@@ -112,6 +112,9 @@ open class KmpVariantImpl @Inject constructor(
 
     override var androidTest: KmpAndroidTestImpl? = null
 
+    override val isAndroidTestCoverageEnabled: Boolean
+        get() = androidTest?.isAndroidTestCoverageEnabled ?: false
+
     override val nestedComponents: List<ComponentCreationConfig>
         get() = listOfNotNull(unitTest, androidTest)
 
@@ -140,10 +143,6 @@ open class KmpVariantImpl @Inject constructor(
     override val renderscriptCreationConfig: RenderscriptCreationConfig? = null
     override val shadersCreationConfig: ShadersCreationConfig? = null
     override val nativeBuildCreationConfig: NativeBuildCreationConfig? = null
-
-    // TODO(b/243387425): Figure out coverage
-    override val isAndroidTestCoverageEnabled: Boolean
-        get() = false
     override val isCoreLibraryDesugaringEnabledLintCheck: Boolean
         get() = false
 }

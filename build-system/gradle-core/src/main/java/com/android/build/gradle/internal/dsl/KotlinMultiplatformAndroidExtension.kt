@@ -21,6 +21,7 @@ import com.android.build.api.dsl.ApkSigningConfig
 import com.android.build.api.dsl.Installation
 import com.android.build.api.dsl.Optimization
 import com.android.build.api.dsl.Packaging
+import com.android.build.api.dsl.TestCoverage
 import com.android.build.api.dsl.TestOptions
 import com.android.build.api.variant.impl.KotlinMultiplatformAndroidVariant
 import java.io.File
@@ -93,6 +94,8 @@ interface KotlinMultiplatformAndroidExtension {
 
     var enableUnitTestCoverage: Boolean
     var enableInstrumentedTestCoverage: Boolean
+
+    val testCoverage: TestCoverage
 
     fun onVariant(
         callback: KotlinMultiplatformAndroidVariant.() -> Unit

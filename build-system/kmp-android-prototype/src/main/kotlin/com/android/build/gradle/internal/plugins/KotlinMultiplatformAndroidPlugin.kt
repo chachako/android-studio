@@ -38,6 +38,7 @@ import com.android.build.gradle.internal.core.dsl.impl.KmpAndroidTestDslInfoImpl
 import com.android.build.gradle.internal.core.dsl.impl.KmpUnitTestDslInfoImpl
 import com.android.build.gradle.internal.core.dsl.impl.KmpVariantDslInfoImpl
 import com.android.build.gradle.internal.dependency.AgpVersionCompatibilityRule
+import com.android.build.gradle.internal.dependency.JacocoInstrumentationService
 import com.android.build.gradle.internal.dependency.SingleVariantBuildTypeRule
 import com.android.build.gradle.internal.dependency.SingleVariantProductFlavorRule
 import com.android.build.gradle.internal.dependency.VariantDependencies
@@ -124,6 +125,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         Aapt2ThreadPoolBuildService.RegistrationAction(project, projectServices.projectOptions).execute()
         Aapt2DaemonBuildService.RegistrationAction(project, projectServices.projectOptions).execute()
         ClassesHierarchyBuildService.RegistrationAction(project).execute()
+        JacocoInstrumentationService.RegistrationAction(project).execute()
 
         val versionedSdkLoaderService: VersionedSdkLoaderService by lazy {
             withProject("versionedSdkLoaderService") { project ->
@@ -332,6 +334,10 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             nestedComponents = mainVariant.nestedComponents,
             bootClasspathConfig = global
         )
+
+        if (androidTest?.isAndroidTestCoverageEnabled == true) {
+            dependencyConfigurator.configureJacocoTransforms()
+        }
 
         taskManager.createTasks(
             project,

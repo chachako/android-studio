@@ -27,7 +27,6 @@ import com.android.build.api.dsl.Installation
 import com.android.build.api.dsl.Lint
 import com.android.build.api.dsl.Prefab
 import com.android.build.api.dsl.Splits
-import com.android.build.api.dsl.TestCoverage
 import com.android.build.api.dsl.TestOptions
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.attribution.BuildAnalyzerIssueReporter
@@ -194,6 +193,8 @@ class KmpGlobalTaskCreationConfigImpl(
     override val targetDeployApiFromIDE: Int? =
         services.projectOptions.get(IntegerOption.IDE_TARGET_DEVICE_API)
 
+    override val testCoverage = extension.testCoverage
+
     // Unsupported properties
     // TODO: Refactor the parent interface so that we don't have to override these values to avoid
     //  accidental calls.
@@ -221,8 +222,6 @@ class KmpGlobalTaskCreationConfigImpl(
         get() = emptySet()
 
     override val splits: Splits
-        get() = throw IllegalAccessException("Not supported for kmp")
-    override val testCoverage: TestCoverage
         get() = throw IllegalAccessException("Not supported for kmp")
     override val legacyLanguageSplitOptions: LanguageSplitOptions
         get() = throw IllegalAccessException("Not supported for kmp")

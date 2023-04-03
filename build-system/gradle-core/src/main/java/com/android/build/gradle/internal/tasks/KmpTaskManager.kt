@@ -16,10 +16,13 @@
 
 package com.android.build.gradle.internal.tasks
 
+import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.artifact.impl.InternalScopedArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.api.component.impl.KmpAndroidTestImpl
 import com.android.build.api.component.impl.KmpUnitTestImpl
+import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.AndroidTestTaskManager
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.component.ComponentCreationConfig
@@ -140,6 +143,33 @@ class KmpTaskManager(
         project.tasks.registerTask(MergeGeneratedProguardFilesCreationAction(variant))
         project.tasks.registerTask(MergeConsumerProguardFilesTask.CreationAction(variant))
         project.tasks.registerTask(ExportConsumerProguardFilesTask.CreationAction(variant))
+
+        // No jacoco transformation for kmp variants, however, we need to publish the classes
+        // pre transformation as the artifact is used in the jacoco report task.
+        variant.artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
+            .publishCurrent(
+                ScopedArtifact.CLASSES,
+                InternalScopedArtifact.PRE_JACOCO_TRANSFORMED_CLASSES,
+            )
+
+        if (variant.isAndroidTestCoverageEnabled) {
+            val jacocoTask = project.tasks.registerTask(
+                JacocoTask.CreationAction(variant)
+            )
+            // in case of library, we never want to publish the jacoco instrumented classes, so
+            // we basically fork the CLASSES into a specific internal type that is consumed
+            // by the jacoco report task.
+            variant.artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
+                .use(jacocoTask)
+                .toFork(
+                    type = ScopedArtifact.CLASSES,
+                    inputJars = { a ->  a.jarsWithIdentity.inputJars },
+                    inputDirectories = JacocoTask::classesDir,
+                    intoJarDirectory = JacocoTask::outputForJars,
+                    intoDirDirectory = JacocoTask::outputForDirs,
+                    intoType = InternalScopedArtifact.JACOCO_TRANSFORMED_CLASSES
+                )
+        }
 
         // Add a task to create the AAR metadata file
         project.tasks.registerTask(AarMetadataTask.CreationAction(variant))

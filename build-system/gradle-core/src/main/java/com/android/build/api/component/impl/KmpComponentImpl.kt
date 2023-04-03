@@ -301,7 +301,9 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
             )
         )
 
-        androidKotlinCompilation.kotlinSourceSets.forEach { sourceSet ->
+        // Include all kotlin sourceSets (the ones added directly to the compilation and the ones
+        // that added transitively through a dependsOn dependency).
+        androidKotlinCompilation.allKotlinSourceSets.forEach { sourceSet ->
             sources.kotlin { kotlin ->
                 sourceSet.kotlin.srcDirs.forEach { srcDir ->
                     kotlin.addSource(

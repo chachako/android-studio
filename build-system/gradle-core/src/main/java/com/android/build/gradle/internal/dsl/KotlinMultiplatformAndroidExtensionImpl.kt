@@ -20,6 +20,7 @@ import com.android.build.api.dsl.ApkSigningConfig
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.impl.KotlinMultiplatformAndroidVariant
 import com.android.build.api.variant.impl.MutableAndroidVersion
+import com.android.build.gradle.internal.coverage.JacocoOptions
 import com.android.build.gradle.internal.dsl.decorator.annotation.WithLazyInitialization
 import com.android.build.gradle.internal.packaging.getDefaultDebugKeystoreLocation
 import com.android.build.gradle.internal.services.AndroidLocationsBuildService
@@ -126,6 +127,8 @@ abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLazyInitiali
             target.codename = value
             target.api = null
         }
+
+    override val testCoverage = dslServices.newInstance(JacocoOptions::class.java)
 
     private val variantOperations = mutableListOf<Action<KotlinMultiplatformAndroidVariant>>()
     private var actionsExecuted = false

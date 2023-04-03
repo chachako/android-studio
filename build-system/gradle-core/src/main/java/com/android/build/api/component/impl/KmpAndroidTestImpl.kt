@@ -97,6 +97,9 @@ open class KmpAndroidTestImpl @Inject constructor(
     override val testOnlyApk: Boolean
         get() = true
 
+    override val debuggable: Boolean
+        get() = true
+
     override fun <T> onTestedVariant(action: (VariantCreationConfig) -> T): T {
         return action.invoke(mainVariant)
     }

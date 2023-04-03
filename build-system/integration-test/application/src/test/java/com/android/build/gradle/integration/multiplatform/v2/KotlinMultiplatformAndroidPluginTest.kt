@@ -25,6 +25,7 @@ import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.apk.Aar
 import com.android.testutils.apk.Apk
 import com.android.utils.FileUtils
+import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Before
@@ -142,7 +143,14 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
 
     @Test
     fun testRunningUnitTests() {
-        project.executor().run(":kmpFirstLib:testKotlinAndroidTest")
+        TestFileUtils.appendToFile(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            """
+                android.enableUnitTestCoverage = true
+            """.trimIndent()
+        )
+
+        project.executor().run(":kmpFirstLib:createKotlinAndroidTestCoverageReport")
 
         assertWithMessage(
             "Running kmp unit tests should run common tests as well"
@@ -158,6 +166,42 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             "com.example.kmpfirstlib.KmpAndroidFirstLibClassTest.html",
             "com.example.kmpfirstlib.KmpCommonFirstLibClassTest.html"
         )
+
+        val coveragePackageFolder = FileUtils.join(
+            project.getSubproject("kmpFirstLib").buildDir,
+            "reports", "coverage", "test", "main", "com.example.kmpfirstlib"
+        )
+        assertThat(coveragePackageFolder.exists()).isTrue()
+
+        assertThat(coveragePackageFolder.listFiles()!!.map { it.name }).containsExactly(
+            "index.html",
+            "index.source.html",
+
+            "KmpCommonFirstLibClass.html",
+            "KmpCommonFirstLibClass.kt.html",
+
+            "KmpAndroidActivity.html",
+            "KmpAndroidActivity.kt.html",
+
+            "KmpAndroidFirstLibClass.html",
+            "KmpAndroidFirstLibClass.kt.html",
+        )
+
+        val packageCoverageReport = FileUtils.join(
+            coveragePackageFolder,
+            "index.html"
+        )
+
+        val generatedCoverageReportHTML = packageCoverageReport.readLines().joinToString("\n")
+
+        val totalCoverageMetricsContents = Regex("<tfoot>(.*?)</tfoot>")
+            .find(generatedCoverageReportHTML)
+        val totalCoverageInfo = Regex("<td class=\"ctr2\">(.*?)</td>")
+            .find(totalCoverageMetricsContents?.groups?.first()!!.value)
+
+        val packageCoveragePercentage = totalCoverageInfo!!.groups[1]!!.value
+
+        assertThat(packageCoveragePercentage.trimEnd('%').toInt() > 0).isTrue()
 
         project.executor().run(":app:testDebugUnitTest")
     }
@@ -290,14 +334,14 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             assertThat(
                 apk.entries.map { it.pathString }.filterNot {
                     it.startsWith("/res") || it.endsWith(".kotlin_builtins") ||
-                            it.startsWith("/META-INF")
+                            it.startsWith("/META-INF") ||
+                            (it.startsWith("/classes") && it.endsWith(".dex"))
                 }
             ).containsExactlyElementsIn(
                 listOf(
                     "/AndroidManifest.xml",
                     "/kmp_resource.txt",
                     "/android_lib_resource.txt",
-                    "/classes.dex"
                 )
             )
         }
