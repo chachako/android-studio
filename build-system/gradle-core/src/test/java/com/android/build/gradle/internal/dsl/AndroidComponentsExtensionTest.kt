@@ -18,7 +18,9 @@ package com.android.build.gradle.internal.dsl
 
 import com.android.build.api.AndroidPluginVersion
 import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.dsl.ApplicationBuildType
 import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.ApplicationProductFlavor
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.dsl.SdkComponents
@@ -51,9 +53,11 @@ import com.android.build.gradle.internal.services.createDslServices
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtensionContainer
 import org.junit.Before
 import org.junit.Test
+import org.mockito.ArgumentCaptor
 import org.mockito.Mockito
 import java.util.regex.Pattern
 
@@ -293,6 +297,37 @@ class AndroidComponentsExtensionTest {
 
     interface DslExtensionType
     interface VariantExtensionType: VariantExtension
+    interface ProjectDslExtensionType
+
+    @Test
+    fun testRegisterProjectExtension() {
+
+        abstract class ExtensionAwareApplicationExtension: ApplicationExtension, ExtensionAware
+
+        val extension = Mockito.mock(ExtensionAwareApplicationExtension::class.java)
+        val extensionContainer= Mockito.mock(ExtensionContainer::class.java)
+        Mockito.`when`(extension.extensions).thenReturn(extensionContainer)
+
+        val variantApiOperationsRegistrar = VariantApiOperationsRegistrar<ApplicationExtension, ApplicationVariantBuilder, ApplicationVariant>(extension)
+        val appExtension = ApplicationAndroidComponentsExtensionImpl(dslServices,
+            Mockito.mock(SdkComponents::class.java),
+            Mockito.mock(ManagedDeviceRegistry::class.java),
+            variantApiOperationsRegistrar,
+            extension
+        )
+        appExtension.registerExtension(
+            DslExtension.Builder("extension")
+                .extendProjectWith(ProjectDslExtensionType::class.java)
+                .build()) {
+            object: VariantExtensionType {}
+        }
+        Mockito.verify(extensionContainer).add("extension", ProjectDslExtensionType::class.java)
+        assertThat(variantApiOperationsRegistrar.dslExtensions).hasSize(1)
+        assertThat(variantApiOperationsRegistrar.dslExtensions[0].dslExtensionTypes.dslName)
+            .isEqualTo("extension")
+        assertThat(variantApiOperationsRegistrar.dslExtensions[0].dslExtensionTypes.projectExtensionType)
+            .isEqualTo(ProjectDslExtensionType::class.java)
+    }
 
     @Test
     fun testRegisterBuildTypeExtension() {
@@ -506,26 +541,43 @@ class AndroidComponentsExtensionTest {
     private fun createExtensionAwareBuildType(extension: ApplicationExtension): ExtensionContainer {
         @Suppress("UNCHECKED_CAST")
         val buildTypesContainer = Mockito.mock(NamedDomainObjectContainer::class.java)
-                as NamedDomainObjectContainer<com.android.build.api.dsl.ApplicationBuildType>
+                as NamedDomainObjectContainer<ApplicationBuildType>
         Mockito.`when`(extension.buildTypes).thenReturn(buildTypesContainer)
         val buildTypeExtensionContainer= Mockito.mock(ExtensionContainer::class.java)
-        val buildType = Mockito.mock(com.android.build.api.dsl.BuildType::class.java)
+        val buildType = Mockito.mock(ApplicationBuildType::class.java)
         Mockito.`when`(buildType.extensions).thenReturn(buildTypeExtensionContainer)
-        val buildTypes = listOf<com.android.build.api.dsl.BuildType>(buildType)
-        Mockito.`when`(buildTypesContainer.iterator()).thenAnswer { buildTypes.iterator() }
+        val buildTypes = listOf<ApplicationBuildType>(buildType)
+        val argument = ArgumentCaptor.forClass(
+            Action::class.java
+        ) as ArgumentCaptor<Action<in ApplicationBuildType>>
+
+        Mockito.`when`(buildTypesContainer.all(argument.capture())).thenAnswer {invocation ->
+            buildTypes.forEach {
+                invocation.getArgument<Action<in ApplicationBuildType>>(0).execute(it)
+            }
+        }
         return buildTypeExtensionContainer
     }
 
     private fun createExtensionAwareProductFlavor(extension: ApplicationExtension): ExtensionContainer {
         @Suppress("UNCHECKED_CAST")
         val productFlavorContainer = Mockito.mock(NamedDomainObjectContainer::class.java)
-                as NamedDomainObjectContainer<com.android.build.api.dsl.ApplicationProductFlavor>
+                as NamedDomainObjectContainer<ApplicationProductFlavor>
         Mockito.`when`(extension.productFlavors).thenReturn(productFlavorContainer)
         val extensionContainer= Mockito.mock(ExtensionContainer::class.java)
-        val productFlavor = Mockito.mock(com.android.build.api.dsl.ProductFlavor::class.java)
+        val productFlavor = Mockito.mock(ApplicationProductFlavor::class.java)
         Mockito.`when`(productFlavor.extensions).thenReturn(extensionContainer)
-        val productFlavors = listOf<com.android.build.api.dsl.ProductFlavor>(productFlavor)
+        val productFlavors = listOf<ApplicationProductFlavor>(productFlavor)
         Mockito.`when`(productFlavorContainer.iterator()).thenAnswer { productFlavors.iterator() }
+        val argument = ArgumentCaptor.forClass(
+            Action::class.java
+        ) as ArgumentCaptor<Action<in ApplicationProductFlavor>>
+
+        Mockito.`when`(productFlavorContainer.all(argument.capture())).thenAnswer {invocation ->
+            productFlavors.forEach {
+                invocation.getArgument<Action<in ApplicationProductFlavor>>(0).execute(it)
+            }
+        }
         return extensionContainer
     }
 

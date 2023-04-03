@@ -29,6 +29,7 @@ import com.android.build.api.variant.VariantBuilder
 import com.android.build.api.variant.VariantExtension
 import com.android.build.gradle.internal.services.DslServices
 import org.gradle.api.Action
+import org.gradle.api.plugins.ExtensionAware
 
 abstract class AndroidComponentsExtensionImpl<
         DslExtensionT: CommonExtension<*, *, *, *, *>,
@@ -97,9 +98,15 @@ abstract class AndroidComponentsExtensionImpl<
                 configurator = configurator
         ))
 
+        dslExtension.projectExtensionType?.let {
+            (commonExtension as ExtensionAware).extensions.add(
+                dslExtension.dslName,
+                it
+            )
+        }
+
         dslExtension.buildTypeExtensionType?.let {
-            commonExtension.buildTypes.forEach {
-                    buildType ->
+            commonExtension.buildTypes.all { buildType ->
                 buildType.extensions.add(
                     dslExtension.dslName,
                     it
@@ -107,7 +114,7 @@ abstract class AndroidComponentsExtensionImpl<
             }
         }
         dslExtension.productFlavorExtensionType?.let {
-            commonExtension.productFlavors.forEach {
+            commonExtension.productFlavors.all {
                 productFlavor -> productFlavor.extensions.add(
                     dslExtension.dslName,
                     it
