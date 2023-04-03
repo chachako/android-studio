@@ -19,6 +19,7 @@ iml_module(
         "//tools/adt/idea/.idea/libraries:jetbrains.kotlinx.coroutines.test[test]",
         "//tools/adt/idea/.idea/libraries:mockito[test]",
         "//tools/adt/idea/.idea/libraries:truth[test]",
+        "//prebuilts/tools/common/m2:kotlinx-cli-jvm-0.3.1",
     ],
 )
 

@@ -16,6 +16,11 @@
 package com.android.tools.debuggertests
 
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.cli.ArgParser
+import kotlinx.cli.ArgType
+import kotlinx.cli.default
+import kotlinx.cli.optional
+import kotlinx.cli.vararg
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 
@@ -29,10 +34,18 @@ import kotlinx.coroutines.withTimeout
  * --add-opens=jdk.jdi/com.sun.tools.jdi=ALL-UNNAMED
  * ```
  */
-fun main() {
-  Resources.findTestClasses().forEach {
+fun main(args: Array<String>) {
+  val parser = ArgParser("UpdateGolden")
+  val verbose by parser.option(ArgType.Boolean, shortName = "v").default(false)
+  val tests by parser.argument(ArgType.String).vararg().optional()
+  parser.parse(args)
+  val testClasses = tests.takeIf { it.isNotEmpty() } ?: Resources.findTestClasses()
+  testClasses.forEach {
     println("Test $it")
     val actual = runBlocking { withTimeout(30.seconds) { Engine.runTest(it) } }
     Resources.writeGolden(it, actual)
+    if (verbose) {
+      println(actual)
+    }
   }
 }
