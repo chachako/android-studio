@@ -194,6 +194,15 @@ class LibraryTaskManager(
         ) {
             taskFactory.register(ExtractAnnotations.CreationAction(libraryVariant))
         }
+
+        // No jacoco transformation for library variants, however, we need to publish the classes
+        // pre transformation as the artifact is used in the jacoco report task.
+        libraryVariant.artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
+            .publishCurrent(
+                ScopedArtifact.CLASSES,
+                InternalScopedArtifact.PRE_JACOCO_TRANSFORMED_CLASSES,
+            )
+
         val instrumented = libraryVariant.isAndroidTestCoverageEnabled
 
         maybeCreateTransformClassesWithAsmTask(libraryVariant)

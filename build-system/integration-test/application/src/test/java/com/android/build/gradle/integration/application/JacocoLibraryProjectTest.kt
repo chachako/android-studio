@@ -19,6 +19,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject.Com
 import com.android.build.gradle.integration.common.fixture.LoggingLevel
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
+import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Rule
@@ -65,11 +66,23 @@ class JacocoLibraryProjectTest {
 
             $buildFile
         """.trimIndent())
-        val result = project.executor().withLoggingLevel(LoggingLevel.INFO).run("testDebugUnitTest")
+        val result = project.executor().withLoggingLevel(LoggingLevel.INFO).run("createDebugUnitTestCoverageReport")
 
         assertThat(result.stdout).doesNotContain("Cannot process instrumented class")
 
         val coverageData = project.buildDir.walk().filter { it.extension=="exec" }.toList()
         assertThat(coverageData).hasSize(1)
+
+        val coveragePackageFolder = FileUtils.join(
+            project.buildDir,
+            "reports", "coverage", "test", "debug", "com.example.helloworld"
+        )
+
+        assertThat(coveragePackageFolder.exists()).isTrue()
+
+        assertThat(coveragePackageFolder.listFiles()!!.map { it.name }).containsAtLeast(
+            "HelloWorld.html",
+            "HelloWorld.java.html"
+        )
     }
 }
