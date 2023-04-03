@@ -15,6 +15,7 @@
  */
 package com.android.tools.debuggertests
 
+import com.android.tools.debuggertests.Engine.EngineType.SIMPLE
 import com.google.common.truth.Truth.assertThat
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.runBlocking
@@ -24,9 +25,9 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
 
-/** Runs tests */
+/** Runs tests using a [SimpleEngine] */
 @RunWith(Parameterized::class)
-class DebuggerTest(private val testClass: String) {
+internal class SimpleEngineDebuggerTest(testClass: String) : DebuggerTestBase(testClass) {
 
   companion object {
 
@@ -35,11 +36,9 @@ class DebuggerTest(private val testClass: String) {
 
   @Test
   fun test() {
-    val actual = runBlocking { withTimeout(5.seconds) { Engine.runTest(testClass) } }
+    val actual = runBlocking { withTimeout(5.seconds) { SIMPLE.getEngine(testClass).runTest() } }
     val expected = Resources.readGolden(testClass)
 
-    assertThat(actual).named(testClass.describe()).isEqualTo(expected)
+    assertThat(actual).named(describeTest()).isEqualTo(expected)
   }
 }
-
-private fun String.describe() = "at $this(${substringAfterLast(".")}.kt:20)"

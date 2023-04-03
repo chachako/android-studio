@@ -15,32 +15,24 @@
  */
 package com.android.tools.debuggertests
 
-import com.sun.jdi.Bootstrap
+import com.sun.jdi.Bootstrap.virtualMachineManager
 import com.sun.jdi.VirtualMachine
+import com.sun.jdi.connect.Connector
 import com.sun.jdi.event.ClassPrepareEvent
 import com.sun.jdi.event.Event
 import com.sun.jdi.event.VMStartEvent
-import com.sun.jdi.request.EventRequestManager
-import kotlinx.coroutines.runBlocking
+
+private const val LAUNCH_CONNECTOR = "com.sun.jdi.CommandLineLaunch"
+private const val ATTACH_CONNECTOR = "com.sun.jdi.SocketAttach"
 
 /** A simple JDI client that can set a breakpoint */
-internal class Debugger(mainClass: String, classpath: String) {
+internal class Debugger private constructor(private val vm: VirtualMachine) {
 
-  private val vm: VirtualMachine
-  private val requestManager: EventRequestManager
-  private val eventChannel: EventChannel
+  private val requestManager = vm.eventRequestManager()
+  private val eventChannel = EventChannel(vm.eventQueue())
 
-  init {
-    val launcher = Bootstrap.virtualMachineManager().defaultConnector()
-    val arguments = launcher.defaultArguments()
-    arguments["main"]?.setValue(mainClass)
-    arguments["options"]?.setValue("-classpath $classpath")
-
-    vm = launcher.launch(arguments)
-    requestManager = vm.eventRequestManager()
-
-    eventChannel = EventChannel(vm.eventQueue())
-    runBlocking { eventChannel.receive<VMStartEvent>() }
+  suspend fun start() {
+    eventChannel.receive<VMStartEvent>()
   }
 
   /** Resume execution and return the next event. */
@@ -62,4 +54,27 @@ internal class Debugger(mainClass: String, classpath: String) {
       .createBreakpointRequest(event.referenceType().locationsOfLine(line).first())
       .apply { enable() }
   }
+
+  companion object {
+
+    fun launch(mainClass: String, classpath: String): Debugger {
+      val connector = virtualMachineManager().launchingConnectors().named(LAUNCH_CONNECTOR)
+      val arguments = connector.defaultArguments()
+      arguments["main"]?.setValue(mainClass)
+      arguments["options"]?.setValue("-classpath $classpath")
+      return Debugger(connector.launch(arguments))
+    }
+
+    fun attachToProcess(hostname: String, port: Int): Debugger {
+      val connector = virtualMachineManager().attachingConnectors().named(ATTACH_CONNECTOR)
+      val arguments = connector.defaultArguments()
+      arguments["hostname"]?.setValue(hostname)
+      (arguments["port"] as? Connector.IntegerArgument)?.setValue(port)
+      return Debugger(connector.attach(arguments))
+    }
+  }
+}
+
+private inline fun <reified T : Connector> List<T>.named(name: String): T = first {
+  it.name() == name
 }

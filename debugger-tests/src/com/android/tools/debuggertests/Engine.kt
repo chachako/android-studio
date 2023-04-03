@@ -19,22 +19,26 @@ import com.sun.jdi.LocalVariable
 import com.sun.jdi.Location
 import com.sun.jdi.event.BreakpointEvent
 import com.sun.jdi.event.Event
+import java.io.Closeable
 
 private const val BREAKPOINT_CLASS = "BreakpointKt"
 private const val BREAKPOINT_LINE = 20
 
 /** A simple test engine */
-object Engine {
+internal abstract class Engine : Closeable {
+
+  protected abstract suspend fun createDebugger(): Debugger
 
   /**
    * Executes a single test.
-   * 1. Starts a [Debugger] and attach to the main class
-   * 2. Sets a breakpoint at Breakpoint.breakpoint() 3, Resumes the program each time it hits a
-   *    breakpoint
+   * 1. Starts a [Debugger]
+   * 2. Sets a breakpoint at Breakpoint.breakpoint()
+   * 3. Resumes the program each time it hits a breakpoint
    * 4. On each breakpoint, emits information about the frame into a string
    */
-  suspend fun runTest(mainClass: String): String {
-    val debugger = Debugger(mainClass, Resources.getTestClassesJarPath())
+  suspend fun runTest(): String {
+    val debugger = createDebugger()
+    debugger.start()
     debugger.setBreakpoint(BREAKPOINT_CLASS, BREAKPOINT_LINE)
     val actual = buildString {
       while (true) {
@@ -62,6 +66,14 @@ object Engine {
       }
     }
     return actual
+  }
+
+  enum class EngineType(private val factory: (String) -> Engine) {
+    SIMPLE(::SimpleEngine),
+    JVM(::JvmEngine),
+    ;
+
+    fun getEngine(testName: String) = factory(testName)
   }
 }
 

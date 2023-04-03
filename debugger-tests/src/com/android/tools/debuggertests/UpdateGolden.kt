@@ -15,6 +15,9 @@
  */
 package com.android.tools.debuggertests
 
+import com.android.tools.debuggertests.Engine.EngineType
+import com.android.tools.debuggertests.Engine.EngineType.JVM
+import com.android.tools.debuggertests.Engine.EngineType.SIMPLE
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
@@ -37,15 +40,24 @@ import kotlinx.coroutines.withTimeout
 fun main(args: Array<String>) {
   val parser = ArgParser("UpdateGolden")
   val verbose by parser.option(ArgType.Boolean, shortName = "v").default(false)
+  val type by parser.option(ArgType.Choice<EngineType>(), shortName = "t").default(SIMPLE)
   val tests by parser.argument(ArgType.String).vararg().optional()
   parser.parse(args)
+
   val testClasses = tests.takeIf { it.isNotEmpty() } ?: Resources.findTestClasses()
-  testClasses.forEach {
-    println("Test $it")
-    val actual = runBlocking { withTimeout(30.seconds) { Engine.runTest(it) } }
-    Resources.writeGolden(it, actual)
-    if (verbose) {
-      println(actual)
+  testClasses.forEach { testClass ->
+    println("Test $testClass")
+    val engine =
+      when (type) {
+        SIMPLE -> SimpleEngine(testClass)
+        JVM -> JvmEngine(testClass)
+      }
+    engine.use {
+      val actual = runBlocking { withTimeout(30.seconds) { engine.runTest() } }
+      Resources.writeGolden(testClass, actual)
+      if (verbose) {
+        println(actual)
+      }
     }
   }
 }
