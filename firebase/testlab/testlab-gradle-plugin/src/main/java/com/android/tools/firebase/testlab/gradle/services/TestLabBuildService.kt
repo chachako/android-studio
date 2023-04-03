@@ -30,13 +30,11 @@ import com.google.api.client.http.GenericUrl
 import com.google.api.client.http.HttpRequestFactory
 import com.google.api.client.http.HttpRequestInitializer
 import com.google.api.client.http.HttpTransport
-import com.google.api.client.http.InputStreamContent
 import com.google.api.client.json.GenericJson
 import com.google.api.client.json.JsonObjectParser
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.client.util.Key
 import com.google.api.services.storage.Storage
-import com.google.api.services.storage.model.StorageObject
 import com.google.api.services.testing.Testing
 import com.google.api.services.testing.model.AndroidDevice
 import com.google.api.services.testing.model.AndroidDeviceCatalog
@@ -83,7 +81,6 @@ import org.gradle.api.services.BuildServiceParameters
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.nio.charset.StandardCharsets
 import java.util.Locale
@@ -108,7 +105,6 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         const val TEST_RESULT_PB_FILE_NAME = "test-result.pb"
         const val clientApplicationName: String = "Firebase TestLab Gradle Plugin"
         const val xGoogUserProjectHeaderKey: String = "X-Goog-User-Project"
-        val cloudStorageUrlRegex = Regex("""gs://(.*?)/(.*)""")
 
         const val INSTRUMENTATION_TEST_SHARD_FIELD = "shardingOption"
         const val TEST_MATRIX_FLAKY_TEST_ATTEMPTS_FIELD = "flakyTestAttempts"
@@ -245,17 +241,18 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val bucketName = parameters.cloudStorageBucket.orNull?.ifBlank { null }
                 ?: initSettingsResult.defaultBucket
 
-        val storageClient = Storage.Builder(
-            httpTransport,
-            jacksonFactory,
-            httpRequestInitializer
-        ).apply {
-            applicationName = clientApplicationName
-        }.build()
+        val testRunStorage = TestRunStorage(
+            runRequestId,
+            bucketName,
+            Storage.Builder(
+                httpTransport,
+                jacksonFactory,
+                httpRequestInitializer
+            ).apply {
+                applicationName = clientApplicationName
+            }.build())
 
-        val testApkStorageObject = uploadToCloudStorage(
-            testData.testApk, runRequestId, storageClient, bucketName
-        )
+        val testApkStorageObject = testRunStorage.uploadToStorage(testData.testApk)
 
         val configProvider = createConfigProvider(
             ftlDeviceModel, deviceLocale, deviceApiLevel
@@ -263,12 +260,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
         // If tested apk is null, this is a self-instrument test (e.g. library module).
         val testedApkFile = testData.testedApkFinder(configProvider).firstOrNull()
-        val appApkStorageObject = uploadToCloudStorage(
-                testedApkFile ?: parameters.stubAppApk.asFile.get(),
-                runRequestId,
-                storageClient,
-                bucketName,
-        )
+        val appApkStorageObject = testRunStorage.uploadToStorage(
+            testedApkFile ?: parameters.stubAppApk.asFile.get())
         val useStubApp = testedApkFile == null
 
         val testingClient = Testing.Builder(
@@ -306,8 +299,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                             val file = File(filePath)
                             check(file.exists()) { "$filePath doesn't exist." }
                             check(file.isFile) { "$filePath must be file." }
-                            val storageObject = uploadToCloudStorage(
-                                    file, runRequestId, storageClient, bucketName)
+                            val storageObject = testRunStorage.uploadToStorage(file)
                             "gs://$bucketName/${storageObject.name}"
                         }
                         filesToPush.add(DeviceFile().apply {
@@ -422,7 +414,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                         testExecution.toolResultsStep.stepId
                     ).execute()
                 executionStep.testExecutionStep.testSuiteOverviews?.forEach { suiteOverview ->
-                    downloadFromCloudStorage(storageClient, suiteOverview.xmlSource.fileUri, runRequestId) {
+                    testRunStorage.downloadFromStorage(suiteOverview.xmlSource.fileUri) {
                         File(resultsOutDir, "TEST-${it.replace("/", "_")}")
                     }?.also {
                         updateTestResultXmlFile(it, deviceName, projectPath, variantName)
@@ -434,9 +426,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 resultTestMatrix,
                 testExecution,
                 deviceInfoFile,
-                storageClient,
-                resultsOutDir,
-                runRequestId,
+                testRunStorage,
+                resultsOutDir
             )
 
             val testSuitePassed = testSuiteResult.testStatus.isPassedOrSkipped()
@@ -511,9 +502,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         testMatrix: TestMatrix,
         testExecution: TestExecution,
         deviceInfoFile: File,
-        storageClient: Storage,
-        resultsOutDir: File,
-        runRequestId: String,
+        testRunStorage: TestRunStorage,
+        resultsOutDir: File
     ): TestSuiteResult {
         val testSuiteResult = TestSuiteResult.newBuilder()
 
@@ -652,8 +642,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                         fileUri.contains(directoriesToPull)
                     }
                     if (download) {
-                        val downloadedFile = downloadFromCloudStorage(
-                                storageClient, fileUri, runRequestId) {
+                        val downloadedFile = testRunStorage.downloadFromStorage(fileUri) {
                             File(resultsOutDir, it)
                         } ?: return@forEach
                         testSuiteResult.addOutputArtifactBuilder().apply {
@@ -722,9 +711,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                             if (case.toolOutputs != null) {
                                 for (toolOutput in (case.toolOutputs as List<ToolOutputReference>)) {
                                     if (toolOutput.output!!.fileUri!!.endsWith("logcat")) {
-                                        val logcatFile = downloadFromCloudStorage(
-                                            storageClient, toolOutput.output!!.fileUri!!,
-                                            runRequestId) {
+                                        val logcatFile = testRunStorage.downloadFromStorage(
+                                            toolOutput.output!!.fileUri!!) {
                                             File(resultsOutDir, it)
                                         }
                                         if (logcatFile != null) {
@@ -838,48 +826,6 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             androidTestDeviceInfo.writeTo(it)
         }
         return deviceInfoFile
-    }
-
-    /**
-     * Uploads the given file to cloud storage.
-     *
-     * @param file the file to be uploaded
-     * @param runId a uuid that is unique to this test run.
-     * @param storageClient the storage connection for the file to be written to.
-     * @param bucketName a unique id for the set of files to be associated with this test.
-     * @return a handle to the Storage object in the cloud.
-     */
-    private fun uploadToCloudStorage(
-        file: File, runId: String, storageClient: Storage, bucketName: String
-    ): StorageObject =
-        FileInputStream(file).use { fileInputStream ->
-            storageClient.objects().insert(
-                bucketName,
-                StorageObject(),
-                InputStreamContent("application/octet-stream", fileInputStream).apply {
-                    length = file.length()
-                }
-            ).apply {
-                name = "${runId}_${file.name}"
-            }.execute()
-        }
-
-    /**
-     * Downloads the given file from cloud storage.
-     */
-    private fun downloadFromCloudStorage(
-        storageClient: Storage, fileUri: String,
-        runId: String, destination: (objectName: String) -> File): File? {
-        val matchResult = cloudStorageUrlRegex.find(fileUri) ?: return null
-        val (bucketName, objectName) = matchResult.destructured
-        return destination(objectName.removePrefix("$runId/")).apply {
-            parentFile.mkdirs()
-            outputStream().use {
-                storageClient.objects()
-                    .get(bucketName, objectName)
-                    .executeMediaAndDownloadTo(it)
-            }
-        }
     }
 
     private fun createConfigProvider(
