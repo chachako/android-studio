@@ -142,6 +142,8 @@ interface ComponentType {
         const val UNIT_TEST_SUFFIX = "UnitTest"
         const val TEST_FIXTURES_PREFIX = "testFixtures"
         const val TEST_FIXTURES_SUFFIX = "TestFixtures"
+        const val SCREENSHOT_TEST_PREFIX = "screenshotTest"
+        const val SCREENSHOT_TEST_SUFFIX = "ScreenshotTest"
 
         val testComponents: ImmutableList<ComponentType>
             get() {
