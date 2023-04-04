@@ -24,14 +24,17 @@ import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.services.createDslServices
 import com.android.build.gradle.internal.testing.utp.createEmulatorControlConfig
 import com.android.build.gradle.internal.testing.utp.createEmulatorControlConfig
+import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.IntegerOption
 import com.android.build.gradle.options.OptionalBooleanOption
 import com.android.build.gradle.options.ProjectOptions
+import com.android.testutils.MockitoKt.whenever
 import com.google.common.collect.ImmutableMap
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
+import kotlin.test.assertFailsWith
 
 class EmulatorControlConfigTest {
     private lateinit var dslServices: DslServices
@@ -52,36 +55,50 @@ class EmulatorControlConfigTest {
     }
 
     @Test
+    fun defaultExperimentalEnableEmulatorControlBooleanIsFalse() {
+        assertThat(emptyProjectOptions.get(BooleanOption.ENABLE_EMULATOR_CONTROL)).isFalse()
+    }
+
+    @Test
     fun disableByDefault() {
         val emulatorControlConfig = createEmulatorControlConfig(emptyProjectOptions, emulatorControl)
         assertThat(emulatorControlConfig.enabled).isFalse()
     }
+    @Test
+    fun emulatorEnableEmulatorControlRequiresGradleProperty() {
+        emulatorControl.enable = true
+        assertFailsWith<IllegalStateException>(
+            message = "EmulatorControl is an experimental feature and it is disabled by default. Please add android.experimental.androidTest.enableEmulatorControl=true in your gradle.properties to opt-in to this feature.",
+            block = {
+                createEmulatorControlConfig(emptyProjectOptions, emulatorControl)
+            }
+        )
+    }
+
 
     @Test
-    fun enableByDslWithDefaultSetup() {
+    fun emulatorEnableEmulatorControlWithGradleProperty() {
+        val fakeProjectOptions = Mockito.mock(ProjectOptions::class.java)
+        whenever(fakeProjectOptions.get(BooleanOption.ENABLE_EMULATOR_CONTROL)).thenReturn(true)
+
         emulatorControl.enable = true
-        val emulatorControlConfig = createEmulatorControlConfig(emptyProjectOptions, emulatorControl)
+        val emulatorControlConfig = createEmulatorControlConfig(fakeProjectOptions, emulatorControl)
         assertThat(emulatorControlConfig.enabled).isTrue()
-        assertThat(emulatorControlConfig.secondsValid).isEqualTo(3600)
-        assertThat(emulatorControlConfig.allowedEndpoints).isEmpty()
-    }
+      }
+
 
     @Test
     fun setSecondsValidByDsl() {
-        emulatorControl.enable = true
         emulatorControl.secondsValid = 30
         val emulatorControlConfig = createEmulatorControlConfig(emptyProjectOptions, emulatorControl)
-        assertThat(emulatorControlConfig.enabled).isTrue()
         assertThat(emulatorControlConfig.secondsValid).isEqualTo(30)
         assertThat(emulatorControlConfig.allowedEndpoints).isEmpty()
     }
 
     @Test
     fun setAllowEndpointsByDsl() {
-        emulatorControl.enable = true
         emulatorControl.allowedEndpoints.add("a")
         val emulatorControlConfig = createEmulatorControlConfig(emptyProjectOptions, emulatorControl)
-        assertThat(emulatorControlConfig.secondsValid).isEqualTo(3600)
         assertThat(emulatorControlConfig.allowedEndpoints).contains("a")
         assertThat(emulatorControlConfig.allowedEndpoints).hasSize(1)
     }
