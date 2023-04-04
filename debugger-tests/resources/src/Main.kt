@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.tools.debuggertests
 
-/** A method that tested code calls when it wants to check a breakpoint. */
-internal fun breakpoint() {
-  // nothing to do
-}
+/** An empty main that we use to build the tested jar */
+fun main() {}

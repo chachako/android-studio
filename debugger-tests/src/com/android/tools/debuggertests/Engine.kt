@@ -20,8 +20,8 @@ import com.sun.jdi.Location
 import com.sun.jdi.event.BreakpointEvent
 import com.sun.jdi.event.Event
 
-private const val BREAKPOINT_CLASS = "com.android.tools.debuggertests.BreakpointKt"
-private const val BREAKPOINT_LINE = 21
+private const val BREAKPOINT_CLASS = "BreakpointKt"
+private const val BREAKPOINT_LINE = 20
 
 /** A simple test engine */
 object Engine {
@@ -34,7 +34,7 @@ object Engine {
    * 4. On each breakpoint, emits information about the frame into a string
    */
   suspend fun runTest(mainClass: String): String {
-    val debugger = Debugger(mainClass, System.getProperty("java.class.path"))
+    val debugger = Debugger(mainClass, Resources.getTestClassesJarPath())
     debugger.setBreakpoint(BREAKPOINT_CLASS, BREAKPOINT_LINE)
     val actual = buildString {
       while (true) {

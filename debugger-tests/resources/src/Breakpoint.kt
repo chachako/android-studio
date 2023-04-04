@@ -13,25 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tests
 
-import breakpoint
-
-@Suppress("NOTHING_TO_INLINE", "SameParameterValue", "UNUSED_PARAMETER")
-object Inline {
-
-  @JvmStatic
-  fun main(args: Array<String>) {
-    breakpoint()
-    foo(1, "Hello")
-  }
-
-  private inline fun foo(i: Int, s: String) {
-    breakpoint()
-    bar(i + 1, s + "1")
-  }
-
-  private inline fun bar(i: Int, s: String) {
-    breakpoint()
-  }
+/** A method that tested code calls when it wants to check a breakpoint. */
+internal fun breakpoint() {
+  // nothing to do
 }
