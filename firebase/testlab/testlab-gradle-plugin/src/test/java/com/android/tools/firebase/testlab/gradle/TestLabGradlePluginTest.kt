@@ -33,6 +33,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.Answers
 import org.mockito.Mock
+import org.mockito.Mockito.atLeastOnce
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
@@ -73,35 +74,45 @@ class TestLabGradlePluginTest {
         plugin.apply(mockProject)
 
         val captor = argumentCaptor<Action<AndroidBasePlugin>>()
-        verify(mockProject.plugins).withType(eq(AndroidBasePlugin::class.java), capture(captor))
+        verify(mockProject.plugins, atLeastOnce())
+                .withType(eq(AndroidBasePlugin::class.java), capture(captor))
 
         captor.value.execute(AndroidBasePlugin())
     }
 
     @Test
     fun agpVersionCheck() {
-        applyFtlPlugin()
-    }
+        val unsupportedVersionsTooOld = listOf(
+                AndroidPluginVersion(8, 1, 0).alpha(8),
+        )
+        val supportedVersions = listOf(
+                AndroidPluginVersion(8, 1, 0).alpha(9),
+                AndroidPluginVersion(8, 1),
+                AndroidPluginVersion(8, 2),
+                AndroidPluginVersion(8, 3, 0).dev(),
+        )
+        val unsupportedVersionsTooRecent = listOf(
+                AndroidPluginVersion(8, 3, 0).alpha(1),
+                AndroidPluginVersion(8, 3, 0),
+        )
 
-    @Test
-    fun agpVersionIsTooOld() {
-        val e = assertThrows(IllegalStateException::class.java) {
-            applyFtlPlugin(AndroidPluginVersion(8, 1, 0).alpha(8))
+        unsupportedVersionsTooOld.forEach {
+            val e = assertThrows(IllegalStateException::class.java) {
+                applyFtlPlugin(it)
+            }
+            assertThat(e).hasMessageThat()
+                    .contains("Android Gradle plugin version 8.1.0-alpha09 or higher is required.")
         }
-        assertThat(e).hasMessageThat()
-                .contains("Android Gradle plugin version 8.1.0-alpha09 or higher is required.")
-    }
 
-    @Test
-    fun agpVersionIsTooRecent() {
-        val e = assertThrows(IllegalStateException::class.java) {
-            applyFtlPlugin(AndroidPluginVersion(8, 2, 0).alpha(1))
+        supportedVersions.forEach {
+            applyFtlPlugin(it)
         }
-        assertThat(e).hasMessageThat().contains("It requires Android Gradle plugin version 8.1.0.")
-    }
 
-    @Test
-    fun agpVersionCheckShouldBeIgnoredForDevBuild() {
-        applyFtlPlugin(AndroidPluginVersion(8, 2, 0).dev())
+        unsupportedVersionsTooRecent.forEach {
+            val e = assertThrows(IllegalStateException::class.java) {
+                applyFtlPlugin(it)
+            }
+            assertThat(e).hasMessageThat().contains("It requires Android Gradle plugin version 8.2.0.")
+        }
     }
 }
