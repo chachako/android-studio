@@ -21,6 +21,7 @@ import com.android.build.api.dsl.BuildType
 import com.android.build.api.dsl.ProductFlavor
 import com.android.build.api.variant.AnnotationProcessor
 import com.android.build.api.variant.BuildConfigField
+import com.android.build.api.variant.Variant
 import com.android.build.api.variant.VariantOutputConfiguration
 import com.android.build.api.variant.impl.TaskProviderBasedDirectoryEntryImpl
 import com.android.build.api.variant.impl.VariantOutputConfigurationImpl
@@ -334,25 +335,9 @@ class OldVariantApiLegacySupportImpl(
         dimension: String,
         alternatedValues: List<String>
     ) {
-        val requestedValue = component.name
-        val attributeKey = ProductFlavorAttr.of(dimension)
-        val attributeValue: ProductFlavorAttr = component.services.named(
-            ProductFlavorAttr::class.java, requestedValue
-        )
-
-        component.variantDependencies.compileClasspath.attributes.attribute(attributeKey, attributeValue)
-        component.variantDependencies.runtimeClasspath.attributes.attribute(attributeKey, attributeValue)
-        component.variantDependencies
-            .annotationProcessorConfiguration!!
-            .attributes
-            .attribute(attributeKey, attributeValue)
-
-        // then add the fallbacks which contain the actual requested value
-        DependencyConfigurator.addFlavorStrategy(
-            component.services.dependencies.attributesSchema,
-            dimension,
-            ImmutableMap.of(requestedValue, alternatedValues)
-        )
+        if (component is Variant) {
+            component.missingDimensionStrategy(dimension, *alternatedValues.toTypedArray())
+        }
     }
 
 
