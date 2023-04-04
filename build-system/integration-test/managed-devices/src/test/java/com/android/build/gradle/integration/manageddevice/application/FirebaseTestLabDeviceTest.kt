@@ -50,6 +50,7 @@ class FirebaseTestLabDeviceTest {
         project.gradlePropertiesFile.appendText("""
             android.experimental.testOptions.managedDevices.customDevice=true
         """.trimIndent())
+
         val appBuildFileContent = project.getSubproject("app").buildFile.readText()
         project.getSubproject("app").buildFile.writeText("""
             apply plugin: 'com.google.firebase.testlab'
@@ -68,6 +69,26 @@ class FirebaseTestLabDeviceTest {
                 }
             }
         """)
+
+        val ktBuildFileContent = project.getSubproject("kotlinDslApp").ktsBuildFile.readText()
+        project.getSubproject("kotlinDslApp").ktsBuildFile.writeText(
+                ktBuildFileContent.replace(
+                        "plugins {",
+                        "plugins { id(\"com.google.firebase.testlab\")"))
+        project.getSubproject("kotlinDslApp").ktsBuildFile.appendText("""
+            firebaseTestLab {
+                managedDevices {
+                    create("myFtlDevice3") {
+                        device = "Pixel2"
+                        apiLevel = 29
+                    }
+                    create("myFtlDevice4") {
+                        device = "Pixel3"
+                        apiLevel = 30
+                    }
+                }
+            }
+        """)
     }
 
     @Test
@@ -78,6 +99,10 @@ class FirebaseTestLabDeviceTest {
             assertThat(it).contains("myFtlDevice1DebugAndroidTest")
             assertThat(it).contains("myFtlDevice2Check")
             assertThat(it).contains("myFtlDevice2DebugAndroidTest")
+            assertThat(it).contains("myFtlDevice3Check")
+            assertThat(it).contains("myFtlDevice3DebugAndroidTest")
+            assertThat(it).contains("myFtlDevice4Check")
+            assertThat(it).contains("myFtlDevice4DebugAndroidTest")
         }
     }
 
@@ -115,6 +140,47 @@ class FirebaseTestLabDeviceTest {
             assertThat(it).contains("serviceAccountCredentials = test.json")
             assertThat(it).contains("grantedPermissions = NONE")
             assertThat(it).contains("extraDeviceFiles = [/sdcard/Android/data/com.example.myapplication/myAdditionalText.txt:app/myAdditionalText.txt]")
+            assertThat(it).contains("networkProfile = LTE")
+            assertThat(it).contains("cloudStorageBucket = my_example_custom_bucket")
+            assertThat(it).contains("resultsHistoryName = MyCustomHistoryName")
+            assertThat(it).contains("directoriesToPull = [/sdcard/Android/data/com.example.myapplication]")
+        }
+    }
+
+    @Test
+    fun kotlinDsl() {
+        project.getSubproject("kotlinDslApp").ktsBuildFile.appendText("""
+            firebaseTestLab {
+                serviceAccountCredentials.set(file("test.json"))
+                testOptions {
+                    fixture {
+                        grantedPermissions = "none"
+                        extraDeviceFiles.put("/sdcard/Android/data/com.example.myapplication/myAdditionalText.txt", "app/myAdditionalText.txt")
+                        networkProfile = "LTE"
+                    }
+                    results {
+                        cloudStorageBucket = "my_example_custom_bucket"
+                        resultsHistoryName = "MyCustomHistoryName"
+                        directoriesToPull.addAll("/sdcard/Android/data/com.example.myapplication")
+                    }
+                }
+            }
+            task("printDslProperties") {
+                println("serviceAccountCredentials = " + firebaseTestLab.serviceAccountCredentials.asFile.get().name)
+                println("grantedPermissions = " + firebaseTestLab.testOptions.fixture.grantedPermissions)
+                println("extraDeviceFiles = " + firebaseTestLab.testOptions.fixture.extraDeviceFiles.get())
+                println("networkProfile = " + firebaseTestLab.testOptions.fixture.networkProfile)
+                println("cloudStorageBucket = " + firebaseTestLab.testOptions.results.cloudStorageBucket)
+                println("resultsHistoryName = " + firebaseTestLab.testOptions.results.resultsHistoryName)
+                println("directoriesToPull = " + firebaseTestLab.testOptions.results.directoriesToPull.get())
+                doLast { /* no-op */ }
+            }
+        """)
+        val result = executor.run(":kotlinDslApp:printDslProperties")
+        result.stdout.use {
+            assertThat(it).contains("serviceAccountCredentials = test.json")
+            assertThat(it).contains("grantedPermissions = NONE")
+            assertThat(it).contains("extraDeviceFiles = {/sdcard/Android/data/com.example.myapplication/myAdditionalText.txt=app/myAdditionalText.txt}")
             assertThat(it).contains("networkProfile = LTE")
             assertThat(it).contains("cloudStorageBucket = my_example_custom_bucket")
             assertThat(it).contains("resultsHistoryName = MyCustomHistoryName")

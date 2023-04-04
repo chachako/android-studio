@@ -1,1 +1,1 @@
-include 'app', 'appWithTestFailures', 'testOnlyModule', 'dynamicfeature1'
+include 'app', 'appWithTestFailures', 'testOnlyModule', 'dynamicfeature1', 'kotlinDslApp'
