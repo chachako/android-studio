@@ -99,6 +99,7 @@ class VariantDependencies internal constructor(
     private val testedVariant: VariantCreationConfig?,
     private val project: Project,
     private val projectOptions: ProjectOptions,
+    val isLibraryConstraintsApplied: Boolean,
     isSelfInstrumenting: Boolean,
 ): ResolutionResultProvider {
 
@@ -484,6 +485,7 @@ class VariantDependencies internal constructor(
                 testedVariant = null,
                 project = project,
                 projectOptions = projectOptions,
+                isLibraryConstraintsApplied = false,
                 isSelfInstrumenting = false
             )
         }

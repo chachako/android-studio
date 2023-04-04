@@ -318,10 +318,9 @@ public class VariantDependenciesBuilder {
         runtimeAttributes.attribute(TARGET_JVM_ENVIRONMENT_ATTRIBUTE, jvmEnvironment);
         runtimeAttributes.attribute(AgpVersionAttr.ATTRIBUTE, agpVersion);
 
-        if (projectOptions.get(BooleanOption.USE_DEPENDENCY_CONSTRAINTS)) {
-            maybeAddDependencyConstraints(
-                    componentType, dependencies, compileClasspath, runtimeClasspath);
-        }
+        boolean isLibraryConstraintApplied =
+                maybeAddDependencyConstraints(
+                        componentType, dependencies, compileClasspath, runtimeClasspath);
 
         Configuration globalTestedApks =
                 configurations.findByName(VariantDependencies.CONFIG_NAME_TESTED_APKS);
@@ -684,14 +683,23 @@ public class VariantDependenciesBuilder {
                 testedVariant,
                 project,
                 projectOptions,
+                isLibraryConstraintApplied,
                 isSelfInstrumenting);
     }
 
-    private void maybeAddDependencyConstraints(
+    /**
+     * Returns whether any library constraints are applied This is used later to generate a sync
+     * warning if the IDE is set to skip runtime classpath, but the library constraints are still
+     * applied, which makes us resolve runtime classpath.
+     */
+    private boolean maybeAddDependencyConstraints(
             ComponentType componentType,
             DependencyHandler dependencies,
             Configuration compileClasspath,
             Configuration runtimeClasspath) {
+        if (!projectOptions.get(BooleanOption.USE_DEPENDENCY_CONSTRAINTS)) {
+            return false;
+        }
         // Contrary to what the name might suggest, this will actually filter all aar components,
         // not just libraries.
         boolean excludeLibraryComponents =
@@ -702,7 +710,7 @@ public class VariantDependenciesBuilder {
                         && testedVariant.getComponentType().isAar();
 
         if (excludeLibraryComponents && (componentType.isAar() || isAarTest)) {
-            return;
+            return false;
         }
 
         Provider<StringCachingBuildService> stringCachingService =
@@ -730,6 +738,7 @@ public class VariantDependenciesBuilder {
                         project.getBuildFile());
             }
         }
+        return true;
     }
 
     @NonNull

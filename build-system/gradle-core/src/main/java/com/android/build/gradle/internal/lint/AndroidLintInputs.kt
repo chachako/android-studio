@@ -1571,6 +1571,7 @@ abstract class AndroidArtifactInput : ArtifactInput() {
             testedVariant = null,
             project = project,
             projectOptions = projectOptions,
+            isLibraryConstraintsApplied = false,
             isSelfInstrumenting = false,
         )
         artifactCollectionsInputs.setDisallowChanges(
@@ -1689,6 +1690,7 @@ abstract class JavaArtifactInput : ArtifactInput() {
             testedVariant = null,
             project = project,
             projectOptions = projectOptions,
+            isLibraryConstraintsApplied = false,
             isSelfInstrumenting = false,
         )
         artifactCollectionsInputs.setDisallowChanges(

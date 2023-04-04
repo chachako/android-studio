@@ -816,6 +816,17 @@ class ModelBuilder<
         libraryService: LibraryService,
         dontBuildRuntimeClasspath: Boolean
     ): ArtifactDependencies {
+        if (dontBuildRuntimeClasspath && component.variantDependencies.isLibraryConstraintsApplied) {
+            variantModel.syncIssueReporter.reportWarning(IssueReporter.Type.GENERIC, """
+                You have experimental IDE flag gradle.ide.gradle.skip.runtime.classpath.for.libraries enabled,
+                but AGP boolean option ${BooleanOption.EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS.propertyName} is not used.
+
+                Please set below in gradle.properties:
+
+                ${BooleanOption.EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS.propertyName}=true
+
+            """.trimIndent())
+        }
 
         val inputs = ArtifactCollectionsInputsImpl(
             variantDependencies = component.variantDependencies,
