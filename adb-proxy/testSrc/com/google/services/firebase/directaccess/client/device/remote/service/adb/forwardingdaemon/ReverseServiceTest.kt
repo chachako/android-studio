@@ -122,8 +122,8 @@ class ReverseServiceTest {
       channel.assertCommand(OKAY)
       val payload =
         "(reverse) ${getCommand(testSocket.port)} ${testSocket.port}\n" +
-          "(reverse) ${getCommand(testSocket2.port)} ${testSocket2.port}"
-      channel.assertCommand(WRTE, payload = "OKAY${String.format("%04X", payload.length)}$payload")
+          "(reverse) ${getCommand(testSocket2.port)} ${testSocket2.port}\n"
+      channel.assertCommand(WRTE, payload = "OKAY${payload.hexLength}$payload")
       channel.assertCommand(CLSE)
     }
 

@@ -16,7 +16,7 @@
 package com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon
 
 import com.android.adblib.AdbChannel
-import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -48,8 +48,9 @@ suspend fun AdbChannel.assertCommand(vararg values: Int, payload: String? = null
   // Read payload so that next assertCommand call will read the next command written to channel
   val payloadBuffer = ByteBuffer.allocate(buffer.getInt(12)).order(ByteOrder.LITTLE_ENDIAN)
   readExactly(payloadBuffer)
-  payload?.let { it == String(payloadBuffer.array()) }
-  values.forEachIndexed { index, value ->
-    Truth.assertThat(buffer.getInt(index * 4)).isEqualTo(value)
-  }
+  payload?.let { assertThat(String(payloadBuffer.array())).isEqualTo(it) }
+  values.forEachIndexed { index, value -> assertThat(buffer.getInt(index * 4)).isEqualTo(value) }
 }
+
+val String.hexLength: String
+  get() = String.format("%04X", length)
