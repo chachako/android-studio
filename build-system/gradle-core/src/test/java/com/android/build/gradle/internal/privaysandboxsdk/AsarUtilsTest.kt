@@ -50,7 +50,7 @@ class AsarUtilsTest {
 
                 <uses-permission
                     android:name="android.permission.WAKE_LOCK"
-                    requiredByPrivacySandboxSdk="true" />
+                    tools:requiredByPrivacySandboxSdk="true" />
 
             </manifest>
         """.trimIndent())

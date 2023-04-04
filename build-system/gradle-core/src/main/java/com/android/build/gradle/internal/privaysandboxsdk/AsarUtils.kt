@@ -33,7 +33,8 @@ fun tagAllElementsAsRequiredByPrivacySandboxSdk(asarManifest: InputStream): Stri
         if (node is Element && node.tagName == "uses-permission") {
             val attr: Attr =
                     document.createAttributeNS(
-                            SdkConstants.TOOLS_URI, "requiredByPrivacySandboxSdk")
+                            SdkConstants.TOOLS_URI,
+                            "${SdkConstants.TOOLS_NS_NAME}:requiredByPrivacySandboxSdk")
             attr.value = "true"
             node.attributes.setNamedItemNS(attr)
         } else {
