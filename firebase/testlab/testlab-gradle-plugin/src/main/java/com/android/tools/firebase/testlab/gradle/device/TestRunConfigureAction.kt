@@ -19,15 +19,15 @@ package com.android.tools.firebase.testlab.gradle.device
 import com.android.build.api.instrumentation.manageddevice.DeviceTestRunConfigureAction
 import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService
 import com.google.firebase.testlab.gradle.ManagedDevice
-import javax.inject.Inject
+import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ProviderFactory
-import org.gradle.api.services.BuildServiceRegistry
+import javax.inject.Inject
 
 open class TestRunConfigureAction @Inject constructor(
     private val objectFactory: ObjectFactory,
     private val providerFactory: ProviderFactory,
-    private val buildServiceRegistry: BuildServiceRegistry,
+    private val project: Project,
 ): DeviceTestRunConfigureAction<ManagedDevice, DeviceTestRunInput> {
 
     override fun configureTaskInput(deviceDSL: ManagedDevice): DeviceTestRunInput =
@@ -45,7 +45,7 @@ open class TestRunConfigureAction @Inject constructor(
             locale.disallowChanges()
 
             buildService.set(
-                TestLabBuildService.RegistrationAction.getBuildService(buildServiceRegistry))
+                TestLabBuildService.RegistrationAction.getBuildService(project))
             buildService.disallowChanges()
 
             numUniformShards.set(

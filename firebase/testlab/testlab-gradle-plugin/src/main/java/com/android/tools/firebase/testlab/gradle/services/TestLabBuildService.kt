@@ -68,6 +68,7 @@ import com.google.testing.platform.proto.api.core.TestResultProto.TestResult
 import com.google.testing.platform.proto.api.core.TestStatusProto.TestStatus
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteMetaData
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
+import org.gradle.api.Project
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logging
 import org.gradle.api.provider.ListProperty
@@ -957,13 +958,13 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
              * Copied from
              * com.android.build.gradle.internal.services.BuildServicesKt.getBuildServiceName.
              */
-            private fun getBuildServiceName(type: Class<*>): String {
-                return type.name + "_" + perClassLoaderConstant
+            private fun getBuildServiceName(type: Class<*>, project: Project): String {
+                return type.name + "_" + perClassLoaderConstant + "_" + project.path
             }
 
-            fun getBuildService(registry: BuildServiceRegistry): Provider<TestLabBuildService> {
-                val serviceName = getBuildServiceName(TestLabBuildService::class.java)
-                return registry.registerIfAbsent(
+            fun getBuildService(project: Project): Provider<TestLabBuildService> {
+                val serviceName = getBuildServiceName(TestLabBuildService::class.java, project)
+                return project.gradle.sharedServices.registerIfAbsent(
                     serviceName,
                     TestLabBuildService::class.java,
                 ) {
@@ -1036,9 +1037,9 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         /**
          * Register [TestLabBuildService] to a registry if absent.
          */
-        fun registerIfAbsent(registry: BuildServiceRegistry): Provider<TestLabBuildService> {
-            return registry.registerIfAbsent(
-                getBuildServiceName(TestLabBuildService::class.java),
+        fun registerIfAbsent(project: Project): Provider<TestLabBuildService> {
+            return project.gradle.sharedServices.registerIfAbsent(
+                getBuildServiceName(TestLabBuildService::class.java, project),
                 TestLabBuildService::class.java,
             ) { buildServiceSpec ->
                 configure(buildServiceSpec.parameters)

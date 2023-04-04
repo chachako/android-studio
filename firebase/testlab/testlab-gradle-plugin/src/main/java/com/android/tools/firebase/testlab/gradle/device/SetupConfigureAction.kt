@@ -19,13 +19,13 @@ package com.android.tools.firebase.testlab.gradle.device
 import com.android.build.api.instrumentation.manageddevice.DeviceSetupConfigureAction
 import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService
 import com.google.firebase.testlab.gradle.ManagedDevice
+import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
-import org.gradle.api.services.BuildServiceRegistry
 import javax.inject.Inject
 
 open class SetupConfigureAction @Inject constructor(
     private val objectFactory: ObjectFactory,
-    private val buildServiceRegistry: BuildServiceRegistry,
+    private val project: Project,
 ) : DeviceSetupConfigureAction<ManagedDevice, DeviceSetupInput> {
 
     override fun configureTaskInput(deviceDsl: ManagedDevice): DeviceSetupInput {
@@ -39,8 +39,7 @@ open class SetupConfigureAction @Inject constructor(
             apiLevel.set(deviceDsl.apiLevel)
             apiLevel.disallowChanges()
 
-            buildService.set(
-                TestLabBuildService.RegistrationAction.getBuildService(buildServiceRegistry))
+            buildService.set(TestLabBuildService.RegistrationAction.getBuildService(project))
             buildService.disallowChanges()
         }
     }

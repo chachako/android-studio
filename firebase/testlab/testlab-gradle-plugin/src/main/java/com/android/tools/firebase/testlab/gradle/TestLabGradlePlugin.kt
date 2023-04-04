@@ -73,7 +73,7 @@ class TestLabGradlePlugin : Plugin<Project> {
             TestLabBuildService.RegistrationAction(
                     project.extensions.getByType(TestLabGradlePluginExtension::class.java),
                     project.providers,
-            ).registerIfAbsent(project.gradle.sharedServices)
+            ).registerIfAbsent(project)
         }
     }
 }
