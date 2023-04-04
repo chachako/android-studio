@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.common.fixture.testprojects
 import com.android.build.api.dsl.AndroidResources
 import com.android.build.api.dsl.CompileOptions
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.integration.common.fixture.testprojects.CompileOptionsImpl.Companion.JAVA_VERSION_NOT_SET
 import com.google.common.base.Charsets
 import org.gradle.api.JavaVersion
 
@@ -227,8 +228,14 @@ internal class AndroidProjectBuilderImpl(
 
         compileOptions?.let { options ->
             sb.append("  compileOptions {\n")
+            if (options.sourceCompatibility != JAVA_VERSION_NOT_SET) {
+                sb.append("    sourceCompatibility = ${options.sourceCompatibility}\n")
+            }
+            if (options.targetCompatibility != JAVA_VERSION_NOT_SET) {
+                sb.append("    targetCompatibility = ${options.targetCompatibility}\n")
+            }
             if (options.isCoreLibraryDesugaringEnabled) {
-                sb.append("    coreLibraryDesugaringEnabled = true")
+                sb.append("    coreLibraryDesugaringEnabled = true\n")
             }
             sb.append("  }\n") // COMPILE-OPTIONS
         }
@@ -475,13 +482,22 @@ internal class AndroidResourcesImpl : AndroidResources {
 
 internal class CompileOptionsImpl: CompileOptions {
 
+    companion object {
+
+        /**
+         * Special version to indicate that the value is not yet explicitly set (used as a
+         * substitute for null in places where the value must be not-null).
+         */
+        val JAVA_VERSION_NOT_SET = JavaVersion.VERSION_1_1
+    }
+
     override var isCoreLibraryDesugaringEnabled: Boolean = false
 
     override var encoding: String = Charsets.UTF_8.name()
 
-    override var sourceCompatibility: JavaVersion = JavaVersion.VERSION_1_8
+    override var sourceCompatibility: JavaVersion = JAVA_VERSION_NOT_SET
 
-    override var targetCompatibility: JavaVersion = JavaVersion.VERSION_1_8
+    override var targetCompatibility: JavaVersion = JAVA_VERSION_NOT_SET
 
     override fun sourceCompatibility(sourceCompatibility: Any) {
         throw RuntimeException("Not yet implemented")

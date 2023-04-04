@@ -37,19 +37,26 @@ fun createProject(action: TestProjectBuilder.() -> Unit): TestProject {
 /**
  * Creates a [GradleTestProject] with the provided configuration action
  */
-fun createGradleProject(action: TestProjectBuilder.() -> Unit): GradleTestProject {
-    return createGradleProjectBuilder(action).create()
+fun createGradleProject(
+    name: String? = null,
+    action: TestProjectBuilder.() -> Unit
+): GradleTestProject {
+    return createGradleProjectBuilder(name, action).create()
 }
 
 /**
  * Creates a [GradleTestProjectBuilder] with the provided configuration action
  */
-fun createGradleProjectBuilder(action: TestProjectBuilder.() -> Unit): GradleTestProjectBuilder {
+fun createGradleProjectBuilder(
+    name: String? = null,
+    action: TestProjectBuilder.() -> Unit
+): GradleTestProjectBuilder {
     val builder = RootTestProjectBuilderImpl()
     action(builder)
 
     return GradleTestProject
         .builder()
+        .apply { name?.let { withName(it) } }
         .fromTestApp(builder)
         .withKotlinGradlePlugin(builder.withKotlinPlugin)
         .withAdditionalMavenRepo(builder.mavenRepoGenerator)

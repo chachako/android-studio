@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.common.fixture
 
+import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.truth.TaskStateList
 import com.google.common.base.Preconditions
 import com.google.common.base.Throwables
@@ -151,4 +152,16 @@ class GradleBuildResult(
     private fun isPlaceholderEx(throwableType: String) =
         throwableType == PlaceholderException::class.java.name
                 || throwableType == ContextualPlaceholderException::class.java.name
+
+    fun assertOutputContains(text: String) {
+        stdout.use {
+            ScannerSubject.assertThat(it).contains(text)
+        }
+    }
+
+    fun assertOutputDoesNotContain(text: String) {
+        stdout.use {
+            ScannerSubject.assertThat(it).doesNotContain(text)
+        }
+    }
 }

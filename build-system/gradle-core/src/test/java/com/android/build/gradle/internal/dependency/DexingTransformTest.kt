@@ -93,7 +93,7 @@ class DexingTransformTest {
         TestInputsGenerator.dirWithEmptyClasses(input.toPath(), listOf("test/A"))
         dexingTransform.transform(outputs)
 
-        val dexFiles = FileUtils.getAllFiles(outputs.outputDirectory)
+        val dexFiles = outputs.outputDirectory.walk().filter { it.path.endsWith(".dex") }.toList()
         assertThat(dexFiles).containsExactly(outputs.outputDirectory.resolve(
             "${computeDexDirName(outputs.outputDirectory)}/test/A.dex"))
         val dexClasses = dexFiles.flatMap { Dex(it).classes.keys }
@@ -144,7 +144,6 @@ class DexingTransformTest {
         TestInputsGenerator.pathWithClasses(input.toPath(), classes)
         val dexingTransform = TestDexingTransform(
             FakeGradleProvider(FakeGradleDirectory(input)),
-            classpath = listOf(),
             parameters = TestDexingTransform.TestParameters(
                 desugaring = true
             )
@@ -152,7 +151,7 @@ class DexingTransformTest {
         val outputs = FakeTransformOutputs(tmp)
         dexingTransform.transform(outputs)
 
-        val dexFiles = FileUtils.getAllFiles(outputs.outputDirectory)
+        val dexFiles = outputs.outputDirectory.walk().filter { it.path.endsWith(".dex") }.toList()
         assertThat(dexFiles).hasSize(classes.size)
         val dexClasses = dexFiles.flatMap { Dex(it).classes.keys }
         assertThat(dexClasses).hasSize(classes.size + 1)
@@ -207,7 +206,6 @@ class DexingTransformTest {
         TestInputsGenerator.pathWithClasses(input.toPath(), classes)
         var dexingTransform = TestDexingTransform(
             FakeGradleProvider(FakeGradleDirectory(input)),
-            classpath = listOf(),
             parameters = TestDexingTransform.TestParameters(
                 desugaring = true
             ),
@@ -215,7 +213,7 @@ class DexingTransformTest {
         )
         dexingTransform.transform(outputs)
 
-        var dexFiles = FileUtils.getAllFiles(outputs.outputDirectory)
+        var dexFiles = outputs.outputDirectory.walk().filter { it.path.endsWith(".dex") }.toList()
         assertThat(dexFiles).hasSize(classes.size)
         var dexClasses = dexFiles.flatMap { Dex(it).classes.keys }
         assertThat(dexClasses).hasSize(classes.size + 1)
@@ -250,7 +248,6 @@ class DexingTransformTest {
 
         dexingTransform = TestDexingTransform(
             FakeGradleProvider(FakeGradleDirectory(input)),
-            classpath = listOf(),
             parameters = TestDexingTransform.TestParameters(
                 desugaring = true
             ),
@@ -268,7 +265,7 @@ class DexingTransformTest {
         TestUtils.waitForFileSystemTick()
         dexingTransform.transform(outputs)
 
-        dexFiles = FileUtils.getAllFiles(outputs.outputDirectory)
+        dexFiles = outputs.outputDirectory.walk().filter { it.path.endsWith(".dex") }.toList()
         assertThat(dexFiles).hasSize(classes.size)
         dexClasses = dexFiles.flatMap { Dex(it).classes.keys }
         assertThat(dexClasses).hasSize(classes.size + 1)
@@ -298,13 +295,13 @@ class DexingTransformTest {
     }
 
     private class TestDexingTransform(
-        override val primaryInput: Provider<FileSystemLocation>,
+        override val inputArtifact: Provider<FileSystemLocation>,
         private val parameters: TestParameters,
-        private val classpath: List<File> = listOf(),
+        private val classpath: List<File>? = null,
         override val inputChanges: InputChanges = FakeInputChanges()
     ) : BaseDexingTransform<BaseDexingTransform.Parameters>() {
 
-        override fun computeClasspathFiles() = classpath.map(File::toPath)
+        override fun computeClasspathFiles() = classpath
 
         class TestParameters(
             minSdkVersion: Int = 12,

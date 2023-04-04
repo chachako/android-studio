@@ -26,13 +26,13 @@ import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.Java8LangSupport
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
-import com.android.build.gradle.internal.utils.getDesugarLibConfig
-import com.android.build.gradle.internal.utils.setDisallowChanges
-import com.android.build.gradle.options.IntegerOption
-import com.android.build.gradle.options.SyncOptions
 import com.android.build.gradle.internal.tasks.factory.features.DexingTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.DexingTaskCreationActionImpl
+import com.android.build.gradle.internal.utils.getDesugarLibConfig
+import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.IntegerOption
+import com.android.build.gradle.options.SyncOptions
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.sdklib.AndroidVersion
 import com.android.utils.FileUtils
@@ -61,7 +61,6 @@ import org.gradle.work.FileChange
 import org.gradle.work.Incremental
 import org.gradle.work.InputChanges
 import java.io.File
-import java.nio.file.Path
 import kotlin.math.max
 
 /**
@@ -518,9 +517,7 @@ abstract class DexingExternalLibArtifactTransform: BaseDexingTransform<DexingExt
         val desugaringClasspath: ConfigurableFileCollection
     }
 
-    override fun computeClasspathFiles(): List<Path> {
-        return parameters.desugaringClasspath.files.map(File::toPath)
-    }
+    override fun computeClasspathFiles() = parameters.desugaringClasspath.files.toList()
 }
 
 /**

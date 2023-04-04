@@ -46,7 +46,6 @@ import java.io.File
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.nio.file.Path
-import java.util.ArrayList
 
 /**
  * Delegate for the [DexArchiveBuilderTask]. This is where the actual processing happens. Using the
@@ -298,13 +297,13 @@ class DexArchiveBuilderTaskDelegate(
                     }
                     ClassFileInput.CLASS_MATCHER.test(it.normalizedPath) -> {
                         // We are in DexFilePerClassFile output mode
-                        DexFilePerClassFile.getDexOutputRelativePathsOfClassFile(
+                        DexFilePerClassFile.getDexOutputRelativePath(
                             classFileRelativePath = it.normalizedPath
-                        ).forEach { outputRelativePath ->
+                        ).let { outputRelativePath ->
                             FileUtils.deleteIfExists(outputDir.resolve(outputRelativePath))
                         }
                         globalSyntheticsDir?.let {globalSyntheticsDir ->
-                            DexFilePerClassFile.getGlobalOutputRelativePathOfClassFile(
+                            DexFilePerClassFile.getGlobalSyntheticOutputRelativePath(
                                 it.normalizedPath
                             ).let { outputRelativePath ->
                                 FileUtils.deleteIfExists(globalSyntheticsDir.resolve(outputRelativePath))
