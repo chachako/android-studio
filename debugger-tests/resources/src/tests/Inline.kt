@@ -17,11 +17,11 @@ package tests
 
 import breakpoint
 
-@Suppress("NOTHING_TO_INLINE", "SameParameterValue", "UNUSED_PARAMETER")
+@Suppress("NOTHING_TO_INLINE", "SameParameterValue", "UNUSED_PARAMETER", "unused")
 object Inline {
 
   @JvmStatic
-  fun main(args: Array<String>) {
+  fun start() {
     breakpoint()
     foo(1, "Hello")
   }

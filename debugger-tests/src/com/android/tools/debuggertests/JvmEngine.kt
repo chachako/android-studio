@@ -32,6 +32,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private const val JDWP_OPTIONS = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y"
+private const val CLASSPATH = "-classpath"
+private const val MAIN = "MainKt"
 private val JAVA = if (isWindows()) "java.exe" else "java"
 
 /**
@@ -47,7 +49,7 @@ internal class JvmEngine(private val mainClass: String) : Engine() {
   override suspend fun createDebugger(): Debugger {
     val classpath = Resources.getTestClassesJarPath()
     process =
-      ProcessBuilder(getJavaExe(), JDWP_OPTIONS, "-classpath", classpath, mainClass)
+      ProcessBuilder(getJavaExe(), JDWP_OPTIONS, CLASSPATH, classpath, MAIN, mainClass)
         .redirectOutput(PIPE)
         .redirectError(INHERIT)
         .start()

@@ -1,3 +1,5 @@
+import kotlin.system.exitProcess
+
 /*
  * Copyright (C) 2023 The Android Open Source Project
  *
@@ -14,5 +16,12 @@
  * limitations under the License.
  */
 
-/** An empty main that we use to build the tested jar */
-fun main() {}
+fun main(args: Array<String>) {
+  if (args.size != 1) {
+    println("Missing test class name argument")
+    exitProcess(1)
+  }
+  val testClass = object {}.javaClass.classLoader.loadClass(args[0])
+  val method = testClass.getDeclaredMethod("start")
+  method.invoke(null)
+}

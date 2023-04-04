@@ -60,7 +60,7 @@ internal class Debugger private constructor(private val vm: VirtualMachine) {
     fun launch(mainClass: String, classpath: String): Debugger {
       val connector = virtualMachineManager().launchingConnectors().named(LAUNCH_CONNECTOR)
       val arguments = connector.defaultArguments()
-      arguments["main"]?.setValue(mainClass)
+      arguments["main"]?.setValue("MainKt $mainClass")
       arguments["options"]?.setValue("-classpath $classpath")
       return Debugger(connector.launch(arguments))
     }
