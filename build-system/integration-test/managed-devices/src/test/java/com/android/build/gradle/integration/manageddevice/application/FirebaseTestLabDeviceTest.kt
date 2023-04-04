@@ -65,6 +65,8 @@ class FirebaseTestLabDeviceTest {
                     myFtlDevice2 {
                         device = "Pixel3"
                         apiLevel = 30
+                        orientation = "landscape"
+                        locale = "en-US"
                     }
                 }
             }
@@ -85,6 +87,8 @@ class FirebaseTestLabDeviceTest {
                     create("myFtlDevice4") {
                         device = "Pixel3"
                         apiLevel = 30
+                        orientation = "landscape"
+                        locale = "en-US"
                     }
                 }
             }
@@ -125,6 +129,7 @@ class FirebaseTestLabDeviceTest {
                 }
             }
             task("printDslProperties") {
+                println("orientation = " + firebaseTestLab.managedDevices.getByName("myFtlDevice2").orientation)
                 println("serviceAccountCredentials = " + firebaseTestLab.serviceAccountCredentials.asFile.get().name)
                 println("grantedPermissions = " + firebaseTestLab.testOptions.fixture.grantedPermissions)
                 println("extraDeviceFiles = " + firebaseTestLab.testOptions.fixture.extraDeviceFiles.get())
@@ -137,6 +142,7 @@ class FirebaseTestLabDeviceTest {
         """)
         val result = executor.run(":app:printDslProperties")
         result.stdout.use {
+            assertThat(it).contains("orientation = LANDSCAPE")
             assertThat(it).contains("serviceAccountCredentials = test.json")
             assertThat(it).contains("grantedPermissions = NONE")
             assertThat(it).contains("extraDeviceFiles = [/sdcard/Android/data/com.example.myapplication/myAdditionalText.txt:app/myAdditionalText.txt]")
@@ -166,6 +172,7 @@ class FirebaseTestLabDeviceTest {
                 }
             }
             task("printDslProperties") {
+                println("orientation = " + firebaseTestLab.managedDevices.getByName("myFtlDevice4").orientation)
                 println("serviceAccountCredentials = " + firebaseTestLab.serviceAccountCredentials.asFile.get().name)
                 println("grantedPermissions = " + firebaseTestLab.testOptions.fixture.grantedPermissions)
                 println("extraDeviceFiles = " + firebaseTestLab.testOptions.fixture.extraDeviceFiles.get())
@@ -178,6 +185,7 @@ class FirebaseTestLabDeviceTest {
         """)
         val result = executor.run(":kotlinDslApp:printDslProperties")
         result.stdout.use {
+            assertThat(it).contains("orientation = LANDSCAPE")
             assertThat(it).contains("serviceAccountCredentials = test.json")
             assertThat(it).contains("grantedPermissions = NONE")
             assertThat(it).contains("extraDeviceFiles = {/sdcard/Android/data/com.example.myapplication/myAdditionalText.txt=app/myAdditionalText.txt}")

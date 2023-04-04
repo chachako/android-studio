@@ -47,8 +47,10 @@ interface ManagedDevice : Device {
 
     /**
      * The orientation the device should have when tests are run.
+     *
+     * Available options are ["DEFAULT", "PORTRAIT", "LANDSCAPE"]
      */
-    var orientation: Orientation
+    var orientation: String
 
     /**
      * The locale that the device should be set to.

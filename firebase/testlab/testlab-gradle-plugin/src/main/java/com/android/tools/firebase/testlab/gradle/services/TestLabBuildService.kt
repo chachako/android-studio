@@ -19,6 +19,7 @@ package com.android.tools.firebase.testlab.gradle.services
 import com.android.build.api.instrumentation.StaticTestData
 import com.android.builder.testing.api.DeviceConfigProvider
 import com.android.tools.firebase.testlab.gradle.FixtureImpl
+import com.android.tools.firebase.testlab.gradle.ManagedDeviceImpl
 import com.android.tools.firebase.testlab.gradle.UtpTestSuiteResultMerger
 import com.android.tools.utp.plugins.host.device.info.proto.AndroidTestDeviceInfoProto
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
@@ -55,7 +56,6 @@ import com.google.api.services.testing.model.ToolResultsHistory
 import com.google.api.services.toolresults.ToolResults
 import com.google.api.services.toolresults.model.History
 import com.google.api.services.toolresults.model.StackTrace
-import com.google.firebase.testlab.gradle.Orientation
 import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
 import com.google.testing.platform.proto.api.core.ErrorProto.Error
 import com.google.testing.platform.proto.api.core.IssueProto.Issue
@@ -78,7 +78,6 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
-import org.gradle.api.services.BuildServiceRegistry
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.io.File
@@ -209,7 +208,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         deviceId: String,
         deviceApiLevel: Int,
         deviceLocale: Locale,
-        deviceOrientation: Orientation,
+        deviceOrientation: ManagedDeviceImpl.Orientation,
         ftlDeviceModel: AndroidModel,
         testData: StaticTestData,
         resultsOutDir: File,

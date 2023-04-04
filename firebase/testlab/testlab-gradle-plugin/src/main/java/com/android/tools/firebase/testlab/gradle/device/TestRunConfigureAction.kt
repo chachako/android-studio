@@ -17,6 +17,7 @@
 package com.android.tools.firebase.testlab.gradle.device
 
 import com.android.build.api.instrumentation.manageddevice.DeviceTestRunConfigureAction
+import com.android.tools.firebase.testlab.gradle.ManagedDeviceImpl
 import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService
 import com.google.firebase.testlab.gradle.ManagedDevice
 import org.gradle.api.Project
@@ -38,7 +39,7 @@ open class TestRunConfigureAction @Inject constructor(
             apiLevel.set(deviceDSL.apiLevel)
             apiLevel.disallowChanges()
 
-            orientation.set(deviceDSL.orientation)
+            orientation.set(ManagedDeviceImpl.Orientation.valueOf(deviceDSL.orientation))
             orientation.disallowChanges()
 
             locale.set(deviceDSL.locale)

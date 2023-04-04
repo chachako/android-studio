@@ -17,7 +17,6 @@
 package com.android.tools.firebase.testlab.gradle
 
 import com.google.firebase.testlab.gradle.ManagedDevice
-import com.google.firebase.testlab.gradle.Orientation
 import javax.inject.Inject
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
@@ -36,8 +35,34 @@ open class ManagedDeviceImpl @Inject constructor(private val name: String) : Man
     @get:Input
     override var apiLevel = -1
 
+    private var _orientation: Orientation = Orientation.DEFAULT
+
     @get:Input
-    override var orientation = Orientation.DEFAULT
+    override var orientation: String
+        set(value) {
+            _orientation = try {
+                Orientation.valueOf(value.uppercase())
+            } catch (_: IllegalArgumentException) {
+                error("$value is invalid. Available options are " +
+                        "[${Orientation.values().joinToString(", ")}].")
+            }
+        }
+        get() {
+            return _orientation.name
+        }
+
+    /**
+     * Specifies the Orientation that tests should be run on the [ManagedDevice]
+     */
+    enum class Orientation {
+        /** The default orientation for that device. */
+        DEFAULT,
+        /** Explicitly set the orientation to portrait. */
+        PORTRAIT,
+        /** Explicitly set the orientation to landscape. */
+        LANDSCAPE,
+    }
+
 
     @get:Input
     override var locale = "en-US"
