@@ -64,9 +64,10 @@ public class FakeAdbTestRule extends ExternalResource {
         // Start server execution.
         myServer.start();
         // Test that we obtain 1 device via the ddmlib APIs
+        AndroidDebugBridge.terminate();
         AndroidDebugBridge.enableFakeAdbServerMode(myServer.getPort());
         DdmPreferences.setJdwpProxyPort(getFreePort());
-        AndroidDebugBridge.initIfNeeded(true);
+        AndroidDebugBridge.init(true);
         AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(getPathToAdb().toString(),
                                                                     false);
         assertNotNull("Debug bridge", bridge);
@@ -80,7 +81,11 @@ public class FakeAdbTestRule extends ExternalResource {
             // timing of when an adb server is started / stopped
             if (myServer != null) {
                 myServer.stop();
-                myServer.awaitServerTermination(1000, TimeUnit.MILLISECONDS);
+                if (!myServer.awaitServerTermination(1000, TimeUnit.MILLISECONDS)) {
+                    // Not stopping fake adb server leads to thread leaks,
+                    // that's hard to debug if we ignore the fact that we didn't stop.
+                    throw new RuntimeException("fake adb server didn't stop");
+                }
             }
             AndroidDebugBridge.terminate();
         }
