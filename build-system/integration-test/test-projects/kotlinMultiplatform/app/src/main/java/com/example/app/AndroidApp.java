@@ -11,6 +11,7 @@ public class AndroidApp {
 
     public String getFromKmpLib() {
         KmpAndroidFirstLibClass kmp = new KmpAndroidFirstLibClass();
-        return kmp.callCommonLibClass() + kmp.callKmpSecondLibClass() + kmp.callAndroidLibClass();
+        return kmp.callCommonLibClass() + kmp.callKmpSecondLibClass() + kmp.callAndroidLibClass() +
+                kmp.callJvmLibClass();
     }
 }

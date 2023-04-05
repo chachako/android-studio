@@ -93,12 +93,18 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         )
 
         TestFileUtils.searchAndReplace(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            "project(\":kmpJvmOnly\")",
+            "\"com.example:kmpJvmOnly:1.0\""
+        )
+
+        TestFileUtils.searchAndReplace(
             project.getSubproject("app").ktsBuildFile,
             "project(\":kmpFirstLib\")",
             "\"com.example:kmpFirstLib-android:1.0\""
         )
 
-        listOf("androidLib", "kmpFirstLib", "kmpSecondLib").forEach { projectName ->
+        listOf("androidLib", "kmpFirstLib", "kmpSecondLib", "kmpJvmOnly").forEach { projectName ->
             TestFileUtils.searchAndReplace(
                 project.getSubproject(projectName).ktsBuildFile,
                 "plugins {",
@@ -146,6 +152,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
 
         project.executor().run(":androidLib:publish")
         project.executor().run(":kmpSecondLib:publish")
+        project.executor().run(":kmpJvmOnly:publish")
         project.executor().run(":kmpFirstLib:publish")
     }
 

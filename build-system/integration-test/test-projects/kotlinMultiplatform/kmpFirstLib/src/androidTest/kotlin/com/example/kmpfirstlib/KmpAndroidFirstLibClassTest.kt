@@ -9,5 +9,6 @@ class KmpAndroidFirstLibClassTest {
         val x = KmpAndroidFirstLibClass()
         assert(x.callCommonLibClass() == x.callAndroidLibClass())
         assert(x.callKmpSecondLibClass() == x.callAndroidLibClass())
+        assert(x.callJvmLibClass() == x.callAndroidLibClass())
     }
 }

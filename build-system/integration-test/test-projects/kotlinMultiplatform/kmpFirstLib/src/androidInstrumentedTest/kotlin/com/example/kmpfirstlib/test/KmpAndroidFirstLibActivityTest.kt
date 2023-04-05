@@ -20,6 +20,7 @@ class KmpAndroidFirstLibActivityTest {
           val x = KmpAndroidFirstLibClass()
           Assert.assertTrue(x.callCommonLibClass() == x.callAndroidLibClass())
           Assert.assertTrue(x.callKmpSecondLibClass() == x.callAndroidLibClass())
+          Assert.assertTrue(x.callJvmLibClass() == x.callAndroidLibClass())
         }
     }
 

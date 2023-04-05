@@ -9,6 +9,7 @@ kotlin {
       dependencies {
         api(project(":androidLib"))
         implementation(project(":kmpSecondLib"))
+        implementation(project(":kmpJvmOnly"))
       }
     }
 

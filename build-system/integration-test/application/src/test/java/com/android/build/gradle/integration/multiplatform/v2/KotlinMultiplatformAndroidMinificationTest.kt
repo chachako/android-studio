@@ -156,6 +156,8 @@ class KotlinMultiplatformAndroidMinificationTest {
                 "Lcom/example/kmpfirstlib/KmpCommonFirstLibClass;",
                 "Lcom/example/kmpsecondlib/KmpAndroidSecondLibClass;",
                 "Lcom/example/kmpsecondlib/KmpCommonSecondLibClass;",
+                "Lcom/example/kmpjvmonly/KmpCommonJvmOnlyLibClass;",
+                "Lcom/example/kmpjvmonly/KmpJvmOnlyLibClass;",
                 "Lkotlin/jvm/internal/Intrinsics;"
             )
         }
