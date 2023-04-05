@@ -34,6 +34,7 @@ import com.android.build.gradle.internal.core.dsl.features.NativeBuildDslInfo
 import com.android.build.gradle.internal.core.dsl.features.OptimizationDslInfo
 import com.android.build.gradle.internal.core.dsl.features.RenderscriptDslInfo
 import com.android.build.gradle.internal.core.dsl.features.ShadersDslInfo
+import com.android.build.gradle.internal.dsl.BaselineProfileImpl
 import com.android.build.gradle.internal.dsl.KeepRulesImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.gradle.internal.dsl.KmpOptimizationImpl
@@ -121,11 +122,17 @@ class KmpVariantDslInfoImpl(
 
         private val keepRules =
             (extension.optimization as KmpOptimizationImpl).keepRules as KeepRulesImpl
+        private val baselineProfile =
+            (extension.optimization as KmpOptimizationImpl).baselineProfile as BaselineProfileImpl
 
         override val ignoredLibraryKeepRules: Set<String>
             get() = keepRules.dependencies
         override val ignoreAllLibraryKeepRules: Boolean
             get() = keepRules.ignoreAllDependencies
+        override val ignoreFromInBaselineProfile: Set<String>
+            get() = baselineProfile.ignoreFrom
+        override val ignoreFromAllExternalDependenciesInBaselineProfile: Boolean
+            get() = baselineProfile.ignoreFromAllExternalDependencies
 
         override fun getProguardFiles(into: ListProperty<RegularFile>) {
             val result: MutableList<File> = ArrayList(gatherProguardFiles(ProguardFileType.EXPLICIT))

@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.tasks
 
+import com.android.build.gradle.internal.fixtures.FakeArtifactCollection
 import com.android.build.gradle.internal.fixtures.FakeGradleWorkExecutor
 import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
 import com.google.common.truth.Truth.assertThat
@@ -68,6 +69,9 @@ internal class MergeArtProfileTaskTest {
         task.profileSourceDirectories.set(baselineProfileSourceDirs)
         task.profileSource.set(artProfileSourceFile)
         task.analyticsService.set(FakeNoOpAnalyticsService())
+        task.ignoreFrom.set(emptySet())
+        task.ignoreFromAllExternalDependencies.set(false)
+        task.libraryArtifacts = FakeArtifactCollection(mutableSetOf())
         outputFile = temporaryFolder.newFile()
         task.outputFile.set(outputFile)
     }

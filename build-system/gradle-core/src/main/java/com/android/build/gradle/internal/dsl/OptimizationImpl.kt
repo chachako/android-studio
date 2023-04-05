@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.dsl
 
+import com.android.build.api.dsl.BaselineProfile
 import com.android.build.api.dsl.KeepRules
 import com.android.build.api.dsl.Optimization
 import com.android.build.gradle.internal.services.DslServices
@@ -26,9 +27,14 @@ abstract class OptimizationImpl@Inject constructor(
 ) : Optimization {
 
     abstract val keepRules: KeepRules
+    abstract val baselineProfile: BaselineProfile
 
     override fun keepRules(action: KeepRules.() -> Unit) {
         action.invoke(keepRules)
+    }
+
+    override fun baselineProfile(action: BaselineProfile.() -> Unit) {
+        action.invoke(baselineProfile)
     }
 
     fun initWith(that: OptimizationImpl) {
@@ -38,6 +44,13 @@ abstract class OptimizationImpl@Inject constructor(
         (keepRules as KeepRulesImpl).dependencies.clear()
         (keepRules as KeepRulesImpl).dependencies.addAll(
                 (that.keepRules as KeepRulesImpl).dependencies)
+
+        (baselineProfile as BaselineProfileImpl).ignoreFromAllExternalDependencies =
+                (that.baselineProfile as BaselineProfileImpl).ignoreFromAllExternalDependencies
+
+        (baselineProfile as BaselineProfileImpl).ignoreFrom.clear()
+        (baselineProfile as BaselineProfileImpl).ignoreFrom.addAll(
+                (that.baselineProfile as BaselineProfileImpl).ignoreFrom)
 
     }
 }

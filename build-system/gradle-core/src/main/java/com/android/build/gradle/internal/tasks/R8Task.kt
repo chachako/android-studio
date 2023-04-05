@@ -34,8 +34,9 @@ import com.android.build.gradle.internal.scope.InternalMultipleArtifactType
 import com.android.build.gradle.internal.scope.Java8LangSupport
 import com.android.build.gradle.internal.services.R8ParallelBuildService
 import com.android.build.gradle.internal.services.getBuildService
+import com.android.build.gradle.internal.utils.LibraryArtifactType
 import com.android.build.gradle.internal.utils.getDesugarLibConfig
-import com.android.build.gradle.internal.utils.getFilteredConfigurationFiles
+import com.android.build.gradle.internal.utils.getFilteredFiles
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.SyncOptions
@@ -573,12 +574,13 @@ abstract class R8Task @Inject constructor(
             it.mainDexListOutput.set(mainDexListOutput.orNull?.asFile)
             it.proguardConfigurationFiles.from(
                 reconcileDefaultProguardFile(
-                    getFilteredConfigurationFiles(
+                    getFilteredFiles(
                         ignoredLibraryKeepRules.get(),
                         ignoreAllLibraryKeepRules.get(),
                         libraryKeepRules,
                         finalListOfConfigurationFiles,
-                        LoggerWrapper.getLogger(R8Task::class.java)),
+                        LoggerWrapper.getLogger(R8Task::class.java),
+                        LibraryArtifactType.KEEP_RULES),
                     extractedDefaultProguardFile))
             it.inputProguardMapping.set(
                 if (testedMappingFile.isEmpty) {

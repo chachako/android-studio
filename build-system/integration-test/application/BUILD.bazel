@@ -622,6 +622,7 @@ maven_repository(
         "@maven//:androidx.compose.material.material_1.3.0",
         "@maven//:androidx.compose.ui.ui-tooling_1.3.0",
         "@maven//:androidx.fragment.fragment_1.3.0",
+        "@maven//:androidx.fragment.fragment_1.4.1",
         "@maven//:androidx.lifecycle.lifecycle-common-java8_2.4.0",
         "@maven//:androidx.navigation.navigation-fragment_2.0.0",
         "@maven//:androidx.navigation.navigation-fragment_2.5.2",

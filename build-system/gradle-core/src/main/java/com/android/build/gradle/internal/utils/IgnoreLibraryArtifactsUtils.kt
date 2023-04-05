@@ -20,23 +20,26 @@ import com.android.build.api.dsl.Optimization
 import com.android.build.gradle.internal.LoggerWrapper
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
-import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileCollection
 
+enum class LibraryArtifactType {
+    BASELINE_PROFILES, KEEP_RULES
+}
+
 /**
- * Filter out extracted library proguard rules at execution time based on users' input from
- * [Optimization.keepRules]
+ * Filter out extracted library artifacts at execution time based on users' input from [Optimization]
  */
-fun getFilteredConfigurationFiles(
+fun getFilteredFiles(
         ignoreList: Set<String>,
         ignoreAll: Boolean,
-        libraryKeepRules: ArtifactCollection,
+        libraryArtifacts: ArtifactCollection,
         configurationFiles: FileCollection,
-        logger: LoggerWrapper
+        logger: LoggerWrapper,
+        libraryArtifactType: LibraryArtifactType
 ) : FileCollection {
     val matchedArtifacts = mutableSetOf<String>()
 
-    val ignoredArtifacts = libraryKeepRules.artifacts.asSequence()
+    val ignoredArtifacts = libraryArtifacts.artifacts.asSequence()
             // Only external dependencies are considered to be ignored
             .filter { it.id.componentIdentifier is ModuleComponentIdentifier }
             .filter { artifact ->
@@ -55,10 +58,14 @@ fun getFilteredConfigurationFiles(
 
     val unmatchedIgnoreList = ignoreList.filterNot { matchedArtifacts.contains(it) }
     if (unmatchedIgnoreList.isNotEmpty()) {
-        logger.warning("Keep rules from $unmatchedIgnoreList are specified to be ignored, " +
-                "but we couldn't recognize them or find them in the project dependencies " +
-                "list. Note we only allow users to ignore keep rules from remote library " +
-                "dependencies.")
+        val artifactType = if (libraryArtifactType == LibraryArtifactType.BASELINE_PROFILES) {
+            "Baseline profiles"
+        } else {
+            "Keep rules"
+        }
+        logger.warning("$artifactType from $unmatchedIgnoreList are specified to be " +
+                "ignored, but we couldn't recognize them or find them in the project dependencies " +
+                "list. Note we only allow users to ignore from remote library dependencies.")
     }
 
     return configurationFiles.filter {

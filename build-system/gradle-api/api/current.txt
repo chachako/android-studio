@@ -587,6 +587,14 @@ package com.android.build.api.dsl {
     property public abstract Boolean? wearAppUnbundled;
   }
 
+  @org.gradle.api.Incubating public interface BaselineProfile {
+    method @org.gradle.api.Incubating public java.util.Set<java.lang.String> getIgnoreFrom();
+    method @org.gradle.api.Incubating public boolean getIgnoreFromAllExternalDependencies();
+    method @org.gradle.api.Incubating public void setIgnoreFromAllExternalDependencies(boolean);
+    property @org.gradle.api.Incubating public abstract java.util.Set<java.lang.String> ignoreFrom;
+    property @org.gradle.api.Incubating public abstract boolean ignoreFromAllExternalDependencies;
+  }
+
   public interface BuildFeatures extends org.gradle.api.plugins.ExtensionAware {
     method public Boolean? getAidl();
     method public Boolean? getBuildConfig();
@@ -1483,6 +1491,7 @@ package com.android.build.api.dsl {
   }
 
   @org.gradle.api.Incubating public interface Optimization {
+    method @org.gradle.api.Incubating public void baselineProfile(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BaselineProfile,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void keepRules(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KeepRules,kotlin.Unit> action);
   }
 
