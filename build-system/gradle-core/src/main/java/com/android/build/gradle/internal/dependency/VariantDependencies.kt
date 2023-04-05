@@ -390,6 +390,7 @@ class VariantDependencies internal constructor(
             runtimeClasspath: Configuration,
             apiElements: Configuration?,
             runtimeElements: Configuration?,
+            sourcesElements: Configuration?,
             apiPublication: Configuration?,
             runtimePublication: Configuration?
         ): VariantDependencies {
@@ -403,6 +404,7 @@ class VariantDependencies internal constructor(
                     runtimeClasspath,
                     apiElements,
                     runtimeElements,
+                    sourcesElements,
                     apiPublication,
                     runtimePublication
                 ).forEach {

@@ -59,6 +59,14 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             return
         }
 
+        // We can't publish android libraries with JVM target enabled, the issue should be fixed
+        // with kotlin 1.9.0 (https://youtrack.jetbrains.com/issue/KT-51940).
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("kmpSecondLib").ktsBuildFile,
+            "jvm()",
+            ""
+        )
+
         TestFileUtils.appendToFile(
             project.settingsFile,
             """

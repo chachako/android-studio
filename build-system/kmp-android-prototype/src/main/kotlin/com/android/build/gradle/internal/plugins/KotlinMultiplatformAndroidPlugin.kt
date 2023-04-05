@@ -423,8 +423,11 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         runtimeClasspath = androidKotlinCompilation.configurations.runtimeDependencyConfiguration!!,
         apiElements = androidTarget.apiElementsConfiguration.forMainVariantConfiguration(dslInfo),
         runtimeElements = androidTarget.runtimeElementsConfiguration.forMainVariantConfiguration(dslInfo),
+        sourcesElements = project.configurations.findByName(
+            androidTarget.sourcesElementsConfigurationName
+        )?.forMainVariantConfiguration(dslInfo),
         apiPublication = androidTarget.apiElementsPublishedConfiguration.forMainVariantConfiguration(dslInfo),
-        runtimePublication = androidTarget.runtimeElementsPublishedConfiguration.forMainVariantConfiguration(dslInfo),
+        runtimePublication = androidTarget.runtimeElementsPublishedConfiguration.forMainVariantConfiguration(dslInfo)
     )
 
     private fun getAndroidManifestDefaultLocation(

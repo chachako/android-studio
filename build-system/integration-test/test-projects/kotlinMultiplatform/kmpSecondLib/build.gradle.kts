@@ -4,6 +4,8 @@ plugins {
 }
 
 kotlin {
+  jvm()
+
   androidPrototype {
     options {
       namespace = "com.example.kmpsecondlib"
