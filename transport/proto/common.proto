@@ -180,7 +180,7 @@ message Event {
     SessionData session = 101;
     // Poulated when |kind| is |TRACE_STATUS|
     TraceStatusData trace_status = 102;
-    // Populated when |kind| is a non-status, trace-related event.
+    // Populated when |kind| is |CPU_TRACE| or |MEMORY_TRACE|
     TraceData trace_data = 103;
 
     // Network Profiler Prefix = 200
