@@ -1,0 +1,131 @@
+[
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.8.20-Beta/kotlin-stdlib-jdk8-1.8.20-Beta.jar"
+    ],
+    "coordinates": "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20-Beta",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{GRADLE_CACHE}/{CHECKSUM}/transformed/runner-1.3.0-api.jar"
+    ],
+    "coordinates": "androidx.test:runner:1.3.0",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{GRADLE_CACHE}/{CHECKSUM}/transformed/junit-1.1.2-api.jar"
+    ],
+    "coordinates": "androidx.test.ext:junit:1.1.2",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{GRADLE_CACHE}/{CHECKSUM}/transformed/core-1.3.0-api.jar"
+    ],
+    "coordinates": "androidx.test:core:1.3.0",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.8.20-Beta/kotlin-stdlib-jdk7-1.8.20-Beta.jar"
+    ],
+    "coordinates": "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.20-Beta",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib/1.8.20-Beta/kotlin-stdlib-1.8.20-Beta.jar"
+    ],
+    "coordinates": "org.jetbrains.kotlin:kotlin-stdlib:1.8.20-Beta",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{GRADLE_CACHE}/{CHECKSUM}/transformed/monitor-1.3.0-api.jar"
+    ],
+    "coordinates": "androidx.test:monitor:1.3.0",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/androidx/lifecycle/lifecycle-common/2.0.0/lifecycle-common-2.0.0.jar"
+    ],
+    "coordinates": "androidx.lifecycle:lifecycle-common:2.0.0",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/androidx/annotation/annotation/1.0.0/annotation-1.0.0.jar"
+    ],
+    "coordinates": "androidx.annotation:annotation:1.0.0",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/junit/junit/4.12/junit-4.12.jar"
+    ],
+    "coordinates": "junit:junit:4.12",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver",
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;sourcesClasspath": [
+        "{LOCAL_REPO}/junit/junit/4.12/junit-4.12-sources.jar"
+      ]
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/org/jetbrains/annotations/13.0/annotations-13.0.jar"
+    ],
+    "coordinates": "org.jetbrains:annotations:13.0",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver",
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;sourcesClasspath": [
+        "{LOCAL_REPO}/org/jetbrains/annotations/13.0/annotations-13.0-sources.jar"
+      ]
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"
+    ],
+    "coordinates": "org.hamcrest:hamcrest-core:1.3",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver",
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;sourcesClasspath": [
+        "{LOCAL_REPO}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3-sources.jar"
+      ]
+    }
+  }
+]

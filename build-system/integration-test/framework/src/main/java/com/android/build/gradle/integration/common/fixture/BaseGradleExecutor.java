@@ -106,7 +106,7 @@ public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
     @NonNull
     final ProjectConnection projectConnection;
     @Nullable protected final GradleTestProject project;
-    @NonNull protected final ProjectLocation projectLocation;
+    @NonNull public final ProjectLocation projectLocation;
     @NonNull final Consumer<GradleBuildResult> lastBuildResultConsumer;
     @NonNull private final List<String> arguments = Lists.newArrayList();
     @NonNull private final ProjectOptionsBuilder options = new ProjectOptionsBuilder();

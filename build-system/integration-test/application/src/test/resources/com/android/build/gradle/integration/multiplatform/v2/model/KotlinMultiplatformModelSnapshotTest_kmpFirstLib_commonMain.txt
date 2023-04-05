@@ -1,0 +1,45 @@
+[
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.8.20-Beta/kotlin-stdlib-jdk8-1.8.20-Beta.jar"
+    ],
+    "coordinates": "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20-Beta",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.8.20-Beta/kotlin-stdlib-jdk7-1.8.20-Beta.jar"
+    ],
+    "coordinates": "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.20-Beta",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib/1.8.20-Beta/kotlin-stdlib-1.8.20-Beta.jar"
+    ],
+    "coordinates": "org.jetbrains.kotlin:kotlin-stdlib:1.8.20-Beta",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/org/jetbrains/annotations/13.0/annotations-13.0.jar"
+    ],
+    "coordinates": "org.jetbrains:annotations:13.0",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver",
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;sourcesClasspath": [
+        "{LOCAL_REPO}/org/jetbrains/annotations/13.0/annotations-13.0-sources.jar"
+      ]
+    }
+  }
+]

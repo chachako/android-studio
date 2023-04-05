@@ -46,11 +46,77 @@ open class ModelComparator: BaseModelComparator {
     }
 }
 
-class Comparator(
+abstract class BasicComparator(
     private val testClass: BaseModelComparator,
+) {
+    /**
+     * Runs the comparison
+     *
+     * @param name a display name for the dump model class
+     * @param actualContent the result of the model dump
+     * @param goldenFile the test specific portion of the golden file name.
+     */
+    protected fun runComparison(
+        name: String,
+        actualContent: String,
+        goldenFile: String
+    ) {
+        if (System.getenv("GENERATE_MODEL_GOLDEN_FILES").isNullOrEmpty()) {
+            Truth.assertWithMessage("Dumped $name (full version in stdout)")
+                .that(actualContent)
+                .isEqualTo(loadGoldenFile(goldenFile))
+        } else {
+            val file = findGoldenFileLocation(goldenFile)
+            file.writeText(actualContent)
+        }
+    }
+
+    protected fun generateStdoutHeader(
+        normalizer: FileNormalizer
+    ) {
+        println("--------------------------------------------------")
+        println("To regenerate the golden files use:")
+        println("$ GENERATE_MODEL_GOLDEN_FILES=true ./gradlew ...")
+        println("--------------------------------------------------")
+        println(normalizer)
+        println("--------------------------------------------------")
+    }
+
+    private fun findGoldenFileLocation(name: String): File {
+        val sep = File.separatorChar
+        val path = testClass.javaClass.name.replace('.', sep)
+        val root = System.getenv("PROJECT_ROOT")
+
+        val fullPath = if (name.isNotBlank()) {
+            "$root${sep}src${sep}test${sep}resources${sep}${path}_$name.txt"
+        } else {
+            "$root${sep}src${sep}test${sep}resources${sep}${path}.txt"
+        }
+
+        return File(fullPath).also {
+            FileUtils.mkdirs(it.parentFile)
+        }
+    }
+
+    private fun loadGoldenFile(name: String): String? {
+        val resourceName = if (name.isNotBlank()) {
+            "${testClass.javaClass.simpleName}_${name}.txt"
+        } else {
+            "${testClass.javaClass.simpleName}.txt"
+        }
+        println("Golden file loaded from $resourceName")
+        return Resources.toString(
+            Resources.getResource(testClass.javaClass, resourceName
+            ), Charsets.UTF_8
+        )
+    }
+}
+
+class Comparator(
+    testClass: BaseModelComparator,
     private val result: ModelBuilderV2.FetchResult<ModelContainerV2>,
     private val referenceResult: ModelBuilderV2.FetchResult<ModelContainerV2>?
-) {
+): BasicComparator(testClass) {
 
     fun compareVersions(
         projectAction: ModelContainerV2.() -> ModelContainerV2.ModelInfo = { getProject() },
@@ -188,7 +254,7 @@ class Comparator(
             referenceProject = referenceResult,
             action = snapshotAction
         ).also {
-            generateStdoutHeader()
+            generateStdoutHeader(result.normalizer)
             println(it)
         }
 
@@ -208,71 +274,11 @@ class Comparator(
             referenceProject = referenceResult!!,
             action = snapshotAction,
             failureAction =  {
-                generateStdoutHeader()
+                generateStdoutHeader(result.normalizer)
                 println(SnapshotItemWriter().write(it))
 
                 fail("Expected no differences between $modelAction models. See stdout for details")
             }
-        )
-    }
-
-    /**
-     * Runs the comparison
-     *
-     * @param name a display name for the dump model class
-     * @param actualContent the result of the model dump
-     * @param goldenFile the test specific portion of the golden file name.
-     */
-    private fun runComparison(
-        name: String,
-        actualContent: String,
-        goldenFile: String
-    ) {
-        if (System.getenv("GENERATE_MODEL_GOLDEN_FILES").isNullOrEmpty()) {
-            Truth.assertWithMessage("Dumped $name (full version in stdout)")
-                .that(actualContent)
-                .isEqualTo(loadGoldenFile(goldenFile))
-        } else {
-            val file = findGoldenFileLocation(goldenFile)
-            file.writeText(actualContent)
-        }
-    }
-
-    private fun generateStdoutHeader() {
-        println("--------------------------------------------------")
-        println("To regenerate the golden files use:")
-        println("$ GENERATE_MODEL_GOLDEN_FILES=true ./gradlew ...")
-        println("--------------------------------------------------")
-        println(result.normalizer)
-        println("--------------------------------------------------")
-    }
-
-    private fun findGoldenFileLocation(name: String): File {
-        val sep = File.separatorChar
-        val path = testClass.javaClass.name.replace('.', sep)
-        val root = System.getenv("PROJECT_ROOT")
-
-        val fullPath = if (name.isNotBlank()) {
-            "$root${sep}src${sep}test${sep}resources${sep}${path}_$name.txt"
-        } else {
-            "$root${sep}src${sep}test${sep}resources${sep}${path}.txt"
-        }
-
-        return File(fullPath).also {
-            FileUtils.mkdirs(it.parentFile)
-        }
-    }
-
-    private fun loadGoldenFile(name: String): String? {
-        val resourceName = if (name.isNotBlank()) {
-            "${testClass.javaClass.simpleName}_${name}.txt"
-        } else {
-            "${testClass.javaClass.simpleName}.txt"
-        }
-        println("Golden file loaded from $resourceName")
-        return Resources.toString(
-            Resources.getResource(testClass.javaClass, resourceName
-            ), Charsets.UTF_8
         )
     }
 }
