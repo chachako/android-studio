@@ -18,7 +18,7 @@ package com.android.adblib.tools.debugging.packets.ddms.chunks
 import com.android.adblib.readRemaining
 import com.android.adblib.tools.debugging.packets.ddms.ChunkDataParsing.readByte
 import com.android.adblib.tools.debugging.packets.ddms.ChunkDataWriting
-import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes
+import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CHUNK_BYTE_ORDER
 import com.android.adblib.utils.ResizableBuffer
@@ -26,7 +26,7 @@ import com.android.adblib.utils.ResizableBuffer
 /**
  * "REAQ: REcent Allocation Query"
  *
- * @see DdmsChunkTypes.REAQ
+ * @see DdmsChunkType.REAQ
  */
 internal data class DdmsReaqChunk(
     /**

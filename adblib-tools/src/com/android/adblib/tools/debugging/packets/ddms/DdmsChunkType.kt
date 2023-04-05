@@ -16,7 +16,7 @@
 package com.android.adblib.tools.debugging.packets.ddms
 
 @JvmInline
-value class DdmsChunkTypes(val value: Int) {
+value class DdmsChunkType(val value: Int) {
 
     val text: String
         get() = chunkTypeToString(this)
@@ -27,7 +27,7 @@ value class DdmsChunkTypes(val value: Int) {
 
     @Suppress("SpellCheckingInspection")
     companion object {
-        val NULL = DdmsChunkTypes(0)
+        val NULL = DdmsChunkType(0)
 
         val FAIL = chunkTypeFromString("FAIL")
 
@@ -130,20 +130,20 @@ value class DdmsChunkTypes(val value: Int) {
         /**
          * Convert a 4-character string to a 32-bit chunk type.
          */
-        private fun chunkTypeFromString(type: String): DdmsChunkTypes {
+        private fun chunkTypeFromString(type: String): DdmsChunkType {
             var result = 0
             check(type.length == 4) { "Type name must be 4 letter long" }
             for (i in 0..3) {
                 result = result shl 8
                 result = result or type[i].code.toByte().toInt()
             }
-            return DdmsChunkTypes(result)
+            return DdmsChunkType(result)
         }
 
         /**
          * Convert an integer type to a 4-character string.
          */
-        private fun chunkTypeToString(type: DdmsChunkTypes): String {
+        private fun chunkTypeToString(type: DdmsChunkType): String {
             val ascii = ByteArray(4)
             ascii[0] = (type.value shr 24 and 0xff).toByte()
             ascii[1] = (type.value shr 16 and 0xff).toByte()

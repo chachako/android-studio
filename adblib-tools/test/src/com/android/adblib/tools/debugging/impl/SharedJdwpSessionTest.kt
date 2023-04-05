@@ -34,7 +34,7 @@ import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.clone
-import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes
+import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
 import com.android.adblib.tools.debugging.packets.ddms.MutableDdmsChunk
@@ -552,7 +552,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
 
     private suspend fun createHeloDdmsPacket(jdwpSession: SharedJdwpSession): MutableJdwpPacket {
         val heloChunk = MutableDdmsChunk()
-        heloChunk.type = DdmsChunkTypes.HELO
+        heloChunk.type = DdmsChunkType.HELO
         heloChunk.length = 0
         heloChunk.payload = AdbBufferedInputChannel.empty()
 
@@ -604,7 +604,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
 
     private suspend fun JdwpPacketView.isApnmCommand(): Boolean {
         return isDdmsCommand &&
-                clone().ddmsChunks().firstOrNull { it.type == DdmsChunkTypes.APNM } != null
+                clone().ddmsChunks().firstOrNull { it.type == DdmsChunkType.APNM } != null
     }
 
     class TestJdwpSessionMonitorFactory : SharedJdwpSessionMonitorFactory {

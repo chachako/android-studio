@@ -16,7 +16,7 @@
 package com.android.adblib.tools.debugging
 
 import com.android.adblib.AdbInputChannel
-import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes
+import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsFailException
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -31,7 +31,7 @@ private const val DEFAULT_PROFILING_BUFFER_SIZE = 0
 
 /**
  * Handles collecting CPU profiling information (instrumentation or sample) from a [JdwpProcess]
- * using the DDMS protocol commands (See [DdmsChunkTypes.SPSS], [DdmsChunkTypes.MPSS], etc.)
+ * using the DDMS protocol commands (See [DdmsChunkType.SPSS], [DdmsChunkType.MPSS], etc.)
  *
  * Note: Modern profilers use a custom Java agent to collect profiling data, so this API
  * should only be used for legacy devices with API < 26 (i.e. Android "N-MR1" and earlier).

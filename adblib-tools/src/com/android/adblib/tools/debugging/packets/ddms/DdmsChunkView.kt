@@ -23,9 +23,9 @@ import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
  */
 interface DdmsChunkView {
     /**
-     * The chunk type, a 4-byte integer, see [DdmsChunkTypes]
+     * The chunk type, a 4-byte integer, see [DdmsChunkType]
      */
-    val type: DdmsChunkTypes
+    val type: DdmsChunkType
 
     /**
      * The length (in bytes) of [payload], a 4-byte integer.

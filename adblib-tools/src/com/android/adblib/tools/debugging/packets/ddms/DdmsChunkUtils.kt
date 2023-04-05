@@ -125,7 +125,7 @@ internal fun JdwpPacketView.ddmsChunks(
 
             // Prepare chunk source
             val chunk = MutableDdmsChunk().apply {
-                this.type = DdmsChunkTypes(payloadBuffer.getInt())
+                this.type = DdmsChunkType(payloadBuffer.getInt())
                 this.length = payloadBuffer.getInt()
                 val slice = AdbInputChannelSlice(jdwpPacketView.payload, this.length)
                 this.payload = AdbBufferedInputChannel.forInputChannel(slice)

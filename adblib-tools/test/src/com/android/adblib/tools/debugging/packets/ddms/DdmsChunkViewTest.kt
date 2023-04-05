@@ -100,13 +100,13 @@ class DdmsChunkViewTest : AdbLibToolsTestBase() {
         // Assert
         assertEquals(3, chunks.size)
 
-        assertEquals(DdmsChunkTypes.REAQ, chunks[0].type)
+        assertEquals(DdmsChunkType.REAQ, chunks[0].type)
         assertEquals(4, chunks[0].length)
 
-        assertEquals(DdmsChunkTypes.APNM, chunks[1].type)
+        assertEquals(DdmsChunkType.APNM, chunks[1].type)
         assertEquals(0, chunks[1].length)
 
-        assertEquals(DdmsChunkTypes.HELO, chunks[2].type)
+        assertEquals(DdmsChunkType.HELO, chunks[2].type)
         assertEquals(8, chunks[2].length)
     }
 
@@ -122,20 +122,20 @@ class DdmsChunkViewTest : AdbLibToolsTestBase() {
         // Assert
         assertEquals(3, chunks.size)
 
-        assertEquals(DdmsChunkTypes.REAQ, chunks[0].type)
+        assertEquals(DdmsChunkType.REAQ, chunks[0].type)
         assertEquals(4, chunks[0].length)
 
-        assertEquals(DdmsChunkTypes.APNM, chunks[1].type)
+        assertEquals(DdmsChunkType.APNM, chunks[1].type)
         assertEquals(0, chunks[1].length)
 
-        assertEquals(DdmsChunkTypes.HELO, chunks[2].type)
+        assertEquals(DdmsChunkType.HELO, chunks[2].type)
         assertEquals(8, chunks[2].length)
     }
 
     private suspend fun createJdwpPacketWithThreeDdmsChunks(): MutableJdwpPacket {
-        val chunk1 = createTestDdmsChunk(DdmsChunkTypes.REAQ, listOf(127, 128, 255, 0))
-        val chunk2 = createTestDdmsChunk(DdmsChunkTypes.APNM, listOf())
-        val chunk3 = createTestDdmsChunk(DdmsChunkTypes.HELO, listOf(1, 2, 3, 4, 5, 6, 7, 8))
+        val chunk1 = createTestDdmsChunk(DdmsChunkType.REAQ, listOf(127, 128, 255, 0))
+        val chunk2 = createTestDdmsChunk(DdmsChunkType.APNM, listOf())
+        val chunk3 = createTestDdmsChunk(DdmsChunkType.HELO, listOf(1, 2, 3, 4, 5, 6, 7, 8))
         val outputBuffer = ResizableBuffer()
         val output = ByteBufferAdbOutputChannel(outputBuffer)
         chunk1.writeToChannel(output)
@@ -153,7 +153,7 @@ class DdmsChunkViewTest : AdbLibToolsTestBase() {
     }
 
     private fun createTestDdmsChunk(
-        chunkType: DdmsChunkTypes = DdmsChunkTypes.REAQ,
+        chunkType: DdmsChunkType = DdmsChunkType.REAQ,
         bytes: List<Int> = listOf(128, 0, 255, 10)
     ): DdmsChunkView {
         val ddmsChunk = MutableDdmsChunk()

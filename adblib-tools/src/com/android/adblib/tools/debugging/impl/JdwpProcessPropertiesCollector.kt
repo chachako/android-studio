@@ -33,7 +33,7 @@ import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_HEADER_LENGTH
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
-import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes
+import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CMD
@@ -283,16 +283,16 @@ internal class JdwpProcessPropertiesCollector(
             // packet.
             jdwpPacket.ddmsChunks().collect { chunk ->
                 when (chunk.type) {
-                    DdmsChunkTypes.WAIT -> {
+                    DdmsChunkType.WAIT -> {
                         collectState.waitReceived = true
                         processWaitCommand(collectState, chunk.clone(), workBuffer)
                     }
 
-                    DdmsChunkTypes.APNM -> {
+                    DdmsChunkType.APNM -> {
                         processApnmCommand(collectState, chunk.clone(), workBuffer)
                     }
 
-                    DdmsChunkTypes.STAG -> {
+                    DdmsChunkType.STAG -> {
                         processStagCommand(collectState, chunk.clone(), workBuffer)
                     }
 
@@ -395,7 +395,7 @@ internal class JdwpProcessPropertiesCollector(
         // Return is as a packet
         return createDdmsChunkPacket(
             jdwpSession.nextPacketId(),
-            DdmsChunkTypes.HELO,
+            DdmsChunkType.HELO,
             payload.forChannelWrite()
         )
     }
@@ -407,14 +407,14 @@ internal class JdwpProcessPropertiesCollector(
         // Return is as a packet
         return createDdmsChunkPacket(
             jdwpSession.nextPacketId(),
-            DdmsChunkTypes.FEAT,
+            DdmsChunkType.FEAT,
             payload.forChannelWrite()
         )
     }
 
     private suspend fun createDdmsChunkPacket(
         packetId: Int,
-        chunkType: DdmsChunkTypes,
+        chunkType: DdmsChunkType,
         chunkData: ByteBuffer
     ): JdwpPacketView {
         val chunk = MutableDdmsChunk()

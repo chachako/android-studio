@@ -33,7 +33,7 @@ import com.android.adblib.tools.debugging.handleDdmsCommandAndReplyProtocol
 import com.android.adblib.tools.debugging.handleDdmsCommandWithEmptyReply
 import com.android.adblib.tools.debugging.handleDdmsMPRQ
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
-import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes
+import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
 import com.android.adblib.tools.debugging.packets.ddms.isDdmsCommand
 import com.android.adblib.tools.debugging.processEmptyDdmsReplyPacket
@@ -66,7 +66,7 @@ internal class JdwpProcessProfilerImpl(
     ) {
         process.withJdwpSession {
             val requestPacket = createDdmsMPSS(bufferSize)
-            handleDdmsCommandWithEmptyReply(requestPacket, DdmsChunkTypes.MPSS, progress)
+            handleDdmsCommandWithEmptyReply(requestPacket, DdmsChunkType.MPSS, progress)
         }
     }
 
@@ -77,7 +77,7 @@ internal class JdwpProcessProfilerImpl(
         return process.withJdwpSession {
             logger.debug { "Stopping method profiling session" }
             val requestPacket = createDdmsMPSE()
-            handleMPSEReply(requestPacket, DdmsChunkTypes.MPSE, progress, block)
+            handleMPSEReply(requestPacket, DdmsChunkType.MPSE, progress, block)
         }
     }
 
@@ -90,7 +90,7 @@ internal class JdwpProcessProfilerImpl(
         process.withJdwpSession {
             logger.debug { "Starting sampling profiling session" }
             val requestPacket = createDdmsSPSS(bufferSize, interval, intervalUnit)
-            handleDdmsCommandWithEmptyReply(requestPacket, DdmsChunkTypes.SPSS, progress)
+            handleDdmsCommandWithEmptyReply(requestPacket, DdmsChunkType.SPSS, progress)
         }
     }
 
@@ -101,13 +101,13 @@ internal class JdwpProcessProfilerImpl(
         return process.withJdwpSession {
             logger.debug { "Stopping sampling profiling session" }
             val requestPacket = createDdmsSPSE()
-            handleMPSEReply(requestPacket, DdmsChunkTypes.SPSE, progress, block)
+            handleMPSEReply(requestPacket, DdmsChunkType.SPSE, progress, block)
         }
     }
 
     private suspend fun <R> SharedJdwpSession.handleMPSEReply(
         requestPacket: JdwpPacketView,
-        chunkType: DdmsChunkTypes,
+        chunkType: DdmsChunkType,
         progress: JdwpCommandProgress?,
         block: suspend (data: AdbInputChannel, dataLength: Int) -> R
     ): R {
@@ -118,12 +118,12 @@ internal class JdwpProcessProfilerImpl(
 
     private suspend fun <R> SharedJdwpSession.handleMPSEReplyImpl(
         requestPacket: JdwpPacketView,
-        chunkType: DdmsChunkTypes,
+        chunkType: DdmsChunkType,
         progress: JdwpCommandProgress?,
         signal: Signal<R>,
         block: suspend (data: AdbInputChannel, dataLength: Int) -> R
     ) {
-        assert(chunkType == DdmsChunkTypes.MPSE || chunkType == DdmsChunkTypes.SPSE)
+        assert(chunkType == DdmsChunkType.MPSE || chunkType == DdmsChunkType.SPSE)
 
         // Send an "MPSE" (or "SPSE") DDMS command to the VM. Note that the AndroidVM treats "MPSE"
         // in a special way: the profiling data comes back as an "MPSE" command (with the
@@ -150,7 +150,7 @@ internal class JdwpProcessProfilerImpl(
 
                 if (packet.isDdmsCommand) {
                     packet.ddmsChunks().collect { chunk ->
-                        if (chunk.type == DdmsChunkTypes.MPSE) {
+                        if (chunk.type == DdmsChunkType.MPSE) {
                             val blockResult = block(chunk.payload, chunk.length)
 
                             // We got the result we want, signal so that the timeout waiting for

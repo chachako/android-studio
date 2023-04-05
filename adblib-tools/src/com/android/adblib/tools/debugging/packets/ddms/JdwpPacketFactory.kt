@@ -26,7 +26,7 @@ object JdwpPacketFactory {
      */
     fun createDdmsPacket(
         jdwpPacketId: Int,
-        chunkType: DdmsChunkTypes,
+        chunkType: DdmsChunkType,
         chunkPayload: ByteBuffer
     ): MutableJdwpPacket {
         // Serialize chunk into a ByteBuffer

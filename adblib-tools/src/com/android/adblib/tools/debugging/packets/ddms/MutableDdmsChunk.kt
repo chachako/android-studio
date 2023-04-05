@@ -22,7 +22,7 @@ import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
  */
 internal class MutableDdmsChunk : DdmsChunkView {
 
-    override var type: DdmsChunkTypes = DdmsChunkTypes.NULL
+    override var type: DdmsChunkType = DdmsChunkType.NULL
 
     override var length: Int = 0
 
