@@ -379,7 +379,7 @@ internal class JdwpProcessPropertiesCollector(
 
     private suspend fun createDdmsChunkPacket(
         packetId: Int,
-        chunkType: Int,
+        chunkType: DdmsChunkTypes,
         chunkData: ByteBuffer
     ): JdwpPacketView {
         val chunk = MutableDdmsChunk()

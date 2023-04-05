@@ -153,7 +153,7 @@ class DdmsChunkViewTest : AdbLibToolsTestBase() {
     }
 
     private fun createTestDdmsChunk(
-        chunkType: Int = DdmsChunkTypes.REAQ,
+        chunkType: DdmsChunkTypes = DdmsChunkTypes.REAQ,
         bytes: List<Int> = listOf(128, 0, 255, 10)
     ): DdmsChunkView {
         val ddmsChunk = MutableDdmsChunk()

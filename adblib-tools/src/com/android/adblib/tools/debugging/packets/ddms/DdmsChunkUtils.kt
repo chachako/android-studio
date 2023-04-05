@@ -49,7 +49,7 @@ internal suspend fun DdmsChunkView.writeToChannel(
     workBuffer.order(DDMS_CHUNK_BYTE_ORDER)
 
     // Write header
-    workBuffer.appendInt(type)
+    workBuffer.appendInt(type.value)
     workBuffer.appendInt(length)
     channel.writeExactly(workBuffer.forChannelWrite())
 
@@ -125,7 +125,7 @@ internal fun JdwpPacketView.ddmsChunks(
 
             // Prepare chunk source
             val chunk = MutableDdmsChunk().apply {
-                this.type = payloadBuffer.getInt()
+                this.type = DdmsChunkTypes(payloadBuffer.getInt())
                 this.length = payloadBuffer.getInt()
                 val slice = AdbInputChannelSlice(jdwpPacketView.payload, this.length)
                 this.payload = AdbBufferedInputChannel.forInputChannel(slice)
@@ -182,7 +182,7 @@ internal suspend fun DdmsChunkView.throwFailException(): Nothing {
     throw createFailException()
 }
 
-class DdmsFailException(val errorCode: Int, val failMessage: String): Exception() {
+class DdmsFailException(val errorCode: Int, val failMessage: String) : Exception() {
 
     override val message: String?
         get() = "DDMS Failure on AndroidVM: errorCode=$errorCode, message=$failMessage"

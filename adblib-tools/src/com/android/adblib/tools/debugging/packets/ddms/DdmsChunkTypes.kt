@@ -15,80 +15,91 @@
  */
 package com.android.adblib.tools.debugging.packets.ddms
 
-class DdmsChunkTypes {
+@JvmInline
+value class DdmsChunkTypes(val value: Int) {
+
+    val text: String
+        get() = chunkTypeToString(this)
+
+    override fun toString(): String {
+        return text
+    }
+
     @Suppress("SpellCheckingInspection")
     companion object {
-        val FAIL: Int = chunkTypeFromString("FAIL")
+        val NULL = DdmsChunkTypes(0)
 
-        val HELO: Int = chunkTypeFromString("HELO")
+        val FAIL = chunkTypeFromString("FAIL")
 
-        val FEAT: Int = chunkTypeFromString("FEAT")
+        val HELO = chunkTypeFromString("HELO")
+
+        val FEAT = chunkTypeFromString("FEAT")
 
         /**
          * "REAE: REcent Allocation Enable"
          */
-        val REAE: Int = chunkTypeFromString("REAE")
+        val REAE = chunkTypeFromString("REAE")
 
         /**
          * "REAQ: REcent Allocation Query"
          */
-        val REAQ: Int = chunkTypeFromString("REAQ")
+        val REAQ = chunkTypeFromString("REAQ")
 
         /**
          * "REAL: REcent Allocation List"
          */
-        val REAL: Int = chunkTypeFromString("REAL")
+        val REAL = chunkTypeFromString("REAL")
 
-        val APNM: Int = chunkTypeFromString("APNM")
+        val APNM = chunkTypeFromString("APNM")
 
-        val WAIT: Int = chunkTypeFromString("WAIT")
+        val WAIT = chunkTypeFromString("WAIT")
 
-        val EXIT: Int = chunkTypeFromString("EXIT")
+        val EXIT = chunkTypeFromString("EXIT")
 
         /**
          * Requests a `Method Profiling Streaming Start`
          */
-        val MPSS: Int = chunkTypeFromString("MPSS")
+        val MPSS = chunkTypeFromString("MPSS")
 
         /**
          * Requests a `Method Profiling Streaming End`
          */
-        val MPSE: Int = chunkTypeFromString("MPSE")
+        val MPSE = chunkTypeFromString("MPSE")
 
         /**
          * Requests a `Method PRofiling Start`
          */
-        val MPRS: Int = chunkTypeFromString("MPRS")
+        val MPRS = chunkTypeFromString("MPRS")
 
         /**
          * Requests a `Method PRofiling End`
          */
-        val MPRE: Int = chunkTypeFromString("MPRE")
+        val MPRE = chunkTypeFromString("MPRE")
 
         /**
          * Requests a `Method PRofiling Query`
          */
-        val MPRQ: Int = chunkTypeFromString("MPRQ")
+        val MPRQ = chunkTypeFromString("MPRQ")
 
         /**
          * Requests a `Sampling Profiling Streaming Start`
          */
-        val SPSS: Int = chunkTypeFromString("SPSS")
+        val SPSS = chunkTypeFromString("SPSS")
 
         /**
          * Requests a `Sampling Profiling Streaming End`
          */
-        val SPSE: Int = chunkTypeFromString("SPSE")
+        val SPSE = chunkTypeFromString("SPSE")
 
         /**
          * List `ViewRootImpl`'s of this process
          */
-        val VULW: Int = chunkTypeFromString("VULW")
+        val VULW = chunkTypeFromString("VULW")
 
         /**
          * Operation on view root, first parameter in packet should be one of VURT_* constants
          */
-        val VURT: Int = chunkTypeFromString("VURT")
+        val VURT = chunkTypeFromString("VURT")
 
         enum class VURTOpCode(val value: Int) {
             /**
@@ -101,12 +112,12 @@ class DdmsChunkTypes {
          * Generic View Operation, first parameter in the packet should be one of the VUOP_* constants
          * below.
          */
-        val VUOP: Int = chunkTypeFromString("VUOP")
+        val VUOP = chunkTypeFromString("VUOP")
 
         /**
          * Requests a Gabage Collection of a process (`HeaP Gabage Collect`)
          */
-        val HPGC: Int = chunkTypeFromString("HPGC")
+        val HPGC = chunkTypeFromString("HPGC")
 
         enum class VUOPOpCode(val value: Int) {
 
@@ -117,25 +128,25 @@ class DdmsChunkTypes {
         /**
          * Convert a 4-character string to a 32-bit chunk type.
          */
-        private fun chunkTypeFromString(type: String): Int {
+        private fun chunkTypeFromString(type: String): DdmsChunkTypes {
             var result = 0
             check(type.length == 4) { "Type name must be 4 letter long" }
             for (i in 0..3) {
                 result = result shl 8
                 result = result or type[i].code.toByte().toInt()
             }
-            return result
+            return DdmsChunkTypes(result)
         }
 
         /**
          * Convert an integer type to a 4-character string.
          */
-        fun chunkTypeToString(type: Int): String {
+        private fun chunkTypeToString(type: DdmsChunkTypes): String {
             val ascii = ByteArray(4)
-            ascii[0] = (type shr 24 and 0xff).toByte()
-            ascii[1] = (type shr 16 and 0xff).toByte()
-            ascii[2] = (type shr 8 and 0xff).toByte()
-            ascii[3] = (type and 0xff).toByte()
+            ascii[0] = (type.value shr 24 and 0xff).toByte()
+            ascii[1] = (type.value shr 16 and 0xff).toByte()
+            ascii[2] = (type.value shr 8 and 0xff).toByte()
+            ascii[3] = (type.value and 0xff).toByte()
             return String(ascii, Charsets.US_ASCII)
         }
     }

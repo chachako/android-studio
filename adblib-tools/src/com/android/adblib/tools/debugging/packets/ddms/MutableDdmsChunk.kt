@@ -16,20 +16,19 @@
 package com.android.adblib.tools.debugging.packets.ddms
 
 import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
-import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes.Companion.chunkTypeToString
 
 /**
  * A mutable version of [DdmsChunkView], to be used when creating DDMS "chunks"
  */
 internal class MutableDdmsChunk : DdmsChunkView {
 
-    override var type: Int = 0
+    override var type: DdmsChunkTypes = DdmsChunkTypes.NULL
 
     override var length: Int = 0
 
     override var payload = AdbBufferedInputChannel.empty()
 
     override fun toString(): String {
-        return "DDMS Chunk: type=$type (${chunkTypeToString(type)}), length=$length"
+        return "DDMS Chunk: type=$type (${type.value}), length=$length"
     }
 }

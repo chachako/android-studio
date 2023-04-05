@@ -25,7 +25,6 @@ import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes.Companion.MPRQ
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes.Companion.VURTOpCode
-import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes.Companion.chunkTypeToString
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsFailException
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
@@ -308,7 +307,7 @@ suspend fun <R> SharedJdwpSession.handleDdmsCaptureView(
  * @throws DdmsCommandException if there is an unexpected DDMS/JDWP protocol error
  */
 suspend fun <R> SharedJdwpSession.handleDdmsCommand(
-    chunkType: Int,
+    chunkType: DdmsChunkTypes,
     payload: ByteBuffer,
     progress: JdwpCommandProgress? = null,
     replyHandler: suspend (DdmsChunkView) -> R
@@ -323,11 +322,11 @@ suspend fun <R> SharedJdwpSession.handleDdmsCommand(
 
 private suspend fun <R> SharedJdwpSession.processDdmsReplyPacket(
     packet: JdwpPacketView,
-    chunkType: Int,
+    chunkType: DdmsChunkTypes,
     block: suspend (packet: DdmsChunkView) -> R
 ): R {
     val logger = thisLogger(device.session)
-    val chunkTypeString = chunkTypeToString(chunkType)
+    val chunkTypeString = chunkType.text
 
     // Error: FAIL packet
     packet.getDdmsFail()?.also { failChunk ->
@@ -340,7 +339,7 @@ private suspend fun <R> SharedJdwpSession.processDdmsReplyPacket(
 
     return packet.ddmsChunks().map { replyChunk ->
         if (replyChunk.type != chunkType) {
-            val message = "DDMS reply '${chunkTypeToString(replyChunk.type)}' " +
+            val message = "DDMS reply '${replyChunk.type}' " +
                     "does not match DDMS command '$chunkTypeString'"
             logger.warn(message)
             throw DdmsCommandException(message)
@@ -373,13 +372,11 @@ private suspend fun <R> SharedJdwpSession.processDdmsReplyPacket(
  */
 suspend fun SharedJdwpSession.handleDdmsCommandWithEmptyReply(
     requestPacket: JdwpPacketView,
-    chunkType: Int,
+    chunkType: DdmsChunkTypes,
     progress: JdwpCommandProgress?
 ) {
     val logger = thisLogger(device.session).withPrefix("pid=$pid: ")
-    val chunkTypeString = chunkTypeToString(chunkType)
-
-    logger.debug { "Invoking DDMS command $chunkTypeString" }
+    logger.debug { "Invoking DDMS command ${chunkType.text}" }
 
     return handleDdmsCommandAndReplyProtocol(progress) { signal ->
         handleAlwaysEmptyReplyDdmsCommand(requestPacket, chunkType, progress, signal)
@@ -388,15 +385,14 @@ suspend fun SharedJdwpSession.handleDdmsCommandWithEmptyReply(
 
 private suspend fun SharedJdwpSession.handleAlwaysEmptyReplyDdmsCommand(
     requestPacket: JdwpPacketView,
-    chunkType: Int,
+    chunkType: DdmsChunkTypes,
     progress: JdwpCommandProgress?,
     signal: Signal<Unit>?
 ) {
     val logger = thisLogger(device.session).withPrefix("pid=$pid: ")
-    val chunkTypeString = chunkTypeToString(chunkType)
 
     newPacketReceiver()
-        .withName("handleEmptyReplyDdmsCommand($chunkTypeString)")
+        .withName("handleEmptyReplyDdmsCommand(${chunkType.text})")
         .onActivation {
             progress?.beforeSend(requestPacket)
             sendPacket(requestPacket)
@@ -417,9 +413,12 @@ private suspend fun SharedJdwpSession.handleAlwaysEmptyReplyDdmsCommand(
         }
 }
 
-suspend fun SharedJdwpSession.processEmptyDdmsReplyPacket(packet: JdwpPacketView, chunkType: Int) {
+suspend fun SharedJdwpSession.processEmptyDdmsReplyPacket(
+    packet: JdwpPacketView,
+    chunkType: DdmsChunkTypes
+) {
     val logger = thisLogger(device.session).withPrefix("pid=$pid: ")
-    val chunkTypeString = chunkTypeToString(chunkType)
+    val chunkTypeString = chunkType.text
 
     // Error: FAIL packet
     packet.getDdmsFail()?.also { failChunk ->
@@ -504,11 +503,11 @@ suspend fun AdbInputChannel.toByteArray(size: Int): ByteArray {
     return result
 }
 
-fun SharedJdwpSession.createDdmsPacket(chunkType: Int, chunkPayload: ByteBuffer): JdwpPacketView {
+fun SharedJdwpSession.createDdmsPacket(chunkType: DdmsChunkTypes, chunkPayload: ByteBuffer): JdwpPacketView {
     return JdwpPacketFactory.createDdmsPacket(nextPacketId(), chunkType, chunkPayload)
         .also { packet ->
             val logger = thisLogger(device.session)
-            logger.verbose { "Sending DDMS command '${chunkTypeToString(chunkType)}' in JDWP packet $packet" }
+            logger.verbose { "Sending DDMS command '$chunkType' in JDWP packet $packet" }
         }
 }
 

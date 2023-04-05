@@ -107,7 +107,7 @@ internal class JdwpProcessProfilerImpl(
 
     private suspend fun <R> SharedJdwpSession.handleMPSEReply(
         requestPacket: JdwpPacketView,
-        chunkType: Int,
+        chunkType: DdmsChunkTypes,
         progress: JdwpCommandProgress?,
         block: suspend (data: AdbInputChannel, dataLength: Int) -> R
     ): R {
@@ -118,7 +118,7 @@ internal class JdwpProcessProfilerImpl(
 
     private suspend fun <R> SharedJdwpSession.handleMPSEReplyImpl(
         requestPacket: JdwpPacketView,
-        chunkType: Int,
+        chunkType: DdmsChunkTypes,
         progress: JdwpCommandProgress?,
         signal: Signal<R>,
         block: suspend (data: AdbInputChannel, dataLength: Int) -> R

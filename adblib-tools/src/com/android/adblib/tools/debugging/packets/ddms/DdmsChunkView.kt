@@ -25,7 +25,7 @@ interface DdmsChunkView {
     /**
      * The chunk type, a 4-byte integer, see [DdmsChunkTypes]
      */
-    val type: Int
+    val type: DdmsChunkTypes
 
     /**
      * The length (in bytes) of [payload], a 4-byte integer.

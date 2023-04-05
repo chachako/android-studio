@@ -26,14 +26,14 @@ object JdwpPacketFactory {
      */
     fun createDdmsPacket(
         jdwpPacketId: Int,
-        chunkType: Int,
+        chunkType: DdmsChunkTypes,
         chunkPayload: ByteBuffer
     ): MutableJdwpPacket {
         // Serialize chunk into a ByteBuffer
         val serializedChunk =
             ByteBuffer.allocate(DDMS_CHUNK_HEADER_LENGTH + chunkPayload.remaining())
         serializedChunk.order(DdmsPacketConstants.DDMS_CHUNK_BYTE_ORDER)
-        serializedChunk.putInt(chunkType)
+        serializedChunk.putInt(chunkType.value)
         serializedChunk.putInt(chunkPayload.remaining())
         serializedChunk.put(chunkPayload)
         serializedChunk.flip()
