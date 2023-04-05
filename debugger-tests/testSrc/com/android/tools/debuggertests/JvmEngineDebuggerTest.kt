@@ -16,10 +16,6 @@
 package com.android.tools.debuggertests
 
 import com.android.tools.debuggertests.Engine.EngineType.JVM
-import com.google.common.truth.Truth.assertThat
-import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -36,9 +32,6 @@ internal class JvmEngineDebuggerTest(testClass: String) : DebuggerTestBase(testC
 
   @Test
   fun test() {
-    val actual = runBlocking { withTimeout(5.seconds) { JVM.getEngine(testClass).runTest() } }
-    val expected = Resources.readGolden(testClass)
-
-    assertThat(actual).named(describeTest()).isEqualTo(expected)
+    runTest(JVM)
   }
 }

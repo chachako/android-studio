@@ -15,8 +15,23 @@
  */
 package com.android.tools.debuggertests
 
-/** A base class for Debugger Tests */
-internal abstract class DebuggerTestBase(protected val testClass: String) {
+import com.android.tools.debuggertests.Engine.EngineType
+import com.google.common.truth.Truth
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 
-  protected fun describeTest() = "at $testClass(${testClass.substringAfterLast(".")}.kt:20)"
+/** A base class for Debugger Tests */
+internal abstract class DebuggerTestBase(private val testClass: String) {
+
+  private fun describeTest() = "at $testClass(${testClass.substringAfterLast(".")}.kt:20)"
+
+  fun runTest(engineType: EngineType) {
+    val actual = runBlocking {
+      withTimeout(5.seconds) { engineType.getEngine(testClass).runTest() }
+    }
+    val expected = Resources.readGolden(testClass, engineType.name.lowercase())
+
+    Truth.assertThat(actual).named(describeTest()).isEqualTo(expected)
+  }
 }

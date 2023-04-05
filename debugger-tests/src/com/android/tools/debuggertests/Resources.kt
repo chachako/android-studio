@@ -17,14 +17,12 @@ package com.android.tools.debuggertests
 
 import com.intellij.util.io.isFile
 import java.io.File
-import java.io.InputStreamReader
-import java.io.OutputStreamWriter
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.inputStream
-import kotlin.io.path.outputStream
 import kotlin.io.path.pathString
+import kotlin.io.path.reader
+import kotlin.io.path.writer
 import kotlin.streams.asSequence
 
 private const val MODULE_PATH = "tools/base/debugger-tests"
@@ -52,15 +50,17 @@ object Resources {
   }
 
   /** Read expected result from golden file */
-  fun readGolden(test: String): String {
-    val path = Paths.get(getRepoResourceDir(), RES, GOLDEN, getGoldenFileName(test))
-    return InputStreamReader(path.inputStream()).use { it.readText() }
+  fun readGolden(test: String, dir: String): String {
+    val path = Paths.get(getRepoResourceDir(), RES, GOLDEN, dir, getGoldenFileName(test))
+    return path.reader().use { it.readText() }
   }
 
   /** Write expected result to golden file */
-  fun writeGolden(test: String, actual: String) {
-    val path = Paths.get(getWorkspaceDir(), RESOURCE_PATH, RES, GOLDEN, getGoldenFileName(test))
-    OutputStreamWriter(path.outputStream()).use { it.write(actual) }
+  fun writeGolden(test: String, actual: String, dir: String) {
+    val fileName = getGoldenFileName(test)
+    val path = Paths.get(getWorkspaceDir(), RESOURCE_PATH, RES, GOLDEN, dir, fileName)
+    path.parent.toFile().mkdirs()
+    path.writer().use { it.write(actual) }
   }
 
   fun getTestClassesJarPath(): String {

@@ -40,6 +40,7 @@ import kotlinx.coroutines.withTimeout
 fun main(args: Array<String>) {
   val parser = ArgParser("UpdateGolden")
   val verbose by parser.option(ArgType.Boolean, shortName = "v").default(false)
+  val noop by parser.option(ArgType.Boolean, shortName = "n").default(false)
   val type by parser.option(ArgType.Choice<EngineType>(), shortName = "t").default(SIMPLE)
   val tests by parser.argument(ArgType.String).vararg().optional()
   parser.parse(args)
@@ -54,7 +55,9 @@ fun main(args: Array<String>) {
       }
     engine.use {
       val actual = runBlocking { withTimeout(30.seconds) { engine.runTest() } }
-      Resources.writeGolden(testClass, actual)
+      if (!noop) {
+        Resources.writeGolden(testClass, actual, type.name.lowercase())
+      }
       if (verbose) {
         println(actual)
       }
