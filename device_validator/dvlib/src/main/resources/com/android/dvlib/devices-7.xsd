@@ -895,6 +895,13 @@
                 </xsd:documentation>
             </xsd:annotation>
         </xsd:element>
+        <xsd:element name="change-orientation-on-fold" type="xsd:boolean" minOccurs="0">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">
+                    Specifies if the device orientation will change on fold.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:element>
         <xsd:element name="fold-at-posture" type="xsd:nonNegativeInteger"
                      minOccurs="0">
             <xsd:annotation>

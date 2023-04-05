@@ -198,6 +198,7 @@ public class DeviceSchema {
     public static final String NODE_HINGE_SUB_TYPE = "sub-type";
     public static final String NODE_HINGE_TYPE = "type";
     public static final String NODE_HINGE_FOLD_AT_POSTURE = "fold-at-posture";
+    public static final String NODE_CHANGE_ORIENTATION_ON_FOLD = "change-orientation-on-fold";
     public static final String NODE_HINGE_POSTURE_LIST = "posture-list";
     public static final String NODE_HINGE_ANGLES_POSTURE_DEFINITIONS =
             "hinge-angles-posture-definitions";

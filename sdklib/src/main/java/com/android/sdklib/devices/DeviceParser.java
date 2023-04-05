@@ -220,6 +220,8 @@ public class DeviceParser {
                 mHardware.getHinge().setDefaults(getInteger(mStringAccumulator));
             } else if (DeviceSchema.NODE_HINGE_AREAS.equals(localName)) {
                 mHardware.getHinge().setAreas(getString(mStringAccumulator));
+            } else if (DeviceSchema.NODE_CHANGE_ORIENTATION_ON_FOLD.equals(localName)) {
+                mHardware.getHinge().setChangeOrientationOnFold(getBool(mStringAccumulator));
             } else if (DeviceSchema.NODE_HINGE_FOLD_AT_POSTURE.equals(localName)) {
                 mHardware.getHinge().setFoldAtPosture(getInteger(mStringAccumulator));
             } else if (DeviceSchema.NODE_HINGE_POSTURE_LIST.equals(localName)) {

@@ -245,6 +245,19 @@ public final class Device {
             return null;
         }
 
+        // Some foldable devices have different orientations when folded vs unfolded.
+        // Screen size usually refers to the unfolded screen size, while
+        // orientation refers to the folded orientation.
+        Hinge hinge = getDefaultHardware().getHinge();
+
+        if (hinge != null && hinge.getChangeOrientationOnFold()) {
+            if (orientation == ScreenOrientation.PORTRAIT) {
+                orientation = ScreenOrientation.LANDSCAPE;
+            } else if (orientation == ScreenOrientation.LANDSCAPE) {
+                orientation = ScreenOrientation.PORTRAIT;
+            }
+        }
+
         // compute width and height to take orientation into account.
         int x = screen.getXDimension();
         int y = screen.getYDimension();
