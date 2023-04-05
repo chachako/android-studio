@@ -27,6 +27,7 @@ import com.android.build.api.variant.CanMinifyAndroidResourcesBuilder
 import com.android.build.api.variant.CanMinifyCodeBuilder
 import com.android.build.api.variant.Component
 import com.android.build.api.variant.Packaging
+import com.android.build.gradle.internal.KotlinMultiplatformCompileOptionsImpl
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.KmpCreationConfig
 import com.android.build.gradle.internal.component.features.NativeBuildCreationConfig
@@ -132,6 +133,16 @@ open class KmpVariantImpl @Inject constructor(
         PackagingImpl(dslInfo.packaging, internalServices)
     }
 
+    override val isCoreLibraryDesugaringEnabledLintCheck: Boolean
+        get() = global.compileOptions.isCoreLibraryDesugaringEnabled
+
+    override fun syncAndroidAndKmpClasspathAndSources() {
+        super.syncAndroidAndKmpClasspathAndSources()
+
+        (global.compileOptions as KotlinMultiplatformCompileOptionsImpl)
+            .initFromCompilation(androidKotlinCompilation)
+    }
+
     override fun <T : Component> createUserVisibleVariantObject(
         stats: GradleBuildVariant.Builder?
     ): T {
@@ -143,6 +154,4 @@ open class KmpVariantImpl @Inject constructor(
     override val renderscriptCreationConfig: RenderscriptCreationConfig? = null
     override val shadersCreationConfig: ShadersCreationConfig? = null
     override val nativeBuildCreationConfig: NativeBuildCreationConfig? = null
-    override val isCoreLibraryDesugaringEnabledLintCheck: Boolean
-        get() = false
 }

@@ -76,7 +76,7 @@ class KotlinMultiplatformAndroidConnectedTest {
 
         Truth.assertThat(testResultFolder.listFiles()!!.map { it.name }).containsAtLeast(
             "com.example.kmpfirstlib.test.html",
-            "com.example.kmpfirstlib.test.KmpAndroidFirstLibClassTest.html",
+            "com.example.kmpfirstlib.test.KmpAndroidFirstLibActivityTest.html",
         )
 
         val coveragePackageFolder = FileUtils.join(

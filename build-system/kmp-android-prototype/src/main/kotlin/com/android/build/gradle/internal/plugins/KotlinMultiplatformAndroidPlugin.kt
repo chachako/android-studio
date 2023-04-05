@@ -30,6 +30,7 @@ import com.android.build.api.variant.impl.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.variant.impl.KotlinMultiplatformAndroidCompilationImpl
 import com.android.build.api.variant.impl.KotlinMultiplatformAndroidTarget
 import com.android.build.api.variant.impl.KotlinMultiplatformAndroidTargetImpl
+import com.android.build.gradle.internal.CompileOptions
 import com.android.build.gradle.internal.DependencyConfigurator
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.TaskManager
@@ -328,6 +329,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         listOfNotNull(mainVariant, unitTest, androidTest).forEach {
             it.syncAndroidAndKmpClasspathAndSources()
         }
+
+        (global.compileOptions as CompileOptions).finalizeSourceAndTargetCompatibility(project)
 
         dependencyConfigurator.configureVariantTransforms(
             variants = listOf(mainVariant),

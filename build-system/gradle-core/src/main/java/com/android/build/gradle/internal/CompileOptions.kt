@@ -57,8 +57,8 @@ abstract class CompileOptions : CompileOptions {
     override var encoding: String = Charsets.UTF_8.name()
     override var isCoreLibraryDesugaringEnabled: Boolean = false
 
-    private var _sourceCompatibility: JavaVersion? = null
-    private var _targetCompatibility: JavaVersion? = null
+    protected var _sourceCompatibility: JavaVersion? = null
+    protected var _targetCompatibility: JavaVersion? = null
 
     private var sourceAndTargetFinalized: Boolean = false
 

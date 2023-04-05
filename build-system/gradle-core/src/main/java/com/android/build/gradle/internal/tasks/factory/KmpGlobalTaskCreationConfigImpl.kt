@@ -28,6 +28,7 @@ import com.android.build.api.dsl.Lint
 import com.android.build.api.dsl.Prefab
 import com.android.build.api.dsl.Splits
 import com.android.build.api.dsl.TestOptions
+import com.android.build.gradle.internal.KotlinMultiplatformCompileOptionsImpl
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.attribution.BuildAnalyzerIssueReporter
 import com.android.build.gradle.internal.core.SettingsOptions
@@ -50,9 +51,7 @@ import com.android.builder.core.LibraryRequest
 import com.android.builder.testing.api.DeviceProvider
 import com.android.builder.testing.api.TestServer
 import com.android.repository.Revision
-import com.google.common.base.Charsets
 import org.gradle.api.Action
-import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.attributes.AttributeContainer
@@ -119,30 +118,9 @@ class KmpGlobalTaskCreationConfigImpl(
             BuildAnalyzerIssueReporter(services.projectOptions, services.buildServiceRegistry)
         }
 
-    // TODO(b/267309622): Get this from kotlin plugin
-    override val compileOptions: CompileOptions
-        get() = object: CompileOptions {
-            override var sourceCompatibility = JavaVersion.VERSION_11
-
-            override fun sourceCompatibility(sourceCompatibility: Any) {
-                throw IllegalAccessException("Not supported for kmp")
-            }
-
-            override var targetCompatibility: JavaVersion
-                get() = JavaVersion.VERSION_1_8
-                set(value) {}
-
-            override fun targetCompatibility(targetCompatibility: Any) {
-                throw IllegalAccessException("Not supported for kmp")
-            }
-
-            override var encoding: String
-                get() = Charsets.UTF_8.name()
-                set(value) {}
-            override var isCoreLibraryDesugaringEnabled: Boolean
-                get() = false
-                set(value) {}
-        }
+    override val compileOptions: CompileOptions = KotlinMultiplatformCompileOptionsImpl(
+        extension
+    )
 
     override val manifestArtifactType: InternalArtifactType<Directory>
         get() = if (services.projectOptions[BooleanOption.IDE_DEPLOY_AS_INSTANT_APP])

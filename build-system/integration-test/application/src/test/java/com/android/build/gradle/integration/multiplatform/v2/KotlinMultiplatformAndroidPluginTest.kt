@@ -306,6 +306,13 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             assertThatApk(apk).hasClass("Lcom/example/kmpfirstlib/KmpCommonFirstLibClass;")
             assertThatApk(apk).hasClass("Lcom/example/kmpsecondlib/KmpCommonSecondLibClass;")
 
+            // instrumented test classes are packaged
+            assertThatApk(apk).containsClass("Lcom/example/kmpfirstlib/test/KmpAndroidFirstLibActivityTest;")
+
+            // classes from common tests and unit tests are not packaged
+            assertThatApk(apk).doesNotContainClass("Lcom/example/kmpfirstlib/KmpCommonFirstLibClassTest;")
+            assertThatApk(apk).doesNotContainClass("Lcom/example/kmpfirstlib/KmpAndroidFirstLibClassTest;")
+
             // classes from androidMain are packaged
             assertThatApk(apk).hasClass("Lcom/example/kmpfirstlib/KmpAndroidFirstLibClass;")
             assertThatApk(apk).hasClass("Lcom/example/kmpsecondlib/KmpAndroidSecondLibClass;")

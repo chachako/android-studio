@@ -80,6 +80,7 @@ interface KotlinMultiplatformAndroidExtension {
 
     var isTestMultiDexEnabled: Boolean?
     var testMultiDexKeepProguard: File?
+    var isCoreLibraryDesugaringEnabled: Boolean
 
     val installation: Installation
 

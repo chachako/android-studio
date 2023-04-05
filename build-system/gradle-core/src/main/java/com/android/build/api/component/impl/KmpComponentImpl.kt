@@ -286,7 +286,7 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
         override val variantSourceProvider: DefaultAndroidSourceSet? = null
     }
 
-    fun syncAndroidAndKmpClasspathAndSources() {
+    open fun syncAndroidAndKmpClasspathAndSources() {
         artifacts
             .forScope(ScopedArtifacts.Scope.PROJECT)
             .getScopedArtifactsContainer(ScopedArtifact.CLASSES)

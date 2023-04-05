@@ -17,6 +17,11 @@
 package com.android.build.api.variant.impl
 
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
+import org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 
-interface KotlinMultiplatformAndroidCompilation: KotlinCompilation<KotlinCommonOptions>
+interface KotlinMultiplatformAndroidCompilation: KotlinCompilation<KotlinCommonOptions> {
+
+    override val compilerOptions: HasCompilerOptions<KotlinJvmCompilerOptions>
+}

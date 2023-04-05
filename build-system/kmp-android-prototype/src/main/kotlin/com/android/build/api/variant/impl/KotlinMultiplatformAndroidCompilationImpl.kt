@@ -16,11 +16,20 @@
 
 package com.android.build.api.variant.impl
 
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
+import org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions
 import org.jetbrains.kotlin.gradle.plugin.mpp.external.ExternalDecoratedKotlinCompilation
 
 class KotlinMultiplatformAndroidCompilationImpl(
     delegate: Delegate
-) : ExternalDecoratedKotlinCompilation(delegate), KotlinMultiplatformAndroidCompilation
+) : ExternalDecoratedKotlinCompilation(delegate), KotlinMultiplatformAndroidCompilation {
+
+    // This is a workaround for non-removable parametrization for compiler options, it should be
+    // safe to cast as the type will always be KotlinJvmCompilerOptions
+    @Suppress("UNCHECKED_CAST")
+    override val compilerOptions
+        get() = super.compilerOptions as HasCompilerOptions<KotlinJvmCompilerOptions>
+}
 
 internal enum class KmpPredefinedAndroidCompilation(val compilationName: String) {
     MAIN("main"),
