@@ -20,6 +20,12 @@ import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2
 import com.android.build.gradle.integration.common.fixture.model.BaseModelComparator
+import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.testutils.TestInputsGenerator
+import com.android.testutils.generateAarWithContent
+import com.android.utils.FileUtils
+import com.google.common.collect.ImmutableList
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -30,6 +36,43 @@ class KotlinMultiplatformModelSnapshotTest: BaseModelComparator {
         .fromTestProject("kotlinMultiplatform")
         .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
         .create()
+
+    @Before
+    fun setUp() {
+        // Add a local aar
+        FileUtils.join(
+            project.getSubproject("kmpFirstLib").projectDir,
+            "libs",
+            "local.aar"
+        ).apply {
+            parentFile.mkdir()
+            writeBytes(
+                generateAarWithContent(
+                    packageName = "com.example.aar",
+                    mainJar = TestInputsGenerator.jarWithEmptyClasses(ImmutableList.of("com/example/aar/AarClass")),
+                    resources = mapOf("values/strings.xml" to """<resources><string name="aar_string">Aar String</string></resources>""".toByteArray())
+                )
+            )
+        }
+
+        // Add a local jar
+        FileUtils.join(
+            project.getSubproject("kmpFirstLib").projectDir,
+            "libs",
+            "local.jar"
+        ).writeBytes(
+            TestInputsGenerator.jarWithEmptyClasses(ImmutableList.of("com/example/jar/JarClass"))
+        )
+
+        TestFileUtils.appendToFile(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            """
+                kotlin.sourceSets.getByName("androidMain").dependencies {
+                    implementation(files("libs/local.aar", "libs/local.jar"))
+                }
+            """.trimIndent()
+        )
+    }
 
     @Test
     fun testModels() {

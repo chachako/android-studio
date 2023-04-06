@@ -9,6 +9,26 @@
   {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
+      "{GRADLE_CACHE}/{CHECKSUM}/transformed/local-api.jar"
+    ],
+    "coordinates": "__local_aars__:{GRADLE_CACHE}/{CHECKSUM}/transformed/local-api.jar:unspecified",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "libs/local.jar"
+    ],
+    "coordinates": "__local_aars__:{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/libs/local.jar:unspecified",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
       "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.8.20-Beta/kotlin-stdlib-jdk8-1.8.20-Beta.jar"
     ],
     "coordinates": "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20-Beta",
