@@ -390,32 +390,36 @@ constructor(
     }
     val neutralPath = getPath(location.file, project)
     writeAttribute(writer, indent + 1, ATTR_FILE, neutralPath)
-    val start = location.start
-    if (start != null) {
-      val line = start.line
-      val column = start.column
-      if (line >= 0) {
-        // +1: Line numbers internally are 0-based, report should be
-        // 1-based.
-        writeAttribute(writer, indented, ATTR_LINE, (line + 1).toString())
-        if (column >= 0) {
-          writeAttribute(writer, indented, ATTR_COLUMN, (column + 1).toString())
-        }
-      }
-      if (type.includeOffsets()) {
-        writeAttribute(writer, indented, ATTR_START_OFFSET, start.offset.toString())
-        val end = location.end
-        if (end != null) {
-          if (line != -1) {
-            val endLine = end.line + 1
-            val endColumn = end.column + 1
-            writeAttribute(writer, indented, ATTR_END_LINE, endLine.toString())
-            writeAttribute(writer, indented, ATTR_END_COLUMN, endColumn.toString())
+
+    if (type != XmlFileType.BASELINE || !client.flags.isBaselineOmitLineNumbers) {
+      val start = location.start
+      if (start != null) {
+        val line = start.line
+        val column = start.column
+        if (line >= 0) {
+          // +1: Line numbers internally are 0-based, report should be
+          // 1-based.
+          writeAttribute(writer, indented, ATTR_LINE, (line + 1).toString())
+          if (column >= 0) {
+            writeAttribute(writer, indented, ATTR_COLUMN, (column + 1).toString())
           }
-          writeAttribute(writer, indented, ATTR_END_OFFSET, end.offset.toString())
+        }
+        if (type.includeOffsets()) {
+          writeAttribute(writer, indented, ATTR_START_OFFSET, start.offset.toString())
+          val end = location.end
+          if (end != null) {
+            if (line != -1) {
+              val endLine = end.line + 1
+              val endColumn = end.column + 1
+              writeAttribute(writer, indented, ATTR_END_LINE, endLine.toString())
+              writeAttribute(writer, indented, ATTR_END_COLUMN, endColumn.toString())
+            }
+            writeAttribute(writer, indented, ATTR_END_OFFSET, end.offset.toString())
+          }
         }
       }
     }
+
     location.message?.let { writeAttribute(writer, indented, ATTR_MESSAGE, it) }
 
     writer.write("/>\n")

@@ -1058,8 +1058,8 @@ class LintIssueDocGeneratorTest {
       "$relativePath needs to be updated to reflect changes to the lint command line flags.\n" +
         "***If you set the environment variable $ADT_SOURCE_TREE (or set it as a system property " +
         "in the test run config) this test can automatically create/edit the files for you!***",
+      newContents.dos2unix(),
       fileContents.dos2unix(),
-      newContents.dos2unix()
     )
   }
 

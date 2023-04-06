@@ -180,6 +180,7 @@ public class Main {
     private static final String ARG_UPDATE_BASELINE = "--update-baseline";
     private static final String ARG_CONTINUE_AFTER_BASELINE_CREATED =
             "--continue-after-baseline-created";
+    private static final String ARG_BASELINE_OMIT_LINE_NUMBERS = "--baseline-omit-line-numbers";
     private static final String ARG_WRITE_REF_BASELINE = "--write-reference-baseline";
     private static final String ARG_MISSING_BASELINE_IS_EMPTY_BASELINE =
             "--missing-baseline-is-empty-baseline";
@@ -1445,6 +1446,8 @@ public class Main {
                 flags.setUpdateBaseline(true);
             } else if (arg.equals(ARG_CONTINUE_AFTER_BASELINE_CREATED)) {
                 flags.setContinueAfterBaselineCreated(true);
+            } else if (arg.equals(ARG_BASELINE_OMIT_LINE_NUMBERS)) {
+                flags.setBaselineOmitLineNumbers(true);
             } else if (arg.equals(ARG_WRITE_REF_BASELINE)) {
                 if (index == args.length - 1) {
                     System.err.println("Missing baseline file path");
@@ -2216,6 +2219,8 @@ public class Main {
                             + ARG_UPDATE_BASELINE
                             + " is also used and there are lint issues, a new baseline file will "
                             + "be created, and the lint issues will be written to it.",
+                    ARG_BASELINE_OMIT_LINE_NUMBERS,
+                    "Omit line numbers when writing out the baseline file",
                     ARG_ALLOW_SUPPRESS,
                     "Whether to allow suppressing issues that have been explicitly registered "
                             + "as not suppressible.",

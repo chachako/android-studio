@@ -874,10 +874,12 @@ open class LintCliClient : LintClient {
     driver.allowSuppress = flags.allowSuppress
     driver.allowBaselineSuppress = flags.allowBaselineSuppress
     driver.skipAnnotations = flags.skipAnnotations
+    driver.baselineOmitLineNumbers = flags.isBaselineOmitLineNumbers
     val baselineFile = flags.baselineFile
     if (baselineFile != null) {
       val baseline = LintBaseline(this, baselineFile)
       driver.baseline = baseline
+      baseline.omitLineNumbers = driver.baselineOmitLineNumbers
       if (flags.isRemoveFixedBaselineIssues) {
         baseline.writeOnClose = true
         baseline.removeFixed = true

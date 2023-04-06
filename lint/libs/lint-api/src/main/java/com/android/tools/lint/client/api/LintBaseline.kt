@@ -99,6 +99,9 @@ class LintBaseline(
    */
   var removeFixed: Boolean = false
 
+  /** If true, line numbers are omitted when writing out the baseline file. */
+  var omitLineNumbers: Boolean = false
+
   /**
    * If non-null, a list of issues to write back out to the baseline file when the baseline is
    * closed.
@@ -563,7 +566,7 @@ class LintBaseline(
    * write a baseline file (since we need to sort them before writing out the result file, to ensure
    * stable files.)
    */
-  private class ReportedEntry(
+  private inner class ReportedEntry(
     val issue: Issue,
     val project: Project?,
     location: Location,
@@ -664,10 +667,10 @@ class LintBaseline(
           indent(writer, 2)
           writer.write("<")
           writer.write(TAG_LOCATION)
-          val path = getDisplayPath(client, project, currentLocation.file)
+          val path = getDisplayPath(client, project, currentLocation.file).replace('\\', '/')
           writeAttribute(writer, 3, ATTR_FILE, path)
           val line = currentLocation.line
-          if (line >= 0) {
+          if (line >= 0 && !omitLineNumbers) {
             // +1: Line numbers internally are 0-based, report should be
             // 1-based.
             writeAttribute(writer, 3, ATTR_LINE, (line + 1).toString())

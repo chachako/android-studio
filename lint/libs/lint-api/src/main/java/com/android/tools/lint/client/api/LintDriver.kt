@@ -274,6 +274,9 @@ class LintDriver(
   /** Whether dependent projects should be checked. */
   var checkDependencies = true
 
+  /** Whether to omit line numbers when writing out a baseline file. */
+  var baselineOmitLineNumbers = false
+
   /** Time the analysis started. */
   var analysisStartTime = System.currentTimeMillis()
 
@@ -594,7 +597,8 @@ class LintDriver(
       val mainConfiguration = lastProject.getConfiguration(this)
       val baselineFile = mainConfiguration.baselineFile
       if (baselineFile != null) {
-        baseline = LintBaseline(client, baselineFile)
+        baseline =
+          LintBaseline(client, baselineFile).also { it.omitLineNumbers = baselineOmitLineNumbers }
       }
     }
   }

@@ -839,6 +839,144 @@ class LintBaselineTest {
   }
 
   @Test
+  fun testWriteNewBaselineWithoutLineNumbers() {
+    // Makes sure that writing a new baseline file with --baseline-omit-line-numbers
+    // omits line numbers.
+    val root = temporaryFolder.newFolder().canonicalFile.absoluteFile
+
+    val testFile =
+      kotlin("""
+            package test.pkg
+            val path = "/sdcard/path"
+            """)
+        .indented()
+
+    val outputBaseline = File(root, "baseline-out.xml")
+    val project = lint().files(testFile).createProjects(root).single()
+    MainTest.checkDriver(
+      // Expected output
+      "src/test/pkg/test.kt:2: Warning: Do not hardcode \"/sdcard/\"; use Environment.getExternalStorageDirectory().getPath() instead [SdCardPath]\n" +
+        "0 errors, 1 warnings",
+      // Expected error
+      "",
+      // Expected exit code
+      ERRNO_SUCCESS,
+      arrayOf(
+        "--check",
+        "SdCardPath",
+        "--nolines",
+        "--write-reference-baseline",
+        outputBaseline.path,
+        "--baseline-omit-line-numbers",
+        "--disable",
+        "LintError",
+        project.path
+      ),
+      { it.replace(root.path, "ROOT") },
+      null
+    )
+
+    @Language("XML")
+    val expected =
+      """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <issues>
+
+                <issue
+                    id="SdCardPath"
+                    message="Do not hardcode &quot;/sdcard/&quot;; use `Environment.getExternalStorageDirectory().getPath()` instead">
+                    <location
+                        file="src/test/pkg/test.kt"/>
+                </issue>
+
+            </issues>
+        """
+        .trimIndent()
+    assertEquals(expected, readBaseline(outputBaseline))
+  }
+
+  @Test
+  fun testUpdateBaselineWithoutLineNumbers() {
+    // Makes sure that updating an existing baseline file with --baseline-omit-line-numbers
+    // omits line numbers.
+    val root = temporaryFolder.newFolder().canonicalFile.absoluteFile
+
+    val testFile =
+      kotlin("""
+            package test.pkg
+            val path = "/sdcard/path"
+            """)
+        .indented()
+
+    val existingBaseline = File(root, "baseline.xml")
+    existingBaseline.writeText(
+      // language=XML
+      """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <issues>
+
+                <issue
+                    id="SdCardPath"
+                    message="Do not hardcode &quot;/sdcard/&quot;; use `Environment.getExternalStorageDirectory().getPath()` instead">
+                    <location
+                        file="src/test/pkg/test.kt"
+                        line="2"
+                        column="13"/>
+                </issue>
+
+            </issues>
+        """
+        .trimIndent()
+    )
+    val project = lint().files(testFile).createProjects(root).single()
+    MainTest.checkDriver(
+      // Expected output
+      """
+        ../baseline.xml: Information: 1 warning was filtered out because it is listed in the baseline file, ../baseline.xml
+         [LintBaseline]
+        0 errors, 0 warnings (1 warning filtered by baseline baseline.xml)
+        """
+        .trimIndent(),
+      // Expected error
+      "",
+      // Expected exit code
+      ERRNO_CREATED_BASELINE,
+      arrayOf(
+        "--check",
+        "SdCardPath",
+        "--nolines",
+        "--baseline",
+        existingBaseline.path,
+        "--update-baseline",
+        "--baseline-omit-line-numbers",
+        "--disable",
+        "LintError",
+        project.path
+      ),
+      { it.replace(root.path, "ROOT") },
+      null
+    )
+
+    @Language("XML")
+    val expected =
+      """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <issues>
+
+                <issue
+                    id="SdCardPath"
+                    message="Do not hardcode &quot;/sdcard/&quot;; use `Environment.getExternalStorageDirectory().getPath()` instead">
+                    <location
+                        file="src/test/pkg/test.kt"/>
+                </issue>
+
+            </issues>
+        """
+        .trimIndent()
+    assertEquals(expected, readBaseline(existingBaseline))
+  }
+
+  @Test
   fun testPlatformTestCase() {
     val baselineFile = temporaryFolder.newFile("baseline.xml")
 

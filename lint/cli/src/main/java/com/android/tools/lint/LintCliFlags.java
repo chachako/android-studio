@@ -74,6 +74,7 @@ public class LintCliFlags {
     private boolean removedFixedBaselineIssues;
     private boolean missingBaselineIsEmptyBaseline;
     private boolean updateBaseline;
+    private boolean baselineOmitLineNumbers;
     private boolean continueAfterBaselineCreated;
     private boolean autoFix = VALUE_TRUE.equals(System.getProperty("lint.autofix"));
     private boolean abortOnAutoFix;
@@ -796,6 +797,16 @@ public class LintCliFlags {
     /** If true, continue normally even after a baseline file has been created. */
     public void setContinueAfterBaselineCreated(boolean continueAfterBaselineCreated) {
         this.continueAfterBaselineCreated = continueAfterBaselineCreated;
+    }
+
+    /** If true, omit line numbers when writing out a baseline file. */
+    public boolean isBaselineOmitLineNumbers() {
+        return baselineOmitLineNumbers;
+    }
+
+    /** If true, omit line numbers when writing out a baseline file. */
+    public void setBaselineOmitLineNumbers(boolean baselineOmitLineNumbers) {
+        this.baselineOmitLineNumbers = baselineOmitLineNumbers;
     }
 
     /**
