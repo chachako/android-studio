@@ -1,0 +1,34 @@
+@@ -5 +5
++       "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug-api.jar"
++     ],
++     "coordinates": "com.example:androidLib:1.0",
++     "extras": {
++       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
++     }
++   },
++   {
++     "binaryType": "KOTLIN_COMPILE",
++     "classpath": [
++       "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib-api.jar"
++     ],
++     "coordinates": "com.example:kmpSecondLib-android:1.0",
++     "extras": {
++       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
++     }
++   },
++   {
++     "binaryType": "KOTLIN_COMPILE",
++     "classpath": [
++       "testRepo/com/example/kmpJvmOnly-jvm/1.0/kmpJvmOnly-jvm-1.0.jar"
++     ],
++     "coordinates": "com.example:kmpJvmOnly-jvm:1.0",
++     "extras": {
++       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver",
++       "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;sourcesClasspath": [
++         "testRepo/com/example/kmpJvmOnly-jvm/1.0/kmpJvmOnly-jvm-1.0-sources.jar"
++       ]
++     }
++   },
++   {
++     "binaryType": "KOTLIN_COMPILE",
++     "classpath": [

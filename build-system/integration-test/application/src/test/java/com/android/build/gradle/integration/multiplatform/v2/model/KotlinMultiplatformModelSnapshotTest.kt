@@ -18,7 +18,6 @@ package com.android.build.gradle.integration.multiplatform.v2.model
 
 import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
-import com.android.build.gradle.integration.common.fixture.ModelContainerV2
 import com.android.build.gradle.integration.common.fixture.model.BaseModelComparator
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.TestInputsGenerator
@@ -76,30 +75,11 @@ class KotlinMultiplatformModelSnapshotTest: BaseModelComparator {
 
     @Test
     fun testModels() {
-        val buildMap = mapOf(
-            ModelContainerV2.ROOT_BUILD_ID to ModelContainerV2.BuildInfo(
-                name = "kotlinMultiplatform",
-                rootDir = project.projectDir,
-                projects = project.settingsFile.readText().split("\n").mapNotNull {
-                    it.takeIf { it.startsWith("include ") }?.substringAfter("include ")
-                        ?.trim('\'', ':')?.let { it to project.getSubproject(it).projectDir }
-                }
-            )
-        )
-
-        val comparator = KmpModelComparator(
+        KmpModelComparator(
             project = project,
             testClass = this
-        )
-
-        comparator.fetchAndCompareModelForProject(
-            projectPath = ":kmpFirstLib",
-            buildMap = buildMap
-        )
-
-        comparator.fetchAndCompareModelForProject(
-            projectPath = ":kmpSecondLib",
-            buildMap = buildMap
+        ).fetchAndCompareModels(
+            listOf(":kmpFirstLib", ":kmpSecondLib")
         )
     }
 }

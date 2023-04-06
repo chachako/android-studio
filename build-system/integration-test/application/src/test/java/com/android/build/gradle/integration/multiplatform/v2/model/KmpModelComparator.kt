@@ -19,10 +19,12 @@ package com.android.build.gradle.integration.multiplatform.v2.model
 import com.android.SdkConstants.DOT_JSON
 import com.android.build.gradle.integration.common.fixture.FileNormalizerImpl
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.fixture.ModelContainerV2
 import com.android.build.gradle.integration.common.fixture.model.BaseModelComparator
 import com.android.build.gradle.integration.common.fixture.model.BasicComparator
+import com.android.build.gradle.integration.multiplatform.v2.getBuildMap
+import com.android.testutils.TestUtils
 import com.android.utils.FileUtils
+import com.google.common.truth.Truth
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 
@@ -31,10 +33,12 @@ class KmpModelComparator(
     private val project: GradleTestProject,
 ): BasicComparator(testClass) {
 
-    fun fetchAndCompareModelForProject(
+    private val buildMap = project.getBuildMap()
+
+    private fun fetchModels(
         projectPath: String,
-        buildMap: Map<String, ModelContainerV2.BuildInfo>,
-    ) {
+        printModelToStdout: Boolean = true
+    ): Map<String, String> {
         val executor = project.executor()
         executor.run("$projectPath:resolveIdeDependencies")
 
@@ -60,7 +64,7 @@ class KmpModelComparator(
 
         val gson = GsonBuilder().setPrettyPrinting().create()
 
-        outputFolder.listFiles()!!.forEach { jsonReport ->
+        return outputFolder.listFiles()!!.associate { jsonReport ->
             val sourceSetName = jsonReport.name.removeSuffix(DOT_JSON)
 
             val content = normalizer.normalize(
@@ -70,17 +74,73 @@ class KmpModelComparator(
             ).let {
                 gson.toJson(it)
             }.also {
-                generateStdoutHeader(normalizer)
-                println(it)
+                if (printModelToStdout) {
+                    generateStdoutHeader(normalizer)
+                    println(it)
+                }
             }
 
-            runComparison(
-                name = projectPath.substringAfterLast(":") + "/" + sourceSetName,
-                actualContent = content,
-                goldenFile = projectPath
-                    .removePrefix(":")
-                    .replace(':', '_') + "_" + sourceSetName
+            sourceSetName to content
+        }
+    }
+
+    fun fetchAndCompareModels(
+        projects: List<String>,
+    ) {
+        projects.forEach { projectPath ->
+            fetchModels(projectPath).forEach { (sourceSetName, content) ->
+                runComparison(
+                    name = projectPath.substringAfterLast(":") + "/" + sourceSetName,
+                    actualContent = content,
+                    goldenFile = projectPath
+                        .removePrefix(":")
+                        .replace(':', '_') + "_" + sourceSetName
+                )
+            }
+        }
+    }
+
+    fun compareModelDeltaAfterChange(
+        projects: List<String>,
+        action: () -> Unit
+    ) {
+        val baseModels = projects.associateWith { projectPath ->
+            fetchModels(
+                projectPath, printModelToStdout = false
             )
+        }
+        action()
+        val changedModels = projects.associateWith { projectPath ->
+            fetchModels(
+                projectPath, printModelToStdout = false
+            )
+        }
+
+        projects.forEach { projectPath ->
+            val projectBaseModels = baseModels[projectPath]!!
+            val projectChangedModels = changedModels[projectPath]!!
+
+            Truth.assertWithMessage(
+                "Expected the same sourceSets after change."
+            ).that(
+                projectBaseModels.keys
+            ).containsExactlyElementsIn(projectChangedModels.keys)
+
+            projectBaseModels.keys.forEach { sourceSetName ->
+                val baseModel = projectBaseModels[sourceSetName]!!
+                val changedModel = projectChangedModels[sourceSetName]!!
+
+                runComparison(
+                    name = projectPath.substringAfterLast(":") + "/" + sourceSetName,
+                    actualContent = TestUtils.getDiff(
+                        baseModel,
+                        changedModel
+                    ),
+                    goldenFile = projectPath
+                        .removePrefix(":")
+                        .replace(':', '_') + "_" + sourceSetName
+                )
+            }
         }
     }
 }

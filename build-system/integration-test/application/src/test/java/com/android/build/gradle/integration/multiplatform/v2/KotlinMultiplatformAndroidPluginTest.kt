@@ -25,7 +25,6 @@ import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.apk.Aar
 import com.android.testutils.apk.Apk
 import com.android.utils.FileUtils
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Before
@@ -55,105 +54,9 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
 
     @Before
     fun setUpProject() {
-        if (!publishLibs) {
-            return
+        if (publishLibs) {
+            project.publishLibs()
         }
-
-        // We can't publish android libraries with JVM target enabled, the issue should be fixed
-        // with kotlin 1.9.0 (https://youtrack.jetbrains.com/issue/KT-51940).
-        TestFileUtils.searchAndReplace(
-            project.getSubproject("kmpSecondLib").ktsBuildFile,
-            "jvm()",
-            ""
-        )
-
-        TestFileUtils.appendToFile(
-            project.settingsFile,
-            """
-                dependencyResolutionManagement {
-                    repositories {
-                        maven {
-                            url 'testRepo'
-                        }
-                    }
-                }
-            """.trimIndent()
-        )
-
-        TestFileUtils.searchAndReplace(
-            project.getSubproject("kmpFirstLib").ktsBuildFile,
-            "project(\":kmpSecondLib\")",
-            "\"com.example:kmpSecondLib-android:1.0\""
-        )
-
-        TestFileUtils.searchAndReplace(
-            project.getSubproject("kmpFirstLib").ktsBuildFile,
-            "project(\":androidLib\")",
-            "\"com.example:androidLib:1.0\""
-        )
-
-        TestFileUtils.searchAndReplace(
-            project.getSubproject("kmpFirstLib").ktsBuildFile,
-            "project(\":kmpJvmOnly\")",
-            "\"com.example:kmpJvmOnly:1.0\""
-        )
-
-        TestFileUtils.searchAndReplace(
-            project.getSubproject("app").ktsBuildFile,
-            "project(\":kmpFirstLib\")",
-            "\"com.example:kmpFirstLib-android:1.0\""
-        )
-
-        listOf("androidLib", "kmpFirstLib", "kmpSecondLib", "kmpJvmOnly").forEach { projectName ->
-            TestFileUtils.searchAndReplace(
-                project.getSubproject(projectName).ktsBuildFile,
-                "plugins {",
-                "plugins {\n  id(\"maven-publish\")"
-            )
-
-            TestFileUtils.appendToFile(project.getSubproject(projectName).ktsBuildFile,
-                """
-                    group = "com.example"
-                    version = "1.0"
-                    publishing {
-                      repositories {
-                        maven {
-                          url = uri("../testRepo")
-                        }
-                      }
-                    }
-                """.trimIndent()
-            )
-        }
-
-        // set up publishing for android lib
-        TestFileUtils.appendToFile(
-            project.getSubproject("androidLib").ktsBuildFile,
-            """
-                android {
-                  publishing {
-                    multipleVariants("all") {
-                      allVariants()
-                    }
-                  }
-                }
-
-                afterEvaluate {
-                  publishing {
-                    publications {
-                      create<MavenPublication>("all") {
-                        from(components["all"])
-                      }
-                    }
-                  }
-                }
-            """.trimIndent()
-        )
-
-        project.executor().run(":androidLib:publish")
-        project.executor().run(":kmpSecondLib:publish")
-        project.executor().run(":kmpJvmOnly:publish")
-        project.executor().run(":kmpFirstLib:publish")
     }
 
     @Test
