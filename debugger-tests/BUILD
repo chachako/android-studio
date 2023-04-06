@@ -1,3 +1,4 @@
+load("//tools/adt/idea/android/integration:build_defs.bzl", "INTEGRATION_TEST_SYSTEM_IMAGE")
 load("//tools/base/bazel:bazel.bzl", "iml_module")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 
@@ -37,7 +38,12 @@ java_binary(
 kotlin_test(
     name = "tests",
     srcs = glob(["testSrc/**/*.kt"]),
-    data = glob(["resources/**"]) + [":test-classes-binary_deploy.jar"],
+    data = glob(["resources/**"]) + [
+        ":test-classes-binary_deploy.jar",
+        "//prebuilts/studio/sdk:emulator",
+        "//prebuilts/studio/sdk:platform-tools",
+        INTEGRATION_TEST_SYSTEM_IMAGE,
+    ],
     friends = [":debugger"],
     jvm_flags = [
         "-Dtest.suite.jar=tests.jar",
@@ -47,6 +53,7 @@ kotlin_test(
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
         ":debugger",
+        "//tools/adt/idea/as-driver:as-driver.utils_testlib",
         "//tools/base/testutils:tools.testutils",
         "@maven//:com.google.truth.truth",
         "@maven//:junit.junit",
@@ -86,6 +93,7 @@ iml_module(
     # do not sort: must match IML order
     deps = [
         "//prebuilts/studio/intellij-sdk:studio-sdk",
+        "//tools/adt/idea/as-driver:as-driver.utils[module, test]",
         "//tools/adt/idea/.idea/libraries:jetbrains.kotlinx.coroutines.test[test]",
         "//tools/adt/idea/.idea/libraries:mockito[test]",
         "//tools/adt/idea/.idea/libraries:truth[test]",
