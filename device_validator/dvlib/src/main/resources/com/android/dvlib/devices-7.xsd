@@ -48,7 +48,7 @@
       </xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
-      <xsd:element name="device" maxOccurs="unbounded">
+      <xsd:element name="device" minOccurs="0" maxOccurs="unbounded">
         <xsd:annotation>
           <xsd:documentation xml:lang="en">
             A device element contains one hardware profile for a device, along with
