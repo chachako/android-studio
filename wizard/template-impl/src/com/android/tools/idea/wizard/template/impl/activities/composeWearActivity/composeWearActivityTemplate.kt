@@ -146,7 +146,7 @@ val composeWearActivityWithTileAndComplicationTemplate
             constraints = listOf(CLASS, UNIQUE, NONEMPTY)
         }
         val complicationServiceClass = stringParameter {
-            name = "Tile Service Name"
+            name = "Complication Service Name"
             default = "MainComplicationService"
             help = "The name of the complication service class to create"
             constraints = listOf(CLASS, UNIQUE, NONEMPTY)
