@@ -68,5 +68,35 @@
         "{LOCAL_REPO}/org/jetbrains/annotations/13.0/annotations-13.0-sources.jar"
       ]
     }
+  },
+  {
+    "type": "Regular",
+    "coordinates": ":androidLib",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;artifactsClasspath": [
+        "androidLib/build/intermediates/full_jar/typeoneModetwoDebug/full.jar"
+      ],
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
+    }
+  },
+  {
+    "type": "Regular",
+    "coordinates": ":kmpSecondLib",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;artifactsClasspath": [
+        "kmpSecondLib/build/intermediates/full_jar/kotlinAndroid/full.jar"
+      ],
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
+    }
+  },
+  {
+    "type": "Regular",
+    "coordinates": ":kmpJvmOnly",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;artifactsClasspath": [
+        "kmpJvmOnly/build/libs/kmpJvmOnly-jvm.jar"
+      ],
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
+    }
   }
 ]

@@ -71,5 +71,25 @@
         "{LOCAL_REPO}/org/jetbrains/annotations/13.0/annotations-13.0-sources.jar"
       ]
     }
+  },
+  {
+    "type": "Regular",
+    "coordinates": ":kmpFirstLib",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;artifactsClasspath": [
+        "build/intermediates/full_jar/kotlinAndroid/full.jar"
+      ],
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
+    }
+  },
+  {
+    "type": "Regular",
+    "coordinates": ":androidLib",
+    "extras": {
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;artifactsClasspath": [
+        "androidLib/build/intermediates/full_jar/typeoneModetwoDebug/full.jar"
+      ],
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
+    }
   }
 ]

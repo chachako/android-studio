@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.ide.kmp
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker.Companion.android
 import com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver
+import com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver
@@ -56,6 +57,15 @@ object KotlinIdeImportConfigurator {
 
         service.registerDependencyResolver(
             resolver = BinaryDependencyResolver(
+                sourceSetToCreationConfigMap = sourceSetToCreationConfigMapProvider
+            ),
+            constraint = androidSourceSetFilter,
+            phase = resolutionPhase,
+            level = resolutionLevel
+        )
+
+        service.registerDependencyResolver(
+            resolver = ProjectDependencyResolver(
                 sourceSetToCreationConfigMap = sourceSetToCreationConfigMapProvider
             ),
             constraint = androidSourceSetFilter,

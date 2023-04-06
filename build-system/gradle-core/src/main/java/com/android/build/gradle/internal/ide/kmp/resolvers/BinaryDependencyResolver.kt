@@ -41,27 +41,20 @@ import org.jetbrains.kotlin.tooling.core.mutableExtrasOf
  * An implementation of [IdeDependencyResolver] that resolves library dependencies.
  */
 internal class BinaryDependencyResolver(
-    private val sourceSetToCreationConfigMap: () -> Map<KotlinSourceSet, KmpComponentCreationConfig>
-) : IdeDependencyResolver {
+    sourceSetToCreationConfigMap: () -> Map<KotlinSourceSet, KmpComponentCreationConfig>
+) : BaseIdeDependencyResolver(
+    sourceSetToCreationConfigMap
+) {
     private val logger = Logging.getLogger(BinaryDependencyResolver::class.java)
 
     override fun resolve(sourceSet: KotlinSourceSet): Set<IdeaKotlinDependency> {
         val component = sourceSetToCreationConfigMap()[sourceSet] ?: return emptySet()
 
-        val artifacts = component
-            .variantDependencies
-            .compileClasspath
-            .incoming
-            .artifactView { config ->
-                config.lenient(true)
-                config.componentFilter {
-                    it !is ProjectComponentIdentifier
-                }
-                config.attributes.attribute(
-                    AndroidArtifacts.ARTIFACT_TYPE,
-                    AndroidArtifacts.ArtifactType.CLASSES_JAR.type
-                )
-            }.artifacts
+        val artifacts =
+            getArtifactsForComponent(
+                component,
+                AndroidArtifacts.ArtifactType.CLASSES_JAR
+            ) { it !is ProjectComponentIdentifier }
 
         val unresolvedDependencies = artifacts.failures
             .onEach { reason -> logger.error("Failed to resolve platform dependency on ${sourceSet.name}", reason) }

@@ -9,3 +9,14 @@
 +   {
 +     "binaryType": "KOTLIN_COMPILE",
 +     "classpath": [
+@@ -140 +150
+-   },
+-   {
+-     "type": "Regular",
+-     "coordinates": ":androidLib",
+-     "extras": {
+-       "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;artifactsClasspath": [
+-         "androidLib/build/intermediates/full_jar/typeoneModetwoDebug/full.jar"
+-       ],
+-       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
+-     }
