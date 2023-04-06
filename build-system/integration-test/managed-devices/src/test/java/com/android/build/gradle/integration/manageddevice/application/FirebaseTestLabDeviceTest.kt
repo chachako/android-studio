@@ -195,4 +195,56 @@ class FirebaseTestLabDeviceTest {
             assertThat(it).contains("directoriesToPull = [/sdcard/Android/data/com.example.myapplication]")
         }
     }
+
+    @Test
+    fun managedDevicesAddsAllDevices() {
+        project.getSubproject("app").buildFile.appendText("""
+            android {
+                testOptions {
+                    managedDevices {
+                        deviceGroups {
+                            ftlDevices {
+                                // devices added to firebaseTestLab.manageddevices
+                                // should be available through allDevices
+                                targetDevices.add(allDevices.myFtlDevice1)
+                                targetDevices.add(allDevices.myFtlDevice2)
+                            }
+                        }
+                    }
+                }
+            }
+        """.trimIndent())
+        val result = executor.run("tasks")
+        result.stdout.use {
+            assertThat(it).contains("ftlDevicesGroupCheck")
+            assertThat(it).contains("ftlDevicesGroupDebugAndroidTest")
+        }
+    }
+
+    @Test
+    fun managedDevicesRemovesAllDevices() {
+        project.getSubproject("app").buildFile.appendText("""
+            firebaseTestLab {
+                managedDevices.remove(managedDevices.myFtlDevice1)
+            }
+        """.trimIndent())
+
+        val result = executor.run("tasks")
+        // b/c stdout is a scanner, we have to start over every time we search for something
+        // that does not exist.
+        result.stdout.use {
+            assertThat(it).doesNotContain("myFtlDevice1Check")
+        }
+        result.stdout.use {
+            assertThat(it).doesNotContain("myFtlDevice1DebugAndroidTest")
+        }
+        result.stdout.use {
+            assertThat(it).contains("myFtlDevice2Check")
+            assertThat(it).contains("myFtlDevice2DebugAndroidTest")
+            assertThat(it).contains("myFtlDevice3Check")
+            assertThat(it).contains("myFtlDevice3DebugAndroidTest")
+            assertThat(it).contains("myFtlDevice4Check")
+            assertThat(it).contains("myFtlDevice4DebugAndroidTest")
+        }
+    }
 }

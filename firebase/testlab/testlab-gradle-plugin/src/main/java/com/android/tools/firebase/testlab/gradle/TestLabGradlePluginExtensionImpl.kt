@@ -16,6 +16,7 @@
 
 package com.android.tools.firebase.testlab.gradle
 
+import com.android.build.api.dsl.Device
 import com.android.build.api.dsl.ManagedDevices
 import com.google.firebase.testlab.gradle.ManagedDevice
 import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
@@ -29,6 +30,7 @@ abstract class TestLabGradlePluginExtensionImpl @Inject constructor(
     objectFactory: ObjectFactory,
     devicesBlock: ManagedDevices
 ): TestLabGradlePluginExtension {
+
     override val managedDevices: NamedDomainObjectContainer<ManagedDevice> =
         objectFactory.domainObjectContainer(
             ManagedDevice::class.java,
@@ -37,9 +39,27 @@ abstract class TestLabGradlePluginExtensionImpl @Inject constructor(
             whenObjectAdded { device: ManagedDevice ->
                 devicesBlock.devices.add(device)
             }
+            whenObjectRemoved { device: ManagedDevice ->
+                devicesBlock.devices.remove(device)
+            }
         }
-    override val testOptions: TestOptions = objectFactory.newInstance(TestOptionsImpl::class.java)
 
+    init {
+        devicesBlock.devices.apply {
+            whenObjectAdded { device: Device ->
+                if (device is ManagedDevice) {
+                    managedDevices.add(device)
+                }
+            }
+            whenObjectRemoved { device: Device ->
+                if (device is ManagedDevice) {
+                    managedDevices.remove(device)
+                }
+            }
+        }
+    }
+
+    override val testOptions: TestOptions = objectFactory.newInstance(TestOptionsImpl::class.java)
     override fun testOptions(action: TestOptions.() -> Unit) {
         testOptions.action()
     }
