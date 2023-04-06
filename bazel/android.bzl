@@ -116,28 +116,43 @@ def _aidl_to_java(filename, output_dir):
     segments = filename.split("/")
     return output_dir + "/" + "/".join(segments[segments.index("aidl") + 1:])
 
+def _parent_directory(file):
+    """Returns the name of the directory containg the file."""
+
+    segments = file.split("/")
+    return "/".join(segments[:-1])
+
+def _name(file):
+    """Returns the name of the file."""
+
+    return file.split("/")[-1]
+
 def aidl_library(name, srcs = [], visibility = None, tags = [], deps = []):
     """Builds a Java library out of .aidl files."""
 
-    gen_name = name + "_gen_aidl"
-    intermediates = [_aidl_to_java(filename, gen_name) for filename in srcs]
-    cmd = ("LD_LIBRARY_PATH=$(location //prebuilts/studio/sdk:build-tools/latest/aidl)/../lib64" +
-           " $(location //prebuilts/studio/sdk:build-tools/latest/aidl)" +
-           " -p$(location //prebuilts/studio/sdk:platforms/latest/framework.aidl)" +
-           " $< -o$(RULEDIR)/" + gen_name)
     tools = [
         "//prebuilts/studio/sdk:build-tools/latest",
         "//prebuilts/studio/sdk:build-tools/latest/aidl",
         "//prebuilts/studio/sdk:platforms/latest/framework.aidl",
     ]
-    native.genrule(
-        name = gen_name,
-        srcs = srcs,
-        outs = intermediates,
-        tags = tags,
-        cmd = cmd,
-        tools = tools,
-    )
+    gen_dir = name + "_gen_aidl"
+    for src in srcs:
+        gen_name = name + "_gen_" + _name(src).replace(".", "_")
+        java_file = _aidl_to_java(src, gen_dir)
+        cmd = ("LD_LIBRARY_PATH=$(location //prebuilts/studio/sdk:build-tools/latest/aidl)/../lib64" +
+               " $(location //prebuilts/studio/sdk:build-tools/latest/aidl)" +
+               " -p$(location //prebuilts/studio/sdk:platforms/latest/framework.aidl)" +
+               " $< -o$(RULEDIR)/" + gen_dir)
+        native.genrule(
+            name = gen_name,
+            srcs = [src],
+            outs = [java_file],
+            tags = tags,
+            cmd = cmd,
+            tools = tools,
+        )
+
+    intermediates = [_aidl_to_java(src, gen_dir) for src in srcs]
     native.java_library(
         name = name,
         srcs = intermediates,
