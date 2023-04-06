@@ -27,5 +27,7 @@ abstract class ExecutionImpl : Execution {
         failFast = false
 
         numUniformShards = 0
+
+        targetedShardDurationMinutes = 0
     }
 }

@@ -161,8 +161,14 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             @Key var numShards: Int? = null
         }
 
+        class SmartSharding: GenericJson() {
+            @Key var targetedShardDuration: String? = null
+        }
+
         class ShardingOption: GenericJson() {
             @Key var uniformSharding: UniformSharding? = null
+
+            @Key var smartSharding: SmartSharding? = null
         }
     }
 
@@ -179,6 +185,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val maxTestReruns: Property<Int>
         val failFast: Property<Boolean>
         val numUniformShards: Property<Int>
+        val targetedShardDurationMinutes: Property<Int>
         val grantedPermissions: Property<String>
         val extraDeviceFiles: MapProperty<String, String>
         val networkProfile: Property<String>
@@ -206,8 +213,12 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
     internal open val httpTransport: HttpTransport
         get() = GoogleNetHttpTransport.newTrustedTransport()
+
     val numUniformShards: Int
-        get() = parameters.numUniformShards.getOrNull() ?: 0
+        get() = parameters.numUniformShards.get()
+
+    val targetedShardDurationMinutes: Int
+        get() = parameters.targetedShardDurationMinutes.get()
 
     fun runTestsOnDevice(
         deviceName: String,
@@ -488,13 +499,24 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         return catalog.androidDeviceCatalog
     }
 
-    private fun createShardingOption(): ShardingOption? {
-        if (numUniformShards == 0) {
-            return null
+    private fun createShardingOption(): ShardingOption? = when {
+
+        numUniformShards == 0 && targetedShardDurationMinutes == 0 -> null
+        numUniformShards != 0 && targetedShardDurationMinutes != 0 -> {
+            error("""
+                Only one sharding option should be set for "numUniformShards" or
+                "targetedShardDurationMinutes" in firebaseTestLab.testOptions.execution.
+            """.trimIndent())
+
         }
-        return ShardingOption().apply {
+        numUniformShards != 0 -> ShardingOption().apply {
             uniformSharding = UniformSharding().apply {
                 numShards = numUniformShards
+            }
+        }
+        else -> ShardingOption().apply {
+            smartSharding = SmartSharding().apply {
+                targetedShardDuration = "${targetedShardDurationMinutes * 60}s"
             }
         }
     }
@@ -1063,6 +1085,9 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             })
             params.numUniformShards.set( providerFactory.provider {
                 testLabExtension.testOptions.execution.numUniformShards
+            })
+            params.targetedShardDurationMinutes.set(providerFactory.provider {
+                testLabExtension.testOptions.execution.targetedShardDurationMinutes
             })
             params.grantedPermissions.set(providerFactory.provider {
                 testLabExtension.testOptions.fixture.grantedPermissions
