@@ -15,7 +15,9 @@
  */
 package com.android.tools.debuggertests
 
-import com.android.tools.debuggertests.Engine.EngineType
+import com.android.tools.debuggertests.EngineType.ANDROID
+import com.android.tools.debuggertests.EngineType.JVM
+import com.android.tools.debuggertests.EngineType.SIMPLE
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
@@ -40,6 +42,7 @@ fun main(args: Array<String>) {
   val verbose by parser.option(ArgType.Boolean, shortName = "v").default(false)
   val noop by parser.option(ArgType.Boolean, shortName = "n").default(false)
   val type by parser.option(ArgType.Choice<EngineType>(), shortName = "t")
+  val serialNumber by parser.option(ArgType.String, shortName = "s")
   val tests by parser.argument(ArgType.String).vararg().optional()
   parser.parse(args)
 
@@ -49,16 +52,21 @@ fun main(args: Array<String>) {
   val engineTypes = if (t != null) listOf(t) else EngineType.values().asList()
   engineTypes.forEach { engineType ->
     println("Running tests for engine: $engineType")
+
     testClasses.forEach { testClass ->
       println("  Test $testClass")
-      engineType.getEngine(testClass).use { engine ->
-        val actual = runBlocking { withTimeout(30.seconds) { engine.runTest() } }
-        if (!noop) {
-          Resources.writeGolden(testClass, actual, engineType.name.lowercase())
+      val engine =
+        when (engineType) {
+          SIMPLE -> SimpleEngine(testClass)
+          JVM -> JvmEngine(testClass)
+          ANDROID -> AndroidEngine(testClass, serialNumber)
         }
-        if (verbose) {
-          println(actual)
-        }
+      val actual = runBlocking { withTimeout(30.seconds) { engine.runTest() } }
+      if (!noop) {
+        Resources.writeGolden(testClass, actual, engine.vmName)
+      }
+      if (verbose) {
+        println(actual)
       }
     }
   }

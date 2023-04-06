@@ -15,22 +15,8 @@
  */
 package com.android.tools.debuggertests
 
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
-import org.junit.runners.Parameterized.Parameters
-
-/** Runs tests using a [SimpleEngine] */
-@RunWith(Parameterized::class)
-internal class SimpleEngineDebuggerTest(testClass: String) : DebuggerTestBase(testClass) {
-
-  companion object {
-
-    @JvmStatic @Parameters fun getTestClasses() = Resources.findTestClasses()
-  }
-
-  @Test
-  fun test() {
-    runTest(SimpleEngine(testClass))
-  }
+internal enum class EngineType {
+  SIMPLE,
+  JVM,
+  ANDROID,
 }

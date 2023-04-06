@@ -25,7 +25,7 @@ private const val BREAKPOINT_CLASS = "BreakpointKt"
 private const val BREAKPOINT_LINE = 20
 
 /** A simple test engine */
-internal abstract class Engine : Closeable {
+internal abstract class Engine(val vmName: String) : Closeable {
 
   protected abstract suspend fun startDebugger(): Debugger
 
@@ -68,15 +68,6 @@ internal abstract class Engine : Closeable {
       }
     }
     return actual
-  }
-
-  enum class EngineType(private val factory: (String) -> Engine) {
-    SIMPLE(::SimpleEngine),
-    JVM(::JvmEngine),
-    ANDROID(::AndroidEngine),
-    ;
-
-    fun getEngine(testName: String) = factory(testName)
   }
 }
 

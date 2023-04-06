@@ -41,7 +41,7 @@ private val JAVA = if (isWindows()) "java.exe" else "java"
  *
  * Starts a java process and connects to it using the socket JDWP transport.
  */
-internal class JvmEngine(private val mainClass: String) : Engine() {
+internal class JvmEngine(private val mainClass: String) : Engine("jvm") {
 
   private lateinit var process: Process
   private val scope = CoroutineScope(SupervisorJob())

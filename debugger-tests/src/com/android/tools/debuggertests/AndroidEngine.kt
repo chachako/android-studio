@@ -29,14 +29,14 @@ import kotlinx.coroutines.withContext
 
 private const val DEVICE_DEX_PATH = "/data/local/tmp/test-classes-dex.jar"
 private const val JDWP_PORT = 54321
-private const val PUSH_COMMAND = "adb push %s %s"
+private const val PUSH_COMMAND = "%s push %s %s"
 private const val LAUNCH_COMMAND =
-  "adb shell dalvikvm" +
+  "%s shell dalvikvm" +
     " -classpath %s" +
     " -XjdwpProvider:adbconnection" +
     " -XjdwpOptions:server=y" +
     " MainKt -dalvik %s"
-private const val PORT_FORWARD_COMMAND = "adb forward tcp:%d jdwp:%d"
+private const val PORT_FORWARD_COMMAND = "%s forward tcp:%d jdwp:%d"
 
 /**
  * An [Engine] runs on an Android device.
@@ -47,9 +47,13 @@ private const val PORT_FORWARD_COMMAND = "adb forward tcp:%d jdwp:%d"
  *
  * TODO: Add support for specifying a serial number
  */
-internal class AndroidEngine(private val mainClass: String) : Engine() {
+internal class AndroidEngine(private val mainClass: String, serialNumber: String? = null) :
+  Engine("dalvik") {
+
+  private val adb = if (serialNumber == null) "adb" else "adb -s $serialNumber"
 
   private lateinit var process: Process
+
   private val scope = CoroutineScope(SupervisorJob())
 
   /**
@@ -71,7 +75,7 @@ internal class AndroidEngine(private val mainClass: String) : Engine() {
 
     // Step 2
     process =
-      ProcessBuilder(LAUNCH_COMMAND.format(DEVICE_DEX_PATH, mainClass).split(' '))
+      ProcessBuilder(LAUNCH_COMMAND.format(adb, DEVICE_DEX_PATH, mainClass).split(' '))
         .redirectOutput(PIPE)
         .redirectError(INHERIT)
         .redirectInput(PIPE)
@@ -123,15 +127,21 @@ internal class AndroidEngine(private val mainClass: String) : Engine() {
     }
     scope.cancel()
   }
-}
 
-private fun pushDexFileToDevice() {
-  val dexPath = Resources.getTestClassesDexPath()
-  println("Pushing dex file to device")
-  Runtime.getRuntime().exec(PUSH_COMMAND.format(dexPath, DEVICE_DEX_PATH)).waitFor()
-}
+  private fun pushDexFileToDevice() {
+    val dexPath = Resources.getTestClassesDexPath()
+    println("Pushing dex file to device")
+    val rc = Runtime.getRuntime().exec(PUSH_COMMAND.format(adb, dexPath, DEVICE_DEX_PATH)).waitFor()
+    if (rc != 0) {
+      throw IllegalStateException("Failed to push dex file to device")
+    }
+  }
 
-private fun setupPortForwarding(pid: Int) {
-  println("Setting up port forwarding")
-  Runtime.getRuntime().exec(PORT_FORWARD_COMMAND.format(JDWP_PORT, pid)).waitFor()
+  private fun setupPortForwarding(pid: Int) {
+    println("Setting up port forwarding")
+    val rc = Runtime.getRuntime().exec(PORT_FORWARD_COMMAND.format(adb, JDWP_PORT, pid)).waitFor()
+    if (rc != 0) {
+      throw IllegalStateException("Failed to set up port forwarding")
+    }
+  }
 }

@@ -15,7 +15,6 @@
  */
 package com.android.tools.debuggertests
 
-import com.android.tools.debuggertests.Engine.EngineType.JVM
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -32,6 +31,6 @@ internal class JvmEngineDebuggerTest(testClass: String) : DebuggerTestBase(testC
 
   @Test
   fun test() {
-    runTest(JVM)
+    runTest(JvmEngine(testClass))
   }
 }
