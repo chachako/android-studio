@@ -97,8 +97,9 @@ class LocalEmulatorProvisionerPluginTest {
     override suspend fun startAvd(avdInfo: AvdInfo, coldBoot: Boolean) {
       val device =
         FakeEmulatorConsole(avdInfo.name, avdInfo.dataFolderPath.toString()) { doStopAvd(avdInfo) }
+      val selector = DeviceSelector.fromSerialNumber("emulator-${device.port}")
       session.deviceServices.configureDeviceProperties(
-        DeviceSelector.fromSerialNumber("emulator-${device.port}"),
+        selector,
         mapOf(
           "ro.serialno" to "EMULATOR31X3X7X0",
           DevicePropertyNames.RO_BUILD_VERSION_SDK to API_LEVEL.apiString,
@@ -107,6 +108,11 @@ class LocalEmulatorProvisionerPluginTest {
           DevicePropertyNames.RO_PRODUCT_MODEL to MODEL,
           DevicePropertyNames.RO_PRODUCT_CPU_ABI to ABI.toString()
         )
+      )
+      session.deviceServices.configureShellCommand(
+        selector,
+        command = "wm size",
+        stdout = "Physical size: 1024x768\n"
       )
       device.start()
       runningDevices += device

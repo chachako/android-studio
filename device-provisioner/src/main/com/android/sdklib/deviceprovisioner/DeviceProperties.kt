@@ -15,6 +15,8 @@
  */
 package com.android.sdklib.deviceprovisioner
 
+import com.android.adblib.AdbFailResponseException
+import com.android.adblib.ConnectedDevice
 import com.android.adblib.DevicePropertyNames.RO_BUILD_CHARACTERISTICS
 import com.android.adblib.DevicePropertyNames.RO_BUILD_VERSION_RELEASE
 import com.android.adblib.DevicePropertyNames.RO_MANUFACTURER
@@ -22,9 +24,17 @@ import com.android.adblib.DevicePropertyNames.RO_MODEL
 import com.android.adblib.DevicePropertyNames.RO_PRODUCT_CPU_ABI
 import com.android.adblib.DevicePropertyNames.RO_PRODUCT_MANUFACTURER
 import com.android.adblib.DevicePropertyNames.RO_PRODUCT_MODEL
+import com.android.adblib.DevicePropertyNames.RO_SF_LCD_DENSITY
+import com.android.adblib.selector
+import com.android.adblib.shellAsText
+import com.android.adblib.thisLogger
+import com.android.resources.Density
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.AndroidVersionUtil
 import com.android.sdklib.devices.Abi
+import java.time.Duration
+import java.util.concurrent.TimeoutException
+import kotlin.math.ceil
 
 /**
  * Stores various properties about a device that are generally stable.
@@ -54,6 +64,26 @@ interface DeviceProperties {
    */
   val isVirtual: Boolean?
 
+  /** The actual screen resolution of the device in pixels (not adjusted to "dp"). */
+  val resolution: Resolution?
+
+  /** The screen resolution in device-independent pixels ("dp"). */
+  val resolutionDp: Resolution?
+    get() {
+      val resolution = resolution ?: return null
+      val density = density ?: return null
+      return Resolution(
+        width = ceil(Density.DEFAULT_DENSITY.toDouble() * resolution.width / density).toInt(),
+        height = ceil(Density.DEFAULT_DENSITY.toDouble() * resolution.height / density).toInt()
+      )
+    }
+
+  /**
+   * The pixel density (in dpi) of the device, adjusted to fit one of the standard buckets in
+   * [com.android.resources.Density].
+   */
+  val density: Int?
+
   /**
    * A string ideally unique to the device instance (e.g. serial number or emulator console port),
    * used for disambiguating this device from others with similar properties.
@@ -80,7 +110,8 @@ interface DeviceProperties {
 
   companion object {
     /** Builds a basic DeviceProperties instance with no additional fields. */
-    fun build(block: Builder.() -> Unit): DeviceProperties = Builder().apply(block).buildBase()
+    inline fun build(block: Builder.() -> Unit): DeviceProperties =
+      Builder().apply(block).buildBase()
   }
 
   open class Builder {
@@ -94,6 +125,8 @@ interface DeviceProperties {
     var deviceType: DeviceType? = null
     var isVirtual: Boolean? = null
     var wearPairingId: String? = null
+    var resolution: Resolution? = null
+    var density: Int? = null
 
     fun readCommonProperties(properties: Map<String, String>) {
       manufacturer = properties[RO_PRODUCT_MANUFACTURER] ?: properties[RO_MANUFACTURER]
@@ -110,6 +143,7 @@ interface DeviceProperties {
           else -> DeviceType.HANDHELD
         }
       isVirtual = properties["ro.kernel.qemu"] == "1"
+      density = properties[RO_SF_LCD_DENSITY]?.toIntOrNull()
     }
 
     fun buildBase(): DeviceProperties =
@@ -123,6 +157,8 @@ interface DeviceProperties {
         deviceType = deviceType,
         isVirtual = isVirtual,
         wearPairingId = wearPairingId,
+        resolution = resolution,
+        density = density,
       )
   }
 
@@ -135,7 +171,9 @@ interface DeviceProperties {
     override val disambiguator: String?,
     override val deviceType: DeviceType?,
     override val isVirtual: Boolean?,
-    override val wearPairingId: String?
+    override val wearPairingId: String?,
+    override val resolution: Resolution?,
+    override val density: Int?,
   ) : DeviceProperties
 }
 
@@ -149,4 +187,33 @@ enum class DeviceType {
   WEAR,
   TV,
   AUTOMOTIVE
+}
+
+data class Resolution(val width: Int, val height: Int) {
+  override fun toString() = "$width × $height"
+
+  companion object {
+    private val REGEX = Regex("Physical size: (\\d+)x(\\d+)")
+
+    fun parseWmSizeOutput(output: String): Resolution? =
+      REGEX.matchEntire(output)?.let { result ->
+        Resolution(result.groupValues[1].toInt(), result.groupValues[2].toInt())
+      }
+
+    suspend fun readFromDevice(device: ConnectedDevice): Resolution? =
+      try {
+        parseWmSizeOutput(
+          device.session.deviceServices
+            .shellAsText(device.selector, "wm size", commandTimeout = Duration.ofSeconds(5))
+            .stdout
+            .trim()
+        )
+      } catch (e: AdbFailResponseException) {
+        thisLogger(device.session).warn(e, "Failed to read device resolution")
+        null
+      } catch (e: TimeoutException) {
+        thisLogger(device.session).warn(e, "Timeout reading device resolution")
+        null
+      }
+  }
 }

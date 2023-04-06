@@ -17,6 +17,7 @@ package com.android.sdklib.deviceprovisioner
 
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.DevicePropertyNames
 import com.android.adblib.deviceProperties
 import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
@@ -31,6 +32,7 @@ import com.android.sdklib.deviceprovisioner.DeviceState.Connected
 import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import com.android.sdklib.devices.Abi
 import com.android.sdklib.internal.avd.AvdInfo
+import com.android.sdklib.internal.avd.HardwareProperties
 import com.android.sdklib.repository.IdDisplay
 import com.android.sdklib.repository.targets.SystemImage.ANDROID_TV_TAG
 import com.android.sdklib.repository.targets.SystemImage.AUTOMOTIVE_PLAY_STORE_TAG
@@ -213,6 +215,8 @@ class LocalEmulatorProvisionerPlugin(
       val properties =
         LocalEmulatorProperties.build {
           readCommonProperties(deviceProperties)
+          density = deviceProperties[DevicePropertyNames.QEMU_SF_LCD_DENSITY]?.toIntOrNull()
+          resolution = Resolution.readFromDevice(device)
           avdName = handle.avdInfo.name
           displayName = handle.avdInfo.displayName
           disambiguator = port.toString()
@@ -233,7 +237,20 @@ class LocalEmulatorProvisionerPlugin(
       displayName = avdInfo.displayName
       deviceType = avdInfo.tag.toDeviceType()
       wearPairingId = avdInfo.id
+      density = avdInfo.density
+      resolution = avdInfo.resolution
     }
+
+  private val AvdInfo.density
+    get() = properties[HardwareProperties.HW_LCD_DENSITY]?.toIntOrNull()
+
+  private val AvdInfo.resolution
+    get() =
+      properties[HardwareProperties.HW_LCD_WIDTH]?.toIntOrNull()?.let { width ->
+        properties[HardwareProperties.HW_LCD_HEIGHT]?.toIntOrNull()?.let { height ->
+          Resolution(width, height)
+        }
+      }
 
   private fun IdDisplay.toDeviceType(): DeviceType =
     when (this) {
@@ -440,7 +457,7 @@ class LocalEmulatorProperties(
   override val title = displayName
 
   companion object {
-    fun build(block: Builder.() -> Unit) =
+    inline fun build(block: Builder.() -> Unit) =
       Builder()
         .apply { isVirtual = true }
         .apply(block)

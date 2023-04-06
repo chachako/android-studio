@@ -40,6 +40,7 @@ class PhysicalDeviceProvisionerPlugin(val scope: CoroutineScope) : DeviceProvisi
     val deviceProperties =
       PhysicalDeviceProperties.build {
         readCommonProperties(properties)
+        resolution = Resolution.readFromDevice(device)
         val matcher = WIFI_SERIAL_NUMBER.matchEntire(device.serialNumber)
         connectionType =
           when (matcher) {
@@ -108,7 +109,7 @@ class PhysicalDeviceProperties(base: DeviceProperties, val connectionType: Conne
   }
 
   companion object {
-    fun build(block: Builder.() -> Unit) =
+    inline fun build(block: Builder.() -> Unit) =
       Builder().apply(block).run {
         PhysicalDeviceProperties(buildBase(), checkNotNull(connectionType))
       }

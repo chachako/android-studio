@@ -62,7 +62,8 @@ class DeviceProvisionerTest {
         "ro.serialno" to SerialNumbers.physicalUsb,
         DevicePropertyNames.RO_BUILD_VERSION_SDK to "31",
         DevicePropertyNames.RO_PRODUCT_MANUFACTURER to "Google",
-        DevicePropertyNames.RO_PRODUCT_MODEL to "Pixel 6"
+        DevicePropertyNames.RO_PRODUCT_MODEL to "Pixel 6",
+        DevicePropertyNames.RO_SF_LCD_DENSITY to "320",
       )
     )
     fakeSession.deviceServices.configureDeviceProperties(
@@ -71,7 +72,8 @@ class DeviceProvisionerTest {
         "ro.serialno" to "X1BQ704RX2B",
         DevicePropertyNames.RO_BUILD_VERSION_SDK to "31",
         DevicePropertyNames.RO_PRODUCT_MANUFACTURER to "Google",
-        DevicePropertyNames.RO_PRODUCT_MODEL to "Pixel 6"
+        DevicePropertyNames.RO_PRODUCT_MODEL to "Pixel 6",
+        DevicePropertyNames.RO_SF_LCD_DENSITY to "320",
       )
     )
     fakeSession.deviceServices.configureDeviceProperties(
@@ -80,9 +82,18 @@ class DeviceProvisionerTest {
         "ro.serialno" to "EMULATOR31X3X7X0",
         DevicePropertyNames.RO_BUILD_VERSION_SDK to "31",
         DevicePropertyNames.RO_PRODUCT_MANUFACTURER to "Google",
-        DevicePropertyNames.RO_PRODUCT_MODEL to "sdk_goog3_x86_64"
+        DevicePropertyNames.RO_PRODUCT_MODEL to "sdk_goog3_x86_64",
+        DevicePropertyNames.RO_SF_LCD_DENSITY to "320",
       )
     )
+    for (serial in
+      listOf(SerialNumbers.emulator, SerialNumbers.physicalWifi, SerialNumbers.physicalUsb)) {
+      fakeSession.deviceServices.configureShellCommand(
+        DeviceSelector.fromSerialNumber(serial),
+        command = "wm size",
+        stdout = "Physical size: 2000x1500\n"
+      )
+    }
   }
 
   private fun setDevices(vararg serialNumber: String) {
@@ -99,23 +110,28 @@ class DeviceProvisionerTest {
       setDevices(SerialNumbers.physicalUsb, SerialNumbers.physicalWifi)
 
       // The plugin adds the devices one at a time, so there are two events here
-      channel.receiveUntilPassing { handles ->
-        assertThat(handles).hasSize(2)
+      val handles =
+        channel.receiveUntilPassing { handles ->
+          assertThat(handles).hasSize(2)
+          handles
+        }
 
-        val handlesByType =
-          handles.associateBy { (it.state.properties as PhysicalDeviceProperties).connectionType }
+      val handlesByType =
+        handles.associateBy { (it.state.properties as PhysicalDeviceProperties).connectionType }
 
-        assertThat(handlesByType).hasSize(2)
-        val usbHandle = checkNotNull(handlesByType[ConnectionType.USB])
-        assertThat(usbHandle.state.connectedDevice?.serialNumber)
-          .isEqualTo(SerialNumbers.physicalUsb)
-        assertThat(usbHandle.state.properties.wearPairingId).isEqualTo(SerialNumbers.physicalUsb)
+      assertThat(handlesByType).hasSize(2)
+      val usbHandle = checkNotNull(handlesByType[ConnectionType.USB])
+      assertThat(usbHandle.state.connectedDevice?.serialNumber).isEqualTo(SerialNumbers.physicalUsb)
+      assertThat(usbHandle.state.properties.wearPairingId).isEqualTo(SerialNumbers.physicalUsb)
+      assertThat(usbHandle.state.properties.resolution).isEqualTo(Resolution(2000, 1500))
+      assertThat(usbHandle.state.properties.resolutionDp).isEqualTo(Resolution(1000, 750))
 
-        val wifiHandle = checkNotNull(handlesByType[ConnectionType.WIFI])
-        assertThat(wifiHandle.state.connectedDevice?.serialNumber)
-          .isEqualTo(SerialNumbers.physicalWifi)
-        assertThat(wifiHandle.state.properties.wearPairingId).isEqualTo("X1BQ704RX2B")
-      }
+      val wifiHandle = checkNotNull(handlesByType[ConnectionType.WIFI])
+      assertThat(wifiHandle.state.connectedDevice?.serialNumber)
+        .isEqualTo(SerialNumbers.physicalWifi)
+      assertThat(wifiHandle.state.properties.wearPairingId).isEqualTo("X1BQ704RX2B")
+      assertThat(usbHandle.state.properties.resolution).isEqualTo(Resolution(2000, 1500))
+      assertThat(usbHandle.state.properties.resolutionDp).isEqualTo(Resolution(1000, 750))
     }
   }
 

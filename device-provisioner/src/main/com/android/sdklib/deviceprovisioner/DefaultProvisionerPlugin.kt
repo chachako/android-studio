@@ -40,7 +40,11 @@ class DefaultProvisionerPlugin : DeviceProvisionerPlugin {
 
   override suspend fun claim(device: ConnectedDevice): DeviceHandle {
     val properties = device.deviceProperties().all().asMap()
-    val deviceProperties = DeviceProperties.build { readCommonProperties(properties) }
+    val deviceProperties =
+      DeviceProperties.build {
+        readCommonProperties(properties)
+        Resolution.readFromDevice(device)
+      }
     val handle =
       DefaultDeviceHandle(
         // Lifecycle is the same as the ConnectedDevice
