@@ -1,4 +1,5 @@
 load("//tools/adt/idea/android/integration:build_defs.bzl", "INTEGRATION_TEST_SYSTEM_IMAGE")
+load("//tools/base/bazel:android.bzl", "dex_library")
 load("//tools/base/bazel:bazel.bzl", "iml_module")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 
@@ -24,6 +25,17 @@ kotlin_library(
     tags = tags,
 )
 
+dex_library(
+    name = "test-classes-dex",
+    dexer = "D8",
+    flags = ["--min-api 26"],
+    jars = [
+        ":test-classes-binary_deploy.jar",
+    ],
+    tags = tags,
+    visibility = ["//visibility:public"],
+)
+
 # A library with all tested classes so we can create a "*_deploy.jar" that contains all dependencies
 java_binary(
     name = "test-classes-binary",
@@ -34,12 +46,22 @@ java_binary(
     ],
 )
 
+filegroup(
+    name = "test-classes-deps",
+    srcs = [
+        ":test-classes-binary_deploy.jar",
+        ":test-classes-dex.jar",
+    ],
+    tags = tags,
+)
+
 # Test target
 kotlin_test(
     name = "tests",
     srcs = glob(["testSrc/**/*.kt"]),
     data = glob(["resources/**"]) + [
         ":test-classes-binary_deploy.jar",
+        ":test-classes-dex.jar",
         "//prebuilts/studio/sdk:emulator",
         "//prebuilts/studio/sdk:platform-tools",
         INTEGRATION_TEST_SYSTEM_IMAGE,
@@ -48,6 +70,7 @@ kotlin_test(
     jvm_flags = [
         "-Dtest.suite.jar=tests.jar",
         "-Dtest-classes-jar=$(location :test-classes-binary_deploy.jar)",
+        "-Dtest-classes-dex=$(location :test-classes-dex.jar)",
     ],
     tags = tags,
     test_class = "com.android.testutils.JarTestSuite",
@@ -64,10 +87,14 @@ kotlin_test(
 # A command line program that updates the golden files.
 java_binary(
     name = "update-golden",
-    data = glob(["resources/**"]) + [":test-classes-binary_deploy.jar"],
+    data = glob(["resources/**"]) + [
+        ":test-classes-binary_deploy.jar",
+        ":test-classes-dex.jar",
+    ],
     jvm_flags = [
         "--add-opens=jdk.jdi/com.sun.tools.jdi=ALL-UNNAMED",
         "-Dtest-classes-jar=$(location :test-classes-binary_deploy.jar)",
+        "-Dtest-classes-dex=$(location :test-classes-dex.jar)",
     ],
     main_class = "com.android.tools.debuggertests.UpdateGoldenKt",
     tags = tags,

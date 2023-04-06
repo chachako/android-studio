@@ -13,19 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.tools.debuggertests
-
-/**
- * A simple [Engine] that launches and connects to a program.
- *
- * This is the easiest way to debug a program. It uses a [com.sun.jdi.connect.LaunchingConnector]
- * which launches and connects to the process.
- */
-internal class SimpleEngine(private val mainClass: String) : Engine() {
-
-  override suspend fun startDebugger(): Debugger {
-    return Debugger.launch(mainClass, Resources.getTestClassesJarPath()).waitForStart()
-  }
-
-  override fun close() {}
-}
+/** Call this function to prevent Kotlin from optimizing variables away */
+fun function(vararg args: Any) {}

@@ -16,8 +16,6 @@
 package com.android.tools.debuggertests
 
 import com.android.tools.debuggertests.Engine.EngineType
-import com.android.tools.debuggertests.Engine.EngineType.JVM
-import com.android.tools.debuggertests.Engine.EngineType.SIMPLE
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
@@ -41,25 +39,26 @@ fun main(args: Array<String>) {
   val parser = ArgParser("UpdateGolden")
   val verbose by parser.option(ArgType.Boolean, shortName = "v").default(false)
   val noop by parser.option(ArgType.Boolean, shortName = "n").default(false)
-  val type by parser.option(ArgType.Choice<EngineType>(), shortName = "t").default(SIMPLE)
+  val type by parser.option(ArgType.Choice<EngineType>(), shortName = "t")
   val tests by parser.argument(ArgType.String).vararg().optional()
   parser.parse(args)
 
   val testClasses = tests.takeIf { it.isNotEmpty() } ?: Resources.findTestClasses()
-  testClasses.forEach { testClass ->
-    println("Test $testClass")
-    val engine =
-      when (type) {
-        SIMPLE -> SimpleEngine(testClass)
-        JVM -> JvmEngine(testClass)
-      }
-    engine.use {
-      val actual = runBlocking { withTimeout(30.seconds) { engine.runTest() } }
-      if (!noop) {
-        Resources.writeGolden(testClass, actual, type.name.lowercase())
-      }
-      if (verbose) {
-        println(actual)
+
+  val t = type // so we can smart-cast
+  val engineTypes = if (t != null) listOf(t) else EngineType.values().asList()
+  engineTypes.forEach { engineType ->
+    println("Running tests for engine: $engineType")
+    testClasses.forEach { testClass ->
+      println("  Test $testClass")
+      engineType.getEngine(testClass).use { engine ->
+        val actual = runBlocking { withTimeout(30.seconds) { engine.runTest() } }
+        if (!noop) {
+          Resources.writeGolden(testClass, actual, engineType.name.lowercase())
+        }
+        if (verbose) {
+          println(actual)
+        }
       }
     }
   }

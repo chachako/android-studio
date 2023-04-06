@@ -31,8 +31,13 @@ internal class Debugger private constructor(private val vm: VirtualMachine) {
   private val requestManager = vm.eventRequestManager()
   private val eventChannel = EventChannel(vm.eventQueue())
 
-  suspend fun start() {
+  suspend fun waitForStart(): Debugger {
     eventChannel.receive<VMStartEvent>()
+    return this
+  }
+
+  fun suspend() {
+    vm.suspend()
   }
 
   /** Resume execution and return the next event. */

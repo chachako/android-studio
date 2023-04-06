@@ -27,7 +27,9 @@ private const val BREAKPOINT_LINE = 20
 /** A simple test engine */
 internal abstract class Engine : Closeable {
 
-  protected abstract suspend fun createDebugger(): Debugger
+  protected abstract suspend fun startDebugger(): Debugger
+
+  protected open fun onBreakpointAdded() {}
 
   /**
    * Executes a single test.
@@ -37,9 +39,9 @@ internal abstract class Engine : Closeable {
    * 4. On each breakpoint, emits information about the frame into a string
    */
   suspend fun runTest(): String {
-    val debugger = createDebugger()
-    debugger.start()
+    val debugger = startDebugger()
     debugger.setBreakpoint(BREAKPOINT_CLASS, BREAKPOINT_LINE)
+    onBreakpointAdded()
     val actual = buildString {
       while (true) {
         val breakpoint = debugger.resume<Event>() as? BreakpointEvent ?: break
@@ -71,6 +73,7 @@ internal abstract class Engine : Closeable {
   enum class EngineType(private val factory: (String) -> Engine) {
     SIMPLE(::SimpleEngine),
     JVM(::JvmEngine),
+    ANDROID(::AndroidEngine),
     ;
 
     fun getEngine(testName: String) = factory(testName)

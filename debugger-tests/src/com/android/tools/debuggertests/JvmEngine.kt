@@ -46,7 +46,7 @@ internal class JvmEngine(private val mainClass: String) : Engine() {
   private lateinit var process: Process
   private val scope = CoroutineScope(SupervisorJob())
 
-  override suspend fun createDebugger(): Debugger {
+  override suspend fun startDebugger(): Debugger {
     val classpath = Resources.getTestClassesJarPath()
     process =
       ProcessBuilder(getJavaExe(), JDWP_OPTIONS, CLASSPATH, classpath, MAIN, mainClass)
@@ -75,7 +75,7 @@ internal class JvmEngine(private val mainClass: String) : Engine() {
     }
     val port = portDeferred.await()
     println("Attaching to localhost:$port")
-    return Debugger.attachToProcess("localhost", port)
+    return Debugger.attachToProcess("localhost", port).waitForStart()
   }
 
   override fun close() {

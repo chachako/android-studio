@@ -1,3 +1,4 @@
+import java.util.Scanner
 import kotlin.system.exitProcess
 
 /*
@@ -17,11 +18,48 @@ import kotlin.system.exitProcess
  */
 
 fun main(args: Array<String>) {
-  if (args.size != 1) {
+  val testClassName = args.find { !it.startsWith("-") }
+  if (testClassName == null) {
     println("Missing test class name argument")
     exitProcess(1)
   }
-  val testClass = object {}.javaClass.classLoader.loadClass(args[0])
+
+  if (args[0] == "-dalvik") {
+    println(
+      """
+        Waiting for debugger. run:
+           adb forward tcp:54321 jdwp:${getPid()}
+        And press <Enter> when connected.
+      """
+        .trimIndent()
+    )
+    // ART does not support the JDWP option `suspend` so we must do it ourselves
+    waitForDebugger()
+  }
+  val testClass = object {}.javaClass.classLoader.loadClass(testClassName)
   val method = testClass.getDeclaredMethod("start")
   method.invoke(null)
+}
+
+/**
+ * Wait for the engine to send a signal to continue
+ *
+ * We could use `android.os.Debug.waitForDebugger()` which is the way Android Studio does it but
+ * this way runs quicker because `waitForDebugger()` needs to wait a few seconds for the debugger to
+ * settle down since it doesn't exactly when it's done. We on the other hand know exactly when we
+ * can release the app.
+ */
+fun waitForDebugger() {
+  Scanner(System.`in`).nextLine()
+}
+
+/**
+ * Gets the pid using reflection
+ *
+ * This code will only need to run on Android/Dalvik. It's easier to just use reflection rather than
+ * have to include the Android Framework stubs that are required to compile this normally.
+ */
+private fun getPid(): Int {
+  val process = object {}.javaClass.classLoader.loadClass("android.os.Process")
+  return process.getDeclaredMethod("myPid").invoke(null) as Int
 }

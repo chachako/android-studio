@@ -28,17 +28,19 @@ import kotlin.streams.asSequence
 private const val MODULE_PATH = "tools/base/debugger-tests"
 private const val RESOURCE_PATH = "$MODULE_PATH/resources"
 private const val TEST_CLASSES_JAR = "bazel-bin/$MODULE_PATH/test-classes-binary_deploy.jar"
+private const val TEST_CLASSES_JAR_PROPERTY = "test-classes-jar"
+private const val TEST_CLASSES_DEX_PROPERTY = "test-classes-dex"
+private const val TEST_CLASSES_DEX = "bazel-bin/$MODULE_PATH/test-classes-dex.jar"
 private const val TOOLS_ADT = "tools/adt/idea"
 private const val RES = "res"
 private const val GOLDEN = "golden"
 private const val SRC = "src"
 private const val TESTS = "tests"
 private const val BAZEL_PWD = "BUILD_WORKSPACE_DIRECTORY"
-private const val TEST_CLASSES = "test-classes-jar"
 private const val USER_DIR = "user.dir"
 
 /** Utilities for fetching resources */
-object Resources {
+internal object Resources {
 
   /** Find all tested classes. */
   fun findTestClasses(): List<String> {
@@ -63,19 +65,23 @@ object Resources {
     path.writer().use { it.write(actual) }
   }
 
-  fun getTestClassesJarPath(): String {
-    val jarPath = System.getProperty(TEST_CLASSES)
+  fun getTestClassesJarPath() = getPathFromProperty(TEST_CLASSES_JAR_PROPERTY, TEST_CLASSES_JAR)
+
+  fun getTestClassesDexPath() = getPathFromProperty(TEST_CLASSES_DEX_PROPERTY, TEST_CLASSES_DEX)
+
+  private fun getPathFromProperty(property: String, filename: String): String {
+    val jarPath = System.getProperty(property)
     if (jarPath != null) {
       return jarPath
     }
-    val path = Paths.get(getWorkspaceDir(), TEST_CLASSES_JAR)
+    val path = Paths.get(getWorkspaceDir(), filename)
     if (path.isFile()) {
       return path.pathString
     }
     throw IllegalStateException(
       """
-        $TEST_CLASSES_JAR not found. Please run
-          'bazel build //tools/base/debugger-tests:test-classes-binary_deploy.jar'
+        $filename not found. Please run
+          'bazel build //tools/base/debugger-tests:test-deps'
       """
     )
   }
