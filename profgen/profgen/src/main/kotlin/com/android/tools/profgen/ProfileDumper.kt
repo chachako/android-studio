@@ -83,5 +83,9 @@ private fun extractName(profileKey: String): String {
     if (index < 0) {
         index = profileKey.indexOf(":")
     }
+    if (index < 0 && profileKey.endsWith(".apk")) {
+        // `base.apk` is equivalent to `base.apk!classes.dex`
+        return "classes.dex"
+    }
     return profileKey.substring(index + 1)
 }
