@@ -30,11 +30,11 @@ import kotlin.streams.asSequence
 internal object Resources {
 
   // Root of running process. IntelliJ runs from `tools/adt/idea` to we remove that
-  private val ROOT = Paths.get(System.getProperty("user.dir").removeSuffix("tools/adt/idea"))
+  val ROOT = Paths.get(System.getProperty("user.dir").removeSuffix("tools/adt/idea"))
 
   // Root location for build artifacts. When running from IntelliJ, we use `bazel-bin`.
   // Required build artifacts should be added to the `idea-deps` file group.
-  private val BUILD_ROOT = run {
+  val BUILD_ROOT = run {
     val bazelBin = ROOT.resolve("bazel-bin")
     when {
       bazelBin.exists() -> bazelBin

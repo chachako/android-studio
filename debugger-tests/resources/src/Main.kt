@@ -24,7 +24,7 @@ fun main(args: Array<String>) {
     exitProcess(1)
   }
 
-  if (args[0] == "-dalvik") {
+  if (args[0] == "-android") {
     println(
       """
         Waiting for debugger. run:

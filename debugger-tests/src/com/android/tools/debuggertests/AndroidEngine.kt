@@ -36,7 +36,7 @@ private const val LAUNCH_COMMAND =
     " -classpath %s" +
     " -XjdwpProvider:adbconnection" +
     " -XjdwpOptions:server=y" +
-    " MainKt -dalvik %s"
+    " MainKt -android %s"
 private const val PORT_FORWARD_COMMAND = "%s forward tcp:%d jdwp:%d"
 
 /**
@@ -48,7 +48,7 @@ private const val PORT_FORWARD_COMMAND = "%s forward tcp:%d jdwp:%d"
  *
  * TODO: Add support for specifying a serial number
  */
-internal class AndroidEngine(serialNumber: String? = null) : Engine("dalvik") {
+internal class AndroidEngine(serialNumber: String? = null) : Engine("dex") {
 
   private val adb = if (serialNumber == null) "adb" else "adb -s $serialNumber"
 

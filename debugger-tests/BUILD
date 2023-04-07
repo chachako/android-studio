@@ -51,6 +51,9 @@ filegroup(
     srcs = [
         ":test-classes-binary_deploy.jar",
         ":test-classes-dex.jar",
+        "//prebuilts/tools/linux-x86_64/art",
+        "//prebuilts/tools/linux-x86_64/art:art_deps",
+        "//tools/base/fakeandroid:android-mock-dex.jar",
     ],
     tags = tags,
 )
@@ -88,6 +91,9 @@ java_binary(
     data = glob(["resources/**"]) + [
         ":test-classes-binary_deploy.jar",
         ":test-classes-dex.jar",
+        "//prebuilts/tools/linux-x86_64/art",
+        "//prebuilts/tools/linux-x86_64/art:art_deps",
+        "//tools/base/fakeandroid:android-mock-dex.jar",
     ],
     jvm_flags = [
         "--add-opens=jdk.jdi/com.sun.tools.jdi=ALL-UNNAMED",

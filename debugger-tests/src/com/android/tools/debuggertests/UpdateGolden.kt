@@ -16,6 +16,7 @@
 package com.android.tools.debuggertests
 
 import com.android.tools.debuggertests.EngineType.ANDROID
+import com.android.tools.debuggertests.EngineType.ART
 import com.android.tools.debuggertests.EngineType.JVM
 import com.android.tools.debuggertests.EngineType.SIMPLE
 import kotlin.time.Duration.Companion.seconds
@@ -53,9 +54,10 @@ fun main(args: Array<String>) {
   engineTypes.forEach { engineType ->
     val engine =
       when (engineType) {
-        SIMPLE -> SimpleEngine()
-        JVM -> JvmEngine()
         ANDROID -> AndroidEngine(serialNumber)
+        ART -> ArtEngine()
+        JVM -> JvmEngine()
+        SIMPLE -> SimpleEngine()
       }
     println("Running tests for engine: $engineType")
 

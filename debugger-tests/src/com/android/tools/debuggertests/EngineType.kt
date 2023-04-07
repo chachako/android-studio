@@ -16,7 +16,8 @@
 package com.android.tools.debuggertests
 
 internal enum class EngineType {
-  SIMPLE,
-  JVM,
   ANDROID,
+  ART,
+  JVM,
+  SIMPLE,
 }
