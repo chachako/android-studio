@@ -124,7 +124,7 @@ internal class AndroidEngine(serialNumber: String? = null) : Engine("dalvik") {
   }
 
   private fun pushDexFileToDevice() {
-    val dexPath = Resources.getTestClassesDexPath()
+    val dexPath = Resources.TEST_CLASSES_DEX
     println("Pushing dex file to device")
     val rc = Runtime.getRuntime().exec(PUSH_COMMAND.format(adb, dexPath, DEVICE_DEX_PATH)).waitFor()
     if (rc != 0) {

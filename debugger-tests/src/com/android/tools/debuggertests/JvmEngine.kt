@@ -54,7 +54,7 @@ internal class JvmEngine : Engine("jvm") {
     val scope = CoroutineScope(SupervisorJob())
 
     // Step 1
-    val classpath = Resources.getTestClassesJarPath()
+    val classpath = Resources.TEST_CLASSES_JAR
     val process =
       ProcessBuilder(getJavaExe(), JDWP_OPTIONS, CLASSPATH, classpath, MAIN, mainClass)
         .redirectOutput(PIPE)

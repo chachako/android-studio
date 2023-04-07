@@ -47,7 +47,7 @@ java_binary(
 )
 
 filegroup(
-    name = "test-classes-deps",
+    name = "idea-deps",
     srcs = [
         ":test-classes-binary_deploy.jar",
         ":test-classes-dex.jar",
@@ -69,8 +69,6 @@ kotlin_test(
     friends = [":debugger"],
     jvm_flags = [
         "-Dtest.suite.jar=tests.jar",
-        "-Dtest-classes-jar=$(location :test-classes-binary_deploy.jar)",
-        "-Dtest-classes-dex=$(location :test-classes-dex.jar)",
     ],
     tags = tags,
     test_class = "com.android.testutils.JarTestSuite",
@@ -93,8 +91,6 @@ java_binary(
     ],
     jvm_flags = [
         "--add-opens=jdk.jdi/com.sun.tools.jdi=ALL-UNNAMED",
-        "-Dtest-classes-jar=$(location :test-classes-binary_deploy.jar)",
-        "-Dtest-classes-dex=$(location :test-classes-dex.jar)",
     ],
     main_class = "com.android.tools.debuggertests.UpdateGoldenKt",
     tags = tags,

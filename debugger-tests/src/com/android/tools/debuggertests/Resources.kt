@@ -15,6 +15,7 @@
  */
 package com.android.tools.debuggertests
 
+import com.intellij.util.io.exists
 import com.intellij.util.io.isFile
 import java.io.File
 import java.nio.file.Files
@@ -25,75 +26,68 @@ import kotlin.io.path.reader
 import kotlin.io.path.writer
 import kotlin.streams.asSequence
 
-private const val MODULE_PATH = "tools/base/debugger-tests"
-private const val RESOURCE_PATH = "$MODULE_PATH/resources"
-private const val TEST_CLASSES_JAR = "bazel-bin/$MODULE_PATH/test-classes-binary_deploy.jar"
-private const val TEST_CLASSES_JAR_PROPERTY = "test-classes-jar"
-private const val TEST_CLASSES_DEX_PROPERTY = "test-classes-dex"
-private const val TEST_CLASSES_DEX = "bazel-bin/$MODULE_PATH/test-classes-dex.jar"
-private const val TOOLS_ADT = "tools/adt/idea"
-private const val RES = "res"
-private const val GOLDEN = "golden"
-private const val SRC = "src"
-private const val TESTS = "tests"
-private const val BAZEL_PWD = "BUILD_WORKSPACE_DIRECTORY"
-private const val USER_DIR = "user.dir"
-
 /** Utilities for fetching resources */
 internal object Resources {
 
+  // Root of running process. IntelliJ runs from `tools/adt/idea` to we remove that
+  private val ROOT = Paths.get(System.getProperty("user.dir").removeSuffix("tools/adt/idea"))
+
+  // Root location for build artifacts. When running from IntelliJ, we use `bazel-bin`.
+  // Required build artifacts should be added to the `idea-deps` file group.
+  private val BUILD_ROOT = run {
+    val bazelBin = ROOT.resolve("bazel-bin")
+    when {
+      bazelBin.exists() -> bazelBin
+      else -> ROOT
+    }
+  }
+
+  // Root location of source files.
+  // When running with Bazel, these need to be added as `data`
+  // When running from IntelliJ just use the `ROOT` dir
+  private val MODULE_SRC = ROOT.resolve("tools/base/debugger-tests")
+
+  // Module build artifacts location
+  private val MODULE_BUILD = BUILD_ROOT.resolve("tools/base/debugger-tests")
+
+  // Test classes location
+  private val TESTS = MODULE_SRC.resolve("resources/src/tests")
+
+  // Readable golden classes location. Can be used by local and remote (presubmit) executions
+  private val GOLDEN = MODULE_SRC.resolve("resources/res/golden")
+
+  // Writeable golden classes location. Can only be used by local execution.
+  private val WORKSPACE_GOLDEN =
+    Paths.get(
+      System.getenv("BUILD_WORKSPACE_DIRECTORY")
+        ?: System.getProperty("user.dir").removeSuffix("tools/adt/idea"),
+      "tools/base/debugger-tests",
+      "resources/res/golden"
+    )
+
+  // Test classes jar file
+  val TEST_CLASSES_JAR = MODULE_BUILD.resolve("test-classes-binary_deploy.jar").pathString
+
+  // Test classes dex file
+  val TEST_CLASSES_DEX = MODULE_BUILD.resolve("test-classes-dex.jar").pathString
+
   /** Find all tested classes. */
   fun findTestClasses(): List<String> {
-    return Files.walk(Paths.get(getRepoResourceDir(), SRC, TESTS))
-      .asSequence()
-      .filter(Path::isFile)
-      .map(Path::toClassName)
-      .toList()
+    return Files.walk(TESTS).asSequence().filter(Path::isFile).map(Path::toClassName).toList()
   }
 
   /** Read expected result from golden file */
   fun readGolden(test: String, dir: String): String {
-    val path = Paths.get(getRepoResourceDir(), RES, GOLDEN, dir, getGoldenFileName(test))
+    val path = GOLDEN.resolve("$dir/${getGoldenFileName(test)}")
     return path.reader().use { it.readText() }
   }
 
   /** Write expected result to golden file */
   fun writeGolden(test: String, actual: String, dir: String) {
-    val fileName = getGoldenFileName(test)
-    val path = Paths.get(getWorkspaceDir(), RESOURCE_PATH, RES, GOLDEN, dir, fileName)
+    val path = WORKSPACE_GOLDEN.resolve("$dir/${getGoldenFileName(test)}")
     path.parent.toFile().mkdirs()
     path.writer().use { it.write(actual) }
   }
-
-  fun getTestClassesJarPath() = getPathFromProperty(TEST_CLASSES_JAR_PROPERTY, TEST_CLASSES_JAR)
-
-  fun getTestClassesDexPath() = getPathFromProperty(TEST_CLASSES_DEX_PROPERTY, TEST_CLASSES_DEX)
-
-  private fun getPathFromProperty(property: String, filename: String): String {
-    val jarPath = System.getProperty(property)
-    if (jarPath != null) {
-      return jarPath
-    }
-    val path = Paths.get(getWorkspaceDir(), filename)
-    if (path.isFile()) {
-      return path.pathString
-    }
-    throw IllegalStateException(
-      """
-        $filename not found. Please run
-          'bazel build //tools/base/debugger-tests:test-deps'
-      """
-    )
-  }
-}
-
-private fun getWorkspaceDir(): String =
-  System.getenv(BAZEL_PWD) ?: System.getProperty(USER_DIR).removeSuffix(TOOLS_ADT)
-
-// Only works when running locally. Used for writing golden files
-private fun getRepoResourceDir(): String {
-  val path = Paths.get(System.getProperty(USER_DIR).removeSuffix(TOOLS_ADT))
-  return Paths.get(path.pathString, RESOURCE_PATH).pathString
 }
 
 private fun getGoldenFileName(test: String) = "${test.replace(".", File.separator)}.txt"

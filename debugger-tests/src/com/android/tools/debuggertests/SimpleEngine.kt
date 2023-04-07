@@ -24,6 +24,6 @@ package com.android.tools.debuggertests
 internal class SimpleEngine : Engine("jvm") {
 
   override suspend fun startDebugger(mainClass: String): Debugger {
-    return DebuggerImpl.launch(mainClass, Resources.getTestClassesJarPath()).waitForStart()
+    return DebuggerImpl.launch(mainClass, Resources.TEST_CLASSES_JAR).waitForStart()
   }
 }
