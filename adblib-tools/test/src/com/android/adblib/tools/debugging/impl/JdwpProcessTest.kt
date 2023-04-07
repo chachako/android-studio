@@ -426,6 +426,78 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         assertEquals(AppStage.NAMD.value, process.properties.stage?.value)
     }
 
+    @Test
+    fun startMonitoringWaitsUntilAppStageA_go() = runBlockingWithTimeout {
+        // Prepare
+        val (fakeAdb, _, process) = createJdwpProcess(deviceApi = 34, waitForDebugger = false)
+        val clientState = fakeAdb.device(process.device.serialNumber).getClient(process.pid)!!
+        clientState.setStage(AppStage.BOOT)
+        // Set up to send updated stage for transitions to AppStage.ATCH and AppStage.A_GO
+        clientState.sendStagCommandAfterHelo.addAll(
+            listOf(
+                Duration.ofMillis(500),
+                Duration.ofMillis(500)
+            )
+        )
+
+        // Act: Start monitoring
+        setHostPropertyValue(
+            process.device.session.host,
+            AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT,
+            Duration.ofSeconds(60) // long timeout
+        )
+        process.startMonitoring()
+        yieldUntil { process.properties.stage?.value == AppStage.BOOT.value }
+
+        // Assert
+        assertFalse(process.properties.completed)
+
+        // Act
+        clientState.setStage(AppStage.ATCH)
+        yieldUntil { process.properties.stage?.value == AppStage.ATCH.value }
+
+        // Assert
+        assertFalse(process.properties.completed)
+
+        // Act
+        clientState.setStage(AppStage.A_GO)
+        yieldUntil { process.properties.stage?.value == AppStage.A_GO.value }
+
+        // Assert. Now that the stage is A_GO the collection should be completed.
+        assertTrue(process.properties.completed)
+    }
+
+    @Test
+    fun startMonitoringWaitsUntilAppStageDebg() = runBlockingWithTimeout {
+        // Prepare (Note waitForDebugger is false since we rely only on AppStage in this test)
+        val (fakeAdb, _, process) = createJdwpProcess(deviceApi = 34, waitForDebugger = false)
+        val clientState = fakeAdb.device(process.device.serialNumber).getClient(process.pid)!!
+        clientState.setStage(AppStage.BOOT)
+        // Set up to send updated stage for transition to AppStage.DEBG
+        clientState.sendStagCommandAfterHelo.addAll(listOf(Duration.ofMillis(500)))
+
+        // Act: Start monitoring
+        setHostPropertyValue(
+            process.device.session.host,
+            AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT,
+            Duration.ofSeconds(60) // long timeout
+        )
+        process.startMonitoring()
+        yieldUntil { process.properties.stage?.value == AppStage.BOOT.value }
+
+        // Assert
+        assertFalse(process.properties.completed)
+
+        // Act
+        clientState.setStage(AppStage.DEBG)
+        yieldUntil { process.properties.stage?.value == AppStage.DEBG.value }
+
+        // Assert. Now that the stage is DEBG the collection should be completed.
+        // The JDWP session should still be in-use, since app boot stage is `DEBG`
+        assertTrue(process.properties.completed)
+        assertTrue(process.isJdwpSessionRetained)
+    }
+
     private suspend fun createJdwpProcess(
         deviceApi: Int = 30,
         waitForDebugger: Boolean = true

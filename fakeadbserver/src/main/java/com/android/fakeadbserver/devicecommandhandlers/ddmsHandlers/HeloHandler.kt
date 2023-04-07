@@ -19,6 +19,8 @@ import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import java.io.IOException
 import java.nio.ByteBuffer
+import java.util.Timer
+import kotlin.concurrent.schedule
 
 class HeloHandler : DDMPacketHandler {
 
@@ -157,6 +159,27 @@ class HeloHandler : DDMPacketHandler {
             } catch (e: IOException) {
                 e.printStackTrace()
                 return false
+            }
+        }
+
+        var delayStagCommand = 0L
+        for (sendStagCommandDelay in client.sendStagCommandAfterHelo) {
+            delayStagCommand += sendStagCommandDelay.toMillis()
+            Timer(
+                "STAG(at $delayStagCommand ms)",
+                true
+            ).schedule(delayStagCommand) {
+                val stage =
+                    client.stage
+                        ?: throw IllegalStateException("'stage' must be set before its used")
+                val stagPayload = ByteBuffer.allocate(4)
+                stagPayload.putInt(stage.value)
+                val stagPacket = DdmPacket.createCommand(
+                    client.nextDdmsCommandId(),
+                    DdmPacket.encodeChunkType("STAG"),
+                    stagPayload.array()
+                )
+                stagPacket.write(jdwpHandlerOutput)
             }
         }
         return true

@@ -16,6 +16,7 @@
 package com.android.fakeadbserver
 
 import java.net.Socket
+import java.time.Duration
 import java.util.Arrays
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -34,6 +35,10 @@ class ClientState internal constructor(
 
     val viewsState = ClientViewsState()
     val profilerState = ProfilerState()
+
+    // If non-empty then the STAG command(s) will be sent out after the HELO response after
+    // the specified delay(s). STAG payload will be populated from the ClientState.stage value.
+    val sendStagCommandAfterHelo = mutableListOf<Duration>()
 
     /**
      * Set of DDMS features for this process.
