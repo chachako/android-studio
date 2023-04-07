@@ -69,6 +69,7 @@ import com.google.testing.platform.proto.api.core.TestStatusProto.TestStatus
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteMetaData
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
 import org.gradle.api.Project
+import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logging
 import org.gradle.api.provider.ListProperty
@@ -113,6 +114,10 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         const val TEST_MATRIX_FAIL_FAST_FIELD = "failFast"
 
         const val CHECK_TEST_STATE_WAIT_MS = 10 * 1000L;
+
+        private const val STUB_APP_CONFIG_NAME: String =
+                "_internal-test-lab-gradle-plugin-configuration-stub-app"
+        private const val STUB_APP_NAME: String = "androidx.test.services"
 
         val oauthScope = listOf(
                 // Scope for Cloud Tool Results API and Cloud Testing API.
@@ -182,6 +187,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val directoriesToPull: ListProperty<String>
         val recordVideo: Property<Boolean>
         val performanceMetrics: Property<Boolean>
+        val stubAppApk: RegularFileProperty
     }
 
     internal open val credential: GoogleCredential by lazy {
@@ -252,12 +258,16 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val configProvider = createConfigProvider(
             ftlDeviceModel, deviceLocale, deviceApiLevel
         )
+
+        // If tested apk is null, this is a self-instrument test (e.g. library module).
+        val testedApkFile = testData.testedApkFinder(configProvider).firstOrNull()
         val appApkStorageObject = uploadToCloudStorage(
-            testData.testedApkFinder(configProvider).first(),
-            runRequestId,
-            storageClient,
-            bucketName
+                testedApkFile ?: parameters.stubAppApk.asFile.get(),
+                runRequestId,
+                storageClient,
+                bucketName,
         )
+        val useStubApp = testedApkFile == null
 
         val testingClient = Testing.Builder(
             httpTransport,
@@ -317,7 +327,11 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                     appApk = com.google.api.services.testing.model.FileReference().apply {
                         gcsPath = "gs://$bucketName/${appApkStorageObject.name}"
                     }
-                    appPackageId = testData.testedApplicationId
+                    appPackageId = if (useStubApp) {
+                        STUB_APP_NAME
+                    } else {
+                        testData.testedApplicationId
+                    }
                     testPackageId = testData.applicationId
                     testRunnerClass = testData.instrumentationRunner
 
@@ -746,6 +760,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                             namespace = "android"
                         }
                     }
+                    logger.warn(summaryBuilder.errorMessage)
                 }
             }
         }
@@ -939,10 +954,13 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
     /**
      * An action to register TestLabBuildService to a project.
      */
-    class RegistrationAction(
-        private val testLabExtension: TestLabGradlePluginExtension,
-        private val providerFactory: ProviderFactory,
-    ) {
+    class RegistrationAction(private val project: Project) {
+
+        private val testLabExtension: TestLabGradlePluginExtension =
+                project.extensions.getByType(TestLabGradlePluginExtension::class.java)
+        private val providerFactory: ProviderFactory = project.providers
+        private val configurationContainer: ConfigurationContainer = project.configurations
+
         companion object {
             /**
              * Get build service name that works even if build service types come from different
@@ -1036,12 +1054,28 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         /**
          * Register [TestLabBuildService] to a registry if absent.
          */
-        fun registerIfAbsent(project: Project): Provider<TestLabBuildService> {
+        fun registerIfAbsent(): Provider<TestLabBuildService> {
+            createConfigIfAbsent()
             return project.gradle.sharedServices.registerIfAbsent(
                 getBuildServiceName(TestLabBuildService::class.java, project),
                 TestLabBuildService::class.java,
             ) { buildServiceSpec ->
                 configure(buildServiceSpec.parameters)
+            }
+        }
+
+        private fun createConfigIfAbsent() {
+            if (configurationContainer.findByName(STUB_APP_CONFIG_NAME) == null) {
+                configurationContainer.create(STUB_APP_CONFIG_NAME).apply {
+                    isVisible = false
+                    isTransitive = true
+                    isCanBeConsumed = false
+                    description = "A configuration to resolve the stub app dependencies for " +
+                            "Firebase Test Plugin."
+                }
+                project.dependencies.add(
+                        STUB_APP_CONFIG_NAME,
+                        "androidx.test.services:test-services:1.4.2")
             }
         }
 
@@ -1088,6 +1122,9 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             })
             params.performanceMetrics.set(providerFactory.provider {
                 testLabExtension.testOptions.results.performanceMetrics
+            })
+            params.stubAppApk.fileProvider(providerFactory.provider {
+                configurationContainer.getByName(STUB_APP_CONFIG_NAME).singleFile
             })
         }
     }

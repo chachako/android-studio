@@ -87,8 +87,11 @@ class TestLabBuildServiceTest {
 
         val mockProject = mock<Project>(withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
         `when`(mockProject.path).thenReturn("mockProjectPath")
-        TestLabBuildService.RegistrationAction(mockExtension, mockProviderFactory)
-            .registerIfAbsent(mockProject)
+        `when`(mockProject.extensions.getByType(eq(TestLabGradlePluginExtension::class.java)))
+                .thenReturn(mockExtension)
+        `when`(mockProject.providers).thenReturn(mockProviderFactory)
+
+        TestLabBuildService.RegistrationAction(mockProject).registerIfAbsent()
 
         lateinit var configAction: Action<in BuildServiceSpec<TestLabBuildService.Parameters>>
         verify(mockProject.gradle.sharedServices).registerIfAbsent(

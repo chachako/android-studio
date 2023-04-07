@@ -70,10 +70,7 @@ class TestLabGradlePlugin : Plugin<Project> {
                 androidExtension.testOptions.managedDevices
             )
 
-            TestLabBuildService.RegistrationAction(
-                    project.extensions.getByType(TestLabGradlePluginExtension::class.java),
-                    project.providers,
-            ).registerIfAbsent(project)
+            TestLabBuildService.RegistrationAction(project).registerIfAbsent()
         }
     }
 }
