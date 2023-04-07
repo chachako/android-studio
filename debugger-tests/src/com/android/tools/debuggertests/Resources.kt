@@ -73,7 +73,7 @@ internal object Resources {
 
   /** Find all tested classes. */
   fun findTestClasses(): List<String> {
-    return Files.walk(TESTS).asSequence().filter(Path::isFile).map(Path::toClassName).toList()
+    return Files.walk(TESTS).asSequence().filter(Path::isTestFile).map(Path::toClassName).toList()
   }
 
   /** Read expected result from golden file */
@@ -97,3 +97,10 @@ private fun Path.toClassName() =
     .substringAfterLast("src${File.separator}")
     .replace(File.separator, ".")
     .removeSuffix(".kt")
+
+private fun Path.isTestFile(): Boolean {
+  if (!isFile()) {
+    return false
+  }
+  return reader().readLines().find { it.contains("fun start() {") } != null
+}

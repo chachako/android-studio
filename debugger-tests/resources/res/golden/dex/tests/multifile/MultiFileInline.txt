@@ -1,0 +1,24 @@
+Breakpoint: File1.kt.tests.multifile.MultiFileInline.start():24
+========================================================
+0  [26-26]    [1-20]    : i$iv                          : int
+1  [23-26]    [2-20]    : $i$f$function1                : int
+2  [24-26]    [4-20]    : s$iv                          : java.lang.String
+
+Breakpoint: File2.kt.tests.multifile.MultiFileInline.start():24
+========================================================
+0  [26-26]    [1-20]    : i$iv                          : int
+1  [23-26]    [2-20]    : $i$f$function1                : int
+2  [24-26]    [4-20]    : s$iv                          : java.lang.String
+3  [23-26]    [8-19]    : $i$f$function2                : int
+4  [24-26]    [9-19]    : x$iv$iv                       : int
+
+Breakpoint: MultiFileInline.kt.tests.multifile.MultiFileInline.start():30
+========================================================
+0  [26-26]    [1-20]    : i$iv                          : int
+1  [23-26]    [2-20]    : $i$f$function1                : int
+2  [24-26]    [4-20]    : s$iv                          : java.lang.String
+3  [23-26]    [8-19]    : $i$f$function2                : int
+4  [24-26]    [9-19]    : x$iv$iv                       : int
+5  [25-31]    [14-18]   : this_$iv$iv$iv                : tests.multifile.MultiFileInline
+6  [30-31]    [15-18]   : $i$f$file0                    : int
+

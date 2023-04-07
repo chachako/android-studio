@@ -14,7 +14,19 @@
  * limitations under the License.
  */
 
-/** A method that tested code calls when it wants to check a breakpoint. */
-fun breakpoint() {
-  // nothing to do
+package tests.multifile
+
+import breakpoint
+
+@Suppress("NOTHING_TO_INLINE", "SameParameterValue", "UNUSED_PARAMETER", "unused")
+object MultiFileInline {
+
+  @JvmStatic
+  fun start() {
+    function1(3)
+  }
+
+  inline fun file0(i: Int, s: String, x: Int) {
+    breakpoint()
+  }
 }

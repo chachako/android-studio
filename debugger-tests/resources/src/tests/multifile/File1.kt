@@ -13,8 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("NOTHING_TO_INLINE")
 
-/** A method that tested code calls when it wants to check a breakpoint. */
-fun breakpoint() {
-  // nothing to do
+package tests.multifile
+
+import breakpoint
+
+inline fun function1(i: Int) {
+  val s = ""
+  breakpoint()
+  function2(i, s)
 }
