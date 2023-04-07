@@ -13,62 +13,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver.devicecommandhandlers
 
-package com.android.fakeadbserver.devicecommandhandlers;
-
-import com.android.annotations.NonNull;
-import com.android.fakeadbserver.CommandHandler;
-import com.android.fakeadbserver.DeviceState;
-import com.android.fakeadbserver.FakeAdbServer;
-import java.net.Socket;
+import com.android.fakeadbserver.CommandHandler
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.FakeAdbServer
+import java.net.Socket
 
 /**
  * DeviceComamndHandlers handle commands directed at a device. This includes host-prefix: commands
  * as per the protocol doc, as well as device commands after calling host:transport[-*].
  */
-public class DeviceCommandHandler extends CommandHandler {
-
-    protected final String command;
-
-    public DeviceCommandHandler(String command) {
-        this.command = command;
-    }
+open class DeviceCommandHandler(@JvmField protected val command: String) : CommandHandler() {
 
     /**
      * Processes the command and arguments. If this handler accepts it, it will execute it and
      * return true.
      */
-    public boolean accept(
-            @NonNull FakeAdbServer server,
-            @NonNull Socket socket,
-            @NonNull DeviceState device,
-            @NonNull String command,
-            @NonNull String args) {
-        if (this.command.equals(command)) {
+    open fun accept(
+        server: FakeAdbServer,
+        socket: Socket,
+        device: DeviceState,
+        command: String,
+        args: String
+    ): Boolean {
+        return if (this.command == command) {
             try {
-                invoke(server, socket, device, args);
-                return true;
-            } catch (NextHandlerException e) {
+                invoke(server, socket, device, args)
+                true
+            } catch (e: NextHandlerException) {
                 // The handler does not want to handle this command
-                return false;
+                false
             }
-        }
-        return false;
+        } else false
     }
 
     /**
      * Invokes this command. This method is only called if the handler accepts the command with its
      * arguments.
      */
-    public void invoke(
-            @NonNull FakeAdbServer server,
-            @NonNull Socket socket,
-            @NonNull DeviceState device,
-            @NonNull String args) {}
+    open operator fun invoke(
+        server: FakeAdbServer,
+        socket: Socket,
+        device: DeviceState,
+        args: String
+    ) {
+    }
 
     /**
-     * Exception thrown by {@link DeviceCommandHandler} implementations that want to pass the
+     * Exception thrown by [DeviceCommandHandler] implementations that want to pass the
      * command to the next handler in line.
      */
-    public static class NextHandlerException extends UnsupportedOperationException {}
+    class NextHandlerException : UnsupportedOperationException()
 }

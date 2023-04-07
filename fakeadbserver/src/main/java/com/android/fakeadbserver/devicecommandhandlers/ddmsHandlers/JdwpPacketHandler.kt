@@ -19,7 +19,7 @@ import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import java.io.OutputStream
 
-interface JdwpPacketHandler {
+fun interface JdwpPacketHandler {
 
     /**
      * Interface for fake debugger to handle incoming JDWP packets

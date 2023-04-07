@@ -13,25 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers;
+package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 
-import com.android.annotations.NonNull;
-import com.android.fakeadbserver.ClientState;
-import com.android.fakeadbserver.DeviceState;
-import java.io.OutputStream;
+import com.android.fakeadbserver.ClientState
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket.Companion.encodeChunkType
+import java.io.OutputStream
 
-public class ExitHandler implements DDMPacketHandler {
+class ExitHandler : DDMPacketHandler {
 
-    public static final int CHUNK_TYPE = DdmPacket.encodeChunkType("EXIT");
-
-    @Override
-    public boolean handlePacket(
-            @NonNull DeviceState device,
-            @NonNull ClientState client,
-            @NonNull DdmPacket packet,
-            @NonNull OutputStream oStream) {
+    override fun handlePacket(
+        device: DeviceState,
+        client: ClientState,
+        packet: DdmPacket,
+        oStream: OutputStream
+    ): Boolean {
         // Kill the client and the connection
-        device.stopClient(client.getPid());
-        return false;
+        device.stopClient(client.pid)
+        return false
+    }
+
+    companion object {
+
+        val CHUNK_TYPE = encodeChunkType("EXIT")
     }
 }

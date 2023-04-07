@@ -13,105 +13,86 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver.devicecommandhandlers
 
-package com.android.fakeadbserver.devicecommandhandlers;
-
-import com.android.annotations.NonNull;
-import com.android.fakeadbserver.DeviceState;
-import com.android.fakeadbserver.FakeAdbServer;
-import com.android.fakeadbserver.statechangehubs.ClientStateChangeHandlerFactory;
-import com.android.fakeadbserver.statechangehubs.StateChangeHandlerFactory;
-import com.android.fakeadbserver.statechangehubs.StateChangeQueue;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.util.concurrent.Callable;
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.FakeAdbServer
+import com.android.fakeadbserver.statechangehubs.ClientStateChangeHandlerFactory
+import com.android.fakeadbserver.statechangehubs.StateChangeHandlerFactory
+import java.io.IOException
+import java.io.OutputStream
+import java.net.Socket
+import java.util.concurrent.Callable
 
 /**
- * track-jdwp tracks the device's Android Client list, sending change messages whenever a client
- * is added/removed, or have its state changed.
+ * track-jdwp tracks the device's Android Client list, sending change messages whenever a client is
+ * added/removed, or have its state changed.
  */
-public class TrackJdwpCommandHandler extends DeviceCommandHandler {
+class TrackJdwpCommandHandler : DeviceCommandHandler("track-jdwp") {
 
-    public TrackJdwpCommandHandler() {
-        super("track-jdwp");
-    }
-
-    @Override
-    public void invoke(
-            @NonNull FakeAdbServer server,
-            @NonNull Socket socket,
-            @NonNull DeviceState device,
-            @NonNull String args) {
-        OutputStream stream;
-        try {
-            stream = socket.getOutputStream();
-        } catch (IOException e) {
-            return;
+    override fun invoke(
+        server: FakeAdbServer,
+        socket: Socket,
+        device: DeviceState,
+        args: String
+    ) {
+        val stream: OutputStream
+        stream = try {
+            socket.getOutputStream()
+        } catch (e: IOException) {
+            return
         }
+        val queue = device.clientChangeHub
+            .subscribe(
+                object : ClientStateChangeHandlerFactory {
+                    override fun createClientListChangedHandler(): Callable<StateChangeHandlerFactory.HandlerResult> {
+                        return Callable {
+                            try {
+                                sendClientList(device, stream)
+                                return@Callable StateChangeHandlerFactory.HandlerResult(
+                                    true
+                                )
+                            } catch (ignored: IOException) {
+                                return@Callable StateChangeHandlerFactory.HandlerResult(
+                                    false
+                                )
+                            }
+                        }
+                    }
 
-        StateChangeQueue queue =
-                device.getClientChangeHub()
-                        .subscribe(
-                                new ClientStateChangeHandlerFactory() {
-                                    @NonNull
-                                    @Override
-                                    public Callable<HandlerResult>
-                                            createClientListChangedHandler() {
-                                        return () -> {
-                                            try {
-                                                sendClientList(device, stream);
-                                                return new StateChangeHandlerFactory.HandlerResult(
-                                                        true);
-                                            } catch (IOException ignored) {
-                                                return new StateChangeHandlerFactory.HandlerResult(
-                                                        false);
-                                            }
-                                        };
-                                    }
+                    override fun createAppProcessListChangedHandler(): Callable<StateChangeHandlerFactory.HandlerResult> {
+                        return Callable { StateChangeHandlerFactory.HandlerResult(true) }
+                    }
 
-                                    @NonNull
-                                    @Override
-                                    public Callable<HandlerResult>
-                                            createAppProcessListChangedHandler() {
-                                        return () -> new HandlerResult(true);
-                                    }
-
-                                    @NonNull
-                                    @Override
-                                    public Callable<HandlerResult>
-                                            createLogcatMessageAdditionHandler(
-                                                    @NonNull String message) {
-                                        return () -> new HandlerResult(true);
-                                    }
-                                });
-
-        if (queue == null) {
-            return; // Server has shutdown before we are able to start listening to the queue.
-        }
-
+                    override fun createLogcatMessageAdditionHandler(
+                        message: String
+                    ): Callable<StateChangeHandlerFactory.HandlerResult> {
+                        return Callable { StateChangeHandlerFactory.HandlerResult(true) }
+                    }
+                })
+            ?: return  // Server has shutdown before we are able to start listening to the queue.
         try {
-            writeOkay(stream); // Send ok first.
-
-            sendClientList(device, stream); // Then send the initial client list.
-
+            writeOkay(stream) // Send ok first.
+            sendClientList(device, stream) // Then send the initial client list.
             while (true) {
                 if (!queue.take().call().mShouldContinue) {
-                    break;
+                    break
                 }
             }
-        } catch (Exception ignored) {
+        } catch (ignored: Exception) {
         } finally {
-            device.getClientChangeHub().unsubscribe(queue);
+            device.clientChangeHub.unsubscribe(queue)
         }
-
-        return;
+        return
     }
 
-    private static void sendClientList(@NonNull DeviceState device, @NonNull OutputStream stream)
-            throws IOException {
-        String clientListString = device.getClientListString();
-        write4ByteHexIntString(stream, clientListString.length());
-        writeString(stream, clientListString);
+    companion object {
+
+        @Throws(IOException::class)
+        private fun sendClientList(device: DeviceState, stream: OutputStream) {
+            val clientListString = device.clientListString
+            write4ByteHexIntString(stream, clientListString.length)
+            writeString(stream, clientListString)
+        }
     }
 }

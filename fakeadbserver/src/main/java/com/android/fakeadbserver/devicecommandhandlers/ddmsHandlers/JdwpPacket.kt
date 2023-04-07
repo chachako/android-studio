@@ -13,127 +13,88 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers;
+package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 
-import com.google.common.io.ByteStreams;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
+import com.google.common.io.ByteStreams
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
+import java.nio.ByteBuffer
 
 // Handle a JDWP packet.
-public class JdwpPacket {
+class JdwpPacket(
+    val id: Int,
+    val isResponse: Boolean,
+    val errorCode: Short,
+    val payload: ByteArray,
+    val cmdSet: Int,
+    val cmd: Int
+) {
 
-    private static final int JDWP_HEADER_LENGTH = 11;
-
-    private static final byte IS_RESPONSE_FLAG = (byte)0x80;
-
-    private final int myId;
-
-    private final boolean myIsResponse;
-
-    private final short myErrorCode;
-
-    private final byte[] myPayload;
-
-    private final int mCmdSet;
-
-    private final int mCmd;
-
-    protected JdwpPacket(
-            int id, boolean isResponse, short errorCode, byte[] payload, int cmdSet, int cmd) {
-        myId = id;
-        myIsResponse = isResponse;
-        myErrorCode = errorCode;
-        myPayload = payload;
-        mCmdSet = cmdSet;
-        mCmd = cmd;
-    }
-
-    public byte[] getPayload() {
-        return myPayload;
-    }
-
-    public int getCmdSet() {
-        return mCmdSet;
-    }
-
-    public int getCmd() {
-        return mCmd;
-    }
-
-    public boolean isResponse() {
-        return myIsResponse;
-    }
-
-    public short getErrorCode() {
-        return myErrorCode;
-    }
-
-    public int getId() {
-        return myId;
-    }
-
-    public void write(OutputStream oStream) throws IOException {
-        byte[] response = new byte[JDWP_HEADER_LENGTH + myPayload.length];
-        ByteBuffer responseBuffer = ByteBuffer.wrap(response);
-        responseBuffer.putInt(response.length);
-        responseBuffer.putInt(myId);
-        responseBuffer.put(myIsResponse ? IS_RESPONSE_FLAG : 0);
-        if (myIsResponse) {
-            responseBuffer.putShort(myErrorCode);
+    @Throws(IOException::class)
+    fun write(oStream: OutputStream) {
+        val response = ByteArray(JDWP_HEADER_LENGTH + payload.size)
+        val responseBuffer = ByteBuffer.wrap(response)
+        responseBuffer.putInt(response.size)
+        responseBuffer.putInt(id)
+        responseBuffer.put(if (isResponse) IS_RESPONSE_FLAG else 0)
+        if (isResponse) {
+            responseBuffer.putShort(errorCode)
         } else {
-            responseBuffer.put((byte) mCmdSet);
-            responseBuffer.put((byte) mCmd);
+            responseBuffer.put(cmdSet.toByte())
+            responseBuffer.put(cmd.toByte())
         }
-        responseBuffer.put(myPayload);
-
-        oStream.write(response);
+        responseBuffer.put(payload)
+        oStream.write(response)
     }
 
-    // Reads a packet from a stream
-    public static JdwpPacket readFrom(InputStream iStream) throws IOException {
-        byte[] packetHeader = new byte[JDWP_HEADER_LENGTH];
-        ByteStreams.readFully(iStream, packetHeader);
+    companion object {
 
-        ByteBuffer headerBuffer = ByteBuffer.wrap(packetHeader);
-        int length = headerBuffer.getInt();
-        int id = headerBuffer.getInt();
-        int flags = headerBuffer.get() & 0xff;
-        int commandSet = headerBuffer.get() & 0xff;
-        int command = headerBuffer.get() & 0xff;
-        int readCount;
+        private const val JDWP_HEADER_LENGTH = 11
+        private const val IS_RESPONSE_FLAG = 0x80.toByte()
 
-        int payloadLength = length - JDWP_HEADER_LENGTH;
-        byte[] payload = new byte[payloadLength];
-        if (payloadLength > 0) {
-            readCount = iStream.read(payload);
-            assert payload.length == readCount;
+        // Reads a packet from a stream
+        @Throws(IOException::class)
+        fun readFrom(iStream: InputStream): JdwpPacket {
+            val packetHeader = ByteArray(JDWP_HEADER_LENGTH)
+            ByteStreams.readFully(iStream, packetHeader)
+            val headerBuffer = ByteBuffer.wrap(packetHeader)
+            val length = headerBuffer.int
+            val id = headerBuffer.int
+            val flags = headerBuffer.get().toInt() and 0xff
+            val commandSet = headerBuffer.get().toInt() and 0xff
+            val command = headerBuffer.get().toInt() and 0xff
+            val readCount: Int
+            val payloadLength = length - JDWP_HEADER_LENGTH
+            val payload = ByteArray(payloadLength)
+            if (payloadLength > 0) {
+                readCount = iStream.read(payload)
+                assert(payload.size == readCount)
+            }
+            assert(length >= JDWP_HEADER_LENGTH)
+            assert(flags and IS_RESPONSE_FLAG.toInt().inv() == 0)
+            return JdwpPacket(id, isResponse(flags), 0.toShort(), payload, commandSet, command)
         }
 
-        assert length >= JDWP_HEADER_LENGTH;
-        assert (flags & ~IS_RESPONSE_FLAG) == 0;
+        // Create a response packet
+        fun createResponse(id: Int, payload: ByteArray, cmdSet: Int, cmd: Int): JdwpPacket {
+            return JdwpPacket(id, true, 0.toShort(), payload, cmdSet, cmd)
+        }
 
-        return new JdwpPacket(id, isResponse(flags), (short) 0, payload, commandSet, command);
-    }
+        // Create a response packet with an empty payload
+        fun createEmptyDdmsResponse(id: Int): JdwpPacket {
+            return createResponse(
+                id, ByteArray(0), DdmPacket.DDMS_CMD_SET, DdmPacket.DDMS_CMD
+            )
+        }
 
-    // Create a response packet
-    public static JdwpPacket createResponse(int id, byte[] payload, int cmdSet, int cmd) {
-        return new JdwpPacket(id, true, (short) 0, payload, cmdSet, cmd);
-    }
+        // create a non-response packet
+        fun create(payload: ByteArray, cmdSet: Int, cmd: Int): JdwpPacket {
+            return JdwpPacket(1234, false, 0.toShort(), payload, cmdSet, cmd)
+        }
 
-    // Create a response packet with an empty payload
-    public static JdwpPacket createEmptyDdmsResponse(int id) {
-        return JdwpPacket.createResponse(
-                id, new byte[0], DdmPacket.DDMS_CMD_SET, DdmPacket.DDMS_CMD);
-    }
-
-    // create a non-response packet
-    public static JdwpPacket create(byte[] payload, int cmdSet, int cmd) {
-        return new JdwpPacket(1234, false, (short) 0, payload, cmdSet, cmd);
-    }
-
-    private static boolean isResponse(int flags) {
-        return (flags & IS_RESPONSE_FLAG) != 0;
+        private fun isResponse(flags: Int): Boolean {
+            return flags and IS_RESPONSE_FLAG.toInt() != 0
+        }
     }
 }
