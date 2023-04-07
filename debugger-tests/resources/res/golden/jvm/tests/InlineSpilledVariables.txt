@@ -1,38 +1,38 @@
-Breakpoint: InlineSpilledVariables.kt:40
+Breakpoint: InlineSpilledVariables.kt.tests.InlineSpilledVariables.start():40
 ========================================================
-0  [2-214]   : main1               : int
-1  [4-214]   : main2               : int
-2  [6-214]   : main3               : int
-3  [8-214]   : main4               : int
-4  [63-213]  : this_$iv            : tests.InlineSpilledVariables
-5  [63-213]  : i$iv                : int
-6  [63-213]  : s$iv                : java.lang.String
-7  [66-213]  : $i$f$foo            : int
-8  [69-213]  : foo1$iv             : int
-9  [72-213]  : foo2$iv             : int
-10 [75-213]  : foo3$iv             : int
-11 [78-213]  : foo4$iv             : int
+0  [27-32]    [2-214]   : main1                         : int
+1  [28-32]    [4-214]   : main2                         : int
+2  [29-32]    [6-214]   : main3                         : int
+3  [30-32]    [8-214]   : main4                         : int
+4  [31-42]    [63-213]  : this_$iv                      : tests.InlineSpilledVariables
+5  [31-42]    [63-213]  : i$iv                          : int
+6  [31-42]    [63-213]  : s$iv                          : java.lang.String
+7  [35-42]    [66-213]  : $i$f$foo                      : int
+8  [36-42]    [69-213]  : foo1$iv                       : int
+9  [37-42]    [72-213]  : foo2$iv                       : int
+10 [38-42]    [75-213]  : foo3$iv                       : int
+11 [39-42]    [78-213]  : foo4$iv                       : int
 
-Breakpoint: InlineSpilledVariables.kt:50
+Breakpoint: InlineSpilledVariables.kt.tests.InlineSpilledVariables.start():50
 ========================================================
-0  [2-214]   : main1               : int
-1  [4-214]   : main2               : int
-2  [6-214]   : main3               : int
-3  [8-214]   : main4               : int
-4  [63-213]  : this_$iv            : tests.InlineSpilledVariables
-5  [63-213]  : i$iv                : int
-6  [63-213]  : s$iv                : java.lang.String
-7  [66-213]  : $i$f$foo            : int
-8  [69-213]  : foo1$iv             : int
-9  [72-213]  : foo2$iv             : int
-10 [75-213]  : foo3$iv             : int
-11 [78-213]  : foo4$iv             : int
-12 [147-212] : this_$iv$iv         : tests.InlineSpilledVariables
-13 [147-212] : i$iv$iv             : int
-14 [147-212] : s$iv$iv             : java.lang.String
-15 [150-212] : $i$f$bar            : int
-16 [153-212] : bar1$iv$iv          : int
-17 [156-212] : bar2$iv$iv          : int
-18 [159-212] : bar3$iv$iv          : int
-19 [162-212] : bar4$iv$iv          : int
+0  [27-32]    [2-214]   : main1                         : int
+1  [28-32]    [4-214]   : main2                         : int
+2  [29-32]    [6-214]   : main3                         : int
+3  [30-32]    [8-214]   : main4                         : int
+4  [31-42]    [63-213]  : this_$iv                      : tests.InlineSpilledVariables
+5  [31-42]    [63-213]  : i$iv                          : int
+6  [31-42]    [63-213]  : s$iv                          : java.lang.String
+7  [35-42]    [66-213]  : $i$f$foo                      : int
+8  [36-42]    [69-213]  : foo1$iv                       : int
+9  [37-42]    [72-213]  : foo2$iv                       : int
+10 [38-42]    [75-213]  : foo3$iv                       : int
+11 [39-42]    [78-213]  : foo4$iv                       : int
+12 [41-51]    [147-212] : this_$iv$iv                   : tests.InlineSpilledVariables
+13 [41-51]    [147-212] : i$iv$iv                       : int
+14 [41-51]    [147-212] : s$iv$iv                       : java.lang.String
+15 [45-51]    [150-212] : $i$f$bar                      : int
+16 [46-51]    [153-212] : bar1$iv$iv                    : int
+17 [47-51]    [156-212] : bar2$iv$iv                    : int
+18 [48-51]    [159-212] : bar3$iv$iv                    : int
+19 [49-51]    [162-212] : bar4$iv$iv                    : int
 

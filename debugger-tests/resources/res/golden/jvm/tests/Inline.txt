@@ -1,21 +1,21 @@
-Breakpoint: Inline.kt:25
+Breakpoint: Inline.kt.tests.Inline.start():25
 ========================================================
 
-Breakpoint: Inline.kt:30
+Breakpoint: Inline.kt.tests.Inline.start():30
 ========================================================
-0  [12-40]   : this_$iv            : tests.Inline
-1  [12-40]   : i$iv                : int
-2  [12-40]   : s$iv                : java.lang.String
-3  [14-40]   : $i$f$foo            : int
+0  [26-32]    [12-40]   : this_$iv                      : tests.Inline
+1  [26-32]    [12-40]   : i$iv                          : int
+2  [26-32]    [12-40]   : s$iv                          : java.lang.String
+3  [30-32]    [14-40]   : $i$f$foo                      : int
 
-Breakpoint: Inline.kt:35
+Breakpoint: Inline.kt.tests.Inline.start():35
 ========================================================
-0  [12-40]   : this_$iv            : tests.Inline
-1  [12-40]   : i$iv                : int
-2  [12-40]   : s$iv                : java.lang.String
-3  [14-40]   : $i$f$foo            : int
-4  [33-39]   : this_$iv$iv         : tests.Inline
-5  [33-39]   : i$iv$iv             : int
-6  [33-39]   : s$iv$iv             : java.lang.String
-7  [36-39]   : $i$f$bar            : int
+0  [26-32]    [12-40]   : this_$iv                      : tests.Inline
+1  [26-32]    [12-40]   : i$iv                          : int
+2  [26-32]    [12-40]   : s$iv                          : java.lang.String
+3  [30-32]    [14-40]   : $i$f$foo                      : int
+4  [31-36]    [33-39]   : this_$iv$iv                   : tests.Inline
+5  [31-36]    [33-39]   : i$iv$iv                       : int
+6  [31-36]    [33-39]   : s$iv$iv                       : java.lang.String
+7  [35-36]    [36-39]   : $i$f$bar                      : int
 

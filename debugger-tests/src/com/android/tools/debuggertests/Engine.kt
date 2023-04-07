@@ -46,18 +46,26 @@ internal abstract class Engine(val vmName: String) {
           val breakpoint = debugger.resume(Event::class.java) as? BreakpointEvent ?: break
           val frame = breakpoint.thread().frames()[1]
           val location = frame.location()
-          append("Breakpoint: ${location.sourceName()}:${location.lineNumber()}\n")
+          append(
+            "Breakpoint: ${location.sourceName()}.${location.method()}:${location.lineNumber()}\n"
+          )
           append("========================================================\n")
           frame.visibleVariables().map { variable ->
-            val scope =
+            val codeScope =
               "[%d-%d]".format(
                 variable.getStartScope().codeIndex(),
                 variable.getEndScope().codeIndex()
               )
+            val lineScope =
+              "[%d-%d]".format(
+                variable.getStartScope().lineNumber(),
+                variable.getEndScope().lineNumber()
+              )
             val line =
-              "%-2d %-10s: %-20s: %s\n".format(
+              "%-2d %-10s %-10s: %-30s: %s\n".format(
                 variable.getSlot(),
-                scope,
+                lineScope,
+                codeScope,
                 variable.name(),
                 variable.typeName()
               )
