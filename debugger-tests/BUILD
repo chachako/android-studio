@@ -51,6 +51,7 @@ filegroup(
     srcs = [
         ":test-classes-binary_deploy.jar",
         ":test-classes-dex.jar",
+        "//prebuilts/studio/sdk:platform-tools",
         "//prebuilts/tools/linux-x86_64/art",
         "//prebuilts/tools/linux-x86_64/art:art_deps",
     ],
@@ -92,6 +93,7 @@ java_binary(
     data = glob(["resources/**"]) + [
         ":test-classes-binary_deploy.jar",
         ":test-classes-dex.jar",
+        "//prebuilts/studio/sdk:platform-tools",
         "//prebuilts/tools/linux-x86_64/art",
         "//prebuilts/tools/linux-x86_64/art:art_deps",
     ],

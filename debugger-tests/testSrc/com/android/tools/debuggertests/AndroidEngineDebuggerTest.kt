@@ -16,26 +16,25 @@
 package com.android.tools.debuggertests
 
 import com.android.tools.asdriver.tests.EmulatorRule
-import com.google.common.truth.Truth.assertThat
 import org.junit.ClassRule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
-class AndroidEngineDebuggerTest {
+/** Runs tests using a [JvmEngine] */
+@RunWith(Parameterized::class)
+internal class AndroidEngineDebuggerTest(testClass: String) :
+  DebuggerTestBase(testClass, AndroidEngine(emulatorRule.emulator.serialNumber)) {
 
   companion object {
+
+    @JvmStatic @Parameterized.Parameters fun getTestClasses() = Resources.findTestClasses()
 
     @JvmStatic @get:ClassRule val emulatorRule = EmulatorRule()
   }
 
   @Test
-  fun runEmulatorTest1() {
-    println("Test1")
-    assertThat(emulatorRule.emulator.serialNumber).startsWith("emulator-")
-  }
-
-  @Test
-  fun runEmulatorTest2() {
-    println("Test2")
-    assertThat(emulatorRule.emulator.serialNumber).startsWith("emulator-")
+  fun test() {
+    runTest()
   }
 }

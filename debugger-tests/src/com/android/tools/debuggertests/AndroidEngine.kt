@@ -18,6 +18,7 @@ package com.android.tools.debuggertests
 import java.io.Closeable
 import java.lang.ProcessBuilder.Redirect.INHERIT
 import java.lang.ProcessBuilder.Redirect.PIPE
+import kotlin.io.path.pathString
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +29,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+private val ADB = Resources.ROOT.resolve("prebuilts/studio/sdk/linux/platform-tools/adb").pathString
 private const val DEVICE_DEX_PATH = "/data/local/tmp/test-classes-dex.jar"
 private const val JDWP_PORT = 54321
 private const val PUSH_COMMAND = "%s push %s %s"
@@ -50,7 +52,7 @@ private const val PORT_FORWARD_COMMAND = "%s forward tcp:%d jdwp:%d"
  */
 internal class AndroidEngine(serialNumber: String? = null) : Engine("dex") {
 
-  private val adb = if (serialNumber == null) "adb" else "adb -s $serialNumber"
+  private val adb = if (serialNumber == null) ADB else "$ADB -s $serialNumber"
 
   init {
     pushDexFileToDevice()
@@ -98,8 +100,8 @@ internal class AndroidEngine(serialNumber: String? = null) : Engine("dex") {
     // Step 7
     return DebuggerWithResources(
       debugger,
-      Closeable { process.destroyForcibly() },
       Closeable { scope.cancel() },
+      Closeable { if (process.isAlive) process.destroyForcibly() },
     )
   }
 

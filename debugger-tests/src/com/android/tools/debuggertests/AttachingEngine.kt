@@ -58,8 +58,8 @@ internal abstract class AttachingEngine(vmName: String) : Engine(vmName) {
     println("Attaching to localhost:$port")
     return DebuggerWithResources(
       DebuggerImpl.attachToProcess("localhost", port).waitForStart(),
-      Closeable { process.destroyForcibly() },
       Closeable { scope.cancel() },
+      Closeable { if (process.isAlive) process.destroyForcibly() },
     )
   }
 
