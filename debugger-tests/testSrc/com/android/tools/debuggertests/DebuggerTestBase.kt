@@ -21,12 +21,15 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 
 /** A base class for Debugger Tests */
-internal abstract class DebuggerTestBase(protected val testClass: String) {
+internal abstract class DebuggerTestBase(
+  private val testClass: String,
+  private val engine: Engine,
+) {
 
   private fun describeTest() = "at $testClass(${testClass.substringAfterLast(".")}.kt:20)"
 
-  fun runTest(engine: Engine) {
-    val actual = runBlocking { withTimeout(5.seconds) { engine.runTest() } }
+  fun runTest() {
+    val actual = runBlocking { withTimeout(5.seconds) { engine.runTest(testClass) } }
     val expected = Resources.readGolden(testClass, engine.vmName)
 
     Truth.assertThat(actual).named(describeTest()).isEqualTo(expected)

@@ -51,17 +51,17 @@ fun main(args: Array<String>) {
   val t = type // so we can smart-cast
   val engineTypes = if (t != null) listOf(t) else EngineType.values().asList()
   engineTypes.forEach { engineType ->
+    val engine =
+      when (engineType) {
+        SIMPLE -> SimpleEngine()
+        JVM -> JvmEngine()
+        ANDROID -> AndroidEngine(serialNumber)
+      }
     println("Running tests for engine: $engineType")
 
     testClasses.forEach { testClass ->
       println("  Test $testClass")
-      val engine =
-        when (engineType) {
-          SIMPLE -> SimpleEngine(testClass)
-          JVM -> JvmEngine(testClass)
-          ANDROID -> AndroidEngine(testClass, serialNumber)
-        }
-      val actual = runBlocking { withTimeout(30.seconds) { engine.runTest() } }
+      val actual = runBlocking { withTimeout(30.seconds) { engine.runTest(testClass) } }
       if (!noop) {
         Resources.writeGolden(testClass, actual, engine.vmName)
       }

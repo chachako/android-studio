@@ -15,22 +15,16 @@
  */
 package com.android.tools.debuggertests
 
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
-import org.junit.runners.Parameterized.Parameters
+import java.io.Closeable
 
-/** Runs tests using a [JvmEngine] */
-@RunWith(Parameterized::class)
-internal class JvmEngineDebuggerTest(testClass: String) : DebuggerTestBase(testClass, JvmEngine()) {
+/** A [Debugger] that owns resources and releases them when it's done */
+internal class DebuggerWithResources(
+  private val delegate: Debugger,
+  private vararg val resources: Closeable,
+) : Debugger by delegate {
 
-  companion object {
-
-    @JvmStatic @Parameters fun getTestClasses() = Resources.findTestClasses()
-  }
-
-  @Test
-  fun test() {
-    runTest()
+  override fun close() {
+    delegate.close()
+    resources.forEach { it.close() }
   }
 }

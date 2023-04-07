@@ -19,55 +19,54 @@ import com.sun.jdi.LocalVariable
 import com.sun.jdi.Location
 import com.sun.jdi.event.BreakpointEvent
 import com.sun.jdi.event.Event
-import java.io.Closeable
 
 private const val BREAKPOINT_CLASS = "BreakpointKt"
 private const val BREAKPOINT_LINE = 20
 
 /** A simple test engine */
-internal abstract class Engine(val vmName: String) : Closeable {
+internal abstract class Engine(val vmName: String) {
 
-  protected abstract suspend fun startDebugger(): Debugger
+  protected abstract suspend fun startDebugger(mainClass: String): Debugger
 
   protected open fun onBreakpointAdded() {}
 
   /**
    * Executes a single test.
-   * 1. Starts a [Debugger]
+   * 1. Starts a [DebuggerImpl]
    * 2. Sets a breakpoint at Breakpoint.breakpoint()
    * 3. Resumes the program each time it hits a breakpoint
    * 4. On each breakpoint, emits information about the frame into a string
    */
-  suspend fun runTest(): String {
-    val debugger = startDebugger()
-    debugger.setBreakpoint(BREAKPOINT_CLASS, BREAKPOINT_LINE)
-    onBreakpointAdded()
-    val actual = buildString {
-      while (true) {
-        val breakpoint = debugger.resume<Event>() as? BreakpointEvent ?: break
-        val frame = breakpoint.thread().frames()[1]
-        val location = frame.location()
-        append("Breakpoint: ${location.sourceName()}:${location.lineNumber()}\n")
-        append("========================================================\n")
-        frame.visibleVariables().map { variable ->
-          val scope =
-            "[%d-%d]".format(
-              variable.getStartScope().codeIndex(),
-              variable.getEndScope().codeIndex()
-            )
-          val line =
-            "%-2d %-10s: %-20s: %s\n".format(
-              variable.getSlot(),
-              scope,
-              variable.name(),
-              variable.typeName()
-            )
-          append(line)
+  suspend fun runTest(mainClass: String): String {
+    return startDebugger(mainClass).use { debugger ->
+      debugger.setBreakpoint(BREAKPOINT_CLASS, BREAKPOINT_LINE)
+      onBreakpointAdded()
+      buildString {
+        while (true) {
+          val breakpoint = debugger.resume(Event::class.java) as? BreakpointEvent ?: break
+          val frame = breakpoint.thread().frames()[1]
+          val location = frame.location()
+          append("Breakpoint: ${location.sourceName()}:${location.lineNumber()}\n")
+          append("========================================================\n")
+          frame.visibleVariables().map { variable ->
+            val scope =
+              "[%d-%d]".format(
+                variable.getStartScope().codeIndex(),
+                variable.getEndScope().codeIndex()
+              )
+            val line =
+              "%-2d %-10s: %-20s: %s\n".format(
+                variable.getSlot(),
+                scope,
+                variable.name(),
+                variable.typeName()
+              )
+            append(line)
+          }
+          append('\n')
         }
-        append('\n')
       }
     }
-    return actual
   }
 }
 

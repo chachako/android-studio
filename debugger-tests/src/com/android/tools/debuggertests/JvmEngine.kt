@@ -16,6 +16,7 @@
 package com.android.tools.debuggertests
 
 import java.io.BufferedReader
+import java.io.Closeable
 import java.io.InputStreamReader
 import java.lang.ProcessBuilder.Redirect.INHERIT
 import java.lang.ProcessBuilder.Redirect.PIPE
@@ -41,19 +42,38 @@ private val JAVA = if (isWindows()) "java.exe" else "java"
  *
  * Starts a java process and connects to it using the socket JDWP transport.
  */
-internal class JvmEngine(private val mainClass: String) : Engine("jvm") {
+internal class JvmEngine : Engine("jvm") {
 
-  private lateinit var process: Process
-  private val scope = CoroutineScope(SupervisorJob())
+  /**
+   * Starts a debugger:
+   * 1. Launch process using `java`.
+   * 2. Monitor the output from `java` and extract the debugger port
+   * 3. Attach a debugger and wait for vm to start
+   */
+  override suspend fun startDebugger(mainClass: String): Debugger {
+    val scope = CoroutineScope(SupervisorJob())
 
-  override suspend fun startDebugger(): Debugger {
+    // Step 1
     val classpath = Resources.getTestClassesJarPath()
-    process =
+    val process =
       ProcessBuilder(getJavaExe(), JDWP_OPTIONS, CLASSPATH, classpath, MAIN, mainClass)
         .redirectOutput(PIPE)
         .redirectError(INHERIT)
         .start()
 
+    // Step 2
+    val port = waitForPortNumber(scope, process)
+
+    // Step 3
+    println("Attaching to localhost:$port")
+    return DebuggerWithResources(
+      DebuggerImpl.attachToProcess("localhost", port).waitForStart(),
+      Closeable { process.destroyForcibly() },
+      Closeable { scope.cancel() },
+    )
+  }
+
+  private suspend fun waitForPortNumber(scope: CoroutineScope, process: Process): Int {
     val portDeferred = CompletableDeferred<Int>()
     scope.launch {
       launch {
@@ -73,16 +93,7 @@ internal class JvmEngine(private val mainClass: String) : Engine("jvm") {
         }
       }
     }
-    val port = portDeferred.await()
-    println("Attaching to localhost:$port")
-    return Debugger.attachToProcess("localhost", port).waitForStart()
-  }
-
-  override fun close() {
-    if (this::process.isInitialized && process.isAlive) {
-      process.destroyForcibly()
-    }
-    scope.cancel()
+    return portDeferred.await()
   }
 }
 

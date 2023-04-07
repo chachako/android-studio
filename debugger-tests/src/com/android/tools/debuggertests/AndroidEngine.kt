@@ -15,6 +15,7 @@
  */
 package com.android.tools.debuggertests
 
+import java.io.Closeable
 import java.lang.ProcessBuilder.Redirect.INHERIT
 import java.lang.ProcessBuilder.Redirect.PIPE
 import kotlinx.coroutines.CompletableDeferred
@@ -47,61 +48,62 @@ private const val PORT_FORWARD_COMMAND = "%s forward tcp:%d jdwp:%d"
  *
  * TODO: Add support for specifying a serial number
  */
-internal class AndroidEngine(private val mainClass: String, serialNumber: String? = null) :
-  Engine("dalvik") {
+internal class AndroidEngine(serialNumber: String? = null) : Engine("dalvik") {
 
   private val adb = if (serialNumber == null) "adb" else "adb -s $serialNumber"
 
-  private lateinit var process: Process
-
-  private val scope = CoroutineScope(SupervisorJob())
+  init {
+    pushDexFileToDevice()
+  }
 
   /**
    * Starts a debugger:
-   * 1. Push the DEX JAR file to the device TODO: Find a way to do this once for all tests
-   * 2. Launch process using `dalvikvm`. The process will wait for a `<newline>` before starting the
+   * 1. Launch process using `dalvikvm`. The process will wait for a `<newline>` before starting the
    *    test.
-   * 3. Monitor the output from `dalvik` and extract the PID of the launched process
-   * 4. Using the pid, set up port forwarding. TODO: Find a way to find a safe unused port
-   * 5. Attach a debugger
-   * 6. Suspend the process because `dalvik` doesn't support `suspend`
-   * 7. Send a `<newline>` to the process. It is still suspended.
-   * 8. The debugger is now ready. Note that unlike other engines, we do not expect a `VMStartEvent`
+   * 2. Monitor the output from `dalvik` and extract the PID of the launched process
+   * 3. Using the pid, set up port forwarding. TODO: Find a way to find a safe unused port
+   * 4. Attach a debugger
+   * 5. Suspend the process because `dalvik` doesn't support `suspend`
+   * 6. Send a `<newline>` to the process. It is still suspended.
+   * 7. The debugger is now ready. Note that unlike other engines, we do not expect a `VMStartEvent`
    *    here so do not call [Debugger.waitForStart]
    */
-  override suspend fun startDebugger(): Debugger {
-    // Step 1
-    pushDexFileToDevice()
+  override suspend fun startDebugger(mainClass: String): Debugger {
+    val scope = CoroutineScope(SupervisorJob())
 
-    // Step 2
-    process =
+    // Step 1
+    val process =
       ProcessBuilder(LAUNCH_COMMAND.format(adb, DEVICE_DEX_PATH, mainClass).split(' '))
         .redirectOutput(PIPE)
         .redirectError(INHERIT)
         .redirectInput(PIPE)
         .start()
 
-    // Step 3
-    val pid = waitForPid(process)
+    // Step 2
+    val pid = waitForPid(process, scope)
 
-    // Step 4
+    // Step 3
     setupPortForwarding(pid)
 
-    // Step 5
+    // Step 4
     println("Attaching to process $pid via adb")
-    val debugger = Debugger.attachToProcess("localhost", JDWP_PORT)
+    val debugger = DebuggerImpl.attachToProcess("localhost", JDWP_PORT)
 
-    // Step 6
+    // Step 5
     debugger.suspend()
 
-    // Step 7
+    // Step 6
     process.outputStream.writer().use { it.write("\n") }
 
-    // Step 8
-    return debugger
+    // Step 7
+    return DebuggerWithResources(
+      debugger,
+      Closeable { process.destroyForcibly() },
+      Closeable { scope.cancel() },
+    )
   }
 
-  private suspend fun waitForPid(process: Process): Int {
+  private suspend fun waitForPid(process: Process, scope: CoroutineScope): Int {
     val pidDeferred = CompletableDeferred<Int>()
     scope.launch {
       process.inputStream.bufferedReader().use {
@@ -119,13 +121,6 @@ internal class AndroidEngine(private val mainClass: String, serialNumber: String
       }
     }
     return pidDeferred.await()
-  }
-
-  override fun close() {
-    if (this::process.isInitialized && process.isAlive) {
-      process.destroyForcibly()
-    }
-    scope.cancel()
   }
 
   private fun pushDexFileToDevice() {

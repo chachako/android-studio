@@ -21,11 +21,9 @@ package com.android.tools.debuggertests
  * This is the easiest way to debug a program. It uses a [com.sun.jdi.connect.LaunchingConnector]
  * which launches and connects to the process.
  */
-internal class SimpleEngine(private val mainClass: String) : Engine("jvm") {
+internal class SimpleEngine : Engine("jvm") {
 
-  override suspend fun startDebugger(): Debugger {
-    return Debugger.launch(mainClass, Resources.getTestClassesJarPath()).waitForStart()
+  override suspend fun startDebugger(mainClass: String): Debugger {
+    return DebuggerImpl.launch(mainClass, Resources.getTestClassesJarPath()).waitForStart()
   }
-
-  override fun close() {}
 }

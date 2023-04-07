@@ -31,9 +31,13 @@ internal class EventChannel(queue: EventQueue) {
     thread.start()
   }
 
-  suspend inline fun <reified T : Event> receive(): T {
-    val event = channel.receive()
-    return event as? T ?: throw IllegalStateException("Unexpected event: $event")
+  suspend fun <T : Event> receive(eventClass: Class<T>): T {
+    val event: Event = channel.receive()
+    @Suppress("UNCHECKED_CAST")
+    when {
+      eventClass.isAssignableFrom(event.javaClass) -> return event as T
+      else -> throw IllegalStateException("Unexpected event: $event")
+    }
   }
 
   private class EventQueueThread(
