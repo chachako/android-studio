@@ -693,6 +693,7 @@
             <xsd:simpleType>
                 <xsd:restriction base="xsd:token">
                     <xsd:enumeration value="NFC" />
+                    <xsd:enumeration value="UWB" />
                     <xsd:enumeration value="Bluetooth" />
                     <xsd:enumeration value="Wifi" />
                 </xsd:restriction>
@@ -713,6 +714,7 @@
                     <xsd:enumeration value="Barometer" />
                     <xsd:enumeration value="Compass" />
                     <xsd:enumeration value="GPS" />
+                    <xsd:enumeration value="Fingerprint" />
                     <xsd:enumeration value="Gyroscope" />
                     <xsd:enumeration value="LightSensor" />
                     <xsd:enumeration value="ProximitySensor" />
