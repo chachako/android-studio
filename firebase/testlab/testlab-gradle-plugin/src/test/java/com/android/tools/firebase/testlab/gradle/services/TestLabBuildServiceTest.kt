@@ -16,6 +16,7 @@
 
 package com.android.tools.firebase.testlab.gradle.services
 
+import com.android.build.api.dsl.CommonExtension
 import com.android.testutils.MockitoKt.any
 import com.android.testutils.MockitoKt.eq
 import com.android.testutils.MockitoKt.mock
@@ -89,6 +90,8 @@ class TestLabBuildServiceTest {
         `when`(mockProject.path).thenReturn("mockProjectPath")
         `when`(mockProject.extensions.getByType(eq(TestLabGradlePluginExtension::class.java)))
                 .thenReturn(mockExtension)
+        `when`(mockProject.extensions.getByType(eq(CommonExtension::class.java)))
+                .thenReturn(mock())
         `when`(mockProject.providers).thenReturn(mockProviderFactory)
 
         TestLabBuildService.RegistrationAction(mockProject).registerIfAbsent()

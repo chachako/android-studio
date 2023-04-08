@@ -16,6 +16,7 @@
 
 package com.android.tools.firebase.testlab.gradle.services
 
+import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.instrumentation.StaticTestData
 import com.android.builder.testing.api.DeviceConfigProvider
 import com.android.tools.firebase.testlab.gradle.FixtureImpl
@@ -188,6 +189,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val recordVideo: Property<Boolean>
         val performanceMetrics: Property<Boolean>
         val stubAppApk: RegularFileProperty
+        val useOrchestrator: Property<Boolean>
     }
 
     internal open val credential: GoogleCredential by lazy {
@@ -334,6 +336,10 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                     }
                     testPackageId = testData.applicationId
                     testRunnerClass = testData.instrumentationRunner
+
+                    if(parameters.useOrchestrator.get()) {
+                        orchestratorOption = "USE_ORCHESTRATOR"
+                    }
 
                     createShardingOption()?.also { sharding ->
                         this.set(INSTRUMENTATION_TEST_SHARD_FIELD, sharding)
@@ -958,6 +964,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
         private val testLabExtension: TestLabGradlePluginExtension =
                 project.extensions.getByType(TestLabGradlePluginExtension::class.java)
+        private val androidExtension: CommonExtension<*, *, *, *, *> =
+                project.extensions.getByType(CommonExtension::class.java)
         private val providerFactory: ProviderFactory = project.providers
         private val configurationContainer: ConfigurationContainer = project.configurations
 
@@ -1125,6 +1133,12 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             })
             params.stubAppApk.fileProvider(providerFactory.provider {
                 configurationContainer.getByName(STUB_APP_CONFIG_NAME).singleFile
+            })
+            params.useOrchestrator.set(providerFactory.provider {
+                when(androidExtension.testOptions.execution.uppercase()) {
+                    "ANDROID_TEST_ORCHESTRATOR", "ANDROIDX_TEST_ORCHESTRATOR" -> true
+                    else -> false
+                }
             })
         }
     }
