@@ -343,7 +343,7 @@ class JavaEvaluator {
       val size = parameterList.parametersCount
       if (size > 0) {
         val last = parameterList.getParameter(size - 1) ?: return false
-        return last.type.canonicalText == "kotlin.coroutines.Continuation<? super kotlin.Unit>"
+        return last.type.canonicalText.startsWith("kotlin.coroutines.Continuation<")
       }
     }
     return hasModifier(owner, KtTokens.SUSPEND_KEYWORD)

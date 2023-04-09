@@ -17,6 +17,7 @@
 package com.android.tools.lint.helpers
 
 import com.android.testutils.TestUtils
+import com.android.tools.lint.checks.infrastructure.TestFiles.bytecode
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
@@ -34,6 +35,7 @@ import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifierListOwner
+import kotlin.test.assertNotNull
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UElement
@@ -412,6 +414,89 @@ class DefaultJavaEvaluatorTest {
                 1 errors, 0 warnings
                 """
       )
+  }
+
+  @Suppress("RedundantSuspendModifier")
+  @Test
+  fun testIsSuspend() {
+    // Regression test for b/274945683
+    listOf(
+        kotlin(
+            """
+            package test.pkg
+            suspend fun test() {
+                isNotSuspend1()
+                isSuspend1()
+                isSuspend2()
+                isSuspend3(0)
+            }
+            """
+          )
+          .indented(),
+        bytecode(
+          "libs/lib.jar",
+          kotlin(
+              "src/test/pkg/suspends.kt",
+              """
+              package test.pkg
+
+              fun isNotSuspend1(): Int = 0
+              suspend fun isSuspend1() { }
+              suspend fun isSuspend2(): Int = 0
+              suspend fun isSuspend3(int: Int): List<String> = emptyList()
+              """
+            )
+            .indented(),
+          0x14f5ac5d,
+          """
+          META-INF/main.kotlin_module:
+          H4sIAAAAAAAA/2NgYGBmYGBgBGIOBijgkuPiKEktLtEryE4X4gouLS5IzUsp
+          9i4RYgsBinqXKDFoMQAATQJerzgAAAA=
+          """,
+          """
+          test/pkg/SuspendsKt.class:
+          H4sIAAAAAAAA/51TS08TURT+7kyfw6s8RFtAUEBbFaa8FAWNiBpHazUW2eBm
+          WibNhekMmbkluCMm+kNcuzCuiAtDcOePMp47DFLKy9i095ye853vvO799fv7
+          DwDTuM/QLSxf6BvrVb1U9zcsZ9V/IeJgDKk1c9PUbdOp6q/Ka1aFrCpDG/eL
+          rgihEwxqNmcwaNw/NE1nC+uusLmjV1zPrQvuWL6+6Dqk1E3BXWcuV2jmnmN4
+          fF7Y/NgB4K3DxdyDk2lGCq5X1dcsUfZM7vi66TiuCOJ9vVi3bbNsWwQbPgvm
+          CokkVEtDwjhaGRJGsbS0UFx8QpM4Uk0r2tGRRBtSFDVScWsbtiXZGIbOm0bj
+          +CYZnv/DHA77NhxhVS3vtGmMHqda26zpnKI8x7T1R+4Wd6px9DLEyu4WsTH0
+          Zo3cCRlacQlpDReRaSx4imEma/zXwt+dG3fQKblsvcB9Md/AUxIelU6Nn9L6
+          0F9u2yZLsNnFQ13e8kGGpFXbEO8lN0NXNteUj5q+gqsahjBMV53L6TC67p0H
+          db+0hLlqCpPSKbVNld4Uk0dCHiDsulQUcm5xqeVJky/k4+52v7a7rSmpxL5Q
+          NCWhkhyiXzvpSiaW2t3OKHmW6UwpJNVne58e/txhu9t7n2NKKkLmqHQ3mwdT
+          sUyiK9Kl5BP5+GQslTwO0vY+KBHKkZbF0H2jOlv88OmPr1OHkUV31WLoKNA+
+          ivVa2fKW5KOh+RTcimkvmx6X/0NjssSrjinqHul9b+q0vJplOJvc5+ReOHxV
+          9DKbva9Nz6xZdBOPwLSSW/cq1lMu2dNhzPIxPkxAQUTOmc40oohRIzP0L0NS
+          fhT1S7CE23TGAptKuDgShJe4cbkgGf0NnV8lvgEZwR06W0O9C90kZwNMEndD
+          lEbyHv3ikqaFlDR6/pLrIXlU3UFfM3u0gT16hP3CWez9GAjZZ8mmyNJ2MNJM
+          HgvIe/f9GMW1cEQyDQvTXD6WJqkEs2oJ3HPBOY15kgWyXqcqsytQDeQM3DBw
+          E7cMjGHcoDbzK2ByF5MrdIsQ9THlIx6cCR89PvoDnb6jPgb+ADtWbP14BgAA
+          """
+        )
+      )
+      .use(temporaryFolder, TestUtils.getSdk().toFile()) { context ->
+        val evaluator = context.evaluator
+        context.uastFile?.accept(
+          object : AbstractUastVisitor() {
+            override fun visitCallExpression(node: UCallExpression): Boolean {
+              val method = node.resolve()
+              assertNotNull("Couldn't resolve ${node.sourcePsi?.text}")
+              checkResolve(method!!)
+              return super.visitCallExpression(node)
+            }
+            private fun checkResolve(method: PsiMethod) {
+              val name = method.name
+              if (name.startsWith("isSuspend")) {
+                assertTrue("Expected $name to return isSuspend=true", evaluator.isSuspend(method))
+              } else if (name.startsWith("isNotSuspend")) {
+                assertFalse("Expected $name to return isSuspend=false", evaluator.isSuspend(method))
+              }
+            }
+          }
+        )
+      }
   }
 
   @Test
