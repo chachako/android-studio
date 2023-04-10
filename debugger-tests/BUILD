@@ -53,7 +53,6 @@ filegroup(
         ":test-classes-dex.jar",
         "//prebuilts/tools/linux-x86_64/art",
         "//prebuilts/tools/linux-x86_64/art:art_deps",
-        "//tools/base/fakeandroid:android-mock-dex.jar",
     ],
     tags = tags,
 )
@@ -67,6 +66,8 @@ kotlin_test(
         ":test-classes-dex.jar",
         "//prebuilts/studio/sdk:emulator",
         "//prebuilts/studio/sdk:platform-tools",
+        "//prebuilts/tools/linux-x86_64/art",
+        "//prebuilts/tools/linux-x86_64/art:art_deps",
         INTEGRATION_TEST_SYSTEM_IMAGE,
     ],
     friends = [":debugger"],
@@ -93,7 +94,6 @@ java_binary(
         ":test-classes-dex.jar",
         "//prebuilts/tools/linux-x86_64/art",
         "//prebuilts/tools/linux-x86_64/art:art_deps",
-        "//tools/base/fakeandroid:android-mock-dex.jar",
     ],
     jvm_flags = [
         "--add-opens=jdk.jdi/com.sun.tools.jdi=ALL-UNNAMED",
