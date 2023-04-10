@@ -535,7 +535,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                     testSuiteName = step.name
                     var scheduledTestCount = 0
                     step.testExecutionStep.testSuiteOverviews?.forEach { testSuiteOverview ->
-                        scheduledTestCount += testSuiteOverview.totalCount
+                        scheduledTestCount += testSuiteOverview?.totalCount ?: 0
                     }
                     scheduledTestCaseCount = scheduledTestCount
                 }.build()
