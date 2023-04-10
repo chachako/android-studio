@@ -18,12 +18,14 @@ package com.android.build.gradle.integration.manageddevice.application
 
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
+import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
+import kotlin.test.assertTrue
 
 class ManagedDeviceExtensionTest {
     @get:Rule
@@ -175,5 +177,42 @@ android.testOptions.managedDevices.devices {
         assertThat(File(mergedTestReportDir, "index.html")).exists()
         assertThat(File(mergedTestReportDir, "com.example.android.kotlin.html")).exists()
         assertThat(File(mergedTestReportDir, "com.example.android.kotlin.ExampleInstrumentedTest.html")).exists()
+    }
+
+    @Test
+    fun runCustomManagedDeviceWithNoTests() {
+        assertTrue(FileUtils.join(
+                project.getSubproject("app").projectDir, "src", "androidTest")
+                .deleteRecursively())
+
+        val result = executor.run(":app:myCustomDeviceCheck")
+
+        result.stdout.use {
+            assertThat(it).contains("No tests found, nothing to do.")
+        }
+
+        val setupDir = FileUtils.join(
+                project.getSubproject("app").buildDir,
+                "managedDeviceSetupResults",
+                "myCustomDevice")
+        assertThat(File(setupDir, "deviceName.txt")).contains("myCustomDevice")
+
+        val reportDir = FileUtils.join(
+                project.getSubproject("app").buildDir,
+                "reports",
+                "androidTests",
+                "managedDevice",
+                "debug",
+                "myCustomDevice")
+        assertThat(File(reportDir, "index.html")).exists()
+
+        val mergedTestReportDir = FileUtils.join(
+                project.getSubproject("app").buildDir,
+                "reports",
+                "androidTests",
+                "managedDevice",
+                "debug",
+                "allDevices")
+        assertThat(File(mergedTestReportDir, "index.html")).exists()
     }
 }
