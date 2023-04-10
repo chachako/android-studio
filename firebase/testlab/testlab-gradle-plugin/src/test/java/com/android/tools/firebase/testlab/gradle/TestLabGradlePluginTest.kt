@@ -83,11 +83,12 @@ class TestLabGradlePluginTest {
     @Test
     fun agpVersionCheck() {
         val unsupportedVersionsTooOld = listOf(
-                AndroidPluginVersion(8, 1, 0).alpha(8),
-        )
-        val supportedVersions = listOf(
                 AndroidPluginVersion(8, 1, 0).alpha(9),
                 AndroidPluginVersion(8, 1),
+        )
+        val supportedVersions = listOf(
+                AndroidPluginVersion(8, 1).dev(),
+                AndroidPluginVersion(8, 2, 0).alpha(1),
                 AndroidPluginVersion(8, 2),
                 AndroidPluginVersion(8, 3, 0).dev(),
         )
@@ -101,7 +102,7 @@ class TestLabGradlePluginTest {
                 applyFtlPlugin(it)
             }
             assertThat(e).hasMessageThat()
-                    .contains("Android Gradle plugin version 8.1.0-alpha09 or higher is required.")
+                    .contains("Android Gradle plugin version 8.2.0-alpha01 or higher is required.")
         }
 
         supportedVersions.forEach {
