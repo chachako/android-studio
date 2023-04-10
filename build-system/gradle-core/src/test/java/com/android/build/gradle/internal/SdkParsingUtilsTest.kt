@@ -491,4 +491,15 @@ class SdkParsingUtilsTest {
         )
     }
 
+    @Test
+    fun `do not warn for extensions`() {
+        val issueReporter = FakeSyncIssueReporter(throwOnError = true)
+        warnIfCompileSdkTooNew(
+            version = AndroidVersion(33, null, 5, false),
+            issueReporter = issueReporter,
+            maxVersion = AndroidVersion(33),
+            androidGradlePluginVersion = "8.1.0-alpha11",
+        )
+        assertThat(issueReporter.messages).isEmpty()
+    }
 }
