@@ -434,6 +434,38 @@ public class MainTest extends AbstractCheckTest {
                 });
     }
 
+    public void testList() throws Exception {
+        checkDriver(
+                "\"XmlEscapeNeeded\": Missing XML Escape",
+                "",
+
+                // Expected exit code
+                ERRNO_SUCCESS,
+
+                // Args
+                new String[] {
+                    "--list",
+                    // "SdCardPath",
+                    // "--disable",
+                    // "LintError"
+                },
+                s -> {
+                    // "--list" produces a massive list -- listing all available issues.
+                    // With bug b/277590473, part of the output wasn't emitted, so we were missing
+                    // the last few entries.
+                    // Instead of checking in the complete expected output here, we'll just
+                    // filter all the output down to any lines that contain "XmlEscapeNeeded", which
+                    // is the last line of output. When the bug is present, this part is never
+                    // included.
+                    // With proper buffer flushing, it shows up, so the expected output should be
+                    // exactly the output line containing the XmlEscapeNeeded entry.
+                    return Arrays.stream(s.split("\n"))
+                            .filter(s1 -> s1.contains("XmlEscapeNeeded"))
+                            .collect(Collectors.joining("\n"));
+                },
+                null);
+    }
+
     public void testLibraries() throws Exception {
         File project = getProjectDir(null, manifest().minSdk(1), cipherTestSource, cipherTestClass);
         checkDriver(

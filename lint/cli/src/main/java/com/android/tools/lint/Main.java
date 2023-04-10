@@ -89,6 +89,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -1958,13 +1959,15 @@ public class Main {
         out.println();
         List<Issue> issues = registry.getIssues();
         out.println("Valid issue id's:");
-        for (Issue issue : issues) {
+        for (Issue issue : issues.stream().sorted().collect(Collectors.toList())) {
             listIssue(out, issue);
         }
+        out.flush();
     }
 
     private static void listIssue(PrintWriter out, Issue issue) {
         out.print(wrapArg("\"" + issue.getId() + "\": " + issue.getBriefDescription(TEXT)));
+        out.flush();
     }
 
     private static void showIssues(IssueRegistry registry) {
@@ -2347,6 +2350,7 @@ public class Main {
                                 indent));
             }
         }
+        out.flush();
     }
 
     public void log(
