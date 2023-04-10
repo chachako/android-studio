@@ -25,10 +25,12 @@ import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket.Co
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket.Companion.isDdmPacket
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.ExitHandler
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.FEATHandler
+import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpHandlerOutput
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.HeloHandler
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.HpgcHandler
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpCommandId
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpPacket
+import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpPacket.Companion.readFrom
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpPacketHandler
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpVmExitHandler
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpVmIdSizesHandler
@@ -174,37 +176,39 @@ class JdwpCommandHandler : DeviceCommandHandler("jdwp") {
 
         // default - ignore the packet and keep listening
         val defaultDdmHandler =
-            DDMPacketHandler { device: DeviceState, client: ClientState, packet: DdmPacket, oStream: OutputStream ->
+            DDMPacketHandler { device1: DeviceState, client1: ClientState, packet1: DdmPacket, jdwpHandlerOutput: JdwpHandlerOutput ->
                 handleUnknownDdmsPacket(
-                    device,
-                    client,
-                    packet,
-                    oStream
+                    device1,
+                    client1,
+                    packet1,
+                    jdwpHandlerOutput
                 )
             }
         val defaultJdwpHandler =
-            JdwpPacketHandler { state: DeviceState, clientState: ClientState, packet: JdwpPacket, stream: OutputStream ->
+            JdwpPacketHandler { state: DeviceState, clientState: ClientState, packet1: JdwpPacket, jdwpHandlerOutput: JdwpHandlerOutput ->
                 handleUnknownJdwpPacket(
                     state,
                     clientState,
-                    packet,
-                    stream
+                    packet1,
+                    jdwpHandlerOutput
                 )
             }
+
         var running = true
+        val jdwpHandlerOutput = JdwpHandlerOutput(oStream)
         while (running) {
             running = try {
-                val packet = JdwpPacket.readFrom(iStream)
+                val packet = readFrom(iStream)
                 if (isDdmPacket(packet)) {
                     val ddmPacket = fromJdwpPacket(packet)
                     ddmPacketHandlers
                         .getOrDefault(ddmPacket.chunkType, defaultDdmHandler)
-                        .handlePacket(device, client, ddmPacket, oStream)
+                        .handlePacket(device, client, ddmPacket, jdwpHandlerOutput)
                 } else {
                     val commandId = JdwpCommandId(packet.cmdSet, packet.cmd)
                     jdwpPacketHandlers
                         .getOrDefault(commandId, defaultJdwpHandler)
-                        .handlePacket(device, client, packet, oStream)
+                        .handlePacket(device, client, packet, jdwpHandlerOutput)
                 }
             } catch (e: IOException) {
                 writeFailResponse(oStream, "Could not read packet.")
@@ -217,7 +221,7 @@ class JdwpCommandHandler : DeviceCommandHandler("jdwp") {
         state: DeviceState,
         clientState: ClientState,
         packet: JdwpPacket,
-        stream: OutputStream
+        jdwpHandlerOutput: JdwpHandlerOutput
     ): Boolean {
         System.err.printf(
             "FakeAdbServer: Unsupported JDWP packet: id=%d, cmdSet=%d, cmd=%d%n",
@@ -230,7 +234,7 @@ class JdwpCommandHandler : DeviceCommandHandler("jdwp") {
         device: DeviceState,
         client: ClientState,
         packet: DdmPacket,
-        oStream: OutputStream
+        jdwpHandlerOutput: JdwpHandlerOutput
     ): Boolean {
         System.err.printf(
             "FakeAdbServer: Unsupported DDMS command: '%s'%n",

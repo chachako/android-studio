@@ -19,7 +19,6 @@ import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.CommandHandler
 import com.android.fakeadbserver.DeviceState
 import java.io.IOException
-import java.io.OutputStream
 import java.nio.ByteBuffer
 
 private const val FEAT_CHUNK_HEADER_LENGTH = 4
@@ -41,7 +40,7 @@ class FeaturesHandler(
         device: DeviceState,
         client: ClientState,
         packet: DdmPacket,
-        oStream: OutputStream
+        jdwpHandlerOutput: JdwpHandlerOutput
     ): Boolean {
         val features = featureMap[client.pid] ?: defaultFeatures
         if (features.isEmpty()) {
@@ -63,9 +62,14 @@ class FeaturesHandler(
         val responsePacket = DdmPacket.createResponse(packet.id, CHUNK_TYPE, payload)
 
         try {
-            responsePacket.write(oStream)
+            responsePacket.write(jdwpHandlerOutput)
         } catch (e: IOException) {
-            writeFailResponse(oStream, "Could not write FEAT response packet")
+            jdwpHandlerOutput.withOutputStream {
+                writeFailResponse(
+                    it,
+                    "Could not write FEAT response packet"
+                )
+            }
             return false
         }
 
@@ -73,10 +77,15 @@ class FeaturesHandler(
             val waitPayload = ByteArray(1)
             val waitPacket = DdmPacket.createCommand(client.nextDdmsCommandId(), DdmPacket.encodeChunkType("WAIT"), waitPayload)
             try {
-                waitPacket.write(oStream)
+                waitPacket.write(jdwpHandlerOutput)
             } catch (e: IOException) {
-                writeFailResponse(oStream, "Could not write WAIT packet")
-        return false
+                jdwpHandlerOutput.withOutputStream {
+                    writeFailResponse(
+                        it,
+                        "Could not write WAIT packet"
+                    )
+                }
+                return false
       }
     }
     return true

@@ -18,7 +18,6 @@ package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.ProfilerState
-import java.io.OutputStream
 
 /**
  * MPSE: `Method Profiling Streaming End`
@@ -29,7 +28,7 @@ class MpseHandler : DDMPacketHandler {
         device: DeviceState,
         client: ClientState,
         packet: DdmPacket,
-        oStream: OutputStream
+        jdwpHandlerOutput: JdwpHandlerOutput
     ): Boolean {
         client.profilerState.status = ProfilerState.Status.Off
 
@@ -41,11 +40,11 @@ class MpseHandler : DDMPacketHandler {
                 DdmPayload {
                     writeBytes(client.profilerState.instrumentationData.bytes)
                 })
-        responsePacket.write(oStream)
+        responsePacket.write(jdwpHandlerOutput)
 
         // Empty response used to be sent out before the release of Android 28
         if (device.apiLevel < 28) {
-            JdwpPacket.createEmptyDdmsResponse(packet.id).write(oStream)
+            JdwpPacket.createEmptyDdmsResponse(packet.id).write(jdwpHandlerOutput)
         }
 
         // Keep JDWP connection open

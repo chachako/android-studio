@@ -18,7 +18,6 @@ package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket.Companion.encodeChunkType
-import java.io.OutputStream
 
 class HpgcHandler : DDMPacketHandler {
 
@@ -26,7 +25,7 @@ class HpgcHandler : DDMPacketHandler {
         device: DeviceState,
         client: ClientState,
         packet: DdmPacket,
-        oStream: OutputStream
+        jdwpHandlerOutput: JdwpHandlerOutput
     ): Boolean {
 
         client.requestHgpc()
@@ -34,7 +33,7 @@ class HpgcHandler : DDMPacketHandler {
         // Empty response used to be sent out before the release of Android 28
         if (device.apiLevel < 28) {
             val responsePacket = JdwpPacket.createEmptyDdmsResponse(packet.id)
-            responsePacket.write(oStream)
+            responsePacket.write(jdwpHandlerOutput)
         }
 
         // Keep JDWP connection open

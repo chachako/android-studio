@@ -30,8 +30,6 @@
  */
 package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 
-import java.io.IOException
-import java.io.OutputStream
 import java.nio.ByteBuffer
 
 class DdmPacket private constructor(
@@ -42,8 +40,7 @@ class DdmPacket private constructor(
     val isResponse: Boolean = false
 ) {
 
-    @kotlin.jvm.Throws(IOException::class)
-    fun write(outputStream: OutputStream) {
+    fun write(jdwpHandlerOutput: JdwpHandlerOutput) {
         JdwpPacket(
             id,
             isResponse,
@@ -51,7 +48,7 @@ class DdmPacket private constructor(
             getDdmPayload(chunkType, payload),
             DDMS_CMD_SET,
             DDMS_CMD
-        ).write(outputStream)
+        ).write(jdwpHandlerOutput)
     }
 
     companion object {

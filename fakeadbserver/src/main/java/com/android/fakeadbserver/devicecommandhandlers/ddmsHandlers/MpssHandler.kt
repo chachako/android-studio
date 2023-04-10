@@ -18,7 +18,6 @@ package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.ProfilerState
-import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -31,7 +30,7 @@ class MpssHandler : DDMPacketHandler {
         device: DeviceState,
         client: ClientState,
         packet: DdmPacket,
-        oStream: OutputStream
+        jdwpHandlerOutput: JdwpHandlerOutput
     ): Boolean {
         val payload = ByteBuffer.wrap(packet.payload).order(ByteOrder.BIG_ENDIAN)
         @Suppress("UsePropertyAccessSyntax")
@@ -42,7 +41,7 @@ class MpssHandler : DDMPacketHandler {
 
         // Empty response used to be sent out before the release of Android 28
         if (device.apiLevel < 28) {
-            JdwpPacket.createEmptyDdmsResponse(packet.id).write(oStream)
+            JdwpPacket.createEmptyDdmsResponse(packet.id).write(jdwpHandlerOutput)
         }
 
         // Keep JDWP connection open

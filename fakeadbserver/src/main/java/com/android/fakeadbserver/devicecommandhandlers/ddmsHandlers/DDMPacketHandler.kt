@@ -17,7 +17,6 @@ package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
-import java.io.OutputStream
 
 fun interface DDMPacketHandler {
 
@@ -27,7 +26,7 @@ fun interface DDMPacketHandler {
      * @param device The device associated with the client
      * @param client The client associated with the connection
      * @param packet The packet that is being handled
-     * @param oStream The stream to write the response to
+     * @param jdwpHandlerOutput The stream to write the response to
      * @return If true the fake debugger should continue accepting packets, if false it should
      * terminate the session
      */
@@ -35,12 +34,12 @@ fun interface DDMPacketHandler {
         device: DeviceState,
         client: ClientState,
         packet: DdmPacket,
-        oStream: OutputStream
+        jdwpHandlerOutput: JdwpHandlerOutput
     ): Boolean
 
-    fun replyDdmFail(oStream: OutputStream, packetId: Int) {
+    fun replyDdmFail(jdwpHandlerOutput: JdwpHandlerOutput, packetId: Int) {
         // Android seems to always reply to invalid DDM commands with an empty JDWP reply packet
         val packet = JdwpPacket(packetId, true, 0.toShort(), ByteArray(0), 0, 0)
-        packet.write(oStream)
+        packet.write(jdwpHandlerOutput)
     }
 }

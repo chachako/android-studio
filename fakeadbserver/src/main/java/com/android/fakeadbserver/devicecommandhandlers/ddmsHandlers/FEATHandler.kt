@@ -19,7 +19,6 @@ import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket.Companion.createResponse
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket.Companion.encodeChunkType
-import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -29,7 +28,7 @@ class FEATHandler : DDMPacketHandler {
         device: DeviceState,
         client: ClientState,
         packet: DdmPacket,
-        oStream: OutputStream
+        jdwpHandlerOutput: JdwpHandlerOutput
     ): Boolean {
         val features = client.features
         // 4 = number of features
@@ -47,7 +46,7 @@ class FEATHandler : DDMPacketHandler {
         }
 
         val responsePacket = createResponse(packet.id, CHUNK_TYPE, payload.array())
-        responsePacket.write(oStream)
+        responsePacket.write(jdwpHandlerOutput)
 
         // Keep JDWP connection open
         return true

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 
 import com.google.common.io.ByteStreams
-import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
@@ -31,8 +30,7 @@ class JdwpPacket(
     val cmd: Int
 ) {
 
-    @Throws(IOException::class)
-    fun write(oStream: OutputStream) {
+    fun write(jdwpHandlerOutput: JdwpHandlerOutput) {
         val response = ByteArray(JDWP_HEADER_LENGTH + payload.size)
         val responseBuffer = ByteBuffer.wrap(response)
         responseBuffer.putInt(response.size)
@@ -45,7 +43,7 @@ class JdwpPacket(
             responseBuffer.put(cmd.toByte())
         }
         responseBuffer.put(payload)
-        oStream.write(response)
+        jdwpHandlerOutput.withOutputStream { oStream: OutputStream -> oStream.write(response) }
     }
 
     companion object {
@@ -54,7 +52,6 @@ class JdwpPacket(
         private const val IS_RESPONSE_FLAG = 0x80.toByte()
 
         // Reads a packet from a stream
-        @Throws(IOException::class)
         fun readFrom(iStream: InputStream): JdwpPacket {
             val packetHeader = ByteArray(JDWP_HEADER_LENGTH)
             ByteStreams.readFully(iStream, packetHeader)

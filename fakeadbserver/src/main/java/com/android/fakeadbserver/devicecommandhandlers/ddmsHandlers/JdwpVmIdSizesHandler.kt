@@ -28,7 +28,7 @@ class JdwpVmIdSizesHandler : JdwpPacketHandler {
         device: DeviceState,
         client: ClientState,
         packet: JdwpPacket,
-        oStream: OutputStream
+        jdwpHandlerOutput: JdwpHandlerOutput
     ): Boolean {
         // See https://docs.oracle.com/javase/8/docs/platform/jpda/jdwp/jdwp-protocol.html#JDWP_VirtualMachine_IDSizes
         // int	fieldIDSize	fieldID size in bytes
@@ -45,7 +45,7 @@ class JdwpVmIdSizesHandler : JdwpPacketHandler {
 
         val payload = payloadStream.toByteArray()
         val replyPacket = JdwpPacket.createResponse(packet.id, payload, packet.cmdSet, packet.cmd)
-        replyPacket.write(oStream)
+        replyPacket.write(jdwpHandlerOutput)
 
         return true // don't close connection
     }

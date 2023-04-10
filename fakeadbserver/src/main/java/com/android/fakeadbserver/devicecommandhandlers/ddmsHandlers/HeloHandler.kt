@@ -18,7 +18,6 @@ package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import java.io.IOException
-import java.io.OutputStream
 import java.nio.ByteBuffer
 
 class HeloHandler : DDMPacketHandler {
@@ -27,7 +26,7 @@ class HeloHandler : DDMPacketHandler {
         device: DeviceState,
         client: ClientState,
         packet: DdmPacket,
-        oStream: OutputStream
+        jdwpHandlerOutput: JdwpHandlerOutput
     ): Boolean {
         // ADB has an issue of reporting the process name instead of the real not reporting the real package name.
         val appName = client.processName
@@ -103,7 +102,7 @@ class HeloHandler : DDMPacketHandler {
         }
         val responsePacket = DdmPacket.createResponse(packet.id, CHUNK_TYPE, payload)
         try {
-            responsePacket.write(oStream)
+            responsePacket.write(jdwpHandlerOutput)
         } catch (e: IOException) {
             e.printStackTrace()
             return false
@@ -139,7 +138,7 @@ class HeloHandler : DDMPacketHandler {
                 DdmPacket.encodeChunkType("APNM"),
                 apmnPayload.array()
             )
-            apnmPacket.write(oStream)
+            apnmPacket.write(jdwpHandlerOutput)
         } catch (e: IOException) {
             e.printStackTrace()
             return false
@@ -154,7 +153,7 @@ class HeloHandler : DDMPacketHandler {
                 waitPayload
             )
             try {
-                waitPacket.write(oStream)
+                waitPacket.write(jdwpHandlerOutput)
             } catch (e: IOException) {
                 e.printStackTrace()
                 return false

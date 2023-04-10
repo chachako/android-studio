@@ -19,7 +19,6 @@ import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket.Companion.createResponse
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket.Companion.encodeChunkType
-import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -29,7 +28,7 @@ class VUOPHandler : DDMPacketHandler {
         device: DeviceState,
         client: ClientState,
         packet: DdmPacket,
-        oStream: OutputStream
+        jdwpHandlerOutput: JdwpHandlerOutput
     ): Boolean {
         // We only support "capture" view, which is
         // Opcode: 4 bytes
@@ -38,7 +37,7 @@ class VUOPHandler : DDMPacketHandler {
         val payload = ByteBuffer.wrap(packet.payload).order(ByteOrder.BIG_ENDIAN)
         val opCode = payload.readInt()
         if (opCode != VUOP_CAPTURE_VIEW) {
-            replyDdmFail(oStream, packet.id)
+            replyDdmFail(jdwpHandlerOutput, packet.id)
             return true // Keep JDWP connection open
         }
         val viewRoot = payload.readLengthPrefixedString()
@@ -46,9 +45,9 @@ class VUOPHandler : DDMPacketHandler {
 
         client.viewsState.captureViewData(viewRoot, view)?.also {
             val responsePacket = createResponse(packet.id, CHUNK_TYPE, it.array())
-            responsePacket.write(oStream)
+            responsePacket.write(jdwpHandlerOutput)
         } ?: run {
-            replyDdmFail(oStream, packet.id)
+            replyDdmFail(jdwpHandlerOutput, packet.id)
         }
 
         return true // Keep JDWP connection open

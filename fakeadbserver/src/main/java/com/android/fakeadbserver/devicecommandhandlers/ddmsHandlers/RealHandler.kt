@@ -17,9 +17,6 @@ package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
-import java.io.OutputStream
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 class RealHandler : DDMPacketHandler {
 
@@ -27,14 +24,14 @@ class RealHandler : DDMPacketHandler {
         device: DeviceState,
         client: ClientState,
         packet: DdmPacket,
-        oStream: OutputStream
+        jdwpHandlerOutput: JdwpHandlerOutput
     ): Boolean {
         val responsePacket =
             DdmPacket.createResponse(
                 packet.id,
                 CHUNK_TYPE,
                 DdmPayload { writeString(client.allocationTrackerDetails) })
-        responsePacket.write(oStream)
+        responsePacket.write(jdwpHandlerOutput)
 
         // Keep JDWP connection open
         return true

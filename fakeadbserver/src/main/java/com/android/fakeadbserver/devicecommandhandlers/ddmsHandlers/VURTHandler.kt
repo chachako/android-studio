@@ -17,7 +17,6 @@ package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
-import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -27,7 +26,7 @@ class VURTHandler : DDMPacketHandler {
       device: DeviceState,
       client: ClientState,
       packet: DdmPacket,
-      oStream: OutputStream
+      jdwpHandlerOutput: JdwpHandlerOutput
     ): Boolean {
         // We only support "capture" view, which is
         // Opcode: 4 bytes
@@ -38,7 +37,7 @@ class VURTHandler : DDMPacketHandler {
         val payload = ByteBuffer.wrap(packet.payload).order(ByteOrder.BIG_ENDIAN)
         val opCode = payload.readInt()
         if (opCode != VURT_DUMP_HIERARCHY) {
-            replyDdmFail(oStream, packet.id)
+            replyDdmFail(jdwpHandlerOutput, packet.id)
             return true // Keep JDWP connection open
         }
         val viewRoot = payload.readLengthPrefixedString()
@@ -48,9 +47,9 @@ class VURTHandler : DDMPacketHandler {
 
         client.viewsState.viewHierarchyData(viewRoot, skipChildren, includeProperties, useV2)?.also {
             val responsePacket = DdmPacket.createResponse(packet.id, CHUNK_TYPE, it.array())
-            responsePacket.write(oStream)
+            responsePacket.write(jdwpHandlerOutput)
         } ?: run {
-            replyDdmFail(oStream, packet.id)
+            replyDdmFail(jdwpHandlerOutput, packet.id)
         }
 
         return true // Keep JDWP connection open

@@ -18,7 +18,6 @@ package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket.Companion.encodeChunkType
-import java.io.OutputStream
 
 class MprqHandler : DDMPacketHandler {
 
@@ -26,13 +25,13 @@ class MprqHandler : DDMPacketHandler {
         device: DeviceState,
         client: ClientState,
         packet: DdmPacket,
-        oStream: OutputStream
+        jdwpHandlerOutput: JdwpHandlerOutput
     ): Boolean {
 
         val responsePacket = DdmPacket.createResponse(packet.id, CHUNK_TYPE, DdmPayload {
             writeByte(client.profilerState.status.ddmsChunkValue)
         })
-        responsePacket.write(oStream)
+        responsePacket.write(jdwpHandlerOutput)
 
         // Keep JDWP connection open
         return true

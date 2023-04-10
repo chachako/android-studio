@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,18 @@
  */
 package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 
-import com.android.fakeadbserver.ClientState
-import com.android.fakeadbserver.DeviceState
+import java.io.OutputStream
 
-class JdwpVmExitHandler : JdwpPacketHandler {
-  override fun handlePacket(
-    device: DeviceState,
-    client: ClientState,
-    packet: JdwpPacket,
-    jdwpHandlerOutput: JdwpHandlerOutput
-  ): Boolean {
-    // Kill the client and the connection
-    device.stopClient(client.pid)
-    return false
-  }
+/**
+ * Class that provides a synchronization for writing to a handler's output stream.
+ */
+class JdwpHandlerOutput(private val stream: OutputStream) {
 
-  companion object {
-    val commandId = JdwpCommandId(JdwpCommands.CmdSet.SET_VM.value, JdwpCommands.VmCmd.CMD_VM_EXIT.value)
-  }
+    private val lock = Any()
+
+    fun withOutputStream(block: (OutputStream) -> Unit) {
+        synchronized(lock) {
+            block(stream)
+        }
+    }
 }
