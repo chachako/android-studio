@@ -20,6 +20,7 @@ import com.android.build.gradle.integration.common.fixture.testprojects.PluginTy
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
 import com.android.build.gradle.internal.tasks.AarMetadataReader
+import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.tasks.FusedLibraryMergeArtifactTask
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
@@ -116,6 +117,9 @@ internal class FusedLibraryMergeArtifactTaskTest {
                 include(project(":androidLib3"))
                 include(project(":androidLib2"))
             }
+        }
+        gradleProperties {
+            set(BooleanOption.FUSED_LIBRARY_SUPPORT, true)
         }
     }
 

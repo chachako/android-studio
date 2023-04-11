@@ -20,6 +20,7 @@ import com.android.build.gradle.integration.common.fixture.DEFAULT_MIN_SDK_VERSI
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
+import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.generateAarWithContent
 import com.google.common.truth.Truth
@@ -108,6 +109,7 @@ class FusedLibraryTest(
                             .build()
             )
             .withAdditionalMavenRepo(mavenRepo)
+            .addGradleProperties("${BooleanOption.FUSED_LIBRARY_SUPPORT.propertyName}=true")
             .create()
 
     @Test

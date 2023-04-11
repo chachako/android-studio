@@ -24,6 +24,7 @@ import com.android.build.gradle.integration.common.truth.ScannerSubject.Companio
 import com.android.build.gradle.integration.common.utils.IgnoredTests
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
 import com.android.build.gradle.internal.manifest.parseManifest
+import com.android.build.gradle.options.BooleanOption
 import com.android.builder.errors.EvalIssueException
 import com.android.builder.errors.IssueReporter
 import com.android.testutils.MavenRepoGenerator
@@ -126,6 +127,9 @@ internal class FusedLibraryManifestMergerTaskTest {
                 minSdk = 19
             }
             // Add a dependency on the fused library aar in the test if needed.
+        }
+        gradleProperties {
+            set(BooleanOption.FUSED_LIBRARY_SUPPORT, true)
         }
     }
 

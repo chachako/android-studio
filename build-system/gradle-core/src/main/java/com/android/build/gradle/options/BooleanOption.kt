@@ -225,6 +225,8 @@ enum class BooleanOption(
         FeatureStage.Experimental
     ),
 
+    FUSED_LIBRARY_SUPPORT("android.experimental.fusedLibrarySupport", false, FeatureStage.Experimental),
+
     /* ------------------------
      * SOFTLY-ENFORCED FEATURES
      */

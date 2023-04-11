@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.application
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
+import com.android.build.gradle.options.BooleanOption
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -72,6 +73,9 @@ internal class FusedLibraryClassesRewriteTaskTest {
             dependencies {
                 include(project(":androidLib2"))
             }
+        }
+        gradleProperties {
+            set(BooleanOption.FUSED_LIBRARY_SUPPORT, true)
         }
     }
 

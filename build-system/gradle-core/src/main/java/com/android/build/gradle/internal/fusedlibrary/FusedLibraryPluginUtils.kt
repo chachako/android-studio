@@ -30,7 +30,7 @@ import org.gradle.api.Project
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
 
-fun createTasks(
+internal fun createTasks(
         project: Project,
         artifacts: ArtifactsImpl,
         artifactForPublication: Artifact.Single<RegularFile>,
@@ -50,12 +50,12 @@ fun createTasks(
     }
 }
 
-fun configureTransforms(project: Project, projectServices: ProjectServices) {
+internal fun configureTransforms(project: Project, projectServices: ProjectServices) {
     DependencyConfigurator(project, projectServices)
             .configureGeneralTransforms(namespacedAndroidResources = false)
 }
 
-fun getDslServices(project: Project, projectServices: ProjectServices): DslServices {
+internal fun getDslServices(project: Project, projectServices: ProjectServices): DslServices {
     val sdkComponentsBuildService: Provider<SdkComponentsBuildService> =
             SdkComponentsBuildService.RegistrationAction(
                     project,
