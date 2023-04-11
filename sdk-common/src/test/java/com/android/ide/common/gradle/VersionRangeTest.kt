@@ -395,6 +395,112 @@ class VersionRangeTest {
     }
 
     @Test
+    fun testSingletonWithoutUpperBound() {
+        VersionRange.parse("1.2.3").let { range ->
+            val extendedRange = range.withoutUpperBound()
+            assertThat(range.contains(Version.parse("0"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("0"))).isFalse()
+            assertThat(range.contains(Version.parse("1"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("1"))).isFalse()
+            assertThat(range.contains(Version.parse("1.2"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("1.2"))).isFalse()
+            assertThat(range.contains(Version.parse("1.2.2"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("1.2.2"))).isFalse()
+            assertThat(range.contains(Version.parse("1.2.3"))).isTrue()
+            assertThat(extendedRange.contains(Version.parse("1.2.3"))).isTrue()
+            assertThat(range.contains(Version.parse("1.2.3.4"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("1.2.3.4"))).isTrue()
+            assertThat(range.contains(Version.parse("1.2.4"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("1.2.4"))).isTrue()
+            assertThat(range.contains(Version.parse("1.3"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("1.3"))).isTrue()
+            assertThat(range.contains(Version.parse("2"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("2"))).isTrue()
+            assertThat(range.contains(Version.parse("${Int.MAX_VALUE}"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("${Int.MAX_VALUE}"))).isTrue()
+        }
+    }
+
+    @Test
+    fun testPrefixWithoutUpperBound() {
+        VersionRange.parse("1.2.3.+").let { range ->
+            val extendedRange = range.withoutUpperBound()
+            assertThat(range.contains(Version.parse("0"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("0"))).isFalse()
+            assertThat(range.contains(Version.parse("1"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("1"))).isFalse()
+            assertThat(range.contains(Version.parse("1.2"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("1.2"))).isFalse()
+            assertThat(range.contains(Version.parse("1.2.2"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("1.2.2"))).isFalse()
+            assertThat(range.contains(Version.parse("1.2.3"))).isTrue()
+            assertThat(extendedRange.contains(Version.parse("1.2.3"))).isTrue()
+            assertThat(range.contains(Version.parse("1.2.3.4"))).isTrue()
+            assertThat(extendedRange.contains(Version.parse("1.2.3.4"))).isTrue()
+            assertThat(range.contains(Version.parse("1.2.4"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("1.2.4"))).isTrue()
+            assertThat(range.contains(Version.parse("1.3"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("1.3"))).isTrue()
+            assertThat(range.contains(Version.parse("2"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("2"))).isTrue()
+            assertThat(range.contains(Version.parse("${Int.MAX_VALUE}"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("${Int.MAX_VALUE}"))).isTrue()
+        }
+    }
+
+    @Test
+    fun testMavenRangeWithoutUpperBound() {
+        VersionRange.parse("[1.2,1.3]").let { range ->
+            val extendedRange = range.withoutUpperBound()
+            assertThat(range.contains(Version.parse("0"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("0"))).isFalse()
+            assertThat(range.contains(Version.parse("1"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("1"))).isFalse()
+            assertThat(range.contains(Version.parse("1.2"))).isTrue()
+            assertThat(extendedRange.contains(Version.parse("1.2"))).isTrue()
+            assertThat(range.contains(Version.parse("1.2.2"))).isTrue()
+            assertThat(extendedRange.contains(Version.parse("1.2.2"))).isTrue()
+            assertThat(range.contains(Version.parse("1.2.3"))).isTrue()
+            assertThat(extendedRange.contains(Version.parse("1.2.3"))).isTrue()
+            assertThat(range.contains(Version.parse("1.2.3.4"))).isTrue()
+            assertThat(extendedRange.contains(Version.parse("1.2.3.4"))).isTrue()
+            assertThat(range.contains(Version.parse("1.2.4"))).isTrue()
+            assertThat(extendedRange.contains(Version.parse("1.2.4"))).isTrue()
+            assertThat(range.contains(Version.parse("1.3"))).isTrue()
+            assertThat(extendedRange.contains(Version.parse("1.3"))).isTrue()
+            assertThat(range.contains(Version.parse("2"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("2"))).isTrue()
+            assertThat(range.contains(Version.parse("${Int.MAX_VALUE}"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("${Int.MAX_VALUE}"))).isTrue()
+        }
+    }
+
+    @Test
+    fun testDifferentlyBoundedRangesWithoutUpperBound() {
+        VersionRange.parse("+").let { range ->
+            val extendedRange = range.withoutUpperBound()
+            assertThat(range.contains(Version.parse("0"))).isTrue()
+            assertThat(extendedRange.contains(Version.parse("0"))).isTrue()
+            assertThat(range.contains(Version.parse("${Int.MAX_VALUE}"))).isTrue()
+            assertThat(extendedRange.contains(Version.parse("${Int.MAX_VALUE}"))).isTrue()
+        }
+        VersionRange.parse("[1.0,]").let { range ->
+            val extendedRange = range.withoutUpperBound()
+            assertThat(range.contains(Version.parse("0"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("0"))).isFalse()
+            assertThat(range.contains(Version.parse("${Int.MAX_VALUE}"))).isTrue()
+            assertThat(extendedRange.contains(Version.parse("${Int.MAX_VALUE}"))).isTrue()
+        }
+        VersionRange.parse("[,1.0]").let { range ->
+            val extendedRange = range.withoutUpperBound()
+            assertThat(range.contains(Version.parse("0"))).isTrue()
+            assertThat(extendedRange.contains(Version.parse("0"))).isTrue()
+            assertThat(range.contains(Version.parse("${Int.MAX_VALUE}"))).isFalse()
+            assertThat(extendedRange.contains(Version.parse("${Int.MAX_VALUE}"))).isTrue()
+        }
+    }
+
+    @Test
     fun testUnrepresentableIdentifiers() {
         // [,1.0) is a prefix upper bound
         assertThat(VersionRange(Range.lessThan(Version.parse("1.0"))).toIdentifier()).isNull()

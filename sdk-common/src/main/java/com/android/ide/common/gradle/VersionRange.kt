@@ -105,6 +105,16 @@ class VersionRange(private val range: Range<Version>) {
         else -> "VersionRange(range=$range)"
     }
 
+    @Suppress("WHEN_ENUM_CAN_BE_NULL_IN_JAVA")
+    internal fun withoutUpperBound(): VersionRange = when {
+        !hasUpperBound() -> this
+        !hasLowerBound() -> VersionRange(Range.all())
+        else -> when (lowerBoundType()) {
+            BoundType.CLOSED -> VersionRange(Range.atLeast(lowerEndpoint()))
+            BoundType.OPEN -> VersionRange(Range.greaterThan(lowerEndpoint()))
+        }
+    }
+
     private fun isPrefixRange() =
         hasLowerBound() && hasUpperBound() && let {
             val lower = lowerEndpoint()
