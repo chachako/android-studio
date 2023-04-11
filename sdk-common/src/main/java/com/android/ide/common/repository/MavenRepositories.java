@@ -145,10 +145,4 @@ public class MavenRepositories {
 
         return artifactIdDirectory.resolve(component.getVersion().toString());
     }
-
-    public static Path getMavenMetadataFile(
-            @NonNull Path repository, @NonNull String groupId, @NonNull String artifactId) {
-        return getArtifactIdDirectory(repository, groupId, artifactId)
-                .resolve(MAVEN_METADATA_FILE_NAME);
-    }
 }
