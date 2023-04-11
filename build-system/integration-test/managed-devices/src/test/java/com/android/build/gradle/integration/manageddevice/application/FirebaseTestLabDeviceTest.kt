@@ -38,12 +38,12 @@ class FirebaseTestLabDeviceTest {
         project.rootProject.buildFile.appendText("""
             buildscript {
                 dependencies {
-                    classpath "com.google.firebase.testlab:testlab-gradle-plugin:0.0.1-dev"
+                    classpath "com.google.firebase.testlab:testlab-gradle-plugin:+"
                 }
             }
             project.buildscript {
                 dependencies {
-                    classpath "com.google.firebase.testlab:testlab-gradle-plugin:0.0.1-dev"
+                    classpath "com.google.firebase.testlab:testlab-gradle-plugin:+"
                 }
             }
         """.trimIndent())
