@@ -999,25 +999,6 @@ class VariantManager<
         }
     }
 
-    companion object {
-
-        /**
-         * Returns a modified name.
-         *
-         *
-         * This name is used to request a missing dimension. It is the same name as the flavor that
-         * sets up the request, which means it's not going to be matched, and instead it'll go to a
-         * custom fallbacks provided by the flavor.
-         *
-         *
-         * We are just modifying the name to avoid collision in case the same name exists in
-         * different dimensions
-         */
-        fun getModifiedName(name: String): String {
-            return "____$name"
-        }
-    }
-
     init {
         signingOverride = createSigningOverride(dslServices)
         variantFilter = VariantFilter(ReadOnlyObjectProvider())
