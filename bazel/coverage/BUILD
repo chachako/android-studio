@@ -300,7 +300,7 @@ coverage_report(
         "tools/vendor/google/directaccess-client",
     ],
     tests = [
-        "//tools/studio/google/cloud/testing/directaccess:directacess_tests",
+        "//tools/studio/google/cloud/testing/directaccess:directaccess_tests",
         "//tools/vendor/google/directaccess-client:directaccess-client_tests",
     ],
 )
