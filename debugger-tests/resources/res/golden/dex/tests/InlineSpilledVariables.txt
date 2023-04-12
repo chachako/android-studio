@@ -1,4 +1,4 @@
-Breakpoint: InlineSpilledVariables.kt.tests.InlineSpilledVariables.start():40
+Breakpoint: InlineSpilledVariables.kt:40 - tests.InlineSpilledVariables.start()
 ========================================================
 0  [27-49]    [1-95]    : main1                         : int
 1  [28-49]    [2-101]   : main2                         : int
@@ -13,7 +13,7 @@ Breakpoint: InlineSpilledVariables.kt.tests.InlineSpilledVariables.start():40
 10 [38-42]    [36-129]  : foo3$iv                       : int
 11 [39-42]    [37-129]  : foo4$iv                       : int
 
-Breakpoint: InlineSpilledVariables.kt.tests.InlineSpilledVariables.start():50
+Breakpoint: InlineSpilledVariables.kt:50 - tests.InlineSpilledVariables.start()
 ========================================================
 4  [31-42]    [29-129]  : this_$iv                      : tests.InlineSpilledVariables
 5  [31-42]    [30-129]  : i$iv                          : int

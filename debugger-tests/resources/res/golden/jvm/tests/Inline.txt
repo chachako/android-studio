@@ -1,14 +1,14 @@
-Breakpoint: Inline.kt.tests.Inline.start():25
+Breakpoint: Inline.kt:25 - tests.Inline.start()
 ========================================================
 
-Breakpoint: Inline.kt.tests.Inline.start():30
+Breakpoint: Inline.kt:30 - tests.Inline.start()
 ========================================================
 0  [26-32]    [12-40]   : this_$iv                      : tests.Inline
 1  [26-32]    [12-40]   : i$iv                          : int
 2  [26-32]    [12-40]   : s$iv                          : java.lang.String
 3  [30-32]    [14-40]   : $i$f$foo                      : int
 
-Breakpoint: Inline.kt.tests.Inline.start():35
+Breakpoint: Inline.kt:35 - tests.Inline.start()
 ========================================================
 0  [26-32]    [12-40]   : this_$iv                      : tests.Inline
 1  [26-32]    [12-40]   : i$iv                          : int

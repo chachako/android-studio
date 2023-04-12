@@ -49,7 +49,7 @@ fun main(args: Array<String>) {
   val testClasses = tests.takeIf { it.isNotEmpty() } ?: Resources.findTestClasses()
 
   val t = type // so we can smart-cast
-  val engineTypes = if (t != null) listOf(t) else EngineType.values().asList()
+  val engineTypes = if (t != null) listOf(t) else listOf(SIMPLE, ART)
   engineTypes.forEach { engineType ->
     val engine =
       when (engineType) {
@@ -61,7 +61,9 @@ fun main(args: Array<String>) {
 
     testClasses.forEach { testClass ->
       println("  Test $testClass")
-      val actual = runBlocking { withTimeout(30.seconds) { engine.runTest(testClass) } }
+      val frameListener = LocalVariablesFrameListener()
+      runBlocking { withTimeout(30.seconds) { engine.runTest(testClass, frameListener) } }
+      val actual = frameListener.getText()
       if (!noop) {
         Resources.writeGolden(testClass, actual, engine.vmName)
       }

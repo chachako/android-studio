@@ -15,8 +15,7 @@
  */
 package com.android.tools.debuggertests
 
-import com.jetbrains.jdi.LocalVariableImpl
-import com.sun.jdi.LocalVariable
+import com.sun.jdi.StackFrame
 import com.sun.jdi.event.BreakpointEvent
 import com.sun.jdi.event.Event
 
@@ -28,56 +27,30 @@ internal abstract class Engine(val vmName: String) {
 
   protected abstract suspend fun startDebugger(mainClass: String): Debugger
 
-  protected open fun onBreakpointAdded() {}
-
   /**
    * Executes a single test.
    * 1. Starts a [DebuggerImpl]
    * 2. Sets a breakpoint at Breakpoint.breakpoint()
    * 3. Resumes the program each time it hits a breakpoint
-   * 4. On each breakpoint, emits information about the frame into a string
+   * 4. On each breakpoint, calls provided callback with a [StackFrame]
+   *
+   * Note that we can't just return a list of frames because some of the methods in StackFrame
+   * require a live VM behind the scene.
    */
-  suspend fun runTest(mainClass: String): String {
+  suspend fun runTest(mainClass: String, listener: FrameListener) {
     return startDebugger(mainClass).use { debugger ->
       debugger.setBreakpoint(BREAKPOINT_CLASS, BREAKPOINT_LINE)
-      onBreakpointAdded()
       buildString {
         while (true) {
           val breakpoint = debugger.resume(Event::class.java) as? BreakpointEvent ?: break
-          val frame = breakpoint.thread().frames()[1]
-          val location = frame.location()
-          append(
-            "Breakpoint: ${location.sourceName()}.${location.method()}:${location.lineNumber()}\n"
-          )
-          append("========================================================\n")
-          frame
-            .visibleVariables()
-            .map { it as LocalVariableImpl }
-            .forEach { variable ->
-              val codeScope =
-                "[%d-%d]".format(variable.scopeStart.codeIndex(), variable.scopeEnd.codeIndex())
-              val lineScope =
-                "[%d-%d]".format(variable.scopeStart.lineNumber(), variable.scopeEnd.lineNumber())
-              val line =
-                "%-2d %-10s %-10s: %-30s: %s\n".format(
-                  variable.getSlot(),
-                  lineScope,
-                  codeScope,
-                  variable.name(),
-                  variable.typeName()
-                )
-              append(line)
-            }
-          append('\n')
+          listener.onFrame(breakpoint.thread().frames()[1])
         }
       }
     }
   }
-}
 
-private fun LocalVariable.getSlot(): Int = getFieldValue("slot")
+  fun interface FrameListener {
 
-private inline fun <reified T> Any.getFieldValue(name: String): T {
-  val field = javaClass.getDeclaredField(name).apply { isAccessible = true }
-  return field.get(this) as T
+    fun onFrame(frame: StackFrame)
+  }
 }
