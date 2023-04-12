@@ -31,7 +31,12 @@ internal class SimpleEngineDebuggerTest(testClass: String) :
   }
 
   @Test
-  fun test() {
-    runTest()
+  fun localVariablesTest() {
+    runLocalVariablesTest()
+  }
+
+  @Test
+  fun inlineFramesTest() {
+    runInlineFramesTest()
   }
 }

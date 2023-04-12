@@ -61,14 +61,25 @@ fun main(args: Array<String>) {
 
     testClasses.forEach { testClass ->
       println("  Test $testClass")
-      val frameListener = LocalVariablesFrameListener()
-      runBlocking { withTimeout(30.seconds) { engine.runTest(testClass, frameListener) } }
-      val actual = frameListener.getText()
+      val localVariablesListener = LocalVariablesFrameListener()
+      val inlineFramesListener = InlineStackFrameFrameListener()
+      runBlocking {
+        withTimeout(30.seconds) {
+          engine.runTest(testClass) {
+            localVariablesListener.onFrame(it)
+            inlineFramesListener.onFrame(it)
+          }
+        }
+      }
+      val localVariablesText = localVariablesListener.getText()
+      val inlineFramesText = inlineFramesListener.getText()
       if (!noop) {
-        Resources.writeGolden(testClass, actual, engine.vmName)
+        Resources.writeGolden(testClass, localVariablesText, engine.vmName)
+        Resources.writeGolden(testClass, inlineFramesText, "inline-stack-frames")
       }
       if (verbose) {
-        println(actual)
+        println(localVariablesText)
+        println(inlineFramesText)
       }
     }
   }

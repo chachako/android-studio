@@ -1,0 +1,55 @@
+Breakpoint: InlineSpilledVariables.kt:40 - tests.InlineSpilledVariables.start()
+========================================================
+Not an Inline Stack Frame
+Call location: InlineSpilledVariables.kt:31 - tests.InlineSpilledVariables.start()
+------------------------------------------------------
+  main1                         : int
+  main2                         : int
+  main3                         : int
+  main4                         : int
+
+Inline frame for function 'foo' Depth: 1
+Call location: InlineSpilledVariables.kt:40 - tests.InlineSpilledVariables.start()
+------------------------------------------------------
+  foo1$iv                       : int
+  foo2$iv                       : int
+  foo3$iv                       : int
+  foo4$iv                       : int
+  i$iv                          : int
+  s$iv                          : java.lang.String
+  this_$iv                      : tests.InlineSpilledVariables
+
+
+Breakpoint: InlineSpilledVariables.kt:50 - tests.InlineSpilledVariables.start()
+========================================================
+Not an Inline Stack Frame
+Call location: InlineSpilledVariables.kt:31 - tests.InlineSpilledVariables.start()
+------------------------------------------------------
+  main1                         : int
+  main2                         : int
+  main3                         : int
+  main4                         : int
+
+Inline frame for function 'foo' Depth: 1
+Call location: InlineSpilledVariables.kt:41 - tests.InlineSpilledVariables.start()
+------------------------------------------------------
+  foo1$iv                       : int
+  foo2$iv                       : int
+  foo3$iv                       : int
+  foo4$iv                       : int
+  i$iv                          : int
+  s$iv                          : java.lang.String
+  this_$iv                      : tests.InlineSpilledVariables
+
+Inline frame for function 'bar' Depth: 2
+Call location: InlineSpilledVariables.kt:50 - tests.InlineSpilledVariables.start()
+------------------------------------------------------
+  bar1$iv$iv                    : int
+  bar2$iv$iv                    : int
+  bar3$iv$iv                    : int
+  bar4$iv$iv                    : int
+  i$iv$iv                       : int
+  s$iv$iv                       : java.lang.String
+  this_$iv$iv                   : tests.InlineSpilledVariables
+
+

@@ -15,27 +15,6 @@
  */
 package com.android.tools.debuggertests
 
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
-import org.junit.runners.Parameterized.Parameters
+import com.sun.jdi.Location
 
-/** Runs tests using a [ArtEngine] */
-@RunWith(Parameterized::class)
-internal class ArtEngineDebuggerTest(testClass: String) : DebuggerTestBase(testClass, ArtEngine()) {
-
-  companion object {
-
-    @JvmStatic @Parameters fun getTestClasses() = Resources.findTestClasses()
-  }
-
-  @Test
-  fun localVariablesTest() {
-    runLocalVariablesTest()
-  }
-
-  @Test
-  fun inlineFramesTest() {
-    runInlineFramesTest()
-  }
-}
+internal fun Location.printToString() = "${sourceName()}:${lineNumber()} - ${method()}"

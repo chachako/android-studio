@@ -28,13 +28,23 @@ internal abstract class DebuggerTestBase(
 
   private fun describeTest() = "at $testClass(${testClass.substringAfterLast(".")}.kt:20)"
 
-  fun runTest() {
-    val frameListener = LocalVariablesFrameListener()
+  fun runLocalVariablesTest() {
+    val listener = LocalVariablesFrameListener()
 
-    runBlocking { withTimeout(5.seconds) { engine.runTest(testClass, frameListener) } }
+    runBlocking { withTimeout(5.seconds) { engine.runTest(testClass, listener) } }
 
     val expected = Resources.readGolden(testClass, engine.vmName)
-    val actual = frameListener.getText()
+    val actual = listener.getText()
+    assertThat(actual).named(describeTest()).isEqualTo(expected)
+  }
+
+  fun runInlineFramesTest() {
+    val listener = InlineStackFrameFrameListener()
+
+    runBlocking { withTimeout(5.seconds) { engine.runTest(testClass, listener) } }
+
+    val expected = Resources.readGolden(testClass, "inline-stack-frames")
+    val actual = listener.getText()
     assertThat(actual).named(describeTest()).isEqualTo(expected)
   }
 }

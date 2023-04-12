@@ -18,7 +18,6 @@ package com.android.tools.debuggertests
 import com.android.tools.debuggertests.Engine.FrameListener
 import com.jetbrains.jdi.LocalVariableImpl
 import com.sun.jdi.LocalVariable
-import com.sun.jdi.Location
 import com.sun.jdi.StackFrame
 
 /** A [FrameListener] that builds a string representation of the frames local variables */
@@ -29,32 +28,26 @@ internal class LocalVariablesFrameListener : FrameListener {
   fun getText() = sb.toString()
 
   override fun onFrame(frame: StackFrame) {
-    val location = frame.location()
-    sb.append("Breakpoint: ${location.printToString()}\n")
+    sb.append("Breakpoint: ${frame.location().printToString()}\n")
     sb.append("========================================================\n")
     frame
       .visibleVariables()
       .map { it as LocalVariableImpl }
-      .forEach { variable ->
-        val scopeStart = variable.scopeStart
-        val scopeEnd = variable.scopeEnd
-        val lineScope = "[%d-%d]".format(scopeStart.lineNumber(), scopeEnd.lineNumber())
-        val codeScope = "[%d-%d]".format(scopeStart.codeIndex(), scopeEnd.codeIndex())
-        val line =
-          "%-2d %-10s %-10s: %-30s: %s\n".format(
-            variable.getSlot(),
-            lineScope,
-            codeScope,
-            variable.name(),
-            variable.typeName()
-          )
-        sb.append(line)
-      }
+      .forEach { sb.append(it.toSummaryLine()) }
     sb.append('\n')
   }
 }
 
-private fun Location.printToString() = "${sourceName()}:${lineNumber()} - ${method()}"
+private fun LocalVariableImpl.toSummaryLine() =
+  "%-2d %s: %-30s: %s\n".format(getSlot(), getScopes(), name(), typeName())
+
+private fun LocalVariableImpl.getScopes(): String {
+  val scopeStart = scopeStart
+  val scopeEnd = scopeEnd
+  val lineScope = "[%d-%d]".format(scopeStart.lineNumber(), scopeEnd.lineNumber())
+  val codeScope = "[%d-%d]".format(scopeStart.codeIndex(), scopeEnd.codeIndex())
+  return "%-10s %-10s".format(lineScope, codeScope)
+}
 
 private fun LocalVariable.getSlot(): Int = getFieldValue("slot")
 

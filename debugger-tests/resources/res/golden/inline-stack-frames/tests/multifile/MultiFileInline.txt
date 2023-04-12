@@ -1,0 +1,54 @@
+Breakpoint: File1.kt:24 - tests.multifile.MultiFileInline.start()
+========================================================
+Not an Inline Stack Frame
+Call location: MultiFileInline.kt:26 - tests.multifile.MultiFileInline.start()
+------------------------------------------------------
+
+Inline frame for function 'function1' Depth: 1
+Call location: File1.kt:24 - tests.multifile.MultiFileInline.start()
+------------------------------------------------------
+  i$iv                          : int
+  s$iv                          : java.lang.String
+
+
+Breakpoint: File2.kt:24 - tests.multifile.MultiFileInline.start()
+========================================================
+Not an Inline Stack Frame
+Call location: MultiFileInline.kt:26 - tests.multifile.MultiFileInline.start()
+------------------------------------------------------
+
+Inline frame for function 'function1' Depth: 1
+Call location: File1.kt:25 - tests.multifile.MultiFileInline.start()
+------------------------------------------------------
+  i$iv                          : int
+  s$iv                          : java.lang.String
+
+Inline frame for function 'function2' Depth: 2
+Call location: File2.kt:24 - tests.multifile.MultiFileInline.start()
+------------------------------------------------------
+  x$iv$iv                       : int
+
+
+Breakpoint: MultiFileInline.kt:30 - tests.multifile.MultiFileInline.start()
+========================================================
+Not an Inline Stack Frame
+Call location: MultiFileInline.kt:26 - tests.multifile.MultiFileInline.start()
+------------------------------------------------------
+
+Inline frame for function 'function1' Depth: 1
+Call location: File1.kt:25 - tests.multifile.MultiFileInline.start()
+------------------------------------------------------
+  i$iv                          : int
+  s$iv                          : java.lang.String
+
+Inline frame for function 'function2' Depth: 2
+Call location: File2.kt:25 - tests.multifile.MultiFileInline.start()
+------------------------------------------------------
+  x$iv$iv                       : int
+
+Inline frame for function 'file0' Depth: 3
+Call location: MultiFileInline.kt:30 - tests.multifile.MultiFileInline.start()
+------------------------------------------------------
+  this_$iv$iv$iv                : tests.multifile.MultiFileInline
+
+

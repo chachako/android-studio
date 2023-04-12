@@ -1,0 +1,42 @@
+Breakpoint: Inline.kt:25 - tests.Inline.start()
+========================================================
+Not an Inline Stack Frame
+Call location: Inline.kt:25 - tests.Inline.start()
+------------------------------------------------------
+
+
+Breakpoint: Inline.kt:30 - tests.Inline.start()
+========================================================
+Not an Inline Stack Frame
+Call location: Inline.kt:26 - tests.Inline.start()
+------------------------------------------------------
+
+Inline frame for function 'foo' Depth: 1
+Call location: Inline.kt:30 - tests.Inline.start()
+------------------------------------------------------
+  i$iv                          : int
+  s$iv                          : java.lang.String
+  this_$iv                      : tests.Inline
+
+
+Breakpoint: Inline.kt:35 - tests.Inline.start()
+========================================================
+Not an Inline Stack Frame
+Call location: Inline.kt:26 - tests.Inline.start()
+------------------------------------------------------
+
+Inline frame for function 'foo' Depth: 1
+Call location: Inline.kt:31 - tests.Inline.start()
+------------------------------------------------------
+  i$iv                          : int
+  s$iv                          : java.lang.String
+  this_$iv                      : tests.Inline
+
+Inline frame for function 'bar' Depth: 2
+Call location: Inline.kt:35 - tests.Inline.start()
+------------------------------------------------------
+  i$iv$iv                       : int
+  s$iv$iv                       : java.lang.String
+  this_$iv$iv                   : tests.Inline
+
+
