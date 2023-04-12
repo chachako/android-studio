@@ -16,20 +16,30 @@
 
 package com.android.testutils.truth;
 
+import static com.android.tools.smali.dexlib2.Opcode.INVOKE_DIRECT;
+import static com.android.tools.smali.dexlib2.Opcode.INVOKE_DIRECT_RANGE;
+import static com.android.tools.smali.dexlib2.Opcode.INVOKE_INTERFACE;
+import static com.android.tools.smali.dexlib2.Opcode.INVOKE_INTERFACE_RANGE;
+import static com.android.tools.smali.dexlib2.Opcode.INVOKE_STATIC;
+import static com.android.tools.smali.dexlib2.Opcode.INVOKE_STATIC_RANGE;
+import static com.android.tools.smali.dexlib2.Opcode.INVOKE_SUPER;
+import static com.android.tools.smali.dexlib2.Opcode.INVOKE_SUPER_RANGE;
+import static com.android.tools.smali.dexlib2.Opcode.INVOKE_VIRTUAL;
+import static com.android.tools.smali.dexlib2.Opcode.INVOKE_VIRTUAL_RANGE;
 import static com.google.common.truth.Truth.assertAbout;
-import static org.jf.dexlib2.Opcode.INVOKE_DIRECT;
-import static org.jf.dexlib2.Opcode.INVOKE_DIRECT_RANGE;
-import static org.jf.dexlib2.Opcode.INVOKE_INTERFACE;
-import static org.jf.dexlib2.Opcode.INVOKE_INTERFACE_RANGE;
-import static org.jf.dexlib2.Opcode.INVOKE_STATIC;
-import static org.jf.dexlib2.Opcode.INVOKE_STATIC_RANGE;
-import static org.jf.dexlib2.Opcode.INVOKE_SUPER;
-import static org.jf.dexlib2.Opcode.INVOKE_SUPER_RANGE;
-import static org.jf.dexlib2.Opcode.INVOKE_VIRTUAL;
-import static org.jf.dexlib2.Opcode.INVOKE_VIRTUAL_RANGE;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.tools.smali.dexlib2.DebugItemType;
+import com.android.tools.smali.dexlib2.Opcode;
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedClassDef;
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedField;
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedMethod;
+import com.android.tools.smali.dexlib2.iface.debug.DebugItem;
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction;
+import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction35c;
+import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction3rc;
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference;
 import com.google.common.collect.Lists;
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
@@ -38,16 +48,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.jf.dexlib2.DebugItemType;
-import org.jf.dexlib2.Opcode;
-import org.jf.dexlib2.dexbacked.DexBackedClassDef;
-import org.jf.dexlib2.dexbacked.DexBackedField;
-import org.jf.dexlib2.dexbacked.DexBackedMethod;
-import org.jf.dexlib2.iface.debug.DebugItem;
-import org.jf.dexlib2.iface.instruction.Instruction;
-import org.jf.dexlib2.iface.instruction.formats.Instruction35c;
-import org.jf.dexlib2.iface.instruction.formats.Instruction3rc;
-import org.jf.dexlib2.iface.reference.MethodReference;
 
 @SuppressWarnings("NonBooleanMethodNameMayNotStartWithQuestion")
 public class DexClassSubject extends Subject<DexClassSubject, DexBackedClassDef> {

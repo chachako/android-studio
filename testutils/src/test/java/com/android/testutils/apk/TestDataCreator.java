@@ -17,6 +17,9 @@
 package com.android.testutils.apk;
 
 import com.android.annotations.NonNull;
+import com.android.tools.smali.dexlib2.Opcodes;
+import com.android.tools.smali.dexlib2.writer.builder.DexBuilder;
+import com.android.tools.smali.dexlib2.writer.io.MemoryDataStore;
 import com.google.common.collect.ImmutableSet;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,9 +28,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import org.jf.dexlib2.Opcodes;
-import org.jf.dexlib2.writer.builder.DexBuilder;
-import org.jf.dexlib2.writer.io.MemoryDataStore;
 
 public class TestDataCreator {
 

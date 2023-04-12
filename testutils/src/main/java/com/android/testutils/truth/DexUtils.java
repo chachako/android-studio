@@ -18,6 +18,9 @@ package com.android.testutils.truth;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.tools.smali.dexlib2.Opcodes;
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedClassDef;
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,9 +28,6 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
-import org.jf.dexlib2.Opcodes;
-import org.jf.dexlib2.dexbacked.DexBackedClassDef;
-import org.jf.dexlib2.dexbacked.DexBackedDexFile;
 
 public final class DexUtils {
 

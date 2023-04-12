@@ -24,12 +24,12 @@ import com.android.testutils.apk.DexAndroidArchive;
 import com.android.testutils.truth.DexClassSubject;
 import com.android.testutils.truth.DexSubject;
 import com.android.testutils.truth.IndirectSubject;
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedClassDef;
 import com.google.common.truth.Fact;
 import com.google.common.truth.FailureMetadata;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Optional;
-import org.jf.dexlib2.dexbacked.DexBackedClassDef;
 
 /** Truth support for apk files. */
 @SuppressWarnings("NonBooleanMethodNameMayNotStartWithQuestion")

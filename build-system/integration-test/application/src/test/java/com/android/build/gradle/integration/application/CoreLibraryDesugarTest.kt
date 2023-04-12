@@ -43,7 +43,7 @@ import com.android.testutils.truth.DexSubject
 import com.android.tools.profgen.ArtProfile
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth
-import org.jf.dexlib2.immutable.debug.ImmutableStartLocal
+import com.android.tools.smali.dexlib2.immutable.debug.ImmutableStartLocal
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

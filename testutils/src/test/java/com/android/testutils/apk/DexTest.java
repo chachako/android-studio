@@ -18,12 +18,12 @@ package com.android.testutils.apk;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedClassDef;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Map;
-import org.jf.dexlib2.dexbacked.DexBackedClassDef;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;

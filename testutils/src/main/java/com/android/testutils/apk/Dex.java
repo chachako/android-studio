@@ -20,6 +20,9 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.annotations.concurrency.Immutable;
 import com.android.testutils.truth.DexUtils;
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedClassDef;
+import com.android.tools.smali.dexlib2.dexbacked.raw.HeaderItem;
+import com.android.tools.smali.dexlib2.dexbacked.reference.DexBackedStringReference;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
@@ -28,9 +31,6 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Supplier;
-import org.jf.dexlib2.dexbacked.DexBackedClassDef;
-import org.jf.dexlib2.dexbacked.raw.HeaderItem;
-import org.jf.dexlib2.dexbacked.reference.DexBackedStringReference;
 
 @Immutable
 public final class Dex {

@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertAbout;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.testutils.apk.Dex;
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedClassDef;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -32,7 +33,6 @@ import com.google.common.truth.Truth;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import org.jf.dexlib2.dexbacked.DexBackedClassDef;
 
 @SuppressWarnings("NonBooleanMethodNameMayNotStartWithQuestion")
 public class DexSubject extends Subject<DexSubject, Dex> {

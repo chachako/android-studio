@@ -24,10 +24,10 @@ import com.android.zipflinger.ZipArchive
 import com.google.common.collect.ImmutableSet
 import com.google.common.truth.Truth.assertThat
 import org.apache.commons.io.FileUtils
-import org.jf.dexlib2.iface.reference.MethodReference
-import org.jf.dexlib2.immutable.ImmutableMethod
-import org.jf.dexlib2.immutable.ImmutableMethodParameter
-import org.jf.dexlib2.immutable.util.ParamUtil
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
+import com.android.tools.smali.dexlib2.immutable.util.ParamUtil
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

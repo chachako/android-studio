@@ -19,7 +19,7 @@ package com.android.build.gradle.integration.common.utils
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.testutils.apk.Apk
 import com.google.common.truth.Truth
-import org.jf.dexlib2.dexbacked.DexBackedClassDef
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedClassDef
 
 /**
  * Utils for tests that are based on asmTransformApi test project.

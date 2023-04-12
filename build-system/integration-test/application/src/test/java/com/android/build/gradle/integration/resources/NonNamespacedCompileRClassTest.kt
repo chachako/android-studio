@@ -25,8 +25,8 @@ import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.truth.Truth
-import org.jf.dexlib2.dexbacked.DexBackedClassDef
-import org.jf.dexlib2.iface.value.IntEncodedValue
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedClassDef
+import com.android.tools.smali.dexlib2.iface.value.IntEncodedValue
 import org.junit.Rule
 import org.junit.Test
 import org.objectweb.asm.Opcodes

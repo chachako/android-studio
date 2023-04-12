@@ -34,6 +34,7 @@ kotlin_library(
         "@maven//:org.ow2.asm.asm",
         "@maven//:org.ow2.asm.asm-tree",
         # You can change order after this line:
+        "@maven//:com.android.tools.smali.smali-dexlib2",
         "@maven//:com.google.apis.google-api-services-storage",
         "@maven//:com.google.protobuf.protobuf-java",
         "@maven//:com.google.protobuf.protobuf-java-util",
@@ -47,7 +48,6 @@ kotlin_library(
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk7",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
-        "@maven//:org.smali.dexlib2",
     ],
 )
 
@@ -82,6 +82,7 @@ kotlin_test(
         "//tools/base/sdklib:tools.sdklib",
         "//tools/base/testing-infrastructure/device-pool/device-provider",
         "//tools/base/testutils:tools.testutils",
+        "@maven//:com.android.tools.smali.smali-dexlib2",
         "@maven//:com.google.apis.google-api-services-storage",
         "@maven//:com.google.protobuf.protobuf-java",
         "@maven//:com.google.protobuf.protobuf-java-util",
@@ -90,6 +91,5 @@ kotlin_test(
         "@maven//:org.mockito.mockito-core",
         "@maven//:org.ow2.asm.asm",
         "@maven//:org.ow2.asm.asm-tree",
-        "@maven//:org.smali.dexlib2",
     ],
 )

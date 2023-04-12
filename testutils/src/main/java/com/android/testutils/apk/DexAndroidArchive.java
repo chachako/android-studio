@@ -19,12 +19,12 @@ package com.android.testutils.apk;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.annotations.concurrency.Immutable;
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedClassDef;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
-import org.jf.dexlib2.dexbacked.DexBackedClassDef;
 import org.mockito.CheckReturnValue;
 
 @Immutable

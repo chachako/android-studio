@@ -20,6 +20,7 @@ TEST_DEPS = [
     "//tools/base/sdk-common:tools.sdk-common",
     "//tools/base/sdklib:tools.sdklib",
     "//tools/base/testutils:tools.testutils",
+    "@maven//:com.android.tools.smali.smali-dexlib2",
     "@maven//:com.google.guava.guava",
     "@maven//:com.google.protobuf.protobuf-java",
     "@maven//:com.google.protobuf.protobuf-java-util",
@@ -30,7 +31,6 @@ TEST_DEPS = [
     "@maven//:org.mockito.mockito-core",
     "@maven//:org.ow2.asm.asm",
     "@maven//:org.ow2.asm.asm-tree",
-    "@maven//:org.smali.dexlib2",
     "@maven//:org.jetbrains.kotlin.kotlin-stdlib",
     "@maven//:org.jetbrains.kotlin.kotlin-test",
 ]

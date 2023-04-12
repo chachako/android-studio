@@ -16,7 +16,7 @@ iml_module(
         "//tools/base/common:studio.android.sdktools.common[module, test]",
         "//tools/adt/idea/.idea/libraries:mockito[test]",
         "//tools/adt/idea/.idea/libraries:truth[test]",
-        "//tools/adt/idea/.idea/libraries:dexlib2[test]",
+        "//tools/adt/idea/.idea/libraries:google-dexlib2[test]",
         "//tools/adt/idea/.idea/libraries:jimfs[test]",
         "//tools/adt/idea/.idea/libraries:asm-tools[test]",
     ],
@@ -38,7 +38,7 @@ iml_module(
         "//tools/base/annotations:studio.android.sdktools.android-annotations[module, test]",
         "//tools/base/common:studio.android.sdktools.common[module, test]",
         "//tools/adt/idea/.idea/libraries:truth[test]",
-        "//tools/adt/idea/.idea/libraries:dexlib2[test]",
+        "//tools/adt/idea/.idea/libraries:google-dexlib2[test]",
         "//tools/adt/idea/.idea/libraries:jimfs[test]",
         "//tools/adt/idea/.idea/libraries:truth-java8-extension",
     ],
@@ -64,6 +64,7 @@ maven_library(
     ],
     deps = [
         "//tools/base/common:tools.common",
+        "@maven//:com.android.tools.smali.smali-dexlib2",
         "@maven//:com.google.jimfs.jimfs",
         "@maven//:junit.junit",
         "@maven//:org.apache.commons.commons-compress",
@@ -72,7 +73,6 @@ maven_library(
         "@maven//:org.jetbrains.kotlin.kotlin-test",
         "@maven//:org.mockito.mockito-core",
         "@maven//:org.ow2.asm.asm",
-        "@maven//:org.smali.dexlib2",
     ],
 )
 
@@ -91,11 +91,11 @@ kotlin_test(
         ":tools.testutils",
         "//tools/base/annotations",
         "//tools/base/common:tools.common",
+        "@maven//:com.android.tools.smali.smali-dexlib2",
         "@maven//:com.google.jimfs.jimfs",
         "@maven//:com.google.truth.extensions.truth-java8-extension",
         "@maven//:com.google.truth.truth",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
         "@maven//:org.jetbrains.kotlin.kotlin-test",
-        "@maven//:org.smali.dexlib2",
     ],
 )
