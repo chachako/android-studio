@@ -13,25 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver.statechangehubs
 
-package com.android.fakeadbserver.statechangehubs;
-
-import com.android.annotations.NonNull;
-import java.util.concurrent.Callable;
+import java.util.concurrent.Callable
 
 /**
- * A factory interface to create client event receivers. The {@link Callable}'s return value
+ * A factory interface to create client event receivers. The [Callable]'s return value
  * indicates if a possible error may have occurred (or a shut down signal was sent), and the calling
  * thread should terminate the processing task and release all open resources.
  */
-public interface ClientStateChangeHandlerFactory extends StateChangeHandlerFactory {
+interface ClientStateChangeHandlerFactory : StateChangeHandlerFactory {
 
-    @NonNull
-    Callable<HandlerResult> createClientListChangedHandler();
-
-    @NonNull
-    Callable<HandlerResult> createAppProcessListChangedHandler();
-
-    @NonNull
-    Callable<HandlerResult> createLogcatMessageAdditionHandler(@NonNull String message);
+    fun createClientListChangedHandler(): Callable<StateChangeHandlerFactory.HandlerResult>
+    fun createAppProcessListChangedHandler(): Callable<StateChangeHandlerFactory.HandlerResult>
+    fun createLogcatMessageAdditionHandler(message: String): Callable<StateChangeHandlerFactory.HandlerResult>
 }

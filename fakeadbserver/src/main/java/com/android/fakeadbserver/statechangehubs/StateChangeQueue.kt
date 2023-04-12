@@ -13,27 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver.statechangehubs
 
-package com.android.fakeadbserver.statechangehubs;
-
-import com.android.annotations.NonNull;
-import com.android.fakeadbserver.statechangehubs.StateChangeHandlerFactory.HandlerResult;
-import java.util.concurrent.Callable;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Callable
+import java.util.concurrent.LinkedBlockingQueue
 
 /**
  * This queue is the primary message pump for listening threads to know when events have
  * arrived, as well as what to do for such an event.
  */
-public final class StateChangeQueue {
+class StateChangeQueue {
 
-    private LinkedBlockingQueue<Callable<HandlerResult>> mQueue = new LinkedBlockingQueue<>();
+    private val mQueue = LinkedBlockingQueue<Callable<StateChangeHandlerFactory.HandlerResult>>()
 
-    public Callable<HandlerResult> take() throws InterruptedException {
-        return mQueue.take();
+    @Throws(InterruptedException::class)
+    fun take(): Callable<StateChangeHandlerFactory.HandlerResult> {
+        return mQueue.take()
     }
 
-    public void add(@NonNull Callable<HandlerResult> handler) {
-        mQueue.add(handler);
+    fun add(handler: Callable<StateChangeHandlerFactory.HandlerResult>) {
+        mQueue.add(handler)
     }
 }

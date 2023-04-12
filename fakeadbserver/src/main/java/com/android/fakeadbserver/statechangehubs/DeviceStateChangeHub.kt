@@ -13,35 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver.statechangehubs
 
-package com.android.fakeadbserver.statechangehubs;
-
-import com.android.annotations.NonNull;
-import com.android.fakeadbserver.DeviceState;
-import com.android.fakeadbserver.DeviceState.DeviceStatus;
-import java.util.Collection;
+import com.android.fakeadbserver.DeviceState
 
 /**
  * This class is the primary class that effects the changes to device states and propagates the
  * changes to existing, registered monitoring connections.
  */
-public final class DeviceStateChangeHub
-        extends StateChangeHub<DeviceStateChangeHandlerFactory> {
+class DeviceStateChangeHub : StateChangeHub<DeviceStateChangeHandlerFactory>() {
 
-    public void deviceListChanged(@NonNull Collection<DeviceState> deviceList) {
-        synchronized (mHandlers) {
-            mHandlers.forEach((stateChangeQueue, deviceChangeHandlerFactory) -> stateChangeQueue
-                    .add(deviceChangeHandlerFactory.createDeviceListChangedHandler(deviceList)));
+    fun deviceListChanged(deviceList: Collection<DeviceState?>) {
+        synchronized(mHandlers) {
+            mHandlers.forEach { (stateChangeQueue: StateChangeQueue, deviceChangeHandlerFactory: DeviceStateChangeHandlerFactory) ->
+                stateChangeQueue
+                    .add(deviceChangeHandlerFactory.createDeviceListChangedHandler(deviceList))
+            }
         }
     }
 
-    public void deviceStatusChanged(@NonNull DeviceState device, @NonNull DeviceStatus status) {
-        synchronized (mHandlers) {
-            mHandlers.forEach(
-                    (stateChangeQueue, deviceChangeHandlerFactory) ->
-                            stateChangeQueue.add(
-                                    deviceChangeHandlerFactory.createDeviceStateChangedHandler(
-                                            device, status)));
+    fun deviceStatusChanged(device: DeviceState, status: DeviceState.DeviceStatus) {
+        synchronized(mHandlers) {
+            mHandlers.forEach { (stateChangeQueue: StateChangeQueue, deviceChangeHandlerFactory: DeviceStateChangeHandlerFactory) ->
+                stateChangeQueue.add(
+                    deviceChangeHandlerFactory.createDeviceStateChangedHandler(
+                        device, status
+                    )
+                )
+            }
         }
     }
 }

@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.android.fakeadbserver.statechangehubs;
+package com.android.fakeadbserver.statechangehubs
 
 /**
  * Base factory interface that defines handler results.
  */
-public interface StateChangeHandlerFactory {
+interface StateChangeHandlerFactory {
 
-    class HandlerResult {
+    class HandlerResult(shouldContinue: Boolean) {
 
         // Decide if the executing thread should terminate the connection and exit the handler
         // task.
-        public boolean mShouldContinue = true;
+        @JvmField
+        var mShouldContinue = true
 
-        public HandlerResult(boolean shouldContinue) {
-            mShouldContinue = shouldContinue;
+        init {
+            mShouldContinue = shouldContinue
         }
     }
 }

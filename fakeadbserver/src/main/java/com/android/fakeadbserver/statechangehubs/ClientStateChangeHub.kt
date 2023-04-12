@@ -13,44 +13,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.android.fakeadbserver.statechangehubs;
-
-import com.android.annotations.NonNull;
+package com.android.fakeadbserver.statechangehubs
 
 /**
  * This class is the primary class that effects the changes to client states and propagates the
  * changes to existing, registered monitoring connections. It acts mainly as a multiplexer for
  * for events to existing client/server connections.
  */
-public class ClientStateChangeHub extends StateChangeHub<ClientStateChangeHandlerFactory> {
+class ClientStateChangeHub : StateChangeHub<ClientStateChangeHandlerFactory>() {
 
-    public void clientListChanged() {
-        synchronized (mHandlers) {
-            mHandlers.forEach(
-                    (stateChangeQueue, clientStateChangeHandlerFactory) ->
-                            stateChangeQueue.add(
-                                    clientStateChangeHandlerFactory
-                                            .createClientListChangedHandler()));
+    fun clientListChanged() {
+        synchronized(mHandlers) {
+            mHandlers.forEach { (stateChangeQueue: StateChangeQueue, clientStateChangeHandlerFactory: ClientStateChangeHandlerFactory) ->
+                stateChangeQueue.add(
+                    clientStateChangeHandlerFactory
+                        .createClientListChangedHandler()
+                )
+            }
         }
     }
 
-    public void appProcessListChanged() {
-        synchronized (mHandlers) {
-            mHandlers.forEach(
-                    (stateChangeQueue, clientStateChangeHandlerFactory) ->
-                            stateChangeQueue.add(
-                                    clientStateChangeHandlerFactory
-                                            .createAppProcessListChangedHandler()));
+    fun appProcessListChanged() {
+        synchronized(mHandlers) {
+            mHandlers.forEach { (stateChangeQueue: StateChangeQueue, clientStateChangeHandlerFactory: ClientStateChangeHandlerFactory) ->
+                stateChangeQueue.add(
+                    clientStateChangeHandlerFactory
+                        .createAppProcessListChangedHandler()
+                )
+            }
         }
     }
 
-    public void logcatMessageAdded(@NonNull String message) {
-        synchronized (mHandlers) {
-            mHandlers.forEach(
-                    ((stateChangeQueue, clientStateChangeHandlerFactory) -> stateChangeQueue
-                            .add(clientStateChangeHandlerFactory
-                                    .createLogcatMessageAdditionHandler(message))));
+    fun logcatMessageAdded(message: String) {
+        synchronized(mHandlers) {
+            mHandlers.forEach { (stateChangeQueue: StateChangeQueue, clientStateChangeHandlerFactory: ClientStateChangeHandlerFactory) ->
+                stateChangeQueue
+                    .add(
+                        clientStateChangeHandlerFactory
+                            .createLogcatMessageAdditionHandler(message)
+                    )
+            }
         }
     }
 }
