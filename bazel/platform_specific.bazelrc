@@ -24,6 +24,8 @@ build:windows --enable_runfiles
 build:windows --features=static_link_msvcrt
 # Windows only supports worker,local strategies, sandboxed not supported.
 build:windows --dynamic_local_strategy=worker,local
+# Workaround for b/277781554 where bazel fails to clean up python zips
+build:windows --nobuild_python_zip
 
 #
 # Mac
