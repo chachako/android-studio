@@ -13,35 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver.hostcommandhandlers
 
-package com.android.fakeadbserver.hostcommandhandlers;
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.FakeAdbServer
+import java.io.IOException
+import java.net.Socket
 
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.fakeadbserver.CommandHandler;
-import com.android.fakeadbserver.DeviceState;
-import com.android.fakeadbserver.FakeAdbServer;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.Socket;
+/** host:host-features returns list of features supported by the HOST.  */
+class HostFeaturesCommandHandler : HostCommandHandler() {
 
-/** host:host-features returns list of features supported by the HOST. */
-public class HostFeaturesCommandHandler extends HostCommandHandler {
-
-    @NonNull public static final String COMMAND = "host-features";
-
-    @Override
-    public boolean invoke(
-            @NonNull FakeAdbServer fakeAdbServer,
-            @NonNull Socket responseSocket,
-            @Nullable DeviceState device,
-            @NonNull String args) {
+    override fun invoke(
+        fakeAdbServer: FakeAdbServer,
+        responseSocket: Socket,
+        device: DeviceState?,
+        args: String
+    ): Boolean {
         try {
-            OutputStream out = responseSocket.getOutputStream();
-            CommandHandler.writeOkayResponse(out, String.join(",", fakeAdbServer.getFeatures()));
-        } catch (IOException e) {
+            val out = responseSocket.getOutputStream()
+            writeOkayResponse(out, java.lang.String.join(",", fakeAdbServer.features))
+        } catch (e: IOException) {
             // Ignored (this is from responseSocket.getOutputStream())
         }
-        return false;
+        return false
+    }
+
+    companion object {
+
+        const val COMMAND = "host-features"
     }
 }

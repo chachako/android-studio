@@ -13,100 +13,79 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver.hostcommandhandlers
 
-package com.android.fakeadbserver.hostcommandhandlers;
-
-import static java.nio.charset.StandardCharsets.US_ASCII;
-
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.fakeadbserver.DeviceState;
-import com.android.fakeadbserver.DeviceState.DeviceStatus;
-import com.android.fakeadbserver.FakeAdbServer;
-import com.android.fakeadbserver.statechangehubs.DeviceStateChangeHandlerFactory;
-import com.android.fakeadbserver.statechangehubs.StateChangeHandlerFactory.HandlerResult;
-import com.android.fakeadbserver.statechangehubs.StateChangeQueue;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.util.Collection;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.FakeAdbServer
+import com.android.fakeadbserver.statechangehubs.DeviceStateChangeHandlerFactory
+import com.android.fakeadbserver.statechangehubs.StateChangeHandlerFactory
+import java.io.IOException
+import java.net.Socket
+import java.nio.charset.StandardCharsets
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutionException
 
 /**
  * host:track-devices is a persistent connection that tracks device connection/disconnections, as
  * well as device state changes (such as coming online, going offline, etc...). Every time an event
  * occurs, the list of connected devices and their states are sent.
  */
-public class TrackDevicesCommandHandler extends HostCommandHandler {
+class TrackDevicesCommandHandler @JvmOverloads constructor(private val longFormat: Boolean = false) :
+    HostCommandHandler() {
 
-    @NonNull
-    public static final String COMMAND = "track-devices";
-
-    @NonNull public static final String LONG_COMMAND = "track-devices-l";
-
-    private final boolean longFormat;
-
-    public TrackDevicesCommandHandler() {
-        this(false);
-    }
-
-    public TrackDevicesCommandHandler(boolean longFormat) {
-        this.longFormat = longFormat;
-    }
-
-    @NonNull
-    private Callable<HandlerResult> sendDeviceList(@NonNull Socket responseSocket,
-            @NonNull FakeAdbServer server) {
-        return () -> {
+    private fun sendDeviceList(
+        responseSocket: Socket,
+        server: FakeAdbServer
+    ): Callable<StateChangeHandlerFactory.HandlerResult> {
+        return Callable {
             try {
-                OutputStream stream = responseSocket.getOutputStream();
-                String deviceListString = ListDevicesCommandHandler
-                        .formatDeviceList(server.getDeviceListCopy().get(), longFormat);
-                write4ByteHexIntString(stream, deviceListString.length());
-                stream.write(deviceListString.getBytes(US_ASCII));
-                stream.flush();
-                return new HandlerResult(true);
-            } catch (InterruptedException | ExecutionException | IOException e) {
-                return new HandlerResult(false);
+                val stream = responseSocket.getOutputStream()
+                val deviceListString: String =
+                    ListDevicesCommandHandler.formatDeviceList(
+                        server.deviceListCopy.get(),
+                        longFormat
+                    )
+                write4ByteHexIntString(stream, deviceListString.length)
+                stream.write(deviceListString.toByteArray(StandardCharsets.US_ASCII))
+                stream.flush()
+                return@Callable StateChangeHandlerFactory.HandlerResult(true)
+            } catch (e: InterruptedException) {
+                return@Callable StateChangeHandlerFactory.HandlerResult(false)
+            } catch (e: ExecutionException) {
+                return@Callable StateChangeHandlerFactory.HandlerResult(false)
+            } catch (e: IOException) {
+                return@Callable StateChangeHandlerFactory.HandlerResult(false)
             }
-        };
+        }
     }
 
-    @Override
-    public boolean invoke(@NonNull FakeAdbServer fakeAdbServer, @NonNull Socket responseSocket,
-            @Nullable DeviceState device, @NonNull String args) {
-        StateChangeQueue queue =
-                fakeAdbServer
-                        .getDeviceChangeHub()
-                        .subscribe(
-                                new DeviceStateChangeHandlerFactory() {
-                                    @NonNull
-                                    @Override
-                                    public Callable<HandlerResult> createDeviceListChangedHandler(
-                                            @NonNull Collection<DeviceState> deviceList) {
-                                        return sendDeviceList(responseSocket, fakeAdbServer);
-                                    }
+    override fun invoke(
+        fakeAdbServer: FakeAdbServer, responseSocket: Socket,
+        device: DeviceState?, args: String
+    ): Boolean {
+        val queue = fakeAdbServer
+            .deviceChangeHub
+            .subscribe(
+                object : DeviceStateChangeHandlerFactory {
+                    override fun createDeviceListChangedHandler(
+                        deviceList: Collection<DeviceState?>
+                    ): Callable<StateChangeHandlerFactory.HandlerResult> {
+                        return sendDeviceList(responseSocket, fakeAdbServer)
+                    }
 
-                                    @NonNull
-                                    @Override
-                                    public Callable<HandlerResult> createDeviceStateChangedHandler(
-                                            @NonNull DeviceState device,
-                                            @NonNull DeviceStatus status) {
-                                        return sendDeviceList(responseSocket, fakeAdbServer);
-                                    }
-                                });
-
-        if (queue == null) {
-            return false; // Server has shutdown before we are able to start listening to the queue.
-        }
-
+                    override fun createDeviceStateChangedHandler(
+                        device: DeviceState,
+                        status: DeviceState.DeviceStatus
+                    ): Callable<StateChangeHandlerFactory.HandlerResult> {
+                        return sendDeviceList(responseSocket, fakeAdbServer)
+                    }
+                })
+            ?: return false // Server has shutdown before we are able to start listening to the queue.
         try {
-            writeOkay(responseSocket.getOutputStream()); // Send ok first.
+            writeOkay(responseSocket.getOutputStream()) // Send ok first.
 
             // Then send over the full list of devices before going into monitoring mode.
-            sendDeviceList(responseSocket, fakeAdbServer).call();
-
+            sendDeviceList(responseSocket, fakeAdbServer).call()
             while (true) {
                 try {
                     // Grab a command from the queue (take()), and execute the command (get(), as
@@ -114,18 +93,23 @@ public class TrackDevicesCommandHandler extends HostCommandHandler {
                     // thread so that we can send the message in the opened connection (which only
                     // exists in the current thread).
                     if (!queue.take().call().mShouldContinue) {
-                        break;
+                        break
                     }
-                } catch (InterruptedException ignored) {
+                } catch (ignored: InterruptedException) {
                     // Most likely server going into shutdown, so quit out of the loop.
-                    break;
+                    break
                 }
             }
-        } catch (Exception ignored) {
+        } catch (ignored: Exception) {
         } finally {
-            fakeAdbServer.getDeviceChangeHub().unsubscribe(queue);
+            fakeAdbServer.deviceChangeHub.unsubscribe(queue)
         }
+        return false // The only we can get here is if the connection/server was terminated.
+    }
 
-        return false; // The only we can get here is if the connection/server was terminated.
+    companion object {
+
+        const val COMMAND = "track-devices"
+        const val LONG_COMMAND = "track-devices-l"
     }
 }

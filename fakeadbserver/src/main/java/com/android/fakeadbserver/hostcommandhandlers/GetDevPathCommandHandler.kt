@@ -13,35 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver.hostcommandhandlers
 
-package com.android.fakeadbserver.hostcommandhandlers;
-
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.fakeadbserver.DeviceState;
-import com.android.fakeadbserver.FakeAdbServer;
-
-import java.io.IOException;
-import java.net.Socket;
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.FakeAdbServer
+import java.io.IOException
+import java.net.Socket
 
 /**
  * host-prefix:get-devpath return the last known state of the device
  */
-public class GetDevPathCommandHandler extends HostCommandHandler {
+class GetDevPathCommandHandler : HostCommandHandler() {
 
-    @NonNull public static final String COMMAND = "get-devpath";
-
-    @Override
-    public boolean invoke(
-            @NonNull FakeAdbServer fakeAdbServer,
-            @NonNull Socket responseSocket,
-            @Nullable DeviceState device,
-            @NonNull String args) {
-        assert device != null;
+    override fun invoke(
+        fakeAdbServer: FakeAdbServer,
+        responseSocket: Socket,
+        device: DeviceState?,
+        args: String
+    ): Boolean {
+        assert(device != null)
         try {
-            writeOkayResponse(responseSocket.getOutputStream(), "dev-path-reply");
-        } catch (IOException ignored) {
+            writeOkayResponse(responseSocket.getOutputStream(), "dev-path-reply")
+        } catch (ignored: IOException) {
         }
-        return false;
+        return false
+    }
+
+    companion object {
+
+        const val COMMAND = "get-devpath"
     }
 }

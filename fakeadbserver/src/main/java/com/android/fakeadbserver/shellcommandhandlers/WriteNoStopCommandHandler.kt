@@ -13,37 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.fakeadbserver.shellcommandhandlers;
+package com.android.fakeadbserver.shellcommandhandlers
 
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.fakeadbserver.DeviceState;
-import com.android.fakeadbserver.FakeAdbServer;
-import com.android.fakeadbserver.ShellProtocolType;
-import com.android.fakeadbserver.services.ShellCommandOutput;
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.FakeAdbServer
+import com.android.fakeadbserver.ShellProtocolType
+import com.android.fakeadbserver.services.ShellCommandOutput
 
-/** shell:write-no-stop continuously write to the output stream without stopping. */
-public class WriteNoStopCommandHandler extends SimpleShellHandler {
+/** shell:write-no-stop continuously write to the output stream without stopping.  */
+class WriteNoStopCommandHandler(shellProtocolType: ShellProtocolType?) : SimpleShellHandler(
+    shellProtocolType!!,
+    "write-no-stop"
+) {
 
-    public WriteNoStopCommandHandler(ShellProtocolType shellProtocolType) {
-        super(shellProtocolType, "write-no-stop");
-    }
-
-    @Override
-    public void execute(
-            @NonNull FakeAdbServer fakeAdbServer,
-            @NonNull StatusWriter statusWriter,
-            @NonNull ShellCommandOutput shellCommandOutput,
-            @NonNull DeviceState device,
-            @NonNull String shellCommand,
-            @Nullable String shellCommandArgs) {
+    override fun execute(
+        fakeAdbServer: FakeAdbServer,
+        statusWriter: StatusWriter,
+        shellCommandOutput: ShellCommandOutput,
+        device: DeviceState,
+        shellCommand: String,
+        shellCommandArgs: String?
+    ) {
         try {
-            statusWriter.writeOk(); // Send ok first.
+            statusWriter.writeOk() // Send ok first.
             while (true) {
-                shellCommandOutput.writeStdout("write-no-stop test in progress\n");
-                Thread.sleep(200);
+                shellCommandOutput.writeStdout("write-no-stop test in progress\n")
+                Thread.sleep(200)
             }
-        } catch (InterruptedException ignored) {
+        } catch (ignored: InterruptedException) {
         }
     }
 }

@@ -13,37 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver.hostcommandhandlers
 
-package com.android.fakeadbserver.hostcommandhandlers;
-
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.fakeadbserver.CommandHandler;
-import com.android.fakeadbserver.DeviceState;
-import com.android.fakeadbserver.FakeAdbServer;
-import java.io.IOException;
-import java.net.Socket;
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.FakeAdbServer
+import java.io.IOException
+import java.net.Socket
 
 /**
  * host:kill terminates the server when the command is received.
  */
-public class KillCommandHandler extends HostCommandHandler {
+class KillCommandHandler : HostCommandHandler() {
 
-    @NonNull
-    public static final String COMMAND = "kill";
-
-    @Override
-    public boolean invoke(
-            @NonNull FakeAdbServer fakeAdbServer,
-            @NonNull Socket responseSocket,
-            @Nullable DeviceState device,
-            @NonNull String args) {
-        fakeAdbServer.stop();
+    override fun invoke(
+        fakeAdbServer: FakeAdbServer,
+        responseSocket: Socket,
+        device: DeviceState?,
+        args: String
+    ): Boolean {
+        fakeAdbServer.stop()
         try {
-            CommandHandler.writeOkay(responseSocket.getOutputStream()); // Send ok.
-        } catch (IOException ignored) {
+            writeOkay(responseSocket.getOutputStream()) // Send ok.
+        } catch (ignored: IOException) {
         }
+        return false
+    }
 
-        return false;
+    companion object {
+
+        const val COMMAND = "kill"
     }
 }

@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver.hostcommandhandlers
 
-package com.android.fakeadbserver.hostcommandhandlers;
+/** An implementation of "host:version" that returns an invalid string  */
+class FaultyVersionCommandHandler : VersionCommandHandler() {
 
-/** An implementation of "host:version" that returns an invalid string */
-public class FaultyVersionCommandHandler extends VersionCommandHandler {
-
-    @Override
-    protected String getVersionString() {
-        return "QWER";
-    }
+    override val versionString: String
+        get() = "QWER"
 }

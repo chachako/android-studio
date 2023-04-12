@@ -13,74 +13,74 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.fakeadbserver.hostcommandhandlers;
+package com.android.fakeadbserver.hostcommandhandlers
 
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.fakeadbserver.DeviceState;
-import com.android.fakeadbserver.FakeAdbServer;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.Socket;
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.FakeAdbServer
+import java.io.IOException
+import java.io.OutputStream
+import java.net.Socket
 
 /**
  * host-prefix:killforward ADB command removes a port forward from the specified local port. This
  * implementation only handles tcp sockets, and not Unix domain sockets.
  */
-public class KillForwardCommandHandler extends HostCommandHandler {
+class KillForwardCommandHandler : HostCommandHandler() {
 
-    @NonNull public static final String COMMAND = "killforward";
-
-    @Override
-    public boolean invoke(
-            @NonNull FakeAdbServer fakeAdbServer,
-            @NonNull Socket responseSocket,
-            @Nullable DeviceState device,
-            @NonNull String args) {
-        assert device != null;
-
-        OutputStream stream;
-        try {
-            stream = responseSocket.getOutputStream();
-        } catch (IOException ignored) {
-            return false;
+    override fun invoke(
+        fakeAdbServer: FakeAdbServer,
+        responseSocket: Socket,
+        device: DeviceState?,
+        args: String
+    ): Boolean {
+        assert(device != null)
+        val stream: OutputStream
+        stream = try {
+            responseSocket.getOutputStream()
+        } catch (ignored: IOException) {
+            return false
         }
-
-        String[] hostAddress = args.split(":");
-        switch (hostAddress[0]) {
-            case "tcp":
-                break;
-            case "local":
+        val hostAddress = args.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        when (hostAddress[0]) {
+            "tcp" -> {}
+            "local" -> {
                 writeFailResponse(
-                        stream, "Host Unix domain sockets not supported in fake ADB Server.");
-                return false;
-            default:
-                writeFailResponse(stream, "Invalid host transport specified: " + hostAddress[0]);
-                return false;
-        }
-        int hostPort;
-        try {
-            hostPort = Integer.parseInt(hostAddress[1]);
-        } catch (NumberFormatException ignored) {
-            writeFailResponse(stream, "Invalid port specified: " + hostAddress[1]);
-            return false;
-        }
+                    stream, "Host Unix domain sockets not supported in fake ADB Server."
+                )
+                return false
+            }
 
-        if (!device.removePortForwarder(hostPort)) {
-            writeFailResponse(stream, "Could not successfully remove forward.");
-            return false;
+            else -> {
+                writeFailResponse(stream, "Invalid host transport specified: " + hostAddress[0])
+                return false
+            }
         }
-
+        val hostPort: Int
+        hostPort = try {
+            hostAddress[1].toInt()
+        } catch (ignored: NumberFormatException) {
+            writeFailResponse(stream, "Invalid port specified: " + hostAddress[1])
+            return false
+        }
+        if (!device!!.removePortForwarder(hostPort)) {
+            writeFailResponse(stream, "Could not successfully remove forward.")
+            return false
+        }
         try {
             // We send 2 OKAY answers: 1st OKAY is connect, 2nd OKAY is status.
             // See
             // https://cs.android.com/android/platform/superproject/+/3a52886262ae22477a7d8ffb12adba64daf6aafa:packages/modules/adb/adb.cpp;l=1058
-            writeOkay(stream);
-            writeOkay(stream);
-        } catch (IOException ignored) {
+            writeOkay(stream)
+            writeOkay(stream)
+        } catch (ignored: IOException) {
         }
 
         // We always close the connection, as per ADB protocol spec.
-        return false;
+        return false
+    }
+
+    companion object {
+
+        const val COMMAND = "killforward"
     }
 }

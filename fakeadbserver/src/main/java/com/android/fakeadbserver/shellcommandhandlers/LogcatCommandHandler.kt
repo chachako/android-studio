@@ -13,103 +13,81 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver.shellcommandhandlers
 
-package com.android.fakeadbserver.shellcommandhandlers;
-
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.fakeadbserver.DeviceState;
-import com.android.fakeadbserver.DeviceState.LogcatChangeHandlerSubscriptionResult;
-import com.android.fakeadbserver.FakeAdbServer;
-import com.android.fakeadbserver.ShellProtocolType;
-import com.android.fakeadbserver.services.ShellCommandOutput;
-import com.android.fakeadbserver.statechangehubs.ClientStateChangeHandlerFactory;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.FakeAdbServer
+import com.android.fakeadbserver.ShellProtocolType
+import com.android.fakeadbserver.services.ShellCommandOutput
+import com.android.fakeadbserver.statechangehubs.ClientStateChangeHandlerFactory
+import com.android.fakeadbserver.statechangehubs.StateChangeHandlerFactory
+import java.nio.charset.Charset
+import java.util.concurrent.Callable
 
 /**
  * shell:logcat command is a persistent command issued to grab the output of logcat. In this
  * implementation, the command handler can be driven to send messages to the client of the fake ADB
  * Server.
  */
-public class LogcatCommandHandler extends SimpleShellHandler {
+open class LogcatCommandHandler(shellProtocolType: ShellProtocolType?) : SimpleShellHandler(
+    shellProtocolType!!,
+    "logcat"
+) {
 
-    public LogcatCommandHandler(ShellProtocolType shellProtocolType) {
-        super(shellProtocolType, "logcat");
-    }
-
-    @Override
-    public void execute(
-            @NonNull FakeAdbServer fakeAdbServer,
-            @NonNull StatusWriter statusWriter,
-            @NonNull ShellCommandOutput shellCommandOutput,
-            @NonNull DeviceState device,
-            @NonNull String shellCommand,
-            @Nullable String shellCommandArgs) {
-        List<String> parsedArgs =
-                Arrays.asList(
-                        shellCommandArgs == null ? new String[0] : shellCommandArgs.split(" +"));
-
-        int formatIndex = parsedArgs.indexOf("-v");
-        if (formatIndex + 1 > parsedArgs.size()) {
-            return;
+    override fun execute(
+        fakeAdbServer: FakeAdbServer,
+        statusWriter: StatusWriter,
+        shellCommandOutput: ShellCommandOutput,
+        device: DeviceState,
+        shellCommand: String,
+        shellCommandArgs: String?
+    ) {
+        val parsedArgs = shellCommandArgs?.split(" +".toRegex()) ?: listOf()
+        val formatIndex = parsedArgs.indexOf("-v")
+        if (formatIndex + 1 > parsedArgs.size) {
+            return
         }
-
-        String format = parsedArgs.get(formatIndex + 1);
+        val format = parsedArgs[formatIndex + 1]
         // TODO format the output according {@code format} argument.
+        statusWriter.writeOk()
+        val subscriptionResult = device.subscribeLogcatChangeHandler(
+            object : ClientStateChangeHandlerFactory {
+                override fun createClientListChangedHandler(): Callable<StateChangeHandlerFactory.HandlerResult> {
+                    return Callable { StateChangeHandlerFactory.HandlerResult(true) }
+                }
 
-        statusWriter.writeOk();
+                override fun createAppProcessListChangedHandler(): Callable<StateChangeHandlerFactory.HandlerResult> {
+                    return Callable { StateChangeHandlerFactory.HandlerResult(true) }
+                }
 
-        LogcatChangeHandlerSubscriptionResult subscriptionResult =
-                device.subscribeLogcatChangeHandler(
-                        new ClientStateChangeHandlerFactory() {
-                            @NonNull
-                            @Override
-                            public Callable<HandlerResult> createClientListChangedHandler() {
-                                return () -> new HandlerResult(true);
-                            }
-
-                            @NonNull
-                            @Override
-                            public Callable<HandlerResult> createAppProcessListChangedHandler() {
-                                return () -> new HandlerResult(true);
-                            }
-
-                            @NonNull
-                            @Override
-                            public Callable<HandlerResult> createLogcatMessageAdditionHandler(
-                                    @NonNull String message) {
-                                return () -> {
-                                    shellCommandOutput.writeStdout(
-                                            message.getBytes(Charset.defaultCharset()));
-                                    return new HandlerResult(true);
-                                };
-                            }
-                        });
-
-        if (subscriptionResult == null) {
-            return;
-        }
-
+                override fun createLogcatMessageAdditionHandler(
+                    message: String
+                ): Callable<StateChangeHandlerFactory.HandlerResult> {
+                    return Callable {
+                        shellCommandOutput.writeStdout(
+                            message.toByteArray(Charset.defaultCharset())
+                        )
+                        StateChangeHandlerFactory.HandlerResult(true)
+                    }
+                }
+            }) ?: return
         try {
-            for (String message : subscriptionResult.mLogcatContents) {
-                shellCommandOutput.writeStdout(message);
+            for (message in subscriptionResult.mLogcatContents) {
+                shellCommandOutput.writeStdout(message)
             }
             while (true) {
                 try {
                     if (!subscriptionResult.mQueue.take().call().mShouldContinue) {
-                        break;
+                        break
                     }
-                } catch (InterruptedException ignored) {
-                    Thread.currentThread().interrupt();
-                    break;
+                } catch (ignored: InterruptedException) {
+                    Thread.currentThread().interrupt()
+                    break
                 }
             }
-        } catch (Exception ignored) {
+        } catch (ignored: Exception) {
         } finally {
-            device.getClientChangeHub().unsubscribe(subscriptionResult.mQueue);
+            device.clientChangeHub.unsubscribe(subscriptionResult.mQueue)
         }
     }
 }

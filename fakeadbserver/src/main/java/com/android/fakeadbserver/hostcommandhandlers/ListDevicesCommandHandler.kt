@@ -13,111 +13,90 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver.hostcommandhandlers
 
-package com.android.fakeadbserver.hostcommandhandlers;
-
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.fakeadbserver.DeviceState;
-import com.android.fakeadbserver.FakeAdbServer;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.FakeAdbServer
+import java.io.IOException
+import java.io.OutputStream
+import java.net.Socket
+import java.nio.charset.StandardCharsets
+import java.util.concurrent.ExecutionException
 
 /**
  * host:devices is a one-shot command to list devices and their states that are presently connected
  * to the server.
  */
-public class ListDevicesCommandHandler extends HostCommandHandler {
+class ListDevicesCommandHandler @JvmOverloads constructor(private val longFormat: Boolean = false) :
+    HostCommandHandler() {
 
-    @NonNull public static final String COMMAND = "devices";
-
-    @NonNull public static final String LONG_COMMAND = "devices-l";
-
-    private final boolean longFormat;
-
-    public ListDevicesCommandHandler() {
-        this(false);
-    }
-
-    public ListDevicesCommandHandler(boolean longFormat) {
-        this.longFormat = longFormat;
-    }
-
-    @Override
-    public boolean invoke(
-            @NonNull FakeAdbServer fakeAdbServer,
-            @NonNull Socket responseSocket,
-            @Nullable DeviceState device,
-            @NonNull String args) {
-        OutputStream stream;
-        try {
-            stream = responseSocket.getOutputStream();
-        }
-        catch (IOException ignored) {
-            return false;
+    override fun invoke(
+        fakeAdbServer: FakeAdbServer,
+        responseSocket: Socket,
+        device: DeviceState?,
+        args: String
+    ): Boolean {
+        val stream: OutputStream
+        stream = try {
+            responseSocket.getOutputStream()
+        } catch (ignored: IOException) {
+            return false
         }
         try {
-            String deviceListString = formatDeviceList(fakeAdbServer.getDeviceListCopy().get(),
-                                                       longFormat);
-
+            val deviceListString = formatDeviceList(
+                fakeAdbServer.deviceListCopy.get(),
+                longFormat
+            )
             try {
-                writeOkay(stream); // Send ok first.
-                write4ByteHexIntString(stream, deviceListString.length());
-                stream.write(deviceListString.getBytes(StandardCharsets.US_ASCII));
+                writeOkay(stream) // Send ok first.
+                write4ByteHexIntString(stream, deviceListString.length)
+                stream.write(deviceListString.toByteArray(StandardCharsets.US_ASCII))
+            } catch (ignored: IOException) {
+                return false
             }
-            catch (IOException ignored) {
-                return false;
-            }
+        } catch (ignored: InterruptedException) {
+            Thread.currentThread().interrupt()
+        } catch (e: ExecutionException) {
+            writeFailResponse(stream, "Failed to retrieve the list of devices from the server.")
+            return false
         }
-        catch (InterruptedException ignored) {
-            Thread.currentThread().interrupt();
-        }
-        catch (ExecutionException e) {
-            writeFailResponse(stream, "Failed to retrieve the list of devices from the server.");
-            return false;
-        }
-
-        return true;
+        return true
     }
 
-    @NonNull
-    static String formatDeviceList(@NonNull List<DeviceState> deviceList, boolean longFormat) {
-        StringBuilder builder = new StringBuilder();
-        for (DeviceState deviceState : deviceList) {
-            builder.append(deviceState.getDeviceId());
-            builder.append("\t");
-            builder.append(deviceState.getDeviceStatus().getState());
-            if (longFormat) {
-                if (deviceState.getDeviceStatus() == DeviceState.DeviceStatus.ONLINE) {
-                    builder.append(" ");
-                    builder.append("product:");
-                    builder.append(deviceState.getManufacturer());
+    companion object {
 
-                    builder.append(" ");
-                    builder.append("model:");
-                    builder.append(deviceState.getModel());
-
-                    builder.append(" ");
-                    builder.append("device:");
-                    builder.append(deviceState.getBuildVersionRelease());
+        const val COMMAND = "devices"
+        const val LONG_COMMAND = "devices-l"
+        fun formatDeviceList(deviceList: List<DeviceState>, longFormat: Boolean): String {
+            val builder = StringBuilder()
+            for (deviceState in deviceList) {
+                builder.append(deviceState.deviceId)
+                builder.append("\t")
+                builder.append(deviceState.deviceStatus.state)
+                if (longFormat) {
+                    if (deviceState.deviceStatus === DeviceState.DeviceStatus.ONLINE) {
+                        builder.append(" ")
+                        builder.append("product:")
+                        builder.append(deviceState.manufacturer)
+                        builder.append(" ")
+                        builder.append("model:")
+                        builder.append(deviceState.model)
+                        builder.append(" ")
+                        builder.append("device:")
+                        builder.append(deviceState.buildVersionRelease)
+                    }
+                    builder.append(" ")
+                    builder.append("transport_id:")
+                    builder.append("1")
                 }
-                builder.append(" ");
-                builder.append("transport_id:");
-                builder.append("1");
+                builder.append("\n")
             }
-            builder.append("\n");
-        }
 
-        // Remove trailing '\n' to match adb server behavior
-        if (!deviceList.isEmpty()) {
-            builder.deleteCharAt(builder.length() - 1);
+            // Remove trailing '\n' to match adb server behavior
+            if (!deviceList.isEmpty()) {
+                builder.deleteCharAt(builder.length - 1)
+            }
+            return builder.toString()
         }
-
-        return builder.toString();
     }
 }

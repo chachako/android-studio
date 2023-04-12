@@ -13,66 +13,70 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver.hostcommandhandlers
 
-package com.android.fakeadbserver.hostcommandhandlers;
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.FakeAdbServer
+import com.android.fakeadbserver.MdnsService
+import java.io.IOException
+import java.net.Socket
+import java.util.Locale
+import java.util.concurrent.ExecutionException
+import java.util.function.Consumer
 
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.fakeadbserver.CommandHandler;
-import com.android.fakeadbserver.DeviceState;
-import com.android.fakeadbserver.FakeAdbServer;
-import com.android.fakeadbserver.MdnsService;
-import java.io.IOException;
-import java.net.Socket;
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.ExecutionException;
+/** host:mdns:check returns the status of mDNS support  */
+class MdnsCommandHandler : HostCommandHandler() {
 
-/** host:mdns:check returns the status of mDNS support */
-public class MdnsCommandHandler extends HostCommandHandler {
-
-    @NonNull public static final String COMMAND = "mdns";
-
-    @Override
-    public boolean invoke(
-            @NonNull FakeAdbServer fakeAdbServer,
-            @NonNull Socket responseSocket,
-            @Nullable DeviceState device,
-            @NonNull String args) {
+    override fun invoke(
+        fakeAdbServer: FakeAdbServer,
+        responseSocket: Socket,
+        device: DeviceState?,
+        args: String
+    ): Boolean {
         try {
-            if ("check".equals(args)) {
-                CommandHandler.writeOkayResponse(
-                        responseSocket.getOutputStream(),
-                        "mdns daemon version [FakeAdb implementation]\n");
-            } else if ("services".equals(args)) {
-                String result = formatMdnsServiceList(fakeAdbServer.getMdnsServicesCopy().get());
-                CommandHandler.writeOkayResponse(responseSocket.getOutputStream(), result);
+            if ("check" == args) {
+                writeOkayResponse(
+                    responseSocket.getOutputStream(),
+                    "mdns daemon version [FakeAdb implementation]\n"
+                )
+            } else if ("services" == args) {
+                val result = formatMdnsServiceList(fakeAdbServer.mdnsServicesCopy.get())
+                writeOkayResponse(responseSocket.getOutputStream(), result)
             } else {
-                CommandHandler.writeFailResponse(
-                        responseSocket.getOutputStream(), "Invalid mdns command");
+                writeFailResponse(
+                    responseSocket.getOutputStream(), "Invalid mdns command"
+                )
             }
-        } catch (IOException | ExecutionException ignored) {
-            return false;
-        } catch (InterruptedException ignored) {
-            Thread.currentThread().interrupt();
+        } catch (ignored: IOException) {
+            return false
+        } catch (ignored: ExecutionException) {
+            return false
+        } catch (ignored: InterruptedException) {
+            Thread.currentThread().interrupt()
         }
-
-        return false;
+        return false
     }
 
-    private String formatMdnsServiceList(List<MdnsService> services) {
-        StringBuilder sb = new StringBuilder();
+    private fun formatMdnsServiceList(services: List<MdnsService>): String {
+        val sb = StringBuilder()
         services.forEach(
-                service -> {
-                    sb.append(
-                            String.format(
-                                    Locale.US,
-                                    "%s\t%s\t%s:%d\n",
-                                    service.getInstanceName(),
-                                    service.getServiceName(),
-                                    service.getDeviceAddress().getHostString(),
-                                    service.getDeviceAddress().getPort()));
-                });
-        return sb.toString();
+            Consumer { service: MdnsService ->
+                sb.append(
+                    String.format(
+                        Locale.US,
+                        "%s\t%s\t%s:%d\n",
+                        service.instanceName,
+                        service.serviceName,
+                        service.deviceAddress.hostString,
+                        service.deviceAddress.port
+                    )
+                )
+            })
+        return sb.toString()
+    }
+
+    companion object {
+
+        const val COMMAND = "mdns"
     }
 }

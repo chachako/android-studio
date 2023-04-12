@@ -13,40 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver.hostcommandhandlers
 
-package com.android.fakeadbserver.hostcommandhandlers;
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.FakeAdbServer
+import java.io.IOException
+import java.net.Socket
 
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.fakeadbserver.CommandHandler;
-import com.android.fakeadbserver.DeviceState;
-import com.android.fakeadbserver.FakeAdbServer;
-import java.io.IOException;
-import java.net.Socket;
+/** host:version returns the internal ADB server version.  */
+open class VersionCommandHandler : HostCommandHandler() {
 
-/** host:version returns the internal ADB server version. */
-public class VersionCommandHandler extends HostCommandHandler {
-
-    @NonNull public static final String COMMAND = "version";
-
-    public static final int ADB_INTERNAL_VERSION = 40;
-
-    @Override
-    public boolean invoke(
-            @NonNull FakeAdbServer fakeAdbServer,
-            @NonNull Socket responseSocket,
-            @Nullable DeviceState device,
-            @NonNull String args) {
+    override fun invoke(
+        fakeAdbServer: FakeAdbServer,
+        responseSocket: Socket,
+        device: DeviceState?,
+        args: String
+    ): Boolean {
         try {
-            String version = getVersionString();
-            CommandHandler.writeOkayResponse(responseSocket.getOutputStream(), version);
-        } catch (IOException ignored) {
+            val version = versionString
+            writeOkayResponse(responseSocket.getOutputStream(), version)
+        } catch (ignored: IOException) {
         }
-
-        return false;
+        return false
     }
 
-    protected String getVersionString() {
-        return String.format("%04X", ADB_INTERNAL_VERSION);
+    protected open val versionString: String
+        get() = String.format("%04X", ADB_INTERNAL_VERSION)
+
+    companion object {
+
+        const val COMMAND = "version"
+        const val ADB_INTERNAL_VERSION = 40
     }
 }

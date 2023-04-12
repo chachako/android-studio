@@ -13,48 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver.hostcommandhandlers
 
-package com.android.fakeadbserver.hostcommandhandlers;
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.FakeAdbServer
+import java.io.IOException
+import java.net.Socket
 
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.fakeadbserver.CommandHandler;
-import com.android.fakeadbserver.DeviceState;
-import com.android.fakeadbserver.FakeAdbServer;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.util.HashSet;
-import java.util.Set;
+/** host:features returns list of features supported by both the device and the HOST.  */
+class FeaturesCommandHandler : HostCommandHandler() {
 
-/** host:features returns list of features supported by both the device and the HOST. */
-public class FeaturesCommandHandler extends HostCommandHandler {
-
-    @NonNull public static final String COMMAND = "features";
-
-    @Override
-    public boolean invoke(
-            @NonNull FakeAdbServer fakeAdbServer,
-            @NonNull Socket responseSocket,
-            @Nullable DeviceState device,
-            @NonNull String args) {
+    override fun invoke(
+        fakeAdbServer: FakeAdbServer,
+        responseSocket: Socket,
+        device: DeviceState?,
+        args: String
+    ): Boolean {
         try {
             if (device == null) {
-                CommandHandler.writeFailMissingDevice(responseSocket.getOutputStream(), COMMAND);
-                return false;
+                writeFailMissingDevice(responseSocket.getOutputStream(), COMMAND)
+                return false
             }
-
-            OutputStream out = responseSocket.getOutputStream();
+            val out = responseSocket.getOutputStream()
             // This is a features request. It should contain only the features supported by
             // both the server and the device.
-            Set deviceFeatures = device.getFeatures();
-            Set hostFeatures = fakeAdbServer.getFeatures();
-            Set commonFeatures = new HashSet(deviceFeatures);
-            commonFeatures.retainAll(hostFeatures);
-            CommandHandler.writeOkayResponse(out, String.join(",", commonFeatures));
-        } catch (IOException e) {
+            val deviceFeatures = device.features
+            val hostFeatures = fakeAdbServer.features
+            val commonFeatures = HashSet(deviceFeatures)
+            commonFeatures.retainAll(hostFeatures)
+            writeOkayResponse(out, java.lang.String.join(",", commonFeatures))
+        } catch (e: IOException) {
             // Ignored (this is from responseSocket.getOutputStream())
         }
-        return false;
+        return false
+    }
+
+    companion object {
+
+        const val COMMAND = "features"
     }
 }

@@ -13,37 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver.hostcommandhandlers
 
-package com.android.fakeadbserver.hostcommandhandlers;
-
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.fakeadbserver.DeviceState;
-import com.android.fakeadbserver.FakeAdbServer;
-import java.io.IOException;
-import java.net.Socket;
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.FakeAdbServer
+import java.io.IOException
+import java.net.Socket
 
 /**
  * host-prefix:get-serialno return the last known state of the device
  */
-public class GetSerialNoCommandHandler extends HostCommandHandler {
+class GetSerialNoCommandHandler : HostCommandHandler() {
 
-    @NonNull public static final String COMMAND = "get-serialno";
-
-    @Override
-    public boolean invoke(
-            @NonNull FakeAdbServer fakeAdbServer,
-            @NonNull Socket responseSocket,
-            @Nullable DeviceState device,
-            @NonNull String args) {
+    override fun invoke(
+        fakeAdbServer: FakeAdbServer,
+        responseSocket: Socket,
+        device: DeviceState?,
+        args: String
+    ): Boolean {
         // Device may be null if an invalid serial number was sent. A FAIL response
         // should already have been sent.
         if (device != null) {
             try {
-                writeOkayResponse(responseSocket.getOutputStream(), device.getDeviceId());
-            } catch (IOException ignored) {
+                writeOkayResponse(responseSocket.getOutputStream(), device.deviceId)
+            } catch (ignored: IOException) {
             }
         }
-        return false;
+        return false
+    }
+
+    companion object {
+
+        const val COMMAND = "get-serialno"
     }
 }

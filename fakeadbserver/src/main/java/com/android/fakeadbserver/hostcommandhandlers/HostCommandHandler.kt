@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver.hostcommandhandlers
 
-package com.android.fakeadbserver.hostcommandhandlers;
-
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.fakeadbserver.CommandHandler;
-import com.android.fakeadbserver.DeviceState;
-import com.android.fakeadbserver.FakeAdbServer;
-import java.net.Socket;
+import com.android.fakeadbserver.CommandHandler
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.FakeAdbServer
+import java.net.Socket
 
 /**
  * HostCommandHandlers handle commands directly to the ADB Server itself, such as host:kill,
  * host:devices, etc.... This does not include host commands that are directed at a specific device.
  */
-public abstract class HostCommandHandler extends CommandHandler {
+abstract class HostCommandHandler : CommandHandler() {
 
     /**
      * This is the main execution method of the command.
@@ -38,6 +35,8 @@ public abstract class HostCommandHandler extends CommandHandler {
      * @param args           Arguments for the command.
      * @return a boolean, with true meaning keep the connection alive, false to close the connection
      */
-    public abstract boolean invoke(@NonNull FakeAdbServer fakeAdbServer,
-            @NonNull Socket responseSocket, @Nullable DeviceState device, @NonNull String args);
+    abstract operator fun invoke(
+        fakeAdbServer: FakeAdbServer,
+        responseSocket: Socket, device: DeviceState?, args: String
+    ): Boolean
 }
