@@ -21,7 +21,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
-/** Runs tests using a [JvmEngine] */
+/** Runs tests using a [AndroidEngine] */
 @RunWith(Parameterized::class)
 internal class AndroidEngineDebuggerTest(testClass: String) :
   DebuggerTestBase(testClass, AndroidEngine(emulatorRule.emulator.serialNumber)) {
