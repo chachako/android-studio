@@ -298,6 +298,74 @@ class MissingClassDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testInjectable() {
+    lint()
+      .issues(INSTANTIATABLE)
+      .files(
+        manifest(
+            """
+            <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                package="test.pkg" >
+                <application>
+                    <activity
+                        android:name=".Foo"
+                        android:label="@string/app_name" >
+                    </activity>
+                    <activity
+                        android:name=".Bar"
+                        android:label="@string/app_name" >
+                    </activity>
+                </application>
+            </manifest>
+            """
+          )
+          .indented(),
+        java(
+            """
+            package test.pkg;
+
+            import android.app.Activity;
+            import javax.inject.Inject;
+
+            public class Foo extends Activity {
+                @Inject
+                Foo(Bar bar) {}
+            }
+            """
+          )
+          .indented(),
+        kotlin(
+            """
+            package test.pkg
+
+            import android.app.Activity
+            import javax.inject.Inject
+
+            class Bar : Activity {
+                private constructor()
+
+                @Inject
+                constructor(foo: Foo)
+            }
+            """
+          )
+          .indented(),
+        java(
+            """
+            package javax.inject;
+
+            import java.lang.annotation.Target;
+
+            @Target({ CONSTRUCTOR })
+            public @interface Inject {}
+            """
+          )
+          .indented(),
+      )
+      .run()
+      .expectClean()
+  }
+
   fun testManifestMissing() {
     lint()
       .issues(MISSING)

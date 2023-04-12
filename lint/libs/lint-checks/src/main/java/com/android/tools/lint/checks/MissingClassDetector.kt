@@ -403,6 +403,12 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
         return
       }
       for (constructor in cls.constructors) {
+        if (constructor.hasAnnotation("javax.inject.Inject")) {
+          // Assume instantiable via a custom AppComponentFactory / dependency injection.
+          return
+        }
+      }
+      for (constructor in cls.constructors) {
         if (constructor.parameterList.isEmpty) {
           if (evaluator.isPrivate(constructor)) {
             val message = "The default constructor must be public in `$fqcn`"
@@ -490,11 +496,16 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
         briefDescription = "Registered class is not instantiatable",
         explanation =
           """
-                    Activities, services, broadcast receivers etc. registered in the \
-                    manifest file (or for custom views, in a layout file) must be \
-                    "instantiatable" by the system, which means that the class must \
-                    be public, it must have an empty public constructor, and if it's an \
-                    inner class, it must be a static inner class.""",
+          Activities, services, broadcast receivers etc. registered in the \
+          manifest file (or for custom views, in a layout file) must be \
+          "instantiatable" by the system, which means that the class must \
+          be public, it must have an empty public constructor, and if it's an \
+          inner class, it must be a static inner class.
+
+          If you use a custom `AppComponentFactory` to instantiate app \
+          components yourself, consider disabling this Lint issue in order \
+          to avoid false positives.
+          """,
         category = Category.CORRECTNESS,
         priority = 6,
         severity = Severity.FATAL,
