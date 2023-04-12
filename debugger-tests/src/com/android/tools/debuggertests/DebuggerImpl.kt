@@ -15,15 +15,15 @@
  */
 package com.android.tools.debuggertests
 
-import com.sun.jdi.Bootstrap.virtualMachineManager
+import com.jetbrains.jdi.VirtualMachineManagerImpl.virtualMachineManager
 import com.sun.jdi.VirtualMachine
 import com.sun.jdi.connect.Connector
 import com.sun.jdi.event.ClassPrepareEvent
 import com.sun.jdi.event.Event
 import com.sun.jdi.event.VMStartEvent
 
-private const val LAUNCH_CONNECTOR = "com.sun.jdi.CommandLineLaunch"
-private const val ATTACH_CONNECTOR = "com.sun.jdi.SocketAttach"
+private const val LAUNCH_CONNECTOR = ".CommandLineLaunch"
+private const val ATTACH_CONNECTOR = ".SocketAttach"
 
 /** A simple JDI client that can set a breakpoint */
 internal class DebuggerImpl private constructor(private val vm: VirtualMachine) : Debugger {
@@ -83,5 +83,5 @@ internal class DebuggerImpl private constructor(private val vm: VirtualMachine) 
 }
 
 private inline fun <reified T : Connector> List<T>.named(name: String): T = first {
-  it.name() == name
+  it.name().endsWith(name)
 }

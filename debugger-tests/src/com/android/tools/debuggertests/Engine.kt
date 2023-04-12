@@ -15,8 +15,8 @@
  */
 package com.android.tools.debuggertests
 
+import com.jetbrains.jdi.LocalVariableImpl
 import com.sun.jdi.LocalVariable
-import com.sun.jdi.Location
 import com.sun.jdi.event.BreakpointEvent
 import com.sun.jdi.event.Event
 
@@ -50,37 +50,30 @@ internal abstract class Engine(val vmName: String) {
             "Breakpoint: ${location.sourceName()}.${location.method()}:${location.lineNumber()}\n"
           )
           append("========================================================\n")
-          frame.visibleVariables().map { variable ->
-            val codeScope =
-              "[%d-%d]".format(
-                variable.getStartScope().codeIndex(),
-                variable.getEndScope().codeIndex()
-              )
-            val lineScope =
-              "[%d-%d]".format(
-                variable.getStartScope().lineNumber(),
-                variable.getEndScope().lineNumber()
-              )
-            val line =
-              "%-2d %-10s %-10s: %-30s: %s\n".format(
-                variable.getSlot(),
-                lineScope,
-                codeScope,
-                variable.name(),
-                variable.typeName()
-              )
-            append(line)
-          }
+          frame
+            .visibleVariables()
+            .map { it as LocalVariableImpl }
+            .forEach { variable ->
+              val codeScope =
+                "[%d-%d]".format(variable.scopeStart.codeIndex(), variable.scopeEnd.codeIndex())
+              val lineScope =
+                "[%d-%d]".format(variable.scopeStart.lineNumber(), variable.scopeEnd.lineNumber())
+              val line =
+                "%-2d %-10s %-10s: %-30s: %s\n".format(
+                  variable.getSlot(),
+                  lineScope,
+                  codeScope,
+                  variable.name(),
+                  variable.typeName()
+                )
+              append(line)
+            }
           append('\n')
         }
       }
     }
   }
 }
-
-private fun LocalVariable.getStartScope(): Location = getFieldValue("scopeStart")
-
-private fun LocalVariable.getEndScope(): Location = getFieldValue("scopeEnd")
 
 private fun LocalVariable.getSlot(): Int = getFieldValue("slot")
 
