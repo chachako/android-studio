@@ -1,5 +1,7 @@
 import com.android.jdwppacket.SourceFileCmd
 import com.android.jdwppacket.SourceFileReply
+import com.android.jdwppacket.referencetype.InterfacesCmd
+import com.android.jdwppacket.referencetype.InterfacesReply
 import com.android.jdwppacket.referencetype.MethodsCmd
 import com.android.jdwppacket.referencetype.MethodsReply
 import com.android.jdwppacket.referencetype.MethodsWithGenericsCmd
@@ -104,5 +106,17 @@ class ReferenceTypeTest {
   fun testSourceFileReply() {
     val packet = SourceFileReply("/foo/bar")
     assertJDWPObjectAndWireEquals(packet, SourceFileReply::parse)
+  }
+
+  @Test
+  fun testInterfacesCmd() {
+    val packet = InterfacesCmd(Long.MAX_VALUE)
+    assertJDWPObjectAndWireEquals(packet, InterfacesCmd::parse)
+  }
+
+  @Test
+  fun testInterfacesReply() {
+    val packet = InterfacesReply(listOf(1, 2, 3))
+    assertJDWPObjectAndWireEquals(packet, InterfacesReply::parse)
   }
 }

@@ -2,6 +2,8 @@ import com.android.jdwppacket.IsObsoleteCmd
 import com.android.jdwppacket.IsObsoleteReply
 import com.android.jdwppacket.LineTableCmd
 import com.android.jdwppacket.LineTableReply
+import com.android.jdwppacket.VariableTableWithGenericCmd
+import com.android.jdwppacket.VariableTableWithGenericReply
 import org.junit.Test
 
 /*
@@ -50,5 +52,30 @@ class MethodTest {
         listOf(LineTableReply.Line(Long.MAX_VALUE, Int.MAX_VALUE))
       )
     assertJDWPObjectAndWireEquals(packet, LineTableReply::parse)
+  }
+
+  @Test
+  fun testVariableTableWithGenericCmd() {
+    val packet = VariableTableWithGenericCmd(Long.MAX_VALUE - 1, Long.MAX_VALUE - 2)
+    assertJDWPObjectAndWireEquals(packet, VariableTableWithGenericCmd::parse)
+  }
+
+  @Test
+  fun testVariableTableWithGenericReply() {
+    val packet =
+      VariableTableWithGenericReply(
+        Int.MAX_VALUE - 1,
+        listOf(
+          VariableTableWithGenericReply.Slot(
+            Long.MAX_VALUE,
+            "a",
+            "b",
+            "c",
+            Int.MAX_VALUE - 1,
+            Int.MAX_VALUE - 2
+          )
+        )
+      )
+    assertJDWPObjectAndWireEquals(packet, VariableTableWithGenericReply::parse)
   }
 }
