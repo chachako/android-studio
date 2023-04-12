@@ -13,62 +13,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.fakeadbserver;
-
-import com.android.annotations.NonNull;
+package com.android.fakeadbserver
 
 /**
  * Parser for ADB service requests where each part is separated with a ":", e.g.
  * "host-serial:emulator-5554:get-serialno"
  */
-class ServiceRequest {
+internal class ServiceRequest(private val original: String) {
 
-    private static final char SEPARATOR = ':';
+    private var request: String = original
 
-    private final String original;
+    private var token: String = ""
 
-    private String request;
-    private String token;
-
-    ServiceRequest(@NonNull String request) {
-        this.original = request;
-        this.request = request;
+    fun peekToken(): String {
+        val separatorIndex = request.indexOf(SEPARATOR)
+        return if (separatorIndex == -1) request else request.substring(0, separatorIndex)
     }
 
-    @NonNull
-    public String peekToken() {
-        int separatorIndex = request.indexOf(SEPARATOR);
+    fun nextToken(): String {
+        val separatorIndex = request.indexOf(SEPARATOR)
         if (separatorIndex == -1) {
-            return request;
+            token = request
+            request = ""
+            return token
         }
-        return request.substring(0, separatorIndex);
+        token = request.substring(0, separatorIndex)
+        request = request.substring(separatorIndex + 1)
+        return token
     }
 
-    @NonNull
-    public String nextToken() {
-        int separatorIndex = request.indexOf(SEPARATOR);
-        if (separatorIndex == -1) {
-            token = request;
-            request = "";
-            return token;
-        }
-        token = request.substring(0, separatorIndex);
-        request = request.substring(separatorIndex + 1);
-        return token;
+    fun currToken(): String {
+        return token
     }
 
-    @NonNull
-    public String currToken() {
-        return token;
+    fun remaining(): String {
+        return request
     }
 
-    @NonNull
-    public String remaining() {
-        return request;
+    fun original(): String {
+        return original
     }
 
-    @NonNull
-    public String original() {
-        return original;
+    companion object {
+
+        private const val SEPARATOR = ':'
     }
 }
