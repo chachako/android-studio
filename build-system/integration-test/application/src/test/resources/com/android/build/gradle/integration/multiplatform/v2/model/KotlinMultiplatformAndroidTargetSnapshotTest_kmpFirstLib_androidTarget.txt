@@ -1,0 +1,60 @@
+{
+  "targetName": "android",
+  "compilations": [
+    {
+      "compilationName": "instrumentedTest",
+      "defaultSourceSet": {
+        "sourceSetName": "androidInstrumentedTest",
+        "extras": {
+          "com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker": {},
+          "org.gradle.api.artifacts.Configuration;resolvableMetadataConfiguration": "configuration \u0027:kmpFirstLib:androidInstrumentedTestResolvableDependenciesMetadata\u0027"
+        }
+      },
+      "allSourceSets": [
+        {
+          "sourceSetName": "androidInstrumentedTest"
+        }
+      ],
+      "extras": {}
+    },
+    {
+      "compilationName": "main",
+      "defaultSourceSet": {
+        "sourceSetName": "androidMain",
+        "extras": {
+          "com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker": {},
+          "org.gradle.api.artifacts.Configuration;resolvableMetadataConfiguration": "configuration \u0027:kmpFirstLib:androidMainResolvableDependenciesMetadata\u0027"
+        }
+      },
+      "allSourceSets": [
+        {
+          "sourceSetName": "androidMain"
+        },
+        {
+          "sourceSetName": "commonMain"
+        }
+      ],
+      "extras": {}
+    },
+    {
+      "compilationName": "test",
+      "defaultSourceSet": {
+        "sourceSetName": "androidTest",
+        "extras": {
+          "com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker": {},
+          "org.gradle.api.artifacts.Configuration;resolvableMetadataConfiguration": "configuration \u0027:kmpFirstLib:androidTestResolvableDependenciesMetadata\u0027"
+        }
+      },
+      "allSourceSets": [
+        {
+          "sourceSetName": "androidTest"
+        },
+        {
+          "sourceSetName": "commonTest"
+        }
+      ],
+      "extras": {}
+    }
+  ],
+  "extras": {}
+}

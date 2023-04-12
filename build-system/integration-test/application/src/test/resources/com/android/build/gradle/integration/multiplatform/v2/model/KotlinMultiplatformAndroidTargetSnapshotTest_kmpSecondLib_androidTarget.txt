@@ -1,0 +1,25 @@
+{
+  "targetName": "android",
+  "compilations": [
+    {
+      "compilationName": "main",
+      "defaultSourceSet": {
+        "sourceSetName": "androidMain",
+        "extras": {
+          "com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker": {},
+          "org.gradle.api.artifacts.Configuration;resolvableMetadataConfiguration": "configuration \u0027:kmpSecondLib:androidMainResolvableDependenciesMetadata\u0027"
+        }
+      },
+      "allSourceSets": [
+        {
+          "sourceSetName": "androidMain"
+        },
+        {
+          "sourceSetName": "commonMain"
+        }
+      ],
+      "extras": {}
+    }
+  ],
+  "extras": {}
+}

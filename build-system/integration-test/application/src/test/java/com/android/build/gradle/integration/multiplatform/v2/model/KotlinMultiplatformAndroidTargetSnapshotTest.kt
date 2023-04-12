@@ -19,12 +19,13 @@ package com.android.build.gradle.integration.multiplatform.v2.model
 import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.fixture.model.BaseModelComparator
-import com.android.build.gradle.integration.multiplatform.v2.publishLibs
+import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.utils.FileUtils
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class KotlinMultiplatformPublicationModelSnapshotTest: BaseModelComparator {
+class KotlinMultiplatformAndroidTargetSnapshotTest: BaseModelComparator {
 
     @Suppress("DEPRECATION") // kmp doesn't support configuration caching for now (b/276472789)
     @get:Rule
@@ -34,27 +35,20 @@ class KotlinMultiplatformPublicationModelSnapshotTest: BaseModelComparator {
         .create()
 
     @Test
-    fun testModelDiffWhenLibsArePublished() {
-        val comparator = KmpModelComparator(
+    fun testModels() {
+        KmpModelComparator(
             project = project,
             testClass = this,
-            modelSnapshotTask = "resolveIdeDependencies",
+            modelSnapshotTask = "dumpAndroidTarget",
             taskOutputLocator = { projectPath ->
                 FileUtils.join(
                     project.getSubproject(projectPath).buildDir,
                     "ide",
-                    "dependencies",
-                    "json"
+                    "targets"
                 )
             }
+        ).fetchAndCompareModels(
+            listOf(":kmpFirstLib", ":kmpSecondLib")
         )
-
-        comparator.compareModelDeltaAfterChange(
-            projects = listOf(":kmpFirstLib")
-        ) {
-            project.publishLibs(
-                publishKmpFirstLib = false,
-            )
-        }
     }
 }

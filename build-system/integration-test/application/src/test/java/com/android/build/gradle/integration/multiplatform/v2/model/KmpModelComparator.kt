@@ -23,14 +23,16 @@ import com.android.build.gradle.integration.common.fixture.model.BaseModelCompar
 import com.android.build.gradle.integration.common.fixture.model.BasicComparator
 import com.android.build.gradle.integration.multiplatform.v2.getBuildMap
 import com.android.testutils.TestUtils
-import com.android.utils.FileUtils
 import com.google.common.truth.Truth
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
+import java.io.File
 
 class KmpModelComparator(
     testClass: BaseModelComparator,
     private val project: GradleTestProject,
+    private val modelSnapshotTask: String,
+    private val taskOutputLocator: (String) -> File
 ): BasicComparator(testClass) {
 
     private val buildMap = project.getBuildMap()
@@ -40,15 +42,9 @@ class KmpModelComparator(
         printModelToStdout: Boolean = true
     ): Map<String, String> {
         val executor = project.executor()
-        executor.run("$projectPath:resolveIdeDependencies")
+        executor.run("$projectPath:$modelSnapshotTask")
 
-        val outputFolder =
-            FileUtils.join(
-                project.getSubproject(projectPath).buildDir,
-                "ide",
-                "dependencies",
-                "json"
-            )
+        val outputFolder = taskOutputLocator(projectPath)
 
         val normalizer = FileNormalizerImpl(
             buildMap = buildMap,
@@ -65,7 +61,7 @@ class KmpModelComparator(
         val gson = GsonBuilder().setPrettyPrinting().create()
 
         return outputFolder.listFiles()!!.associate { jsonReport ->
-            val sourceSetName = jsonReport.name.removeSuffix(DOT_JSON)
+            val reportName = jsonReport.name.removeSuffix(DOT_JSON)
 
             val content = normalizer.normalize(
                 jsonReport.inputStream().buffered().reader().use {
@@ -80,7 +76,7 @@ class KmpModelComparator(
                 }
             }
 
-            sourceSetName to content
+            reportName to content
         }
     }
 
@@ -88,13 +84,13 @@ class KmpModelComparator(
         projects: List<String>,
     ) {
         projects.forEach { projectPath ->
-            fetchModels(projectPath).forEach { (sourceSetName, content) ->
+            fetchModels(projectPath).forEach { (reportName, content) ->
                 runComparison(
-                    name = projectPath.substringAfterLast(":") + "/" + sourceSetName,
+                    name = projectPath.substringAfterLast(":") + "/" + reportName,
                     actualContent = content,
                     goldenFile = projectPath
                         .removePrefix(":")
-                        .replace(':', '_') + "_" + sourceSetName
+                        .replace(':', '_') + "_" + reportName
                 )
             }
         }
@@ -126,19 +122,19 @@ class KmpModelComparator(
                 projectBaseModels.keys
             ).containsExactlyElementsIn(projectChangedModels.keys)
 
-            projectBaseModels.keys.forEach { sourceSetName ->
-                val baseModel = projectBaseModels[sourceSetName]!!
-                val changedModel = projectChangedModels[sourceSetName]!!
+            projectBaseModels.keys.forEach { reportName ->
+                val baseModel = projectBaseModels[reportName]!!
+                val changedModel = projectChangedModels[reportName]!!
 
                 runComparison(
-                    name = projectPath.substringAfterLast(":") + "/" + sourceSetName,
+                    name = projectPath.substringAfterLast(":") + "/" + reportName,
                     actualContent = TestUtils.getDiff(
                         baseModel,
                         changedModel
                     ),
                     goldenFile = projectPath
                         .removePrefix(":")
-                        .replace(':', '_') + "_" + sourceSetName
+                        .replace(':', '_') + "_" + reportName
                 )
             }
         }

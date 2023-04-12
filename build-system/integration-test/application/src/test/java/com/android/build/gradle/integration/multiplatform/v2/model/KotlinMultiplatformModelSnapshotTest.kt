@@ -77,7 +77,16 @@ class KotlinMultiplatformModelSnapshotTest: BaseModelComparator {
     fun testModels() {
         KmpModelComparator(
             project = project,
-            testClass = this
+            testClass = this,
+            modelSnapshotTask = "resolveIdeDependencies",
+            taskOutputLocator = { projectPath ->
+                FileUtils.join(
+                    project.getSubproject(projectPath).buildDir,
+                    "ide",
+                    "dependencies",
+                    "json"
+                )
+            }
         ).fetchAndCompareModels(
             listOf(":kmpFirstLib", ":kmpSecondLib")
         )
