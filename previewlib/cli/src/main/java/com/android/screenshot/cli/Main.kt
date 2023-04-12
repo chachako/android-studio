@@ -97,8 +97,10 @@ class Main {
     private val ARG_LINT_RULE_JARS = "--lint-rule-jars"
     private val ARG_CACHE_DIR = "--cache-dir"
     private val ARG_OUTPUT_LOCATION = "--output-location"
+    private val ARG_GOLDEN_LOCATION = "--golden-location"
     private val ARG_FILE_PATH = "--file-path"
     private val ARG_ROOT_LINT_MODEL = "--root-lint-model"
+    private val ARG_RECORD_GOLDENS = "--record-golden"
 
     private var sdkHomePath: File? = null
     private var jdkHomePath: File? = null
@@ -116,6 +118,7 @@ class Main {
         parseArguments(args, client, argumentState)
         initializePathVariables(argumentState, client)
         initializeConfigurations(client, argumentState)
+        setupPaths(argumentState)
         val projects: List<Project> = configureProject(client, argumentState)
         initializeUast(projects) // TODO: Clean up
         val driver: LintDriver = createDriver(projects, client as MainLintClient)
@@ -128,11 +131,27 @@ class Main {
         ProjectDriver(driver, projects[0]).prepareUastFileList()
         val dependencies = Dependencies(projects[0], argumentState.rootModule!!)
         val screenshot = ScreenshotProvider(projects[0], sdkHomePath!!.absolutePath, dependencies)
-        screenshot.capture(findUMethod(projects[0],argumentState.filePath!!), argumentState.outputLocation!!)
+        val results = screenshot.verifyScreenshot(findPreviewNodes(projects[0], argumentState.filePath!!),
+                                  argumentState.goldenLocation!!,
+                                  argumentState.outputLocation!!,
+                                  argumentState.recordGoldens)
+        //save or return results
         System.exit(0)
     }
 
-  private fun findUMethod(project: Project, file: String) : List<ComposePreviewElement> {
+    private fun setupPaths(argumentState: Main.ArgumentState) {
+        val output = File(argumentState.outputLocation!!)
+        val golden = File(argumentState.goldenLocation!!)
+        if (!output.exists()) {
+            output.mkdirs()
+        }
+        if (!golden.exists()) {
+            golden.mkdirs()
+        }
+
+    }
+
+    private fun findPreviewNodes(project: Project, file: String) : List<ComposePreviewElement> {
       val vFile = File(file)
       val psiFile = AndroidPsiUtils.getPsiFileSafely(project.ideaProject!!, vFile.toVirtualFile()!!)
       val annotationEntry = PsiTreeUtil.findChildrenOfType(psiFile, KtAnnotationEntry::class.java).asSequence()
@@ -431,6 +450,14 @@ class Main {
                     return ERRNO_INVALID_ARGS
                 }
                 argumentState.outputLocation = args[++index]
+            } else if (arg == ARG_GOLDEN_LOCATION) {
+                if (index == args.size - 1) {
+                    System.err.println("Missing argument location")
+                    return ERRNO_INVALID_ARGS
+                }
+                argumentState.goldenLocation = args[++index]
+            } else if (arg == ARG_RECORD_GOLDENS) {
+                argumentState.recordGoldens = true
             } else if (arg == ARG_FILE_PATH) {
                 if (index == args.size - 1) {
                     System.err.println("Missing input file path")
@@ -584,7 +611,8 @@ class Main {
     }
 
     inner class ArgumentState {
-
+        var recordGoldens: Boolean = false
+        var goldenLocation: String? = null
         var rootModule: LintModelModule? = null
         var clientVersion: String? = null
         var clientName: String? = null

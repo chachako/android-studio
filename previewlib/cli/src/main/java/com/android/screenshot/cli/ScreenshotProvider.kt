@@ -17,6 +17,8 @@ package com.android.screenshot.cli
 
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.resources.configuration.FolderConfiguration
+import com.android.screenshot.cli.diff.ImageDiffer
+import com.android.screenshot.cli.diff.Verify
 import com.android.tools.idea.AndroidPsiUtils
 import com.android.tools.idea.compose.preview.ComposeAdapterLightVirtualFile
 import com.android.tools.idea.compose.preview.ComposePreviewElement
@@ -24,6 +26,7 @@ import com.android.tools.idea.compose.preview.ComposePreviewElementInstance
 import com.android.tools.idea.compose.preview.ComposePreviewElementTemplate
 import com.android.tools.idea.compose.preview.applyTo
 import com.android.tools.idea.configurations.Configuration
+import com.android.tools.idea.rendering.RenderResult
 import com.android.tools.idea.rendering.ShowFixFactory
 import com.android.tools.idea.rendering.StudioHtmlLinkManager
 import com.android.tools.idea.rendering.StudioRenderConfiguration
@@ -35,6 +38,7 @@ import com.intellij.psi.xml.XmlFile
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.ModuleManagerComponentBridge
 import com.android.tools.rendering.ModuleRenderContext
 import org.mockito.Mockito
+import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
@@ -124,62 +128,90 @@ class ScreenshotProvider(
         return deps
     }
 
-    fun capture(previewNodes: List<ComposePreviewElement>, outputLocation: String) {
+    fun verifyScreenshot(
+        previewNodes: List<ComposePreviewElement>,
+        goldenLocation: String,
+        outputLocation: String,
+        recordGoldens: Boolean
+    ): List<Verify.AnalysisResult> {
+        val results = mutableListOf<Verify.AnalysisResult>()
         val instances =
             previewNodes.filterIsInstance<ComposePreviewElementTemplate>()
                 .flatMap { it.instances(ModuleRenderContext.forFile(composeModule) { it.previewElementDefinitionPsi?.containingFile }) }
                 .toMutableList()
         instances.addAll(previewNodes.filterIsInstance<ComposePreviewElementInstance>())
+        instances.distinct()
         for (previewElement in instances) {
-            val config =
-                Configuration.create(
-                    createConfigManager(composeProject, composeModule, sdkPath),
-                    null,
-                    FolderConfiguration.createDefault()
+            val renderResult = renderPreviewElement(previewElement)
+            val fileName = previewElement.instanceId + ".png"
+            if (recordGoldens) {
+                renderResult!!.renderedImage.copy?.let { saveImage(it, goldenLocation + fileName) }
+            } else {
+                val result = compareImages(
+                    renderResult!!,
+                    goldenLocation,
+                    outputLocation,
+                    fileName
                 )
-            previewElement.applyTo(config)
-            val file = ComposeAdapterLightVirtualFile(
-                "singlePreviewElement.xml",
-                previewElement.toPreviewXml()
-                    .toolsAttribute("paintBounds", "false")
-                    .toolsAttribute("findDesignInfoProviders", "false")
-                    .buildString()
-            ) { previewElement.previewElementDefinitionPsi?.virtualFile }
-
-            val service = StudioRenderService.getInstance(project.ideaProject!!)
-            val task =
-                service.taskBuilder(
-                    ScreenshotRenderModelModule(
-                        composeApplication,
-                        composeProject,
-                        composeModule,
-                        sdkPath
-                    ),
-                    StudioRenderConfiguration(config),
-                    service.createLogger(
-                        composeProject.lintProject.ideaProject,
-                        true, ShowFixFactory, ::StudioHtmlLinkManager
-                    )
-                )
-                    .withRenderingMode(SessionParams.RenderingMode.SHRINK)
-                    .disableDecorations()
-                    .useTransparentBackground()
-                    .usePrivateClassLoader()
-                    .doNotReportOutOfDateUserClasses()
-                    .withPsiFile(
-                        AndroidPsiUtils.getPsiFileSafely(
-                            project.ideaProject!!,
-                            file
-                        )!! as XmlFile
-                    )
-                    .build().get()
-            val inflateResult = task.inflate().get()
-            val renderResult = task.render().get()
-            ImageIO.write(
-                renderResult.renderedImage.copy,
-                "png",
-                File("${outputLocation}${previewElement.instanceId}_${previewElement.displaySettings.name}.png")
-            )
+                if ( result is Verify.AnalysisResult.Failed) {
+                    saveImage(result.imageDiff.highlights, outputLocation + previewElement.instanceId + "_diff.png")
+                    renderResult.renderedImage.copy?.let { saveImage(it, outputLocation + previewElement.instanceId + "_actual.png") }
+                }
+                results.add(result)
+            }
         }
+        return results
+    }
+
+    private fun renderPreviewElement(previewElement: ComposePreviewElementInstance): RenderResult? {
+        val config =
+            Configuration.create(
+                createConfigManager(composeProject, composeModule, sdkPath),
+                null,
+                FolderConfiguration.createDefault()
+            )
+        previewElement.applyTo(config)
+        val file = ComposeAdapterLightVirtualFile(
+            "singlePreviewElement.xml",
+            previewElement.toPreviewXml()
+                .toolsAttribute("paintBounds", "false")
+                .toolsAttribute("findDesignInfoProviders", "false")
+                .buildString()
+        ) { previewElement.previewElementDefinitionPsi?.virtualFile }
+
+        val service = StudioRenderService.getInstance(project.ideaProject!!)
+        val task =
+            service.taskBuilder(ScreenshotRenderModelModule(composeApplication, composeProject, composeModule, sdkPath),
+                                StudioRenderConfiguration(config),
+                                service.createLogger(composeProject.lintProject.ideaProject,
+                                                     true, ShowFixFactory, ::StudioHtmlLinkManager)
+            )
+                .withRenderingMode(SessionParams.RenderingMode.SHRINK)
+                .disableDecorations()
+                .useTransparentBackground()
+                .usePrivateClassLoader()
+                .doNotReportOutOfDateUserClasses()
+                .withPsiFile(
+                    AndroidPsiUtils.getPsiFileSafely(
+                        project.ideaProject!!,
+                        file
+                    )!! as XmlFile
+                )
+                .build().get()
+        return task.render().get()
+    }
+
+    private fun saveImage(image: BufferedImage, fileName: String) {
+        ImageIO.write(
+            image,
+            "png",
+            File(fileName)
+        )
+
+    }
+
+    private fun compareImages(renderResult: RenderResult, goldenLocation: String, outputLocation: String, fileName: String): Verify.AnalysisResult {
+        val verifier = Verify(ImageDiffer.MSSIMMatcher, outputLocation + fileName)
+        return verifier.assertMatchGolden(goldenLocation + fileName, renderResult.renderedImage.copy!!)
     }
 }
