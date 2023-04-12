@@ -103,6 +103,8 @@ interface GlobalTaskCreationConfig: BootClasspathConfig {
 
     val manifestArtifactType: InternalArtifactType<Directory>
 
+    val publishConsumerProguardRules: Boolean
+
     // Internal Objects
 
     val globalArtifacts: ArtifactsImpl

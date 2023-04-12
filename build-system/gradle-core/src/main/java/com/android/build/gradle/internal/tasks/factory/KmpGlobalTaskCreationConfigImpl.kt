@@ -128,6 +128,9 @@ class KmpGlobalTaskCreationConfigImpl(
         else
             InternalArtifactType.PACKAGED_MANIFESTS
 
+    override val publishConsumerProguardRules: Boolean
+        get() = extension.optimization.enableConsumerProguardRulePublishing
+
     override val testOptionExecutionEnum: com.android.builder.model.TestOptions.Execution? by lazy {
         testOptions.execution.toExecutionEnum()
     }

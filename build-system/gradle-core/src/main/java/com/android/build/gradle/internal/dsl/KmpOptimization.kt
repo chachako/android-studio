@@ -62,5 +62,16 @@ interface KmpOptimization: Optimization {
      * [Shrink Your Code and Resources](https://developer.android.com/studio/build/shrink-code.html).
      */
      @get:Incubating
+     @set:Incubating
      var isMinifyEnabled: Boolean
+
+    /**
+     * Publishing consumer proguard rules as part of a kmp library is an opt-in feature.
+     * By default, consumer proguard rules will not be published.
+     *
+     * To enable it, set this property to `true`
+     */
+     @get:Incubating
+     @set:Incubating
+     var enableConsumerProguardRulePublishing: Boolean
 }

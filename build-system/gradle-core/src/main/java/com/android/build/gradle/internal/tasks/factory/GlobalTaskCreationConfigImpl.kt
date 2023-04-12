@@ -199,6 +199,9 @@ class GlobalTaskCreationConfigImpl(
         else
             InternalArtifactType.PACKAGED_MANIFESTS
 
+    override val publishConsumerProguardRules: Boolean
+        get() = true
+
     // Internal Objects
 
     override val globalArtifacts: ArtifactsImpl = ArtifactsImpl(project, "global")

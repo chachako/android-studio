@@ -55,8 +55,8 @@ interface KotlinMultiplatformAndroidExtension {
     val packagingOptions: Packaging
 
     val optimization: KmpOptimization
-    fun optimization(action: KmpOptimization.() -> Unit)
 
+    fun optimization(action: KmpOptimization.() -> Unit)
     // test stuff. todo, combine to a test block
 
     var testNamespace: String?

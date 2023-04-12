@@ -93,6 +93,7 @@ class OptimizationCreationConfigImpl(
                 minifyCodeBuilder?.isMinifyEnabled ?: false
             }
         }
+
     override val resourcesShrink: Boolean
         get() {
             return when (component) {

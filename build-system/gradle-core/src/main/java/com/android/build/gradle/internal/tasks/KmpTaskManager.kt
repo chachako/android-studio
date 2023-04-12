@@ -140,9 +140,12 @@ class KmpTaskManager(
             )
         }
 
-        project.tasks.registerTask(MergeGeneratedProguardFilesCreationAction(variant))
-        project.tasks.registerTask(MergeConsumerProguardFilesTask.CreationAction(variant))
-        project.tasks.registerTask(ExportConsumerProguardFilesTask.CreationAction(variant))
+        // Publishing consumer proguard rules is an opt-in feature for KMP
+        if (globalConfig.publishConsumerProguardRules) {
+            project.tasks.registerTask(MergeGeneratedProguardFilesCreationAction(variant))
+            project.tasks.registerTask(MergeConsumerProguardFilesTask.CreationAction(variant))
+            project.tasks.registerTask(ExportConsumerProguardFilesTask.CreationAction(variant))
+        }
 
         // No jacoco transformation for kmp variants, however, we need to publish the classes
         // pre transformation as the artifact is used in the jacoco report task.

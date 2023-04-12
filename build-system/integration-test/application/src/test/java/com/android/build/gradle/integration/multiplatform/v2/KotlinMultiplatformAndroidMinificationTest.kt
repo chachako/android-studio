@@ -42,13 +42,14 @@ class KotlinMultiplatformAndroidMinificationTest {
         TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                android.optimization.isMinifyEnabled = true
-                android.optimization.consumerProguard.files.add(
-                    File(project.projectDir, "consumer-proguard-rules.pro")
-                )
-                android.optimization.proguard.files.add(
-                    File(project.projectDir, "proguard-rules.pro")
-                )
+                android.optimization {
+                    isMinifyEnabled = true
+                    consumerProguard.files.add(
+                        File(project.projectDir, "consumer-proguard-rules.pro")
+                    )
+                    proguard.file("proguard-rules.pro")
+                    enableConsumerProguardRulePublishing = true
+                }
             """.trimIndent()
         )
 
@@ -184,6 +185,33 @@ class KotlinMultiplatformAndroidMinificationTest {
                 "Lcom/example/kmpfirstlib/KmpCommonFirstLibClass;",
                 "Lcom/example/kmpsecondlib/KmpAndroidSecondLibClass;",
                 "Lcom/example/kmpsecondlib/KmpCommonSecondLibClass;"
+            )
+        }
+    }
+
+    @Test
+    fun `test disabling consumer proguard rules from kmp lib`() {
+        TestFileUtils.appendToFile(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            """
+                android.optimization.enableConsumerProguardRulePublishing = false
+            """.trimIndent()
+        )
+        FileUtils.writeToFile(
+            project.getSubproject("kmpFirstLib").file("consumer-proguard-rules.pro"),
+            """
+                -keep public class com.example.kmpfirstlib.KmpAndroidFirstLibClass {
+                    java.lang.String callCommonLibClass();
+                    java.lang.String callKmpSecondLibClass();
+                 }
+            """.trimIndent()
+        )
+
+        project.executor().run(":app:assembleDebug")
+
+        project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
+            Truth.assertThat(apk.mainDexFile.get().classes.keys).containsExactly(
+                "Lcom/example/kmpfirstlib/KmpAndroidActivity;"
             )
         }
     }
