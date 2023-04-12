@@ -2833,7 +2833,7 @@ public final class SdkConstants {
     public static final String GRADLE_ANDROID_TEST_API_CONFIGURATION = "androidTestApi";
 
     public static final String GRADLE_ANDROID_TEST_UTIL_CONFIGURATION = "androidTestUtil";
-    public static final String CURRENT_BUILD_TOOLS_VERSION = "33.0.1";
+    public static final String CURRENT_BUILD_TOOLS_VERSION = "34.0.0-rc3";
     public static final String SUPPORT_LIB_GROUP_ID = "com.android.support";
     public static final String SUPPORT_LIB_ARTIFACT = "com.android.support:support-v4";
     public static final String DESIGN_LIB_ARTIFACT = "com.android.support:design";

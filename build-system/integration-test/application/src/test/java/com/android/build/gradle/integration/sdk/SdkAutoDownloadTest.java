@@ -492,6 +492,10 @@ public class SdkAutoDownloadTest {
         FileUtils.delete(licenseFile);
     }
 
+    private void deletePreviewLicense() throws Exception {
+        FileUtils.delete(previewLicenseFile);
+    }
+
     @Ignore("b/144346671")
     @Test
     public void checkNoLicenseError_AddonTarget() throws Exception {
@@ -517,6 +521,7 @@ public class SdkAutoDownloadTest {
     @Test
     public void checkNoLicenseError_BuildTools() throws Exception {
         deleteLicense();
+        deletePreviewLicense();
 
         TestFileUtils.appendToFile(
                 project.getBuildFile(),

@@ -21,23 +21,31 @@ java_binary(
 )
 
 filegroup(
-    name = "build-tools/33.0.1",
-    srcs = glob(
-        include = ["*/build-tools/33.0.1/**"],
-    ),
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
     name = "build-tools/latest",
-    srcs = [":build-tools/33.0.1"],
+    srcs = [":build-tools/34.0.0-rc3"],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "build-tools/latest/aidl",
     srcs = sdk_glob(
-        include = ["build-tools/33.0.1/aidl"],
+        include = ["build-tools/34.0.0-rc3/aidl"],
+    ),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "build-tools/34.0.0-rc3",
+    srcs = glob(
+        include = ["*/build-tools/34.0.0-rc3/**"],
+    ),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "build-tools/33.0.1",
+    srcs = glob(
+        include = ["*/build-tools/33.0.1/**"],
     ),
     visibility = ["//visibility:public"],
 )

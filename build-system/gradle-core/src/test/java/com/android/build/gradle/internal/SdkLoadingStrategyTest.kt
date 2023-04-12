@@ -112,12 +112,21 @@ class SdkLoadingStrategyTest {
                     <major>${ToolsRevisionUtils.MIN_BUILD_TOOLS_REV.major}</major>
                     <minor>${ToolsRevisionUtils.MIN_BUILD_TOOLS_REV.minor}</minor>
                     <micro>${ToolsRevisionUtils.MIN_BUILD_TOOLS_REV.micro}</micro>
+                    ${appendPreviewTag()}
                 </revision>
                 <display-name>Android SDK Build-Tools ${SdkConstants.CURRENT_BUILD_TOOLS_VERSION}</display-name>
                 <uses-license ref="android-sdk-license"/>
             </localPackage>
         </ns2:repository>
     """.trimIndent()
+
+    private fun appendPreviewTag(): String {
+        return if(ToolsRevisionUtils.MIN_BUILD_TOOLS_REV.isPreview) {
+            "<preview>${ToolsRevisionUtils.MIN_BUILD_TOOLS_REV.preview}</preview>"
+        } else {
+            ""
+        }
+    }
 
     private val ADD_ON_XML = """
         <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -916,7 +925,7 @@ class SdkLoadingStrategyTest {
               assertThat(sdkDirectLoadingStrategy.getApiVersionsFile()).isNull()
         }
 
-        val buildToolDirectory = sdkRoot.resolve("build-tools/33.0.1")
+        val buildToolDirectory = sdkRoot.resolve("build-tools/34.0.0-rc3")
         assertThat(sdkDirectLoadingStrategy.getBuildToolsRevision()).isEqualTo(
             ToolsRevisionUtils.MIN_BUILD_TOOLS_REV)
         assertThat(sdkDirectLoadingStrategy.getAidlExecutable()).isEqualTo(
