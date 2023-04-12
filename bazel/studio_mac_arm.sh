@@ -39,7 +39,8 @@ readonly config_options="--config=release --config=ants"
         "${conditional_flags[@]}" \
         -- \
         //tools/base/bazel/... \
-        //tools/base/dynamic-layout-inspector/skia:skiaparser
+        //tools/base/dynamic-layout-inspector/skia:skiaparser \
+        //tools/adt/idea/android/src/com/android/tools/idea/diagnostics/heap/native/...
 
 readonly bazel_status=$?
 
@@ -50,6 +51,7 @@ if [[ -d "${dist_dir}" ]]; then
   readonly bin_dir="$("${script_dir}"/bazel info --config=release bazel-bin)"
   cp -a ${bin_dir}/tools/base/dynamic-layout-inspector/skia/skiaparser.zip ${dist_dir}
   cp -a ${bin_dir}/tools/base/profiler/native/trace_processor_daemon/trace_processor_daemon ${dist_dir}
+  cp -a ${bin_dir}/tools/adt/idea/android/src/com/android/tools/idea/diagnostics/heap/native/libjni_object_tagger.dylib ${dist_dir}
   #echo "<head><meta http-equiv=\"refresh\" content=\"0; URL='https://fusion2.corp.google.com/invocations/${invocation_id}'\" /></head>" > "${dist_dir}"/sponge_test_results.html
 fi
 
