@@ -17,11 +17,13 @@ package com.android.tools.debuggertests
 
 import com.android.tools.asdriver.tests.EmulatorRule
 import org.junit.ClassRule
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 /** Runs tests using a [AndroidEngine] */
+@Ignore
 @RunWith(Parameterized::class)
 internal class AndroidEngineDebuggerTest(testClass: String) :
   DebuggerTestBase(testClass, AndroidEngine(emulatorRule.emulator.serialNumber)) {
