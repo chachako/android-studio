@@ -13,262 +13,212 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver
 
-package com.android.fakeadbserver;
+import com.android.annotations.concurrency.GuardedBy
+import com.android.fakeadbserver.DeviceState.HostConnectionType
+import com.android.fakeadbserver.devicecommandhandlers.AbbCommandHandler
+import com.android.fakeadbserver.devicecommandhandlers.AbbExecCommandHandler
+import com.android.fakeadbserver.devicecommandhandlers.DeviceCommandHandler
+import com.android.fakeadbserver.devicecommandhandlers.FakeSyncCommandHandler
+import com.android.fakeadbserver.devicecommandhandlers.JdwpCommandHandler
+import com.android.fakeadbserver.devicecommandhandlers.ReverseForwardCommandHandler
+import com.android.fakeadbserver.devicecommandhandlers.TrackAppCommandHandler
+import com.android.fakeadbserver.devicecommandhandlers.TrackJdwpCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.FeaturesCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.ForwardCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.GetDevPathCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.GetSerialNoCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.GetStateCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.HostCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.HostFeaturesCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.KillCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.KillForwardAllCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.KillForwardCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.ListDevicesCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.ListForwardCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.MdnsCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.NetworkConnectCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.NetworkDisconnectCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.PairCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.TrackDevicesCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.VersionCommandHandler
+import com.android.fakeadbserver.shellcommandhandlers.ActivityManagerCommandHandler
+import com.android.fakeadbserver.shellcommandhandlers.CatCommandHandler
+import com.android.fakeadbserver.shellcommandhandlers.CmdCommandHandler
+import com.android.fakeadbserver.shellcommandhandlers.DumpsysCommandHandler
+import com.android.fakeadbserver.shellcommandhandlers.EchoCommandHandler
+import com.android.fakeadbserver.shellcommandhandlers.GetPropCommandHandler
+import com.android.fakeadbserver.shellcommandhandlers.LogcatCommandHandler
+import com.android.fakeadbserver.shellcommandhandlers.PackageManagerCommandHandler
+import com.android.fakeadbserver.shellcommandhandlers.PingCommandHandler
+import com.android.fakeadbserver.shellcommandhandlers.RmCommandHandler
+import com.android.fakeadbserver.shellcommandhandlers.SetPropCommandHandler
+import com.android.fakeadbserver.shellcommandhandlers.ShellProtocolEchoCommandHandler
+import com.android.fakeadbserver.shellcommandhandlers.StatCommandHandler
+import com.android.fakeadbserver.shellcommandhandlers.WindowManagerCommandHandler
+import com.android.fakeadbserver.shellcommandhandlers.WriteNoStopCommandHandler
+import com.android.fakeadbserver.statechangehubs.DeviceStateChangeHub
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ThreadFactoryBuilder
+import java.io.IOException
+import java.net.InetAddress
+import java.net.InetSocketAddress
+import java.net.StandardSocketOptions
+import java.nio.channels.ServerSocketChannel
+import java.util.Collections
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.function.Consumer
+import java.util.function.Supplier
 
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.annotations.concurrency.GuardedBy;
-import com.android.fakeadbserver.devicecommandhandlers.AbbCommandHandler;
-import com.android.fakeadbserver.devicecommandhandlers.AbbExecCommandHandler;
-import com.android.fakeadbserver.devicecommandhandlers.DeviceCommandHandler;
-import com.android.fakeadbserver.devicecommandhandlers.FakeSyncCommandHandler;
-import com.android.fakeadbserver.devicecommandhandlers.JdwpCommandHandler;
-import com.android.fakeadbserver.devicecommandhandlers.ReverseForwardCommandHandler;
-import com.android.fakeadbserver.devicecommandhandlers.TrackAppCommandHandler;
-import com.android.fakeadbserver.devicecommandhandlers.TrackJdwpCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.FeaturesCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.ForwardCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.GetDevPathCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.GetSerialNoCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.GetStateCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.HostCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.HostFeaturesCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.KillCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.KillForwardAllCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.KillForwardCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.ListDevicesCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.ListForwardCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.MdnsCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.NetworkConnectCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.NetworkDisconnectCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.PairCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.TrackDevicesCommandHandler;
-import com.android.fakeadbserver.hostcommandhandlers.VersionCommandHandler;
-import com.android.fakeadbserver.shellcommandhandlers.ActivityManagerCommandHandler;
-import com.android.fakeadbserver.shellcommandhandlers.CatCommandHandler;
-import com.android.fakeadbserver.shellcommandhandlers.CmdCommandHandler;
-import com.android.fakeadbserver.shellcommandhandlers.DumpsysCommandHandler;
-import com.android.fakeadbserver.shellcommandhandlers.EchoCommandHandler;
-import com.android.fakeadbserver.shellcommandhandlers.GetPropCommandHandler;
-import com.android.fakeadbserver.shellcommandhandlers.LogcatCommandHandler;
-import com.android.fakeadbserver.shellcommandhandlers.PackageManagerCommandHandler;
-import com.android.fakeadbserver.shellcommandhandlers.PingCommandHandler;
-import com.android.fakeadbserver.shellcommandhandlers.RmCommandHandler;
-import com.android.fakeadbserver.shellcommandhandlers.SetPropCommandHandler;
-import com.android.fakeadbserver.shellcommandhandlers.ShellProtocolEchoCommandHandler;
-import com.android.fakeadbserver.shellcommandhandlers.StatCommandHandler;
-import com.android.fakeadbserver.shellcommandhandlers.WindowManagerCommandHandler;
-import com.android.fakeadbserver.shellcommandhandlers.WriteNoStopCommandHandler;
-import com.android.fakeadbserver.statechangehubs.DeviceStateChangeHub;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.StandardSocketOptions;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
+/** See `FakeAdbServerTest#testInteractiveServer()` for example usage.  */
+class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEATURES) :
+    AutoCloseable {
 
-/** See {@code FakeAdbServerTest#testInteractiveServer()} for example usage. */
-public final class FakeAdbServer implements AutoCloseable {
-
-    private final ServerSocketChannel mServerSocket;
-
-    private InetSocketAddress mServerSocketLocalAddress;
+    private val mServerSocket: ServerSocketChannel
+    private var mServerSocketLocalAddress: InetSocketAddress? = null
 
     /**
-     * The {@link CommandHandler}s have internal state. To allow for reentrancy, instead of using a
-     * pre-allocated {@link CommandHandler} object, the constructor is passed in and a new object is
+     * The [CommandHandler]s have internal state. To allow for reentrancy, instead of using a
+     * pre-allocated [CommandHandler] object, the constructor is passed in and a new object is
      * created as-needed.
      */
-    private final Map<String, Supplier<HostCommandHandler>> mHostCommandHandlers = new HashMap<>();
-
-    private final List<DeviceCommandHandler> mHandlers = new ArrayList<>();
-
-    private final Map<String, DeviceState> mDevices = new HashMap<>();
+    private val mHostCommandHandlers: MutableMap<String, Supplier<HostCommandHandler>> = HashMap()
+    val handlers: MutableList<DeviceCommandHandler> = ArrayList()
+    private val mDevices: MutableMap<String, DeviceState> = HashMap()
 
     // Device ip address to DeviceState. Device may or may not currently be connected to adb.
-    private final Map<String, DeviceState> mNetworkDevices = new HashMap<>();
+    private val mNetworkDevices: MutableMap<String, DeviceState> = HashMap()
+    private val mMdnsServices: MutableSet<MdnsService> = HashSet()
 
-    private final Set<MdnsService> mMdnsServices = new HashSet<>();
-
-    private final DeviceStateChangeHub mDeviceChangeHub = new DeviceStateChangeHub();
-
-    private final AtomicInteger mLastTransportId = new AtomicInteger();
+    /**
+     * Grabs the DeviceStateChangeHub from the server. This should only be used for implementations
+     * for handlers that inherit from [CommandHandler]. The purpose of the hub is to propagate
+     * server events to existing connections with the server.
+     *
+     *
+     * For example, if [.connectDevice] is called, an event will be sent
+     * through the [DeviceStateChangeHub] to all open connections waiting on
+     * host:track-devices messages.
+     */
+    val deviceChangeHub = DeviceStateChangeHub()
+    private val mLastTransportId = AtomicInteger()
 
     // This is the executor for accepting incoming connections as well as handling the execution of
     // the commands over the connection. There is one task for accepting connections, and multiple
     // tasks to handle the execution of the commands.
-    private final ExecutorService mThreadPoolExecutor =
-            Executors.newCachedThreadPool(
-                    new ThreadFactoryBuilder()
-                            .setNameFormat("fake-adb-server-connection-pool-%d")
-                            .build());
-
-    private Future<?> mConnectionHandlerTask = null;
+    private val mThreadPoolExecutor = Executors.newCachedThreadPool(
+        ThreadFactoryBuilder().setNameFormat("fake-adb-server-connection-pool-%d").build()
+    )
+    private var mConnectionHandlerTask: Future<*>? = null
 
     // All "external" server controls are synchronized through a central executor, much like the EDT
     // thread in Swing.
-    private final ExecutorService mMainServerThreadExecutor = Executors.newSingleThreadExecutor();
+    private val mMainServerThreadExecutor = Executors.newSingleThreadExecutor()
 
-    private volatile boolean mServerKeepAccepting = false;
+    @Volatile
+    private var mServerKeepAccepting = false
 
     @GuardedBy("this")
-    private volatile Future<?> mStopRequestTask = null;
+    @Volatile
+    private var mStopRequestTask: Future<*>? = null
 
-    private Set<String> mFeatures;
-    private static final Set<String> DEFAULT_FEATURES =
-            Collections.unmodifiableSet(
-                    new HashSet<>(
-                            Arrays.asList(
-                                    "push_sync",
-                                    "fixed_push_mkdir",
-                                    "shell_v2",
-                                    "apex",
-                                    "stat_v2",
-                                    "cmd",
-                                    "abb",
-                                    "abb_exec")));
-
-
-    private FakeAdbServer() throws IOException {
-        this(DEFAULT_FEATURES);
+    init {
+        mServerSocket = ServerSocketChannel.open()
     }
 
-    private FakeAdbServer(Set<String> features) throws IOException {
-        mServerSocket = ServerSocketChannel.open();
-        mFeatures = features;
+    @Throws(IOException::class)
+    fun start() {
+        assert(
+            mConnectionHandlerTask == null // Do not reuse the server.
+        )
+        mServerSocket.bind(InetSocketAddress(InetAddress.getLoopbackAddress(), 0))
+        mServerSocket.setOption(StandardSocketOptions.SO_REUSEADDR, true)
+        mServerSocketLocalAddress = mServerSocket.localAddress as InetSocketAddress
+        mServerKeepAccepting = true
+        mConnectionHandlerTask = mThreadPoolExecutor.submit {
+            while (mServerKeepAccepting) {
+                try { // Socket can not be closed in finally block, because a separate
+                    // thread will
+                    // read from the socket. Closing the socket leads to a race
+                    // condition.
+                    val socket = mServerSocket.accept()
+                    val handler = ConnectionHandler(this, socket)
+                    mThreadPoolExecutor.execute(handler)
+                } catch (ignored: IOException) { // close() is called in a separate thread, and will cause
+                    // accept() to throw an
+                    // exception if closed here.
+                }
+            }
+        }
     }
 
-    public void start() throws IOException {
-        assert mConnectionHandlerTask == null; // Do not reuse the server.
+    val inetAddress: InetAddress
+        get() = mServerSocketLocalAddress!!.address
+    val port: Int
+        get() = mServerSocketLocalAddress!!.port
 
-        mServerSocket.bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        mServerSocket.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-        mServerSocketLocalAddress = (InetSocketAddress) mServerSocket.getLocalAddress();
-        mServerKeepAccepting = true;
-
-        mConnectionHandlerTask =
-                mThreadPoolExecutor.submit(
-                        () -> {
-                            while (mServerKeepAccepting) {
-                                try {
-                                    // Socket can not be closed in finally block, because a separate
-                                    // thread will
-                                    // read from the socket. Closing the socket leads to a race
-                                    // condition.
-                                    //noinspection SocketOpenedButNotSafelyClosed
-                                    SocketChannel socket = mServerSocket.accept();
-                                    ConnectionHandler handler = new ConnectionHandler(this, socket);
-                                    mThreadPoolExecutor.execute(handler);
-                                } catch (IOException ignored) {
-                                    // close() is called in a separate thread, and will cause
-                                    // accept() to throw an
-                                    // exception if closed here.
-                                }
-                            }
-                        });
-    }
-
-    @NonNull
-    public InetAddress getInetAddress() {
-        return mServerSocketLocalAddress.getAddress();
-    }
-
-    public int getPort() {
-        return mServerSocketLocalAddress.getPort();
-    }
-
-    /** This method allows for the caller thread to wait until the server shuts down. */
-    public boolean awaitServerTermination() throws InterruptedException {
-        return awaitServerTermination(Integer.MAX_VALUE, TimeUnit.DAYS);
-    }
-
-    public boolean awaitServerTermination(long time, TimeUnit unit) throws InterruptedException {
-        return mMainServerThreadExecutor.awaitTermination(time, unit)
-                && mThreadPoolExecutor.awaitTermination(time, unit);
+    /** This method allows for the caller thread to wait until the server shuts down.  */
+    @JvmOverloads
+    @Throws(InterruptedException::class)
+    fun awaitServerTermination(
+        time: Long = Int.MAX_VALUE.toLong(),
+        unit: TimeUnit? = TimeUnit.DAYS
+    ): Boolean {
+        return (mMainServerThreadExecutor.awaitTermination(
+            time,
+            unit
+        ) && mThreadPoolExecutor.awaitTermination(time, unit))
     }
 
     /**
      * Stops the server. This method records the first stop request and all subsequent ones will get
-     * that value. This ensures no task submissions are attempted after {@link
-     * #mMainServerThreadExecutor} is shut down.
+     * that value. This ensures no task submissions are attempted after [ ][.mMainServerThreadExecutor] is shut down.
      *
-     * @return a {@link Future} if the caller needs to wait until the server is stopped.
+     * @return a [Future] if the caller needs to wait until the server is stopped.
      */
-    public synchronized Future<?> stop() {
+    @Synchronized
+    fun stop(): Future<*>? {
         if (mStopRequestTask == null) {
-            mStopRequestTask =
-                    mMainServerThreadExecutor.submit(
-                            () -> {
-                                if (!mServerKeepAccepting) {
-                                    return;
-                                }
-                                mServerKeepAccepting = false;
+            mStopRequestTask = mMainServerThreadExecutor.submit {
+                if (!mServerKeepAccepting) {
+                    return@submit
+                }
+                mServerKeepAccepting = false
+                deviceChangeHub.stop()
+                mDevices.forEach { (id: String?, device: DeviceState) -> device.stop() }
+                mConnectionHandlerTask!!.cancel(true)
+                try {
+                    mServerSocket.close()
+                } catch (ignored: IOException) {
+                }
 
-                                mDeviceChangeHub.stop();
-                                mDevices.forEach((id, device) -> device.stop());
-
-                                mConnectionHandlerTask.cancel(true);
-                                try {
-                                    mServerSocket.close();
-                                } catch (IOException ignored) {
-                                }
-
-                                // Note: Use "shutdownNow()" to ensure threads of long running tasks
-                                // are interrupted, as opposed
-                                // to merely waiting for the tasks to finish. This is because
-                                // mThreadPoolExecutor is used to
-                                // run CommandHandler implementations, and some of them (e.g.
-                                // TrackJdwpCommandHandler) wait
-                                // indefinitely on queues and expect to be interrupted as a signal
-                                // to terminate.
-                                mThreadPoolExecutor.shutdownNow();
-                                mMainServerThreadExecutor.shutdown();
-                            });
+                // Note: Use "shutdownNow()" to ensure threads of long-running tasks
+                // are interrupted, as opposed
+                // to merely waiting for the tasks to finish. This is because
+                // mThreadPoolExecutor is used to
+                // run CommandHandler implementations, and some of them (e.g.
+                // TrackJdwpCommandHandler) wait
+                // indefinitely on queues and expect to be interrupted as a signal
+                // to terminate.
+                mThreadPoolExecutor.shutdownNow()
+                mMainServerThreadExecutor.shutdown()
+            }
         }
-        return mStopRequestTask;
+        return mStopRequestTask
     }
 
-    @Override
-    public void close() throws Exception {
+    @Throws(Exception::class)
+    override fun close() {
         try {
-            stop().get();
-        } catch (InterruptedException ignored) {
-            // Catch InterruptedException as specified by JavaDoc.
-        } catch (RejectedExecutionException ignored) {
-            // The server has already been closed once
+            stop()!!.get()
+        } catch (ignored: InterruptedException) { // Catch InterruptedException as specified by JavaDoc.
+        } catch (ignored: RejectedExecutionException) { // The server has already been closed once
         }
-    }
-
-    /**
-     * Grabs the DeviceStateChangeHub from the server. This should only be used for implementations
-     * for handlers that inherit from {@link CommandHandler}. The purpose of the hub is to propagate
-     * server events to existing connections with the server.
-     *
-     * <p>For example, if {@link #connectDevice(DeviceState)} is called, an event will be sent
-     * through the {@link DeviceStateChangeHub} to all open connections waiting on
-     * host:track-devices messages.
-     */
-    @NonNull
-    public DeviceStateChangeHub getDeviceChangeHub() {
-        return mDeviceChangeHub;
     }
 
     /**
@@ -284,152 +234,145 @@ public final class FakeAdbServer implements AutoCloseable {
      * @param hostConnectionType is the simulated connection type to the device @return the future
      * @return a future to allow synchronization of the side effects of the call
      */
-    public Future<DeviceState> connectDevice(
-            @NonNull String deviceId,
-            @NonNull String manufacturer,
-            @NonNull String deviceModel,
-            @NonNull String release,
-            @NonNull String sdk,
-            @NonNull String cpuAbi,
-            @NonNull Map<String, String> properties,
-            @NonNull DeviceState.HostConnectionType hostConnectionType) {
-        DeviceState device =
-                new DeviceState(
-                        this,
-                        deviceId,
-                        manufacturer,
-                        deviceModel,
-                        release,
-                        sdk,
-                        cpuAbi,
-                        properties,
-                        hostConnectionType,
-                        newTransportId());
-        return connectDevice(device);
+    fun connectDevice(
+        deviceId: String,
+        manufacturer: String,
+        deviceModel: String,
+        release: String,
+        sdk: String,
+        cpuAbi: String,
+        properties: Map<String, String>,
+        hostConnectionType: HostConnectionType
+    ): Future<DeviceState> {
+        val device = DeviceState(
+            this,
+            deviceId,
+            manufacturer,
+            deviceModel,
+            release,
+            sdk,
+            cpuAbi,
+            properties,
+            hostConnectionType,
+            newTransportId()
+        )
+        return connectDevice(device)
     }
 
-    @NonNull
-    private Future<DeviceState> connectDevice(@NonNull DeviceState device) {
-        String deviceId = device.getDeviceId();
-        if (mConnectionHandlerTask == null) {
-            assert !mDevices.containsKey(deviceId);
-            mDevices.put(deviceId, device);
-            return Futures.immediateFuture(device);
+    private fun connectDevice(device: DeviceState): Future<DeviceState> {
+        val deviceId = device.deviceId
+        return if (mConnectionHandlerTask == null) {
+            assert(!mDevices.containsKey(deviceId))
+            mDevices[deviceId] = device
+            Futures.immediateFuture(device)
         } else {
-            return mMainServerThreadExecutor.submit(
-                    () -> {
-                        assert !mDevices.containsKey(deviceId);
-                        mDevices.put(deviceId, device);
-                        mDeviceChangeHub.deviceListChanged(mDevices.values());
-                        return device;
-                    });
+            mMainServerThreadExecutor.submit<DeviceState> {
+                assert(!mDevices.containsKey(deviceId))
+                mDevices[deviceId] = device
+                deviceChangeHub.deviceListChanged(mDevices.values)
+                device
+            }
         }
     }
 
-    public Future<DeviceState> connectDevice(
-            @NonNull String deviceId,
-            @NonNull String manufacturer,
-            @NonNull String deviceModel,
-            @NonNull String release,
-            @NonNull String sdk,
-            @NonNull DeviceState.HostConnectionType hostConnectionType) {
+    fun connectDevice(
+        deviceId: String,
+        manufacturer: String,
+        deviceModel: String,
+        release: String,
+        sdk: String,
+        hostConnectionType: HostConnectionType
+    ): Future<DeviceState> {
         return connectDevice(
-                deviceId,
-                manufacturer,
-                deviceModel,
-                release,
-                sdk,
-                "x86_64",
-                Collections.emptyMap(),
-                hostConnectionType);
+            deviceId,
+            manufacturer,
+            deviceModel,
+            release,
+            sdk,
+            "x86_64",
+            emptyMap(),
+            hostConnectionType
+        )
     }
 
-    void addDevice(DeviceStateConfig deviceConfig) {
-        DeviceState device = new DeviceState(this, this.newTransportId(), deviceConfig);
-        this.mDevices.put(device.getDeviceId(), device);
+    fun addDevice(deviceConfig: DeviceStateConfig?) {
+        val device = DeviceState(this, newTransportId(), deviceConfig!!)
+        mDevices[device.deviceId] = device
     }
 
-    public void registerNetworkDevice(
-            @NonNull String address,
-            @NonNull String deviceId,
-            @NonNull String manufacturer,
-            @NonNull String deviceModel,
-            @NonNull String release,
-            @NonNull String sdk,
-            @NonNull DeviceState.HostConnectionType hostConnectionType) {
-        DeviceState device =
-                new DeviceState(
-                        this,
-                        deviceId,
-                        manufacturer,
-                        deviceModel,
-                        release,
-                        sdk,
-                        "x86_64",
-                        Collections.emptyMap(),
-                        hostConnectionType,
-                        newTransportId());
-        mNetworkDevices.put(address, device);
+    fun registerNetworkDevice(
+        address: String,
+        deviceId: String,
+        manufacturer: String,
+        deviceModel: String,
+        release: String,
+        sdk: String,
+        hostConnectionType: HostConnectionType
+    ) {
+        val device = DeviceState(
+            this,
+            deviceId,
+            manufacturer,
+            deviceModel,
+            release,
+            sdk,
+            "x86_64",
+            emptyMap(),
+            hostConnectionType,
+            newTransportId()
+        )
+        mNetworkDevices[address] = device
     }
 
-    public @NonNull Future<DeviceState> connectNetworkDevice(String address) {
-        DeviceState device = mNetworkDevices.get(address);
-        if (device != null) {
-            return connectDevice(device);
-        } else {
-            return Futures.immediateFailedFuture(new Exception("Device " + address + " not found"));
+    fun connectNetworkDevice(address: String): Future<DeviceState> {
+        val device = mNetworkDevices[address]
+        return device?.let { connectDevice(it) }
+            ?: Futures.immediateFailedFuture(Exception("Device $address not found"))
+    }
+
+    fun disconnectNetworkDevice(address: String): Future<*> {
+        val device = mNetworkDevices[address]
+        return if (device != null) {
+            disconnectDevice(device.deviceId)
+        } else { // The real adb will disconnect ongoing sessions, but this is an edge case.
+            Futures.immediateFuture<Any?>(null)
         }
     }
 
-    public @NonNull Future<?> disconnectNetworkDevice(String address) {
-        DeviceState device = mNetworkDevices.get(address);
-        if (device != null) {
-            return disconnectDevice(device.getDeviceId());
+    fun addMdnsService(service: MdnsService): Future<*> {
+        return if (mConnectionHandlerTask == null) {
+            assert(!mMdnsServices.contains(service))
+            mMdnsServices.add(service)
+            Futures.immediateFuture<Any?>(null)
         } else {
-            // The real adb will disconnect ongoing sessions, but this is an edge case.
-            return Futures.immediateFuture(null);
+            mMainServerThreadExecutor.submit<Any?> {
+                assert(!mMdnsServices.contains(service))
+                mMdnsServices.add(service)
+                null
+            }
         }
     }
 
-    public Future<?> addMdnsService(@NonNull MdnsService service) {
-        if (mConnectionHandlerTask == null) {
-            assert !mMdnsServices.contains(service);
-            mMdnsServices.add(service);
-            return Futures.immediateFuture(null);
+    fun removeMdnsService(service: MdnsService): Future<*> {
+        return if (mConnectionHandlerTask == null) {
+            mMdnsServices.remove(service)
+            Futures.immediateFuture<Any?>(null)
         } else {
-            return mMainServerThreadExecutor.submit(
-                    () -> {
-                        assert !mMdnsServices.contains(service);
-                        mMdnsServices.add(service);
-                        return null;
-                    });
+            mMainServerThreadExecutor.submit<Any?> {
+                mMdnsServices.remove(service)
+                null
+            }
         }
     }
 
-    @NonNull
-    public Future<?> removeMdnsService(@NonNull MdnsService service) {
-        if (mConnectionHandlerTask == null) {
-            mMdnsServices.remove(service);
-            return Futures.immediateFuture(null);
-        } else {
-            return mMainServerThreadExecutor.submit(
-                    () -> {
-                        mMdnsServices.remove(service);
-                        return null;
-                    });
-        }
-    }
+    val mdnsServicesCopy: Future<List<MdnsService>>
+        /**
+         * Thread-safely gets a copy of the mDNS service list. This is useful for asynchronous handlers.
+         */
+        get() = mMainServerThreadExecutor.submit<List<MdnsService>> { ArrayList(mMdnsServices) }
 
-    /**
-     * Thread-safely gets a copy of the mDNS service list. This is useful for asynchronous handlers.
-     */
-    @NonNull
-    public Future<List<MdnsService>> getMdnsServicesCopy() {
-        return mMainServerThreadExecutor.submit(() -> new ArrayList<>(mMdnsServices));
-    }
-
-    private int newTransportId() {
-        return mLastTransportId.incrementAndGet();
+    private fun newTransportId(): Int {
+        return mLastTransportId.incrementAndGet()
     }
 
     /**
@@ -438,186 +381,196 @@ public final class FakeAdbServer implements AutoCloseable {
      * @param deviceId is the unique device ID of the device
      * @return a future to allow synchronization of the side effects of the call
      */
-    public Future<?> disconnectDevice(@NonNull String deviceId) {
-        return mMainServerThreadExecutor.submit(
-                () -> {
-                    assert mDevices.containsKey(deviceId);
-                    DeviceState removedDevice = mDevices.remove(deviceId);
-                    if (removedDevice != null) {
-                        removedDevice.stop();
-                    }
-                    mDeviceChangeHub.deviceListChanged(mDevices.values());
-                });
-    }
-
-    /**
-     * Thread-safely gets a copy of the device list. This is useful for asynchronous handlers.
-     */
-    @NonNull
-    public Future<List<DeviceState>> getDeviceListCopy() {
-        return mMainServerThreadExecutor.submit(() -> new ArrayList<>(mDevices.values()));
-    }
-
-    public HostCommandHandler getHostCommandHandler(String command) {
-        Supplier<HostCommandHandler> supplier = mHostCommandHandlers.get(command);
-        if (supplier != null) {
-            return supplier.get();
+    fun disconnectDevice(deviceId: String): Future<*> {
+        return mMainServerThreadExecutor.submit {
+            assert(mDevices.containsKey(deviceId))
+            val removedDevice = mDevices.remove(deviceId)
+            removedDevice?.stop()
+            deviceChangeHub.deviceListChanged(mDevices.values)
         }
-        return null;
     }
 
-    public List<DeviceCommandHandler> getHandlers() {
-        return mHandlers;
+    val deviceListCopy: Future<List<DeviceState>>
+        /**
+         * Thread-safely gets a copy of the device list. This is useful for asynchronous handlers.
+         */
+        get() = mMainServerThreadExecutor.submit<List<DeviceState>> { ArrayList(mDevices.values) }
+
+    fun getHostCommandHandler(command: String): HostCommandHandler? {
+        val supplier = mHostCommandHandlers[command]
+        return supplier?.get()
     }
 
-    @NonNull
-    public FakeAdbServerConfig getCurrentConfig() {
-        FakeAdbServerConfig config = new FakeAdbServerConfig();
-
-        config.getHostHandlers().putAll(mHostCommandHandlers);
-        config.getDeviceHandlers().addAll(mHandlers);
-        config.getMdnsServices().addAll(mMdnsServices);
-        mDevices.forEach(
-                (serial, device) -> {
-                    DeviceStateConfig deviceConfig = device.getConfig();
-                    config.getDevices().add(deviceConfig);
-                });
-
-        return config;
-    }
-
-    public static final class Builder {
-
-        @NonNull private final FakeAdbServer mServer;
-
-        @Nullable private FakeAdbServerConfig mConfig;
-
-        public Builder() throws IOException {
-            mServer = new FakeAdbServer();
+    val currentConfig: FakeAdbServerConfig
+        get() {
+            val config = FakeAdbServerConfig()
+            config.hostHandlers.putAll(mHostCommandHandlers)
+            config.deviceHandlers.addAll(handlers)
+            config.mdnsServices.addAll(mMdnsServices)
+            mDevices.forEach { (serial: String?, device: DeviceState) ->
+                val deviceConfig = device.config
+                config.devices.add(deviceConfig)
+            }
+            return config
         }
 
-        /** Used to restore a {@link FakeAdbServer} instance from a previously running instance */
-        public Builder setConfig(@NonNull FakeAdbServerConfig config) {
-            mConfig = config;
-            return this;
+    class Builder {
+
+        private val mServer: FakeAdbServer
+        private var mConfig: FakeAdbServerConfig? = null
+
+        init {
+            mServer = FakeAdbServer()
+        }
+
+        /** Used to restore a [FakeAdbServer] instance from a previously running instance  */
+        fun setConfig(config: FakeAdbServerConfig): Builder {
+            mConfig = config
+            return this
         }
 
         /**
          * Sets the handler for a specific host ADB command. This only needs to be called if the
-         * test author requires additional functionality that is not provided by the default {@link
-         * CommandHandler}s.
+         * test author requires additional functionality that is not provided by the default [ ]s.
          *
          * @param command            The ADB protocol string of the command.
          * @param handlerConstructor The constructor for the handler.
          */
-        @NonNull
-        public Builder setHostCommandHandler(
-                @NonNull String command, @NonNull Supplier<HostCommandHandler> handlerConstructor) {
-            mServer.mHostCommandHandlers.put(command, handlerConstructor);
-            return this;
+        fun setHostCommandHandler(
+            command: String, handlerConstructor: Supplier<HostCommandHandler>
+        ): Builder {
+            mServer.mHostCommandHandlers[command] = handlerConstructor
+            return this
         }
 
         /**
          * Adds the handler for a device command. Handlers added last take priority over existing
          * handlers.
          */
-        @NonNull
-        public Builder addDeviceHandler(@NonNull DeviceCommandHandler handler) {
-            mServer.mHandlers.add(0, handler);
-            return this;
+        fun addDeviceHandler(handler: DeviceCommandHandler): Builder {
+            mServer.handlers.add(0, handler)
+            return this
         }
 
         /**
          * Installs the default set of host command handlers. The user may override any command
          * handler.
          */
-        @NonNull
-        public Builder installDefaultCommandHandlers() {
-            setHostCommandHandler(KillCommandHandler.COMMAND, KillCommandHandler::new);
+        fun installDefaultCommandHandlers(): Builder {
+            setHostCommandHandler(KillCommandHandler.COMMAND) { KillCommandHandler() }
             setHostCommandHandler(
-                    ListDevicesCommandHandler.COMMAND, ListDevicesCommandHandler::new);
+                ListDevicesCommandHandler.COMMAND
+            ) { ListDevicesCommandHandler() }
             setHostCommandHandler(
-                    ListDevicesCommandHandler.LONG_COMMAND, () -> new ListDevicesCommandHandler(true));
+                ListDevicesCommandHandler.LONG_COMMAND
+            ) { ListDevicesCommandHandler(true) }
             setHostCommandHandler(
-                    TrackDevicesCommandHandler.COMMAND, TrackDevicesCommandHandler::new);
+                TrackDevicesCommandHandler.COMMAND
+            ) { TrackDevicesCommandHandler() }
             setHostCommandHandler(
-                    TrackDevicesCommandHandler.LONG_COMMAND,
-                    () -> new TrackDevicesCommandHandler(true));
-            setHostCommandHandler(ForwardCommandHandler.COMMAND, ForwardCommandHandler::new);
-            setHostCommandHandler(KillForwardCommandHandler.COMMAND,
-                    KillForwardCommandHandler::new);
+                TrackDevicesCommandHandler.LONG_COMMAND
+            ) { TrackDevicesCommandHandler(true) }
+            setHostCommandHandler(ForwardCommandHandler.COMMAND) { ForwardCommandHandler() }
+            setHostCommandHandler(KillForwardCommandHandler.COMMAND) { KillForwardCommandHandler() }
             setHostCommandHandler(
-                    KillForwardAllCommandHandler.COMMAND, KillForwardAllCommandHandler::new);
+                KillForwardAllCommandHandler.COMMAND
+            ) { KillForwardAllCommandHandler() }
             setHostCommandHandler(
-                    ListForwardCommandHandler.COMMAND, ListForwardCommandHandler::new);
-            setHostCommandHandler(FeaturesCommandHandler.COMMAND, FeaturesCommandHandler::new);
+                ListForwardCommandHandler.COMMAND
+            ) { ListForwardCommandHandler() }
+            setHostCommandHandler(FeaturesCommandHandler.COMMAND) { FeaturesCommandHandler() }
             setHostCommandHandler(
-                    HostFeaturesCommandHandler.COMMAND, HostFeaturesCommandHandler::new);
-            setHostCommandHandler(VersionCommandHandler.COMMAND, VersionCommandHandler::new);
-            setHostCommandHandler(MdnsCommandHandler.COMMAND, MdnsCommandHandler::new);
-            setHostCommandHandler(PairCommandHandler.COMMAND, PairCommandHandler::new);
-            setHostCommandHandler(GetStateCommandHandler.COMMAND, GetStateCommandHandler::new);
-            setHostCommandHandler(GetSerialNoCommandHandler.COMMAND, GetSerialNoCommandHandler::new);
-            setHostCommandHandler(GetDevPathCommandHandler.COMMAND, GetDevPathCommandHandler::new);
+                HostFeaturesCommandHandler.COMMAND
+            ) { HostFeaturesCommandHandler() }
+            setHostCommandHandler(VersionCommandHandler.COMMAND) { VersionCommandHandler() }
+            setHostCommandHandler(MdnsCommandHandler.COMMAND) { MdnsCommandHandler() }
+            setHostCommandHandler(PairCommandHandler.COMMAND) { PairCommandHandler() }
+            setHostCommandHandler(GetStateCommandHandler.COMMAND) { GetStateCommandHandler() }
+            setHostCommandHandler(GetSerialNoCommandHandler.COMMAND) { GetSerialNoCommandHandler() }
+            setHostCommandHandler(GetDevPathCommandHandler.COMMAND) { GetDevPathCommandHandler() }
             setHostCommandHandler(
-                    NetworkConnectCommandHandler.COMMAND, NetworkConnectCommandHandler::new);
+                NetworkConnectCommandHandler.COMMAND
+            ) { NetworkConnectCommandHandler() }
             setHostCommandHandler(
-                    NetworkDisconnectCommandHandler.COMMAND, NetworkDisconnectCommandHandler::new);
-
-            addDeviceHandler(new TrackJdwpCommandHandler());
-            addDeviceHandler(new TrackAppCommandHandler());
-            addDeviceHandler(new FakeSyncCommandHandler());
-            addDeviceHandler(new ReverseForwardCommandHandler());
-
-            addDeviceHandler(new PingCommandHandler(ShellProtocolType.EXEC));
-            addDeviceHandler(new RmCommandHandler(ShellProtocolType.SHELL));
-            addDeviceHandler(new LogcatCommandHandler(ShellProtocolType.SHELL));
-            addDeviceHandler(new GetPropCommandHandler(ShellProtocolType.EXEC));
-            addDeviceHandler(new GetPropCommandHandler(ShellProtocolType.SHELL));
-            addDeviceHandler(new GetPropCommandHandler(ShellProtocolType.SHELL_V2));
-            addDeviceHandler(new SetPropCommandHandler(ShellProtocolType.SHELL));
-            addDeviceHandler(new WriteNoStopCommandHandler(ShellProtocolType.SHELL));
-            addDeviceHandler(new PackageManagerCommandHandler(ShellProtocolType.SHELL));
-            addDeviceHandler(new WindowManagerCommandHandler(ShellProtocolType.SHELL));
-            addDeviceHandler(new CmdCommandHandler(ShellProtocolType.EXEC));
-            addDeviceHandler(new CmdCommandHandler(ShellProtocolType.SHELL));
-            addDeviceHandler(new DumpsysCommandHandler(ShellProtocolType.SHELL));
-            addDeviceHandler(new CatCommandHandler(ShellProtocolType.EXEC));
-            addDeviceHandler(new CatCommandHandler(ShellProtocolType.SHELL));
-            addDeviceHandler(new CatCommandHandler(ShellProtocolType.SHELL_V2));
-            addDeviceHandler(new EchoCommandHandler(ShellProtocolType.SHELL));
-            addDeviceHandler(new ShellProtocolEchoCommandHandler());
-            addDeviceHandler(new AbbCommandHandler());
-            addDeviceHandler(new AbbExecCommandHandler());
-            addDeviceHandler(new ActivityManagerCommandHandler(ShellProtocolType.SHELL));
-            addDeviceHandler(new ActivityManagerCommandHandler(ShellProtocolType.SHELL_V2));
-            addDeviceHandler(new JdwpCommandHandler());
-            addDeviceHandler(new StatCommandHandler(ShellProtocolType.SHELL));
-
-            return this;
+                NetworkDisconnectCommandHandler.COMMAND
+            ) { NetworkDisconnectCommandHandler() }
+            addDeviceHandler(TrackJdwpCommandHandler())
+            addDeviceHandler(TrackAppCommandHandler())
+            addDeviceHandler(FakeSyncCommandHandler())
+            addDeviceHandler(ReverseForwardCommandHandler())
+            addDeviceHandler(PingCommandHandler(ShellProtocolType.EXEC))
+            addDeviceHandler(RmCommandHandler(ShellProtocolType.SHELL))
+            addDeviceHandler(LogcatCommandHandler(ShellProtocolType.SHELL))
+            addDeviceHandler(GetPropCommandHandler(ShellProtocolType.EXEC))
+            addDeviceHandler(GetPropCommandHandler(ShellProtocolType.SHELL))
+            addDeviceHandler(GetPropCommandHandler(ShellProtocolType.SHELL_V2))
+            addDeviceHandler(SetPropCommandHandler(ShellProtocolType.SHELL))
+            addDeviceHandler(WriteNoStopCommandHandler(ShellProtocolType.SHELL))
+            addDeviceHandler(PackageManagerCommandHandler(ShellProtocolType.SHELL))
+            addDeviceHandler(WindowManagerCommandHandler(ShellProtocolType.SHELL))
+            addDeviceHandler(CmdCommandHandler(ShellProtocolType.EXEC))
+            addDeviceHandler(CmdCommandHandler(ShellProtocolType.SHELL))
+            addDeviceHandler(DumpsysCommandHandler(ShellProtocolType.SHELL))
+            addDeviceHandler(CatCommandHandler(ShellProtocolType.EXEC))
+            addDeviceHandler(CatCommandHandler(ShellProtocolType.SHELL))
+            addDeviceHandler(CatCommandHandler(ShellProtocolType.SHELL_V2))
+            addDeviceHandler(EchoCommandHandler(ShellProtocolType.SHELL))
+            addDeviceHandler(ShellProtocolEchoCommandHandler())
+            addDeviceHandler(AbbCommandHandler())
+            addDeviceHandler(AbbExecCommandHandler())
+            addDeviceHandler(ActivityManagerCommandHandler(ShellProtocolType.SHELL))
+            addDeviceHandler(ActivityManagerCommandHandler(ShellProtocolType.SHELL_V2))
+            addDeviceHandler(JdwpCommandHandler())
+            addDeviceHandler(StatCommandHandler(ShellProtocolType.SHELL))
+            return this
         }
 
-        @NonNull
-        public FakeAdbServer build() {
+        fun build(): FakeAdbServer {
             if (mConfig != null) {
-                mConfig.getHostHandlers().forEach(this::setHostCommandHandler);
-                mConfig.getDeviceHandlers().forEach(this::addDeviceHandler);
-                mConfig.getDevices().forEach(mServer::addDevice);
-                mConfig.getMdnsServices().forEach(mServer::addMdnsService);
+                mConfig!!.hostHandlers.forEach { (command: String, handlerConstructor: Supplier<HostCommandHandler>) ->
+                    setHostCommandHandler(
+                        command, handlerConstructor
+                    )
+                }
+                mConfig!!.deviceHandlers.forEach(Consumer { handler: DeviceCommandHandler ->
+                    addDeviceHandler(
+                        handler
+                    )
+                })
+                mConfig!!.devices.forEach(Consumer { deviceConfig: DeviceStateConfig? ->
+                    mServer.addDevice(
+                        deviceConfig
+                    )
+                })
+                mConfig!!.mdnsServices.forEach(Consumer { service: MdnsService ->
+                    mServer.addMdnsService(
+                        service
+                    )
+                })
             }
-            return mServer;
+            return mServer
         }
 
-        public void setFeatures(@NonNull Set<String> features) {
-            mServer.setFeatures(features);
+        fun setFeatures(features: Set<String>) {
+            mServer.features = features
         }
     }
 
-    public Set<String> getFeatures() {
-        return mFeatures;
-    }
+    companion object {
 
-    public void setFeatures(Set<String> features) {
-        mFeatures = features;
+        private val DEFAULT_FEATURES = Collections.unmodifiableSet(
+            HashSet(
+                mutableListOf(
+                    "push_sync",
+                    "fixed_push_mkdir",
+                    "shell_v2",
+                    "apex",
+                    "stat_v2",
+                    "cmd",
+                    "abb",
+                    "abb_exec"
+                )
+            )
+        )
     }
 }

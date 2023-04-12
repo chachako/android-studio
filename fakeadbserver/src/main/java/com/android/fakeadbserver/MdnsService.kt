@@ -13,57 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver
 
-package com.android.fakeadbserver;
+import java.net.InetSocketAddress
+import java.util.Objects
 
-import com.android.annotations.NonNull;
-import java.net.InetSocketAddress;
-import java.util.Objects;
+class MdnsService(
+    val instanceName: String,
+    val serviceName: String,
+    val deviceAddress: InetSocketAddress
+) {
 
-public final class MdnsService {
-
-    @NonNull private final String mInstanceName;
-
-    @NonNull private final String mServiceName;
-
-    @NonNull private final InetSocketAddress mDeviceAddress;
-
-    public MdnsService(
-            @NonNull String instanceName,
-            @NonNull String serviceName,
-            @NonNull InetSocketAddress deviceAddress) {
-        mInstanceName = instanceName;
-        mServiceName = serviceName;
-        mDeviceAddress = deviceAddress;
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val state = other as MdnsService
+        return instanceName == state.instanceName && serviceName == state.serviceName && deviceAddress == state.deviceAddress
     }
 
-    @NonNull
-    public String getInstanceName() {
-        return mInstanceName;
-    }
-
-    @NonNull
-    public String getServiceName() {
-        return mServiceName;
-    }
-
-    @NonNull
-    public InetSocketAddress getDeviceAddress() {
-        return mDeviceAddress;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        MdnsService state = (MdnsService) o;
-        return mInstanceName.equals(state.mInstanceName)
-                && mServiceName.equals(state.mServiceName)
-                && mDeviceAddress.equals(state.mDeviceAddress);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(mInstanceName, mServiceName, mDeviceAddress);
+    override fun hashCode(): Int {
+        return Objects.hash(instanceName, serviceName, deviceAddress)
     }
 }

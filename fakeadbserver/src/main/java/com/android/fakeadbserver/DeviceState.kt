@@ -242,12 +242,12 @@ class DeviceState internal constructor(
         synchronized(mPortForwarders) {
             return if (noRebind) {
                 (mPortForwarders.computeIfAbsent(
-                    forwarder.source.mPort
+                    forwarder.source.port
                 ) { port: Int? -> forwarder }
                         == forwarder)
             } else {
                 // Just overwrite the previous forwarder.
-                mPortForwarders[forwarder.source.mPort] = forwarder
+                mPortForwarders[forwarder.source.port] = forwarder
                 true
             }
         }
@@ -257,12 +257,12 @@ class DeviceState internal constructor(
         synchronized(mReversePortForwarders) {
             return if (noRebind) {
                 (mReversePortForwarders.computeIfAbsent(
-                    forwarder.source.mPort
+                    forwarder.source.port
                 ) { port: Int? -> forwarder }
                         == forwarder)
             } else {
                 // Just overwrite the previous forwarder.
-                mReversePortForwarders[forwarder.source.mPort] = forwarder
+                mReversePortForwarders[forwarder.source.port] = forwarder
                 true
             }
         }

@@ -13,75 +13,67 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver
 
-package com.android.fakeadbserver;
+import java.io.IOException
+import java.net.Socket
+import java.nio.channels.SocketChannel
+import java.nio.charset.StandardCharsets
 
-import static java.nio.charset.StandardCharsets.US_ASCII;
-import static java.nio.charset.StandardCharsets.UTF_8;
+// TODO: Should we declare a setSoTimeout of 10s on the socket?
+// Otherwise, a bad test fails with timeout which can take a long time.
+// If we go this way, we must add a SocketTimeoutException handler in the main loop runner.
+class SmartSocket
+internal constructor(private val mSocket: SocketChannel) : AutoCloseable {
 
-import com.android.annotations.NonNull;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.nio.channels.SocketChannel;
+    val socket: Socket
+        get() = mSocket.socket()
 
-public class SmartSocket implements AutoCloseable {
-
-    @NonNull private SocketChannel mSocket;
-
-    SmartSocket(@NonNull SocketChannel socket) {
-        this.mSocket = socket;
-        // TODO: Should we declare a setSoTimeout of 10s on the socket?
-        // Otherwise, a bad test fails with timeout which can take a long time.
-        // If we go this way, we must add a SocketTimeoutException handler in the main loop runner.
+    @Throws(IOException::class)
+    internal fun readServiceRequest(): ServiceRequest {
+        val lengthString = ByteArray(4)
+        readFully(lengthString)
+        val requestLength = String(lengthString).toInt(16)
+        val payloadBytes = ByteArray(requestLength)
+        readFully(payloadBytes)
+        val payload = String(payloadBytes, StandardCharsets.UTF_8)
+        return ServiceRequest(payload)
     }
 
-    Socket getSocket() {
-        return mSocket.socket();
-    }
-
-    @NonNull
-    ServiceRequest readServiceRequest() throws IOException {
-        byte[] lengthString = new byte[4];
-        readFully(lengthString);
-        int requestLength = Integer.parseInt(new String(lengthString), 16);
-
-        byte[] payloadBytes = new byte[requestLength];
-        readFully(payloadBytes);
-        String payload = new String(payloadBytes, UTF_8);
-        return new ServiceRequest(payload);
-    }
-
-    private void readFully(@NonNull byte[] buffer) throws IOException {
-        int bytesRead = 0;
-        while (bytesRead < buffer.length) {
-            bytesRead +=
-                    mSocket.socket()
-                            .getInputStream()
-                            .read(buffer, bytesRead, buffer.length - bytesRead);
+    @Throws(IOException::class)
+    private fun readFully(buffer: ByteArray) {
+        var bytesRead = 0
+        while (bytesRead < buffer.size) {
+            bytesRead += mSocket.socket()
+                .getInputStream()
+                .read(buffer, bytesRead, buffer.size - bytesRead)
         }
     }
 
-    void sendOkay() throws IOException {
-        OutputStream stream = mSocket.socket().getOutputStream();
-        stream.write("OKAY".getBytes(US_ASCII));
+    @Throws(IOException::class)
+    fun sendOkay() {
+        val stream = mSocket.socket().getOutputStream()
+        stream.write("OKAY".toByteArray(StandardCharsets.US_ASCII))
     }
 
-    void sendFailWithReason(@NonNull String reason) {
+    fun sendFailWithReason(reason: String) {
         try {
-            OutputStream stream = mSocket.socket().getOutputStream();
-            stream.write("FAIL".getBytes(US_ASCII));
-            byte[] reasonBytes = reason.getBytes(UTF_8);
-            assert reasonBytes.length < 65536;
-            stream.write(String.format("%04x", reason.length()).getBytes(US_ASCII));
-            stream.write(reasonBytes);
-            stream.flush();
-        } catch (IOException ignored) {
+            val stream = mSocket.socket().getOutputStream()
+            stream.write("FAIL".toByteArray(StandardCharsets.US_ASCII))
+            val reasonBytes = reason.toByteArray(StandardCharsets.UTF_8)
+            assert(reasonBytes.size < 65536)
+            stream.write(
+                String.format("%04x", reason.length)
+                    .toByteArray(StandardCharsets.US_ASCII)
+            )
+            stream.write(reasonBytes)
+            stream.flush()
+        } catch (ignored: IOException) {
         }
     }
 
-    @Override
-    public void close() throws Exception {
-        mSocket.close();
+    @Throws(Exception::class)
+    override fun close() {
+        mSocket.close()
     }
 }

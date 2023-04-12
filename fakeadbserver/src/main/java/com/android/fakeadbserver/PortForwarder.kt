@@ -13,85 +13,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.fakeadbserver;
-
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
+package com.android.fakeadbserver
 
 /**
- * Represents a port forward pair from {@link #mSource} to {@link #mDestination}.
+ * Represents a port forward pair from [.mSource] to [.mDestination].
  */
-public final class PortForwarder {
+class PortForwarder private constructor(hostPort: Int) {
+  val source = ForwarderSource()
+  val destination = ForwarderDestination()
 
+  /** Use one of the static factory methods to create an instance of this class.  */
+  init {
+    source.port = hostPort
+  }
+
+  class ForwarderSource {
+    var port = INVALID_PORT
+  }
+
+  class ForwarderDestination {
+    var port = INVALID_PORT
+    var jdwpPid = INVALID_PORT
+    var unixDomain: String? = null
+  }
+
+  companion object {
     /**
      * An invalid/uninitialized port number.
      */
-    public static final int INVALID_PORT = -1;
-
-    private final ForwarderSource mSource = new ForwarderSource();
-
-    private final ForwarderDestination mDestination = new ForwarderDestination();
-
-    @NonNull
-    public static PortForwarder createPortForwarder(int hostPort, int port) {
-        PortForwarder forwarder = new PortForwarder(hostPort);
-        forwarder.mDestination.mPort = port;
-        return forwarder;
+    const val INVALID_PORT = -1
+    @JvmStatic
+    fun createPortForwarder(hostPort: Int, port: Int): PortForwarder {
+      val forwarder = PortForwarder(hostPort)
+      forwarder.destination.port = port
+      return forwarder
     }
 
-    @NonNull
-    public static PortForwarder createJdwpForwarder(int hostPort, int pid) {
-        PortForwarder forwarder = new PortForwarder(hostPort);
-        forwarder.mDestination.mJdwpPid = pid;
-        return forwarder;
+    fun createJdwpForwarder(hostPort: Int, pid: Int): PortForwarder {
+      val forwarder = PortForwarder(hostPort)
+      forwarder.destination.jdwpPid = pid
+      return forwarder
     }
 
-    @NonNull
-    public static PortForwarder createUnixForwarder(int hostPort, @NonNull String unixDomain) {
-        PortForwarder forwarder = new PortForwarder(hostPort);
-        forwarder.mDestination.mUnixDomain = unixDomain;
-        return forwarder;
+    @JvmStatic
+    fun createUnixForwarder(hostPort: Int, unixDomain: String): PortForwarder {
+      val forwarder = PortForwarder(hostPort)
+      forwarder.destination.unixDomain = unixDomain
+      return forwarder
     }
-
-    /** Use one of the static factory methods to create an instance of this class. */
-    private PortForwarder(int hostPort) {
-        mSource.mPort = hostPort;
-    }
-
-    public ForwarderSource getSource() {
-        return mSource;
-    }
-
-    public ForwarderDestination getDestination() {
-        return mDestination;
-    }
-
-    public static class ForwarderSource {
-
-        int mPort = INVALID_PORT;
-
-        public int getPort() {
-            return mPort;
-        }
-    }
-
-    public static class ForwarderDestination {
-
-        int mPort = INVALID_PORT;
-        int mJdwpPid = INVALID_PORT;
-        String mUnixDomain = null;
-
-        public int getPort() {
-            return mPort;
-        }
-
-        public int getJdwpPid() {
-            return mJdwpPid;
-        }
-
-        @Nullable
-        public String getUnixDomain() {
-            return mUnixDomain;
-        }
-    }
+  }
 }

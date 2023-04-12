@@ -13,53 +13,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.fakeadbserver
 
-package com.android.fakeadbserver;
+import com.google.common.base.Charsets
+import java.io.IOException
+import java.io.OutputStream
 
-import static com.google.common.base.Charsets.UTF_8;
+abstract class CommandHandler {
+    companion object {
 
-import com.android.annotations.NonNull;
-import java.io.IOException;
-import java.io.OutputStream;
-
-public abstract class CommandHandler {
-
-    protected static void writeOkay(@NonNull OutputStream stream) throws IOException {
-        stream.write("OKAY".getBytes(UTF_8));
-    }
-
-    protected static void writeOkayResponse(@NonNull OutputStream stream, @NonNull String response)
-            throws IOException {
-        writeOkay(stream);
-        write4ByteHexIntString(stream, response.length());
-        writeString(stream, response);
-    }
-
-    protected static void writeFail(@NonNull OutputStream stream) throws IOException {
-        stream.write("FAIL".getBytes(UTF_8));
-    }
-
-    protected static void writeFailResponse(@NonNull OutputStream stream, @NonNull String reason) {
-        try {
-            writeFail(stream);
-            write4ByteHexIntString(stream, reason.length());
-            writeString(stream, reason);
-        } catch (IOException ignored) {
+        @JvmStatic
+        @Throws(IOException::class)
+        protected fun writeOkay(stream: OutputStream) {
+            stream.write("OKAY".toByteArray(Charsets.UTF_8))
         }
-    }
 
-    protected static void write4ByteHexIntString(@NonNull OutputStream stream, int value)
-            throws IOException {
-        stream.write(String.format("%04x", value).getBytes(UTF_8));
-    }
+        @JvmStatic
+        @Throws(IOException::class)
+        protected fun writeOkayResponse(stream: OutputStream, response: String) {
+            writeOkay(stream)
+            write4ByteHexIntString(stream, response.length)
+            writeString(stream, response)
+        }
 
-    protected static void writeString(@NonNull OutputStream stream, @NonNull String string)
-            throws IOException {
-        stream.write(string.getBytes(UTF_8));
-    }
+        @JvmStatic
+        @Throws(IOException::class)
+        protected fun writeFail(stream: OutputStream) {
+            stream.write("FAIL".toByteArray(Charsets.UTF_8))
+        }
 
-    protected static void writeFailMissingDevice(
-            @NonNull OutputStream stream, @NonNull String service) {
-        writeFailResponse(stream, "No device found to satisfy " + service);
+        @JvmStatic
+        protected fun writeFailResponse(stream: OutputStream, reason: String) {
+            try {
+                writeFail(stream)
+                write4ByteHexIntString(stream, reason.length)
+                writeString(stream, reason)
+            } catch (ignored: IOException) {
+            }
+        }
+
+        @JvmStatic
+        @Throws(IOException::class)
+        protected fun write4ByteHexIntString(stream: OutputStream, value: Int) {
+            stream.write(String.format("%04x", value).toByteArray(Charsets.UTF_8))
+        }
+
+        @JvmStatic
+        @Throws(IOException::class)
+        protected fun writeString(stream: OutputStream, string: String) {
+            stream.write(string.toByteArray(Charsets.UTF_8))
+        }
+
+        @JvmStatic
+        protected fun writeFailMissingDevice(
+            stream: OutputStream, service: String
+        ) {
+            writeFailResponse(stream, "No device found to satisfy $service")
+        }
     }
 }

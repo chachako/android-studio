@@ -13,41 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.fakeadbserver;
+package com.android.fakeadbserver
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.Ignore
+import org.junit.Test
 
-public class FakeAdbServerTest {
+class FakeAdbServerTest {
 
-    private static final String SERIAL = "test_device_001";
-
-    private static final String MANUFACTURER = "Google";
-
-    private static final String MODEL = "Nexus Silver";
-
-    private static final String RELEASE = "8.0";
-
-    private static final String SDK = "26";
-
-    /** Very basic test example. Remove {@code @Ignore} if you wish to run an interactive server. */
+    /** Very basic test example. Remove `@Ignore` if you wish to run an interactive server.  */
     @Test
     @Ignore
-    public void testInteractiveServer() throws Exception {
+    @Throws(Exception::class)
+    fun testInteractiveServer() {
         // Build the server and configure it to use the default ADB command handlers.
-        FakeAdbServer.Builder builder = new FakeAdbServer.Builder();
-        builder.installDefaultCommandHandlers();
-        try (FakeAdbServer server = builder.build()) {
+        val builder = FakeAdbServer.Builder()
+        builder.installDefaultCommandHandlers()
+        builder.build().use { server ->
             // Connect a test device to simulate device connection before server bring-up.
             server.connectDevice(
-                    SERIAL, MANUFACTURER, MODEL, RELEASE, SDK, DeviceState.HostConnectionType.USB);
+                SERIAL, MANUFACTURER, MODEL, RELEASE, SDK, DeviceState.HostConnectionType.USB
+            )
 
             // Start server execution.
-            server.start();
+            server.start()
 
             // Optional: Since the server lives on a separate thread, we can pause the test to poke at
             // the server.
-            server.awaitServerTermination();
+            server.awaitServerTermination()
         }
+    }
+
+    companion object {
+
+        private const val SERIAL = "test_device_001"
+        private const val MANUFACTURER = "Google"
+        private const val MODEL = "Nexus Silver"
+        private const val RELEASE = "8.0"
+        private const val SDK = "26"
     }
 }

@@ -1133,7 +1133,7 @@ coverage_report(
         "//tools/base/draw9patch:studio.android.sdktools.draw9patch_tests",
         "//tools/base/dynamic-layout-inspector/agent/appinspection:agent_tests.test",
         "//tools/base/fakeadbserver:studio.android.sdktools.fakeadbserver_tests",
-        "//tools/base/fakeadbserver:tools.tests",
+        "//tools/base/fakeadbserver:tools.tests.test",
         "//tools/base/firebase/testlab/testlab-gradle-plugin:tests.test",
         "//tools/base/flags:studio.android.sdktools.flags_tests",
         "//tools/base/jdwp-packet:jdwp-packet.tests.test",

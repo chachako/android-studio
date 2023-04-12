@@ -47,7 +47,7 @@ maven_library(
     ],
 )
 
-coverage_java_test(
+kotlin_test(
     name = "tools.tests",
     srcs = glob(["src/test/java/**"]),
     jvm_flags = ["-Dtest.suite.jar=tools.tests.jar"],
