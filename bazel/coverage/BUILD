@@ -328,6 +328,16 @@ coverage_report(
 )
 
 coverage_report(
+    name = "firebase-testlab",
+    srcpath_include = [
+        "tools/base/firebase/testlab/testlab-gradle-plugin/src/main",
+    ],
+    tests = [
+        "//tools/base/firebase/testlab/testlab-gradle-plugin:tests.test",
+    ],
+)
+
+coverage_report(
     name = "fullscreen-heapdump-ui",
     srcpath_include = [
         "tools/adt/idea/profilers/src/com/android/tools/profilers/memory",
@@ -918,6 +928,7 @@ combine_report_definitions(
         "directaccess",
         "dsl",
         "dynamic-layout-inspector",
+        "firebase-testlab",
         "fullscreen-heapdump-ui",
         "gmd-code-completion",
         "gradle-managed-virtual-device",
@@ -1123,6 +1134,7 @@ coverage_report(
         "//tools/base/dynamic-layout-inspector/agent/appinspection:agent_tests.test",
         "//tools/base/fakeadbserver:studio.android.sdktools.fakeadbserver_tests",
         "//tools/base/fakeadbserver:tools.tests",
+        "//tools/base/firebase/testlab/testlab-gradle-plugin:tests.test",
         "//tools/base/flags:studio.android.sdktools.flags_tests",
         "//tools/base/jdwp-packet:jdwp-packet.tests.test",
         "//tools/base/layoutlib-api:studio.android.sdktools.layoutlib-api_tests",

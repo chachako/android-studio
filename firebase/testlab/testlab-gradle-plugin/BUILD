@@ -1,3 +1,4 @@
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:gradle.bzl", "gradle_build", "gradle_test")
 load("//tools/base/bazel:maven.bzl", "maven_repository")
 load("//tools/base/build-system:hybrid_build.bzl", "GRADLE_PROPERTIES")
@@ -102,4 +103,58 @@ gradle_test(
     tasks = [":base:firebase:testlab:testlab-gradle-plugin:test"],
     test_output_dir = "build/base/firebase/testlab/testlab-gradle-plugin/build/test-results/test",
     visibility = ["//visibility:public"],
+)
+
+kotlin_library(
+    name = "lib",
+    srcs = glob([
+        "src/main/java/**/*.kt",
+        "src/main/java/**/*.java",
+    ]),
+    deps = [
+        "//tools/base/build-system:gradle-api",
+        "//tools/base/build-system/gradle-core",
+        "//tools/base/common:tools.common",
+        "//tools/base/sdk-common:tools.sdk-common",
+        "//tools/base/sdklib:tools.sdklib",
+        "//tools/base/testutils:tools.testutils",
+        "//tools/base/utp/android-test-plugin-host-device-info-proto",
+        "@maven//:com.google.api-client.google-api-client",
+        "@maven//:com.google.apis.google-api-services-storage",
+        "@maven//:com.google.apis.google-api-services-testing",
+        "@maven//:com.google.apis.google-api-services-toolresults",
+        "@maven//:com.google.protobuf.protobuf-java",
+        "@maven//:com.google.testing.platform.core-proto",
+    ],
+)
+
+kotlin_test(
+    name = "tests",
+    srcs = glob([
+        "src/test/java/**/*.kt",
+        "src/test/java/**/*.java",
+    ]),
+    friends = [":lib"],
+    jvm_flags = ["-Dtest.suite.jar=tests.jar"],
+    resources = glob(["src/test/resources/**"]),
+    test_class = "com.android.testutils.JarTestSuite",
+    deps = [
+        ":lib",
+        "//tools/base/build-system:gradle-api",
+        "//tools/base/build-system/gradle-core",
+        "//tools/base/common:tools.common",
+        "//tools/base/sdk-common:tools.sdk-common",
+        "//tools/base/sdklib:tools.sdklib",
+        "//tools/base/testutils:tools.testutils",
+        "//tools/base/utp/android-test-plugin-host-device-info-proto",
+        "@maven//:com.google.api-client.google-api-client",
+        "@maven//:com.google.apis.google-api-services-storage",
+        "@maven//:com.google.apis.google-api-services-testing",
+        "@maven//:com.google.apis.google-api-services-toolresults",
+        "@maven//:com.google.protobuf.protobuf-java",
+        "@maven//:com.google.testing.platform.core-proto",
+        "@maven//:com.google.truth.truth",
+        "@maven//:junit.junit",
+        "@maven//:org.mockito.mockito-core",
+    ],
 )
