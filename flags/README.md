@@ -101,7 +101,7 @@ shown to users.
 
 At last, let's specify some flags.
 
-Flags support common primitive value types: *int*, *bool*, and *string*. Use
+Flags support common primitive value types: *int*, *long*, *bool*, and *string*. Use
 the appropriate `Flag#create(group, ..., defaultValue)` methods to create them.
 
 ```java
@@ -114,8 +114,13 @@ public final class GameFlags {
    public static final Flag<String> RESOLUTION = Flag.create(
       GRAPHICS, "resolution", "Initial resolution", "... description ...",
       "1280x720");
+
    public static final Flag<Integer> FPS_CAP = Flag.create(
       GRAPHICS, "fps.cap", "FPS cap", "... description ...", 30);
+
+   public static final Flag<Long> MAX_HEAP_SIZE = Flag.create(
+      MEMORY, "max.heap.size", "Max Heap Size in bytes", "... description ...",
+      4_000_000_000L);
    ...
 }
 ```
@@ -136,6 +141,9 @@ int currFps = update(...);
 if (currFps > GameFlags.FPS_CAP.get()) {
    ... sleep ...
 }
+
+long maxHeapSize = GameFlags.MAX_HEAP_SIZE.get();
+configureMemorySettings(..., maxHeapSize, ...);
 ```
 
 ## Overriding Flags
