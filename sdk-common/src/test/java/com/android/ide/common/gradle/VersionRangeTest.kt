@@ -501,6 +501,31 @@ class VersionRangeTest {
     }
 
     @Test
+    fun testIsSingletonFalse() {
+        for (string in listOf("+", "1.+", "[1,2]", "[1,2)", "(1,2]", "(1,1]", "[1,1)")) {
+            val range = VersionRange.parse(string)
+            assertThat(range.isSingleton).isFalse()
+            assertThat(range.singletonVersion).isNull()
+        }
+    }
+
+    @Test
+    fun testIsSingletonTrue() {
+        for (string in listOf("1.0", "[1.0,1.0]", "1.0000")) {
+            val range = VersionRange.parse(string)
+            assertThat(range.isSingleton).isTrue()
+            assertThat(range.singletonVersion).isEqualTo(Version.parse("1.0"))
+        }
+    }
+
+    @Test
+    fun testIsSingletonPrefixInfimum() {
+        val range = VersionRange(Range.singleton(Version.prefixInfimum("1.0")))
+        assertThat(range.isSingleton).isFalse()
+        assertThat(range.singletonVersion).isNull()
+    }
+
+    @Test
     fun testUnrepresentableIdentifiers() {
         // [,1.0) is a prefix upper bound
         assertThat(VersionRange(Range.lessThan(Version.parse("1.0"))).toIdentifier()).isNull()
