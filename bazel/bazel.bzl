@@ -938,7 +938,7 @@ def _gen_split_tests(
         )
     native.test_suite(
         name = name + "_tests",
-        tags = ["manual"] if "manual" in test_tags else [],
+        tags = ["manual"] if test_tags and "manual" in test_tags else [],
         tests = split_tests,
     )
 
