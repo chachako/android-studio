@@ -188,7 +188,7 @@ class MemoryLeakTest {
       // Needed to allow PrivateResourceDetector to run.
       // Needed to allow GradleDetector to run.
       .networkData(
-        "http://search.maven.org/solrsearch/select" +
+        "https://search.maven.org/solrsearch/select" +
           "?q=g:%22androidx.appcompat%22+AND+a:%22appcompat%22&core=gav&wt=json",
         "" // Response doesn't matter for this test.
       )

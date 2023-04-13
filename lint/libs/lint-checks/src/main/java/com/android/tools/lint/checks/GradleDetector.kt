@@ -3446,7 +3446,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       val query = StringBuilder()
       val encoding = UTF_8.name()
       try {
-        query.append("http://search.maven.org/solrsearch/select?q=g:%22")
+        query.append("https://search.maven.org/solrsearch/select?q=g:%22")
         query.append(URLEncoder.encode(groupId, encoding))
         query.append("%22+AND+a:%22")
         query.append(URLEncoder.encode(artifactId, encoding))
