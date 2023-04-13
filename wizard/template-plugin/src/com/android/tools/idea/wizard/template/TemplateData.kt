@@ -62,6 +62,7 @@ enum class BytecodeLevel(val description: String, val versionString: String) {
   }
 }
 
+const val KOTLIN_DSL_LINK = "https://d.android.com/build/migrate-to-kotlin-dsl"
 enum class BuildConfigurationLanguageForNewProject(
     val description: String,
     val useKts: Boolean,
