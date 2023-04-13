@@ -20,6 +20,9 @@ import com.android.adblib.AdbSession
 import java.time.Duration
 import java.util.concurrent.TimeoutException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+
+val LATENCY_COLLECTION_INTERVAL: Duration = Duration.ofSeconds(10)
 
 /**
  * A ForwardingDaemon behaves as an ADB daemon, connecting to a remote Android device.
@@ -67,6 +70,9 @@ interface ForwardingDaemon : AutoCloseable {
    * routing it to the appropriate Stream.
    */
   suspend fun receiveRemoteCommand(command: StreamCommand)
+
+  /** Returns a flow of round trip latency, emitting every [LATENCY_COLLECTION_INTERVAL]. */
+  val roundTripLatencyMsFlow: Flow<Long>
 }
 
 fun ForwardingDaemon(

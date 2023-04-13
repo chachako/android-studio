@@ -17,12 +17,14 @@ package com.google.services.firebase.directaccess.client.device.remote.service.a
 
 import com.android.adblib.AdbOutputChannel
 import com.android.adblib.AdbServerSocket
+import com.android.adblib.DeviceSelector
 import com.android.adblib.testing.FakeAdbSession
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.utils.createChildScope
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.junit.After
 import org.junit.Before
@@ -97,5 +99,21 @@ class ForwardingDaemonTest {
       channel.assertCommand(OKAY, 1, 1)
     }
     assertThat(payloadAssertException.get()).isEqualTo(null)
+  }
+
+  @Test
+  fun testLatency() = runBlockingWithTimeout {
+    val childScope = fakeAdbSession.scope.createChildScope(context = exceptionHandler)
+    forwardingDaemon =
+      ForwardingDaemonImpl(fakeStreamOpener, childScope, fakeAdbSession) { testSocket }
+    assertThat(forwardingDaemon.devicePort).isEqualTo(-1)
+    forwardingDaemon.start()
+    fakeAdbSession.deviceServices.configureShellV2Command(
+      DeviceSelector.fromSerialNumber("localhost:${testSocket.localAddress()!!.port}"),
+      "cat",
+      "Foo"
+    )
+    // Check if roundTripLatencyMsFlow emits a value.
+    assertThat(forwardingDaemon.roundTripLatencyMsFlow.first()).isNotNull()
   }
 }

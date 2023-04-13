@@ -19,6 +19,9 @@ package com.google.services.firebase.directaccess.client.device.remote.service.a
 import com.android.adblib.AdbChannel
 import com.android.adblib.AdbServerSocket
 import com.android.adblib.AdbSession
+import com.android.adblib.DeviceSelector
+import com.android.adblib.shellCommand
+import com.android.adblib.withInputChannelCollector
 import java.nio.ByteBuffer
 import java.time.Duration
 import java.util.concurrent.TimeUnit
@@ -26,14 +29,19 @@ import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Level
 import java.util.logging.Logger
+import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -63,6 +71,8 @@ internal class ForwardingDaemonImpl(
   private var reverseService: ReverseService? = null
   private var features: String = ""
   override var devicePort: Int = -1
+  private val serialNumber: String
+    get() = "localhost:$devicePort"
 
   // The socket the local ADB server sends ADB commands to. Bytes, in this case ADB commands,
   // coming to this socket are forwarded to the remote device.
@@ -70,6 +80,36 @@ internal class ForwardingDaemonImpl(
   private val deviceState = MutableStateFlow(DeviceState.MISSING)
   private val onlineStates = setOf(DeviceState.DEVICE, DeviceState.RECOVERY, DeviceState.RESCUE)
   private lateinit var adbCommandHandler: Job
+
+  override val roundTripLatencyMsFlow: Flow<Long> =
+    flow {
+        deviceState.takeWhile { it !in onlineStates }.collect()
+
+        val device = DeviceSelector.fromSerialNumber(serialNumber)
+        val stdinInputChannel = adbSession.channelFactory.createPipedChannel()
+        val byteArray = "Foo".toByteArray()
+        val buffer = ByteBuffer.wrap(byteArray)
+        adbSession.deviceServices
+          .shellCommand(device, "cat")
+          .withInputChannelCollector()
+          .withStdin(stdinInputChannel)
+          .executeAsSingleOutput { result ->
+            val input = result.stdout
+            val output = stdinInputChannel.pipeSource
+            while (true) {
+              emit(
+                measureTimeMillis {
+                  output.writeExactly(buffer)
+                  buffer.flip()
+                  input.readExactly(buffer)
+                }
+              )
+              buffer.flip()
+              delay(LATENCY_COLLECTION_INTERVAL.toMillis())
+            }
+          }
+      }
+      .flowOn(Dispatchers.IO)
 
   private suspend fun run() {
     streamOpener.connect(this)
@@ -96,12 +136,7 @@ internal class ForwardingDaemonImpl(
                 }
               }
             reverseService =
-              ReverseService(
-                "localhost:$devicePort",
-                scope,
-                ResponseWriter(localAdbChannel),
-                adbSession
-              )
+              ReverseService(serialNumber, scope, ResponseWriter(localAdbChannel), adbSession)
 
             while (true) {
               ensureActive()
