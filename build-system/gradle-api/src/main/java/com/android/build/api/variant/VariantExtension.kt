@@ -22,5 +22,8 @@ package com.android.build.api.variant
  * Variant extension must be registered using the
  * [AndroidComponentsExtension.registerExtension] API and can be
  * retrieved from a [Variant] instance using the [Variant.getExtension] API.
+ *
+ * Since this type will most likely be used as [org.gradle.api.Task]'s input, your subtype
+ * should also extend [java.io.Serializable]
  */
 interface VariantExtension
