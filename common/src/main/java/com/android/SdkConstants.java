@@ -1120,6 +1120,7 @@ public final class SdkConstants {
     public static final String TAG_STAGING_PUBLIC_GROUP = "staging-public-group";
     public static final String TAG_STAGING_PUBLIC_GROUP_FINAL = "staging-public-group-final";
 
+    public static final String TAG_JAVA_SYMBOL = "java-symbol";
 
     // Tags: Adaptive icon
     public static final String TAG_ADAPTIVE_ICON = "adaptive-icon";

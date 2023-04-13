@@ -37,6 +37,7 @@ import static com.android.SdkConstants.TAG_EAT_COMMENT;
 import static com.android.SdkConstants.TAG_ENUM;
 import static com.android.SdkConstants.TAG_FLAG;
 import static com.android.SdkConstants.TAG_ITEM;
+import static com.android.SdkConstants.TAG_JAVA_SYMBOL;
 import static com.android.SdkConstants.TAG_PUBLIC;
 import static com.android.SdkConstants.TAG_PUBLIC_GROUP;
 import static com.android.SdkConstants.TAG_RESOURCES;
@@ -1054,6 +1055,12 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
 
     if (type == null) {
       if (TAG_EAT_COMMENT.equals(tagName) || TAG_SKIP.equals(tagName)) {
+        return null;
+      }
+
+      if (TAG_JAVA_SYMBOL.equals(tagName)) {
+        // java-symbol is only used within framework and does not provide any public
+        // information so we can safely ignore it.
         return null;
       }
 
