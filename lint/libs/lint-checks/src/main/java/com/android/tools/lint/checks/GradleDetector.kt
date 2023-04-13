@@ -3442,6 +3442,18 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       return location1
     }
 
+    @JvmStatic
+    fun getLatestVersionFromRemoteRepo(
+      client: LintClient,
+      dependency: Dependency,
+      filter: Predicate<Version>?,
+      allowPreview: Boolean
+    ): Version? =
+      dependency
+        .toIdentifier()
+        ?.let { GradleCoordinate.parseCoordinateString(it) }
+        ?.let { getLatestVersionFromRemoteRepo(client, it, filter, allowPreview) }
+
     /** TODO: Cache these results somewhere! */
     @JvmStatic
     fun getLatestVersionFromRemoteRepo(
