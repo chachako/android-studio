@@ -139,46 +139,6 @@ void CountersRequestHandler::PopulateCpuCoreCounters(
   }
 }
 
-std::string GetPowerCounterQueryStringFor(int display_mode) {
-  // Mapping of display mode to meaning:
-  // Value of HIDE_POWER_PROFILER_DISPLAY_MODE -> Hide both power + battery
-  // tracks. Value of MINMAX_POWER_PROFILER_DISPLAY_MODE -> Show power rails is
-  // min-max view and battery counters in zero-based view.
-  // Value of DELTA_POWER_PROFILER_DISPLAY_MODE -> Show power rails in delta
-  // view and battery counters in zero-based view.
-
-  // It is worth noting that although we use value
-  // HIDE_POWER_PROFILER_DISPLAY_MODE to hide the tracks on studio-side, we
-  // still want to query for the data so it is in a newly recorded trace.
-  std::string query_string = "";
-  switch (display_mode) {
-    case HIDE_POWER_PROFILER_DISPLAY_MODE:
-    case MINMAX_POWER_PROFILER_DISPLAY_MODE:
-      return "SELECT t.name, c.ts, c.value "
-             "FROM counter c INNER JOIN counter_track t "
-             "     ON c.track_id = t.id "
-             "WHERE t.name LIKE \"batt.%\" OR t.name LIKE \"power.%\""
-             "ORDER BY c.track_id ASC, c.ts ASC;";
-
-    case DELTA_POWER_PROFILER_DISPLAY_MODE:
-      return "SELECT t.name, c.ts, c.value - LAG(c.value) "
-             "OVER (partition by t.id ORDER BY t.name) AS delta "
-             "FROM counter c INNER JOIN counter_track t "
-             "       ON c.track_id = t.id "
-             "WHERE t.name LIKE \"power.%\" "
-             "UNION ALL "
-             "SELECT t.name, c.ts, c.value "
-             "FROM counter c INNER JOIN counter_track t "
-             "       ON c.track_id = t.id "
-             "WHERE t.name LIKE \"batt.%\" "
-             "ORDER BY t.name ASC, c.ts ASC;";
-
-    default:
-      std::cerr << "Power profiler display mode not supported." << std::endl;
-      return "";
-  }
-}
-
 void CountersRequestHandler::PopulatePowerCounterTracks(
     PowerCounterTracksParameters params, PowerCounterTracksResult* result) {
   if (result == nullptr) {
@@ -186,7 +146,11 @@ void CountersRequestHandler::PopulatePowerCounterTracks(
   }
 
   std::string query_string =
-      GetPowerCounterQueryStringFor(params.display_mode());
+      "SELECT t.name, c.ts, c.value "
+      "FROM counter c INNER JOIN counter_track t "
+      "     ON c.track_id = t.id "
+      "WHERE t.name LIKE \"batt.%\" OR t.name LIKE \"power.%\""
+      "ORDER BY c.track_id ASC, c.ts ASC;";
 
   std::unordered_map<std::string, Counter*> counters_map;
 

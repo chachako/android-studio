@@ -138,11 +138,7 @@ message QueryParameters {
 
   // Returns data from all counter tracks, mostly utilized for battery counters and rails.
   // See https://perfetto.dev/docs/data-sources/battery-counters.
-  message PowerCounterTracksParameters {
-    // This field allows studio-side to pass in a feature flag for the
-    // type of query to be performed on recorded trace data.
-    int32 display_mode = 1;
-  }
+  message PowerCounterTracksParameters {}
 
   // Returns data from the Perfetto data source: android.surfaceflinger.frame.
   // See https://perfetto.dev/docs/analysis/sql-tables#frame_slice.
