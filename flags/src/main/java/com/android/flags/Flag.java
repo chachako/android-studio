@@ -26,7 +26,7 @@ import java.util.Locale;
  */
 public final class Flag<T> {
     private static final ValueConverter<Boolean> BOOL_CONVERTER =
-            new ValueConverter<Boolean>() {
+            new ValueConverter<>() {
                 @NonNull
                 @Override
                 public String serialize(@NonNull Boolean value) {
@@ -40,7 +40,7 @@ public final class Flag<T> {
                 }
             };
     private static final ValueConverter<Integer> INT_CONVERTER =
-            new ValueConverter<Integer>() {
+            new ValueConverter<>() {
                 @NonNull
                 @Override
                 public String serialize(@NonNull Integer value) {
@@ -54,7 +54,7 @@ public final class Flag<T> {
                 }
             };
     private static final ValueConverter<String> PASSTHRU_CONVERTER =
-            new ValueConverter<String>() {
+            new ValueConverter<>() {
                 @NonNull
                 @Override
                 public String serialize(@NonNull String value) {
