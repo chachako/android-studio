@@ -66,6 +66,16 @@ class Version: Comparable<Version> {
     // This is a reasonably well-defined concept.
     val isPreview
         get() = parts.any { it !is Numeric }
+    // This is moderately well-defined as a contributor to UI elements, though probably not for any
+    // automated computation.  This returns the least non-numeric part (in Gradle comparison
+    // terms), if any, of the version, with the intuition that this corresponds to the degree of
+    // previewness that a user may need to be alerted to.  For the common case of exactly zero or
+    // one non-numeric component, it does what you should expect; the possible ambiguities arise
+    // when there are two or more non-numeric part, and this choice -- the minimum -- is
+    // somewhat arbitrary; one could defend the first or the last non-numeric part as reasonable
+    // return values.
+    val previewString
+        get() = parts.filter { it !is Numeric }.minOrNull()?.toString()
     // This is not very well-defined:
     // - why is SNAPSHOT special, compared with all the other Special components?
     // - we check only check the last part because this is what the GradleVersion class did

@@ -449,6 +449,39 @@ class VersionTest {
 
         assertThat(Version.parse("1-SNAPSHOT.3").isPreview).isTrue()
         assertThat(Version.parse("1-dev.3").isPreview).isTrue()
+        assertThat(Version.parse("1.2.3-alpha4-beta5").isPreview).isTrue()
+        assertThat(Version.parse("1.2.3-beta4-alpha5").isPreview).isTrue()
+        assertThat(Version.parse("1.2.3-alpha.10").isPreview).isTrue()
+    }
+
+    @Test
+    fun testPreviewString() {
+        assertThat(Version.parse("2").previewString).isNull()
+        assertThat(Version.parse("2-alpha1").previewString).isEqualTo("alpha")
+        assertThat(Version.parse("2-alpha1-SNAPSHOT").previewString).isEqualTo("alpha")
+        assertThat(Version.parse("2-SNAPSHOT").previewString).isEqualTo("SNAPSHOT")
+        assertThat(Version.parse("2-snapshot").previewString).isEqualTo("snapshot")
+        assertThat(Version.parse("2-dev").previewString).isEqualTo("dev")
+        assertThat(Version.parse("1.2").previewString).isNull()
+        assertThat(Version.parse("1.2-alpha3").previewString).isEqualTo("alpha")
+        assertThat(Version.parse("1.2-alpha3-SNAPSHOT").previewString).isEqualTo("alpha")
+        assertThat(Version.parse("1.2-SNAPSHOT").previewString).isEqualTo("SNAPSHOT")
+        assertThat(Version.parse("1.2.3").previewString).isNull()
+        assertThat(Version.parse("1.2.3-alpha4").previewString).isEqualTo("alpha")
+        assertThat(Version.parse("1.2.3-alpha-4").previewString).isEqualTo("alpha")
+        assertThat(Version.parse("1.2.3-alpha4-SNAPSHOT").previewString).isEqualTo("alpha")
+        assertThat(Version.parse("1.2.3-alpha-4-SNAPSHOT").previewString).isEqualTo("alpha")
+        assertThat(Version.parse("1.2.3-SNAPSHOT").previewString).isEqualTo("SNAPSHOT")
+        assertThat(Version.parse("1.2.3.4").previewString).isNull()
+        assertThat(Version.parse("1.2.3.4.5-SNAPSHOT").previewString).isEqualTo("SNAPSHOT")
+        assertThat(Version.parse("1.2.3.4.5.6-alpha9-SNAPSHOT").previewString).isEqualTo("alpha")
+        assertThat(Version.parse("7.0.0-dev03").previewString).isEqualTo("dev")
+
+        assertThat(Version.parse("1-SNAPSHOT.3").previewString).isEqualTo("SNAPSHOT")
+        assertThat(Version.parse("1-dev.3").previewString).isEqualTo("dev")
+        assertThat(Version.parse("1.2.3-alpha4-beta5").previewString).isEqualTo("alpha")
+        assertThat(Version.parse("1.2.3-beta4-alpha5").previewString).isEqualTo("alpha")
+        assertThat(Version.parse("1.2.3-alpha.10").previewString).isEqualTo("alpha")
     }
 
     @Test
