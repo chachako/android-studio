@@ -19,7 +19,7 @@ import static java.nio.file.Files.walkFileTree;
 
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
-import com.android.ide.common.repository.GradleVersion;
+import com.android.ide.common.gradle.Version;
 import com.android.tools.lint.detector.api.Category;
 import com.android.tools.lint.detector.api.ClassContext;
 import com.android.tools.lint.detector.api.ClassScanner;
@@ -100,10 +100,11 @@ public class CordovaVersionDetector extends Detector implements ClassScanner {
     public CordovaVersionDetector() {}
 
     /**
-     * The cordova version is similar to a dewey decimal like system used by {@link GradleVersion}
-     * except for the named qualifiers.
+     * The cordova version is a three-digit numeric version, followed for prereleases by a dash and
+     * other qualifiers. Our {@link Version} class can handle this naturally with the right
+     * comparison semantics.
      */
-    private GradleVersion cordovaVersion;
+    private Version cordovaVersion;
 
     @Override
     public void afterCheckRootProject(@NonNull Context context) {
@@ -154,16 +155,18 @@ public class CordovaVersionDetector extends Detector implements ClassScanner {
         }
     }
 
+    private static final Version firstNonVulnerableCordovaVersion =
+            Version.Companion.parse("6.1.2");
+
     private static void validateCordovaVersion(
-            @NonNull Context context, @NonNull GradleVersion cordovaVersion, Location location) {
+            @NonNull Context context, @NonNull Version cordovaVersion, Location location) {
         // See
         // https://www.cvedetails.com/vulnerability-list/vendor_id-45/product_id-27153/Apache-Cordova.html
         // See https://cordova.apache.org/announcements/2015/11/20/security.html
-        if (!cordovaVersion.isAtLeast(6, 1, 2)) {
+        if (cordovaVersion.compareTo(firstNonVulnerableCordovaVersion) < 0) {
             String message =
                     String.format(
-                            "You are using a vulnerable version of Cordova: %1$s",
-                            cordovaVersion.toString());
+                            "You are using a vulnerable version of Cordova: %1$s", cordovaVersion);
             context.report(ISSUE, location, message);
         }
     }
@@ -251,10 +254,10 @@ public class CordovaVersionDetector extends Detector implements ClassScanner {
         }
     }
 
-    private static GradleVersion createVersion(String version) {
+    private static Version createVersion(String version) {
         Matcher matcher = VERSION_STR.matcher(version);
         if (matcher.matches()) {
-            return GradleVersion.tryParse(matcher.group(1));
+            return Version.Companion.parse(matcher.group(1));
         }
         return null;
     }
@@ -264,7 +267,7 @@ public class CordovaVersionDetector extends Detector implements ClassScanner {
      * early. The constant is typically declared at the start of the file so it makes it efficient
      * to terminate early.
      */
-    public static class JsVersionLineProcessor implements LineProcessor<GradleVersion> {
+    public static class JsVersionLineProcessor implements LineProcessor<Version> {
 
         // var CORDOVA_JS_BUILD_LABEL = '3.5.1-dev';
         private static final Pattern PATTERN =
@@ -272,7 +275,7 @@ public class CordovaVersionDetector extends Detector implements ClassScanner {
                         "var\\s*(PLATFORM_VERSION_BUILD_LABEL|CORDOVA_JS_BUILD_LABEL)\\s*"
                                 + "=\\s*'(\\d+\\.\\d+\\.\\d+)[^']*';.*");
 
-        private GradleVersion mVersion;
+        private Version mVersion;
 
         @Override
         public boolean processLine(@NonNull String line) {
@@ -280,7 +283,7 @@ public class CordovaVersionDetector extends Detector implements ClassScanner {
                     || line.contains("CORDOVA_JS_BUILD_LABEL")) {
                 Matcher matcher = PATTERN.matcher(line);
                 if (matcher.matches()) {
-                    mVersion = GradleVersion.tryParse(matcher.group(2));
+                    mVersion = Version.Companion.parse(matcher.group(2));
                     return false; // stop processing other lines.
                 }
             }
@@ -288,7 +291,7 @@ public class CordovaVersionDetector extends Detector implements ClassScanner {
         }
 
         @Override
-        public GradleVersion getResult() {
+        public Version getResult() {
             return mVersion;
         }
     }
