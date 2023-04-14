@@ -15,8 +15,8 @@ iml_module(
     ],
     test_srcs = ["test/java"],
     test_tags = [
-        "cpu:3",
         "block-network",
+        "cpu:3",
         "no_test_windows",
     ],
     test_timeout = "long",  # "medium" is not sufficient on Mac b/155999536
@@ -79,5 +79,22 @@ kotlin_library(
         "@maven//:com.google.guava.guava",
         "@maven//:com.google.protobuf.protobuf-java",
         "@maven//:net.sf.kxml.kxml2",
+    ],
+)
+
+kotlin_library(
+    name = "tools.resource-repository.test.util",
+    srcs = [
+        "test/java/com/android/resources/AarTestUtils.kt",
+    ],
+    visibility = [
+        "//tools/adt/idea/render-resources:__pkg__",
+    ],
+    deps = [
+        ":tools.resource-repository",
+        "//prebuilts/tools/common/lint-psi/intellij-core",
+        "//tools/base/common:tools.common",
+        "//tools/base/sdk-common:tools.sdk-common",
+        "//tools/base/testutils:tools.testutils",
     ],
 )

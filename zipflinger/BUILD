@@ -11,6 +11,7 @@ maven_library(
     description = "Library used to build and incrementally modify zip files",
     version = BUILD_VERSION,
     visibility = [
+        "//tools/adt/idea/render-resources:__subpackages__",
         "//tools/base:__pkg__",
         "//tools/base/bazel:__subpackages__",
         "//tools/base/build-system:__subpackages__",
