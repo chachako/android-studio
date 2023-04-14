@@ -15,6 +15,7 @@
  */
 package com.android.testutils
 
+import com.android.SdkConstants
 import com.android.io.readImage
 import com.android.io.writeImage
 import org.junit.Assert
@@ -46,6 +47,26 @@ object ImageDiffUtil {
         g2d.drawImage(inputImg, 0, 0, null)
         g2d.dispose()
         return outputImg
+    }
+
+    /**
+     * Asserts that the given image is similar to a golden file for the current OS platform.
+     * If the golden image file does not exist, it is created and the test fails.
+     */
+    fun assertImageSimilarPerPlatform(
+        testDataPath: Path,
+        fileNameBase: String,
+        actual: BufferedImage,
+        maxPercentDifferent: Double
+    ) {
+        val os = when (val platform = SdkConstants.currentPlatform()) {
+            SdkConstants.PLATFORM_LINUX -> "linux"
+            SdkConstants.PLATFORM_DARWIN -> "mac"
+            SdkConstants.PLATFORM_WINDOWS -> "windows"
+            else -> throw IllegalArgumentException("unknown platform $platform")
+        }
+        val goldenFile = testDataPath.resolve("$fileNameBase-$os.png")
+        assertImageSimilar(goldenFile, actual, maxPercentDifferent)
     }
 
     /**
