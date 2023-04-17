@@ -1,0 +1,44 @@
+Breakpoint: SpilledScopeVariable.kt:43 - tests.SpilledScopeVariable.start()
+========================================================
+Not an Inline Stack Frame
+Call location: SpilledScopeVariable.kt:26 - tests.SpilledScopeVariable.start()
+------------------------------------------------------
+
+Inline frame for function 'foo' Depth: 1
+Call location: SpilledScopeVariable.kt:43 - tests.SpilledScopeVariable.start()
+------------------------------------------------------
+  foo01$iv                      : int
+  foo02$iv                      : int
+  foo03$iv                      : int
+  foo04$iv                      : int
+  foo05$iv                      : int
+  this_$iv                      : tests.SpilledScopeVariable
+
+
+Breakpoint: SpilledScopeVariable.kt:57 - tests.SpilledScopeVariable.start()
+========================================================
+Not an Inline Stack Frame
+Call location: SpilledScopeVariable.kt:26 - tests.SpilledScopeVariable.start()
+------------------------------------------------------
+
+Inline frame for function 'foo' Depth: 1
+Call location: SpilledScopeVariable.kt:57 - tests.SpilledScopeVariable.start()
+------------------------------------------------------
+  foo01$iv                      : int
+  foo02$iv                      : int
+  foo03$iv                      : int
+  foo04$iv                      : int
+  foo05$iv                      : int
+  foo06$iv                      : int
+  foo07$iv                      : int
+  foo08$iv                      : int
+  foo09$iv                      : int
+  foo10$iv                      : int
+  foo11$iv                      : int
+  foo12$iv                      : int
+  foo13$iv                      : int
+  foo14$iv                      : int
+  foo15$iv                      : int
+  this_$iv                      : tests.SpilledScopeVariable
+
+

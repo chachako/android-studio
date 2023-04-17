@@ -1,0 +1,30 @@
+Breakpoint: SpilledScopeVariable.kt:43 - tests.SpilledScopeVariable.start()
+========================================================
+0  [26-54]    [2-23]    : this_$iv                      : tests.SpilledScopeVariable
+1  [38-54]    [3-29]    : $i$f$foo                      : int
+2  [39-54]    [4-35]    : foo01$iv                      : int
+3  [40-54]    [5-41]    : foo02$iv                      : int
+4  [41-54]    [6-47]    : foo03$iv                      : int
+5  [42-58]    [7-116]   : foo04$iv                      : int
+6  [43-58]    [8-116]   : foo05$iv                      : int
+
+Breakpoint: SpilledScopeVariable.kt:57 - tests.SpilledScopeVariable.start()
+========================================================
+5  [42-58]    [7-116]   : foo04$iv                      : int
+6  [43-58]    [8-116]   : foo05$iv                      : int
+7  [45-58]    [12-116]  : foo06$iv                      : int
+8  [46-58]    [13-116]  : foo07$iv                      : int
+9  [47-58]    [14-116]  : foo08$iv                      : int
+10 [48-58]    [15-116]  : foo09$iv                      : int
+11 [49-58]    [16-116]  : foo10$iv                      : int
+12 [50-58]    [17-116]  : foo11$iv                      : int
+13 [51-58]    [18-116]  : foo12$iv                      : int
+14 [52-58]    [19-116]  : foo13$iv                      : int
+15 [53-58]    [20-116]  : foo14$iv                      : int
+16 [54-58]    [22-116]  : foo15$iv                      : int
+17 [54-58]    [24-116]  : this_$iv                      : tests.SpilledScopeVariable
+18 [54-58]    [30-116]  : $i$f$foo                      : int
+19 [54-58]    [36-116]  : foo01$iv                      : int
+20 [54-58]    [42-116]  : foo02$iv                      : int
+21 [54-58]    [48-116]  : foo03$iv                      : int
+
