@@ -15,7 +15,7 @@ readonly script_name="$(basename "$0")"
 # Invalidate local cache to avoid picking up obsolete test result xmls
 "${script_dir}/../bazel" clean --async
 
-config_options="--config=remote"
+config_options="--config=ci"
 runs_per_test=500
 
 readonly invocation_id_smoke_longrunning="$(uuidgen)"

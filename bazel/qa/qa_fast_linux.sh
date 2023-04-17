@@ -12,7 +12,7 @@ readonly script_name="$(basename "$0")"
 # Invalidate local cache to avoid picking up obsolete test result xmls
 "${script_dir}/../bazel" clean --async
 
-config_options="--config=remote"
+config_options="--config=ci"
 
 # Generate a UUID for use as the bazel invocation id
 readonly invocation_id="$(uuidgen)"

@@ -105,7 +105,7 @@ if [[ $lsb_release == "crostini" ]]; then
   fi
 
 else #Executes normally on linux as before
-  config_options="--config=remote"
+  config_options="--config=ci"
 
   # Generate a UUID for use as the bazel invocation id
   readonly invocation_id="$(uuidgen)"
