@@ -30,6 +30,7 @@ import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Transformer
 import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.services.BuildServiceSpec
@@ -161,7 +162,11 @@ class TestLabBuildServiceTest {
                     })
                 }.build()
             override fun getParameters() = mock<Parameters>(
-                    withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+                    withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS)).apply {
+                        val mockProperty: Property<String> = mock()
+                        `when`(mockProperty.get()).thenReturn("projectName")
+                        `when`(quotaProjectName).thenReturn(mockProperty)
+                    }
         }
 
         val catalog = service.catalog()

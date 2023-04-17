@@ -53,8 +53,6 @@ import com.google.api.services.testing.model.TestSetup
 import com.google.api.services.testing.model.TestSpecification
 import com.google.api.services.testing.model.ToolResultsHistory
 import com.google.api.services.toolresults.ToolResults
-import com.google.api.services.toolresults.model.History
-import com.google.api.services.toolresults.model.StackTrace
 import com.google.common.annotations.VisibleForTesting
 import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
 import com.google.testing.platform.proto.api.core.TestStatusProto.TestStatus
@@ -97,7 +95,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
     companion object {
         const val TEST_RESULT_PB_FILE_NAME = "test-result.pb"
-        const val clientApplicationName: String = "Firebase TestLab Gradle Plugin"
+        const val CLIENT_APPLICATION_NAME: String = "Firebase TestLab Gradle Plugin"
         const val xGoogUserProjectHeaderKey: String = "X-Goog-User-Project"
 
         const val INSTRUMENTATION_TEST_SHARD_FIELD = "shardingOption"
@@ -114,40 +112,6 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 // Scope for Cloud Tool Results API and Cloud Testing API.
                 "https://www.googleapis.com/auth/cloud-platform",
         )
-
-        class TestCases : GenericJson() {
-            @Key var testCases: List<TestCase>? = null
-            @Key var nextPageToken: String? = null
-        }
-
-        class TestCase : GenericJson() {
-            @Key var testCaseId: String? = null
-            @Key var startTime: TimeStamp? = null
-            @Key var endTime: TimeStamp? = null
-            @Key var stackTraces: List<StackTrace>? = null
-            @Key var status: String? = null
-            @Key var testCaseReference: TestCaseReference? = null
-            @Key var toolOutputs: List<ToolOutputReference>? = null
-        }
-
-        class TimeStamp : GenericJson() {
-            @Key var seconds: String? = null
-            @Key var nanos: Int? = null
-        }
-
-        class TestCaseReference : GenericJson() {
-            @Key var name: String? = null
-            @Key var className: String? = null
-            @Key var testSuiteName: String? = null
-        }
-
-        class ToolOutputReference: GenericJson() {
-            @Key var output: FileReference? = null
-        }
-
-        class FileReference: GenericJson() {
-            @Key var fileUri: String? = null
-        }
 
         class UniformSharding: GenericJson() {
             @Key var numShards: Int? = null
@@ -216,6 +180,31 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         TestResultProcessor(parameters.directoriesToPull.get())
     }
 
+    private val toolResultsManager: ToolResultsManager by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        ToolResultsManager(
+            ToolResults.Builder(
+                httpTransport,
+                jacksonFactory,
+                httpRequestInitializer
+            ).apply {
+                applicationName = CLIENT_APPLICATION_NAME
+            }.build(),
+            httpTransport.createRequestFactory(httpRequestInitializer),
+        )
+    }
+
+    private val testingManager: TestingManager by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        TestingManager(
+            Testing.Builder(
+                httpTransport,
+                jacksonFactory,
+                httpRequestInitializer
+            ).apply {
+                applicationName = CLIENT_APPLICATION_NAME
+            }.build()
+        )
+    }
+
     fun runTestsOnDevice(
         deviceName: String,
         deviceId: String,
@@ -237,16 +226,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val projectName = parameters.quotaProjectName.get()
         val runRequestId = UUID.randomUUID().toString()
 
-        val toolResultsClient = ToolResults.Builder(
-            httpTransport,
-            jacksonFactory,
-            httpRequestInitializer
-        ).apply {
-            applicationName = clientApplicationName
-        }.build()
-
-        val initSettingsResult =
-                toolResultsClient.projects().initializeSettings(projectName).execute()
+        val initSettingsResult = toolResultsManager.initializeSettings(projectName)
         val bucketName = parameters.cloudStorageBucket.orNull?.ifBlank { null }
                 ?: initSettingsResult.defaultBucket
 
@@ -258,7 +238,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 jacksonFactory,
                 httpRequestInitializer
             ).apply {
-                applicationName = clientApplicationName
+                applicationName = CLIENT_APPLICATION_NAME
             }.build())
 
         val testApkStorageObject = testRunStorage.uploadToStorage(testData.testApk)
@@ -273,25 +253,15 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             testedApkFile ?: parameters.stubAppApk.asFile.get())
         val useStubApp = testedApkFile == null
 
-        val testingClient = Testing.Builder(
-            httpTransport,
-            jacksonFactory,
-            httpRequestInitializer
-        ).apply {
-            applicationName = clientApplicationName
-        }.build()
-
-        val testMatricesClient = testingClient.projects().testMatrices()
-
         val testHistoryName = parameters.resultsHistoryName.getOrElse("").ifBlank {
             testData.testedApplicationId ?: testData.applicationId
         }
-        val historyId = getOrCreateHistory(toolResultsClient, projectName, testHistoryName)
+        val historyId = toolResultsManager.getOrCreateHistory(projectName, testHistoryName)
 
         val testMatrix = TestMatrix().apply {
             projectId = projectName
             clientInfo = ClientInfo().apply {
-                name = clientApplicationName
+                name = CLIENT_APPLICATION_NAME
             }
             testSpecification = TestSpecification().apply {
                 testSetup = TestSetup().apply {
@@ -374,16 +344,14 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             set(TEST_MATRIX_FLAKY_TEST_ATTEMPTS_FIELD, parameters.maxTestReruns.get())
             set(TEST_MATRIX_FAIL_FAST_FIELD, parameters.failFast.get())
         }
-        val updatedTestMatrix = testMatricesClient.create(projectName, testMatrix).apply {
-            this.requestId = runRequestId
-        }.execute()
+        val updatedTestMatrix =
+            testingManager.createTestMatrixRun(projectName, testMatrix, runRequestId)
 
         lateinit var resultTestMatrix: TestMatrix
         var previousTestMatrixState = ""
         var printResultsUrl = true
         while (true) {
-            val latestTestMatrix = testMatricesClient.get(
-                projectName, updatedTestMatrix.testMatrixId).execute()
+            val latestTestMatrix = testingManager.getTestMatrix(projectName, updatedTestMatrix)
             if (previousTestMatrixState != latestTestMatrix.state) {
                 previousTestMatrixState = latestTestMatrix.state
                 logger.lifecycle("Firebase TestLab Test execution state: $previousTestMatrixState")
@@ -415,13 +383,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val ftlTestRunResults: ArrayList<FtlTestRunResult> = ArrayList()
         resultTestMatrix.testExecutions.forEach { testExecution ->
             if (testExecution.toolResultsStep != null) {
-                val executionStep =
-                    toolResultsClient.projects().histories().executions().steps().get(
-                        testExecution.toolResultsStep.projectId,
-                        testExecution.toolResultsStep.historyId,
-                        testExecution.toolResultsStep.executionId,
-                        testExecution.toolResultsStep.stepId
-                    ).execute()
+                val executionStep = toolResultsManager.requestStep(
+                        ToolResultsManager.requestFrom(testExecution.toolResultsStep))
                 executionStep.testExecutionStep.testSuiteOverviews?.forEach { suiteOverview ->
                     testRunStorage.downloadFromStorage(suiteOverview.xmlSource.fileUri) {
                         File(resultsOutDir, "TEST-${it.replace("/", "_")}")
@@ -431,7 +394,6 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 }
             }
             val testSuiteResult = getTestSuiteResult(
-                toolResultsClient,
                 resultTestMatrix,
                 testExecution,
                 deviceInfoFile,
@@ -456,39 +418,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         return ftlTestRunResults
     }
 
-    fun getOrCreateHistory(
-            toolResultsClient: ToolResults,
-            projectId: String, historyName: String): String {
-        val historyList = toolResultsClient.projects().histories().list(projectId).apply {
-            filterByName = historyName
-        }.execute()
-        historyList?.histories?.firstOrNull()?.historyId?.let { return it }
-
-        return toolResultsClient.projects().histories().create(
-                projectId,
-                History().apply {
-                    name = historyName
-                    displayName = historyName
-                }).apply {
-            requestId = UUID.randomUUID().toString()
-        }.execute().historyId
-    }
-
-    fun catalog(): AndroidDeviceCatalog {
-        val testingClient = Testing.Builder(
-            httpTransport,
-            jacksonFactory,
-            httpRequestInitializer,
-        ).apply {
-            applicationName = clientApplicationName
-        }.build()
-
-        val catalog = testingClient.testEnvironmentCatalog().get("ANDROID").apply {
-            projectId = parameters.quotaProjectName.get()
-        }.execute()
-
-        return catalog.androidDeviceCatalog
-    }
+    fun catalog(): AndroidDeviceCatalog =
+        testingManager.catalog(parameters.quotaProjectName.get())
 
     private fun createShardingOption(): ShardingOption? = when {
 
@@ -513,7 +444,6 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
     }
 
     private fun getTestSuiteResult(
-        toolResultsClient: ToolResults,
         testMatrix: TestMatrix,
         testExecution: TestExecution,
         deviceInfoFile: File,
@@ -524,40 +454,15 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val results = testExecution.toolResultsStep
         return if (results != null) {
 
-            val projectId = results.projectId
-            val historyId = results.historyId
-            val executionId = results.executionId
-            val stepId = results.stepId
-
-            // Need the latest version of google-api-client to use
-            // toolResultsClient.projects().histories().executions().steps().testCases().list().
-            // Manually calling this API until this is available.
-            val httpRequestFactory: HttpRequestFactory = httpTransport.createRequestFactory(httpRequestInitializer)
-            val url = "https://toolresults.googleapis.com/toolresults/v1beta3/projects/$projectId/histories/$historyId/executions/$executionId/steps/$stepId/testCases"
-            val testCaseRequest = httpRequestFactory.buildGetRequest(GenericUrl(url))
-            val parser = JsonObjectParser(Utils.getDefaultJsonFactory())
-            testCaseRequest.setParser(parser)
+            val requestInfo = ToolResultsManager.requestFrom(results)
 
             testResultProcessor.toUtpResult(
                 resultsOutDir,
-                toolResultsClient.projects().histories().executions().steps().get(
-                    projectId,
-                    historyId,
-                    executionId,
-                    stepId
-                ).execute(),
-                toolResultsClient.projects().histories().executions().steps().thumbnails().list(
-                    projectId,
-                    historyId,
-                    executionId,
-                    stepId
-                ).execute()?.thumbnails,
+                toolResultsManager.requestStep(requestInfo),
+                toolResultsManager.requestThumbnails(requestInfo)?.thumbnails,
                 testRunStorage,
                 deviceInfoFile,
-                testCaseRequest.execute().content.use { response ->
-                    parser.parseAndClose<TestCases>(
-                        response, StandardCharsets.UTF_8, TestCases::class.java)
-                },
+                toolResultsManager.requestTestCases(requestInfo),
                 testMatrix.invalidMatrixDetails
             )
         } else {

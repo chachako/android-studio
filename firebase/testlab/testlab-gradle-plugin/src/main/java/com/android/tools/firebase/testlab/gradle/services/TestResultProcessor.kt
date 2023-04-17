@@ -16,7 +16,7 @@
 
 package com.android.tools.firebase.testlab.gradle.services
 
-import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService.Companion.TestCases
+import com.android.tools.firebase.testlab.gradle.services.ToolResultsManager.TestCases
 import com.google.api.services.toolresults.model.FileReference
 import com.google.api.services.toolresults.model.Image
 import com.google.api.services.toolresults.model.Step
