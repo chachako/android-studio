@@ -105,9 +105,7 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
         .addMoreInfo(
           "https://developer.android.com/guide/topics/ui/notifiers/notifications?hl=en#Actions"
         )
-        .addMoreInfo(
-          "https://material.io/design/platform-guidance/android-notifications.html#behavior"
-        )
+        .addMoreInfo("https://d.android.com/r/studio-ui/designer/material/notifications-behavior")
         .addMoreInfo("https://developer.android.com/guide/topics/ui/notifiers/notifications?hl=en")
   }
 

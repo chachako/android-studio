@@ -121,7 +121,7 @@ public class ButtonDetector extends ResourceXmlDetector {
                             8,
                             Severity.WARNING,
                             IMPLEMENTATION)
-                    .addMoreInfo("https://material.io/components/dialogs/");
+                    .addMoreInfo("https://d.android.com/r/studio-ui/designer/material/dialogs");
 
     /** The main issue discovered by this detector */
     public static final Issue STYLE =
@@ -136,7 +136,7 @@ public class ButtonDetector extends ResourceXmlDetector {
                             5,
                             Severity.WARNING,
                             IMPLEMENTATION)
-                    .addMoreInfo("https://material.io/components/dialogs/");
+                    .addMoreInfo("https://d.android.com/r/studio-ui/designer/material/dialogs");
 
     /** The main issue discovered by this detector */
     public static final Issue BACK_BUTTON =
@@ -160,7 +160,7 @@ public class ButtonDetector extends ResourceXmlDetector {
                             Severity.WARNING,
                             IMPLEMENTATION)
                     .setEnabledByDefault(false)
-                    .addMoreInfo("https://material.io/design/");
+                    .addMoreInfo("https://d.android.com/r/studio-ui/designer/material/design");
 
     /** The main issue discovered by this detector */
     public static final Issue CASE =

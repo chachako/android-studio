@@ -195,7 +195,7 @@ public class IconDetector extends Detector implements XmlScanner, SourceCodeScan
                             IMPLEMENTATION_JAVA)
                     // Still some potential false positives:
                     .setEnabledByDefault(false)
-                    .addMoreInfo("https://material.io/design/iconography/");
+                    .addMoreInfo("https://d.android.com/r/studio-ui/designer/material/iconography");
 
     /** Inconsistent dip size across densities */
     public static final Issue ICON_DIP_SIZE =
@@ -378,7 +378,7 @@ public class IconDetector extends Detector implements XmlScanner, SourceCodeScan
                             + "a notification icon is based on the filename prefix: `ic_menu_` for "
                             + "action bar icons, `ic_stat_` for notification icons etc. These correspond "
                             + "to the naming conventions documented in "
-                            + "https://material.io/design/iconography/",
+                            + "https://d.android.com/r/studio-ui/designer/material/iconography",
                     Category.ICONS,
                     6,
                     Severity.WARNING,
@@ -390,7 +390,7 @@ public class IconDetector extends Detector implements XmlScanner, SourceCodeScan
                     "IconLauncherShape",
                     "The launcher icon shape should use a distinct silhouette",
                     "According to the Android Design Guide "
-                            + "(https://material.io/design/iconography/) "
+                            + "(https://d.android.com/r/studio-ui/designer/material/iconography) "
                             + "your launcher icons should \"use a distinct silhouette\", "
                             + "a \"three-dimensional, front view, with a slight perspective as if viewed "
                             + "from above, so that users perceive some depth.\"\n"
@@ -410,7 +410,7 @@ public class IconDetector extends Detector implements XmlScanner, SourceCodeScan
                     "Notification icons should define a raster image to support Android versions below 5.0 (API 21). "
                             + "Note that the way Lint decides whether an icon is a notification icon is based on the filename prefix "
                             + "`ic_stat_`. This corresponds to the naming convention documented in "
-                            + "https://material.io/design/iconography/",
+                            + "https://d.android.com/r/studio-ui/designer/material/iconography",
                     Category.CORRECTNESS,
                     6,
                     Severity.WARNING,
