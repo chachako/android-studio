@@ -677,18 +677,18 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                     testSuiteResult.apply {
                         addTestResult(TestResult.newBuilder().apply {
                             testCase = TestCaseProto.TestCase.newBuilder().apply {
-                                val packageName: String = case.testCaseReference!!.className!!
+                                val packageName: String = case.testCaseReference?.className ?: ""
                                 val className: String = packageName.split(".").last()
                                 testClass = className
                                 testPackage = packageName.dropLast(className.length + 1)
-                                testMethod = case.testCaseReference!!.name
+                                testMethod = case.testCaseReference?.name ?: ""
                                 startTimeBuilder.apply {
-                                    seconds = case.startTime!!.seconds!!.toLong()
-                                    nanos = case.startTime!!.nanos!!.toInt()
+                                    seconds = case.startTime?.seconds?.toLong() ?: 0
+                                    nanos = case.startTime?.nanos ?: 0
                                 }
                                 endTimeBuilder.apply {
-                                    seconds = case.endTime!!.seconds!!.toLong()
-                                    nanos = case.endTime!!.nanos!!.toInt()
+                                    seconds = case.endTime?.seconds?.toLong() ?: 0
+                                    nanos = case.endTime?.nanos ?: 0
                                 }
                             }.build()
 
@@ -704,27 +704,29 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
                             if (status == "failed" || status == "error") {
                                 error = Error.newBuilder().apply {
-                                    stackTrace = case.stackTraces!![0].exception
+                                    stackTrace = case.stackTraces?.getOrNull(0)?.exception ?: ""
                                 }.build()
                             }
 
                             if (case.toolOutputs != null) {
                                 for (toolOutput in (case.toolOutputs as List<ToolOutputReference>)) {
-                                    if (toolOutput.output!!.fileUri!!.endsWith("logcat")) {
-                                        val logcatFile = testRunStorage.downloadFromStorage(
-                                            toolOutput.output!!.fileUri!!) {
-                                            File(resultsOutDir, it)
-                                        }
-                                        if (logcatFile != null) {
-                                            addOutputArtifactBuilder().apply {
-                                                labelBuilder.apply {
-                                                    label = "logcat"
-                                                    namespace = "android"
+                                    if (toolOutput.output?.fileUri?.endsWith("logcat") == true) {
+                                        val fileUri = toolOutput.output?.fileUri
+                                        if (fileUri != null) {
+                                            val logcatFile = testRunStorage.downloadFromStorage(fileUri) {
+                                                File(resultsOutDir, it)
+                                            }
+                                            if (logcatFile != null) {
+                                                addOutputArtifactBuilder().apply {
+                                                    labelBuilder.apply {
+                                                        label = "logcat"
+                                                        namespace = "android"
+                                                    }
+                                                    sourcePathBuilder.apply {
+                                                        path = logcatFile.path
+                                                    }.build()
+                                                    type = ArtifactType.TEST_DATA
                                                 }
-                                                sourcePathBuilder.apply {
-                                                    path = logcatFile.path
-                                                }.build()
-                                                type = ArtifactType.TEST_DATA
                                             }
                                         }
                                     }
