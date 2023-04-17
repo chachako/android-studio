@@ -74,6 +74,41 @@ data class Dependency(
         }
     }
 
+    /**
+     * Is true if the [Dependency] has a [version], and that [RichVersion] explicitly includes
+     * preview versions in any way: as the preferred version, or as either endpoint of the
+     * version declaration.  Explicit mentions of previews in the version's exclude list are not
+     * considered as inclusions.
+     */
+    val explicitlyIncludesPreview: Boolean
+        get() = version?.run {
+            if (prefer?.isPreview == true) return true
+            (require ?: strictly)?.run {
+                (hasLowerBound() && lowerEndpoint().isPreview) ||
+                        (hasUpperBound() && upperEndpoint().isPreview)
+            }
+        } ?: false
+
+    /**
+     * Is true if the [Dependency] has a [version], and that [RichVersion] has an upper bound
+     * which is distinct from its lower bound (which may be empty).  Upper bounds implicitly
+     * formed by an entry in the version's exclude list with no upper bound are not considered
+     * explicit for the purposes of this field.
+     */
+    val hasExplicitDistinctUpperBound: Boolean
+        get() = version?.run {
+            (require ?: strictly)?.run {
+                hasUpperBound() && (!hasLowerBound() || lowerEndpoint() != upperEndpoint())
+            }
+        } ?: false
+
+    /**
+     * If this [Dependency] has a [version] which explicitly encodes the range of a single version,
+     * return it.  See [RichVersion.explicitSingletonVersion].
+     */
+    val explicitSingletonVersion: Version?
+        get() = version?.explicitSingletonVersion
+
     companion object {
         /**
          * Parse a String as a [Dependency].  All strings are valid dependencies; the last

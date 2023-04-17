@@ -161,6 +161,98 @@ class DependencyTest {
     }
 
     @Test
+    fun testExplicitlyIncludesPreview() {
+        // no explicit preview mention in declaration
+        for (v in listOf("+", "[1,2)", "1.2.+", "1.2.3")) {
+            for (s in listOf("", "!!", "!!1.2.3")) {
+                val dependency = Dependency.parse("com.example:example:$v$s")
+                assertThat(dependency.explicitlyIncludesPreview).isFalse()
+            }
+            // explicit preview mention in prefer
+            Dependency.parse("com.example:example:$v!!1.2.3-rc").let { dependency ->
+                assertThat(dependency.explicitlyIncludesPreview).isTrue()
+            }
+            // previews in exclude but not declaration or prefer
+            Dependency(
+                group = "com.example",
+                name = "example",
+                version = RichVersion(
+                    declaration = RichVersion.Declaration(
+                        RichVersion.Kind.REQUIRE,
+                        VersionRange.parse("1.2.3")
+                    ), exclude = listOf(VersionRange.parse("1.2.4-alpha01"))
+                )
+            ).let { dependency ->
+                assertThat(dependency.explicitlyIncludesPreview).isFalse()
+            }
+
+        }
+        // explicit preview in declaration
+        for (v in listOf("[1.2-alpha01,2)", "[1.2,1.2.4-alpha01)", "1.2-alpha.+", "1.2-alpha01")) {
+            for (s in listOf("", "!!", "!!1.2.3")) {
+                val dependency = Dependency.parse("com.example:example:$v$s")
+                assertThat(dependency.explicitlyIncludesPreview).isTrue()
+            }
+        }
+        // missing version
+        Dependency.parse("com.example:example").let { dependency ->
+            assertThat(dependency.explicitlyIncludesPreview).isFalse()
+        }
+    }
+
+    @Test
+    fun testHasExplicitDistinctUpperBound() {
+        // explicit distinct upper bound
+        for (v in listOf("[1,2]", "[1,2)", "(1,2]", "(1,2)", "[,2]", "[,2)", "1.+")) {
+            for (s in listOf("", "!!", "!!1.2.3")) {
+                val dependency = Dependency.parse("com.example:example:$v")
+                assertThat(dependency.hasExplicitDistinctUpperBound).isTrue()
+            }
+        }
+        // no upper bound or singleton version
+        for (v in listOf("1.2.3", "+", "[1,]", "[1,)")) {
+            for (s in listOf("", "!!", "!!1.2.3")) {
+                val dependency = Dependency.parse("com.example:example:$v")
+                assertThat(dependency.hasExplicitDistinctUpperBound).isFalse()
+            }
+        }
+        // upper bound provided through exclude (not explicit)
+        Dependency(
+            group = "com.example",
+            name = "example",
+            version = RichVersion(
+                RichVersion.Declaration(
+                    RichVersion.Kind.REQUIRE,
+                    VersionRange.parse("[1,]")
+                ), exclude = listOf(VersionRange.parse("[2,]"))
+            )
+        ).let { dependency ->
+            // semantically this does have an upper exclusive bound of 2, but not explicitly so.
+            assertThat(dependency.hasExplicitDistinctUpperBound).isFalse()
+        }
+        // missing version
+        Dependency.parse("com.example:example").let { dependency ->
+            assertThat(dependency.hasExplicitDistinctUpperBound).isFalse()
+        }
+    }
+
+    @Test
+    fun testExplicitSingletonVersion() {
+        for (v in listOf("+", "1.+", "[1,2]")) {
+            for (s in listOf("", "!!", "!!1.0")) {
+                val dependency = Dependency.parse("com.example:example:$v$s")
+                assertThat(dependency.explicitSingletonVersion).isNull()
+            }
+        }
+        for (v in listOf("1.0", "[1.0,1.0]")) {
+            for (s in listOf("", "!!", "!!1.0")) {
+                val dependency = Dependency.parse("com.example:example:$v$s")
+                assertThat(dependency.explicitSingletonVersion).isEqualTo(Version.parse("1.0"))
+            }
+        }
+    }
+
+    @Test
     fun testInvalidName() {
         for (n in listOf(":", "@", "ab:cd", "ab@cd")) {
             Dependency(name = n).let {

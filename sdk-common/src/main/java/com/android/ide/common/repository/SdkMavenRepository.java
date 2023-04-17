@@ -17,7 +17,6 @@ package com.android.ide.common.repository;
 
 import static com.android.SdkConstants.FD_EXTRAS;
 import static com.android.SdkConstants.FD_M2_REPOSITORY;
-import static com.android.ide.common.repository.GoogleMavenRepositoryKt.getExplicitlyIncludesPreview;
 import static java.io.File.separator;
 
 import com.android.annotations.NonNull;
@@ -222,7 +221,7 @@ public enum SdkMavenRepository {
         return sdkHandler.getLatestLocalPackageForPrefix(
                 prefix,
                 revisionFilter,
-                getExplicitlyIncludesPreview(dependency),
+                dependency.getExplicitlyIncludesPreview(),
                 Version.Companion::parse,
                 progress);
     }
@@ -249,7 +248,7 @@ public enum SdkMavenRepository {
         return sdkHandler.getLatestRemotePackageForPrefix(
                 prefix,
                 revisionFilter,
-                getExplicitlyIncludesPreview(dependency),
+                dependency.getExplicitlyIncludesPreview(),
                 Version.Companion::parse,
                 progress);
     }

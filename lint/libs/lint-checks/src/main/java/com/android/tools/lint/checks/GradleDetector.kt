@@ -34,7 +34,6 @@ import com.android.ide.common.repository.GoogleMavenRepository.Companion.MAVEN_G
 import com.android.ide.common.repository.GradleCoordinate
 import com.android.ide.common.repository.GradleCoordinate.COMPARE_PLUS_HIGHER
 import com.android.ide.common.repository.MavenRepositories
-import com.android.ide.common.repository.explicitlyIncludesPreview
 import com.android.io.CancellableFileIo
 import com.android.sdklib.AndroidTargetHash
 import com.android.sdklib.SdkVersionInfo

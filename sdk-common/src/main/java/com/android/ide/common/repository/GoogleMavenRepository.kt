@@ -20,7 +20,6 @@ import com.android.ide.common.gradle.Dependency
 import com.android.ide.common.gradle.RichVersion
 import com.android.ide.common.gradle.Version
 import com.android.ide.common.gradle.VersionRange
-import com.google.common.collect.BoundType
 import com.google.common.collect.Maps
 import com.google.common.collect.Range
 import org.kxml2.io.KXmlParser
@@ -79,7 +78,7 @@ abstract class GoogleMavenRepository @JvmOverloads constructor(
         fun predicate(version: Version) = predicate?.test(version) ?: true
         dependency.group ?: return null
         val filter = when {
-            dependency.hasExplicitUpperBound -> {
+            dependency.hasExplicitDistinctUpperBound -> {
                 { v: Version -> predicate(v) && dependency.version?.contains(v) ?: true }
             }
             else -> {
@@ -349,21 +348,4 @@ abstract class GoogleMavenRepository @JvmOverloads constructor(
         }
     }
 }
-
-val Dependency.explicitlyIncludesPreview: Boolean
-    get() = version?.run {
-        if (prefer?.isPreview == true) return true
-        (require ?: strictly)?.run {
-            (hasLowerBound() && lowerEndpoint().isPreview) ||
-                    (hasUpperBound() && upperEndpoint().isPreview)
-        }
-    } ?: false
-val Dependency.hasExplicitUpperBound: Boolean
-    get() = version?.run {
-        (require ?: strictly)?.run {
-            hasUpperBound() && (!hasLowerBound() || lowerEndpoint() != upperEndpoint())
-        }
-    } ?: false
-val Dependency.explicitSingletonVersion: Version?
-    get() = version?.explicitSingletonVersion
 
