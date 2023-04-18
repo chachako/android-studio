@@ -25,6 +25,7 @@ import com.android.tools.idea.wizard.template.impl.activities.common.generateMan
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.complication.complicationServiceKt
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values.complicationStringsXml
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values.stringsXml
+import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values.stylesXml
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values.tileStringsXml
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.src.app_package.mainActivityKt
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.src.app_package.theme.colorKt
@@ -65,10 +66,12 @@ private fun RecipeExecutor.commonComposeRecipe(
 
     addDependency(mavenCoordinate = "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
     addDependency(mavenCoordinate = "androidx.activity:activity-compose:1.5.1")
+
+    val launchActivityThemeName = "${activityClass}Theme.Launch"
     generateManifest(
         moduleData = moduleData,
         activityClass = "presentation.${activityClass}",
-        activityThemeName = "@android:style/Theme.DeviceDefault",
+        activityThemeName = launchActivityThemeName,
         packageName = packageName,
         isLauncher = isLauncher,
         hasNoActionBar = true,
@@ -104,6 +107,11 @@ private fun RecipeExecutor.commonComposeRecipe(
     save(typeKt(packageName), srcOut.resolve("$uiThemeFolder/Type.kt"))
     save(themeKt(packageName, themeName), srcOut.resolve("$uiThemeFolder/Theme.kt"))
 
+    mergeXml(
+        stylesXml(launchActivityThemeName),
+        resOut.resolve("values/styles.xml")
+    )
+
     requireJavaVersion("1.8", true)
     setBuildFeature("compose", true)
     // Note: kotlinCompilerVersion default is declared in TaskManager.COMPOSE_KOTLIN_COMPILER_VERSION
@@ -129,8 +137,10 @@ fun RecipeExecutor.composeWearActivityRecipe(
         defaultPreview
     )
 
-    val (_, srcOut, _, _) = moduleData
+    val (_, srcOut, resOut, _) = moduleData
     open(srcOut.resolve("${activityClass}.kt"))
+
+    copy(File("wear-app").resolve("drawable/splash_icon.xml"), resOut.resolve("drawable/splash_icon.xml"))
 }
 
 fun RecipeExecutor.composeWearActivityWithTileAndComplicationRecipe(
