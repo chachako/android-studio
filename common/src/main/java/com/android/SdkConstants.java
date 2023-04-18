@@ -2941,4 +2941,7 @@ public final class SdkConstants {
             META_INF + "/" + COM_ANDROID_TOOLS_FOLDER;
 
     public static final String FD_PREFAB_PACKAGE = "prefab";
+
+    /** Name used to identify a folder containing the exploded contents of an .aar file. */
+    public static final String EXPLODED_AAR = "exploded-aar";
 }
