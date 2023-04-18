@@ -85,7 +85,7 @@ coverage_report(
 coverage_report(
     name = "adb-proxy",
     srcpath_include = [
-        "tools/basel/adb-proxy",
+        "tools/base/adb-proxy",
     ],
     tests = [
         "//tools/base/adb-proxy:studio.adb-proxy_tests",
