@@ -32,12 +32,10 @@
 package com.android.tools.lint.detector.api
 
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiPackage
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.asJava.elements.KtLightElement
-import org.jetbrains.kotlin.asJava.elements.KtLightField
-import org.jetbrains.kotlin.asJava.elements.KtLightMember
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UElement
 
@@ -73,12 +71,11 @@ class AnnotationInfo(
    * directly on the [annotated] element.
    */
   fun isInherited(): Boolean {
-    // Some annotations should not be treated as inherited though
-    // the hierarchy: if that's the case for this annotation in
-    // this scanner, check whether it's inherited and if so, skip it
-    @Suppress("UElementAsPsi") val annotated = annotated
-    // First try to look by directly checking the owner element of
-    // the annotation.
+    val annotated = annotated
+    if (annotated is PsiPackage || (annotated as? UElement)?.sourcePsi is PsiPackage) {
+      return false // Packages can only have direct annotations.
+    }
+    // First try to look by directly checking the owner element of the annotation.
     // NB: Both JavaUAnnotation and KotlinUAnnotation have `javaPsi` of `PsiAnnotation` type.
     val annotationOwner = annotation.javaPsi?.owner ?: annotation.uastParent?.sourcePsi
     val ownerPsi =
@@ -88,22 +85,9 @@ class AnnotationInfo(
       } else {
         annotationOwner
       }
-    if (ownerPsi != null) {
-      if (
-        ownerPsi == annotated ||
-          ownerPsi == (annotated as? UElement)?.sourcePsi ||
-          ownerPsi == (annotated as? KtLightElement<*, *>)?.kotlinOrigin ||
-          ownerPsi is KtLightField &&
-            annotated is KtLightMember<*> &&
-            ownerPsi.kotlinOrigin == annotated.lightMemberOrigin?.originalElement
-      ) {
-        return false
-      }
-
-      if (annotated is PsiPackage || (annotated as? UElement)?.sourcePsi is PsiPackage) {
-        return false
-      }
-      return true
+    if (ownerPsi is PsiElement) {
+      val psiManager = PsiManager.getInstance(ownerPsi.project)
+      return !psiManager.areElementsEquivalent(ownerPsi, annotated)
     }
     return false
   }
