@@ -869,10 +869,7 @@ class JavaEvaluator {
    * in the appcompat library, this would return "com.android.support".
    */
   open fun getLibrary(element: PsiElement): LintModelMavenName? {
-    if (element !is PsiCompiledElement) {
-      return getProject(element)?.mavenCoordinate
-    }
-    return getLibrary(findJarPath(element))
+    return getLibrary(findJarPath(element)) ?: getProject(element)?.mavenCoordinate
   }
 
   /**
@@ -880,15 +877,13 @@ class JavaEvaluator {
    * in the appcompat library, this would return "com.android.support".
    */
   open fun getLibrary(element: UElement): LintModelMavenName? {
-    if (element !is PsiCompiledElement) {
-      val psi = element.sourcePsi
-      return if (psi != null) {
-        getProject(psi)?.mavenCoordinate
-      } else {
-        null
-      }
-    }
-    return getLibrary(findJarPath(element as UElement))
+    val lib = getLibrary(findJarPath(element))
+    if (lib != null) return lib
+
+    val psi = element.sourcePsi
+    if (psi != null) return getProject(psi)?.mavenCoordinate
+
+    return null
   }
 
   /** Disambiguate between UElement and PsiElement since a UMethod is both. */

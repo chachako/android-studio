@@ -29,7 +29,6 @@ import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiAnnotation
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
-import com.intellij.psi.PsiCompiledFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
@@ -273,7 +272,7 @@ open class DefaultJavaEvaluator(
   }
 
   private fun findJarPath(containingFile: PsiFile?): String? {
-    if (containingFile is PsiCompiledFile) {
+    if (containingFile != null) {
       // This code is roughly similar to the following:
       //      VirtualFile jarVirtualFile = PsiUtil.getJarFile(containingFile);
       //      if (jarVirtualFile != null) {
