@@ -30,11 +30,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.wear.tiles.ColorBuilders.argb
 import androidx.wear.tiles.LayoutElementBuilders
 import androidx.wear.tiles.RequestBuilders
 import androidx.wear.tiles.ResourceBuilders
 import androidx.wear.tiles.TileBuilders
 import androidx.wear.tiles.TimelineBuilders
+import androidx.wear.tiles.material.Colors
 import androidx.wear.tiles.material.Text
 import androidx.wear.tiles.material.Typography
 import androidx.wear.tiles.material.layouts.PrimaryLayout
@@ -73,6 +75,7 @@ private fun tileLayout(context: Context): LayoutElementBuilders.LayoutElement {
     return PrimaryLayout.Builder(buildDeviceParameters(context.resources))
         .setContent(
             Text.Builder(context, "Hello World!")
+                .setColor(argb(Colors.DEFAULT.onSurface))
                 .setTypography(Typography.TYPOGRAPHY_CAPTION1)
                 .build()
         ).build()
