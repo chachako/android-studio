@@ -16,9 +16,9 @@
 package com.android.tools.lint.checks.infrastructure
 
 import com.android.SdkConstants
+import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.AgpVersion
 import com.android.ide.common.repository.GradleCoordinate
-import com.android.ide.common.repository.GradleVersion
 import com.android.sdklib.AndroidTargetHash
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.SdkVersionInfo
@@ -548,9 +548,8 @@ constructor(
         .mapValues { (_, libs) ->
           libs.maxByOrNull {
             when (it) {
-              is LintModelExternalLibrary -> GradleVersion.tryParse(it.resolvedCoordinates.version)
-                  ?: GradleVersion(0, 0)
-              else -> GradleVersion(0, 0)
+              is LintModelExternalLibrary -> Version.parse(it.resolvedCoordinates.version)
+              else -> Version.prefixInfimum("dev") // least possible version
             }
           }
         }
