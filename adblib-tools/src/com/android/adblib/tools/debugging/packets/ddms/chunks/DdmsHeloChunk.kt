@@ -87,7 +87,7 @@ internal data class DdmsHeloChunk(
         ): DdmsHeloChunk {
             workBuffer.clear()
             chunk.payload.readRemaining(workBuffer)
-            val buffer = workBuffer.afterChannelRead(0)
+            val buffer = workBuffer.afterChannelRead(useMarkedPosition = false)
 
             // Version, pid, vm identifier and process name are always present
             buffer.order(DDMS_CHUNK_BYTE_ORDER)

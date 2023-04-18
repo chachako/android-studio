@@ -103,7 +103,7 @@ internal data class DdmsStagChunk(
             workBuffer.clear()
             chunk.payload.rewind()
             chunk.payload.readRemaining(workBuffer)
-            val buffer = workBuffer.afterChannelRead(0)
+            val buffer = workBuffer.afterChannelRead(useMarkedPosition = false)
 
             buffer.order(DdmsPacketConstants.DDMS_CHUNK_BYTE_ORDER)
             val stage = AppStage(ChunkDataParsing.readInt(buffer))

@@ -50,7 +50,7 @@ suspend fun JdwpPacketView.writeToChannel(
     } else {
         val byteCount = payload.readRemaining(workBuffer)
         checkPacketLength(byteCount)
-        channel.writeExactly(workBuffer.afterChannelRead(0))
+        channel.writeExactly(workBuffer.afterChannelRead(useMarkedPosition = false))
     }
     this.payload.rewind()
 }

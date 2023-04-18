@@ -43,7 +43,7 @@ internal data class DdmsReaqChunk(
         ): DdmsReaqChunk {
             workBuffer.clear()
             chunk.payload.readRemaining(workBuffer)
-            val buffer = workBuffer.afterChannelRead(0)
+            val buffer = workBuffer.afterChannelRead(useMarkedPosition = false)
 
             buffer.order(DDMS_CHUNK_BYTE_ORDER)
             val enabled = readByte(buffer) != 0.toByte()

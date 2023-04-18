@@ -64,7 +64,7 @@ class AdbBufferedInputChannelTest {
         assertEquals(1_024, byteCount)
         assertEquals(
             (0 until 1_024).map { (it and 0xff).toByte() },
-            workBuffer.afterChannelRead(0).toByteArray().toList()
+            workBuffer.afterChannelRead(useMarkedPosition = false).toByteArray().toList()
         )
     }
 
@@ -91,13 +91,13 @@ class AdbBufferedInputChannelTest {
         assertEquals(1_024, byteCount1)
         assertEquals(
             (0 until 1_024).map { (it and 0xff).toByte() },
-            workBuffer1.afterChannelRead(0).toByteArray().toList()
+            workBuffer1.afterChannelRead(useMarkedPosition = false).toByteArray().toList()
         )
 
         assertEquals(1_024, byteCount2)
         assertEquals(
             (0 until 1_024).map { (it and 0xff).toByte() },
-            workBuffer2.afterChannelRead(0).toByteArray().toList()
+            workBuffer2.afterChannelRead(useMarkedPosition = false).toByteArray().toList()
         )
     }
 
@@ -124,13 +124,13 @@ class AdbBufferedInputChannelTest {
         assertEquals(1_024, byteCount1)
         assertEquals(
             (0 until 1_024).map { (it and 0xff).toByte() },
-            workBuffer1.afterChannelRead(0).toByteArray().toList()
+            workBuffer1.afterChannelRead(useMarkedPosition = false).toByteArray().toList()
         )
 
         assertEquals(1_024, byteCount2)
         assertEquals(
             (0 until 1_024).map { (it and 0xff).toByte() },
-            workBuffer2.afterChannelRead(0).toByteArray().toList()
+            workBuffer2.afterChannelRead(useMarkedPosition = false).toByteArray().toList()
         )
     }
 
@@ -160,7 +160,7 @@ class AdbBufferedInputChannelTest {
         assertEquals(1_024, byteCount)
         assertEquals(
             (0 until 1_024).map { (it and 0xff).toByte() },
-            workBuffer.afterChannelRead(0).toByteArray().toList()
+            workBuffer.afterChannelRead(useMarkedPosition = false).toByteArray().toList()
         )
     }
 

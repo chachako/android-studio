@@ -104,7 +104,7 @@ class JdwpPacketViewTest : AdbLibToolsTestBase() {
         val outputBuffer = ResizableBuffer()
         outputBuffer.appendByte(90)
         outputBuffer.appendJdwpPacket(packet)
-        val buffer = outputBuffer.afterChannelRead(0)
+        val buffer = outputBuffer.afterChannelRead(useMarkedPosition = false)
 
         // Assert: Data should be from [0, buffer.position[
         var index = 0
