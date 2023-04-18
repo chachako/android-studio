@@ -570,6 +570,26 @@ public final class GradleCoordinate {
     }
 
     /**
+     * Returns the upper-bound version of this coordinate.  If this coordinate indicates a
+     * prefix range (by ending with a +), the upper-bound is the infimum of the next prefix;
+     * otherwise, the upper-bound is the version itself.
+     * <p>
+     * Note that using this on a user-supplied coordinate is almost certainly a mistake, as the
+     * syntax for user-supplied coordinates is richer than single versions (see for a start the
+     * contortions here around {@link GradleCoordinate#acceptsGreaterRevisions()}, and the
+     * contradictions within this file about whether we support rich versions or not (mostly not
+     * but apparently we do support prefix matching).  Compromise for now by returning a
+     * {@link Version} representing the latest possible matching version.
+     */
+    @NonNull
+    public Version getUpperBoundVersion() {
+        if (acceptsGreaterRevisions()) {
+            return Version.Companion.prefixInfimum(getPrefix()).nextPrefix();
+        }
+        return Version.Companion.parse(getRevision());
+    }
+
+    /**
      * Returns the version of this coordinate
      *
      * @return the version

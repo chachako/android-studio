@@ -32,7 +32,6 @@ import com.android.ide.common.repository.GoogleMavenRepository
 import com.android.ide.common.repository.GoogleMavenRepository.Companion.MAVEN_GOOGLE_CACHE_DIR_KEY
 import com.android.ide.common.repository.GradleCoordinate
 import com.android.ide.common.repository.GradleCoordinate.COMPARE_PLUS_HIGHER
-import com.android.ide.common.repository.GradleVersion
 import com.android.ide.common.repository.MavenRepositories
 import com.android.io.CancellableFileIo
 import com.android.sdklib.AndroidTargetHash
@@ -1075,8 +1074,17 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       }
       "io.fabric.tools" -> {
         if ("gradle" == artifactId) {
-          val parsed = GradleVersion.tryParse(revision)
-          if (parsed != null && parsed < "1.21.6") {
+          // TODO(b/242691473): semantically I think this should be close to
+          //    richVersion = RichVersion.parse(revision)
+          //    if (richVersion.run { strictly ?: require }
+          //                   ?.intersection(VersionRange.parse("[1.21.6,]")
+          //                   ?.isEmpty() == true
+          //       ) {
+          //      ...
+          //  and the GradleCoordinate version will fail on dependency expressions using
+          //  RichVersion features.
+          val upper = dependency.upperBoundVersion
+          if (upper < Version.parse("1.21.6")) {
             val fix = getUpdateDependencyFix(revision, "1.22.1")
             report(
               context,
