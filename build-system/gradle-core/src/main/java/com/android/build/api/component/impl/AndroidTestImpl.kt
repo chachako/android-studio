@@ -301,8 +301,13 @@ open class AndroidTestImpl @Inject constructor(
             mainVariant.applicationId
         }
 
-    override val instrumentationRunnerArguments: Map<String, String>
-        get() = dslInfo.instrumentationRunnerArguments
+    override val instrumentationRunnerArguments: MapProperty<String, String> by lazy(LazyThreadSafetyMode.NONE) {
+        internalServices.mapPropertyOf(
+            String::class.java,
+            String::class.java,
+            dslInfo.instrumentationRunnerArguments
+        )
+    }
 
     override val shouldPackageProfilerDependencies: Boolean = false
 

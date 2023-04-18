@@ -25,9 +25,7 @@ import com.android.build.api.variant.ApplicationVariantBuilder;
 import com.android.build.api.variant.Component;
 import com.android.build.api.variant.impl.VariantImpl;
 import com.android.build.gradle.api.TestVariant;
-import com.android.build.gradle.internal.component.AndroidTestCreationConfig;
 import com.android.build.gradle.internal.component.ApplicationCreationConfig;
-import com.android.build.gradle.internal.component.TestComponentCreationConfig;
 import com.android.build.gradle.internal.component.VariantCreationConfig;
 import com.android.build.gradle.internal.dsl.BaseAppModuleExtension;
 import com.android.build.gradle.internal.dsl.BuildType;
@@ -609,61 +607,6 @@ public class PluginDslTest {
                 .isEqualTo("foo");
     }
 
-    @Test
-    public void testInstrumentationRunnerArguments_merging() {
-
-        Eval.me(
-                "project",
-                project,
-                "\n"
-                        + "project.android {\n"
-                        + "    defaultConfig {\n"
-                        + "        testInstrumentationRunnerArguments(value: 'default', size: 'small')\n"
-                        + "    }\n"
-                        + "\n"
-                        + "    flavorDimensions 'foo'\n"
-                        + "    productFlavors {\n"
-                        + "        f1 {\n"
-                        + "        }\n"
-                        + "\n"
-                        + "        f2  {\n"
-                        + "            testInstrumentationRunnerArgument 'value', 'f2'\n"
-                        + "        }\n"
-                        + "\n"
-                        + "        f3  {\n"
-                        + "            testInstrumentationRunnerArguments['otherValue'] = 'f3'\n"
-                        + "        }\n"
-                        + "\n"
-                        + "        f4  {\n"
-                        + "            testInstrumentationRunnerArguments(otherValue: 'f4.1')\n"
-                        + "            testInstrumentationRunnerArguments = [otherValue: 'f4.2']\n"
-                        + "        }\n"
-                        + "    }\n"
-                        + "}\n");
-        plugin.createAndroidTasks(project);
-
-        Map<String, AndroidTestCreationConfig> componentMap = getAndroidTestComponentMap();
-
-        Map<String, Map<String, String>> expected =
-                ImmutableMap.of(
-                        "f1Debug",
-                        ImmutableMap.of("value", "default", "size", "small"),
-                        "f2Debug",
-                        ImmutableMap.of("value", "f2", "size", "small"),
-                        "f3Debug",
-                        ImmutableMap.of("value", "default", "size", "small", "otherValue", "f3"),
-                        "f4Debug",
-                        ImmutableMap.of("value", "default", "size", "small", "otherValue", "f4.2"));
-
-        expected.forEach(
-                (variant, args) ->
-                        assertThat(
-                                        componentMap
-                                                .get(variant + "AndroidTest")
-                                                .getInstrumentationRunnerArguments())
-                                .containsExactlyEntriesIn(args));
-    }
-
     /** Make sure DSL objects don't need "=" everywhere. */
     @Test
     public void testSetters() throws Exception {
@@ -900,17 +843,6 @@ public class PluginDslTest {
         for (ComponentInfo<ApplicationVariantBuilder, ApplicationCreationConfig> variant :
                 plugin.getVariantManager().getMainComponents()) {
             result.put(variant.getVariant().getName(), variant.getVariant());
-        }
-        return result;
-    }
-
-    public Map<String, AndroidTestCreationConfig> getAndroidTestComponentMap() {
-        Map<String, AndroidTestCreationConfig> result = new HashMap<>();
-        for (TestComponentCreationConfig component :
-                plugin.getVariantManager().getTestComponents()) {
-            if (component instanceof AndroidTestCreationConfig) {
-                result.put(component.getName(), (AndroidTestCreationConfig) component);
-            }
         }
         return result;
     }

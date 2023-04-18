@@ -2415,10 +2415,12 @@ package com.android.build.api.variant {
     method public org.gradle.api.provider.Property<java.lang.Boolean> getFunctionalTest();
     method public org.gradle.api.provider.Property<java.lang.Boolean> getHandleProfiling();
     method public org.gradle.api.provider.Property<java.lang.String> getInstrumentationRunner();
+    method public org.gradle.api.provider.MapProperty<java.lang.String,java.lang.String> getInstrumentationRunnerArguments();
     method public org.gradle.api.provider.Property<java.lang.String> getTestLabel();
     property public abstract org.gradle.api.provider.Property<java.lang.Boolean> functionalTest;
     property public abstract org.gradle.api.provider.Property<java.lang.Boolean> handleProfiling;
     property public abstract org.gradle.api.provider.Property<java.lang.String> instrumentationRunner;
+    property public abstract org.gradle.api.provider.MapProperty<java.lang.String,java.lang.String> instrumentationRunnerArguments;
     property public abstract org.gradle.api.provider.Property<java.lang.String> testLabel;
   }
 

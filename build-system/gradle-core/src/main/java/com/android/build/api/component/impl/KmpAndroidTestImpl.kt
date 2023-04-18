@@ -128,8 +128,12 @@ open class KmpAndroidTestImpl @Inject constructor(
 
     override val applicationId: Property<String>
         get() = dslInfo.applicationId
-    override val instrumentationRunnerArguments: Map<String, String>
-        get() = dslInfo.instrumentationRunnerArguments
+    override val instrumentationRunnerArguments: MapProperty<String, String> by lazy(LazyThreadSafetyMode.NONE) {
+        internalServices.mapPropertyOf(
+            String::class.java,
+            String::class.java,
+            dslInfo.instrumentationRunnerArguments)
+    }
     override val handleProfiling: Property<Boolean> =
         internalServices.propertyOf(Boolean::class.java, dslInfo.handleProfiling)
     override val functionalTest: Property<Boolean> =

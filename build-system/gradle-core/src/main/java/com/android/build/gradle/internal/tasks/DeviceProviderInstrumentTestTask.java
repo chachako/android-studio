@@ -453,7 +453,7 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                 throw new GradleException(
                         "Cannot determine devices to target. For custom device providers either "
                                 + "unset the ANDROID_SERIAL environment variable or do remove the "
-                                + "--serial command line argumetnts when running this task");
+                                + "--serial command line arguments when running this task");
             }
         }
         List<? extends DeviceConnector> allDevices = deviceProvider.getDevices();
