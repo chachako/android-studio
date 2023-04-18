@@ -459,12 +459,14 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         // Assert
         assertFalse(process.properties.completed)
 
-        // Act
+        // Act: When the stage is A_GO the collection should become completed
         clientState.setStage(AppStage.A_GO)
-        yieldUntil { process.properties.stage?.value == AppStage.A_GO.value }
+        yieldUntil { process.properties.completed }
 
-        // Assert. Now that the stage is A_GO the collection should be completed.
-        assertTrue(process.properties.completed)
+        // Assert
+        val properties = process.properties
+        assertProcessPropertiesComplete(properties)
+        assertEquals(AppStage.A_GO.value, process.properties.stage?.value)
     }
 
     @Test
@@ -488,14 +490,16 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         // Assert
         assertFalse(process.properties.completed)
 
-        // Act
+        // Act: When the stage is DEBG the collection should become completed
         clientState.setStage(AppStage.DEBG)
-        yieldUntil { process.properties.stage?.value == AppStage.DEBG.value }
+        yieldUntil { process.properties.completed }
 
-        // Assert. Now that the stage is DEBG the collection should be completed.
+        // Assert
         // The JDWP session should still be in-use, since app boot stage is `DEBG`
-        assertTrue(process.properties.completed)
         assertTrue(process.isJdwpSessionRetained)
+        assertEquals(AppStage.DEBG.value, process.properties.stage?.value)
+        val properties = process.properties
+        assertProcessPropertiesComplete(properties)
     }
 
     private suspend fun createJdwpProcess(
