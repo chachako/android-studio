@@ -45,6 +45,7 @@ import org.eclipse.aether.impl.RemoteRepositoryManager;
 import org.eclipse.aether.impl.VersionRangeResolver;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
@@ -186,6 +187,7 @@ public class MavenRepository {
     }
 
     private File getModuleFile(Artifact artifact, File pomFile) throws Exception {
+
         // published-with-gradle-metadata suggests module was published with a Gradle metadata model
         String content = Files.readString(pomFile.toPath());
         if (!content.contains("published-with-gradle-metadata")) {
@@ -202,9 +204,19 @@ public class MavenRepository {
             return null;
         }
 
-        ArtifactRequest request = new ArtifactRequest(moduleArtifact, repositories, null);
-        moduleArtifact = system.resolveArtifact(session, request).getArtifact();
-        return moduleArtifact.getFile();
+        try {
+            ArtifactRequest request = new ArtifactRequest(moduleArtifact, repositories, null);
+            moduleArtifact = system.resolveArtifact(session, request).getArtifact();
+            return moduleArtifact.getFile();
+        } catch (ArtifactResolutionException e) {
+            System.out.println(e);
+            System.out.println(
+                    "Module metadata file for"
+                            + artifact.toString()
+                            + " does not exist. "
+                            + "Consider adding it to DEPS_WITHOUT_GRADLE_MODULE in MavenRepository.java file.");
+            return null;
+        }
     }
 
     private static String removePrefix(final String s, final String prefix) {
