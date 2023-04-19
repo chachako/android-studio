@@ -52,6 +52,8 @@ import com.intellij.psi.PsiTypeParameter
 import com.intellij.psi.PsiWildcardType
 import com.intellij.psi.util.PsiUtil
 import java.io.File
+import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtConstructorDelegationCall
 import org.jetbrains.uast.UBlockExpression
 import org.jetbrains.uast.UCallExpression
@@ -591,7 +593,19 @@ internal open class StubClassFile(
         error("Annotation attribute type not yet supported: $value")
       }
     } else if (value is PsiLiteral) {
-      visitor.visit(name, value.value)
+      val literalValue = value.value
+      if (literalValue is Pair<*, *>) {
+        // Hack: Kotlin enum references are represented by a KtLightPsiLiteral evaluating to
+        // Pair<ClassId,Name>.
+        val (enumType, enumValue) = literalValue
+        check(enumType is ClassId && enumValue is Name) {
+          "Expected Kotlin enum value; instead found $literalValue"
+        }
+        val enumTypeName = ClassContext.getInternalName(enumType.asFqNameString())
+        visitor.visitEnum(name, "L$enumTypeName;", enumValue.identifier)
+      } else {
+        visitor.visit(name, literalValue)
+      }
     } else if (value is PsiArrayInitializerMemberValue) {
       val initializers = value.initializers
       if (name == null) {
