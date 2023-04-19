@@ -15,9 +15,11 @@
  */
 package com.android.sdklib.deviceprovisioner
 
+import com.android.sdklib.deviceprovisioner.DeviceAction.DefaultPresentation
 import java.nio.file.Path
 import java.time.Duration
 import java.time.Instant
+import javax.swing.Icon
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -28,9 +30,30 @@ import kotlinx.coroutines.flow.StateFlow
  *   action type
  */
 interface DeviceAction {
-  val label: String
+  val presentation: StateFlow<Presentation>
 
-  val isEnabled: StateFlow<Boolean>
+  data class Presentation(val label: String, val icon: Icon, val enabled: Boolean)
+
+  /** Returns the appropriate element of DefaultPresentation for this class. */
+  fun DefaultPresentation.fromContext(): Presentation
+
+  /**
+   * A default value for [Presentation] for all the action types.
+   *
+   * This primarily exists to allow icons to be defined / loaded by higher-level modules and
+   * injected into plugin implementations in tools/base.
+   */
+  interface DefaultPresentation {
+    val createDeviceAction: Presentation
+    val createDeviceTemplateAction: Presentation
+    val activationAction: Presentation
+    val deactivationAction: Presentation
+    val editAction: Presentation
+    val deleteAction: Presentation
+    val editTemplateAction: Presentation
+    val reservationAction: Presentation
+    val templateActivationAction: Presentation
+  }
 }
 
 interface CreateDeviceAction : DeviceAction {
@@ -41,6 +64,8 @@ interface CreateDeviceAction : DeviceAction {
    * provisioner's list of devices.
    */
   suspend fun create()
+
+  override fun DefaultPresentation.fromContext() = createDeviceAction
 }
 
 interface CreateDeviceTemplateAction : DeviceAction {
@@ -51,10 +76,14 @@ interface CreateDeviceTemplateAction : DeviceAction {
    * provisioner's list of templates.
    */
   suspend fun create()
+
+  override fun DefaultPresentation.fromContext() = createDeviceTemplateAction
 }
 
 interface ActivationAction : DeviceAction {
   suspend fun activate(params: ActivationParams = ActivationParams.DefaultActivation)
+
+  override fun DefaultPresentation.fromContext() = activationAction
 }
 
 sealed interface ActivationParams {
@@ -66,10 +95,14 @@ sealed interface ActivationParams {
 
 interface DeactivationAction : DeviceAction {
   suspend fun deactivate()
+
+  override fun DefaultPresentation.fromContext() = deactivationAction
 }
 
 interface EditAction : DeviceAction {
   suspend fun edit()
+
+  override fun DefaultPresentation.fromContext() = editAction
 }
 
 interface EditTemplateAction : DeviceAction {
@@ -78,11 +111,15 @@ interface EditTemplateAction : DeviceAction {
    * that was created.
    */
   suspend fun edit(): DeviceTemplate?
+
+  override fun DefaultPresentation.fromContext() = editTemplateAction
 }
 
 /** Deletes the given device from any persistent storage. */
 interface DeleteAction : DeviceAction {
   suspend fun delete()
+
+  override fun DefaultPresentation.fromContext() = deleteAction
 }
 
 interface ReservationAction : DeviceAction {
@@ -100,6 +137,8 @@ interface ReservationAction : DeviceAction {
    * @return the new end time of the reservation
    */
   suspend fun reserve(duration: Duration): Instant
+
+  override fun DefaultPresentation.fromContext() = reservationAction
 }
 
 interface TemplateActivationAction : DeviceAction {
@@ -117,6 +156,8 @@ interface TemplateActivationAction : DeviceAction {
 
   /** Indicates if the duration argument is relevant. */
   val durationUsed: Boolean
+
+  override fun DefaultPresentation.fromContext() = templateActivationAction
 }
 
 /**
@@ -132,4 +173,4 @@ class DeviceActionException(message: String, cause: Throwable? = null) : Excepti
  * to race conditions; callers should recover gracefully.
  */
 class DeviceActionDisabledException(action: DeviceAction) :
-  Exception("The \"${action.label}\" action is unavailable.")
+  Exception("The \"${action.presentation.value.label}\" action is unavailable.")

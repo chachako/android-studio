@@ -68,7 +68,8 @@ class LocalEmulatorProvisionerPlugin(
   private val scope: CoroutineScope,
   private val adbSession: AdbSession,
   private val avdManager: AvdManager,
-  rescanPeriod: Duration = Duration.ofSeconds(10)
+  private val defaultPresentation: DeviceAction.DefaultPresentation,
+  rescanPeriod: Duration = Duration.ofSeconds(10),
 ) : DeviceProvisionerPlugin {
   val logger = thisLogger(adbSession)
 
@@ -246,8 +247,7 @@ class LocalEmulatorProvisionerPlugin(
 
   override val createDeviceAction =
     object : CreateDeviceAction {
-      override val label = "Create AVD"
-      override val isEnabled = MutableStateFlow(true).asStateFlow()
+      override val presentation = MutableStateFlow(defaultPresentation.fromContext()).asStateFlow()
 
       override suspend fun create() {
         if (avdManager.createAvd()) {
@@ -280,12 +280,14 @@ class LocalEmulatorProvisionerPlugin(
 
     override val activationAction =
       object : ActivationAction {
-        override val label: String = "Start"
-
-        override val isEnabled =
+        override val presentation =
           stateFlow
-            .map { it is Disconnected && !it.isTransitioning }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+            .map {
+              defaultPresentation
+                .fromContext()
+                .copy(enabled = it is Disconnected && !it.isTransitioning)
+            }
+            .stateIn(scope, SharingStarted.WhileSubscribed(), defaultPresentation.fromContext())
 
         override suspend fun activate(params: ActivationParams) {
           try {
@@ -308,9 +310,8 @@ class LocalEmulatorProvisionerPlugin(
 
     override val editAction =
       object : EditAction {
-        override val label = "Edit"
-
-        override val isEnabled = MutableStateFlow(true).asStateFlow()
+        override val presentation =
+          MutableStateFlow(defaultPresentation.fromContext()).asStateFlow()
 
         override suspend fun edit() {
           if (avdManager.editAvd(avdInfo)) {
@@ -321,14 +322,16 @@ class LocalEmulatorProvisionerPlugin(
 
     override val deactivationAction: DeactivationAction =
       object : DeactivationAction {
-        override val label = "Stop"
-
         // We could check this with AvdManagerConnection.isAvdRunning, but that's expensive, and if
         // it's not running we should see it from ADB anyway
-        override val isEnabled =
+        override val presentation =
           stateFlow
-            .map { it is Connected && !it.isTransitioning }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+            .map {
+              defaultPresentation
+                .fromContext()
+                .copy(enabled = it is Connected && !it.isTransitioning)
+            }
+            .stateIn(scope, SharingStarted.WhileSubscribed(), defaultPresentation.fromContext())
 
         override suspend fun deactivate() {
           try {

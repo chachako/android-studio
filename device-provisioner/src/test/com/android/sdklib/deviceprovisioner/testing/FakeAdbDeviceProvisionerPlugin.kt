@@ -29,6 +29,7 @@ import com.android.sdklib.deviceprovisioner.DeviceProvisionerPlugin
 import com.android.sdklib.deviceprovisioner.DeviceState
 import com.android.sdklib.deviceprovisioner.DeviceState.Connected
 import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
+import com.android.sdklib.deviceprovisioner.TestDefaultDeviceActionPresentation
 import com.android.sdklib.deviceprovisioner.invokeOnDisconnection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -116,8 +117,8 @@ class FakeAdbDeviceProvisionerPlugin(
 
     override val activationAction =
       object : ActivationAction {
-        override val label = "Activate"
-        override val isEnabled = MutableStateFlow(true)
+        override val presentation =
+          MutableStateFlow(TestDefaultDeviceActionPresentation.fromContext())
         override suspend fun activate(params: ActivationParams) {
           val properties = state.properties
           fakeAdbDevice =
@@ -136,8 +137,8 @@ class FakeAdbDeviceProvisionerPlugin(
 
     override val deactivationAction: DeactivationAction =
       object : DeactivationAction {
-        override val label = "Activate"
-        override val isEnabled = MutableStateFlow(true)
+        override val presentation =
+          MutableStateFlow(TestDefaultDeviceActionPresentation.fromContext())
         override suspend fun deactivate() {
           fakeAdb.disconnectDevice(serialNumber)
           fakeAdbDevice = null

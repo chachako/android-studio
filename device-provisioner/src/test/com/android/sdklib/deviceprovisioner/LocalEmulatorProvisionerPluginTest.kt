@@ -40,7 +40,13 @@ class LocalEmulatorProvisionerPluginTest {
   val session = FakeAdbSession()
   val avdManager = FakeAvdManager()
   val plugin =
-    LocalEmulatorProvisionerPlugin(session.scope, session, avdManager, Duration.ofMillis(100))
+    LocalEmulatorProvisionerPlugin(
+      session.scope,
+      session,
+      avdManager,
+      TestDefaultDeviceActionPresentation,
+      Duration.ofMillis(100),
+    )
   val provisioner = DeviceProvisioner.create(session, listOf(plugin))
 
   @After
