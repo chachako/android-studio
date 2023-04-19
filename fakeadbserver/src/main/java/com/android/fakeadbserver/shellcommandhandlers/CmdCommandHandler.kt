@@ -121,6 +121,6 @@ class CmdCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandl
             totalBytesRead += numRead
         }
 
-        return "Success: streamed ${totalBytesRead} bytes\n"
+        return "Success: streamed $totalBytesRead bytes\n"
     }
 }

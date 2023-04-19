@@ -36,12 +36,7 @@ class TrackJdwpCommandHandler : DeviceCommandHandler("track-jdwp") {
         device: DeviceState,
         args: String
     ) {
-        val stream: OutputStream
-        stream = try {
-            socket.getOutputStream()
-        } catch (e: IOException) {
-            return
-        }
+        val stream: OutputStream = socket.getOutputStream()
         val queue = device.clientChangeHub
             .subscribe(
                 object : ClientStateChangeHandlerFactory {
@@ -88,7 +83,6 @@ class TrackJdwpCommandHandler : DeviceCommandHandler("track-jdwp") {
 
     companion object {
 
-        @Throws(IOException::class)
         private fun sendClientList(device: DeviceState, stream: OutputStream) {
             val clientListString = device.clientListString
             write4ByteHexIntString(stream, clientListString.length)

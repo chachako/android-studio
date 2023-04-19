@@ -56,7 +56,6 @@ class VurtHandler : DdmPacketHandler {
     }
 
     companion object {
-        @JvmField
         val CHUNK_TYPE = DdmPacket.encodeChunkType("VURT")
 
         const val VURT_DUMP_HIERARCHY = 1

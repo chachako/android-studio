@@ -42,7 +42,6 @@ class PortForwarder private constructor(hostPort: Int) {
      * An invalid/uninitialized port number.
      */
     const val INVALID_PORT = -1
-    @JvmStatic
     fun createPortForwarder(hostPort: Int, port: Int): PortForwarder {
       val forwarder = PortForwarder(hostPort)
       forwarder.destination.port = port
@@ -55,7 +54,6 @@ class PortForwarder private constructor(hostPort: Int) {
       return forwarder
     }
 
-    @JvmStatic
     fun createUnixForwarder(hostPort: Int, unixDomain: String): PortForwarder {
       val forwarder = PortForwarder(hostPort)
       forwarder.destination.unixDomain = unixDomain

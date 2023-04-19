@@ -103,21 +103,18 @@ class ForwardCommandHandler : HostCommandHandler() {
             }
         }
         val bindOk = device!!.addPortForwarder(forwarder, norebind)
-        try {
-            // We send 2 OKAY answers: 1st OKAY is connect, 2nd OKAY is status.
-            // See
-            // https://cs.android.com/android/platform/superproject/+/3a52886262ae22477a7d8ffb12adba64daf6aafa:packages/modules/adb/adb.cpp;l=1058
-            writeOkay(stream)
-            if (bindOk) {
-                if (hostPortToSendBack != null) {
-                    writeOkayResponse(stream, hostPortToSendBack.toString())
-                } else {
-                    writeOkay(stream)
-                }
+        // We send 2 OKAY answers: 1st OKAY is connect, 2nd OKAY is status.
+        // See
+        // https://cs.android.com/android/platform/superproject/+/3a52886262ae22477a7d8ffb12adba64daf6aafa:packages/modules/adb/adb.cpp;l=1058
+        writeOkay(stream)
+        if (bindOk) {
+            if (hostPortToSendBack != null) {
+                writeOkayResponse(stream, hostPortToSendBack.toString())
             } else {
-                writeFailResponse(stream, "Could not bind to the specified forwarding ports.")
+                writeOkay(stream)
             }
-        } catch (ignored: IOException) {
+        } else {
+            writeFailResponse(stream, "Could not bind to the specified forwarding ports.")
         }
 
         // We always close the connection, as per ADB protocol spec.

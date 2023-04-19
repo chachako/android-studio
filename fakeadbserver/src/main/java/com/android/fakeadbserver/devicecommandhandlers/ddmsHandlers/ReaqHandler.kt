@@ -39,7 +39,6 @@ class ReaqHandler : DdmPacketHandler {
 
     companion object {
 
-        @JvmField
         val CHUNK_TYPE = DdmPacket.encodeChunkType("REAQ")
     }
 }

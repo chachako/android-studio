@@ -23,7 +23,6 @@ class FakeAdbServerTest {
     /** Very basic test example. Remove `@Ignore` if you wish to run an interactive server.  */
     @Test
     @Ignore
-    @Throws(Exception::class)
     fun testInteractiveServer() {
         // Build the server and configure it to use the default ADB command handlers.
         val builder = FakeAdbServer.Builder()

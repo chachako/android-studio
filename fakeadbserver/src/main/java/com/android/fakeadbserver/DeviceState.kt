@@ -389,8 +389,8 @@ class DeviceState internal constructor(
      * synchronize between adding the listener and getting the correct lines from the logcat buffer.
      */
     class LogcatChangeHandlerSubscriptionResult(
-        @JvmField val mQueue: StateChangeQueue,
-        @JvmField val mLogcatContents: List<String>
+        val mQueue: StateChangeQueue,
+        val mLogcatContents: List<String>
     )
 
     companion object {

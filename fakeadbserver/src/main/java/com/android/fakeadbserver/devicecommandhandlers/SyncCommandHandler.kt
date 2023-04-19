@@ -35,28 +35,24 @@ import java.nio.charset.StandardCharsets.UTF_8
 class SyncCommandHandler : DeviceCommandHandler("sync") {
 
     override fun invoke(server: FakeAdbServer, socket: Socket, device: DeviceState, args: String) {
-        try {
-            val output = socket.getOutputStream()
-            val input = socket.getInputStream()
+        val output = socket.getOutputStream()
+        val input = socket.getInputStream()
 
-            // Tell client we accepted the `sync` service request
-            CommandHandler.writeOkay(output)
+        // Tell client we accepted the `sync` service request
+        CommandHandler.writeOkay(output)
 
-            //
-            // Handle the various "SEND", "RECV", etc. requests
-            while (true) {
-                // Sync protocol:
-                // https://cs.android.com/android/platform/superproject/+/fbe41e9a47a57f0d20887ace0fc4d0022afd2f5f:packages/modules/adb/SYNC.TXT
-                // Bytes 0-3: 'SEND', 'RECV', 'LIST', etc.
-                when (val syncRequest = readSyncRequest(input)) {
-                    "SEND" -> handleSendProtocol(device, input, output)
-                    "RECV" -> handleRecvProtocol(device, input, output)
-                    "STAT" -> handleStatProtocol(device, input, output)
-                    else -> throwUnsupportedRequest(output, syncRequest)
-                }
+        //
+        // Handle the various "SEND", "RECV", etc. requests
+        while (true) {
+            // Sync protocol:
+            // https://cs.android.com/android/platform/superproject/+/fbe41e9a47a57f0d20887ace0fc4d0022afd2f5f:packages/modules/adb/SYNC.TXT
+            // Bytes 0-3: 'SEND', 'RECV', 'LIST', etc.
+            when (val syncRequest = readSyncRequest(input)) {
+                "SEND" -> handleSendProtocol(device, input, output)
+                "RECV" -> handleRecvProtocol(device, input, output)
+                "STAT" -> handleStatProtocol(device, input, output)
+                else -> throwUnsupportedRequest(output, syncRequest)
             }
-        } catch (ignored: IOException) {
-            // Unable to respond to the client, and we can't do anything about it. Swallow the exception and continue on
         }
     }
 

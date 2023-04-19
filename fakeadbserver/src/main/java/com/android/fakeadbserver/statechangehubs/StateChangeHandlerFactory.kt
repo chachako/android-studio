@@ -24,7 +24,6 @@ interface StateChangeHandlerFactory {
 
         // Decide if the executing thread should terminate the connection and exit the handler
         // task.
-        @JvmField
         var mShouldContinue = true
 
         init {

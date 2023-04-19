@@ -29,7 +29,6 @@ internal constructor(private val mSocket: SocketChannel) : AutoCloseable {
     val socket: Socket
         get() = mSocket.socket()
 
-    @Throws(IOException::class)
     internal fun readServiceRequest(): ServiceRequest {
         val lengthString = ByteArray(4)
         readFully(lengthString)
@@ -40,7 +39,6 @@ internal constructor(private val mSocket: SocketChannel) : AutoCloseable {
         return ServiceRequest(payload)
     }
 
-    @Throws(IOException::class)
     private fun readFully(buffer: ByteArray) {
         var bytesRead = 0
         while (bytesRead < buffer.size) {
@@ -50,7 +48,6 @@ internal constructor(private val mSocket: SocketChannel) : AutoCloseable {
         }
     }
 
-    @Throws(IOException::class)
     fun sendOkay() {
         val stream = mSocket.socket().getOutputStream()
         stream.write("OKAY".toByteArray(StandardCharsets.US_ASCII))
@@ -72,7 +69,6 @@ internal constructor(private val mSocket: SocketChannel) : AutoCloseable {
         }
     }
 
-    @Throws(Exception::class)
     override fun close() {
         mSocket.close()
     }

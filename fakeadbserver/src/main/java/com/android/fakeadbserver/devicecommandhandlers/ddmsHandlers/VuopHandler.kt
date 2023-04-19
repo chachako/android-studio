@@ -54,7 +54,6 @@ class VuopHandler : DdmPacketHandler {
     }
 
     companion object {
-        @JvmField
         val CHUNK_TYPE = encodeChunkType("VUOP")
 
         const val VUOP_CAPTURE_VIEW = 1

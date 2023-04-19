@@ -17,7 +17,6 @@ package com.android.fakeadbserver.hostcommandhandlers
 
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
-import java.io.IOException
 import java.net.Socket
 
 /**
@@ -32,10 +31,7 @@ class GetStateCommandHandler : HostCommandHandler() {
         args: String
     ): Boolean {
         assert(device != null)
-        try {
-            writeOkayResponse(responseSocket.getOutputStream(), device!!.deviceStatus.state)
-        } catch (ignored: IOException) {
-        }
+        writeOkayResponse(responseSocket.getOutputStream(), device!!.deviceStatus.state)
         return false
     }
 

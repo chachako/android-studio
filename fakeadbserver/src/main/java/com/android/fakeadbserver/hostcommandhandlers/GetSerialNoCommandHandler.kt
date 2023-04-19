@@ -17,7 +17,6 @@ package com.android.fakeadbserver.hostcommandhandlers
 
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
-import java.io.IOException
 import java.net.Socket
 
 /**
@@ -34,10 +33,7 @@ class GetSerialNoCommandHandler : HostCommandHandler() {
         // Device may be null if an invalid serial number was sent. A FAIL response
         // should already have been sent.
         if (device != null) {
-            try {
-                writeOkayResponse(responseSocket.getOutputStream(), device.deviceId)
-            } catch (ignored: IOException) {
-            }
+            writeOkayResponse(responseSocket.getOutputStream(), device.deviceId)
         }
         return false
     }

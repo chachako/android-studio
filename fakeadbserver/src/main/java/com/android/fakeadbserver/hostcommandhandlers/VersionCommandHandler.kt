@@ -17,7 +17,6 @@ package com.android.fakeadbserver.hostcommandhandlers
 
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
-import java.io.IOException
 import java.net.Socket
 
 /** host:version returns the internal ADB server version.  */
@@ -29,11 +28,7 @@ open class VersionCommandHandler : HostCommandHandler() {
         device: DeviceState?,
         args: String
     ): Boolean {
-        try {
-            val version = versionString
-            writeOkayResponse(responseSocket.getOutputStream(), version)
-        } catch (ignored: IOException) {
-        }
+        writeOkayResponse(responseSocket.getOutputStream(), versionString)
         return false
     }
 

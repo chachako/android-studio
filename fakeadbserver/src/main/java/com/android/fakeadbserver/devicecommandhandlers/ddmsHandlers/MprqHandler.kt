@@ -39,7 +39,6 @@ class MprqHandler : DdmPacketHandler {
 
     companion object {
 
-        @JvmField
         val CHUNK_TYPE = encodeChunkType("MPRQ")
     }
 }

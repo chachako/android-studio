@@ -42,7 +42,6 @@ class HpgcHandler : DdmPacketHandler {
 
     companion object {
 
-        @JvmField
         val CHUNK_TYPE = encodeChunkType("HPGC")
     }
 }

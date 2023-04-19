@@ -19,7 +19,6 @@ import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
 import com.android.fakeadbserver.services.ShellCommandOutput
-import java.io.IOException
 
 class DumpsysCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandler(
     shellProtocolType,"dumpsys") {
@@ -32,22 +31,19 @@ class DumpsysCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellH
       shellCommand: String,
       shellCommandArgs: String?
     ) {
-        try {
-            if (shellCommandArgs == null) {
-                statusWriter.writeFail()
-                return
-            }
-
-            statusWriter.writeOk()
-
-            val response: String = when {
-                shellCommandArgs.startsWith("package") -> packageCommandHandler()
-                else -> ""
-            }
-
-            shellCommandOutput.writeStdout(response)
-        } catch (ignored: IOException) {
+        if (shellCommandArgs == null) {
+            statusWriter.writeFail()
+            return
         }
+
+        statusWriter.writeOk()
+
+        val response: String = when {
+            shellCommandArgs.startsWith("package") -> packageCommandHandler()
+            else -> ""
+        }
+
+        shellCommandOutput.writeStdout(response)
     }
 
   private fun packageCommandHandler(): String {

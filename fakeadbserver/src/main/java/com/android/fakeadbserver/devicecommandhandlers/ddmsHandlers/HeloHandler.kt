@@ -187,7 +187,6 @@ class HeloHandler : DdmPacketHandler {
 
     companion object {
 
-        @JvmField
         val CHUNK_TYPE = DdmPacket.encodeChunkType("HELO")
         private const val VM_IDENTIFIER = "FakeVM"
         private const val JVM_FLAGS = "-jvmflag=true"

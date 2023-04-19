@@ -18,7 +18,6 @@ package com.android.fakeadbserver.hostcommandhandlers
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.MdnsService
-import java.io.IOException
 import java.net.Socket
 import java.util.Locale
 import java.util.concurrent.ExecutionException
@@ -47,8 +46,6 @@ class MdnsCommandHandler : HostCommandHandler() {
                     responseSocket.getOutputStream(), "Invalid mdns command"
                 )
             }
-        } catch (ignored: IOException) {
-            return false
         } catch (ignored: ExecutionException) {
             return false
         } catch (ignored: InterruptedException) {

@@ -16,20 +16,17 @@
 package com.android.fakeadbserver
 
 import com.google.common.base.Charsets
-import java.io.IOException
 import java.io.OutputStream
 
 abstract class CommandHandler {
     companion object {
 
         @JvmStatic
-        @Throws(IOException::class)
         protected fun writeOkay(stream: OutputStream) {
             stream.write("OKAY".toByteArray(Charsets.UTF_8))
         }
 
         @JvmStatic
-        @Throws(IOException::class)
         protected fun writeOkayResponse(stream: OutputStream, response: String) {
             writeOkay(stream)
             write4ByteHexIntString(stream, response.length)
@@ -37,29 +34,23 @@ abstract class CommandHandler {
         }
 
         @JvmStatic
-        @Throws(IOException::class)
         protected fun writeFail(stream: OutputStream) {
             stream.write("FAIL".toByteArray(Charsets.UTF_8))
         }
 
         @JvmStatic
         protected fun writeFailResponse(stream: OutputStream, reason: String) {
-            try {
-                writeFail(stream)
-                write4ByteHexIntString(stream, reason.length)
-                writeString(stream, reason)
-            } catch (ignored: IOException) {
-            }
+            writeFail(stream)
+            write4ByteHexIntString(stream, reason.length)
+            writeString(stream, reason)
         }
 
         @JvmStatic
-        @Throws(IOException::class)
         protected fun write4ByteHexIntString(stream: OutputStream, value: Int) {
             stream.write(String.format("%04x", value).toByteArray(Charsets.UTF_8))
         }
 
         @JvmStatic
-        @Throws(IOException::class)
         protected fun writeString(stream: OutputStream, string: String) {
             stream.write(string.toByteArray(Charsets.UTF_8))
         }

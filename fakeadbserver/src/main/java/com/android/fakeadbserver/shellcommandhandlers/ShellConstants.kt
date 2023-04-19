@@ -16,5 +16,5 @@
 package com.android.fakeadbserver.shellcommandhandlers
 
 object ShellConstants {
-    val NON_INSTALLED_APP_ID = "non.installed.app.id"
+    const val NON_INSTALLED_APP_ID = "non.installed.app.id"
 }

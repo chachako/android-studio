@@ -16,7 +16,6 @@
 package com.android.fakeadbserver
 
 import com.android.fakeadbserver.DeviceState.HostConnectionType
-import java.io.IOException
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.nio.channels.SocketChannel
@@ -71,7 +70,6 @@ internal class ConnectionHandler(private val mServer: FakeAdbServer, socket: Soc
         }
     }
 
-    @Throws(IOException::class)
     private fun handleHostService(request: ServiceRequest) {
         when (request.nextToken()) {
             "host" -> {
@@ -168,7 +166,6 @@ internal class ConnectionHandler(private val mServer: FakeAdbServer, socket: Soc
         mSmartSocket.sendFailWithReason("Unknown request $serviceName-$command")
     }
 
-    @Throws(IOException::class)
     private fun dispatchToHostHandlers(request: ServiceRequest) {
         // Intercepting the host:transport* service request because it has the special side-effect
         // of changing the target device.

@@ -18,7 +18,6 @@ package com.android.fakeadbserver.devicecommandhandlers
 import com.android.fakeadbserver.CommandHandler
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
-import java.io.IOException
 import java.net.Socket
 import java.nio.charset.StandardCharsets
 
@@ -26,24 +25,20 @@ import java.nio.charset.StandardCharsets
  * This is a fairly limited implementation of the `sync` service
  */
 class FakeSyncCommandHandler : DeviceCommandHandler("sync") {
-  override fun invoke(server: FakeAdbServer, socket: Socket, device: DeviceState, args: String) {
-    try {
-      val output = socket.getOutputStream()
-      // Sync used for transferring files. Newly created emulator devices should not fail to handle this command.
-      CommandHandler.writeOkay(output)
 
-      // TODO the following is a hack. See http://b/79271028
-      output.write("OKAY".toByteArray(StandardCharsets.UTF_8).copyOf(8))
-      // Drain input stream. This data comes from files
-      val input = socket.getInputStream()
-      val buffer= ByteArray(1024)
-      var bytesRead = 0
-      while (bytesRead >= 0) {
-        bytesRead = input.read(buffer)
-      }
+    override fun invoke(server: FakeAdbServer, socket: Socket, device: DeviceState, args: String) {
+        val output = socket.getOutputStream()
+        // Sync used for transferring files. Newly created emulator devices should not fail to handle this command.
+        CommandHandler.writeOkay(output)
+
+        // TODO the following is a hack. See http://b/79271028
+        output.write("OKAY".toByteArray(StandardCharsets.UTF_8).copyOf(8))
+        // Drain input stream. This data comes from files
+        val input = socket.getInputStream()
+        val buffer = ByteArray(1024)
+        var bytesRead = 0
+        while (bytesRead >= 0) {
+            bytesRead = input.read(buffer)
+        }
     }
-    catch (ignored: IOException) {
-      // Unable to respond to the client, and we can't do anything about it. Swallow the exception and continue on
-    }
-  }
 }

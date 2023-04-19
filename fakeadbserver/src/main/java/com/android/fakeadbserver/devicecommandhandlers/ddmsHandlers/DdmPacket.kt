@@ -57,7 +57,6 @@ class DdmPacket private constructor(
 
         const val DDMS_CMD = 0x01
 
-        @JvmStatic
         fun fromJdwpPacket(packet: JdwpPacket): DdmPacket {
             assert(packet.cmdSet == DDMS_CMD_SET && packet.cmd == DDMS_CMD)
             val buffer = ByteBuffer.wrap(packet.payload)
@@ -68,20 +67,16 @@ class DdmPacket private constructor(
             return DdmPacket(packet.id, packet.errorCode, chunkType, payloadBytes)
         }
 
-        @JvmStatic
         fun createResponse(id: Int, chunkType: Int, payload: ByteArray) =
             DdmPacket(id, 0.toShort(), chunkType, payload, isResponse = true)
 
-        @JvmStatic
         fun createCommand(id: Int, chunkType: Int, payload: ByteArray) =
             DdmPacket(id, errorCode = 0.toShort(), chunkType, payload, isResponse = false)
 
-        @JvmStatic
         fun isDdmPacket(packet: JdwpPacket): Boolean {
             return packet.cmdSet == DDMS_CMD_SET && packet.cmd == DDMS_CMD
         }
 
-        @JvmStatic
         fun encodeChunkType(typeName: String): Int {
             assert(typeName.length == 4)
             var value = 0
@@ -95,7 +90,6 @@ class DdmPacket private constructor(
         /**
          * Convert an integer type to a 4-character string.
          */
-        @JvmStatic
         fun chunkTypeToString(type: Int): String {
             val ascii = ByteArray(4)
             ascii[0] = (type shr 24 and 0xff).toByte()

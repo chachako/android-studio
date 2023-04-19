@@ -47,13 +47,9 @@ class ListDevicesCommandHandler @JvmOverloads constructor(private val longFormat
                 fakeAdbServer.deviceListCopy.get(),
                 longFormat
             )
-            try {
-                writeOkay(stream) // Send ok first.
-                write4ByteHexIntString(stream, deviceListString.length)
-                stream.write(deviceListString.toByteArray(StandardCharsets.US_ASCII))
-            } catch (ignored: IOException) {
-                return false
-            }
+            writeOkay(stream) // Send ok first.
+            write4ByteHexIntString(stream, deviceListString.length)
+            stream.write(deviceListString.toByteArray(StandardCharsets.US_ASCII))
         } catch (ignored: InterruptedException) {
             Thread.currentThread().interrupt()
         } catch (e: ExecutionException) {

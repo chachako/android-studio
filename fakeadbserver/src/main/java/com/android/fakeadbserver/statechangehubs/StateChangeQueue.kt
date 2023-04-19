@@ -26,7 +26,6 @@ class StateChangeQueue {
 
     private val mQueue = LinkedBlockingQueue<Callable<StateChangeHandlerFactory.HandlerResult>>()
 
-    @Throws(InterruptedException::class)
     fun take(): Callable<StateChangeHandlerFactory.HandlerResult> {
         return mQueue.take()
     }

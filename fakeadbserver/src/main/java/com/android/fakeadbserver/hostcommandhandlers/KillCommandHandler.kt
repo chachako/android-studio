@@ -17,7 +17,6 @@ package com.android.fakeadbserver.hostcommandhandlers
 
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
-import java.io.IOException
 import java.net.Socket
 
 /**
@@ -32,10 +31,7 @@ class KillCommandHandler : HostCommandHandler() {
         args: String
     ): Boolean {
         fakeAdbServer.stop()
-        try {
-            writeOkay(responseSocket.getOutputStream()) // Send ok.
-        } catch (ignored: IOException) {
-        }
+        writeOkay(responseSocket.getOutputStream()) // Send ok.
         return false
     }
 

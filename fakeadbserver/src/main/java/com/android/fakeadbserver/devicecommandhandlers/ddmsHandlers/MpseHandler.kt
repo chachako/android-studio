@@ -53,7 +53,6 @@ class MpseHandler : DdmPacketHandler {
 
     companion object {
 
-        @JvmField
         val CHUNK_TYPE = DdmPacket.encodeChunkType("MPSE")
     }
 }

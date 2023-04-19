@@ -17,7 +17,6 @@ package com.android.fakeadbserver.hostcommandhandlers
 
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
-import java.io.IOException
 import java.net.Socket
 
 /** host:features returns list of features supported by both the device and the HOST.  */
@@ -29,22 +28,18 @@ class FeaturesCommandHandler : HostCommandHandler() {
         device: DeviceState?,
         args: String
     ): Boolean {
-        try {
-            if (device == null) {
-                writeFailMissingDevice(responseSocket.getOutputStream(), COMMAND)
-                return false
-            }
-            val out = responseSocket.getOutputStream()
-            // This is a features request. It should contain only the features supported by
-            // both the server and the device.
-            val deviceFeatures = device.features
-            val hostFeatures = fakeAdbServer.features
-            val commonFeatures = HashSet(deviceFeatures)
-            commonFeatures.retainAll(hostFeatures)
-            writeOkayResponse(out, java.lang.String.join(",", commonFeatures))
-        } catch (e: IOException) {
-            // Ignored (this is from responseSocket.getOutputStream())
+        if (device == null) {
+            writeFailMissingDevice(responseSocket.getOutputStream(), COMMAND)
+            return false
         }
+        val out = responseSocket.getOutputStream()
+        // This is a features request. It should contain only the features supported by
+        // both the server and the device.
+        val deviceFeatures = device.features
+        val hostFeatures = fakeAdbServer.features
+        val commonFeatures = HashSet(deviceFeatures)
+        commonFeatures.retainAll(hostFeatures)
+        writeOkayResponse(out, java.lang.String.join(",", commonFeatures))
         return false
     }
 

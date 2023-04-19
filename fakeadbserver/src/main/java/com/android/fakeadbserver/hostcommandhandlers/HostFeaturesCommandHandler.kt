@@ -17,7 +17,6 @@ package com.android.fakeadbserver.hostcommandhandlers
 
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
-import java.io.IOException
 import java.net.Socket
 
 /** host:host-features returns list of features supported by the HOST.  */
@@ -29,12 +28,10 @@ class HostFeaturesCommandHandler : HostCommandHandler() {
         device: DeviceState?,
         args: String
     ): Boolean {
-        try {
-            val out = responseSocket.getOutputStream()
-            writeOkayResponse(out, java.lang.String.join(",", fakeAdbServer.features))
-        } catch (e: IOException) {
-            // Ignored (this is from responseSocket.getOutputStream())
-        }
+        writeOkayResponse(
+            responseSocket.getOutputStream(),
+            java.lang.String.join(",", fakeAdbServer.features)
+        )
         return false
     }
 
