@@ -55,6 +55,7 @@ import com.google.api.services.testing.model.ToolResultsHistory
 import com.google.api.services.toolresults.ToolResults
 import com.google.api.services.toolresults.model.History
 import com.google.api.services.toolresults.model.StackTrace
+import com.google.common.annotations.VisibleForTesting
 import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
 import com.google.testing.platform.proto.api.core.ErrorProto.Error
 import com.google.testing.platform.proto.api.core.IssueProto.Issue
@@ -97,8 +98,9 @@ import javax.xml.transform.stream.StreamResult
  */
 abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters> {
 
-    init {
-        Logger.getLogger("com.google.api.client").level = Level.WARNING
+    @get:VisibleForTesting
+    internal val apiClientLogger = Logger.getLogger("com.google.api.client").apply {
+        level = Level.WARNING
     }
 
     companion object {

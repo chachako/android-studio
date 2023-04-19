@@ -47,7 +47,6 @@ import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import java.io.File
 import java.util.logging.Level
-import java.util.logging.Logger
 
 /**
  * Unit tests for [TestLabBuildService].
@@ -129,7 +128,7 @@ class TestLabBuildServiceTest {
     @Test
     fun logLevelShouldBeWarning() {
         val credentialFile = temporaryFolderRule.newFile("testCredentialFile")
-        object: TestLabBuildService() {
+        val buildService = object: TestLabBuildService() {
             override fun getParameters(): Parameters {
                 val params = mock<Parameters>(
                         withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
@@ -137,7 +136,7 @@ class TestLabBuildServiceTest {
                 return params
             }
         }
-        assertThat(Logger.getLogger("com.google.api.client").level).isEqualTo(Level.WARNING)
+        assertThat(buildService.apiClientLogger.level).isEqualTo(Level.WARNING)
     }
 
     @Test
