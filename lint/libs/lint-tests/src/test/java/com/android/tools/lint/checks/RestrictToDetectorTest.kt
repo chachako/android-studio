@@ -2371,4 +2371,67 @@ class RestrictToDetectorTest : AbstractCheckTest() {
       .run()
       .expectClean()
   }
+
+  fun test278573413() {
+    // Regression test for b/278573413.
+    lint()
+      .files(
+        kotlin(
+            """
+          package test.pkg
+
+          import library.pkg.PrivateKotlinClass
+
+          class Test : PrivateKotlinClass {
+            override fun method() {}
+          }
+          """
+          )
+          .indented(),
+        mavenLibrary(
+          "my.group.id:myklib:25.0.0-SNAPSHOT",
+          stubSources =
+            listOf(
+              kotlin(
+                  """
+              package library.pkg
+
+              import androidx.annotation.RestrictTo
+
+              @RestrictTo(RestrictTo.Scope.GROUP_ID)
+              open class PrivateKotlinClass {
+                  open fun method() {}
+              }
+              """
+                )
+                .indented(),
+            ),
+          compileOnly = listOf(SUPPORT_ANNOTATIONS_JAR)
+        ),
+        gradle(
+            """
+                apply plugin: 'com.android.application'
+
+                dependencies {
+                    compile 'my.group.id:myklib:25.0.0-SNAPSHOT'
+                }
+                """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .allowKotlinClassStubs(true)
+      .run()
+      .expect(
+        """
+        src/main/kotlin/test/pkg/Test.kt:5: Error: PrivateKotlinClass can only be accessed from within the same library group (referenced groupId=my.group.id from groupId=<unknown>) [RestrictedApi]
+        class Test : PrivateKotlinClass {
+                     ~~~~~~~~~~~~~~~~~~
+        src/main/kotlin/test/pkg/Test.kt:6: Error: PrivateKotlinClass.method can only be called from within the same library group (referenced groupId=my.group.id from groupId=<unknown>) [RestrictedApi]
+          override fun method() {}
+                       ~~~~~~
+        2 errors, 0 warnings
+        """
+      )
+  }
 }
