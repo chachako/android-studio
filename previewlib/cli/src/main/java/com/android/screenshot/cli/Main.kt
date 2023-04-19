@@ -16,7 +16,7 @@
 package com.android.screenshot.cli
 
 import com.android.SdkConstants
-import com.android.resources.ResourceFolderType
+import com.android.screenshot.cli.util.Decompressor
 import com.android.tools.idea.AndroidPsiUtils
 import com.android.tools.idea.compose.preview.ComposePreviewElement
 import com.android.tools.idea.compose.preview.getPreviewNodes
@@ -33,16 +33,13 @@ import com.android.tools.lint.client.api.ConfigurationHierarchy
 import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.LintClient.Companion.clientName
 import com.android.tools.lint.client.api.LintDriver
-import com.android.tools.lint.client.api.LintListener
 import com.android.tools.lint.client.api.LintRequest
 import com.android.tools.lint.client.api.LintXmlConfiguration.Companion.create
-import com.android.tools.lint.client.api.UastParser
 import com.android.tools.lint.client.api.Vendor
 import com.android.tools.lint.computeMetadata
 import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue
-import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.LintModelModuleProject
 import com.android.tools.lint.detector.api.LintModelModuleProject.Companion.resolveDependencies
 import com.android.tools.lint.detector.api.Location
@@ -50,11 +47,8 @@ import com.android.tools.lint.detector.api.Location.Companion.create
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
-import com.android.tools.lint.detector.api.SourceSetType
-import com.android.tools.lint.detector.api.XmlContext
 import com.android.tools.lint.detector.api.guessGradleLocation
 import com.android.tools.lint.detector.api.isJreFolder
-import com.android.tools.lint.detector.api.isXmlFile
 import com.android.tools.lint.detector.api.splitPath
 import com.android.tools.lint.model.LintModelModule
 import com.android.tools.lint.model.LintModelSerialization
@@ -67,7 +61,6 @@ import com.google.common.io.ByteStreams
 import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.extensions.Extensions
-import com.intellij.openapi.util.io.FileUtil
 import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.config.JVMConfigurationKeys
@@ -81,10 +74,12 @@ import org.w3c.dom.Document
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
+import java.nio.file.Path
 import java.util.EnumSet
 import java.util.zip.ZipEntry
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
+import kotlin.system.exitProcess
 
 class Main {
 
@@ -101,6 +96,8 @@ class Main {
     private val ARG_FILE_PATH = "--file-path"
     private val ARG_ROOT_LINT_MODEL = "--root-lint-model"
     private val ARG_RECORD_GOLDENS = "--record-golden"
+    private val ARG_EXTRACTION_DIR = "--extraction-dir"
+    private val ARG_JAR_LOCATION = "--jar-location"
 
     private var sdkHomePath: File? = null
     private var jdkHomePath: File? = null
@@ -116,6 +113,9 @@ class Main {
         val argumentState = ArgumentState()
         val client: LintCliClient = MainLintClient(flags, argumentState)
         parseArguments(args, client, argumentState)
+        if (argumentState.extractionDir != null && argumentState.jarLocation != null){
+            extractJar(argumentState)
+        }
         initializePathVariables(argumentState, client)
         initializeConfigurations(client, argumentState)
         setupPaths(argumentState)
@@ -123,7 +123,8 @@ class Main {
         initializeUast(projects) // TODO: Clean up
         val driver: LintDriver = createDriver(projects, client as MainLintClient)
         client.initializeProjects(driver, projects)
-        ComposeApplication.setupEnvVars()
+
+        ComposeApplication.setupEnvVars(argumentState.extractionDir)
         CoreApplicationEnvironment.registerExtensionPointAndExtensions(PathUtil.getResourcePathForClass(this::class.java).toPath(), "plugin.xml",
                                                                        Extensions.getRootArea())
 
@@ -135,8 +136,9 @@ class Main {
                                   argumentState.goldenLocation!!,
                                   argumentState.outputLocation!!,
                                   argumentState.recordGoldens)
+        argumentState.extractionDir?.let { deleteTempFiles(it) }
         //save or return results
-        System.exit(0)
+        exitProcess(0)
     }
 
     private fun setupPaths(argumentState: Main.ArgumentState) {
@@ -149,6 +151,31 @@ class Main {
             golden.mkdirs()
         }
 
+    }
+
+    private fun deleteTempFiles(extractionDir: String) {
+        val outputDir = Path.of(extractionDir).resolve("system").normalize()
+        try {
+            outputDir.toFile().deleteRecursively()
+        } catch (e: Exception) {
+            // do nothing
+        }
+
+
+    }
+
+    private fun extractJar(argumentState: Main.ArgumentState) {
+        val jarPath = Path.of(argumentState.jarLocation!!)
+        val outputDir = Path.of(argumentState.extractionDir!!)
+        val outputDirLayoutLib = Path.of(argumentState.extractionDir!!).resolve("plugins/design-tools/resources/").normalize()
+        val outputDirAppInfo = Path.of(argumentState.extractionDir!!).resolve("META-INF").normalize()
+        val filterLayouutLib = { file: File?, name: String ->
+            name =="layoutlib" || file?.absolutePath?.contains("layoutlib") ?: false  }
+        val filterAppInfo = { file: File?, name: String ->
+                    name == "ApplicationInfo.xml" && file?.absolutePath?.startsWith(outputDirAppInfo.toString()) ?: false }
+
+        Decompressor.Zip(jarPath).filter(Decompressor.FileFilterAdapter.wrap(outputDirLayoutLib, filterLayouutLib)).removePrefixPath("prebuilts/studio/").overwrite(false).extract(outputDirLayoutLib)
+        Decompressor.Zip(jarPath).filter(Decompressor.FileFilterAdapter.wrap(outputDir, filterAppInfo)).overwrite(true).extract(outputDir)
     }
 
     private fun findPreviewNodes(project: Project, file: String) : List<ComposePreviewElement> {
@@ -470,6 +497,18 @@ class Main {
                     return ERRNO_INVALID_ARGS
                 }
                 argumentState.clientVersion = args[++index]
+            } else if (arg == ARG_EXTRACTION_DIR) {
+                if (index == args.size - 1) {
+                    System.err.println("Missing client version")
+                    return ERRNO_INVALID_ARGS
+                }
+                argumentState.extractionDir = args[++index]
+            } else if (arg == ARG_JAR_LOCATION) {
+                if (index == args.size - 1) {
+                    System.err.println("Missing client version")
+                    return ERRNO_INVALID_ARGS
+                }
+                argumentState.jarLocation = args[++index]
             } else if (arg == ARG_ROOT_LINT_MODEL) {
                 if (index == args.size - 1) {
                     System.err.println("Missing lint model argument after $ARG_LINT_MODEL")
@@ -613,6 +652,8 @@ class Main {
     inner class ArgumentState {
         var recordGoldens: Boolean = false
         var goldenLocation: String? = null
+        var jarLocation: String? =null
+        var extractionDir: String? = null
         var rootModule: LintModelModule? = null
         var clientVersion: String? = null
         var clientName: String? = null

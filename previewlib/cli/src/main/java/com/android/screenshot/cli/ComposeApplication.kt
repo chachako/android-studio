@@ -48,13 +48,11 @@ import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.impl.ProjectJdkTableImpl
-import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.util.PlatformUtils
 import com.intellij.util.ReflectionUtil
 import com.intellij.util.download.DownloadableFileService
 import com.intellij.util.indexing.FileBasedIndex
-import com.intellij.util.indexing.FileBasedIndexImpl
 import org.jetbrains.android.uipreview.StudioModuleClassLoaderManager
 import org.jetbrains.kotlin.utils.PathUtil
 import org.mockito.Mockito
@@ -177,24 +175,22 @@ class ComposeApplication(private val applicationManager: CoreApplicationEnvironm
 
     companion object {
 
-        fun setupEnvVars() {
+        fun setupEnvVars(homePath: String?) {
             //HACK
-            val relative = "../../../../../../" //ROOT_FROM_UNBUNDLED_SDK
-            val baseDir = PathUtil.getResourcePathForClass(this::class.java).absolutePath
-            val srcPath = Paths.get(baseDir, relative).normalize().toString()
-
-            System.setProperty("idea.home.path", "${srcPath}/tools/base")
-            System.setProperty("idea.home", "${srcPath}/tools/idea")
-            System.setProperty(
-                "idea.application.info.value",
-                "${baseDir}/META-INF/ApplicationInfo.xml"
-            )
+            val relative = "../../../../../../"; //ROOT_FROM_UNBUNDLED_SDK;
+            val baseDir = PathUtil.getResourcePathForClass(this::class.java).absolutePath //tools/
+            val srcPath = Paths.get(baseDir, relative).normalize().toString();
+            setPaths(homePath, srcPath, baseDir)
 
             Registry.get("platform.projectModel.workspace.model.file.index").setValue(false)
             Registry.get("gradle.report.recently.saved.paths").setValue("")
             Registry.get("kotlin.gradle.testing.enabled").setValue(false)
-            //tools/idea/adt-branding/src/idea/AndroidStudioApplicationInfo.xml
             System.setProperty("idea.platform.prefix", PlatformUtils.GATEWAY_PREFIX)
+        }
+
+        private fun setPaths(homePath: String?, srcPath: String, baseDir: String) {
+            System.setProperty("idea.home.path", homePath ?: "${srcPath}/tools/base")
+            System.setProperty("idea.application.info.value", (homePath ?: baseDir) + "/META-INF/ApplicationInfo.xml")
         }
     }
 
