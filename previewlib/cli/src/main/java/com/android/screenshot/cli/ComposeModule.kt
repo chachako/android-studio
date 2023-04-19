@@ -1,0 +1,138 @@
+/*
+ * Copyright (C) 2023 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.android.screenshot.cli
+
+import com.android.tools.idea.model.MergedManifestManager
+import com.android.tools.idea.model.MergedManifestModificationTracker
+import com.android.tools.idea.res.AndroidFacetResourceIdManagerModelModule
+import com.android.tools.res.ids.ResourceIdManager
+import com.android.tools.idea.res.ResourceIdManagerBase
+import com.android.tools.rendering.api.IdeaModuleProvider
+import com.intellij.facet.FacetManager
+import com.intellij.openapi.module.Module
+import com.intellij.openapi.roots.ModuleRootManager
+import com.intellij.workspaceModel.ide.impl.legacyBridge.facet.FacetManagerBridge
+import com.intellij.workspaceModel.ide.impl.legacyBridge.module.roots.ModuleRootComponentBridge
+import com.intellij.workspaceModel.ide.legacyBridge.ModuleBridge
+import com.intellij.workspaceModel.storage.EntitySource
+import com.intellij.workspaceModel.storage.MutableEntityStorage
+import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
+import com.intellij.workspaceModel.storage.bridgeEntities.addFacetEntity
+import com.intellij.workspaceModel.storage.impl.VersionedEntityStorageOnStorage
+import com.intellij.workspaceModel.storage.url.VirtualFileUrl
+import org.jetbrains.android.facet.AndroidFacet
+import org.jetbrains.android.facet.AndroidFacetConfiguration
+import org.jetbrains.android.facet.AndroidFacetType
+import org.jetbrains.android.facet.ResourceFolderManager
+import org.jetbrains.android.uipreview.ModuleClassLoaderOverlays
+import org.mockito.Mockito
+
+/**
+ * This class represents an Android Studio Module that is a child of the current project.
+ * The class is reused for dependency modules that the project has. The minimal setup here is
+ * required for a module to be used in screenshot testing.
+ */
+class ComposeModule(
+    private val composeProject: ComposeProject, private val dependencies: Dependencies? = null
+) : IdeaModuleProvider {
+
+    var module = Mockito.mock(ModuleBridge::class.java)
+    var facet = createFacet()
+
+    init {
+        setupModule()
+    }
+
+    fun setupModule(): ModuleBridge {
+        Mockito.`when`(module.name).thenReturn("")
+        Mockito.`when`(module.project)
+            .thenReturn(composeProject.lintProject.ideaProject) // Needed by StudioModuleClassLoaderManager
+        val moduleManager = Mockito.spy(ModuleRootComponentBridge(module))
+        Mockito.`when`(moduleManager.module).thenReturn(module)
+
+        // Needed by StudioModuleClassLoader
+        val id = ModuleId("android")
+        Mockito.`when`(module.moduleEntityId).thenReturn(id) // Needed by FacetManager
+        val storage = createEntityStorage(id)
+        Mockito.`when`(module.entityStorage)
+            .thenReturn(VersionedEntityStorageOnStorage(storage.toSnapshot()))
+        Mockito.`when`(module.getComponent(ModuleRootManager::class.java)).thenReturn(moduleManager)
+        Mockito.`when`(module.getService(ModuleClassLoaderOverlays::class.java))
+            .thenReturn(ModuleClassLoaderOverlays(module))
+
+        // Needed by ModuleClassLoader
+        val facetManager = Mockito.spy(FacetManagerBridge(module)) // depend on storage
+        Mockito.`when`(facetManager.getFacetByType(AndroidFacet.ID)).thenReturn(facet)
+        Mockito.`when`(module.getComponent(FacetManager::class.java))
+            .thenReturn(facetManager) //depends on entitystorage
+
+        // Needed by StudioAndroidModuleInfo::getMinSdkVersion
+        val manifestTracker = MergedManifestModificationTracker(module)
+        Mockito.`when`(module.getService(MergedManifestModificationTracker::class.java))
+            .thenReturn(manifestTracker)
+
+        // Needed by getAppTheme / StudioThemeInfoProvider
+        Mockito.`when`(module.getService(MergedManifestManager::class.java))
+            .thenReturn(MergedManifestManager(module))
+
+        // Needed by LibraryResourceClassLoader
+        val resourceIdManager = object : ResourceIdManagerBase(
+            AndroidFacetResourceIdManagerModelModule(
+                AndroidFacet.getInstance(module)
+                    ?: error("${ResourceIdManager::class.qualifiedName} used on a non-Android module.")
+            )
+        ) {} //depends on facetmanager
+        Mockito.`when`(module.getService(ResourceIdManager::class.java))
+            .thenReturn(resourceIdManager)
+        val resourceFolderManager = ResourceFolderManager(module)
+        Mockito.`when`(module.getService(ResourceFolderManager::class.java))
+            .thenReturn(resourceFolderManager)
+        return module
+    }
+
+    fun createFacet(): AndroidFacet {
+        val facetConfig = Mockito.spy(AndroidFacetConfiguration())
+        Mockito.`when`(facetConfig.isAppOrFeature).thenReturn(false)
+        val facet = Mockito.spy(AndroidFacet(module, "Android", facetConfig))
+        Mockito.`when`(facet.module).thenReturn(module)
+        return facet
+    }
+
+    companion object {
+
+        fun createEntityStorage(id: ModuleId): MutableEntityStorage {
+            val storage = MutableEntityStorage.create()
+            val entity =
+                ModuleEntity.invoke(id.name, listOf(), Mockito.mock(EntitySource::class.java), null)
+            storage.addEntity(entity)
+            storage.addFacetEntity(AndroidFacet.NAME,
+                                   AndroidFacetType.TYPE_ID,
+                                   null,
+                                   entity,
+                                   null,
+                                   object : EntitySource {
+                                       override val virtualFileUrl: VirtualFileUrl?
+                                           get() = super.virtualFileUrl
+                                   })
+            return storage
+        }
+
+    }
+
+    override fun getIdeaModule(): Module = module
+
+}

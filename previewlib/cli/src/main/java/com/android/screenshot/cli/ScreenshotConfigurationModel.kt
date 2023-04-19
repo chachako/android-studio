@@ -1,0 +1,63 @@
+/*
+ * Copyright (C) 2023 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.android.screenshot.cli
+
+import com.android.tools.idea.configurations.ConfigurationManager
+import com.android.tools.idea.configurations.ConfigurationModelModule
+import com.android.tools.idea.configurations.ConfigurationStateManager
+import com.android.tools.idea.configurations.StudioConfigurationStateManager
+import com.android.tools.idea.configurations.StudioThemeInfoProvider
+import com.android.tools.idea.configurations.ThemeInfoProvider
+import com.android.tools.module.AndroidModuleInfo
+import com.android.tools.idea.model.StudioAndroidModuleInfo
+import com.android.tools.rendering.api.EnvironmentContext
+import com.android.tools.module.ModuleDependencies
+import com.android.tools.idea.rendering.StudioEnvironmentContext
+import com.android.tools.res.ResourceRepositoryManager
+import com.android.tools.idea.res.StudioResourceRepositoryManager
+import com.android.tools.layoutlib.LayoutlibContext
+import com.android.tools.sdk.AndroidPlatform
+import com.android.tools.sdk.AndroidSdkData
+import com.intellij.openapi.project.Project
+import org.jetbrains.android.sdk.StudioEmbeddedRenderTarget
+
+class ScreenshotConfigurationModel(private val composeProject: ComposeProject,private val composeModule: ComposeModule,private val sdkPath: String): ConfigurationModelModule {
+    override val androidPlatform: AndroidPlatform?
+        get() = AndroidPlatform(AndroidSdkData.getSdkData(sdkPath)!!, StudioEmbeddedRenderTarget.getCompatibilityTarget(composeProject.lintProject.buildTarget!!))
+    override val resourceRepositoryManager: ResourceRepositoryManager?
+        get() = StudioResourceRepositoryManager.getInstance(composeModule.module)
+    override val configurationStateManager: ConfigurationStateManager
+        get() = StudioConfigurationStateManager.get(composeProject.lintProject.ideaProject!!)
+    override val themeInfoProvider: ThemeInfoProvider
+        get() = StudioThemeInfoProvider(composeModule.module)
+    override val layoutlibContext: LayoutlibContext
+        get() = ScreenshotEnvironmentContext(composeProject).layoutlibContext
+    override val androidModuleInfo: AndroidModuleInfo?
+        get() = StudioAndroidModuleInfo.getInstance(composeModule.module)
+    override val project: Project
+        get() = composeProject.lintProject.ideaProject!!
+    override val name: String
+        get() = ""
+    override val dependencies: ModuleDependencies
+        get() = TODO("Not yet implemented")
+
+    override fun dispose() {
+
+    }
+}
+fun createConfigManager(composeProject: ComposeProject,composeModule: ComposeModule,sdkPath: String): ConfigurationManager {
+    return object : ConfigurationManager(composeModule.module, ScreenshotConfigurationModel(composeProject, composeModule, sdkPath)) {}
+}

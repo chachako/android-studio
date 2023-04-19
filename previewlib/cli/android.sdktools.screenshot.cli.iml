@@ -7,8 +7,49 @@
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="inheritedJdk" />
+    <orderEntry type="module-library" exported="">
+      <library name="lint-cli-psi-prebuilts">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../../../prebuilts/tools/common/lint-psi/intellij-core/intellij-core.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../../prebuilts/tools/common/lint-psi/kotlin-compiler/kotlin-compiler.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../../prebuilts/tools/common/lint-psi/uast/uast-common.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../../prebuilts/tools/common/lint-psi/uast/uast-kotlin.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/../../../../prebuilts/tools/common/lint-psi/intellij-core/intellij-core-sources.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../../prebuilts/tools/common/lint-psi/kotlin-compiler/kotlin-compiler-sources.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../../prebuilts/tools/common/lint-psi/uast/uast-common-sources.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../../prebuilts/tools/common/lint-psi/uast/uast-kotlin-sources.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module" module-name="analytics-tracker" />
+    <orderEntry type="library" name="studio-analytics-proto" level="project" />
+    <orderEntry type="module" module-name="analytics-shared" />
+    <orderEntry type="module" module-name="android.sdktools.common" />
+    <orderEntry type="module" module-name="android.sdktools.sdklib" />
+    <orderEntry type="module" module-name="android.sdktools.sdk-common" />
+    <orderEntry type="module" module-name="android.sdktools.layoutlib-api" />
     <orderEntry type="library" name="studio-sdk" level="project" />
+    <orderEntry type="library" name="studio-plugin-gradle" level="project" />
+    <orderEntry type="module" module-name="android.sdktools.lint-model" />
     <orderEntry type="module" module-name="android.sdktools.lint-api" />
+    <orderEntry type="module" module-name="android.sdktools.lint-checks" />
+    <orderEntry type="module" module-name="intellij.android.layoutlib" />
+    <orderEntry type="module" module-name="intellij.android.core" />
+    <orderEntry type="module" module-name="intellij.android.projectSystem.gradle" />
     <orderEntry type="module" module-name="android.sdktools.lint.cli" />
+    <orderEntry type="module" module-name="intellij.android.common" />
+    <orderEntry type="module" module-name="intellij.android.compose-designer" />
+    <orderEntry type="library" name="mockito" level="project" />
+    <orderEntry type="module" module-name="intellij.android.preview-designer" />
+    <orderEntry type="module" module-name="intellij.android.projectSystem" />
+    <orderEntry type="module" module-name="intellij.android.render-resources" />
+    <orderEntry type="library" name="studio-plugin-gradle-java" level="project" />
+    <orderEntry type="module" module-name="intellij.android.build-attribution" />
+    <orderEntry type="module" module-name="intellij.android.layoutlib-loader" />
+    <orderEntry type="module" module-name="android.sdktools.analyzer" />
+    <orderEntry type="module" module-name="intellij.android.rendering" />
   </component>
 </module>

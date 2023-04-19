@@ -16,8 +16,11 @@
 package com.android.screenshot.cli
 
 import com.android.SdkConstants
-import com.android.annotations.NonNull
-import com.android.annotations.Nullable
+import com.android.resources.ResourceFolderType
+import com.android.tools.idea.AndroidPsiUtils
+import com.android.tools.idea.compose.preview.ComposePreviewElement
+import com.android.tools.idea.compose.preview.getPreviewNodes
+import com.android.tools.idea.util.toVirtualFile
 import com.android.tools.lint.CliConfiguration
 import com.android.tools.lint.LintCliClient
 import com.android.tools.lint.LintCliFlags
@@ -28,16 +31,18 @@ import com.android.tools.lint.UastEnvironment
 import com.android.tools.lint.client.api.Configuration
 import com.android.tools.lint.client.api.ConfigurationHierarchy
 import com.android.tools.lint.client.api.IssueRegistry
-import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.LintClient.Companion.clientName
 import com.android.tools.lint.client.api.LintDriver
+import com.android.tools.lint.client.api.LintListener
 import com.android.tools.lint.client.api.LintRequest
 import com.android.tools.lint.client.api.LintXmlConfiguration.Companion.create
+import com.android.tools.lint.client.api.UastParser
 import com.android.tools.lint.client.api.Vendor
 import com.android.tools.lint.computeMetadata
 import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue
+import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.LintModelModuleProject
 import com.android.tools.lint.detector.api.LintModelModuleProject.Companion.resolveDependencies
 import com.android.tools.lint.detector.api.Location
@@ -45,8 +50,11 @@ import com.android.tools.lint.detector.api.Location.Companion.create
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
+import com.android.tools.lint.detector.api.SourceSetType
+import com.android.tools.lint.detector.api.XmlContext
 import com.android.tools.lint.detector.api.guessGradleLocation
 import com.android.tools.lint.detector.api.isJreFolder
+import com.android.tools.lint.detector.api.isXmlFile
 import com.android.tools.lint.detector.api.splitPath
 import com.android.tools.lint.model.LintModelModule
 import com.android.tools.lint.model.LintModelSerialization
@@ -56,10 +64,19 @@ import com.android.tools.lint.model.PathVariables
 import com.android.utils.XmlUtils
 import com.google.common.collect.Sets
 import com.google.common.io.ByteStreams
+import com.intellij.core.CoreApplicationEnvironment
+import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.extensions.Extensions
+import com.intellij.openapi.util.io.FileUtil
 import com.intellij.pom.java.LanguageLevel
-import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
+import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.config.LanguageVersionSettings
+import org.jetbrains.kotlin.psi.KtAnnotationEntry
+import org.jetbrains.kotlin.utils.PathUtil
+import org.jetbrains.uast.UAnnotation
+import org.jetbrains.uast.getContainingUMethod
+import org.jetbrains.uast.toUElementOfType
 import org.w3c.dom.Document
 import org.xml.sax.SAXException
 import java.io.File
@@ -79,6 +96,9 @@ class Main {
     private val ARG_LINT_MODEL = "--lint-model"
     private val ARG_LINT_RULE_JARS = "--lint-rule-jars"
     private val ARG_CACHE_DIR = "--cache-dir"
+    private val ARG_OUTPUT_LOCATION = "--output-location"
+    private val ARG_FILE_PATH = "--file-path"
+    private val ARG_ROOT_LINT_MODEL = "--root-lint-model"
 
     private var sdkHomePath: File? = null
     private var jdkHomePath: File? = null
@@ -90,7 +110,6 @@ class Main {
             Main().run(args)
         }
     }
-
     fun run(args: Array<String>) {
         val argumentState = ArgumentState()
         val client: LintCliClient = MainLintClient(flags, argumentState)
@@ -98,9 +117,30 @@ class Main {
         initializePathVariables(argumentState, client)
         initializeConfigurations(client, argumentState)
         val projects: List<Project> = configureProject(client, argumentState)
+        initializeUast(projects) // TODO: Clean up
         val driver: LintDriver = createDriver(projects, client as MainLintClient)
-        initializeUast(projects)
+        client.initializeProjects(driver, projects)
+        ComposeApplication.setupEnvVars()
+        CoreApplicationEnvironment.registerExtensionPointAndExtensions(PathUtil.getResourcePathForClass(this::class.java).toPath(), "plugin.xml",
+                                                                       Extensions.getRootArea())
+
+        driver.computeDetectors(projects[0])
+        ProjectDriver(driver, projects[0]).prepareUastFileList()
+        val dependencies = Dependencies(projects[0], argumentState.rootModule!!)
+        val screenshot = ScreenshotProvider(projects[0], sdkHomePath!!.absolutePath, dependencies)
+        screenshot.capture(findUMethod(projects[0],argumentState.filePath!!), argumentState.outputLocation!!)
+        System.exit(0)
     }
+
+  private fun findUMethod(project: Project, file: String) : List<ComposePreviewElement> {
+      val vFile = File(file)
+      val psiFile = AndroidPsiUtils.getPsiFileSafely(project.ideaProject!!, vFile.toVirtualFile()!!)
+      val annotationEntry = PsiTreeUtil.findChildrenOfType(psiFile, KtAnnotationEntry::class.java).asSequence()
+      val annotations = annotationEntry.mapNotNull { it.psiOrParent.toUElementOfType<UAnnotation>() }
+      val uMethods = annotations.mapNotNull { it.getContainingUMethod() }
+      val previewNodes = uMethods.flatMap { runReadAction { getPreviewNodes(it, null, false) } }.filterIsInstance<ComposePreviewElement>().toList()
+      return previewNodes
+  }
 
     /**
      * Configure project with idea project and configure CoreAppEnv
@@ -385,12 +425,59 @@ class Main {
                     return ERRNO_INVALID_ARGS
                 }
                 argumentState.clientName = args[++index]
+            } else if (arg == ARG_OUTPUT_LOCATION) {
+                if (index == args.size - 1) {
+                    System.err.println("Missing argument location")
+                    return ERRNO_INVALID_ARGS
+                }
+                argumentState.outputLocation = args[++index]
+            } else if (arg == ARG_FILE_PATH) {
+                if (index == args.size - 1) {
+                    System.err.println("Missing input file path")
+                    return ERRNO_INVALID_ARGS
+                }
+                argumentState.filePath = args[++index]
             } else if (arg == ARG_CLIENT_VERSION) {
                 if (index == args.size - 1) {
                     System.err.println("Missing client version")
                     return ERRNO_INVALID_ARGS
                 }
                 argumentState.clientVersion = args[++index]
+            } else if (arg == ARG_ROOT_LINT_MODEL) {
+                if (index == args.size - 1) {
+                    System.err.println("Missing lint model argument after $ARG_LINT_MODEL")
+                    return ERRNO_INVALID_ARGS
+                }
+                val paths = args[++index]
+                for (path: String in splitPath(paths)) {
+                    val input: File = getInArgumentPath(path)
+                    if (!input.exists()) {
+                        System.err.println("Lint model $input does not exist.")
+                        return ERRNO_INVALID_ARGS
+                    }
+                    if (!input.isDirectory) {
+                        System.err.println(
+                            "Lint model "
+                                    + input
+                                    + " should be a folder containing the XML descriptor files"
+                                    + if (input.isDirectory) ", not a file" else ""
+                        )
+                        return ERRNO_INVALID_ARGS
+                    }
+                    try {
+                        val reader = LintModelSerialization
+                        val module = reader.readModule(input, null, true, client.pathVariables)
+                        argumentState.rootModule = module
+                    } catch (error: Throwable) {
+                        System.err.println(
+                            ("Could not deserialize "
+                                    + input
+                                    + " to a lint model: "
+                                    + error.toString())
+                        )
+                        return ERRNO_INVALID_ARGS
+                    }
+                }
             } else if (arg == ARG_SDK_HOME) {
                 if (index == args.size - 1) {
                     System.err.println("Missing SDK home directory")
@@ -498,22 +585,14 @@ class Main {
 
     inner class ArgumentState {
 
-        @Nullable
+        var rootModule: LintModelModule? = null
         var clientVersion: String? = null
-
-        @Nullable
         var clientName: String? = null
-
-        @Nullable
+        var filePath: String? = null
+        var outputLocation: String? = null
         var javaLanguageLevel: LanguageLevel? = null
-
-        @Nullable
         var kotlinLanguageLevel: LanguageVersionSettings? = null
-
-        @NonNull
         var modules: MutableList<LintModelModule> = mutableListOf()
-
-        @NonNull
         var files: List<File> = mutableListOf()
     }
 
@@ -647,7 +726,8 @@ class Main {
         @Throws(IOException::class)
         override fun readBytes(file: File): ByteArray {
             // .srcjar file handle?
-            return (readSrcJar(file))!!
+            val srcJarBytes = readSrcJar(file)
+            return srcJarBytes ?: super.readBytes(file)
         }
 
         private var metadata: ProjectMetadata? = null
@@ -656,7 +736,7 @@ class Main {
             val descriptor: File? = flags.projectDescriptorOverride
             if (descriptor != null) {
                 metadata = computeMetadata(this, descriptor)
-                val clientName: String? = metadata!!.clientName
+            val clientName: String? = metadata!!.clientName
                 if (clientName != null) {
                     LintCliClient(clientName) // constructor has side effect
                 }
@@ -722,7 +802,7 @@ class Main {
             return super.getCacheDir(name, create)
         }
 
-        override fun getMergedManifest(project: Project): Document? {
+        override fun getMergedManifest(project: Project): Document {
             if (metadata != null) {
                 val manifest: File? = metadata!!.mergedManifests[project]
                 if (manifest != null && manifest.exists()) {
@@ -738,7 +818,7 @@ class Main {
                     }
                 }
             }
-            return super.getMergedManifest(project)
+            return super.getMergedManifest(project)!!
         }
 
         override fun getSdkHome(): File? {
