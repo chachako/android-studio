@@ -18,7 +18,7 @@ package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 
-class ReaqHandler : DDMPacketHandler {
+class ReaqHandler : DdmPacketHandler {
 
     override fun handlePacket(
         device: DeviceState,

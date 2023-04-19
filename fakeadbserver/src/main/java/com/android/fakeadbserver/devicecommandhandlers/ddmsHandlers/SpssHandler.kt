@@ -24,7 +24,7 @@ import java.nio.ByteOrder
 /**
  * SPSS: 'Sampling Profiling Streaming Start'
  */
-class SpssHandler : DDMPacketHandler {
+class SpssHandler : DdmPacketHandler {
 
     @Suppress("UsePropertyAccessSyntax")
     override fun handlePacket(

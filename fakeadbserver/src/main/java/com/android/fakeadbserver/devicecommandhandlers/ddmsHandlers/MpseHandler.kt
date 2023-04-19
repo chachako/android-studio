@@ -22,7 +22,7 @@ import com.android.fakeadbserver.ProfilerState
 /**
  * MPSE: `Method Profiling Streaming End`
  */
-class MpseHandler : DDMPacketHandler {
+class MpseHandler : DdmPacketHandler {
 
     override fun handlePacket(
         device: DeviceState,

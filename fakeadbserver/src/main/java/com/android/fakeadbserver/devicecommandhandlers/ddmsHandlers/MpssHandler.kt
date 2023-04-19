@@ -24,7 +24,7 @@ import java.nio.ByteOrder
 /**
  * MPSS: `Method Profiling Streaming Start`
  */
-class MpssHandler : DDMPacketHandler {
+class MpssHandler : DdmPacketHandler {
 
     override fun handlePacket(
         device: DeviceState,

@@ -22,7 +22,7 @@ import com.android.fakeadbserver.ProfilerState
 /**
  * SPSE: 'Sampling Profiling Streaming End'
  */
-class SpseHandler : DDMPacketHandler {
+class SpseHandler : DdmPacketHandler {
 
     override fun handlePacket(
         device: DeviceState,

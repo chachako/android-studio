@@ -22,7 +22,7 @@ import java.nio.ByteBuffer
 import java.util.Timer
 import kotlin.concurrent.schedule
 
-class HeloHandler : DDMPacketHandler {
+class HeloHandler : DdmPacketHandler {
 
     override fun handlePacket(
         device: DeviceState,

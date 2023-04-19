@@ -22,7 +22,7 @@ import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket.Co
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class FEATHandler : DDMPacketHandler {
+class VuopHandler : DdmPacketHandler {
 
     override fun handlePacket(
         device: DeviceState,
@@ -30,31 +30,33 @@ class FEATHandler : DDMPacketHandler {
         packet: DdmPacket,
         jdwpHandlerOutput: JdwpHandlerOutput
     ): Boolean {
-        val features = client.features
-        // 4 = number of features
-        // for each feature:
-        //   4 = number of UTF-16 characters
-        //   2 = number of bytes per UTF-16 character
-        val payloadLength = 4 + features.sumOf { 4 + 2 * it.length }
-        val payload = ByteBuffer.allocate(payloadLength).order(ByteOrder.BIG_ENDIAN)
-        payload.putInt(features.size)
-        for (feature in features) {
-            payload.putInt(feature.length)
-            for (c in feature) {
-                payload.putChar(c)
-            }
+        // We only support "capture" view, which is
+        // Opcode: 4 bytes
+        // view root: length prefixed UTF16 string
+        // view: length prefixed UTF16 string
+        val payload = ByteBuffer.wrap(packet.payload).order(ByteOrder.BIG_ENDIAN)
+        val opCode = payload.readInt()
+        if (opCode != VUOP_CAPTURE_VIEW) {
+            replyDdmFail(jdwpHandlerOutput, packet.id)
+            return true // Keep JDWP connection open
+        }
+        val viewRoot = payload.readLengthPrefixedString()
+        val view = payload.readLengthPrefixedString()
+
+        client.viewsState.captureViewData(viewRoot, view)?.also {
+            val responsePacket = createResponse(packet.id, CHUNK_TYPE, it.array())
+            responsePacket.write(jdwpHandlerOutput)
+        } ?: run {
+            replyDdmFail(jdwpHandlerOutput, packet.id)
         }
 
-        val responsePacket = createResponse(packet.id, CHUNK_TYPE, payload.array())
-        responsePacket.write(jdwpHandlerOutput)
-
-        // Keep JDWP connection open
-        return true
+        return true // Keep JDWP connection open
     }
 
     companion object {
-
         @JvmField
-        val CHUNK_TYPE = encodeChunkType("FEAT")
+        val CHUNK_TYPE = encodeChunkType("VUOP")
+
+        const val VUOP_CAPTURE_VIEW = 1
     }
 }

@@ -29,12 +29,12 @@ private const val FEAT_CHUNK_HEADER_LENGTH = 4
  * To use create a JdwpCommandHandler and add this as a packet handler.
  * Provide a map with the features wanted for each expected client pid.
  */
-@Deprecated("Use FEATHandler instead")
+@Deprecated("Use FeatHandler instead")
 class FeaturesHandler(
     private val featureMap: Map<Int, List<String>>,
     private val defaultFeatures: List<String>
 ) : CommandHandler(),
-    DDMPacketHandler {
+    DdmPacketHandler {
 
     override fun handlePacket(
         device: DeviceState,

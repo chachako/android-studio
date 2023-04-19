@@ -18,7 +18,7 @@ package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 
-fun interface DDMPacketHandler {
+fun interface DdmPacketHandler {
 
     /**
      * Interface for fake debugger to handle incoming packets

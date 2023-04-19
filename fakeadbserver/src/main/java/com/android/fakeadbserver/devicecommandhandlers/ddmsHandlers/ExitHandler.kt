@@ -19,7 +19,7 @@ import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket.Companion.encodeChunkType
 
-class ExitHandler : DDMPacketHandler {
+class ExitHandler : DdmPacketHandler {
 
     override fun handlePacket(
         device: DeviceState,

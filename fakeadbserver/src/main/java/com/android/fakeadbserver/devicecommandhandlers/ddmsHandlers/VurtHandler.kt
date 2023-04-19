@@ -20,7 +20,7 @@ import com.android.fakeadbserver.DeviceState
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class VURTHandler : DDMPacketHandler {
+class VurtHandler : DdmPacketHandler {
 
     override fun handlePacket(
       device: DeviceState,

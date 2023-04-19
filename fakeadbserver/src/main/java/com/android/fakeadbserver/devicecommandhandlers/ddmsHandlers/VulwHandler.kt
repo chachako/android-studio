@@ -22,7 +22,7 @@ import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket.Co
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class VULWHandler : DDMPacketHandler {
+class VulwHandler : DdmPacketHandler {
 
     override fun handlePacket(
         device: DeviceState,

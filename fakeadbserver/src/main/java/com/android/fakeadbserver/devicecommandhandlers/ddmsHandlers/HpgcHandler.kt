@@ -19,7 +19,7 @@ import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket.Companion.encodeChunkType
 
-class HpgcHandler : DDMPacketHandler {
+class HpgcHandler : DdmPacketHandler {
 
     override fun handlePacket(
         device: DeviceState,

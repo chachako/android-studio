@@ -25,7 +25,7 @@ import java.nio.ByteOrder
  * Builds the payload of a DDM packet by invoking [block] with a [DdmPayloadWriter]
  */
 @Suppress("TestFunctionName")
-internal fun DDMPacketHandler.DdmPayload(block: DdmPayloadWriter.() -> Unit): ByteArray {
+internal fun DdmPacketHandler.DdmPayload(block: DdmPayloadWriter.() -> Unit): ByteArray {
     val writer = DdmPayloadWriter()
     writer.block()
     return writer.bytes()

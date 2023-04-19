@@ -18,13 +18,13 @@ package com.android.fakeadbserver.devicecommandhandlers
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
-import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DDMPacketHandler
+import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacketHandler
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket.Companion.chunkTypeToString
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket.Companion.fromJdwpPacket
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket.Companion.isDdmPacket
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.ExitHandler
-import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.FEATHandler
+import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.FeatHandler
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpHandlerOutput
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.HeloHandler
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.HpgcHandler
@@ -43,9 +43,9 @@ import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.RealHandler
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.ReaqHandler
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.SpseHandler
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.SpssHandler
-import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.VULWHandler
-import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.VUOPHandler
-import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.VURTHandler
+import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.VulwHandler
+import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.VuopHandler
+import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.VurtHandler
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -57,14 +57,14 @@ import java.nio.charset.StandardCharsets
  */
 class JdwpCommandHandler : DeviceCommandHandler("jdwp") {
 
-    private val ddmPacketHandlers: MutableMap<Int, DDMPacketHandler> = HashMap()
+    private val ddmPacketHandlers: MutableMap<Int, DdmPacketHandler> = HashMap()
     private val jdwpPacketHandlers: MutableMap<JdwpCommandId, JdwpPacketHandler> = HashMap()
 
     init {
         addDdmPacketHandler(HeloHandler.CHUNK_TYPE, HeloHandler())
         addDdmPacketHandler(HpgcHandler.CHUNK_TYPE, HpgcHandler())
         addDdmPacketHandler(ExitHandler.CHUNK_TYPE, ExitHandler())
-        addDdmPacketHandler(FEATHandler.CHUNK_TYPE, FEATHandler())
+        addDdmPacketHandler(FeatHandler.CHUNK_TYPE, FeatHandler())
         addDdmPacketHandler(ReaeHandler.CHUNK_TYPE, ReaeHandler())
         addDdmPacketHandler(RealHandler.CHUNK_TYPE, RealHandler())
         addDdmPacketHandler(ReaqHandler.CHUNK_TYPE, ReaqHandler())
@@ -72,9 +72,9 @@ class JdwpCommandHandler : DeviceCommandHandler("jdwp") {
         addDdmPacketHandler(SpseHandler.CHUNK_TYPE, SpseHandler())
         addDdmPacketHandler(MpssHandler.CHUNK_TYPE, MpssHandler())
         addDdmPacketHandler(MpseHandler.CHUNK_TYPE, MpseHandler())
-        addDdmPacketHandler(VULWHandler.CHUNK_TYPE, VULWHandler())
-        addDdmPacketHandler(VUOPHandler.CHUNK_TYPE, VUOPHandler())
-        addDdmPacketHandler(VURTHandler.CHUNK_TYPE, VURTHandler())
+        addDdmPacketHandler(VulwHandler.CHUNK_TYPE, VulwHandler())
+        addDdmPacketHandler(VuopHandler.CHUNK_TYPE, VuopHandler())
+        addDdmPacketHandler(VurtHandler.CHUNK_TYPE, VurtHandler())
         addDdmPacketHandler(MprqHandler.CHUNK_TYPE, MprqHandler())
         addJdwpPacketHandler(JdwpVmExitHandler.commandId, JdwpVmExitHandler())
         addJdwpPacketHandler(
@@ -85,7 +85,7 @@ class JdwpCommandHandler : DeviceCommandHandler("jdwp") {
         )
     }
 
-    fun addDdmPacketHandler(chunkType: Int, packetHandler: DDMPacketHandler) {
+    fun addDdmPacketHandler(chunkType: Int, packetHandler: DdmPacketHandler) {
         ddmPacketHandlers[chunkType] = packetHandler
     }
 
@@ -176,7 +176,7 @@ class JdwpCommandHandler : DeviceCommandHandler("jdwp") {
 
         // default - ignore the packet and keep listening
         val defaultDdmHandler =
-            DDMPacketHandler { device1: DeviceState, client1: ClientState, packet1: DdmPacket, jdwpHandlerOutput: JdwpHandlerOutput ->
+            DdmPacketHandler { device1: DeviceState, client1: ClientState, packet1: DdmPacket, jdwpHandlerOutput: JdwpHandlerOutput ->
                 handleUnknownDdmsPacket(
                     device1,
                     client1,
