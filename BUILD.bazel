@@ -64,7 +64,6 @@ maven_repository(
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core_1.4.1",
         "@maven//:org.jetbrains.markdown",
         "@maven//:org.mockito.mockito-core",
-        "@maven//:org.smali.baksmali",
         "@maven//:org.tensorflow.tensorflow-lite-metadata",
         "@maven//:org.tomlj.tomlj",
         "@maven//:xerces.xercesImpl",

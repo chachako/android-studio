@@ -413,7 +413,6 @@ maven_repository(
         "@maven//:org.jetbrains.kotlin.kotlin-test",
         "@maven//:org.jetbrains.markdown",
         "@maven//:org.mockito.mockito-core",
-        "@maven//:org.smali.baksmali",
         "@maven//:org.tensorflow.tensorflow-lite-metadata",
         "@maven//:xerces.xercesImpl",
     ],
