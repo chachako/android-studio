@@ -58,6 +58,7 @@ import com.android.build.gradle.internal.services.Aapt2ThreadPoolBuildService
 import com.android.build.gradle.internal.services.ClassesHierarchyBuildService
 import com.android.build.gradle.internal.services.DslServicesImpl
 import com.android.build.gradle.internal.services.FakeDependencyJarBuildService
+import com.android.build.gradle.internal.services.SymbolTableBuildService
 import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.TaskCreationServicesImpl
 import com.android.build.gradle.internal.services.VariantServices
@@ -135,6 +136,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         Aapt2DaemonBuildService.RegistrationAction(project, projectServices.projectOptions).execute()
         ClassesHierarchyBuildService.RegistrationAction(project).execute()
         JacocoInstrumentationService.RegistrationAction(project).execute()
+        SymbolTableBuildService.RegistrationAction(project).execute()
 
         val versionedSdkLoaderService: VersionedSdkLoaderService by lazy {
             withProject("versionedSdkLoaderService") { project ->
