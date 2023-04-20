@@ -18,6 +18,7 @@ package com.android.tools.lint;
 
 import static com.android.SdkConstants.DOT_XML;
 import static com.android.SdkConstants.VALUE_NONE;
+import static com.android.SdkConstants.VALUE_TRUE;
 import static com.android.tools.lint.LintCliClient.printWriter;
 import static com.android.tools.lint.LintCliFlags.ERRNO_APPLIED_SUGGESTIONS;
 import static com.android.tools.lint.LintCliFlags.ERRNO_CREATED_BASELINE;
@@ -1463,6 +1464,8 @@ public class Main {
                     argumentState.desugaredMethodsPaths = new ArrayList<>();
                 }
                 argumentState.desugaredMethodsPaths.add(path);
+            } else if (arg.equals("-XskipJarVerification")) {
+                System.setProperty("android.lint.skip.bytecode.verifier", VALUE_TRUE);
             } else if (arg.equals("--XgenerateApiLookup")) {
                 if (index > args.length - 3) {
                     System.err.println(

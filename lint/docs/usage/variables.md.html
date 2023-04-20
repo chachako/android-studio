@@ -91,6 +91,8 @@ what they are seems useful.
 : If set to `true`, lint will *not* perform bytecode verification of custom
   lint check jars from libraries or passed in via command line flags.
 
+  Corresponding system property: `android.lint.skip.bytecode.verifier`
+
 ### Lint Development Variables
 
 `LINT_PRINT_STACKTRACE`
@@ -168,4 +170,8 @@ what they are seems useful.
   database to read from. If the file is not found or uses the wrong format
   version, lint will fail.
 
+`android.lint.skip.bytecode.verifier`
+: Alias for `$ANDROID_LINT_SKIP_BYTECODE_VERIFIER`
+
+  Corresponding system property: `android.lint.skip.bytecode.verifier`
 <!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://morgan3d.github.io/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>

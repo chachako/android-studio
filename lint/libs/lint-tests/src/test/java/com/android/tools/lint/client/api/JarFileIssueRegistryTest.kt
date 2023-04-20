@@ -16,6 +16,8 @@
 package com.android.tools.lint.client.api
 
 import com.android.testutils.TestUtils
+import com.android.tools.lint.LintCliFlags
+import com.android.tools.lint.MainTest
 import com.android.tools.lint.checks.AbstractCheckTest
 import com.android.tools.lint.checks.infrastructure.TestFile
 import com.android.tools.lint.checks.infrastructure.TestLintTask
@@ -633,6 +635,36 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
                 The Lint API version currently running is $CURRENT_API (${describeApi(CURRENT_API)}). [ObsoleteLintCustomCheck]
                 0 errors, 1 warnings"""
       )
+
+    val dir = File(root, "test2")
+    lint()
+      .files(
+        source( // instead of xml: not valid XML below
+            "res/values/strings.xml",
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <resources/>
+            """
+          )
+          .indented()
+      )
+      .createProjects(dir)
+
+    MainTest.checkDriver(
+      "No issues found.",
+      "",
+      LintCliFlags.ERRNO_SUCCESS,
+      arrayOf(
+        "--lint-rule-jars",
+        lintJar.path,
+        dir.path,
+        "-XskipJarVerification",
+        "--disable",
+        "_TestIssueId"
+      ),
+      null,
+      null
+    )
   }
 
   fun testFragment150Broken() {

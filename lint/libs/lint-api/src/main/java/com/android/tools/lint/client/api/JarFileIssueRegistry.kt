@@ -223,7 +223,9 @@ private constructor(
 
     /** Verifies that the given issue jar [jarFile] is compatible. */
     private fun verify(client: LintClient, jarFile: File): LintJarVerifier {
-      val skip = System.getenv("ANDROID_LINT_SKIP_BYTECODE_VERIFIER") == VALUE_TRUE
+      val skip =
+        (System.getProperty("android.lint.skip.bytecode.verifier")
+          ?: System.getenv("ANDROID_LINT_SKIP_BYTECODE_VERIFIER")) == VALUE_TRUE
       val verifier = LintJarVerifier(client, jarFile, skip)
       verifier.getVerificationThrowable()?.let {
         if (logJarProblems()) {
