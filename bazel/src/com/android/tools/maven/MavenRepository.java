@@ -74,7 +74,9 @@ public class MavenRepository {
     private final ModelBuilder modelBuilder;
 
     private static final List<String> DEPS_WITHOUT_GRADLE_MODULE =
-            ImmutableList.of("org.testng:testng:module:7.3.0");
+            ImmutableList.of(
+                    "org.testng:testng:module:7.3.0",
+                    "com.google.android.apps.common.testing.accessibility.framework:accessibility-test-framework:module:3.1.2");
 
     public MavenRepository(String repoPath, List<RemoteRepository> repositories, boolean verbose) {
         serviceLocator = AetherUtils.newServiceLocator(verbose);
