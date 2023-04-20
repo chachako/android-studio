@@ -2242,13 +2242,13 @@ public class TestLintClient extends LintCliClient {
         @NonNull
         public List<File> getUnitTestSourceFolders() {
             if (unitTestSourceFolders == null) {
-                List<File> testSourceFolders = super.getInstrumentationTestSourceFolders();
+                List<File> testSourceFolders = super.getUnitTestSourceFolders();
 
                 if (testSourceFolders.isEmpty()) {
-                    File instrumentationTests = new File(getDir(), "test");
-                    if (instrumentationTests.exists()) {
+                    File unitTests = new File(getDir(), "test");
+                    if (unitTests.exists()) {
                         List<File> all = Lists.newArrayList(testSourceFolders);
-                        all.add(instrumentationTests);
+                        all.add(unitTests);
                         testSourceFolders = all;
                     }
                 }
