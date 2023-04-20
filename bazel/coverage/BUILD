@@ -222,7 +222,8 @@ coverage_report(
         "tools/adt/idea/dagger/src/com/android/tools/idea/dagger",
     ],
     tests = [
-        "//tools/adt/idea/dagger:intellij.android.dagger.tests_tests",
+        # TODO(b/277967945) too flaky for coverage
+        #"//tools/adt/idea/dagger:intellij.android.dagger.tests_tests",
     ],
 )
 
@@ -1003,7 +1004,8 @@ coverage_report(
         "//tools/adt/idea/build-common:intellij.android.buildCommon_tests",
         "//tools/adt/idea/compose-designer:intellij.android.compose-designer.tests_tests",
         "//tools/adt/idea/connection-assistant:connection-assistant-test_tests",
-        "//tools/adt/idea/dagger:intellij.android.dagger.tests_tests",
+        # TODO(b/277967945) too flaky for coverage
+        #"//tools/adt/idea/dagger:intellij.android.dagger.tests_tests",
         "//tools/adt/idea/compose-ide-plugin:intellij.android.compose-ide-plugin.tests_tests",
         "//tools/adt/idea/databinding:intellij.android.databinding.tests_tests",
         "//tools/adt/idea/debuggers:intellij.android.debuggers.tests_tests",
