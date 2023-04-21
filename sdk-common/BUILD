@@ -1,5 +1,5 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
-load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library")
 load("//tools/base/bazel:proto.bzl", "java_proto_library")
 load("//tools/base/bazel:utils.bzl", "fileset")
@@ -141,6 +141,21 @@ kotlin_test(
         "@maven//:org.jetbrains.intellij.deps.trove4j",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
         "@maven//:org.mockito.mockito-core",
+    ],
+)
+
+kotlin_library(
+    name = "tools.sdk-common.test.util",
+    srcs = [
+        "src/test/java/com/android/ide/common/resources/RecordingLogger.java",
+    ],
+    visibility = [
+        "//tools/adt/idea/rendering:__pkg__",
+    ],
+    deps = [
+        "//tools/base/annotations",
+        "//tools/base/common:tools.common",
+        "@maven//:com.google.guava.guava",
     ],
 )
 
