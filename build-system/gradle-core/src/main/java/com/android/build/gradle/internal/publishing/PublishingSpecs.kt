@@ -324,9 +324,16 @@ class PublishingSpecs {
                 runtime(JAVA_RES, ArtifactType.JAVA_RES)
                 runtime(AAR_METADATA, ArtifactType.AAR_METADATA)
                 runtime(CONSUMER_PROGUARD_DIR, ArtifactType.UNFILTERED_PROGUARD_RULES)
-                // Publish LOCAL_AAR_FOR_LINT to API_AND_RUNTIME_ELEMENTS to support compileOnly
-                // module dependencies.
+
+                // Publish lint artifacts to API_AND_RUNTIME_ELEMENTS to support compileOnly module
+                // dependencies.
+                output(LINT_PUBLISH_JAR, ArtifactType.LINT)
+                output(LINT_MODEL, ArtifactType.LINT_MODEL)
+                output(LINT_VITAL_LINT_MODEL, ArtifactType.LINT_VITAL_LINT_MODEL)
+                output(LINT_PARTIAL_RESULTS, ArtifactType.LINT_PARTIAL_RESULTS)
+                output(LINT_VITAL_PARTIAL_RESULTS, ArtifactType.LINT_VITAL_PARTIAL_RESULTS)
                 output(LOCAL_AAR_FOR_LINT, ArtifactType.LOCAL_AAR_FOR_LINT)
+                output(LINT_MODEL_METADATA, ArtifactType.LINT_MODEL_METADATA)
             }
 
             // Publishing will be done manually from the lint standalone plugin for now.

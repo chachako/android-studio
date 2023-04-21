@@ -37,6 +37,14 @@ kotlin {
 
       enableUnitTest = true
       enableAndroidTest = true
+
+        lint {
+            disable += "GradleDependency" // such that we don't flag newly available Kotlin versions etc
+            abortOnError = true
+            checkTestSources = true
+            checkDependencies = true
+            textReport = true
+        }
     }
   }
 

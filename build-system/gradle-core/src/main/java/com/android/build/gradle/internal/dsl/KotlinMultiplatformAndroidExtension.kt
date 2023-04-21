@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.dsl
 import com.android.build.api.dsl.AarMetadata
 import com.android.build.api.dsl.ApkSigningConfig
 import com.android.build.api.dsl.Installation
+import com.android.build.api.dsl.Lint
 import com.android.build.api.dsl.Packaging
 import com.android.build.api.dsl.TestCoverage
 import com.android.build.api.dsl.TestOptions
@@ -89,6 +90,10 @@ interface KotlinMultiplatformAndroidExtension {
     var enableInstrumentedTestCoverage: Boolean
 
     val testCoverage: TestCoverage
+
+
+    val lint: Lint
+    fun lint(action: Lint.() -> Unit)
 
     fun onVariant(
         callback: KotlinMultiplatformAndroidVariant.() -> Unit

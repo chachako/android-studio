@@ -28,6 +28,8 @@ import com.android.build.api.dsl.Lint
 import com.android.build.api.dsl.Prefab
 import com.android.build.api.dsl.Splits
 import com.android.build.api.dsl.TestOptions
+import com.android.build.api.variant.DependenciesInfoBuilder
+import com.android.build.api.variant.impl.DependenciesInfoBuilderImpl
 import com.android.build.gradle.internal.KotlinMultiplatformCompileOptionsImpl
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.attribution.BuildAnalyzerIssueReporter
@@ -36,6 +38,7 @@ import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.dsl.LanguageSplitOptions
 import com.android.build.gradle.internal.instrumentation.ASM_API_VERSION_FOR_INSTRUMENTATION
+import com.android.build.gradle.internal.lint.getLocalCustomLintChecks
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.BaseServices
@@ -151,12 +154,23 @@ class KmpGlobalTaskCreationConfigImpl(
 
     override val managedDeviceRegistry = ManagedDeviceRegistry(testOptions)
     override val lintChecks = createCustomLintChecksConfig(project)
+    override val lintPublish: Configuration = createCustomLintPublishConfig(project)
     override val fakeDependency = createFakeDependencyConfig(project)
 
     private fun createCustomLintChecksConfig(project: Project): Configuration {
-        val lintChecks = project.configurations.maybeCreate(VariantDependencies.CONFIG_NAME_LINTCHECKS)
+        val lintChecks = project.configurations
+            .maybeCreate(VariantDependencies.CONFIG_NAME_LINTCHECKS)
         lintChecks.isVisible = false
         lintChecks.description = "Configuration to apply external lint check jar"
+        lintChecks.isCanBeConsumed = false
+        return lintChecks
+    }
+
+    private fun createCustomLintPublishConfig(project: Project): Configuration {
+        val lintChecks = project.configurations
+            .maybeCreate(VariantDependencies.CONFIG_NAME_LINTPUBLISH)
+        lintChecks.isVisible = false
+        lintChecks.description = "Configuration to publish external lint check jar"
         lintChecks.isCanBeConsumed = false
         return lintChecks
     }
@@ -175,6 +189,12 @@ class KmpGlobalTaskCreationConfigImpl(
         services.projectOptions.get(IntegerOption.IDE_TARGET_DEVICE_API)
 
     override val testCoverage = extension.testCoverage
+
+    override val lintOptions: Lint = extension.lint
+
+    override val localCustomLintChecks: FileCollection by lazy(LazyThreadSafetyMode.NONE) {
+        getLocalCustomLintChecks(lintChecks)
+    }
 
     // Unsupported properties
     // TODO: Refactor the parent interface so that we don't have to override these values to avoid
@@ -206,15 +226,9 @@ class KmpGlobalTaskCreationConfigImpl(
         get() = throw IllegalAccessException("Not supported for kmp")
     override val legacyLanguageSplitOptions: LanguageSplitOptions
         get() = throw IllegalAccessException("Not supported for kmp")
-    override val localCustomLintChecks: FileCollection
-        get() = throw IllegalAccessException("Not supported for kmp")
     override val versionedNdkHandler: SdkComponentsBuildService.VersionedNdkHandler
         get() = throw IllegalAccessException("Not supported for kmp")
-    override val lintPublish: Configuration
-        get() = throw IllegalAccessException("Not supported for kmp")
     override val externalNativeBuild: ExternalNativeBuild
-        get() = throw IllegalAccessException("Not supported for kmp")
-    override val lintOptions: Lint
         get() = throw IllegalAccessException("Not supported for kmp")
     override val bundleOptions: Bundle
         get() = throw IllegalAccessException("Not supported for kmp")

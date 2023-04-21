@@ -44,12 +44,19 @@ import com.android.build.gradle.internal.dependency.JacocoInstrumentationService
 import com.android.build.gradle.internal.dependency.SingleVariantBuildTypeRule
 import com.android.build.gradle.internal.dependency.SingleVariantProductFlavorRule
 import com.android.build.gradle.internal.dependency.VariantDependencies
+import com.android.build.gradle.internal.dsl.BuildType
+import com.android.build.gradle.internal.dsl.DefaultConfig
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
+import com.android.build.gradle.internal.dsl.ProductFlavor
+import com.android.build.gradle.internal.dsl.SigningConfig
 import com.android.build.gradle.internal.dsl.decorator.androidPluginDslDecorator
+import com.android.build.gradle.internal.ide.dependencies.LibraryDependencyCacheBuildService
+import com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService
 import com.android.build.gradle.internal.ide.kmp.KotlinIdeImportConfigurator
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker.Companion.android
+import com.android.build.gradle.internal.lint.LintFixBuildService
 import com.android.build.gradle.internal.manifest.LazyManifestParser
 import com.android.build.gradle.internal.scope.KotlinMultiplatformBuildFeaturesValuesImpl
 import com.android.build.gradle.internal.scope.MutableTaskContainer
@@ -58,6 +65,8 @@ import com.android.build.gradle.internal.services.Aapt2ThreadPoolBuildService
 import com.android.build.gradle.internal.services.ClassesHierarchyBuildService
 import com.android.build.gradle.internal.services.DslServicesImpl
 import com.android.build.gradle.internal.services.FakeDependencyJarBuildService
+import com.android.build.gradle.internal.services.LintClassLoaderBuildService
+import com.android.build.gradle.internal.services.StringCachingBuildService
 import com.android.build.gradle.internal.services.SymbolTableBuildService
 import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.TaskCreationServicesImpl
@@ -70,6 +79,9 @@ import com.android.build.gradle.internal.tasks.factory.BootClasspathConfigImpl
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.KmpGlobalTaskCreationConfigImpl
 import com.android.build.gradle.internal.utils.validatePreviewTargetValue
+import com.android.build.gradle.internal.variant.VariantInputModel
+import com.android.build.gradle.internal.variant.VariantModel
+import com.android.build.gradle.internal.variant.VariantModelImpl
 import com.android.build.gradle.internal.variant.VariantPathHelper
 import com.android.build.gradle.options.BooleanOption
 import com.android.builder.core.ComponentTypeImpl
@@ -139,6 +151,17 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         ClassesHierarchyBuildService.RegistrationAction(project).execute()
         JacocoInstrumentationService.RegistrationAction(project).execute()
         SymbolTableBuildService.RegistrationAction(project).execute()
+
+        val stringCachingService: Provider<StringCachingBuildService> =
+            StringCachingBuildService.RegistrationAction(project).execute()
+        val mavenCoordinatesCacheBuildService =
+            MavenCoordinatesCacheBuildService.RegistrationAction(project, stringCachingService)
+                .execute()
+        LibraryDependencyCacheBuildService.RegistrationAction(
+            project, mavenCoordinatesCacheBuildService
+        ).execute()
+        LintClassLoaderBuildService.RegistrationAction(project).execute()
+        LintFixBuildService.RegistrationAction(project).execute()
 
         val versionedSdkLoaderService: VersionedSdkLoaderService by lazy {
             withProject("versionedSdkLoaderService") { project ->

@@ -421,6 +421,8 @@ abstract class BundleAar : Zip(), VariantAwareTask {
             super.configure(task)
             task.destinationDirectory.set(creationConfig.paths.aarLocation)
             task.archiveExtension.set(BuilderConstants.EXT_LIB_ARCHIVE)
+
+            task.from(creationConfig.artifacts.get(InternalArtifactType.LINT_PUBLISH_JAR))
         }
     }
 

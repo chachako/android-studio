@@ -13,6 +13,7 @@ import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.TaskFactory
 import com.android.build.gradle.internal.variant.VariantModel
 import com.android.builder.core.ComponentType
+import com.android.builder.core.ComponentTypeImpl
 import com.android.utils.appendCapitalized
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -44,6 +45,21 @@ class LintTaskManager constructor(
     fun createLintTasks(
         componentType: ComponentType,
         variantModel: VariantModel,
+        variantPropertiesList: List<VariantCreationConfig>,
+        testComponentPropertiesList: Collection<TestComponentCreationConfig>
+    ) {
+        return createLintTasks(
+            componentType,
+            defaultVariant = variantModel.defaultVariant,
+            variantPropertiesList,
+            testComponentPropertiesList
+        )
+    }
+
+
+    fun createLintTasks(
+        componentType: ComponentType,
+        defaultVariant: String?,
         variantPropertiesList: List<VariantCreationConfig>,
         testComponentPropertiesList: Collection<TestComponentCreationConfig>
     ) {
@@ -155,7 +171,6 @@ class LintTaskManager constructor(
             return
         }
 
-        val defaultVariant = variantModel.defaultVariant
         if (defaultVariant != null) {
             taskFactory.configure(AndroidLintGlobalTask.GlobalCreationAction.name, AndroidLintGlobalTask::class.java) { globalTask ->
                 globalTask.dependsOn("lint".appendCapitalized(defaultVariant))

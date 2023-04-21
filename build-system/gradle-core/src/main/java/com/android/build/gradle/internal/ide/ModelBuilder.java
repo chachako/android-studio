@@ -45,6 +45,7 @@ import com.android.build.gradle.internal.component.AndroidTestCreationConfig;
 import com.android.build.gradle.internal.component.ApkCreationConfig;
 import com.android.build.gradle.internal.component.ComponentCreationConfig;
 import com.android.build.gradle.internal.component.ConsumableCreationConfig;
+import com.android.build.gradle.internal.component.KmpComponentCreationConfig;
 import com.android.build.gradle.internal.component.NestedComponentCreationConfig;
 import com.android.build.gradle.internal.component.UnitTestCreationConfig;
 import com.android.build.gradle.internal.component.VariantCreationConfig;
@@ -1192,8 +1193,12 @@ public class ModelBuilder<Extension extends BaseExtension>
                             .getVariantData()
                             .getExtraGeneratedSourceFoldersOnlyInModel());
         }
-        fileCollection.from(
-                component.getArtifacts().get(InternalArtifactType.AP_GENERATED_SOURCES.INSTANCE));
+        if (!(component instanceof KmpComponentCreationConfig)) {
+            fileCollection.from(
+                    component
+                            .getArtifacts()
+                            .get(InternalArtifactType.AP_GENERATED_SOURCES.INSTANCE));
+        }
         fileCollection.disallowChanges();
         return fileCollection;
     }
@@ -1210,9 +1215,11 @@ public class ModelBuilder<Extension extends BaseExtension>
         ConfigurableFileCollection fileCollection = component.getServices().fileCollection();
         ArtifactsImpl artifacts = component.getArtifacts();
         fileCollection.from(getGeneratedSourceFoldersFileCollectionForUnitTests(component));
-        Callable<Directory> aidlCallable =
-                () -> artifacts.get(AIDL_SOURCE_OUTPUT_DIR.INSTANCE).getOrNull();
-        fileCollection.from(aidlCallable);
+        if (component.getBuildFeatures().getAidl()) {
+            Callable<Directory> aidlCallable =
+                    () -> artifacts.get(AIDL_SOURCE_OUTPUT_DIR.INSTANCE).getOrNull();
+            fileCollection.from(aidlCallable);
+        }
         if (component.getBuildConfigCreationConfig() != null
                 && component.getBuildConfigCreationConfig().getBuildConfigType()
                         == BuildConfigType.JAVA_SOURCE) {
@@ -1233,7 +1240,7 @@ public class ModelBuilder<Extension extends BaseExtension>
             ndkMode =
                     mainVariant.getRenderscriptCreationConfig().getDslRenderscriptNdkModeEnabled();
         }
-        if (!ndkMode) {
+        if (!ndkMode && component.getBuildFeatures().getRenderScript()) {
             Callable<Directory> renderscriptCallable =
                     () -> artifacts.get(RENDERSCRIPT_SOURCE_OUTPUT_DIR.INSTANCE).getOrNull();
             fileCollection.from(renderscriptCallable);

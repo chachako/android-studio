@@ -19,15 +19,18 @@ package com.android.build.gradle.internal.lint
 
 import com.android.SdkConstants
 import com.android.Version
+import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.dsl.Lint
 import com.android.build.api.variant.InternalSources
 import com.android.build.api.variant.ResValue
+import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.api.variant.impl.FlatSourceDirectoriesImpl
 import com.android.build.api.variant.impl.LayeredSourceDirectoriesImpl
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.ConsumableCreationConfig
+import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.component.LibraryCreationConfig
 import com.android.build.gradle.internal.component.UnitTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
@@ -457,6 +460,7 @@ internal fun ComponentType.toLintModelModuleType(): LintModelModuleType {
         ComponentTypeImpl.LIBRARY -> LintModelModuleType.LIBRARY
         ComponentTypeImpl.OPTIONAL_APK -> LintModelModuleType.DYNAMIC_FEATURE
         ComponentTypeImpl.TEST_APK -> LintModelModuleType.TEST
+        ComponentTypeImpl.KMP_ANDROID -> LintModelModuleType.LIBRARY
         else -> throw RuntimeException("Unsupported ComponentTypeImpl value")
     }
 }
@@ -963,6 +967,8 @@ abstract class VariantInputs {
             targetSdkVersion.initialize(creationConfig.targetSdk)
         } else if (creationConfig is LibraryCreationConfig) {
             targetSdkVersion.initialize(creationConfig.targetSdk)
+        } else if (creationConfig is KmpComponentCreationConfig) {
+            targetSdkVersion.initialize(creationConfig.minSdk)
         }
 
         resValues.setDisallowChanges(
@@ -1504,8 +1510,16 @@ abstract class AndroidArtifactInput : ArtifactInput() {
                 ?: false
         )
         if (includeClassesOutputDirectories) {
-            classesOutputDirectories.from(creationConfig.artifacts.get(InternalArtifactType.JAVAC))
-
+            if (creationConfig is KmpComponentCreationConfig) {
+                classesOutputDirectories.from(
+                    creationConfig
+                        .artifacts
+                        .forScope(ScopedArtifacts.Scope.PROJECT)
+                        .getFinalArtifacts(ScopedArtifact.CLASSES)
+                )
+            } else {
+                classesOutputDirectories.from(creationConfig.artifacts.get(InternalArtifactType.JAVAC))
+            }
             creationConfig.oldVariantApiLegacySupport?.variantData?.let {
                 classesOutputDirectories.from(
                     it.allPreJavacGeneratedBytecode
@@ -1654,7 +1668,16 @@ abstract class JavaArtifactInput : ArtifactInput() {
         fatalOnly: Boolean
     ): JavaArtifactInput {
         if (includeClassesOutputDirectories) {
-            classesOutputDirectories.from(creationConfig.artifacts.get(InternalArtifactType.JAVAC))
+            if (creationConfig is KmpComponentCreationConfig) {
+                classesOutputDirectories.from(
+                    creationConfig
+                        .artifacts
+                        .forScope(ScopedArtifacts.Scope.PROJECT)
+                        .getFinalArtifacts(ScopedArtifact.CLASSES)
+                )
+            } else {
+                classesOutputDirectories.from(creationConfig.artifacts.get(InternalArtifactType.JAVAC))
+            }
 
             creationConfig.oldVariantApiLegacySupport?.variantData?.let {
                 classesOutputDirectories.from(

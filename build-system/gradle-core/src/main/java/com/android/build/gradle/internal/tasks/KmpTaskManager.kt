@@ -27,22 +27,34 @@ import com.android.build.gradle.internal.AndroidTestTaskManager
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.KmpCreationConfig
+import com.android.build.gradle.internal.component.TestComponentCreationConfig
 import com.android.build.gradle.internal.coverage.JacocoConfigurations
 import com.android.build.gradle.internal.coverage.JacocoReportTask
+import com.android.build.gradle.internal.dsl.BuildType
+import com.android.build.gradle.internal.dsl.DefaultConfig
+import com.android.build.gradle.internal.dsl.ProductFlavor
+import com.android.build.gradle.internal.dsl.SigningConfig
+import com.android.build.gradle.internal.lint.LintTaskManager
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.res.GenerateEmptyResourceFilesTask
 import com.android.build.gradle.internal.res.GenerateLibraryRFileTask
+import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.R8ParallelBuildService
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.TaskConfigAction
 import com.android.build.gradle.internal.tasks.factory.TaskProviderCallback
 import com.android.build.gradle.internal.tasks.factory.registerTask
+import com.android.build.gradle.internal.variant.VariantInputModel
+import com.android.build.gradle.internal.variant.VariantModel
+import com.android.build.gradle.internal.variant.VariantModelImpl
 import com.android.build.gradle.options.IntegerOption
 import com.android.build.gradle.tasks.BundleAar
 import com.android.build.gradle.tasks.ProcessLibraryManifest
 import com.android.build.gradle.tasks.ProcessTestManifest
 import com.android.build.gradle.tasks.ZipMergingTask
 import com.android.build.gradle.tasks.factory.AndroidUnitTest
+import com.android.builder.core.ComponentType
+import com.android.builder.core.ComponentTypeImpl
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskProvider
@@ -60,6 +72,8 @@ class KmpTaskManager(
         InternalScopedArtifacts.InternalScope.LOCAL_DEPS,
     )
 
+    private val lintTaskManager = LintTaskManager(globalConfig, taskFactory, project)
+
     var hasCreatedTasks = false
 
     fun createTasks(
@@ -69,10 +83,33 @@ class KmpTaskManager(
         androidTest: KmpAndroidTestImpl?,
     ) {
         createMainVariantTasks(project, variant)
-        unitTest?.let { createUnitTestTasks(project, unitTest) }
+        unitTest?.let {
+            createUnitTestTasks(project, unitTest)
+        }
         androidTest?.let {
             createAndroidTestTasks(project, androidTest)
         }
+
+        taskFactory.register(PrepareLintJarForPublish.CreationAction(globalConfig))
+        variant.artifacts
+            .copy(
+                InternalArtifactType.LINT_PUBLISH_JAR,
+                globalConfig.globalArtifacts
+            )
+
+        taskFactory.register(COMPILE_LINT_CHECKS_TASK) { task: Task ->
+            task.dependsOn(globalConfig.localCustomLintChecks)
+        }
+
+        lintTaskManager.createLintTasks(
+            ComponentTypeImpl.KMP_ANDROID,
+            variant.name,
+            listOf(variant),
+            listOfNotNull(
+                unitTest as? TestComponentCreationConfig,
+                androidTest as? TestComponentCreationConfig
+            )
+        )
 
         variant.publishBuildArtifacts()
 
