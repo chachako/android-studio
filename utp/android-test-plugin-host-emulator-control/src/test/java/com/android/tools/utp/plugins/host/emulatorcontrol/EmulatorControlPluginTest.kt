@@ -47,6 +47,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations.openMocks
 import java.io.File
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 /**
  * Unit tests for [EmulatorAccess]
@@ -166,6 +167,9 @@ class EmulatorControlPluginTest {
         val fakeJwk = tempFolder.root.path + File.separator + UUID.randomUUID().toString()
         File(fakeJwk).bufferedWriter().use { out -> out.write("fake-cert") }
         val modified = File(fakeJwk).lastModified()
+
+        // Wait a bit so we are sure we have a different timestamp.
+        TimeUnit.MILLISECONDS.sleep(10)
         val localEmulatorControlPluginConfig = buildemulatorControlConfig(
             jwkPath = fakeJwk
         )
