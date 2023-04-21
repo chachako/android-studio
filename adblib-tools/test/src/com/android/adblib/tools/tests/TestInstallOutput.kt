@@ -17,7 +17,6 @@ package com.android.adblib.tools.tests
 
 import com.android.adblib.tools.InstallException
 import com.android.adblib.tools.InstallResult
-import com.android.adblib.tools.PMDriver
 import com.android.adblib.tools.PMDriver.Companion.parseInstallResult
 import com.android.adblib.tools.PMDriver.Companion.parseSessionID
 import com.android.adblib.tools.SUCCESS_OUTPUT
@@ -27,7 +26,7 @@ import org.junit.Test
 class TestInstallOutput {
 
     /**
-     * Test that [InstallerResult] properly reports unknown failure based on install output.
+     * Test that [InstallResult] properly reports unknown failure based on install output.
      */
     @Test
     fun testInstallResult() {
@@ -72,7 +71,7 @@ class TestInstallOutput {
     fun testCommitResult() {
         // Get the Success message
         val sessionID = "1741914381"
-        var id = parseSessionID("Success: created install session [$sessionID]\n")
+        val id = parseSessionID("Success: created install session [$sessionID]\n")
         Assert.assertEquals(sessionID, id)
 
         // In case of recognized failure, the error message captures it.
@@ -91,7 +90,7 @@ class TestInstallOutput {
     fun testCommitResultWithLF() {
         // Get the Success message
         val sessionID = "1741914381"
-        var id = parseSessionID("Success: created install session [$sessionID]\n")
+        val id = parseSessionID("Success: created install session [$sessionID]\n")
         Assert.assertEquals(sessionID, id)
     }
 }
