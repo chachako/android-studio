@@ -1,12 +1,11 @@
 plugins {
   id("dumpAndroidTarget")
   id("org.jetbrains.kotlin.multiplatform")
+  id("com.android.kotlin.multiplatform")
 }
 
-project.plugins.apply(com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin::class.java)
-
 kotlin {
-  (this as ExtensionAware).extensions.configure(com.android.build.api.variant.impl.KotlinMultiplatformAndroidTarget::class.java) {
+  androidExperimental {
     sourceSets.getByName("androidMain") {
       dependencies {
         api(project(":androidLib"))

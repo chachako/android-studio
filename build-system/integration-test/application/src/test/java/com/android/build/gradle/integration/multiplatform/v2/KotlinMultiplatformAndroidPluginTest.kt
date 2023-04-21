@@ -64,7 +64,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                extensions.configure(com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension::class.java) {
+                android {
                     enableUnitTestCoverage = true
                 }
             """.trimIndent()
@@ -200,7 +200,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                extensions.configure(com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension::class.java) {
+                android {
                     packagingOptions.resources.excludes.addAll(listOf(
                         "**/*.java",
                         "junit/**",

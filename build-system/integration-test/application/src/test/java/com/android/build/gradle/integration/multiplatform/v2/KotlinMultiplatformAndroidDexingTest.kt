@@ -42,7 +42,7 @@ class KotlinMultiplatformAndroidDexingTest {
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
                 kotlin {
-                    (this as ExtensionAware).extensions.configure(com.android.build.api.variant.impl.KotlinMultiplatformAndroidTarget::class.java) {
+                    androidExperimental {
                         onMainCompilation {
                             compilerOptions.configure {
                                 jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)

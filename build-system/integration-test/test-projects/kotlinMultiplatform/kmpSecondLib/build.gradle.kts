@@ -1,9 +1,8 @@
 plugins {
   id("dumpAndroidTarget")
   id("org.jetbrains.kotlin.multiplatform")
+  id("com.android.kotlin.multiplatform")
 }
-
-project.plugins.apply(com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin::class.java)
 
 kotlin {
   jvm()

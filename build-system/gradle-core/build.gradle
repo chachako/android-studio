@@ -114,6 +114,11 @@ gradlePlugin {
             id = "com.android.privacy-sandbox-sdk"
             implementationClass = "com.android.build.gradle.api.PrivacySandboxSdkPlugin"
         }
+        comAndroidKotlinMultiplatform {
+            id = "com.android.kotlin.multiplatform"
+            // TODO(b/267309622): Move to gradle-api
+            implementationClass = "com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin"
+        }
     }
 }
 

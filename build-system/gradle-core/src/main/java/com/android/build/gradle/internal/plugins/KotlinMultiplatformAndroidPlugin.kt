@@ -227,7 +227,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
 
             (kotlinExtension as ExtensionAware).extensions.add(
                 KotlinMultiplatformAndroidTarget::class.java,
-                "androidPrototype",
+                "androidExperimental",
                 androidTarget
             )
 
