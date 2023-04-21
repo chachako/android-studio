@@ -1601,7 +1601,6 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/frontend.native.kotlin_module
   META-INF/ir.psi2ir.kotlin_module
   META-INF/ir.serialization.common.kotlin_module
-  META-INF/ir.serialization.jvm.kotlin_module
   META-INF/ir.tree.kotlin_module
   META-INF/java.kotlin_module
   META-INF/jps-common.kotlin_module
@@ -1958,8 +1957,6 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/backend/jvm/lower/indy/
   org/jetbrains/kotlin/backend/jvm/mapping/
   org/jetbrains/kotlin/backend/jvm/metadata/
-  org/jetbrains/kotlin/backend/jvm/serialization/
-  org/jetbrains/kotlin/backend/jvm/serialization/proto/
   org/jetbrains/kotlin/build/
   org/jetbrains/kotlin/build/report/
   org/jetbrains/kotlin/build/report/metrics/
@@ -2184,8 +2181,6 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/ir/
   org/jetbrains/kotlin/ir/backend/
   org/jetbrains/kotlin/ir/backend/js/
-  org/jetbrains/kotlin/ir/backend/jvm/
-  org/jetbrains/kotlin/ir/backend/jvm/serialization/
   org/jetbrains/kotlin/ir/builders/
   org/jetbrains/kotlin/ir/builders/declarations/
   org/jetbrains/kotlin/ir/declarations/
