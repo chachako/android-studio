@@ -16,6 +16,8 @@
 
 package com.android.kotlin.multiplatform.ide.models.serialization
 
+import com.android.kotlin.multiplatform.models.AndroidCompilation
+import com.android.kotlin.multiplatform.models.AndroidSourceSet
 import com.android.kotlin.multiplatform.models.AndroidTarget
 import com.google.protobuf.InvalidProtocolBufferException
 import org.jetbrains.kotlin.gradle.idea.serialize.IdeaKotlinExtrasSerializer
@@ -53,3 +55,48 @@ object AndroidTargetModelSerializer: IdeaKotlinExtrasSerializer<() -> AndroidTar
         value: () -> AndroidTarget?
     ): ByteArray? = value()?.toByteArray()
 }
+
+object AndroidCompilationModelSerializer: IdeaKotlinExtrasSerializer<() -> AndroidCompilation?> {
+
+    override fun deserialize(
+        context: IdeaKotlinSerializationContext,
+        data: ByteArray
+    ): () -> AndroidCompilation? = with(context.logger) {
+        {
+            try {
+                AndroidCompilation.parseFrom(data)
+            } catch (e: InvalidProtocolBufferException) {
+                handleException("Android Compilation Model", e)
+                null
+            }
+        }
+    }
+
+    override fun serialize(
+        context: IdeaKotlinSerializationContext,
+        value: () -> AndroidCompilation?
+    ): ByteArray? = value()?.toByteArray()
+}
+
+object AndroidSourceSetModelSerializer: IdeaKotlinExtrasSerializer<() -> AndroidSourceSet?> {
+
+    override fun deserialize(
+        context: IdeaKotlinSerializationContext,
+        data: ByteArray
+    ): () -> AndroidSourceSet? = with(context.logger) {
+        {
+            try {
+                AndroidSourceSet.parseFrom(data)
+            } catch (e: InvalidProtocolBufferException) {
+                handleException("Android SourceSet Model", e)
+                null
+            }
+        }
+    }
+
+    override fun serialize(
+        context: IdeaKotlinSerializationContext,
+        value: () -> AndroidSourceSet?
+    ): ByteArray? = value()?.toByteArray()
+}
+

@@ -473,6 +473,12 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             projectServices.projectOptions,
             syncIssueReporter
         )
+
+        KotlinModelBuildingConfigurator.setupAndroidCompilations(
+            listOfNotNull(mainVariant, unitTest, androidTest),
+            androidExtension.testInstrumentationRunner,
+            androidExtension.testInstrumentationRunnerArguments
+        )
     }
 
     private fun Configuration.forMainVariantConfiguration(

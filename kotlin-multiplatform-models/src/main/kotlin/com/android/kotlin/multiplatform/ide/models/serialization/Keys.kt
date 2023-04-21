@@ -15,6 +15,8 @@
  */
 package com.android.kotlin.multiplatform.ide.models.serialization
 
+import com.android.kotlin.multiplatform.models.AndroidCompilation
+import com.android.kotlin.multiplatform.models.AndroidSourceSet
 import com.android.kotlin.multiplatform.models.AndroidTarget
 import org.jetbrains.kotlin.tooling.core.extrasKeyOf
 
@@ -25,3 +27,19 @@ import org.jetbrains.kotlin.tooling.core.extrasKeyOf
  * This is part of the contract between build and sync, and must not change.
  */
 val androidTargetKey = extrasKeyOf<() -> AndroidTarget?>("android-target-model")
+
+/**
+ * The extras map key that is used to serialize the android compilation models during build import
+ * action and deserialize it during IDE project resolution.
+ *
+ * This is part of the contract between build and sync, and must not change.
+ */
+val androidCompilationKey = extrasKeyOf<() -> AndroidCompilation?>("android-compilation-model")
+
+/**
+ * The extras map key that is used to serialize the android source set models during build import
+ * action and deserialize it during IDE project resolution.
+ *
+ * This is part of the contract between build and sync, and must not change.
+ */
+val androidSourceSetKey = extrasKeyOf<() -> AndroidSourceSet?>("android-source-set-model")

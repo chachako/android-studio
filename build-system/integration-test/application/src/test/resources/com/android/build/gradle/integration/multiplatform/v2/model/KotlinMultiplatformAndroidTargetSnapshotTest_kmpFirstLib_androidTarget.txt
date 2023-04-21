@@ -7,7 +7,14 @@
         "sourceSetName": "androidInstrumentedTest",
         "extras": {
           "com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker": {},
-          "org.gradle.api.artifacts.Configuration;resolvableMetadataConfiguration": "configuration \u0027:kmpFirstLib:androidInstrumentedTestResolvableDependenciesMetadata\u0027"
+          "org.gradle.api.artifacts.Configuration;resolvableMetadataConfiguration": "configuration \u0027:kmpFirstLib:androidInstrumentedTestResolvableDependenciesMetadata\u0027",
+          "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidSourceSet?\u003e;android-source-set-model": {
+            "sourceProvider": {
+              "manifestFile": {
+                "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/src/androidInstrumentedTest/AndroidManifest.xml"
+              }
+            }
+          }
         }
       },
       "allSourceSets": [
@@ -15,7 +22,32 @@
           "sourceSetName": "androidInstrumentedTest"
         }
       ],
-      "extras": {}
+      "extras": {
+        "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidCompilation?\u003e;android-compilation-model": {
+          "type": "INSTRUMENTED_TEST",
+          "instrumentedTestDslInfo": {
+            "namespace": "com.example.kmpfirstlib.test",
+            "testInstrumentationRunner": "androidx.test.runner.AndroidJUnitRunner",
+            "testInstrumentationRunnerArguments": {},
+            "signingConfig": {
+              "name": "debug",
+              "storeFile": {
+                "absolutePath": "{ANDROID_PREFS}/.android/debug.keystore"
+              },
+              "storePassword": "android",
+              "keyAlias": "AndroidDebugKey",
+              "keyPassword": "android",
+              "enableV1Signing": true,
+              "enableV2Signing": true,
+              "enableV3Signing": false,
+              "enableV4Signing": false,
+              "isSigningReady": true
+            }
+          },
+          "defaultSourceSetName": "androidInstrumentedTest",
+          "assembleTaskName": "assembleAndroidInstrumentedTest"
+        }
+      }
     },
     {
       "compilationName": "main",
@@ -23,7 +55,14 @@
         "sourceSetName": "androidMain",
         "extras": {
           "com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker": {},
-          "org.gradle.api.artifacts.Configuration;resolvableMetadataConfiguration": "configuration \u0027:kmpFirstLib:androidMainResolvableDependenciesMetadata\u0027"
+          "org.gradle.api.artifacts.Configuration;resolvableMetadataConfiguration": "configuration \u0027:kmpFirstLib:androidMainResolvableDependenciesMetadata\u0027",
+          "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidSourceSet?\u003e;android-source-set-model": {
+            "sourceProvider": {
+              "manifestFile": {
+                "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/src/androidMain/AndroidManifest.xml"
+              }
+            }
+          }
         }
       },
       "allSourceSets": [
@@ -34,7 +73,27 @@
           "sourceSetName": "commonMain"
         }
       ],
-      "extras": {}
+      "extras": {
+        "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidCompilation?\u003e;android-compilation-model": {
+          "type": "MAIN",
+          "mainDslInfo": {
+            "namespace": "com.example.kmpfirstlib",
+            "compileSdkTarget": "android-33",
+            "minSdkVersion": {
+              "apiLevel": 22,
+              "codename": ""
+            },
+            "proguardFiles": [
+              {
+                "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/build/intermediates/default_proguard_files/global/proguard-android.txt-{AGP_Version}"
+              }
+            ],
+            "consumerProguardFiles": []
+          },
+          "defaultSourceSetName": "androidMain",
+          "assembleTaskName": "assembleAndroidMain"
+        }
+      }
     },
     {
       "compilationName": "unitTest",
@@ -42,7 +101,14 @@
         "sourceSetName": "androidUnitTest",
         "extras": {
           "com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker": {},
-          "org.gradle.api.artifacts.Configuration;resolvableMetadataConfiguration": "configuration \u0027:kmpFirstLib:androidUnitTestResolvableDependenciesMetadata\u0027"
+          "org.gradle.api.artifacts.Configuration;resolvableMetadataConfiguration": "configuration \u0027:kmpFirstLib:androidUnitTestResolvableDependenciesMetadata\u0027",
+          "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidSourceSet?\u003e;android-source-set-model": {
+            "sourceProvider": {
+              "manifestFile": {
+                "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/src/androidUnitTest/AndroidManifest.xml"
+              }
+            }
+          }
         }
       },
       "allSourceSets": [
@@ -53,7 +119,16 @@
           "sourceSetName": "commonTest"
         }
       ],
-      "extras": {}
+      "extras": {
+        "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidCompilation?\u003e;android-compilation-model": {
+          "type": "UNIT_TEST",
+          "unitTestDslInfo": {
+            "namespace": "com.example.kmpfirstlib.test"
+          },
+          "defaultSourceSetName": "androidUnitTest",
+          "assembleTaskName": "assembleAndroidUnitTest"
+        }
+      }
     }
   ],
   "extras": {

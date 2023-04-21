@@ -16,7 +16,10 @@
 
 package com.android.build.gradle.internal.ide.proto
 
+import com.android.build.api.variant.impl.SigningConfigImpl
 import com.android.builder.model.proto.ide.AndroidGradlePluginProjectFlags
+import com.android.builder.model.proto.ide.AndroidVersion
+import com.android.builder.model.proto.ide.SigningConfig
 import com.android.builder.model.proto.ide.TestInfo
 import java.io.File
 
@@ -88,3 +91,22 @@ internal fun com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags.co
                 }
         )
         .build()
+
+internal fun com.android.build.api.variant.AndroidVersion.convert() =
+    AndroidVersion.newBuilder()
+        .setApiLevel(apiLevel)
+        .setIfNotNull(codename, AndroidVersion.Builder::setCodename)
+
+
+internal fun SigningConfigImpl.convert() =
+    SigningConfig.newBuilder()
+        .setIfNotNull(name, SigningConfig.Builder::setName)
+        .setIfNotNull(storeFile.orNull?.convert(), SigningConfig.Builder::setStoreFile)
+        .setIfNotNull(storePassword.orNull, SigningConfig.Builder::setStorePassword)
+        .setIfNotNull(keyAlias.orNull, SigningConfig.Builder::setKeyAlias)
+        .setIfNotNull(keyPassword.orNull, SigningConfig.Builder::setKeyPassword)
+        .setEnableV1Signing(enableV1Signing.get())
+        .setEnableV2Signing(enableV2Signing.get())
+        .setEnableV3Signing(enableV3Signing.get())
+        .setEnableV4Signing(enableV4Signing.get())
+        .setIsSigningReady(isSigningReady())

@@ -64,3 +64,79 @@ message AndroidTarget {
     // artifact.
     repeated File desugared_methods_files = 12;
 }
+
+// Sources included in a kotlin multiplatform sourceSet.
+message SourceProvider {
+    optional File manifest_file = 1;
+}
+
+// Generated sources included in a kotlin multiplatform compilation.
+message GeneratedSources {
+    repeated File source_folders = 1;
+}
+
+// The dsl info of the main variant of the android kotlin multiplatform target.
+message MainVariantDslInfo {
+    optional string namespace = 1;
+
+    // The compilation target as a string. This is the full extended target hash string.
+    optional string compile_sdk_target = 2;
+
+    // The min SDK version of this artifact.
+    optional AndroidVersion min_sdk_version = 3;
+
+    // The max SDK version of this artifact.
+    optional int32 max_sdk_version = 4;
+
+    // Specifies the ProGuard configuration files that the plugin should use.
+    // There are two ProGuard rules files that ship with the Android plugin and are used by
+    // default:
+    //   * proguard-android.txt
+    //   * proguard-android-optimize.txt
+    // `proguard-android-optimize.txt` is identical to `proguard-android.txt`,
+    // except with optimizations enabled.
+    repeated File proguard_files = 5;
+
+    // The collection of proguard rule files for consumers of the library to use.
+    repeated File consumer_proguard_files = 6;
+}
+
+// The dsl info of the unit test component of the android kotlin multiplatform target.
+message UnitTestDslInfo {
+    optional string namespace = 1;
+}
+
+// The dsl info of the instrumented test component of the android kotlin multiplatform target.
+message InstrumentedTestDslInfo {
+    optional string namespace = 1;
+    optional string test_instrumentation_runner = 2;
+    map<string, string> test_instrumentation_runner_arguments = 3;
+
+    // The signing config used to sign the test apk.
+    optional SigningConfig signing_config = 4;
+}
+
+message AndroidCompilation {
+    // The type of the compilation.
+    optional CompilationType type = 1;
+    // The dsl info of the main variant, will be available iff compilation type is MAIN.
+    optional MainVariantDslInfo main_dsl_info = 2;
+    // The dsl info of the unit test component, will be available iff compilation type is UNIT_TEST.
+    optional UnitTestDslInfo unit_test_dsl_info = 3;
+    // The dsl info of the instrumented test component, will be available iff compilation type is INSTRUMENTED_TEST.
+    optional InstrumentedTestDslInfo instrumented_test_dsl_info = 4;
+    // The name of the default sourceSet of the compilation.
+    optional string default_source_set_name = 5;
+    // The gradle assemble task name.
+    optional string assemble_task_name = 6;
+
+    enum CompilationType {
+        MAIN = 0;
+        UNIT_TEST = 1;
+        INSTRUMENTED_TEST = 2;
+    }
+}
+
+message AndroidSourceSet {
+    optional SourceProvider source_provider = 1;
+}

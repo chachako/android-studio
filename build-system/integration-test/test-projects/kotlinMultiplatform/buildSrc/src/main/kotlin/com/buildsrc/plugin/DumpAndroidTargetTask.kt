@@ -1,6 +1,8 @@
 package com.buildsrc.plugin
 
 import com.android.build.api.variant.impl.KotlinMultiplatformAndroidTarget
+import com.android.kotlin.multiplatform.models.AndroidCompilation
+import com.android.kotlin.multiplatform.models.AndroidSourceSet
 import com.android.kotlin.multiplatform.models.AndroidTarget
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
@@ -68,6 +70,8 @@ abstract class DumpAndroidTargetTask: DefaultTask() {
                 .usingTypeRegistry(
                     JsonFormat.TypeRegistry.newBuilder()
                         .add(AndroidTarget.getDescriptor())
+                        .add(AndroidCompilation.getDescriptor())
+                        .add(AndroidSourceSet.getDescriptor())
                         .build()
                 )
                 .includingDefaultValueFields()
@@ -81,6 +85,12 @@ abstract class DumpAndroidTargetTask: DefaultTask() {
 
                     val valueElement = when (value) {
                         is AndroidTarget -> JsonParser.parseString(
+                            jsonFormat.print(value)
+                        )
+                        is AndroidCompilation -> JsonParser.parseString(
+                            jsonFormat.print(value)
+                        )
+                        is AndroidSourceSet -> JsonParser.parseString(
                             jsonFormat.print(value)
                         )
                         else -> runCatching { context.serialize(value) }.getOrElse {

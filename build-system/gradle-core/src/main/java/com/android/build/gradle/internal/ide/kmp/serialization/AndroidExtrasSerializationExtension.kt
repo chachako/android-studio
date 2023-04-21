@@ -16,7 +16,11 @@
 
 package com.android.build.gradle.internal.ide.kmp.serialization
 
+import com.android.kotlin.multiplatform.ide.models.serialization.AndroidCompilationModelSerializer
+import com.android.kotlin.multiplatform.ide.models.serialization.AndroidSourceSetModelSerializer
 import com.android.kotlin.multiplatform.ide.models.serialization.AndroidTargetModelSerializer
+import com.android.kotlin.multiplatform.ide.models.serialization.androidCompilationKey
+import com.android.kotlin.multiplatform.ide.models.serialization.androidSourceSetKey
 import com.android.kotlin.multiplatform.ide.models.serialization.androidTargetKey
 import org.jetbrains.kotlin.gradle.idea.serialize.IdeaKotlinExtrasSerializationExtension
 import org.jetbrains.kotlin.gradle.idea.serialize.IdeaKotlinExtrasSerializer
@@ -32,6 +36,8 @@ class AndroidExtrasSerializationExtension : IdeaKotlinExtrasSerializationExtensi
     override fun <T : Any> serializer(key: Extras.Key<T>): IdeaKotlinExtrasSerializer<T>? {
         return when(key) {
             androidTargetKey -> AndroidTargetModelSerializer as IdeaKotlinExtrasSerializer<T>
+            androidCompilationKey -> AndroidCompilationModelSerializer as IdeaKotlinExtrasSerializer<T>
+            androidSourceSetKey -> AndroidSourceSetModelSerializer as IdeaKotlinExtrasSerializer<T>
             else -> null
         }
     }

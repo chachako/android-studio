@@ -18,9 +18,15 @@ package com.android.build.gradle.internal.ide.kmp
 
 import com.android.SdkConstants
 import com.android.Version
+import com.android.build.api.component.impl.KmpAndroidTestImpl
+import com.android.build.api.component.impl.KmpUnitTestImpl
 import com.android.build.api.variant.impl.KotlinMultiplatformAndroidTarget
+import com.android.build.gradle.internal.component.AndroidTestCreationConfig
+import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.component.KmpCreationConfig
+import com.android.build.gradle.internal.component.UnitTestCreationConfig
 import com.android.build.gradle.internal.ide.proto.convert
+import com.android.build.gradle.internal.ide.proto.setIfNotNull
 import com.android.build.gradle.internal.ide.v2.ModelBuilder.Companion.getAgpFlags
 import com.android.build.gradle.internal.ide.v2.TestInfoImpl
 import com.android.build.gradle.internal.ide.v2.convertToExecution
@@ -29,14 +35,73 @@ import com.android.build.gradle.internal.utils.getDesugarLibConfigFile
 import com.android.build.gradle.internal.utils.getDesugaredMethods
 import com.android.build.gradle.options.ProjectOptions
 import com.android.builder.errors.IssueReporter
+import com.android.kotlin.multiplatform.ide.models.serialization.androidCompilationKey
+import com.android.kotlin.multiplatform.ide.models.serialization.androidSourceSetKey
 import com.android.kotlin.multiplatform.ide.models.serialization.androidTargetKey
+import com.android.kotlin.multiplatform.models.AndroidCompilation
+import com.android.kotlin.multiplatform.models.AndroidSourceSet
 import com.android.kotlin.multiplatform.models.AndroidTarget
+import com.android.kotlin.multiplatform.models.InstrumentedTestDslInfo
+import com.android.kotlin.multiplatform.models.MainVariantDslInfo
+import com.android.kotlin.multiplatform.models.SourceProvider
+import com.android.kotlin.multiplatform.models.UnitTestDslInfo
 import org.gradle.api.Project
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.external.extras
 
 @OptIn(ExternalKotlinTargetApi::class)
 object KotlinModelBuildingConfigurator {
+    private fun KmpComponentCreationConfig.toType() = when (this) {
+        is KmpCreationConfig -> AndroidCompilation.CompilationType.MAIN
+        is KmpUnitTestImpl -> AndroidCompilation.CompilationType.UNIT_TEST
+        is KmpAndroidTestImpl -> AndroidCompilation.CompilationType.INSTRUMENTED_TEST
+        else -> throw IllegalArgumentException("Unknown type ${this::class.java}")
+    }
+
+    fun setupAndroidCompilations(
+        components: List<KmpComponentCreationConfig>,
+        testInstrumentationRunner: String?,
+        testInstrumentationRunnerArguments: Map<String, String>
+    ) {
+        components.forEach { component ->
+            val compilation = component.androidKotlinCompilation
+
+            compilation.extras[androidCompilationKey] = {
+                AndroidCompilation.newBuilder()
+                    .setType(component.toType())
+                    .setDefaultSourceSetName(
+                        compilation.defaultSourceSet.name
+                    )
+                    .setAssembleTaskName(
+                        component.taskContainer.assembleTask.name
+                    )
+                    .setIfNotNull(
+                        (component as? KmpCreationConfig)?.toDslInfo(),
+                        AndroidCompilation.Builder::setMainDslInfo
+                    )
+                    .setIfNotNull(
+                        (component as? UnitTestCreationConfig)?.toDslInfo(),
+                        AndroidCompilation.Builder::setUnitTestDslInfo
+                    )
+                    .setIfNotNull(
+                        (component as? AndroidTestCreationConfig)?.toDslInfo(
+                            testInstrumentationRunner, testInstrumentationRunnerArguments
+                        ),
+                        AndroidCompilation.Builder::setInstrumentedTestDslInfo
+                    )
+                    .build()
+            }
+
+            compilation.defaultSourceSet.extras[androidSourceSetKey] = {
+                AndroidSourceSet.newBuilder()
+                    .setSourceProvider(
+                        SourceProvider.newBuilder()
+                            .setManifestFile(component.sources.manifestFile.get().convert())
+                    )
+                    .build()
+            }
+        }
+    }
 
     fun setupAndroidTargetModels(
         project: Project,
@@ -103,4 +168,43 @@ object KotlinModelBuildingConfigurator {
                 .build()
         }
     }
+
+    private fun KmpCreationConfig.toDslInfo() =
+        MainVariantDslInfo.newBuilder()
+            .setNamespace(namespace.get())
+            .setCompileSdkTarget(global.compileSdkHashString)
+            .setMinSdkVersion(minSdk.convert())
+            .setIfNotNull(
+                maxSdk,
+                MainVariantDslInfo.Builder::setMaxSdkVersion
+            )
+            .addAllProguardFiles(
+                optimizationCreationConfig.proguardFiles.get().map { it.asFile.convert() }
+            )
+            .addAllConsumerProguardFiles(
+                optimizationCreationConfig.consumerProguardFiles.map { it.convert() }
+            )
+            .build()
+
+    private fun UnitTestCreationConfig.toDslInfo() =
+        UnitTestDslInfo.newBuilder()
+            .setNamespace(namespace.get())
+            .build()
+
+    private fun AndroidTestCreationConfig.toDslInfo(
+        testInstrumentationRunner: String?,
+        testInstrumentationRunnerArguments: Map<String, String>
+    ) =
+        InstrumentedTestDslInfo.newBuilder()
+            .setNamespace(namespace.get())
+            .setIfNotNull(
+                testInstrumentationRunner,
+                InstrumentedTestDslInfo.Builder::setTestInstrumentationRunner
+            )
+            .setIfNotNull(
+                signingConfigImpl?.convert(),
+                InstrumentedTestDslInfo.Builder::setSigningConfig
+            )
+            .putAllTestInstrumentationRunnerArguments(testInstrumentationRunnerArguments)
+            .build()
 }

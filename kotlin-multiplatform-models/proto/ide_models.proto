@@ -105,3 +105,41 @@ message AndroidGradlePluginProjectFlags {
         bool value = 2;
     }
 }
+
+message AndroidVersion {
+    int32 api_level = 1;
+    string codename = 2;
+}
+
+message SigningConfig {
+    // Returns the name of the Signing config
+    optional string name = 1;
+
+    // The keystore file.
+    optional File store_file = 2;
+
+    // The keystore password.
+    optional string store_password = 3;
+
+    // The key alias name.
+    optional string key_alias = 4;
+
+    // The key password.
+    optional string key_password = 5;
+
+    // Signing using JAR Signature Scheme (aka v1 scheme) is enabled.
+    optional bool enable_v1_signing = 6;
+
+    // Signing using APK Signature Scheme v2 (aka v2 scheme) is enabled.
+    optional bool enable_v2_signing = 7;
+
+    // Signing using JAR Signature Scheme v3 (aka v3 scheme) is enabled.
+    optional bool enable_v3_signing = 8;
+
+    // Signing using JAR Signature Scheme v4 (aka v4 scheme) is enabled.
+    optional bool enable_v4_signing = 9;
+
+    // Whether the config is fully configured for signing.
+    // i.e. all the required information are present.
+    bool is_signing_ready = 10;
+}
