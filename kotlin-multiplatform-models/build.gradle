@@ -1,0 +1,28 @@
+apply plugin: 'com.android.tools.java-library'
+apply plugin: 'com.android.tools.kotlin'
+apply plugin: 'com.google.protobuf'
+
+dependencies {
+    compileOnly libs.kotlin_gradle_plugin_idea
+
+    implementation libs.kotlin_stdlib
+    implementation libs.protobuf
+}
+
+sourceSets {
+    main.proto.srcDir 'proto'
+}
+
+protobuf {
+    protoc {
+        artifact = libs.proto_compiler
+    }
+}
+
+tasks.jar {
+    exclude("*.proto")
+}
+
+tasks.named("kotlinSourcesJar").configure {
+    it.dependsOn(tasks.named("generateProto"))
+}

@@ -296,6 +296,8 @@ ANDROID_GRADLE_PLUGIN_SOURCE_FILES = [
     "//tools/base/build-system/profile:agp_gradle_build_files",
     "//tools/base/build-system/shrinker:agp_gradle_build_files",
     "//tools/base/common:agp_gradle_build_files",
+    "//tools/base/kotlin-multiplatform-models:agp_gradle_build_files",
+    "//tools/base/kotlin-multiplatform-models/proto:agp_gradle_build_files",
     "//tools/base/mlkit-common:agp_gradle_build_files",
     "//tools/base/profgen/profgen:agp_gradle_build_files",
     "//tools/buildSrc:agp_gradle_build_files",

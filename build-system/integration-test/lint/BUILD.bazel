@@ -117,6 +117,7 @@ maven_repository(
         "@maven//:com.android.support.test.espresso.espresso-core_3.0.2",
         "@maven//:com.android.tools.desugar_jdk_libs_1.1.5",
         "@maven//:com.google.guava.guava_19.0",
+        "@maven//:com.google.protobuf.protobuf-java-util_3.21.8",
         "@maven//:com.google.truth.truth_0.44",
     ],
 )

@@ -52,6 +52,7 @@ import com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheB
 import com.android.build.gradle.internal.ide.kmp.KotlinIdeImportConfigurator
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker.Companion.android
+import com.android.build.gradle.internal.ide.kmp.KotlinModelBuildingConfigurator
 import com.android.build.gradle.internal.lint.LintFixBuildService
 import com.android.build.gradle.internal.manifest.LazyManifestParser
 import com.android.build.gradle.internal.scope.KotlinMultiplatformBuildFeaturesValuesImpl
@@ -234,6 +235,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         settingsExtension?.let {
             androidExtension.initExtensionFromSettings(it)
         }
+
+        BasePlugin.createAndroidTestUtilConfiguration(project)
 
         project.pluginManager.withPlugin(KOTLIN_MPP_PLUGIN_ID) {
             kotlinExtension = project.extensions.getByName("kotlin") as KotlinMultiplatformExtension
@@ -461,6 +464,14 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             mainVariant,
             unitTest,
             androidTest
+        )
+
+        KotlinModelBuildingConfigurator.setupAndroidTargetModels(
+            project,
+            mainVariant,
+            androidTarget,
+            projectServices.projectOptions,
+            syncIssueReporter
         )
     }
 

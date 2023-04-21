@@ -1,12 +1,15 @@
 package com.buildsrc.plugin
 
 import com.android.build.api.variant.impl.KotlinMultiplatformAndroidTarget
+import com.android.kotlin.multiplatform.models.AndroidTarget
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
+import com.google.protobuf.util.JsonFormat
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
@@ -60,18 +63,36 @@ abstract class DumpAndroidTargetTask: DefaultTask() {
 
     private object ExtrasAdapter : JsonSerializer<Extras> {
 
+        private val jsonFormat =
+            JsonFormat.printer()
+                .usingTypeRegistry(
+                    JsonFormat.TypeRegistry.newBuilder()
+                        .add(AndroidTarget.getDescriptor())
+                        .build()
+                )
+                .includingDefaultValueFields()
+                .sortingMapKeys()
+
         override fun serialize(src: Extras, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
             return JsonObject().apply {
                 src.entries.forEach { entry ->
-                    val valueElement = runCatching { context.serialize(entry.value) }.getOrElse {
-                        JsonPrimitive(entry.value.toString())
+
+                    val value = (entry.value as? Function0<*>)?.let { it() } ?: entry.value
+
+                    val valueElement = when (value) {
+                        is AndroidTarget -> JsonParser.parseString(
+                            jsonFormat.print(value)
+                        )
+                        else -> runCatching { context.serialize(value) }.getOrElse {
+                            JsonPrimitive(value.toString())
+                        }
                     }
 
                     // the kotlin plugin uses a hashset which will not have a deterministic order,
                     // skip since this is reported anyways.
                     if (!entry.key.stableString.contains(
                             "org.jetbrains.kotlin.gradle.plugin.mpp.compilationImpl.KotlinCompilationSourceSetInclusion"
-                    )) {
+                        )) {
                         add(entry.key.stableString, valueElement)
                     }
                 }

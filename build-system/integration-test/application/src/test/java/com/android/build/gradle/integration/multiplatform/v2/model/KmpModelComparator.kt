@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.FileNormalizerImpl
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.model.BaseModelComparator
 import com.android.build.gradle.integration.common.fixture.model.BasicComparator
+import com.android.build.gradle.integration.common.fixture.model.normalizeAgpVersion
 import com.android.build.gradle.integration.multiplatform.v2.getBuildMap
 import com.android.testutils.TestUtils
 import com.google.common.truth.Truth
@@ -68,7 +69,7 @@ class KmpModelComparator(
                     JsonParser.parseReader(it)
                 }
             ).let {
-                gson.toJson(it)
+                gson.toJson(it).normalizeAgpVersion()
             }.also {
                 if (printModelToStdout) {
                     generateStdoutHeader(normalizer)

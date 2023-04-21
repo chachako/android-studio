@@ -67,6 +67,7 @@ kotlin_library(
         "//tools/base/build-system/shrinker",
         "//tools/base/common:tools.common",  # TODO: Not in the pom, but required to compile (?)
         "//tools/base/ddmlib:tools.ddmlib",
+        "//tools/base/kotlin-multiplatform-models",
         "//tools/base/layoutlib-api:tools.layoutlib-api",
         "//tools/base/lint:tools.lint-model",
         "//tools/base/lint/libs/lint-typedef-remover",

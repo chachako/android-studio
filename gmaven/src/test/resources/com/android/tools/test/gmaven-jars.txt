@@ -385,6 +385,7 @@ com/android/tools/build/gradle
   META-INF/gradle-plugins/com.android.privacy-sandbox-sdk.properties
   META-INF/gradle-plugins/com.android.reporting.properties
   META-INF/gradle-plugins/com.android.test.properties
+  META-INF/kotlin-multiplatform-models.kotlin_module
   META-INF/profgen.kotlin_module
   META-INF/services/
   META-INF/services/com.android.build.api.variant.BuiltArtifactsLoader
@@ -465,7 +466,9 @@ com/android/tools/build/gradle
   com/android/build/gradle/internal/ide/dependencies/
   com/android/build/gradle/internal/ide/kmp/
   com/android/build/gradle/internal/ide/kmp/resolvers/
+  com/android/build/gradle/internal/ide/kmp/serialization/
   com/android/build/gradle/internal/ide/level2/
+  com/android/build/gradle/internal/ide/proto/
   com/android/build/gradle/internal/ide/v2/
   com/android/build/gradle/internal/incremental/
   com/android/build/gradle/internal/instrumentation/
@@ -530,6 +533,15 @@ com/android/tools/build/gradle
   com/android/buildanalyzer/common/
   com/android/builder/
   com/android/builder/core/
+  com/android/builder/model/
+  com/android/builder/model/proto/
+  com/android/builder/model/proto/ide/
+  com/android/kotlin/
+  com/android/kotlin/multiplatform/
+  com/android/kotlin/multiplatform/ide/
+  com/android/kotlin/multiplatform/ide/models/
+  com/android/kotlin/multiplatform/ide/models/serialization/
+  com/android/kotlin/multiplatform/models/
   com/android/tools/
   com/android/tools/build/
   com/android/tools/build/libraries/

@@ -20,6 +20,7 @@ import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker.Companion.android
 import com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver
 import com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver
+import com.android.build.gradle.internal.ide.kmp.serialization.AndroidExtrasSerializationExtension
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver
@@ -37,6 +38,10 @@ object KotlinIdeImportConfigurator {
             service,
             sourceSetToCreationConfigMapProvider,
             extraSourceSetsToIncludeInResolution
+        )
+
+        registerExtrasSerializers(
+            service
         )
     }
 
@@ -78,6 +83,12 @@ object KotlinIdeImportConfigurator {
             constraint = androidSourceSetFilter,
             phase = IdeMultiplatformImport.DependencyResolutionPhase.SourcesAndDocumentationResolution,
             level = resolutionLevel
+        )
+    }
+
+    private fun registerExtrasSerializers(service: IdeMultiplatformImport) {
+        service.registerExtrasSerializationExtension(
+            AndroidExtrasSerializationExtension()
         )
     }
 }

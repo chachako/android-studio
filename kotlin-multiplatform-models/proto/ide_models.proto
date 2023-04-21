@@ -1,0 +1,107 @@
+/*
+ * Copyright 2023 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.android.builder.model.proto.ide";
+option java_outer_classname = "IdeModelsProto";
+
+// Representation of a path.
+message File {
+    optional string absolute_path = 1;
+}
+
+// Information for test Artifacts.
+// This includes both Android test components in app/lib modules, and the main component
+// in test modules.
+message TestInfo {
+    optional bool animations_disabled = 1;
+    optional Execution execution = 2;
+
+    // Returns a list of additional APKs that need to installed on the device for this artifact to
+    // work correctly.
+    // For test artifacts, these will be "buddy APKs" from the `androidTestUtil`
+    // configuration.
+    repeated File additional_runtime_apks = 3;
+
+    // Returns the name of the task used to run instrumented tests or null if the variant is not a
+    // test variant.
+    optional string instrumented_test_task_name = 4;
+
+    enum Execution {
+        // On device orchestration is not used in this case.
+        HOST = 0;
+        // On device orchestration is used.
+        ANDROID_TEST_ORCHESTRATOR = 1;
+        // On device orchestration is used, with androidx class names.
+        ANDROIDX_TEST_ORCHESTRATOR = 2;
+    }
+}
+
+// Represents various AGP project-wide flags.
+// This class is only for use in the Gradle tooling model. On the IDE side use
+// `IdeAndroidGradlePluginProjectFlags` which provides an interpreted view of the flags.
+message AndroidGradlePluginProjectFlags {
+    repeated BooleanFlagValue boolean_flag_values = 1;
+
+    /**
+     * Boolean flags for behavior changes in AGP that Android Studio needs to know about.
+     *
+     * Studio uses the legacy default for AGPs that do not specify that flag.
+     *
+     * Flags **must** never be removed from here. This is to avoid issues when the
+     * current version of studio fetches models from a project that has a legacy flag set. They can
+     * be marked as `@Deprecated` and the getter removed from `IdeAndroidGradlePluginProjectFlags`
+     */
+    enum BooleanFlag {
+        // Whether the R class in applications and dynamic features has constant IDs.
+        // If they are constant they can be inlined by the java compiler and used in places that
+        // require constants such as annotations and cases of switch statements.
+        APPLICATION_R_CLASS_CONSTANT_IDS = 0;
+
+        // Whether the R class in instrumentation tests has constant IDs.
+        // If they are constant they can be inlined by the java compiler and used in places that
+        // require constants such as annotations and cases of switch statements.
+        TEST_R_CLASS_CONSTANT_IDS = 1;
+
+        // Whether the R class generated for this project is transitive.
+        // If it is transitive it will contain all of the resources defined in its transitive
+        // dependencies alongside those defined in this project. If non-transitive it will only
+        // contain the resources defined in this project.
+        TRANSITIVE_R_CLASS = 2;
+
+        // Whether the jetpack Compose feature is enabled for this project.
+        JETPACK_COMPOSE = 3;
+
+        // Whether the ML model binding feature is enabled for this project.
+        ML_MODEL_BINDING = 4;
+
+        // Whether the Android Test Platform is enabled for this project.
+        UNIFIED_TEST_PLATFORM = 5;
+
+        // Whether AndroidX libraries should be used instead of legacy support libraries.
+        USE_ANDROID_X = 6;
+
+        // Whether VCS metadata file is generated in APK/Bundle for this project.
+        ENABLE_VCS_INFO = 7;
+    }
+
+    message BooleanFlagValue {
+        BooleanFlag flag = 1;
+        bool value = 2;
+    }
+}

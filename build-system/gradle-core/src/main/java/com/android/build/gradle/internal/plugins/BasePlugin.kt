@@ -489,6 +489,22 @@ abstract class BasePlugin<
             configuration.isCanBeResolved = true
             return configuration
         }
+
+        // Create the "special" configuration for test buddy APKs. It will be resolved by the test
+        // running task, so that we can install all the found APKs before running tests.
+        internal fun createAndroidTestUtilConfiguration(project: Project) {
+            project.logger
+                .debug(
+                    "Creating configuration "
+                            + SdkConstants.GRADLE_ANDROID_TEST_UTIL_CONFIGURATION
+                )
+            val configuration = project.configurations
+                .maybeCreate(SdkConstants.GRADLE_ANDROID_TEST_UTIL_CONFIGURATION)
+            configuration.isVisible = false
+            configuration.description = "Additional APKs used during instrumentation testing."
+            configuration.isCanBeConsumed = false
+            configuration.isCanBeResolved = true
+        }
     }
 
     override fun configureExtension(project: Project) {
@@ -875,21 +891,5 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
         settings.buildToolsVersion.let { buildToolsVersion ->
             this.buildToolsVersion = buildToolsVersion
         }
-    }
-
-    // Create the "special" configuration for test buddy APKs. It will be resolved by the test
-    // running task, so that we can install all the found APKs before running tests.
-    private fun createAndroidTestUtilConfiguration(project: Project) {
-        project.logger
-            .debug(
-                "Creating configuration "
-                        + SdkConstants.GRADLE_ANDROID_TEST_UTIL_CONFIGURATION
-            )
-        val configuration = project.configurations
-            .maybeCreate(SdkConstants.GRADLE_ANDROID_TEST_UTIL_CONFIGURATION)
-        configuration.isVisible = false
-        configuration.description = "Additional APKs used during instrumentation testing."
-        configuration.isCanBeConsumed = false
-        configuration.isCanBeResolved = true
     }
 }
