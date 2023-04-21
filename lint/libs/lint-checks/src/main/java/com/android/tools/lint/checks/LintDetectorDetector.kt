@@ -1269,8 +1269,7 @@ class LintDetectorDetector : Detector(), UastScanner {
       requireUastReceiver: Boolean = false
     ) {
       if (requireUastReceiver) {
-        val receiverType = call.receiver?.getExpressionType()
-        receiverType?.let { it ->
+        call.receiverType?.let {
           val evaluator = context.evaluator
           val typeClass = evaluator.getTypeClass(it)
           if (typeClass != null && !evaluator.inheritsFrom(typeClass, CLASS_U_ELEMENT, false)) {

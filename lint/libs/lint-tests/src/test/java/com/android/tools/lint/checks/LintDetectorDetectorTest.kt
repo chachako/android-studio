@@ -596,4 +596,30 @@ class LintDetectorDetectorTest {
       }
       .toList()
   }
+
+  @Test
+  fun testExtensionReceiverType() {
+    lint()
+      .files(
+        kotlin(
+          """
+            import com.android.tools.lint.detector.api.Detector
+            import com.intellij.psi.PsiField
+
+            class Foo : Detector() {
+              fun PsiField.extension(field: PsiField) {
+                containingClass
+                this.containingClass
+                field.containingClass
+              }
+            }
+          """
+        ),
+        *getLintClassPath()
+      )
+      .issues(*issues)
+      .allowMissingSdk()
+      .run()
+      .expectClean()
+  }
 }
