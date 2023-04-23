@@ -13,7 +13,7 @@ maven_repository(
         "@maven//:com.android.tools.build.jetifier.jetifier-processor",
         "@maven//:com.android.tools.build.transform-api",
         "@maven//:com.github.javaparser.javaparser-core",
-        "@maven//:com.google.apis.google-api-services-storage",
+        "@maven//:com.google.apis.google-api-services-storage_v1-rev82-1.22.0",
         "@maven//:com.google.crypto.tink.tink",
         "@maven//:com.google.guava.guava-testlib",
         "@maven//:com.google.guava.guava_23.0",
