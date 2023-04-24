@@ -480,7 +480,7 @@ gradle_build(
 maven_repository(
     name = "metalava_tool",
     artifacts = [
-        "@maven//:com.android.tools.metalava.metalava_1.0.0-alpha04",
+        "@maven//:com.android.tools.metalava.metalava_1.0.0-alpha06",
     ],
 )
 

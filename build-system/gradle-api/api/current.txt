@@ -43,6 +43,8 @@ package com.android.build.api.artifact {
   }
 
   public enum Artifact.Category {
+    method public static com.android.build.api.artifact.Artifact.Category valueOf(String name) throws java.lang.IllegalArgumentException;
+    method public static com.android.build.api.artifact.Artifact.Category[] values();
     enum_constant public static final com.android.build.api.artifact.Artifact.Category GENERATED;
     enum_constant public static final com.android.build.api.artifact.Artifact.Category INTERMEDIATES;
     enum_constant public static final com.android.build.api.artifact.Artifact.Category OUTPUTS;
@@ -239,9 +241,9 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public String? getMinAgpVersion();
     method public Integer? getMinCompileSdk();
     method @org.gradle.api.Incubating public Integer? getMinCompileSdkExtension();
-    method @org.gradle.api.Incubating public void setMinAgpVersion(String? minAgpVersion);
-    method public void setMinCompileSdk(Integer? minCompileSdk);
-    method @org.gradle.api.Incubating public void setMinCompileSdkExtension(Integer? minCompileSdkExtension);
+    method @org.gradle.api.Incubating public void setMinAgpVersion(String?);
+    method public void setMinCompileSdk(Integer?);
+    method @org.gradle.api.Incubating public void setMinCompileSdkExtension(Integer?);
     property @org.gradle.api.Incubating public abstract String? minAgpVersion;
     property public abstract Integer? minCompileSdk;
     property @org.gradle.api.Incubating public abstract Integer? minCompileSdkExtension;
@@ -249,7 +251,7 @@ package com.android.build.api.dsl {
 
   public interface AbiSplit extends com.android.build.api.dsl.Split {
     method public boolean isUniversalApk();
-    method public void setUniversalApk(boolean isUniversalApk);
+    method public void setUniversalApk(boolean);
     property public abstract boolean isUniversalApk;
   }
 
@@ -267,9 +269,9 @@ package com.android.build.api.dsl {
     method public java.util.Collection<java.lang.String> getNoCompress();
     method @Deprecated public void noCompress(String noCompress);
     method @Deprecated public void noCompress(java.lang.String... noCompress);
-    method public void setFailOnMissingConfigEntry(boolean failOnMissingConfigEntry);
-    method public void setIgnoreAssetsPattern(String? ignoreAssetsPattern);
-    method @org.gradle.api.Incubating public void setNamespaced(boolean namespaced);
+    method public void setFailOnMissingConfigEntry(boolean);
+    method public void setIgnoreAssetsPattern(String?);
+    method @org.gradle.api.Incubating public void setNamespaced(boolean);
     property public abstract java.util.List<java.lang.String> additionalParameters;
     property public abstract boolean failOnMissingConfigEntry;
     property public abstract String? ignoreAssetsPattern;
@@ -368,12 +370,12 @@ package com.android.build.api.dsl {
     method public Boolean? getEnableV4Signing();
     method @Deprecated public boolean isV1SigningEnabled();
     method @Deprecated public boolean isV2SigningEnabled();
-    method public void setEnableV1Signing(Boolean? enableV1Signing);
-    method public void setEnableV2Signing(Boolean? enableV2Signing);
-    method public void setEnableV3Signing(Boolean? enableV3Signing);
-    method public void setEnableV4Signing(Boolean? enableV4Signing);
-    method @Deprecated public void setV1SigningEnabled(boolean isV1SigningEnabled);
-    method @Deprecated public void setV2SigningEnabled(boolean isV2SigningEnabled);
+    method public void setEnableV1Signing(Boolean?);
+    method public void setEnableV2Signing(Boolean?);
+    method public void setEnableV3Signing(Boolean?);
+    method public void setEnableV4Signing(Boolean?);
+    method @Deprecated public void setV1SigningEnabled(boolean);
+    method @Deprecated public void setV2SigningEnabled(boolean);
     property public abstract Boolean? enableV1Signing;
     property public abstract Boolean? enableV2Signing;
     property public abstract Boolean? enableV3Signing;
@@ -384,7 +386,7 @@ package com.android.build.api.dsl {
 
   public interface ApplicationAndroidResources extends com.android.build.api.dsl.AndroidResources {
     method @org.gradle.api.Incubating public boolean getGenerateLocaleConfig();
-    method @org.gradle.api.Incubating public void setGenerateLocaleConfig(boolean generateLocaleConfig);
+    method @org.gradle.api.Incubating public void setGenerateLocaleConfig(boolean);
     property @org.gradle.api.Incubating public abstract boolean generateLocaleConfig;
   }
 
@@ -396,13 +398,13 @@ package com.android.build.api.dsl {
     method public Integer? getVersionCode();
     method public String? getVersionName();
     method @Deprecated public void maxSdkVersion(int maxSdkVersion);
-    method public void setApplicationId(String? applicationId);
-    method public void setMaxSdk(Integer? maxSdk);
-    method public void setTargetSdk(Integer? targetSdk);
-    method public void setTargetSdkPreview(String? targetSdkPreview);
+    method public void setApplicationId(String?);
+    method public void setMaxSdk(Integer?);
+    method public void setTargetSdk(Integer?);
+    method public void setTargetSdkPreview(String?);
     method @Deprecated public void setTargetSdkVersion(String? targetSdkVersion);
-    method public void setVersionCode(Integer? versionCode);
-    method public void setVersionName(String? versionName);
+    method public void setVersionCode(Integer?);
+    method public void setVersionName(String?);
     method @Deprecated public void targetSdkVersion(int targetSdkVersion);
     method @Deprecated public void targetSdkVersion(String? targetSdkVersion);
     property public abstract String? applicationId;
@@ -416,8 +418,8 @@ package com.android.build.api.dsl {
   public interface ApplicationBuildFeatures extends com.android.build.api.dsl.BuildFeatures {
     method public Boolean? getDataBinding();
     method public Boolean? getMlModelBinding();
-    method public void setDataBinding(Boolean? dataBinding);
-    method public void setMlModelBinding(Boolean? mlModelBinding);
+    method public void setDataBinding(Boolean?);
+    method public void setMlModelBinding(Boolean?);
     property public abstract Boolean? dataBinding;
     property public abstract Boolean? mlModelBinding;
   }
@@ -428,11 +430,11 @@ package com.android.build.api.dsl {
     method public boolean isDefault();
     method public boolean isEmbedMicroApp();
     method public boolean isProfileable();
-    method public void setCrunchPngs(Boolean? isCrunchPngs);
-    method public void setDebuggable(boolean isDebuggable);
-    method public void setDefault(boolean isDefault);
-    method public void setEmbedMicroApp(boolean isEmbedMicroApp);
-    method public void setProfileable(boolean isProfileable);
+    method public void setCrunchPngs(Boolean?);
+    method public void setDebuggable(boolean);
+    method public void setDefault(boolean);
+    method public void setEmbedMicroApp(boolean);
+    method public void setProfileable(boolean);
     property public abstract Boolean? isCrunchPngs;
     property public abstract boolean isDebuggable;
     property public abstract boolean isDefault;
@@ -463,7 +465,7 @@ package com.android.build.api.dsl {
 
   public interface ApplicationProductFlavor extends com.android.build.api.dsl.ApplicationBaseFlavor com.android.build.api.dsl.ProductFlavor {
     method public boolean isDefault();
-    method public void setDefault(boolean isDefault);
+    method public void setDefault(boolean);
     property public abstract boolean isDefault;
   }
 
@@ -479,10 +481,10 @@ package com.android.build.api.dsl {
     method public Boolean? getMultiDexEnabled();
     method public com.android.build.api.dsl.ApkSigningConfig? getSigningConfig();
     method public String? getVersionNameSuffix();
-    method public void setApplicationIdSuffix(String? applicationIdSuffix);
-    method public void setMultiDexEnabled(Boolean? multiDexEnabled);
-    method public void setSigningConfig(com.android.build.api.dsl.ApkSigningConfig? signingConfig);
-    method public void setVersionNameSuffix(String? versionNameSuffix);
+    method public void setApplicationIdSuffix(String?);
+    method public void setMultiDexEnabled(Boolean?);
+    method public void setSigningConfig(com.android.build.api.dsl.ApkSigningConfig?);
+    method public void setVersionNameSuffix(String?);
     property public abstract String? applicationIdSuffix;
     property public abstract Boolean? multiDexEnabled;
     property public abstract com.android.build.api.dsl.ApkSigningConfig? signingConfig;
@@ -501,9 +503,9 @@ package com.android.build.api.dsl {
     method public com.android.build.api.dsl.BundleTexture getTexture();
     method public java.util.Set<java.lang.Integer> getVersionCodes();
     method public String getVersionTag();
-    method public void setApplicationId(String applicationId);
-    method public void setCompileSdk(int compileSdk);
-    method public void setVersionTag(String versionTag);
+    method public void setApplicationId(String);
+    method public void setCompileSdk(int);
+    method public void setVersionTag(String);
     method public void signingConfig(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.SigningConfig,kotlin.Unit> action);
     method public void texture(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleTexture,kotlin.Unit> action);
     property public abstract String applicationId;
@@ -550,22 +552,22 @@ package com.android.build.api.dsl {
     method @Deprecated public void resConfig(String config);
     method @Deprecated public void resConfigs(java.util.Collection<java.lang.String> config);
     method @Deprecated public void resConfigs(java.lang.String... config);
-    method public void setMinSdk(Integer? minSdk);
-    method public void setMinSdkPreview(String? minSdkPreview);
+    method public void setMinSdk(Integer?);
+    method public void setMinSdkPreview(String?);
     method @Deprecated public void setMinSdkVersion(int minSdkVersion);
     method @Deprecated public void setMinSdkVersion(String? minSdkVersion);
-    method public void setRenderscriptNdkModeEnabled(Boolean? renderscriptNdkModeEnabled);
-    method public void setRenderscriptSupportModeBlasEnabled(Boolean? renderscriptSupportModeBlasEnabled);
-    method public void setRenderscriptSupportModeEnabled(Boolean? renderscriptSupportModeEnabled);
-    method public void setRenderscriptTargetApi(Integer? renderscriptTargetApi);
-    method public void setTestApplicationId(String? testApplicationId);
-    method public void setTestFunctionalTest(Boolean? testFunctionalTest);
+    method public void setRenderscriptNdkModeEnabled(Boolean?);
+    method public void setRenderscriptSupportModeBlasEnabled(Boolean?);
+    method public void setRenderscriptSupportModeEnabled(Boolean?);
+    method public void setRenderscriptTargetApi(Integer?);
+    method public void setTestApplicationId(String?);
+    method public void setTestFunctionalTest(Boolean?);
     method @Deprecated public Object? setTestFunctionalTest(boolean testFunctionalTest);
-    method public void setTestHandleProfiling(Boolean? testHandleProfiling);
+    method public void setTestHandleProfiling(Boolean?);
     method @Deprecated public Object? setTestHandleProfiling(boolean testHandleProfiling);
-    method public void setTestInstrumentationRunner(String? testInstrumentationRunner);
+    method public void setTestInstrumentationRunner(String?);
     method @Deprecated public Object? setTestInstrumentationRunnerArguments(java.util.Map<java.lang.String,java.lang.String> testInstrumentationRunnerArguments);
-    method public void setWearAppUnbundled(Boolean? wearAppUnbundled);
+    method public void setWearAppUnbundled(Boolean?);
     method @Deprecated public void testInstrumentationRunnerArgument(String key, String value);
     method @Deprecated public void testInstrumentationRunnerArguments(java.util.Map<java.lang.String,java.lang.String> args);
     method public void vectorDrawables(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.VectorDrawables,kotlin.Unit> action);
@@ -594,14 +596,14 @@ package com.android.build.api.dsl {
     method public Boolean? getResValues();
     method public Boolean? getShaders();
     method public Boolean? getViewBinding();
-    method public void setAidl(Boolean? aidl);
-    method public void setBuildConfig(Boolean? buildConfig);
-    method public void setCompose(Boolean? compose);
-    method public void setPrefab(Boolean? prefab);
-    method public void setRenderScript(Boolean? renderScript);
-    method public void setResValues(Boolean? resValues);
-    method public void setShaders(Boolean? shaders);
-    method public void setViewBinding(Boolean? viewBinding);
+    method public void setAidl(Boolean?);
+    method public void setBuildConfig(Boolean?);
+    method public void setCompose(Boolean?);
+    method public void setPrefab(Boolean?);
+    method public void setRenderScript(Boolean?);
+    method public void setResValues(Boolean?);
+    method public void setShaders(Boolean?);
+    method public void setViewBinding(Boolean?);
     property public abstract Boolean? aidl;
     property public abstract Boolean? buildConfig;
     property public abstract Boolean? compose;
@@ -627,18 +629,18 @@ package com.android.build.api.dsl {
     method @Deprecated public boolean isTestCoverageEnabled();
     method @Deprecated public boolean isZipAlignEnabled();
     method @org.gradle.api.Incubating public void postprocessing(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.PostProcessing,kotlin.Unit> action);
-    method public void setEnableAndroidTestCoverage(boolean enableAndroidTestCoverage);
-    method public void setEnableUnitTestCoverage(boolean enableUnitTestCoverage);
-    method public void setJniDebuggable(boolean isJniDebuggable);
+    method public void setEnableAndroidTestCoverage(boolean);
+    method public void setEnableUnitTestCoverage(boolean);
+    method public void setJniDebuggable(boolean);
     method @Deprecated public void setMatchingFallbacks(java.lang.String... fallbacks);
     method @Deprecated public void setMatchingFallbacks(java.util.List<java.lang.String> fallbacks);
-    method public void setMinifyEnabled(boolean isMinifyEnabled);
-    method public void setPseudoLocalesEnabled(boolean isPseudoLocalesEnabled);
-    method public void setRenderscriptDebuggable(boolean isRenderscriptDebuggable);
-    method public void setRenderscriptOptimLevel(int renderscriptOptimLevel);
-    method public void setShrinkResources(boolean isShrinkResources);
-    method @Deprecated public void setTestCoverageEnabled(boolean isTestCoverageEnabled);
-    method @Deprecated public void setZipAlignEnabled(boolean isZipAlignEnabled);
+    method public void setMinifyEnabled(boolean);
+    method public void setPseudoLocalesEnabled(boolean);
+    method public void setRenderscriptDebuggable(boolean);
+    method public void setRenderscriptOptimLevel(int);
+    method public void setShrinkResources(boolean);
+    method @Deprecated public void setTestCoverageEnabled(boolean);
+    method @Deprecated public void setZipAlignEnabled(boolean);
     property public abstract boolean enableAndroidTestCoverage;
     property public abstract boolean enableUnitTestCoverage;
     property public abstract boolean isJniDebuggable;
@@ -684,7 +686,7 @@ package com.android.build.api.dsl {
 
   public interface BundleAbi {
     method @org.gradle.api.Incubating public Boolean? getEnableSplit();
-    method @org.gradle.api.Incubating public void setEnableSplit(Boolean? enableSplit);
+    method @org.gradle.api.Incubating public void setEnableSplit(Boolean?);
     property @org.gradle.api.Incubating public abstract Boolean? enableSplit;
   }
 
@@ -697,44 +699,44 @@ package com.android.build.api.dsl {
   @org.gradle.api.Incubating public interface BundleCountrySet {
     method @org.gradle.api.Incubating public String? getDefaultSet();
     method @org.gradle.api.Incubating public Boolean? getEnableSplit();
-    method @org.gradle.api.Incubating public void setDefaultSet(String? defaultSet);
-    method @org.gradle.api.Incubating public void setEnableSplit(Boolean? enableSplit);
+    method @org.gradle.api.Incubating public void setDefaultSet(String?);
+    method @org.gradle.api.Incubating public void setEnableSplit(Boolean?);
     property @org.gradle.api.Incubating public abstract String? defaultSet;
     property @org.gradle.api.Incubating public abstract Boolean? enableSplit;
   }
 
   public interface BundleDensity {
     method @org.gradle.api.Incubating public Boolean? getEnableSplit();
-    method @org.gradle.api.Incubating public void setEnableSplit(Boolean? enableSplit);
+    method @org.gradle.api.Incubating public void setEnableSplit(Boolean?);
     property @org.gradle.api.Incubating public abstract Boolean? enableSplit;
   }
 
   @org.gradle.api.Incubating public interface BundleDeviceTier {
     method public String? getDefaultTier();
     method public Boolean? getEnableSplit();
-    method public void setDefaultTier(String? defaultTier);
-    method public void setEnableSplit(Boolean? enableSplit);
+    method public void setDefaultTier(String?);
+    method public void setEnableSplit(Boolean?);
     property public abstract String? defaultTier;
     property public abstract Boolean? enableSplit;
   }
 
   public interface BundleLanguage {
     method @org.gradle.api.Incubating public Boolean? getEnableSplit();
-    method @org.gradle.api.Incubating public void setEnableSplit(Boolean? enableSplit);
+    method @org.gradle.api.Incubating public void setEnableSplit(Boolean?);
     property @org.gradle.api.Incubating public abstract Boolean? enableSplit;
   }
 
   public interface BundleStoreArchive {
     method public Boolean? getEnable();
-    method public void setEnable(Boolean? enable);
+    method public void setEnable(Boolean?);
     property public abstract Boolean? enable;
   }
 
   public interface BundleTexture {
     method @org.gradle.api.Incubating public String? getDefaultFormat();
     method @org.gradle.api.Incubating public Boolean? getEnableSplit();
-    method @org.gradle.api.Incubating public void setDefaultFormat(String? defaultFormat);
-    method @org.gradle.api.Incubating public void setEnableSplit(Boolean? enableSplit);
+    method @org.gradle.api.Incubating public void setDefaultFormat(String?);
+    method @org.gradle.api.Incubating public void setEnableSplit(Boolean?);
     property @org.gradle.api.Incubating public abstract String? defaultFormat;
     property @org.gradle.api.Incubating public abstract Boolean? enableSplit;
   }
@@ -745,9 +747,9 @@ package com.android.build.api.dsl {
     method public java.io.File? getPath();
     method public String? getVersion();
     method public void path(Object? path);
-    method public void setBuildStagingDirectory(java.io.File? buildStagingDirectory);
-    method public void setPath(java.io.File? path);
-    method public void setVersion(String? version);
+    method public void setBuildStagingDirectory(java.io.File?);
+    method public void setPath(java.io.File?);
+    method public void setVersion(String?);
     property public abstract java.io.File? buildStagingDirectory;
     property public abstract java.io.File? path;
     property public abstract String? version;
@@ -831,14 +833,14 @@ package com.android.build.api.dsl {
     method @Deprecated public void packagingOptions(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Packaging,kotlin.Unit> action);
     method public void productFlavors(kotlin.jvm.functions.Function1<? super org.gradle.api.NamedDomainObjectContainer<ProductFlavorT>,kotlin.Unit> action);
     method public void release(org.gradle.api.NamedDomainObjectContainer<BuildTypeT>, kotlin.jvm.functions.Function1<? super BuildTypeT,kotlin.Unit> action);
-    method public void setBuildToolsVersion(String buildToolsVersion);
-    method public void setCompileSdk(Integer? compileSdk);
-    method public void setCompileSdkExtension(Integer? compileSdkExtension);
-    method public void setCompileSdkPreview(String? compileSdkPreview);
-    method public void setNamespace(String? namespace);
-    method public void setNdkPath(String? ndkPath);
-    method public void setNdkVersion(String? ndkVersion);
-    method public void setResourcePrefix(String? resourcePrefix);
+    method public void setBuildToolsVersion(String);
+    method public void setCompileSdk(Integer?);
+    method public void setCompileSdkExtension(Integer?);
+    method public void setCompileSdkPreview(String?);
+    method public void setNamespace(String?);
+    method public void setNdkPath(String?);
+    method public void setNdkVersion(String?);
+    method public void setResourcePrefix(String?);
     method public void signingConfigs(kotlin.jvm.functions.Function1<? super org.gradle.api.NamedDomainObjectContainer<? extends com.android.build.api.dsl.ApkSigningConfig>,kotlin.Unit> action);
     method public void sourceSets(kotlin.jvm.functions.Function1<? super org.gradle.api.NamedDomainObjectContainer<? extends com.android.build.api.dsl.AndroidSourceSet>,kotlin.Unit> action);
     method public void splits(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Splits,kotlin.Unit> action);
@@ -888,10 +890,10 @@ package com.android.build.api.dsl {
     method public org.gradle.api.JavaVersion getSourceCompatibility();
     method public org.gradle.api.JavaVersion getTargetCompatibility();
     method public boolean isCoreLibraryDesugaringEnabled();
-    method public void setCoreLibraryDesugaringEnabled(boolean isCoreLibraryDesugaringEnabled);
-    method public void setEncoding(String encoding);
-    method public void setSourceCompatibility(org.gradle.api.JavaVersion sourceCompatibility);
-    method public void setTargetCompatibility(org.gradle.api.JavaVersion targetCompatibility);
+    method public void setCoreLibraryDesugaringEnabled(boolean);
+    method public void setEncoding(String);
+    method public void setSourceCompatibility(org.gradle.api.JavaVersion);
+    method public void setTargetCompatibility(org.gradle.api.JavaVersion);
     method public void sourceCompatibility(Object sourceCompatibility);
     method public void targetCompatibility(Object targetCompatibility);
     property public abstract String encoding;
@@ -904,9 +906,9 @@ package com.android.build.api.dsl {
     method public String? getKotlinCompilerExtensionVersion();
     method @Deprecated public String? getKotlinCompilerVersion();
     method public boolean getUseLiveLiterals();
-    method public void setKotlinCompilerExtensionVersion(String? kotlinCompilerExtensionVersion);
-    method @Deprecated public void setKotlinCompilerVersion(String? kotlinCompilerVersion);
-    method public void setUseLiveLiterals(boolean useLiveLiterals);
+    method public void setKotlinCompilerExtensionVersion(String?);
+    method @Deprecated public void setKotlinCompilerVersion(String?);
+    method public void setUseLiveLiterals(boolean);
     property public abstract String? kotlinCompilerExtensionVersion;
     property @Deprecated public abstract String? kotlinCompilerVersion;
     property public abstract boolean useLiveLiterals;
@@ -920,13 +922,13 @@ package com.android.build.api.dsl {
     method public String? getVersion();
     method @Deprecated public boolean isEnabled();
     method @Deprecated public boolean isEnabledForTests();
-    method public void setAddDefaultAdapters(boolean addDefaultAdapters);
-    method public void setAddKtx(Boolean? addKtx);
-    method public void setEnable(boolean enable);
-    method public void setEnableForTests(boolean enableForTests);
-    method @Deprecated public void setEnabled(boolean isEnabled);
-    method @Deprecated public void setEnabledForTests(boolean isEnabledForTests);
-    method public void setVersion(String? version);
+    method public void setAddDefaultAdapters(boolean);
+    method public void setAddKtx(Boolean?);
+    method public void setEnable(boolean);
+    method public void setEnableForTests(boolean);
+    method @Deprecated public void setEnabled(boolean);
+    method @Deprecated public void setEnabledForTests(boolean);
+    method public void setVersion(String?);
     property public abstract boolean addDefaultAdapters;
     property public abstract Boolean? addKtx;
     property public abstract boolean enable;
@@ -943,7 +945,7 @@ package com.android.build.api.dsl {
     method @Deprecated public void compatibleScreens(java.lang.String... sizes);
     method @Deprecated public java.util.Set<java.lang.String> getCompatibleScreens();
     method @Deprecated public boolean isStrict();
-    method @Deprecated public void setStrict(boolean isStrict);
+    method @Deprecated public void setStrict(boolean);
     property public abstract java.util.Set<java.lang.String> compatibleScreens;
     property public abstract boolean isStrict;
   }
@@ -951,8 +953,8 @@ package com.android.build.api.dsl {
   public interface DependenciesInfo {
     method public boolean getIncludeInApk();
     method public boolean getIncludeInBundle();
-    method public void setIncludeInApk(boolean includeInApk);
-    method public void setIncludeInBundle(boolean includeInBundle);
+    method public void setIncludeInApk(boolean);
+    method public void setIncludeInBundle(boolean);
     property public abstract boolean includeInApk;
     property public abstract boolean includeInBundle;
   }
@@ -967,7 +969,7 @@ package com.android.build.api.dsl {
 
   public interface DexPackaging {
     method public Boolean? getUseLegacyPackaging();
-    method public void setUseLegacyPackaging(Boolean? useLegacyPackaging);
+    method public void setUseLegacyPackaging(Boolean?);
     property public abstract Boolean? useLegacyPackaging;
   }
 
@@ -987,15 +989,15 @@ package com.android.build.api.dsl {
   public interface DynamicFeatureBuildFeatures extends com.android.build.api.dsl.BuildFeatures {
     method public Boolean? getDataBinding();
     method public Boolean? getMlModelBinding();
-    method public void setDataBinding(Boolean? dataBinding);
-    method public void setMlModelBinding(Boolean? mlModelBinding);
+    method public void setDataBinding(Boolean?);
+    method public void setMlModelBinding(Boolean?);
     property public abstract Boolean? dataBinding;
     property public abstract Boolean? mlModelBinding;
   }
 
   public interface DynamicFeatureBuildType extends com.android.build.api.dsl.BuildType com.android.build.api.dsl.DynamicFeatureVariantDimension {
     method @org.gradle.api.Incubating public Boolean? isCrunchPngs();
-    method @org.gradle.api.Incubating public void setCrunchPngs(Boolean? isCrunchPngs);
+    method @org.gradle.api.Incubating public void setCrunchPngs(Boolean?);
     property @org.gradle.api.Incubating public abstract Boolean? isCrunchPngs;
   }
 
@@ -1015,8 +1017,8 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public java.util.Set<java.lang.String> getAllowedEndpoints();
     method @org.gradle.api.Incubating public boolean getEnable();
     method @org.gradle.api.Incubating public int getSecondsValid();
-    method @org.gradle.api.Incubating public void setEnable(boolean enable);
-    method @org.gradle.api.Incubating public void setSecondsValid(int secondsValid);
+    method @org.gradle.api.Incubating public void setEnable(boolean);
+    method @org.gradle.api.Incubating public void setSecondsValid(int);
     property @org.gradle.api.Incubating public abstract java.util.Set<java.lang.String> allowedEndpoints;
     property @org.gradle.api.Incubating public abstract boolean enable;
     property @org.gradle.api.Incubating public abstract int secondsValid;
@@ -1027,9 +1029,9 @@ package com.android.build.api.dsl {
     method public boolean getEnableForTestFailures();
     method public int getMaxSnapshotsForTestFailures();
     method public void retainAll();
-    method public void setCompressSnapshots(boolean compressSnapshots);
-    method public void setEnableForTestFailures(boolean enableForTestFailures);
-    method public void setMaxSnapshotsForTestFailures(int maxSnapshotsForTestFailures);
+    method public void setCompressSnapshots(boolean);
+    method public void setEnableForTestFailures(boolean);
+    method public void setMaxSnapshotsForTestFailures(int);
     property public abstract boolean compressSnapshots;
     property public abstract boolean enableForTestFailures;
     property public abstract int maxSnapshotsForTestFailures;
@@ -1060,8 +1062,8 @@ package com.android.build.api.dsl {
   @Deprecated @org.gradle.api.Incubating public interface FailureRetention extends com.android.build.api.dsl.EmulatorSnapshots {
     method @Deprecated public boolean getEnable();
     method @Deprecated public int getMaxSnapshots();
-    method @Deprecated public void setEnable(boolean enable);
-    method @Deprecated public void setMaxSnapshots(int maxSnapshots);
+    method @Deprecated public void setEnable(boolean);
+    method @Deprecated public void setMaxSnapshots(int);
     property @Deprecated public abstract boolean enable;
     property @Deprecated public abstract int maxSnapshots;
   }
@@ -1069,8 +1071,8 @@ package com.android.build.api.dsl {
   @org.gradle.api.Incubating public interface FusedLibraryExtension {
     method @org.gradle.api.Incubating public Integer? getMinSdk();
     method @org.gradle.api.Incubating public String? getNamespace();
-    method @org.gradle.api.Incubating public void setMinSdk(Integer? minSdk);
-    method @org.gradle.api.Incubating public void setNamespace(String? namespace);
+    method @org.gradle.api.Incubating public void setMinSdk(Integer?);
+    method @org.gradle.api.Incubating public void setNamespace(String?);
     property @org.gradle.api.Incubating public abstract Integer? minSdk;
     property @org.gradle.api.Incubating public abstract String? namespace;
   }
@@ -1084,14 +1086,14 @@ package com.android.build.api.dsl {
     method public int getTimeOutInMs();
     method @Deprecated public void installOptions(String option);
     method @Deprecated public void installOptions(java.lang.String... options);
-    method public void setTimeOutInMs(int timeOutInMs);
+    method public void setTimeOutInMs(int);
     property @org.gradle.api.Incubating public abstract java.util.List<java.lang.String> installOptions;
     property public abstract int timeOutInMs;
   }
 
   @Deprecated @org.gradle.api.Incubating public interface JacocoOptions extends com.android.build.api.dsl.TestCoverage {
     method @Deprecated public String getVersion();
-    method @Deprecated public void setVersion(String version);
+    method @Deprecated public void setVersion(String);
     property @Deprecated public abstract String version;
   }
 
@@ -1106,7 +1108,7 @@ package com.android.build.api.dsl {
     method public java.util.Set<java.lang.String> getKeepDebugSymbols();
     method public java.util.Set<java.lang.String> getPickFirsts();
     method public Boolean? getUseLegacyPackaging();
-    method public void setUseLegacyPackaging(Boolean? useLegacyPackaging);
+    method public void setUseLegacyPackaging(Boolean?);
     property public abstract java.util.Set<java.lang.String> excludes;
     property public abstract java.util.Set<java.lang.String> keepDebugSymbols;
     property public abstract java.util.Set<java.lang.String> pickFirsts;
@@ -1124,8 +1126,8 @@ package com.android.build.api.dsl {
   public interface LibraryBaseFlavor extends com.android.build.api.dsl.BaseFlavor com.android.build.api.dsl.LibraryVariantDimension {
     method @Deprecated public Integer? getTargetSdk();
     method @Deprecated public String? getTargetSdkPreview();
-    method @Deprecated public void setTargetSdk(Integer? targetSdk);
-    method @Deprecated public void setTargetSdkPreview(String? targetSdkPreview);
+    method @Deprecated public void setTargetSdk(Integer?);
+    method @Deprecated public void setTargetSdkPreview(String?);
     method @Deprecated public void setTargetSdkVersion(String? targetSdkVersion);
     method @Deprecated public void targetSdkVersion(int targetSdkVersion);
     method @Deprecated public void targetSdkVersion(String? targetSdkVersion);
@@ -1138,10 +1140,10 @@ package com.android.build.api.dsl {
     method public Boolean? getDataBinding();
     method public Boolean? getMlModelBinding();
     method public Boolean? getPrefabPublishing();
-    method public void setAndroidResources(Boolean? androidResources);
-    method public void setDataBinding(Boolean? dataBinding);
-    method public void setMlModelBinding(Boolean? mlModelBinding);
-    method public void setPrefabPublishing(Boolean? prefabPublishing);
+    method public void setAndroidResources(Boolean?);
+    method public void setDataBinding(Boolean?);
+    method public void setMlModelBinding(Boolean?);
+    method public void setPrefabPublishing(Boolean?);
     property public abstract Boolean? androidResources;
     property public abstract Boolean? dataBinding;
     property public abstract Boolean? mlModelBinding;
@@ -1150,7 +1152,7 @@ package com.android.build.api.dsl {
 
   public interface LibraryBuildType extends com.android.build.api.dsl.BuildType com.android.build.api.dsl.LibraryVariantDimension {
     method public boolean isDefault();
-    method public void setDefault(boolean isDefault);
+    method public void setDefault(boolean);
     property public abstract boolean isDefault;
   }
 
@@ -1169,7 +1171,7 @@ package com.android.build.api.dsl {
 
   public interface LibraryProductFlavor extends com.android.build.api.dsl.LibraryBaseFlavor com.android.build.api.dsl.ProductFlavor {
     method public boolean isDefault();
-    method public void setDefault(boolean isDefault);
+    method public void setDefault(boolean);
     property public abstract boolean isDefault;
   }
 
@@ -1189,8 +1191,8 @@ package com.android.build.api.dsl {
     method public java.util.List<java.io.File> getConsumerProguardFiles();
     method public Boolean? getMultiDexEnabled();
     method public com.android.build.api.dsl.ApkSigningConfig? getSigningConfig();
-    method public void setMultiDexEnabled(Boolean? multiDexEnabled);
-    method public void setSigningConfig(com.android.build.api.dsl.ApkSigningConfig? signingConfig);
+    method public void setMultiDexEnabled(Boolean?);
+    method public void setSigningConfig(com.android.build.api.dsl.ApkSigningConfig?);
     property public abstract com.android.build.api.dsl.AarMetadata aarMetadata;
     property public abstract java.util.List<java.io.File> consumerProguardFiles;
     property public abstract Boolean? multiDexEnabled;
@@ -1231,31 +1233,31 @@ package com.android.build.api.dsl {
     method public boolean getWarningsAsErrors();
     method public java.io.File? getXmlOutput();
     method public boolean getXmlReport();
-    method public void setAbortOnError(boolean abortOnError);
-    method public void setAbsolutePaths(boolean absolutePaths);
-    method public void setBaseline(java.io.File? baseline);
-    method public void setCheckAllWarnings(boolean checkAllWarnings);
-    method public void setCheckDependencies(boolean checkDependencies);
-    method public void setCheckGeneratedSources(boolean checkGeneratedSources);
-    method public void setCheckReleaseBuilds(boolean checkReleaseBuilds);
-    method public void setCheckTestSources(boolean checkTestSources);
-    method public void setExplainIssues(boolean explainIssues);
-    method public void setHtmlOutput(java.io.File? htmlOutput);
-    method public void setHtmlReport(boolean htmlReport);
-    method public void setIgnoreTestFixturesSources(boolean ignoreTestFixturesSources);
-    method public void setIgnoreTestSources(boolean ignoreTestSources);
-    method public void setIgnoreWarnings(boolean ignoreWarnings);
-    method public void setLintConfig(java.io.File? lintConfig);
-    method public void setNoLines(boolean noLines);
-    method public void setQuiet(boolean quiet);
-    method public void setSarifOutput(java.io.File? sarifOutput);
-    method public void setSarifReport(boolean sarifReport);
-    method public void setShowAll(boolean showAll);
-    method public void setTextOutput(java.io.File? textOutput);
-    method public void setTextReport(boolean textReport);
-    method public void setWarningsAsErrors(boolean warningsAsErrors);
-    method public void setXmlOutput(java.io.File? xmlOutput);
-    method public void setXmlReport(boolean xmlReport);
+    method public void setAbortOnError(boolean);
+    method public void setAbsolutePaths(boolean);
+    method public void setBaseline(java.io.File?);
+    method public void setCheckAllWarnings(boolean);
+    method public void setCheckDependencies(boolean);
+    method public void setCheckGeneratedSources(boolean);
+    method public void setCheckReleaseBuilds(boolean);
+    method public void setCheckTestSources(boolean);
+    method public void setExplainIssues(boolean);
+    method public void setHtmlOutput(java.io.File?);
+    method public void setHtmlReport(boolean);
+    method public void setIgnoreTestFixturesSources(boolean);
+    method public void setIgnoreTestSources(boolean);
+    method public void setIgnoreWarnings(boolean);
+    method public void setLintConfig(java.io.File?);
+    method public void setNoLines(boolean);
+    method public void setQuiet(boolean);
+    method public void setSarifOutput(java.io.File?);
+    method public void setSarifReport(boolean);
+    method public void setShowAll(boolean);
+    method public void setTextOutput(java.io.File?);
+    method public void setTextReport(boolean);
+    method public void setWarningsAsErrors(boolean);
+    method public void setXmlOutput(java.io.File?);
+    method public void setXmlReport(boolean);
     property public abstract boolean abortOnError;
     property public abstract boolean absolutePaths;
     property public abstract java.io.File? baseline;
@@ -1337,30 +1339,30 @@ package com.android.build.api.dsl {
     method @Deprecated @org.gradle.api.Incubating public boolean isQuiet();
     method @Deprecated @org.gradle.api.Incubating public boolean isShowAll();
     method @Deprecated @org.gradle.api.Incubating public boolean isWarningsAsErrors();
-    method @Deprecated @org.gradle.api.Incubating public void setAbortOnError(boolean isAbortOnError);
-    method @Deprecated @org.gradle.api.Incubating public void setAbsolutePaths(boolean isAbsolutePaths);
-    method @Deprecated @org.gradle.api.Incubating public void setBaselineFile(java.io.File? baselineFile);
-    method @Deprecated @org.gradle.api.Incubating public void setCheckAllWarnings(boolean isCheckAllWarnings);
-    method @Deprecated @org.gradle.api.Incubating public void setCheckDependencies(boolean isCheckDependencies);
-    method @Deprecated @org.gradle.api.Incubating public void setCheckGeneratedSources(boolean isCheckGeneratedSources);
-    method @Deprecated @org.gradle.api.Incubating public void setCheckReleaseBuilds(boolean isCheckReleaseBuilds);
-    method @Deprecated @org.gradle.api.Incubating public void setCheckTestSources(boolean isCheckTestSources);
-    method @Deprecated @org.gradle.api.Incubating public void setExplainIssues(boolean isExplainIssues);
-    method @Deprecated @org.gradle.api.Incubating public void setHtmlOutput(java.io.File? htmlOutput);
-    method @Deprecated @org.gradle.api.Incubating public void setHtmlReport(boolean htmlReport);
-    method @Deprecated @org.gradle.api.Incubating public void setIgnoreTestSources(boolean isIgnoreTestSources);
-    method @Deprecated @org.gradle.api.Incubating public void setIgnoreWarnings(boolean isIgnoreWarnings);
-    method @Deprecated @org.gradle.api.Incubating public void setLintConfig(java.io.File? lintConfig);
-    method @Deprecated @org.gradle.api.Incubating public void setNoLines(boolean isNoLines);
-    method @Deprecated @org.gradle.api.Incubating public void setQuiet(boolean isQuiet);
-    method @Deprecated @org.gradle.api.Incubating public void setSarifOutput(java.io.File? sarifOutput);
-    method @Deprecated @org.gradle.api.Incubating public void setSarifReport(boolean sarifReport);
-    method @Deprecated @org.gradle.api.Incubating public void setShowAll(boolean isShowAll);
-    method @Deprecated @org.gradle.api.Incubating public void setTextOutput(java.io.File? textOutput);
-    method @Deprecated @org.gradle.api.Incubating public void setTextReport(boolean textReport);
-    method @Deprecated @org.gradle.api.Incubating public void setWarningsAsErrors(boolean isWarningsAsErrors);
-    method @Deprecated @org.gradle.api.Incubating public void setXmlOutput(java.io.File? xmlOutput);
-    method @Deprecated @org.gradle.api.Incubating public void setXmlReport(boolean xmlReport);
+    method @Deprecated @org.gradle.api.Incubating public void setAbortOnError(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setAbsolutePaths(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setBaselineFile(java.io.File?);
+    method @Deprecated @org.gradle.api.Incubating public void setCheckAllWarnings(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setCheckDependencies(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setCheckGeneratedSources(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setCheckReleaseBuilds(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setCheckTestSources(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setExplainIssues(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setHtmlOutput(java.io.File?);
+    method @Deprecated @org.gradle.api.Incubating public void setHtmlReport(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setIgnoreTestSources(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setIgnoreWarnings(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setLintConfig(java.io.File?);
+    method @Deprecated @org.gradle.api.Incubating public void setNoLines(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setQuiet(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setSarifOutput(java.io.File?);
+    method @Deprecated @org.gradle.api.Incubating public void setSarifReport(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setShowAll(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setTextOutput(java.io.File?);
+    method @Deprecated @org.gradle.api.Incubating public void setTextReport(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setWarningsAsErrors(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setXmlOutput(java.io.File?);
+    method @Deprecated @org.gradle.api.Incubating public void setXmlReport(boolean);
     method @Deprecated @org.gradle.api.Incubating public void textOutput(String textOutput);
     method @Deprecated @org.gradle.api.Incubating public void textOutput(java.io.File textOutput);
     method @Deprecated @org.gradle.api.Incubating public void warning(String id);
@@ -1411,11 +1413,11 @@ package com.android.build.api.dsl {
     method public String getDevice();
     method public boolean getRequire64Bit();
     method public String getSystemImageSource();
-    method public void setApiLevel(int apiLevel);
-    method @org.gradle.api.Incubating public void setApiPreview(String? apiPreview);
-    method public void setDevice(String device);
-    method public void setRequire64Bit(boolean require64Bit);
-    method public void setSystemImageSource(String systemImageSource);
+    method public void setApiLevel(int);
+    method @org.gradle.api.Incubating public void setApiPreview(String?);
+    method public void setDevice(String);
+    method public void setRequire64Bit(boolean);
+    method public void setSystemImageSource(String);
     property public abstract int apiLevel;
     property @org.gradle.api.Incubating public abstract String? apiPreview;
     property public abstract String device;
@@ -1437,11 +1439,11 @@ package com.android.build.api.dsl {
     method public java.util.List<java.lang.String>? getLdLibs();
     method public String? getModuleName();
     method public String? getStl();
-    method public void setCFlags(String? cFlags);
-    method public void setDebugSymbolLevel(String? debugSymbolLevel);
-    method public void setJobs(Integer? jobs);
-    method public void setModuleName(String? moduleName);
-    method public void setStl(String? stl);
+    method public void setCFlags(String?);
+    method public void setDebugSymbolLevel(String?);
+    method public void setJobs(Integer?);
+    method public void setModuleName(String?);
+    method public void setStl(String?);
     property public abstract java.util.Set<java.lang.String> abiFilters;
     property public abstract String? cFlags;
     property public abstract String? debugSymbolLevel;
@@ -1456,8 +1458,8 @@ package com.android.build.api.dsl {
     method public java.io.File? getBuildStagingDirectory();
     method public java.io.File? getPath();
     method public void path(Object any);
-    method public void setBuildStagingDirectory(java.io.File? buildStagingDirectory);
-    method public void setPath(java.io.File? path);
+    method public void setBuildStagingDirectory(java.io.File?);
+    method public void setPath(java.io.File?);
     property public abstract java.io.File? buildStagingDirectory;
     property public abstract java.io.File? path;
   }
@@ -1519,13 +1521,13 @@ package com.android.build.api.dsl {
     method public boolean isRemoveUnusedResources();
     method public void proguardFile(Object file);
     method public void proguardFiles(java.lang.Object... files);
-    method @Deprecated public void setCodeShrinker(String codeShrinker);
+    method @Deprecated public void setCodeShrinker(String);
     method public void setConsumerProguardFiles(java.util.List<?> consumerProguardFiles);
-    method public void setObfuscate(boolean isObfuscate);
-    method public void setOptimizeCode(boolean isOptimizeCode);
+    method public void setObfuscate(boolean);
+    method public void setOptimizeCode(boolean);
     method public void setProguardFiles(java.util.List<?> proguardFiles);
-    method public void setRemoveUnusedCode(boolean isRemoveUnusedCode);
-    method public void setRemoveUnusedResources(boolean isRemoveUnusedResources);
+    method public void setRemoveUnusedCode(boolean);
+    method public void setRemoveUnusedResources(boolean);
     method public void setTestProguardFiles(java.util.List<?> testProguardFiles);
     method public void testProguardFile(Object file);
     method public void testProguardFiles(java.lang.Object... files);
@@ -1541,10 +1543,10 @@ package com.android.build.api.dsl {
     method public String? getHeaders();
     method public String? getLibraryName();
     method public String getName();
-    method public void setHeaderOnly(boolean headerOnly);
-    method public void setHeaders(String? headers);
-    method public void setLibraryName(String? libraryName);
-    method public void setName(String name);
+    method public void setHeaderOnly(boolean);
+    method public void setHeaders(String?);
+    method public void setLibraryName(String?);
+    method public void setName(String);
     property public abstract boolean headerOnly;
     property public abstract String? headers;
     property public abstract String? libraryName;
@@ -1556,10 +1558,10 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public String? getCompatSdkProviderClassName();
     method @Deprecated @org.gradle.api.Incubating public String? getPackageName();
     method @org.gradle.api.Incubating public String? getSdkProviderClassName();
-    method @org.gradle.api.Incubating public void setApplicationId(String? applicationId);
-    method @org.gradle.api.Incubating public void setCompatSdkProviderClassName(String? compatSdkProviderClassName);
-    method @Deprecated @org.gradle.api.Incubating public void setPackageName(String? packageName);
-    method @org.gradle.api.Incubating public void setSdkProviderClassName(String? sdkProviderClassName);
+    method @org.gradle.api.Incubating public void setApplicationId(String?);
+    method @org.gradle.api.Incubating public void setCompatSdkProviderClassName(String?);
+    method @Deprecated @org.gradle.api.Incubating public void setPackageName(String?);
+    method @org.gradle.api.Incubating public void setSdkProviderClassName(String?);
     method @org.gradle.api.Incubating public void setVersion(int major, int minor, int patch);
     property @org.gradle.api.Incubating public abstract String? applicationId;
     property @org.gradle.api.Incubating public abstract String? compatSdkProviderClassName;
@@ -1579,13 +1581,13 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public String? getMinSdkPreview();
     method @Deprecated @org.gradle.api.Incubating public String? getNamespace();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.SigningConfig getSigningConfig();
-    method @org.gradle.api.Incubating public void setBuildToolsVersion(String buildToolsVersion);
-    method @org.gradle.api.Incubating public void setCompileSdk(Integer? compileSdk);
-    method @org.gradle.api.Incubating public void setCompileSdkExtension(Integer? compileSdkExtension);
-    method @org.gradle.api.Incubating public void setCompileSdkPreview(String? compileSdkPreview);
-    method @org.gradle.api.Incubating public void setMinSdk(Integer? minSdk);
-    method @org.gradle.api.Incubating public void setMinSdkPreview(String? minSdkPreview);
-    method @Deprecated @org.gradle.api.Incubating public void setNamespace(String? namespace);
+    method @org.gradle.api.Incubating public void setBuildToolsVersion(String);
+    method @org.gradle.api.Incubating public void setCompileSdk(Integer?);
+    method @org.gradle.api.Incubating public void setCompileSdkExtension(Integer?);
+    method @org.gradle.api.Incubating public void setCompileSdkPreview(String?);
+    method @org.gradle.api.Incubating public void setMinSdk(Integer?);
+    method @org.gradle.api.Incubating public void setMinSdkPreview(String?);
+    method @Deprecated @org.gradle.api.Incubating public void setNamespace(String?);
     method @org.gradle.api.Incubating public void signingConfig(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.SigningConfig,kotlin.Unit> action);
     property @org.gradle.api.Incubating public abstract String buildToolsVersion;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.PrivacySandboxSdkBundle bundle;
@@ -1602,7 +1604,7 @@ package com.android.build.api.dsl {
   public interface ProductFlavor extends org.gradle.api.Named com.android.build.api.dsl.BaseFlavor org.gradle.api.plugins.ExtensionAware {
     method public String? getDimension();
     method public java.util.List<java.lang.String> getMatchingFallbacks();
-    method public void setDimension(String? dimension);
+    method public void setDimension(String?);
     method @Deprecated public Void? setDimension(String? dimension);
     method @Deprecated public void setMatchingFallbacks(java.lang.String... fallbacks);
     method @Deprecated public void setMatchingFallbacks(java.util.List<java.lang.String> fallbacks);
@@ -1658,11 +1660,11 @@ package com.android.build.api.dsl {
     method public String? getStorePassword();
     method public String? getStoreType();
     method public void initWith(com.android.build.api.dsl.SigningConfig that);
-    method public void setKeyAlias(String? keyAlias);
-    method public void setKeyPassword(String? keyPassword);
-    method public void setStoreFile(java.io.File? storeFile);
-    method public void setStorePassword(String? storePassword);
-    method public void setStoreType(String? storeType);
+    method public void setKeyAlias(String?);
+    method public void setKeyPassword(String?);
+    method public void setStoreFile(java.io.File?);
+    method public void setStorePassword(String?);
+    method public void setStoreType(String?);
     property public abstract String? keyAlias;
     property public abstract String? keyPassword;
     property public abstract java.io.File? storeFile;
@@ -1680,7 +1682,7 @@ package com.android.build.api.dsl {
     method public void include(java.lang.String... includes);
     method public boolean isEnable();
     method public void reset();
-    method public void setEnable(boolean isEnable);
+    method public void setEnable(boolean);
     property public abstract boolean isEnable;
   }
 
@@ -1705,9 +1707,9 @@ package com.android.build.api.dsl {
     method public Integer? getTargetSdk();
     method public String? getTargetSdkPreview();
     method @Deprecated public void maxSdkVersion(int maxSdkVersion);
-    method public void setMaxSdk(Integer? maxSdk);
-    method public void setTargetSdk(Integer? targetSdk);
-    method public void setTargetSdkPreview(String? targetSdkPreview);
+    method public void setMaxSdk(Integer?);
+    method public void setTargetSdk(Integer?);
+    method public void setTargetSdkPreview(String?);
     method @Deprecated public void setTargetSdkVersion(String? targetSdkVersion);
     method @Deprecated public void targetSdkVersion(int targetSdkVersion);
     method @Deprecated public void targetSdkVersion(String? targetSdkVersion);
@@ -1722,15 +1724,15 @@ package com.android.build.api.dsl {
   public interface TestBuildType extends com.android.build.api.dsl.BuildType com.android.build.api.dsl.TestVariantDimension {
     method public Boolean? isCrunchPngs();
     method public boolean isDebuggable();
-    method public void setCrunchPngs(Boolean? isCrunchPngs);
-    method public void setDebuggable(boolean isDebuggable);
+    method public void setCrunchPngs(Boolean?);
+    method public void setDebuggable(boolean);
     property public abstract Boolean? isCrunchPngs;
     property public abstract boolean isDebuggable;
   }
 
   public interface TestCoverage {
     method public String getJacocoVersion();
-    method public void setJacocoVersion(String jacocoVersion);
+    method public void setJacocoVersion(String);
     property public abstract String jacocoVersion;
   }
 
@@ -1739,15 +1741,15 @@ package com.android.build.api.dsl {
 
   public interface TestExtension extends com.android.build.api.dsl.CommonExtension<com.android.build.api.dsl.TestBuildFeatures,com.android.build.api.dsl.TestBuildType,com.android.build.api.dsl.TestDefaultConfig,com.android.build.api.dsl.TestProductFlavor,com.android.build.api.dsl.TestAndroidResources> {
     method public String? getTargetProjectPath();
-    method public void setTargetProjectPath(String? targetProjectPath);
+    method public void setTargetProjectPath(String?);
     property public abstract String? targetProjectPath;
   }
 
   @org.gradle.api.Incubating public interface TestFixtures {
     method public boolean getAndroidResources();
     method public boolean getEnable();
-    method public void setAndroidResources(boolean androidResources);
-    method public void setEnable(boolean enable);
+    method public void setAndroidResources(boolean);
+    method public void setEnable(boolean);
     property public abstract boolean androidResources;
     property public abstract boolean enable;
   }
@@ -1768,10 +1770,10 @@ package com.android.build.api.dsl {
     method public String? getResultsDir();
     method public com.android.build.api.dsl.UnitTestOptions getUnitTests();
     method @org.gradle.api.Incubating public void managedDevices(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ManagedDevices,kotlin.Unit> action);
-    method public void setAnimationsDisabled(boolean animationsDisabled);
-    method public void setExecution(String execution);
-    method public void setReportDir(String? reportDir);
-    method public void setResultsDir(String? resultsDir);
+    method public void setAnimationsDisabled(boolean);
+    method public void setExecution(String);
+    method public void setReportDir(String?);
+    method public void setResultsDir(String?);
     method public void unitTests(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.UnitTestOptions,kotlin.Unit> action);
     property public abstract boolean animationsDisabled;
     property @Deprecated @org.gradle.api.Incubating public abstract org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.DeviceGroup> deviceGroups;
@@ -1792,8 +1794,8 @@ package com.android.build.api.dsl {
   public interface TestVariantDimension extends com.android.build.api.dsl.VariantDimension {
     method public Boolean? getMultiDexEnabled();
     method public com.android.build.api.dsl.ApkSigningConfig? getSigningConfig();
-    method public void setMultiDexEnabled(Boolean? multiDexEnabled);
-    method public void setSigningConfig(com.android.build.api.dsl.ApkSigningConfig? signingConfig);
+    method public void setMultiDexEnabled(Boolean?);
+    method public void setSigningConfig(com.android.build.api.dsl.ApkSigningConfig?);
     property public abstract Boolean? multiDexEnabled;
     property public abstract com.android.build.api.dsl.ApkSigningConfig? signingConfig;
   }
@@ -1802,8 +1804,8 @@ package com.android.build.api.dsl {
     method public String getTestBuildType();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.TestFixtures getTestFixtures();
     method public String? getTestNamespace();
-    method public void setTestBuildType(String testBuildType);
-    method public void setTestNamespace(String? testNamespace);
+    method public void setTestBuildType(String);
+    method public void setTestNamespace(String?);
     method @org.gradle.api.Incubating public void testFixtures(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.TestFixtures,kotlin.Unit> action);
     property public abstract String testBuildType;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.TestFixtures testFixtures;
@@ -1814,8 +1816,8 @@ package com.android.build.api.dsl {
     method public void all(kotlin.jvm.functions.Function1<? super org.gradle.api.tasks.testing.Test,kotlin.Unit> configAction);
     method public boolean isIncludeAndroidResources();
     method public boolean isReturnDefaultValues();
-    method public void setIncludeAndroidResources(boolean isIncludeAndroidResources);
-    method public void setReturnDefaultValues(boolean isReturnDefaultValues);
+    method public void setIncludeAndroidResources(boolean);
+    method public void setReturnDefaultValues(boolean);
     property public abstract boolean isIncludeAndroidResources;
     property public abstract boolean isReturnDefaultValues;
   }
@@ -1841,8 +1843,8 @@ package com.android.build.api.dsl {
     method public Object proguardFiles(java.lang.Object... files);
     method public void resValue(String type, String name, String value);
     method @Deprecated public Void? setManifestPlaceholders(java.util.Map<java.lang.String,?> manifestPlaceholders);
-    method @Deprecated public void setMultiDexKeepFile(java.io.File? multiDexKeepFile);
-    method public void setMultiDexKeepProguard(java.io.File? multiDexKeepProguard);
+    method @Deprecated public void setMultiDexKeepFile(java.io.File?);
+    method public void setMultiDexKeepProguard(java.io.File?);
     method public Object setProguardFiles(Iterable<?> proguardFileIterable);
     method public void shaders(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Shaders,kotlin.Unit> action);
     method public Object testProguardFile(Object proguardFile);
@@ -1863,14 +1865,14 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public void generatedDensities(java.lang.String... densities);
     method @org.gradle.api.Incubating public java.util.Set<java.lang.String>? getGeneratedDensities();
     method public Boolean? getUseSupportLibrary();
-    method public void setUseSupportLibrary(Boolean? useSupportLibrary);
+    method public void setUseSupportLibrary(Boolean?);
     property @org.gradle.api.Incubating public abstract java.util.Set<java.lang.String>? generatedDensities;
     property public abstract Boolean? useSupportLibrary;
   }
 
   public interface ViewBinding {
     method public boolean getEnable();
-    method public void setEnable(boolean enable);
+    method public void setEnable(boolean);
     property public abstract boolean enable;
   }
 
@@ -1905,6 +1907,8 @@ package com.android.build.api.instrumentation {
   }
 
   public enum FramesComputationMode {
+    method public static com.android.build.api.instrumentation.FramesComputationMode valueOf(String name) throws java.lang.IllegalArgumentException;
+    method public static com.android.build.api.instrumentation.FramesComputationMode[] values();
     enum_constant public static final com.android.build.api.instrumentation.FramesComputationMode COMPUTE_FRAMES_FOR_ALL_CLASSES;
     enum_constant public static final com.android.build.api.instrumentation.FramesComputationMode COMPUTE_FRAMES_FOR_INSTRUMENTED_CLASSES;
     enum_constant public static final com.android.build.api.instrumentation.FramesComputationMode COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS;
@@ -1924,6 +1928,8 @@ package com.android.build.api.instrumentation {
   }
 
   public enum InstrumentationScope {
+    method public static com.android.build.api.instrumentation.InstrumentationScope valueOf(String name) throws java.lang.IllegalArgumentException;
+    method public static com.android.build.api.instrumentation.InstrumentationScope[] values();
     enum_constant public static final com.android.build.api.instrumentation.InstrumentationScope ALL;
     enum_constant public static final com.android.build.api.instrumentation.InstrumentationScope PROJECT;
   }
@@ -2223,7 +2229,7 @@ package com.android.build.api.variant {
 
   @org.gradle.api.Incubating public interface CanMinifyAndroidResourcesBuilder {
     method public boolean getShrinkResources();
-    method public void setShrinkResources(boolean shrinkResources);
+    method public void setShrinkResources(boolean);
     property public abstract boolean shrinkResources;
   }
 
@@ -2234,7 +2240,7 @@ package com.android.build.api.variant {
 
   @org.gradle.api.Incubating public interface CanMinifyCodeBuilder {
     method public boolean isMinifyEnabled();
-    method public void setMinifyEnabled(boolean isMinifyEnabled);
+    method public void setMinifyEnabled(boolean);
     property public abstract boolean isMinifyEnabled;
   }
 
@@ -2268,8 +2274,8 @@ package com.android.build.api.variant {
   public interface ComponentBuilder extends com.android.build.api.variant.ComponentIdentity {
     method public boolean getEnable();
     method @Deprecated public boolean getEnabled();
-    method public void setEnable(boolean enable);
-    method @Deprecated public void setEnabled(boolean enabled);
+    method public void setEnable(boolean);
+    method @Deprecated public void setEnabled(boolean);
     property public abstract boolean enable;
     property @Deprecated public abstract boolean enabled;
   }
@@ -2297,10 +2303,10 @@ package com.android.build.api.variant {
     method public boolean getIncludeInBundle();
     method @Deprecated public boolean getIncludedInApk();
     method @Deprecated public boolean getIncludedInBundle();
-    method public void setIncludeInApk(boolean includeInApk);
-    method public void setIncludeInBundle(boolean includeInBundle);
-    method @Deprecated public void setIncludedInApk(boolean includedInApk);
-    method @Deprecated public void setIncludedInBundle(boolean includedInBundle);
+    method public void setIncludeInApk(boolean);
+    method public void setIncludeInBundle(boolean);
+    method @Deprecated public void setIncludedInApk(boolean);
+    method @Deprecated public void setIncludedInBundle(boolean);
     property public abstract boolean includeInApk;
     property public abstract boolean includeInBundle;
     property @Deprecated public abstract boolean includedInApk;
@@ -2369,6 +2375,8 @@ package com.android.build.api.variant {
   }
 
   public enum FilterConfiguration.FilterType {
+    method public static com.android.build.api.variant.FilterConfiguration.FilterType valueOf(String name) throws java.lang.IllegalArgumentException;
+    method public static com.android.build.api.variant.FilterConfiguration.FilterType[] values();
     enum_constant public static final com.android.build.api.variant.FilterConfiguration.FilterType ABI;
     enum_constant public static final com.android.build.api.variant.FilterConfiguration.FilterType DENSITY;
     enum_constant public static final com.android.build.api.variant.FilterConfiguration.FilterType LANGUAGE;
@@ -2397,8 +2405,8 @@ package com.android.build.api.variant {
   public interface GeneratesApkBuilder {
     method public Integer? getTargetSdk();
     method public String? getTargetSdkPreview();
-    method public void setTargetSdk(Integer? targetSdk);
-    method public void setTargetSdkPreview(String? targetSdkPreview);
+    method public void setTargetSdk(Integer?);
+    method public void setTargetSdkPreview(String?);
     property public abstract Integer? targetSdk;
     property public abstract String? targetSdkPreview;
   }
@@ -2430,8 +2438,8 @@ package com.android.build.api.variant {
   public interface HasAndroidTestBuilder {
     method @Deprecated public boolean getAndroidTestEnabled();
     method public boolean getEnableAndroidTest();
-    method @Deprecated public void setAndroidTestEnabled(boolean androidTestEnabled);
-    method public void setEnableAndroidTest(boolean enableAndroidTest);
+    method @Deprecated public void setAndroidTestEnabled(boolean);
+    method public void setEnableAndroidTest(boolean);
     property @Deprecated public abstract boolean androidTestEnabled;
     property public abstract boolean enableAndroidTest;
   }
@@ -2443,7 +2451,7 @@ package com.android.build.api.variant {
 
   @org.gradle.api.Incubating public interface HasTestFixturesBuilder {
     method public boolean getEnableTestFixtures();
-    method public void setEnableTestFixtures(boolean enableTestFixtures);
+    method public void setEnableTestFixtures(boolean);
     property public abstract boolean enableTestFixtures;
   }
 
@@ -2454,7 +2462,7 @@ package com.android.build.api.variant {
 
   public interface HasUnitTestBuilder {
     method public boolean getEnableUnitTest();
-    method public void setEnableUnitTest(boolean enableUnitTest);
+    method public void setEnableUnitTest(boolean);
     property public abstract boolean enableUnitTest;
   }
 
@@ -2547,6 +2555,8 @@ package com.android.build.api.variant {
   }
 
   public enum ScopedArtifacts.Scope {
+    method public static com.android.build.api.variant.ScopedArtifacts.Scope valueOf(String name) throws java.lang.IllegalArgumentException;
+    method public static com.android.build.api.variant.ScopedArtifacts.Scope[] values();
     enum_constant public static final com.android.build.api.variant.ScopedArtifacts.Scope ALL;
     enum_constant public static final com.android.build.api.variant.ScopedArtifacts.Scope PROJECT;
   }
@@ -2677,14 +2687,14 @@ package com.android.build.api.variant {
     method @Deprecated public String? getTargetSdkPreview();
     method @Deprecated public boolean getUnitTestEnabled();
     method public <T> void registerExtension(Class<? extends T> type, T instance);
-    method @Deprecated public void setEnableUnitTest(boolean enableUnitTest);
-    method public void setMaxSdk(Integer? maxSdk);
-    method public void setMinSdk(Integer? minSdk);
-    method public void setMinSdkPreview(String? minSdkPreview);
-    method public void setRenderscriptTargetApi(int renderscriptTargetApi);
-    method @Deprecated public void setTargetSdk(Integer? targetSdk);
-    method @Deprecated public void setTargetSdkPreview(String? targetSdkPreview);
-    method @Deprecated public void setUnitTestEnabled(boolean unitTestEnabled);
+    method @Deprecated public void setEnableUnitTest(boolean);
+    method public void setMaxSdk(Integer?);
+    method public void setMinSdk(Integer?);
+    method public void setMinSdkPreview(String?);
+    method public void setRenderscriptTargetApi(int);
+    method @Deprecated public void setTargetSdk(Integer?);
+    method @Deprecated public void setTargetSdkPreview(String?);
+    method @Deprecated public void setUnitTestEnabled(boolean);
     property @Deprecated public abstract boolean enableUnitTest;
     property public abstract Integer? maxSdk;
     property public abstract Integer? minSdk;
@@ -2712,7 +2722,7 @@ package com.android.build.api.variant {
     method @Deprecated public java.util.List<com.android.builder.model.ProductFlavor> getFlavors();
     method @Deprecated public boolean getIgnore();
     method @Deprecated public String getName();
-    method @Deprecated public void setIgnore(boolean ignore);
+    method @Deprecated public void setIgnore(boolean);
     property public abstract com.android.builder.model.BuildType buildType;
     property public abstract com.android.builder.model.ProductFlavor defaultConfig;
     property public abstract java.util.List<com.android.builder.model.ProductFlavor> flavors;
@@ -2747,6 +2757,8 @@ package com.android.build.api.variant {
   }
 
   public enum VariantOutputConfiguration.OutputType {
+    method public static com.android.build.api.variant.VariantOutputConfiguration.OutputType valueOf(String name) throws java.lang.IllegalArgumentException;
+    method public static com.android.build.api.variant.VariantOutputConfiguration.OutputType[] values();
     enum_constant public static final com.android.build.api.variant.VariantOutputConfiguration.OutputType ONE_OF_MANY;
     enum_constant public static final com.android.build.api.variant.VariantOutputConfiguration.OutputType SINGLE;
     enum_constant public static final com.android.build.api.variant.VariantOutputConfiguration.OutputType UNIVERSAL;
