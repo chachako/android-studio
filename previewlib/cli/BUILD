@@ -85,6 +85,7 @@ merge_deps(
         "//tools/adt/idea/render-resources:intellij.android.render-resources",
         "//tools/adt/idea/rendering:intellij.android.rendering",
         "//tools/adt/idea/server-flags:intellij.android.server-flags",
+        "//tools/adt/idea/studio/build-flags",
         "//tools/analytics-library/crash:analytics-crash",
         "//tools/analytics-library/shared:analytics-shared",
         "//tools/analytics-library/tracker:analytics-tracker",
