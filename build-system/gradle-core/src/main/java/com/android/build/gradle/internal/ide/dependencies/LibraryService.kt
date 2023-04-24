@@ -34,14 +34,21 @@ import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.result.ResolvedVariantResult
 import org.gradle.internal.component.local.model.OpaqueComponentArtifactIdentifier
 import java.io.File
-import java.lang.IllegalArgumentException
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * a Service that can create a [Library] for a given [ResolvedArtifact].
  *
- * Generally the implementation will cache the created instances to reuse them.
+ * The implementation will cache the created instances globally across build to reuse them.
  */
 interface LibraryService {
+    fun getAllLibraries(): Map<String, Library>
+
+    fun getLibrary(artifact: ResolvedArtifact, additionalArtifacts: AdditionalArtifacts): Library
+}
+
+/** A cache for libraries that's used to cache instances globally across the build. */
+interface LibraryCache {
     fun getLibrary(artifact: ResolvedArtifact, additionalArtifacts: AdditionalArtifacts): Library
 }
 
@@ -124,23 +131,40 @@ class LocalJarCacheImpl : LocalJarCache {
     }
 }
 
-class LibraryServiceImpl(
+class LibraryServiceImpl(private val libraryCache : LibraryCache) : LibraryService {
+    private val libraries = mutableMapOf<String, Library>()
+    override fun getAllLibraries() = libraries
+    override fun getLibrary(
+        artifact: ResolvedArtifact,
+        additionalArtifacts: AdditionalArtifacts
+    ) = libraryCache.getLibrary(artifact, additionalArtifacts).also {
+        libraries.putIfAbsent(it.key, it)
+    }
+}
+
+class LibraryCacheImpl(
     private val stringCache: StringCache,
     private val localJarCache: LocalJarCache
-) : LibraryService {
+) : LibraryCache {
 
     // do not query directly. Use [getLibrary]
     private val libraryCache = mutableMapOf<ResolvedArtifact, Library>()
 
-    /**
-     * Returns a [Library] instance matching the provided a [ResolvedArtifact].
-     */
+    /** Returns a [Library] instance matching the provided a [ResolvedArtifact]. */
     override fun getLibrary(artifact: ResolvedArtifact, additionalArtifacts: AdditionalArtifacts): Library =
-        libraryCache.computeIfAbsent(artifact) {
-            createLibrary(it, additionalArtifacts)
+        synchronized(libraryCache) {
+            libraryCache.computeIfAbsent(artifact) {
+                createLibrary(it, additionalArtifacts)
+            }
         }
 
-    fun getAllLibraries(): Collection<Library> = libraryCache.values
+
+    fun clear() {
+        libraryCache.clear()
+        libraryInfoCache.clear()
+        libraryInfoForLocalJarsCache.clear()
+        projectInfoCache.clear()
+    }
 
     // do not query directly. Use [getProjectInfo]
     private val projectInfoCache = mutableMapOf<ResolvedVariantResult, ProjectInfoImpl>()

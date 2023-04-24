@@ -247,7 +247,7 @@ private fun buildModelGraph(
 ): Pair<ArtifactDependencies, Map<String, Library>> {
     val stringCache = StringCacheImpl()
     val localJarCache = LocalJarCacheImpl()
-    val libraryService = LibraryServiceImpl(stringCache, localJarCache)
+    val libraryService = LibraryServiceImpl(LibraryCacheImpl(stringCache, localJarCache))
 
     val (dependencyResults, resolvedArtifacts) = buildGraph(action)
 
@@ -260,7 +260,7 @@ private fun buildModelGraph(
         dontBuildRuntimeClasspath,
     )
 
-    return builder.build() to libraryService.getAllLibraries().associateBy { it.key }
+    return builder.build() to libraryService.getAllLibraries()
 }
 
 private fun getInputs(artifacts: Set<ResolvedArtifact>): ArtifactCollectionsInputs =

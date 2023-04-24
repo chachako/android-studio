@@ -158,7 +158,6 @@ class ModelBuilder<
         VariantDependenciesAdjacencyList::class.java.name -> throw RuntimeException(
             "Please use parameterized Tooling API to obtain ${className.split(".").last()} model."
         )
-
         else -> throw RuntimeException("Does not support model '$className'")
     }
 
@@ -562,10 +561,7 @@ class ModelBuilder<
             ).get()
 
         val graphEdgeCache = globalLibraryBuildService.graphEdgeCache
-        val libraryService = LibraryServiceImpl(
-            globalLibraryBuildService.stringCache,
-            globalLibraryBuildService.localJarCache
-        )
+        val libraryService = LibraryServiceImpl(globalLibraryBuildService.libraryCache)
 
         val dontBuildRuntimeClasspath = parameter.dontBuildRuntimeClasspath
         return if (adjacencyList) {
@@ -587,7 +583,7 @@ class ModelBuilder<
                 testFixturesArtifact = (variant as? HasTestFixtures)?.testFixtures?.let {
                     createDependenciesWithAdjacencyList(it, buildMapping, libraryService, graphEdgeCache, dontBuildRuntimeClasspath)
                 },
-                libraryService.getAllLibraries().associateBy { it.key }
+                libraryService.getAllLibraries()
             )
         } else VariantDependenciesImpl(
             name = variantName,
@@ -606,7 +602,7 @@ class ModelBuilder<
             testFixturesArtifact = (variant as? HasTestFixtures)?.testFixtures?.let {
                 createDependencies(it, buildMapping, libraryService, dontBuildRuntimeClasspath)
             },
-            libraryService.getAllLibraries().associateBy { it.key }
+            libraryService.getAllLibraries()
         )
     }
 
