@@ -1,21 +1,42 @@
 [
   {
     "type": "DependsOn",
-    "coordinates": ":kmpSecondLib/commonTest",
+    "coordinates": {
+      "project": {
+        "buildId": ":",
+        "projectPath": ":kmpSecondLib",
+        "projectName": "kmpSecondLib"
+      },
+      "sourceSetName": "commonTest"
+    },
     "extras": {
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeDependsOnDependencyResolver"
     }
   },
   {
     "type": "Friend",
-    "coordinates": ":kmpSecondLib/jvmMain",
+    "coordinates": {
+      "project": {
+        "buildId": ":",
+        "projectPath": ":kmpSecondLib",
+        "projectName": "kmpSecondLib"
+      },
+      "sourceSetName": "jvmMain"
+    },
     "extras": {
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeFriendSourceDependencyResolver"
     }
   },
   {
     "type": "Friend",
-    "coordinates": ":kmpSecondLib/commonMain",
+    "coordinates": {
+      "project": {
+        "buildId": ":",
+        "projectPath": ":kmpSecondLib",
+        "projectName": "kmpSecondLib"
+      },
+      "sourceSetName": "commonMain"
+    },
     "extras": {
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeFriendSourceDependencyResolver"
     }
@@ -25,7 +46,11 @@
     "classpath": [
       "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.8.20-Beta/kotlin-stdlib-jdk8-1.8.20-Beta.jar"
     ],
-    "coordinates": "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20-Beta",
+    "coordinates": {
+      "group": "org.jetbrains.kotlin",
+      "module": "kotlin-stdlib-jdk8",
+      "version": "1.8.20-Beta"
+    },
     "extras": {
       "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-jdk8-1.8.20-Beta.jar (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20-Beta)",
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
@@ -36,7 +61,11 @@
     "classpath": [
       "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.8.20-Beta/kotlin-stdlib-jdk7-1.8.20-Beta.jar"
     ],
-    "coordinates": "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.20-Beta",
+    "coordinates": {
+      "group": "org.jetbrains.kotlin",
+      "module": "kotlin-stdlib-jdk7",
+      "version": "1.8.20-Beta"
+    },
     "extras": {
       "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-jdk7-1.8.20-Beta.jar (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.20-Beta)",
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
@@ -47,7 +76,11 @@
     "classpath": [
       "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib/1.8.20-Beta/kotlin-stdlib-1.8.20-Beta.jar"
     ],
-    "coordinates": "org.jetbrains.kotlin:kotlin-stdlib:1.8.20-Beta",
+    "coordinates": {
+      "group": "org.jetbrains.kotlin",
+      "module": "kotlin-stdlib",
+      "version": "1.8.20-Beta"
+    },
     "extras": {
       "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-1.8.20-Beta.jar (org.jetbrains.kotlin:kotlin-stdlib:1.8.20-Beta)",
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
@@ -58,7 +91,11 @@
     "classpath": [
       "{LOCAL_REPO}/org/jetbrains/annotations/13.0/annotations-13.0.jar"
     ],
-    "coordinates": "org.jetbrains:annotations:13.0",
+    "coordinates": {
+      "group": "org.jetbrains",
+      "module": "annotations",
+      "version": "13.0"
+    },
     "extras": {
       "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "annotations-13.0.jar (org.jetbrains:annotations:13.0)",
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver",

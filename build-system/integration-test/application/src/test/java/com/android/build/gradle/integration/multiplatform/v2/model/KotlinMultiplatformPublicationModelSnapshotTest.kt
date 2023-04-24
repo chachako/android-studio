@@ -38,7 +38,7 @@ class KotlinMultiplatformPublicationModelSnapshotTest: BaseModelComparator {
         val comparator = KmpModelComparator(
             project = project,
             testClass = this,
-            modelSnapshotTask = "resolveIdeDependencies",
+            modelSnapshotTask = "dumpSourceSetDependencies",
             taskOutputLocator = { projectPath ->
                 FileUtils.join(
                     project.getSubproject(projectPath).buildDir,

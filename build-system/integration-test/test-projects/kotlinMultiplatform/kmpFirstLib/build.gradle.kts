@@ -25,6 +25,9 @@ kotlin {
       }
     }
 
+    compilations.getByName("instrumentedTest") {
+        kotlinOptions.languageVersion = "1.8"
+    }
     namespace = "com.example.kmpfirstlib"
     compileSdk = property("latestCompileSdk") as Int
     minSdk = 22

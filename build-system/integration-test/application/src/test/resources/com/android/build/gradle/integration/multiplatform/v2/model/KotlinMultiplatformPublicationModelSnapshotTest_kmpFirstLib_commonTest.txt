@@ -1,7 +1,11 @@
-@@ -45 +45
+@@ -61 +61
 +       "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug-api.jar"
 +     ],
-+     "coordinates": "com.example:androidLib:1.0",
++     "coordinates": {
++       "group": "com.example",
++       "module": "androidLib",
++       "version": "1.0"
++     },
 +     "extras": {
 +       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
 +     }
@@ -9,14 +13,18 @@
 +   {
 +     "binaryType": "KOTLIN_COMPILE",
 +     "classpath": [
-@@ -77 +87
+@@ -105 +119
 -   },
 -   {
 -     "type": "Regular",
--     "coordinates": ":androidLib",
+-     "coordinates": {
+-       "buildId": ":",
+-       "projectPath": ":androidLib",
+-       "projectName": "androidLib"
+-     },
 -     "extras": {
 -       "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;artifactsClasspath": [
--         "androidLib/build/intermediates/full_jar/typeoneModetwoDebug/full.jar"
+-         "{INCLUDED_BUILD(kotlinMultiplatform)}/androidLib/build/intermediates/full_jar/typeoneModetwoDebug/full.jar"
 -       ],
 -       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
 -     }
