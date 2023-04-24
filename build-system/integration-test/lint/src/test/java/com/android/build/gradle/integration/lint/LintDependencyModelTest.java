@@ -134,7 +134,7 @@ public class LintDependencyModelTest {
                         .toFile();
         assertThat(lintModelDir).isDirectory();
 
-        File librariesModelFile = new File(lintModelDir, "debug-mainArtifact-libraries.xml");
+        File librariesModelFile = new File(lintModelDir, "debug-artifact-libraries.xml");
         assertThat(librariesModelFile).isFile();
         List<String> expectedStrings =
                 Arrays.asList(

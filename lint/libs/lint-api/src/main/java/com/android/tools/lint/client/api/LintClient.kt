@@ -1249,7 +1249,7 @@ abstract class LintClient {
         val variant = project.buildVariant
         if (variant != null) {
           val rules = ArrayList<File>(4)
-          addLintJarsFromDependencies(rules, variant.mainArtifact.dependencies.getAll())
+          addLintJarsFromDependencies(rules, variant.artifact.dependencies.getAll())
           val model = variant.module
 
           // Locally packaged jars
@@ -1712,7 +1712,7 @@ abstract class LintClient {
     val files = Lists.newArrayListWithExpectedSize<File>(2)
     for (project in projects) {
       val variant = project.buildVariant ?: continue
-      for (library in variant.mainArtifact.dependencies.getAll()) {
+      for (library in variant.artifact.dependencies.getAll()) {
         if (library is LintModelAndroidLibrary) {
           // As of 1.2 this is available in the model:
           //  https://android-review.googlesource.com/#/c/137750/

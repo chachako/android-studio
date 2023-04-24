@@ -757,7 +757,7 @@ private class LintModelVariantWriter(
     writeResValues(variant.resValues, indent + 1)
     writeManifestPlaceholders(variant.manifestPlaceholders, indent + 1)
 
-    writeArtifact(variant.mainArtifact, "mainArtifact", indent + 1, writeDependencies)
+    writeArtifact(variant.artifact, "artifact", indent + 1, writeDependencies, writeType = true)
     variant.androidTestArtifact?.let { artifact ->
       writeArtifact(artifact, "androidTestArtifact", indent + 1, writeDependencies)
     }
@@ -836,13 +836,17 @@ private class LintModelVariantWriter(
     artifact: LintModelArtifact,
     tag: String,
     indent: Int,
-    writeDependencies: Boolean
+    writeDependencies: Boolean,
+    writeType: Boolean = false
   ) {
     indent(indent)
     printer.print("<")
     printer.print(tag)
 
     printer.printFiles("classOutputs", artifact.classOutputs, indent)
+    if (writeType) {
+      printer.printAttribute("type", artifact.type.name, indent)
+    }
     if (artifact is LintModelAndroidArtifact) {
       printer.printAttribute("applicationId", artifact.applicationId, indent)
       printer.printFiles("generatedSourceFolders", artifact.generatedSourceFolders, indent)
@@ -1520,32 +1524,36 @@ private class LintModelVariantReader(
 
   private fun readAndroidArtifact(
     tag: String,
-    readDependencies: Boolean
+    readDependencies: Boolean,
+    type: LintModelArtifactType
   ): LintModelAndroidArtifact {
-    return readArtifact(tag, android = true, readDependencies = readDependencies)
-      as LintModelAndroidArtifact
+    return readArtifact(tag, readDependencies, type) as LintModelAndroidArtifact
   }
 
-  private fun readJavaArtifact(tag: String, readDependencies: Boolean): LintModelJavaArtifact {
-    return readArtifact(tag, android = false, readDependencies = readDependencies)
-      as LintModelJavaArtifact
+  private fun readJavaArtifact(
+    tag: String,
+    readDependencies: Boolean,
+    type: LintModelArtifactType
+  ): LintModelJavaArtifact {
+    return readArtifact(tag, readDependencies, type) as LintModelJavaArtifact
   }
 
   private fun readArtifact(
     tag: String,
-    android: Boolean,
-    readDependencies: Boolean
+    readDependencies: Boolean,
+    typeOrNull: LintModelArtifactType? = null
   ): LintModelArtifact {
     expectTag(tag)
 
     val classOutputs = getFiles("classOutputs")
+    val type = typeOrNull ?: LintModelArtifactType.valueOf(getRequiredAttribute("type"))
 
     val applicationId: String
     val generatedSourceFolders: Collection<File>
     val generatedResourceFolders: Collection<File>
     val desugaredMethodsFiles: Collection<File>
 
-    if (android) {
+    if (type != LintModelArtifactType.UNIT_TEST) {
       applicationId = getRequiredAttribute("applicationId")
       generatedSourceFolders = getFiles("generatedSourceFolders")
       generatedResourceFolders = getFiles("generatedResourceFolders")
@@ -1584,17 +1592,18 @@ private class LintModelVariantReader(
       dependencies = DefaultLintModelDependencies(empty, empty, resolver)
     }
 
-    return if (android) {
+    return if (type != LintModelArtifactType.UNIT_TEST) {
       DefaultLintModelAndroidArtifact(
-        applicationId = applicationId,
-        generatedResourceFolders = generatedResourceFolders,
-        generatedSourceFolders = generatedSourceFolders,
-        desugaredMethodsFiles = desugaredMethodsFiles,
-        classOutputs = classOutputs,
-        dependencies = dependencies
+        applicationId,
+        generatedResourceFolders,
+        generatedSourceFolders,
+        desugaredMethodsFiles,
+        dependencies,
+        classOutputs,
+        type
       )
     } else {
-      DefaultLintModelJavaArtifact(classFolders = classOutputs, dependencies = dependencies)
+      DefaultLintModelJavaArtifact(dependencies, classOutputs, type)
     }
   }
 
@@ -1606,6 +1615,7 @@ private class LintModelVariantReader(
       val name = getName()
       val useSupportLibraryVectorDrawables =
         getOptionalBoolean("useSupportLibraryVectorDrawables", false)
+      var artifact: LintModelArtifact? = null
       var mainArtifact: LintModelAndroidArtifact? = null
       var testArtifact: LintModelJavaArtifact? = null
       var androidTestArtifact: LintModelAndroidArtifact? = null
@@ -1637,12 +1647,27 @@ private class LintModelVariantReader(
           when (parser.name) {
             "resValues" -> resValues = readResValues()
             "manifestPlaceholders" -> manifestPlaceholders = readManifestPlaceholders()
-            "mainArtifact" -> mainArtifact = readAndroidArtifact(parser.name, readDependencies)
+            "artifact" -> artifact = readArtifact(parser.name, readDependencies)
+            "mainArtifact" ->
+              mainArtifact =
+                readAndroidArtifact(parser.name, readDependencies, LintModelArtifactType.MAIN)
             "androidTestArtifact" ->
-              androidTestArtifact = readAndroidArtifact(parser.name, readDependencies)
-            "testArtifact" -> testArtifact = readJavaArtifact(parser.name, readDependencies)
+              androidTestArtifact =
+                readAndroidArtifact(
+                  parser.name,
+                  readDependencies,
+                  LintModelArtifactType.INSTRUMENTATION_TEST
+                )
+            "testArtifact" ->
+              testArtifact =
+                readJavaArtifact(parser.name, readDependencies, LintModelArtifactType.UNIT_TEST)
             "testFixturesArtifact" ->
-              testFixturesArtifact = readAndroidArtifact(parser.name, readDependencies)
+              testFixturesArtifact =
+                readAndroidArtifact(
+                  parser.name,
+                  readDependencies,
+                  LintModelArtifactType.TEST_FIXTURES
+                )
             "sourceProviders" -> sourceProviders = readSourceProviders(parser.name)
             "testSourceProviders" -> testSourceProviders = readSourceProviders(parser.name)
             "testFixturesSourceProviders" ->
@@ -1656,7 +1681,25 @@ private class LintModelVariantReader(
         }
       }
 
-      if (mainArtifact == null || buildFeatures == null) {
+      if (mainArtifact == null && artifact?.type == LintModelArtifactType.MAIN) {
+        mainArtifact = artifact as LintModelAndroidArtifact
+      }
+
+      if (
+        androidTestArtifact == null && artifact?.type == LintModelArtifactType.INSTRUMENTATION_TEST
+      ) {
+        androidTestArtifact = artifact as LintModelAndroidArtifact
+      }
+
+      if (testArtifact == null && artifact?.type == LintModelArtifactType.UNIT_TEST) {
+        testArtifact = artifact as LintModelJavaArtifact
+      }
+
+      if (testFixturesArtifact == null && artifact?.type == LintModelArtifactType.TEST_FIXTURES) {
+        testFixturesArtifact = artifact as LintModelAndroidArtifact
+      }
+
+      if (buildFeatures == null) {
         missingData()
       }
 
@@ -1664,7 +1707,7 @@ private class LintModelVariantReader(
         module = module,
         name = name,
         useSupportLibraryVectorDrawables = useSupportLibraryVectorDrawables,
-        mainArtifact = mainArtifact!!,
+        mainArtifactOrNull = mainArtifact,
         androidTestArtifact = androidTestArtifact,
         testArtifact = testArtifact,
         testFixturesArtifact = testFixturesArtifact,

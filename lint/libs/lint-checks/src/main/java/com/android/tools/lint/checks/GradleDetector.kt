@@ -71,6 +71,7 @@ import com.android.tools.lint.detector.api.guessGradleLocation
 import com.android.tools.lint.detector.api.isNumberString
 import com.android.tools.lint.detector.api.readUrlData
 import com.android.tools.lint.detector.api.readUrlDataAsString
+import com.android.tools.lint.model.LintModelArtifactType
 import com.android.tools.lint.model.LintModelDependency
 import com.android.tools.lint.model.LintModelExternalLibrary
 import com.android.tools.lint.model.LintModelLibrary
@@ -2049,9 +2050,12 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       return
     }
 
+    val artifact = context.project.buildVariant?.artifact ?: return
     // Make sure the Kotlin stdlib is used by the main artifact (not just by tests).
-    val variant = context.project.buildVariant ?: return
-    variant.mainArtifact.findCompileDependency("org.jetbrains.kotlin:kotlin-stdlib") ?: return
+    if (artifact.type != LintModelArtifactType.MAIN) {
+      return
+    }
+    artifact.findCompileDependency("org.jetbrains.kotlin:kotlin-stdlib") ?: return
 
     // Make sure the KTX extension exists for this version of the library.
     val repository = getGoogleMavenRepository(context.client)

@@ -36,13 +36,14 @@
         assetsDirectories="src/testFixtures/assets:src/testFixturesRelease/assets"
         testFixture="true"/>
   </testFixturesSourceProviders>
-  <mainArtifact
+  <artifact
       classOutputs="build/intermediates/javac/release/classes:build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/release/R.jar"
+      type="MAIN"
       applicationId="com.example.app"
       generatedSourceFolders="build/generated/ap_generated_sources/release/out"
       generatedResourceFolders="build/generated/res/resValues/release"
       desugaredMethodsFiles="${gradleCacheDir}/<digest>/transformed/D8BackportedDesugaredMethods.txt">
-  </mainArtifact>
+  </artifact>
   <androidTestArtifact
       applicationId="com.example.app.test"
       generatedResourceFolders="build/generated/res/resValues/androidTest/release"

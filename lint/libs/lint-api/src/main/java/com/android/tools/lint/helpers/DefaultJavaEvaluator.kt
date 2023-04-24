@@ -69,7 +69,7 @@ open class DefaultJavaEvaluator(
       if (myLintProject != null && myLintProject.isAndroidProject) {
         val variant = myLintProject.buildVariant
         if (variant != null) {
-          return variant.mainArtifact.dependencies
+          return variant.artifact.dependencies
         }
       }
       return null

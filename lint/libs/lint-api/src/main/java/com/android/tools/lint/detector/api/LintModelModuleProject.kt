@@ -24,6 +24,7 @@ import com.android.sdklib.AndroidVersion
 import com.android.support.AndroidxNameUtils
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.detector.api.ApiConstraint.Companion.max
+import com.android.tools.lint.model.LintModelAndroidArtifact
 import com.android.tools.lint.model.LintModelDependency
 import com.android.tools.lint.model.LintModelExternalLibrary
 import com.android.tools.lint.model.LintModelModule
@@ -171,8 +172,13 @@ open class LintModelModuleProject(
 
   override fun getGeneratedResourceFolders(): List<File> {
     if (generatedResourceFolders == null) {
+      val artifact = variant.artifact
       generatedResourceFolders =
-        variant.mainArtifact.generatedResourceFolders.asSequence().filter { it.exists() }.toList()
+        if (artifact is LintModelAndroidArtifact) {
+          artifact.generatedResourceFolders.asSequence().filter { it.exists() }.toList()
+        } else {
+          listOf()
+        }
     }
     return generatedResourceFolders
   }
@@ -207,9 +213,13 @@ open class LintModelModuleProject(
 
   override fun getGeneratedSourceFolders(): List<File> {
     if (generatedSourceFolders == null) {
-      val artifact = variant.mainArtifact
+      val artifact = variant.artifact
       generatedSourceFolders =
-        artifact.generatedSourceFolders.asSequence().filter { it.exists() }.toList()
+        if (artifact is LintModelAndroidArtifact) {
+          artifact.generatedSourceFolders.asSequence().filter { it.exists() }.toList()
+        } else {
+          listOf()
+        }
     }
     return generatedSourceFolders
   }
@@ -266,8 +276,7 @@ open class LintModelModuleProject(
   override fun getJavaClassFolders(): List<File> {
     if (javaClassFolders == null) {
       javaClassFolders = ArrayList(3) // common: javac, kotlinc, R.jar
-      var mainArtifact = variant.mainArtifact
-      for (outputClassFolder in mainArtifact.classOutputs) {
+      for (outputClassFolder in variant.artifact.classOutputs) {
         if (outputClassFolder.exists()) {
           javaClassFolders.add(outputClassFolder)
         }
@@ -276,9 +285,8 @@ open class LintModelModuleProject(
         // For libraries we build the release variant instead
         for (variant in model.variants) {
           if (variant != this.variant) {
-            mainArtifact = variant.mainArtifact
             var found = false
-            for (outputClassFolder in mainArtifact.classOutputs) {
+            for (outputClassFolder in variant.artifact.classOutputs) {
               if (outputClassFolder.exists()) {
                 javaClassFolders.add(outputClassFolder)
                 found = true
@@ -301,7 +309,7 @@ open class LintModelModuleProject(
         // this be tied to checkDependencies somehow? If we're creating
         // project from the android libraries then I'll get the libraries there
         // right?
-        val dependencies = variant.mainArtifact.dependencies
+        val dependencies = variant.artifact.dependencies
         val direct = dependencies.compileDependencies.roots
         javaLibraries = Lists.newArrayListWithExpectedSize(direct.size)
         for (graphItem in direct) {
@@ -314,7 +322,7 @@ open class LintModelModuleProject(
     } else {
       // Skip provided libraries?
       if (nonProvidedJavaLibraries == null) {
-        val dependencies = variant.mainArtifact.dependencies
+        val dependencies = variant.artifact.dependencies
         val direct = dependencies.packageDependencies.roots
         nonProvidedJavaLibraries = Lists.newArrayListWithExpectedSize(direct.size)
         for (graphItem in direct) {
@@ -436,7 +444,7 @@ open class LintModelModuleProject(
     return when (id) {
       ANDROIDX_APPCOMPAT_LIB_ARTIFACT -> {
         if (appCompat == null) {
-          val a = variant.mainArtifact
+          val a = variant.artifact
           appCompat =
             a.findCompileDependency(ANDROIDX_APPCOMPAT_LIB_ARTIFACT) != null ||
               a.findCompileDependency(APPCOMPAT_LIB_ARTIFACT) != null
@@ -445,7 +453,7 @@ open class LintModelModuleProject(
       }
       ANDROIDX_LEANBACK_ARTIFACT -> {
         if (leanback == null) {
-          val a = variant.mainArtifact
+          val a = variant.artifact
           leanback =
             a.findCompileDependency(ANDROIDX_LEANBACK_ARTIFACT) != null ||
               a.findCompileDependency(LEANBACK_V17_ARTIFACT) != null
@@ -453,8 +461,7 @@ open class LintModelModuleProject(
         leanback
       }
       else ->
-        if (variant.mainArtifact.findCompileDependency(artifact) != null) true
-        else super.dependsOn(id)
+        if (variant.artifact.findCompileDependency(artifact) != null) true else super.dependsOn(id)
     }
   }
 
@@ -500,7 +507,7 @@ open class LintModelModuleProject(
 
       for (project: LintModelModuleProject in projects) {
         val variant = project.buildVariant
-        val roots = variant.mainArtifact.dependencies.compileDependencies.roots
+        val roots = variant.artifact.dependencies.compileDependencies.roots
         for (dependency: LintModelDependency in roots) {
           val library = dependency.findLibrary()
           if (library is LintModelModuleLibrary) {

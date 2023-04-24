@@ -67,16 +67,16 @@ class LintStandaloneModelDependenciesTest {
     fun testLintModelDependencies() {
         project.executor().run("clean", ":java-lib1:lint")
 
-        val mainArtifactDependenciesFile =
+        val artifactDependenciesFile =
             FileUtils.join(
                 project.getSubproject("java-lib1").intermediatesDir,
                 "lintReport",
                 "android-lint-model",
-                "main-mainArtifact-dependencies.xml"
+                "main-artifact-dependencies.xml"
             )
-        assertThat(mainArtifactDependenciesFile).exists()
-        assertThat(mainArtifactDependenciesFile).containsAllOf("guava", "java-lib2", "java-lib3")
-        assertThat(mainArtifactDependenciesFile).doesNotContain("junit")
+        assertThat(artifactDependenciesFile).exists()
+        assertThat(artifactDependenciesFile).containsAllOf("guava", "java-lib2", "java-lib3")
+        assertThat(artifactDependenciesFile).doesNotContain("junit")
 
         val testArtifactDependenciesFile =
             FileUtils.join(

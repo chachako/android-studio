@@ -76,6 +76,7 @@ import com.android.tools.lint.model.DefaultLintModelResourceField
 import com.android.tools.lint.model.DefaultLintModelSourceProvider
 import com.android.tools.lint.model.DefaultLintModelVariant
 import com.android.tools.lint.model.LintModelAndroidArtifact
+import com.android.tools.lint.model.LintModelArtifactType
 import com.android.tools.lint.model.LintModelBuildFeatures
 import com.android.tools.lint.model.LintModelDependencies
 import com.android.tools.lint.model.LintModelJavaArtifact
@@ -1151,10 +1152,10 @@ abstract class VariantInputs {
             module,
             name.get(),
             useSupportLibraryVectorDrawables = mainArtifact.useSupportLibraryVectorDrawables.get(),
-            mainArtifact = mainArtifact.toLintModel(dependencyCaches),
-            testArtifact = testArtifact.orNull?.toLintModel(dependencyCaches),
-            androidTestArtifact = androidTestArtifact.orNull?.toLintModel(dependencyCaches),
-            testFixturesArtifact = testFixturesArtifact.orNull?.toLintModel(dependencyCaches),
+            mainArtifactOrNull = mainArtifact.toLintModel(dependencyCaches, LintModelArtifactType.MAIN),
+            testArtifact = testArtifact.orNull?.toLintModel(dependencyCaches, LintModelArtifactType.UNIT_TEST),
+            androidTestArtifact = androidTestArtifact.orNull?.toLintModel(dependencyCaches, LintModelArtifactType.INSTRUMENTATION_TEST),
+            testFixturesArtifact = testFixturesArtifact.orNull?.toLintModel(dependencyCaches, LintModelArtifactType.TEST_FIXTURES),
             mergedManifest = mergedManifest.orNull?.asFile,
             manifestMergeReport = manifestMergeReport.orNull?.asFile,
             `package` = namespace.get(),
@@ -1641,14 +1642,18 @@ abstract class AndroidArtifactInput : ArtifactInput() {
         )
     }
 
-    internal fun toLintModel(dependencyCaches: DependencyCaches): LintModelAndroidArtifact {
+    internal fun toLintModel(
+        dependencyCaches: DependencyCaches,
+        type: LintModelArtifactType
+    ): LintModelAndroidArtifact {
         return DefaultLintModelAndroidArtifact(
             applicationId.get(),
             generatedResourceFolders.toList(),
             generatedSourceFolders.toList(),
             desugaredMethodsFiles.toList(),
+            computeDependencies(dependencyCaches),
             classesOutputDirectories.files.toList(),
-            computeDependencies(dependencyCaches)
+            type
         )
     }
 }
@@ -1790,10 +1795,14 @@ abstract class JavaArtifactInput : ArtifactInput() {
     }
 
 
-    internal fun toLintModel(dependencyCaches: DependencyCaches): LintModelJavaArtifact {
+    internal fun toLintModel(
+        dependencyCaches: DependencyCaches,
+        type: LintModelArtifactType
+    ): LintModelJavaArtifact {
         return DefaultLintModelJavaArtifact(
+            computeDependencies(dependencyCaches),
             classesOutputDirectories.files.toList(),
-            computeDependencies(dependencyCaches)
+            type
         )
     }
 }

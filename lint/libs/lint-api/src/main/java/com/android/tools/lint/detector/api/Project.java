@@ -64,6 +64,7 @@ import com.android.tools.lint.client.api.LintClient;
 import com.android.tools.lint.client.api.LintDriver;
 import com.android.tools.lint.client.api.SdkInfo;
 import com.android.tools.lint.client.api.UastParser;
+import com.android.tools.lint.model.LintModelAndroidArtifact;
 import com.android.tools.lint.model.LintModelAndroidLibrary;
 import com.android.tools.lint.model.LintModelLibrary;
 import com.android.tools.lint.model.LintModelMavenName;
@@ -799,8 +800,8 @@ public class Project {
     @Nullable
     public String getApplicationId() {
         LintModelVariant variant = getBuildVariant();
-        if (variant != null) {
-            return variant.getMainArtifact().getApplicationId();
+        if (variant != null && variant.getArtifact() instanceof LintModelAndroidArtifact) {
+            return ((LintModelAndroidArtifact) variant.getArtifact()).getApplicationId();
         }
 
         return getPackage();
@@ -1534,7 +1535,7 @@ public class Project {
             LintModelVariant variant = getBuildVariant();
             if (variant != null) {
                 Collection<LintModelLibrary> libraries =
-                        variant.getMainArtifact().getDependencies().getAll();
+                        variant.getArtifact().getDependencies().getAll();
                 List<ResourceVisibilityLookup> list = new ArrayList<>(libraries.size());
                 for (LintModelLibrary library : libraries) {
                     if (library instanceof LintModelAndroidLibrary) {
