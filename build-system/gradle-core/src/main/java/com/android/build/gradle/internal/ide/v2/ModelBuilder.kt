@@ -48,6 +48,7 @@ import com.android.build.gradle.internal.ide.dependencies.ArtifactCollectionsInp
 import com.android.build.gradle.internal.ide.dependencies.ArtifactCollectionsInputsImpl
 import com.android.build.gradle.internal.ide.dependencies.BuildMapping
 import com.android.build.gradle.internal.ide.dependencies.FullDependencyGraphBuilder
+import com.android.build.gradle.internal.ide.dependencies.GraphEdgeCache
 import com.android.build.gradle.internal.ide.dependencies.LibraryService
 import com.android.build.gradle.internal.ide.dependencies.LibraryServiceImpl
 import com.android.build.gradle.internal.ide.dependencies.computeBuildMapping
@@ -77,6 +78,7 @@ import com.android.builder.model.SyncIssue
 import com.android.builder.model.v2.ModelSyncFile
 import com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags.BooleanFlag
 import com.android.builder.model.v2.ide.ArtifactDependencies
+import com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList
 import com.android.builder.model.v2.ide.BasicArtifact
 import com.android.builder.model.v2.ide.BundleInfo
 import com.android.builder.model.v2.ide.CodeShrinker
@@ -93,6 +95,7 @@ import com.android.builder.model.v2.models.BuildMap
 import com.android.builder.model.v2.models.ModelBuilderParameter
 import com.android.builder.model.v2.models.ProjectSyncIssues
 import com.android.builder.model.v2.models.VariantDependencies
+import com.android.builder.model.v2.models.VariantDependenciesAdjacencyList
 import com.android.builder.model.v2.models.Versions
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
@@ -103,6 +106,7 @@ import org.gradle.tooling.provider.model.ParameterizedToolingModelBuilder
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
+import java.io.Serializable
 import javax.xml.namespace.QName
 import javax.xml.stream.XMLInputFactory
 import javax.xml.stream.XMLStreamException
@@ -136,6 +140,7 @@ class ModelBuilder<
                 || className == AndroidProject::class.java.name
                 || className == AndroidDsl::class.java.name
                 || className == VariantDependencies::class.java.name
+                || className == VariantDependenciesAdjacencyList::class.java.name
                 || className == ProjectSyncIssues::class.java.name
     }
 
@@ -149,9 +154,11 @@ class ModelBuilder<
         AndroidProject::class.java.name -> buildAndroidProjectModel(project)
         AndroidDsl::class.java.name -> buildAndroidDslModel(project)
         ProjectSyncIssues::class.java.name -> buildProjectSyncIssueModel(project)
-        VariantDependencies::class.java.name -> throw RuntimeException(
-            "Please use parameterized Tooling API to obtain VariantDependencies model."
+        VariantDependencies::class.java.name,
+        VariantDependenciesAdjacencyList::class.java.name -> throw RuntimeException(
+            "Please use parameterized Tooling API to obtain ${className.split(".").last()} model."
         )
+
         else -> throw RuntimeException("Does not support model '$className'")
     }
 
@@ -164,6 +171,7 @@ class ModelBuilder<
         project: Project
     ): Any? = when (className) {
         VariantDependencies::class.java.name -> buildVariantDependenciesModel(project, parameter)
+        VariantDependenciesAdjacencyList::class.java.name -> buildVariantDependenciesModel(project, parameter, adjacencyList=true)
         Versions::class.java.name,
         BuildMap::class.java.name,
         AndroidProject::class.java.name,
@@ -536,8 +544,9 @@ class ModelBuilder<
 
     private fun buildVariantDependenciesModel(
         project: Project,
-        parameter: ModelBuilderParameter
-    ): VariantDependencies? {
+        parameter: ModelBuilderParameter,
+        adjacencyList: Boolean = false
+    ): Serializable? {
         // get the variant to return the dependencies for
         val variantName = parameter.variantName
         val variant = variantModel.variants
@@ -552,18 +561,42 @@ class ModelBuilder<
                 GlobalSyncService::class.java
             ).get()
 
+        val graphEdgeCache = globalLibraryBuildService.graphEdgeCache
         val libraryService = LibraryServiceImpl(
             globalLibraryBuildService.stringCache,
             globalLibraryBuildService.localJarCache
         )
 
         val dontBuildRuntimeClasspath = parameter.dontBuildRuntimeClasspath
-        return VariantDependenciesImpl(
+        return if (adjacencyList) {
+            VariantDependenciesAdjacencyListImpl(
+                name = variantName,
+                mainArtifact = createDependenciesWithAdjacencyList(
+                    variant,
+                    buildMapping,
+                    libraryService,
+                    graphEdgeCache,
+                    dontBuildRuntimeClasspath
+                ),
+                androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
+                    createDependenciesWithAdjacencyList(it, buildMapping, libraryService, graphEdgeCache, dontBuildRuntimeClasspath)
+                },
+                unitTestArtifact = (variant as? HasUnitTest)?.unitTest?.let {
+                    createDependenciesWithAdjacencyList(it, buildMapping, libraryService, graphEdgeCache, dontBuildRuntimeClasspath)
+                },
+                testFixturesArtifact = (variant as? HasTestFixtures)?.testFixtures?.let {
+                    createDependenciesWithAdjacencyList(it, buildMapping, libraryService, graphEdgeCache, dontBuildRuntimeClasspath)
+                },
+                libraryService.getAllLibraries().associateBy { it.key }
+            )
+        } else VariantDependenciesImpl(
             name = variantName,
-                mainArtifact = createDependencies(variant,
-                        buildMapping,
-                        libraryService,
-                        dontBuildRuntimeClasspath),
+            mainArtifact = createDependencies(
+                variant,
+                buildMapping,
+                libraryService,
+                dontBuildRuntimeClasspath
+            ),
             androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
                 createDependencies(it, buildMapping, libraryService, dontBuildRuntimeClasspath)
             },
@@ -829,18 +862,42 @@ class ModelBuilder<
         component: ComponentCreationConfig,
         buildMapping: BuildMapping,
         libraryService: LibraryService,
+        dontBuildRuntimeClasspath: Boolean,
+    ) = getGraphBuilder(dontBuildRuntimeClasspath, component, buildMapping, libraryService).build()
+
+    private fun createDependenciesWithAdjacencyList(
+        component: ComponentCreationConfig,
+        buildMapping: BuildMapping,
+        libraryService: LibraryService,
+        graphEdgeCache: GraphEdgeCache,
         dontBuildRuntimeClasspath: Boolean
-    ): ArtifactDependencies {
+    ): ArtifactDependenciesAdjacencyList = getGraphBuilder(
+        dontBuildRuntimeClasspath,
+        component,
+        buildMapping,
+        libraryService,
+        graphEdgeCache
+    ).buildWithAdjacencyList()
+
+    private fun getGraphBuilder(
+        dontBuildRuntimeClasspath: Boolean,
+        component: ComponentCreationConfig,
+        buildMapping: BuildMapping,
+        libraryService: LibraryService,
+        graphEdgeCache: GraphEdgeCache? = null,
+    ): FullDependencyGraphBuilder {
         if (dontBuildRuntimeClasspath && component.variantDependencies.isLibraryConstraintsApplied) {
-            variantModel.syncIssueReporter.reportWarning(IssueReporter.Type.GENERIC, """
-                You have experimental IDE flag gradle.ide.gradle.skip.runtime.classpath.for.libraries enabled,
-                but AGP boolean option ${BooleanOption.EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS.propertyName} is not used.
+            variantModel.syncIssueReporter.reportWarning(
+                IssueReporter.Type.GENERIC, """
+                    You have experimental IDE flag gradle.ide.gradle.skip.runtime.classpath.for.libraries enabled,
+                    but AGP boolean option ${BooleanOption.EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS.propertyName} is not used.
 
-                Please set below in gradle.properties:
+                    Please set below in gradle.properties:
 
-                ${BooleanOption.EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS.propertyName}=true
+                    ${BooleanOption.EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS.propertyName}=true
 
-            """.trimIndent())
+                """.trimIndent()
+            )
         }
 
         val inputs = ArtifactCollectionsInputsImpl(
@@ -855,9 +912,10 @@ class ModelBuilder<
             inputs,
             component.variantDependencies,
             libraryService,
+            graphEdgeCache,
             component.services.projectOptions.get(BooleanOption.ADDITIONAL_ARTIFACTS_IN_MODEL),
             dontBuildRuntimeClasspath
-        ).build()
+        )
     }
 
     private fun getFlags(): AndroidGradlePluginProjectFlagsImpl {

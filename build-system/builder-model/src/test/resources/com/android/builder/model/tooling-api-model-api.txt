@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-aca20f34d5d7628a7015fb9638d2914e5683460d3d1506e09dc3aba9754bab86
+a65e32bb801740b41d68f617e3231f22ace6a5ea6f70fa404ee2af9dff0ccc87
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -626,6 +626,10 @@ com.android.builder.model.v2.ide.ArtifactDependencies implements com.android.bui
 com.android.builder.model.v2.ide.ArtifactDependencies.getCompileDependencies: java.util.List<com.android.builder.model.v2.ide.GraphItem> ()
 com.android.builder.model.v2.ide.ArtifactDependencies.getRuntimeDependencies: java.util.List<com.android.builder.model.v2.ide.GraphItem> ()
 com.android.builder.model.v2.ide.ArtifactDependencies.getUnresolvedDependencies: java.util.List<com.android.builder.model.v2.ide.UnresolvedDependency> ()
+com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList implements com.android.builder.model.v2.AndroidModel
+com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList.getCompileDependencies: java.util.List<com.android.builder.model.v2.ide.Edge> ()
+com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList.getRuntimeDependencies: java.util.List<com.android.builder.model.v2.ide.Edge> ()
+com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList.getUnresolvedDependencies: java.util.List<com.android.builder.model.v2.ide.UnresolvedDependency> ()
 com.android.builder.model.v2.ide.BasicArtifact
 com.android.builder.model.v2.ide.BasicArtifact.getMultiFlavorSourceProvider: com.android.builder.model.v2.ide.SourceProvider ()
 com.android.builder.model.v2.ide.BasicArtifact.getVariantSourceProvider: com.android.builder.model.v2.ide.SourceProvider ()
@@ -651,6 +655,9 @@ com.android.builder.model.v2.ide.ComponentInfo.getBuildType: java.lang.String ()
 com.android.builder.model.v2.ide.ComponentInfo.getCapabilities: java.util.List<java.lang.String> ()
 com.android.builder.model.v2.ide.ComponentInfo.getProductFlavors: java.util.Map<java.lang.String, java.lang.String> ()
 com.android.builder.model.v2.ide.ComponentInfo.isTestFixtures: boolean ()
+com.android.builder.model.v2.ide.Edge implements com.android.builder.model.v2.AndroidModel
+com.android.builder.model.v2.ide.Edge.getFrom: java.lang.String ()
+com.android.builder.model.v2.ide.Edge.getTo: java.lang.String ()
 com.android.builder.model.v2.ide.GraphItem implements com.android.builder.model.v2.AndroidModel
 com.android.builder.model.v2.ide.GraphItem.getDependencies: java.util.List<com.android.builder.model.v2.ide.GraphItem> ()
 com.android.builder.model.v2.ide.GraphItem.getKey: java.lang.String ()
@@ -830,6 +837,13 @@ com.android.builder.model.v2.models.VariantDependencies.getMainArtifact: com.and
 com.android.builder.model.v2.models.VariantDependencies.getName: java.lang.String ()
 com.android.builder.model.v2.models.VariantDependencies.getTestFixturesArtifact: com.android.builder.model.v2.ide.ArtifactDependencies ()
 com.android.builder.model.v2.models.VariantDependencies.getUnitTestArtifact: com.android.builder.model.v2.ide.ArtifactDependencies ()
+com.android.builder.model.v2.models.VariantDependenciesAdjacencyList implements com.android.builder.model.v2.AndroidModel
+com.android.builder.model.v2.models.VariantDependenciesAdjacencyList.getAndroidTestArtifact: com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList ()
+com.android.builder.model.v2.models.VariantDependenciesAdjacencyList.getLibraries: java.util.Map<java.lang.String, com.android.builder.model.v2.ide.Library> ()
+com.android.builder.model.v2.models.VariantDependenciesAdjacencyList.getMainArtifact: com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList ()
+com.android.builder.model.v2.models.VariantDependenciesAdjacencyList.getName: java.lang.String ()
+com.android.builder.model.v2.models.VariantDependenciesAdjacencyList.getTestFixturesArtifact: com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList ()
+com.android.builder.model.v2.models.VariantDependenciesAdjacencyList.getUnitTestArtifact: com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList ()
 com.android.builder.model.v2.models.Versions implements com.android.builder.model.v2.AndroidModel
 com.android.builder.model.v2.models.Versions$Companion
 com.android.builder.model.v2.models.Versions$Version

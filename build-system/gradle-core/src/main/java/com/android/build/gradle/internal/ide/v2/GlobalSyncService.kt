@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.internal.ide.v2
 
+import com.android.build.gradle.internal.ide.dependencies.GraphEdgeCache
+import com.android.build.gradle.internal.ide.dependencies.GraphEdgeCacheImpl
 import com.android.build.gradle.internal.ide.dependencies.LocalJarCache
 import com.android.build.gradle.internal.ide.dependencies.LocalJarCacheImpl
 import com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService
@@ -61,12 +63,17 @@ abstract class GlobalSyncService : BuildService<GlobalSyncService.Parameters>,
     val localJarCache: LocalJarCache
         get() = _localJarCache
 
+    val graphEdgeCache: GraphEdgeCache
+        get() = _graphEdgeCache
+
     private val _stringCache = StringCacheImpl()
     private val _localJarCache = LocalJarCacheImpl()
+    private val _graphEdgeCache  = GraphEdgeCacheImpl()
 
     override fun close() {
         _stringCache.clear()
         _localJarCache.clear()
+        _graphEdgeCache.clear()
     }
 }
 

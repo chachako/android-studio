@@ -255,8 +255,9 @@ private fun buildModelGraph(
         getInputs(resolvedArtifacts),
         getResolutionResultProvider(dependencyResults),
         libraryService,
-        true,
-        dontBuildRuntimeClasspath
+        GraphEdgeCacheImpl(),
+        addAdditionalArtifactsInModel = true,
+        dontBuildRuntimeClasspath,
     )
 
     return builder.build() to libraryService.getAllLibraries().associateBy { it.key }

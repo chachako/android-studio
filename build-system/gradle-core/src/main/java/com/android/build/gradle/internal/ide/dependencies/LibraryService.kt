@@ -19,11 +19,13 @@ package com.android.build.gradle.internal.ide.dependencies
 import com.android.SdkConstants
 import com.android.build.api.attributes.BuildTypeAttr
 import com.android.build.api.attributes.ProductFlavorAttr
+import com.android.build.gradle.internal.ide.v2.EdgeImpl
 import com.android.build.gradle.internal.ide.v2.LibraryImpl
 import com.android.build.gradle.internal.ide.v2.LibraryInfoImpl
 import com.android.build.gradle.internal.ide.v2.ProjectInfoImpl
 import com.android.build.gradle.internal.testFixtures.isLibraryTestFixturesCapability
 import com.android.build.gradle.internal.testFixtures.isProjectTestFixturesCapability
+import com.android.builder.model.v2.ide.Edge
 import com.android.builder.model.v2.ide.Library
 import com.android.ide.common.caching.CreatingCache
 import com.android.utils.FileUtils
@@ -54,6 +56,9 @@ interface StringCache {
     fun cacheString(string: String): String
 }
 
+interface GraphEdgeCache {
+    fun getEdge(from: String, to: String): Edge
+}
 /**
  * A Cache for Local Jars.
  *
@@ -64,6 +69,20 @@ interface StringCache {
 interface LocalJarCache {
 
     fun getLocalJarsForAar(aar: File): List<File>?
+}
+
+class GraphEdgeCacheImpl : GraphEdgeCache {
+    private val cache = mutableMapOf<Pair<String, String>, Edge>()
+
+    override fun getEdge(from: String, to: String): Edge {
+        synchronized(cache) {
+            return cache.computeIfAbsent(from to to) {EdgeImpl(from, to)}
+        }
+    }
+
+    fun clear() {
+        cache.clear()
+    }
 }
 
 class StringCacheImpl : StringCache {
