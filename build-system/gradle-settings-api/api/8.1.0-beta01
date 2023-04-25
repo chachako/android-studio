@@ -1,0 +1,76 @@
+// Signature format: 4.0
+package com.android.build.api.dsl {
+
+  public interface Execution {
+    method public String? getDefaultProfile();
+    method public org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.ExecutionProfile> getProfiles();
+    method public void profiles(kotlin.jvm.functions.Function1<? super org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.ExecutionProfile>,kotlin.Unit> action);
+    method public void setDefaultProfile(String? defaultProfile);
+    property public abstract String? defaultProfile;
+    property public abstract org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.ExecutionProfile> profiles;
+  }
+
+  public interface ExecutionProfile extends org.gradle.api.Named {
+    method public com.android.build.api.dsl.ToolOptions getR8();
+    method public void r8(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ToolOptions,kotlin.Unit> action);
+    property public abstract com.android.build.api.dsl.ToolOptions r8;
+  }
+
+  public interface SettingsExtension {
+    method public void compileSdkAddon(String vendor, String name, int version);
+    method public void execution(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Execution,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public String? getAddOnName();
+    method @org.gradle.api.Incubating public String? getAddOnVendor();
+    method @org.gradle.api.Incubating public Integer? getAddOnVersion();
+    method public String getBuildToolsVersion();
+    method public Integer? getCompileSdk();
+    method public Integer? getCompileSdkExtension();
+    method public String? getCompileSdkPreview();
+    method public com.android.build.api.dsl.Execution getExecution();
+    method public Integer? getMinSdk();
+    method public String? getMinSdkPreview();
+    method public String? getNdkPath();
+    method public String getNdkVersion();
+    method public void setBuildToolsVersion(String buildToolsVersion);
+    method public void setCompileSdk(Integer? compileSdk);
+    method public void setCompileSdkExtension(Integer? compileSdkExtension);
+    method public void setCompileSdkPreview(String? compileSdkPreview);
+    method public void setMinSdk(Integer? minSdk);
+    method public void setMinSdkPreview(String? minSdkPreview);
+    method public void setNdkPath(String? ndkPath);
+    method public void setNdkVersion(String ndkVersion);
+    property @org.gradle.api.Incubating public abstract String? addOnName;
+    property @org.gradle.api.Incubating public abstract String? addOnVendor;
+    property @org.gradle.api.Incubating public abstract Integer? addOnVersion;
+    property public abstract String buildToolsVersion;
+    property public abstract Integer? compileSdk;
+    property public abstract Integer? compileSdkExtension;
+    property public abstract String? compileSdkPreview;
+    property public abstract com.android.build.api.dsl.Execution execution;
+    property public abstract Integer? minSdk;
+    property public abstract String? minSdkPreview;
+    property public abstract String? ndkPath;
+    property public abstract String ndkVersion;
+  }
+
+  public interface ToolOptions {
+    method public java.util.List<java.lang.String> getJvmOptions();
+    method public boolean getRunInSeparateProcess();
+    method public void setRunInSeparateProcess(boolean runInSeparateProcess);
+    property public abstract java.util.List<java.lang.String> jvmOptions;
+    property public abstract boolean runInSeparateProcess;
+  }
+
+}
+
+package com.android.build.gradle {
+
+  public final class SettingsPlugin implements org.gradle.api.Plugin<org.gradle.api.initialization.Settings> {
+    ctor public SettingsPlugin();
+    method public void apply(org.gradle.api.initialization.Settings settings);
+    method public com.android.build.api.dsl.SettingsExtension getAndroid();
+    property public final com.android.build.api.dsl.SettingsExtension android;
+  }
+
+}
+
