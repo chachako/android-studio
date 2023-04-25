@@ -1,7 +1,7 @@
 plugins {
   id("dumpAndroidTarget")
   id("org.jetbrains.kotlin.multiplatform")
-  id("com.android.kotlin.multiplatform")
+  id("com.android.kotlin.multiplatform.library")
 }
 
 kotlin {

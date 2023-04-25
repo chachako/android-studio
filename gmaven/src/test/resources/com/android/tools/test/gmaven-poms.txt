@@ -146,7 +146,7 @@ com.android.internal.settings:com.android.internal.settings.gradle.plugin
   dependencies:
     com.android.tools.build:gradle-settings ()
 
-com.android.kotlin.multiplatform:com.android.kotlin.multiplatform.gradle.plugin
+com.android.kotlin.multiplatform.library:com.android.kotlin.multiplatform.library.gradle.plugin
   pomName=com.android.tools.build.gradle
   description=Gradle plug-in to build Android applications.
   dependencies:
