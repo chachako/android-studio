@@ -56,7 +56,6 @@ import com.android.build.gradle.internal.test.report.ReportType;
 import com.android.build.gradle.internal.test.report.TestReport;
 import com.android.build.gradle.internal.testing.ConnectedDeviceProvider;
 import com.android.build.gradle.internal.testing.OnDeviceOrchestratorTestRunner;
-import com.android.build.gradle.internal.testing.ShardedTestRunner;
 import com.android.build.gradle.internal.testing.SimpleTestRunnable;
 import com.android.build.gradle.internal.testing.SimpleTestRunner;
 import com.android.build.gradle.internal.testing.TestData;
@@ -135,18 +134,12 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
             file -> SdkConstants.EXT_ANDROID_PACKAGE.equals(Files.getFileExtension(file.getName()));
 
     public abstract static class TestRunnerFactory {
+
         @Input
         public abstract Property<Boolean> getUnifiedTestPlatform();
 
         @Internal
         public abstract Property<Boolean> getIsUtpLoggingEnabled();
-
-        @Input
-        public abstract Property<Boolean> getShardBetweenDevices();
-
-        @Input
-        @Optional
-        public abstract Property<Integer> getNumShards();
 
         @Input
         public abstract Property<Boolean> getUninstallIncompatibleApks();
@@ -239,9 +232,6 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                 switch (getExecutionEnum().get()) {
                     case ANDROID_TEST_ORCHESTRATOR:
                     case ANDROIDX_TEST_ORCHESTRATOR:
-                        Preconditions.checkArgument(
-                                !getShardBetweenDevices().get(),
-                                "Sharding is not supported with Android Test Orchestrator.");
 
                         return new OnDeviceOrchestratorTestRunner(
                                 getBuildTools().splitSelectExecutable().getOrNull(),
@@ -249,20 +239,10 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                                 getExecutionEnum().get(),
                                 executorServiceAdapter);
                     case HOST:
-                        if (getShardBetweenDevices().get()) {
-
-                            return new ShardedTestRunner(
-                                    getBuildTools().splitSelectExecutable().getOrNull(),
-                                    gradleProcessExecutor,
-                                    getNumShards().getOrNull(),
-                                    executorServiceAdapter);
-                        } else {
-
-                            return new SimpleTestRunner(
-                                    getBuildTools().splitSelectExecutable().getOrNull(),
-                                    gradleProcessExecutor,
-                                    executorServiceAdapter);
-                        }
+                        return new SimpleTestRunner(
+                                getBuildTools().splitSelectExecutable().getOrNull(),
+                                gradleProcessExecutor,
+                                executorServiceAdapter);
                     default:
                         throw new AssertionError("Unknown value " + getExecutionEnum().get());
                 }
@@ -275,6 +255,7 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
     }
 
     public abstract static class DeviceProviderFactory {
+
         @Nullable private DeviceProvider deviceProvider;
 
         @Input
@@ -589,9 +570,13 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
         private static final String CONNECTED_DEVICE_PROVIDER = "connected";
 
         @NonNull private final String deviceProviderName;
+
         @Nullable private final DeviceProvider deviceProvider;
+
         @NonNull private final Type type;
+
         @NonNull private final AbstractTestDataImpl testData;
+
         @Nullable private final Provider<List<String>> connectedCheckTargetSerials;
 
         public enum Type {
@@ -777,12 +762,6 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                 task.getDeviceProviderFactory().deviceProvider = deviceProvider;
             }
             task.getInstallOptions().set(installationOptions.getInstallOptions());
-            task.getTestRunnerFactory()
-                    .getShardBetweenDevices()
-                    .set(projectOptions.getProvider(BooleanOption.ENABLE_TEST_SHARDING));
-            task.getTestRunnerFactory()
-                    .getNumShards()
-                    .set(projectOptions.getProvider(IntegerOption.ANDROID_TEST_SHARD_COUNT));
 
             task.getTestRunnerFactory()
                     .getSdkBuildService()
