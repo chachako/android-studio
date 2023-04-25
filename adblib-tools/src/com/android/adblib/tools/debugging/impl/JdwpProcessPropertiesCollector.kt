@@ -323,7 +323,8 @@ internal class JdwpProcessPropertiesCollector(
                 abi = heloChunk.abi,
                 jvmFlags = heloChunk.jvmFlags,
                 isNativeDebuggable = heloChunk.isNativeDebuggable,
-                stage = heloChunk.stage
+                stage = heloChunk.stage,
+                isWaitingForDebugger = if (heloChunk.stage != null) heloChunk.stage == AppStage.DEBG else it.isWaitingForDebugger
             )
         }
     }
@@ -382,7 +383,8 @@ internal class JdwpProcessPropertiesCollector(
         logger.debug { "`STAG` command: $stagChunk" }
         collectState.propertiesFlow.update {
             it.copy(
-                stage = stagChunk.stage
+                stage = stagChunk.stage,
+                isWaitingForDebugger = stagChunk.stage == AppStage.DEBG
             )
         }
     }

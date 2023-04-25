@@ -372,13 +372,14 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
 
         // Assert: The JDWP session should still be in-use, since app boot stage is `DEBG`
         assertTrue(process.isJdwpSessionRetained)
+        assertTrue(process.properties.isWaitingForDebugger)
         assertEquals(AppStage.DEBG.value, process.properties.stage?.value)
     }
 
     @Test
     fun startMonitoringReleasesJdwpSessionIfAppBootStageIsA_go() = runBlockingWithTimeout {
         // Prepare
-        val (fakeAdb, _, process) = createJdwpProcess(deviceApi = 34, waitForDebugger = true)
+        val (fakeAdb, _, process) = createJdwpProcess(deviceApi = 34, waitForDebugger = false)
         val clientState = fakeAdb.device(process.device.serialNumber).getClient(process.pid)!!
         clientState.setStage(AppStage.A_GO)
 
@@ -394,8 +395,8 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         delay(500) // give JDWP session holder time to launch
 
         // Assert: We don't keep JDWP session since app boot stage was set to `A_GO`
-        // WAIT packet is ignored when app boot stage info is available
         assertFalse(process.isJdwpSessionRetained)
+        assertFalse(process.properties.isWaitingForDebugger)
         assertEquals(AppStage.A_GO.value, process.properties.stage?.value)
     }
 
@@ -422,7 +423,7 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         val properties = process.properties
         assertNull(properties.exception)
         assertFalse(properties.completed)
-
+        assertFalse(properties.isWaitingForDebugger)
         assertEquals(AppStage.NAMD.value, process.properties.stage?.value)
     }
 
@@ -466,6 +467,7 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         // Assert
         val properties = process.properties
         assertProcessPropertiesComplete(properties)
+        assertFalse(properties.isWaitingForDebugger)
         assertEquals(AppStage.A_GO.value, process.properties.stage?.value)
     }
 
@@ -500,6 +502,7 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         assertEquals(AppStage.DEBG.value, process.properties.stage?.value)
         val properties = process.properties
         assertProcessPropertiesComplete(properties)
+        assertTrue(properties.isWaitingForDebugger)
     }
 
     private suspend fun createJdwpProcess(
