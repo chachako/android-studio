@@ -16,6 +16,7 @@ declare -r build_number="$3"
     cp -r $top/tools/idea/native/fsNotifier/linux/. ./
     ./make.sh
     cp fsnotifier $dist_dir/.
+    chmod +x $dist_dir/fsnotifier
 )
 
 echo "Done Building IntelliJ Linux Tools!"
