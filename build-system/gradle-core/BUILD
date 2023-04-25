@@ -1,5 +1,5 @@
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
-load("//tools/base/bazel:proto.bzl", "java_proto_library")
+load("//tools/base/bazel:proto.bzl", "android_java_proto_library", "java_proto_library")
 load("//tools/base/bazel:utils.bzl", "fileset")
 load("//tools/base/common:version.bzl", "BUILD_VERSION")
 
@@ -16,6 +16,13 @@ fileset(
         "src/fromGradle/resources/": "",
         "//prebuilts/tools/common/aapt:aapt2_version.properties": "com/android/build/gradle/internal/res/aapt2_version.properties",
     },
+)
+
+android_java_proto_library(
+    name = "common_proto",
+    srcs = glob(["src/main/proto/version_control_metadata.proto"]),
+    resource_strip_prefix = "tools/base/build-system/gradle-core/",
+    visibility = ["//visibility:public"],
 )
 
 java_proto_library(
@@ -196,9 +203,9 @@ kotlin_test(
         "@maven//:com.android.tools.desugar_jdk_libs",
         "@maven//:com.android.tools.desugar_jdk_libs_configuration",
         "@maven//:com.google.code.gson.gson",
-        "@maven//:com.google.truth.extensions.truth-java8-extension",
         "@maven//:com.google.jimfs.jimfs",
         "@maven//:com.google.protobuf.protobuf-java",
+        "@maven//:com.google.truth.extensions.truth-java8-extension",
         "@maven//:com.google.truth.truth",
         "@maven//:commons-io.commons-io",  # TODO: remove?
         "@maven//:io.grpc.grpc-testing",
@@ -228,8 +235,8 @@ filegroup(
         "src/main/proto/**/*.proto",
         "src/main/resources/**",
     ]) + [
-        "build.gradle",
         "NOTICE",
+        "build.gradle",
     ],
     visibility = ["//tools/base/build-system:__pkg__"],
 )

@@ -138,6 +138,11 @@ abstract class PerModuleBundleTask: NonIncrementalTask() {
     @get:PathSensitive(PathSensitivity.NAME_ONLY)
     abstract val privacySandboxSdkRuntimeConfigFile: RegularFileProperty
 
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
+    @get:Optional
+    abstract val versionControlInfoMetadata: RegularFileProperty
+
     public override fun doTaskAction() {
         val outputPath =
                 (outputFile.orNull?.asFile ?: File(outputDir.get().asFile, fileName.get())).toPath()
@@ -192,6 +197,12 @@ abstract class PerModuleBundleTask: NonIncrementalTask() {
                 appMetadata.orNull?.asFile?.let { metadataFile -> setOf(metadataFile) }
                     ?: setOf(),
                 Relocator("root/META-INF/com/android/build/gradle"),
+                JarCreator.EXCLUDE_CLASSES)
+            addHybridFolder(
+                jarCreator, versionControlInfoMetadata.orNull?.asFile?.let {
+                    metadataFile -> setOf(metadataFile)
+                } ?: setOf(),
+                Relocator("root/META-INF/"),
                 JarCreator.EXCLUDE_CLASSES)
 
             addHybridFolder(jarCreator, nativeLibsFiles.files, fileFilter = abiFilter)
@@ -386,6 +397,10 @@ abstract class PerModuleBundleTask: NonIncrementalTask() {
                 artifacts.setTaskInputToFinalProduct(
                     InternalArtifactType.APP_METADATA,
                     task.appMetadata
+                )
+                artifacts.setTaskInputToFinalProduct(
+                    InternalArtifactType.VERSION_CONTROL_INFO_FILE,
+                    task.versionControlInfoMetadata
                 )
             }
 

@@ -387,6 +387,12 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
     @Input
     public abstract ArtifactTransformationRequest getTransformationRequest();
 
+    @InputFiles
+    @Incremental
+    @PathSensitive(PathSensitivity.NAME_ONLY)
+    @Optional
+    public abstract RegularFileProperty getVersionControlInfoFile();
+
     @Override
     public void doTaskAction(@NonNull InputChanges changes) {
         if (!changes.isIncremental()) {
@@ -510,6 +516,19 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
             } else {
                 parameter
                         .getMergedArtProfileMetadata()
+                        .set(new SerializableInputChanges(ImmutableList.of(), ImmutableList.of()));
+            }
+
+            if (getVersionControlInfoFile().isPresent()
+                    && getVersionControlInfoFile().get().getAsFile().exists()) {
+                parameter
+                        .getVersionControlInfoFile()
+                        .set(
+                                IncrementalChangesUtils.getChangesInSerializableForm(
+                                        changes, getVersionControlInfoFile()));
+            } else {
+                parameter
+                        .getVersionControlInfoFile()
                         .set(new SerializableInputChanges(ImmutableList.of(), ImmutableList.of()));
             }
 
@@ -706,6 +725,9 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
 
         @Optional
         public abstract Property<SerializableInputChanges> getMergedArtProfileMetadata();
+
+        @Optional
+        public abstract Property<SerializableInputChanges> getVersionControlInfoFile();
     }
 
     /**
@@ -757,6 +779,7 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
      * @param changedAndroidResources incremental Android resource
      * @param changedNLibs incremental native libraries changed
      * @param changedAppMetadata incremental app metadata
+     * @param changedVersionControlInfo incremental version control info
      * @throws IOException failed to package the APK
      */
     private static void doTask(
@@ -772,6 +795,7 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
             @NonNull Collection<SerializableChange> changedAppMetadata,
             @NonNull Collection<SerializableChange> artProfile,
             @NonNull Collection<SerializableChange> artProfileMetadata,
+            @NonNull Collection<SerializableChange> changedVersionControlInfo,
             @NonNull SplitterParams params)
             throws IOException {
 
@@ -877,6 +901,7 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
                         .withChangedAppMetadata(changedAppMetadata)
                         .withChangedArtProfile(artProfile)
                         .withChangedArtProfileMetadata(artProfileMetadata)
+                        .withChangedVersionControlInfo(changedVersionControlInfo)
                         .build()) {
             packager.updateFiles();
         }
@@ -1051,6 +1076,7 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
                         params.getAppMetadataFiles().get().getChanges(),
                         params.getMergedArtProfile().get().getChanges(),
                         params.getMergedArtProfileMetadata().get().getChanges(),
+                        params.getVersionControlInfoFile().get().getChanges(),
                         params);
 
                 /*
@@ -1215,10 +1241,22 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
                 creationConfig.getArtifacts().setTaskInputToFinalProduct(
                         InternalArtifactType.APP_METADATA.INSTANCE,
                         packageAndroidArtifact.getAppMetadata());
+                if (projectOptions.get(BooleanOption.ENABLE_VCS_INFO)) {
+                    creationConfig
+                            .getArtifacts()
+                            .setTaskInputToFinalProduct(
+                                    InternalArtifactType.VERSION_CONTROL_INFO_FILE.INSTANCE,
+                                    packageAndroidArtifact.getVersionControlInfoFile());
+                }
                 if (isDeterministic(creationConfig)) {
                     packageAndroidArtifact
                             .getAllInputFilesWithNameOnlyPathSensitivity()
                             .from(packageAndroidArtifact.getAppMetadata());
+                    if (projectOptions.get(BooleanOption.ENABLE_VCS_INFO)) {
+                        packageAndroidArtifact
+                                .getAllInputFilesWithNameOnlyPathSensitivity()
+                                .from(packageAndroidArtifact.getVersionControlInfoFile());
+                    }
                 }
 
                 if (!creationConfig.getDebuggable()) {

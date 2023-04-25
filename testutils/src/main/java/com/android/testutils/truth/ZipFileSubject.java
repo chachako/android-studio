@@ -65,7 +65,7 @@ public class ZipFileSubject extends AbstractZipSubject<ZipFileSubject, Zip> {
         }
     }
 
-    // Create another ZilFileSubject from a nested zip
+    // Create another ZipFileSubject from a nested zip
     public void nested(@NonNull String subPath, @NonNull Consumer<ZipFileSubject> action)
             throws Exception {
         try (Zip it = new Zip(actual().getEntryAsFile(subPath))) {

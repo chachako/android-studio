@@ -42,7 +42,7 @@ interface ComponentType {
     val isApk: Boolean
 
     /**
-     * Returns true is the variant is a base module. This is only true if it can have features.
+     * Returns true if the variant is a base module. This is only true if it can have features.
      * If the variant can never have feature (TEST modules for instance), then this is false.
      */
     val isBaseModule: Boolean

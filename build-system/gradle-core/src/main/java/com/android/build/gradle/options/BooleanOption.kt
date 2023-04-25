@@ -16,15 +16,14 @@
 
 package com.android.build.gradle.options
 
-import com.android.build.gradle.internal.errors.DeprecationReporter
+import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.VERSION_8_2
+import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.VERSION_9_0
 import com.android.build.gradle.options.Version.VERSION_3_5
 import com.android.build.gradle.options.Version.VERSION_3_6
 import com.android.build.gradle.options.Version.VERSION_4_0
 import com.android.build.gradle.options.Version.VERSION_4_1
 import com.android.build.gradle.options.Version.VERSION_4_2
 import com.android.build.gradle.options.Version.VERSION_7_0
-import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.VERSION_8_2
-import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.VERSION_9_0
 import com.android.build.gradle.options.Version.VERSION_7_2
 import com.android.build.gradle.options.Version.VERSION_7_3
 import com.android.build.gradle.options.Version.VERSION_BEFORE_4_0
@@ -238,6 +237,11 @@ enum class BooleanOption(
         false,
         FeatureStage.Experimental
     ),
+
+    /**
+     * Enables task to add version control info to APKs/Bundle
+     */
+    ENABLE_VCS_INFO("android.enableVcsInfo", false, FeatureStage.Experimental),
 
     /* ------------------------
      * SOFTLY-ENFORCED FEATURES

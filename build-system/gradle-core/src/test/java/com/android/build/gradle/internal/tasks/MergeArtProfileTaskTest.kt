@@ -60,7 +60,7 @@ internal class MergeArtProfileTaskTest {
             project.objects.fileProperty().also { it.set(File("/does/not/exist")) }
         baselineProfileSourceDirs = project.objects.listProperty(Directory::class.java).empty()
         task = project.tasks.register(
-            "appMetadataTask",
+            "mergeArtProfileTask",
             MergeArtProfileTaskForTest::class.java,
             FakeGradleWorkExecutor(project.objects, temporaryFolder.newFolder()),
         ).get()

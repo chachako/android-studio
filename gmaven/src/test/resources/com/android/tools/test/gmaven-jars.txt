@@ -534,6 +534,9 @@ com/android/tools/build/gradle
   com/android/tools/build/
   com/android/tools/build/libraries/
   com/android/tools/build/libraries/metadata/
+  com/android/tools/idea/
+  com/android/tools/idea/insights/
+  com/android/tools/idea/insights/proto/
   com/android/tools/mlkit/
   com/android/tools/profgen/
   cxx_attribution.proto
@@ -542,6 +545,7 @@ com/android/tools/build/gradle
   cxx_io.proto
   cxx_logging.proto
   cxx_process.proto
+  version_control_metadata.proto
 
 com/android/tools/build/gradle-api
   META-INF/

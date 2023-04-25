@@ -20,6 +20,7 @@ import com.android.SdkConstants
 import com.android.build.api.artifact.Artifact
 import com.android.build.api.artifact.ArtifactKind
 import com.android.build.api.artifact.SingleArtifact
+import com.android.builder.internal.packaging.IncrementalPackager.VERSION_CONTROL_INFO_FILE_NAME
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.file.RegularFile
@@ -577,6 +578,11 @@ InternalArtifactType<T : FileSystemLocation>(
     object APP_ID_LIST_MODEL: InternalArtifactType<RegularFile>(
         FILE,
         fileName = "app_id_list.json"
+    )
+
+    object VERSION_CONTROL_INFO_FILE: InternalArtifactType<RegularFile>(
+        FILE,
+        fileName = VERSION_CONTROL_INFO_FILE_NAME
     )
 
     override fun getFileSystemLocationName(): String {
