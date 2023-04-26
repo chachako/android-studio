@@ -947,6 +947,7 @@
           <xsd:enumeration value="NFC" />
           <xsd:enumeration value="Bluetooth" />
           <xsd:enumeration value="Wifi" />
+          <xsd:enumeration value="UWB" />
         </xsd:restriction>
       </xsd:simpleType>
     </xsd:list>
@@ -970,6 +971,7 @@
           <xsd:enumeration value="ProximitySensor" />
           <xsd:enumeration value="StepCounter" />
           <xsd:enumeration value="StepDetector" />
+          <xsd:enumeration value="Fingerprint" />
         </xsd:restriction>
       </xsd:simpleType>
     </xsd:list>
