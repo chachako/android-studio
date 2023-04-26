@@ -780,6 +780,7 @@ public final class SdkConstants {
     public static final String CLASS_MANIFEST_PERMISSION =
             "android.Manifest$permission";
     public static final String CLASS_INTENT = "android.content.Intent";
+    public static final String CLASS_INTENT_FILTER = "android.content.IntentFilter";
     public static final String CLASS_CONTEXT = "android.content.Context";
     public static final String CLASS_CONFIGURATION = "android.content.res.Configuration";
     public static final String CLASS_RESOURCES = "android.content.res.Resources";
