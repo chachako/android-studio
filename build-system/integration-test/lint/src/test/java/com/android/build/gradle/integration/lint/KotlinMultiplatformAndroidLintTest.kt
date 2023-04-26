@@ -49,6 +49,11 @@ class KotlinMultiplatformAndroidLintTest {
 
                         options {
                             isTestMultiDexEnabled = true
+                             lint {
+                                disable += "GradleDependency" // such that we don't flag newly available Kotlin versions etc
+                                textReport = true
+                                abortOnError = true
+                            }
                         }
                     }
                 }
@@ -56,14 +61,82 @@ class KotlinMultiplatformAndroidLintTest {
     }
 
     @Test
-    fun `test lint reports error when calling desugared apis`() {
+    fun `test lint reports error when calling desugared apis in androidMain sourceset`() {
         TestFileUtils.addMethod(
             FileUtils.join(
                 project.getSubproject("kmpFirstLib").projectDir,
-                "src", "androidMain", "kotlin", "com", "example", "kmpfirstlib", "KmpAndroidActivity.kt"
+                "src", "androidMain", "kotlin", "com", "example", "kmpfirstlib", "KmpAndroidFirstLibClass.kt"
             ),
             """
+                fun desugaringTestUsingDate() {
+                    val date = LocalDate.now().month.name
+                }
+            """.trimIndent())
 
+        // Run twice to catch issues with configuration caching
+        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintKotlinAndroid")
+        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintKotlinAndroid")
+
+        val reportFile =
+            File(project.getSubproject("kmpFirstLib").buildDir, "reports/lint-results-kotlinAndroid.txt")
+
+        PathSubject.assertThat(reportFile).exists()
+        PathSubject.assertThat(reportFile).containsAllOf(
+            "Error: Call requires API level 26 (current min is 22): java.time.LocalDate#getMonth [NewApi]",
+            "Error: Call requires API level 26 (current min is 22): java.time.LocalDate#now [NewApi]"
+        )
+    }
+
+    @Test
+    fun `test lint reports error when calling desugared apis in commonMain sourceset`() {
+        TestFileUtils.addMethod(
+            FileUtils.join(
+                project.getSubproject("kmpFirstLib").projectDir,
+                "src", "commonMain", "kotlin", "com", "example", "kmpfirstlib", "KmpCommonFirstLibClass.kt"
+            ),
+            """
+                fun desugaringTestUsingDate() {
+                    val date = LocalDate.now().month.name
+                }
+            """.trimIndent())
+
+        // Run twice to catch issues with configuration caching
+        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintKotlinAndroid")
+        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintKotlinAndroid")
+
+        val reportFile =
+            File(project.getSubproject("kmpFirstLib").buildDir, "reports/lint-results-kotlinAndroid.txt")
+
+        PathSubject.assertThat(reportFile).exists()
+        PathSubject.assertThat(reportFile).containsAllOf(
+            "Error: Call requires API level 26 (current min is 22): java.time.LocalDate#getMonth [NewApi]",
+            "Error: Call requires API level 26 (current min is 22): java.time.LocalDate#now [NewApi]"
+        )
+    }
+
+    @Test
+    fun `test lint reports error when calling desugared apis in androidTest sourceset`() {
+        TestFileUtils.appendToFile(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            """
+                kotlin {
+                    androidExperimental {
+                        options {
+                            lint {
+                                checkTestSources = true
+                            }
+                        }
+                    }
+                }
+            """.trimIndent())
+
+        TestFileUtils.addMethod(
+            FileUtils.join(
+                project.getSubproject("kmpFirstLib").projectDir,
+                "src", "androidTest", "kotlin", "com", "example", "kmpfirstlib", "KmpAndroidFirstLibClassTest.kt"
+            ),
+            """
+                @Test
                 fun desugaringTestUsingDate() {
                     val date = LocalDate.now().month.name
                 }
@@ -102,10 +175,9 @@ class KotlinMultiplatformAndroidLintTest {
         TestFileUtils.addMethod(
             FileUtils.join(
                 project.getSubproject("kmpFirstLib").projectDir,
-                "src", "androidMain", "kotlin", "com", "example", "kmpfirstlib", "KmpAndroidActivity.kt"
+                "src", "androidMain", "kotlin", "com", "example", "kmpfirstlib", "KmpAndroidFirstLibClass.kt"
             ),
             """
-
                 fun desugaringTestUsingDate() {
                     val date = LocalDate.now().month.name
                 }
