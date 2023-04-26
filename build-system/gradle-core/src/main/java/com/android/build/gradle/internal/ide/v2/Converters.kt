@@ -203,7 +203,8 @@ internal fun DefaultAndroidSourceSet.convert(
         resourcesDirectories = resourcesDirectories,
         aidlDirectories = if (features.aidl) aidlDirectories else null,
         renderscriptDirectories = if (features.renderScript) renderscriptDirectories else null,
-        baselineProfileDirectories = (baselineProfiles as DefaultAndroidSourceDirectorySet).srcDirs,
+        baselineProfileDirectories = (baselineProfiles as DefaultAndroidSourceDirectorySet).srcDirs
+            + variantSourcesForModel(mixin?.baselineProfiles),
         resDirectories = if (features.androidResources) resDirectories else null,
         assetsDirectories = assetsDirectories + variantSourcesForModel(mixin?.assets),
         jniLibsDirectories = jniLibsDirectories + variantSourcesForModel(mixin?.jniLibs),
