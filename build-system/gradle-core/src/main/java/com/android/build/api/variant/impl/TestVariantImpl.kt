@@ -215,4 +215,10 @@ open class TestVariantImpl @Inject constructor(
                 stats
             ) as T
         }
+
+    override val enableApiModeling: Boolean
+        get() = isApiModelingEnabled()
+
+    override val enableGlobalSynthetics: Boolean
+        get() = isGlobalSyntheticsEnabled()
 }

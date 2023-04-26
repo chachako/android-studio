@@ -267,4 +267,6 @@ open class KmpAndroidTestImpl @Inject constructor(
     override val renderscriptCreationConfig: RenderscriptCreationConfig? = null
     override val shadersCreationConfig: ShadersCreationConfig? = null
     override val nativeBuildCreationConfig: NativeBuildCreationConfig? = null
+    override val enableApiModeling: Boolean = false
+    override val enableGlobalSynthetics: Boolean = false
 }

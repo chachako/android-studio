@@ -81,6 +81,11 @@ class GlobalSyntheticsTest(private val dexType: DexType) {
 
     @Before
     fun setUp() {
+        TestFileUtils.appendToFile(
+            project.gradlePropertiesFile,
+            "android.enableApiModelingAndGlobalSynthetics=true"
+        )
+
         app = project.getSubproject("app")
         lib = project.getSubproject("lib")
 

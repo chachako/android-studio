@@ -49,6 +49,11 @@ class IncrementalGlobalSyntheticsTest {
 
     @Before
     fun setUp() {
+        TestFileUtils.appendToFile(
+            project.gradlePropertiesFile,
+            "android.enableApiModelingAndGlobalSynthetics=true"
+        )
+
         app = project.getSubproject("app")
 
         changedSourceInApp = app.mainSrcDir.resolve("com/example/app/IllformedLocaleExceptionUsage.java")

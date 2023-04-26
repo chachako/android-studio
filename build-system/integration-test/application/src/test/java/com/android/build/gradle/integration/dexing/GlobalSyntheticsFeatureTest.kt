@@ -19,11 +19,13 @@ package com.android.build.gradle.integration.dexing
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
-import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.options.OptionalBooleanOption.ENABLE_API_MODELING_AND_GLOBAL_SYNTHETICS
 import com.android.testutils.apk.AndroidArchive
 import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
+import kotlin.test.assertFalse
 
 class GlobalSyntheticsFeatureTest {
 
@@ -69,9 +71,37 @@ class GlobalSyntheticsFeatureTest {
 
     @Test
     fun basicTest() {
-        project.executor().run("assembleDebug")
+        project.executor().with(ENABLE_API_MODELING_AND_GLOBAL_SYNTHETICS, true)
+            .run("assembleDebug")
 
         checkPackagedGlobal("Landroid/icu/util/IllformedLocaleException;")
+    }
+
+    @Test
+    fun testEnableGlobalSyntheticsFlagNotSet() {
+        project.executor().run("assembleRelease").also {
+            assert(it.tasks.contains(":feature:dexBuilderRelease"))
+        }
+
+        project.executor().run("assembleDebug").also {
+            assertFalse { it.tasks.contains(":feature:dexBuilderRelease") }
+        }
+
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").buildFile,
+            """
+                android {
+                    compileOptions {
+                        sourceCompatibility JavaVersion.VERSION_14
+                        targetCompatibility JavaVersion.VERSION_14
+                    }
+                }
+            """.trimIndent()
+        )
+
+        project.executor().run("assembleDebug").also {
+            assert(it.tasks.contains(":feature:dexBuilderDebug"))
+        }
     }
 
     private fun checkPackagedGlobal(global: String) {

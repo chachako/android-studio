@@ -58,7 +58,6 @@ import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
-import com.android.build.gradle.options.IntegerOption
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
@@ -320,5 +319,11 @@ open class AndroidTestImpl @Inject constructor(
     // as in apps it will have already been included in the tested application.
     override val packageJacocoRuntime: Boolean
         get() = dslInfo.isAndroidTestCoverageEnabled && mainVariant.componentType.isAar
+
+    override val enableApiModeling: Boolean
+        get() = isApiModelingEnabled()
+
+    override val enableGlobalSynthetics: Boolean
+        get() = isGlobalSyntheticsEnabled()
 }
 

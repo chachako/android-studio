@@ -288,4 +288,10 @@ open class DynamicFeatureVariantImpl @Inject constructor(
             baseModuleMetadata
         )
     }
+
+    override val enableApiModeling: Boolean
+        get() = isApiModelingEnabled()
+
+    override val enableGlobalSynthetics: Boolean
+        get() = isGlobalSyntheticsEnabled()
 }

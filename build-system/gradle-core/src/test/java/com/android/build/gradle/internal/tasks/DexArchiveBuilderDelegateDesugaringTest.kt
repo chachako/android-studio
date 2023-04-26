@@ -486,6 +486,7 @@ class DexArchiveBuilderDelegateDesugaringTest {
                 desugarBootclasspath = bootClasspath.toList(),
                 desugarClasspath = desugaringClasspath.toList(),
                 coreLibDesugarConfig = libConfiguration,
+                enableApiModeling = true,
                 errorFormatMode = SyncOptions.ErrorFormatMode.HUMAN_READABLE,
             ),
             desugarClasspathChangedClasses = emptySet(),

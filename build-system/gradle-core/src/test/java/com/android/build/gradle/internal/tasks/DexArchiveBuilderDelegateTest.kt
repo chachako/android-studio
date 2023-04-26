@@ -417,6 +417,7 @@ class DexArchiveBuilderDelegateTest {
                 desugarBootclasspath = emptyList(),
                 desugarClasspath = desugaringClasspath.toList(),
                 coreLibDesugarConfig = libConfiguration,
+                enableApiModeling = true,
                 errorFormatMode = SyncOptions.ErrorFormatMode.HUMAN_READABLE,
             ),
             projectPath = FakeProviderFactory.factory.provider { "" },

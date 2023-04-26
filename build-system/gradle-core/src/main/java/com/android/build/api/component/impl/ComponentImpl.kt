@@ -57,8 +57,10 @@ import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
+import com.android.build.gradle.options.OptionalBooleanOption.ENABLE_API_MODELING_AND_GLOBAL_SYNTHETICS
 import com.android.builder.core.ComponentType
 import com.android.utils.appendCapitalized
+import org.gradle.api.JavaVersion
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Provider
 import java.io.File
@@ -302,5 +304,21 @@ abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
                 allPlaceholders,
                 internalServices
         )
+    }
+
+
+    fun isApiModelingEnabled(): Boolean {
+        return internalServices.projectOptions.get(ENABLE_API_MODELING_AND_GLOBAL_SYNTHETICS)
+            ?: !debuggable
+    }
+
+    fun isGlobalSyntheticsEnabled(): Boolean {
+        return internalServices.projectOptions.get(ENABLE_API_MODELING_AND_GLOBAL_SYNTHETICS)
+            ?: (!debuggable || isJavaLanguageLevelAbove14())
+    }
+
+    private fun isJavaLanguageLevelAbove14(): Boolean {
+        return global.compileOptions.sourceCompatibility.isCompatibleWith(JavaVersion.VERSION_14) &&
+                global.compileOptions.targetCompatibility.isCompatibleWith(JavaVersion.VERSION_14)
     }
 }

@@ -197,6 +197,7 @@ class D8BundleMainDexListTaskTest {
                 desugarBootclasspath = ClassFileProviderFactory(emptyList()),
                 desugarClasspath = ClassFileProviderFactory(emptyList()),
                 coreLibDesugarConfig = null,
+                enableApiModeling = true,
                 messageReceiver = NoOpMessageReceiver()
             )
         )

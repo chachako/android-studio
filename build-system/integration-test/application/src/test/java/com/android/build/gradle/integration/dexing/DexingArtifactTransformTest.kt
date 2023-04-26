@@ -60,6 +60,10 @@ class DexingArtifactTransformTest {
                 }
             """.trimIndent()
         )
+        TestFileUtils.appendToFile(
+            project.gradlePropertiesFile,
+            "android.enableApiModelingAndGlobalSynthetics=true"
+        )
     }
 
     @Test

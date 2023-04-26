@@ -44,7 +44,6 @@ import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
-import com.android.build.gradle.options.IntegerOption
 import com.android.build.gradle.options.StringOption
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.provider.Property
@@ -255,4 +254,10 @@ open class ApplicationVariantImpl @Inject constructor(
 
     override val generateLocaleConfig: Boolean
         get() = dslInfo.generateLocaleConfig
+
+    override val enableApiModeling: Boolean
+        get() = isApiModelingEnabled()
+
+    override val enableGlobalSynthetics: Boolean
+        get() = isGlobalSyntheticsEnabled()
 }

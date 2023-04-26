@@ -319,6 +319,7 @@ class DexingTransformTest {
             override val enableDesugaring = FakeGradleProperty(desugaring)
             override val libConfiguration: Property<String> = FakeGradleProperty()
             override val enableGlobalSynthetics = FakeGradleProperty(enableGlobalSynthetics)
+            override val enableApiModeling = FakeGradleProperty(enableGlobalSynthetics)
         }
 
         override fun getParameters(): Parameters {

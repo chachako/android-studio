@@ -297,7 +297,7 @@ public class DexArchiveBuilderTest {
         Path output = createOutput();
         Path globalSynthetics = temporaryFolder.getRoot().toPath().resolve("global_synthetics");
         DexArchiveTestUtil.convertClassesToDexArchive(
-                classesDir, output, globalSynthetics, 24, true);
+                classesDir, output, globalSynthetics, true, 24, true);
 
         Path dexFile =
                 Iterators.getOnlyElement(
@@ -311,7 +311,7 @@ public class DexArchiveBuilderTest {
         // now build for release
         FileUtils.cleanOutputDir(output.toFile());
         DexArchiveTestUtil.convertClassesToDexArchive(
-                classesDir, output, globalSynthetics, 24, false);
+                classesDir, output, globalSynthetics, true, 24, false);
         assertThat(new Dex(dexFile))
                 .containsClass(dexClassName)
                 .that()

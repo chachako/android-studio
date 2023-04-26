@@ -148,6 +148,10 @@ class IncrementalDexingWithDesugaringTest(
 
     @Before
     fun setUp() {
+        TestFileUtils.appendToFile(
+            project.gradlePropertiesFile,
+            "android.enableApiModelingAndGlobalSynthetics=true"
+        )
         app = project.getSubproject(EmptyActivityProjectBuilder.APP)
         androidLib = project.getSubproject(LIB)
         javaLib = project.getSubproject(JAVALIB)

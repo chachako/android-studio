@@ -59,13 +59,19 @@ public final class DexArchiveTestUtil {
             int minSdkVersion)
             throws IOException {
         convertClassesToDexArchive(
-                classesInput, dexArchiveOutput, globalSynthetics, minSdkVersion, true);
+                classesInput,
+                dexArchiveOutput,
+                globalSynthetics,
+                true, // enable api modeling by default
+                minSdkVersion,
+                true);
     }
 
     public static void convertClassesToDexArchive(
             @NonNull Path classesInput,
             @NonNull Path dexArchiveOutput,
             @NonNull Path globalSyntheticsOutput,
+            boolean enableApiModeling,
             int minSdkVersion,
             boolean isDebuggable)
             throws IOException {
@@ -85,6 +91,7 @@ public final class DexArchiveTestUtil {
                                     new ClassFileProviderFactory(Collections.emptyList()), // bootcp
                                     new ClassFileProviderFactory(Collections.emptyList()), // cp
                                     null,
+                                    enableApiModeling,
                                     new StandardOutErrMessageReceiver() // messageReceiver
                                     ));
 
