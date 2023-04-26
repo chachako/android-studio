@@ -17,6 +17,7 @@ package com.android.screenshot.cli
 
 import com.android.SdkConstants
 import com.android.ide.common.repository.GradleCoordinate
+import com.android.ide.common.resources.AndroidManifestPackageNameUtils
 import com.android.ide.common.util.PathString
 import com.android.manifmerger.ManifestSystemProperty
 import com.android.projectmodel.ExternalAndroidLibrary
@@ -158,9 +159,17 @@ class ScreenshotAndroidModuleSystem(
                 override val location: PathString?
                     get() = PathString(it)
                 override val manifestFile: PathString?
-                    get() = findPath(it, "AndroidManifest.xml")
+                    get() = PathString(it + "/AndroidManifest.xml")
                 override val packageName: String?
-                    get() = null
+                    get() {
+                        if (manifestFile?.rawPath == composeProject.lintProject.manifestFiles.first().path) {
+                            return composeProject.lintProject.`package`
+                        }
+                        if (manifestFile != null) {
+                            return AndroidManifestPackageNameUtils.getPackageNameFromManifestFile(manifestFile!!)
+                        }
+                        return null
+                    }
                 override val resFolder: ResourceFolder?
                     get() = RecursiveResourceFolder(findPath(it, "res")!!)
                 override val assetsFolder: PathString?

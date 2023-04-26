@@ -31,7 +31,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <sdkType implementation="org.jetbrains.android.sdk.AndroidSdkType"/>
         <facetType implementation="org.jetbrains.android.facet.AndroidFacetType"/>
-        <xml.xmlExtension implementation="org.jetbrains.android.dom.AndroidXmlExtension"
+        <xml.xmlExtension implementation="com.android.screenshot.cli.ScreenshotXmlExtension"
                           order="first"/>
     </extensions>
     <extensions defaultExtensionNs="com.android.tools.idea.layoutlib">

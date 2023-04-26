@@ -36,9 +36,7 @@ class ScreenshotFileBasedIndex: FileBasedIndex() {
         TODO("Not yet implemented")
     }
 
-    override fun getFileBeingCurrentlyIndexed(): VirtualFile? {
-        TODO("Not yet implemented")
-    }
+    override fun getFileBeingCurrentlyIndexed(): VirtualFile? = null
 
     override fun getFileWritingCurrentlyIndexes(): IndexWritingFile? {
         TODO("Not yet implemented")

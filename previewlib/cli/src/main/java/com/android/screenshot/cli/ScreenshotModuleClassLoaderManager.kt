@@ -32,6 +32,12 @@ import java.util.function.Supplier
 class ScreenshotModuleClassLoaderManager(private val dependencies: Dependencies) :
     ModuleClassLoaderManager {
 
+    // This is a hack, the resource system needs to know where the R classes are located, so that
+    // it can load the resource ids properly, using this class loader seemed to be the right
+    // thing to do, however its unclear if there is a better way to create this once and pass it
+    // around.
+    var lastClassLoader: ScreenshotModuleClassLoader? = null
+
     override fun getShared(
         parent: ClassLoader?,
         moduleRenderContext: ModuleRenderContext,
@@ -49,8 +55,8 @@ class ScreenshotModuleClassLoaderManager(private val dependencies: Dependencies)
             getInstance().getCache(moduleRenderContext.module),
             diagnostics,
             dependencies)
-
-        return ScreenshotModuleClassLoader(parent, screenshotModuleClassLoaderImpl, diagnostics)
+        lastClassLoader = ScreenshotModuleClassLoader(parent, screenshotModuleClassLoaderImpl, diagnostics)
+        return lastClassLoader!!
     }
 
     override fun getShared(
@@ -76,7 +82,8 @@ class ScreenshotModuleClassLoaderManager(private val dependencies: Dependencies)
             getInstance().getCache(moduleRenderContext.module),
             diagnostics,
             dependencies)
-        return (ScreenshotModuleClassLoader(parent, screenshotModuleClassLoaderImpl, diagnostics))
+        lastClassLoader = (ScreenshotModuleClassLoader(parent, screenshotModuleClassLoaderImpl, diagnostics))
+        return lastClassLoader!!
     }
 
     override fun getPrivate(

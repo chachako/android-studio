@@ -67,7 +67,7 @@ class ScreenshotRenderModelModule(val composeApp: ComposeApplication, val compos
             return null
         }
     override val resourceIdManager: ResourceIdManager
-        get() = ResourceIdManager.get(composeModule.module)
+        get() = ScreenshotResourceIdManager(composeProject, composeModule)
     override val moduleKey: Any
         get() = composeModule.module
     override val resourcePackage: String?
@@ -90,9 +90,9 @@ class ScreenshotRenderModelModule(val composeApp: ComposeApplication, val compos
     override val assetRepository: AssetRepository?
         get() = AssetRepositoryImpl(composeModule.facet)
     override val resourceRepositoryManager: ResourceRepositoryManager
-        get() = StudioResourceRepositoryManager.getInstance(composeModule.facet)
+        get() = ScreenshotResourceRepositoryManager(composeProject)
     override val info: AndroidModuleInfo
-        get() = StudioAndroidModuleInfo.getInstance(composeModule.facet)
+        get() = ScreenshotAndroidModuleInfo(composeProject)
     override val androidPlatform: AndroidPlatform?
         get() = AndroidPlatform(AndroidSdkData.getSdkData(sdkPath)!!, StudioEmbeddedRenderTarget.getCompatibilityTarget(composeProject.lintProject.buildTarget!!))
     override fun dispose() {}
