@@ -82,4 +82,46 @@ class KotlinMultiplatformAndroidLintTest {
             "Error: Call requires API level 26 (current min is 22): java.time.LocalDate#now [NewApi]"
         )
     }
+
+    @Test
+    fun `test app checkDependencies works`() {
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").ktsBuildFile,
+            """
+                android {
+                    defaultConfig {
+                        minSdk = 24
+                    }
+                    lint {
+                        checkDependencies = true
+                        textReport = true
+                    }
+                }
+            """.trimIndent())
+
+        TestFileUtils.addMethod(
+            FileUtils.join(
+                project.getSubproject("kmpFirstLib").projectDir,
+                "src", "androidMain", "kotlin", "com", "example", "kmpfirstlib", "KmpAndroidActivity.kt"
+            ),
+            """
+
+                fun desugaringTestUsingDate() {
+                    val date = LocalDate.now().month.name
+                }
+            """.trimIndent())
+
+        // Run twice to catch issues with configuration caching
+        project.executor().expectFailure().run(":app:clean", ":app:lintDebug")
+        project.executor().expectFailure().run(":app:clean", ":app:lintDebug")
+
+        val reportFile =
+            File(project.getSubproject("app").buildDir, "reports/lint-results-debug.txt")
+
+        PathSubject.assertThat(reportFile).exists()
+        PathSubject.assertThat(reportFile).containsAllOf(
+            "Error: Call requires API level 26 (current min is 24): java.time.LocalDate#getMonth [NewApi]",
+            "Error: Call requires API level 26 (current min is 24): java.time.LocalDate#now [NewApi]"
+        )
+    }
 }
