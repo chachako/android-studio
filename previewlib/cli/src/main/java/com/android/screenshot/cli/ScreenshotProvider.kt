@@ -63,7 +63,7 @@ class ScreenshotProvider(
     lateinit var mModule: Module
     lateinit var projectRoot: String
     lateinit var moduleFilePath: String
-    val composeApplication = ComposeApplication(project.env)
+    val composeApplication = ComposeApplication(project.env, dependencies)
     val projectFileIndex = ScreenshotProjectFileIndex()
     val composeProject = ComposeProject(project, projectFileIndex)
     val composeModule = ComposeModule(composeProject, dependencies)

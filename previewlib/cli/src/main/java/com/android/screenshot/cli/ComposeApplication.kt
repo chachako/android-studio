@@ -29,6 +29,7 @@ import com.android.tools.idea.res.AarResourceRepositoryCache
 import com.android.tools.idea.res.ResourceFolderRepositoryFileCache
 import com.android.tools.idea.res.ResourceFolderRepositoryFileCacheImpl
 import com.android.tools.idea.sdk.AndroidSdks
+import com.android.tools.rendering.classloading.ModuleClassLoaderManager
 import com.android.tools.res.FrameworkResourceRepositoryManager
 import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.core.CoreFileTypeRegistry
@@ -53,9 +54,9 @@ import com.intellij.util.PlatformUtils
 import com.intellij.util.ReflectionUtil
 import com.intellij.util.download.DownloadableFileService
 import com.intellij.util.indexing.FileBasedIndex
-import org.jetbrains.android.uipreview.StudioModuleClassLoaderManager
 import org.jetbrains.kotlin.utils.PathUtil
 import org.mockito.Mockito
+import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
@@ -63,7 +64,7 @@ import java.nio.file.Paths
  * The services are registered here as the [CoreApplicationEnvironment] does not enumerate or expose
  * a way to load the services from the plugin.xml
  */
-class ComposeApplication(private val applicationManager: CoreApplicationEnvironment) {
+class ComposeApplication(private val applicationManager: CoreApplicationEnvironment, private val dependencies: Dependencies) {
 
     init {
         setupCoreApplication()
@@ -84,8 +85,8 @@ class ComposeApplication(private val applicationManager: CoreApplicationEnvironm
             StudioIoManager()
         )
         applicationManager.registerApplicationService(
-            StudioModuleClassLoaderManager::class.java,
-            StudioModuleClassLoaderManager()
+            ModuleClassLoaderManager::class.java,
+            ScreenshotModuleClassLoaderManager(dependencies)
         )
         applicationManager.registerApplicationService(
             FacetTypeRegistry::class.java,
