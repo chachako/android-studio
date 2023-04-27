@@ -109,7 +109,7 @@ interface DeviceProperties {
           characteristics.contains("automotive") -> DeviceType.AUTOMOTIVE
           else -> DeviceType.HANDHELD
         }
-      isVirtual = properties["ro.kernel.qemu"] != null
+      isVirtual = properties["ro.kernel.qemu"] == "1"
     }
 
     fun buildBase(): DeviceProperties =

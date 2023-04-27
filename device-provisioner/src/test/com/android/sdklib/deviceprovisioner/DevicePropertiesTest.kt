@@ -24,9 +24,8 @@ import org.junit.Test
 class DevicePropertiesTest {
   @Test
   fun readCommonProperties() {
-    val builder = DeviceProperties.Builder()
-    builder.readCommonProperties(
-      mapOf(
+    val props =
+      props(
         "ro.manufacturer" to "Google",
         "ro.product.model" to "Pixel 5",
         "ro.build.version.sdk" to "29",
@@ -35,8 +34,7 @@ class DevicePropertiesTest {
         "ro.build.characteristics" to "watch,nosdcard",
         "ro.kernel.qemu" to "1",
       )
-    )
-    val props = builder.buildBase()
+
     assertThat(props.manufacturer).isEqualTo("Google")
     assertThat(props.model).isEqualTo("Pixel 5")
     assertThat(props.androidVersion).isEqualTo(AndroidVersion(29))
@@ -45,4 +43,15 @@ class DevicePropertiesTest {
     assertThat(props.deviceType).isEqualTo(DeviceType.WEAR)
     assertThat(props.isVirtual).isTrue()
   }
+
+  @Test
+  fun readIsVirtual() {
+    assertThat(props().isVirtual).isFalse()
+    // Some Samsung physical devices do this:
+    assertThat(props("ro.kernel.qemu" to "0").isVirtual).isFalse()
+    assertThat(props("ro.kernel.qemu" to "1").isVirtual).isTrue()
+  }
+
+  private fun props(vararg pairs: Pair<String, String>) =
+    DeviceProperties.Builder().apply { readCommonProperties(mapOf(*pairs)) }.buildBase()
 }

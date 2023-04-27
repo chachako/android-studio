@@ -40,7 +40,6 @@ class PhysicalDeviceProvisionerPlugin(val scope: CoroutineScope) : DeviceProvisi
     val deviceProperties =
       PhysicalDeviceProperties.build {
         readCommonProperties(properties)
-        isVirtual = false
         val matcher = WIFI_SERIAL_NUMBER.matchEntire(device.serialNumber)
         connectionType =
           when (matcher) {
@@ -60,6 +59,10 @@ class PhysicalDeviceProvisionerPlugin(val scope: CoroutineScope) : DeviceProvisi
     // to have their ADB serial number match their device serial number.
     val isUsb = deviceProperties.connectionType == ConnectionType.USB
     if (isUsb && serialNumber != device.serialNumber) {
+      return null
+    }
+    // If a system property says it's virtual, it probably is.
+    if (deviceProperties.isVirtual == true) {
       return null
     }
 
