@@ -78,7 +78,10 @@ public class JacocoAgent {
         RuntimeMXBean mxBean = ManagementFactory.getRuntimeMXBean();
         List<String> inputArguments = mxBean.getInputArguments();
         for (String inputArgument : inputArguments) {
-            if (inputArgument.startsWith("-javaagent") && inputArgument.contains("jacoco.agent")) {
+            // Needs to detect the Jacoco agent jar at //prebuilts/tools/common/jacoco.
+            // Currently that's named "jacoco-agent-<version>.jar" so looking for "jacoco-agent"
+            // is good enough without requiring updates every time we upgrade.
+            if (inputArgument.startsWith("-javaagent") && inputArgument.contains("jacoco-agent")) {
                 return inputArgument;
             }
         }
