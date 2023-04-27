@@ -22,6 +22,8 @@ kotlin_library(
 # A library with all tested classes
 kotlin_library(
     name = "test-classes",
+    # exclude these from coverage by marking them as testonly
+    testonly = True,
     srcs = glob(["resources/src/**/*.kt"]),
     tags = tags,
 )
@@ -40,6 +42,8 @@ dex_library(
 # A library with all tested classes so we can create a "*_deploy.jar" that contains all dependencies
 java_binary(
     name = "test-classes-binary",
+    # must be marked testonly because it depends on :test-classes
+    testonly = True,
     main_class = "MainKt",
     tags = tags,
     runtime_deps = [
@@ -112,12 +116,10 @@ java_binary(
 iml_module(
     name = "studio.debugger-tests",
     # do not sort: must match IML order
-    srcs = [
-        "resources/src",
-        "src",
-    ],
+    srcs = ["src"],
     iml_files = ["debugger-tests.iml"],
-    resources = ["resources/res"],
+    # do not sort: must match IML order
+    resources = ["resources"],
     tags = tags,
     test_srcs = ["testSrc"],
     test_tags = ["manual"],
