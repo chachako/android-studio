@@ -55,6 +55,7 @@ function copy_bazel_artifacts() {(
   cp -a ${bin_dir}/tools/vendor/intel/android-studio-intel-haxm.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/vendor/google/asfp/studio/asfp.linux.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/vendor/google/asfp/studio/asfp_build_manifest.textproto ${artifacts_dir}/asfp_build_manifest.textproto
+  cp -a ${bin_dir}/tools/vendor/google/asfp/studio/asfp-linux-deb.zip ${artifacts_dir}
 
   cp -a ${bin_dir}/tools/base/dynamic-layout-inspector/skia/skiaparser.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/base/sdklib/commandlinetools_*.zip ${artifacts_dir}
@@ -176,6 +177,7 @@ function run_bazel_test() {
     //tools/vendor/google/adrt:android-studio-cros-skeleton.zip \
     //tools/vendor/google/adrt:android-studio-nsis-prebuilt.zip \
     //tools/vendor/google/asfp/studio:asfp \
+    //tools/vendor/google/asfp/studio:asfp-linux-deb.zip \
     //tools/vendor/intel:android-studio-intel-haxm.zip \
     $(< "${SCRIPT_DIR}/targets")
 }
