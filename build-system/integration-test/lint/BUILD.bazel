@@ -77,6 +77,7 @@ gradle_integration_test(
     ),
     data = DATA + [
         "//tools/base/build-system/integration-test:test-projects/dynamicApp",
+        "//tools/base/build-system/integration-test:test-projects/kotlinMultiplatform",
         "//tools/base/build-system/integration-test:test-projects/lintBaseline",
         "//tools/base/build-system/integration-test:test-projects/lintCustomLocalAndPublishRules",
         "//tools/base/build-system/integration-test:test-projects/lintCustomRules",
@@ -88,8 +89,8 @@ gradle_integration_test(
         "//tools/base/build-system/integration-test:test-projects/lintLibrarySkipDeps",
         "//tools/base/build-system/integration-test:test-projects/lintMultipleLintJars",
         "//tools/base/build-system/integration-test:test-projects/lintNoJavaClasses",
-        "//tools/base/build-system/integration-test:test-projects/lintResourceResolve",
         "//tools/base/build-system/integration-test:test-projects/lintRelease",
+        "//tools/base/build-system/integration-test:test-projects/lintResourceResolve",
         "//tools/base/build-system/integration-test:test-projects/lintStandalone",
         "//tools/base/build-system/integration-test:test-projects/lintStandaloneCustomRules",
         "//tools/base/build-system/integration-test:test-projects/lintStandaloneVital",
@@ -109,6 +110,8 @@ maven_repository(
     artifacts = [
         "@maven//:androidx.annotation.annotation_1.1.0",
         "@maven//:androidx.test.espresso.espresso-core_3.2.0",
+        "@maven//:androidx.test.ext.junit_1.1.2",
+        "@maven//:androidx.test.runner_1.3.0",
         "@maven//:com.android.support.constraint.constraint-layout_1.0.2",
         "@maven//:com.android.support.multidex_1.0.2",
         "@maven//:com.android.support.test.espresso.espresso-core_3.0.2",
