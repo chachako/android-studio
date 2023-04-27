@@ -40,7 +40,7 @@ class LintStandaloneNoSdkTest {
         val file = project.file("lint-results.txt");
         assertThat(file).exists();
         assertThat(file).contains("MyClass.java:5: Warning: Use Boolean.valueOf(true) instead");
-        assertThat(file).contains("build.gradle:6: Warning: no Java language level directives");
+        assertThat(file).contains("build.gradle:4: Warning: no Java language level directives");
         assertThat(file).contains("0 errors, 3 warnings");
     }
 }
