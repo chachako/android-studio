@@ -335,6 +335,7 @@ coverage_report(
         "tools/base/firebase/testlab/testlab-gradle-plugin/src/main",
     ],
     tests = [
+        "//tools/base/build-system/integration-test/managed-devices:FirebaseTestLabDeviceTest",
         "//tools/base/firebase/testlab/testlab-gradle-plugin:tests.test",
     ],
 )
@@ -1102,6 +1103,7 @@ coverage_report(
         "//tools/base/build-system/integration-test/databinding:tests",
         "//tools/base/build-system/integration-test/framework:framework_tests.test",
         "//tools/base/build-system/integration-test/lint:tests",
+        "//tools/base/build-system/integration-test/managed-devices:FirebaseTestLabDeviceTest",
         "//tools/base/build-system/integration-test/native:CmakeBasicProjectTest",
         "//tools/base/build-system/integration-test/native:CmakeGradleTargetsTest",
         "//tools/base/build-system/integration-test/native:InjectedAbiSplitTest",
