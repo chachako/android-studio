@@ -66,7 +66,6 @@ internal class ConnectionHandler(private val mServer: FakeAdbServer, socket: Soc
             val pw = PrintWriter(StringWriter())
             pw.print("Unable to process '${request.original()}'\n")
             e.printStackTrace(pw)
-            mSmartSocket.sendFailWithReason("Exception occurred when processing request. $pw")
         }
     }
 
