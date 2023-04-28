@@ -18,6 +18,7 @@ package com.android.build.api.variant.impl
 
 import com.android.SdkConstants.DOT_AAR
 import com.android.build.api.artifact.impl.ArtifactsImpl
+import com.android.build.api.component.analytics.AnalyticsEnabledKotlinMultiplatformAndroidVariant
 import com.android.build.api.component.impl.KmpAndroidTestImpl
 import com.android.build.api.component.impl.KmpComponentImpl
 import com.android.build.api.component.impl.KmpUnitTestImpl
@@ -146,7 +147,7 @@ open class KmpVariantImpl @Inject constructor(
     override fun <T : Component> createUserVisibleVariantObject(
         stats: GradleBuildVariant.Builder?
     ): T {
-        // TODO(b/243387425): Support analytics
+        // this doesn't extend component
         throw IllegalAccessException("Unsupported")
     }
 

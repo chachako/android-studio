@@ -134,9 +134,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         }
     }
 
-    // TODO(b/243387425): Support analytics
     override fun getAnalyticsPluginType(): GradleBuildProject.PluginType? =
-        GradleBuildProject.PluginType.UNKNOWN_PLUGIN_TYPE
+        GradleBuildProject.PluginType.KOTLIN_MULTIPLATFORM_ANDROID_LIBRARY
 
     override fun configureProject(project: Project) { }
 

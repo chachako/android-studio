@@ -261,7 +261,7 @@ enum class ComponentTypeImpl(
         suffix = "",
         artifactName = AndroidProject.ARTIFACT_MAIN,
         artifactType = ArtifactMetaData.TYPE_ANDROID,
-        analyticsVariantType = GradleBuildVariant.VariantType.LIBRARY, //TODO(b/243387425): Support Analytics
+        analyticsVariantType = GradleBuildVariant.VariantType.KOTLIN_MULTIPLATFORM_ANDROID_LIBRARY,
     );
 
     override val isTestComponent: Boolean
