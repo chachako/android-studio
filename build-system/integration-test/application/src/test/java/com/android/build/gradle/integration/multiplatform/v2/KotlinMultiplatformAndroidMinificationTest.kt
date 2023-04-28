@@ -42,7 +42,7 @@ class KotlinMultiplatformAndroidMinificationTest {
         TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                android {
+                kotlin.androidExperimental.options {
                     optimization {
                         isMinifyEnabled = true
                         consumerProguard.files.add(

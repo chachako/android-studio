@@ -206,12 +206,10 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
     override fun configureExtension(project: Project) {
         val extensionImplClass = androidPluginDslDecorator
             .decorate(KotlinMultiplatformAndroidExtensionImpl::class.java)
-        androidExtension = project.extensions.create(
-            KotlinMultiplatformAndroidExtension::class.java,
-            "android",
+        androidExtension = dslServices.newInstance(
             extensionImplClass,
             dslServices
-        ) as KotlinMultiplatformAndroidExtensionImpl
+        )
 
         settingsExtension?.let {
             androidExtension.initExtensionFromSettings(it)

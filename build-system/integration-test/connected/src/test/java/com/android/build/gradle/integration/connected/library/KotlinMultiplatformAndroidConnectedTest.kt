@@ -47,7 +47,7 @@ class KotlinMultiplatformAndroidConnectedTest {
         TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                android {
+                kotlin.androidExperimental.options {
                     enableInstrumentedTestCoverage = true
                 }
 
