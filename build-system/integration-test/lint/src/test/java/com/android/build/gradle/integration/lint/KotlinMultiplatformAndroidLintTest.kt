@@ -41,7 +41,7 @@ class KotlinMultiplatformAndroidLintTest {
             """
                 kotlin {
                     androidExperimental {
-                        onMainCompilation {
+                        compilations.all {
                             compilerOptions.configure {
                                 jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
                             }

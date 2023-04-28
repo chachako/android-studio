@@ -353,7 +353,6 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             mainVariant.name
         )
 
-        androidTarget.executeCompilationOperations()
         androidExtension.executeVariantOperations(
             stats?.let {
                 variantServices.newInstance(

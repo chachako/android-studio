@@ -42,42 +42,6 @@ class KotlinMultiplatformAndroidTargetImpl(
             )
         )
 
-    private val compilationOperations = mapOf(
-        KmpPredefinedAndroidCompilation.MAIN to mutableListOf<Action<KotlinMultiplatformAndroidCompilation>>(),
-        KmpPredefinedAndroidCompilation.UNIT_TEST to mutableListOf(),
-        KmpPredefinedAndroidCompilation.INSTRUMENTED_TEST to mutableListOf(),
-    )
-
-    private fun onCompilation(
-        type: KmpPredefinedAndroidCompilation,
-        action: KotlinMultiplatformAndroidCompilation.() -> Unit
-    ) {
-        compilations.findByName(type.compilationName)?.let(action) ?:
-        compilationOperations[type]!!.add(action)
-    }
-
-    override fun onMainCompilation(action: KotlinMultiplatformAndroidCompilation.() -> Unit) {
-        onCompilation(KmpPredefinedAndroidCompilation.MAIN, action)
-    }
-
-    override fun onUnitTestCompilation(action: KotlinMultiplatformAndroidCompilation.() -> Unit) {
-        onCompilation(KmpPredefinedAndroidCompilation.UNIT_TEST, action)
-    }
-
-    override fun onInstrumentedTestCompilation(action: KotlinMultiplatformAndroidCompilation.() -> Unit) {
-        onCompilation(KmpPredefinedAndroidCompilation.INSTRUMENTED_TEST, action)
-    }
-
-    internal fun executeCompilationOperations() {
-        compilationOperations.forEach { (type, actions) ->
-            compilations.findByName(type.compilationName)?.let { compilation ->
-                actions.forEach {
-                    it.execute(compilation)
-                }
-            }
-        }
-    }
-
     override fun options(action: KotlinMultiplatformAndroidExtension.() -> Unit) {
         androidExtension.action()
     }

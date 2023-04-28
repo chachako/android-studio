@@ -17,6 +17,7 @@
 package com.android.build.api.variant.impl
 
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
+import org.gradle.api.NamedDomainObjectContainer
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 
 /**
@@ -25,13 +26,9 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
  * TODO(b/267309622): Move to gradle-api
  */
 interface KotlinMultiplatformAndroidTarget: KotlinTarget {
+    override val compilations: NamedDomainObjectContainer<out KotlinMultiplatformAndroidCompilation>
+
     val options: KotlinMultiplatformAndroidExtension
 
     fun options(action: KotlinMultiplatformAndroidExtension.() -> Unit)
-
-    fun onMainCompilation(action: KotlinMultiplatformAndroidCompilation.() -> Unit)
-
-    fun onUnitTestCompilation(action: KotlinMultiplatformAndroidCompilation.() -> Unit)
-
-    fun onInstrumentedTestCompilation(action: KotlinMultiplatformAndroidCompilation.() -> Unit)
 }
