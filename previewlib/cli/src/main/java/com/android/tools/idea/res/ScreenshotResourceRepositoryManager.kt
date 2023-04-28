@@ -13,20 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.screenshot.cli
+package com.android.tools.idea.res
 
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.resources.Locale
 import com.android.ide.common.resources.ResourceRepository
+import com.android.screenshot.cli.ComposeModule
+import com.android.screenshot.cli.ComposeProject
 import com.android.tools.res.CacheableResourceRepository
 import com.android.tools.res.ResourceNamespacing
 import com.android.tools.res.ResourceRepositoryManager
 import com.google.common.collect.ImmutableList
 
-class ScreenshotResourceRepositoryManager(private val composeProject: ComposeProject) : ResourceRepositoryManager {
+class ScreenshotResourceRepositoryManager(private val composeProject: ComposeProject, private val composeModule: ComposeModule) : ResourceRepositoryManager {
 
     override val appResources: CacheableResourceRepository
-        get() = ScreenshotResourceRepository(composeProject)
+        get() = ScreenshotResourceRepository(composeProject, composeModule)
     override val projectResources: ResourceRepository
         get() = TODO("Not yet implemented")
     override val namespacing: ResourceNamespacing

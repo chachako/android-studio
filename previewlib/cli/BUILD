@@ -54,6 +54,7 @@ iml_module(
         "//tools/adt/idea/layoutlib-loader:intellij.android.layoutlib-loader[module]",
         "//tools/base/apkparser/analyzer:studio.android.sdktools.analyzer[module]",
         "//tools/adt/idea/rendering:intellij.android.rendering[module]",
+        "//tools/base/resource-repository:studio.android.sdktools.resource-repository[module]",
     ],
 )
 

@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.screenshot.cli
+package com.android.tools.idea.res
 
 import com.android.SdkConstants
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.rendering.api.ResourceReference
 import com.android.resources.ResourceType
+import com.android.screenshot.cli.ComposeModule
+import com.android.screenshot.cli.ComposeProject
+import com.android.screenshot.cli.ScreenshotModuleClassLoaderManager
 import com.android.tools.idea.layoutlib.LayoutLibraryLoader
 import com.android.tools.idea.projectsystem.DependencyScopeType
 import com.android.tools.rendering.classloading.ModuleClassLoaderManager

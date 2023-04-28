@@ -21,6 +21,8 @@ import com.android.tools.idea.projectsystem.getModuleSystem
 import com.android.tools.idea.rendering.RenderMergedManifest
 import com.android.tools.idea.rendering.StudioModuleDependencies
 import com.android.tools.idea.res.AssetRepositoryImpl
+import com.android.tools.idea.res.ScreenshotResourceIdManager
+import com.android.tools.idea.res.ScreenshotResourceRepositoryManager
 import com.android.tools.module.AndroidModuleInfo
 import com.android.tools.module.ModuleDependencies
 import com.android.tools.rendering.api.EnvironmentContext
@@ -39,7 +41,12 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
-class ScreenshotRenderModelModule(val composeApp: ComposeApplication, val composeProject: ComposeProject, val composeModule: ComposeModule, val sdkPath: String):
+class ScreenshotRenderModelModule(
+    val composeApp: ComposeApplication,
+    val composeProject: ComposeProject,
+    val composeModule: ComposeModule,
+    val sdkPath: String
+) :
     RenderModelModule {
 
     private val LOG = Logger.getInstance(ScreenshotRenderModelModule::class.java)
@@ -85,13 +92,18 @@ class ScreenshotRenderModelModule(val composeApp: ComposeApplication, val compos
     override fun getIdeaModule(): Module {
         return composeModule.module
     }
+
     override val assetRepository: AssetRepository?
         get() = AssetRepositoryImpl(composeModule.facet)
     override val resourceRepositoryManager: ResourceRepositoryManager
-        get() = ScreenshotResourceRepositoryManager(composeProject)
+        get() = ScreenshotResourceRepositoryManager(composeProject, composeModule)
     override val info: AndroidModuleInfo
         get() = ScreenshotAndroidModuleInfo(composeProject)
     override val androidPlatform: AndroidPlatform?
-        get() = AndroidPlatform(AndroidSdkData.getSdkData(sdkPath)!!, StudioEmbeddedRenderTarget.getCompatibilityTarget(composeProject.lintProject.buildTarget!!))
+        get() = AndroidPlatform(
+            AndroidSdkData.getSdkData(sdkPath)!!,
+            StudioEmbeddedRenderTarget.getCompatibilityTarget(composeProject.lintProject.buildTarget!!)
+        )
+
     override fun dispose() {}
 }
