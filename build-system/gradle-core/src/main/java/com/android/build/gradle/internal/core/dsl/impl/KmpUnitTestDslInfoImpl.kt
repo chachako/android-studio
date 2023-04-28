@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.core.dsl.impl
 
 import com.android.build.api.component.impl.ComponentIdentityImpl
+import com.android.build.api.variant.impl.KmpPredefinedAndroidCompilation
 import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.KmpVariantDslInfo
 import com.android.build.gradle.internal.core.dsl.UnitTestComponentDslInfo
@@ -35,7 +36,9 @@ class KmpUnitTestDslInfoImpl(
 ), UnitTestComponentDslInfo, KmpComponentDslInfo {
 
     override val componentType = ComponentTypeImpl.UNIT_TEST
-    override val componentIdentity = ComponentIdentityImpl("kotlinAndroidTest")
+    override val componentIdentity = ComponentIdentityImpl(
+        KmpPredefinedAndroidCompilation.UNIT_TEST.getNamePrefixedWithTarget()
+    )
 
     override val namespace: Provider<String> by lazy {
         extension.testNamespace?.let { services.provider { it } }

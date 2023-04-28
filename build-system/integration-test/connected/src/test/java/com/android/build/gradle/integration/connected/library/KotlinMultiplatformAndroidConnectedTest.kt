@@ -71,7 +71,7 @@ class KotlinMultiplatformAndroidConnectedTest {
 
         val testResultFolder = FileUtils.join(
             project.getSubproject("kmpFirstLib").buildDir,
-            "reports", "androidTests", "connected", "kotlinAndroid"
+            "reports", "androidTests", "connected", "androidMain"
         )
 
         Truth.assertThat(testResultFolder.exists()).isTrue()

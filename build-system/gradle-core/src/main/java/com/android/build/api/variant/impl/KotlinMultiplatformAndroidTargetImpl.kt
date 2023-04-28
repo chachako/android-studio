@@ -44,7 +44,7 @@ class KotlinMultiplatformAndroidTargetImpl(
 
     private val compilationOperations = mapOf(
         KmpPredefinedAndroidCompilation.MAIN to mutableListOf<Action<KotlinMultiplatformAndroidCompilation>>(),
-        KmpPredefinedAndroidCompilation.TEST to mutableListOf(),
+        KmpPredefinedAndroidCompilation.UNIT_TEST to mutableListOf(),
         KmpPredefinedAndroidCompilation.INSTRUMENTED_TEST to mutableListOf(),
     )
 
@@ -61,7 +61,7 @@ class KotlinMultiplatformAndroidTargetImpl(
     }
 
     override fun onUnitTestCompilation(action: KotlinMultiplatformAndroidCompilation.() -> Unit) {
-        onCompilation(KmpPredefinedAndroidCompilation.TEST, action)
+        onCompilation(KmpPredefinedAndroidCompilation.UNIT_TEST, action)
     }
 
     override fun onInstrumentedTestCompilation(action: KotlinMultiplatformAndroidCompilation.() -> Unit) {

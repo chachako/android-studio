@@ -70,7 +70,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             """.trimIndent()
         )
 
-        project.executor().run(":kmpFirstLib:createKotlinAndroidTestCoverageReport")
+        project.executor().run(":kmpFirstLib:createAndroidUnitTestCoverageReport")
 
         assertWithMessage(
             "Running kmp unit tests should run common tests as well"
@@ -79,7 +79,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
                 project.getSubproject("kmpFirstLib").buildDir,
                 "reports",
                 "tests",
-                "testKotlinAndroidTest",
+                "testAndroidUnitTest",
                 "classes"
             ).listFiles()!!.map { it.name }
         ).containsExactly(

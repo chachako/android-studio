@@ -21,6 +21,7 @@ import com.android.build.api.dsl.AarMetadata
 import com.android.build.api.dsl.Lint
 import com.android.build.api.dsl.Packaging
 import com.android.build.api.dsl.TestFixtures
+import com.android.build.api.variant.impl.KmpPredefinedAndroidCompilation
 import com.android.build.api.variant.impl.MutableAndroidVersion
 import com.android.build.gradle.ProguardFiles
 import com.android.build.gradle.internal.PostprocessingFeatures
@@ -53,7 +54,9 @@ class KmpVariantDslInfoImpl(
 ), KmpVariantDslInfo {
 
     override val componentType = ComponentTypeImpl.KMP_ANDROID
-    override val componentIdentity = ComponentIdentityImpl("kotlinAndroid")
+    override val componentIdentity = ComponentIdentityImpl(
+        KmpPredefinedAndroidCompilation.MAIN.getNamePrefixedWithTarget()
+    )
 
     override val aarMetadata: AarMetadata
         get() = extension.aarMetadata

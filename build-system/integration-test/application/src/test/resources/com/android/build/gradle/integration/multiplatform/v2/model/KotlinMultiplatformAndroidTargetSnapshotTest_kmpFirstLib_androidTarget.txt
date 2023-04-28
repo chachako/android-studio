@@ -37,17 +37,17 @@
       "extras": {}
     },
     {
-      "compilationName": "test",
+      "compilationName": "unitTest",
       "defaultSourceSet": {
-        "sourceSetName": "androidTest",
+        "sourceSetName": "androidUnitTest",
         "extras": {
           "com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker": {},
-          "org.gradle.api.artifacts.Configuration;resolvableMetadataConfiguration": "configuration \u0027:kmpFirstLib:androidTestResolvableDependenciesMetadata\u0027"
+          "org.gradle.api.artifacts.Configuration;resolvableMetadataConfiguration": "configuration \u0027:kmpFirstLib:androidUnitTestResolvableDependenciesMetadata\u0027"
         }
       },
       "allSourceSets": [
         {
-          "sourceSetName": "androidTest"
+          "sourceSetName": "androidUnitTest"
         },
         {
           "sourceSetName": "commonTest"

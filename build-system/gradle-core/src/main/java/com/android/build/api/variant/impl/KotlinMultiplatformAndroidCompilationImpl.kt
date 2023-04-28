@@ -16,6 +16,8 @@
 
 package com.android.build.api.variant.impl
 
+import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.androidTargetName
+import com.android.utils.appendCapitalized
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions
@@ -35,6 +37,8 @@ class KotlinMultiplatformAndroidCompilationImpl(
 
 internal enum class KmpPredefinedAndroidCompilation(val compilationName: String) {
     MAIN("main"),
-    TEST("test"),
-    INSTRUMENTED_TEST("instrumentedTest")
+    UNIT_TEST("unitTest"),
+    INSTRUMENTED_TEST("instrumentedTest");
+
+    fun getNamePrefixedWithTarget() = androidTargetName.appendCapitalized(compilationName)
 }

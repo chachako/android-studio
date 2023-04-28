@@ -74,11 +74,11 @@ class KotlinMultiplatformAndroidLintTest {
             """.trimIndent())
 
         // Run twice to catch issues with configuration caching
-        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintKotlinAndroid")
-        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintKotlinAndroid")
+        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
+        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
 
         val reportFile =
-            File(project.getSubproject("kmpFirstLib").buildDir, "reports/lint-results-kotlinAndroid.txt")
+            File(project.getSubproject("kmpFirstLib").buildDir, "reports/lint-results-androidMain.txt")
 
         PathSubject.assertThat(reportFile).exists()
         PathSubject.assertThat(reportFile).containsAllOf(
@@ -101,11 +101,11 @@ class KotlinMultiplatformAndroidLintTest {
             """.trimIndent())
 
         // Run twice to catch issues with configuration caching
-        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintKotlinAndroid")
-        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintKotlinAndroid")
+        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
+        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
 
         val reportFile =
-            File(project.getSubproject("kmpFirstLib").buildDir, "reports/lint-results-kotlinAndroid.txt")
+            File(project.getSubproject("kmpFirstLib").buildDir, "reports/lint-results-androidMain.txt")
 
         PathSubject.assertThat(reportFile).exists()
         PathSubject.assertThat(reportFile).containsAllOf(
@@ -115,7 +115,7 @@ class KotlinMultiplatformAndroidLintTest {
     }
 
     @Test
-    fun `test lint reports error when calling desugared apis in androidTest sourceset`() {
+    fun `test lint reports error when calling desugared apis in android unitTest sourceset`() {
         TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
@@ -133,7 +133,7 @@ class KotlinMultiplatformAndroidLintTest {
         TestFileUtils.addMethod(
             FileUtils.join(
                 project.getSubproject("kmpFirstLib").projectDir,
-                "src", "androidTest", "kotlin", "com", "example", "kmpfirstlib", "KmpAndroidFirstLibClassTest.kt"
+                "src", "androidUnitTest", "kotlin", "com", "example", "kmpfirstlib", "KmpAndroidFirstLibClassTest.kt"
             ),
             """
                 @Test
@@ -143,11 +143,11 @@ class KotlinMultiplatformAndroidLintTest {
             """.trimIndent())
 
         // Run twice to catch issues with configuration caching
-        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintKotlinAndroid")
-        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintKotlinAndroid")
+        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
+        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
 
         val reportFile =
-            File(project.getSubproject("kmpFirstLib").buildDir, "reports/lint-results-kotlinAndroid.txt")
+            File(project.getSubproject("kmpFirstLib").buildDir, "reports/lint-results-androidMain.txt")
 
         PathSubject.assertThat(reportFile).exists()
         PathSubject.assertThat(reportFile).containsAllOf(

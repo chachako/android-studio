@@ -133,7 +133,7 @@
     "coordinates": ":kmpFirstLib",
     "extras": {
       "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;artifactsClasspath": [
-        "build/intermediates/full_jar/kotlinAndroid/full.jar"
+        "build/intermediates/full_jar/androidMain/full.jar"
       ],
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
     }

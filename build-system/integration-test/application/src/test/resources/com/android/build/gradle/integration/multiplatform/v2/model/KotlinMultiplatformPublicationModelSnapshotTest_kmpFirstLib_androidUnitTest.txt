@@ -1,4 +1,4 @@
-@@ -32 +32
+@@ -52 +52
 +       "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug-api.jar"
 +     ],
 +     "coordinates": "com.example:androidLib:1.0",

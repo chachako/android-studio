@@ -24,6 +24,7 @@ import com.android.testutils.apk.Apk
 import com.android.testutils.truth.DexClassSubject
 import com.android.testutils.truth.DexSubject
 import com.android.utils.FileUtils
+import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -81,6 +82,8 @@ class KotlinMultiplatformAndroidDexingTest {
             "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"
         )
 
+        Truth.assertThat(testApk.exists()).isTrue()
+
         Apk(testApk).use { apk ->
             DexClassSubject.assertThat(apk.getClass("Lcom/example/kmpfirstlib/KmpAndroidActivity;"))
                 .hasMethodThatInvokes("getText", "Lj$/util/stream/Stream;->findFirst()Lj$/util/Optional;")
@@ -121,6 +124,8 @@ class KotlinMultiplatformAndroidDexingTest {
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
             "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"
         )
+
+        Truth.assertThat(testApk.exists()).isTrue()
 
         Apk(testApk).use { apk ->
             DexClassSubject.assertThat(apk.getClass("Lcom/example/kmpfirstlib/KmpAndroidActivity;"))
