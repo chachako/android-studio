@@ -24,7 +24,7 @@ echo Fetching Emulator build $build
 /google/data/ro/projects/android/fetch_artifact --bid $build --target emulator-linux_x64 "$linux_zip"
 rm -f *.proto
 unzip -j "$linux_zip" emulator/lib/*.proto
-rm -f "$linux_zip"
+rm -f "$linux_zip" rtc_service.proto
 git add .
 
 printf "Update emulator proto files from emu-master-dev build $build\n\nTest: existing\nBug: N/A\n" > commitmsg.tmp

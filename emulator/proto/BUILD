@@ -26,7 +26,8 @@ android_java_proto_library(
     name = "emulator_java_proto",
     srcs = [
         "emulator_controller.proto",
-        "rtc_service.proto",
+        "ice_config.proto",
+        "rtc_service_v2.proto",
         "snapshot.proto",
         "snapshot_service.proto",
         "ui_controller_service.proto",
