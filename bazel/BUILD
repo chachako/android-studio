@@ -545,13 +545,26 @@ java_library(
     ],
 )
 
-java_binary(
-    name = "local_maven_repository_generator",
+java_library(
+    name = "local_maven_repository_generator_lib",
     srcs = [
         "src/com/android/tools/binaries/LocalMavenRepositoryGenerator.java",
         "src/com/android/tools/repository_generator/BuildFileWriter.java",
         "src/com/android/tools/repository_generator/ResolutionResult.java",
     ],
+    visibility = ["//visibility:private"],
+    deps = [
+        ":json",
+        ":maven",
+        ":utils",
+        "@maven//:com.google.code.findbugs.jsr305",
+        "@maven//:com.google.guava.guava",
+        "@maven//:org.apache.maven.maven-aether-provider",
+    ],
+)
+
+java_binary(
+    name = "local_maven_repository_generator",
     args = ARTIFACTS +
            ["+" + d for d in DATA] + [
         "--repo-path",
@@ -566,13 +579,17 @@ java_binary(
     ],
     main_class = "com.android.tools.binaries.LocalMavenRepositoryGenerator",
     visibility = ["//visibility:public"],
-    deps = [
-        ":json",
-        ":maven",
-        ":utils",
-        "@maven//:com.google.code.findbugs.jsr305",
-        "@maven//:com.google.guava.guava",
-        "@maven//:org.apache.maven.maven-aether-provider",
+    runtime_deps = [
+        ":local_maven_repository_generator_lib",
+    ],
+)
+
+java_binary(
+    name = "local_maven_repository_generator_cli",
+    main_class = "com.android.tools.binaries.LocalMavenRepositoryGenerator",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        ":local_maven_repository_generator_lib",
     ],
 )
 
@@ -586,7 +603,7 @@ coverage_java_test(
     test_class = "com.android.tools.binaries.LocalMavenRepositoryGeneratorTest",
     deps = [
         ":json",
-        ":local_maven_repository_generator",
+        ":local_maven_repository_generator_lib",
         ":maven",
         "//tools/base/testutils:tools.testutils",
         "@maven//:junit.junit",
@@ -616,7 +633,7 @@ coverage_java_test(
     test_class = "com.android.tools.binaries.MavenConsistencyTest",
     deps = [
         ":json",
-        ":local_maven_repository_generator",
+        ":local_maven_repository_generator_lib",
         ":maven",
         "//tools/base/testutils:tools.testutils",
         "@maven//:junit.junit",
