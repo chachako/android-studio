@@ -593,7 +593,8 @@ public final class GradleCoordinate {
      * Returns the version of this coordinate
      *
      * @return the version
-     * @deprecated prefer {@link GradleCoordinate#getLowerBoundVersion()} if possible
+     * @deprecated prefer {@link GradleCoordinate#getLowerBoundVersion()} if possible. See the
+     *     deprecation note on {@link GradleVersion} for alternatives.
      */
     @Deprecated
     @Nullable
