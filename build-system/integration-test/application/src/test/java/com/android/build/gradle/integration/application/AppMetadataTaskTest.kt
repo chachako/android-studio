@@ -21,8 +21,6 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.fixture.app.TestSourceFile
-import com.android.build.gradle.integration.common.utils.getBundleLocation
-import com.android.build.gradle.integration.common.utils.getDebugVariant
 import com.android.build.gradle.internal.tasks.AppMetadataTask
 import com.android.build.gradle.options.StringOption
 import com.android.builder.internal.packaging.IncrementalPackager.APP_METADATA_ENTRY_PATH
@@ -32,9 +30,7 @@ import org.junit.Rule
 import org.junit.Test
 import java.util.Properties
 import java.util.function.Consumer
-import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.bufferedReader
-import kotlin.test.fail
 
 /**
  * Tests for [AppMetadataTask]
@@ -119,7 +115,7 @@ class AppMetadataTaskTest {
     @Test
     fun testAppMetadataInBundle() {
         project.executor().run(":app:bundleDebug")
-        val bundleFile = project.locateBundleFileViaModel()
+        val bundleFile = project.locateBundleFileViaModel("debug", ":app")
         Zip(bundleFile).use {
             assertThat(
                 it.getEntry(
@@ -130,7 +126,6 @@ class AppMetadataTaskTest {
     }
 
 
-    @OptIn(ExperimentalPathApi::class)
     @Test
     fun testAppMetadataWithAgdeVersionInApk() {
         project.executor().with(StringOption.IDE_AGDE_VERSION, "2.72").run(":app:assembleDebug")
@@ -145,11 +140,10 @@ class AppMetadataTaskTest {
         }
     }
 
-    @OptIn(ExperimentalPathApi::class)
     @Test
     fun testAppMetadataWithAgdeVersionInBundle() {
         project.executor().with(StringOption.IDE_AGDE_VERSION, "9.81").run(":app:bundleDebug")
-        val bundleFile = project.locateBundleFileViaModel()
+        val bundleFile = project.locateBundleFileViaModel("debug", ":app")
         Zip(bundleFile).use {
             val metadataFile =
                 it.getEntry(
@@ -162,10 +156,4 @@ class AppMetadataTaskTest {
                 .isEqualTo("9.81")
         }
     }
-
-    private fun GradleTestProject.locateBundleFileViaModel() =
-        modelV2().fetchModels().container.getProject(":app").androidProject
-            ?.getDebugVariant()
-            ?.getBundleLocation()
-            ?: fail("Failed to find app bundle file.")
 }

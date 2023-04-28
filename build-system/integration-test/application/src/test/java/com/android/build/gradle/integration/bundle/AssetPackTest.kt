@@ -19,8 +19,6 @@ package com.android.build.gradle.integration.bundle
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
-import com.android.build.gradle.integration.common.utils.getOutputByName
-import com.android.builder.model.AppBundleProjectBuildOutput
 import com.android.testutils.apk.Zip
 import com.google.common.truth.Truth.assertThat
 import com.android.testutils.truth.PathSubject
@@ -119,33 +117,29 @@ class AssetPackTest {
     fun buildDebugBundle() {
         project.executor().run(":app:bundleDebug")
 
-        val outputAppModel = project.model().fetchContainer(AppBundleProjectBuildOutput::class.java).rootBuildModelMap[":app"]
-
-        val bundleFile = outputAppModel?.getOutputByName("debug")?.bundleFile
+        val bundleFile =  project.locateBundleFileViaModel("debug", ":app")
         PathSubject.assertThat(bundleFile).exists()
 
-        if (bundleFile != null) {
-            Zip(bundleFile).use { bundle ->
-                val bundleContents = bundle.entries
+        Zip(bundleFile).use { bundle ->
+            val bundleContents = bundle.entries
 
-                assertThat(bundleContents.map {it.toString()}).containsAtLeast(
-                    "/assetPackOne/assets/assetFileOne.txt",
-                    "/assetPackOne/manifest/AndroidManifest.xml",
-                    "/assetPackOne/assets.pb",
-                    "/assetPackTwo/assets/assetFileTwo.txt",
-                    "/assetPackTwo/manifest/AndroidManifest.xml",
-                    "/assetPackTwo/assets.pb",
-                    "/assetPackA/assets/assetFileA.txt",
-                    "/assetPackA/manifest/AndroidManifest.xml",
-                    "/assetPackA/assets.pb",
-                    "/assetPackAA/assets/assetFileAA.txt",
-                    "/assetPackAA/manifest/AndroidManifest.xml",
-                    "/assetPackAA/assets.pb",
-                    "/assetPackAB/assets/assetFileAB.txt",
-                    "/assetPackAB/manifest/AndroidManifest.xml",
-                    "/assetPackAB/assets.pb"
-                )
-            }
+            assertThat(bundleContents.map {it.toString()}).containsAtLeast(
+                "/assetPackOne/assets/assetFileOne.txt",
+                "/assetPackOne/manifest/AndroidManifest.xml",
+                "/assetPackOne/assets.pb",
+                "/assetPackTwo/assets/assetFileTwo.txt",
+                "/assetPackTwo/manifest/AndroidManifest.xml",
+                "/assetPackTwo/assets.pb",
+                "/assetPackA/assets/assetFileA.txt",
+                "/assetPackA/manifest/AndroidManifest.xml",
+                "/assetPackA/assets.pb",
+                "/assetPackAA/assets/assetFileAA.txt",
+                "/assetPackAA/manifest/AndroidManifest.xml",
+                "/assetPackAA/assets.pb",
+                "/assetPackAB/assets/assetFileAB.txt",
+                "/assetPackAB/manifest/AndroidManifest.xml",
+                "/assetPackAB/assets.pb"
+            )
         }
     }
 }

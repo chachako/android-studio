@@ -16,15 +16,10 @@
 
 package com.android.build.gradle.integration.bundle
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.fixture.app.TestSourceFile
-import com.android.build.gradle.integration.common.utils.getOutputByName
-import com.android.builder.model.AppBundleProjectBuildOutput
-import com.android.builder.model.AppBundleVariantBuildOutput
-import com.android.testutils.apk.Zip
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.testutils.truth.ZipFileSubject
 import com.android.tools.build.libraries.metadata.AppDependencies
@@ -35,7 +30,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.util.zip.ZipFile
-import kotlin.test.fail
 
 /**
  * Tests DSL controlling addition of dependency information to bundles.
@@ -74,7 +68,7 @@ class DependenciesReportDslTest {
     fun testDependenciesFileUnspecifiedDsl() {
         project.addUseAndroidXProperty()
         project.executor().run(":app:bundleRelease")
-        val bundle = getApkFolderOutput("release").bundleFile
+        val bundle = project.locateBundleFileViaModel("release", ":app")
         assertThat(bundle).exists()
         ZipFile(bundle).use {
             val dependenciesFile = it.getEntry("BUNDLE-METADATA/com.android.tools.build.libraries/dependencies.pb")
@@ -103,7 +97,7 @@ class DependenciesReportDslTest {
 
         project.addUseAndroidXProperty()
         project.executor().run(":app:bundleRelease")
-        val bundle = getApkFolderOutput("release").bundleFile
+        val bundle = project.locateBundleFileViaModel("release", ":app")
         assertThat(bundle).exists()
         ZipFile(bundle).use {
             val dependenciesFile = it.getEntry("BUNDLE-METADATA/com.android.tools.build.libraries/dependencies.pb")
@@ -132,20 +126,10 @@ class DependenciesReportDslTest {
 
         project.addUseAndroidXProperty()
         project.executor().run(":app:bundleRelease")
-        val bundle = getApkFolderOutput("release").bundleFile
+        val bundle = project.locateBundleFileViaModel("release", ":app")
         assertThat(bundle).exists()
         ZipFileSubject.assertThat(bundle) {
             it.doesNotContain("BUNDLE-METADATA/com.android.tools.build.libraries/dependencies.pb")
         }
-    }
-
-    private fun getApkFolderOutput(variantName: String): AppBundleVariantBuildOutput {
-        val outputModels = project.model().fetchContainer(AppBundleProjectBuildOutput::class.java)
-
-        val outputAppModel =
-            outputModels.rootBuildModelMap[":app"]
-                ?: fail("Failed to get output model for app module")
-
-        return outputAppModel.getOutputByName(variantName)
     }
 }

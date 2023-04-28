@@ -25,9 +25,6 @@ import com.android.build.gradle.integration.common.truth.ModelContainerSubject
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import com.android.build.gradle.integration.common.utils.getOutputByName
-import com.android.builder.model.AppBundleProjectBuildOutput
-import com.android.builder.model.AppBundleVariantBuildOutput
 import com.android.builder.model.SyncIssue
 import com.android.testutils.AssumeUtil
 import com.android.testutils.TestInputsGenerator
@@ -36,12 +33,10 @@ import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
 import com.android.utils.Pair
 import com.google.common.truth.Truth
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.nio.file.Files
-import kotlin.test.fail
 
 /**
  * Tests using R8 to shrink and obfuscate code in a project with features.
@@ -640,7 +635,7 @@ class MinifyFeaturesTest {
     fun testBundleIsMinified() {
         project.executor().run("bundleMinified")
 
-        val bundleFile = getApkFolderOutput("minified", ":baseModule").bundleFile
+        val bundleFile = project.locateBundleFileViaModel("minified", ":baseModule")
         assertThat(bundleFile).exists()
 
         Aab(bundleFile).use {
@@ -838,18 +833,5 @@ class MinifyFeaturesTest {
                 "minifyEnabled false"
         )
         project.executor().run("assembleMinified")
-    }
-
-    private fun getApkFolderOutput(
-        variantName: String,
-        baseGradlePath: String
-    ): AppBundleVariantBuildOutput {
-        val outputModels = project.model().fetchContainer(AppBundleProjectBuildOutput::class.java)
-
-        val outputAppModel =
-            outputModels.rootBuildModelMap[baseGradlePath]
-                ?: fail("Failed to get output model for $baseGradlePath module")
-
-        return outputAppModel.getOutputByName(variantName)
     }
 }

@@ -32,7 +32,6 @@ import com.android.build.gradle.internal.plugins.VersionCheckPlugin
 import com.android.build.gradle.options.BooleanOption
 import com.android.builder.core.ToolsRevisionUtils
 import com.android.builder.model.AndroidProject
-import com.android.sdklib.SdkVersionInfo
 import com.android.sdklib.internal.project.ProjectProperties
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.OsType
@@ -73,6 +72,8 @@ import java.util.function.Consumer
 import java.util.regex.Pattern
 import java.util.stream.Collectors
 import com.android.SdkConstants.NDK_DEFAULT_VERSION
+import com.android.build.gradle.integration.common.utils.getBundleLocation
+import com.android.build.gradle.integration.common.utils.getVariantByName
 
 /**
  * JUnit4 test rule for integration test.
@@ -1317,6 +1318,15 @@ allprojects { proj ->
     /** Fluent method to get the model.  */
     fun modelV2(): ModelBuilderV2 {
         return applyOptions(ModelBuilderV2(this, projectConnection)).withPerTestPrefsRoot(true)
+    }
+
+    fun locateBundleFileViaModel(variantName: String, projectPath: String): File {
+        val bundleFile = modelV2().fetchModels().container.getProject(projectPath).androidProject
+            ?.getVariantByName(variantName)
+            ?.getBundleLocation()
+
+        return bundleFile
+            ?: throw RuntimeException("Failed to get bundle file for $projectPath module")
     }
 
     private fun <T : BaseGradleExecutor<T>> applyOptions(executor: T): T {
