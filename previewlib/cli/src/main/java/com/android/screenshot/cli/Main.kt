@@ -183,7 +183,7 @@ class Main {
       val psiFile = AndroidPsiUtils.getPsiFileSafely(project.ideaProject!!, vFile.toVirtualFile()!!)
       val annotationEntry = PsiTreeUtil.findChildrenOfType(psiFile, KtAnnotationEntry::class.java).asSequence()
       val annotations = annotationEntry.mapNotNull { it.psiOrParent.toUElementOfType<UAnnotation>() }
-      val uMethods = annotations.mapNotNull { it.getContainingUMethod() }
+      val uMethods = annotations.mapNotNull { it.getContainingUMethod() }.toSet()
       val previewNodes = uMethods.flatMap { runReadAction { getPreviewNodes(it, null, false) } }.filterIsInstance<ComposePreviewElement>().toList()
       return previewNodes
   }

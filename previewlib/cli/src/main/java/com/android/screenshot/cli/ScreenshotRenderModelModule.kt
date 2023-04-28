@@ -17,12 +17,10 @@ package com.android.screenshot.cli
 
 import com.android.ide.common.rendering.api.AssetRepository
 import com.android.tools.idea.model.MergedManifestManager
-import com.android.tools.idea.model.StudioAndroidModuleInfo
 import com.android.tools.idea.projectsystem.getModuleSystem
 import com.android.tools.idea.rendering.RenderMergedManifest
 import com.android.tools.idea.rendering.StudioModuleDependencies
 import com.android.tools.idea.res.AssetRepositoryImpl
-import com.android.tools.idea.res.StudioResourceRepositoryManager
 import com.android.tools.module.AndroidModuleInfo
 import com.android.tools.module.ModuleDependencies
 import com.android.tools.rendering.api.EnvironmentContext

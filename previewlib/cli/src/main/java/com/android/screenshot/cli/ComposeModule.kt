@@ -83,6 +83,11 @@ class ComposeModule(
         val resourceFolderManager = ResourceFolderManager(module)
         Mockito.`when`(module.getService(ResourceFolderManager::class.java))
             .thenReturn(resourceFolderManager)
+
+        // Needed by the Manifest merger
+        val facetManager = Mockito.mock(FacetManager::class.java)
+        Mockito.`when`(facetManager.getFacetByType(AndroidFacet.ID)).thenReturn(facet)
+        Mockito.`when`(module.getComponent(FacetManager::class.java)).thenReturn(facetManager)
         return module
     }
 
@@ -114,7 +119,5 @@ class ComposeModule(
         }
 
     }
-
     override fun getIdeaModule(): Module = module
-
 }

@@ -29,8 +29,10 @@ import com.android.tools.idea.projectsystem.ClassFileFinder
 import com.android.tools.idea.projectsystem.DependencyScopeType
 import com.android.tools.idea.projectsystem.DependencyType
 import com.android.tools.idea.projectsystem.ManifestOverrides
+import com.android.tools.idea.projectsystem.MergedManifestContributors
 import com.android.tools.idea.projectsystem.NamedModuleTemplate
 import com.android.tools.idea.projectsystem.ScopeType
+import com.android.tools.idea.util.toVirtualFile
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.openapi.vfs.VfsUtil
@@ -232,6 +234,20 @@ class ScreenshotAndroidModuleSystem(
 
     override fun getOrCreateSampleDataDirectory(): PathString? {
         return null
+    }
+
+    override fun getMergedManifestContributors(): MergedManifestContributors {
+        var main: VirtualFile? = null
+        var libraryManifest = mutableListOf<VirtualFile>()
+        for(file in composeProject.lintProject.manifestFiles) {
+            if (main == null) {
+                main = file.toVirtualFile()
+            }
+            else {
+                libraryManifest.add(file.toVirtualFile()!!)
+            }
+        }
+        return MergedManifestContributors(main, listOf(), libraryManifest, listOf(),listOf())
     }
 
 }
