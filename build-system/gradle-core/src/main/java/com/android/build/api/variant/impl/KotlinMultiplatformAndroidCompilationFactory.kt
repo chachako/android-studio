@@ -30,6 +30,16 @@ class KotlinMultiplatformAndroidCompilationFactory(
 ): NamedDomainObjectFactory<KotlinMultiplatformAndroidCompilationImpl> {
 
     override fun create(name: String): KotlinMultiplatformAndroidCompilationImpl {
+        if (!KmpPredefinedAndroidCompilation.values().any { it.compilationName == name }) {
+            throw IllegalAccessException(
+                "Kotlin multiplatform android plugin doesn't support creating arbitrary " +
+                        "compilations. Only three types of compilations are supported:\n" +
+                        "  * main compilation (named \"${KmpPredefinedAndroidCompilation.MAIN.compilationName}\"),\n" +
+                        "  * unit test compilation (named \"${KmpPredefinedAndroidCompilation.UNIT_TEST.compilationName}\"),\n" +
+                        "  * instrumented test compilation (named \"${KmpPredefinedAndroidCompilation.INSTRUMENTED_TEST.compilationName}\")."
+            )
+        }
+
         return target.createCompilation {
             compilationName = name
             defaultSourceSet = kotlinExtension.sourceSets.getByName(
