@@ -43,9 +43,7 @@ import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiPrimitiveType
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypeParameter
-import kotlin.reflect.full.declaredMemberProperties
 import org.jetbrains.kotlin.analysis.api.KtStarTypeProjection
-import org.jetbrains.kotlin.analysis.api.KtTypeProjection
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.types.KtDynamicType
 import org.jetbrains.kotlin.analysis.api.types.KtFlexibleType
@@ -329,32 +327,8 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
     private fun KtType.isFlexibleRecursive(): Boolean {
       if (this is KtFlexibleType) return true
       val arguments = (this as? KtNonErrorClassType)?.ownTypeArguments ?: return false
-      return arguments.any {
-        // TODO: we won't need this typecast once studio-sdk moves to kotlinc 1.8.20-Beta or stable.
-        it is KtTypeProjection &&
-          it !is KtStarTypeProjection &&
-          it.type?.isFlexibleRecursive() == true
-      }
+      return arguments.any { it !is KtStarTypeProjection && it.type?.isFlexibleRecursive() == true }
     }
-
-    // TODO: we won't need this extra reflection workaround once studio-sdk moves to kotlinc
-    // 1.8.20-Beta or stable.
-    private val KtNonErrorClassType.ownTypeArguments: List<*>?
-      get() {
-        val klass = KtNonErrorClassType::class
-        val properties = klass.declaredMemberProperties
-        properties
-          .find { it.name == "ownTypeArguments" }
-          ?.let {
-            return it.get(this) as? List<*>
-          }
-        properties
-          .find { it.name == "typeArguments" }
-          ?.let {
-            return it.get(this) as? List<*>
-          }
-        return emptyList<KtTypeProjection>()
-      }
 
     override fun visitField(node: UField) {}
 
