@@ -21,6 +21,7 @@ import com.android.fakeadbserver.ShellProtocolType
 import com.android.fakeadbserver.devicecommandhandlers.DeviceCommandHandler
 import com.android.fakeadbserver.services.ShellCommandOutput
 import com.google.common.base.Charsets
+import kotlinx.coroutines.CoroutineScope
 import java.net.Socket
 
 /**
@@ -34,11 +35,12 @@ abstract class ShellHandler protected constructor(
 ) : DeviceCommandHandler(shellProtocolType.command) {
 
     override fun accept(
-        server: FakeAdbServer,
-        socket: Socket,
-        device: DeviceState,
-        command: String,
-        args: String
+      server: FakeAdbServer,
+      socketScope: CoroutineScope,
+      socket: Socket,
+      device: DeviceState,
+      command: String,
+      args: String
     ): Boolean {
         if (this.command != command) {
             return false

@@ -18,6 +18,7 @@ package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.ProfilerState
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * SPSE: 'Sampling Profiling Streaming End'
@@ -28,7 +29,8 @@ class SpseHandler : DdmPacketHandler {
         device: DeviceState,
         client: ClientState,
         packet: DdmPacket,
-        jdwpHandlerOutput: JdwpHandlerOutput
+        jdwpHandlerOutput: JdwpHandlerOutput,
+        socketScope: CoroutineScope
     ): Boolean {
         client.profilerState.status = ProfilerState.Status.Off
 

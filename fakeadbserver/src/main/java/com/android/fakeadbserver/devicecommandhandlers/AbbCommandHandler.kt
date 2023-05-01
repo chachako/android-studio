@@ -18,6 +18,7 @@ package com.android.fakeadbserver.devicecommandhandlers
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.services.ShellV2Output
+import kotlinx.coroutines.CoroutineScope
 import java.net.Socket
 
 class AbbCommandHandler : DeviceCommandHandler(COMMAND) {
@@ -29,6 +30,7 @@ class AbbCommandHandler : DeviceCommandHandler(COMMAND) {
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
+        socketScope: CoroutineScope,
         socket: Socket,
         device: DeviceState,
         args: String

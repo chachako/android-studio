@@ -19,6 +19,7 @@ import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.statechangehubs.ClientStateChangeHandlerFactory
 import com.android.fakeadbserver.statechangehubs.StateChangeHandlerFactory
+import kotlinx.coroutines.CoroutineScope
 import java.io.IOException
 import java.io.OutputStream
 import java.net.Socket
@@ -32,6 +33,7 @@ class TrackJdwpCommandHandler : DeviceCommandHandler("track-jdwp") {
 
     override fun invoke(
         server: FakeAdbServer,
+        socketScope: CoroutineScope,
         socket: Socket,
         device: DeviceState,
         args: String

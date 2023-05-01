@@ -36,6 +36,7 @@ import java.nio.ByteOrder;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import kotlinx.coroutines.CoroutineScope;
 
 public class FakeDeviceHandler extends DeviceCommandHandler {
     //@GuardedBy("devices")
@@ -56,6 +57,7 @@ public class FakeDeviceHandler extends DeviceCommandHandler {
     @Override
     public boolean accept(
             @NonNull FakeAdbServer server,
+            @NonNull CoroutineScope socketScope,
             @NonNull Socket socket,
             @NonNull DeviceState deviceState,
             @NonNull String command,

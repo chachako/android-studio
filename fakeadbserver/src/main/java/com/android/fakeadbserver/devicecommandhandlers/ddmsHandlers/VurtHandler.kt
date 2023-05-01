@@ -17,16 +17,18 @@ package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
+import kotlinx.coroutines.CoroutineScope
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 class VurtHandler : DdmPacketHandler {
 
     override fun handlePacket(
-      device: DeviceState,
-      client: ClientState,
-      packet: DdmPacket,
-      jdwpHandlerOutput: JdwpHandlerOutput
+        device: DeviceState,
+        client: ClientState,
+        packet: DdmPacket,
+        jdwpHandlerOutput: JdwpHandlerOutput,
+        socketScope: CoroutineScope
     ): Boolean {
         // We only support "capture" view, which is
         // Opcode: 4 bytes

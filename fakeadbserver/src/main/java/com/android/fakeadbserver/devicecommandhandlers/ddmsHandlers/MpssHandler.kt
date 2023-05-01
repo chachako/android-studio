@@ -18,6 +18,7 @@ package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.ProfilerState
+import kotlinx.coroutines.CoroutineScope
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -30,7 +31,8 @@ class MpssHandler : DdmPacketHandler {
         device: DeviceState,
         client: ClientState,
         packet: DdmPacket,
-        jdwpHandlerOutput: JdwpHandlerOutput
+        jdwpHandlerOutput: JdwpHandlerOutput,
+        socketScope: CoroutineScope
     ): Boolean {
         val payload = ByteBuffer.wrap(packet.payload).order(ByteOrder.BIG_ENDIAN)
         @Suppress("UsePropertyAccessSyntax")

@@ -18,10 +18,11 @@ package com.android.fakeadbserver.devicecommandhandlers
 import com.android.fakeadbserver.CommandHandler
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
+import kotlinx.coroutines.CoroutineScope
 import java.net.Socket
 
 /**
- * DeviceComamndHandlers handle commands directed at a device. This includes host-prefix: commands
+ * DeviceCommandHandlers handle commands directed at a device. This includes host-prefix: commands
  * as per the protocol doc, as well as device commands after calling host:transport[-*].
  */
 open class DeviceCommandHandler(@JvmField protected val command: String) : CommandHandler() {
@@ -32,6 +33,7 @@ open class DeviceCommandHandler(@JvmField protected val command: String) : Comma
      */
     open fun accept(
         server: FakeAdbServer,
+        socketScope: CoroutineScope,
         socket: Socket,
         device: DeviceState,
         command: String,
@@ -39,7 +41,7 @@ open class DeviceCommandHandler(@JvmField protected val command: String) : Comma
     ): Boolean {
         return if (this.command == command) {
             try {
-                invoke(server, socket, device, args)
+                invoke(server, socketScope, socket, device, args)
                 true
             } catch (e: NextHandlerException) {
                 // The handler does not want to handle this command
@@ -54,6 +56,7 @@ open class DeviceCommandHandler(@JvmField protected val command: String) : Comma
      */
     open operator fun invoke(
         server: FakeAdbServer,
+        socketScope: CoroutineScope,
         socket: Socket,
         device: DeviceState,
         args: String

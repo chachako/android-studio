@@ -18,11 +18,18 @@ package com.android.fakeadbserver.devicecommandhandlers
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.services.ExecOutput
+import kotlinx.coroutines.CoroutineScope
 import java.net.Socket
 
 class AbbExecCommandHandler : DeviceCommandHandler("abb_exec") {
 
-    override fun invoke(server: FakeAdbServer, socket: Socket, device: DeviceState, args: String) {
+    override fun invoke(
+        server: FakeAdbServer,
+        socketScope: CoroutineScope,
+        socket: Socket,
+        device: DeviceState,
+        args: String
+    ) {
 
         // Acknowledge only if "abb_exec" is supported
         // TODO: Even though it is equivalent to use API level to check for abb_exec the answer

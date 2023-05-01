@@ -19,6 +19,7 @@ import com.android.fakeadbserver.CommandHandler
 import com.android.fakeadbserver.DeviceFileState
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
+import kotlinx.coroutines.CoroutineScope
 import java.io.EOFException
 import java.io.IOException
 import java.io.InputStream
@@ -34,7 +35,13 @@ import java.nio.charset.StandardCharsets.UTF_8
  */
 class SyncCommandHandler : DeviceCommandHandler("sync") {
 
-    override fun invoke(server: FakeAdbServer, socket: Socket, device: DeviceState, args: String) {
+    override fun invoke(
+        server: FakeAdbServer,
+        socketScope: CoroutineScope,
+        socket: Socket,
+        device: DeviceState,
+        args: String
+    ) {
         val output = socket.getOutputStream()
         val input = socket.getInputStream()
 

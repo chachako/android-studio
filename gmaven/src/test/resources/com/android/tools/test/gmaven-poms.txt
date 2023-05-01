@@ -596,6 +596,7 @@ com.android.tools.fakeadbserver:fakeadbserver
     net.sf.kxml:kxml2 (runtime)
     org.jetbrains.kotlin:kotlin-reflect (runtime)
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
+    org.jetbrains.kotlinx:kotlinx-coroutines-core (runtime)
 
 com.android.tools.layoutlib:layoutlib-api
   pomName=Android Tools layoutlib-api

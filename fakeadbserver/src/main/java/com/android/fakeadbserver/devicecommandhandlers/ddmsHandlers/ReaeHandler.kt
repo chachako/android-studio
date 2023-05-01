@@ -17,6 +17,7 @@ package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
+import kotlinx.coroutines.CoroutineScope
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -26,7 +27,8 @@ class ReaeHandler : DdmPacketHandler {
         device: DeviceState,
         client: ClientState,
         packet: DdmPacket,
-        jdwpHandlerOutput: JdwpHandlerOutput
+        jdwpHandlerOutput: JdwpHandlerOutput,
+        socketScope: CoroutineScope
     ): Boolean {
 
         val payload = ByteBuffer.wrap(packet.payload).order(ByteOrder.BIG_ENDIAN)

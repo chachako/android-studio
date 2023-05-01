@@ -17,6 +17,7 @@ package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
+import kotlinx.coroutines.CoroutineScope
 
 fun interface DdmPacketHandler {
 
@@ -27,6 +28,7 @@ fun interface DdmPacketHandler {
      * @param client The client associated with the connection
      * @param packet The packet that is being handled
      * @param jdwpHandlerOutput The stream to write the response to
+     * @param socketScope CoroutineScope with a lifecycle of a client socket
      * @return If true the fake debugger should continue accepting packets, if false it should
      * terminate the session
      */
@@ -34,7 +36,8 @@ fun interface DdmPacketHandler {
         device: DeviceState,
         client: ClientState,
         packet: DdmPacket,
-        jdwpHandlerOutput: JdwpHandlerOutput
+        jdwpHandlerOutput: JdwpHandlerOutput,
+        socketScope: CoroutineScope
     ): Boolean
 
     fun replyDdmFail(jdwpHandlerOutput: JdwpHandlerOutput, packetId: Int) {

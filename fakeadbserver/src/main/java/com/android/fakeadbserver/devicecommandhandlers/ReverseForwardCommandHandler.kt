@@ -18,6 +18,7 @@ package com.android.fakeadbserver.devicecommandhandlers
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.PortForwarder
+import kotlinx.coroutines.CoroutineScope
 import java.net.Socket
 import java.nio.charset.StandardCharsets
 
@@ -28,6 +29,7 @@ internal class ReverseForwardCommandHandler : DeviceCommandHandler("reverse") {
 
     override fun invoke(
         server: FakeAdbServer,
+        socketScope: CoroutineScope,
         socket: Socket,
         device: DeviceState,
         args: String

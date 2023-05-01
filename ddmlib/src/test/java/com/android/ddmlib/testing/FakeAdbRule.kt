@@ -26,6 +26,7 @@ import com.android.fakeadbserver.devicecommandhandlers.DeviceCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.HostCommandHandler
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.Uninterruptibles
+import kotlinx.coroutines.CoroutineScope
 import org.junit.rules.ExternalResource
 import java.net.Socket
 import java.util.concurrent.CountDownLatch
@@ -53,7 +54,14 @@ class FakeAdbRule : ExternalResource() {
   private val hostCommandHandlers: MutableMap<String, () -> HostCommandHandler> = mutableMapOf()
   private val deviceCommandHandlers: MutableList<DeviceCommandHandler> = mutableListOf(
     object : DeviceCommandHandler("track-jdwp") {
-      override fun accept(server: FakeAdbServer, socket: Socket, device: DeviceState, command: String, args: String): Boolean {
+      override fun accept(
+          server: FakeAdbServer,
+          socketScope: CoroutineScope,
+          socket: Socket,
+          device: DeviceState,
+          command: String,
+          args: String
+      ): Boolean {
         startingDevices[device.deviceId]?.countDown()
         return false
       }

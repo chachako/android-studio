@@ -18,6 +18,7 @@ package com.android.fakeadbserver.devicecommandhandlers
 import com.android.fakeadbserver.CommandHandler
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
+import kotlinx.coroutines.CoroutineScope
 import java.net.Socket
 import java.nio.charset.StandardCharsets
 
@@ -26,7 +27,13 @@ import java.nio.charset.StandardCharsets
  */
 class FakeSyncCommandHandler : DeviceCommandHandler("sync") {
 
-    override fun invoke(server: FakeAdbServer, socket: Socket, device: DeviceState, args: String) {
+    override fun invoke(
+        server: FakeAdbServer,
+        socketScope: CoroutineScope,
+        socket: Socket,
+        device: DeviceState,
+        args: String
+    ) {
         val output = socket.getOutputStream()
         // Sync used for transferring files. Newly created emulator devices should not fail to handle this command.
         CommandHandler.writeOkay(output)

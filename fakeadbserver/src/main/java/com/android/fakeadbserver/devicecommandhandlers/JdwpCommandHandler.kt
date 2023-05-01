@@ -46,6 +46,7 @@ import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.SpssHandler
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.VulwHandler
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.VuopHandler
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.VurtHandler
+import kotlinx.coroutines.CoroutineScope
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -95,6 +96,7 @@ class JdwpCommandHandler : DeviceCommandHandler("jdwp") {
 
     override fun invoke(
         server: FakeAdbServer,
+        socketScope: CoroutineScope,
         socket: Socket,
         device: DeviceState,
         args: String
@@ -137,7 +139,7 @@ class JdwpCommandHandler : DeviceCommandHandler("jdwp") {
             }
         }
         try {
-            jdwpLoop(device, client, iStream, oStream)
+            jdwpLoop(device, client, iStream, oStream, socketScope)
         } finally {
             client.stopJdwpSession()
         }
@@ -147,7 +149,8 @@ class JdwpCommandHandler : DeviceCommandHandler("jdwp") {
         device: DeviceState,
         client: ClientState,
         iStream: InputStream,
-        oStream: OutputStream
+        oStream: OutputStream,
+        socketScope: CoroutineScope
     ) {
         try {
             writeOkay(oStream)
@@ -176,12 +179,13 @@ class JdwpCommandHandler : DeviceCommandHandler("jdwp") {
 
         // default - ignore the packet and keep listening
         val defaultDdmHandler =
-            DdmPacketHandler { device1: DeviceState, client1: ClientState, packet1: DdmPacket, jdwpHandlerOutput: JdwpHandlerOutput ->
+            DdmPacketHandler { device1: DeviceState, client1: ClientState, packet1: DdmPacket, jdwpHandlerOutput: JdwpHandlerOutput, socketScope: CoroutineScope ->
                 handleUnknownDdmsPacket(
                     device1,
                     client1,
                     packet1,
-                    jdwpHandlerOutput
+                    jdwpHandlerOutput,
+                    socketScope
                 )
             }
         val defaultJdwpHandler =
@@ -203,7 +207,7 @@ class JdwpCommandHandler : DeviceCommandHandler("jdwp") {
                     val ddmPacket = fromJdwpPacket(packet)
                     ddmPacketHandlers
                         .getOrDefault(ddmPacket.chunkType, defaultDdmHandler)
-                        .handlePacket(device, client, ddmPacket, jdwpHandlerOutput)
+                        .handlePacket(device, client, ddmPacket, jdwpHandlerOutput, socketScope)
                 } else {
                     val commandId = JdwpCommandId(packet.cmdSet, packet.cmd)
                     jdwpPacketHandlers
@@ -234,7 +238,8 @@ class JdwpCommandHandler : DeviceCommandHandler("jdwp") {
         device: DeviceState,
         client: ClientState,
         packet: DdmPacket,
-        jdwpHandlerOutput: JdwpHandlerOutput
+        jdwpHandlerOutput: JdwpHandlerOutput,
+        socketScope: CoroutineScope
     ): Boolean {
         System.err.printf(
             "FakeAdbServer: Unsupported DDMS command: '%s'%n",

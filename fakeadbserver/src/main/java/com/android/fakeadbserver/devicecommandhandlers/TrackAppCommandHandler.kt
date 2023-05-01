@@ -23,6 +23,7 @@ import com.android.fakeadbserver.statechangehubs.ClientStateChangeHandlerFactory
 import com.android.fakeadbserver.statechangehubs.StateChangeHandlerFactory
 import com.android.server.adb.protos.AppProcessesProto
 import com.android.server.adb.protos.AppProcessesProto.ProcessEntry
+import kotlinx.coroutines.CoroutineScope
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.net.Socket
@@ -37,6 +38,7 @@ class TrackAppCommandHandler : DeviceCommandHandler("track-app") {
 
     override fun invoke(
         server: FakeAdbServer,
+        socketScope: CoroutineScope,
         socket: Socket,
         device: DeviceState,
         args: String

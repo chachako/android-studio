@@ -17,10 +17,11 @@ package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.IOException
 import java.nio.ByteBuffer
-import java.util.Timer
-import kotlin.concurrent.schedule
 
 class HeloHandler : DdmPacketHandler {
 
@@ -28,7 +29,8 @@ class HeloHandler : DdmPacketHandler {
         device: DeviceState,
         client: ClientState,
         packet: DdmPacket,
-        jdwpHandlerOutput: JdwpHandlerOutput
+        jdwpHandlerOutput: JdwpHandlerOutput,
+        socketScope: CoroutineScope
     ): Boolean {
         // ADB has an issue of reporting the process name instead of the real not reporting the real package name.
         val appName = client.processName
@@ -162,13 +164,12 @@ class HeloHandler : DdmPacketHandler {
             }
         }
 
-        var delayStagCommand = 0L
+        var totalDelayStagCommand = 0L
         for (sendStagCommandDelay in client.sendStagCommandAfterHelo) {
-            delayStagCommand += sendStagCommandDelay.toMillis()
-            Timer(
-                "STAG(at $delayStagCommand ms)",
-                true
-            ).schedule(delayStagCommand) {
+            totalDelayStagCommand += sendStagCommandDelay.toMillis()
+            val delayStagCommand = totalDelayStagCommand
+            socketScope.launch {
+                delay(delayStagCommand)
                 val stage =
                     client.stage
                         ?: throw IllegalStateException("'stage' must be set before its used")
