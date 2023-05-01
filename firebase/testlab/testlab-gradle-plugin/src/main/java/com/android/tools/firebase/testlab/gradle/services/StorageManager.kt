@@ -16,6 +16,7 @@
 
 package com.android.tools.firebase.testlab.gradle.services
 
+import com.android.tools.firebase.testlab.gradle.services.storage.TestRunStorage
 import com.google.api.client.http.InputStreamContent
 import com.google.api.services.storage.Storage
 import com.google.api.services.storage.model.StorageObject
@@ -23,19 +24,26 @@ import java.io.File
 import java.io.FileInputStream
 
 /**
- * Handles upload and download of files to cloud for an individual test run
- *
- * @param testRunId the uuid that is associated with the test run
- * @param bucketName a unique id associated with all test files in this module
- * @param storageClient the storage connection that will handle all storage requests.
+ * class to handle all [Storage] related requests made by the [TestLabBuildService]
  */
-class TestRunStorage (
-    private val testRunId: String,
-    private val bucketName: String,
-    private val storageClient: Storage) {
+class StorageManager (
+    private val storageClient: Storage
+) {
 
-    fun uploadToStorage(file: File): StorageObject =
-        FileInputStream(file).use { fileInputStream ->
+    companion object {
+        val cloudStorageUrlRegex = Regex("""gs://(.*?)/(.*)""")
+    }
+
+    fun testRunStorage(testRunId: String, bucketName: String, historyId: String): TestRunStorage =
+        TestRunStorage(
+            testRunId,
+            bucketName,
+            historyId,
+            this
+        )
+
+    fun uploadFile(file: File, bucketName: String, prefix: String): StorageObject {
+        val storageObject = FileInputStream(file).use { fileInputStream ->
             storageClient.objects().insert(
                 bucketName,
                 StorageObject(),
@@ -43,14 +51,23 @@ class TestRunStorage (
                     length = file.length()
                 }
             ).apply {
-                name = "${testRunId}_${file.name}"
+                name = "$prefix${file.name}"
             }.execute()
         }
+        return storageObject
+    }
 
-    fun downloadFromStorage(fileUri: String, destination: (objectName: String) -> File): File? {
+    fun downloadFile(storageObject: StorageObject, destination: (objectName: String) -> File): File? =
+        download(storageObject.bucket, storageObject.name, destination(storageObject.name))
+
+    fun downloadFile(fileUri: String, destination: (objectName: String) -> File): File? {
         val matchResult = cloudStorageUrlRegex.find(fileUri) ?: return null
         val (bucketName, objectName) = matchResult.destructured
-        return destination(objectName.removePrefix("$testRunId/")).apply {
+        return download(bucketName, objectName, destination(objectName))
+    }
+
+    private fun download(bucketName: String, objectName: String, destination: File): File? =
+        destination.apply {
             parentFile.mkdirs()
             outputStream().use {
                 storageClient.objects()
@@ -58,9 +75,6 @@ class TestRunStorage (
                     .executeMediaAndDownloadTo(it)
             }
         }
-    }
-
-    companion object {
-        val cloudStorageUrlRegex = Regex("""gs://(.*?)/(.*)""")
-    }
 }
+
+fun StorageObject.toUrl() = "gs://$bucket/$name"

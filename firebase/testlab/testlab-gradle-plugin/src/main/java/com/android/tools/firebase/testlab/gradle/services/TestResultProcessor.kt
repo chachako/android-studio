@@ -17,6 +17,7 @@
 package com.android.tools.firebase.testlab.gradle.services
 
 import com.android.tools.firebase.testlab.gradle.services.ToolResultsManager.TestCases
+import com.android.tools.firebase.testlab.gradle.services.storage.TestRunStorage
 import com.google.api.services.toolresults.model.FileReference
 import com.google.api.services.toolresults.model.Image
 import com.google.api.services.toolresults.model.Step
@@ -255,7 +256,7 @@ class TestResultProcessor(
                     if (testMethod != null || qualifiedName != null) {
                         testCase = TestCaseProto.TestCase.newBuilder().apply {
                             if (qualifiedName != null) {
-                                testClass = qualifiedName.split(".")?.last()
+                                testClass = qualifiedName.split(".").last()
                                 testPackage = qualifiedName.dropLast(testClass.length + 1)
                             }
                             this.testMethod = testMethod

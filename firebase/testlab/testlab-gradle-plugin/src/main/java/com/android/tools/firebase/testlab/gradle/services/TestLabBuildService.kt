@@ -18,44 +18,27 @@ package com.android.tools.firebase.testlab.gradle.services
 
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.instrumentation.StaticTestData
-import com.android.builder.testing.api.DeviceConfigProvider
-import com.android.tools.firebase.testlab.gradle.FixtureImpl
 import com.android.tools.firebase.testlab.gradle.ManagedDeviceImpl
 import com.android.tools.firebase.testlab.gradle.UtpTestSuiteResultMerger
-import com.android.tools.utp.plugins.host.device.info.proto.AndroidTestDeviceInfoProto
+import com.android.tools.firebase.testlab.gradle.services.testrunner.ProjectSettings
+import com.android.tools.firebase.testlab.gradle.services.testrunner.TestDeviceData
+import com.android.tools.firebase.testlab.gradle.services.testrunner.TestRunner
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.googleapis.util.Utils
-import com.google.api.client.http.GenericUrl
 import com.google.api.client.http.HttpRequestFactory
 import com.google.api.client.http.HttpRequestInitializer
 import com.google.api.client.http.HttpTransport
 import com.google.api.client.json.GenericJson
 import com.google.api.client.json.JsonObjectParser
 import com.google.api.client.json.jackson2.JacksonFactory
-import com.google.api.client.util.Key
 import com.google.api.services.storage.Storage
 import com.google.api.services.testing.Testing
-import com.google.api.services.testing.model.AndroidDevice
 import com.google.api.services.testing.model.AndroidDeviceCatalog
-import com.google.api.services.testing.model.AndroidDeviceList
-import com.google.api.services.testing.model.AndroidInstrumentationTest
 import com.google.api.services.testing.model.AndroidModel
-import com.google.api.services.testing.model.ClientInfo
-import com.google.api.services.testing.model.DeviceFile
-import com.google.api.services.testing.model.EnvironmentMatrix
-import com.google.api.services.testing.model.GoogleCloudStorage
-import com.google.api.services.testing.model.RegularFile
-import com.google.api.services.testing.model.ResultStorage
-import com.google.api.services.testing.model.TestExecution
-import com.google.api.services.testing.model.TestMatrix
-import com.google.api.services.testing.model.TestSetup
-import com.google.api.services.testing.model.TestSpecification
-import com.google.api.services.testing.model.ToolResultsHistory
 import com.google.api.services.toolresults.ToolResults
 import com.google.common.annotations.VisibleForTesting
 import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
-import com.google.testing.platform.proto.api.core.TestStatusProto.TestStatus
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ConfigurationContainer
@@ -68,20 +51,12 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
-import org.w3c.dom.Element
-import org.w3c.dom.Node
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.FileOutputStream
 import java.nio.charset.StandardCharsets
 import java.util.Locale
 import java.util.UUID
 import java.util.logging.Level
 import java.util.logging.Logger
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
 
 /**
  * A Gradle Build service that provides APIs to talk to the Firebase Test Lab backend server.
@@ -94,41 +69,19 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
     }
 
     companion object {
-        const val TEST_RESULT_PB_FILE_NAME = "test-result.pb"
         const val CLIENT_APPLICATION_NAME: String = "Firebase TestLab Gradle Plugin"
         const val xGoogUserProjectHeaderKey: String = "X-Goog-User-Project"
-
-        const val INSTRUMENTATION_TEST_SHARD_FIELD = "shardingOption"
-        const val TEST_MATRIX_FLAKY_TEST_ATTEMPTS_FIELD = "flakyTestAttempts"
-        const val TEST_MATRIX_FAIL_FAST_FIELD = "failFast"
 
         const val CHECK_TEST_STATE_WAIT_MS = 10 * 1000L;
 
         private const val STUB_APP_CONFIG_NAME: String =
                 "_internal-test-lab-gradle-plugin-configuration-stub-app"
-        private const val STUB_APP_NAME: String = "androidx.test.services"
 
         val oauthScope = listOf(
                 // Scope for Cloud Tool Results API and Cloud Testing API.
                 "https://www.googleapis.com/auth/cloud-platform",
         )
-
-        class UniformSharding: GenericJson() {
-            @Key var numShards: Int? = null
-        }
-
-        class SmartSharding: GenericJson() {
-            @Key var targetedShardDuration: String? = null
-        }
-
-        class ShardingOption: GenericJson() {
-            @Key var uniformSharding: UniformSharding? = null
-
-            @Key var smartSharding: SmartSharding? = null
-        }
     }
-
-    private val logger = Logging.getLogger(this.javaClass)
 
     /**
      * Parameters of [TestLabBuildService].
@@ -205,6 +158,51 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         )
     }
 
+    private val storageManager: StorageManager by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        StorageManager(
+            Storage.Builder(
+                httpTransport,
+                jacksonFactory,
+                httpRequestInitializer
+            ).apply {
+                applicationName = CLIENT_APPLICATION_NAME
+            }.build()
+        )
+    }
+
+    private val testRunner: TestRunner by lazy(LazyThreadSafetyMode.NONE) {
+        TestRunner(
+            ProjectSettings(
+                name = parameters.quotaProjectName.get(),
+                storageBucket = parameters.cloudStorageBucket.orNull.let {
+                    if (it.isNullOrBlank()) { null } else { it }
+                },
+                testHistoryName = parameters.resultsHistoryName.orNull.let {
+                    if (it.isNullOrBlank()) { null } else { it }
+                },
+                grantedPermissions = parameters.grantedPermissions.orNull,
+                networkProfile = parameters.networkProfile.orNull.let {
+                    if (it.isNullOrBlank()) { null } else { it }
+                },
+                extraDeviceFiles = parameters.extraDeviceFiles.get(),
+                directoriesToPull = parameters.directoriesToPull.get(),
+                useOrchestrator = parameters.useOrchestrator.get(),
+                ftlTimeoutSeconds = parameters.timeoutMinutes.get() * 60,
+                performanceMetrics = parameters.performanceMetrics.get(),
+                videoRecording = parameters.recordVideo.get(),
+                maxTestReruns = parameters.maxTestReruns.get(),
+                failFast = parameters.failFast.get(),
+                numUniformShards = parameters.numUniformShards.get(),
+                targetedShardDurationSeconds = parameters.targetedShardDurationMinutes.get() * 60,
+                stubAppApk = parameters.stubAppApk.asFile.get()
+            ),
+            toolResultsManager,
+            testingManager,
+            storageManager,
+            testResultProcessor
+        )
+    }
+
     fun runTestsOnDevice(
         deviceName: String,
         deviceId: String,
@@ -216,355 +214,33 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         resultsOutDir: File,
         projectPath: String,
         variantName: String,
-    ): ArrayList<FtlTestRunResult> {
+    ): List<FtlTestRunResult> {
         resultsOutDir.apply {
             if (!exists()) {
                 mkdirs()
             }
         }
 
-        val projectName = parameters.quotaProjectName.get()
-        val runRequestId = UUID.randomUUID().toString()
-
-        val initSettingsResult = toolResultsManager.initializeSettings(projectName)
-        val bucketName = parameters.cloudStorageBucket.orNull?.ifBlank { null }
-                ?: initSettingsResult.defaultBucket
-
-        val testRunStorage = TestRunStorage(
-            runRequestId,
-            bucketName,
-            Storage.Builder(
-                httpTransport,
-                jacksonFactory,
-                httpRequestInitializer
-            ).apply {
-                applicationName = CLIENT_APPLICATION_NAME
-            }.build())
-
-        val testApkStorageObject = testRunStorage.uploadToStorage(testData.testApk)
-
-        val configProvider = createConfigProvider(
-            ftlDeviceModel, deviceLocale, deviceApiLevel
+        val deviceData = TestDeviceData(
+            name = deviceName,
+            deviceId = deviceId,
+            apiLevel = deviceApiLevel,
+            locale = deviceLocale,
+            orientation = deviceOrientation,
+            ftlModel = ftlDeviceModel
         )
 
-        // If tested apk is null, this is a self-instrument test (e.g. library module).
-        val testedApkFile = testData.testedApkFinder(configProvider).firstOrNull()
-        val appApkStorageObject = testRunStorage.uploadToStorage(
-            testedApkFile ?: parameters.stubAppApk.asFile.get())
-        val useStubApp = testedApkFile == null
-
-        val testHistoryName = parameters.resultsHistoryName.getOrElse("").ifBlank {
-            testData.testedApplicationId ?: testData.applicationId
-        }
-        val historyId = toolResultsManager.getOrCreateHistory(projectName, testHistoryName)
-
-        val testMatrix = TestMatrix().apply {
-            projectId = projectName
-            clientInfo = ClientInfo().apply {
-                name = CLIENT_APPLICATION_NAME
-            }
-            testSpecification = TestSpecification().apply {
-                testSetup = TestSetup().apply {
-                    set("dontAutograntPermissions", parameters.grantedPermissions.orNull ==
-                            FixtureImpl.GrantedPermissions.NONE.name)
-                    if(parameters.networkProfile.getOrElse("").isNotBlank()) {
-                        networkProfile = parameters.networkProfile.get()
-                    }
-                    filesToPush = mutableListOf()
-                    parameters.extraDeviceFiles.get().forEach { (onDevicePath, filePath) ->
-                        val gcsFilePath = if (filePath.startsWith("gs://")) {
-                            filePath
-                        } else {
-                            val file = File(filePath)
-                            check(file.exists()) { "$filePath doesn't exist." }
-                            check(file.isFile) { "$filePath must be file." }
-                            val storageObject = testRunStorage.uploadToStorage(file)
-                            "gs://$bucketName/${storageObject.name}"
-                        }
-                        filesToPush.add(DeviceFile().apply {
-                            regularFile = RegularFile().apply {
-                                content = com.google.api.services.testing.model.FileReference().apply {
-                                    gcsPath = gcsFilePath
-                                }
-                                devicePath = onDevicePath
-                            }
-                        })
-                    }
-
-                    directoriesToPull = parameters.directoriesToPull.get()
-                }
-                androidInstrumentationTest = AndroidInstrumentationTest().apply {
-                    testApk = com.google.api.services.testing.model.FileReference().apply {
-                        gcsPath = "gs://$bucketName/${testApkStorageObject.name}"
-                    }
-                    appApk = com.google.api.services.testing.model.FileReference().apply {
-                        gcsPath = "gs://$bucketName/${appApkStorageObject.name}"
-                    }
-                    appPackageId = if (useStubApp) {
-                        STUB_APP_NAME
-                    } else {
-                        testData.testedApplicationId
-                    }
-                    testPackageId = testData.applicationId
-                    testRunnerClass = testData.instrumentationRunner
-
-                    if(parameters.useOrchestrator.get()) {
-                        orchestratorOption = "USE_ORCHESTRATOR"
-                    }
-
-                    createShardingOption()?.also { sharding ->
-                        this.set(INSTRUMENTATION_TEST_SHARD_FIELD, sharding)
-                    }
-                }
-                environmentMatrix = EnvironmentMatrix().apply {
-                    androidDeviceList = AndroidDeviceList().apply {
-                        androidDevices = listOf(
-                            AndroidDevice().apply {
-                                androidModelId = deviceId
-                                androidVersionId = deviceApiLevel.toString()
-                                locale = deviceLocale.toString()
-                                orientation = deviceOrientation.toString().lowercase()
-                            }
-                        )
-                    }
-                }
-                resultStorage = ResultStorage().apply {
-                    googleCloudStorage = GoogleCloudStorage().apply {
-                        gcsPath = "gs://$bucketName/$runRequestId/results"
-                    }
-                    toolResultsHistory = ToolResultsHistory().apply {
-                        projectId = projectName
-                        this.historyId = historyId
-                    }
-                }
-                testTimeout = "${parameters.timeoutMinutes.get() * 60}s"
-                disablePerformanceMetrics = !parameters.performanceMetrics.get()
-                disableVideoRecording = !parameters.recordVideo.get()
-            }
-            set(TEST_MATRIX_FLAKY_TEST_ATTEMPTS_FIELD, parameters.maxTestReruns.get())
-            set(TEST_MATRIX_FAIL_FAST_FIELD, parameters.failFast.get())
-        }
-        val updatedTestMatrix =
-            testingManager.createTestMatrixRun(projectName, testMatrix, runRequestId)
-
-        lateinit var resultTestMatrix: TestMatrix
-        var previousTestMatrixState = ""
-        var printResultsUrl = true
-        while (true) {
-            val latestTestMatrix = testingManager.getTestMatrix(projectName, updatedTestMatrix)
-            if (previousTestMatrixState != latestTestMatrix.state) {
-                previousTestMatrixState = latestTestMatrix.state
-                logger.lifecycle("Firebase TestLab Test execution state: $previousTestMatrixState")
-            }
-            if (printResultsUrl) {
-                val resultsUrl = latestTestMatrix.resultStorage?.get("resultsUrl") as String?
-                if (!resultsUrl.isNullOrBlank()) {
-                    logger.lifecycle(
-                            "Test request for device $deviceName has been submitted to " +
-                                    "Firebase TestLab: $resultsUrl")
-                    printResultsUrl = false
-                }
-            }
-            val testFinished = when (latestTestMatrix.state) {
-                "VALIDATING", "PENDING", "RUNNING" -> false
-                else -> true
-            }
-            logger.info("Test execution: ${latestTestMatrix.state}")
-            if (testFinished) {
-                resultTestMatrix = latestTestMatrix
-                break
-            }
-            Thread.sleep (CHECK_TEST_STATE_WAIT_MS)
-        }
-
-        val deviceInfoFile =
-            createDeviceInfoFile(resultsOutDir, deviceName, deviceId, deviceApiLevel)
-
-        val ftlTestRunResults: ArrayList<FtlTestRunResult> = ArrayList()
-        resultTestMatrix.testExecutions.forEach { testExecution ->
-            if (testExecution.toolResultsStep != null) {
-                val executionStep = toolResultsManager.requestStep(
-                        ToolResultsManager.requestFrom(testExecution.toolResultsStep))
-                executionStep.testExecutionStep.testSuiteOverviews?.forEach { suiteOverview ->
-                    testRunStorage.downloadFromStorage(suiteOverview.xmlSource.fileUri) {
-                        File(resultsOutDir, "TEST-${it.replace("/", "_")}")
-                    }?.also {
-                        updateTestResultXmlFile(it, deviceName, projectPath, variantName)
-                    }
-                }
-            }
-            val testSuiteResult = getTestSuiteResult(
-                resultTestMatrix,
-                testExecution,
-                deviceInfoFile,
-                testRunStorage,
-                resultsOutDir
-            )
-
-            ftlTestRunResults.add(FtlTestRunResult(testSuiteResult.passed(), testSuiteResult))
-        }
-
-        val resultProtos = ftlTestRunResults.mapNotNull(FtlTestRunResult::resultsProto)
-        if (resultProtos.isNotEmpty()) {
-            val resultsMerger = UtpTestSuiteResultMerger()
-            resultProtos.forEach(resultsMerger::merge)
-
-            val mergedTestResultPbFile = File(resultsOutDir, TEST_RESULT_PB_FILE_NAME)
-            mergedTestResultPbFile.outputStream().use {
-                resultsMerger.result.writeTo(it)
-            }
-        }
-
-        return ftlTestRunResults
+        return testRunner.runTests(
+            deviceData,
+            testData,
+            resultsOutDir,
+            projectPath,
+            variantName
+        )
     }
 
     fun catalog(): AndroidDeviceCatalog =
         testingManager.catalog(parameters.quotaProjectName.get())
-
-    private fun createShardingOption(): ShardingOption? = when {
-
-        numUniformShards == 0 && targetedShardDurationMinutes == 0 -> null
-        numUniformShards != 0 && targetedShardDurationMinutes != 0 -> {
-            error("""
-                Only one sharding option should be set for "numUniformShards" or
-                "targetedShardDurationMinutes" in firebaseTestLab.testOptions.execution.
-            """.trimIndent())
-
-        }
-        numUniformShards != 0 -> ShardingOption().apply {
-            uniformSharding = UniformSharding().apply {
-                numShards = numUniformShards
-            }
-        }
-        else -> ShardingOption().apply {
-            smartSharding = SmartSharding().apply {
-                targetedShardDuration = "${targetedShardDurationMinutes * 60}s"
-            }
-        }
-    }
-
-    private fun getTestSuiteResult(
-        testMatrix: TestMatrix,
-        testExecution: TestExecution,
-        deviceInfoFile: File,
-        testRunStorage: TestRunStorage,
-        resultsOutDir: File
-    ): TestSuiteResult {
-
-        val results = testExecution.toolResultsStep
-        return if (results != null) {
-
-            val requestInfo = ToolResultsManager.requestFrom(results)
-
-            testResultProcessor.toUtpResult(
-                resultsOutDir,
-                toolResultsManager.requestStep(requestInfo),
-                toolResultsManager.requestThumbnails(requestInfo)?.thumbnails,
-                testRunStorage,
-                deviceInfoFile,
-                toolResultsManager.requestTestCases(requestInfo),
-                testMatrix.invalidMatrixDetails
-            )
-        } else {
-            testResultProcessor.toUtpResult(
-                testMatrix.invalidMatrixDetails
-            )
-        }
-    }
-
-    private fun createDeviceInfoFile(
-        resultsOutDir: File,
-        deviceName: String,
-        deviceId: String,
-        deviceApiLevel: Int
-    ): File {
-        val deviceInfoFile = File(resultsOutDir, "device-info.pb")
-        val androidTestDeviceInfo = AndroidTestDeviceInfoProto.AndroidTestDeviceInfo.newBuilder()
-            .setName(deviceName)
-            .setApiLevel(deviceApiLevel.toString())
-            .setGradleDslDeviceName(deviceName)
-            .setModel(deviceId)
-            .build()
-        FileOutputStream(deviceInfoFile).use {
-            androidTestDeviceInfo.writeTo(it)
-        }
-        return deviceInfoFile
-    }
-
-    private fun createConfigProvider(
-        ftlDeviceModel: AndroidModel,
-        locale: Locale,
-        apiLevel: Int
-    ): DeviceConfigProvider {
-        return object : DeviceConfigProvider {
-            override fun getConfigFor(abi: String?): String {
-                return requireNotNull(abi)
-            }
-
-            override fun getDensity(): Int = ftlDeviceModel.screenDensity
-
-            override fun getLanguage(): String {
-                return locale.language
-            }
-
-            override fun getRegion(): String? {
-                return locale.country
-            }
-
-            override fun getAbis() = ftlDeviceModel.supportedAbis
-
-            override fun getApiLevel() = apiLevel
-        }
-    }
-
-    private fun updateTestResultXmlFile(
-        xmlFile: File,
-        deviceName: String,
-        projectPath: String,
-        variantName: String,
-    ) {
-        val builder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-        val document = builder.parse(xmlFile)
-        val testSuiteElements = document.getElementsByTagName("testsuite").let { nodeList ->
-            List(nodeList.length) { index ->
-                nodeList.item(index)
-            }
-        }
-        testSuiteElements.forEach { testSuite ->
-            val propertyNode = testSuite.childNodes.let { nodeList ->
-                List(nodeList.length) { index ->
-                    nodeList.item(index)
-                }
-            }.firstOrNull { node ->
-                node.nodeType == Node.ELEMENT_NODE && node.nodeName.lowercase() == "properties"
-            }
-
-            val propertyElement = if (propertyNode == null) {
-                document.createElement("properties").also {
-                    testSuite.appendChild(it)
-                }
-            } else {
-                propertyNode as Element
-            }
-
-            propertyElement.appendChild(document.createElement("property").apply {
-                setAttribute("name", "device")
-                setAttribute("value", deviceName)
-            })
-            propertyElement.appendChild(document.createElement("property").apply {
-                setAttribute("name", "flavor")
-                setAttribute("value", variantName)
-            })
-            propertyElement.appendChild(document.createElement("property").apply {
-                setAttribute("name", "project")
-                setAttribute("value", projectPath)
-            })
-        }
-
-        val transformerFactory = TransformerFactory.newInstance()
-        val transformer = transformerFactory.newTransformer()
-        transformer.transform(DOMSource(document), StreamResult(xmlFile))
-    }
 
     /**
      * An action to register TestLabBuildService to a project.
