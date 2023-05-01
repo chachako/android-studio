@@ -223,10 +223,10 @@ class FullyQualifyNamesTestModeTest {
             public class ApiDetectorTest2 {
                 public enum HealthChangeHandler {
                     LOCATION_MODE_CHANGED(android.location.LocationManager.MODE_CHANGED_ACTION) {
-                        @Override public String toString() { return super.toString(); }
+                        @java.lang.Override public java.lang.String toString() { return super.toString(); }
                     };
 
-                    HealthChangeHandler(String mode) {
+                    HealthChangeHandler(java.lang.String mode) {
                     }
                 }
             }
@@ -234,7 +234,7 @@ class FullyQualifyNamesTestModeTest {
         .trimIndent()
         .trim()
 
-    val expanded = expandKotlin(java)
+    val expanded = expandJava(java)
     assertEquals(expected, expanded)
   }
 
@@ -281,13 +281,13 @@ class FullyQualifyNamesTestModeTest {
                     public void test() {
                         try {
                             thrower();
-                        } catch (CameraAccessException | MediaDrmResetException e) {
+                        } catch (android.hardware.camera2.CameraAccessException | android.media.MediaDrmResetException e) {
                             logger(e.toString());
                         }
                     }
                 }
 
-                private void logger(String e) {
+                private void logger(java.lang.String e) {
                 }
 
                 public void thrower() throws CameraAccessException, MediaDrmResetException {
@@ -298,7 +298,7 @@ class FullyQualifyNamesTestModeTest {
         .trimIndent()
         .trim()
 
-    val expanded = expandKotlin(java)
+    val expanded = expandJava(java)
     assertEquals(expected, expanded)
   }
 
