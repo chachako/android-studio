@@ -575,7 +575,10 @@ class ModelBuilder<
                     dontBuildRuntimeClasspath
                 ),
                 androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
-                    createDependenciesWithAdjacencyList(it, buildMapping, libraryService, graphEdgeCache, dontBuildRuntimeClasspath)
+                    // dontBuildRuntimeClasspath doesn't apply to androidTestArtifacts since their
+                    // runtime classpaths are required by the IDE (for resources) but can't be obtained
+                    // from the apps runtime classpath.
+                    createDependenciesWithAdjacencyList(it, buildMapping, libraryService, graphEdgeCache, false)
                 },
                 unitTestArtifact = (variant as? HasUnitTest)?.unitTest?.let {
                     createDependenciesWithAdjacencyList(it, buildMapping, libraryService, graphEdgeCache, dontBuildRuntimeClasspath)
@@ -594,7 +597,10 @@ class ModelBuilder<
                 dontBuildRuntimeClasspath
             ),
             androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
-                createDependencies(it, buildMapping, libraryService, dontBuildRuntimeClasspath)
+                // dontBuildRuntimeClasspath doesn't apply to androidTestArtifacts since their
+                // runtime classpaths are required by the IDE (for resources) but can't be obtained
+                // from the apps runtime classpath.
+                createDependencies(it, buildMapping, libraryService, false)
             },
             unitTestArtifact = (variant as? HasUnitTest)?.unitTest?.let {
                 createDependencies(it, buildMapping, libraryService, dontBuildRuntimeClasspath)
