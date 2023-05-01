@@ -79,7 +79,6 @@ import com.android.tools.lint.model.LintModelModuleType
 import com.android.tools.lint.model.PathVariables
 import com.android.utils.CharSequences
 import com.android.utils.StdLogger
-import com.google.common.collect.Sets
 import com.intellij.codeInsight.ExternalAnnotationsManager
 import com.intellij.mock.MockProject
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -87,6 +86,15 @@ import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.PsiClass
 import com.intellij.util.lang.UrlClassLoader
+import org.jetbrains.jps.model.java.impl.JavaSdkUtil
+import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys.PERF_MANAGER
+import org.jetbrains.kotlin.cli.common.CommonCompilerPerformanceManager
+import org.jetbrains.kotlin.config.JVMConfigurationKeys
+import org.jetbrains.kotlin.config.LanguageVersionSettings
+import org.jetbrains.kotlin.config.languageVersionSettings
+import org.jetbrains.kotlin.js.inline.util.toIdentitySet
+import org.jetbrains.kotlin.util.PerformanceCounter.Companion.resetAllCounters
+import org.w3c.dom.Document
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -99,14 +107,6 @@ import java.net.URLConnection
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.math.max
-import org.jetbrains.jps.model.java.impl.JavaSdkUtil
-import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys.PERF_MANAGER
-import org.jetbrains.kotlin.cli.common.CommonCompilerPerformanceManager
-import org.jetbrains.kotlin.config.JVMConfigurationKeys
-import org.jetbrains.kotlin.config.LanguageVersionSettings
-import org.jetbrains.kotlin.config.languageVersionSettings
-import org.jetbrains.kotlin.util.PerformanceCounter.Companion.resetAllCounters
-import org.w3c.dom.Document
 
 /**
  * Lint client for command line usage. Supports the flags in [LintCliFlags], and offers text, HTML
@@ -1438,79 +1438,39 @@ open class LintCliClient : LintClient {
       uastEnvironment = env
       return
     }
-    // Initialize the associated idea project to use
-    val includeTests = !flags.isIgnoreTestSources
     val jdkHome: File? = getJdkHomeUnlessJre()
     // knownProject only lists root projects, not dependencies
-    val allProjects = Sets.newIdentityHashSet<Project>()
-    for (project in knownProjects) {
-      allProjects.add(project)
-      allProjects.addAll(project.allLibraries)
-    }
-    val sourceRoots: MutableSet<File> = LinkedHashSet(10)
-    val classpathRoots: MutableSet<File> = LinkedHashSet(50)
-    for (project in allProjects) {
-      // Note that there could be duplicates here since we're including multiple library
-      // dependencies that could have the same dependencies (e.g. lib1 and lib2 both
-      // referencing guava.jar)
-      sourceRoots.addAll(project.javaSourceFolders)
-      if (includeTests) {
-        sourceRoots.addAll(project.testSourceFolders)
+    val allProjects =
+      knownProjects.asSequence().flatMap { sequenceOf(it) + it.allLibraries }.toIdentitySet()
+    val allModules =
+      allProjects.map {
+        UastEnvironment.Module(
+          it,
+          jdkHome,
+          !flags.isIgnoreTestSources,
+          !flags.isIgnoreTestFixturesSources,
+          isUnitTest
+        )
       }
-      sourceRoots.addAll(project.generatedSourceFolders)
-      classpathRoots.addAll(project.getJavaLibraries(true))
-      if (includeTests) {
-        classpathRoots.addAll(project.testLibraries)
-      }
-      if (!flags.isIgnoreTestFixturesSources) {
-        sourceRoots.addAll(project.testFixturesSourceFolders)
-        classpathRoots.addAll(project.testFixturesLibraries)
-      }
+    val maxLevel =
+      knownProjects
+        .asSequence()
+        .map(Project::getJavaLanguageLevel)
+        .fold(LanguageLevel.JDK_1_7, LanguageLevel::coerceAtLeast)
 
-      // Don't include all class folders:
-      //  files.addAll(project.getJavaClassFolders());
-      // These are the outputs from the sources and generated sources, which we will
-      // parse directly with PSI/UAST anyway. Including them here leads lint to do
-      // a lot more work (e.g. when resolving symbols it looks at both .java and .class
-      // matches).
-      // However, we *do* need them for libraries; otherwise, type resolution into
-      // compiled libraries will not work; see
-      // https://issuetracker.google.com/72032121
-      // (We also enable this for unit tests where there is no actual compilation;
-      // here, the presence of class files is simulating binary-only access
-      if (project.isLibrary || isUnitTest) {
-        classpathRoots.addAll(project.javaClassFolders)
-      } else if (project.isGradleProject) {
-        // As of 3.4, R.java is in a special jar file
-        for (f in project.javaClassFolders) {
-          if (f.name == SdkConstants.FN_R_CLASS_JAR) {
-            classpathRoots.add(f)
-          }
-        }
+    for (module in allModules.asSequence()) {
+      for (file in module.allRoots) {
+        // IntelliJ expects absolute file paths, otherwise resolution can fail in subtle ways.
+        require(file.isAbsolute) { "Relative Path found: $file. All paths should be absolute." }
       }
     }
-    getBootClassPath(knownProjects)?.let(classpathRoots::addAll)
-    var maxLevel = LanguageLevel.JDK_1_7
-    for (project in knownProjects) {
-      val level = project.javaLanguageLevel
-      if (maxLevel.isLessThan(level)) {
-        maxLevel = level
-      }
-    }
-
-    for (file in sourceRoots + classpathRoots) {
-      // IntelliJ expects absolute file paths, otherwise resolution can fail in subtle ways.
-      require(file.isAbsolute) { "Relative Path found: $file. All paths should be absolute." }
-    }
-
     val config =
       UastEnvironment.Configuration.create(
         enableKotlinScripting = mayNeedKotlinScripting(allProjects),
         useFirUast = flags.useK2Uast() || useFirUast()
       )
     config.javaLanguageLevel = maxLevel
-    config.addSourceRoots(sourceRoots.toList())
-    config.addClasspathRoots(classpathRoots.toList())
+    config.addModules(allModules, getBootClassPath(knownProjects) ?: setOf())
     config.kotlinCompilerConfig.putIfNotNull(PERF_MANAGER, kotlinPerformanceManager)
     jdkHome?.let {
       config.kotlinCompilerConfig.put(JVMConfigurationKeys.JDK_HOME, it)

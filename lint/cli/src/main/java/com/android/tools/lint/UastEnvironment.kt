@@ -16,7 +16,9 @@
 
 package com.android.tools.lint
 
+import com.android.SdkConstants
 import com.android.SdkConstants.EXT_JAR
+import com.android.tools.lint.detector.api.Project
 import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
@@ -75,10 +77,24 @@ interface UastEnvironment {
         return if (useFirUast) FirUastEnvironment.Configuration.create(enableKotlinScripting)
         else Fe10UastEnvironment.Configuration.create(enableKotlinScripting)
       }
+
+      fun mergeRoots(
+        modules: List<Module>,
+        bootClassPaths: Iterable<File>
+      ): Pair<Set<File>, Set<File>> {
+        fun mergedFiles(prop: (Module) -> Collection<File>) =
+          modules.flatMapTo(mutableSetOf(), prop)
+        val sourceRoots = mergedFiles(Module::sourceRoots)
+        val classPathRoots = mergedFiles(Module::classpathRoots) + bootClassPaths
+        return sourceRoots to classPathRoots
+      }
     }
+
+    fun addModules(modules: List<Module>, bootClassPaths: Iterable<File>)
 
     val kotlinCompilerConfig: CompilerConfiguration
 
+    @Deprecated("Pass real module structure instead of merging them", ReplaceWith("addModules()"))
     fun addSourceRoots(sourceRoots: List<File>) {
       // Note: the Kotlin compiler would normally add KotlinSourceRoots to the configuration
       // too, to be used by KotlinCoreEnvironment when computing the set of KtFiles to
@@ -95,6 +111,10 @@ interface UastEnvironment {
       }
     }
 
+    @Deprecated(
+      "Pass real module structure through [addModules] instead of merging them",
+      ReplaceWith("addModules()")
+    )
     fun addClasspathRoots(classpathRoots: List<File>) {
       kotlinCompilerConfig.addJvmClasspathRoots(classpathRoots)
     }
@@ -153,4 +173,63 @@ interface UastEnvironment {
   fun dispose() {
     Disposer.dispose(projectDisposable)
   }
+
+  class Module(
+    project: Project,
+    val jdkHome: File?,
+    includeTests: Boolean,
+    includeTestFixtureSources: Boolean,
+    isUnitTest: Boolean
+  ) {
+    val isAndroid = project.isAndroidProject
+
+    val sourceRoots: Set<File> =
+      with(project) {
+        // Note that there could be duplicates here since we're including multiple library
+        // dependencies that could have the same dependencies (e.g. lib1 and lib2 both
+        // referencing guava.jar)
+        setFrom(
+          javaSourceFolders,
+          testSourceFolders.takeIf { includeTests },
+          generatedSourceFolders,
+          testFixturesSourceFolders.takeIf { includeTestFixtureSources }
+        )
+      }
+
+    val classpathRoots: Set<File> =
+      with(project) {
+        setFrom(
+          getJavaLibraries(true),
+          testLibraries.takeIf { includeTests },
+          testFixturesLibraries.takeIf { includeTestFixtureSources },
+
+          // Don't include all class folders:
+          //  files.addAll(project.getJavaClassFolders());
+          // These are the outputs from the sources and generated sources, which we will
+          // parse directly with PSI/UAST anyway. Including them here leads lint to do
+          // a lot more work (e.g. when resolving symbols it looks at both .java and .class
+          // matches).
+          // However, we *do* need them for libraries; otherwise, type resolution into
+          // compiled libraries will not work; see
+          // https://issuetracker.google.com/72032121
+          // (We also enable this for unit tests where there is no actual compilation;
+          // here, the presence of class files is simulating binary-only access
+          when {
+            isLibrary || isUnitTest -> javaClassFolders
+            // As of 3.4, R.java is in a special jar file
+            isGradleProject -> javaClassFolders.filter { it.name == SdkConstants.FN_R_CLASS_JAR }
+            else -> null
+          }
+        )
+      }
+
+    val allRoots: Sequence<File>
+      get() = sourceRoots.asSequence() + classpathRoots.asSequence()
+
+    val name = project.name
+  }
 }
+
+// Return set of merged elements in the order they appear
+private fun <T> setFrom(vararg cols: Collection<T>?): Set<T> =
+  cols.asSequence().filterNotNull().flatMapTo(mutableSetOf()) { it }

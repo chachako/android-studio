@@ -16,6 +16,7 @@
 
 package com.android.tools.lint
 
+import com.android.SdkConstants.ANDROID_MANIFEST_XML
 import com.android.SdkConstants.ANDROID_URI
 import com.android.SdkConstants.ATTR_NAME
 import com.android.SdkConstants.FN_PUBLIC_TXT
@@ -31,7 +32,9 @@ import com.android.tools.lint.checks.infrastructure.ProjectDescription
 import com.android.tools.lint.checks.infrastructure.ProjectDescription.Type.LIBRARY
 import com.android.tools.lint.checks.infrastructure.TestFile
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
+import com.android.tools.lint.checks.infrastructure.TestFiles.kt
 import com.android.tools.lint.checks.infrastructure.TestFiles.manifest
+import com.android.tools.lint.checks.infrastructure.TestFiles.source
 import com.android.tools.lint.checks.infrastructure.TestFiles.xml
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
 import com.android.tools.lint.checks.infrastructure.dos2unix
@@ -50,6 +53,8 @@ import kotlin.io.path.isRegularFile
 import kotlin.io.path.readText
 import kotlin.streams.toList
 import org.intellij.lang.annotations.Language
+import org.jetbrains.uast.UastFacade
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.ClassRule
@@ -2423,6 +2428,337 @@ class ProjectInitializerTest {
       null,
       null
     )
+  }
+
+  @Test
+  fun testKMPProjectK2() {
+    val shared =
+      project(
+          kt(
+            "src/commonMain/kotlin/pkg/Platform.kt",
+            """
+            package pkg
+            interface Platform {
+                val name: String
+            }
+            expect fun getPlatform(): Platform
+          """
+              .trimIndent()
+          ),
+          kt(
+            "src/commonMain/kotlin/pkg/Greeting.kt",
+            """
+            package pkg
+            class Greeting {
+                private val platform: Platform = getPlatform()
+            }
+          """
+              .trimIndent()
+          ),
+          kt(
+            "src/androidMain/kotlin/pkg/Platform.kt",
+            """
+            package pkg
+            class AndroidPlatform : Platform {
+                override val name: String = "Android 34"
+            }
+            actual fun getPlatform(): Platform = AndroidPlatform()
+          """
+              .trimIndent()
+          ),
+          kt(
+            "src/iosMain/kotlin/pkg/Platform.kt",
+            """
+            package pkg
+            import platform.UIKit.UIDevice
+            class IOSPlatform: Platform {
+                override val name: String = UIDevice.currentDevice.systemName() + " " + UIDevice.currentDevice.systemVersion
+            }
+            actual fun getPlatform(): Platform = IOSPlatform()
+          """
+              .trimIndent()
+          )
+        )
+        .type(LIBRARY)
+        .name("shared")
+
+    val androidApp =
+      project(
+          source(
+              "src/main/$ANDROID_MANIFEST_XML",
+              """
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+              <uses-permission android:name="android.permission.INTERNET"/>
+
+              <application
+                  android:allowBackup="false"
+                  android:supportsRtl="true"
+                  android:theme="@style/AppTheme">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+        """
+            )
+            .indented(),
+          xml(
+              "src/main/res/values/styles.xml",
+              """
+            <resources>
+                <style name="AppTheme" parent="android:Theme.Material.NoActionBar"/>
+            </resources>
+          """
+            )
+            .indented(),
+          kt(
+              "src/main/java/pkg/android/MainActivity.kt",
+              """
+            package pkg.android
+
+            import android.os.Bundle
+            import androidx.activity.ComponentActivity
+            import androidx.activity.compose.setContent
+            import androidx.compose.foundation.layout.fillMaxSize
+            import androidx.compose.material.*
+            import androidx.compose.runtime.Composable
+            import androidx.compose.ui.Modifier
+            import androidx.compose.ui.tooling.preview.Preview
+            import com.example.kmptest.Greeting
+            import androidx.compose.runtime.*
+
+            class MainActivity : ComponentActivity() {
+                override fun onCreate(savedInstanceState: Bundle?) {
+                    super.onCreate(savedInstanceState)
+                    setContent {
+                        MyApplicationTheme {
+                            Surface(
+                                modifier = Modifier.fillMaxSize(),
+                                color = MaterialTheme.colors.background
+                            ) {
+                                var text by remember { mutableStateOf("Loading") }
+                                LaunchedEffect(true) {
+                                    text = try {
+                                        Greeting().greet()
+                                    } catch (e: Exception) {
+                                        e.localizedMessage ?: "error"
+                                    }
+                                }
+                                GreetingView(text)
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Composable
+            fun GreetingView(text: String) {
+                Text(text = text)
+            }
+
+            @Preview
+            @Composable
+            fun DefaultPreview() {
+                MyApplicationTheme {
+                    GreetingView("Hello, Android!")
+                }
+            }
+          """
+            )
+            .indented(),
+          kt(
+              "src/main/java/pkg/android/MyApplicationTheme.kt",
+              """
+            package pkg.android
+
+            import androidx.compose.foundation.isSystemInDarkTheme
+            import androidx.compose.foundation.shape.RoundedCornerShape
+            import androidx.compose.material.MaterialTheme
+            import androidx.compose.material.Shapes
+            import androidx.compose.material.Typography
+            import androidx.compose.material.darkColors
+            import androidx.compose.material.lightColors
+            import androidx.compose.runtime.Composable
+            import androidx.compose.ui.graphics.Color
+            import androidx.compose.ui.text.TextStyle
+            import androidx.compose.ui.text.font.FontFamily
+            import androidx.compose.ui.text.font.FontWeight
+            import androidx.compose.ui.unit.dp
+            import androidx.compose.ui.unit.sp
+
+            @Composable
+            fun MyApplicationTheme(
+                darkTheme: Boolean = isSystemInDarkTheme(),
+                content: @Composable () -> Unit
+            ) {
+                val colors = if (darkTheme) {
+                    darkColors(
+                        primary = Color(0xFFBB86FC),
+                        primaryVariant = Color(0xFF3700B3),
+                        secondary = Color(0xFF03DAC5)
+                    )
+                } else {
+                    lightColors(
+                        primary = Color(0xFF6200EE),
+                        primaryVariant = Color(0xFF3700B3),
+                        secondary = Color(0xFF03DAC5)
+                    )
+                }
+                val typography = Typography(
+                    body1 = TextStyle(
+                        fontFamily = FontFamily.Default,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 16.sp
+                    )
+                )
+                val shapes = Shapes(
+                    small = RoundedCornerShape(4.dp),
+                    medium = RoundedCornerShape(4.dp),
+                    large = RoundedCornerShape(0.dp)
+                )
+
+                MaterialTheme(
+                    colors = colors,
+                    typography = typography,
+                    shapes = shapes,
+                    content = content
+                )
+            }
+          """
+            )
+            .indented()
+        )
+        .name("androidApp")
+        .dependsOn(shared)
+
+    val iosApp =
+      project(
+          source(
+            "iosApp/ContentView.swift",
+            """
+            import SwiftUI
+            import shared
+
+            struct ContentView: View {
+                @ObservedObject private(set) var viewModel: ViewModel
+
+                var body: some View {
+                    Text(viewModel.text)
+                }
+            }
+
+            extension ContentView {
+                class ViewModel: ObservableObject {
+                    @Published var text = "Loading..."
+                    init() {
+                        Greeting().greet { greeting, error in
+                                    DispatchQueue.main.async {
+                                        if let greeting = greeting {
+                                            self.text = greeting
+                                        } else {
+                                            self.text = error?.localizedDescription ?? "error"
+                                        }
+                                    }
+                                }
+                    }
+                }
+            }
+          """
+              .trimIndent()
+          ),
+          source(
+            "iosApp/iOSApp.swift",
+            """
+            import SwiftUI
+
+            @main
+            struct iOSApp: App {
+              var body: some Scene {
+                WindowGroup {
+                        ContentView(viewModel: ContentView.ViewModel())
+                }
+              }
+            }
+          """
+              .trimIndent()
+          )
+        )
+        .name("iosApp")
+
+    val root = temp.newFolder().canonicalFile.absoluteFile
+    @Language("XML")
+    val descriptor =
+      """
+        <project>
+          <root dir="$root" />
+
+          <module name="androidApp" android="true" library="false" compile-sdk-version='18'>
+            <manifest file="androidApp/src/main/AndroidManifest.xml" />
+            <resource file="androidApp/src/main/res/values/styles.xml" />
+            <src file="androidApp/src/main/java/pkg/android/MainActivity.kt" />
+            <src file="androidApp/src/main/java/pkg/android/MyApplicationTheme.kt" />
+            <dep module="shared" />
+          </module>
+
+          <module name="iosApp" android="false" library="false">
+            <src file="iosApp/iosApp/ContentView.swift" />
+            <src file="iosApp/iosApp/iOSApp.swift" />
+            <dep module="shared" />
+          </module>
+
+          <module name="shared" android="false">
+            <src file="shared/src/commonMain/kotlin/pkg/Platform.kt" />
+            <src file="shared/src/androidMain/kotlin/pkg/Platform.kt" />
+            <src file="shared/src/iosMain/kotlin/pkg/Platform.kt" />
+          </module>
+        </project>
+      """
+        .trimIndent()
+
+    val projects = lint().projects(shared, androidApp, iosApp).createProjects(root)
+    Files.asCharSink(File(root, "project.xml"), Charsets.UTF_8).write(descriptor)
+
+    MainTest.checkDriver(
+      """
+        src/main/AndroidManifest.xml:1: Warning: Should set android:versionCode to specify the application version [MissingVersion]
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+         ~~~~~~~~
+        src/main/AndroidManifest.xml:1: Warning: Should set android:versionName to specify the application version [MissingVersion]
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+         ~~~~~~~~
+        src/main/AndroidManifest.xml:5: Warning: Should explicitly set android:icon, there is no default [MissingApplicationIcon]
+            <application
+             ~~~~~~~~~~~
+        src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion to at least 17 when enabling RTL support [RtlEnabled]
+                android:supportsRtl="true"
+                                     ~~~~
+        0 errors, 4 warnings
+      """,
+      "",
+      ERRNO_SUCCESS,
+      arrayOf("--XuseK2Uast", "--project", File(root, "project.xml").path),
+      { it.replace(root.canonicalPath, "ROOT").replace(root.path, "ROOT").dos2unix() },
+      object : LintListener {
+        override fun update(
+          driver: LintDriver,
+          type: LintListener.EventType,
+          project: Project?,
+          context: Context?
+        ) {}
+      }
+    )
+  }
+
+  @After
+  fun tearDown() {
+    UastEnvironment.disposeApplicationEnvironment()
+    UastFacade.clearCachedPlugin()
   }
 
   companion object {
