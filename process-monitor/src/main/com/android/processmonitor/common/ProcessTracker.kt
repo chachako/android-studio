@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Provides a [Flow] of [ProcessEvent]
  */
-internal interface ProcessTracker {
+internal fun interface ProcessTracker {
 
-    suspend fun trackProcesses(): Flow<ProcessEvent>
+    fun trackProcesses(): Flow<ProcessEvent>
 }

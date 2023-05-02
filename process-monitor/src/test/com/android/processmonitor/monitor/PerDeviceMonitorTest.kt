@@ -120,7 +120,7 @@ class PerDeviceMonitorTest {
             channel.send(event)
         }
 
-        override suspend fun trackProcesses() = channel.consumeAsFlow()
+        override fun trackProcesses() = channel.consumeAsFlow()
     }
 
 }

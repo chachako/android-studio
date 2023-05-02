@@ -61,7 +61,7 @@ internal class AgentProcessTracker(
 
     private val logger = logger.withPrefix("${this::class.simpleName}: $serialNumber: ")
 
-    override suspend fun trackProcesses()
+    override fun trackProcesses()
             : Flow<ProcessEvent> = flow {
         val deviceSelector = DeviceSelector.fromSerialNumber(serialNumber)
         pushAgent(deviceSelector, deviceAbi)

@@ -46,7 +46,7 @@ internal class JdwpProcessTracker(
     private val logger =
         logger.withPrefix("JdwpProcessTracker: ${device.deviceInfo.serialNumber}: ")
 
-    override suspend fun trackProcesses(): Flow<ProcessEvent> {
+    override fun trackProcesses(): Flow<ProcessEvent> {
         return channelFlow {
             val currentPids: MutableSet<Int> = mutableSetOf()
 

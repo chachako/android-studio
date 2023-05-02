@@ -15,26 +15,19 @@
  */
 package com.android.processmonitor.monitor
 
-import com.android.adblib.AdbLogger
 import com.android.processmonitor.common.ProcessEvent
 import com.android.processmonitor.common.ProcessTracker
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.SharingStarted.Companion.Lazily
+import kotlinx.coroutines.flow.shareIn
 
-/** A [ProcessTracker] that doesn't fail on exception */
-internal class SafeProcessTracker(
-    private val delegate: ProcessTracker,
-    private val errorMessage: String,
-    private val logger: AdbLogger
+/** A [ProcessTracker] as a SharedFlow */
+internal class SharedProcessTracker(
+    coroutineScope: CoroutineScope,
+    delegate: ProcessTracker
 ) : ProcessTracker {
 
-    override fun trackProcesses(): Flow<ProcessEvent> {
-        return delegate.trackProcesses().catch {
-            logger.warn(it, errorMessage)
-        }
-    }
-
-    override fun toString(): String {
-        return "SafeProcessTracker(${delegate::class.simpleName})"
-    }
+    private val flow = delegate.trackProcesses().shareIn(coroutineScope, Lazily)
+    override fun trackProcesses(): Flow<ProcessEvent> = flow
 }

@@ -44,7 +44,7 @@ internal class ClientProcessTracker(
 
     private val logger = logger.withPrefix("${this::class.simpleName}: ${device.serialNumber}: ")
 
-    override suspend fun trackProcesses(): Flow<ProcessEvent> {
+    override fun trackProcesses(): Flow<ProcessEvent> {
         val clients = mutableMapOf<Int, Client>()
 
         return callbackFlow {

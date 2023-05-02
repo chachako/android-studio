@@ -31,7 +31,7 @@ class FakeProcessTracker : ProcessTracker, Closeable {
         events.forEach { channel.send(it) }
     }
 
-    override suspend fun trackProcesses(): Flow<ProcessEvent> = channel.consumeAsFlow()
+    override fun trackProcesses(): Flow<ProcessEvent> = channel.consumeAsFlow()
 
     override fun close() {
         channel.close()

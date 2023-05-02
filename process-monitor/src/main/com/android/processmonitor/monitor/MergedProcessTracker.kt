@@ -27,6 +27,6 @@ internal class MergedProcessTracker(
     vararg val trackers: ProcessTracker,
 ) : ProcessTracker {
 
-    override suspend fun trackProcesses(): Flow<ProcessEvent> =
+    override fun trackProcesses(): Flow<ProcessEvent> =
         merge(*trackers.map { it.trackProcesses() }.toTypedArray())
 }

@@ -80,7 +80,7 @@ class SafeProcessTrackerTest {
         vararg val events: ProcessEvent
     ) : ProcessTracker {
 
-        override suspend fun trackProcesses(): Flow<ProcessEvent> {
+        override fun trackProcesses(): Flow<ProcessEvent> {
             return flow {
                 events.forEach {
                     emit(it)

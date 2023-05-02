@@ -19,17 +19,26 @@ import com.android.adblib.testing.FakeAdbLoggerFactory
 import com.android.processmonitor.common.DeviceEvent.DeviceDisconnected
 import com.android.processmonitor.common.DeviceEvent.DeviceOnline
 import com.android.processmonitor.common.DeviceTracker
+import com.android.processmonitor.common.ProcessEvent
 import com.android.processmonitor.common.ProcessEvent.ProcessAdded
 import com.android.processmonitor.common.ProcessEvent.ProcessRemoved
+import com.android.processmonitor.common.ProcessTracker
 import com.android.processmonitor.monitor.ddmlib.FakeDeviceTracker
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import java.util.concurrent.CancellationException
 
 /**
  * Tests for [ProcessNameMonitorImpl]
@@ -121,6 +130,39 @@ class ProcessNameMonitorImplTest {
             advanceUntilIdle()
 
             assertThat(perDeviceMonitor?.scope?.isActive).isFalse()
+        }
+    }
+
+    @Test
+    fun trackDeviceProcesses_multipleTrackers_sharesFlow(): Unit = runTest {
+        val emitted = mutableListOf<ProcessEvent>()
+        val processTrackerFactory = ProcessTrackerFactory<String> {
+            ProcessTracker {
+                flow {
+                    listOf(0, 1).forEach {
+                        val event = ProcessRemoved(it)
+                        emitted.add(event)
+                        emit(event)
+                    }
+                }
+            }
+        }
+
+        FakeDeviceTracker().use { deviceTracker ->
+            val monitor = processNameMonitor(deviceTracker, trackerFactory = processTrackerFactory)
+            deviceTracker.sendDeviceEvents(DeviceOnline("device1"))
+            advanceUntilIdle()
+
+            val job1 = launch { monitor.trackDeviceProcesses("device1").toList() }
+            val job2 = launch { monitor.trackDeviceProcesses("device1").toList() }
+            advanceUntilIdle()
+            job1.cancel()
+            job2.cancel()
+
+            assertThat(emitted).containsExactly(
+                ProcessRemoved(0),
+                ProcessRemoved(1),
+            ).inOrder()
         }
     }
 
