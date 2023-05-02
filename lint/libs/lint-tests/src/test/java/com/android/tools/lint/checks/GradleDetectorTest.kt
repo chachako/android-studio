@@ -7239,9 +7239,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                       .setIsLatestVersion(false)
                       .setVersionLabels(
                         LibraryVersionLabels.newBuilder()
-                          .setNonCompliantIssueInfo(
-                            LibraryVersionLabels.NonCompliantPolicyInfo.newBuilder()
-                          )
+                          .setPolicyIssuesInfo(LibraryVersionLabels.PolicyIssuesInfo.newBuilder())
                       )
                   )
                   // Critical BLOCKING
@@ -7303,9 +7301,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                         LibraryVersionLabels.newBuilder()
                           .setCriticalIssueInfo(LibraryVersionLabels.CriticalIssueInfo.newBuilder())
                           .setOutdatedIssueInfo(LibraryVersionLabels.OutdatedIssueInfo.newBuilder())
-                          .setNonCompliantIssueInfo(
-                            LibraryVersionLabels.NonCompliantPolicyInfo.newBuilder()
-                          )
+                          .setPolicyIssuesInfo(LibraryVersionLabels.PolicyIssuesInfo.newBuilder())
                       )
                   )
               )

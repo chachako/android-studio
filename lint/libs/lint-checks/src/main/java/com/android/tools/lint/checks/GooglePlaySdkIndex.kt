@@ -153,7 +153,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     buildFile: File?
   ): Boolean {
     val isNonCompliant =
-      getLabels(groupId, artifactId, versionString)?.hasNonCompliantIssueInfo() ?: false
+      getLabels(groupId, artifactId, versionString)?.hasPolicyIssuesInfo() ?: false
     if (isNonCompliant) {
       logNonCompliant(groupId, artifactId, versionString, buildFile)
     }
@@ -228,7 +228,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     }
     // Non-compliant issues are always blocking
     val isLibraryNonCompliant =
-      getLabels(groupId, artifactId, versionString)?.hasNonCompliantIssueInfo() ?: false
+      getLabels(groupId, artifactId, versionString)?.hasPolicyIssuesInfo() ?: false
     return showPolicyIssues && isLibraryNonCompliant
   }
 

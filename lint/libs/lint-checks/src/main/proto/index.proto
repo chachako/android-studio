@@ -14,7 +14,6 @@ option java_multiple_files = true;
 //   older clients will still be able to read the messages.
 // - External clients will store a copy of this file in their repo, so any
 //   changes made here also need to be reflected in their code base.
-//   TODO(b/204306325): Document how to update their files.
 // - You should probably avoid adding any dependencies to this file. Since
 //   external clients are built from separate repos, we would have to copy any
 //   dependencies to them as well.
@@ -23,8 +22,7 @@ option java_multiple_files = true;
 message Index {
   // SDKs from the SDK Index, in no particular order.
   // The list doesn't have duplicates, but it's not guaranteed to contain all
-  // SDKs in the Index, since some might not have any relevant data for external
-  // clients.
+  // SDKs in the Index, since some might not have any relevant data.
   repeated Sdk sdks = 1;
 }
 
@@ -33,7 +31,7 @@ message Sdk {
   // Libraries in this SDK, in no particular order.
   // Guaranteed to contain at least one library.
   // This library list is not exhaustive, libraries that don't have relevant
-  // data to external clients will be skipped.
+  // data will be skipped.
   repeated Library libraries = 1;
 
   // Fully qualified URL pointing to the SDK Index page for this SDK.
@@ -41,6 +39,19 @@ message Sdk {
   // https://play.google.com/sdks/details/com-google-android-gms-play-services-ads
   // Required.
   string index_url = 2;
+
+  // The name of the SDK.
+  string sdk_name = 3;
+
+  // The name of the SDK developer/provider.
+  string developer_name = 4;
+
+  // The URL of the SDK's icon.
+  string icon_url = 5;
+
+  // URL with data safety information for this SDK.
+  // May be empty.
+  string data_safety_url = 6;
 }
 
 // Represents a library in the SDK Index.
@@ -51,7 +62,7 @@ message Library {
 
   // Library versions, in no particular order.
   // This version list is not exhaustive, versions that don't have relevant
-  // data for external clients will be skipped.
+  // data will be skipped.
   repeated LibraryVersion versions = 2;
 }
 
@@ -95,15 +106,20 @@ message LibraryVersionLabels {
   // The developer marked this version as outdated.
   OutdatedIssueInfo outdated_issue_info = 2;
   // This version is not complying to Google Play policies.
-  NonCompliantPolicyInfo non_compliant_issue_info = 3;
+  PolicyIssuesInfo policy_issues_info = 3;
 
   enum Severity {
     UNKNOWN_SEVERITY = 0;
+
     // The Play store could stop publishing an app using this library version.
     BLOCKING_SEVERITY = 1;
+
     // This version has the issues outlined on the labels above, but it's not
     // severe enough to block publishing.
     NON_BLOCKING_SEVERITY = 2;
+
+    // This version has no labels and therefore no severity.
+    NO_SEVERITY = 3;
   }
   Severity severity = 4;
 
@@ -111,5 +127,22 @@ message LibraryVersionLabels {
 
   message OutdatedIssueInfo {}
 
-  message NonCompliantPolicyInfo {}
+  message PolicyIssuesInfo {
+    // A type of Google policy. Each violation maps to one
+    // of policies. The list of policies and the mapping can be found in
+    // http://google3/play/sdk/catalog/api/proto/sdk_violation_type.proto.
+    enum SdkPolicy {
+      SDK_POLICY_UNKNOWN = 0;
+      SDK_POLICY_ADS = 1;
+      SDK_POLICY_DEVICE_AND_NETWORK_ABUSE = 2;
+      SDK_POLICY_DECEPTIVE_BEHAVIOR = 3;
+      SDK_POLICY_USER_DATA = 4;
+      SDK_POLICY_PERMISSIONS = 5;
+      SDK_POLICY_MOBILE_UNWANTED_SOFTWARE = 6;
+      SDK_POLICY_MALWARE = 7;
+    }
+    // List of all the Google policies violated by the library version.
+    // Always set.
+    repeated SdkPolicy violated_sdk_policies = 1;
+  }
 }

@@ -81,9 +81,7 @@ class GooglePlaySdkIndexTest {
                     .setIsLatestVersion(false)
                     .setVersionLabels(
                       LibraryVersionLabels.newBuilder()
-                        .setNonCompliantIssueInfo(
-                          LibraryVersionLabels.NonCompliantPolicyInfo.newBuilder()
-                        )
+                        .setPolicyIssuesInfo(LibraryVersionLabels.PolicyIssuesInfo.newBuilder())
                     )
                 )
             )
@@ -123,9 +121,7 @@ class GooglePlaySdkIndexTest {
                       LibraryVersionLabels.newBuilder()
                         .setCriticalIssueInfo(LibraryVersionLabels.CriticalIssueInfo.newBuilder())
                         .setOutdatedIssueInfo(LibraryVersionLabels.OutdatedIssueInfo.newBuilder())
-                        .setNonCompliantIssueInfo(
-                          LibraryVersionLabels.NonCompliantPolicyInfo.newBuilder()
-                        )
+                        .setPolicyIssuesInfo(LibraryVersionLabels.PolicyIssuesInfo.newBuilder())
                     )
                 )
             )
