@@ -52,5 +52,6 @@
     <orderEntry type="module" module-name="android.sdktools.analyzer" />
     <orderEntry type="module" module-name="intellij.android.rendering" />
     <orderEntry type="module" module-name="android.sdktools.resource-repository" />
+    <orderEntry type="module" module-name="analytics-crash" />
   </component>
 </module>

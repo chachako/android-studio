@@ -18,6 +18,8 @@ package com.android.screenshot.cli
 import com.android.ide.common.rendering.api.RenderResources
 import com.android.ide.common.resources.ResourceResolver
 import com.android.ide.common.util.PathString
+import com.android.tools.analytics.crash.CrashReport
+import com.android.tools.analytics.crash.CrashReporter
 import com.android.tools.idea.AndroidPsiUtils
 import com.android.tools.rendering.api.IncludeReference
 import com.android.tools.rendering.api.NavGraphResolver
@@ -29,6 +31,7 @@ import com.android.tools.layoutlib.LayoutlibContext
 import com.android.tools.rendering.IRenderLogger
 import com.android.tools.rendering.RenderProblem
 import com.android.tools.rendering.api.EnvironmentContext
+import com.android.tools.rendering.classloading.ModuleClassLoaderManager
 import com.android.tools.rendering.parsers.RenderXmlFile
 import com.android.tools.rendering.security.RenderSecurityManager
 import com.android.tools.sdk.AndroidPlatform
@@ -36,10 +39,29 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.psi.PsiFile
 import com.intellij.psi.xml.XmlFile
+import org.apache.http.HttpEntity
 import org.jetbrains.android.dom.navigation.getStartDestLayoutId
+import org.jetbrains.android.uipreview.StudioModuleClassLoaderManager
+import java.util.concurrent.CompletableFuture
 
 class ScreenshotEnvironmentContext(private val project: ComposeProject) : EnvironmentContext {
+    private val stubCrashReporter = object : CrashReporter {
+        override fun submit(crashReport: CrashReport): CompletableFuture<String> =
+            CompletableFuture.completedFuture("")
+
+        override fun submit(
+            crashReport: CrashReport,
+            userReported: Boolean
+        ): CompletableFuture<String> = CompletableFuture.completedFuture("")
+
+        override fun submit(kv: MutableMap<String, String>): CompletableFuture<String> =
+            CompletableFuture.completedFuture("")
+
+        override fun submit(entity: HttpEntity): CompletableFuture<String> =
+            CompletableFuture.completedFuture("")
+    }
 
     override val layoutlibContext: LayoutlibContext
         get() = object : LayoutlibContext {
@@ -100,4 +122,13 @@ class ScreenshotEnvironmentContext(private val project: ComposeProject) : Enviro
     ): RenderSecurityManager {
         return RenderSecurityManager(null,null,false)
     }
+
+    // Can be anything, used for RenderErrorContributor
+    override fun getOriginalFile(psiFile: PsiFile): PsiFile = psiFile
+
+    override fun getModuleClassLoaderManager(): ModuleClassLoaderManager {
+        return StudioModuleClassLoaderManager.get()
+    }
+
+    override fun getCrashReporter(): CrashReporter = stubCrashReporter
 }
