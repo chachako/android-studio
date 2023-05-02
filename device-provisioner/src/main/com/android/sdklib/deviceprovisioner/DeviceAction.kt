@@ -138,6 +138,14 @@ interface ReservationAction : DeviceAction {
    */
   suspend fun reserve(duration: Duration): Instant
 
+  /**
+   * Attempts to end the reservation.
+   *
+   * If the operation is successful, the new state should change to [ReservationState.COMPLETE].
+   * Otherwise, a [DeviceActionException] should be thrown with a user-appropriate message.
+   */
+  suspend fun endReservation()
+
   override fun DefaultPresentation.fromContext() = reservationAction
 }
 
