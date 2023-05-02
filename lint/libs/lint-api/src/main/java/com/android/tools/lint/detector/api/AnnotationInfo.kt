@@ -36,6 +36,8 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiPackage
 import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.asJava.elements.KtLightElementBase
+import org.jetbrains.kotlin.asJava.elements.KtLightMember
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UElement
 
@@ -85,6 +87,23 @@ class AnnotationInfo(
       } else {
         annotationOwner
       }
+    // When propagating annotation from property to accessors implicitly,
+    // the owner of the annotation (either LC element or source PSI of [KtProperty]) and
+    // the annotated element of interest (either accessor in terms of [UElement] or its javaPsi)
+    // will never match, but we don't want to determine the annotation as inherited.
+    // Here, for the annotated element, we deliberately go upward one more time via
+    // `lightMemberOrigin` and check if the annotation belongs to the property.
+    if (origin == AnnotationOrigin.PROPERTY || origin == AnnotationOrigin.PROPERTY_DEFAULT) {
+      val ownerOrigin = (ownerPsi as? KtLightElementBase)?.kotlinOrigin ?: ownerPsi
+      val annotatedOrigin = (annotated as? KtLightMember<*>)?.lightMemberOrigin?.originalElement
+      if (ownerOrigin == annotatedOrigin) {
+        return false
+      }
+    }
+    // Handle remaining general cases, e.g.,
+    // ownerPsi == annotated
+    // ownerPsi == (annotated as? UElement)?.sourcePsi
+    // or `annotated` is a compiled Kotlin declaration
     if (ownerPsi is PsiElement) {
       val psiManager = PsiManager.getInstance(ownerPsi.project)
       return !psiManager.areElementsEquivalent(ownerPsi, annotated)
