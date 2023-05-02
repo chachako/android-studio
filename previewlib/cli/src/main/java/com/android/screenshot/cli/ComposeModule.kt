@@ -17,15 +17,9 @@ package com.android.screenshot.cli
 
 import com.android.tools.idea.model.MergedManifestManager
 import com.android.tools.idea.model.MergedManifestModificationTracker
-import com.android.tools.idea.res.AndroidFacetResourceIdManagerModelModule
-import com.android.tools.res.ids.ResourceIdManager
-import com.android.tools.idea.res.ResourceIdManagerBase
 import com.android.tools.rendering.api.IdeaModuleProvider
 import com.intellij.facet.FacetManager
 import com.intellij.openapi.module.Module
-import com.intellij.openapi.roots.ModuleRootManager
-import com.intellij.workspaceModel.ide.impl.legacyBridge.facet.FacetManagerBridge
-import com.intellij.workspaceModel.ide.impl.legacyBridge.module.roots.ModuleRootComponentBridge
 import com.intellij.workspaceModel.ide.legacyBridge.ModuleBridge
 import com.intellij.workspaceModel.storage.EntitySource
 import com.intellij.workspaceModel.storage.MutableEntityStorage
