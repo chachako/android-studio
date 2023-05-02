@@ -15,38 +15,45 @@
  */
 package com.android.screenshot.cli
 
+import com.android.SdkConstants
 import com.android.resources.ScreenSize
 import com.android.sdklib.IAndroidTarget
 import com.android.sdklib.devices.Device
+import com.android.tools.dom.ActivityAttributesSnapshot
 import com.android.tools.idea.configurations.ThemeInfoProvider
-import com.android.tools.idea.model.AndroidManifestIndex
-import com.android.tools.idea.model.AndroidManifestRawText
-import com.android.tools.idea.projectsystem.getModuleSystem
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.util.indexing.FileBasedIndex
-import java.util.Objects
+import com.android.tools.idea.configurations.getDefaultTheme
+import com.android.tools.idea.model.MergedManifestManager
+import com.android.tools.module.AndroidModuleInfo
 
-class ScreenshotThemeInfoProvider(private val composeModule: ComposeModule, private val composeProject: ComposeProject) : ThemeInfoProvider {
+class ScreenshotThemeInfoProvider(
+    private val moduleInfo: AndroidModuleInfo?,
+    private val composeModule: ComposeModule): ThemeInfoProvider {
 
     override val appThemeName: String?
-        get() {
-            // TODO: This should be returned from the manifest.
-            return ""
-        }
+        get() = MergedManifestManager.getMergedManifest(composeModule.module).get().manifestTheme
     override val allActivityThemeNames: Set<String>
-        get() = TODO("Not yet implemented")
+        get() {
+            val manifest = MergedManifestManager.getMergedManifest(composeModule.module).get()
+            return manifest.activityAttributesMap.values.asSequence()
+                .mapNotNull(ActivityAttributesSnapshot::getTheme)
+                .toSet()
+        }
 
     override fun getThemeNameForActivity(activityFqcn: String): String? {
-        TODO("Not yet implemented")
+        val manifest = MergedManifestManager.getMergedManifest(composeModule.module).get()
+        return manifest.getActivityAttributes(activityFqcn)
+            ?.theme
+            ?.takeIf { it.startsWith(SdkConstants.PREFIX_RESOURCE_REF) }
     }
 
     override fun getDefaultTheme(
         renderingTarget: IAndroidTarget?,
         screenSize: ScreenSize?,
         device: Device?
-    ): String {
-        TODO("Not yet implemented")
-    }
+    ): String = getDefaultTheme(
+        moduleInfo,
+        renderingTarget,
+        screenSize,
+        device
+    )
 }
