@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.sdklib.devices;
 
 import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_FOLD_AT_POSTURE;
@@ -75,7 +74,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -85,9 +83,6 @@ import org.xml.sax.SAXException;
  * Manager class for interacting with {@link Device}s within the SDK
  */
 public class DeviceManager {
-
-    public static final String FLAG_CANONICAL_DEVICES = "canonical.device.definitions.enabled";
-
     private static final String  DEVICE_PROFILES_PROP = "DeviceProfiles";
     private static final Pattern PATH_PROPERTY_PATTERN =
         Pattern.compile('^' + PkgProps.EXTRA_PATH + '=' + DEVICE_PROFILES_PROP + '$');
@@ -277,14 +272,7 @@ public class DeviceManager {
             devices.putAll(mSysImgDevices);
         }
 
-        boolean enabled = getBoolean.apply(FLAG_CANONICAL_DEVICES);
-
-        Collection<Device> deviceCollection =
-                devices.values().stream()
-                        .filter(device -> enabled || !isCanonical(device))
-                        .collect(Collectors.toList());
-
-        return Collections.unmodifiableCollection(deviceCollection);
+        return Collections.unmodifiableCollection(devices.values());
     }
 
     private void initDevicesLists() {
@@ -471,17 +459,6 @@ public class DeviceManager {
             }
         }
         return false;
-    }
-
-    private static boolean isCanonical(@NonNull Device device) {
-        switch (device.getId()) {
-            case "SmallPhone":
-            case "MediumPhone":
-            case "MediumTablet":
-                return true;
-            default:
-                return false;
-        }
     }
 
     public void addUserDevice(@NonNull Device d) {

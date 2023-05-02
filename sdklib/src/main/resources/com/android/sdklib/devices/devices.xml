@@ -1986,7 +1986,7 @@
 
     <d:device>
         <d:name>Small Phone</d:name>
-        <d:id>SmallPhone</d:id>
+        <d:id>small_phone</d:id>
         <d:manufacturer>Generic</d:manufacturer>
         <d:playstore-enabled>true</d:playstore-enabled>
         <d:hardware>
@@ -2120,7 +2120,7 @@
 
     <d:device>
         <d:name>Medium Phone</d:name>
-        <d:id>MediumPhone</d:id>
+        <d:id>medium_phone</d:id>
         <d:manufacturer>Generic</d:manufacturer>
         <d:playstore-enabled>true</d:playstore-enabled>
         <d:hardware>
@@ -2248,7 +2248,7 @@
 
     <d:device>
         <d:name>Medium Tablet</d:name>
-        <d:id>MediumTablet</d:id>
+        <d:id>medium_tablet</d:id>
         <d:manufacturer>Generic</d:manufacturer>
         <d:playstore-enabled>true</d:playstore-enabled>
         <d:hardware>

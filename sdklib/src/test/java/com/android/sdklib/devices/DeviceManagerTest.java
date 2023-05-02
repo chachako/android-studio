@@ -106,8 +106,11 @@ public class DeviceManagerTest {
                         "7.4\" Rollable",
                         "7.6\" Fold-in with outer display",
                         "8\" Fold-out",
+                        "Medium Phone",
+                        "Medium Tablet",
                         "13.5\" Freeform",
-                        "Resizable (Experimental)");
+                        "Resizable (Experimental)",
+                        "Small Phone");
 
         assertThat(dm.getDevice("2.7in QVGA", "Generic").getDisplayName()).isEqualTo("2.7\" QVGA");
 
@@ -182,8 +185,11 @@ public class DeviceManagerTest {
                         "7.4\" Rollable",
                         "7.6\" Fold-in with outer display",
                         "8\" Fold-out",
+                        "Medium Phone",
+                        "Medium Tablet",
                         "13.5\" Freeform",
                         "Resizable (Experimental)",
+                        "Small Phone",
                         "Television (4K)",
                         "Television (1080p)",
                         "Television (720p)",
@@ -294,8 +300,11 @@ public class DeviceManagerTest {
                         "7.4\" Rollable",
                         "7.6\" Fold-in with outer display",
                         "8\" Fold-out",
+                        "Medium Phone",
+                        "Medium Tablet",
                         "13.5\" Freeform",
-                        "Resizable (Experimental)");
+                        "Resizable (Experimental)",
+                        "Small Phone");
 
         // this list comes from the nexus.xml bundled in the JAR
         // cf /sdklib/src/main/java/com/android/sdklib/devices/nexus.xml
@@ -366,8 +375,11 @@ public class DeviceManagerTest {
                         "7.4\" Rollable",
                         "7.6\" Fold-in with outer display",
                         "8\" Fold-out",
+                        "Medium Phone",
+                        "Medium Tablet",
                         "13.5\" Freeform",
                         "Resizable (Experimental)",
+                        "Small Phone",
                         "Television (4K)",
                         "Television (1080p)",
                         "Television (720p)",
@@ -472,8 +484,11 @@ public class DeviceManagerTest {
                         "7.4\" Rollable",
                         "7.6\" Fold-in with outer display",
                         "8\" Fold-out",
+                        "Medium Phone",
+                        "Medium Tablet",
                         "13.5\" Freeform",
-                        "Resizable (Experimental)");
+                        "Resizable (Experimental)",
+                        "Small Phone");
 
         // this list comes from the nexus.xml bundled in the JAR
         // cf /sdklib/src/main/java/com/android/sdklib/devices/nexus.xml
@@ -544,8 +559,11 @@ public class DeviceManagerTest {
                         "7.4\" Rollable",
                         "7.6\" Fold-in with outer display",
                         "8\" Fold-out",
+                        "Medium Phone",
+                        "Medium Tablet",
                         "13.5\" Freeform",
                         "Resizable (Experimental)",
+                        "Small Phone",
                         "Television (4K)",
                         "Television (1080p)",
                         "Television (720p)",
