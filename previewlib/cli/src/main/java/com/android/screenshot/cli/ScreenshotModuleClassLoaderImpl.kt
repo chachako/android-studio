@@ -47,10 +47,10 @@ class ScreenshotModuleClassLoaderImpl (
     private val projectSystemLoader: ProjectSystemClassLoader,
     private val parentClassLoader: ClassLoader?,
     val projectTransforms: ClassTransform,
-    val nonProjectTransforms: ClassTransform,
-    private val binaryCache: ClassBinaryCache,
+    nonProjectTransforms: ClassTransform,
+    binaryCache: ClassBinaryCache,
     private val diagnostics: ModuleClassLoaderDiagnosticsWrite,
-    val additionalExternalLibraries : Dependencies)
+    additionalExternalLibraries : Dependencies)
     : UserDataHolderBase(), DelegatingClassLoader.Loader, Disposable {
     private val loader: DelegatingClassLoader.Loader
 

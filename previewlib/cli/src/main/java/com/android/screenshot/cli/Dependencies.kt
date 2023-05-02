@@ -16,6 +16,7 @@
 package com.android.screenshot.cli
 
 import com.android.tools.lint.detector.api.Project
+import com.android.tools.lint.model.LintModelExternalLibrary
 import com.android.tools.lint.model.LintModelModule
 import java.nio.file.Path
 
@@ -24,15 +25,18 @@ import java.nio.file.Path
  */
 class Dependencies(project: Project, rootLintModule: LintModelModule) {
 
-    var classLoaderDependencies = initClassLoaderDependencies(project, rootLintModule)
+    var classLoaderDependencies = initClassLoaderDependencies(project,rootLintModule)
     var systemDependencies = initSystemDependencies(project)
     private fun initSystemDependencies(project: Project): List<String> {
         val dependencies = mutableListOf<String>(
-            project.dir.absolutePath,
             project.buildTarget?.location!!,
         )
-        dependencies.addAll(project.getJavaLibraries(false).map { it.absolutePath })
-        dependencies.addAll(project.testLibraries.map { it.absolutePath })
+        dependencies.addAll(project.buildVariant!!
+                                .mainArtifact.dependencies.packageDependencies
+                                .getAllLibraries()
+                                .filterIsInstance<LintModelExternalLibrary>()
+                                .flatMap{it.jarFiles}
+                                .map { it.absolutePath })
         return dependencies
     }
 
@@ -40,13 +44,15 @@ class Dependencies(project: Project, rootLintModule: LintModelModule) {
         project: Project,
         rootLintModule: LintModelModule
     ): List<Path> {
-        val trans = arrayListOf<Path>()
-        trans.addAll(project.getJavaLibraries(false).map { it.toPath() })
-        trans.addAll(project.testLibraries.map { it.toPath() })
-        for (path in rootLintModule.variants[0].mainArtifact.classOutputs) {
-            if (path.toString().endsWith("R.jar"))
-                trans.add(path.toPath())
-        }
+        val trans = mutableListOf<Path>()
+        trans.addAll(project.buildVariant!!
+            .mainArtifact.dependencies.packageDependencies
+            .getAllLibraries()
+            .filterIsInstance<LintModelExternalLibrary>()
+            .flatMap{it.jarFiles}
+            .map { it.toPath() })
+        trans.addAll(project.buildVariant!!.mainArtifact.classOutputs.filter { it.extension == "jar" }.map { it.toPath() })
+        trans.addAll(rootLintModule.defaultVariant()!!.mainArtifact.classOutputs.filter { it.extension == "jar" }.map { it.toPath() })
         return trans
     }
 }

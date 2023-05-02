@@ -19,19 +19,16 @@ import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.resources.SingleNamespaceResourceRepository
 import com.android.screenshot.cli.ComposeModule
 import com.android.screenshot.cli.ComposeProject
-import com.android.tools.idea.res.MultiResourceRepository
-import com.android.tools.idea.res.ResourceFolderRegistry
 import com.android.tools.idea.util.toVirtualFile
+import com.android.tools.lint.model.LintModelAndroidLibrary
 
 class ScreenshotResourceRepository(private val composeProject: ComposeProject, private val composeModule: ComposeModule) : MultiResourceRepository("ScreenshotTesting"),
                                                                                                                            SingleNamespaceResourceRepository {
 
     val folderResource =
-        composeProject.lintProject.resourceFolders.map {
-            ResourceFolderRegistry(composeProject.lintProject.ideaProject!!).get(
-                composeModule.facet,
-                it.toVirtualFile()!!
-            )
+        (composeProject.lintProject.resourceFolders.map{it.toVirtualFile()} +
+         composeProject.lintProject.buildVariant!!.mainArtifact.dependencies.packageDependencies.getAllLibraries().filterIsInstance<LintModelAndroidLibrary>().mapNotNull { it.resFolder.toVirtualFile() }).mapNotNull {
+            ResourceFolderRegistry(composeProject.lintProject.ideaProject!!).get(composeModule.facet, it!!)
         }
 
     init {
