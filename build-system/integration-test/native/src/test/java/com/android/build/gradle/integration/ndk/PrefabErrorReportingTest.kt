@@ -84,13 +84,13 @@ class PrefabErrorReportingTest {
     }
 
     @Test
-    fun `CXX1210⋮ No compatible library found for package`() {
+    fun `CXX1210-No compatible library found for package`() {
         baseline.copy(moduleLibraryAbi = "armeabi-v7a")
             .assertHasError("[CXX1210] No compatible library found [//pkg1/lib1]")
     }
 
     @Test
-    fun `CXX1211⋮ Library is a shared library with a statically linked STL and cannot be used with any library using the STL`() {
+    fun `CXX1211-Library is a shared library with a statically linked STL and cannot be used with any library using the STL`() {
         baseline.copy(
             stl = "gnustl_shared",
             moduleLibraryAbiStl = "gnustl_static",
@@ -101,7 +101,7 @@ class PrefabErrorReportingTest {
     }
 
     @Test
-    fun `CXX1212⋮ User is using a static STL but library requires a shared STL`() {
+    fun `CXX1212-User is using a static STL but library requires a shared STL`() {
         baseline.copy(
             stl = "c++_static",
             moduleLibraryAbiStl = "c++_shared",
@@ -112,7 +112,7 @@ class PrefabErrorReportingTest {
     }
 
     @Test
-    fun `CXX1213⋮ User requested libstdc++ but library requires libc++`() {
+    fun `CXX1213-User requested libstdc++ but library requires libc++`() {
         baseline.copy(
             stl = "gnustl_static",
             moduleLibraryAbiStl = "c++_static",
@@ -123,7 +123,7 @@ class PrefabErrorReportingTest {
     }
 
     @Test
-    fun `CXX1214⋮ User has minSdkVersion 7 but library was built for 16`() {
+    fun `CXX1214-User has minSdkVersion 7 but library was built for 16`() {
         baseline.copy(
             abi = "x86",
             osVersion = 7,
@@ -136,7 +136,7 @@ class PrefabErrorReportingTest {
     }
 
     @Test
-    fun `CXX1215⋮ ndk-build does not support fully qualified module names`() {
+    fun `CXX1215-ndk-build does not support fully qualified module names`() {
         baseline.copy(
             buildSystem = "ndk-build",
             prefabPackageName = "pkg1",
@@ -167,13 +167,13 @@ class PrefabErrorReportingTest {
     }
 
     @Test
-    fun `CXX1216⋮ package contains artifacts for an unsupported platform "windows"`() {
+    fun `CXX1216-package contains artifacts for an unsupported platform windows`() {
         baseline.copy(moduleLibraryTargetPlatform = "windows")
             .assertHasError("[CXX1216] //pkg1/lib1 contains artifacts for an unsupported platform \"windows\"")
     }
 
     @Test
-    fun `CXX1217⋮ Only schema_version 1 is supported, pkg1 uses version 2`() {
+    fun `CXX1217-Only schema_version 1 is supported, pkg1 uses version 2`() {
         Assume.assumeFalse(runningFromBazel()) // Prefab 1.1.3 isn't available
         baseline.copy(prefabVersion = "1.1.3")
             .assertHasError("[CXX1217] Only schema_version 1 is supported. pkg1 uses version 2.")
@@ -183,7 +183,7 @@ class PrefabErrorReportingTest {
     }
 
     @Test
-    fun `CXX1218⋮ Unexpected JSON token at offset 87, Encountered an unknown key 'static'`() {
+    fun `CXX1218-Unexpected JSON token at offset 87, Encountered an unknown key 'static'`() {
         Assume.assumeFalse(runningFromBazel()) // Prefab 1.1.3 isn't available
         baseline.copy(
             prefabVersion = "1.1.3",
@@ -196,7 +196,7 @@ class PrefabErrorReportingTest {
     }
 
     @Test
-    fun `CXX1219⋮ Prebuilt directory does not contain …`() {
+    fun `CXX1219-Prebuilt directory does not contain`() {
         Assume.assumeFalse(runningFromBazel()) // Prefab 1.1.3 isn't available
         baseline.copy(
             prefabVersion = "1.1.3",
@@ -208,7 +208,7 @@ class PrefabErrorReportingTest {
     }
 
     @Test
-    fun `CXX1220⋮ Miscellaneous Fatal Errors`() {
+    fun `CXX1220-Miscellaneous Fatal Errors`() {
         baseline.copy(stl = "trash-stl")
             .assertHasError(Regex(".*CXX1220.* Invalid value for .*"))
 

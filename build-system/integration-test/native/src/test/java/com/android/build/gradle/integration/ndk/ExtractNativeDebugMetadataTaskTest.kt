@@ -107,8 +107,8 @@ class ExtractNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymb
             when (debugSymbolLevel) {
                 null -> return
                 NONE -> debugSymbolLevel.name
-                SYMBOL_TABLE -> debugSymbolLevel.name.toLowerCase()
-                FULL -> debugSymbolLevel.name.toUpperCase()
+                SYMBOL_TABLE -> debugSymbolLevel.name.lowercase()
+                FULL -> debugSymbolLevel.name.uppercase()
             }
         project.getSubproject(":app").buildFile.appendText(
             """
@@ -484,7 +484,7 @@ class ExtractNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymb
             "/nativeLibs/unstripped.so"
         ).use { inputStream ->
             File(abiFolder, libName).outputStream().use { outputStream ->
-                inputStream.copyTo(outputStream)
+                inputStream!!.copyTo(outputStream)
             }
         }
     }

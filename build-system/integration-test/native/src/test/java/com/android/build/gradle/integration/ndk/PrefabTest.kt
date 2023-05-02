@@ -88,7 +88,7 @@ class PrefabTest(private val buildSystem: NativeBuildSystem, val cmakeVersion: S
 
     private fun verifyNdkBuildArgs(buildCommand: String, abiDir: File) {
         val expectedArgument = "NDK_GRADLE_INJECTED_IMPORT_PATH=$abiDir"
-        Truth.assertThat(buildCommand).contains(expectedArgument)
+        assertThat(buildCommand).contains(expectedArgument)
     }
 
     private fun verifyCMakePackage(pkg: String, abi: CxxAbiModel) {
@@ -118,6 +118,7 @@ class PrefabTest(private val buildSystem: NativeBuildSystem, val cmakeVersion: S
                 when (buildSystem) {
                     NativeBuildSystem.CMAKE -> verifyCMakePackage(pkg, abi)
                     NativeBuildSystem.NDK_BUILD -> verifyNdkBuildPackage(pkg, abiDir)
+                    else -> error("Unexpected $buildSystem")
                 }
             }
 
@@ -125,6 +126,7 @@ class PrefabTest(private val buildSystem: NativeBuildSystem, val cmakeVersion: S
             when (buildSystem) {
                 NativeBuildSystem.CMAKE -> verifyCMakeArgs(buildCommand, abiDir)
                 NativeBuildSystem.NDK_BUILD -> verifyNdkBuildArgs(buildCommand, abiDir)
+                else -> error("Unexpected $buildSystem")
             }
         }
     }

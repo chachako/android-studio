@@ -39,10 +39,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import java.io.File
-import java.util.zip.ZipFile
 import kotlin.test.fail
 
-/** Test behavior of [MergeNativeDebugMetadataTask]*/
+/** Test behavior of MergeNativeDebugMetadataTask */
 @RunWith(FilterableParameterized::class)
 class MergeNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymbolLevel?) {
 
@@ -66,8 +65,8 @@ class MergeNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymbol
             when (debugSymbolLevel) {
                 null -> return
                 NONE -> debugSymbolLevel.name
-                SYMBOL_TABLE -> debugSymbolLevel.name.toLowerCase()
-                FULL -> debugSymbolLevel.name.toUpperCase()
+                SYMBOL_TABLE -> debugSymbolLevel.name.lowercase()
+                FULL -> debugSymbolLevel.name.uppercase()
             }
         project.getSubproject(":app").buildFile.appendText(
             """
@@ -102,9 +101,9 @@ class MergeNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymbol
         createUnstrippedAbiFile(app, ABI_ARMEABI_V7A, "app.so")
         createUnstrippedAbiFile(app, ABI_INTEL_ATOM, "app.so")
         createUnstrippedAbiFile(app, ABI_INTEL_ATOM64, "app.so")
-        createDebugMetadataFile(app, ABI_ARMEABI_V7A, "app", debugSymbolLevel == FULL)
-        createDebugMetadataFile(app, ABI_INTEL_ATOM, "app", debugSymbolLevel == FULL)
-        createDebugMetadataFile(app, ABI_INTEL_ATOM64, "app", debugSymbolLevel == FULL)
+        createDebugMetadataFile(app, ABI_ARMEABI_V7A, debugSymbolLevel == FULL)
+        createDebugMetadataFile(app, ABI_INTEL_ATOM, debugSymbolLevel == FULL)
+        createDebugMetadataFile(app, ABI_INTEL_ATOM64, debugSymbolLevel == FULL)
         val expectedFullEntries = listOf(
                 "/$ABI_ARMEABI_V7A/app.so.dbg",
                 "/$ABI_INTEL_ATOM/app.so.dbg",
@@ -128,7 +127,7 @@ class MergeNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymbol
     @Test
     fun testBundleExternalNativeDebugSymbolsOutput() {
         val testSetup = setupExternalNativeDebugSymbolTest()
-        val output = getNativeDebugSymbolsOutput("debug")
+        val output = getNativeDebugSymbolsOutput()
         project.executor().run("app:bundleDebug")
         if (debugSymbolLevel == null || debugSymbolLevel == NONE) {
             assertThat(output).doesNotExist()
@@ -162,7 +161,7 @@ class MergeNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymbol
         @Test
     fun testExternalNativeDebugSymbolsOutput() {
         val testSetup = setupExternalNativeDebugSymbolTest()
-        val output = getNativeDebugSymbolsOutput("debug")
+        val output = getNativeDebugSymbolsOutput()
         project.executor().run("app:assembleDebug")
         if (debugSymbolLevel == null || debugSymbolLevel == NONE) {
             assertThat(output).doesNotExist()
@@ -212,7 +211,7 @@ class MergeNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymbol
 
         project.executor().run("app:assembleDebug")
 
-        val output = getNativeDebugSymbolsOutput("debug")
+        val output = getNativeDebugSymbolsOutput()
         if (debugSymbolLevel == null || debugSymbolLevel == NONE) {
             assertThat(output).doesNotExist()
             return
@@ -304,7 +303,7 @@ class MergeNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymbol
     @Test
     fun testTaskSkippedWhenNoNativeLibs() {
         val taskName = "mergeDebugNativeDebugMetadata"
-        val output = getNativeDebugSymbolsOutput("debug")
+        val output = getNativeDebugSymbolsOutput()
         // first test that the task is skipped when there are no native libraries.
         val result1 = project.executor().run("app:assembleDebug")
         assertThat(output).doesNotExist()
@@ -326,7 +325,7 @@ class MergeNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymbol
     fun testTaskRunsWhenNativeLibNameChanges() {
         Assume.assumeTrue(debugSymbolLevel == SYMBOL_TABLE || debugSymbolLevel == FULL)
         val taskName = "mergeDebugNativeDebugMetadata"
-        val output = getNativeDebugSymbolsOutput("debug")
+        val output = getNativeDebugSymbolsOutput()
         // first add a native library, build, and check the output.
         createUnstrippedAbiFile(project.getSubproject(":feature1"), ABI_ARMEABI_V7A, "foo.so")
         val result1 = project.executor().run("app:assembleDebug")
@@ -374,28 +373,27 @@ class MergeNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymbol
         }
     }
 
-    private fun getNativeDebugSymbolsOutput(variantName: String): File {
+    private fun getNativeDebugSymbolsOutput(): File {
         return File(
             project.getSubproject("app").buildDir,
-            "/outputs/native-debug-symbols/$variantName/native-debug-symbols.zip"
+            "/outputs/native-debug-symbols/debug/native-debug-symbols.zip"
         )
     }
 
     private fun createDebugMetadataFile(
             project: GradleTestProject,
             abiName: String,
-            libName: String,
             full: Boolean
     ) {
-        val abiFolder = FileUtils.join(project.projectDir, "symbols", libName, abiName)
+        val abiFolder = FileUtils.join(project.projectDir, "symbols", "app", abiName)
         FileUtils.mkdirs(abiFolder)
         val symFolder = if (full) "full" else "sym"
         val extension = if (full) "dbg" else "sym"
         MergeNativeDebugMetadataTaskTest::class.java.getResourceAsStream(
                 "/nativeDebugSymbols/$symFolder/$abiName/extra.so.$extension"
         ).use { inputStream ->
-            File(abiFolder, "$libName-extra.so.$extension").outputStream().use { outputStream ->
-                inputStream.copyTo(outputStream)
+            File(abiFolder, "app-extra.so.$extension").outputStream().use { outputStream ->
+                inputStream!!.copyTo(outputStream)
             }
         }
     }
@@ -411,7 +409,7 @@ class MergeNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymbol
             "/nativeLibs/unstripped.so"
         ).use { inputStream ->
             File(abiFolder, libName).outputStream().use { outputStream ->
-                inputStream.copyTo(outputStream)
+                inputStream!!.copyTo(outputStream)
             }
         }
     }
@@ -427,7 +425,7 @@ class MergeNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymbol
             "/nativeLibs/libhello-jni.so"
         ).use { inputStream ->
             File(abiFolder, libName).outputStream().use { outputStream ->
-                inputStream.copyTo(outputStream)
+                inputStream!!.copyTo(outputStream)
             }
         }
     }
