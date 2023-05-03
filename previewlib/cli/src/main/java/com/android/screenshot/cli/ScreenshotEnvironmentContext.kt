@@ -42,6 +42,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiFile
 import com.intellij.psi.xml.XmlFile
 import org.apache.http.HttpEntity
+import org.apache.http.entity.mime.MultipartEntityBuilder
 import org.jetbrains.android.dom.navigation.getStartDestLayoutId
 import org.jetbrains.android.uipreview.StudioModuleClassLoaderManager
 import java.util.concurrent.CompletableFuture
@@ -61,6 +62,10 @@ class ScreenshotEnvironmentContext(private val project: ComposeProject) : Enviro
 
         override fun submit(entity: HttpEntity): CompletableFuture<String> =
             CompletableFuture.completedFuture("")
+    }
+
+    private class StubCrashReport : CrashReport("", "", emptyMap(), "") {
+        override fun serializeTo(builder: MultipartEntityBuilder) { }
     }
 
     override val layoutlibContext: LayoutlibContext
@@ -131,4 +136,6 @@ class ScreenshotEnvironmentContext(private val project: ComposeProject) : Enviro
     }
 
     override fun getCrashReporter(): CrashReporter = stubCrashReporter
+
+    override fun createCrashReport(t: Throwable): CrashReport = StubCrashReport()
 }
