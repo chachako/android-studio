@@ -117,12 +117,24 @@ class LocalEmulatorProvisionerPluginTest {
       doStopAvd(avdInfo)
     }
 
+    override suspend fun showOnDisk(avdInfo: AvdInfo) {
+      // no-op
+    }
+
+    override suspend fun duplicateAvd(avdInfo: AvdInfo) {
+      // not used
+    }
+
+    override suspend fun wipeData(avdInfo: AvdInfo) {
+      // not used
+    }
+
     private fun doStopAvd(avdInfo: AvdInfo) {
       runningDevices.removeIf { it.avdPath == avdInfo.dataFolderPath.toString() }
       updateDevices()
     }
 
-    fun deleteAvd(avdInfo: AvdInfo) {
+    override suspend fun deleteAvd(avdInfo: AvdInfo) {
       synchronized(avds) { avds.remove(avdInfo) }
     }
 

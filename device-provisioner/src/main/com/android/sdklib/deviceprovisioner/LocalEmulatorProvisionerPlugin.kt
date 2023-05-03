@@ -83,6 +83,10 @@ class LocalEmulatorProvisionerPlugin(
     suspend fun editAvd(avdInfo: AvdInfo): Boolean
     suspend fun startAvd(avdInfo: AvdInfo)
     suspend fun stopAvd(avdInfo: AvdInfo)
+    suspend fun showOnDisk(avdInfo: AvdInfo)
+    suspend fun duplicateAvd(avdInfo: AvdInfo)
+    suspend fun wipeData(avdInfo: AvdInfo)
+    suspend fun deleteAvd(avdInfo: AvdInfo)
   }
 
   // We can identify local emulators reliably, so this can be relatively high priority.
@@ -280,14 +284,7 @@ class LocalEmulatorProvisionerPlugin(
 
     override val activationAction =
       object : ActivationAction {
-        override val presentation =
-          stateFlow
-            .map {
-              defaultPresentation
-                .fromContext()
-                .copy(enabled = it is Disconnected && !it.isTransitioning)
-            }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), defaultPresentation.fromContext())
+        override val presentation = defaultPresentation.fromContext().enabledIfStopped()
 
         override suspend fun activate(params: ActivationParams) {
           try {
@@ -325,13 +322,7 @@ class LocalEmulatorProvisionerPlugin(
         // We could check this with AvdManagerConnection.isAvdRunning, but that's expensive, and if
         // it's not running we should see it from ADB anyway
         override val presentation =
-          stateFlow
-            .map {
-              defaultPresentation
-                .fromContext()
-                .copy(enabled = it is Connected && !it.isTransitioning)
-            }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), defaultPresentation.fromContext())
+          defaultPresentation.fromContext().enabledIf { it is Connected && !it.isTransitioning }
 
         override suspend fun deactivate() {
           try {
@@ -377,6 +368,52 @@ class LocalEmulatorProvisionerPlugin(
         }
       }
       avdManager.stopAvd(avdInfo)
+    }
+
+    override val showAction: ShowAction =
+      object : ShowAction {
+        override val presentation =
+          MutableStateFlow(defaultPresentation.fromContext().copy(label = "Show on Disk"))
+
+        override suspend fun show() {
+          avdManager.showOnDisk(avdInfo)
+        }
+      }
+
+    override val duplicateAction: DuplicateAction =
+      object : DuplicateAction {
+        override val presentation = MutableStateFlow(defaultPresentation.fromContext())
+
+        override suspend fun duplicate() {
+          avdManager.duplicateAvd(avdInfo)
+        }
+      }
+
+    override val wipeDataAction: WipeDataAction =
+      object : WipeDataAction {
+        override val presentation = defaultPresentation.fromContext().enabledIfStopped()
+
+        override suspend fun wipeData() {
+          avdManager.wipeData(avdInfo)
+        }
+      }
+
+    override val deleteAction: DeleteAction =
+      object : DeleteAction {
+        override val presentation = defaultPresentation.fromContext().enabledIfStopped()
+
+        override suspend fun delete() {
+          avdManager.deleteAvd(avdInfo)
+        }
+      }
+
+    private fun DeviceAction.Presentation.enabledIf(condition: (DeviceState) -> Boolean) =
+      stateFlow
+        .map { this.copy(enabled = condition(it)) }
+        .stateIn(scope, SharingStarted.WhileSubscribed(), this)
+
+    private fun DeviceAction.Presentation.enabledIfStopped() = enabledIf {
+      it is Disconnected && !it.isTransitioning
     }
   }
 }

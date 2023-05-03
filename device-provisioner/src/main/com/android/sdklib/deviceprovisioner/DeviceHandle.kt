@@ -62,4 +62,23 @@ interface DeviceHandle {
    */
   val reservationAction: ReservationAction?
     get() = null
+
+  /** An action that creates a duplicate of the device (with a different name). */
+  val duplicateAction: DuplicateAction?
+    get() = null
+
+  /** Wipes the data on the device's filesystem. */
+  val wipeDataAction: WipeDataAction?
+    get() = null
+
+  /**
+   * Shows the device in its source location; depending on the device, this could launch a file
+   * system browser to show the location of the device on disk, or it could launch a web browser to
+   * show a device definition.
+   */
+  val showAction: ShowAction?
+    get() = null
+
+  val deleteAction: DeleteAction?
+    get() = null
 }

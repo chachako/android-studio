@@ -49,6 +49,9 @@ interface DeviceAction {
     val activationAction: Presentation
     val deactivationAction: Presentation
     val editAction: Presentation
+    val showAction: Presentation
+    val wipeDataAction: Presentation
+    val duplicateAction: Presentation
     val deleteAction: Presentation
     val editTemplateAction: Presentation
     val reservationAction: Presentation
@@ -115,8 +118,32 @@ interface EditTemplateAction : DeviceAction {
   override fun DefaultPresentation.fromContext() = editTemplateAction
 }
 
+interface DuplicateAction : DeviceAction {
+  suspend fun duplicate()
+
+  override fun DefaultPresentation.fromContext() = duplicateAction
+}
+
+interface WipeDataAction : DeviceAction {
+
+  /** Wipes the user data and snapshots of the device. */
+  suspend fun wipeData()
+
+  override fun DefaultPresentation.fromContext() = wipeDataAction
+}
+
+interface ShowAction : DeviceAction {
+  suspend fun show()
+
+  override fun DefaultPresentation.fromContext() = showAction
+}
+
 /** Deletes the given device from any persistent storage. */
 interface DeleteAction : DeviceAction {
+  /**
+   * Deletes the device; this can mean deleting a device from disk, or simply removing it from a
+   * list of remembered devices.
+   */
   suspend fun delete()
 
   override fun DefaultPresentation.fromContext() = deleteAction
@@ -174,7 +201,8 @@ interface TemplateActivationAction : DeviceAction {
  * @param message a user-visible statement of what went wrong
  * @param cause the underlying exception; not displayed to user
  */
-class DeviceActionException(message: String, cause: Throwable? = null) : Exception(message, cause)
+open class DeviceActionException(message: String, cause: Throwable? = null) :
+  Exception(message, cause)
 
 /**
  * Indicates that the device action was called when it is not enabled. This may be unavoidable due
