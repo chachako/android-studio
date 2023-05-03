@@ -232,4 +232,6 @@ class ScreenshotProjectSystem(private val project: ComposeProject) : AndroidProj
             .filter { facet -> facet.sourceProviders.mainManifestFile?.let(projectScope::contains) == true }
             .toList()
     }
+
+    override fun isNamespaceOrParentPackage(packageName: String): Boolean = TODO()
 }
