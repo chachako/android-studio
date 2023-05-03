@@ -147,6 +147,8 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           FirebaseAnalyticsDetector.INVALID_NAME,
           FirebaseMessagingDetector.MISSING_TOKEN_REFRESH,
           FontDetector.FONT_VALIDATION,
+          ForegroundServicePermissionDetector.ISSUE_PERMISSION,
+          ForegroundServiceTypesDetector.ISSUE_TYPE,
           FragmentDetector.ISSUE,
           FullBackupContentDetector.ISSUE,
           GestureBackNavDetector.ISSUE,

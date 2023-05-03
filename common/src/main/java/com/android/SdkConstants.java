@@ -1304,6 +1304,7 @@ public final class SdkConstants {
     public static final String ATTR_TARGET_ACTIVITY = "targetActivity";
     public static final String ATTR_MIMETYPE = "mimeType";
     public static final String ATTR_LOCALE_CONFIG = "localeConfig";
+    public static final String ATTR_FOREGROUND_SERVICE_TYPE = "foregroundServiceType";
 
     // Attributes: Resources
     public static final String ATTR_ATTR = "attr";
