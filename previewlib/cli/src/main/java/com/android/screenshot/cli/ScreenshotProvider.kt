@@ -31,6 +31,7 @@ import com.android.tools.idea.rendering.ShowFixFactory
 import com.android.tools.idea.rendering.StudioHtmlLinkManager
 import com.android.tools.idea.rendering.StudioRenderConfiguration
 import com.android.tools.idea.rendering.StudioRenderService
+import com.android.tools.lint.model.LintModelModule
 import com.intellij.mock.MockComponentManager
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
@@ -110,7 +111,8 @@ class ScreenshotProvider(
         previewNodes: List<ComposePreviewElement>,
         goldenLocation: String,
         outputLocation: String,
-        recordGoldens: Boolean
+        recordGoldens: Boolean,
+        rootLintModule: LintModelModule
     ): List<Verify.AnalysisResult> {
         val results = mutableListOf<Verify.AnalysisResult>()
         val instances =
@@ -119,7 +121,7 @@ class ScreenshotProvider(
                 .toMutableList()
         instances.addAll(previewNodes.filterIsInstance<ComposePreviewElementInstance>())
         instances.distinct()
-        val model = ScreenshotRenderModelModule(composeApplication, composeProject, composeModule, sdkPath)
+        val model = ScreenshotRenderModelModule(composeApplication, composeProject, composeModule, sdkPath, rootLintModule)
         for (previewElement in instances) {
             val renderResult = renderPreviewElement(previewElement, model)
             val fileName = previewElement.displaySettings.name + ".png"

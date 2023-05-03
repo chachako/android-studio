@@ -23,6 +23,7 @@ import com.android.tools.idea.rendering.StudioModuleDependencies
 import com.android.tools.idea.res.AssetRepositoryImpl
 import com.android.tools.idea.res.ScreenshotResourceIdManager
 import com.android.tools.idea.res.ScreenshotResourceRepositoryManager
+import com.android.tools.lint.model.LintModelModule
 import com.android.tools.module.AndroidModuleInfo
 import com.android.tools.module.ModuleDependencies
 import com.android.tools.rendering.api.EnvironmentContext
@@ -45,10 +46,12 @@ class ScreenshotRenderModelModule(
     val composeApp: ComposeApplication,
     val composeProject: ComposeProject,
     val composeModule: ComposeModule,
-    val sdkPath: String
+    val sdkPath: String,
+    val rootLintModule: LintModelModule
 ) :
     RenderModelModule {
 
+    private val resourceManager = ScreenshotResourceIdManager(composeProject, composeModule, rootLintModule)
     private val LOG = Logger.getInstance(ScreenshotRenderModelModule::class.java)
 
     override val manifest: RenderModelManifest?
@@ -72,7 +75,7 @@ class ScreenshotRenderModelModule(
             return null
         }
     override val resourceIdManager: ResourceIdManager
-        get() = ScreenshotResourceIdManager(composeProject, composeModule)
+        get() = resourceManager
     override val moduleKey: Any
         get() = composeModule.module
     override val resourcePackage: String?

@@ -135,7 +135,8 @@ class Main {
         val results = screenshot.verifyScreenshot(findPreviewNodes(projects[0], argumentState.filePath!!),
                                   argumentState.goldenLocation!!,
                                   argumentState.outputLocation!!,
-                                  argumentState.recordGoldens)
+                                  argumentState.recordGoldens,
+                                  argumentState.rootModule!!)
         argumentState.extractionDir?.let { deleteTempFiles(it) }
         //save or return results
         exitProcess(0)
