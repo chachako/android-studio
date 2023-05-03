@@ -50,7 +50,7 @@ class GooglePlaySdkIndexTest {
                 .addVersions(
                   LibraryVersion.newBuilder().setVersionString("1.2.18").setIsLatestVersion(true)
                 )
-                // Ok, latest, no issues
+                // Ok, no issues
                 .addVersions(
                   LibraryVersion.newBuilder().setVersionString("1.2.17").setIsLatestVersion(false)
                 )
@@ -74,7 +74,7 @@ class GooglePlaySdkIndexTest {
                         .setOutdatedIssueInfo(LibraryVersionLabels.OutdatedIssueInfo.newBuilder())
                     )
                 )
-                // Policy
+                // Policy (deprecated label)
                 .addVersions(
                   LibraryVersion.newBuilder()
                     .setVersionString("1.2.14")
@@ -112,7 +112,7 @@ class GooglePlaySdkIndexTest {
                 .addVersions(
                   LibraryVersion.newBuilder().setVersionString("7.2.1").setIsLatestVersion(false)
                 )
-                // Outdated & non compliant & Critical
+                // Outdated & non compliant (user data) & Critical
                 .addVersions(
                   LibraryVersion.newBuilder()
                     .setVersionString("7.2.0")
@@ -121,7 +121,141 @@ class GooglePlaySdkIndexTest {
                       LibraryVersionLabels.newBuilder()
                         .setCriticalIssueInfo(LibraryVersionLabels.CriticalIssueInfo.newBuilder())
                         .setOutdatedIssueInfo(LibraryVersionLabels.OutdatedIssueInfo.newBuilder())
-                        .setPolicyIssuesInfo(LibraryVersionLabels.PolicyIssuesInfo.newBuilder())
+                        .setPolicyIssuesInfo(
+                          LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_USER_DATA
+                            )
+                        )
+                    )
+                )
+                // Non-compliant (Ads)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.0")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setPolicyIssuesInfo(
+                          LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_ADS
+                            )
+                        )
+                    )
+                )
+                // Non-compliant (Device and Network Abuse)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.1")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setPolicyIssuesInfo(
+                          LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy
+                                .SDK_POLICY_DEVICE_AND_NETWORK_ABUSE
+                            )
+                        )
+                    )
+                )
+                // Non-compliant (Deceptive Behavior)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.2")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setPolicyIssuesInfo(
+                          LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy
+                                .SDK_POLICY_DECEPTIVE_BEHAVIOR
+                            )
+                        )
+                    )
+                )
+                // Non-compliant (User Data)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.3")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setPolicyIssuesInfo(
+                          LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_USER_DATA
+                            )
+                        )
+                    )
+                )
+                // Non-compliant (Permissions)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.4")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setPolicyIssuesInfo(
+                          LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_PERMISSIONS
+                            )
+                        )
+                    )
+                )
+                // Non-compliant (Mobile Unwanted Software)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.5")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setPolicyIssuesInfo(
+                          LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy
+                                .SDK_POLICY_MOBILE_UNWANTED_SOFTWARE
+                            )
+                        )
+                    )
+                )
+                // Non-compliant (Malware)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.6")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setPolicyIssuesInfo(
+                          LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE
+                            )
+                        )
+                    )
+                )
+                // Non-compliant (Multiple violations)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.7")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setPolicyIssuesInfo(
+                          LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_USER_DATA
+                            )
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE
+                            )
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_PERMISSIONS
+                            )
+                        )
                     )
                 )
             )
@@ -158,7 +292,7 @@ class GooglePlaySdkIndexTest {
   @Test
   fun `policy issues shown if showPolicyIssues is enabled`() {
     index.showPolicyIssues = true
-    assertThat(countPolicyIssues()).isEqualTo(2)
+    assertThat(countPolicyIssues()).isEqualTo(10)
   }
 
   @Test
@@ -201,6 +335,60 @@ class GooglePlaySdkIndexTest {
     offlineIndex.initialize()
     assertThat(offlineIndex.isReady()).isTrue()
     assertThat(offlineIndex.getLastReadSource()).isEqualTo(NetworkCache.DataSourceType.DEFAULT_DATA)
+  }
+
+  @Test
+  fun `No violation type policy issue message`() {
+    index.showPolicyIssues = true
+    assertThat(index.generatePolicyMessage("logj4", "logj4", "1.2.14"))
+      .isEqualTo(
+        "logj4:logj4 version 1.2.14 has policy issues that will block publishing of your app to Play Console"
+      )
+  }
+
+  @Test
+  fun `policy with other issues message`() {
+    verifyPolicyMessage("7.2.0", "User Data policy")
+  }
+
+  @Test
+  fun `Ads policy issue message`() {
+    verifyPolicyMessage("7.1.0", "Ads policy")
+  }
+
+  @Test
+  fun `Device and Network Abuse policy issue message`() {
+    verifyPolicyMessage("7.1.1", "Device and Network Abuse policy")
+  }
+
+  @Test
+  fun `Deceptive Behavior policy issue message`() {
+    verifyPolicyMessage("7.1.2", "Deceptive Behavior policy")
+  }
+
+  @Test
+  fun `User Data policy issue message`() {
+    verifyPolicyMessage("7.1.3", "User Data policy")
+  }
+
+  @Test
+  fun `Permissions policy issue message`() {
+    verifyPolicyMessage("7.1.4", "Permissions policy")
+  }
+
+  @Test
+  fun `Mobile Unwanted Software policy issue message`() {
+    verifyPolicyMessage("7.1.5", "Mobile Unwanted Software policy")
+  }
+
+  @Test
+  fun `Malware policy issue message`() {
+    verifyPolicyMessage("7.1.6", "Malware policy")
+  }
+
+  @Test
+  fun `multiple policy types issue message`() {
+    verifyPolicyMessage("7.1.7", "policy")
   }
 
   private fun countOutdatedIssues(): Int {
@@ -249,5 +437,13 @@ class GooglePlaySdkIndexTest {
       }
     }
     return result
+  }
+
+  private fun verifyPolicyMessage(version: String, policyType: String) {
+    index.showPolicyIssues = true
+    val expectedMessage =
+      "com.example.ads.third.party:example version $version has $policyType issues that will block publishing of your app to Play Console"
+    assertThat(index.generatePolicyMessage("com.example.ads.third.party", "example", version))
+      .isEqualTo(expectedMessage)
   }
 }

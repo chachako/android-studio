@@ -5082,7 +5082,15 @@ class GradleDetectorTest : AbstractCheckTest() {
                     compile 'com.example.ads.third.party:example:8.0.0' // OK
                     compile 'com.example.ads.third.party:example:7.2.2' // OK
                     compile 'com.example.ads.third.party:example:7.2.1' // OK
-                    compile 'com.example.ads.third.party:example:7.2.0' // Outdated & Non compliant & Critical
+                    compile 'com.example.ads.third.party:example:7.2.0' // Outdated + Critical + Policy (user Data)
+                    compile 'com.example.ads.third.party:example:7.1.0' // Policy (Ads)
+                    compile 'com.example.ads.third.party:example:7.1.1' // Policy (Device and Network Abuse)
+                    compile 'com.example.ads.third.party:example:7.1.2' // Policy (Deceptive Behavior)
+                    compile 'com.example.ads.third.party:example:7.1.3' // Policy (User Data)
+                    compile 'com.example.ads.third.party:example:7.1.4' // Policy (Permissions)
+                    compile 'com.example.ads.third.party:example:7.1.5' // Policy (Mobile Unwanted Software)
+                    compile 'com.example.ads.third.party:example:7.1.6' // Policy (Malware)
+                    compile 'com.example.ads.third.party:example:7.1.7' // Policy (multiple)
 
                     compile 'log4j:log4j:latest.release' // OK
                     compile 'log4j:log4j' // OK
@@ -5109,7 +5117,7 @@ class GradleDetectorTest : AbstractCheckTest() {
               compile 'log4j:log4j:1.2.15' // Outdated NON_BLOCKING
                       ~~~~~~~~~~~~~~~~~~~~
           build.gradle:13: Warning: com.example.ads.third.party:example version 7.2.0 has been marked as outdated by its author [OutdatedLibrary]
-              compile 'com.example.ads.third.party:example:7.2.0' // Outdated & Non compliant & Critical
+              compile 'com.example.ads.third.party:example:7.2.0' // Outdated + Critical + Policy (user Data)
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           2 errors, 2 warnings
         """
@@ -7292,7 +7300,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                   .addVersions(
                     LibraryVersion.newBuilder().setVersionString("7.2.1").setIsLatestVersion(false)
                   )
-                  // Outdated & non compliant & Critical
+                  // Outdated & non compliant (user data) & Critical
                   .addVersions(
                     LibraryVersion.newBuilder()
                       .setVersionString("7.2.0")
@@ -7301,7 +7309,143 @@ class GradleDetectorTest : AbstractCheckTest() {
                         LibraryVersionLabels.newBuilder()
                           .setCriticalIssueInfo(LibraryVersionLabels.CriticalIssueInfo.newBuilder())
                           .setOutdatedIssueInfo(LibraryVersionLabels.OutdatedIssueInfo.newBuilder())
-                          .setPolicyIssuesInfo(LibraryVersionLabels.PolicyIssuesInfo.newBuilder())
+                          .setPolicyIssuesInfo(
+                            LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                              .addViolatedSdkPolicies(
+                                LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_USER_DATA
+                              )
+                          )
+                      )
+                  )
+                  // Non-compliant (Ads)
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("7.1.0")
+                      .setIsLatestVersion(false)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setPolicyIssuesInfo(
+                            LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                              .addViolatedSdkPolicies(
+                                LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_ADS
+                              )
+                          )
+                      )
+                  )
+                  // Non-compliant (Device and Network Abuse)
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("7.1.1")
+                      .setIsLatestVersion(false)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setPolicyIssuesInfo(
+                            LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                              .addViolatedSdkPolicies(
+                                LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy
+                                  .SDK_POLICY_DEVICE_AND_NETWORK_ABUSE
+                              )
+                          )
+                      )
+                  )
+                  // Non-compliant (Deceptive Behavior)
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("7.1.2")
+                      .setIsLatestVersion(false)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setPolicyIssuesInfo(
+                            LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                              .addViolatedSdkPolicies(
+                                LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy
+                                  .SDK_POLICY_DECEPTIVE_BEHAVIOR
+                              )
+                          )
+                      )
+                  )
+                  // Non-compliant (User Data)
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("7.1.3")
+                      .setIsLatestVersion(false)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setPolicyIssuesInfo(
+                            LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                              .addViolatedSdkPolicies(
+                                LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_USER_DATA
+                              )
+                          )
+                      )
+                  )
+                  // Non-compliant (Permissions)
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("7.1.4")
+                      .setIsLatestVersion(false)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setPolicyIssuesInfo(
+                            LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                              .addViolatedSdkPolicies(
+                                LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy
+                                  .SDK_POLICY_PERMISSIONS
+                              )
+                          )
+                      )
+                  )
+                  // Non-compliant (Mobile Unwanted Software)
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("7.1.5")
+                      .setIsLatestVersion(false)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setPolicyIssuesInfo(
+                            LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                              .addViolatedSdkPolicies(
+                                LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy
+                                  .SDK_POLICY_MOBILE_UNWANTED_SOFTWARE
+                              )
+                          )
+                      )
+                  )
+                  // Non-compliant (Malware)
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("7.1.6")
+                      .setIsLatestVersion(false)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setPolicyIssuesInfo(
+                            LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                              .addViolatedSdkPolicies(
+                                LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE
+                              )
+                          )
+                      )
+                  )
+                  // Non-compliant (Multiple violations)
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("7.1.7")
+                      .setIsLatestVersion(false)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setPolicyIssuesInfo(
+                            LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                              .addViolatedSdkPolicies(
+                                LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_USER_DATA
+                              )
+                              .addViolatedSdkPolicies(
+                                LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE
+                              )
+                              .addViolatedSdkPolicies(
+                                LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy
+                                  .SDK_POLICY_PERMISSIONS
+                              )
+                          )
                       )
                   )
               )

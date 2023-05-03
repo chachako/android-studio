@@ -44,6 +44,20 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     const val GOOGLE_PLAY_SDK_CACHE_EXPIRY_INTERVAL_DAYS = 7L
     const val GOOGLE_PLAY_SDK_INDEX_URL = "https://play.google.com/sdks"
     const val VIEW_DETAILS_MESSAGE = "View details in Google Play SDK Index"
+    val POLICY_TYPE_TO_TEXT =
+      mapOf(
+        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_UNKNOWN to "unknown",
+        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_ADS to "Ads",
+        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_DEVICE_AND_NETWORK_ABUSE to
+          "Device and Network Abuse",
+        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_DECEPTIVE_BEHAVIOR to
+          "Deceptive Behavior",
+        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_USER_DATA to "User Data",
+        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_PERMISSIONS to "Permissions",
+        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MOBILE_UNWANTED_SOFTWARE to
+          "Mobile Unwanted Software",
+        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE to "Malware"
+      )
   }
 
   private lateinit var lastReadResult: ReadDataResult
@@ -349,8 +363,10 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   }
 
   /** Generate a message for a library that has policy issues */
-  fun generatePolicyMessage(groupId: String, artifactId: String, versionString: String) =
-    "$groupId:$artifactId version $versionString has policy issues that will block publishing of your app to Play Console"
+  fun generatePolicyMessage(groupId: String, artifactId: String, versionString: String): String {
+    val policyTypeLabel = getPolicyLabel(getLabels(groupId, artifactId, versionString))
+    return "$groupId:$artifactId version $versionString has $policyTypeLabel issues that will block publishing of your app to Play Console"
+  }
 
   /** Generate a message for a library that has blocking critical issues */
   fun generateBlockingCriticalMessage(groupId: String, artifactId: String, versionString: String) =
@@ -416,4 +432,32 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   )
 
   @VisibleForTesting fun getLastReadSource() = lastReadSourceType
+
+  private fun getPolicyLabel(labels: LibraryVersionLabels?): String {
+    val defaultLabel = "policy"
+    val policyViolations = extractPolicyViolations(labels)
+    if (policyViolations.size != 1) {
+      return defaultLabel
+    }
+    val violation = policyViolations.first()
+    if (!POLICY_TYPE_TO_TEXT.containsKey(violation)) {
+      return defaultLabel
+    }
+    val type = POLICY_TYPE_TO_TEXT[violation] ?: return defaultLabel
+    return "$type policy"
+  }
+
+  private fun extractPolicyViolations(
+    labels: LibraryVersionLabels?
+  ): Set<LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy> {
+    val result = mutableSetOf<LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy>()
+    if (labels == null || !labels.hasPolicyIssuesInfo()) {
+      return result
+    }
+    val types = labels.policyIssuesInfo.violatedSdkPoliciesList
+    if (types != null) {
+      result.addAll(types)
+    }
+    return result
+  }
 }
