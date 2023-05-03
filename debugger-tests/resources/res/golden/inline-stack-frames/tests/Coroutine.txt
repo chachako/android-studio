@@ -1,0 +1,9 @@
+Breakpoint: Coroutine.kt:33 - tests.Coroutine$start$1.invokeSuspend(java.lang.Object)
+========================================================
+Not an Inline Stack Frame
+Call location: Coroutine.kt:33 - tests.Coroutine$start$1.invokeSuspend(java.lang.Object)
+------------------------------------------------------
+  $result                       : java.lang.Object
+  i3                            : int
+
+

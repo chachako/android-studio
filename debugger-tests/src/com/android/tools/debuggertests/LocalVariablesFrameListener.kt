@@ -16,7 +16,9 @@
 package com.android.tools.debuggertests
 
 import com.android.tools.debuggertests.Engine.FrameListener
+import com.jetbrains.jdi.ClassTypeImpl
 import com.jetbrains.jdi.LocalVariableImpl
+import com.sun.jdi.Field
 import com.sun.jdi.LocalVariable
 import com.sun.jdi.StackFrame
 
@@ -29,7 +31,30 @@ internal class LocalVariablesFrameListener : FrameListener {
 
   override fun onFrame(frame: StackFrame) {
     sb.append("Breakpoint: ${frame.location().printToString()}\n")
-    sb.append("========================================================\n")
+
+    val thisObject = frame.thisObject()
+    if (thisObject != null) {
+      sb.append("====== This Object ======================================================\n")
+      val type = thisObject.referenceType() as ClassTypeImpl
+      val interfaces = type.interfaces().map { it.name() }
+      if (interfaces.isNotEmpty()) {
+        sb.append("Interfaces:\n")
+        interfaces.forEach { sb.append("  $it\n") }
+      }
+      val superclass = type.superclass()?.name()
+      if (superclass != "java.lang.Object") {
+        sb.append("Superclass:\n")
+        sb.append("  $superclass\n")
+      }
+
+      val fields = type.fields()
+      if (fields.isNotEmpty()) {
+        sb.append("Fields:\n")
+        fields.forEach { sb.append("  %-10s: %s\n".format(it.name(), it.typeName())) }
+      }
+    }
+
+    sb.append("====== Local Variables ==================================================\n")
     frame
       .visibleVariables()
       .map { it as LocalVariableImpl }
@@ -37,6 +62,8 @@ internal class LocalVariablesFrameListener : FrameListener {
     sb.append('\n')
   }
 }
+
+private fun Field.toSummaryLine() = "%-10s: %s\n".format(name(), typeName())
 
 private fun LocalVariableImpl.toSummaryLine() =
   "%-2d %s: %-30s: %s\n".format(getSlot(), getScopes(), name(), typeName())

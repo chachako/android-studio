@@ -1,5 +1,5 @@
 Breakpoint: InlineSpilledVariables.kt:40 - tests.InlineSpilledVariables.start()
-========================================================
+====== Local Variables ==================================================
 0  [27-32]    [2-214]   : main1                         : int
 1  [28-32]    [4-214]   : main2                         : int
 2  [29-32]    [6-214]   : main3                         : int
@@ -14,7 +14,7 @@ Breakpoint: InlineSpilledVariables.kt:40 - tests.InlineSpilledVariables.start()
 11 [39-42]    [78-213]  : foo4$iv                       : int
 
 Breakpoint: InlineSpilledVariables.kt:50 - tests.InlineSpilledVariables.start()
-========================================================
+====== Local Variables ==================================================
 0  [27-32]    [2-214]   : main1                         : int
 1  [28-32]    [4-214]   : main2                         : int
 2  [29-32]    [6-214]   : main3                         : int

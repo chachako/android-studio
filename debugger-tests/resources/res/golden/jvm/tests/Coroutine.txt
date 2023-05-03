@@ -1,0 +1,13 @@
+Breakpoint: Coroutine.kt:33 - tests.Coroutine$start$1.invokeSuspend(java.lang.Object)
+====== This Object ======================================================
+Interfaces:
+  kotlin.jvm.functions.Function2
+Superclass:
+  kotlin.coroutines.jvm.internal.SuspendLambda
+Fields:
+  label     : int
+  $i1       : int
+====== Local Variables ==================================================
+1  [31-34]    [32-66]   : $result                       : java.lang.Object
+2  [32-34]    [34-66]   : i3                            : int
+

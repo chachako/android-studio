@@ -1,0 +1,10 @@
+Breakpoint: SuspendLambda.kt:34 - tests.SuspendLambda$start$1$1.invokeSuspend(java.lang.Object)
+========================================================
+Not an Inline Stack Frame
+Call location: SuspendLambda.kt:34 - tests.SuspendLambda$start$1$1.invokeSuspend(java.lang.Object)
+------------------------------------------------------
+  $result                       : java.lang.Object
+  i3                            : int
+  s                             : java.lang.String
+
+

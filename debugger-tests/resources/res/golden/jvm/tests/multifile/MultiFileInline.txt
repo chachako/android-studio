@@ -1,11 +1,11 @@
 Breakpoint: File1.kt:24 - tests.multifile.MultiFileInline.start()
-========================================================
+====== Local Variables ==================================================
 0  [26-26]    [2-31]    : i$iv                          : int
 1  [23-26]    [4-31]    : $i$f$function1                : int
 2  [24-26]    [7-31]    : s$iv                          : java.lang.String
 
 Breakpoint: File2.kt:24 - tests.multifile.MultiFileInline.start()
-========================================================
+====== Local Variables ==================================================
 0  [26-26]    [2-31]    : i$iv                          : int
 1  [23-26]    [4-31]    : $i$f$function1                : int
 2  [24-26]    [7-31]    : s$iv                          : java.lang.String
@@ -13,7 +13,7 @@ Breakpoint: File2.kt:24 - tests.multifile.MultiFileInline.start()
 4  [24-26]    [15-30]   : x$iv$iv                       : int
 
 Breakpoint: MultiFileInline.kt:30 - tests.multifile.MultiFileInline.start()
-========================================================
+====== Local Variables ==================================================
 0  [26-26]    [2-31]    : i$iv                          : int
 1  [23-26]    [4-31]    : $i$f$function1                : int
 2  [24-26]    [7-31]    : s$iv                          : java.lang.String

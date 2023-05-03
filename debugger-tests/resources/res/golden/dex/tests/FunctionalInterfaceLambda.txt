@@ -1,0 +1,10 @@
+Breakpoint: FunctionalInterfaceLambda.kt:32 - tests.FunctionalInterfaceLambda$start$1.visit(java.lang.String)
+====== This Object ======================================================
+Interfaces:
+  tests.FunctionalInterfaceLambda$Visitor
+Fields:
+  $i1       : int
+====== Local Variables ==================================================
+4  [30-33]    [0-26]    : s                             : java.lang.String
+0  [31-33]    [6-26]    : i3                            : int
+

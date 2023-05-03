@@ -1,0 +1,8 @@
+Breakpoint: RunnableLambda.kt:32 - tests.RunnableLambda$start$1.run()
+========================================================
+Not an Inline Stack Frame
+Call location: RunnableLambda.kt:32 - tests.RunnableLambda$start$1.run()
+------------------------------------------------------
+  i3                            : int
+
+

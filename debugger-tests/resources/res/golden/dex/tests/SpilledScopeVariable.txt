@@ -1,5 +1,5 @@
 Breakpoint: SpilledScopeVariable.kt:43 - tests.SpilledScopeVariable.start()
-========================================================
+====== Local Variables ==================================================
 0  [26-54]    [2-23]    : this_$iv                      : tests.SpilledScopeVariable
 1  [38-54]    [3-29]    : $i$f$foo                      : int
 2  [39-54]    [4-35]    : foo01$iv                      : int
@@ -9,7 +9,7 @@ Breakpoint: SpilledScopeVariable.kt:43 - tests.SpilledScopeVariable.start()
 6  [43-58]    [8-116]   : foo05$iv                      : int
 
 Breakpoint: SpilledScopeVariable.kt:57 - tests.SpilledScopeVariable.start()
-========================================================
+====== Local Variables ==================================================
 5  [42-58]    [7-116]   : foo04$iv                      : int
 6  [43-58]    [8-116]   : foo05$iv                      : int
 7  [45-58]    [12-116]  : foo06$iv                      : int

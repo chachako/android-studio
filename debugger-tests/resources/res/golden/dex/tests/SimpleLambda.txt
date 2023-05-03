@@ -1,0 +1,12 @@
+Breakpoint: SimpleLambda.kt:32 - tests.SimpleLambda$start$1.invoke(java.lang.String)
+====== This Object ======================================================
+Interfaces:
+  kotlin.jvm.functions.Function1
+Superclass:
+  kotlin.jvm.internal.Lambda
+Fields:
+  $i1       : int
+====== Local Variables ==================================================
+4  [30-33]    [0-26]    : s                             : java.lang.String
+0  [31-33]    [6-26]    : i3                            : int
+

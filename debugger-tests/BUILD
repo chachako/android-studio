@@ -26,6 +26,9 @@ kotlin_library(
     testonly = True,
     srcs = glob(["resources/src/**/*.kt"]),
     tags = tags,
+    deps = [
+        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core",
+    ],
 )
 
 dex_library(
@@ -118,10 +121,11 @@ iml_module(
     # do not sort: must match IML order
     srcs = ["src"],
     iml_files = ["debugger-tests.iml"],
-    # do not sort: must match IML order
-    resources = ["resources"],
     tags = tags,
-    test_srcs = ["testSrc"],
+    test_srcs = [
+        "resources/src",
+        "testSrc",
+    ],
     test_tags = ["manual"],
     visibility = ["//visibility:public"],
     # do not sort: must match IML order

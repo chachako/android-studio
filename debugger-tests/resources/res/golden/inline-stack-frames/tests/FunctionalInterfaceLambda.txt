@@ -1,0 +1,9 @@
+Breakpoint: FunctionalInterfaceLambda.kt:32 - tests.FunctionalInterfaceLambda$start$1.visit(java.lang.String)
+========================================================
+Not an Inline Stack Frame
+Call location: FunctionalInterfaceLambda.kt:32 - tests.FunctionalInterfaceLambda$start$1.visit(java.lang.String)
+------------------------------------------------------
+  i3                            : int
+  s                             : java.lang.String
+
+

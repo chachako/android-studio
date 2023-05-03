@@ -1,0 +1,10 @@
+Breakpoint: InlineLambda.kt:32 - tests.InlineLambda.start()
+====== Local Variables ==================================================
+0  [27-34]    [1-41]    : i1                            : int
+1  [28-34]    [2-41]    : i2                            : int
+2  [29-38]    [15-40]   : this_$iv                      : tests.InlineLambda
+3  [37-38]    [16-40]   : $i$f$foo                      : int
+4  [37-33]    [18-38]   : s                             : java.lang.String
+5  [30-33]    [19-38]   : $i$a$-foo-InlineLambda$start$1: int
+6  [31-33]    [20-38]   : i3                            : int
+

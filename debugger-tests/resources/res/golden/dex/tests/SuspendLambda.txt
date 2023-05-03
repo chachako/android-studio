@@ -1,0 +1,15 @@
+Breakpoint: SuspendLambda.kt:34 - tests.SuspendLambda$start$1$1.invokeSuspend(java.lang.Object)
+====== This Object ======================================================
+Interfaces:
+  kotlin.jvm.functions.Function2
+Superclass:
+  kotlin.coroutines.jvm.internal.SuspendLambda
+Fields:
+  $i1       : int
+  L$0       : java.lang.Object
+  label     : int
+====== Local Variables ==================================================
+6  [31-35]    [20-53]   : $result                       : java.lang.Object
+1  [32-35]    [24-53]   : s                             : java.lang.String
+2  [33-35]    [25-53]   : i3                            : int
+

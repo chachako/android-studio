@@ -1,0 +1,22 @@
+Breakpoint: InlineLambda.kt:32 - tests.InlineLambda.start()
+========================================================
+Not an Inline Stack Frame
+Call location: InlineLambda.kt:29 - tests.InlineLambda.start()
+------------------------------------------------------
+  i1                            : int
+  i2                            : int
+
+Inline frame for function 'foo' Depth: 1
+Call location: InlineLambda.kt:37 - tests.InlineLambda.start()
+------------------------------------------------------
+  this_$iv                      : tests.InlineLambda
+
+Inline frame for function 'lambda 'foo' in 'start'' Depth: 0
+Call location: InlineLambda.kt:32 - tests.InlineLambda.start()
+------------------------------------------------------
+  i1                            : int
+  i2                            : int
+  i3                            : int
+  s                             : java.lang.String
+
+

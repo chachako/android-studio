@@ -1,0 +1,9 @@
+Breakpoint: RunnableLambda.kt:32 - tests.RunnableLambda$start$1.run()
+====== This Object ======================================================
+Interfaces:
+  java.lang.Runnable
+Fields:
+  $i1       : int
+====== Local Variables ==================================================
+0  [31-33]    [1-21]    : i3                            : int
+
