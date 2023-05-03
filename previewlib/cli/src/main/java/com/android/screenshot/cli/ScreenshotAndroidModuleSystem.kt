@@ -40,7 +40,10 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.containers.map2Array
+import com.jetbrains.rd.util.collections.toImmutableStack
 import org.apache.commons.io.FileUtils
+import org.jetbrains.kotlin.fir.resolve.dfa.isNotEmpty
+import org.jetbrains.kotlin.fir.resolve.dfa.stackOf
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -60,19 +63,16 @@ class ScreenshotAndroidModuleSystem(
     override val module: Module
         get() = composeModule.module
 
-    val listOfFiles = mutableListOf<VirtualFile>()
+    val filesMap = mutableMapOf<String, MutableList<VirtualFile>>()
     override val moduleClassFileFinder: ClassFileFinder
         get() = object : ClassFileFinder {
             override fun findClassFile(fqcn: String): VirtualFile? {
-                if (listOfFiles.isEmpty()) {
+                if (filesMap.isEmpty()) {
                     try {
-                        listOfFiles.addAll(deps().filter { File(it).exists() }.flatMap {
-                            FileUtils.listFiles(
-                                File(it), arrayOf("jar"), true
-                            )
-                        }.map {
+                        val stack = stackOf<VirtualFile>()
+                        deps().map {
                             try {
-                                val outputRoot = StandardFileSystems.local().findFileByPath(it.path)
+                                val outputRoot = StandardFileSystems.local().findFileByPath(it)
                                 VirtualFileManager.getInstance().getFileSystem(
                                     StandardFileSystems.JAR_PROTOCOL
                                 )
@@ -80,22 +80,24 @@ class ScreenshotAndroidModuleSystem(
                             } catch (ex: Throwable) {
                                 null
                             }
-                        }.filterNotNull())
+                        }.filterNotNull().forEach{
+                            it.children.forEach { stack.push(it) }
+                        }
+                        while(stack.isNotEmpty) {
+                            val child = stack.pop()
+                            if (child.isDirectory) {
+                                child.children.forEach { stack.push(it) }
+                            } else {
+                                val name = child.path.substring(child.path.indexOf("!/")+2).replace("/",".").replace(".class","")
+                                filesMap.computeIfAbsent(name) {mutableListOf()}.add(child)
+                            }
+                        }
+
                     } catch (ex: Throwable) {
                         ex.printStackTrace()
                     }
                 }
-                val pathSegments = fqcn.split(".").toTypedArray()
-                pathSegments[pathSegments.size - 1] += SdkConstants.DOT_CLASS
-                listOfFiles.forEach {
-                    val classFile = VfsUtil.findRelativeFile(it, *pathSegments) ?: VfsUtil.findFile(
-                        Paths.get(it.path, *pathSegments), true
-                    )
-                    if (classFile != null && classFile.exists()) {
-                        return classFile
-                    }
-                }
-                return null
+                return filesMap[fqcn]?.get(0)
             }
 
         }

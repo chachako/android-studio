@@ -24,6 +24,7 @@ import com.android.screenshot.cli.ComposeProject
 import com.android.screenshot.cli.ScreenshotModuleClassLoaderManager
 import com.android.tools.idea.layoutlib.LayoutLibraryLoader
 import com.android.tools.idea.projectsystem.DependencyScopeType
+import com.android.tools.lint.model.LintModelExternalLibrary
 import com.android.tools.rendering.classloading.ModuleClassLoaderManager
 import com.android.tools.res.ids.ResourceIdManager
 import gnu.trove.TIntObjectHashMap
@@ -37,7 +38,7 @@ class ScreenshotResourceIdManager(private val composeProject: ComposeProject, pr
     private val toIdMap = EnumMap<ResourceType, MutableMap<String, Int>>(ResourceType::class.java)
     private val fromIdMap = TIntObjectHashMap<Pair<ResourceType, String>>()
     override val finalIdsUsed: Boolean
-        get() = true
+        get() = false
 
     override fun getCompiledId(resource: ResourceReference): Int? {
         TODO("Not yet implemented")
@@ -52,6 +53,13 @@ class ScreenshotResourceIdManager(private val composeProject: ComposeProject, pr
         if (rClass != null) {
             loadIdsFromResourceClass(rClass)
         }
+        composeProject.lintProject.buildVariant!!
+            .androidTestArtifact!!.dependencies.packageDependencies
+            .getAllLibraries()
+            .filterIsInstance<LintModelExternalLibrary>()
+            .flatMap{it.jarFiles}
+            .filter { it.name.equals("R.jar") }
+            .map { it.absolutePath }.map { (ModuleClassLoaderManager.get() as ScreenshotModuleClassLoaderManager).lastClassLoader?.loadClass(it) }.forEach { loadIdsFromResourceClass(it!!) }
         deps.forEach { loadIdsFromResourceClass(it) }
 
         return fromIdMap[id]?.let { (type, name) -> ResourceReference(ResourceNamespace.RES_AUTO, type, name) }

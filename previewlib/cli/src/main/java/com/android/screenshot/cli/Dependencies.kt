@@ -18,7 +18,10 @@ package com.android.screenshot.cli
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.model.LintModelExternalLibrary
 import com.android.tools.lint.model.LintModelModule
+import org.apache.commons.io.FileUtils
+import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 
 /**
  * This class manages a list of project dependencies.
@@ -26,18 +29,18 @@ import java.nio.file.Path
 class Dependencies(project: Project, rootLintModule: LintModelModule) {
 
     var classLoaderDependencies = initClassLoaderDependencies(project,rootLintModule)
-    var systemDependencies = initSystemDependencies(project)
-    private fun initSystemDependencies(project: Project): List<String> {
-        val dependencies = mutableListOf<String>(
-            project.buildTarget?.location!!,
-        )
+    var systemDependencies = initSystemDependencies(project,rootLintModule)
+    private fun initSystemDependencies(project: Project, rootLintModule: LintModelModule): List<String> {
+        val dependencies = mutableListOf<String>()
+        dependencies.addAll(rootLintModule.defaultVariant()!!.mainArtifact.classOutputs.filter { it.extension == "jar" }.map { it.absolutePath })
         dependencies.addAll(project.buildVariant!!
-                                .mainArtifact.dependencies.packageDependencies
+                                .androidTestArtifact!!.dependencies.packageDependencies
                                 .getAllLibraries()
                                 .filterIsInstance<LintModelExternalLibrary>()
                                 .flatMap{it.jarFiles}
                                 .map { it.absolutePath })
-        return dependencies
+        // This gets reversed in the ScreenshotAndroidModuleSystem as it does its caching.
+        return dependencies.reversed()
     }
 
     private fun initClassLoaderDependencies(
@@ -45,6 +48,8 @@ class Dependencies(project: Project, rootLintModule: LintModelModule) {
         rootLintModule: LintModelModule
     ): List<Path> {
         val trans = mutableListOf<Path>()
+        trans.addAll(FileUtils.listFiles(File(project.buildTarget?.location!!), arrayOf("jar"), true).map { it.toPath() })
+        trans.addAll(rootLintModule.defaultVariant()!!.mainArtifact.classOutputs.filter { it.extension == "jar" }.map { it.toPath() })
         trans.addAll(project.buildVariant!!
             .mainArtifact.dependencies.packageDependencies
             .getAllLibraries()
@@ -52,7 +57,6 @@ class Dependencies(project: Project, rootLintModule: LintModelModule) {
             .flatMap{it.jarFiles}
             .map { it.toPath() })
         trans.addAll(project.buildVariant!!.mainArtifact.classOutputs.filter { it.extension == "jar" }.map { it.toPath() })
-        trans.addAll(rootLintModule.defaultVariant()!!.mainArtifact.classOutputs.filter { it.extension == "jar" }.map { it.toPath() })
         return trans
     }
 }
