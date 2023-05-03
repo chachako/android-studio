@@ -482,7 +482,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             it.defaultSourceSet.dependsOn(
                 kotlinExtension.sourceSets.getByName(COMMON_MAIN_SOURCE_SET_NAME)
             )
-        }
+        } as KotlinMultiplatformAndroidCompilationImpl
 
         return KmpVariantImpl(
             dslInfo = dslInfo,
@@ -531,7 +531,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             it.defaultSourceSet.dependsOn(
                 kotlinExtension.sourceSets.getByName(COMMON_TEST_SOURCE_SET_NAME)
             )
-        }
+        } as KotlinMultiplatformAndroidCompilationImpl
 
         return KmpUnitTestImpl(
             dslInfo = dslInfo,
@@ -564,7 +564,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
 
         val kotlinCompilation = androidTarget.compilations.maybeCreate(
             KmpPredefinedAndroidCompilation.INSTRUMENTED_TEST.compilationName
-        )
+        ) as KotlinMultiplatformAndroidCompilationImpl
 
         val manifestLocation = getAndroidManifestDefaultLocation(kotlinCompilation)
 

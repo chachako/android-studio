@@ -296,4 +296,29 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             "Kotlin multiplatform android plugin doesn't support creating arbitrary compilations."
         )
     }
+
+    @Test
+    fun `accessing predefined compilations should succeed`() {
+        TestFileUtils.appendToFile(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            """
+                kotlin {
+                    androidExperimental {
+                        afterEvaluate {
+                            compilations {
+                                val main by getting {
+                                }
+                                val unitTest by getting {
+                                }
+                                val instrumentedTest by getting {
+                                }
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        project.executor().run(":kmpFirstLib:assembleAndroidMain")
+    }
 }

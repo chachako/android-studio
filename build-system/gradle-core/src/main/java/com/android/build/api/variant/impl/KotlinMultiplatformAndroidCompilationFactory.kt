@@ -27,7 +27,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.external.createCompilation
 class KotlinMultiplatformAndroidCompilationFactory(
     private val target: KotlinMultiplatformAndroidTargetImpl,
     private val kotlinExtension: KotlinMultiplatformExtension
-): NamedDomainObjectFactory<KotlinMultiplatformAndroidCompilationImpl> {
+): NamedDomainObjectFactory<KotlinMultiplatformAndroidCompilation> {
 
     override fun create(name: String): KotlinMultiplatformAndroidCompilationImpl {
         if (!KmpPredefinedAndroidCompilation.values().any { it.compilationName == name }) {

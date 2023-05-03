@@ -33,9 +33,9 @@ class KotlinMultiplatformAndroidTargetImpl(
     override val options: KotlinMultiplatformAndroidExtension
         get() = androidExtension
 
-    override val compilations: NamedDomainObjectContainer<KotlinMultiplatformAndroidCompilationImpl> =
+    override val compilations: NamedDomainObjectContainer<KotlinMultiplatformAndroidCompilation> =
         project.objects.domainObjectContainer(
-            KotlinMultiplatformAndroidCompilationImpl::class.java,
+            KotlinMultiplatformAndroidCompilation::class.java,
             KotlinMultiplatformAndroidCompilationFactory(
                 this,
                 kotlinExtension
