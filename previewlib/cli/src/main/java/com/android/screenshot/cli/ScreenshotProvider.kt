@@ -26,7 +26,6 @@ import com.android.tools.idea.compose.preview.ComposePreviewElementInstance
 import com.android.tools.idea.compose.preview.ComposePreviewElementTemplate
 import com.android.tools.idea.compose.preview.applyTo
 import com.android.tools.idea.configurations.Configuration
-import com.android.tools.idea.rendering.RenderResult
 import com.android.tools.idea.rendering.ShowFixFactory
 import com.android.tools.idea.rendering.StudioHtmlLinkManager
 import com.android.tools.idea.rendering.StudioRenderConfiguration
@@ -38,6 +37,7 @@ import com.intellij.openapi.module.ModuleManager
 import com.intellij.psi.xml.XmlFile
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.ModuleManagerComponentBridge
 import com.android.tools.rendering.ModuleRenderContext
+import com.android.tools.rendering.RenderResult
 import org.mockito.Mockito
 import java.awt.image.BufferedImage
 import java.io.File
