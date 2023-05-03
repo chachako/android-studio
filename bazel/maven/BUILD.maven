@@ -23,34 +23,6 @@ maven_import(
 )
 
 maven_artifact(
-    name = "androidx.inspection.inspection_1.0.0",
-    pom = "repository/androidx/inspection/inspection/1.0.0/inspection-1.0.0.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/inspection/inspection/1.0.0",
-    deps = [
-        "androidx.annotation.annotation_1.1.0",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_import(
-    name = "androidx.inspection.inspection",
-    classifiers = [],
-    jars = [
-    ],
-    exports = [
-        "androidx.annotation.annotation",
-    ],
-    original_deps = [
-        "androidx.annotation.annotation_1.1.0",
-    ],
-    pom = "repository/androidx/inspection/inspection/1.0.0/inspection-1.0.0.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/inspection/inspection/1.0.0",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "cglib.cglib-nodep_3.1",
     pom = "repository/cglib/cglib-nodep/3.1/cglib-nodep-3.1.pom",
     repo_root_path = "repository",

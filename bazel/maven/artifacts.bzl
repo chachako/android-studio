@@ -1,6 +1,5 @@
 ARTIFACTS = [
     "androidx.annotation:annotation:1.1.0",
-    "androidx.inspection:inspection:aar:1.0.0",
     "com.android.tools.build:aapt2-proto:7.3.0-alpha07-8248216",
     "com.android.tools.build:bundletool:1.14.1",
     "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10",
