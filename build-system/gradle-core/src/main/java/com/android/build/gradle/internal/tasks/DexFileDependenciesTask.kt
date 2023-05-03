@@ -180,7 +180,7 @@ abstract class DexFileDependenciesTask: NonIncrementalTask() {
                 DexFileDependenciesTask::outputDirectory
             ).on(InternalArtifactType.EXTERNAL_FILE_LIB_DEX_ARCHIVES)
 
-            if (creationConfig.services.projectOptions[BooleanOption.ENABLE_GLOBAL_SYNTHETICS]) {
+            if (creationConfig.enableGlobalSynthetics) {
                 creationConfig.artifacts
                     .setInitialProvider(taskProvider, DexFileDependenciesTask::outputGlobalSynthetics)
                     .on(InternalArtifactType.GLOBAL_SYNTHETICS_FILE_LIB)

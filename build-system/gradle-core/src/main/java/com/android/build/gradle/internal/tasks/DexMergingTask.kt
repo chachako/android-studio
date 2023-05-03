@@ -334,7 +334,7 @@ abstract class DexMergingTask : NewIncrementalTask() {
                     task.fileDependencyDexDir
                 )
             }
-            if (creationConfig.services.projectOptions[BooleanOption.ENABLE_GLOBAL_SYNTHETICS]
+            if (creationConfig.enableGlobalSynthetics
                 && creationConfig.dexingCreationConfig.dexingType != NATIVE_MULTIDEX) {
                 task.globalSynthetics.from(
                     getGlobalSyntheticsInput(

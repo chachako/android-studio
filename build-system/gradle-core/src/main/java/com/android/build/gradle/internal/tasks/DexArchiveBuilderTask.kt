@@ -296,7 +296,7 @@ abstract class DexArchiveBuilderTask : NewIncrementalTask() {
                 taskProvider,
                 DexArchiveBuilderTask::previousRunNumberOfBucketsFile
             ).withName("out").on(InternalArtifactType.DEX_NUMBER_OF_BUCKETS_FILE)
-            if (creationConfig.services.projectOptions[BooleanOption.ENABLE_GLOBAL_SYNTHETICS]) {
+            if (creationConfig.enableGlobalSynthetics) {
                 creationConfig.artifacts.setInitialProvider(
                     taskProvider
                 ) { it.projectOutputs.globalSynthetics }
