@@ -223,7 +223,7 @@ private constructor(
 
   companion object {
     @JvmStatic
-    fun create(config: UastEnvironment.Configuration): Fe10UastEnvironment {
+    fun create(config: Configuration): Fe10UastEnvironment {
       val parentDisposable = Disposer.newDisposable("Fe10UastEnvironment.create")
       val kotlinEnv = createKotlinCompilerEnv(parentDisposable, config)
       return Fe10UastEnvironment(kotlinEnv, parentDisposable)
@@ -248,7 +248,7 @@ private fun createKotlinCompilerConfig(enableKotlinScripting: Boolean): Compiler
 
 private fun createKotlinCompilerEnv(
   parentDisposable: Disposable,
-  config: UastEnvironment.Configuration
+  config: Fe10UastEnvironment.Configuration
 ): KotlinCoreEnvironment {
   // We don't bundle .dll files in the Gradle plugin for native file system access;
   // prevent warning logs on Windows when it's not found (see b.android.com/260180).
@@ -273,7 +273,7 @@ private fun createKotlinCompilerEnv(
 
 private fun configureFe10ProjectEnvironment(
   project: MockProject,
-  config: UastEnvironment.Configuration
+  config: Fe10UastEnvironment.Configuration
 ) {
   // UAST support.
   @Suppress("DEPRECATION") // TODO: Migrate to using UastFacade instead.
@@ -295,7 +295,7 @@ private fun configureFe10ProjectEnvironment(
 @OptIn(KtAnalysisApiInternals::class)
 private fun configureAnalysisApiServices(
   project: MockProject,
-  config: UastEnvironment.Configuration,
+  config: Fe10UastEnvironment.Configuration,
 ) {
   // Analysis API Base, i.e., base services for FE1.0 and FIR
   // But, for FIR, AA session builder already register these

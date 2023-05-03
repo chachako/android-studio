@@ -122,7 +122,8 @@ interface UastEnvironment {
     ): UastEnvironment {
       return when (config) {
         is FirUastEnvironment.Configuration -> FirUastEnvironment.create(config)
-        else -> Fe10UastEnvironment.create(config)
+        is Fe10UastEnvironment.Configuration -> Fe10UastEnvironment.create(config)
+        else -> throw UnsupportedOperationException()
       }
     }
 

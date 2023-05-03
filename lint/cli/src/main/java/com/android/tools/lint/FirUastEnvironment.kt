@@ -72,7 +72,7 @@ private constructor(
 
   companion object {
     @JvmStatic
-    fun create(config: UastEnvironment.Configuration): FirUastEnvironment {
+    fun create(config: Configuration): FirUastEnvironment {
       val parentDisposable = Disposer.newDisposable("FirUastEnvironment.create")
       val analysisSession = createAnalysisSession(parentDisposable, config)
       return FirUastEnvironment(
@@ -97,7 +97,7 @@ private fun createKotlinCompilerConfig(enableKotlinScripting: Boolean): Compiler
 
 private fun createAnalysisSession(
   parentDisposable: Disposable,
-  config: UastEnvironment.Configuration
+  config: FirUastEnvironment.Configuration
 ): StandaloneAnalysisAPISession {
   // [configureApplicationEnvironment] will register app disposable and dispose it at
   // [UastEnvironment#disposeApplicationEnvironment].
