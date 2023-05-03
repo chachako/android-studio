@@ -117,7 +117,9 @@ private constructor(
           // ADB is aware of this serial number; wait for it to appear in the provisioner.
           devices
             .mapNotNull { handles ->
-              handles.firstOrNull { it.state.connectedDevice?.serialNumber == serialNumber }
+              handles.firstOrNull {
+                it.state.connectedDevice?.serialNumber == serialNumber && it.state.isOnline()
+              }
             }
             .firstOrNull()
         else -> null
