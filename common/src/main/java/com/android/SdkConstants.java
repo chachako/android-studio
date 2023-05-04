@@ -67,9 +67,6 @@ public final class SdkConstants {
     /** Property in local.properties file that specifies the path of the Android SDK. */
     public static final String SDK_DIR_PROPERTY = "sdk.dir";
 
-    /** Property in local.properties file that specifies the path of the Gradle JDK. */
-    public static final String GRADLE_JDK_DIR_PROPERTY = "jdk.dir";
-
     /** Property in local.properties file that specifies the path of the Android NDK. */
     public static final String NDK_DIR_PROPERTY = "ndk.dir";
 
