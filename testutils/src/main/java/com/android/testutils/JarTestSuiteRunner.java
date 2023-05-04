@@ -16,36 +16,21 @@
 
 package com.android.testutils;
 
-import com.android.utils.ILogger;
-import com.android.utils.StdLogger;
-import com.google.common.base.Stopwatch;
-import java.io.File;
+import org.junit.runners.Suite;
+import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.RunnerBuilder;
+
 import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.junit.runner.Description;
-import org.junit.runner.Runner;
-import org.junit.runner.manipulation.Sorter;
-import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.Suite;
-import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.RunnerBuilder;
 
 public class JarTestSuiteRunner extends Suite {
 
@@ -57,77 +42,9 @@ public class JarTestSuiteRunner extends Suite {
         Class<?>[] value();
     }
 
-    private static final String JAVA_CLASS_PATH = "java.class.path";
-
-    private static final ILogger logger = new StdLogger(StdLogger.Level.INFO);
-
-    private final boolean isBazelIntegrationTestsSuite;
-
     public JarTestSuiteRunner(Class<?> suiteClass, RunnerBuilder builder)
             throws InitializationError, ClassNotFoundException, IOException {
         super(new DelegatingRunnerBuilder(builder), suiteClass, getTestClasses(suiteClass));
-        isBazelIntegrationTestsSuite =
-                suiteClass
-                        .getName()
-                        .equals("com.android.build.gradle.integration.BazelIntegrationTestsSuite");
-        final String seed = System.getProperty("test.seed");
-        if (seed != null) {
-            randomizeTestOrder(Long.parseLong(seed));
-        }
-        useAbsoluteForClasspath();
-    }
-
-    @Override
-    protected void runChild(Runner runner, RunNotifier notifier) {
-        // Logs the test class that will be invoked, temporarily added to investigate tests timing
-        // out issue b/78568459
-        if (isBazelIntegrationTestsSuite) {
-            TestExecutionTimeLogger.log();
-            Stopwatch stopwatch = Stopwatch.createStarted();
-            logger.info("Running " + describeChild(runner).getClassName());
-            super.runChild(runner, notifier);
-            logger.info(
-                    describeChild(runner).getClassName() + " finished running in %d secs",
-                    stopwatch.stop().elapsed(TimeUnit.SECONDS));
-        } else {
-            super.runChild(runner, notifier);
-        }
-    }
-
-    private void randomizeTestOrder(long seed) {
-        Map<Description, Integer> values = new HashMap<>();
-        Random random = new Random(seed);
-        assign(getDescription(), random, values);
-        super.sort(new Sorter(Comparator.comparingInt(values::get)));
-    }
-
-    private static void assign(
-            Description description, Random random, Map<Description, Integer> values) {
-        values.put(description, random.nextInt());
-        for (Description child : description.getChildren()) {
-            assign(child, random, values);
-        }
-    }
-
-    /**
-     * Rewrite java.class.path system property to use absolute paths. This is to work around the
-     * limitation in Gradle 4.9-rc-1 that prevents relative paths in the classpath.
-     */
-    private static void useAbsoluteForClasspath() {
-        Object javaClassPath = System.getProperties().get(JAVA_CLASS_PATH);
-        if (javaClassPath instanceof String) {
-            String classPath = (String) javaClassPath;
-            String[] paths = classPath.split(File.pathSeparator);
-
-            Path workspace = TestUtils.getWorkspaceRoot();
-            String absolutePaths =
-                    Arrays.stream(paths)
-                            .map(workspace::resolve)
-                            .map(Path::toString)
-                            .collect(Collectors.joining(File.pathSeparator));
-
-            System.setProperty(JAVA_CLASS_PATH, absolutePaths);
-        }
     }
 
     private static Class<?>[] getTestClasses(Class<?> suiteClass)
