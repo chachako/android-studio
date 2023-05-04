@@ -16,7 +16,7 @@
 package com.android.adblib.tools.testutils
 
 import com.android.adblib.AdbChannel
-import com.android.adblib.AdbChannelProvider
+import com.android.adblib.AdbServerChannelProvider
 import com.android.adblib.AdbSession
 import com.android.adblib.AdbSessionHost
 import com.android.adblib.ConnectedDevice
@@ -67,7 +67,7 @@ open class AdbLibToolsTestBase {
 
     protected fun createDisconnectedSession(): AdbSession {
         val host = registerCloseable(TestingAdbSessionHost())
-        val channelProvider = object: AdbChannelProvider {
+        val channelProvider = object: AdbServerChannelProvider {
             override suspend fun createChannel(timeout: Long, unit: TimeUnit): AdbChannel {
                 throw NotImplementedError("A disconnected session does not support channels")
             }
