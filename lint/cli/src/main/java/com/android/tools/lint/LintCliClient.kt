@@ -1333,7 +1333,7 @@ open class LintCliClient : LintClient {
     }
 
     if (fullPath) {
-      path = getCleanPath(file.absoluteFile)
+      path = file.absoluteFile.toPath().normalize().toString()
     } else if (file.isAbsolute) {
       path = getRelativePath(referenceDir, file) ?: file.path
       if (containsEmbeddedParentRef(path)) {
@@ -1955,55 +1955,6 @@ open class LintCliClient : LintClient {
       // When we switch to Java 11 this can be
       // return PrintWriter(this, true, Charsets.UTF_8)
       return PrintWriter(OutputStreamWriter(this, Charsets.UTF_8).buffered(), true)
-    }
-
-    /**
-     * Given a file, it produces a cleaned up path from the file. This will clean up the path such
-     * that `foo/./bar` becomes `foo/bar` and `foo/bar/../baz` becomes `foo/baz`.
-     *
-     * Unlike [java.io.File.getCanonicalPath] however, it will **not** attempt to make the file
-     * canonical, such as expanding symlinks and network mounts.
-     *
-     * @param file the file to compute a clean path for
-     * @return the cleaned up path
-     */
-    @JvmStatic
-    @VisibleForTesting
-    fun getCleanPath(file: File): String {
-      val path = file.path
-      val sb = StringBuilder(path.length)
-      if (path.startsWith(File.separator)) {
-        sb.append(File.separator)
-      }
-      elementLoop@ for (element in Splitter.on(File.separatorChar).omitEmptyStrings().split(path)) {
-        if (element == ".") {
-          continue
-        } else if (element == "..") {
-          if (sb.isNotEmpty()) {
-            for (i in sb.length - 1 downTo 0) {
-              val c = sb[i]
-              if (c == File.separatorChar) {
-                sb.setLength(if (i == 0) 1 else i)
-                continue@elementLoop
-              }
-            }
-            sb.setLength(0)
-            continue
-          }
-        }
-        if (sb.length > 1) {
-          sb.append(File.separatorChar)
-        } else if (sb.isNotEmpty() && sb[0] != File.separatorChar) {
-          sb.append(File.separatorChar)
-        }
-        sb.append(element)
-      }
-      if (
-        path.endsWith(File.separator) && sb.isNotEmpty() && sb[sb.length - 1] != File.separatorChar
-      ) {
-        sb.append(File.separator)
-      }
-      return sb.toString()
     }
   }
 

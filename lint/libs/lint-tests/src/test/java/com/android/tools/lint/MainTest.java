@@ -662,41 +662,6 @@ public class MainTest extends AbstractCheckTest {
         return new AccessibilityDetector();
     }
 
-    public void test_getCleanPath() {
-        assertEquals("foo", LintCliClient.getCleanPath(new File("foo")));
-        String sep = File.separator;
-        assertEquals(
-                "foo" + sep + "bar", LintCliClient.getCleanPath(new File("foo" + sep + "bar")));
-        assertEquals(sep, LintCliClient.getCleanPath(new File(sep)));
-        assertEquals(
-                "foo" + sep + "bar",
-                LintCliClient.getCleanPath(new File("foo" + sep + "." + sep + "bar")));
-        assertEquals("bar", LintCliClient.getCleanPath(new File("foo" + sep + ".." + sep + "bar")));
-        assertEquals("", LintCliClient.getCleanPath(new File("foo" + sep + "..")));
-        assertEquals("foo", LintCliClient.getCleanPath(new File("foo" + sep + "bar" + sep + "..")));
-        assertEquals(
-                "foo" + sep + ".foo" + sep + "bar",
-                LintCliClient.getCleanPath(new File("foo" + sep + ".foo" + sep + "bar")));
-        assertEquals(
-                "foo" + sep + "bar",
-                LintCliClient.getCleanPath(new File("foo" + sep + "bar" + sep + ".")));
-        assertEquals(
-                "foo" + sep + "...", LintCliClient.getCleanPath(new File("foo" + sep + "...")));
-        assertEquals(".." + sep + "foo", LintCliClient.getCleanPath(new File(".." + sep + "foo")));
-        assertEquals(sep + "foo", LintCliClient.getCleanPath(new File(sep + "foo")));
-        assertEquals(sep, LintCliClient.getCleanPath(new File(sep + "foo" + sep + "..")));
-        assertEquals(
-                sep + "foo",
-                LintCliClient.getCleanPath(new File(sep + "foo" + sep + "bar " + sep + "..")));
-
-        if (SdkConstants.CURRENT_PLATFORM != SdkConstants.PLATFORM_WINDOWS) {
-            assertEquals(sep + "c:", LintCliClient.getCleanPath(new File(sep + "c:")));
-            assertEquals(
-                    sep + "c:" + sep + "foo",
-                    LintCliClient.getCleanPath(new File(sep + "c:" + sep + "foo")));
-        }
-    }
-
     public void testGradle() throws Exception {
         File project =
                 getProjectDir(
