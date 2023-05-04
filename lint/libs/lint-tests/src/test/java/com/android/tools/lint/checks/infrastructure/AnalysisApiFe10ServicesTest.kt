@@ -65,4 +65,9 @@ class AnalysisApiFe10ServicesTest : AnalysisApiServicesTestBase() {
   fun testParameterModifiers() {
     checkParameterModifiers()
   }
+
+  @Test
+  fun testCancellation() {
+    checkCancellation()
+  }
 }

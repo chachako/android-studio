@@ -19,10 +19,13 @@ import com.intellij.codeInsight.CustomExceptionHandler
 import com.intellij.codeInsight.ExternalAnnotationsManager
 import com.intellij.codeInsight.InferredAnnotationsManager
 import com.intellij.core.CoreApplicationEnvironment
+import com.intellij.mock.MockApplication
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.DefaultLogger
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.impl.CoreProgressManager
 import com.intellij.openapi.roots.LanguageLevelProjectExtension
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.registry.Registry
@@ -132,6 +135,22 @@ internal fun configureApplicationEnvironment(
 
   appConfigured = true
   Disposer.register(appEnv.parentDisposable, Disposable { appConfigured = false })
+}
+
+internal fun reRegisterProgressManager(application: MockApplication) {
+  // The ProgressManager service is registered early in CoreApplicationEnvironment, we need to
+  // remove it first.
+  application.picoContainer.unregisterComponent(ProgressManager::class.java.name)
+  application.registerService(
+    ProgressManager::class.java,
+    object : CoreProgressManager() {
+      override fun doCheckCanceled() {
+        // Do nothing
+      }
+
+      override fun isInNonCancelableSection() = true
+    }
+  )
 }
 
 // KT-56277: [CompactVirtualFileSetFactory] is package-private, so we introduce our own default-ish

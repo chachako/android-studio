@@ -16,6 +16,7 @@
 package com.android.tools.lint
 
 import com.intellij.core.CoreApplicationEnvironment
+import com.intellij.mock.MockApplication
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
@@ -130,6 +131,8 @@ private fun createAnalysisSession(
           InternalPersistentJavaLanguageLevelReaderService.DefaultImpl()
         )
       }
+      // We need to re-register Application-level service before AA session is built.
+      reRegisterProgressManager(application as MockApplication)
       buildKtModuleProviderByCompilerConfiguration(config.kotlinCompilerConfig)
     }
   appLock.withLock {

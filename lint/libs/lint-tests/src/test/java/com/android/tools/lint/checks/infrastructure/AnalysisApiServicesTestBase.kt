@@ -17,6 +17,7 @@ package com.android.tools.lint.checks.infrastructure
 
 import com.android.tools.lint.analyzeForLint
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
+import com.intellij.openapi.progress.ProgressManager
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -231,5 +232,21 @@ abstract class AnalysisApiServicesTestBase {
           }
         )
       }
+  }
+
+  protected fun checkCancellation() {
+    listOf(kotlin("""
+          fun foo() { }
+               """)).use { context ->
+      context.uastFile!!.accept(
+        object : AbstractUastVisitor() {
+          override fun visitMethod(node: UMethod): Boolean {
+            assertTrue(ProgressManager.getInstance().isInNonCancelableSection)
+
+            return super.visitMethod(node)
+          }
+        }
+      )
+    }
   }
 }
