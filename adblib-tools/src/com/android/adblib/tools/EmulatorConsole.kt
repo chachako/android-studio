@@ -16,7 +16,7 @@
 package com.android.adblib.tools
 
 import com.android.adblib.AdbChannel
-import com.android.adblib.AdbChannelProviderFactory
+import com.android.adblib.AdbServerChannelProvider
 import com.android.adblib.AdbSession
 import com.android.adblib.testing.FakeAdbSession
 import com.android.adblib.toChannelReader
@@ -180,7 +180,7 @@ suspend fun AdbSession.openEmulatorConsole(
     authTokenProvider: suspend () -> String
 ): EmulatorConsole {
     val channelProvider =
-        AdbChannelProviderFactory.createConnectAddresses(host) {
+        AdbServerChannelProvider.createConnectAddresses(host) {
             listOf(address)
         }
 

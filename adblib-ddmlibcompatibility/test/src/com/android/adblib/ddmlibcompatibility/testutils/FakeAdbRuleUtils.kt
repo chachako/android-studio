@@ -15,7 +15,7 @@
  */
 package com.android.adblib.ddmlibcompatibility.testutils
 
-import com.android.adblib.AdbChannelProviderFactory
+import com.android.adblib.AdbServerChannelProvider
 import com.android.adblib.AdbSession
 import com.android.adblib.testingutils.CloseablesRule
 import com.android.adblib.testingutils.TestingAdbSessionHost
@@ -29,7 +29,7 @@ import java.time.Duration
 fun FakeAdbRule.createAdbSession(closeables: CloseablesRule): AdbSession {
     val host = TestingAdbSessionHost()
     val channelProvider =
-        AdbChannelProviderFactory.createOpenLocalHost(host) { this.fakeAdbServerPort }
+        AdbServerChannelProvider.createOpenLocalHost(host) { this.fakeAdbServerPort }
     return closeables.register(AdbSession.create(host, channelProvider))
 }
 
