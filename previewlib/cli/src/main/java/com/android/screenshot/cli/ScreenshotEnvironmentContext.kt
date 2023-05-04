@@ -44,10 +44,10 @@ import com.intellij.psi.xml.XmlFile
 import org.apache.http.HttpEntity
 import org.apache.http.entity.mime.MultipartEntityBuilder
 import org.jetbrains.android.dom.navigation.getStartDestLayoutId
-import org.jetbrains.android.uipreview.StudioModuleClassLoaderManager
 import java.util.concurrent.CompletableFuture
 
-class ScreenshotEnvironmentContext(private val project: ComposeProject) : EnvironmentContext {
+class ScreenshotEnvironmentContext(private val project: ComposeProject, private val dependencies: Dependencies) : EnvironmentContext {
+    private val classLoaderManager = ScreenshotModuleClassLoaderManager(dependencies)
     private val stubCrashReporter = object : CrashReporter {
         override fun submit(crashReport: CrashReport): CompletableFuture<String> =
             CompletableFuture.completedFuture("")
@@ -132,7 +132,7 @@ class ScreenshotEnvironmentContext(private val project: ComposeProject) : Enviro
     override fun getOriginalFile(psiFile: PsiFile): PsiFile = psiFile
 
     override fun getModuleClassLoaderManager(): ModuleClassLoaderManager {
-        return StudioModuleClassLoaderManager.get()
+        return classLoaderManager
     }
 
     override fun getCrashReporter(): CrashReporter = stubCrashReporter

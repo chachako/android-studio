@@ -47,12 +47,14 @@ class ScreenshotRenderModelModule(
     val composeProject: ComposeProject,
     val composeModule: ComposeModule,
     val sdkPath: String,
-    val rootLintModule: LintModelModule
+    val rootLintModule: LintModelModule,
+    val sysDependencies: Dependencies
 ) :
     RenderModelModule {
 
     private val resourceManager = ScreenshotResourceIdManager(composeProject, composeModule, rootLintModule)
     private val LOG = Logger.getInstance(ScreenshotRenderModelModule::class.java)
+    private val environmentContext = ScreenshotEnvironmentContext(composeProject, sysDependencies)
 
     override val manifest: RenderModelManifest?
         get() {
@@ -90,7 +92,7 @@ class ScreenshotRenderModelModule(
     override val name: String
         get() = composeModule.module.name
     override val environment: EnvironmentContext
-        get() = ScreenshotEnvironmentContext(composeProject)
+        get() = environmentContext
 
     override fun getIdeaModule(): Module {
         return composeModule.module

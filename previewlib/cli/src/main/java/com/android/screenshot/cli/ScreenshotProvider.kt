@@ -121,7 +121,7 @@ class ScreenshotProvider(
                 .toMutableList()
         instances.addAll(previewNodes.filterIsInstance<ComposePreviewElementInstance>())
         instances.distinct()
-        val model = ScreenshotRenderModelModule(composeApplication, composeProject, composeModule, sdkPath, rootLintModule)
+        val model = ScreenshotRenderModelModule(composeApplication, composeProject, composeModule, sdkPath, rootLintModule, dependencies)
         for (previewElement in instances) {
             val renderResult = renderPreviewElement(previewElement, model)
             val fileName = previewElement.displaySettings.name
@@ -147,7 +147,7 @@ class ScreenshotProvider(
     private fun renderPreviewElement(previewElement: ComposePreviewElementInstance, model: ScreenshotRenderModelModule): RenderResult? {
         val config =
             Configuration.create(
-                createConfigManager(composeProject, composeModule, sdkPath),
+                createConfigManager(composeProject, composeModule, sdkPath, dependencies),
                 null,
                 FolderConfiguration.createDefault()
             )
