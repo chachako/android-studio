@@ -124,19 +124,19 @@ class ScreenshotProvider(
         val model = ScreenshotRenderModelModule(composeApplication, composeProject, composeModule, sdkPath, rootLintModule)
         for (previewElement in instances) {
             val renderResult = renderPreviewElement(previewElement, model)
-            val fileName = previewElement.displaySettings.name + ".png"
+            val fileName = previewElement.displaySettings.name
             if (recordGoldens) {
-                renderResult!!.renderedImage.copy?.let { saveImage(it, goldenLocation + fileName) }
+                renderResult!!.renderedImage.copy?.let { saveImage(it, goldenLocation + fileName + ".png") }
             } else {
                 val result = compareImages(
                     renderResult!!,
                     goldenLocation,
                     outputLocation,
-                    fileName
+                    fileName + ".png"
                 )
                 if ( result is Verify.AnalysisResult.Failed) {
-                    saveImage(result.imageDiff.highlights, outputLocation + previewElement.instanceId + "_diff.png")
-                    renderResult.renderedImage.copy?.let { saveImage(it, outputLocation + previewElement.instanceId + "_actual.png") }
+                    saveImage(result.imageDiff.highlights, outputLocation + fileName + "_diff.png")
+                    renderResult.renderedImage.copy?.let { saveImage(it, outputLocation + fileName + "_actual.png") }
                 }
                 results.add(result)
             }
