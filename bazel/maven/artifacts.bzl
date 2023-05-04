@@ -682,7 +682,8 @@ REMOTE_REPOS = {
     "Maven Central": "https://repo1.maven.org/maven2/",
     "JCenter": "https://jcenter.bintray.com/",
     "Google": "https://maven.google.com/",
-    "IntelliJ deps": "https://repo.gradle.org/gradle/libs-releases/",
+    "Gradle Libs": "https://repo.gradle.org/gradle/libs-releases/",
     "GradlePlugins": "https://plugins.gradle.org/m2",
     "Kotlin dev": "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev/",
+    "IntelliJ Third-Party deps": "https://cache-redirector.jetbrains.com/intellij-dependencies",
 }
