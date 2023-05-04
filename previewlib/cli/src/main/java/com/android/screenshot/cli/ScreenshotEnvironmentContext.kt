@@ -138,4 +138,6 @@ class ScreenshotEnvironmentContext(private val project: ComposeProject) : Enviro
     override fun getCrashReporter(): CrashReporter = stubCrashReporter
 
     override fun createCrashReport(t: Throwable): CrashReport = StubCrashReport()
+
+    override fun isInTest(): Boolean = false
 }
