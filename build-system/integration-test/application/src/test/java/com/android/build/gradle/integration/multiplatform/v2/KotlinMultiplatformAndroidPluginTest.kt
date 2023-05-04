@@ -64,7 +64,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                kotlin.androidExperimental.options {
+                kotlin.androidExperimental {
                     enableUnitTestCoverage = true
                 }
             """.trimIndent()
@@ -200,7 +200,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                kotlin.androidExperimental.options {
+                kotlin.androidExperimental {
                     packagingOptions.resources.excludes.addAll(listOf(
                         "**/*.java",
                         "junit/**",

@@ -17,7 +17,6 @@
 package com.android.build.api.variant.impl
 
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
-import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -27,11 +26,10 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.external.DecoratedExternalKotlinTa
 class KotlinMultiplatformAndroidTargetImpl(
     delegate: Delegate,
     kotlinExtension: KotlinMultiplatformExtension,
-    private val androidExtension: KotlinMultiplatformAndroidExtension
-) : DecoratedExternalKotlinTarget(delegate), KotlinMultiplatformAndroidTarget {
-
-    override val options: KotlinMultiplatformAndroidExtension
-        get() = androidExtension
+    androidExtension: KotlinMultiplatformAndroidExtension
+) : DecoratedExternalKotlinTarget(delegate),
+    KotlinMultiplatformAndroidTarget,
+    KotlinMultiplatformAndroidExtension by androidExtension {
 
     override val compilations: NamedDomainObjectContainer<KotlinMultiplatformAndroidCompilation> =
         project.objects.domainObjectContainer(
@@ -41,8 +39,4 @@ class KotlinMultiplatformAndroidTargetImpl(
                 kotlinExtension
             )
         )
-
-    override fun options(action: KotlinMultiplatformAndroidExtension.() -> Unit) {
-        androidExtension.action()
-    }
 }

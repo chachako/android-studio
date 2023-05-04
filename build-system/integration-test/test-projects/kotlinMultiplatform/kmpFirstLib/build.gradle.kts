@@ -23,21 +23,19 @@ kotlin {
     }
 
 
-    options {
-      namespace = "com.example.kmpfirstlib"
-      compileSdk = property("latestCompileSdk") as Int
-      minSdk = 22
-      buildTypeMatching.add("debug")
-      productFlavorsMatching["type"] = mutableListOf("typeone")
-      productFlavorsMatching["mode"] = mutableListOf("modetwo")
+    namespace = "com.example.kmpfirstlib"
+    compileSdk = property("latestCompileSdk") as Int
+    minSdk = 22
+    buildTypeMatching.add("debug")
+    productFlavorsMatching["type"] = mutableListOf("typeone")
+    productFlavorsMatching["mode"] = mutableListOf("modetwo")
 
-      testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-      aarMetadata.minAgpVersion = "7.2.0"
+    aarMetadata.minAgpVersion = "7.2.0"
 
-      enableUnitTest = true
-      enableAndroidTest = true
-    }
+    enableUnitTest = true
+    enableAndroidTest = true
   }
 
    sourceSets.getByName("commonTest") {

@@ -25,10 +25,6 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
  *
  * TODO(b/267309622): Move to gradle-api
  */
-interface KotlinMultiplatformAndroidTarget: KotlinTarget {
+interface KotlinMultiplatformAndroidTarget: KotlinTarget, KotlinMultiplatformAndroidExtension {
     override val compilations: NamedDomainObjectContainer<KotlinMultiplatformAndroidCompilation>
-
-    val options: KotlinMultiplatformAndroidExtension
-
-    fun options(action: KotlinMultiplatformAndroidExtension.() -> Unit)
 }

@@ -50,10 +50,8 @@ class KotlinMultiplatformAndroidDexingTest {
                             }
                         }
 
-                        options {
-                            isTestMultiDexEnabled = true
-                            isCoreLibraryDesugaringEnabled = true
-                        }
+                        isTestMultiDexEnabled = true
+                        isCoreLibraryDesugaringEnabled = true
                     }
                 }
                 dependencies {

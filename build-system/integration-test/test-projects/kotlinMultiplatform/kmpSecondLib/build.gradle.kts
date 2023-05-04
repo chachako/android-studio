@@ -8,10 +8,8 @@ kotlin {
   jvm()
 
   targets.withType(com.android.build.api.variant.impl.KotlinMultiplatformAndroidTarget::class.java) {
-    options {
-      namespace = "com.example.kmpsecondlib"
-      compileSdk = property("latestCompileSdk") as Int
-      minSdk = 22
-    }
+    namespace = "com.example.kmpsecondlib"
+    compileSdk = property("latestCompileSdk") as Int
+    minSdk = 22
   }
 }

@@ -47,13 +47,11 @@ class KotlinMultiplatformAndroidLintTest {
                             }
                         }
 
-                        options {
-                            isTestMultiDexEnabled = true
-                             lint {
-                                disable += "GradleDependency" // such that we don't flag newly available Kotlin versions etc
-                                textReport = true
-                                abortOnError = true
-                            }
+                        isTestMultiDexEnabled = true
+                        lint {
+                            disable += "GradleDependency" // such that we don't flag newly available Kotlin versions etc
+                            textReport = true
+                            abortOnError = true
                         }
                     }
                 }
@@ -121,10 +119,8 @@ class KotlinMultiplatformAndroidLintTest {
             """
                 kotlin {
                     androidExperimental {
-                        options {
-                            lint {
-                                checkTestSources = true
-                            }
+                        lint {
+                            checkTestSources = true
                         }
                     }
                 }
