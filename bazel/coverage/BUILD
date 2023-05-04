@@ -1003,7 +1003,8 @@ coverage_report(
         "//tools/adt/idea/assistant:assistant-test_tests",
         "//tools/adt/idea/build-attribution:intellij.android.build-attribution.tests_tests",
         "//tools/adt/idea/build-common:intellij.android.buildCommon_tests",
-        "//tools/adt/idea/compose-designer:intellij.android.compose-designer.tests_tests",
+        # TODO(b/280794485): test are too flaky, disabling studio-coverage until we solve all the studio-linux flakes
+        #"//tools/adt/idea/compose-designer:intellij.android.compose-designer.tests_tests",
         "//tools/adt/idea/connection-assistant:connection-assistant-test_tests",
         # TODO(b/277967945) too flaky for coverage
         #"//tools/adt/idea/dagger:intellij.android.dagger.tests_tests",
@@ -1011,8 +1012,10 @@ coverage_report(
         "//tools/adt/idea/databinding:intellij.android.databinding.tests_tests",
         "//tools/adt/idea/debuggers:intellij.android.debuggers.tests_tests",
         "//tools/adt/idea/deploy:intellij.android.deploy_tests",
-        "//tools/adt/idea/designer:intellij.android.designer.tests_tests",
-        "//tools/adt/idea/designer/customview:intellij.android.designer.customview.tests_tests",
+        # TODO(b/280794485): test are too flaky, disabling studio-coverage until we solve all the studio-linux flakes
+        #"//tools/adt/idea/designer:intellij.android.designer.tests_tests",
+        # TODO(b/280794485): test are too flaky, disabling studio-coverage until we solve all the studio-linux flakes
+        #"//tools/adt/idea/designer/customview:intellij.android.designer.customview.tests_tests",
         "//tools/adt/idea/device-explorer:intellij.android.device-explorer.tests_tests",
         "//tools/adt/idea/device-explorer-files:intellij.android.device-explorer-files.tests_tests",
         "//tools/adt/idea/device-explorer-monitor:intellij.android.device-explorer-monitor.tests_tests",
