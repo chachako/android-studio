@@ -81,7 +81,7 @@ class LocalEmulatorProvisionerPlugin(
     suspend fun rescanAvds(): List<AvdInfo>
     suspend fun createAvd(): Boolean
     suspend fun editAvd(avdInfo: AvdInfo): Boolean
-    suspend fun startAvd(avdInfo: AvdInfo)
+    suspend fun startAvd(avdInfo: AvdInfo, coldBoot: Boolean)
     suspend fun stopAvd(avdInfo: AvdInfo)
     suspend fun showOnDisk(avdInfo: AvdInfo)
     suspend fun duplicateAvd(avdInfo: AvdInfo)
@@ -286,24 +286,37 @@ class LocalEmulatorProvisionerPlugin(
       object : ActivationAction {
         override val presentation = defaultPresentation.fromContext().enabledIfStopped()
 
-        override suspend fun activate(params: ActivationParams) {
-          try {
-            withContext(scope.coroutineContext) {
-              stateFlow.advanceStateWithTimeout(
-                timeout = CONNECTION_TIMEOUT,
-                updateState = {
-                  (it as? Disconnected)?.let {
-                    Disconnected(it.properties, isTransitioning = true, status = "Starting up")
-                  }
-                },
-                advanceAction = { avdManager.startAvd(avdInfo) }
-              )
-            }
-          } catch (e: TimeoutCancellationException) {
-            logger.warn("Emulator failed to connect within $CONNECTION_TIMEOUT_MINUTES minutes")
-          }
+        override suspend fun activate() {
+          activate(coldBoot = false)
         }
       }
+
+    override val coldBootAction =
+      object : ColdBootAction {
+        override val presentation = defaultPresentation.fromContext().enabledIfStopped()
+
+        override suspend fun activate() {
+          activate(coldBoot = true)
+        }
+      }
+
+    private suspend fun activate(coldBoot: Boolean) {
+      try {
+        withContext(scope.coroutineContext) {
+          stateFlow.advanceStateWithTimeout(
+            timeout = CONNECTION_TIMEOUT,
+            updateState = {
+              (it as? Disconnected)?.let {
+                Disconnected(it.properties, isTransitioning = true, status = "Starting up")
+              }
+            },
+            advanceAction = { avdManager.startAvd(avdInfo, coldBoot) }
+          )
+        }
+      } catch (e: TimeoutCancellationException) {
+        logger.warn("Emulator failed to connect within $CONNECTION_TIMEOUT_MINUTES minutes")
+      }
+    }
 
     override val editAction =
       object : EditAction {

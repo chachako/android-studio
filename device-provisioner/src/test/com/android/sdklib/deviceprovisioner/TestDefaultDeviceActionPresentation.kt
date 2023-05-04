@@ -23,6 +23,7 @@ object TestDefaultDeviceActionPresentation : DeviceAction.DefaultPresentation {
   override val createDeviceAction = DeviceAction.Presentation("Create", icon, true)
   override val createDeviceTemplateAction = DeviceAction.Presentation("Create", icon, true)
   override val activationAction = DeviceAction.Presentation("Start", icon, true)
+  override val coldBootAction = DeviceAction.Presentation("Cold Boot", icon, true)
   override val deactivationAction = DeviceAction.Presentation("Stop", icon, true)
   override val editAction = DeviceAction.Presentation("Edit", icon, true)
   override val showAction = DeviceAction.Presentation("Show", icon, true)

@@ -94,7 +94,7 @@ class LocalEmulatorProvisionerPluginTest {
         return true
       }
 
-    override suspend fun startAvd(avdInfo: AvdInfo) {
+    override suspend fun startAvd(avdInfo: AvdInfo, coldBoot: Boolean) {
       val device =
         FakeEmulatorConsole(avdInfo.name, avdInfo.dataFolderPath.toString()) { doStopAvd(avdInfo) }
       session.deviceServices.configureDeviceProperties(
@@ -216,6 +216,18 @@ class LocalEmulatorProvisionerPluginTest {
     assertThat(handle.state).isInstanceOf(Disconnected::class.java)
     assertThat(provisioner.devices.value.map { it.state.properties.title })
       .containsExactly("Fake Device 1")
+  }
+
+  @Test
+  fun coldBootDevice(): Unit = runBlockingWithTimeout {
+    avdManager.createAvd()
+
+    yieldUntil { provisioner.devices.value.size == 1 }
+
+    val handle = provisioner.devices.value[0]
+    handle.coldBootAction?.activate()
+
+    assertThat(handle.state.connectedDevice).isNotNull()
   }
 
   private fun checkProperties(properties: LocalEmulatorProperties) {

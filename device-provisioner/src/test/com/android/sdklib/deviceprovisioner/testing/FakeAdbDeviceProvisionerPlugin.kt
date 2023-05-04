@@ -21,7 +21,6 @@ import com.android.adblib.testingutils.FakeAdbServerProvider
 import com.android.adblib.utils.createChildScope
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.deviceprovisioner.ActivationAction
-import com.android.sdklib.deviceprovisioner.ActivationParams
 import com.android.sdklib.deviceprovisioner.DeactivationAction
 import com.android.sdklib.deviceprovisioner.DeviceHandle
 import com.android.sdklib.deviceprovisioner.DeviceProperties
@@ -119,7 +118,7 @@ class FakeAdbDeviceProvisionerPlugin(
       object : ActivationAction {
         override val presentation =
           MutableStateFlow(TestDefaultDeviceActionPresentation.fromContext())
-        override suspend fun activate(params: ActivationParams) {
+        override suspend fun activate() {
           val properties = state.properties
           fakeAdbDevice =
             fakeAdb

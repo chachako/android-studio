@@ -16,7 +16,6 @@
 package com.android.sdklib.deviceprovisioner
 
 import com.android.sdklib.deviceprovisioner.DeviceAction.DefaultPresentation
-import java.nio.file.Path
 import java.time.Duration
 import java.time.Instant
 import javax.swing.Icon
@@ -47,6 +46,7 @@ interface DeviceAction {
     val createDeviceAction: Presentation
     val createDeviceTemplateAction: Presentation
     val activationAction: Presentation
+    val coldBootAction: Presentation
     val deactivationAction: Presentation
     val editAction: Presentation
     val showAction: Presentation
@@ -84,16 +84,15 @@ interface CreateDeviceTemplateAction : DeviceAction {
 }
 
 interface ActivationAction : DeviceAction {
-  suspend fun activate(params: ActivationParams = ActivationParams.DefaultActivation)
+  suspend fun activate()
 
   override fun DefaultPresentation.fromContext() = activationAction
 }
 
-sealed interface ActivationParams {
-  object DefaultActivation : ActivationParams
-  object ColdBoot : ActivationParams
-  object QuickBoot : ActivationParams
-  data class SnapshotBoot(val snapshot: Path) : ActivationParams
+interface ColdBootAction : DeviceAction {
+  suspend fun activate()
+
+  override fun DefaultPresentation.fromContext() = coldBootAction
 }
 
 interface DeactivationAction : DeviceAction {
