@@ -188,12 +188,12 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
         @VisibleForTesting
         internal fun configureObfuscationMappingFile(task: CompileArtProfileTask) {
             if (creationConfig is VariantCreationConfig) {
-                task.useMappingFile.set(
+                task.useMappingFile.setDisallowChanges(
                     creationConfig.experimentalProperties.map {
                         !ModulePropertyKey.BooleanWithDefault.ART_PROFILE_R8_REWRITING.getValue(it)
                     })
             } else {
-                task.useMappingFile.set(true)
+                task.useMappingFile.setDisallowChanges(true)
             }
             task.obfuscationMappingFile.setDisallowChanges(
                 creationConfig.artifacts.get(SingleArtifact.OBFUSCATION_MAPPING_FILE)
