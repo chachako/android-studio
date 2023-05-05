@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.apache.maven.model.Model;
-import org.apache.maven.model.building.DefaultModelBuilderFactory;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.model.building.ModelBuildingRequest;
@@ -83,7 +82,7 @@ public class MavenRepository {
         system = AetherUtils.newRepositorySystem(serviceLocator);
         session = AetherUtils.newSession(system, repoPath);
         this.repositories = repositories;
-        modelBuilder = new DefaultModelBuilderFactory().newInstance();
+        modelBuilder = (ModelBuilder) serviceLocator.getService(ModelBuilder.class);
     }
 
     /**

@@ -171,8 +171,10 @@ java_library(
     deps = [
         ":json",
         "@maven//:com.google.code.findbugs.jsr305",
+        "@maven//:com.google.code.gson.gson",
         "@maven//:com.google.guava.guava",
         "@maven//:org.apache.maven.maven-aether-provider",
+        "@maven//:org.apache.maven.maven-model-builder",
         "@maven//:org.eclipse.aether.aether-connector-basic",
         "@maven//:org.eclipse.aether.aether-transport-file",
         "@maven//:org.eclipse.aether.aether-transport-http",

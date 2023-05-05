@@ -18,6 +18,14 @@ package com.android.tools.maven;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
+import org.apache.maven.model.building.DefaultModelBuilderFactory;
+import org.apache.maven.model.building.ModelBuilder;
+import org.apache.maven.model.building.ModelBuildingRequest;
+import org.apache.maven.model.building.ModelProblemCollector;
+import org.apache.maven.model.validation.DefaultModelValidator;
+import org.apache.maven.model.validation.ModelValidator;
 import org.apache.maven.repository.internal.ArtifactDescriptorReaderDelegate;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
@@ -44,6 +52,48 @@ public class AetherUtils {
         locator.addService(TransporterFactory.class, FileTransporterFactory.class);
         locator.addService(TransporterFactory.class, HttpTransporterFactory.class);
         locator.setServices(VersionRangeResolver.class, new CustomVersionRangeResolver(verbose));
+
+        // Use a custom model builder that enables us to inject a custom model validator.
+        locator.setServices(
+                ModelBuilder.class,
+                new DefaultModelBuilderFactory() {
+                    @Override
+                    protected ModelValidator newModelValidator() {
+                        return new DefaultModelValidator(newModelVersionPropertiesProcessor()) {
+                            @Override
+                            public void validateEffectiveModel(
+                                    org.apache.maven.model.Model m,
+                                    ModelBuildingRequest request,
+                                    ModelProblemCollector problems) {
+                                // Some artifacts have models that cannot be processed by the
+                                // maven-model-builder library. Specifically,
+                                // We get the following validation errors:
+                                // Caused by:
+                                // org.apache.maven.model.building.ModelBuildingException: ...
+                                // problems were encountered while building the
+                                // effective model for org.glassfish.jaxb:jaxb-runtime:2.2.11
+                                // [ERROR] 'dependencyManagement.dependencies.dependency.systemPath'
+                                // for com.sun:tools:jar must
+                                // specify an absolute path but is ${tools.jar} @
+                                DependencyManagement management = m.getDependencyManagement();
+                                if (management != null) {
+                                    for (Dependency dependency : management.getDependencies()) {
+                                        String systemPath = dependency.getSystemPath();
+                                        if (systemPath != null
+                                                && systemPath.equals("${tools.jar}")) {
+                                            return; // Ignore this artifact.
+                                        }
+                                    }
+                                }
+
+                                // For all other artifacts, we delegate to the default model
+                                // validator.
+                                super.validateEffectiveModel(m, request, problems);
+                            }
+                        };
+                    }
+                }.newInstance());
+
         return locator;
     }
 
@@ -66,6 +116,7 @@ public class AetherUtils {
                 system.newLocalRepositoryManager(session, new LocalRepository(repoPath)));
 
         session.setIgnoreArtifactDescriptorRepositories(true);
+        session.setRepositoryListener(new CustomRepositoryListener(repoPath));
 
         // When this flag is false, conflict losers are removed from the dependency graph. E.g.,
         // even though common:28 depends on guava:28, it will not be in the dependency graph if

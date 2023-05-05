@@ -20,20 +20,31 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.android.testutils.TestUtils;
-import org.junit.Test;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class LocalMavenRepositoryGeneratorTest {
 
+    @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     @Test
     public void testGenerator() throws Exception {
-        Path repoPath = Paths.get("tools/base/bazel/test/local_maven_repository_generator/fake_repository");
+        // All aritfacts will be downloaded to a local repository in this temporary folder.
+        Path localRepoPath = temporaryFolder.newFolder("fake_local_repository").toPath();
+
+        // A local directory will be used as if it's a remote repository.
+        String fakeRemoteRepoName = "Fake Remote Repository";
+        Path fakeRemoteRepoPath =
+                Paths.get("tools/base/bazel/test/local_maven_repository_generator/fake_repository")
+                        .toAbsolutePath();
         List<String> coords = Arrays.asList(
             "com.google.example:a:1",
             "com.google.example:b:1",
@@ -49,27 +60,42 @@ public class LocalMavenRepositoryGeneratorTest {
         String outputBuildFile = "generated.BUILD";
         LocalMavenRepositoryGenerator generator =
                 new LocalMavenRepositoryGenerator(
-                        repoPath,
+                        localRepoPath,
                         outputBuildFile,
                         coords,
                         data,
-                        false,
-                        Collections.emptyMap(),
+                        true,
+                        Map.of(fakeRemoteRepoName, "file://" + fakeRemoteRepoPath),
                         false);
         generator.run();
 
-        Path golden = repoPath.resolveSibling("BUILD.golden");
-        Path generated = Paths.get(outputBuildFile);
+        // Verify the BUILD file.
+        Path goldenBuild = fakeRemoteRepoPath.resolveSibling("BUILD.golden");
+        Path generatedBuild = Paths.get(outputBuildFile);
 
-        assertTrue(generated.toFile().exists());
-        String goldenFileContents = Files.readString(golden);
-        String generatedFileContents = Files.readString(generated);
-        if (!goldenFileContents.equals(generatedFileContents)) {
-            System.err.println("=== Start generated file contents ===");
-            System.err.println(generatedFileContents);
-            System.err.println("=== End generated file contents ===");
-            Files.copy(generated, TestUtils.getTestOutputDir().resolve(outputBuildFile));
+        assertTrue(generatedBuild.toFile().exists());
+        String goldenBuildContents = Files.readString(goldenBuild);
+        String generatedBuildContents = Files.readString(generatedBuild);
+        if (!goldenBuildContents.equals(generatedBuildContents)) {
+            System.err.println("=== Start generated BUILD file contents ===");
+            System.err.println(generatedBuildContents);
+            System.err.println("=== End generated BUILD file contents ===");
+            Files.copy(generatedBuild, TestUtils.getTestOutputDir().resolve(outputBuildFile));
         }
-        assertEquals("The files differ!", goldenFileContents, generatedFileContents);
+        assertEquals("The BUILD files differ!", goldenBuildContents, generatedBuildContents);
+
+        // Verify that every downloaded pom file has an origin.json file next to it.
+        // We ignore non-pom files, as we assume it's not possible to download a Maven
+        // artifact without the pom file.
+        try (Stream<Path> stream = Files.walk(localRepoPath)) {
+            stream.forEach(
+                    path -> {
+                        if (Files.isRegularFile(path) && path.toString().endsWith(".pom")) {
+                            Path originFile = path.resolveSibling("origin.json");
+                            assertTrue(
+                                    "File not found: " + originFile, originFile.toFile().exists());
+                        }
+                    });
+        }
     }
 }
