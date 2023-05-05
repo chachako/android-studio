@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.core.dsl.impl.features
 import com.android.build.api.dsl.EmulatorControl
 import com.android.build.api.dsl.EmulatorSnapshots
 import com.android.build.api.dsl.ManagedDevices
+import com.android.build.api.variant.AndroidVersion
 import com.android.build.gradle.internal.core.dsl.features.AndroidTestOptionsDslInfo
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnDeviceConfigurationImpl
@@ -47,4 +48,6 @@ internal class KmpAndroidTestOptionsDslInfoImpl(
     override val emulatorSnapshots: EmulatorSnapshots
         get() = testOnDeviceConfig?.emulatorSnapshots
             ?: throw IllegalAccessException("Test on device configuration does not exist")
+    override val targetSdkVersion: AndroidVersion?
+        get() = null
 }

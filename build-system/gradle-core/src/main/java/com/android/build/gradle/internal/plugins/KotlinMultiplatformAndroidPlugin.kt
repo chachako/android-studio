@@ -84,6 +84,7 @@ import com.android.build.gradle.internal.utils.validatePreviewTargetValue
 import com.android.build.gradle.internal.variant.VariantPathHelper
 import com.android.build.gradle.options.BooleanOption
 import com.android.builder.core.ComponentTypeImpl
+import com.android.builder.model.v2.ide.ProjectType
 import com.android.repository.Revision
 import com.android.utils.FileUtils
 import com.android.utils.appendCapitalized
@@ -128,7 +129,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
 
             DslServicesImpl(
                 projectServices,
-                sdkComponentsBuildService
+                sdkComponentsBuildService,
+                ProjectType.LIBRARY
             )
         }
     }

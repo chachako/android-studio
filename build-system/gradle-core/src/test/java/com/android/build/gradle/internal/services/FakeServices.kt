@@ -29,6 +29,7 @@ import com.android.build.gradle.internal.lint.LintFromMaven
 import com.android.build.gradle.internal.res.Aapt2FromMaven
 import com.android.build.gradle.internal.scope.ProjectInfo
 import com.android.build.gradle.options.ProjectOptions
+import com.android.builder.model.v2.ide.ProjectType
 import com.android.testutils.TestUtils
 import com.google.common.collect.ImmutableMap
 import org.gradle.api.Project
@@ -71,9 +72,10 @@ fun createProjectServices(
 @JvmOverloads
 fun createDslServices(
     projectServices: ProjectServices = createProjectServices(),
-    sdkComponents: Provider<SdkComponentsBuildService> = FakeGradleProvider(null)
+    sdkComponents: Provider<SdkComponentsBuildService> = FakeGradleProvider(null),
+    projectType: ProjectType? = null
 ): DslServices {
-    return DslServicesImpl(projectServices, sdkComponents)
+    return DslServicesImpl(projectServices, sdkComponents, projectType)
 }
 
 @JvmOverloads

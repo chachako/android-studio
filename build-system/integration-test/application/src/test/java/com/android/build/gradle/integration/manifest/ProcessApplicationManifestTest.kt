@@ -24,6 +24,7 @@ import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.truth.PathSubject.assertThat
 import org.junit.Rule
 import org.junit.Test
+import kotlin.test.assertTrue
 
 class ProcessApplicationManifestTest {
 
@@ -83,4 +84,23 @@ class ProcessApplicationManifestTest {
                 .run("clean", ":app:processDebugManifest")
         ScannerSubject.assertThat(result2.stdout).doesNotContain(expectedWarning)
     }
+
+    @Test
+    fun testLibraryManifestContainsTargetSdkVersionFromOptions() {
+        project.getSubproject(":lib").buildFile.appendText("""
+            android {
+                testOptions {
+                    targetSdk = 22
+                    unitTests {
+                        includeAndroidResources = true
+                    }
+                }
+            }
+        """.trimIndent())
+        val result = project.executor().run(":lib:processReleaseUnitTestManifest")
+        assertTrue { result.failedTasks.isEmpty()}
+        val manifestFile =  project.getSubproject(":lib").file("build/intermediates/packaged_manifests/releaseUnitTest/AndroidManifest.xml")
+        assertThat(manifestFile).contains("android:targetSdkVersion=\"22\"")
+    }
+
 }

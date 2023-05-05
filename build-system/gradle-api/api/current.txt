@@ -1415,6 +1415,8 @@ package com.android.build.api.dsl {
     method public java.io.File? getSarifOutput();
     method public boolean getSarifReport();
     method public boolean getShowAll();
+    method public Integer? getTargetSdk();
+    method public String? getTargetSdkPreview();
     method public java.io.File? getTextOutput();
     method public boolean getTextReport();
     method public java.util.Set<java.lang.String> getWarning();
@@ -1441,6 +1443,8 @@ package com.android.build.api.dsl {
     method public void setSarifOutput(java.io.File?);
     method public void setSarifReport(boolean);
     method public void setShowAll(boolean);
+    method public void setTargetSdk(Integer?);
+    method public void setTargetSdkPreview(String?);
     method public void setTextOutput(java.io.File?);
     method public void setTextReport(boolean);
     method public void setWarningsAsErrors(boolean);
@@ -1473,6 +1477,8 @@ package com.android.build.api.dsl {
     property public abstract java.io.File? sarifOutput;
     property public abstract boolean sarifReport;
     property public abstract boolean showAll;
+    property public abstract Integer? targetSdk;
+    property public abstract String? targetSdkPreview;
     property public abstract java.io.File? textOutput;
     property public abstract boolean textReport;
     property public abstract java.util.Set<java.lang.String> warning;
@@ -1965,12 +1971,16 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public com.android.build.api.dsl.ManagedDevices getManagedDevices();
     method public String? getReportDir();
     method public String? getResultsDir();
+    method public Integer? getTargetSdk();
+    method public String? getTargetSdkPreview();
     method public com.android.build.api.dsl.UnitTestOptions getUnitTests();
     method @org.gradle.api.Incubating public void managedDevices(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ManagedDevices,kotlin.Unit> action);
     method public void setAnimationsDisabled(boolean);
     method public void setExecution(String);
     method public void setReportDir(String?);
     method public void setResultsDir(String?);
+    method public void setTargetSdk(Integer?);
+    method public void setTargetSdkPreview(String?);
     method public void unitTests(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.UnitTestOptions,kotlin.Unit> action);
     property public abstract boolean animationsDisabled;
     property @Deprecated @org.gradle.api.Incubating public abstract org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.DeviceGroup> deviceGroups;
@@ -1982,6 +1992,8 @@ package com.android.build.api.dsl {
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ManagedDevices managedDevices;
     property public abstract String? reportDir;
     property public abstract String? resultsDir;
+    property public abstract Integer? targetSdk;
+    property public abstract String? targetSdkPreview;
     property public abstract com.android.build.api.dsl.UnitTestOptions unitTests;
   }
 

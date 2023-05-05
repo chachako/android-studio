@@ -17,8 +17,10 @@
 package com.android.build.gradle.internal.dsl
 
 import com.android.build.api.dsl.Lint
+import com.android.build.gradle.internal.fixtures.FakeSyncIssueReporter
 import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.services.createDslServices
+import com.android.builder.model.v2.ide.ProjectType
 import com.android.tools.lint.model.LintModelSeverity
 import com.android.tools.lint.model.LintModelSeverity.DEFAULT_ENABLED
 import com.android.tools.lint.model.LintModelSeverity.ERROR
@@ -243,6 +245,25 @@ class LintImplTest {
         }
         assertThat(lint.sarifReport).named("lint.sarifReport").isTrue()
         assertThat(lint.sarifOutput?.path).named("lint.sarifOutput").isEqualTo("lint_report.sarif")
+    }
+
+    @Test
+    fun testTargetSdk() {
+
+        lint {
+            targetSdk = 3
+        }
+        assertThat(lint.targetSdk).named("lint.targetSdk").isNotNull()
+        assertThat(lint.targetSdk!!).isEqualTo(3)
+    }
+
+    @Test
+    fun testTargetSdkPreview() {
+        lint {
+            targetSdkPreview = "M"
+        }
+        assertThat(lint.targetSdkPreview).named("lint.targetSdkVersion").isNotNull()
+        assertThat(lint.targetSdkPreview!!).isEqualTo("M")
     }
 
     @Test

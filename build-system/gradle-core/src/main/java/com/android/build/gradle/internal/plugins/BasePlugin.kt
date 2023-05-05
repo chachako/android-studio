@@ -269,7 +269,8 @@ abstract class BasePlugin<
     protected val dslServices: DslServicesImpl by lazy {
         DslServicesImpl(
             projectServices,
-            sdkComponentsBuildService
+            sdkComponentsBuildService,
+            getProjectTypeV2()
         ) {
             versionedSdkLoaderService
         }

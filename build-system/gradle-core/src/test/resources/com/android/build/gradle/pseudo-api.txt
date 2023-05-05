@@ -1819,6 +1819,8 @@ com.android.build.gradle.internal.dsl.TestOptions.getManagedDevices: com.android
 com.android.build.gradle.internal.dsl.TestOptions.getManagedDevices: com.android.build.gradle.internal.dsl.ManagedDevices ()
 com.android.build.gradle.internal.dsl.TestOptions.getReportDir: java.lang.String ()
 com.android.build.gradle.internal.dsl.TestOptions.getResultsDir: java.lang.String ()
+com.android.build.gradle.internal.dsl.TestOptions.getTargetSdk: java.lang.Integer ()
+com.android.build.gradle.internal.dsl.TestOptions.getTargetSdkPreview: java.lang.String ()
 com.android.build.gradle.internal.dsl.TestOptions.getUnitTests: com.android.build.api.dsl.UnitTestOptions ()
 com.android.build.gradle.internal.dsl.TestOptions.getUnitTests: com.android.build.gradle.internal.dsl.TestOptions$UnitTestOptions ()
 com.android.build.gradle.internal.dsl.TestOptions.managedDevices: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ManagedDevices, kotlin.Unit>)
@@ -1827,6 +1829,8 @@ com.android.build.gradle.internal.dsl.TestOptions.setAnimationsDisabled: void (b
 com.android.build.gradle.internal.dsl.TestOptions.setExecution: void (java.lang.String)
 com.android.build.gradle.internal.dsl.TestOptions.setReportDir: void (java.lang.String)
 com.android.build.gradle.internal.dsl.TestOptions.setResultsDir: void (java.lang.String)
+com.android.build.gradle.internal.dsl.TestOptions.setTargetSdk: void (java.lang.Integer)
+com.android.build.gradle.internal.dsl.TestOptions.setTargetSdkPreview: void (java.lang.String)
 com.android.build.gradle.internal.dsl.TestOptions.unitTests: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.UnitTestOptions, kotlin.Unit>)
 com.android.build.gradle.internal.dsl.TestOptions.unitTests: void (org.gradle.api.Action<com.android.build.gradle.internal.dsl.TestOptions$UnitTestOptions>)
 com.android.build.gradle.internal.dsl.ValidationUtilKt

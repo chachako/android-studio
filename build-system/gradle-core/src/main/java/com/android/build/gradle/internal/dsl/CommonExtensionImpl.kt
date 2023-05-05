@@ -23,6 +23,8 @@ import com.android.build.api.dsl.BuildFeatures
 import com.android.build.api.dsl.ComposeOptions
 import com.android.build.api.dsl.DefaultConfig
 import com.android.build.api.dsl.Installation
+import com.android.build.api.dsl.LibraryDefaultConfig
+import com.android.build.api.dsl.Lint
 import com.android.build.api.dsl.Packaging
 import com.android.build.api.dsl.SdkComponents
 import com.android.build.api.dsl.TestCoverage

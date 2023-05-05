@@ -105,7 +105,8 @@ abstract class LintPlugin : Plugin<Project> {
 
         dslServices = DslServicesImpl(
             projectServices,
-            project.providers.provider { null }
+            project.providers.provider { null },
+            null
         )
 
         val dslOperationsRegistrar = createExtension(project, dslServices)

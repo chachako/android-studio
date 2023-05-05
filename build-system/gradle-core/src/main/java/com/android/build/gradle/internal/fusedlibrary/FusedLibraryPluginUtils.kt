@@ -26,6 +26,7 @@ import com.android.build.gradle.internal.services.DslServicesImpl
 import com.android.build.gradle.internal.services.ProjectServices
 import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.TaskFactoryImpl
+import com.android.builder.model.v2.ide.ProjectType
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.file.RegularFile
@@ -69,6 +70,6 @@ internal fun getDslServices(project: Project, projectServices: ProjectServices):
                     projectServices.projectOptions
             ).execute()
 
-    return DslServicesImpl(projectServices, sdkComponentsBuildService)
+    return DslServicesImpl(projectServices, sdkComponentsBuildService, ProjectType.FUSED_LIBRARIES)
 }
 

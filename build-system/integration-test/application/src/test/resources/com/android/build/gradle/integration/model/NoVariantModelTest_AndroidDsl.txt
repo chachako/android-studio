@@ -142,6 +142,7 @@
       - checkReleaseBuilds        = true
       - checkDependencies         = false
       - baseline                  = (null)
+      - targetSdk                 = (null)
    < lintOptions
    - dependenciesInfo:
       - includeInApk    = true

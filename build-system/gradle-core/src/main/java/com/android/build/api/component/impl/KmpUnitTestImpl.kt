@@ -79,7 +79,7 @@ open class KmpUnitTestImpl @Inject constructor(
     override val testedApplicationId: Provider<String>
         get() = mainVariant.applicationId
     override val targetSdkVersion: AndroidVersion
-        get() = minSdk
+        get() = global.unitTestOptions.targetSdkVersion ?: minSdk
 
     override val manifestPlaceholdersCreationConfig: ManifestPlaceholdersCreationConfig by lazy(LazyThreadSafetyMode.NONE) {
         ManifestPlaceholdersCreationConfigImpl(

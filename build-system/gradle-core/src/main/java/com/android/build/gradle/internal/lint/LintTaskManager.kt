@@ -1,11 +1,14 @@
 package com.android.build.gradle.internal.lint
 
+import com.android.build.gradle.internal.utils.createTargetSdkVersion
 import com.android.build.api.dsl.Lint
 import com.android.build.api.variant.impl.HasTestFixtures
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
+import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.TestComponentCreationConfig
+import com.android.build.gradle.internal.component.TestCreationConfig
 import com.android.build.gradle.internal.component.UnitTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.tasks.LintModelMetadataTask
@@ -13,12 +16,14 @@ import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.TaskFactory
 import com.android.build.gradle.internal.variant.VariantModel
 import com.android.builder.core.ComponentType
+import com.android.builder.errors.IssueReporter
 import com.android.utils.appendCapitalized
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.tasks.TaskProvider
 import java.io.File
+import java.util.Locale
 
 /** Factory for the LintModel based lint tasks */
 class LintTaskManager constructor(
@@ -65,6 +70,8 @@ class LintTaskManager constructor(
         testComponentPropertiesList: Collection<TestComponentCreationConfig>,
         isPerComponent: Boolean
     ) {
+        runConfigurationValidation(componentType, variantPropertiesList)
+
         if (componentType.isForTesting) {
             return // Don't  create lint tasks in test-only projects
         }
@@ -294,6 +301,40 @@ class LintTaskManager constructor(
     private fun getTaskPath(task: TaskProvider<out Task>) = getTaskPath(task.name)
 
     private fun getTaskPath(taskName: String) = TaskManager.getTaskPath(project, taskName)
+
+    private fun runConfigurationValidation(componentType: ComponentType, variantPropertiesList: List<VariantCreationConfig>) {
+        val targetSdkVersion = globalTaskCreationConfig.lintOptions.run { createTargetSdkVersion(targetSdk,targetSdkPreview) }
+        if (targetSdkVersion != null && !componentType.isAar) {
+            val versionToName = mutableMapOf<Int, MutableList<String>>()
+            for (variant in variantPropertiesList) {
+                val variantTargetSdkVersion = when (variant) {
+                    is ApkCreationConfig -> variant.targetSdk
+                    is TestCreationConfig -> variant.targetSdkVersion
+                    else -> null
+                }
+                if(variantTargetSdkVersion != null &&
+                    targetSdkVersion.apiLevel < variantTargetSdkVersion.apiLevel){
+                    versionToName.getOrPut(variantTargetSdkVersion.apiLevel, ::mutableListOf).add(variant.name)
+                }
+            }
+
+            versionToName.forEach { (variantSdkLevel, names) ->
+                globalTaskCreationConfig.services.issueReporter
+                    .reportError(
+                        IssueReporter.Type.GENERIC, String.format(
+                            Locale.US,
+                            "lint.targetSdk (%d) for non library is smaller than android.targetSdk (%d)"
+                                    + " for variants %s. Please change the"
+                                    + " values such that lint.targetSdk is greater than or"
+                                    + " equal to android.targetSdk.",
+                            targetSdkVersion.apiLevel,
+                            variantSdkLevel,
+                            names.joinToString(separator = ", ")
+                        )
+                    )
+            }
+        }
+    }
 
     companion object {
 

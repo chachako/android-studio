@@ -97,6 +97,9 @@ import java.io.File
  *          // Whether lint should check all dependencies too as part of its analysis.
  *          // Default is false.
  *          checkDependencies true
+ *          // targetSdk version used when generating a lint report for a library.
+ *          // Must be equal or higher than main target SDK. Must be set for libraries only.
+ *          targetSdk 33
  *     }
  * }
  * ```
@@ -282,4 +285,16 @@ interface Lint {
 
     /** Issues that have severity overridden to 'fatal' */
     val fatal: MutableSet<String>
+
+    /**
+     * The target sdk version used when generating a lint report for a library.
+     * Must be equal or higher than main target SDK. Must be set for libraries only.
+     */
+    var targetSdk: Int?
+
+    /**
+     * The target sdk preview version used when generating a lint report for a library.
+     * Must be set for libraries only.
+     */
+    var targetSdkPreview: String?
 }

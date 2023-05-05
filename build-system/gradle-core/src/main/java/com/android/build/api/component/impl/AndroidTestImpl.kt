@@ -107,7 +107,7 @@ open class AndroidTestImpl @Inject constructor(
         get() = mainVariant.minSdk
 
     override val targetSdk: AndroidVersion
-        get() = getMainTargetSdkVersion()
+        get() = global.androidTestOptions.targetSdkVersion ?: getMainTargetSdkVersion()
 
     override val targetSdkVersion: AndroidVersion
         get() = targetSdk

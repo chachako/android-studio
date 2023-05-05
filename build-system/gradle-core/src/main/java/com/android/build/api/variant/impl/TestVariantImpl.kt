@@ -137,7 +137,7 @@ open class TestVariantImpl @Inject constructor(
         )
     }
     override val targetSdk: AndroidVersion by lazy(LazyThreadSafetyMode.NONE) {
-        variantBuilder.targetSdkVersion
+        global.androidTestOptions.targetSdkVersion ?: variantBuilder.targetSdkVersion
     }
 
     override val targetSdkVersion: AndroidVersion

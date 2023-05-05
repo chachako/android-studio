@@ -16,14 +16,8 @@
 
 package com.android.build.gradle.internal.core.dsl.features
 
-import org.gradle.api.tasks.testing.Test
+import com.android.build.api.variant.AndroidVersion
 
-/**
- * Contains the final dsl info computed from the DSL object model (extension, default config,
- * build type, flavors) that are needed by components that configure and run unit tests
- */
-interface UnitTestOptionsDslInfo: TestOptionsDslInfo {
-    val isIncludeAndroidResources: Boolean
-    val isReturnDefaultValues: Boolean
-    fun applyConfiguration(task: Test)
+interface TestOptionsDslInfo {
+    val targetSdkVersion: AndroidVersion?
 }

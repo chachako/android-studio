@@ -25,7 +25,7 @@ import org.gradle.api.tasks.testing.Test
  * Contains the final dsl info computed from the DSL object model (extension, default config,
  * build type, flavors) that are needed by components that configure and run instrumentation tests
  */
-interface AndroidTestOptionsDslInfo {
+interface AndroidTestOptionsDslInfo: TestOptionsDslInfo {
     val animationsDisabled: Boolean
     val execution: String
     val resultsDir: String?

@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.core.dsl.impl.features
 
+import com.android.build.api.variant.AndroidVersion
 import com.android.build.gradle.internal.core.dsl.features.UnitTestOptionsDslInfo
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnJvmConfigurationImpl
@@ -36,4 +37,6 @@ internal class KmpUnitTestOptionsDslInfoImpl(
     override fun applyConfiguration(task: Test) {
         testOnJvmConfig?.applyConfiguration(task)
     }
+    override val targetSdkVersion: AndroidVersion?
+        get() = null
 }

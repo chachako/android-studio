@@ -54,6 +54,7 @@ import com.android.build.gradle.internal.services.LintClassLoaderBuildService
 import com.android.build.gradle.internal.services.LintParallelBuildService
 import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.getBuildService
+import com.android.build.gradle.internal.utils.createTargetSdkVersion
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.getDesugaredMethods
 import com.android.build.gradle.internal.utils.setDisallowChanges
@@ -64,7 +65,6 @@ import com.android.builder.core.ComponentType
 import com.android.builder.core.ComponentTypeImpl
 import com.android.builder.errors.EvalIssueException
 import com.android.builder.errors.IssueReporter
-import com.android.builder.model.ApiVersion
 import com.android.ide.common.repository.AgpVersion
 import com.android.sdklib.AndroidVersion
 import com.android.tools.lint.model.DefaultLintModelAndroidArtifact
@@ -1020,12 +1020,15 @@ abstract class VariantInputs {
 
         minSdkVersion.initialize(variantCreationConfig.minSdk)
 
-        if (variantCreationConfig is ApkCreationConfig) {
-            targetSdkVersion.initialize(variantCreationConfig.targetSdk)
-        } else if (variantCreationConfig is LibraryCreationConfig) {
-            targetSdkVersion.initialize(variantCreationConfig.targetSdk)
-        } else if (variantCreationConfig is KmpComponentCreationConfig) {
-            targetSdkVersion.initialize(variantCreationConfig.minSdk)
+        val lintOptions = variantCreationConfig.global.lintOptions
+        when (variantCreationConfig) {
+            is ApkCreationConfig ->
+                    targetSdkVersion.initialize(variantCreationConfig.targetSdk)
+            is LibraryCreationConfig ->
+                    targetSdkVersion.initialize(
+                        createTargetSdkVersion(lintOptions.targetSdk,lintOptions.targetSdkPreview) ?: variantCreationConfig.targetSdk
+                    )
+            is KmpComponentCreationConfig -> targetSdkVersion.initialize(variantCreationConfig.minSdk)
         }
 
         resValues.setDisallowChanges(
@@ -1671,14 +1674,14 @@ abstract class SdkVersionInput {
     @get:Optional
     abstract val codeName: Property<String?>
 
-    internal fun initialize(version: ApiVersion) {
+    internal fun initialize(version: com.android.build.api.variant.AndroidVersion) {
         apiLevel.setDisallowChanges(version.apiLevel)
         codeName.setDisallowChanges(version.codename)
     }
 
-    internal fun initialize(version: com.android.build.api.variant.AndroidVersion) {
-        apiLevel.setDisallowChanges(version.apiLevel)
-        codeName.setDisallowChanges(version.codename)
+    internal fun initialize(apiLeve:Int, codename:String?) {
+        apiLevel.setDisallowChanges(apiLeve)
+        codeName.setDisallowChanges(codename)
     }
 
     internal fun initializeEmpty() {

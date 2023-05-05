@@ -20,6 +20,7 @@ import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTestConfiguration
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceConfiguration
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvmConfiguration
+import com.android.build.api.dsl.Lint
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.KotlinMultiplatformAndroidVariant
 import com.android.build.api.variant.impl.MutableAndroidVersion

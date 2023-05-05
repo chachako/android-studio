@@ -16,12 +16,14 @@
 
 package com.android.build.gradle.internal.core.dsl.impl.features
 
+import com.android.build.gradle.internal.utils.createTargetSdkVersion
 import com.android.build.gradle.internal.core.dsl.features.AndroidTestOptionsDslInfo
 
 
 import com.android.build.api.dsl.EmulatorControl
 import com.android.build.api.dsl.EmulatorSnapshots
 import com.android.build.api.dsl.ManagedDevices
+import com.android.build.api.variant.AndroidVersion
 import com.android.build.gradle.internal.dsl.CommonExtensionImpl
 
 internal class AndroidTestOptionsDslInfoImpl(
@@ -42,4 +44,6 @@ internal class AndroidTestOptionsDslInfoImpl(
         get() = extension.testOptions.emulatorControl
     override val emulatorSnapshots: EmulatorSnapshots
         get() = extension.testOptions.emulatorSnapshots
+    override val targetSdkVersion: AndroidVersion?
+        get() = extension.testOptions.run { createTargetSdkVersion(targetSdk, targetSdkPreview)}
 }

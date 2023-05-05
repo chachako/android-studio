@@ -16,8 +16,10 @@
 
 package com.android.build.gradle.internal.core.dsl.impl.features
 
+import com.android.build.api.variant.AndroidVersion
 import com.android.build.gradle.internal.core.dsl.features.UnitTestOptionsDslInfo
 import com.android.build.gradle.internal.dsl.CommonExtensionImpl
+import com.android.build.gradle.internal.utils.createTargetSdkVersion
 import org.gradle.api.tasks.testing.Test
 
 internal class UnitTestOptionsDslInfoImpl(
@@ -30,4 +32,6 @@ internal class UnitTestOptionsDslInfoImpl(
     override fun applyConfiguration(task: Test) {
         extension.testOptions.unitTests.applyConfiguration(task)
     }
+    override val targetSdkVersion: AndroidVersion?
+        get() = extension.testOptions.run { createTargetSdkVersion(targetSdk, targetSdkPreview) }
 }

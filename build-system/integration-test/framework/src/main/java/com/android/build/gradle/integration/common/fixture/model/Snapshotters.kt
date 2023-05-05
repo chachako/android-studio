@@ -548,6 +548,7 @@ private fun ModelSnapshotter<LintOptions>.snapshotLintOptions() {
     item("checkReleaseBuilds", LintOptions::checkReleaseBuilds)
     item("checkDependencies", LintOptions::checkDependencies)
     item("baseline", LintOptions::baseline)
+    item("targetSdk", LintOptions::targetSdk)
 }
 
 internal fun ModelSnapshotter<VariantDependencies>.snapshotVariantDependencies() {
