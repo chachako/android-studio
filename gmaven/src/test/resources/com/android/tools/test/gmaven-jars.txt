@@ -772,9 +772,11 @@ com/android/tools/external/com-intellij/intellij-core
   META-INF/intellij.platform.projectModel.kotlin_module
   META-INF/intellij.platform.util.base.kotlin_module
   META-INF/intellij.platform.util.diff.kotlin_module
+  META-INF/intellij.platform.util.ex.kotlin_module
   META-INF/intellij.platform.util.kotlin_module
   META-INF/intellij.platform.util.xmlDom.kotlin_module
   META-INF/intellij.platform.workspaceModel.storage.kotlin_module
+  META-INF/kotlinx-collections-immutable.kotlin_module
   META-INF/kotlinx-coroutines-core.kotlin_module
   META-INF/kotlinx-coroutines-debug.kotlin_module
   META-INF/kotlinx-coroutines-jdk8.kotlin_module
@@ -899,6 +901,7 @@ com/android/tools/external/com-intellij/intellij-core
   com/github/benmanes/caffeine/cache/
   com/github/benmanes/caffeine/cache/stats/
   com/intellij/
+  com/intellij/application/
   com/intellij/codeInsight/
   com/intellij/codeInsight/completion/
   com/intellij/codeInsight/completion/proc/
@@ -920,6 +923,7 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/concurrency/
   com/intellij/configurationStore/
   com/intellij/core/
+  com/intellij/credentialStore/
   com/intellij/diagnostic/
   com/intellij/diagnostic/tracing/
   com/intellij/diff/
@@ -978,6 +982,7 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/model/psi/
   com/intellij/model/psi/impl/
   com/intellij/model/search/
+  com/intellij/mvstore/
   com/intellij/navigation/
   com/intellij/notebook/
   com/intellij/notebook/editor/
@@ -991,9 +996,6 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/openapi/command/undo/
   com/intellij/openapi/components/
   com/intellij/openapi/diagnostic/
-  com/intellij/openapi/diff/
-  com/intellij/openapi/diff/impl/
-  com/intellij/openapi/diff/impl/patch/
   com/intellij/openapi/editor/
   com/intellij/openapi/editor/actionSystem/
   com/intellij/openapi/editor/colors/
@@ -1048,6 +1050,8 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/patterns/
   com/intellij/patterns/compiler/
   com/intellij/platform/
+  com/intellij/platform/backend/
+  com/intellij/platform/backend/presentation/
   com/intellij/platform/util/
   com/intellij/pom/
   com/intellij/pom/core/
@@ -1140,11 +1144,16 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/util/containers/
   com/intellij/util/containers/hash/
   com/intellij/util/containers/package.html
+  com/intellij/util/containers/prefix/
+  com/intellij/util/containers/prefix/factory/
+  com/intellij/util/containers/prefix/map/
+  com/intellij/util/containers/prefix/set/
   com/intellij/util/diff/
   com/intellij/util/diff/package.html
   com/intellij/util/download/
   com/intellij/util/download/impl/
   com/intellij/util/execution/
+  com/intellij/util/flow/
   com/intellij/util/fmap/
   com/intellij/util/graph/
   com/intellij/util/graph/impl/
@@ -1157,6 +1166,8 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/util/io/
   com/intellij/util/io/externalizer/
   com/intellij/util/io/keyStorage/
+  com/intellij/util/io/pagecache/
+  com/intellij/util/io/pagecache/impl/
   com/intellij/util/io/stats/
   com/intellij/util/io/storage/
   com/intellij/util/io/zip/
@@ -1169,7 +1180,6 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/util/ref/
   com/intellij/util/system/
   com/intellij/util/text/
-  com/intellij/util/text/matching/
   com/intellij/util/text/package.html
   com/intellij/util/ui/
   com/intellij/util/xml/
@@ -1309,6 +1319,16 @@ com/android/tools/external/com-intellij/intellij-core
   it/unimi/dsi/fastutil/objects/
   it/unimi/dsi/fastutil/shorts/
   kotlinx/
+  kotlinx/collections/
+  kotlinx/collections/immutable/
+  kotlinx/collections/immutable/adapters/
+  kotlinx/collections/immutable/implementations/
+  kotlinx/collections/immutable/implementations/immutableList/
+  kotlinx/collections/immutable/implementations/immutableMap/
+  kotlinx/collections/immutable/implementations/immutableSet/
+  kotlinx/collections/immutable/implementations/persistentOrderedMap/
+  kotlinx/collections/immutable/implementations/persistentOrderedSet/
+  kotlinx/collections/immutable/internal/
   kotlinx/coroutines/
   kotlinx/coroutines/channels/
   kotlinx/coroutines/debug/
