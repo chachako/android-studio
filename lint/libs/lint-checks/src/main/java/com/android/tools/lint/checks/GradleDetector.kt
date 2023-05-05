@@ -536,7 +536,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
                   "to unpredictable and unrepeatable builds (" +
                   dependency +
                   ")"
-              val fix = fix().data(KEY_COORDINATE, gc.toString())
+              val fix = fix().data(KEY_COORDINATE, gc.toString(), KEY_REVISION, gc.revision)
               report(context, valueCookie, PLUS, message, fix)
             }
 
@@ -2533,6 +2533,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
     var calendar: Calendar? = null
 
     const val KEY_COORDINATE = "coordinate"
+    const val KEY_REVISION = "revision"
 
     private const val VC_LIBRARY_PREFIX = "libs."
     private const val VC_PLUGIN_PREFIX = "libs.plugins."
