@@ -148,6 +148,8 @@ public final class SdkConstants {
     public static final String FN_BUILD_GRADLE = "build.gradle";
     /** An SDK Project's build.gradle Kotlin script file */
     public static final String FN_BUILD_GRADLE_KTS = "build.gradle.kts";
+    /** An SDK Project's build.gradle.toml declarative file */
+    public static final String FN_DECLARATIVE_BUILD_GRADLE = "build.gradle.toml";
     /** An SDK Project's settings.gradle file */
     public static final String FN_SETTINGS_GRADLE = "settings.gradle";
     /** An SDK Project's settings.gradle Kotlin script file */
