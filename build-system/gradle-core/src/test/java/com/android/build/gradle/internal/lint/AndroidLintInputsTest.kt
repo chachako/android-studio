@@ -71,43 +71,23 @@ class AndroidLintInputsTest {
     }
 
     @Test
-    fun `check lint version override with slightly outdated version`() {
+    fun `check lint version override with outdated version`() {
         val issueReporter = FakeSyncIssueReporter(throwOnError = false)
 
         val lintVersion = getLintMavenArtifactVersion(
             versionOverride = "7.0.0-alpha05",
             reporter = issueReporter,
-            defaultVersion = "30.1.0",
-            agpVersion = "7.1.0",
+            defaultVersion = "30.0.0-alpha06",
+            agpVersion = "7.0.0-alpha06",
         )
-        assertThat(lintVersion).isEqualTo("30.0.0-alpha05")
-        assertThat(issueReporter.errors).hasSize(0)
-        assertThat(issueReporter.warnings).hasSize(1)
-        assertThat(issueReporter.warnings.single()).isEqualTo(
-            """
-                The build will use lint version 7.0.0-alpha05 which is older than the default.
-                Recommendation: Remove or update the gradle property android.experimental.lint.version to be at least 7.1.0
-            """.trimIndent()
-        )
-    }
-
-    @Test
-    fun `check lint version override with an significantly outdated version`() {
-        val issueReporter = FakeSyncIssueReporter(throwOnError = false)
-        val lintVersion = getLintMavenArtifactVersion(
-            versionOverride = "7.0.0",
-            reporter = issueReporter,
-            defaultVersion = "31.0.0-rc01",
-            agpVersion = "8.0.0-rc01",
-        )
-        assertThat(lintVersion).isEqualTo("31.0.0-rc01")
+        assertThat(lintVersion).isEqualTo("30.0.0-alpha06")
         assertThat(issueReporter.errors).hasSize(1)
         assertThat(issueReporter.warnings).hasSize(0)
         assertThat(issueReporter.errors.single()).isEqualTo(
             """
-                Lint must be at least version 8.0.0, and is recommended to be at least 8.0.0-rc01
-                Recommendation: Remove or update the gradle property android.experimental.lint.version to be at least 8.0.0-rc01
-                """.trimIndent()
+                Lint must be at least version 7.0.0-alpha06
+                Recommendation: Remove or update the gradle property android.experimental.lint.version to be at least 7.0.0-alpha06
+            """.trimIndent()
         )
     }
 }

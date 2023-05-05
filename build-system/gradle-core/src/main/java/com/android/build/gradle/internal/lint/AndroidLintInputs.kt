@@ -2127,27 +2127,15 @@ internal fun getLintMavenArtifactVersion(
     val normalizedOverride: String = (parsed.major + 23).toString() + versionOverride.removePrefix(parsed.major.toString())
     val normalizedParsed = AgpVersion.tryParse(normalizedOverride) ?: error("Unexpected parse error")
 
-    // Only fail if the major version is outdated.
-    // e.g. if the default lint version is 31.1.0 (as will be for AGP 8.1.0), fail is specifying
-    // lint 30.2.0, but only warn if specifying lint 31.0.0
-    if (normalizedParsed.major < default.major) {
+    if (normalizedParsed < default) {
         reporter?.reportError(
             IssueReporter.Type.GENERIC,
             """
-                    Lint must be at least version ${agpVersion.substringBefore(".")}.0.0, and is recommended to be at least $agpVersion
+                    Lint must be at least version $agpVersion
                     Recommendation: Remove or update the gradle property ${StringOption.LINT_VERSION_OVERRIDE.propertyName} to be at least $agpVersion
                     """.trimIndent()
         )
         return defaultVersion
-    }
-    if (normalizedParsed < default) {
-        reporter?.reportWarning(
-            IssueReporter.Type.GENERIC,
-            """
-                    The build will use lint version $versionOverride which is older than the default.
-                    Recommendation: Remove or update the gradle property ${StringOption.LINT_VERSION_OVERRIDE.propertyName} to be at least $agpVersion
-                    """.trimIndent()
-        )
     }
     return normalizedOverride
 }
