@@ -48,8 +48,8 @@ interface KotlinMultiplatformAndroidExtension {
 
     val experimentalProperties: MutableMap<String, Any>
 
-    val buildTypeMatching: MutableList<String>
-    val productFlavorsMatching: MutableMap<String, MutableList<String>>
+    val dependencyVariantSelection: DependencyVariantSelection
+    fun dependencyVariantSelection(action: DependencyVariantSelection.() -> Unit)
 
     val aarMetadata: AarMetadata
 

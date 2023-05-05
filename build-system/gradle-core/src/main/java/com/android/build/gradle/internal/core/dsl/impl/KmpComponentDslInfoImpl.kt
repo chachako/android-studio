@@ -17,12 +17,12 @@
 package com.android.build.gradle.internal.core.dsl.impl
 
 import com.android.build.api.variant.impl.MutableAndroidVersion
-import com.android.build.gradle.api.JavaCompileOptions
 import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.builder.core.AbstractProductFlavor
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 
 abstract class KmpComponentDslInfoImpl(
@@ -41,13 +41,13 @@ abstract class KmpComponentDslInfoImpl(
     }
 
     override val missingDimensionStrategies: Map<String, AbstractProductFlavor.DimensionRequest>
-        get() = extension.productFlavorsMatching.mapValues {
+        get() = extension.dependencyVariantSelection.productFlavors.get().mapValues {
             AbstractProductFlavor.DimensionRequest(
                 requested = it.key,
                 fallbacks = it.value.toList()
             )
         }
 
-    override val buildTypeMatchingFallbacks: List<String>
-        get() = extension.buildTypeMatching.toList()
+    override val buildTypeMatchingFallbacks: ListProperty<String>
+        get() = extension.dependencyVariantSelection.buildTypes
 }

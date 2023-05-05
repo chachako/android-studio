@@ -26,9 +26,12 @@ kotlin {
     namespace = "com.example.kmpfirstlib"
     compileSdk = property("latestCompileSdk") as Int
     minSdk = 22
-    buildTypeMatching.add("debug")
-    productFlavorsMatching["type"] = mutableListOf("typeone")
-    productFlavorsMatching["mode"] = mutableListOf("modetwo")
+
+    dependencyVariantSelection {
+      buildTypes.add("debug")
+      productFlavors.put("type", mutableListOf("typeone"))
+      productFlavors.put("mode", mutableListOf("modetwo"))
+    }
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

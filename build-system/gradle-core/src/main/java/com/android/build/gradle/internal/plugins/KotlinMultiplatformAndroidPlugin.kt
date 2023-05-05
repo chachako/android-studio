@@ -613,15 +613,16 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
 
     private fun configureDisambiguationRules(project: Project) {
         project.dependencies.attributesSchema { schema ->
-            if (androidExtension.buildTypeMatching.isNotEmpty()) {
+            val buildTypesToMatch = androidExtension.dependencyVariantSelection.buildTypes.get()
+            if (buildTypesToMatch.isNotEmpty()){
                 schema.attribute(BuildTypeAttr.ATTRIBUTE)
                     .disambiguationRules
                     .add(SingleVariantBuildTypeRule::class.java) { config ->
-                        config.setParams(androidExtension.buildTypeMatching)
+                        config.setParams(buildTypesToMatch)
                     }
             }
 
-            androidExtension.productFlavorsMatching.forEach { (dimension, fallbacks) ->
+            androidExtension.dependencyVariantSelection.productFlavors.get().forEach { (dimension, fallbacks) ->
                 schema.attribute(ProductFlavorAttr.of(dimension))
                     .disambiguationRules
                     .add(SingleVariantProductFlavorRule::class.java) { config ->

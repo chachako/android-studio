@@ -77,6 +77,8 @@ import com.android.build.gradle.internal.dsl.ConfigurableFilesImpl
 import com.android.build.gradle.internal.dsl.DataBindingOptions
 import com.android.build.gradle.internal.dsl.DensitySplitOptions
 import com.android.build.gradle.internal.dsl.DependenciesInfoImpl
+import com.android.build.gradle.internal.dsl.DependencyVariantSelection
+import com.android.build.gradle.internal.dsl.DependencyVariantSelectionImpl
 import com.android.build.gradle.internal.dsl.DexPackagingImpl
 import com.android.build.gradle.internal.dsl.FusedLibraryExtensionImpl
 import com.android.build.gradle.internal.dsl.ExternalNativeBuild as ExternalNativeBuildImpl
@@ -146,6 +148,7 @@ val AGP_SUPPORTED_PROPERTY_TYPES: List<SupportedPropertyType> = listOf(
     SupportedPropertyType.Block(ViewBinding::class.java, ViewBindingOptionsImpl::class.java),
     SupportedPropertyType.Block(ConfigurableFiles::class.java, ConfigurableFilesImpl::class.java),
     SupportedPropertyType.Block(KmpOptimization::class.java, KmpOptimizationImpl::class.java),
+    SupportedPropertyType.Block(DependencyVariantSelection::class.java, DependencyVariantSelectionImpl::class.java),
 
     // FusedLibrary Extensions.
     SupportedPropertyType.Block(FusedLibraryExtension::class.java, FusedLibraryExtensionImpl::class.java),
