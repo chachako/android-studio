@@ -30,13 +30,14 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
-import java.io.Serializable
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
+import java.io.Serializable
 import java.lang.System.err
 import java.lang.management.ManagementFactory
+import java.nio.file.Paths
 import java.util.concurrent.TimeUnit.SECONDS
 
 class ExecuteProcessTest {
@@ -202,6 +203,9 @@ class ExecuteProcessTest {
         val sb = StringBuilder()
         val java = File(runtime.systemProperties["java.home"]!!).resolve("bin/java")
         val classPath = runtime.systemProperties["java.class.path"]!!
+            .split(File.pathSeparator)
+            .map { path -> Paths.get(path).toAbsolutePath() }
+            .joinToString(File.pathSeparator)
         val mainClass = ShellScriptCallback::class.java.name
         val windowsScript = File("${posixScript.path}.bat")
         sb.append("$java --class-path ${classPath.replace("\\\\", "/")} ")

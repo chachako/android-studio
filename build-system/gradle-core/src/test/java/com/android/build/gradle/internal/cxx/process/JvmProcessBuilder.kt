@@ -17,7 +17,7 @@
 package com.android.build.gradle.internal.cxx.process
 
 import java.io.File
-import java.util.*
+import java.nio.file.Paths
 import kotlin.jvm.internal.Intrinsics
 import kotlin.reflect.KClass
 
@@ -50,7 +50,11 @@ class JvmProcessBuilder(clazz : KClass<*>) {
      * The new process should use the current process's class path.
      */
     fun dependsOnCurrentClassPath() : JvmProcessBuilder {
-        classPath = System.getProperty("java.class.path") + os.classPathSeparator + classPath
+        val currentClassPath = System.getProperty("java.class.path")
+            .split(os.classPathSeparator)
+            .map { path -> Paths.get(path).toAbsolutePath() }
+            .joinToString(os.classPathSeparator)
+        classPath = currentClassPath + os.classPathSeparator + classPath
         return this
     }
 
