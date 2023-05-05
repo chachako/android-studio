@@ -16,8 +16,8 @@
 package com.android.screenshot.cli
 
 import com.android.layoutlib.reflection.TrackingThreadLocal.Companion.clearThreadLocals
-import com.android.tools.idea.rendering.RenderService
 import com.android.tools.idea.rendering.classloading.findMethodLike
+import com.android.tools.rendering.RenderService
 import com.android.tools.rendering.classloading.ModuleClassLoader
 import com.android.tools.rendering.classloading.ModuleClassLoaderDiagnosticsRead
 import com.android.tools.rendering.classloading.ModuleClassLoaderDiagnosticsWrite
