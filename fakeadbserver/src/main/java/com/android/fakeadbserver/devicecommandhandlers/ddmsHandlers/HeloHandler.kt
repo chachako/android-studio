@@ -22,6 +22,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.nio.ByteBuffer
+import java.time.Duration
 
 class HeloHandler : DdmPacketHandler {
 
@@ -106,6 +107,9 @@ class HeloHandler : DdmPacketHandler {
         }
         val responsePacket = DdmPacket.createResponse(packet.id, CHUNK_TYPE, payload)
         try {
+            if (client.sendWaitCommandAfterHelo?.isNegative == true) {
+                sendWait(client, jdwpHandlerOutput)
+            }
             responsePacket.write(jdwpHandlerOutput)
         } catch (e: IOException) {
             e.printStackTrace()
@@ -149,19 +153,15 @@ class HeloHandler : DdmPacketHandler {
         }
 
         // Send "WAIT" packet if needed
-        if (client.isWaiting) {
-            val waitPayload = ByteArray(1)
-            val waitPacket = DdmPacket.createCommand(
-                client.nextDdmsCommandId(),
-                DdmPacket.encodeChunkType("WAIT"),
-                waitPayload
-            )
-            try {
-                waitPacket.write(jdwpHandlerOutput)
-            } catch (e: IOException) {
-                e.printStackTrace()
-                return false
+        if (client.sendWaitCommandAfterHelo != null) {
+            val waitCommandDelay = client.sendWaitCommandAfterHelo!!
+            if (waitCommandDelay >= Duration.ZERO) {
+                socketScope.launch {
+                    delay(waitCommandDelay.toMillis())
+                    sendWait(client, jdwpHandlerOutput)
+                }
             }
+            // Note that Negative waitCommandDelay is handled earlier in this method
         }
 
         var totalDelayStagCommand = 0L
@@ -184,6 +184,16 @@ class HeloHandler : DdmPacketHandler {
             }
         }
         return true
+    }
+
+    private fun sendWait(client: ClientState, jdwpHandlerOutput: JdwpHandlerOutput) {
+        val waitPayload = ByteArray(1)
+        val waitPacket = DdmPacket.createCommand(
+            client.nextDdmsCommandId(),
+            DdmPacket.encodeChunkType("WAIT"),
+            waitPayload
+        )
+        waitPacket.write(jdwpHandlerOutput)
     }
 
     companion object {

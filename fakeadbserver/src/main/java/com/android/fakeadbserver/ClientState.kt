@@ -26,11 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * @param isWaiting whether this client is waiting for a debugger connection or not.
  */
 class ClientState internal constructor(
-    pid: Int,
-    val uid: Int,
-    val processName: String,
-    val packageName: String,
-    val isWaiting: Boolean
+    pid: Int, val uid: Int, val processName: String, val packageName: String, isWaiting: Boolean
 ) : ProcessState(pid) {
 
     val viewsState = ClientViewsState()
@@ -39,6 +35,12 @@ class ClientState internal constructor(
     // If non-empty then the STAG command(s) will be sent out after the HELO response after
     // the specified delay(s). STAG payload will be populated from the ClientState.stage value.
     val sendStagCommandAfterHelo = mutableListOf<Duration>()
+
+    // If non-null then the WAIT command indicating that the client is waiting for debugger will be
+    // sent out before or after the HELO reply.
+    // Note that if the specified duration is negative then the WAIT command will be sent out right
+    // before the HELO reply and the actual duration value is ignored.
+    var sendWaitCommandAfterHelo: Duration? = null
 
     /**
      * Set of DDMS features for this process.
@@ -57,6 +59,9 @@ class ClientState internal constructor(
     private val nextDdmsCommandId = AtomicInteger(0x70000000)
 
     init {
+        if (isWaiting) {
+            sendWaitCommandAfterHelo = Duration.ZERO
+        }
         mFeatures.addAll(Arrays.asList(*mBuiltinVMFeatures))
         mFeatures.addAll(Arrays.asList(*mBuiltinFrameworkFeatures))
     }
