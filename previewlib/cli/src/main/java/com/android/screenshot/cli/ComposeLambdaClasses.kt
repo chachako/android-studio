@@ -27,7 +27,6 @@ import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileFilter
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.util.download.DownloadableFileDescription
 import com.intellij.util.download.DownloadableFileService
 import com.intellij.util.download.DownloadableFileSetDescription
@@ -195,35 +194,22 @@ class WorkspaceModelI(
         TODO("Not yet implemented")
     }
 
-    override fun <R> updateProjectModel(
-        description: String,
-        updater: (MutableEntityStorage) -> R
-    ): R {
+    override val currentSnapshot: EntityStorageSnapshot
+        get() = entityStorage.current.toSnapshot()
+
+    override val currentSnapshotOfUnloadedEntities: EntityStorageSnapshot
+        get() = entityStorage.current.toSnapshot()
+
+    override fun updateProjectModel(description: String, updater: (MutableEntityStorage) -> Unit) {
         TODO("Not yet implemented")
     }
 
-    override fun <R> updateProjectModelSilent(
+    override fun updateUnloadedEntities(
         description: String,
-        updater: (MutableEntityStorage) -> R
-    ): R {
+        updater: (MutableEntityStorage) -> Unit
+    ) {
         TODO("Not yet implemented")
     }
-    //
-    //override val currentSnapshot: EntityStorageSnapshot
-    //    get() = entityStorage.current.toSnapshot()
-    //override val currentSnapshotOfUnloadedEntities: EntityStorageSnapshot
-    //    get() = entityStorage.current.toSnapshot()
-    //
-    //override fun updateProjectModel(description: String, updater: (MutableEntityStorage) -> Unit) {
-    //    TODO("Not yet implemented")
-    //}
-    //
-    //override fun updateUnloadedEntities(
-    //    description: String,
-    //    updater: (MutableEntityStorage) -> Unit
-    //) {
-    //    TODO("Not yet implemented")
-    //}
 }
 
 
@@ -353,7 +339,7 @@ class ScreenshotProjectFileIndex : ProjectFileIndex {
         TODO("Not yet implemented")
     }
 
-    //override fun getUnloadedModuleNameForFile(fileOrDir: VirtualFile): String? {
-    //    TODO("Not yet implemented")
-    //}
+    override fun getUnloadedModuleNameForFile(fileOrDir: VirtualFile): String? {
+        TODO("Not yet implemented")
+    }
 }
