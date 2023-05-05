@@ -224,6 +224,7 @@ java_library(
     srcs = ["src/com/android/tools/binaries/RepoBuilder.java"],
     deps = [
         ":utils",
+        "@maven//:com.google.guava.guava",
         "@maven//:org.apache.maven.maven-model-builder",
     ],
 )

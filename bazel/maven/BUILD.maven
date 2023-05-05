@@ -5849,26 +5849,25 @@ maven_import(
 )
 
 maven_artifact(
-    name = "org.apache.commons.commons-lang3_3.4",
-    pom = "repository/org/apache/commons/commons-lang3/3.4/commons-lang3-3.4.pom",
+    name = "org.apache.commons.commons-lang3_3.8.1",
+    pom = "repository/org/apache/commons/commons-lang3/3.8.1/commons-lang3-3.8.1.pom",
     repo_root_path = "repository",
-    repo_path = "org/apache/commons/commons-lang3/3.4",
-    parent = "org.apache.commons.commons-parent_37",
+    repo_path = "org/apache/commons/commons-lang3/3.8.1",
+    parent = "org.apache.commons.commons-parent_47",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "org.apache.commons.commons-lang3",
     classifiers = [],
-    parent = "org.apache.commons.commons-parent_37",
+    parent = "org.apache.commons.commons-parent_47",
     jars = [
-        "repository/org/apache/commons/commons-lang3/3.4/commons-lang3-3.4.jar"
+        "repository/org/apache/commons/commons-lang3/3.8.1/commons-lang3-3.8.1.jar"
     ],
     original_deps = [],
-    pom = "repository/org/apache/commons/commons-lang3/3.4/commons-lang3-3.4.pom",
+    pom = "repository/org/apache/commons/commons-lang3/3.8.1/commons-lang3-3.8.1.pom",
     repo_root_path = "repository",
-    repo_path = "org/apache/commons/commons-lang3/3.4",
-    srcjar = "repository/org/apache/commons/commons-lang3/3.4/commons-lang3-3.4-sources.jar",
+    repo_path = "org/apache/commons/commons-lang3/3.8.1",
     visibility = ["//visibility:public"],
 )
 
@@ -6023,14 +6022,14 @@ maven_import(
 )
 
 maven_artifact(
-    name = "org.apache.maven.maven-artifact_3.3.9",
-    pom = "repository/org/apache/maven/maven-artifact/3.3.9/maven-artifact-3.3.9.pom",
+    name = "org.apache.maven.maven-artifact_3.9.1",
+    pom = "repository/org/apache/maven/maven-artifact/3.9.1/maven-artifact-3.9.1.pom",
     repo_root_path = "repository",
-    repo_path = "org/apache/maven/maven-artifact/3.3.9",
-    parent = "org.apache.maven.maven_3.3.9",
+    repo_path = "org/apache/maven/maven-artifact/3.9.1",
+    parent = "org.apache.maven.maven_3.9.1",
     deps = [
-        "org.codehaus.plexus.plexus-utils_3.0.22",
-        "org.apache.commons.commons-lang3_3.4",
+        "org.codehaus.plexus.plexus-utils_3.5.1",
+        "org.apache.commons.commons-lang3_3.8.1",
     ],
     visibility = ["//visibility:public"],
 )
@@ -6038,75 +6037,61 @@ maven_artifact(
 maven_import(
     name = "org.apache.maven.maven-artifact",
     classifiers = [],
-    parent = "org.apache.maven.maven_3.3.9",
+    parent = "org.apache.maven.maven_3.9.1",
     jars = [
-        "repository/org/apache/maven/maven-artifact/3.3.9/maven-artifact-3.3.9.jar"
+        "repository/org/apache/maven/maven-artifact/3.9.1/maven-artifact-3.9.1.jar"
     ],
     exports = [
         "org.codehaus.plexus.plexus-utils",
         "org.apache.commons.commons-lang3",
     ],
     original_deps = [
-        "org.codehaus.plexus.plexus-utils_3.0.22",
-        "org.apache.commons.commons-lang3_3.4",
+        "org.codehaus.plexus.plexus-utils_3.5.1",
+        "org.apache.commons.commons-lang3_3.8.1",
     ],
-    pom = "repository/org/apache/maven/maven-artifact/3.3.9/maven-artifact-3.3.9.pom",
+    pom = "repository/org/apache/maven/maven-artifact/3.9.1/maven-artifact-3.9.1.pom",
     repo_root_path = "repository",
-    repo_path = "org/apache/maven/maven-artifact/3.3.9",
-    srcjar = "repository/org/apache/maven/maven-artifact/3.3.9/maven-artifact-3.3.9-sources.jar",
+    repo_path = "org/apache/maven/maven-artifact/3.9.1",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.apache.maven.maven-builder-support_3.3.9",
-    pom = "repository/org/apache/maven/maven-builder-support/3.3.9/maven-builder-support-3.3.9.pom",
+    name = "org.apache.maven.maven-builder-support_3.9.1",
+    pom = "repository/org/apache/maven/maven-builder-support/3.9.1/maven-builder-support-3.9.1.pom",
     repo_root_path = "repository",
-    repo_path = "org/apache/maven/maven-builder-support/3.3.9",
-    parent = "org.apache.maven.maven_3.3.9",
-    deps = [
-        "org.codehaus.plexus.plexus-utils_3.0.22",
-        "org.apache.commons.commons-lang3_3.4",
-    ],
+    repo_path = "org/apache/maven/maven-builder-support/3.9.1",
+    parent = "org.apache.maven.maven_3.9.1",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "org.apache.maven.maven-builder-support",
     classifiers = [],
-    parent = "org.apache.maven.maven_3.3.9",
+    parent = "org.apache.maven.maven_3.9.1",
     jars = [
-        "repository/org/apache/maven/maven-builder-support/3.3.9/maven-builder-support-3.3.9.jar"
+        "repository/org/apache/maven/maven-builder-support/3.9.1/maven-builder-support-3.9.1.jar"
     ],
-    exports = [
-        "org.codehaus.plexus.plexus-utils",
-        "org.apache.commons.commons-lang3",
-    ],
-    original_deps = [
-        "org.codehaus.plexus.plexus-utils_3.0.22",
-        "org.apache.commons.commons-lang3_3.4",
-    ],
-    pom = "repository/org/apache/maven/maven-builder-support/3.3.9/maven-builder-support-3.3.9.pom",
+    original_deps = [],
+    pom = "repository/org/apache/maven/maven-builder-support/3.9.1/maven-builder-support-3.9.1.pom",
     repo_root_path = "repository",
-    repo_path = "org/apache/maven/maven-builder-support/3.3.9",
-    srcjar = "repository/org/apache/maven/maven-builder-support/3.3.9/maven-builder-support-3.3.9-sources.jar",
+    repo_path = "org/apache/maven/maven-builder-support/3.9.1",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.apache.maven.maven-model-builder_3.3.9",
-    pom = "repository/org/apache/maven/maven-model-builder/3.3.9/maven-model-builder-3.3.9.pom",
+    name = "org.apache.maven.maven-model-builder_3.9.1",
+    pom = "repository/org/apache/maven/maven-model-builder/3.9.1/maven-model-builder-3.9.1.pom",
     repo_root_path = "repository",
-    repo_path = "org/apache/maven/maven-model-builder/3.3.9",
-    parent = "org.apache.maven.maven_3.3.9",
+    repo_path = "org/apache/maven/maven-model-builder/3.9.1",
+    parent = "org.apache.maven.maven_3.9.1",
     deps = [
-        "org.codehaus.plexus.plexus-utils_3.0.22",
-        "org.codehaus.plexus.plexus-interpolation_1.21",
-        "org.codehaus.plexus.plexus-component-annotations_1.6",
-        "org.apache.maven.maven-model_3.3.9",
-        "org.apache.maven.maven-artifact_3.3.9",
-        "org.apache.maven.maven-builder-support_3.3.9",
-        "com.google.guava.guava_18.0",
-        "org.apache.commons.commons-lang3_3.4",
+        "org.codehaus.plexus.plexus-utils_3.5.1",
+        "org.codehaus.plexus.plexus-interpolation_1.26",
+        "javax.inject.javax.inject_1",
+        "org.apache.maven.maven-model_3.9.1",
+        "org.apache.maven.maven-artifact_3.9.1",
+        "org.apache.maven.maven-builder-support_3.9.1",
+        "org.eclipse.sisu.org.eclipse.sisu.inject_0.3.5",
     ],
     visibility = ["//visibility:public"],
 )
@@ -6114,46 +6099,43 @@ maven_artifact(
 maven_import(
     name = "org.apache.maven.maven-model-builder",
     classifiers = [],
-    parent = "org.apache.maven.maven_3.3.9",
+    parent = "org.apache.maven.maven_3.9.1",
     jars = [
-        "repository/org/apache/maven/maven-model-builder/3.3.9/maven-model-builder-3.3.9.jar"
+        "repository/org/apache/maven/maven-model-builder/3.9.1/maven-model-builder-3.9.1.jar"
     ],
     exports = [
         "org.codehaus.plexus.plexus-utils",
         "org.codehaus.plexus.plexus-interpolation",
-        "org.codehaus.plexus.plexus-component-annotations",
+        "javax.inject.javax.inject",
         "org.apache.maven.maven-model",
         "org.apache.maven.maven-artifact",
         "org.apache.maven.maven-builder-support",
-        "com.google.guava.guava",
-        "org.apache.commons.commons-lang3",
+        "org.eclipse.sisu.org.eclipse.sisu.inject",
     ],
     original_deps = [
-        "org.codehaus.plexus.plexus-utils_3.0.22",
-        "org.codehaus.plexus.plexus-interpolation_1.21",
-        "org.codehaus.plexus.plexus-component-annotations_1.6",
-        "org.apache.maven.maven-model_3.3.9",
-        "org.apache.maven.maven-artifact_3.3.9",
-        "org.apache.maven.maven-builder-support_3.3.9",
-        "com.google.guava.guava_18.0",
-        "org.apache.commons.commons-lang3_3.4",
+        "org.codehaus.plexus.plexus-utils_3.5.1",
+        "org.codehaus.plexus.plexus-interpolation_1.26",
+        "javax.inject.javax.inject_1",
+        "org.apache.maven.maven-model_3.9.1",
+        "org.apache.maven.maven-artifact_3.9.1",
+        "org.apache.maven.maven-builder-support_3.9.1",
+        "org.eclipse.sisu.org.eclipse.sisu.inject_0.3.5",
     ],
-    pom = "repository/org/apache/maven/maven-model-builder/3.3.9/maven-model-builder-3.3.9.pom",
+    pom = "repository/org/apache/maven/maven-model-builder/3.9.1/maven-model-builder-3.9.1.pom",
     repo_root_path = "repository",
-    repo_path = "org/apache/maven/maven-model-builder/3.3.9",
-    srcjar = "repository/org/apache/maven/maven-model-builder/3.3.9/maven-model-builder-3.3.9-sources.jar",
+    repo_path = "org/apache/maven/maven-model-builder/3.9.1",
+    srcjar = "repository/org/apache/maven/maven-model-builder/3.9.1/maven-model-builder-3.9.1-sources.jar",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.apache.maven.maven-model_3.3.9",
-    pom = "repository/org/apache/maven/maven-model/3.3.9/maven-model-3.3.9.pom",
+    name = "org.apache.maven.maven-model_3.9.1",
+    pom = "repository/org/apache/maven/maven-model/3.9.1/maven-model-3.9.1.pom",
     repo_root_path = "repository",
-    repo_path = "org/apache/maven/maven-model/3.3.9",
-    parent = "org.apache.maven.maven_3.3.9",
+    repo_path = "org/apache/maven/maven-model/3.9.1",
+    parent = "org.apache.maven.maven_3.9.1",
     deps = [
-        "org.codehaus.plexus.plexus-utils_3.0.22",
-        "org.apache.commons.commons-lang3_3.4",
+        "org.codehaus.plexus.plexus-utils_3.5.1",
     ],
     visibility = ["//visibility:public"],
 )
@@ -6161,22 +6143,19 @@ maven_artifact(
 maven_import(
     name = "org.apache.maven.maven-model",
     classifiers = [],
-    parent = "org.apache.maven.maven_3.3.9",
+    parent = "org.apache.maven.maven_3.9.1",
     jars = [
-        "repository/org/apache/maven/maven-model/3.3.9/maven-model-3.3.9.jar"
+        "repository/org/apache/maven/maven-model/3.9.1/maven-model-3.9.1.jar"
     ],
     exports = [
         "org.codehaus.plexus.plexus-utils",
-        "org.apache.commons.commons-lang3",
     ],
     original_deps = [
-        "org.codehaus.plexus.plexus-utils_3.0.22",
-        "org.apache.commons.commons-lang3_3.4",
+        "org.codehaus.plexus.plexus-utils_3.5.1",
     ],
-    pom = "repository/org/apache/maven/maven-model/3.3.9/maven-model-3.3.9.pom",
+    pom = "repository/org/apache/maven/maven-model/3.9.1/maven-model-3.9.1.pom",
     repo_root_path = "repository",
-    repo_path = "org/apache/maven/maven-model/3.3.9",
-    srcjar = "repository/org/apache/maven/maven-model/3.3.9/maven-model-3.3.9-sources.jar",
+    repo_path = "org/apache/maven/maven-model/3.9.1",
     visibility = ["//visibility:public"],
 )
 
@@ -7233,50 +7212,48 @@ maven_import(
 )
 
 maven_artifact(
-    name = "org.codehaus.plexus.plexus-interpolation_1.21",
-    pom = "repository/org/codehaus/plexus/plexus-interpolation/1.21/plexus-interpolation-1.21.pom",
+    name = "org.codehaus.plexus.plexus-interpolation_1.26",
+    pom = "repository/org/codehaus/plexus/plexus-interpolation/1.26/plexus-interpolation-1.26.pom",
     repo_root_path = "repository",
-    repo_path = "org/codehaus/plexus/plexus-interpolation/1.21",
-    parent = "org.codehaus.plexus.plexus-components_1.3.1",
+    repo_path = "org/codehaus/plexus/plexus-interpolation/1.26",
+    parent = "org.codehaus.plexus.plexus_5.1",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "org.codehaus.plexus.plexus-interpolation",
     classifiers = [],
-    parent = "org.codehaus.plexus.plexus-components_1.3.1",
+    parent = "org.codehaus.plexus.plexus_5.1",
     jars = [
-        "repository/org/codehaus/plexus/plexus-interpolation/1.21/plexus-interpolation-1.21.jar"
+        "repository/org/codehaus/plexus/plexus-interpolation/1.26/plexus-interpolation-1.26.jar"
     ],
     original_deps = [],
-    pom = "repository/org/codehaus/plexus/plexus-interpolation/1.21/plexus-interpolation-1.21.pom",
+    pom = "repository/org/codehaus/plexus/plexus-interpolation/1.26/plexus-interpolation-1.26.pom",
     repo_root_path = "repository",
-    repo_path = "org/codehaus/plexus/plexus-interpolation/1.21",
-    srcjar = "repository/org/codehaus/plexus/plexus-interpolation/1.21/plexus-interpolation-1.21-sources.jar",
+    repo_path = "org/codehaus/plexus/plexus-interpolation/1.26",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.codehaus.plexus.plexus-utils_3.0.22",
-    pom = "repository/org/codehaus/plexus/plexus-utils/3.0.22/plexus-utils-3.0.22.pom",
+    name = "org.codehaus.plexus.plexus-utils_3.5.1",
+    pom = "repository/org/codehaus/plexus/plexus-utils/3.5.1/plexus-utils-3.5.1.pom",
     repo_root_path = "repository",
-    repo_path = "org/codehaus/plexus/plexus-utils/3.0.22",
-    parent = "org.codehaus.plexus.plexus_3.3.1",
+    repo_path = "org/codehaus/plexus/plexus-utils/3.5.1",
+    parent = "org.codehaus.plexus.plexus_10",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "org.codehaus.plexus.plexus-utils",
     classifiers = [],
-    parent = "org.codehaus.plexus.plexus_3.3.1",
+    parent = "org.codehaus.plexus.plexus_10",
     jars = [
-        "repository/org/codehaus/plexus/plexus-utils/3.0.22/plexus-utils-3.0.22.jar"
+        "repository/org/codehaus/plexus/plexus-utils/3.5.1/plexus-utils-3.5.1.jar"
     ],
     original_deps = [],
-    pom = "repository/org/codehaus/plexus/plexus-utils/3.0.22/plexus-utils-3.0.22.pom",
+    pom = "repository/org/codehaus/plexus/plexus-utils/3.5.1/plexus-utils-3.5.1.pom",
     repo_root_path = "repository",
-    repo_path = "org/codehaus/plexus/plexus-utils/3.0.22",
-    srcjar = "repository/org/codehaus/plexus/plexus-utils/3.0.22/plexus-utils-3.0.22-sources.jar",
+    repo_path = "org/codehaus/plexus/plexus-utils/3.5.1",
     visibility = ["//visibility:public"],
 )
 
@@ -7622,6 +7599,29 @@ maven_import(
     repo_root_path = "repository",
     repo_path = "org/eclipse/aether/aether-util/1.0.2.v20150114",
     srcjar = "repository/org/eclipse/aether/aether-util/1.0.2.v20150114/aether-util-1.0.2.v20150114-sources.jar",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.eclipse.sisu.org.eclipse.sisu.inject_0.3.5",
+    pom = "repository/org/eclipse/sisu/org.eclipse.sisu.inject/0.3.5/org.eclipse.sisu.inject-0.3.5.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/sisu/org.eclipse.sisu.inject/0.3.5",
+    parent = "org.eclipse.sisu.sisu-inject_0.3.5",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "org.eclipse.sisu.org.eclipse.sisu.inject",
+    classifiers = [],
+    parent = "org.eclipse.sisu.sisu-inject_0.3.5",
+    jars = [
+        "repository/org/eclipse/sisu/org.eclipse.sisu.inject/0.3.5/org.eclipse.sisu.inject-0.3.5.jar"
+    ],
+    original_deps = [],
+    pom = "repository/org/eclipse/sisu/org.eclipse.sisu.inject/0.3.5/org.eclipse.sisu.inject-0.3.5.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/sisu/org.eclipse.sisu.inject/0.3.5",
     visibility = ["//visibility:public"],
 )
 
@@ -37968,6 +37968,15 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.apache.commons.commons-lang3_3.4",
+    pom = "repository/org/apache/commons/commons-lang3/3.4/commons-lang3-3.4.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/commons/commons-lang3/3.4",
+    parent = "org.apache.commons.commons-parent_37",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.apache.httpcomponents.httpclient_4.0.1",
     pom = "repository/org/apache/httpcomponents/httpclient/4.0.1/httpclient-4.0.1.pom",
     repo_root_path = "repository",
@@ -38190,6 +38199,64 @@ maven_artifact(
     parent = "org.apache.httpcomponents.httpcomponents-client_4.5.2",
     deps = [
         "org.apache.httpcomponents.httpclient_4.5.2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.apache.maven.maven-artifact_3.3.9",
+    pom = "repository/org/apache/maven/maven-artifact/3.3.9/maven-artifact-3.3.9.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/maven/maven-artifact/3.3.9",
+    parent = "org.apache.maven.maven_3.3.9",
+    deps = [
+        "org.codehaus.plexus.plexus-utils_3.0.22",
+        "org.apache.commons.commons-lang3_3.4",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.apache.maven.maven-builder-support_3.3.9",
+    pom = "repository/org/apache/maven/maven-builder-support/3.3.9/maven-builder-support-3.3.9.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/maven/maven-builder-support/3.3.9",
+    parent = "org.apache.maven.maven_3.3.9",
+    deps = [
+        "org.codehaus.plexus.plexus-utils_3.0.22",
+        "org.apache.commons.commons-lang3_3.4",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.apache.maven.maven-model-builder_3.3.9",
+    pom = "repository/org/apache/maven/maven-model-builder/3.3.9/maven-model-builder-3.3.9.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/maven/maven-model-builder/3.3.9",
+    parent = "org.apache.maven.maven_3.3.9",
+    deps = [
+        "org.codehaus.plexus.plexus-utils_3.0.22",
+        "org.codehaus.plexus.plexus-interpolation_1.21",
+        "org.codehaus.plexus.plexus-component-annotations_1.6",
+        "org.apache.maven.maven-model_3.3.9",
+        "org.apache.maven.maven-artifact_3.3.9",
+        "org.apache.maven.maven-builder-support_3.3.9",
+        "com.google.guava.guava_18.0",
+        "org.apache.commons.commons-lang3_3.4",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.apache.maven.maven-model_3.3.9",
+    pom = "repository/org/apache/maven/maven-model/3.3.9/maven-model-3.3.9.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/maven/maven-model/3.3.9",
+    parent = "org.apache.maven.maven_3.3.9",
+    deps = [
+        "org.codehaus.plexus.plexus-utils_3.0.22",
+        "org.apache.commons.commons-lang3_3.4",
     ],
     visibility = ["//visibility:public"],
 )
@@ -39008,6 +39075,24 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "org/codehaus/mojo/animal-sniffer-annotations/1.18",
     parent = "org.codehaus.mojo.animal-sniffer-parent_1.18",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.codehaus.plexus.plexus-interpolation_1.21",
+    pom = "repository/org/codehaus/plexus/plexus-interpolation/1.21/plexus-interpolation-1.21.pom",
+    repo_root_path = "repository",
+    repo_path = "org/codehaus/plexus/plexus-interpolation/1.21",
+    parent = "org.codehaus.plexus.plexus-components_1.3.1",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.codehaus.plexus.plexus-utils_3.0.22",
+    pom = "repository/org/codehaus/plexus/plexus-utils/3.0.22/plexus-utils-3.0.22.pom",
+    repo_root_path = "repository",
+    repo_path = "org/codehaus/plexus/plexus-utils/3.0.22",
+    parent = "org.codehaus.plexus.plexus_3.3.1",
     visibility = ["//visibility:public"],
 )
 
@@ -47741,6 +47826,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.apache.commons.commons-parent_47",
+    pom = "repository/org/apache/commons/commons-parent/47/commons-parent-47.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/commons/commons-parent/47",
+    parent = "org.apache.apache_19",
+)
+
+maven_artifact(
     name = "org.apache.commons.commons-parent_48",
     pom = "repository/org/apache/commons/commons-parent/48/commons-parent-48.pom",
     repo_root_path = "repository",
@@ -47987,11 +48080,27 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.apache.maven.maven-parent_39",
+    pom = "repository/org/apache/maven/maven-parent/39/maven-parent-39.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/maven/maven-parent/39",
+    parent = "org.apache.apache_29",
+)
+
+maven_artifact(
     name = "org.apache.maven.maven_3.3.9",
     pom = "repository/org/apache/maven/maven/3.3.9/maven-3.3.9.pom",
     repo_root_path = "repository",
     repo_path = "org/apache/maven/maven/3.3.9",
     parent = "org.apache.maven.maven-parent_27",
+)
+
+maven_artifact(
+    name = "org.apache.maven.maven_3.9.1",
+    pom = "repository/org/apache/maven/maven/3.9.1/maven-3.9.1.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/maven/maven/3.9.1",
+    parent = "org.apache.maven.maven-parent_39",
 )
 
 maven_artifact(
@@ -48030,6 +48139,13 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.apache.apache_19",
+    pom = "repository/org/apache/apache/19/apache-19.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/apache/19",
+)
+
+maven_artifact(
     name = "org.apache.apache_21",
     pom = "repository/org/apache/apache/21/apache-21.pom",
     repo_root_path = "repository",
@@ -48041,6 +48157,13 @@ maven_artifact(
     pom = "repository/org/apache/apache/23/apache-23.pom",
     repo_root_path = "repository",
     repo_path = "org/apache/apache/23",
+)
+
+maven_artifact(
+    name = "org.apache.apache_29",
+    pom = "repository/org/apache/apache/29/apache-29.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/apache/29",
 )
 
 maven_artifact(
@@ -48142,6 +48265,13 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.codehaus.plexus.plexus_10",
+    pom = "repository/org/codehaus/plexus/plexus/10/plexus-10.pom",
+    repo_root_path = "repository",
+    repo_path = "org/codehaus/plexus/plexus/10",
+)
+
+maven_artifact(
     name = "org.codehaus.plexus.plexus_3.3.1",
     pom = "repository/org/codehaus/plexus/plexus/3.3.1/plexus-3.3.1.pom",
     repo_root_path = "repository",
@@ -48155,6 +48285,13 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "org/codehaus/plexus/plexus/3.3.2",
     parent = "org.sonatype.spice.spice-parent_17",
+)
+
+maven_artifact(
+    name = "org.codehaus.plexus.plexus_5.1",
+    pom = "repository/org/codehaus/plexus/plexus/5.1/plexus-5.1.pom",
+    repo_root_path = "repository",
+    repo_path = "org/codehaus/plexus/plexus/5.1",
 )
 
 maven_artifact(
@@ -48204,6 +48341,14 @@ maven_artifact(
     pom = "repository/org/eclipse/jetty/jetty-parent/14/jetty-parent-14.pom",
     repo_root_path = "repository",
     repo_path = "org/eclipse/jetty/jetty-parent/14",
+)
+
+maven_artifact(
+    name = "org.eclipse.sisu.sisu-inject_0.3.5",
+    pom = "repository/org/eclipse/sisu/sisu-inject/0.3.5/sisu-inject-0.3.5.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/sisu/sisu-inject/0.3.5",
+    parent = "org.sonatype.oss.oss-parent_9",
 )
 
 maven_artifact(

@@ -128,6 +128,7 @@ ARTIFACTS = [
     "org.apache.httpcomponents:httpcore:4.4.10",
     "org.apache.httpcomponents:httpmime:4.5.6",
     "org.apache.maven:maven-aether-provider:3.3.9",
+    "org.apache.maven:maven-model-builder:3.9.1",
     "org.bouncycastle:bcpkix-jdk15on:1.67",
     "org.bouncycastle:bcprov-jdk15on:1.67",
     "org.bytedeco:ffmpeg:5.1.2-1.5.8",
