@@ -115,8 +115,8 @@ class BidirectionalTextDetector : ResourceXmlDetector(), SourceCodeScanner, Grad
           priority = 2,
           severity = Severity.ERROR,
           implementation = IMPLEMENTATION,
-          //noinspection LintImplUnexpectedDomain
           moreInfo =
+            //noinspection LintImplUnexpectedDomain
             "https://krebsonsecurity.com/2021/11/trojan-source-bug-threatens-the-security-of-all-code/",
         )
         .addMoreInfo("https://goo.gle/BidiSpoofing")

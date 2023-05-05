@@ -23,7 +23,6 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.dos2unix
 import com.android.tools.lint.helpers.DefaultJavaEvaluator
 import com.intellij.codeInsight.AnnotationTargetUtil
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.PsiClass
@@ -59,7 +58,6 @@ import org.jetbrains.uast.UPostfixExpression
 import org.jetbrains.uast.UPrefixExpression
 import org.jetbrains.uast.UReferenceExpression
 import org.jetbrains.uast.UastCallKind
-import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
 import org.jetbrains.uast.toUElement
 import org.jetbrains.uast.toUElementOfType
 import org.jetbrains.uast.util.isAssignment
@@ -177,18 +175,7 @@ class UastTest : TestCase() {
             val bar = node.resolve()
             assertNotNull(bar)
             assertEquals("kotlinBar", bar!!.name)
-            // TODO(kotlin-uast-cleanup): FIR UAST will point to KotlinFoo correctly
-            assertEquals("SubKotlinFoo", bar.containingClass?.name)
-
-            val service =
-              ApplicationManager.getApplication()
-                .getService(BaseKotlinUastResolveProviderService::class.java)
-            (node.sourcePsi as? KtCallExpression)?.let {
-              val otherResolved = service?.resolveToDeclaration(it) as? PsiMethod
-              assertNotNull(otherResolved)
-              assertEquals("kotlinBar", otherResolved!!.name)
-              assertEquals("KotlinFoo", otherResolved.containingClass?.name)
-            }
+            assertEquals("KotlinFoo", bar.containingClass?.name)
 
             return super.visitCallExpression(node)
           }
@@ -259,23 +246,9 @@ class UastTest : TestCase() {
         object : AbstractUastVisitor() {
           override fun visitCallExpression(node: UCallExpression): Boolean {
             val resolved = node.resolve()
-            assertNull(resolved)
-            // TODO(kotlin-uast-cleanup): FIR UAST will successfully resolve it
-            /*
             assertNotNull(resolved)
             assertTrue(resolved!!.name in names)
             assertEquals("Dependency", resolved.containingClass?.name)
-             */
-
-            val service =
-              ApplicationManager.getApplication()
-                .getService(BaseKotlinUastResolveProviderService::class.java)
-            (node.sourcePsi as? KtCallExpression)?.let {
-              val otherResolved = service?.resolveToDeclaration(it) as? PsiMethod
-              assertNotNull(otherResolved)
-              assertTrue(otherResolved!!.name in names)
-              assertEquals("Dependency", otherResolved.containingClass?.name)
-            }
 
             return super.visitCallExpression(node)
           }

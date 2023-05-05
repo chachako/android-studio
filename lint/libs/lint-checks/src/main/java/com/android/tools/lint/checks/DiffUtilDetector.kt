@@ -26,6 +26,7 @@ import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.isKotlin
 import com.intellij.psi.CommonClassNames.JAVA_LANG_OBJECT
+import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
@@ -90,10 +91,17 @@ class DiffUtilDetector : Detector(), SourceCodeScanner {
 
     when (node) {
       is UBinaryExpression -> {
+        val left = node.leftOperand.getExpressionType() as? PsiClassType
+        val cls = left?.resolve()
+        if (isSealedOrData(context, cls)) {
+          // Filter out `sealed` or `data` classes before `resolveOperator`
+          // since some of their synthetic members, including `equals`, are now resolved.
+          return false
+        }
+
         resolved = node.resolveOperator()
         if (resolved == null) {
-          val left = node.leftOperand.getExpressionType() as? PsiClassType
-          return defaultEquals(context, left)
+          return defaultEquals(cls)
         }
       }
       is UCallExpression -> {
@@ -111,14 +119,25 @@ class DiffUtilDetector : Detector(), SourceCodeScanner {
     return resolved?.containingClass?.qualifiedName == JAVA_LANG_OBJECT
   }
 
+  private fun isSealedOrData(context: JavaContext, cls: PsiClass?): Boolean {
+    if (cls == null) return false
+    return isKotlin(cls) && (context.evaluator.isSealed(cls) || context.evaluator.isData(cls))
+  }
+
   private fun defaultEquals(context: JavaContext, type: PsiClassType?): Boolean {
     val cls = type?.resolve() ?: return false
 
-    if (isKotlin(cls) && (context.evaluator.isSealed(cls) || context.evaluator.isData(cls))) {
+    if (isSealedOrData(context, cls)) {
       // Sealed class doesn't guarantee that it defines equals/hashCode
       // but it's likely (we'd need to go look at each inner class)
       return false
     }
+
+    return defaultEquals(cls)
+  }
+
+  private fun defaultEquals(cls: PsiClass?): Boolean {
+    if (cls == null) return false
 
     for (m in cls.findMethodsByName("equals", true)) {
       if (m is PsiMethod) {

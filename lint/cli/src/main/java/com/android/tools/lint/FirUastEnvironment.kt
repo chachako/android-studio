@@ -20,6 +20,7 @@ import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFileSetFactory
+import com.intellij.pom.java.InternalPersistentJavaLanguageLevelReaderService
 import com.intellij.pom.java.LanguageLevel
 import java.io.File
 import kotlin.concurrent.withLock
@@ -116,6 +117,18 @@ private fun createAnalysisSession(
         // to instantiate [FilesScope]
         // For FIR UAST, the first attempt will be made while building the module structure below.
         registerApplicationService(VirtualFileSetFactory::class.java, LintVirtualFileSetFactory)
+      }
+      // This app-level service should be registered before building project structure
+      // which attempt to read JvmRoots for java files
+      if (
+        application.getServiceIfCreated(
+          InternalPersistentJavaLanguageLevelReaderService::class.java
+        ) == null
+      ) {
+        registerApplicationService(
+          InternalPersistentJavaLanguageLevelReaderService::class.java,
+          InternalPersistentJavaLanguageLevelReaderService.DefaultImpl()
+        )
       }
       buildKtModuleProviderByCompilerConfiguration(config.kotlinCompilerConfig)
     }

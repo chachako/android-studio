@@ -25,6 +25,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFileSetFactory
+import com.intellij.pom.java.InternalPersistentJavaLanguageLevelReaderService
 import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiNameHelper
@@ -374,6 +375,10 @@ private fun configureFe10ApplicationEnvironment(appEnv: CoreApplicationEnvironme
     // For FE1.0 UAST, the first attempt will be made during project env setup, so any place inside
     // this app env setup is safe.
     it.application.registerService(VirtualFileSetFactory::class.java, LintVirtualFileSetFactory)
+    appEnv.application.registerService(
+      InternalPersistentJavaLanguageLevelReaderService::class.java,
+      InternalPersistentJavaLanguageLevelReaderService.DefaultImpl()
+    )
   }
 }
 
