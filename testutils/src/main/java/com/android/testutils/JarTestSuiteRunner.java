@@ -16,12 +16,9 @@
 
 package com.android.testutils;
 
-import org.junit.runners.Suite;
-import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.RunnerBuilder;
-
 import java.io.IOException;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -31,8 +28,16 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import org.junit.runner.Description;
+import org.junit.runner.Runner;
+import org.junit.runner.notification.RunNotifier;
+import org.junit.runners.Suite;
+import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.RunnerBuilder;
+import org.junit.runners.model.Statement;
 
 public class JarTestSuiteRunner extends Suite {
+    private final Runner finalizerTest;
 
     /** Putatively temporary mechanism to avoid running certain classes. */
     @Retention(RetentionPolicy.RUNTIME)
@@ -42,9 +47,23 @@ public class JarTestSuiteRunner extends Suite {
         Class<?>[] value();
     }
 
+    /**
+     * Mechanism to run an additional test at the end of the suite. This can be used to add
+     * assertions about the tests themselves, for example that they do not leak memory. Normally
+     * this would be accomplished using suite-level @AfterClass methods, but exceptions thrown from
+     * those are handled poorly by the Bazel JUnit runner (b/152757288).
+     */
+    @Inherited
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    public @interface FinalizerTest {
+        Class<?> value();
+    }
+
     public JarTestSuiteRunner(Class<?> suiteClass, RunnerBuilder builder)
             throws InitializationError, ClassNotFoundException, IOException {
         super(new DelegatingRunnerBuilder(builder), suiteClass, getTestClasses(suiteClass));
+        finalizerTest = getFinalizerTest(suiteClass, builder);
     }
 
     private static Class<?>[] getTestClasses(Class<?> suiteClass)
@@ -82,6 +101,40 @@ public class JarTestSuiteRunner extends Suite {
         return classes;
     }
 
+    private static Runner getFinalizerTest(Class<?> suiteClass, RunnerBuilder runnerBuilder) {
+        FinalizerTest finalizerTestAnnotation = suiteClass.getAnnotation(FinalizerTest.class);
+        if (finalizerTestAnnotation != null) {
+            System.out.printf("Found finalizer test: %s%n", finalizerTestAnnotation.value());
+            return runnerBuilder.safeRunnerForClass(finalizerTestAnnotation.value());
+        }
+        return null;
+    }
+
+    @Override
+    protected Statement classBlock(RunNotifier notifier) {
+        // Note: we run the finalizer test here instead of adding it to the list of child runners
+        // because the finalizer test should not be subject to test filters, sharding, sorting, etc.
+        Statement delegate = super.classBlock(notifier);
+        return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                delegate.evaluate();
+                if (finalizerTest != null) {
+                    finalizerTest.run(notifier);
+                }
+            }
+        };
+    }
+
+    @Override
+    public Description getDescription() {
+        // Add the finalizer test to the suite description so that it is included in test.xml.
+        Description description = super.getDescription();
+        if (finalizerTest != null) {
+            description.addChild(finalizerTest.getDescription());
+        }
+        return description;
+    }
 
     /** Putatively temporary mechanism to avoid running certain classes. */
     private static Set<String> classNamesToExclude(
