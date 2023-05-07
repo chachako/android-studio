@@ -444,6 +444,45 @@ public class PluralsDetectorTest extends AbstractCheckTest {
                 .expectClean();
     }
 
+    public void test280634462() {
+        // Regression for https://issuetracker.google.com/issues/280634462
+        lint().files(
+                        xml(
+                                "res/values-es/plurals.xml",
+                                ""
+                                        + "<plurals name=\"product_type_ch_adult_general_abonnement\">\n"
+                                        + "  <item quantity=\"many\">%d dospělých (karta GA)</item>\n"
+                                        + "  <item quantity=\"one\">%d Dospělý (GA travelcard)</item>\n"
+                                        + "  <item quantity=\"other\">%d Dospělí/dospělých (GA travelcard)</item>\n"
+                                        + "</plurals>"),
+                        xml(
+                                "res/values-it/plurals.xml",
+                                ""
+                                        + "<plurals name=\"product_type_ch_adult_general_abonnement\">\n"
+                                        + "  <item quantity=\"many\">%d dospělých (karta GA)</item>\n"
+                                        + "  <item quantity=\"one\">%d Dospělý (GA travelcard)</item>\n"
+                                        + "  <item quantity=\"other\">%d Dospělí/dospělých (GA travelcard)</item>\n"
+                                        + "</plurals>"),
+                        xml(
+                                "res/values-pt/plurals.xml",
+                                ""
+                                        + "<plurals name=\"product_type_ch_adult_general_abonnement\">\n"
+                                        + "  <item quantity=\"many\">%d dospělých (karta GA)</item>\n"
+                                        + "  <item quantity=\"one\">%d Dospělý (GA travelcard)</item>\n"
+                                        + "  <item quantity=\"other\">%d Dospělí/dospělých (GA travelcard)</item>\n"
+                                        + "</plurals>"),
+                        xml(
+                                "res/values-pt‑PT/plurals.xml",
+                                ""
+                                        + "<plurals name=\"product_type_ch_adult_general_abonnement\">\n"
+                                        + "  <item quantity=\"many\">%d dospělých (karta GA)</item>\n"
+                                        + "  <item quantity=\"one\">%d Dospělý (GA travelcard)</item>\n"
+                                        + "  <item quantity=\"other\">%d Dospělí/dospělých (GA travelcard)</item>\n"
+                                        + "</plurals>"))
+                .run()
+                .expectClean();
+    }
+
     @SuppressWarnings("all") // Sample code
     private TestFile mPlurals =
             xml(
