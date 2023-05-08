@@ -166,7 +166,8 @@ class UnitTestTaskManager(
         // testedVariantScope.getTaskContainer().getJavacTask());
         maybeCreateTransformClassesWithAsmTask(unitTestCreationConfig)
 
-        if (unitTestCreationConfig.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)) {
+        if (unitTestCreationConfig.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)
+            && globalConfig.lintOptions.ignoreTestSources.not()) {
             taskFactory.register(
                 AndroidLintAnalysisTask.PerComponentCreationAction(
                     unitTestCreationConfig,

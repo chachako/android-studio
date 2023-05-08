@@ -725,8 +725,12 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                 lintPartialResultsArtifactType
             )
             if (!fatalOnly && isLintAnalysisPerComponent) {
+                val ignoreTestSources = task.projectInputs.lintOptions.ignoreTestSources.get()
+                val ignoreTestFixturesSources =
+                    task.projectInputs.lintOptions.ignoreTestFixturesSources.get()
                 // Add unit test lint models and partial results
-                if ((creationConfig as? HasUnitTest)?.unitTest != null) {
+                if ((creationConfig as? HasUnitTest)?.unitTest != null
+                    && ignoreTestSources.not()) {
                     task.nestedComponentLintModels.from(
                         creationConfig.artifacts.get(UNIT_TEST_LINT_MODEL)
                     )
@@ -746,7 +750,8 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                 )
 
                 // Add android test lint models and partial results
-                if ((creationConfig as? HasAndroidTest)?.androidTest != null) {
+                if ((creationConfig as? HasAndroidTest)?.androidTest != null
+                    && ignoreTestSources.not()) {
                     task.nestedComponentLintModels.from(
                         creationConfig.artifacts.get(ANDROID_TEST_LINT_MODEL)
                     )
@@ -766,7 +771,8 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                 )
 
                 // Add test fixtures lint models and partial results
-                if ((creationConfig as? HasTestFixtures)?.testFixtures != null) {
+                if ((creationConfig as? HasTestFixtures)?.testFixtures != null
+                    && ignoreTestFixturesSources.not()) {
                     task.nestedComponentLintModels.from(
                         creationConfig.artifacts.get(TEST_FIXTURES_LINT_MODEL)
                     )

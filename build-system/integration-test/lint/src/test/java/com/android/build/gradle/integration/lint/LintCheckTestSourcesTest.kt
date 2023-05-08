@@ -16,19 +16,24 @@
 
 package com.android.build.gradle.integration.lint
 
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
+import com.android.build.gradle.options.BooleanOption.LINT_ANALYSIS_PER_COMPONENT
 import com.android.testutils.truth.PathSubject.assertThat
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import java.io.File
 
 /**
  * Integration test testing cases when lint should analyze test sources.
  */
-class LintCheckTestSourcesTest {
+@RunWith(Parameterized::class)
+class LintCheckTestSourcesTest(private val lintAnalysisPerComponent: Boolean) {
 
     private val app = MinimalSubProject.app("com.example.app")
     private val lib = MinimalSubProject.lib("com.example.lib")
@@ -46,6 +51,12 @@ class LintCheckTestSourcesTest {
                     .dependency(app, javaLib)
                     .build()
             ).create()
+
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "lintAnalysisPerComponent_{0}")
+        fun params() = listOf(true, false)
+    }
 
     @Before
     fun before() {
@@ -176,7 +187,7 @@ class LintCheckTestSourcesTest {
     @Test
     fun testCheckTestSources() {
         // check that there are no errors before adding "checkTestSources true"
-        project.executor().run(":app:lintRelease")
+        getExecutor().run(":app:lintRelease")
         val reportFile = File(project.getSubproject("app").projectDir, "lint-results.txt")
         assertThat(reportFile).exists()
         assertThat(reportFile).doesNotContain("Error: STOPSHIP")
@@ -190,7 +201,7 @@ class LintCheckTestSourcesTest {
         project.getSubproject(":javaLib")
             .buildFile
             .appendText("\nlintOptions.checkTestSources true\n")
-        project.executor().run(":app:lintRelease")
+        getExecutor().run(":app:lintRelease")
         assertThat(reportFile).exists()
         assertThat(reportFile).containsAllOf(
             "AppUnitTest.java:4: Error: STOPSHIP comment found",
@@ -204,7 +215,7 @@ class LintCheckTestSourcesTest {
     @Test
     fun testIgnoreTestSources() {
         // check that there are no unused resource warnings before adding "ignoreTestSources true"
-        project.executor().run(":app:lintRelease")
+        getExecutor().run(":app:lintRelease")
         val reportFile = File(project.getSubproject("app").projectDir, "lint-results.txt")
         assertThat(reportFile).exists()
         assertThat(reportFile).doesNotContain(
@@ -214,8 +225,12 @@ class LintCheckTestSourcesTest {
         project.getSubproject(":app")
             .buildFile
             .appendText("\nandroid.lintOptions.ignoreTestSources true\n")
-        project.executor().run(":app:lintRelease")
+        getExecutor().run(":app:lintRelease")
         assertThat(reportFile).exists()
         assertThat(reportFile).contains("Warning: The resource R.string.foo appears to be unused")
+    }
+
+    private fun getExecutor(): GradleTaskExecutor {
+        return project.executor().with(LINT_ANALYSIS_PER_COMPONENT, lintAnalysisPerComponent)
     }
 }

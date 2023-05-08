@@ -224,7 +224,8 @@ class TestFixturesTaskManager(
 
         createBundleTaskForTestFixtures(testFixturesComponent)
 
-        if (testFixturesComponent.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)) {
+        if (testFixturesComponent.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)
+            && globalConfig.lintOptions.ignoreTestFixturesSources.not()) {
             taskFactory.register(
                 AndroidLintAnalysisTask.PerComponentCreationAction(
                     testFixturesComponent,

@@ -512,6 +512,10 @@ abstract class LintOptionsInput {
     abstract val baseline: RegularFileProperty
     @get:Input
     abstract val severityOverrides: MapProperty<String, LintModelSeverity>
+    @get:Input
+    abstract val ignoreTestSources: Property<Boolean>
+    @get:Input
+    abstract val ignoreTestFixturesSources: Property<Boolean>
 
     fun initialize(lintOptions: Lint, lintMode: LintMode) {
         disable.setDisallowChanges(lintOptions.disable)
@@ -537,6 +541,8 @@ abstract class LintOptionsInput {
         }
         baseline.disallowChanges()
         severityOverrides.setDisallowChanges((lintOptions as LintImpl).severityOverridesMap)
+        ignoreTestSources.setDisallowChanges(lintOptions.ignoreTestSources)
+        ignoreTestFixturesSources.setDisallowChanges(lintOptions.ignoreTestFixturesSources)
     }
 
     fun toLintModel(): LintModelLintOptions {
@@ -552,8 +558,8 @@ abstract class LintOptionsInput {
             ignoreWarnings=ignoreWarnings.get(),
             warningsAsErrors=warningsAsErrors.get(),
             checkTestSources=checkTestSources.get(),
-            ignoreTestSources=false, // Handled in LintTaskManager
-            ignoreTestFixturesSources=false, // Handled in LintTaskManager
+            ignoreTestSources=ignoreTestSources.get(),
+            ignoreTestFixturesSources=ignoreTestFixturesSources.get(),
             checkGeneratedSources=checkGeneratedSources.get(),
             explainIssues=explainIssues.get(),
             showAll=showAll.get(),

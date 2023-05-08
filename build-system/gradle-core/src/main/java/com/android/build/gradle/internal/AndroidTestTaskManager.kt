@@ -210,8 +210,10 @@ class AndroidTestTaskManager(
                     .name)
         }
 
-        if (androidTestProperties.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)
-            || androidTestProperties is KmpComponentCreationConfig) {
+        val isPerComponentLintAnalysis =
+            androidTestProperties.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)
+                    || androidTestProperties is KmpComponentCreationConfig
+        if (isPerComponentLintAnalysis && globalConfig.lintOptions.ignoreTestSources.not()) {
             taskFactory.register(
                 AndroidLintAnalysisTask.PerComponentCreationAction(
                     androidTestProperties,
