@@ -386,6 +386,14 @@ public abstract class LintDetectorTest extends BaseLintDetectorTest {
         return TestFiles.kotlin("build.gradle.kts", source);
     }
 
+    @SuppressWarnings("UnknownLanguage")
+    @NonNull
+    public static TestFile kts(
+            @NonNull String to, @NonNull @Language("kotlin-script") String source) {
+        //noinspection LanguageMismatch
+        return TestFiles.kotlin(to, source);
+    }
+
     @NonNull
     public static TestFile xml(@NonNull String to, @NonNull @Language("XML") String source) {
         return TestFiles.xml(to, source);

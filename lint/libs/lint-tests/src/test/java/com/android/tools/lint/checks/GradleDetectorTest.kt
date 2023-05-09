@@ -1397,6 +1397,34 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testVersionCatalogNotSuggestedInSettingsGradle() {
+    lint()
+      .files(
+        gradleToml("""
+                [versions]
+                [libraries]
+                """)
+          .indented(),
+        kts(
+            "settings.gradle.kts",
+            """
+                buildscript {
+                    repositories {
+                        google()
+                    }
+                    dependencies {
+                        classpath("com.android.application:com.android.application.gradle.plugin:8.0.1")
+                    }
+                }
+                """
+          )
+          .indented()
+      )
+      .issues(SWITCH_TO_TOML)
+      .run()
+      .expectClean()
+  }
+
   fun testVersionsFromGradleCache() {
     val expected =
       "" +

@@ -543,6 +543,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
             val tomlLibraries = context.getTomlValue(VC_LIBRARIES)
             if (
               tomlLibraries != null &&
+                !context.file.name.startsWith("settings.gradle") &&
                 !dependency.contains("+") &&
                 (!dependency.contains("$") || isResolved)
             ) {
