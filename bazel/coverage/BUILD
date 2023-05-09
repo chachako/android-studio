@@ -312,8 +312,7 @@ coverage_report(
         "tools/adt/idea/gradle-dsl/src/com/android/tools/idea/gradle/dsl",
     ],
     tests = [
-        # TODO(b/278991173)
-        # "//tools/adt/idea/gradle-dsl:intellij.android.gradle.dsl.tests_tests",
+        "//tools/adt/idea/gradle-dsl:intellij.android.gradle.dsl.tests_tests",
     ],
 )
 
@@ -1024,8 +1023,7 @@ coverage_report(
         "//tools/adt/idea/device-manager-v2:intellij.android.device-manager-v2_tests",
         "//tools/adt/idea/gmd-code-completion:intellij.android.gmd-code-completion_tests",
         "//tools/adt/idea/streaming:intellij.android.streaming.tests_tests",
-        # TODO(b/278991173)
-        # "//tools/adt/idea/gradle-dsl:intellij.android.gradle.dsl.tests_tests",
+        "//tools/adt/idea/gradle-dsl:intellij.android.gradle.dsl.tests_tests",
         "//tools/adt/idea/kotlin-integration:kotlin-integration-tests_tests",
         "//tools/adt/idea/layout-inspector:intellij.android.layout-inspector.tests_tests",
         "//tools/adt/idea/layout-ui:intellij.android.layout-ui_tests",
