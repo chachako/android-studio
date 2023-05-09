@@ -104,11 +104,13 @@ class ModelInstantAppCompatibleTest {
             "dist:onDemand=\"true\"",
             "dist:onDemand=\"false\" dist:instant=\"true\""
         )
-        val issues =
-            project.model().ignoreSyncIssues().fetchAndroidProjects().onlyModelSyncIssuesMap[":app"]!!
+
+        val issues = project.modelV2().ignoreSyncIssues().fetchModels()
+            .container.getProject(":app").issues?.syncIssues!!
+
         Truth.assertThat(issues.size).isAtLeast(1)
-        Truth.assertThat(issues.last().message).startsWith("Failed to parse XML")
-        Truth.assertThat(issues.last().message).contains(
+        Truth.assertThat(issues.single().message.trim()).startsWith("Failed to parse XML")
+        Truth.assertThat(issues.single().message).contains(
             File(
                 project.getSubproject(":app").mainSrcDir.parent,
                 "/AndroidManifest.xml"
@@ -143,19 +145,21 @@ class ModelInstantAppCompatibleTest {
             "dist:onDemand=\"true\"",
             "dist:onDemand=\"false\" dist:instant=\"true\""
         )
-        val issues =
-            project.model().ignoreSyncIssues().fetchAndroidProjects().onlyModelSyncIssuesMap[":app"]!!
+
+        val issues = project.modelV2().ignoreSyncIssues().fetchModels()
+            .container.getProject(":app").issues?.syncIssues!!
         Truth.assertThat(issues).isEmpty()
-        var models = project.model().ignoreSyncIssues().fetchAndroidProjects().onlyModelMap
-        for ((_, model) in models) {
-            for (variant in model.variants) {
-                if (model.name == "feature1") {
+
+        val models = project.modelV2().ignoreSyncIssues().fetchModels().container.rootInfoMap
+        for ((modelName, model) in models) {
+            for (variant in model.androidProject?.variants!!) {
+                if (modelName == ":feature1") {
                     Truth.assertThat(variant.isInstantAppCompatible)
-                        .named("Project ${model.name} isInstantAppCompatible property populated from manifest")
+                        .named("Project $modelName isInstantAppCompatible property populated from manifest")
                         .isFalse()
                 } else {
                     Truth.assertThat(variant.isInstantAppCompatible)
-                        .named("Project ${model.name} isInstantAppCompatible property populated from manifest")
+                        .named("Project $modelName isInstantAppCompatible property populated from manifest")
                         .isTrue()
                 }
             }
@@ -174,16 +178,17 @@ class ModelInstantAppCompatibleTest {
             "</manifest",
             "<dist:module dist:instant=\"true\" /> </manifest"
         )
-        var models = buildTypeProject.model().ignoreSyncIssues().fetchAndroidProjects().onlyModelMap
-        for ((_, model) in models) {
-            for (variant in model.variants) {
-                if (variant.buildType == "debug") {
+
+        val models = buildTypeProject.modelV2().ignoreSyncIssues().fetchModels().container.rootInfoMap
+        for ((modelName, model) in models) {
+            for (variant in model.androidProject?.variants!!) {
+                if (variant.name == "debug") {
                     Truth.assertThat(variant.isInstantAppCompatible)
-                        .named("Project ${model.name} isInstantAppCompatible property populated from manifest")
+                        .named("Project $modelName isInstantAppCompatible property populated from manifest")
                         .isTrue()
                 } else {
                     Truth.assertThat(variant.isInstantAppCompatible)
-                        .named("Project ${model.name} isInstantAppCompatible property populated from manifest")
+                        .named("Project $modelName isInstantAppCompatible property populated from manifest")
                         .isFalse()
                 }
             }
@@ -207,16 +212,17 @@ class ModelInstantAppCompatibleTest {
             "<application",
             "<dist:module dist:instant=\"true\" /> <application"
         )
-        var models = flavorProject.model().ignoreSyncIssues().fetchAndroidProjects().onlyModelMap
-        for ((_, model) in models) {
-            for (variant in model.variants) {
-                if (variant.productFlavors.contains("free")) {
+
+        val models = flavorProject.modelV2().ignoreSyncIssues().fetchModels().container.rootInfoMap
+        for ((modelName, model) in models) {
+            for (variant in model.androidProject?.variants!!) {
+                if (variant.displayName.contains("free")) {
                     Truth.assertThat(variant.isInstantAppCompatible)
-                        .named("Project ${model.name} isInstantAppCompatible property populated from manifest")
+                        .named("Project $modelName isInstantAppCompatible property populated from manifest")
                         .isTrue()
                 } else {
                     Truth.assertThat(variant.isInstantAppCompatible)
-                        .named("Project ${model.name} isInstantAppCompatible property populated from manifest")
+                        .named("Project $modelName isInstantAppCompatible property populated from manifest")
                         .isFalse()
                 }
             }
@@ -265,16 +271,16 @@ class ModelInstantAppCompatibleTest {
             "dist:",
             "apkd:"
         )
-        var models = project.model().ignoreSyncIssues().fetchAndroidProjects().onlyModelMap
-        for ((_, model) in models) {
-            for (variant in model.variants) {
-                if (model.name == "feature1") {
+        val models = project.modelV2().ignoreSyncIssues().fetchModels().container.rootInfoMap
+        for ((modelName, model) in models) {
+            for (variant in model.androidProject?.variants!!) {
+                if (modelName == ":feature1") {
                     Truth.assertThat(variant.isInstantAppCompatible)
-                        .named("Project ${model.name} isInstantAppCompatible property populated from manifest")
+                        .named("Project $modelName isInstantAppCompatible property populated from manifest")
                         .isFalse()
                 } else {
                     Truth.assertThat(variant.isInstantAppCompatible)
-                        .named("Project ${model.name} isInstantAppCompatible property populated from manifest")
+                        .named("Project $modelName isInstantAppCompatible property populated from manifest")
                         .isTrue()
                 }
             }
@@ -298,14 +304,16 @@ class ModelInstantAppCompatibleTest {
             "dist:onDemand=\"true\"",
             "dist:onDemand=\"false\" android:instant=\"true\""
         )
-        var models = project.model().ignoreSyncIssues().fetchAndroidProjects().onlyModelMap
-        for ((_, model) in models) {
-            for (variant in model.variants) {
+
+        val models = project.modelV2().ignoreSyncIssues().fetchModels().container.rootInfoMap
+        for ((modelName, model) in models) {
+            for (variant in model.androidProject?.variants!!) {
                 Truth.assertThat(variant.isInstantAppCompatible)
-                    .named("Project ${model.name} isInstantAppCompatible property populated from manifest")
+                    .named("Project $modelName isInstantAppCompatible property populated from manifest")
                     .isFalse()
             }
         }
+
     }
 
     @Test
@@ -315,16 +323,17 @@ class ModelInstantAppCompatibleTest {
             "<application>",
             "<dist:module dist:instant=\"true\" /> <application>"
         )
-        var models = project.model().ignoreSyncIssues().fetchAndroidProjects().onlyModelMap
-        for ((_, model) in models) {
-            for (variant in model.variants) {
-                if (model.name == "app") {
+
+        val models = project.modelV2().ignoreSyncIssues().fetchModels().container.rootInfoMap
+        for ((modelName, model) in models) {
+            for (variant in model.androidProject?.variants!!) {
+                if (modelName == ":app") {
                     Truth.assertThat(variant.isInstantAppCompatible)
-                        .named("Project ${model.name} isInstantAppCompatible property populated from manifest")
+                        .named("Project $modelName isInstantAppCompatible property populated from manifest")
                         .isTrue()
                 } else {
                     Truth.assertThat(variant.isInstantAppCompatible)
-                        .named("Project ${model.name} isInstantAppCompatible property populated from manifest")
+                        .named("Project $modelName isInstantAppCompatible property populated from manifest")
                         .isFalse()
                 }
             }
@@ -338,11 +347,11 @@ class ModelInstantAppCompatibleTest {
             "<application>",
             "<dist:module dist:instant=\"blah\" /> <application>"
         )
-        var models = project.model().ignoreSyncIssues().fetchAndroidProjects().onlyModelMap
-        for ((_, model) in models) {
-            for (variant in model.variants) {
+        val models = project.modelV2().ignoreSyncIssues().fetchModels().container.rootInfoMap
+        for ((modelName, model) in models) {
+            for (variant in model.androidProject?.variants!!) {
                 Truth.assertThat(variant.isInstantAppCompatible)
-                    .named("Project ${model.name} isInstantAppCompatible property populated from manifest")
+                    .named("Project $modelName isInstantAppCompatible property populated from manifest")
                     .isFalse()
             }
         }

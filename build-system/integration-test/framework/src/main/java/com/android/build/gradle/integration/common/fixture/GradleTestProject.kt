@@ -1329,6 +1329,24 @@ allprojects { proj ->
             ?: throw RuntimeException("Failed to get bundle file for $projectPath module")
     }
 
+    fun getApkFromBundleTaskName(variantName: String, projectPath: String): String {
+        val appModel = modelV2().fetchModels().container.getProject(projectPath).androidProject
+            ?: throw RuntimeException("Failed to get sync model for $projectPath module")
+
+        val variantMainArtifact = appModel.getVariantByName(variantName).mainArtifact
+        return variantMainArtifact.bundleInfo?.apkFromBundleTaskName
+            ?: throw RuntimeException("Module $projectPath does not have apkFromBundle task name")
+    }
+
+    fun getBundleTaskName(variantName: String, projectPath: String): String {
+        val appModel = modelV2().fetchModels().container.getProject(projectPath).androidProject
+            ?: throw RuntimeException("Failed to get sync model for $projectPath module")
+
+        val variantMainArtifact = appModel.getVariantByName(variantName).mainArtifact
+        return variantMainArtifact.bundleInfo?.bundleTaskName
+            ?: throw RuntimeException("Module $projectPath does not have bundle task name")
+    }
+
     private fun <T : BaseGradleExecutor<T>> applyOptions(executor: T): T {
         for ((option, value) in booleanOptions) {
             executor.with(option, value)

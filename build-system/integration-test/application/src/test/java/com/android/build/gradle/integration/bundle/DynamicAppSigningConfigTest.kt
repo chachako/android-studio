@@ -21,11 +21,8 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.ModelContainerSubject.assertThat
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.SigningHelper
-import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.OptionalBooleanOption
 import com.android.build.gradle.options.StringOption
-import com.android.builder.errors.IssueReporter
-import com.android.builder.model.SyncIssue
 import com.google.common.io.Resources
 import org.junit.Rule
 import org.junit.Test
@@ -56,21 +53,25 @@ class DynamicAppSigningConfigTest {
                         }
                     }
                 """.trimIndent())
-        val container = project.model().ignoreSyncIssues().fetchAndroidProjects()
 
-        assertThat(container).rootBuild().project(":feature1")
-            .hasSingleIssue(
-                IssueReporter.Severity.WARNING.severity,
-                SyncIssue.TYPE_SIGNING_CONFIG_DECLARED_IN_DYNAMIC_FEATURE,
-                null,
-                "Signing configuration should not be declared in build types of dynamic-feature. Dynamic-features use the signing configuration declared in the application module."
-            )
+        val syncIssues = project.modelV2().ignoreSyncIssues().fetchModels().container
+            .getProject(":feature1").issues?.syncIssues!!
+
+        assertThat(syncIssues).hasSize(1)
+        val singleSyncIssue = syncIssues.single()
+        assertThat(singleSyncIssue.severity)
+            .isEqualTo(com.android.builder.model.v2.ide.SyncIssue.SEVERITY_WARNING)
+        assertThat(singleSyncIssue.type)
+            .isEqualTo(com.android.builder.model.v2.ide.SyncIssue.TYPE_SIGNING_CONFIG_DECLARED_IN_DYNAMIC_FEATURE)
+        assertThat(singleSyncIssue.message)
+            .contains("Signing configuration should not be declared in build types of dynamic-feature. Dynamic-features use the signing configuration declared in the application module.")
     }
 
     @Test
     fun testNoSyncWarning() {
-        val container = project.model().ignoreSyncIssues().fetchAndroidProjects()
-        assertThat(container).rootBuild().project(":feature2").hasNoIssues()
+        val issues = project.modelV2().ignoreSyncIssues().fetchModels().container
+            .getProject(":feature1").issues?.syncIssues!!
+        assertThat(issues).hasSize(0)
     }
 
     @Test

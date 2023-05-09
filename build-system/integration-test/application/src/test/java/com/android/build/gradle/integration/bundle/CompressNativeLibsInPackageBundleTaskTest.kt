@@ -20,8 +20,6 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.runner.FilterableParameterized
-import com.android.build.gradle.integration.common.utils.getOutputByName
-import com.android.builder.model.AppBundleProjectBuildOutput
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.tools.build.bundletool.model.AppBundle
 import com.google.common.truth.Truth.assertThat
@@ -86,12 +84,7 @@ class CompressNativeLibsInPackageBundleTaskTest(
         }
 
         project.executor().run(":app:bundleDebug")
-        val bundleFile =
-            project.model()
-                .fetchContainer(AppBundleProjectBuildOutput::class.java)
-                .rootBuildModelMap[":app"]
-                ?.getOutputByName("debug")
-                ?.bundleFile
+        val bundleFile = project.locateBundleFileViaModel("debug", ":app")
         assertThat(bundleFile).isNotNull()
         assertThat(bundleFile).exists()
         ZipFile(bundleFile!!).use { zip ->

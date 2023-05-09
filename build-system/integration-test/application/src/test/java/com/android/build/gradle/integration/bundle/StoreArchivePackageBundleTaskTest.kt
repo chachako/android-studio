@@ -20,8 +20,6 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.runner.FilterableParameterized
-import com.android.build.gradle.integration.common.utils.getBundleLocation
-import com.android.build.gradle.integration.common.utils.getVariantByName
 import com.android.testutils.truth.PathSubject
 import com.android.tools.build.bundletool.model.AppBundle
 import com.google.common.truth.Truth
@@ -30,8 +28,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import java.io.File
-import kotlin.test.fail
 
 @RunWith(FilterableParameterized::class)
 class StoreArchivePackageBundleTaskTest(
@@ -62,7 +58,7 @@ class StoreArchivePackageBundleTaskTest(
         }
         project.executor().run(":app:bundleDebug")
 
-        val bundleFile = getBundleFileOutput("debug")
+        val bundleFile = project.locateBundleFileViaModel("debug", ":app")
 
         PathSubject.assertThat(bundleFile).isNotNull()
         PathSubject.assertThat(bundleFile).exists()
@@ -76,13 +72,5 @@ class StoreArchivePackageBundleTaskTest(
                     .isEqualTo(storeArchiveEnabled)
             }
         }
-    }
-
-    private fun getBundleFileOutput(variantName: String): File {
-        val outputModels = project.modelV2().fetchModels()
-        val outputAppModel = outputModels.container.getProject(":app").androidProject
-            ?: fail("Failed to get output model for :app module")
-
-        return outputAppModel.getVariantByName(variantName).getBundleLocation()
     }
 }

@@ -24,9 +24,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject.Apk
 import com.android.build.gradle.integration.common.truth.AabSubject.Companion.assertThat
 import com.android.build.gradle.integration.common.truth.ApkSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import com.android.build.gradle.integration.common.utils.getBundleLocation
 import com.android.build.gradle.integration.common.utils.getOutputByName
-import com.android.build.gradle.integration.common.utils.getVariantByName
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
@@ -74,7 +72,7 @@ internal val multiDexSupportLibClasses = listOf(
 class DynamicAppTest {
 
     @get:Rule
-    val tmpFile= TemporaryFolder()
+    val tmpFile = TemporaryFolder()
 
     @get:Rule
     val project: GradleTestProject = GradleTestProject.builder()
@@ -141,11 +139,11 @@ class DynamicAppTest {
         val feature1Project =
                 modelContainer.getProject( ":feature1").androidProject
 
-        Truth.assertThat(appProject).isNotNull()
-        Truth.assertThat(appProject?.dynamicFeatures)
+        assertThat(appProject).isNotNull()
+        assertThat(appProject?.dynamicFeatures)
             .containsExactly(":feature1", ":feature2")
 
-        Truth.assertThat(feature1Project).isNotNull()
+        assertThat(feature1Project).isNotNull()
     }
 
     @Test
@@ -174,10 +172,10 @@ class DynamicAppTest {
             project.getSubproject(":feature1").buildFile,
             "minSdkVersion 18",
             "minSdkVersion 21")
-        val bundleTaskName = getBundleTaskName("debug")
+        val bundleTaskName = project.getBundleTaskName("debug", ":app")
         project.execute("app:$bundleTaskName")
 
-        val bundleFile = getBundleFileOutput("debug")
+        val bundleFile = project.locateBundleFileViaModel("debug", ":app")
         assertThat(bundleFile).exists()
 
         val manifestFile = FileUtils.join(project.getSubproject("feature1").buildDir,
@@ -219,10 +217,10 @@ class DynamicAppTest {
 
     @Test
     fun `test bundleDebug task`() {
-        val bundleTaskName = getBundleTaskName("debug")
+        val bundleTaskName = project.getBundleTaskName("debug", ":app")
         project.execute("app:$bundleTaskName")
 
-        val bundleFile = getBundleFileOutput("debug")
+        val bundleFile = project.locateBundleFileViaModel("debug", ":app")
         assertThat(bundleFile).exists()
 
         Aab(bundleFile).use { aab ->
@@ -305,16 +303,16 @@ class DynamicAppTest {
     // regression test for Issue 145688738
     @Test
     fun `test bundleRelease task`() {
-        val bundleTaskName = getBundleTaskName("release")
+        val bundleTaskName = project.getBundleTaskName("release", ":app")
         project.execute("app:$bundleTaskName")
     }
 
     @Test
     fun `test unsigned bundleRelease task with r8`() {
-        val bundleTaskName = getBundleTaskName("release")
+        val bundleTaskName = project.getBundleTaskName("release", ":app")
         project.executor().run("app:$bundleTaskName")
 
-        val bundleFile = getBundleFileOutput("release")
+        val bundleFile = project.locateBundleFileViaModel("release", ":app")
         assertThat(bundleFile).exists()
 
         Zip(bundleFile).use {
@@ -328,10 +326,10 @@ class DynamicAppTest {
     fun `test unsigned bundleRelease task with r8 dontminify`() {
         project.getSubproject("app").projectDir.resolve("proguard-rules.pro")
             .writeText("-dontobfuscate")
-        val bundleTaskName = getBundleTaskName("release")
+        val bundleTaskName = project.getBundleTaskName("release", ":app")
         project.executor().run("app:$bundleTaskName")
 
-        val bundleFile = getBundleFileOutput("release")
+        val bundleFile = project.locateBundleFileViaModel("release", ":app")
         assertThat(bundleFile).exists()
 
         Zip(bundleFile).use {
@@ -356,10 +354,10 @@ class DynamicAppTest {
         FileUtils.mkdirs(fooTxt.parentFile)
         Files.write(fooTxt.toPath(), "foo".toByteArray(Charsets.UTF_8))
 
-        val bundleTaskName = getBundleTaskName("debug")
+        val bundleTaskName = project.getBundleTaskName("debug", ":app")
         project.execute("app:$bundleTaskName")
 
-        val bundleFile = getBundleFileOutput("debug")
+        val bundleFile = project.locateBundleFileViaModel("debug", ":app")
         assertThat(bundleFile).exists()
 
         Zip(bundleFile).use {
@@ -387,10 +385,10 @@ class DynamicAppTest {
         createAbiFile(featureProject, SdkConstants.ABI_INTEL_ATOM, "libfeature1.so")
         createAbiFile(featureProject, SdkConstants.ABI_INTEL_ATOM64, "libfeature1.so")
 
-        val bundleTaskName = getBundleTaskName("debug")
+        val bundleTaskName = project.getBundleTaskName("debug", ":app")
         project.execute("app:$bundleTaskName")
 
-        val bundleFile = getBundleFileOutput("debug")
+        val bundleFile = project.locateBundleFileViaModel("debug", ":app")
         assertThat(bundleFile).exists()
 
         val bundleContentWithAbis = debugUnsignedContent.plus(
@@ -402,7 +400,7 @@ class DynamicAppTest {
             )
         )
         Zip(bundleFile).use {
-            Truth.assertThat(it.entries.map { it.toString() })
+            assertThat(it.entries.map { it.toString() })
                 .containsExactly(*bundleContentWithAbis)
         }
     }
@@ -502,7 +500,7 @@ class DynamicAppTest {
 
     @Test
     fun `test making APKs from bundle`() {
-        val apkFromBundleTaskName = getApkFromBundleTaskName("debug")
+        val apkFromBundleTaskName = project.getApkFromBundleTaskName("debug", ":app")
 
         // -------------
         // build apks for API 27
@@ -519,14 +517,14 @@ class DynamicAppTest {
         assertThat(apkFolder).isDirectory()
 
         var apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
-        Truth.assertThat(apkFileArray.toList()).named("APK List for API 27")
+        assertThat(apkFileArray.toList()).named("APK List for API 27")
             .containsExactly(
                 "base-master.apk",
                 "base-xxhdpi.apk")
 
         val baseApk = File(apkFolder, "base-master.apk")
         Zip(baseApk).use {
-            Truth.assertThat(it.entries.map { it.toString() })
+            assertThat(it.entries.map { it.toString() })
                     .containsAllOf("/META-INF/BNDLTOOL.RSA", "/META-INF/BNDLTOOL.SF")
         }
 
@@ -607,7 +605,7 @@ class DynamicAppTest {
 
     @Test
     fun `test extracting instant APKs from bundle`() {
-        val apkFromBundleTaskName = getApkFromBundleTaskName("debug")
+        val apkFromBundleTaskName = project.getApkFromBundleTaskName("debug", ":app")
 
         // -------------
         // build apks for API 27
@@ -674,7 +672,7 @@ class DynamicAppTest {
     @Test
     fun `test extracting instant APKs from bundle with IDE hint`() {
 
-        val apkFromBundleTaskName = getApkFromBundleTaskName("debug")
+        val apkFromBundleTaskName = project.getApkFromBundleTaskName("debug", ":app")
 
         // -------------
         // build apks for API 27
@@ -716,7 +714,7 @@ class DynamicAppTest {
         assertThat(apkFolder).isDirectory()
 
         var apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
-        Truth.assertThat(apkFileArray.toList()).named("APK List when extract instant is true")
+        assertThat(apkFileArray.toList()).named("APK List when extract instant is true")
             .containsExactly(
                 "instant-base-master.apk",
                 "instant-base-xxhdpi.apk",
@@ -773,7 +771,7 @@ class DynamicAppTest {
 
 
         for (flavor in listOf("red", "blue")) {
-            val bundleFile = getBundleFileOutput("${flavor}Debug")
+            val bundleFile = project.locateBundleFileViaModel("${flavor}Debug", ":app")
             assertThat(
                 FileUtils.join(
                     project.getSubproject(":app").projectDir,
@@ -794,7 +792,7 @@ class DynamicAppTest {
             .run("app:bundle")
 
         for (flavor in listOf("red", "blue")) {
-            val bundleFile = getBundleFileOutput("${flavor}Debug")
+            val bundleFile = project.locateBundleFileViaModel("${flavor}Debug", ":app")
             assertThat(
                 FileUtils.join(File(absolutePath), flavor, "debug", bundleFile.name))
                 .exists()
@@ -803,18 +801,18 @@ class DynamicAppTest {
 
     @Test
     fun `test DSL update to bundle name`() {
-        val bundleTaskName = getBundleTaskName("debug")
+        val bundleTaskName = project.getBundleTaskName("debug", ":app")
 
         project.execute("app:$bundleTaskName")
 
-        val bundleFile = getBundleFileOutput("debug")
+        val bundleFile = project.locateBundleFileViaModel("debug", ":app")
         assertThat(bundleFile).exists()
 
         project.getSubproject(":app").buildFile.appendText("\narchivesBaseName ='foo'")
 
         project.execute("app:$bundleTaskName")
 
-        val newBundleFile = getBundleFileOutput("debug")
+        val newBundleFile = project.locateBundleFileViaModel("debug", ":app")
         assertThat(newBundleFile).exists()
 
         // test the folder is the same as the previous one.
@@ -828,7 +826,7 @@ class DynamicAppTest {
                  android.buildTypes.debug.debuggable = false
             """
         )
-        val apkFromBundleTaskName = getBundleTaskName("debug")
+        val apkFromBundleTaskName = project.getBundleTaskName("debug", ":app")
 
         // use a relative path to the project build dir.
         val failure = project
@@ -848,7 +846,7 @@ class DynamicAppTest {
 
     @Test
     fun `test ResConfig is applied`() {
-        val apkFromBundleTaskName = getBundleTaskName("debug")
+        val apkFromBundleTaskName = project.getBundleTaskName("debug", ":app")
 
         val content = """
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
@@ -885,17 +883,17 @@ class DynamicAppTest {
 
         // First check without resConfigs.
         project.executor().run("app:$apkFromBundleTaskName")
-        val bundleFile = getBundleFileOutput("debug")
+        val bundleFile = project.locateBundleFileViaModel("debug", ":app")
         assertThat(bundleFile).exists()
 
         Zip(bundleFile).use {
             val entries = it.entries.map { it.toString() }
-            Truth.assertThat(entries).contains("/base/res/drawable-mdpi-v21/density.xml")
-            Truth.assertThat(entries).contains("/base/res/drawable-hdpi-v21/density.xml")
-            Truth.assertThat(entries).contains("/base/res/drawable-xxxhdpi-v21/density.xml")
-            Truth.assertThat(entries).contains("/base/res/drawable-anydpi-v21/lang.xml")
-            Truth.assertThat(entries).contains("/base/res/drawable-en-anydpi-v21/lang.xml")
-            Truth.assertThat(entries).contains("/base/res/drawable-es-anydpi-v21/lang.xml")
+            assertThat(entries).contains("/base/res/drawable-mdpi-v21/density.xml")
+            assertThat(entries).contains("/base/res/drawable-hdpi-v21/density.xml")
+            assertThat(entries).contains("/base/res/drawable-xxxhdpi-v21/density.xml")
+            assertThat(entries).contains("/base/res/drawable-anydpi-v21/lang.xml")
+            assertThat(entries).contains("/base/res/drawable-en-anydpi-v21/lang.xml")
+            assertThat(entries).contains("/base/res/drawable-es-anydpi-v21/lang.xml")
         }
 
         project.file("app/build.gradle").appendText("""
@@ -919,7 +917,7 @@ class DynamicAppTest {
 
     @Test
     fun `test versionCode and versionName overrides`() {
-        val bundleTaskName = getBundleTaskName("debug")
+        val bundleTaskName = project.getBundleTaskName("debug", ":app")
 
         project.getSubproject(":app").buildFile.appendText(
             """
@@ -978,7 +976,7 @@ class DynamicAppTest {
             "CN=Bundle signing test",
             100)
 
-        val bundleTaskName = getBundleTaskName("release")
+        val bundleTaskName = project.getBundleTaskName("release", ":app")
         project.executor()
             .with(StringOption.IDE_SIGNING_STORE_FILE, keyStoreFile.path)
             .with(StringOption.IDE_SIGNING_STORE_PASSWORD, unicodeStorePass)
@@ -986,7 +984,7 @@ class DynamicAppTest {
             .with(StringOption.IDE_SIGNING_KEY_PASSWORD, unicodeKeyPass)
             .run("app:$bundleTaskName")
 
-        val bundleFile = getBundleFileOutput("release")
+        val bundleFile = project.locateBundleFileViaModel("release", ":app")
         assertThat(bundleFile).exists()
 
         Zip(bundleFile).use {
@@ -1083,7 +1081,7 @@ class DynamicAppTest {
             buildFileCustomizer(keyAlias, keyPass, keyStoreFile, storePass)
         )
 
-        val bundleTaskName = getBundleTaskName("release")
+        val bundleTaskName = project.getBundleTaskName("release", ":app")
         project.executor()
             .with(StringOption.IDE_SIGNING_STORE_FILE, keyStoreFile.path)
             .with(StringOption.IDE_SIGNING_STORE_PASSWORD, storePass)
@@ -1092,7 +1090,7 @@ class DynamicAppTest {
             .run("app:$bundleTaskName")
 
 
-        val bundleFile = getBundleFileOutput("release")
+        val bundleFile = project.locateBundleFileViaModel("release", ":app")
         assertThat(bundleFile).exists()
 
         ByteArrayOutputStream().use { outputStream ->
@@ -1132,14 +1130,14 @@ class DynamicAppTest {
 
     @Test
     fun `test excluding sources for release`() {
-        val bundleTaskName = getBundleTaskName("release")
+        val bundleTaskName = project.getBundleTaskName("release", ":app")
 
         // First run without the flag so that we get the original sizes
         project.executor()
             .with(BooleanOption.EXCLUDE_RES_SOURCES_FOR_RELEASE_BUNDLES, false)
             .run("app:$bundleTaskName")
 
-        val bundleFile = getBundleFileOutput("release")
+        val bundleFile = project.locateBundleFileViaModel("release", ":app")
         assertThat(bundleFile).exists()
 
         val bundleTimestamp = bundleFile.lastModified()
@@ -1178,7 +1176,7 @@ class DynamicAppTest {
 
     @Test
     fun `test extracting _ALL_ apks`() {
-        val apkFromBundleTaskName = getApkFromBundleTaskName("debug")
+        val apkFromBundleTaskName = project.getApkFromBundleTaskName("debug", ":app")
 
         // -------------
         // build apks for API 27
@@ -1208,7 +1206,7 @@ class DynamicAppTest {
     // make sure two flags can be passed to bundleTool simultaneously
     @Test
     fun `test flag local_testing and extracting _ALL_ apks`() {
-        val apkFromBundleTaskName = getApkFromBundleTaskName("debug")
+        val apkFromBundleTaskName = project.getApkFromBundleTaskName("debug", ":app")
 
         // -------------
         // build apks for API 27
@@ -1225,7 +1223,7 @@ class DynamicAppTest {
         assertThat(apkFolder).isDirectory()
 
         var apkFileArray = apkFolder.list() ?: fail("No files at $apkFolder")
-        Truth.assertThat(apkFileArray.toList()).named("APK List when extract instant is true")
+        assertThat(apkFileArray.toList()).named("APK List when extract instant is true")
             .containsExactly(
                 "base-master.apk",
                 "base-xxhdpi.apk",
@@ -1239,7 +1237,7 @@ class DynamicAppTest {
 
     @Test
     fun `generate correct output-metadata`() {
-        val apkFromBundleTaskName = getApkFromBundleTaskName("debug")
+        val apkFromBundleTaskName = project.getApkFromBundleTaskName("debug", ":app")
 
         // -------------
         // build apks for API 27
@@ -1305,42 +1303,11 @@ class DynamicAppTest {
         assertThat(result.failureMessage).isEqualTo("No connected devices!")
     }
 
-    private fun getBundleTaskName(name: String): String {
-        // query the model to get the task name
-        val syncModels = project.modelV2()
-            .fetchModels()
-        val appModel =
-            syncModels.container.getProject(":app").androidProject ?: fail("Failed to get sync model for :app module")
-
-        val debugArtifact = appModel.getVariantByName(name).mainArtifact
-        return debugArtifact.bundleInfo?.bundleTaskName ?: fail("Module App does not have bundle task name")
-    }
-
-    private fun getApkFromBundleTaskName(name: String): String {
-        // query the model to get the task name
-        val syncModels = project.modelV2().fetchModels()
-        val appModel =
-                syncModels.container.getProject(":app").androidProject
-                        ?: fail("Failed to get sync model for :app module")
-
-        val debugArtifact = appModel.getVariantByName(name).mainArtifact
-        return debugArtifact.bundleInfo?.apkFromBundleTaskName
-                ?: fail("Module App does not have apkFromBundle task name")
-    }
-
-    private fun getBundleFileOutput(variantName: String): File {
-        val outputModels = project.modelV2().fetchModels()
-
-        val outputAppModel = outputModels.container.getProject(":app").androidProject
-                ?: fail("Failed to get output model for :app module")
-
-        return outputAppModel.getVariantByName(variantName).getBundleLocation()
-    }
     private fun getApkFolderOutput(variantName: String): File {
         val outputModels = project.model()
                 .fetchContainer(AppBundleProjectBuildOutput::class.java)
 
-        val outputAppModel = outputModels.rootBuildModelMap[":app"]
+        val outputAppModel: AppBundleProjectBuildOutput = outputModels.rootBuildModelMap[":app"]
                 ?: fail("Failed to get output model for :app module")
 
         return outputAppModel.getOutputByName(variantName).apkFolder

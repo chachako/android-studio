@@ -82,7 +82,7 @@ class TextureTargetedAssetPackTest {
 
     @Test
     fun buildDebugApksForRecentAstcDevice() {
-        val apkFromBundleTaskName = getApkFromBundleTaskName("debug")
+        val apkFromBundleTaskName = project.getApkFromBundleTaskName("debug", ":app")
         var jsonFile = getJsonFile(27, true)
 
         project
@@ -120,7 +120,7 @@ class TextureTargetedAssetPackTest {
 
     @Test
     fun buildDebugApksForRecentEtc2Device() {
-        val apkFromBundleTaskName = getApkFromBundleTaskName("debug")
+        val apkFromBundleTaskName = project.getApkFromBundleTaskName("debug", ":app")
         var jsonFile = getJsonFile(27, false)
 
         project
@@ -158,7 +158,7 @@ class TextureTargetedAssetPackTest {
 
     @Test
     fun buildStandaloneDebugApksForPreLDevice() {
-        val apkFromBundleTaskName = getApkFromBundleTaskName("debug")
+        val apkFromBundleTaskName = project.getApkFromBundleTaskName("debug", ":app")
         var jsonFile = getJsonFile(18, false)
 
         project
@@ -183,18 +183,6 @@ class TextureTargetedAssetPackTest {
                     "/assets/textures/etc2.txt"
                 )
         }
-    }
-
-    private fun getApkFromBundleTaskName(name: String): String {
-        // Query the model to get the task name.
-        val syncModels = project.model()
-            .fetchAndroidProjects()
-        val appModel =
-            syncModels.rootBuildModelMap[":app"] ?: fail("Failed to get sync model for :app module")
-
-        val debugArtifact = appModel.getVariantByName(name).mainArtifact
-        return debugArtifact.apkFromBundleTaskName
-            ?: fail("Module App does not have apkFromBundle task name")
     }
 
     private fun getApkFolderOutput(variantName: String): AppBundleVariantBuildOutput {
