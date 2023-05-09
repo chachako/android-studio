@@ -49,6 +49,8 @@ import com.android.build.gradle.tasks.GenerateLocaleConfigTask
 import com.android.build.gradle.tasks.sync.AppIdListTask
 import com.android.build.gradle.tasks.sync.ApplicationVariantModelTask
 import com.android.builder.core.ComponentType
+import com.android.builder.errors.IssueReporter
+import com.android.builder.internal.aapt.AaptUtils
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -119,6 +121,17 @@ class ApplicationTaskManager(
         taskFactory.register(CompileArtProfileTask.CreationAction(variant))
 
         if (variant.generateLocaleConfig) {
+            val resourceConfigs = variant.androidResourcesCreationConfig?.resourceConfigurations
+            if (!resourceConfigs.isNullOrEmpty() &&
+                AaptUtils.getNonDensityResConfigs(resourceConfigs).toList().isNotEmpty()) {
+                variant.services.issueReporter.reportError(
+                    IssueReporter.Type.GENERIC,
+                    "You cannot specify languages in resource configurations when " +
+                    "automatic locale generation is enabled. To use resource configurations, " +
+                    "please provide the locale config manually: " +
+                    "https://d.android.com/r/tools/locale-config"
+                )
+            }
             taskFactory.register(ExtractSupportedLocalesTask.CreationAction(variant))
             taskFactory.register(GenerateLocaleConfigTask.CreationAction(variant))
         }

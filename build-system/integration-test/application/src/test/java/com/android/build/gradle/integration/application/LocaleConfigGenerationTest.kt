@@ -401,7 +401,7 @@ class LocaleConfigGenerationTest {
         ScannerSubject.assertThat(result.stderr).contains("No resources.properties file found.")
     }
 
-     @Test
+    @Test
     fun `Test multiple resources properties files error`() {
         buildDsl(generateLocaleConfig = true)
 
@@ -426,6 +426,23 @@ class LocaleConfigGenerationTest {
 
         ScannerSubject.assertThat(result.stderr).contains(
             "Multiple resources.properties files found with different unqualifiedResLocale values.")
+    }
+
+    @Test
+    fun `Test error when using resource configurations`() {
+        buildDsl(generateLocaleConfig = true)
+
+        project.getSubproject("app").buildFile.appendText("""
+            android.defaultConfig.resourceConfigurations += ["en"]
+        """.trimIndent())
+
+        val result = project.executor().expectFailure().run("assembleDebug")
+
+        ScannerSubject.assertThat(result.stderr).contains(
+            "You cannot specify languages in resource configurations when " +
+            "automatic locale generation is enabled. To use resource configurations, " +
+            "please provide the locale config manually: " +
+            "https://d.android.com/r/tools/locale-config")
     }
 
     @Test
