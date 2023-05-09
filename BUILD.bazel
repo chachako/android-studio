@@ -53,7 +53,6 @@ maven_repository(
         "@maven//:org.gradle.gradle-tooling-api",
         "@maven//:org.jacoco.org.jacoco.agent",
         "@maven//:org.jacoco.org.jacoco.report",
-        "@maven//:org.jetbrains.dokka.dokka-android-gradle-plugin",
         "@maven//:org.jetbrains.dokka.dokka-core",
         "@maven//:org.jetbrains.kotlin.jvm.org.jetbrains.kotlin.jvm.gradle.plugin",
         "@maven//:org.jetbrains.kotlin.kotlin-compiler",
