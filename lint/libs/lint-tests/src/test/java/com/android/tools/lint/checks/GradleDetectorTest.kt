@@ -68,7 +68,6 @@ import com.android.tools.lint.checks.infrastructure.TestLintTask
 import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.checks.infrastructure.platformPath
 import com.android.tools.lint.client.api.LintClient
-import com.android.tools.lint.client.api.LintClient.Companion.clientName
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Project
@@ -4943,18 +4942,16 @@ class GradleDetectorTest : AbstractCheckTest() {
 
   fun testSdkIndexLibrary() {
     val expectedFixes =
-      if (GooglePlaySdkIndex.DEFAULT_SHOW_LINKS)
-        """
-                Show URL for build.gradle line 7: View details in Google Play SDK Index:
-                http://index.example.url/
-                Show URL for build.gradle line 8: View details in Google Play SDK Index:
-                http://index.example.url/
-                Show URL for build.gradle line 5: View details in Google Play SDK Index:
-                http://index.example.url/
-                Show URL for build.gradle line 13: View details in Google Play SDK Index:
-                http://another.example.url/
-            """
-      else ""
+      """
+        Show URL for build.gradle line 7: View details in Google Play SDK Index:
+        http://index.example.url/
+        Show URL for build.gradle line 8: View details in Google Play SDK Index:
+        http://index.example.url/
+        Show URL for build.gradle line 5: View details in Google Play SDK Index:
+        http://index.example.url/
+        Show URL for build.gradle line 13: View details in Google Play SDK Index:
+        http://another.example.url/
+      """
     lint()
       .files(
         gradle(
@@ -4988,20 +4985,20 @@ class GradleDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-                    build.gradle:7: Error: log4j:log4j version 1.2.13 has been reported as problematic by its author and will block publishing of your app to Play Console [RiskyLibrary]
-                        compile 'log4j:log4j:1.2.13' // Critical BLOCKING
-                                ~~~~~~~~~~~~~~~~~~~~
-                    build.gradle:8: Error: log4j:log4j version 1.2.12 has been marked as outdated by its author and will block publishing of your app to Play Console [OutdatedLibrary]
-                        compile 'log4j:log4j:1.2.12' // OUTDATED BLOCKING
-                                ~~~~~~~~~~~~~~~~~~~~
-                    build.gradle:5: Warning: log4j:log4j version 1.2.15 has been marked as outdated by its author [OutdatedLibrary]
-                        compile 'log4j:log4j:1.2.15' // Outdated NON_BLOCKING
-                                ~~~~~~~~~~~~~~~~~~~~
-                    build.gradle:13: Warning: com.example.ads.third.party:example version 7.2.0 has been marked as outdated by its author [OutdatedLibrary]
-                        compile 'com.example.ads.third.party:example:7.2.0' // Outdated & Non compliant & Critical
-                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                    2 errors, 2 warnings
-                """
+          build.gradle:7: Error: log4j:log4j version 1.2.13 has been reported as problematic by its author and will block publishing of your app to Play Console [RiskyLibrary]
+              compile 'log4j:log4j:1.2.13' // Critical BLOCKING
+                      ~~~~~~~~~~~~~~~~~~~~
+          build.gradle:8: Error: log4j:log4j version 1.2.12 has been marked as outdated by its author and will block publishing of your app to Play Console [OutdatedLibrary]
+              compile 'log4j:log4j:1.2.12' // OUTDATED BLOCKING
+                      ~~~~~~~~~~~~~~~~~~~~
+          build.gradle:5: Warning: log4j:log4j version 1.2.15 has been marked as outdated by its author [OutdatedLibrary]
+              compile 'log4j:log4j:1.2.15' // Outdated NON_BLOCKING
+                      ~~~~~~~~~~~~~~~~~~~~
+          build.gradle:13: Warning: com.example.ads.third.party:example version 7.2.0 has been marked as outdated by its author [OutdatedLibrary]
+              compile 'com.example.ads.third.party:example:7.2.0' // Outdated & Non compliant & Critical
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          2 errors, 2 warnings
+        """
       )
       .expectFixDiffs(expectedFixes)
   }

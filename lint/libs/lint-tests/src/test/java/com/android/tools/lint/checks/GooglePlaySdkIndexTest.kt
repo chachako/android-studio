@@ -150,62 +150,29 @@ class GooglePlaySdkIndexTest {
   }
 
   @Test
-  fun `outdated shown if showMessages is enabled`() {
-    index.showMessages = true
-    assertThat(hasOutdatedIssues()).isTrue()
+  fun `outdated issues shown`() {
+    assertThat(countOutdatedIssues()).isEqualTo(2)
   }
 
   @Test
-  fun `outdated not shown if showMessages is disabled`() {
-    index.showMessages = false
-    assertThat(hasOutdatedIssues()).isFalse()
+  fun `critical issues shown`() {
+    assertThat(countCriticalIssues()).isEqualTo(2)
   }
 
   @Test
-  fun `critical shown if showMessages and showCritical are enabled`() {
-    index.showMessages = true
-    index.showCriticalIssues = true
-    assertThat(hasCriticalIssues()).isTrue()
-  }
-
-  @Test
-  fun `critical not shown if showMessages is enabled but showCritical not`() {
-    index.showMessages = true
-    index.showCriticalIssues = false
-    assertThat(hasCriticalIssues()).isFalse()
-  }
-
-  @Test
-  fun `critical not shown if showMessages and showCritical are not enabled`() {
-    index.showMessages = false
-    index.showCriticalIssues = false
-    assertThat(hasCriticalIssues()).isFalse()
-  }
-
-  @Test
-  fun `policy issues shown if showMessages and showPolicyIssues are enabled`() {
-    index.showMessages = true
+  fun `policy issues shown if showPolicyIssues is enabled`() {
     index.showPolicyIssues = true
-    assertThat(hasPolicyIssues()).isTrue()
+    assertThat(countPolicyIssues()).isEqualTo(2)
   }
 
   @Test
-  fun `policy issues not shown if showMessages is enabled but showPolicyIssues not`() {
-    index.showMessages = true
+  fun `policy issues not shown if showPolicyIssues is not enabled`() {
     index.showPolicyIssues = false
-    assertThat(hasPolicyIssues()).isFalse()
-  }
-
-  @Test
-  fun `policy issues not shown if showMessages and showPolicyIssues are not enabled`() {
-    index.showMessages = false
-    index.showPolicyIssues = false
-    assertThat(hasPolicyIssues()).isFalse()
+    assertThat(countPolicyIssues()).isEqualTo(0)
   }
 
   @Test
   fun `all links are present when showLinks is enabled`() {
-    index.showLinks = true
     for (sdk in proto.sdksList) {
       val expectedUrl = sdk.indexUrl
       for (library in sdk.librariesList) {
@@ -226,25 +193,6 @@ class GooglePlaySdkIndexTest {
   }
 
   @Test
-  fun `no links are present when showLinks is not enabled`() {
-    index.showLinks = false
-    for (sdk in proto.sdksList) {
-      for (library in sdk.librariesList) {
-        val group = library.libraryId.mavenId.groupId
-        val artifact = library.libraryId.mavenId.artifactId
-        val lintLink =
-          index.generateSdkLinkLintFix(
-            group,
-            artifact,
-            versionString = "noVersion",
-            buildFile = null
-          )
-        assertThat(lintLink).isNull()
-      }
-    }
-  }
-
-  @Test
   fun `offline snapshot can be used correctly`() {
     val offlineIndex =
       object : GooglePlaySdkIndex() {
@@ -259,48 +207,51 @@ class GooglePlaySdkIndexTest {
     assertThat(offlineIndex.getLastReadSource()).isEqualTo(NetworkCache.DataSourceType.DEFAULT_DATA)
   }
 
-  private fun hasOutdatedIssues(): Boolean {
+  private fun countOutdatedIssues(): Int {
+    var result = 0
     for (sdk in proto.sdksList) {
       for (library in sdk.librariesList) {
         val group = library.libraryId.mavenId.groupId
         val artifact = library.libraryId.mavenId.artifactId
         for (version in library.versionsList) {
           if (index.isLibraryOutdated(group, artifact, version.versionString, null)) {
-            return true
+            result++
           }
         }
       }
     }
-    return false
+    return result
   }
 
-  private fun hasPolicyIssues(): Boolean {
+  private fun countPolicyIssues(): Int {
+    var result = 0
     for (sdk in proto.sdksList) {
       for (library in sdk.librariesList) {
         val group = library.libraryId.mavenId.groupId
         val artifact = library.libraryId.mavenId.artifactId
         for (version in library.versionsList) {
           if (index.isLibraryNonCompliant(group, artifact, version.versionString, null)) {
-            return true
+            result++
           }
         }
       }
     }
-    return false
+    return result
   }
 
-  private fun hasCriticalIssues(): Boolean {
+  private fun countCriticalIssues(): Int {
+    var result = 0
     for (sdk in proto.sdksList) {
       for (library in sdk.librariesList) {
         val group = library.libraryId.mavenId.groupId
         val artifact = library.libraryId.mavenId.artifactId
         for (version in library.versionsList) {
           if (index.hasLibraryCriticalIssues(group, artifact, version.versionString, null)) {
-            return true
+            result++
           }
         }
       }
     }
-    return false
+    return result
   }
 }

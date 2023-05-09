@@ -35,10 +35,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   companion object {
     const val SDK_INDEX_SNAPSHOT_TEST_BASE_URL_ENV_VAR = "SDK_INDEX_TEST_BASE_URL"
     private const val DEFAULT_SDK_INDEX_SNAPSHOT_BASE_URL = "https://dl.google.com/play-sdk/index/"
-    const val DEFAULT_SHOW_MESSAGES = true
-    const val DEFAULT_SHOW_LINKS = true
     const val DEFAULT_SHOW_POLICY_ISSUES = false
-    const val DEFAULT_SHOW_CRITICAL_ISSUES = true
     const val GOOGLE_PLAY_SDK_INDEX_SNAPSHOT_FILE = "snapshot.gz"
     const val GOOGLE_PLAY_SDK_INDEX_SNAPSHOT_RESOURCE = "sdk-index-offline-snapshot.proto.gz"
     val GOOGLE_PLAY_SDK_INDEX_SNAPSHOT_URL =
@@ -53,10 +50,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   private var initialized: Boolean = false
   private var status: GooglePlaySdkIndexStatus = GooglePlaySdkIndexStatus.NOT_READY
   private val libraryToSdk = HashMap<String, LibraryToSdk>()
-  var showMessages = DEFAULT_SHOW_MESSAGES
-  var showLinks = DEFAULT_SHOW_LINKS
   var showPolicyIssues = DEFAULT_SHOW_POLICY_ISSUES
-  var showCriticalIssues = DEFAULT_SHOW_CRITICAL_ISSUES
 
   /**
    * Read Index snapshot (locally if it is not old and remotely if old and network is available) and
@@ -163,7 +157,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     if (isNonCompliant) {
       logNonCompliant(groupId, artifactId, versionString, buildFile)
     }
-    return showMessages && showPolicyIssues && isNonCompliant
+    return showPolicyIssues && isNonCompliant
   }
 
   /**
@@ -186,7 +180,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     if (isOutdated) {
       logOutdated(groupId, artifactId, versionString, buildFile)
     }
-    return showMessages && isOutdated
+    return isOutdated
   }
 
   /**
@@ -210,7 +204,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     if (hasCriticalIssues) {
       logHasCriticalIssues(groupId, artifactId, versionString, buildFile)
     }
-    return showMessages && showCriticalIssues && hasCriticalIssues
+    return hasCriticalIssues
   }
 
   /**
@@ -249,7 +243,6 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     if (!isReady()) {
       return null
     }
-    if (!showLinks) return null
     val sdk = getSdk(groupId, artifactId) ?: return null
     return sdk.sdk.indexUrl
   }
@@ -343,8 +336,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
    * @param artifactId: artifact id for library coordinates
    * @param versionString: version of the library (only used for logging)
    * @param buildFile: build file where this library is being used
-   * @return a link to the SDK url this library belongs to if the index has information about it and
-   *   [showLinks] is true.
+   * @return a link to the SDK url this library belongs to if the index has information about it
    */
   open fun generateSdkLinkLintFix(
     groupId: String,
