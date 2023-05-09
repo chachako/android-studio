@@ -15,6 +15,7 @@
  */
 package com.android.adblib.tools
 
+import com.android.adblib.AdbServerChannelProvider
 import com.android.adblib.AdbSession
 
 /**
@@ -32,6 +33,9 @@ fun createStandaloneSession() : AdbSession {
     // TODO Move to an AdbChannelProvider that knows how to spawn and ADB server.
     // This one assume it is already up and running which is fine for our current needs.
     val host = StandaloneHost(StdLoggerFactory())
-    val session = AdbSession.create(host)
+    val session =
+        AdbSession.create(
+            host = host,
+            channelProvider = AdbServerChannelProvider.createConnectAddressesWithServerStartup(host))
     return session
 }
