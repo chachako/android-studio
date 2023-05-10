@@ -114,7 +114,7 @@ class PrivacySandboxSdkTest {
                 minSdk = 14
             }
             dependencies {
-                implementation("androidx.privacysandbox.tools:tools-apipackager:$androidxPrivacySandboxSdkToolsVersion")
+                implementation("androidx.privacysandbox.tools:tools-apipackager:$androidxPrivacySandboxVersion")
             }
             addFile(
                     "src/main/res/values/strings.xml",

@@ -24,8 +24,7 @@ import com.android.sdklib.BuildToolInfo
 
 private val aidlPath = SdkHelper.getBuildTool(BuildToolInfo.PathId.AIDL).absolutePath
         .replace("""\""", """\\""")
-const val androidxPrivacySandboxSdkToolsVersion = "1.0.0-alpha02"
-const val androidxPrivacySandboxSdkRuntimeVersion = "1.0.0-SNAPSHOT"
+const val androidxPrivacySandboxVersion = "1.0.0-alpha03"
 
 fun TestProjectBuilder.privacySandboxSdkProject(path: String, action: SubProjectBuilder.() -> Unit) {
     subProject(path) {
@@ -50,11 +49,13 @@ fun TestProjectBuilder.privacySandboxSdkLibraryProject(path: String, action: Sub
         }
         dependencies {
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
-            implementation("androidx.privacysandbox.tools:tools:$androidxPrivacySandboxSdkToolsVersion")
-            implementation("androidx.privacysandbox.sdkruntime:sdkruntime-core:$androidxPrivacySandboxSdkRuntimeVersion")
-            implementation("androidx.privacysandbox.sdkruntime:sdkruntime-client:$androidxPrivacySandboxSdkRuntimeVersion")
+            implementation("androidx.privacysandbox.tools:tools:$androidxPrivacySandboxVersion")
+            implementation("androidx.privacysandbox.sdkruntime:sdkruntime-core:$androidxPrivacySandboxVersion")
+            implementation("androidx.privacysandbox.sdkruntime:sdkruntime-client:$androidxPrivacySandboxVersion")
 
-            ksp("androidx.privacysandbox.tools:tools-apicompiler:$androidxPrivacySandboxSdkToolsVersion")
+
+            ksp("androidx.privacysandbox.tools:tools-apicompiler:$androidxPrivacySandboxVersion")
+            ksp("androidx.annotation:annotation:1.6.0")
         }
         appendToBuildFile {
             """

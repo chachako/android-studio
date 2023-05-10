@@ -511,7 +511,7 @@ class DependencyConfigurator(
                                 experimentalPropertiesApiGenerator
                                         ?: project.dependencies.create(
                                                 projectServices.projectOptions.get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR)
-                                                        ?: "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha02"
+                                                        ?: "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha03"
                                         ) as Dependency
 
                         val experimentalPropertiesRuntimeApigeneratorDependencies =
