@@ -97,6 +97,7 @@ import java.io.PrintWriter
 import java.net.URL
 import java.net.URLConnection
 import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.math.max
 import org.jetbrains.jps.model.java.impl.JavaSdkUtil
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys.PERF_MANAGER
@@ -151,7 +152,6 @@ open class LintCliClient : LintClient {
 
   protected var validatedIds = false
   private var kotlinPerformanceManager: LintCliKotlinPerformanceManager? = null
-  private var jdkHome: File? = null
   var uastEnvironment: UastEnvironment? = null
   val ideaProject: MockProject?
     get() = uastEnvironment?.ideaProject
@@ -1440,6 +1440,7 @@ open class LintCliClient : LintClient {
     }
     // Initialize the associated idea project to use
     val includeTests = !flags.isIgnoreTestSources
+    val jdkHome: File? = getJdkHomeUnlessJre()
     // knownProject only lists root projects, not dependencies
     val allProjects = Sets.newIdentityHashSet<Project>()
     for (project in knownProjects) {
@@ -1488,7 +1489,7 @@ open class LintCliClient : LintClient {
         }
       }
     }
-    addBootClassPath(knownProjects, classpathRoots)
+    getBootClassPath(knownProjects)?.let(classpathRoots::addAll)
     var maxLevel = LanguageLevel.JDK_1_7
     for (project in knownProjects) {
       val level = project.javaLanguageLevel
@@ -1526,43 +1527,20 @@ open class LintCliClient : LintClient {
     super.initializeProjects(driver, knownProjects)
   }
 
-  protected open fun addBootClassPath(
-    knownProjects: Collection<Project>,
-    files: MutableSet<File>
-  ): Boolean {
+  // TODO: When the JRE/JDK distinction no longer applies, simplify the jdkHome setup.
+  private fun getJdkHomeUnlessJre(): File? = getJdkHome()?.takeIf(::isJdkFolder)
+
+  protected open fun getBootClassPath(knownProjects: Collection<Project>): Set<File>? =
     // TODO: Use bootclasspath from Gradle?
-
-    val buildTarget = pickBuildTarget(knownProjects)
-    if (buildTarget != null) {
-      @Suppress("UNNECESSARY_SAFE_CALL") // because of mocking
-      val file: File? = buildTarget.getPath(IAndroidTarget.ANDROID_JAR)?.toFile()
-      if (file != null) {
-        // because we're partially mocking it in some tests
-        files.add(file)
-        return true
-      }
+    pickBuildTarget(knownProjects)?.getPath(IAndroidTarget.ANDROID_JAR)?.toFile()?.let {
+      // because we're partially mocking it in some tests
+      setOf(it)
     }
-
-    val jdkHome = getJdkHome()
-    if (jdkHome != null) {
-      val isJre = !isJdkFolder(jdkHome)
-      val roots = JavaSdkUtil.getJdkClassesRoots(jdkHome.toPath(), isJre)
-      for (root in roots) {
-        val rootFile = root.toFile()
-        if (rootFile.exists()) {
-          files.add(rootFile)
-        }
+      ?: getJdkHome()?.let { jdkHome ->
+        val isJre = !isJdkFolder(jdkHome)
+        val roots = JavaSdkUtil.getJdkClassesRoots(jdkHome.toPath(), isJre)
+        roots.asSequence().map(Path::toFile).filter(File::exists).toSet()
       }
-
-      // TODO: When the JRE/JDK distinction no longer applies, simplify the jdkHome setup.
-      if (!isJre) {
-        this.jdkHome = jdkHome
-      }
-      return true
-    }
-
-    return false
-  }
 
   /**
    * Return the best build target to use among the given set of projects. This is necessary because

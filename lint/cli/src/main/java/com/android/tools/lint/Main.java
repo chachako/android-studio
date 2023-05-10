@@ -787,29 +787,21 @@ public class Main {
         }
 
         @Override
-        protected boolean addBootClassPath(
-                @NonNull Collection<? extends Project> knownProjects, @NonNull Set<File> files) {
+        protected @Nullable Set<File> getBootClassPath(
+                @NonNull Collection<? extends Project> knownProjects) {
             if (metadata != null && !metadata.getJdkBootClasspath().isEmpty()) {
-                boolean isAndroid = false;
-                for (Project project : knownProjects) {
-                    if (project.isAndroidProject()) {
-                        isAndroid = true;
-                        break;
-                    }
-                }
+                boolean isAndroid = knownProjects.stream().anyMatch(Project::isAndroidProject);
                 if (!isAndroid) {
-                    files.addAll(metadata.getJdkBootClasspath());
-                    return true;
+                    return new HashSet<>(metadata.getJdkBootClasspath());
                 }
 
-                boolean ok = super.addBootClassPath(knownProjects, files);
-                if (!ok) {
-                    files.addAll(metadata.getJdkBootClasspath());
-                }
-                return ok;
+                var fromSuper = super.getBootClassPath(knownProjects);
+                return fromSuper != null
+                        ? fromSuper
+                        : new HashSet<>(metadata.getJdkBootClasspath());
             }
 
-            return super.addBootClassPath(knownProjects, files);
+            return super.getBootClassPath(knownProjects);
         }
 
         @NonNull

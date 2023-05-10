@@ -825,28 +825,11 @@ class Main {
             } else super.getJdkHome(project)
         }
 
-        override fun addBootClassPath(
-            knownProjects: Collection<Project>, files: MutableSet<File>
-        ): Boolean {
-            if (metadata != null && metadata!!.jdkBootClasspath.isNotEmpty()) {
-                var isAndroid = false
-                for (project in knownProjects) {
-                    if (project.isAndroidProject) {
-                        isAndroid = true
-                        break
-                    }
-                }
-                if (!isAndroid) {
-                    files.addAll(metadata!!.jdkBootClasspath)
-                    return true
-                }
-                val ok: Boolean = super.addBootClassPath(knownProjects, files)
-                if (!ok) {
-                    files.addAll(metadata!!.jdkBootClasspath)
-                }
-                return ok
-            }
-            return super.addBootClassPath(knownProjects, files)
+        override fun getBootClassPath(knownProjects: Collection<Project>): Set<File>? = when {
+            metadata == null || metadata!!.jdkBootClasspath.isEmpty() ->
+                super.getBootClassPath(knownProjects)
+            !knownProjects.any(Project::isAndroidProject) -> metadata!!.jdkBootClasspath.toSet()
+            else -> super.getBootClassPath(knownProjects) ?: metadata!!.jdkBootClasspath.toSet()
         }
 
         override fun getExternalAnnotations(projects: Collection<Project>): List<File> {

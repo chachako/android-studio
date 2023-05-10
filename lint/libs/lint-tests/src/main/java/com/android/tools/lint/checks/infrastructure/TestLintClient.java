@@ -130,6 +130,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1539,16 +1540,17 @@ public class TestLintClient extends LintCliClient {
     }
 
     @Override
-    protected boolean addBootClassPath(
-            @NonNull Collection<? extends Project> knownProjects, Set<File> files) {
-        boolean ok = super.addBootClassPath(knownProjects, files);
+    protected @Nullable Set<File> getBootClassPath(
+            @NonNull Collection<? extends Project> knownProjects) {
+        var fromSuper = super.getBootClassPath(knownProjects);
 
         // Also add in the kotlin standard libraries if applicable
-        if (hasKotlin(knownProjects)) {
+        if (fromSuper != null && hasKotlin(knownProjects)) {
+            var files = new HashSet<>(fromSuper);
             files.addAll(findKotlinStdlibPath());
+            return files;
         }
-
-        return ok;
+        return fromSuper;
     }
 
     private static boolean hasKotlin(Collection<? extends Project> projects) {
