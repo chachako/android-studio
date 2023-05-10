@@ -16,16 +16,17 @@
 package com.android.jdwptracer;
 
 import com.android.annotations.NonNull;
+import com.android.jdwppacket.PacketHeader;
 
 // Representation of the cmd packet.
 class Command extends Packet {
     private final int cmdSetID;
     private final int cmdID;
 
-    Command(int id, int cmdSetID, int cmdID, long length, long time, @NonNull Message message) {
-        super(id, length, time, message);
-        this.cmdSetID = cmdSetID;
-        this.cmdID = cmdID;
+    Command(@NonNull PacketHeader header, long time, @NonNull Message message) {
+        super(header.getId(), header.getLength(), time, message);
+        this.cmdSetID = header.getCmdSet();
+        this.cmdID = header.getCmd();
     }
 
     int cmdSetID() {

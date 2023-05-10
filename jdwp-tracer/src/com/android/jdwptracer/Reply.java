@@ -16,15 +16,16 @@
 package com.android.jdwptracer;
 
 import com.android.annotations.NonNull;
+import com.android.jdwppacket.PacketHeader;
 
 // Representation of the reply packet
 class Reply extends Packet {
 
     private final short error;
 
-    Reply(int id, long length, short error, long time, @NonNull Message message) {
-        super(id, length, time, message);
-        this.error = error;
+    Reply(@NonNull PacketHeader header, long time, @NonNull Message message) {
+        super(header.getId(), header.getLength(), time, message);
+        this.error = header.getError();
     }
 
     short error() {
