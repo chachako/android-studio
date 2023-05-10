@@ -16,6 +16,7 @@
 package com.android.jdwppacket.event
 
 import com.android.jdwppacket.EventKind
+import com.android.jdwppacket.Location
 import com.android.jdwppacket.MessageReader
 
 // This is the event type, usually issued from the VM. We don't cache them and we don't
@@ -31,6 +32,13 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) {
     val referenceTypeID: Long,
     val signature: String,
     val status: Int
+  ) : Event(kind, requestID)
+
+  class ThreadLocation(
+    kind: EventKind,
+    requestID: Int,
+    val threadID: Long,
+    val location: Location,
   ) : Event(kind, requestID)
 
   companion object {
@@ -52,9 +60,7 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) {
           EventKind.BREAKPOINT,
           EventKind.METHOD_ENTRY,
           EventKind.METHOD_EXIT -> {
-            reader.getThreadID()
-            reader.getLocation()
-            events.add(Event(kind, requestID))
+            events.add(ThreadLocation(kind, requestID, reader.getThreadID(), reader.getLocation()))
           }
           EventKind.METHOD_EXIT_WITH_RETURN_VALUE -> {
             reader.getThreadID()

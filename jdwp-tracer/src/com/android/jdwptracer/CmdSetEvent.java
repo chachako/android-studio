@@ -15,8 +15,6 @@
  */
 package com.android.jdwptracer;
 
-import static com.android.jdwppacket.EventKind.CLASS_PREPARE;
-
 import com.android.annotations.NonNull;
 import com.android.jdwppacket.EventKind;
 import com.android.jdwppacket.MessageReader;
@@ -57,13 +55,26 @@ class CmdSetEvent extends CmdSet {
             eventJson.addProperty("eventKind", kind.name());
             message.setName(kind.name());
 
-            if (kind == CLASS_PREPARE) {
-                CompositeCmd.ClassPrepareEvent cp = (CompositeCmd.ClassPrepareEvent) event;
-                eventJson.addProperty("thread", cp.getThreadID());
-                eventJson.addProperty("refTypeTag", cp.getTypeTag());
-                eventJson.addProperty("typeID", cp.getReferenceTypeID());
-                eventJson.addProperty("signature", cp.getSignature());
-                eventJson.addProperty("status", cp.getStatus());
+            switch (kind) {
+                case CLASS_PREPARE:
+                    {
+                        CompositeCmd.ClassPrepareEvent cp = (CompositeCmd.ClassPrepareEvent) event;
+                        eventJson.addProperty("thread", cp.getThreadID());
+                        eventJson.addProperty("refTypeTag", cp.getTypeTag());
+                        eventJson.addProperty("typeID", cp.getReferenceTypeID());
+                        eventJson.addProperty("signature", cp.getSignature());
+                        eventJson.addProperty("status", cp.getStatus());
+                    }
+                    break;
+                case BREAKPOINT:
+                    {
+                        CompositeCmd.ThreadLocation se = (CompositeCmd.ThreadLocation) event;
+                        eventJson.addProperty("threadID", se.getThreadID());
+                        eventJson.add("location", JsonLocation.get(se.getLocation()));
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 
