@@ -27,13 +27,10 @@ import com.android.build.gradle.internal.AndroidTestTaskManager
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.KmpCreationConfig
-import com.android.build.gradle.internal.component.TestComponentCreationConfig
 import com.android.build.gradle.internal.coverage.JacocoConfigurations
 import com.android.build.gradle.internal.coverage.JacocoReportTask
-import com.android.build.gradle.internal.dsl.BuildType
-import com.android.build.gradle.internal.dsl.DefaultConfig
-import com.android.build.gradle.internal.dsl.ProductFlavor
-import com.android.build.gradle.internal.dsl.SigningConfig
+import com.android.build.gradle.internal.lint.AndroidLintAnalysisTask
+import com.android.build.gradle.internal.lint.LintModelWriterTask
 import com.android.build.gradle.internal.lint.LintTaskManager
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.res.GenerateEmptyResourceFilesTask
@@ -44,16 +41,12 @@ import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.TaskConfigAction
 import com.android.build.gradle.internal.tasks.factory.TaskProviderCallback
 import com.android.build.gradle.internal.tasks.factory.registerTask
-import com.android.build.gradle.internal.variant.VariantInputModel
-import com.android.build.gradle.internal.variant.VariantModel
-import com.android.build.gradle.internal.variant.VariantModelImpl
 import com.android.build.gradle.options.IntegerOption
 import com.android.build.gradle.tasks.BundleAar
 import com.android.build.gradle.tasks.ProcessLibraryManifest
 import com.android.build.gradle.tasks.ProcessTestManifest
 import com.android.build.gradle.tasks.ZipMergingTask
 import com.android.build.gradle.tasks.factory.AndroidUnitTest
-import com.android.builder.core.ComponentType
 import com.android.builder.core.ComponentTypeImpl
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -105,10 +98,8 @@ class KmpTaskManager(
             ComponentTypeImpl.KMP_ANDROID,
             variant.name,
             listOf(variant),
-            listOfNotNull(
-                unitTest as? TestComponentCreationConfig,
-                androidTest as? TestComponentCreationConfig
-            )
+            testComponentPropertiesList = emptyList(),
+            isPerComponent = true
         )
 
         variant.publishBuildArtifacts()
@@ -275,6 +266,19 @@ class KmpTaskManager(
                     JacocoReportTask.CreateActionUnitTest(component, ant)
                 )
             }
+        }
+
+        if (globalConfig.lintOptions.ignoreTestSources.not()) {
+            project.tasks.registerTask(
+                AndroidLintAnalysisTask.PerComponentCreationAction(component, fatalOnly = false)
+            )
+            project.tasks.registerTask(
+                LintModelWriterTask.PerComponentCreationAction(
+                    component,
+                    useModuleDependencyLintModels = false,
+                    fatalOnly = false
+                )
+            )
         }
     }
 

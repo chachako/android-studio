@@ -27,6 +27,7 @@ import com.android.build.api.variant.HasAndroidTest
 import com.android.build.api.variant.HasTestFixtures
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.component.ComponentCreationConfig
+import com.android.build.gradle.internal.component.KmpCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope
@@ -603,6 +604,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
             val hasDynamicFeatures = creationConfig.global.hasDynamicFeatures
             val isLintAnalysisPerComponent =
                 variant.main.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)
+                        || variant.main is KmpCreationConfig
             if (isLintAnalysisPerComponent) {
                 task.variantInputs.initialize(
                     variant.main,
@@ -615,7 +617,8 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                     warnIfProjectTreatedAsExternalDependency = true,
                     lintMode = lintMode,
                     fatalOnly = fatalOnly,
-                    includeMainArtifact = true
+                    includeMainArtifact = true,
+                    isPerComponentLintAnalysis = true
                 )
             } else {
                 task.variantInputs.initialize(

@@ -201,7 +201,8 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
             componentType,
             variantModel,
             variantPropertiesList,
-            testComponents
+            testComponents,
+            globalConfig.services.projectOptions.get(BooleanOption.LINT_ANALYSIS_PER_COMPONENT)
         )
         createReportTasks()
 

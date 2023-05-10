@@ -428,7 +428,8 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
                 lintMode = LintMode.ANALYSIS,
                 addBaseModuleLintModel = false,
                 fatalOnly = fatalOnly,
-                includeMainArtifact = creationConfig is VariantCreationConfig
+                includeMainArtifact = creationConfig is VariantCreationConfig,
+                isPerComponentLintAnalysis = true
             )
 
             task.lintTool.initialize(mainVariant.services)

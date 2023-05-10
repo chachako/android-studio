@@ -210,7 +210,8 @@ class AndroidTestTaskManager(
                     .name)
         }
 
-        if (androidTestProperties.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)) {
+        if (androidTestProperties.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)
+            || androidTestProperties is KmpComponentCreationConfig) {
             taskFactory.register(
                 AndroidLintAnalysisTask.PerComponentCreationAction(
                     androidTestProperties,

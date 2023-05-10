@@ -270,7 +270,8 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
                 lintMode = LintMode.MODEL_WRITING,
                 addBaseModuleLintModel = creationConfig is DynamicFeatureCreationConfig,
                 fatalOnly = fatalOnly,
-                includeMainArtifact = creationConfig is VariantCreationConfig
+                includeMainArtifact = creationConfig is VariantCreationConfig,
+                isPerComponentLintAnalysis = true
             )
             val partialResultsDir =
                 mainVariant.artifacts.getOutputPath(

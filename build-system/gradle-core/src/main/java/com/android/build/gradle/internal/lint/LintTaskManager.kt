@@ -12,7 +12,6 @@ import com.android.build.gradle.internal.tasks.LintModelMetadataTask
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.TaskFactory
 import com.android.build.gradle.internal.variant.VariantModel
-import com.android.build.gradle.options.BooleanOption.LINT_ANALYSIS_PER_COMPONENT
 import com.android.builder.core.ComponentType
 import com.android.utils.appendCapitalized
 import org.gradle.api.Project
@@ -46,13 +45,15 @@ class LintTaskManager constructor(
         componentType: ComponentType,
         variantModel: VariantModel,
         variantPropertiesList: List<VariantCreationConfig>,
-        testComponentPropertiesList: Collection<TestComponentCreationConfig>
+        testComponentPropertiesList: Collection<TestComponentCreationConfig>,
+        isPerComponent: Boolean
     ) {
         return createLintTasks(
             componentType,
             defaultVariant = variantModel.defaultVariant,
             variantPropertiesList,
-            testComponentPropertiesList
+            testComponentPropertiesList,
+            isPerComponent
         )
     }
 
@@ -61,7 +62,8 @@ class LintTaskManager constructor(
         componentType: ComponentType,
         defaultVariant: String?,
         variantPropertiesList: List<VariantCreationConfig>,
-        testComponentPropertiesList: Collection<TestComponentCreationConfig>
+        testComponentPropertiesList: Collection<TestComponentCreationConfig>,
+        isPerComponent: Boolean
     ) {
         if (componentType.isForTesting) {
             return // Don't  create lint tasks in test-only projects
@@ -86,8 +88,6 @@ class LintTaskManager constructor(
 
         for (variantWithTests in variantsWithTests.values) {
             val mainVariant = variantWithTests.main
-            val isPerComponent =
-                mainVariant.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)
             if (componentType.isAar || componentType.isDynamicFeature) {
                 if (isPerComponent) {
                     taskFactory.register(

@@ -348,8 +348,12 @@ class PublishingSpecs {
                 output(LINT_PUBLISH_JAR, ArtifactType.LINT)
                 output(LINT_MODEL, ArtifactType.LINT_MODEL)
                 output(LINT_VITAL_LINT_MODEL, ArtifactType.LINT_VITAL_LINT_MODEL)
+                output(UNIT_TEST_LINT_MODEL, ArtifactType.UNIT_TEST_LINT_MODEL)
+                output(ANDROID_TEST_LINT_MODEL, ArtifactType.ANDROID_TEST_LINT_MODEL)
                 output(LINT_PARTIAL_RESULTS, ArtifactType.LINT_PARTIAL_RESULTS)
                 output(LINT_VITAL_PARTIAL_RESULTS, ArtifactType.LINT_VITAL_PARTIAL_RESULTS)
+                output(UNIT_TEST_LINT_PARTIAL_RESULTS, ArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS)
+                output(ANDROID_TEST_LINT_PARTIAL_RESULTS, ArtifactType.ANDROID_TEST_LINT_PARTIAL_RESULTS)
                 output(LOCAL_AAR_FOR_LINT, ArtifactType.LOCAL_AAR_FOR_LINT)
                 output(LINT_MODEL_METADATA, ArtifactType.LINT_MODEL_METADATA)
             }
