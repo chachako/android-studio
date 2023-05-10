@@ -109,6 +109,13 @@ data class Dependency(
     val explicitSingletonVersion: Version?
         get() = version?.explicitSingletonVersion
 
+    /**
+     * If this [Dependency] corresponds to a [Module], return that [Module]; otherwise (if the
+     * [Dependency]'s [group] is null), return null.
+     */
+    val module: Module?
+        get() = group?.let { group -> Module(group, name) }
+
     companion object {
         /**
          * Parse a String as a [Dependency].  All strings are valid dependencies; the last

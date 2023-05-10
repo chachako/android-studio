@@ -253,6 +253,25 @@ class DependencyTest {
     }
 
     @Test
+    fun testModule() {
+        for (name in listOf("", "example", "example-foo")) {
+            for (group in listOf("", "com", "com.example")) {
+                val m = Module(group, name)
+                assertThat(Dependency.parse("$group:$name").module).isEqualTo(m)
+                assertThat(Dependency.parse("$group:$name@aar").module).isEqualTo(m)
+                for (version in listOf("1", "+", "[2,3]")) {
+                    assertThat(Dependency.parse("$group:$name:$version").module).isEqualTo(m)
+                    assertThat(Dependency.parse("$group:$name:$version@aar").module).isEqualTo(m)
+                }
+            }
+            for (version in listOf("1", "+", "[2,3]")) {
+                assertThat(Dependency(name = name, version = RichVersion.parse(version)).module)
+                    .isNull()
+            }
+        }
+    }
+
+    @Test
     fun testInvalidName() {
         for (n in listOf(":", "@", "ab:cd", "ab@cd")) {
             Dependency(name = n).let {
