@@ -23,6 +23,7 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.ide.common.gradle.Component;
 import com.android.ide.common.gradle.Dependency;
+import com.android.ide.common.gradle.Module;
 import com.android.ide.common.gradle.RichVersion;
 import com.android.ide.common.gradle.Version;
 import com.android.io.CancellableFileIo;
@@ -187,43 +188,44 @@ public enum SdkMavenRepository {
     }
 
     /**
-     * Finds the latest installed version of the SDK package identified by the given
-     * {@link Dependency}. Preview versions will only be included if the given coordinate is
-     * a preview.
-     * E.g. if {@code coordinate} is {@code com.android.support.constraint:constraint-layout:1.0.0}
-     * and {@code com.android.support.constraint:constraint-layout:1.1.0} and
-     * {@code com.android.support.constraint:constraint-layout:1.2.0-alpha1} are also installed, the
-     * SDK package
-     * {@code extras;m2repository;com;android;support;constraint;constraint-layout;1.1.0} will be
-     * returned, since the provided coordinate is not a preview. If
-     * {@code com.android.support.constraint:constraint-layout:1.0.0-alpha1} is passed in,
-     * {@code extras;m2repository;com;android;support;constraint;constraint-layout;1.1.0-alpha1}
-     * will be returned.
+     * Finds the latest installed version of the SDK package identified by the given {@link Module}.
+     * Preview versions will only be considered if the boolean {@code allowPreview} argument is
+     * true, though they may be subsequently filtered out by the {@code filter} argument.
      *
-     * @param dependency The {@link Dependency} identifying the artifact we're interested in.
+     * @param module The {@link Module} identifying the artifact we're interested in.
+     * @param allowPreview Whether to include preview versions.
      * @param sdkHandler {@link AndroidSdkHandler} instance.
-     * @param filter The version filter that has to be satisfied
+     * @param filter The version filter that has to be satisfied.
      * @param progress {@link ProgressIndicator}, for logging.
      * @return The {@link LocalPackage} with the same {@code groupId} and {@code artifactId} as the
-     * given {@code coordinate} and the highest version.
+     *     given {@code coordinate} and the highest version.
      */
     @Nullable
-    public static LocalPackage findLatestLocalVersion(@NonNull Dependency dependency,
+    public static LocalPackage findLatestLocalVersion(
+            @NonNull Module module,
+            boolean allowPreview,
             @NonNull AndroidSdkHandler sdkHandler,
             @Nullable Predicate<Version> filter,
             @NonNull ProgressIndicator progress) {
-        String group = dependency.getGroup();
-        if (group == null) return null;
-        String prefix = DetailsTypes.MavenType.getRepositoryPath(
-                group, dependency.getName(), null);
-        Predicate<Revision> revisionFilter = filter == null ? null
-                : (revision) -> filter.test(revisionToVersion(revision));
+        String prefix =
+                DetailsTypes.MavenType.getRepositoryPath(module.getGroup(), module.getName(), null);
+        Predicate<Revision> revisionFilter =
+                filter == null ? null : (revision) -> filter.test(revisionToVersion(revision));
         return sdkHandler.getLatestLocalPackageForPrefix(
-                prefix,
-                revisionFilter,
-                dependency.getExplicitlyIncludesPreview(),
-                Version.Companion::parse,
-                progress);
+                prefix, revisionFilter, allowPreview, Version.Companion::parse, progress);
+    }
+
+    @Deprecated
+    @Nullable
+    public static LocalPackage findLatestLocalVersion(
+            @NonNull Dependency dependency,
+            @NonNull AndroidSdkHandler sdkHandler,
+            @Nullable Predicate<Version> filter,
+            @NonNull ProgressIndicator progress) {
+        Module module = dependency.getModule();
+        if (module == null) return null;
+        return findLatestLocalVersion(
+                module, dependency.getExplicitlyIncludesPreview(), sdkHandler, filter, progress);
     }
 
     @NonNull
@@ -232,38 +234,52 @@ public enum SdkMavenRepository {
     }
 
     /**
-     * Like {@link #findLatestLocalVersion}, but for available {@link RemotePackage}s.
+     * Like {@link #findLatestLocalVersion(Module, boolean, AndroidSdkHandler, Predicate,
+     * ProgressIndicator)}, but for available {@link RemotePackage}s.
      */
     @Nullable
-    public static RemotePackage findLatestRemoteVersion(@NonNull Dependency dependency,
+    public static RemotePackage findLatestRemoteVersion(
+            @NonNull Module module,
+            boolean allowPreview,
             @NonNull AndroidSdkHandler sdkHandler,
             @Nullable Predicate<Version> filter,
             @NonNull ProgressIndicator progress) {
-        String group = dependency.getGroup();
-        if (group == null) return null;
-        String prefix = DetailsTypes.MavenType.getRepositoryPath(
-                group, dependency.getName(), null);
-        Predicate<Revision> revisionFilter = filter == null ? null
-                : (revision) -> filter.test(revisionToVersion(revision));
+        String prefix =
+                DetailsTypes.MavenType.getRepositoryPath(module.getGroup(), module.getName(), null);
+        Predicate<Revision> revisionFilter =
+                filter == null ? null : (revision) -> filter.test(revisionToVersion(revision));
         return sdkHandler.getLatestRemotePackageForPrefix(
-                prefix,
-                revisionFilter,
-                dependency.getExplicitlyIncludesPreview(),
-                Version.Companion::parse,
-                progress);
+                prefix, revisionFilter, allowPreview, Version.Companion::parse, progress);
+    }
+
+    @Deprecated
+    @Nullable
+    public static RemotePackage findLatestRemoteVersion(
+            @NonNull Dependency dependency,
+            @NonNull AndroidSdkHandler sdkHandler,
+            @Nullable Predicate<Version> filter,
+            @NonNull ProgressIndicator progress) {
+        Module module = dependency.getModule();
+        if (module == null) return null;
+        return findLatestRemoteVersion(
+                module, dependency.getExplicitlyIncludesPreview(), sdkHandler, filter, progress);
     }
 
     /**
-     * Like {@link #findLatestLocalVersion}, but returns the most recent package available either
-     * locally or remotely.
+     * Like {@link #findLatestLocalVersion(Module, boolean, AndroidSdkHandler, Predicate,
+     * ProgressIndicator)}, but returns the most recent package available either locally or
+     * remotely.
      */
-    @Nullable
-    public static RepoPackage findLatestVersion(@NonNull Dependency dependency,
+    public static RepoPackage findLatestVersion(
+            @NonNull Module module,
+            boolean allowPreview,
             @NonNull AndroidSdkHandler sdkHandler,
             @Nullable Predicate<Version> filter,
             @NonNull ProgressIndicator progress) {
-        LocalPackage local = findLatestLocalVersion(dependency, sdkHandler, filter, progress);
-        RemotePackage remote = findLatestRemoteVersion(dependency, sdkHandler, filter, progress);
+        LocalPackage local =
+                findLatestLocalVersion(module, allowPreview, sdkHandler, filter, progress);
+        RemotePackage remote =
+                findLatestRemoteVersion(module, allowPreview, sdkHandler, filter, progress);
         if (local == null) {
             return remote;
         }
@@ -284,5 +300,18 @@ public enum SdkMavenRepository {
         else {
             return local;
         }
+    }
+
+    @Deprecated
+    @Nullable
+    public static RepoPackage findLatestVersion(
+            @NonNull Dependency dependency,
+            @NonNull AndroidSdkHandler sdkHandler,
+            @Nullable Predicate<Version> filter,
+            @NonNull ProgressIndicator progress) {
+        Module module = dependency.getModule();
+        if (module == null) return null;
+        return findLatestVersion(
+                module, dependency.getExplicitlyIncludesPreview(), sdkHandler, filter, progress);
     }
 }

@@ -28,7 +28,6 @@ import static com.android.SdkConstants.AUTO_URI;
 import static com.android.SdkConstants.SUPPORT_LIB_GROUP_ID;
 import static com.android.SdkConstants.TAG_FONT;
 import static com.android.SdkConstants.TAG_FONT_FAMILY;
-import static com.android.ide.common.repository.GradleCoordinate.COMPARE_PLUS_LOWER;
 import static com.android.tools.lint.detector.api.Lint.coalesce;
 
 import com.android.annotations.NonNull;
@@ -39,7 +38,8 @@ import com.android.ide.common.fonts.FontLoader;
 import com.android.ide.common.fonts.FontProvider;
 import com.android.ide.common.fonts.MutableFontDetail;
 import com.android.ide.common.fonts.QueryParser;
-import com.android.ide.common.repository.GradleCoordinate;
+import com.android.ide.common.gradle.Module;
+import com.android.ide.common.gradle.Version;
 import com.android.resources.ResourceFolderType;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.SdkVersionInfo;
@@ -99,8 +99,9 @@ public class FontDetector extends ResourceXmlDetector {
                             "https://developer.android.com/guide/topics/text/downloadable-fonts.html")
                     .setAliases(Arrays.asList("FontValidationWarning", "FontValidationError"));
 
-    public static final GradleCoordinate MIN_APPSUPPORT_VERSION =
-            new GradleCoordinate(SUPPORT_LIB_GROUP_ID, APPCOMPAT_LIB_ARTIFACT_ID, "26.0.0");
+    public static final Module APPSUPPORT_MODULE =
+            new Module(SUPPORT_LIB_GROUP_ID, APPCOMPAT_LIB_ARTIFACT_ID);
+    private static final Version MIN_APPSUPPORT_VERSION = Version.Companion.parse("26.0.0");
 
     private FontLoader mFontLoader;
 
@@ -205,17 +206,15 @@ public class FontDetector extends ResourceXmlDetector {
         LintModelExternalLibrary extLibrary = (LintModelExternalLibrary) library;
 
         LintModelMavenName rc = extLibrary.getResolvedCoordinates();
-        GradleCoordinate version =
-                new GradleCoordinate(
-                        SUPPORT_LIB_GROUP_ID, APPCOMPAT_LIB_ARTIFACT_ID, rc.getVersion());
-        if (COMPARE_PLUS_LOWER.compare(version, MIN_APPSUPPORT_VERSION) < 0) {
+        Version version = Version.Companion.parse(rc.getVersion());
+        if (version.compareTo(MIN_APPSUPPORT_VERSION) < 0) {
             String message =
                     "Using version "
-                            + version.getRevision()
+                            + version
                             + " of the "
                             + APPCOMPAT_LIB_ARTIFACT_ID
                             + " library. Required version for using downloadable fonts: "
-                            + MIN_APPSUPPORT_VERSION.getRevision()
+                            + MIN_APPSUPPORT_VERSION
                             + " or higher.";
             LintFix fix = LintFix.create().data(KEY_ARTIFACT_ID, APPCOMPAT_LIB_ARTIFACT_ID);
             reportError(context, element, message, context.getNameLocation(element), fix);
