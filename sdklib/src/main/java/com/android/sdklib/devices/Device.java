@@ -344,6 +344,7 @@ public final class Device {
         private State mDefaultState;
         private String mTagId;
         private final Map<String, String> mBootProps = new TreeMap<String, String>();
+        private boolean mDeprecated;
 
         public Builder() { }
 
@@ -360,6 +361,7 @@ public final class Device {
                 mState.add(s.deepCopy());
             }
             mMeta = d.getMeta();
+            mDeprecated = d.mIsDeprecated;
         }
 
         public void setName(@NonNull String name) {
@@ -437,6 +439,10 @@ public final class Device {
             mMeta = meta;
         }
 
+        void setDeprecated(boolean deprecated) {
+            mDeprecated = deprecated;
+        }
+
         public Device build() {
             if (mName == null) {
                 throw generateBuildException("Device missing name");
@@ -504,6 +510,7 @@ public final class Device {
         mDefaultState = b.mDefaultState;
         mTagId = b.mTagId;
         mBootProps = Collections.unmodifiableMap(b.mBootProps);
+        mIsDeprecated = b.mDeprecated;
     }
 
     @Override

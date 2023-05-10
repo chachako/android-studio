@@ -652,6 +652,7 @@ com/android/tools/common
   com/android/utils/time/
   com/android/version.properties
   com/android/xml/
+  com/android/xml/sax/
 
 com/android/tools/ddms/ddmlib
   META-INF/

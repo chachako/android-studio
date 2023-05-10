@@ -80,7 +80,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>Nexus S</d:name>
         <d:manufacturer>Google</d:manufacturer>
         <d:hardware>

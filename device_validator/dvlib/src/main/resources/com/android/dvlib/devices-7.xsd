@@ -75,6 +75,8 @@
             <xsd:element name="tag-id"       type= "c:idType"        minOccurs="0" />
             <xsd:element name="boot-props"   type= "c:bootPropsType" minOccurs="0" />
           </xsd:sequence>
+
+          <xsd:attribute name="deprecated" type="xsd:boolean"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:sequence>
