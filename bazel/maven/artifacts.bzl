@@ -139,7 +139,6 @@ ARTIFACTS = [
     "org.jacoco:org.jacoco.agent:0.8.8",
     "org.jacoco:org.jacoco.core:0.8.8",
     "org.jacoco:org.jacoco.report:0.8.8",
-    "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.17-g004",
     "org.jetbrains.dokka:dokka-core:1.4.32",
     "org.jetbrains.intellij.deps:asm-all:8.0.1",
     "org.jetbrains.intellij.deps:trove4j:1.0.20181211",
