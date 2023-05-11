@@ -106,7 +106,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>13.5" Freeform</d:name>
         <d:id>13.5in Freeform</d:id>
         <d:manufacturer>Generic</d:manufacturer>
@@ -295,7 +295,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>8" Fold-out</d:name>
         <d:id>8in Foldable</d:id>
         <d:manufacturer>Generic</d:manufacturer>
@@ -399,7 +399,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>6.7" Horizontal Fold-in</d:name>
         <d:id>6.7in Foldable</d:id>
         <d:manufacturer>Generic</d:manufacturer>
@@ -496,7 +496,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>7.4" Rollable</d:name>
         <d:id>7.4in Rollable</d:id>
         <d:manufacturer>Generic</d:manufacturer>
@@ -592,7 +592,7 @@
             <d:nav-state>nonav</d:nav-state>
         </d:state>
     </d:device>
-    <d:device>
+    <d:device deprecated="true">
         <d:name>2.7" QVGA</d:name>
         <d:id>2.7in QVGA</d:id>
         <d:manufacturer>
@@ -680,7 +680,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>2.7" QVGA slider</d:name>
         <d:id>2.7in QVGA slider</d:id>
         <d:manufacturer>
@@ -774,7 +774,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>3.2" HVGA slider (ADP1)</d:name>
         <d:id>3.2in HVGA slider (ADP1)</d:id>
         <d:manufacturer>
@@ -868,7 +868,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>3.2" QVGA (ADP2)</d:name>
         <d:id>3.2in QVGA (ADP2)</d:id>
         <d:manufacturer>
@@ -956,7 +956,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>3.3" WQVGA</d:name>
         <d:id>3.3in WQVGA</d:id>
         <d:manufacturer>
@@ -1043,7 +1043,7 @@
             <d:nav-state>navhidden</d:nav-state>
         </d:state>
     </d:device>
-    <d:device>
+    <d:device deprecated="true">
         <d:name>3.4" WQVGA</d:name>
         <d:id>3.4in WQVGA</d:id>
         <d:manufacturer>
@@ -1131,7 +1131,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>3.7" WVGA (Nexus One)</d:name>
         <d:id>3.7in WVGA (Nexus One)</d:id>
         <d:manufacturer>
@@ -1219,7 +1219,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>3.7" FWVGA slider</d:name>
         <d:id>3.7 FWVGA slider</d:id>
         <d:manufacturer>
@@ -1313,7 +1313,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>4" WVGA (Nexus S)</d:name>
         <d:id>4in WVGA (Nexus S)</d:id>
         <d:manufacturer>
@@ -1401,7 +1401,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>4.65" 720p (Galaxy Nexus)</d:name>
         <d:id>4.65in 720p (Galaxy Nexus)</d:id>
         <d:manufacturer>
@@ -1538,7 +1538,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>4.7" WXGA</d:name>
         <d:id>4.7in WXGA</d:id>
         <d:manufacturer>
@@ -1626,7 +1626,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>5.1" WVGA</d:name>
         <d:id>5.1in WVGA</d:id>
         <d:manufacturer>
@@ -1714,7 +1714,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>5.4" FWVGA</d:name>
         <d:id>5.4in FWVGA</d:id>
         <d:manufacturer>
@@ -1802,7 +1802,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>7" WSVGA (Tablet)</d:name>
         <d:id>7in WSVGA (Tablet)</d:id>
         <d:manufacturer>
@@ -1891,7 +1891,7 @@
     </d:device>
 
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>10.1" WXGA (Tablet)</d:name>
         <d:id>10.1in WXGA (Tablet)</d:id>
         <d:manufacturer>

@@ -3,7 +3,7 @@
 <d:devices
         xmlns:d="http://schemas.android.com/sdk/devices/7">
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>Nexus One</d:name>
         <d:manufacturer>Google</d:manufacturer>
         <d:hardware>
@@ -194,7 +194,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>Galaxy Nexus</d:name>
         <d:manufacturer>Google</d:manufacturer>
         <d:hardware>
@@ -327,7 +327,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>Nexus 7 (2012)</d:name>
         <d:id>Nexus 7</d:id>
         <d:manufacturer>Google</d:manufacturer>
@@ -407,7 +407,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>Nexus 4</d:name>
         <d:manufacturer>Google</d:manufacturer>
         <d:hardware>
@@ -504,7 +504,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>Nexus 10</d:name>
         <d:manufacturer>Google</d:manufacturer>
         <d:hardware>
@@ -600,7 +600,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>Nexus 7</d:name>
         <d:id>Nexus 7 2013</d:id>
         <d:manufacturer>Google</d:manufacturer>
@@ -701,7 +701,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>Nexus 5</d:name>
         <d:id>Nexus 5</d:id>
         <d:manufacturer>Google</d:manufacturer>
@@ -803,7 +803,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>Nexus 6</d:name>
         <d:id>Nexus 6</d:id>
         <d:manufacturer>Google</d:manufacturer>
@@ -923,7 +923,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>Nexus 9</d:name>
         <d:id>Nexus 9</d:id>
         <d:manufacturer>Google</d:manufacturer>
@@ -1072,7 +1072,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>Nexus 5X</d:name>
         <d:id>Nexus 5X</d:id>
         <d:manufacturer>Google</d:manufacturer>
@@ -1186,7 +1186,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>Nexus 6P</d:name>
         <d:id>Nexus 6P</d:id>
         <d:manufacturer>Google</d:manufacturer>
