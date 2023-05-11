@@ -237,29 +237,12 @@ class PathVariables {
      * variables are listed last, and other than that, alphabetical order.
      */
     private val PATH_COMPARATOR: Comparator<PathVariable> =
-      object : Comparator<PathVariable> {
-        override fun compare(v1: PathVariable, v2: PathVariable): Int {
-          val p1 = v1.dir.path
-          val p2 = v2.dir.path
-
-          val c1 = if (v1.name.endsWith(CANONICALIZED)) 1 else 0
-          val c2 = if (v2.name.endsWith(CANONICALIZED)) 1 else 0
-
-          if (c1 != c2) {
-            return c1 - c2
-          }
-          if (p2.length != p1.length) {
-            return p2.length - p1.length
-          }
-
-          val delta = p1.compareTo(p2)
-          if (delta != 0) {
-            return delta
-          }
-
-          return v1.name.compareTo(v2.name)
-        }
-      }
+      compareBy(
+        { it.name.endsWith(CANONICALIZED) },
+        { -it.dir.path.length },
+        { it.dir.path },
+        { it.name }
+      )
 
     /**
      * Parses a path variable descriptor and returns a corresponding [PathVariables] object. The
