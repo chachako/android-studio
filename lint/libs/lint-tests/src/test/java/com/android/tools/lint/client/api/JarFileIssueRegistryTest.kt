@@ -27,10 +27,15 @@ import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.describeApi
+import com.google.common.io.ByteStreams
 import com.google.common.truth.Truth.assertThat
 import java.io.File
+import java.io.FileOutputStream
 import java.io.StringWriter
 import java.nio.file.Files
+import java.util.jar.JarFile
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 class JarFileIssueRegistryTest : AbstractCheckTest() {
   override fun lint(): TestLintTask = TestLintTask.lint().sdkHome(TestUtils.getSdk().toFile())
@@ -635,6 +640,44 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
                 The Lint API version currently running is $CURRENT_API (${describeApi(CURRENT_API)}). [ObsoleteLintCustomCheck]
                 0 errors, 1 warnings"""
       )
+
+    // Also make sure we can handle issue registries without a manifest: b/280305856.
+    // We'll just rewrite the above lint.jar file and filter out the manifest file.
+    // This test would fail with the NPE from b/280305856 until the corresponding fix.
+    val lintJarWithoutManifest = File(root, "app/lint2.jar")
+    val zos = ZipOutputStream(FileOutputStream(lintJarWithoutManifest))
+    JarFile(lintJar).use { jarFile ->
+      for (entry in jarFile.entries()) {
+        val name = entry.name
+        if (name == "META-INF/MANIFEST.MF") {
+          continue
+        }
+        zos.putNextEntry(ZipEntry(name))
+        if (!entry.isDirectory) {
+          jarFile.getInputStream(entry).use { stream -> zos.write(ByteStreams.toByteArray(stream)) }
+        }
+        zos.closeEntry()
+      }
+    }
+    zos.close()
+
+    lint()
+      .files(
+        source( // instead of xml: not valid XML below
+            "res/values/strings.xml",
+            """
+                <?xml version="1.0" encoding="utf-8"?>
+                <resources/>
+                """
+          )
+          .indented()
+      )
+      .clientFactory { createGlobalLintJarClient(lintJarWithoutManifest) }
+      .testModes(TestMode.DEFAULT)
+      .allowObsoleteLintChecks(false)
+      .issueIds("MyIssueId")
+      .run()
+      .expectContains("Lint found an issue registry (test.pkg.MyIssueRegistry)")
 
     val dir = File(root, "test2")
     lint()

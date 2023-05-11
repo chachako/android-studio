@@ -164,7 +164,7 @@ internal constructor(
     }
 
     assertTrue(
-      "Not true that\n\"$expectedWithoutIndent\$\nis found in lint output\n\"$actual\$",
+      "Not true that\n\"$expectedWithoutIndent\nis found in lint output\n\"$actual",
       actual.contains(expectedWithoutIndent)
     )
 

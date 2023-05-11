@@ -494,15 +494,16 @@ open class LintModelModuleProject(
   override fun equals(other: Any?): Boolean {
     val thisPartialResultsDir = partialResultsDir
     val otherPartialResultDir = (other as? LintModelModuleProject)?.partialResultsDir
-    val samePartialResultsDir = if (thisPartialResultsDir == null) {
-      otherPartialResultDir == null
-    } else {
-      otherPartialResultDir != null && FileUtils.isSameFile(thisPartialResultsDir, otherPartialResultDir)
-    }
+    val samePartialResultsDir =
+      if (thisPartialResultsDir == null) {
+        otherPartialResultDir == null
+      } else {
+        otherPartialResultDir != null &&
+          FileUtils.isSameFile(thisPartialResultsDir, otherPartialResultDir)
+      }
 
     return super.equals(other) && samePartialResultsDir
   }
-
 
   companion object {
     /**

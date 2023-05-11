@@ -507,9 +507,11 @@ open class LintCliClient : LintClient {
           dependentsMap[dependency] ?: ArrayList<Project>().also { dependentsMap[dependency] = it }
         val dependencyType = dependency.buildVariant?.artifact?.type
         val dependencyModulePath = dependency.buildModule?.modulePath
-        if (dependencyType != null
-          && dependencyType != LintModelArtifactType.MAIN
-          && dependencyModulePath != null) {
+        if (
+          dependencyType != null &&
+            dependencyType != LintModelArtifactType.MAIN &&
+            dependencyModulePath != null
+        ) {
           dependents.add(modulePathToMainProject[dependencyModulePath] ?: root)
         } else {
           dependents.add(root)
@@ -521,8 +523,10 @@ open class LintCliClient : LintClient {
       // features and test components since we've transferred them in as dependencies
       // instead (see LintModelModuleProject.resolveDependencies)
       for (dependency in root.allLibraries) {
-        if (dependency.type == LintModelModuleType.DYNAMIC_FEATURE
-          || root.buildModule?.modulePath?.let { it == dependency.buildModule?.modulePath } == true) {
+        if (
+          dependency.type == LintModelModuleType.DYNAMIC_FEATURE ||
+            root.buildModule?.modulePath?.let { it == dependency.buildModule?.modulePath } == true
+        ) {
           val dependents =
             dependentsMap[dependency]
               ?: ArrayList<Project>().also { dependentsMap[dependency] = it }

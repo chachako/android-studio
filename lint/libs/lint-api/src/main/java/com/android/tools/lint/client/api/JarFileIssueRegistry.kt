@@ -501,64 +501,65 @@ private constructor(
       for (jarFile in jarFiles) {
         JarFile(jarFile).use { file ->
           val manifest = file.manifest
-          val attrs = manifest.mainAttributes
-          var attribute: Any? = attrs[Attributes.Name(MF_LINT_REGISTRY)]
-          var isLegacy = false
-          if (attribute == null) {
-            attribute = attrs[Attributes.Name(MF_LINT_REGISTRY_OLD)]
-            if (attribute != null) {
-              isLegacy = true
+          if (manifest != null) {
+            val attrs = manifest.mainAttributes
+            var attribute: Any? = attrs[Attributes.Name(MF_LINT_REGISTRY)]
+            var isLegacy = false
+            if (attribute == null) {
+              attribute = attrs[Attributes.Name(MF_LINT_REGISTRY_OLD)]
+              if (attribute != null) {
+                isLegacy = true
+              }
+            }
+            if (attribute is String) {
+              val className = attribute
+
+              // Store class name -- but it may not be unique (there could be
+              // multiple separate jar files pointing to the same issue registry
+              // (due to the way local lint.jar files propagate via project
+              // dependencies) so only store this file if it hasn't already
+              // been found, or if it's a v2 version (e.g. not legacy)
+              if (!isLegacy || registryClassToJarFile[className] == null) {
+                registryClassToJarFile[className] = jarFile
+              }
+              return@use
             }
           }
-          if (attribute is String) {
-            val className = attribute
 
-            // Store class name -- but it may not be unique (there could be
-            // multiple separate jar files pointing to the same issue registry
-            // (due to the way local lint.jar files propagate via project
-            // dependencies) so only store this file if it hasn't already
-            // been found, or if it's a v2 version (e.g. not legacy)
-            if (!isLegacy || registryClassToJarFile[className] == null) {
-              registryClassToJarFile[className] = jarFile
-            }
-          } else {
-            // Load service keys. We're reading it manually instead of using
-            // ServiceLoader because we don't want to put these jars into
-            // the class loaders yet (since there can be many duplicates
-            // when a library is available through multiple dependencies)
-            val services = file.getJarEntry(SERVICE_KEY)
-            if (services != null) {
-              file.getInputStream(services).use {
-                val reader = InputStreamReader(it, Charsets.UTF_8)
-                reader.useLines { lines ->
-                  for (line in lines) {
-                    val comment = line.indexOf("#")
-                    val className =
-                      if (comment >= 0) {
-                        line.substring(0, comment).trim()
-                      } else {
-                        line.trim()
-                      }
-                    if (className.isNotEmpty() && registryClassToJarFile[className] == null) {
-                      registryClassToJarFile[className] = jarFile
+          // Load service keys. We're reading it manually instead of using
+          // ServiceLoader because we don't want to put these jars into
+          // the class loaders yet (since there can be many duplicates
+          // when a library is available through multiple dependencies)
+          val services = file.getJarEntry(SERVICE_KEY)
+          if (services != null) {
+            file.getInputStream(services).use {
+              val reader = InputStreamReader(it, Charsets.UTF_8)
+              reader.useLines { lines ->
+                for (line in lines) {
+                  val comment = line.indexOf("#")
+                  val className =
+                    if (comment >= 0) {
+                      line.substring(0, comment).trim()
+                    } else {
+                      line.trim()
                     }
+                  if (className.isNotEmpty() && registryClassToJarFile[className] == null) {
+                    registryClassToJarFile[className] = jarFile
                   }
                 }
               }
-            } else {
-              if (logJarProblems() && jarFile.name == "lint.jar") {
-                client.log(
-                  Severity.ERROR,
-                  null,
-                  "Custom lint rule jar %1\$s does not contain a valid " +
-                    "registry manifest key (%2\$s).\n" +
-                    "Either the custom jar is invalid, or it uses an outdated " +
-                    "API not supported this lint client",
-                  jarFile.path,
-                  MF_LINT_REGISTRY
-                )
-              }
             }
+          } else if (logJarProblems() && jarFile.name == "lint.jar") {
+            client.log(
+              Severity.ERROR,
+              null,
+              "Custom lint rule jar %1\$s does not contain a valid " +
+                "registry manifest key (%2\$s).\n" +
+                "Either the custom jar is invalid, or it uses an outdated " +
+                "API not supported this lint client",
+              jarFile.path,
+              MF_LINT_REGISTRY
+            )
           }
         }
       }
