@@ -32,9 +32,9 @@ class Session {
 
     private IDSizes idSizes = new IDSizes();
 
-    private final HashMap<Integer, Transmission> idToTransmission = new HashMap<>();
-
     private final List<Event> events = new ArrayList<>();
+
+    private final HashMap<Integer, Transmission> upStreamTransmissions = new HashMap<>();
 
     private Map<Integer, DdmJDWPTiming> timings = new HashMap<>();
 
@@ -46,8 +46,7 @@ class Session {
         this.log = log;
     }
 
-    // private
-    void addPacket(@NonNull ByteBuffer packet) {
+    void addPacket(@NonNull ByteBuffer packet, Direction direction) {
         long now_ns = System.nanoTime();
 
         MessageReader messageReader = new MessageReader(idSizes, packet);
@@ -56,12 +55,15 @@ class Session {
         if (header.isReply()) {
             processReplyPacket(now_ns, header, packet);
         } else {
-            processCmdPacket(now_ns, header, packet);
+            processCmdPacket(now_ns, header, packet, direction);
         }
     }
 
     private void processCmdPacket(
-            long time_ns, @NonNull PacketHeader header, @NonNull ByteBuffer packet) {
+            long time_ns,
+            @NonNull PacketHeader header,
+            @NonNull ByteBuffer packet,
+            Direction direction) {
         // From here, we parse the packet with the message reader.
         MessageReader messageReader = new MessageReader(idSizes, packet);
 
@@ -70,20 +72,25 @@ class Session {
         Command command = new Command(header, time_ns, message);
 
         Transmission t = new Transmission(command, header.getId(), events.size());
-        idToTransmission.put(header.getId(), t);
+
+        // We only track upstream commands. Downstream commands are event without a reply
+        if (direction == Direction.UPSTREAM) {
+            upStreamTransmissions.put(header.getId(), t);
+        }
         events.add(t);
     }
 
     private void processReplyPacket(
             long time_ns, @NonNull PacketHeader header, @NonNull ByteBuffer packet) {
-        if (!idToTransmission.containsKey(header.getId())) {
+        if (!upStreamTransmissions.containsKey(header.getId())) {
             String msg =
                     String.format(
                             Locale.US, "Found reply id=%d packet without a cmd", header.getId());
             log.warn(msg);
             return;
         }
-        Transmission t = idToTransmission.get(header.getId());
+        Transmission t = upStreamTransmissions.get(header.getId());
+        upStreamTransmissions.remove(header.getId());
 
         int cmdSetID = t.cmd().cmdSetID();
         int cmdID = t.cmd().cmdID();

@@ -592,7 +592,8 @@ public class ClientImpl extends JdwpPipe implements Client {
             return;
         }
 
-        jdwpTracer.onPacket(ByteBuffer.wrap(packet.getPayload().array(), 0, packet.getLength()));
+        jdwpTracer.onUpstreamPacket(
+                ByteBuffer.wrap(packet.getPayload().array(), 0, packet.getLength()));
 
         packet.log("Client: sending jdwp packet to Android Device");
         // Synchronizing on this variable is still useful as we do not want more than one
@@ -726,7 +727,7 @@ public class ClientImpl extends JdwpPipe implements Client {
             }
             JdwpPacket packet = JdwpPacket.findPacket(mReadBuffer);
             if (packet != null) {
-                jdwpTracer.onPacket(
+                jdwpTracer.onDownstreamPacket(
                         ByteBuffer.wrap(packet.getPayload().array(), 0, packet.getLength()));
             }
             return packet;

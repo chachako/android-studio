@@ -56,13 +56,32 @@ public class JDWPTracer {
     }
 
     /**
-     * Add a packet [buffer] to the session [id]. A session ID associate all packets together and is
-     * used to associate cmds and replies.
+     * Add an upstream packet [buffer] to the session [id]. A session ID associate all packets
+     * together and is used to associate cmds and replies.
+     *
+     * <p>An UPSTREAM packet is a packet sent toward the DEBUGGED VM (ART)
      *
      * @param id The identifier of the current session. Socket.hashCode is a good candidate.
      * @param buffer The full JDWP packet including header.
      */
-    public synchronized void addPacket(@NonNull ByteBuffer buffer) {
+    public synchronized void addUpstreamPacket(@NonNull ByteBuffer buffer) {
+        addPacket(buffer, Direction.UPSTREAM);
+    }
+
+    /**
+     * Add a downstream packet [buffer] to the session [id]. A session ID associate all packets
+     * together and is used to associate cmds and replies.
+     *
+     * <p>A DOWNSTREAM packet is a packet sent to the DEBUGGER.
+     *
+     * @param id The identifier of the current session. Socket.hashCode is a good candidate.
+     * @param buffer The full JDWP packet including header.
+     */
+    public synchronized void addDownstreamPacket(@NonNull ByteBuffer buffer) {
+        addPacket(buffer, Direction.DOWNSTREAM);
+    }
+
+    private synchronized void addPacket(@NonNull ByteBuffer buffer, Direction direction) {
         if (!enabled) {
             return;
         }
@@ -71,7 +90,7 @@ public class JDWPTracer {
         packet.order(ByteOrder.BIG_ENDIAN);
 
         try {
-            session.addPacket(packet);
+            session.addPacket(packet, direction);
         } catch (Exception e) {
             // We don't log the exception to avoid being misleading in idea.log. Add
             // a log.warn(..., e) if it turns out this is not enough data to debug.

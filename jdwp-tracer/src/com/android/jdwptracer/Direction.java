@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ddmlib;
+package com.android.jdwptracer;
 
-import com.android.annotations.NonNull;
-import java.nio.ByteBuffer;
-
-public interface DDMLibJdwpTracer {
-    default void onEvent(@NonNull String event) {}
-
-    default void onUpstreamPacket(@NonNull ByteBuffer packet) {}
-
-    default void onDownstreamPacket(@NonNull ByteBuffer packet) {}
-
-    default void close() {}
+// Upstream are transmissions started by the debugger (typically cmd then a downstream reply)
+// Downstream are transmission started by the debuggee (typically a VM event cmd NOT followed by a
+// reply)
+enum Direction {
+    UPSTREAM,
+    DOWNSTREAM
 }
