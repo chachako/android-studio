@@ -148,7 +148,6 @@ class ScreenshotProvider(
         val config =
             Configuration.create(
                 createConfigManager(composeProject, composeModule, sdkPath, dependencies),
-                null,
                 FolderConfiguration.createDefault()
             )
         previewElement.applyTo(config)
