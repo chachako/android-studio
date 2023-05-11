@@ -1977,7 +1977,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       if (!mAppliedKspPlugin) {
         // KSP plugin not applied yet in this module, point to docs on how to enable it
         fix()
-          .name("Enable KSP and use the KSP processor for this dependency instead")
+          .name(
+            "Learn about how to enable KSP and use the KSP processor for this dependency instead"
+          )
           .url("https://developer.android.com/studio/build/migrate-to-ksp")
           .build()
       } else {

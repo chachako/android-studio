@@ -6000,13 +6000,13 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
       .expectFixDiffs(
         """
-                Show URL for build.gradle line 7: Enable KSP and use the KSP processor for this dependency instead:
+                Show URL for build.gradle line 7: Learn about how to enable KSP and use the KSP processor for this dependency instead:
                 https://developer.android.com/studio/build/migrate-to-ksp
-                Show URL for build.gradle line 8: Enable KSP and use the KSP processor for this dependency instead:
+                Show URL for build.gradle line 8: Learn about how to enable KSP and use the KSP processor for this dependency instead:
                 https://developer.android.com/studio/build/migrate-to-ksp
-                Show URL for build.gradle line 9: Enable KSP and use the KSP processor for this dependency instead:
+                Show URL for build.gradle line 9: Learn about how to enable KSP and use the KSP processor for this dependency instead:
                 https://developer.android.com/studio/build/migrate-to-ksp
-                Show URL for build.gradle line 10: Enable KSP and use the KSP processor for this dependency instead:
+                Show URL for build.gradle line 10: Learn about how to enable KSP and use the KSP processor for this dependency instead:
                 https://developer.android.com/studio/build/migrate-to-ksp
                 """
       )
