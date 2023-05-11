@@ -98,6 +98,15 @@ class Session {
         // From here, we parse the packet with the message reader.
         MessageReader messageReader = new MessageReader(idSizes, packet);
 
+        // If the reply errored, we should not try to parse it.
+        if (header.getError() != 0) {
+            Message message = new Message(messageReader);
+            Reply reply = new Reply(header, time_ns, message);
+            t.addReply(reply);
+            t.cmd().message().prefixName("ERROR:");
+            return;
+        }
+
         // Make a Reply
         CmdSet cmdSet = CmdSets.get(cmdSetID);
         Message message = cmdSet.getCmd(cmdID).getReplyParser().parse(messageReader, this);

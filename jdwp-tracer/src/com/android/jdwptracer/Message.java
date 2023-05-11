@@ -65,6 +65,10 @@ class Message {
         return args;
     }
 
+    public void prefixName(@NonNull String prefix) {
+        name = prefix + name;
+    }
+
     @NonNull
     static Message defaultMessageParser(@NonNull MessageReader reader, @NonNull Session unused) {
         return new Message(reader);
