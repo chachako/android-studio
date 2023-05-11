@@ -6,6 +6,9 @@ plugins {
 
 kotlin {
   androidExperimental {
+    withAndroidTestOnJvm(compilationName = "unitTest")
+    withAndroidTestOnDevice(compilationName = "instrumentedTest")
+
     sourceSets.getByName("androidMain") {
       dependencies {
         api(project(":androidLib"))
@@ -22,7 +25,6 @@ kotlin {
       }
     }
 
-
     namespace = "com.example.kmpfirstlib"
     compileSdk = property("latestCompileSdk") as Int
     minSdk = 22
@@ -36,9 +38,6 @@ kotlin {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
     aarMetadata.minAgpVersion = "7.2.0"
-
-    enableUnitTest = true
-    enableAndroidTest = true
   }
 
    sourceSets.getByName("commonTest") {

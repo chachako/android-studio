@@ -16,6 +16,8 @@
 
 package com.android.build.api.variant.impl
 
+import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
+import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.androidExtensionOnKotlinExtensionName
 import com.android.utils.appendCapitalized
 import org.gradle.api.NamedDomainObjectFactory
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
@@ -24,19 +26,22 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.external.ExternalKotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.external.createCompilation
 
 @OptIn(ExternalKotlinTargetApi::class)
-class KotlinMultiplatformAndroidCompilationFactory(
+internal class KotlinMultiplatformAndroidCompilationFactory(
     private val target: KotlinMultiplatformAndroidTargetImpl,
-    private val kotlinExtension: KotlinMultiplatformExtension
+    private val kotlinExtension: KotlinMultiplatformExtension,
+    private val androidExtension: KotlinMultiplatformAndroidExtensionImpl
 ): NamedDomainObjectFactory<KotlinMultiplatformAndroidCompilation> {
 
     override fun create(name: String): KotlinMultiplatformAndroidCompilationImpl {
-        if (!KmpPredefinedAndroidCompilation.values().any { it.compilationName == name }) {
+        if (KmpPredefinedAndroidCompilation.MAIN.compilationName != name &&
+            androidExtension.androidTestOnJvmConfiguration?.compilationName != name &&
+            androidExtension.androidTestOnDeviceConfiguration?.compilationName != name) {
             throw IllegalAccessException(
                 "Kotlin multiplatform android plugin doesn't support creating arbitrary " +
                         "compilations. Only three types of compilations are supported:\n" +
                         "  * main compilation (named \"${KmpPredefinedAndroidCompilation.MAIN.compilationName}\"),\n" +
-                        "  * unit test compilation (named \"${KmpPredefinedAndroidCompilation.UNIT_TEST.compilationName}\"),\n" +
-                        "  * instrumented test compilation (named \"${KmpPredefinedAndroidCompilation.INSTRUMENTED_TEST.compilationName}\")."
+                        "  * test on jvm compilation (use `kotlin.$androidExtensionOnKotlinExtensionName.withAndroidTestOnJvm()` to enable),\n" +
+                        "  * test on device compilation (use `kotlin.$androidExtensionOnKotlinExtensionName.withAndroidTestOnDevice()` to enable)."
             )
         }
 

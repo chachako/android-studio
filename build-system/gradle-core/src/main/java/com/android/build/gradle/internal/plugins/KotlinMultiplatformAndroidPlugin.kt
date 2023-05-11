@@ -74,12 +74,14 @@ import com.android.build.gradle.internal.tasks.SigningConfigUtils.Companion.crea
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfigImpl
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.KmpGlobalTaskCreationConfigImpl
+import com.android.build.gradle.internal.utils.KOTLIN_MPP_PLUGIN_ID
 import com.android.build.gradle.internal.utils.validatePreviewTargetValue
 import com.android.build.gradle.internal.variant.VariantPathHelper
 import com.android.build.gradle.options.BooleanOption
 import com.android.builder.core.ComponentTypeImpl
 import com.android.repository.Revision
 import com.android.utils.FileUtils
+import com.android.utils.appendCapitalized
 import com.google.wireless.android.sdk.stats.GradleBuildProject
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -195,7 +197,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         )
 
         project.afterEvaluate {
-            if (!project.plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")) {
+            if (!project.plugins.hasPlugin(KOTLIN_MPP_PLUGIN_ID)) {
                 throw RuntimeException("Kotlin multiplatform plugin was not found. This plugin needs" +
                         " to be applied as part of the kotlin multiplatform plugin.")
             }
@@ -208,14 +210,32 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             .decorate(KotlinMultiplatformAndroidExtensionImpl::class.java)
         androidExtension = dslServices.newInstance(
             extensionImplClass,
-            dslServices
+            dslServices,
+            { jvmConfiguration: KotlinMultiplatformAndroidExtensionImpl.KotlinMultiplatformAndroidTestConfigurationImpl ->
+                if (project.pluginManager.hasPlugin(KOTLIN_MPP_PLUGIN_ID)) {
+                    createCompilation(
+                        compilationName = jvmConfiguration.compilationName,
+                        defaultSourceSetName = jvmConfiguration.defaultSourceSetName,
+                        sourceSetsToDependOn = listOf(COMMON_TEST_SOURCE_SET_NAME)
+                    )
+                }
+            },
+            { deviceConfiguration: KotlinMultiplatformAndroidExtensionImpl.KotlinMultiplatformAndroidTestConfigurationImpl ->
+                if (project.pluginManager.hasPlugin(KOTLIN_MPP_PLUGIN_ID)) {
+                    createCompilation(
+                        compilationName = deviceConfiguration.compilationName,
+                        defaultSourceSetName = deviceConfiguration.defaultSourceSetName,
+                        sourceSetsToDependOn = emptyList()
+                    )
+                }
+            }
         )
 
         settingsExtension?.let {
             androidExtension.initExtensionFromSettings(it)
         }
 
-        project.pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
+        project.pluginManager.withPlugin(KOTLIN_MPP_PLUGIN_ID) {
             kotlinExtension = project.extensions.getByName("kotlin") as KotlinMultiplatformExtension
 
             androidTarget = kotlinExtension.createExternalKotlinTarget {
@@ -239,11 +259,31 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
 
             (kotlinExtension as ExtensionAware).extensions.add(
                 KotlinMultiplatformAndroidTarget::class.java,
-                "androidExperimental",
+                androidExtensionOnKotlinExtensionName,
                 androidTarget
             )
 
-            createSourceSetsEagerly()
+            createCompilation(
+                compilationName = KmpPredefinedAndroidCompilation.MAIN.compilationName,
+                defaultSourceSetName = KmpPredefinedAndroidCompilation.MAIN.compilationName.getNamePrefixedWithTarget(),
+                sourceSetsToDependOn = listOf(COMMON_MAIN_SOURCE_SET_NAME)
+            )
+
+            androidExtension.androidTestOnJvmConfiguration?.let { jvmConfiguration ->
+                createCompilation(
+                    compilationName = jvmConfiguration.compilationName,
+                    defaultSourceSetName = jvmConfiguration.defaultSourceSetName,
+                    sourceSetsToDependOn = listOf(COMMON_TEST_SOURCE_SET_NAME)
+                )
+            }
+
+            androidExtension.androidTestOnDeviceConfiguration?.let { deviceConfiguration ->
+                createCompilation(
+                    compilationName = deviceConfiguration.compilationName,
+                    defaultSourceSetName = deviceConfiguration.defaultSourceSetName,
+                    sourceSetsToDependOn = emptyList()
+                )
+            }
         }
     }
 
@@ -275,14 +315,22 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         }
     }
 
-    private fun createSourceSetsEagerly() {
-        KmpPredefinedAndroidCompilation.values().map {
-            it.getNamePrefixedWithTarget()
-        }.forEach { name ->
-            kotlinExtension.sourceSets.maybeCreate(name).apply {
-                android = KotlinAndroidSourceSetMarker()
+    private fun createCompilation(
+        compilationName: String,
+        defaultSourceSetName: String,
+        sourceSetsToDependOn: List<String>
+    ) {
+        kotlinExtension.sourceSets.maybeCreate(
+            defaultSourceSetName
+        ).apply {
+            android = KotlinAndroidSourceSetMarker()
+            sourceSetsToDependOn.forEach {
+                dependsOn(kotlinExtension.sourceSets.getByName(it))
             }
         }
+        androidTarget.compilations.maybeCreate(
+            compilationName
+        )
     }
 
     private fun getCompileSdkVersion(): String =
@@ -476,13 +524,9 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
 
         val artifacts = ArtifactsImpl(project, dslInfo.componentIdentity.name)
 
-        val kotlinCompilation = androidTarget.compilations.maybeCreate(
+        val kotlinCompilation = androidTarget.compilations.getByName(
             KmpPredefinedAndroidCompilation.MAIN.compilationName
-        ).also {
-            it.defaultSourceSet.dependsOn(
-                kotlinExtension.sourceSets.getByName(COMMON_MAIN_SOURCE_SET_NAME)
-            )
-        } as KotlinMultiplatformAndroidCompilationImpl
+        ) as KotlinMultiplatformAndroidCompilationImpl
 
         return KmpVariantImpl(
             dslInfo = dslInfo,
@@ -525,13 +569,9 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
 
         val artifacts = ArtifactsImpl(project, dslInfo.componentIdentity.name)
 
-        val kotlinCompilation = androidTarget.compilations.maybeCreate(
-            KmpPredefinedAndroidCompilation.UNIT_TEST.compilationName
-        ).also {
-            it.defaultSourceSet.dependsOn(
-                kotlinExtension.sourceSets.getByName(COMMON_TEST_SOURCE_SET_NAME)
-            )
-        } as KotlinMultiplatformAndroidCompilationImpl
+        val kotlinCompilation = androidTarget.compilations.getByName(
+            androidExtension.androidTestOnJvmConfiguration!!.compilationName
+        ) as KotlinMultiplatformAndroidCompilationImpl
 
         return KmpUnitTestImpl(
             dslInfo = dslInfo,
@@ -562,8 +602,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             return null
         }
 
-        val kotlinCompilation = androidTarget.compilations.maybeCreate(
-            KmpPredefinedAndroidCompilation.INSTRUMENTED_TEST.compilationName
+        val kotlinCompilation = androidTarget.compilations.getByName(
+            androidExtension.androidTestOnDeviceConfiguration!!.compilationName
         ) as KotlinMultiplatformAndroidCompilationImpl
 
         val manifestLocation = getAndroidManifestDefaultLocation(kotlinCompilation)
@@ -637,6 +677,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
     }
 
     companion object {
-        const val androidTargetName = "android"
+        private const val androidTargetName = "android"
+        const val androidExtensionOnKotlinExtensionName = "androidExperimental"
+        fun String.getNamePrefixedWithTarget() = androidTargetName.appendCapitalized(this)
     }
 }

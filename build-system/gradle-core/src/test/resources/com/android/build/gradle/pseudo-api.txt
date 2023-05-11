@@ -1553,6 +1553,9 @@ com.android.build.gradle.internal.dsl.KmpOptimization.isMinifyEnabled: boolean (
 com.android.build.gradle.internal.dsl.KmpOptimization.setEnableConsumerProguardRulePublishing: void (boolean)
 com.android.build.gradle.internal.dsl.KmpOptimization.setMinifyEnabled: void (boolean)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
+com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension$DefaultImpls
+com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension$DefaultImpls.withAndroidTestOnDevice$default: void (com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension, java.lang.String, kotlin.jvm.functions.Function1, int, java.lang.Object)
+com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension$DefaultImpls.withAndroidTestOnJvm$default: void (com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension, java.lang.String, kotlin.jvm.functions.Function1, int, java.lang.Object)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.dependencyVariantSelection: void (kotlin.jvm.functions.Function1<? super com.android.build.gradle.internal.dsl.DependencyVariantSelection, kotlin.Unit>)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getAarMetadata: com.android.build.api.dsl.AarMetadata ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getBuildToolsVersion: java.lang.String ()
@@ -1560,9 +1563,7 @@ com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getCom
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getCompileSdkExtension: java.lang.Integer ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getCompileSdkPreview: java.lang.String ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getDependencyVariantSelection: com.android.build.gradle.internal.dsl.DependencyVariantSelection ()
-com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getEnableAndroidTest: boolean ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getEnableInstrumentedTestCoverage: boolean ()
-com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getEnableUnitTest: boolean ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getEnableUnitTestCoverage: boolean ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getExperimentalProperties: java.util.Map<java.lang.String, java.lang.Object> ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getInstallation: com.android.build.api.dsl.Installation ()
@@ -1593,9 +1594,7 @@ com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.setCom
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.setCompileSdkExtension: void (java.lang.Integer)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.setCompileSdkPreview: void (java.lang.String)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.setCoreLibraryDesugaringEnabled: void (boolean)
-com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.setEnableAndroidTest: void (boolean)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.setEnableInstrumentedTestCoverage: void (boolean)
-com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.setEnableUnitTest: void (boolean)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.setEnableUnitTestCoverage: void (boolean)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.setMinSdk: void (java.lang.Integer)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.setMinSdkPreview: void (java.lang.String)
@@ -1611,6 +1610,15 @@ com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.setTes
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.testSigningConfig: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ApkSigningConfig, kotlin.Unit>)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.useLibrary: void (java.lang.String)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.useLibrary: void (java.lang.String, boolean)
+com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.withAndroidTestOnDevice$default: void (com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension, java.lang.String, kotlin.jvm.functions.Function1, int, java.lang.Object)
+com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.withAndroidTestOnDevice: void (java.lang.String, kotlin.jvm.functions.Function1<? super com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnDeviceConfiguration, kotlin.Unit>)
+com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.withAndroidTestOnJvm$default: void (com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension, java.lang.String, kotlin.jvm.functions.Function1, int, java.lang.Object)
+com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.withAndroidTestOnJvm: void (java.lang.String, kotlin.jvm.functions.Function1<? super com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnJvmConfiguration, kotlin.Unit>)
+com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfiguration
+com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfiguration.getDefaultSourceSetName: java.lang.String ()
+com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfiguration.setDefaultSourceSetName: void (java.lang.String)
+com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnDeviceConfiguration implements com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfiguration
+com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnJvmConfiguration implements com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfiguration
 com.android.build.gradle.internal.dsl.LanguageSplitOptions
 com.android.build.gradle.internal.dsl.LanguageSplitOptions.<init>: com.android.build.gradle.internal.dsl.LanguageSplitOptions ()
 com.android.build.gradle.internal.dsl.LanguageSplitOptions.getApplicationFilters: java.util.Set<java.lang.String> ()

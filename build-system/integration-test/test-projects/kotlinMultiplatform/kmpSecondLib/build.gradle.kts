@@ -1,6 +1,6 @@
 plugins {
   id("dumpAndroidTarget")
-  id("org.jetbrains.kotlin.multiplatform")
+  id("kotlin-multiplatform")
   id("com.android.kotlin.multiplatform.library")
 }
 

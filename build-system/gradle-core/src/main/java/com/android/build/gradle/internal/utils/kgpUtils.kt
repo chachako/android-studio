@@ -43,7 +43,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 const val KOTLIN_ANDROID_PLUGIN_ID = "org.jetbrains.kotlin.android"
 const val KOTLIN_KAPT_PLUGIN_ID = "org.jetbrains.kotlin.kapt"
 const val KSP_PLUGIN_ID = "com.google.devtools.ksp"
-private val KOTLIN_MPP_PLUGIN_IDS = listOf("kotlin-multiplatform", "org.jetbrains.kotlin.multiplatform")
+const val KOTLIN_MPP_PLUGIN_ID = "org.jetbrains.kotlin.multiplatform"
+private val KOTLIN_MPP_PLUGIN_IDS = listOf("kotlin-multiplatform", KOTLIN_MPP_PLUGIN_ID)
 
 /**
  * Returns `true` if any of the Kotlin plugins is applied (there are many Kotlin plugins). If we

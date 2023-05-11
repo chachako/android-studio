@@ -83,8 +83,15 @@ interface KotlinMultiplatformAndroidExtension {
     var testTargetSdk: Int?
     var testTargetSdkPreview: String?
 
-    var enableUnitTest: Boolean
-    var enableAndroidTest: Boolean
+    fun withAndroidTestOnJvm(
+        compilationName: String = "testOnJvm",
+        action: KotlinMultiplatformAndroidTestOnJvmConfiguration.() -> Unit = {}
+    )
+
+    fun withAndroidTestOnDevice(
+        compilationName: String = "testOnDevice",
+        action: KotlinMultiplatformAndroidTestOnDeviceConfiguration.() -> Unit = {}
+    )
 
     var enableUnitTestCoverage: Boolean
     var enableInstrumentedTestCoverage: Boolean
@@ -99,3 +106,16 @@ interface KotlinMultiplatformAndroidExtension {
         callback: KotlinMultiplatformAndroidVariant.() -> Unit
     )
 }
+
+interface KotlinMultiplatformAndroidTestConfiguration {
+
+    /**
+     * By default, this will be equal to the compilation name specified when enabling the test
+     * component prefixed by "android". (i.e. when the compilation name is "testOnJvm" then the
+     * default sourceSet name will be "androidTestOnJvm").
+     */
+    var defaultSourceSetName: String
+}
+
+interface KotlinMultiplatformAndroidTestOnJvmConfiguration: KotlinMultiplatformAndroidTestConfiguration
+interface KotlinMultiplatformAndroidTestOnDeviceConfiguration: KotlinMultiplatformAndroidTestConfiguration

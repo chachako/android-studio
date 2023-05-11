@@ -38,6 +38,8 @@ import com.android.build.gradle.internal.dsl.BaselineProfileImpl
 import com.android.build.gradle.internal.dsl.KeepRulesImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.gradle.internal.dsl.KmpOptimizationImpl
+import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
+import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.getNamePrefixedWithTarget
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.builder.core.ComponentTypeImpl
 import org.gradle.api.file.DirectoryProperty
@@ -56,7 +58,7 @@ class KmpVariantDslInfoImpl(
 
     override val componentType = ComponentTypeImpl.KMP_ANDROID
     override val componentIdentity = ComponentIdentityImpl(
-        KmpPredefinedAndroidCompilation.MAIN.getNamePrefixedWithTarget()
+        KmpPredefinedAndroidCompilation.MAIN.compilationName.getNamePrefixedWithTarget()
     )
 
     override val aarMetadata: AarMetadata
@@ -93,9 +95,9 @@ class KmpVariantDslInfoImpl(
     }
 
     override val enabledUnitTest: Boolean
-        get() = extension.enableUnitTest
+        get() = (extension as KotlinMultiplatformAndroidExtensionImpl).androidTestOnJvmConfiguration != null
     override val enableAndroidTest: Boolean
-        get() = extension.enableAndroidTest
+        get() =  (extension as KotlinMultiplatformAndroidExtensionImpl).androidTestOnDeviceConfiguration != null
 
     // not supported
     override val targetSdkVersion: MutableAndroidVersion? = null

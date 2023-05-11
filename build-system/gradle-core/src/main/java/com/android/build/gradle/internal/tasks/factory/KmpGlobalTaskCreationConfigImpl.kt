@@ -28,8 +28,6 @@ import com.android.build.api.dsl.Lint
 import com.android.build.api.dsl.Prefab
 import com.android.build.api.dsl.Splits
 import com.android.build.api.dsl.TestOptions
-import com.android.build.api.variant.DependenciesInfoBuilder
-import com.android.build.api.variant.impl.DependenciesInfoBuilderImpl
 import com.android.build.gradle.internal.KotlinMultiplatformCompileOptionsImpl
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.attribution.BuildAnalyzerIssueReporter
@@ -62,7 +60,7 @@ import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Provider
 
-class KmpGlobalTaskCreationConfigImpl(
+internal class KmpGlobalTaskCreationConfigImpl(
     project: Project,
     private val extension: KotlinMultiplatformAndroidExtensionImpl,
     private val versionedSdkLoaderService: VersionedSdkLoaderService,

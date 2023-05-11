@@ -23,6 +23,7 @@ import com.android.build.api.variant.impl.MutableAndroidVersion
 import com.android.build.gradle.internal.coverage.JacocoOptions
 import com.android.build.gradle.internal.dsl.decorator.annotation.WithLazyInitialization
 import com.android.build.gradle.internal.packaging.getDefaultDebugKeystoreLocation
+import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.getNamePrefixedWithTarget
 import com.android.build.gradle.internal.services.AndroidLocationsBuildService
 import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.services.getBuildService
@@ -33,8 +34,10 @@ import com.android.builder.signing.DefaultSigningConfig
 import org.gradle.api.Action
 import javax.inject.Inject
 
-abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLazyInitialization("lazyInit") constructor(
-    private val dslServices: DslServices
+internal abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLazyInitialization("lazyInit") constructor(
+    private val dslServices: DslServices,
+    private val enablingTestOnJvmCallBack: (KotlinMultiplatformAndroidTestConfigurationImpl) -> Unit,
+    private val enablingTestOnDeviceCallBack: (KotlinMultiplatformAndroidTestConfigurationImpl) -> Unit,
 ): KotlinMultiplatformAndroidExtension, Lockable {
 
     fun lazyInit() {
@@ -153,5 +156,64 @@ abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLazyInitiali
         variantOperations.forEach {
             it.execute(variant)
         }
+    }
+
+    internal var androidTestOnJvmConfiguration: KotlinMultiplatformAndroidTestConfigurationImpl? = null
+    internal var androidTestOnDeviceConfiguration: KotlinMultiplatformAndroidTestConfigurationImpl? = null
+
+    private fun withAndroidTest(
+        compilationName: String,
+        previousConfiguration: KotlinMultiplatformAndroidTestConfigurationImpl?,
+        type: String
+    ): KotlinMultiplatformAndroidTestConfigurationImpl {
+        previousConfiguration?.let {
+            throw IllegalAccessException(
+                "Android tests on $type has already been enabled, and a corresponding compilation " +
+                        "(`${it.compilationName}`) has already been created. You can create only " +
+                        "one component of type android tests on $type. Alternatively, you can " +
+                        "specify a dependency from the default sourceSet " +
+                        "(`${it.defaultSourceSetName}`) to another sourceSet and it will be " +
+                        "included in the compilation."
+            )
+        }
+
+        return KotlinMultiplatformAndroidTestConfigurationImpl(compilationName)
+    }
+
+    override fun withAndroidTestOnJvm(
+        compilationName: String,
+        action: KotlinMultiplatformAndroidTestOnJvmConfiguration.() -> Unit
+    ) {
+        androidTestOnJvmConfiguration = withAndroidTest(
+            compilationName,
+            androidTestOnJvmConfiguration,
+            "jvm"
+        )
+
+        action(androidTestOnJvmConfiguration!!)
+
+        enablingTestOnJvmCallBack(androidTestOnJvmConfiguration!!)
+    }
+
+    override fun withAndroidTestOnDevice(
+        compilationName: String,
+        action: KotlinMultiplatformAndroidTestOnDeviceConfiguration.() -> Unit
+    ) {
+        androidTestOnDeviceConfiguration = withAndroidTest(
+            compilationName,
+            androidTestOnDeviceConfiguration,
+            "device"
+        )
+
+        action(androidTestOnDeviceConfiguration!!)
+
+        enablingTestOnDeviceCallBack(androidTestOnDeviceConfiguration!!)
+    }
+
+    internal class KotlinMultiplatformAndroidTestConfigurationImpl(
+        val compilationName: String
+    ): KotlinMultiplatformAndroidTestOnJvmConfiguration, KotlinMultiplatformAndroidTestOnDeviceConfiguration {
+
+        override var defaultSourceSetName: String = compilationName.getNamePrefixedWithTarget()
     }
 }
