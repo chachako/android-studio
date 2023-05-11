@@ -116,6 +116,20 @@ coverage_report(
 coverage_report(
     name = "aqi",
     srcpath_include = [
+        "tools/adt/idea/app-quality-insights/api/src",
+        "tools/adt/idea/app-quality-insights/ide/src",
+        "tools/adt/idea/app-quality-insights/ui/src",
+    ],
+    tests = [
+        "//tools/adt/idea/app-quality-insights/api:intellij.android.app-quality-insights.api_tests",
+        "//tools/adt/idea/app-quality-insights/ide:intellij.android.app-quality-insights.ide.tests_tests",
+        "//tools/adt/idea/app-quality-insights/ui:intellij.android.app-quality-insights.ui.tests_tests",
+    ],
+)
+
+coverage_report(
+    name = "crashlytics",
+    srcpath_include = [
         "tools/vendor/google/firebase/src/com/google/services/firebase/insights",
     ],
     tests = [
@@ -922,6 +936,7 @@ combine_report_definitions(
         "build-analyzer",
         "cmake-vnext",
         "compose-ide-plugin",
+        "crashlytics",
         "custom-views-preview",
         "dagger-editing",
         "databinding",
@@ -999,6 +1014,9 @@ coverage_report(
         "//tools/adt/idea/app-inspection/inspectors/network/ide:app-inspection.inspectors.network.ide.tests_tests",
         "//tools/adt/idea/app-inspection/inspectors/network/model:app-inspection.inspectors.network.model_tests",
         "//tools/adt/idea/app-inspection/inspectors/network/view:app-inspection.inspectors.network.view.tests_tests",
+        "//tools/adt/idea/app-quality-insights/api:intellij.android.app-quality-insights.api_tests",
+        "//tools/adt/idea/app-quality-insights/ide:intellij.android.app-quality-insights.ide.tests_tests",
+        "//tools/adt/idea/app-quality-insights/ui:intellij.android.app-quality-insights.ui.tests_tests",
         "//tools/adt/idea/assistant:assistant-test_tests",
         "//tools/adt/idea/build-attribution:intellij.android.build-attribution.tests_tests",
         "//tools/adt/idea/build-common:intellij.android.buildCommon_tests",
