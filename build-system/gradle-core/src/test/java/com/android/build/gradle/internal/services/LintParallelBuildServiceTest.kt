@@ -18,7 +18,8 @@ package com.android.build.gradle.internal.services
 
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.ProjectOptions
-import com.android.build.gradle.options.StringOption
+import com.android.build.gradle.options.StringOption.LINT_HEAP_SIZE
+import com.android.build.gradle.options.StringOption.LINT_RESERVED_MEMORY_PER_TASK
 import com.google.common.truth.Truth
 import kotlin.test.fail
 import org.junit.Rule
@@ -48,6 +49,16 @@ class LintParallelBuildServiceTest {
                 maxRuntimeMemory = 20 * GB,
                 totalPhysicalMemory = 40 * GB
             )
+        ).isEqualTo(30)
+
+        // Check with specified LINT_RESERVED_MEMORY_PER_TASK
+        Mockito.`when`(projectOptions.get(LINT_RESERVED_MEMORY_PER_TASK)).thenReturn("1g")
+        Truth.assertThat(
+            LintParallelBuildService.calculateMaxParallelUsages(
+                projectOptions,
+                maxRuntimeMemory = 20 * GB,
+                totalPhysicalMemory = 40 * GB
+            )
         ).isEqualTo(15)
 
         // Check case when there's not enough memory, but should still return 1
@@ -59,11 +70,28 @@ class LintParallelBuildServiceTest {
             )
         ).isEqualTo(1)
 
+        // Check case when user specifies invalid LINT_RESERVED_MEMORY_PER_TASK
+        Mockito.`when`(projectOptions.get(LINT_RESERVED_MEMORY_PER_TASK))
+            .thenReturn("invalid")
+        try {
+            LintParallelBuildService.calculateMaxParallelUsages(
+                projectOptions,
+                maxRuntimeMemory = 1 * GB,
+                totalPhysicalMemory = 1 * GB
+            )
+            fail("expected RuntimeException")
+        } catch (e: RuntimeException) {
+            Truth.assertThat(e.message)
+                .isEqualTo(
+                    "Failed to parse ${LINT_RESERVED_MEMORY_PER_TASK.propertyName} \"invalid\"."
+                )
+        }
+
         // then test out of process cases
         Mockito.`when`(projectOptions.get(BooleanOption.RUN_LINT_IN_PROCESS)).thenReturn(false)
 
         // Check no specified lint heap size
-        Mockito.`when`(projectOptions.get(StringOption.LINT_HEAP_SIZE)).thenReturn(null)
+        Mockito.`when`(projectOptions.get(LINT_HEAP_SIZE)).thenReturn(null)
         Truth.assertThat(
             LintParallelBuildService.calculateMaxParallelUsages(
                 projectOptions,
@@ -73,7 +101,7 @@ class LintParallelBuildServiceTest {
         ).isEqualTo(2)
 
         // Check with specified lint heap size
-        Mockito.`when`(projectOptions.get(StringOption.LINT_HEAP_SIZE)).thenReturn("2g")
+        Mockito.`when`(projectOptions.get(LINT_HEAP_SIZE)).thenReturn("2g")
         Truth.assertThat(
             LintParallelBuildService.calculateMaxParallelUsages(
                 projectOptions,
@@ -92,7 +120,7 @@ class LintParallelBuildServiceTest {
         ).isEqualTo(1)
 
         // Check case when user specifies invalid lint heap size
-        Mockito.`when`(projectOptions.get(StringOption.LINT_HEAP_SIZE)).thenReturn("invalid")
+        Mockito.`when`(projectOptions.get(LINT_HEAP_SIZE)).thenReturn("invalid")
         try {
             LintParallelBuildService.calculateMaxParallelUsages(
                 projectOptions,
@@ -103,7 +131,7 @@ class LintParallelBuildServiceTest {
         } catch (e: RuntimeException) {
             Truth.assertThat(e.message)
                 .isEqualTo(
-                    "Failed to parse ${StringOption.LINT_HEAP_SIZE.propertyName} \"invalid\"."
+                    "Failed to parse ${LINT_HEAP_SIZE.propertyName} \"invalid\"."
                 )
         }
     }
