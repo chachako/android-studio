@@ -27,7 +27,7 @@ class CmdSetEvent extends CmdSet {
 
     protected CmdSetEvent() {
         super(64, "EVENT");
-        add(100, "Composite", CmdSetEvent::parseCmdComposite, CmdSetEvent::parseReplyComposite);
+        add(100, "Compo", CmdSetEvent::parseCmdComposite, CmdSetEvent::parseReplyComposite);
     }
 
     @NonNull
