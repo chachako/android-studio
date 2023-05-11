@@ -324,26 +324,6 @@ class UtpTestUtilsTest {
     }
 
     @Test
-    fun utpShouldBeEnabledByDefault() {
-        val projectOptions = ProjectOptions(
-            ImmutableMap.of(),
-            FakeProviderFactory(FakeProviderFactory.factory, mapOf()))
-
-        assertThat(shouldEnableUtp(projectOptions, testOptions = null)).isTrue()
-    }
-
-    @Test
-    fun utpShouldBeEnabledForDynamicFeatureModule() {
-        val projectOptions = ProjectOptions(
-            ImmutableMap.of(),
-            FakeProviderFactory(FakeProviderFactory.factory, mapOf()))
-        val componentType = mock<ComponentType>()
-        `when`(componentType.isDynamicFeature).thenReturn(true)
-
-        assertThat(shouldEnableUtp(projectOptions, testOptions = null)).isTrue()
-    }
-
-    @Test
     fun resultHasEmulatorTimeoutException() {
         val testResult = TestSuiteResultProto.TestSuiteResult.newBuilder().apply {
             platformErrorBuilder.apply {

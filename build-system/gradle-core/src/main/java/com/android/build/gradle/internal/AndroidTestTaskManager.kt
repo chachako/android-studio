@@ -50,7 +50,6 @@ import com.android.build.gradle.internal.tasks.featuresplit.getFeatureName
 import com.android.build.gradle.internal.test.AbstractTestDataImpl
 import com.android.build.gradle.internal.test.BundleTestDataImpl
 import com.android.build.gradle.internal.test.TestDataImpl
-import com.android.build.gradle.internal.testing.utp.shouldEnableUtp
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.BooleanOption.LINT_ANALYSIS_PER_COMPONENT
 import com.android.builder.core.BuilderConstants.FD_MANAGED_DEVICE_SETUP_RESULTS
@@ -337,12 +336,7 @@ class AndroidTestTaskManager(
     }
 
     private fun createTestDevicesTasks() {
-        if (!shouldEnableUtp(
-                globalConfig.services.projectOptions,
-                globalConfig.testOptions,
-            ) ||
-            globalConfig.testOptions.devices.isEmpty()
-        ) {
+        if (globalConfig.testOptions.devices.isEmpty()) {
             return
         }
 

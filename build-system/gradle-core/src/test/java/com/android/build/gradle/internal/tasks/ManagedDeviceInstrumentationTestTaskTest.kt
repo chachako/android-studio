@@ -58,7 +58,6 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.services.BuildServiceRegistration
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.workers.WorkerExecutor
-import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -242,7 +241,6 @@ class ManagedDeviceInstrumentationTestTaskTest {
             ManagedDeviceInstrumentationTestTask.TestRunnerFactory::class.java,
             CALLS_REAL_METHODS)
 
-        `when`(factory.unifiedTestPlatform).thenReturn(FakeGradleProperty(true))
         `when`(factory.executionEnum)
             .thenReturn(FakeGradleProperty(TestOptions.Execution.ANDROIDX_TEST_ORCHESTRATOR))
         `when`(factory.retentionConfig)
@@ -267,17 +265,7 @@ class ManagedDeviceInstrumentationTestTaskTest {
         val testRunner = factory.createTestRunner(workerExecutor, null)
         assertThat(testRunner).isInstanceOf(ManagedDeviceTestRunner::class.java)
 
-        // If Utp is not enabled, then the factory should fail
-        `when`(factory.unifiedTestPlatform).thenReturn(FakeGradleProperty(false))
-
-        val e = assertThrows(
-            IllegalArgumentException::class.java
-        ) {
-            factory.createTestRunner(workerExecutor, null)
-        }
-        assertThat(e.message)
-            .isEqualTo(
-                "android.experimental.androidTest.useUnifiedTestPlatform must be enabled.")
+        factory.createTestRunner(workerExecutor, null)
     }
 
     @Test
@@ -335,8 +323,6 @@ class ManagedDeviceInstrumentationTestTaskTest {
         // RETURNS_DEEP_STUBS does not work as expected with verify. Also, we can't use
         // FakeGradleProperties because they do not support disallowChanges().
 
-        val unifiedTestPlatform = mockEmptyProperty<Boolean>()
-        `when`(task.testRunnerFactory.unifiedTestPlatform).thenReturn(unifiedTestPlatform)
         val executionEnum = mockEmptyProperty<TestOptions.Execution>()
         `when`(task.testRunnerFactory.executionEnum).thenReturn(executionEnum)
         val sdkBuildService = mockEmptyProperty<SdkComponentsBuildService>()
@@ -348,10 +334,6 @@ class ManagedDeviceInstrumentationTestTaskTest {
         `when`(task.device).thenReturn(device)
 
         config.configure(task)
-
-        verify(unifiedTestPlatform).set(true)
-        verify(unifiedTestPlatform).disallowChanges()
-        verifyNoMoreInteractions(unifiedTestPlatform)
 
         verify(executionEnum).set(TestOptions.Execution.ANDROIDX_TEST_ORCHESTRATOR)
         verify(executionEnum).disallowChanges()

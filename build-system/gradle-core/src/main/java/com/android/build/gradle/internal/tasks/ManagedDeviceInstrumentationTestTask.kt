@@ -46,7 +46,6 @@ import com.android.build.gradle.internal.testing.utp.createEmulatorControlConfig
 import com.android.build.gradle.internal.testing.utp.createRetentionConfig
 import com.android.build.gradle.internal.testing.utp.maybeCreateUtpConfigurations
 import com.android.build.gradle.internal.testing.utp.resolveDependencies
-import com.android.build.gradle.internal.testing.utp.shouldEnableUtp
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.IntegerOption
@@ -55,7 +54,6 @@ import com.android.builder.model.TestOptions
 import com.android.repository.Revision
 import com.android.utils.FileUtils
 import com.google.common.annotations.VisibleForTesting
-import com.google.common.base.Preconditions
 import org.gradle.api.GradleException
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.artifacts.ArtifactCollection
@@ -90,9 +88,6 @@ import java.util.logging.Level
 abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), AndroidTestTask {
 
     abstract class TestRunnerFactory {
-        @get: Input
-        abstract val unifiedTestPlatform: Property<Boolean>
-
         @get: Input
         abstract val customManagedDevice: Property<Boolean>
 
@@ -146,10 +141,6 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
 
         fun createTestRunner(
             workerExecutor: WorkerExecutor, numShards: Int?): ManagedDeviceTestRunner {
-
-            Preconditions.checkArgument(
-                unifiedTestPlatform.get(),
-                "android.experimental.androidTest.useUnifiedTestPlatform must be enabled.")
 
             val useOrchestrator = when(executionEnum.get()) {
                 TestOptions.Execution.ANDROIDX_TEST_ORCHESTRATOR,
@@ -443,24 +434,18 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
 
             val executionEnum = globalConfig.testOptionExecutionEnum
             task.testRunnerFactory.executionEnum.setDisallowChanges(executionEnum)
-            val useUtp = shouldEnableUtp(
-                projectOptions, globalConfig.testOptions
-            )
-            task.testRunnerFactory.unifiedTestPlatform.setDisallowChanges(useUtp)
 
-            if (useUtp) {
-                if (!projectOptions.get(BooleanOption.ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM)) {
-                    LoggerWrapper.getLogger(CreationAction::class.java).warning(
-                        "Implicitly enabling Unified Test Platform because related features " +
-                                "are specified in gradle test options. Please add " +
-                                "-Pandroid.experimental.androidTest.useUnifiedTestPlatform=true " +
-                                "to your gradle command to suppress this warning."
-                    )
-                }
-                maybeCreateUtpConfigurations(task.project)
-                task.testRunnerFactory.utpDependencies
-                        .resolveDependencies(task.project.configurations)
+            if (!projectOptions.get(BooleanOption.ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM)) {
+                LoggerWrapper.getLogger(CreationAction::class.java).warning(
+                    "Implicitly enabling Unified Test Platform because related features " +
+                            "are specified in gradle test options. Please add " +
+                            "-Pandroid.experimental.androidTest.useUnifiedTestPlatform=true " +
+                            "to your gradle command to suppress this warning."
+                )
             }
+            maybeCreateUtpConfigurations(task.project)
+            task.testRunnerFactory.utpDependencies
+                    .resolveDependencies(task.project.configurations)
             task.testRunnerFactory.getTargetIsSplitApk.setDisallowChanges(
                     testedConfig?.componentType?.isDynamicFeature ?: false
             )

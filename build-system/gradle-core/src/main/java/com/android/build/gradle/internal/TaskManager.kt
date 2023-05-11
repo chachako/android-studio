@@ -127,7 +127,6 @@ import com.android.build.gradle.internal.tasks.featuresplit.getFeatureName
 import com.android.build.gradle.internal.tasks.mlkit.GenerateMlModelClass
 import com.android.build.gradle.internal.test.AbstractTestDataImpl
 import com.android.build.gradle.internal.testing.utp.TEST_RESULT_PB_FILE_NAME
-import com.android.build.gradle.internal.testing.utp.shouldEnableUtp
 import com.android.build.gradle.internal.transforms.ShrinkAppBundleResourcesTask
 import com.android.build.gradle.internal.transforms.ShrinkResourcesNewShrinkerTask
 import com.android.build.gradle.internal.utils.getProjectKotlinPluginKotlinVersion
@@ -902,11 +901,7 @@ abstract class TaskManager(
         }
 
         val managedDevices = getManagedDevices()
-        if (!shouldEnableUtp(
-                globalConfig.services.projectOptions,
-                globalConfig.testOptions,
-            ) ||
-                managedDevices.isEmpty()) {
+        if (managedDevices.isEmpty()) {
             return
         }
 

@@ -58,7 +58,7 @@ class UtpTestTaskStatesTest {
     }
 
     @Test
-    fun checkNoUtpTasksWithoutFlag() {
+    fun checkUtpTasksWithoutFlag() {
         project.gradlePropertiesFile.appendText(
             "\nandroid.experimental.androidTest.useUnifiedTestPlatform=false\n")
         appProject.buildFile.appendText("""
@@ -77,12 +77,12 @@ class UtpTestTaskStatesTest {
                 }
             }
         """)
-        assertTaskDoesNotExist(project, "app:cleanManagedDevices")
-        assertTaskDoesNotExist(project, "app:device1Setup")
-        assertTaskDoesNotExist(project, "app:device1DebugAndroidTest")
-        assertTaskDoesNotExist(project, "app:allDevicesDebugAndroidTest")
-        assertTaskDoesNotExist(project, "app:device1Check")
-        assertTaskDoesNotExist(project, "app:allDevicesCheck")
+        assertTaskExists(project, "app:cleanManagedDevices")
+        assertTaskExists(project, "app:device1Setup")
+        assertTaskExists(project, "app:device1DebugAndroidTest")
+        assertTaskExists(project, "app:allDevicesDebugAndroidTest")
+        assertTaskExists(project, "app:device1Check")
+        assertTaskExists(project, "app:allDevicesCheck")
     }
 
     @Test
