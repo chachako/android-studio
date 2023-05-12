@@ -85,7 +85,9 @@ class Session {
         if (!upStreamTransmissions.containsKey(header.getId())) {
             String msg =
                     String.format(
-                            Locale.US, "Found reply id=%d packet without a cmd", header.getId());
+                            Locale.US,
+                            "Found reply id=%s packet without a cmd",
+                            Integer.toHexString(header.getId()));
             log.warn(msg);
             return;
         }
