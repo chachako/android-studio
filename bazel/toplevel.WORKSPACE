@@ -128,17 +128,17 @@ http_archive(
 http_archive(
     name = "system_image_android-30_default_x86_64",
     build_file = "//tools/base/bazel/avd:system_images.BUILD",
-    sha256 = "a97f08f286df90dd510abcfbf7a785f950b42775930f7cf00b1453c59a4ec6e5",
+    sha256 = "8d591034a4244a920d7a3ec274bb1734dd6474a3d8c11d0fce902010db3a13aa",
     strip_prefix = "x86_64",
-    url = "https://dl.google.com/android/repository/sys-img/android/x86_64-30_r10.zip",
+    url = "https://dl.google.com/android/repository/sys-img/android/x86_64-30_r11.zip",
 )
 
 http_archive(
     name = "system_image_android-31_default_x86_64",
     build_file = "//tools/base/bazel/avd:system_images.BUILD",
-    sha256 = "6e809f8541408c98039e27737fbd25056ae25d0c89e105d6b983ac3340a67e44",
+    sha256 = "5a79444f93aeecf780ec5cccf93d5ac835015360a4eda5266cb25d0f9124b34a",
     strip_prefix = "x86_64",
-    url = "https://dl.google.com/android/repository/sys-img/google_apis_playstore/x86_64-31_r09.zip",
+    url = "https://dl.google.com/android/repository/sys-img/google_apis/x86_64-31_r13.zip",
 )
 
 http_archive(
