@@ -69,7 +69,7 @@ class LocaleGenerationTest {
         addResFolder(res3, "values-b+zh+Hans+SG", false)
 
         assertThat(generateLocaleList(listOf(res1, res2, res3)))
-            .containsExactly("en-US", "ru-RU", "es-ES", "pt-BR", "zh-Hans-SG")
+            .isEqualTo(listOf("en-US", "es-ES", "pt-BR", "ru-RU", "zh-Hans-SG"))
     }
 
     @Test
@@ -78,7 +78,7 @@ class LocaleGenerationTest {
         addResFolder(res1, "values-en-rUS", false)
         addResFolder(res1, "values-ru-rRU", true)
 
-        assertThat(generateLocaleList(listOf(res1))).containsExactly("en-US")
+        assertThat(generateLocaleList(listOf(res1))).isEqualTo(listOf("en-US"))
     }
 
     @Test
@@ -91,13 +91,13 @@ class LocaleGenerationTest {
         assertThat(
             listOf(
                 """<locale-config xmlns:android="http://schemas.android.com/apk/res/android">""",
+                """    <locale android:name="en-GB"/>""",
                 """    <locale android:name="en-US"/>""",
-                """    <locale android:name="ru-RU"/>""",
                 """    <locale android:name="es-ES"/>""",
                 """    <locale android:name="pt-BR"/>""",
+                """    <locale android:name="ru-RU"/>""",
                 """    <locale android:name="zh-Hans-SG"/>""",
-                """    <locale android:name="en-GB"/>""",
-                """</locale-config>""")).containsExactlyElementsIn(outfile.readLines()).inOrder()
+                """</locale-config>""")).isEqualTo(outfile.readLines())
     }
 
     @Test
@@ -116,14 +116,14 @@ class LocaleGenerationTest {
     @Test
     fun `Test supported locales read and write`() {
         val jsonFile = temporaryFolder.newFile("locales.txt")
-        val locales = listOf("en-US", "ru-RU", "es-ES", "pt-BR", "zh-Hans-SG")
+        val locales = listOf("en-US", "es-ES", "pt-BR", "ru-RU", "zh-Hans-SG")
         // Write file to json and read it back to make sure it results in the same list
-        assertThat(locales).containsExactlyElementsIn(
+        assertThat(locales).isEqualTo(
             run {
                 writeSupportedLocales(jsonFile, locales.drop(1), defaultLocale = "en-US")
                 jsonFile.readLines()
             }
-        ).inOrder()
+        )
     }
 
     @Test

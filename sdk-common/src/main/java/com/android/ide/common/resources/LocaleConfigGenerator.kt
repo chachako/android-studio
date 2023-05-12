@@ -50,7 +50,7 @@ fun generateLocaleList(resources: Collection<File>): List<String> {
             ?.let { folderConfig -> localeQualifiers.add(folderConfig.localeQualifier) }
     }
     // Finally, extract the locale name to be used in the configuration file
-    val supportedLocales = mutableSetOf<String>()
+    val supportedLocales = sortedSetOf<String>()
     localeQualifiers.forEach {
         it?.let { localeQualifier ->
             supportedLocales.add(generateLocaleString(localeQualifier))
@@ -92,10 +92,9 @@ fun validateLocale(locale: String): String? {
 }
 
 fun writeLocaleConfig(output: File, locales: Collection<String>) {
-    val localeSet = locales.toMutableSet()
     val outLines = mutableListOf<String>()
     outLines.add("<locale-config xmlns:android=\"http://schemas.android.com/apk/res/android\">")
-    localeSet.forEach { localeString ->
+    locales.sorted().forEach { localeString ->
         outLines.add("    <locale android:name=\"$localeString\"/>")
     }
     outLines.add("</locale-config>")
