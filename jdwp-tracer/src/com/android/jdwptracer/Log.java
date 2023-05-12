@@ -15,18 +15,22 @@
  */
 package com.android.jdwptracer;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 class Log {
 
+    private Logger logger = Logger.getLogger(Log.class.getName());
+
     void info(String message) {
-        System.out.println("JDWP-Info:" + message);
+        logger.info(message);
     }
 
     void warn(String message) {
-        System.out.println("JDWP-Warning:" + message);
+        warn(message, null);
     }
 
     void warn(String message, Throwable t) {
-        warn(message);
-        t.printStackTrace(System.out);
+        logger.log(Level.WARNING, message, t);
     }
 }

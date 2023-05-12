@@ -24,7 +24,8 @@ class AssertableLog extends Log {
     private List<String> warnings = new ArrayList<>();
 
     @Override
-    public void warn(@NonNull String message) {
+    public void warn(@NonNull String message, Throwable t) {
+        super.warn(message, t);
         warnings.add(message);
     }
 
