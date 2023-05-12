@@ -120,4 +120,15 @@ public class JDWPTracer {
         }
         session.addEvent(name);
     }
+
+    /**
+     * The name of the process being traced is usually extracted from APNM or HELO packet. However,
+     * if tracing from a side which does not see DDM packets (like the debugger side), it is useful
+     * to specify the package name manually.
+     *
+     * @param the name of the app package being traced.
+     */
+    public void setName(String name) {
+        session.setName(name);
+    }
 }

@@ -26,4 +26,6 @@ public interface DDMLibJdwpTracer {
     default void onDownstreamPacket(@NonNull ByteBuffer packet) {}
 
     default void close() {}
+
+    default void setName(String s) {}
 }
