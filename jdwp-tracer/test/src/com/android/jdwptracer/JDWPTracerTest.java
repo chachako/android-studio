@@ -34,6 +34,6 @@ public class JDWPTracerTest {
             Assert.fail();
         }
 
-        Assert.assertEquals(logs.getWarnings().size(), 1);
+        Assert.assertEquals(1, logs.getWarnings().size());
     }
 }
