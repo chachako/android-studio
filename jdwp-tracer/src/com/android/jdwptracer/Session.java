@@ -53,20 +53,17 @@ class Session {
         PacketHeader header = new PacketHeader(messageReader);
 
         if (header.isReply()) {
-            processReplyPacket(now_ns, header, packet);
+            processReplyPacket(now_ns, header, messageReader);
         } else {
-            processCmdPacket(now_ns, header, packet, direction);
+            processCmdPacket(now_ns, header, messageReader, direction);
         }
     }
 
     private void processCmdPacket(
             long time_ns,
             @NonNull PacketHeader header,
-            @NonNull ByteBuffer packet,
+            @NonNull MessageReader messageReader,
             Direction direction) {
-        // From here, we parse the packet with the message reader.
-        MessageReader messageReader = new MessageReader(idSizes, packet);
-
         CmdSet cmdSet = CmdSets.get(header.getCmdSet());
         Message message = cmdSet.getCmd(header.getCmd()).getCmdParser().parse(messageReader, this);
         Command command = new Command(header, time_ns, message);
@@ -81,7 +78,7 @@ class Session {
     }
 
     private void processReplyPacket(
-            long time_ns, @NonNull PacketHeader header, @NonNull ByteBuffer packet) {
+            long time_ns, @NonNull PacketHeader header, @NonNull MessageReader messageReader) {
         if (!upStreamTransmissions.containsKey(header.getId())) {
             String msg =
                     String.format(
@@ -96,9 +93,6 @@ class Session {
 
         int cmdSetID = t.cmd().cmdSetID();
         int cmdID = t.cmd().cmdID();
-
-        // From here, we parse the packet with the message reader.
-        MessageReader messageReader = new MessageReader(idSizes, packet);
 
         // If the reply errored, we should not try to parse it.
         if (header.getError() != 0) {
