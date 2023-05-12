@@ -27,7 +27,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /** Plugin providing access to physical devices, connected over USB or WiFi. */
-class PhysicalDeviceProvisionerPlugin(val scope: CoroutineScope) : DeviceProvisionerPlugin {
+class PhysicalDeviceProvisionerPlugin(
+  val scope: CoroutineScope,
+  private val deviceIcons: DeviceIcons
+) : DeviceProvisionerPlugin {
   override val priority = 0
 
   private val devicesBySerial = hashMapOf<String, PhysicalDeviceHandle>()
@@ -52,6 +55,14 @@ class PhysicalDeviceProvisionerPlugin(val scope: CoroutineScope) : DeviceProvisi
           when (matcher) {
             null -> device.serialNumber
             else -> matcher.groupValues[1]
+          }
+        icon =
+          when (deviceType) {
+            DeviceType.HANDHELD -> deviceIcons.handheld
+            DeviceType.WEAR -> deviceIcons.wear
+            DeviceType.TV -> deviceIcons.tv
+            DeviceType.AUTOMOTIVE -> deviceIcons.automotive
+            else -> deviceIcons.handheld
           }
       }
 

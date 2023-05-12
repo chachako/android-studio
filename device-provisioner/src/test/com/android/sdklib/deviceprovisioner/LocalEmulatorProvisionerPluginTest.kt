@@ -15,11 +15,6 @@
  */
 package com.android.sdklib.deviceprovisioner
 
-import com.android.adblib.DeviceInfo
-import com.android.adblib.DeviceList
-import com.android.adblib.DevicePropertyNames
-import com.android.adblib.DeviceSelector
-import com.android.adblib.DeviceState
 import com.android.adblib.testing.FakeAdbSession
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
@@ -29,9 +24,7 @@ import com.android.sdklib.devices.Abi
 import com.android.sdklib.internal.avd.AvdInfo
 import com.android.sdklib.internal.avd.AvdInfo.AvdStatus
 import com.android.sdklib.internal.avd.AvdManager
-import com.android.sdklib.repository.IdDisplay
 import com.android.sdklib.repository.targets.SystemImage
-import com.android.sdklib.repository.targets.SystemImage.DEFAULT_TAG
 import com.google.common.truth.Truth.assertThat
 import java.nio.file.Path
 import java.time.Duration
@@ -44,147 +37,24 @@ import org.junit.Test
 class LocalEmulatorProvisionerPluginTest {
 
   val session = FakeAdbSession()
-  val avdManager = FakeAvdManager()
+  private val avdManager = FakeAvdManager(session)
+  private val deviceIcons =
+    DeviceIcons(EmptyIcon.DEFAULT, EmptyIcon.DEFAULT, EmptyIcon.DEFAULT, EmptyIcon.DEFAULT)
   val plugin =
     LocalEmulatorProvisionerPlugin(
       session.scope,
       session,
       avdManager,
+      deviceIcons,
       TestDefaultDeviceActionPresentation,
       Duration.ofMillis(100),
     )
-  val provisioner = DeviceProvisioner.create(session, listOf(plugin))
+  private val provisioner = DeviceProvisioner.create(session, listOf(plugin), deviceIcons)
 
   @After
   fun tearDown() {
     avdManager.close()
     session.close()
-  }
-
-  var avdIndex = 1
-  fun makeAvdInfo(
-    index: Int,
-    androidVersion: AndroidVersion = API_LEVEL,
-    hasPlayStore: Boolean = true,
-    avdStatus: AvdStatus = AvdStatus.OK,
-    tag: IdDisplay = DEFAULT_TAG,
-  ): AvdInfo {
-    val basePath = Path.of("/tmp/fake_avds/$index")
-    return AvdInfo(
-      "fake_avd_$index",
-      basePath.resolve("config.ini"),
-      basePath,
-      null,
-      mapOf(
-        AvdManager.AVD_INI_DEVICE_MANUFACTURER to MANUFACTURER,
-        AvdManager.AVD_INI_DEVICE_NAME to MODEL,
-        AvdManager.AVD_INI_ANDROID_API to androidVersion.apiStringWithoutExtension,
-        AvdManager.AVD_INI_ABI_TYPE to ABI.toString(),
-        AvdManager.AVD_INI_DISPLAY_NAME to "Fake Device $index",
-        AvdManager.AVD_INI_PLAYSTORE_ENABLED to hasPlayStore.toString(),
-        AvdManager.AVD_INI_TAG_ID to tag.id,
-        AvdManager.AVD_INI_TAG_DISPLAY to tag.display,
-      ),
-      avdStatus
-    )
-  }
-
-  inner class FakeAvdManager : LocalEmulatorProvisionerPlugin.AvdManager {
-    val avds = mutableListOf<AvdInfo>()
-
-    val runningDevices = mutableSetOf<FakeEmulatorConsole>()
-
-    override suspend fun rescanAvds(): List<AvdInfo> = synchronized(avds) { avds.toList() }
-
-    override suspend fun createAvd(): Boolean {
-      createAvd(makeAvdInfo(avdIndex++))
-      return true
-    }
-
-    fun createAvd(avdInfo: AvdInfo) {
-      synchronized(avds) { avds += avdInfo }
-    }
-
-    override suspend fun editAvd(avdInfo: AvdInfo): Boolean =
-      synchronized(avds) {
-        avds.remove(avdInfo)
-        avds += makeAvdInfo(avdIndex++)
-        return true
-      }
-
-    override suspend fun startAvd(avdInfo: AvdInfo, coldBoot: Boolean) {
-      val device =
-        FakeEmulatorConsole(avdInfo.name, avdInfo.dataFolderPath.toString()) { doStopAvd(avdInfo) }
-      val selector = DeviceSelector.fromSerialNumber("emulator-${device.port}")
-      session.deviceServices.configureDeviceProperties(
-        selector,
-        mapOf(
-          "ro.serialno" to "EMULATOR31X3X7X0",
-          DevicePropertyNames.RO_BUILD_VERSION_SDK to API_LEVEL.apiString,
-          DevicePropertyNames.RO_BUILD_VERSION_RELEASE to RELEASE,
-          DevicePropertyNames.RO_PRODUCT_MANUFACTURER to MANUFACTURER,
-          DevicePropertyNames.RO_PRODUCT_MODEL to MODEL,
-          DevicePropertyNames.RO_PRODUCT_CPU_ABI to ABI.toString()
-        )
-      )
-      session.deviceServices.configureShellCommand(
-        selector,
-        command = "wm size",
-        stdout = "Physical size: 1024x768\n"
-      )
-      device.start()
-      runningDevices += device
-      updateDevices()
-    }
-
-    override suspend fun stopAvd(avdInfo: AvdInfo) {
-      doStopAvd(avdInfo)
-    }
-
-    override suspend fun showOnDisk(avdInfo: AvdInfo) {
-      // no-op
-    }
-
-    override suspend fun duplicateAvd(avdInfo: AvdInfo) {
-      // not used
-    }
-
-    override suspend fun wipeData(avdInfo: AvdInfo) {
-      // not used
-    }
-
-    private fun doStopAvd(avdInfo: AvdInfo) {
-      runningDevices.removeIf { it.avdPath == avdInfo.dataFolderPath.toString() }
-      updateDevices()
-    }
-
-    override suspend fun deleteAvd(avdInfo: AvdInfo) {
-      synchronized(avds) { avds.remove(avdInfo) }
-    }
-
-    override suspend fun downloadAvdSystemImage(avdInfo: AvdInfo) {
-      avds[avds.indexOf(avdInfo)] =
-        AvdInfo(
-          avdInfo.name,
-          avdInfo.iniFile,
-          avdInfo.dataFolderPath,
-          avdInfo.systemImage,
-          avdInfo.properties,
-          AvdStatus.OK
-        )
-    }
-
-    fun close() {
-      runningDevices.forEach(FakeEmulatorConsole::close)
-    }
-  }
-
-  private fun updateDevices() {
-    session.hostServices.devices =
-      DeviceList(
-        avdManager.runningDevices.map { DeviceInfo("emulator-${it.port}", DeviceState.ONLINE) },
-        emptyList()
-      )
   }
 
   @Test
@@ -268,12 +138,13 @@ class LocalEmulatorProvisionerPluginTest {
 
   @Test
   fun isPairable() {
-    val api29WithPlay = makeAvdInfo(1, AndroidVersion(29), hasPlayStore = true)
-    val api31NoPlay = makeAvdInfo(2, AndroidVersion(29), hasPlayStore = false)
-    val api30WithPlay = makeAvdInfo(3, AndroidVersion(30), hasPlayStore = true)
-    assertThat(LocalEmulatorProperties.build(api29WithPlay).wearPairingId).isNull()
-    assertThat(LocalEmulatorProperties.build(api31NoPlay).wearPairingId).isNull()
-    assertThat(LocalEmulatorProperties.build(api30WithPlay).wearPairingId).isNotNull()
+    val api29WithPlay = avdManager.makeAvdInfo(1, AndroidVersion(29), hasPlayStore = true)
+    val api31NoPlay = avdManager.makeAvdInfo(2, AndroidVersion(29), hasPlayStore = false)
+    val api30WithPlay = avdManager.makeAvdInfo(3, AndroidVersion(30), hasPlayStore = true)
+    fun build(info: AvdInfo) = LocalEmulatorProperties.build(info) { icon = EmptyIcon.DEFAULT }
+    assertThat(build(api29WithPlay).wearPairingId).isNull()
+    assertThat(build(api31NoPlay).wearPairingId).isNull()
+    assertThat(build(api30WithPlay).wearPairingId).isNotNull()
   }
 
   @Test
@@ -287,7 +158,7 @@ class LocalEmulatorProvisionerPluginTest {
 
     activationAction.presentation.takeWhile { !it.enabled }.collect()
 
-    avdManager.avds[0] = makeAvdInfo(1, avdStatus = AvdStatus.ERROR_IMAGE_MISSING)
+    avdManager.avds[0] = avdManager.makeAvdInfo(1, avdStatus = AvdStatus.ERROR_IMAGE_MISSING)
 
     // The action should become disabled.
     yieldUntil { activationAction.presentation.value.enabled == false }
@@ -295,7 +166,7 @@ class LocalEmulatorProvisionerPluginTest {
 
   @Test
   fun repair() = runBlockingWithTimeout {
-    avdManager.createAvd(makeAvdInfo(1, avdStatus = AvdStatus.ERROR_IMAGE_MISSING))
+    avdManager.createAvd(avdManager.makeAvdInfo(1, avdStatus = AvdStatus.ERROR_IMAGE_MISSING))
 
     yieldUntil { provisioner.devices.value.size == 1 }
 
@@ -314,7 +185,7 @@ class LocalEmulatorProvisionerPluginTest {
 
   @Test
   fun tvDeviceType() = runBlockingWithTimeout {
-    avdManager.createAvd(makeAvdInfo(1, tag = SystemImage.GOOGLE_TV_TAG))
+    avdManager.createAvd(avdManager.makeAvdInfo(1, tag = SystemImage.GOOGLE_TV_TAG))
 
     yieldUntil { provisioner.devices.value.size == 1 }
 

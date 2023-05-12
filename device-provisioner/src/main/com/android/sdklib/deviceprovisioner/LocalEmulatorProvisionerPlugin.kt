@@ -73,6 +73,7 @@ class LocalEmulatorProvisionerPlugin(
   private val scope: CoroutineScope,
   private val adbSession: AdbSession,
   private val avdManager: AvdManager,
+  private val deviceIcons: DeviceIcons,
   private val defaultPresentation: DeviceAction.DefaultPresentation,
   rescanPeriod: Duration = Duration.ofSeconds(10),
 ) : DeviceProvisionerPlugin {
@@ -159,7 +160,7 @@ class LocalEmulatorProvisionerPlugin(
 
   private fun disconnectedState(avdInfo: AvdInfo) =
     Disconnected(
-      LocalEmulatorProperties.build(avdInfo),
+      LocalEmulatorProperties.build(avdInfo) { icon = iconForType() },
       isTransitioning = false,
       status = "Offline",
       error = avdInfo.deviceError
@@ -234,12 +235,22 @@ class LocalEmulatorProvisionerPlugin(
           resolution = Resolution.readFromDevice(device)
           disambiguator = port.toString()
           wearPairingId = path.toString().takeIf { isPairable() }
+          icon = iconForType()
         }
       handle.stateFlow.value = Connected(properties, device)
       handle
     }
 
-  private fun refreshDevices() {
+  private fun LocalEmulatorProperties.Builder.iconForType() =
+    when (deviceType) {
+      DeviceType.HANDHELD -> deviceIcons.handheld
+      DeviceType.WEAR -> deviceIcons.wear
+      DeviceType.TV -> deviceIcons.tv
+      DeviceType.AUTOMOTIVE -> deviceIcons.automotive
+      else -> deviceIcons.handheld
+    }
+
+  fun refreshDevices() {
     avdScanner.runNow()
   }
 
@@ -455,8 +466,6 @@ class LocalEmulatorProperties(
   override val title = displayName
 
   companion object {
-    fun build(avdInfo: AvdInfo) = build(avdInfo) {}
-
     inline fun build(avdInfo: AvdInfo, block: Builder.() -> Unit) =
       buildPartial(avdInfo).apply(block).run {
         LocalEmulatorProperties(

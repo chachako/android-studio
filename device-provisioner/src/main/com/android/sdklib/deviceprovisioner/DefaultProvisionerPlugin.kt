@@ -33,7 +33,8 @@ import kotlinx.coroutines.launch
  * handle for any device, but offers no operations on that device and does not have any memory of
  * devices.
  */
-class DefaultProvisionerPlugin(val scope: CoroutineScope) : DeviceProvisionerPlugin {
+class DefaultProvisionerPlugin(val scope: CoroutineScope, private val defaultIcons: DeviceIcons) :
+  DeviceProvisionerPlugin {
   override val priority: Int = Int.MIN_VALUE
 
   private val _devices = MutableStateFlow<List<DefaultDeviceHandle>>(emptyList())
@@ -44,6 +45,7 @@ class DefaultProvisionerPlugin(val scope: CoroutineScope) : DeviceProvisionerPlu
     val deviceProperties =
       DeviceProperties.build {
         readCommonProperties(properties)
+        icon = defaultIcons.iconForDeviceType(deviceType)
         Resolution.readFromDevice(device)
       }
     val handle =

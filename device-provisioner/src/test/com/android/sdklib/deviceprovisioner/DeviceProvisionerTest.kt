@@ -44,13 +44,16 @@ import org.junit.Test
 class DeviceProvisionerTest {
   val fakeSession = FakeAdbSession()
 
-  val plugin = PhysicalDeviceProvisionerPlugin(fakeSession.scope)
-  val provisioner = DeviceProvisioner.create(fakeSession.scope, fakeSession, listOf(plugin))
+  private val deviceIcons =
+    DeviceIcons(EmptyIcon.DEFAULT, EmptyIcon.DEFAULT, EmptyIcon.DEFAULT, EmptyIcon.DEFAULT)
+  private val plugin = PhysicalDeviceProvisionerPlugin(fakeSession.scope, deviceIcons)
+  private val provisioner =
+    DeviceProvisioner.create(fakeSession.scope, fakeSession, listOf(plugin), deviceIcons)
 
   object SerialNumbers {
-    val physicalUsb = "X1058A"
-    val physicalWifi = "adb-X1BQ704RX2B-VQ4ADB._adb-tls-connect._tcp."
-    val emulator = "emulator-5554"
+    const val physicalUsb = "X1058A"
+    const val physicalWifi = "adb-X1BQ704RX2B-VQ4ADB._adb-tls-connect._tcp."
+    const val emulator = "emulator-5554"
   }
 
   init {

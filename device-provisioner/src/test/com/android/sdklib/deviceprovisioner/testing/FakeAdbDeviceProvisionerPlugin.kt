@@ -28,6 +28,7 @@ import com.android.sdklib.deviceprovisioner.DeviceProvisionerPlugin
 import com.android.sdklib.deviceprovisioner.DeviceState
 import com.android.sdklib.deviceprovisioner.DeviceState.Connected
 import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
+import com.android.sdklib.deviceprovisioner.EmptyIcon
 import com.android.sdklib.deviceprovisioner.TestDefaultDeviceActionPresentation
 import com.android.sdklib.deviceprovisioner.awaitDisconnection
 import com.android.sdklib.deviceprovisioner.testing.FakeAdbDeviceProvisionerPlugin.FakeDeviceHandle
@@ -102,6 +103,7 @@ class FakeAdbDeviceProvisionerPlugin(
         model = "Pixel 6"
         androidVersion = AndroidVersion(31)
         androidRelease = "11"
+        icon = EmptyIcon.DEFAULT
       }
   }
 

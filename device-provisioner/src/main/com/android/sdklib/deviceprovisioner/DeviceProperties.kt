@@ -34,6 +34,7 @@ import com.android.sdklib.AndroidVersionUtil
 import com.android.sdklib.devices.Abi
 import java.time.Duration
 import java.util.concurrent.TimeoutException
+import javax.swing.Icon
 import kotlin.math.ceil
 
 /**
@@ -63,6 +64,9 @@ interface DeviceProperties {
    * native hardware.
    */
   val isVirtual: Boolean?
+
+  /** Icon used to represent this device in UIs */
+  val icon: Icon
 
   /** The actual screen resolution of the device in pixels (not adjusted to "dp"). */
   val resolution: Resolution?
@@ -127,6 +131,7 @@ interface DeviceProperties {
     var wearPairingId: String? = null
     var resolution: Resolution? = null
     var density: Int? = null
+    var icon: Icon? = null
 
     fun readCommonProperties(properties: Map<String, String>) {
       manufacturer = properties[RO_PRODUCT_MANUFACTURER] ?: properties[RO_MANUFACTURER]
@@ -159,6 +164,7 @@ interface DeviceProperties {
         wearPairingId = wearPairingId,
         resolution = resolution,
         density = density,
+        icon = checkNotNull(icon),
       )
   }
 
@@ -174,6 +180,7 @@ interface DeviceProperties {
     override val wearPairingId: String?,
     override val resolution: Resolution?,
     override val density: Int?,
+    override val icon: Icon,
   ) : DeviceProperties
 }
 
@@ -191,13 +198,23 @@ enum class DeviceType(val stringValue: String) {
   override fun toString() = stringValue
 }
 
+data class DeviceIcons(val handheld: Icon, val wear: Icon, val tv: Icon, val automotive: Icon) {
+  fun iconForDeviceType(type: DeviceType?) =
+    when (type) {
+      DeviceType.TV -> tv
+      DeviceType.AUTOMOTIVE -> automotive
+      DeviceType.WEAR -> wear
+      else -> handheld
+    }
+}
+
 data class Resolution(val width: Int, val height: Int) {
   override fun toString() = "$width × $height"
 
   companion object {
     private val REGEX = Regex("Physical size: (\\d+)x(\\d+)")
 
-    fun parseWmSizeOutput(output: String): Resolution? =
+    private fun parseWmSizeOutput(output: String): Resolution? =
       REGEX.matchEntire(output)?.let { result ->
         Resolution(result.groupValues[1].toInt(), result.groupValues[2].toInt())
       }

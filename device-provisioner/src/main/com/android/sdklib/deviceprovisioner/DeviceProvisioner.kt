@@ -58,18 +58,24 @@ private constructor(
 ) {
   companion object {
     @TestOnly
-    fun create(adbSession: AdbSession, provisioners: List<DeviceProvisionerPlugin>) =
-      create(adbSession.scope, adbSession, provisioners)
+    fun create(
+      adbSession: AdbSession,
+      provisioners: List<DeviceProvisionerPlugin>,
+      icons: DeviceIcons
+    ) = create(adbSession.scope, adbSession, provisioners, icons)
 
     fun create(
       coroutineScope: CoroutineScope,
       adbSession: AdbSession,
-      provisioners: List<DeviceProvisionerPlugin>
+      provisioners: List<DeviceProvisionerPlugin>,
+      defaultIcons: DeviceIcons
     ) =
       DeviceProvisioner(
         coroutineScope,
         adbSession,
-        (provisioners + DefaultProvisionerPlugin(coroutineScope)).sortedByDescending { it.priority }
+        (provisioners + DefaultProvisionerPlugin(coroutineScope, defaultIcons)).sortedByDescending {
+          it.priority
+        }
       )
   }
 

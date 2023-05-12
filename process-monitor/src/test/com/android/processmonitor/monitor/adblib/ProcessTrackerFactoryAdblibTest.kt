@@ -24,6 +24,7 @@ import com.android.adblib.testing.FakeAdbLoggerFactory
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.deviceprovisioner.DeviceProperties
 import com.android.sdklib.deviceprovisioner.DeviceState
+import com.android.sdklib.deviceprovisioner.EmptyIcon
 import com.android.sdklib.devices.Abi
 import com.android.testutils.MockitoKt.mock
 import com.android.testutils.MockitoKt.whenever
@@ -57,6 +58,7 @@ private fun deviceProperties(aplLevel: Int, abi: Abi) =
     DeviceProperties.build {
         androidVersion = AndroidVersion(aplLevel)
         this.abi = abi
+        icon = EmptyIcon.DEFAULT
     }
 
 @Suppress("SameParameterValue")

@@ -53,5 +53,10 @@ class DevicePropertiesTest {
   }
 
   private fun props(vararg pairs: Pair<String, String>) =
-    DeviceProperties.Builder().apply { readCommonProperties(mapOf(*pairs)) }.buildBase()
+    DeviceProperties.Builder()
+      .apply {
+        readCommonProperties(mapOf(*pairs))
+        icon = EmptyIcon.DEFAULT
+      }
+      .buildBase()
 }

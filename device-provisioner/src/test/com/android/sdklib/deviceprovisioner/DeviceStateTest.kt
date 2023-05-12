@@ -35,7 +35,11 @@ class DeviceStateTest {
 
   val connectedDevice = mock(ConnectedDevice::class.java)
 
-  val properties = PhysicalDeviceProperties.build { connectionType = ConnectionType.USB }
+  val properties =
+    PhysicalDeviceProperties.build {
+      connectionType = ConnectionType.USB
+      icon = EmptyIcon.DEFAULT
+    }
 
   class Activating(override val properties: DeviceProperties) : Disconnected(properties)
 
