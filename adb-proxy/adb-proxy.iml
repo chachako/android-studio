@@ -9,8 +9,16 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="studio-sdk" level="project" />
+    <orderEntry type="module-library" exported="">
+      <library name="adb_proxy_proto">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../../bazel-bin/tools/base/adb-proxy/proto/adb_proxy_studio_proto.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="module" module-name="android.sdktools.adblib" />
-    <orderEntry type="library" name="adb_proxy_proto" level="project" />
     <orderEntry type="library" scope="TEST" name="mockito" level="project" />
     <orderEntry type="module" module-name="android.sdktools.testutils" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="truth" level="project" />

@@ -14,11 +14,12 @@ iml_module(
     iml_files = ["adb-proxy.iml"],
     test_srcs = ["testSrc"],
     visibility = ["//visibility:public"],
+    exports = ["//tools/base/adb-proxy:adb_proxy_proto"],
     # do not sort: must match IML order
     deps = [
         "//prebuilts/studio/intellij-sdk:studio-sdk",
+        "//tools/base/adb-proxy:adb_proxy_proto",
         "//tools/base/adblib:studio.android.sdktools.adblib[module]",
-        "//tools/adt/idea/.idea/libraries:adb_proxy_proto",
         "//tools/adt/idea/.idea/libraries:mockito[test]",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
         "//tools/adt/idea/.idea/libraries:truth[test]",
@@ -38,4 +39,13 @@ kotlin_library(
     deps = [
         "//tools/base/adblib",
     ],
+)
+
+load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
+
+# managed by go/iml_to_build
+jvm_import(
+    name = "adb_proxy_proto",
+    jars = ["//tools/base/adb-proxy/proto:adb_proxy_studio_proto.jar"],
+    visibility = ["//visibility:public"],
 )
