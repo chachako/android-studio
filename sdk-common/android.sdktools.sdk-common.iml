@@ -25,6 +25,15 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="library" name="studio-sdk" level="project" />
+    <orderEntry type="module-library">
+      <library name="aia-proto">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../../bazel-bin/tools/base/sdk-common/aia-manifest-jar-generator/proto.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="library" scope="TEST" name="kotlin-test" level="project" />
     <orderEntry type="module" module-name="android.sdktools.layoutlib-api" exported="" />
     <orderEntry type="module" module-name="android.sdktools.builder-model" exported="" />
@@ -42,7 +51,6 @@
     <orderEntry type="library" name="javax-inject" level="project" />
     <orderEntry type="library" name="aapt-proto" level="project" />
     <orderEntry type="library" name="studio-analytics-proto" level="project" />
-    <orderEntry type="library" name="aia-proto" level="project" />
     <orderEntry type="library" name="studio-proto" level="project" />
   </component>
 </module>

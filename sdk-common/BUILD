@@ -27,6 +27,7 @@ iml_module(
     # do not sort: must match IML order
     deps = [
         "//prebuilts/studio/intellij-sdk:studio-sdk",
+        "//tools/base/sdk-common:aia-proto",
         "//tools/adt/idea/.idea/libraries:kotlin-test[test]",
         "//tools/base/layoutlib-api:studio.android.sdktools.layoutlib-api[module]",
         "//tools/base/build-system/builder-model:studio.android.sdktools.builder-model[module]",
@@ -44,7 +45,6 @@ iml_module(
         "//tools/adt/idea/.idea/libraries:javax-inject",
         "//tools/adt/idea/.idea/libraries:aapt-proto",
         "//tools/adt/idea/.idea/libraries:studio-analytics-proto",
-        "//tools/adt/idea/.idea/libraries:aia-proto",
         "//tools/adt/idea/.idea/libraries:studio-proto",
     ],
 )
@@ -164,4 +164,13 @@ java_proto_library(
     srcs = glob(["src/main/proto/*.proto"]),
     resource_strip_prefix = "tools/base/sdk-common/src/main/proto",
     resources = glob(["src/main/proto/*.proto"]),
+)
+
+load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
+
+# managed by go/iml_to_build
+jvm_import(
+    name = "aia-proto",
+    jars = ["//tools/base/sdk-common/aia-manifest-jar-generator:proto.jar"],
+    visibility = ["//visibility:public"],
 )
