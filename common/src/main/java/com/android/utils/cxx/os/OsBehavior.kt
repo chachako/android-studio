@@ -130,7 +130,7 @@ fun createOsBehavior(
             val escaped = argument.replace("%", "%%")
             return if (listOf(
                     ",", ";", "=", " ", "\u0008", "|", "&",
-                    "*", "\"", "<", ">", "^",
+                    "*", "\"", "<", ">", "^", "(", ")",
                     // Colon (:) is a special case. A normal windows.bat script will accept this as
                     // a single parameter. However, if that script then invokes PowerShell.exe with
                     // %* args passed at the command-line then the argument will be split on the
@@ -183,6 +183,8 @@ fun createOsBehavior(
                     .replace("\"", "\\\"")
                     .replace("$", "\\$")
                     .replace("`", "\\`")
+                    .replace("(", "\\(")
+                    .replace(")", "\\)")
             }
         }
 

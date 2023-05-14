@@ -108,8 +108,8 @@ class ModuleToModuleDepsTest(
             override fun toString() = " [no-header]"
         }
     }
-    private val app = MinimalSubProject.app()
-    private val lib = MinimalSubProject.lib()
+    private val app = MinimalSubProject.app(projectPath="app(1)")
+    private val lib = MinimalSubProject.lib(projectPath="lib(1)")
     private val multiModule = MultiModuleTestProject.builder()
         .subproject(":app", app)
         .subproject(":lib", lib)
