@@ -16,6 +16,9 @@
 package com.android.jdwptracer;
 
 import com.android.annotations.NonNull;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -31,13 +34,13 @@ class SystraceOutput {
         List<Event> events = session.events();
         try {
             FileWriter out = new FileWriter(path.toAbsolutePath().toString());
-            out.write("[ ");
+            JsonArray root = new JsonArray();
             for (int i = 0; i < events.size(); i++) {
                 Event event = events.get(i);
                 if (event instanceof Transmission) {
-                    processTransmission(out, (Transmission) event);
+                    processTransmission(root, (Transmission) event);
                 } else if (event instanceof NamedEvent) {
-                    processNamedEvent(out, (NamedEvent) event);
+                    processNamedEvent(root, (NamedEvent) event);
                 } else {
                     throw new IllegalStateException("Unknown type of event");
                 }
@@ -45,14 +48,15 @@ class SystraceOutput {
 
             // On Android U and above, oj-libjdwp sends how long it took for ART to process a cmd
             // and send a reply. We augment our traces with it.
-            addARTTimings(session, out);
+            addARTTimings(session, root);
 
             // The Json output we generate is meant to be opened vi perfetto UI. The render usually
             // deals with Processes and Threads with result in an awkward title "Process 0". We name
             // the process 0 in order to get a nicer title "JDWP packets, session 0".
-            nameProcess(out, 0, "JDWP packets, session");
+            nameProcess(root, "JDWP packets, session");
 
-            out.write("]");
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            out.write(gson.toJson(root));
             out.flush();
             out.close();
         } catch (IOException e) {
@@ -60,7 +64,7 @@ class SystraceOutput {
         }
     }
 
-    private static void addARTTimings(@NonNull Session session, FileWriter out) throws IOException {
+    private static void addARTTimings(@NonNull Session session, JsonArray root) throws IOException {
         Map<Integer, DdmJDWPTiming> idToArtTimings = session.timings();
         List<Transmission> transmissions = event2Transmission(session.events());
 
@@ -107,7 +111,7 @@ class SystraceOutput {
             // Use the delta previously calculated to sync the start time with the JDWP packet
             // times.
             long startTime = timing.start_ns() + clockDelta_ns;
-            emitCompleteEvent(out, ns2us(startTime), ns2us(timing.duration_ns()), t.line(), "art");
+            emitCompleteEvent(root, ns2us(startTime), ns2us(timing.duration_ns()), t.line(), "art");
         }
     }
 
@@ -121,15 +125,15 @@ class SystraceOutput {
         return transmissions;
     }
 
-    private static void processNamedEvent(@NonNull FileWriter out, @NonNull NamedEvent event)
+    private static void processNamedEvent(@NonNull JsonArray root, @NonNull NamedEvent event)
             throws IOException {
         String name = event.name();
-        emitInstantEvent(out, ns2us(event.time_ns()), event.line(), name);
-        nameThread(out, event.line(), name);
+        emitInstantEvent(root, ns2us(event.time_ns()), event.line(), name);
+        nameThread(root, event.line(), name);
     }
 
     private static void processTransmission(
-            @NonNull FileWriter out, @NonNull Transmission transmission) throws IOException {
+            @NonNull JsonArray root, @NonNull Transmission transmission) throws IOException {
         Command command = transmission.cmd();
 
         CmdSet cmdset = CmdSets.get(transmission.cmd().cmdSetID());
@@ -151,7 +155,7 @@ class SystraceOutput {
             args.add("cmd", makeMessagePayload(command.message()));
             args.add("reply", makeMessagePayload(reply.message()));
             emitCompleteEvent(
-                    out,
+                    root,
                     ns2us(command.time_ns()),
                     ns2us(duration),
                     transmission.line(),
@@ -159,11 +163,11 @@ class SystraceOutput {
                     args);
         } else {
             args.add("event", makeMessagePayload(command.message()));
-            emitInstantEvent(out, ns2us(command.time_ns()), transmission.line(), name, args);
+            emitInstantEvent(root, ns2us(command.time_ns()), transmission.line(), name, args);
         }
 
         // Write the thread dictionary via MetaData Event
-        nameThread(out, transmission.line(), name);
+        nameThread(root, transmission.line(), name);
     }
 
     private static JsonObject makeMessagePayload(Message message) {
@@ -179,17 +183,17 @@ class SystraceOutput {
     }
 
     private static void emitCompleteEvent(
-            @NonNull FileWriter out,
+            @NonNull JsonArray root,
             long startTime_us,
             long duration_us,
             int line,
             @NonNull String name)
             throws IOException {
-        emitCompleteEvent(out, startTime_us, duration_us, line, name, new JsonObject());
+        emitCompleteEvent(root, startTime_us, duration_us, line, name, new JsonObject());
     }
 
     private static void emitCompleteEvent(
-            @NonNull FileWriter out,
+            @NonNull JsonArray root,
             long startTime,
             long duration_us,
             int i,
@@ -206,18 +210,17 @@ class SystraceOutput {
         part.addProperty("tid", i);
         part.add("args", args);
 
-        out.write(part.toString());
-        out.write(",\n");
+        root.add(part);
     }
 
     private static void emitInstantEvent(
-            @NonNull FileWriter out, long time_us, int lineID, @NonNull String name)
+            @NonNull JsonArray root, long time_us, int lineID, @NonNull String name)
             throws IOException {
-        emitInstantEvent(out, time_us, lineID, name, new JsonObject());
+        emitInstantEvent(root, time_us, lineID, name, new JsonObject());
     }
 
     private static void emitInstantEvent(
-            @NonNull FileWriter out,
+            @NonNull JsonArray root,
             long time_us,
             int threadID,
             @NonNull String name,
@@ -234,12 +237,10 @@ class SystraceOutput {
             part.add("args", args);
         }
 
-        out.write(part.toString());
-        out.write(",\n");
+        root.add(part);
     }
 
-    private static void nameThread(@NonNull FileWriter out, int threadID, @NonNull String name)
-            throws IOException {
+    private static void nameThread(@NonNull JsonArray root, int threadID, @NonNull String name) {
         JsonObject args = new JsonObject();
         args.addProperty("name", name);
 
@@ -250,11 +251,10 @@ class SystraceOutput {
         part.addProperty("tid", threadID);
         part.add("args", args);
 
-        out.write(part.toString());
-        out.write(",\n");
+        root.add(part);
     }
 
-    private static void nameProcess(@NonNull FileWriter out, int pid, @NonNull String name)
+    private static void nameProcess(@NonNull JsonArray root, @NonNull String name)
             throws IOException {
         JsonObject args = new JsonObject();
         args.addProperty("name", name);
@@ -265,8 +265,7 @@ class SystraceOutput {
         part.addProperty("pid", 0);
         part.add("args", args);
 
-        out.write(part.toString());
-        out.write(",\n");
+        root.add(part);
     }
 
     private static long ns2us(long time_ns) {
