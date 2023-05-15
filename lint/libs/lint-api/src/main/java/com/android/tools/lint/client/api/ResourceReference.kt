@@ -30,6 +30,7 @@ import com.intellij.psi.PsiField
 import com.intellij.psi.PsiJavaFile
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiType
+import com.intellij.psi.PsiTypes
 import com.intellij.psi.PsiVariable
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.uast.UCallExpression
@@ -200,7 +201,7 @@ class ResourceReference(
       val variable = declaration as PsiVariable?
       if (
         variable !is PsiField ||
-          (variable.type != PsiType.INT && !isIntArray(variable.type)) ||
+          (variable.type != PsiTypes.intType() && !isIntArray(variable.type)) ||
           // Note that we don't check for PsiModifier.FINAL; in library projects
           // the R class fields are deliberately not made final such that their
           // values can be substituted when all the resources are merged together
@@ -248,6 +249,6 @@ class ResourceReference(
      * fields.
      */
     private fun isIntArray(type: PsiType): Boolean =
-      (type as? PsiArrayType)?.componentType == PsiType.INT
+      (type as? PsiArrayType)?.componentType == PsiTypes.intType()
   }
 }

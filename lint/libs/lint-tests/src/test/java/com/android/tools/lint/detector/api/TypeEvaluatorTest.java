@@ -28,6 +28,7 @@ import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLocalVariable;
 import com.intellij.psi.PsiType;
+import com.intellij.psi.PsiTypes;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicReference;
 import junit.framework.TestCase;
@@ -179,7 +180,7 @@ public class TypeEvaluatorTest extends TestCase {
     }
 
     public void testNull() {
-        checkExpression(PsiType.NULL, "null");
+        checkExpression(PsiTypes.nullType(), "null");
     }
 
     public void testStrings() {

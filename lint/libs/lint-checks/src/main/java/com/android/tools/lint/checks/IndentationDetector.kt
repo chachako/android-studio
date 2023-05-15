@@ -30,7 +30,7 @@ import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiType
+import com.intellij.psi.PsiTypes
 import kotlin.math.min
 import org.jetbrains.kotlin.psi.psiUtil.endOffset
 import org.jetbrains.kotlin.psi.psiUtil.startOffset
@@ -312,7 +312,7 @@ class IndentationDetector : Detector(), SourceCodeScanner {
           return true
         }
         val type = curr.getExpressionType()
-        if (type == null || type == PsiType.VOID || type == UastErrorType) {
+        if (type == null || type == PsiTypes.voidType() || type == UastErrorType) {
           return true
         }
         return prev.isClosedWithBraces()

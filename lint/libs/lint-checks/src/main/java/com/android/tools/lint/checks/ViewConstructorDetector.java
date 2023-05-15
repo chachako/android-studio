@@ -36,7 +36,7 @@ import com.intellij.psi.PsiAnonymousClass;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiParameterList;
-import com.intellij.psi.PsiType;
+import com.intellij.psi.PsiTypes;
 import java.util.Collections;
 import java.util.List;
 import org.jetbrains.uast.UClass;
@@ -95,7 +95,7 @@ public class ViewConstructorDetector extends Detector implements SourceCodeScann
         if (argumentCount == 2) {
             return true;
         }
-        return PsiType.INT.equals(parameters[2].getType());
+        return PsiTypes.intType().equals(parameters[2].getType());
     }
 
     @Nullable

@@ -73,7 +73,7 @@ import com.android.tools.lint.detector.api.findSelector
 import com.google.common.collect.Sets
 import com.intellij.psi.PsiArrayType
 import com.intellij.psi.PsiMethod
-import com.intellij.psi.PsiType
+import com.intellij.psi.PsiTypes
 import com.intellij.psi.PsiVariable
 import java.util.EnumSet
 import org.jetbrains.uast.UAnnotation
@@ -312,11 +312,11 @@ class ResourceTypeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         break
       }
       val expressionType = curr.getExpressionType()
-      if (expressionType != null && PsiType.SHORT != expressionType) {
+      if (expressionType != null && PsiTypes.shortType() != expressionType) {
         if (
-          PsiType.VOID == expressionType ||
-            PsiType.BOOLEAN == expressionType ||
-            PsiType.BYTE == expressionType
+          PsiTypes.voidType() == expressionType ||
+            PsiTypes.booleanType() == expressionType ||
+            PsiTypes.byteType() == expressionType
         ) {
           break
         }

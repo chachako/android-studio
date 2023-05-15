@@ -49,6 +49,7 @@ import com.intellij.psi.PsiPrimitiveType
 import com.intellij.psi.PsiReference
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypeParameter
+import com.intellij.psi.PsiTypes
 import com.intellij.psi.PsiWildcardType
 import com.intellij.psi.util.PsiUtil
 import java.io.File
@@ -779,7 +780,7 @@ internal open class StubClassFile(
     }
 
     private fun appendReturnTypeSignature(method: PsiMethod, signature: StringBuilder) {
-      val returnType = method.returnType ?: PsiType.VOID
+      val returnType = method.returnType ?: PsiTypes.voidType()
       appendFieldTypeSignature(returnType, signature)
     }
 

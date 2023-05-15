@@ -81,6 +81,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiParameterList;
 import com.intellij.psi.PsiType;
+import com.intellij.psi.PsiTypes;
 import com.intellij.psi.PsiVariable;
 import java.io.File;
 import java.util.ArrayList;
@@ -1591,13 +1592,13 @@ public class StringFormatDetector extends ResourceXmlDetector implements SourceC
                                     suggestion = "`b`";
                                 } else if (isCharacterType(type)) {
                                     suggestion = "'c'";
-                                } else if (PsiType.INT.equals(type)
-                                        || PsiType.LONG.equals(type)
-                                        || PsiType.BYTE.equals(type)
-                                        || PsiType.SHORT.equals(type)) {
+                                } else if (PsiTypes.intType().equals(type)
+                                        || PsiTypes.longType().equals(type)
+                                        || PsiTypes.byteType().equals(type)
+                                        || PsiTypes.shortType().equals(type)) {
                                     suggestion = "`d`, 'o' or `x`";
-                                } else if (PsiType.FLOAT.equals(type)
-                                        || PsiType.DOUBLE.equals(type)) {
+                                } else if (PsiTypes.floatType().equals(type)
+                                        || PsiTypes.doubleType().equals(type)) {
                                     suggestion = "`e`, 'f', 'g' or `a`";
                                 } else if (type instanceof PsiClassType) {
                                     String fqn = type.getCanonicalText();
@@ -1793,7 +1794,7 @@ public class StringFormatDetector extends ResourceXmlDetector implements SourceC
 
     private static boolean isCharacterType(PsiType type) {
         // return PsiType.CHAR.isAssignableFrom(type);
-        if (type == PsiType.CHAR) {
+        if (PsiTypes.charType().equals(type)) {
             return true;
         }
         if (type instanceof PsiClassType) {
@@ -1806,7 +1807,7 @@ public class StringFormatDetector extends ResourceXmlDetector implements SourceC
 
     private static boolean isBooleanType(PsiType type) {
         // return PsiType.BOOLEAN.isAssignableFrom(type);
-        if (type == PsiType.BOOLEAN) {
+        if (PsiTypes.booleanType().equals(type)) {
             return true;
         }
         if (type instanceof PsiClassType) {
@@ -1819,12 +1820,12 @@ public class StringFormatDetector extends ResourceXmlDetector implements SourceC
 
     // PsiType:java.lang.Boolean
     private static boolean isNumericType(@NonNull PsiType type, boolean allowBigNumbers) {
-        if (PsiType.INT.equals(type)
-                || PsiType.FLOAT.equals(type)
-                || PsiType.DOUBLE.equals(type)
-                || PsiType.LONG.equals(type)
-                || PsiType.BYTE.equals(type)
-                || PsiType.SHORT.equals(type)) {
+        if (PsiTypes.intType().equals(type)
+                || PsiTypes.floatType().equals(type)
+                || PsiTypes.doubleType().equals(type)
+                || PsiTypes.longType().equals(type)
+                || PsiTypes.byteType().equals(type)
+                || PsiTypes.shortType().equals(type)) {
             return true;
         }
 

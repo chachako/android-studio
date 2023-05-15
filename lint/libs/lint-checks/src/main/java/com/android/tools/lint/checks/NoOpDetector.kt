@@ -53,7 +53,7 @@ import com.intellij.psi.PsiLocalVariable
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.PsiParameter
-import com.intellij.psi.PsiType
+import com.intellij.psi.PsiTypes
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import org.jetbrains.kotlin.asJava.elements.KtLightMember
@@ -671,7 +671,9 @@ class NoOpDetector : Detector(), SourceCodeScanner {
   private fun isGetter(psiMethod: PsiMethod?): Boolean {
     if (psiMethod == null) return false
     if (
-      psiMethod.isConstructor || psiMethod.hasParameters() || psiMethod.returnType == PsiType.VOID
+      psiMethod.isConstructor ||
+        psiMethod.hasParameters() ||
+        psiMethod.returnType == PsiTypes.voidType()
     ) {
       return false
     }

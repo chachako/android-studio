@@ -40,7 +40,7 @@ import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiSynchronizedStatement
-import com.intellij.psi.PsiType
+import com.intellij.psi.PsiTypes
 import com.intellij.psi.PsiWildcardType
 import java.util.EnumSet
 import org.jetbrains.uast.UAnnotationMethod
@@ -102,7 +102,7 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     val method = usageInfo.referenced as? PsiMethod ?: return
     val returnType = method.returnType ?: return
     if (
-      returnType == PsiType.VOID ||
+      returnType == PsiTypes.voidType() ||
         method.isConstructor ||
         returnType.canonicalText == "kotlin.Unit"
     ) {
@@ -127,7 +127,7 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
           method.parameterList.parameters.lastOrNull()?.type as? PsiClassType ?: return
         val wildcard = classReference.parameters.singleOrNull() as? PsiWildcardType ?: return
         val bound = wildcard.bound ?: return
-        if (bound == PsiType.VOID || bound.canonicalText == "kotlin.Unit") {
+        if (bound == PsiTypes.voidType() || bound.canonicalText == "kotlin.Unit") {
           return
         }
       }

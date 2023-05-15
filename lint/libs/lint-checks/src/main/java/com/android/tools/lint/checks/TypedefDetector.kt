@@ -46,7 +46,7 @@ import com.intellij.psi.PsiLiteralExpression
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiModifierListOwner
-import com.intellij.psi.PsiType
+import com.intellij.psi.PsiTypes
 import com.intellij.psi.PsiVariable
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UBinaryExpression
@@ -292,7 +292,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         if (type != null) {
           type = type.deepComponentType
         }
-        if (PsiType.INT == type || PsiType.LONG == type) {
+        if (PsiTypes.intType() == type || PsiTypes.longType() == type) {
           for (expression in argument.valueArguments) {
             checkTypeDefConstant(context, annotation, expression, errorNode, flag, usageInfo)
           }

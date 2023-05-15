@@ -79,7 +79,7 @@ import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiPrimitiveType
 import com.intellij.psi.PsiReferenceExpression
 import com.intellij.psi.PsiSwitchLabelStatement
-import com.intellij.psi.PsiType
+import com.intellij.psi.PsiTypes
 import java.util.Locale
 import kotlin.math.abs
 import org.jetbrains.kotlin.asJava.elements.KtLightField
@@ -239,7 +239,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
           // Check that the return type of this method is not void!
           val parent = skipParenthesizedExprUp(annotation.uastParent)
           if (parent is UMethod) {
-            if (!parent.isConstructor && PsiType.VOID == parent.returnType) {
+            if (!parent.isConstructor && PsiTypes.voidType() == parent.returnType) {
               context.report(
                 ANNOTATION_USAGE,
                 annotation,
@@ -439,7 +439,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
             val returnType = parent.returnType
             if (
               !parent.isConstructor &&
-                (PsiType.VOID == returnType || returnType is PsiPrimitiveType)
+                (PsiTypes.voidType() == returnType || returnType is PsiPrimitiveType)
             ) {
               context.report(
                 ANNOTATION_USAGE,
@@ -807,7 +807,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
 
     override fun visitSwitchExpression(node: USwitchExpression) {
       val condition = node.expression
-      if (condition != null && PsiType.INT == condition.getExpressionType()) {
+      if (condition != null && PsiTypes.intType() == condition.getExpressionType()) {
         val annotation = findIntDefAnnotation(condition)
         if (annotation != null) {
           val value =

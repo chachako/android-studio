@@ -45,6 +45,7 @@ import com.intellij.psi.PsiReferenceExpression
 import com.intellij.psi.PsiStatement
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypeCastExpression
+import com.intellij.psi.PsiTypes
 import com.intellij.psi.PsiVariable
 import com.intellij.psi.util.PsiTreeUtil
 import java.util.concurrent.atomic.AtomicBoolean
@@ -679,14 +680,14 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
 
     private val kotlinPrimArrayTypes =
       listOf(
-        PrimArrayType("ByteArray", "byteArrayOf", PsiPrimitiveType.BYTE),
-        PrimArrayType("CharArray", "charArrayOf", PsiPrimitiveType.CHAR),
-        PrimArrayType("ShortArray", "shortArrayOf", PsiPrimitiveType.SHORT),
-        PrimArrayType("IntArray", "intArrayOf", PsiPrimitiveType.INT),
-        PrimArrayType("LongArray", "longArrayOf", PsiPrimitiveType.LONG),
-        PrimArrayType("FloatArray", "floatArrayOf", PsiPrimitiveType.FLOAT),
-        PrimArrayType("DoubleArray", "doubleArrayOf", PsiPrimitiveType.DOUBLE),
-        PrimArrayType("BooleanArray", "booleanArrayOf", PsiPrimitiveType.BOOLEAN)
+        PrimArrayType("ByteArray", "byteArrayOf", PsiTypes.byteType()),
+        PrimArrayType("CharArray", "charArrayOf", PsiTypes.charType()),
+        PrimArrayType("ShortArray", "shortArrayOf", PsiTypes.shortType()),
+        PrimArrayType("IntArray", "intArrayOf", PsiTypes.intType()),
+        PrimArrayType("LongArray", "longArrayOf", PsiTypes.longType()),
+        PrimArrayType("FloatArray", "floatArrayOf", PsiTypes.floatType()),
+        PrimArrayType("DoubleArray", "doubleArrayOf", PsiTypes.doubleType()),
+        PrimArrayType("BooleanArray", "booleanArrayOf", PsiTypes.booleanType())
       )
     private val kotlinPrimArrayFixedArgConstructors =
       kotlinPrimArrayTypes.map(PrimArrayType::constructorName)
@@ -913,12 +914,12 @@ private fun Any?.tryUnaryMinus() =
 private fun Any?.tryToNum(type: PsiType) =
   (this as? Number)?.let { n ->
     when (type) {
-      PsiType.FLOAT -> n.toFloat()
-      PsiType.DOUBLE -> n.toDouble()
-      PsiType.INT -> n.toInt()
-      PsiType.LONG -> n.toLong()
-      PsiType.SHORT -> n.toShort()
-      PsiType.BYTE -> n.toByte()
+      PsiTypes.floatType() -> n.toFloat()
+      PsiTypes.doubleType() -> n.toDouble()
+      PsiTypes.intType() -> n.toInt()
+      PsiTypes.longType() -> n.toLong()
+      PsiTypes.shortType() -> n.toShort()
+      PsiTypes.byteType() -> n.toByte()
       else -> this
     }
   }
@@ -980,14 +981,14 @@ private fun isType(type: PsiType, name: String) =
 
 private fun List<Any?>.reifiedAsArray(elemType: PsiType): Any? =
   when {
-    elemType == PsiType.BOOLEAN -> BooleanArray(size) { this[it] as? Boolean ?: false }
-    elemType == PsiType.CHAR -> CharArray(size) { this[it] as? Char ?: 0.toChar() }
-    elemType == PsiType.BYTE -> ByteArray(size) { this[it] as? Byte ?: 0.toByte() }
-    elemType == PsiType.DOUBLE -> DoubleArray(size) { this[it] as? Double ?: 0.0 }
-    elemType == PsiType.FLOAT -> FloatArray(size) { this[it] as? Float ?: 0F }
-    elemType == PsiType.INT -> IntArray(size) { this[it] as? Int ?: 0 }
-    elemType == PsiType.SHORT -> ShortArray(size) { this[it] as? Short ?: 0.toShort() }
-    elemType == PsiType.LONG -> LongArray(size) { this[it] as? Long ?: 0L }
+    elemType == PsiTypes.booleanType() -> BooleanArray(size) { this[it] as? Boolean ?: false }
+    elemType == PsiTypes.charType() -> CharArray(size) { this[it] as? Char ?: 0.toChar() }
+    elemType == PsiTypes.byteType() -> ByteArray(size) { this[it] as? Byte ?: 0.toByte() }
+    elemType == PsiTypes.doubleType() -> DoubleArray(size) { this[it] as? Double ?: 0.0 }
+    elemType == PsiTypes.floatType() -> FloatArray(size) { this[it] as? Float ?: 0F }
+    elemType == PsiTypes.intType() -> IntArray(size) { this[it] as? Int ?: 0 }
+    elemType == PsiTypes.shortType() -> ShortArray(size) { this[it] as? Short ?: 0.toShort() }
+    elemType == PsiTypes.longType() -> LongArray(size) { this[it] as? Long ?: 0L }
     isType(elemType, TYPE_OBJECT) -> Array(size) { this[it] }
     isType(elemType, TYPE_STRING) -> Array(size) { this[it] as? String }
     else -> {
@@ -1016,14 +1017,14 @@ private fun freshArray(type: PsiType, size: Int, dimensions: Int): Any =
   when {
     size <= LARGEST_LITERAL_ARRAY ->
       when (type) {
-        PsiType.BYTE -> ByteArray(size)
-        PsiType.BOOLEAN -> BooleanArray(size)
-        PsiType.INT -> IntArray(size)
-        PsiType.LONG -> LongArray(size)
-        PsiType.CHAR -> CharArray(size)
-        PsiType.FLOAT -> FloatArray(size)
-        PsiType.DOUBLE -> DoubleArray(size)
-        PsiType.SHORT -> ShortArray(size)
+        PsiTypes.byteType() -> ByteArray(size)
+        PsiTypes.booleanType() -> BooleanArray(size)
+        PsiTypes.intType() -> IntArray(size)
+        PsiTypes.longType() -> LongArray(size)
+        PsiTypes.charType() -> CharArray(size)
+        PsiTypes.floatType() -> FloatArray(size)
+        PsiTypes.doubleType() -> DoubleArray(size)
+        PsiTypes.shortType() -> ShortArray(size)
         else ->
           when (val className = type.canonicalText) {
             TYPE_STRING -> arrayOfNulls<String>(size)
@@ -1033,14 +1034,14 @@ private fun freshArray(type: PsiType, size: Int, dimensions: Int): Any =
       }
     else ->
       when (type) {
-        PsiType.BYTE -> ArrayReference.of(java.lang.Byte.TYPE, size, dimensions)
-        PsiType.BOOLEAN -> ArrayReference.of(java.lang.Boolean.TYPE, size, dimensions)
-        PsiType.INT -> ArrayReference.of(Integer.TYPE, size, dimensions)
-        PsiType.LONG -> ArrayReference.of(java.lang.Long.TYPE, size, dimensions)
-        PsiType.CHAR -> ArrayReference.of(Character.TYPE, size, dimensions)
-        PsiType.FLOAT -> ArrayReference.of(java.lang.Float.TYPE, size, dimensions)
-        PsiType.DOUBLE -> ArrayReference.of(java.lang.Double.TYPE, size, dimensions)
-        PsiType.SHORT -> ArrayReference.of(java.lang.Short.TYPE, size, dimensions)
+        PsiTypes.byteType() -> ArrayReference.of(java.lang.Byte.TYPE, size, dimensions)
+        PsiTypes.booleanType() -> ArrayReference.of(java.lang.Boolean.TYPE, size, dimensions)
+        PsiTypes.intType() -> ArrayReference.of(Integer.TYPE, size, dimensions)
+        PsiTypes.longType() -> ArrayReference.of(java.lang.Long.TYPE, size, dimensions)
+        PsiTypes.charType() -> ArrayReference.of(Character.TYPE, size, dimensions)
+        PsiTypes.floatType() -> ArrayReference.of(java.lang.Float.TYPE, size, dimensions)
+        PsiTypes.doubleType() -> ArrayReference.of(java.lang.Double.TYPE, size, dimensions)
+        PsiTypes.shortType() -> ArrayReference.of(java.lang.Short.TYPE, size, dimensions)
         else ->
           when (val className = type.canonicalText) {
             TYPE_STRING -> ArrayReference.of(String::class.java, size, dimensions)
