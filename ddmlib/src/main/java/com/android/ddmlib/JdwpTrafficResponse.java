@@ -13,27 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.jdwppacket
+package com.android.ddmlib;
 
-import com.android.jdwppacket.vm.IDSizesReply
+import com.android.annotations.NonNull;
 
-class IDSizes(
-  val fieldIDSize: Int = 8,
-  val methodIDSize: Int = 8,
-  val objectIDSize: Int = 8,
-  val referenceTypeIDSize: Int = 8,
-  val frameIDSize: Int = 8
-) {
+public interface JdwpTrafficResponse {
 
-  constructor(size: Int) : this(size, size, size, size, size)
+    /**
+     * Packet to be transmitted on the wire.
+     *
+     * @return Upstream and Downstream packets to be send to the debugger/debugged.
+     */
+    @NonNull
+    JdwpTraffic getEdict();
 
-  constructor(
-    idSizes: IDSizesReply
-  ) : this(
-    idSizes.fieldIDSize,
-    idSizes.methodIDSize,
-    idSizes.objectIDSize,
-    idSizes.referenceTypeIDSize,
-    idSizes.frameIDSize
-  )
+    /**
+     * Packet to be reported in tracer / inspector. See scache README.md for further explanations.
+     *
+     * @return Upstream and Downstream packets to be reported to tracer.
+     */
+    @NonNull
+    JdwpTraffic getJournal();
 }

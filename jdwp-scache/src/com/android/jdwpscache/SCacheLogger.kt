@@ -13,27 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.jdwppacket
+package com.android.jdwpscache
 
-import com.android.jdwppacket.vm.IDSizesReply
+interface SCacheLogger {
 
-class IDSizes(
-  val fieldIDSize: Int = 8,
-  val methodIDSize: Int = 8,
-  val objectIDSize: Int = 8,
-  val referenceTypeIDSize: Int = 8,
-  val frameIDSize: Int = 8
-) {
+  fun info(message: String)
 
-  constructor(size: Int) : this(size, size, size, size, size)
+  fun warn(message: String)
 
-  constructor(
-    idSizes: IDSizesReply
-  ) : this(
-    idSizes.fieldIDSize,
-    idSizes.methodIDSize,
-    idSizes.objectIDSize,
-    idSizes.referenceTypeIDSize,
-    idSizes.frameIDSize
-  )
+  fun error(message: String)
+
+  fun error(message: String, t: Throwable)
 }

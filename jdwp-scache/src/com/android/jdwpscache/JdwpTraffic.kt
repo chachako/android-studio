@@ -13,27 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.jdwppacket
+package com.android.jdwpscache
 
-import com.android.jdwppacket.vm.IDSizesReply
+import java.nio.ByteBuffer
 
-class IDSizes(
-  val fieldIDSize: Int = 8,
-  val methodIDSize: Int = 8,
-  val objectIDSize: Int = 8,
-  val referenceTypeIDSize: Int = 8,
-  val frameIDSize: Int = 8
-) {
+class JdwpTraffic {
 
-  constructor(size: Int) : this(size, size, size, size, size)
+  internal val upstreamList = mutableListOf<ByteBuffer>()
 
-  constructor(
-    idSizes: IDSizesReply
-  ) : this(
-    idSizes.fieldIDSize,
-    idSizes.methodIDSize,
-    idSizes.objectIDSize,
-    idSizes.referenceTypeIDSize,
-    idSizes.frameIDSize
-  )
+  val toUpstream: List<ByteBuffer>
+    get() = upstreamList
+
+  internal val downstreamList = mutableListOf<ByteBuffer>()
+
+  val toDownstream: List<ByteBuffer>
+    get() = downstreamList
 }

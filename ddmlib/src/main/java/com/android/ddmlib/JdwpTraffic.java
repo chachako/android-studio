@@ -13,27 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.jdwppacket
+package com.android.ddmlib;
 
-import com.android.jdwppacket.vm.IDSizesReply
+import com.android.annotations.NonNull;
+import java.nio.ByteBuffer;
+import java.util.List;
 
-class IDSizes(
-  val fieldIDSize: Int = 8,
-  val methodIDSize: Int = 8,
-  val objectIDSize: Int = 8,
-  val referenceTypeIDSize: Int = 8,
-  val frameIDSize: Int = 8
-) {
+public interface JdwpTraffic {
 
-  constructor(size: Int) : this(size, size, size, size, size)
+    /** @return List of JDWP packets to be sent to the debugged process. */
+    @NonNull
+    List<ByteBuffer> getToUpstream();
 
-  constructor(
-    idSizes: IDSizesReply
-  ) : this(
-    idSizes.fieldIDSize,
-    idSizes.methodIDSize,
-    idSizes.objectIDSize,
-    idSizes.referenceTypeIDSize,
-    idSizes.frameIDSize
-  )
+    /** @return List of JDWP packets to be sent to the debugger. */
+    @NonNull
+    List<ByteBuffer> getToDownstream();
 }

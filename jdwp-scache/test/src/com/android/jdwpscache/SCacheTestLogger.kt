@@ -13,27 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.jdwppacket
+package com.android.jdwpscache
 
-import com.android.jdwppacket.vm.IDSizesReply
+import java.util.logging.Level
+import java.util.logging.Logger
 
-class IDSizes(
-  val fieldIDSize: Int = 8,
-  val methodIDSize: Int = 8,
-  val objectIDSize: Int = 8,
-  val referenceTypeIDSize: Int = 8,
-  val frameIDSize: Int = 8
-) {
+class SCacheTestLogger : SCacheLogger {
 
-  constructor(size: Int) : this(size, size, size, size, size)
+  private val logger = Logger.getLogger("SCacheTestLogger")
 
-  constructor(
-    idSizes: IDSizesReply
-  ) : this(
-    idSizes.fieldIDSize,
-    idSizes.methodIDSize,
-    idSizes.objectIDSize,
-    idSizes.referenceTypeIDSize,
-    idSizes.frameIDSize
-  )
+  override fun info(message: String) {
+    logger.info(message)
+  }
+
+  override fun warn(message: String) {
+    logger.warning(message)
+  }
+
+  override fun error(message: String) {
+    logger.severe(message)
+  }
+
+  override fun error(message: String, t: Throwable) {
+    logger.log(Level.SEVERE, message, t)
+  }
 }

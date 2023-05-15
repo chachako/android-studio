@@ -30,6 +30,10 @@ import java.nio.charset.StandardCharsets
 
 class MessageReader(val idSizes: IDSizes, val buffer: ByteBuffer) {
 
+  fun duplicate(): MessageReader {
+    return MessageReader(idSizes, buffer.duplicate())
+  }
+
   fun getByte() = buffer.get()
 
   fun getTypeTag() = getByte()

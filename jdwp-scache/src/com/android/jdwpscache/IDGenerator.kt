@@ -13,27 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.jdwppacket
+package com.android.jdwpscache
 
-import com.android.jdwppacket.vm.IDSizesReply
+class IDGenerator {
 
-class IDSizes(
-  val fieldIDSize: Int = 8,
-  val methodIDSize: Int = 8,
-  val objectIDSize: Int = 8,
-  val referenceTypeIDSize: Int = 8,
-  val frameIDSize: Int = 8
-) {
+  /**
+   * Summary of all ID generators:
+   *
+   * oj-libjdwp (downstream) starts at 0 Intellij debugger (upstream) starts at 0 ddmlib (upstream)
+   * starts at 0x40000000 (JdwpPacket.java) adbconnection (downstream) starts at 0x80000000
+   * (adbconnection.cc)
+   *
+   * We start at 0xA000000 to avoid collisions with other injected streams.
+   */
+  private var id: Int = 0xA000000
 
-  constructor(size: Int) : this(size, size, size, size, size)
+  internal fun get(): Int {
+    return id++
+  }
 
-  constructor(
-    idSizes: IDSizesReply
-  ) : this(
-    idSizes.fieldIDSize,
-    idSizes.methodIDSize,
-    idSizes.objectIDSize,
-    idSizes.referenceTypeIDSize,
-    idSizes.frameIDSize
-  )
+  internal fun getLast(): Int {
+    return id - 1
+  }
 }

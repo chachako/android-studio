@@ -13,27 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.jdwppacket
+package com.android.jdwppacket.vm
 
-import com.android.jdwppacket.vm.IDSizesReply
+import com.android.jdwppacket.Cmd
+import com.android.jdwppacket.MessageReader
+import com.android.jdwppacket.VirtualMachine
+import com.android.jdwppacket.Writer
 
-class IDSizes(
-  val fieldIDSize: Int = 8,
-  val methodIDSize: Int = 8,
-  val objectIDSize: Int = 8,
-  val referenceTypeIDSize: Int = 8,
-  val frameIDSize: Int = 8
-) {
+class IDSizesCmd : Cmd(VirtualMachine.IDSizes) {
 
-  constructor(size: Int) : this(size, size, size, size, size)
+  override fun paramsKey(): String {
+    return ""
+  }
 
-  constructor(
-    idSizes: IDSizesReply
-  ) : this(
-    idSizes.fieldIDSize,
-    idSizes.methodIDSize,
-    idSizes.objectIDSize,
-    idSizes.referenceTypeIDSize,
-    idSizes.frameIDSize
-  )
+  override fun writePayload(writer: Writer) {}
+
+  companion object {
+    @JvmStatic
+    fun parse(reader: MessageReader): IDSizesCmd {
+      return IDSizesCmd()
+    }
+  }
 }

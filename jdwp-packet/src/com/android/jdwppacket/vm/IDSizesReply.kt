@@ -15,6 +15,7 @@
  */
 package com.android.jdwppacket.vm
 
+import com.android.jdwppacket.IDSizes
 import com.android.jdwppacket.MessageReader
 import com.android.jdwppacket.Reply
 import com.android.jdwppacket.Writer
@@ -26,6 +27,16 @@ data class IDSizesReply(
   val referenceTypeIDSize: Int,
   val frameIDSize: Int
 ) : Reply() {
+
+  constructor(
+    idSizes: IDSizes
+  ) : this(
+    idSizes.fieldIDSize,
+    idSizes.methodIDSize,
+    idSizes.objectIDSize,
+    idSizes.referenceTypeIDSize,
+    idSizes.frameIDSize
+  )
 
   companion object {
 
