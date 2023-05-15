@@ -24,11 +24,15 @@ import com.android.build.gradle.integration.common.fixture.model.ReferenceModelC
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.setUpHelloWorld
+import com.android.build.gradle.integration.common.utils.getDebugVariant
+import com.android.build.gradle.internal.scope.InternalArtifactType
+import com.android.build.gradle.internal.scope.getOutputDir
 import com.android.build.gradle.options.BooleanOption
 import com.android.builder.model.v2.ide.SyncIssue
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
 import com.android.testutils.generateAarWithContent
+import com.android.utils.FileUtils
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.Rule
@@ -796,5 +800,40 @@ class AppWithUseLibraryModelTest: ReferenceModelComparator(
     @Test
     fun `test AndroidDsl model`() {
         ensureAndroidDslDeltaIsEmpty()
+    }
+}
+
+class BuildConfigJarInAppModelTest {
+    @get:Rule
+    val project = createGradleProject {
+        gradleProperties {
+            set(BooleanOption.ENABLE_BUILD_CONFIG_AS_BYTECODE, true)
+        }
+        rootProject {
+            plugins.add(PluginType.ANDROID_APP)
+            android {
+                setUpHelloWorld()
+                buildFeatures {
+                    buildConfig = true
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test BuildConfig jar is in model`() {
+        project.executor().run("assembleDebug")
+        val result = project.modelV2()
+            .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
+            .fetchModels(variantName = "debug").container
+         val androidProject = result.getProject().androidProject
+            ?: throw RuntimeException("Failed to get AndroidProject model")
+        val debugVariant = androidProject.getDebugVariant()
+        val expectedBuildConfigPath = FileUtils.join(InternalArtifactType.COMPILE_BUILD_CONFIG_JAR
+            .getOutputDir(project.buildDir), "debug/BuildConfig.jar")
+        Truth.assertThat(debugVariant.mainArtifact.classesFolders).contains(expectedBuildConfigPath)
+        Truth.assertThat(
+            debugVariant.mainArtifact.generatedClassPaths["buildConfigGeneratedClasses"])
+            .isEqualTo(expectedBuildConfigPath)
     }
 }

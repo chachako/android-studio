@@ -77,7 +77,6 @@ import com.android.builder.errors.IssueReporter
 import com.android.builder.model.SyncIssue
 import com.android.builder.model.v2.ModelSyncFile
 import com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags.BooleanFlag
-import com.android.builder.model.v2.ide.ArtifactDependencies
 import com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList
 import com.android.builder.model.v2.ide.BasicArtifact
 import com.android.builder.model.v2.ide.BundleInfo
@@ -703,6 +702,8 @@ class ModelBuilder<
             classesFolders.add(it)
         }
 
+        val generatedClassPaths = addGeneratedClassPaths(component, classesFolders)
+
         val testInfo: TestInfo? = when(component) {
             is TestVariantCreationConfig, is AndroidTestCreationConfig -> {
                 val runtimeApks: Collection<File> = project
@@ -801,7 +802,8 @@ class ModelBuilder<
                 coreLibDesugaring,
                 component.minSdk,
                 component.global
-            ).files.toList()
+            ).files.toList(),
+            generatedClassPaths = generatedClassPaths
         )
     }
 
@@ -845,6 +847,8 @@ class ModelBuilder<
             }
         }
 
+        val generatedClassPaths = addGeneratedClassPaths(component, classesFolders)
+
         return JavaArtifactImpl(
             assembleTaskName = taskContainer.assembleTask.name,
             compileTaskName = taskContainer.compileTask.name,
@@ -857,6 +861,7 @@ class ModelBuilder<
 
             mockablePlatformJar = variantModel.mockableJarArtifact.files.singleOrNull(),
             modelSyncFiles = listOf(),
+            generatedClassPaths = generatedClassPaths
         )
     }
 
@@ -1103,5 +1108,20 @@ class ModelBuilder<
             }
         }
         return null
+    }
+
+    private fun addGeneratedClassPaths(
+        component: ComponentCreationConfig,
+        classesFolders: MutableSet<File>
+    ): Map<String, File> {
+        val generatedClassPaths = mutableMapOf<String, File>()
+
+        val buildConfigJar = component.artifacts.get(InternalArtifactType.COMPILE_BUILD_CONFIG_JAR)
+        if (buildConfigJar.isPresent) {
+            classesFolders.add(buildConfigJar.get().asFile)
+            generatedClassPaths["buildConfigGeneratedClasses"] = buildConfigJar.get().asFile
+        }
+
+        return generatedClassPaths
     }
 }

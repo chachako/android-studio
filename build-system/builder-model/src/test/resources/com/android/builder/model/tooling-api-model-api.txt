@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-a65e32bb801740b41d68f617e3231f22ace6a5ea6f70fa404ee2af9dff0ccc87
+651d046af5a01145827cc9d687aaa2daebe6b4a6a501ac051d5c5a474e0473ec
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -574,6 +574,7 @@ com.android.builder.model.v2.ide.AbstractArtifact
 com.android.builder.model.v2.ide.AbstractArtifact.getAssembleTaskName: java.lang.String ()
 com.android.builder.model.v2.ide.AbstractArtifact.getClassesFolders: java.util.Set<java.io.File> ()
 com.android.builder.model.v2.ide.AbstractArtifact.getCompileTaskName: java.lang.String ()
+com.android.builder.model.v2.ide.AbstractArtifact.getGeneratedClassPaths: java.util.Map<java.lang.String, java.io.File> ()
 com.android.builder.model.v2.ide.AbstractArtifact.getGeneratedSourceFolders: java.util.Collection<java.io.File> ()
 com.android.builder.model.v2.ide.AbstractArtifact.getIdeSetupTaskNames: java.util.Set<java.lang.String> ()
 com.android.builder.model.v2.ide.AbstractArtifact.getModelSyncFiles: java.util.Collection<com.android.builder.model.v2.ModelSyncFile> ()
