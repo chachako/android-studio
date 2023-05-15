@@ -148,7 +148,7 @@ coverage_report(
     tests = [
         "//tools/adt/idea/app-quality-insights/play-vitals/ide:intellij.android.app-quality-insights.play-vitals.ide.tests_tests",
         "//tools/adt/idea/app-quality-insights/play-vitals/model:intellij.android.app-quality-insights.play-vitals.model_tests",
-        "//tools/adt/idea/app-quality-insights/play-vitals/view:intellij.android.app-quality-insights.play-vitals.view_tests",
+        "//tools/adt/idea/app-quality-insights/play-vitals/view:intellij.android.app-quality-insights.play-vitals.view.tests_tests",
     ],
 )
 
@@ -1033,7 +1033,7 @@ coverage_report(
         "//tools/adt/idea/app-quality-insights/ide:intellij.android.app-quality-insights.ide.tests_tests",
         "//tools/adt/idea/app-quality-insights/play-vitals/ide:intellij.android.app-quality-insights.play-vitals.ide.tests_tests",
         "//tools/adt/idea/app-quality-insights/play-vitals/model:intellij.android.app-quality-insights.play-vitals.model_tests",
-        "//tools/adt/idea/app-quality-insights/play-vitals/view:intellij.android.app-quality-insights.play-vitals.view_tests",
+        "//tools/adt/idea/app-quality-insights/play-vitals/view:intellij.android.app-quality-insights.play-vitals.view.tests_tests",
         "//tools/adt/idea/app-quality-insights/ui:intellij.android.app-quality-insights.ui.tests_tests",
         "//tools/adt/idea/assistant:assistant-test_tests",
         "//tools/adt/idea/build-attribution:intellij.android.build-attribution.tests_tests",
