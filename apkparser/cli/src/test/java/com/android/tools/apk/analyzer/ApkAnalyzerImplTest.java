@@ -345,14 +345,14 @@ public class ApkAnalyzerImplTest {
     public void dexPackagesTest() throws IOException {
         impl.dexPackages(apk, null, null, null, null, false, false, null);
         assertEquals(
-                "P d 3\t7\t270\t<TOTAL>\n"
-                        + "P d 3\t4\t246\tcom\n"
-                        + "P d 3\t4\t246\tcom.example\n"
-                        + "P d 3\t4\t246\tcom.example.helloworld\n"
-                        + "C d 3\t4\t246\tcom.example.helloworld.HelloWorld\n"
-                        + "M d 1\t1\t57\tcom.example.helloworld.HelloWorld <clinit>()\n"
-                        + "M d 1\t1\t43\tcom.example.helloworld.HelloWorld <init>()\n"
-                        + "M d 1\t1\t54\tcom.example.helloworld.HelloWorld void onCreate(android.os.Bundle)\n"
+                "P d 3\t7\t252\t<TOTAL>\n"
+                        + "P d 3\t4\t228\tcom\n"
+                        + "P d 3\t4\t228\tcom.example\n"
+                        + "P d 3\t4\t228\tcom.example.helloworld\n"
+                        + "C d 3\t4\t228\tcom.example.helloworld.HelloWorld\n"
+                        + "M d 1\t1\t52\tcom.example.helloworld.HelloWorld <clinit>()\n"
+                        + "M d 1\t1\t38\tcom.example.helloworld.HelloWorld <init>()\n"
+                        + "M d 1\t1\t46\tcom.example.helloworld.HelloWorld void onCreate(android.os.Bundle)\n"
                         + "M r 0\t1\t8\tcom.example.helloworld.HelloWorld void setContentView(int)\n"
                         + "F d 0\t0\t18\tcom.example.helloworld.HelloWorld java.util.concurrent.atomic.AtomicIntegerFieldUpdater hw\n"
                         + "F d 0\t0\t10\tcom.example.helloworld.HelloWorld int volAtomicVarKept\n"

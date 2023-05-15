@@ -45,11 +45,11 @@ public class PackageTreeCreatorTest {
         StringBuffer sb = new StringBuffer(100);
         dumpTree(sb, packageTreeNode, 0, null, null);
         assertEquals(
-                "root: 3,6,213\n"
-                        + "  Test: 3,3,189\n"
-                        + "    <init>(): 1,1,43\n"
-                        + "    java.lang.Integer get(): 1,1,47\n"
-                        + "    java.util.List getList(): 1,1,43\n"
+                "root: 3,6,198\n"
+                        + "  Test: 3,3,174\n"
+                        + "    <init>(): 1,1,38\n"
+                        + "    java.lang.Integer get(): 1,1,42\n"
+                        + "    java.util.List getList(): 1,1,38\n"
                         + "  ~java: 0,3,24\n"
                         + "    ~lang: 0,2,16\n"
                         + "      ~Integer: 0,1,8\n"
@@ -126,12 +126,12 @@ public class PackageTreeCreatorTest {
         StringBuffer sb = new StringBuffer(100);
         dumpTree(sb, packageTreeNode, 0, null, null);
         assertEquals(
-                "root: 9,14,745\n"
+                "root: 9,14,730\n"
                         + "  SomeAnnotation: 0,0,66\n"
-                        + "  Test: 3,3,189\n"
-                        + "    <init>(): 1,1,43\n"
-                        + "    java.lang.Integer get(): 1,1,47\n"
-                        + "    java.util.List getList(): 1,1,43\n"
+                        + "  Test: 3,3,174\n"
+                        + "    <init>(): 1,1,38\n"
+                        + "    java.lang.Integer get(): 1,1,42\n"
+                        + "    java.util.List getList(): 1,1,38\n"
                         + "  Test2: 3,3,192\n"
                         + "    <init>(): 1,1,52\n"
                         + "    a aClassField: 0,0,10\n"
