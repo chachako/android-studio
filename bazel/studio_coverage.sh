@@ -52,7 +52,6 @@ declare -a extra_test_flags
 if [[ $postsubmit ]]; then
     extra_test_flags+=(--bes_keywords=ab-postsubmit)
     extra_test_flags+=(--nocache_test_results)
-    extra_test_flags+=(--flaky_test_attempts=2)
 fi
 
 # Generate baseline coverage file lists

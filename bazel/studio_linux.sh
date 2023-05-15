@@ -119,7 +119,6 @@ function run_bazel_test() {
   elif [[ $BUILD_TYPE == "POSTSUBMIT" ]]; then
     conditional_flags+=(--bes_keywords=ab-postsubmit)
     conditional_flags+=(--nocache_test_results)
-    conditional_flags+=(--flaky_test_attempts=2)
   fi
 
   # Generate a UUID for use as the bazel test invocation id
