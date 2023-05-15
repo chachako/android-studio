@@ -29,6 +29,7 @@ enum class Category {
   Automotive,
   XML,
   Wear,
+  TV,
   AIDL,
   Widget,
   Google,

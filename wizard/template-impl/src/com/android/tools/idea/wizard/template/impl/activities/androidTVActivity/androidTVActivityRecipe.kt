@@ -23,6 +23,7 @@ import com.android.tools.idea.wizard.template.impl.activities.androidTVActivity.
 import com.android.tools.idea.wizard.template.impl.activities.androidTVActivity.res.layout.activityMainXml
 import com.android.tools.idea.wizard.template.impl.activities.androidTVActivity.res.values.colorsXml
 import com.android.tools.idea.wizard.template.impl.activities.androidTVActivity.res.values.stringsXml
+import com.android.tools.idea.wizard.template.impl.activities.androidTVActivity.res.values.themesXml
 import com.android.tools.idea.wizard.template.impl.activities.androidTVActivity.src.app_package.browseErrorActivityJava
 import com.android.tools.idea.wizard.template.impl.activities.androidTVActivity.src.app_package.browseErrorActivityKt
 import com.android.tools.idea.wizard.template.impl.activities.androidTVActivity.src.app_package.cardPresenterJava
@@ -71,6 +72,7 @@ fun RecipeExecutor.androidTVActivityRecipe(
            manifestOut.resolve("AndroidManifest.xml"))
   mergeXml(stringsXml(activityClass, moduleData.isNewModule), resOut.resolve("values/strings.xml"))
   mergeXml(colorsXml(), resOut.resolve("values/colors.xml"))
+  mergeXml(themesXml(moduleData.themesData.main.name), resOut.resolve("values/themes.xml"))
 
   copy(File("androidtv-activity").resolve("drawable"), resOut.resolve("drawable"))
   save(activityMainXml(activityClass, packageName), resOut.resolve("layout/${layoutName}.xml"))

@@ -218,9 +218,14 @@ DATA = [
     "androidx.compose.animation:animation:1.2.0-alpha05",
     "androidx.compose.animation:animation:1.3.0",
     "androidx.compose.animation:animation:1.4.0",
+    "androidx.compose.animation:animation:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.animation:animation-core-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.foundation:foundation:1.2.0-alpha05",
     "androidx.compose.foundation:foundation:1.3.0",
     "androidx.compose.foundation:foundation:1.4.0",
+    "androidx.compose.animation:animation-core-android:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.foundation:foundation:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.foundation:foundation-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.compiler:compiler:1.2.0",
     "androidx.compose.compiler:compiler:1.3.2",
     "androidx.compose.compiler:compiler:1.4.3",
@@ -229,6 +234,7 @@ DATA = [
     "androidx.compose.material:material:1.3.0",  # Needed by //tools/base/build-system/integration-test/...
     "androidx.compose.material:material:1.4.0",
     "androidx.compose.material:material:1.5.0-alpha04",
+    "androidx.compose.material:material:1.4.3",  # Necessary for Compose for TV.
     "androidx.compose.material3:material3:1.0.0-alpha02",
     "androidx.compose.material3:material3:1.0.0",
     "androidx.compose.material3:material3:1.0.1",
@@ -242,16 +248,30 @@ DATA = [
     "androidx.compose.ui:ui-test-junit4:1.3.0",
     "androidx.compose.ui:ui-test-junit4:1.4.0",
     "androidx.compose.ui:ui-test-junit4:1.5.0-alpha04",
+    "androidx.compose.ui:ui-test-junit4:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.ui:ui-test-junit4-android:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.ui:ui-test-manifest:1.2.0",
     "androidx.compose.ui:ui-test-manifest:1.2.0",
     "androidx.compose.ui:ui-test-manifest:1.3.0",
     "androidx.compose.ui:ui-test-manifest:1.4.0",
     "androidx.compose.ui:ui-test-manifest:1.5.0-alpha04",
+    "androidx.compose.ui:ui-test-manifest:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.ui:ui-unit-android:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.ui:ui-test-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.ui:ui:1.3.0",
     "androidx.compose.ui:ui:1.4.0",
+    "androidx.compose.ui:ui:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.ui:ui-graphics-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.ui:ui-tooling:1.2.0",
     "androidx.compose.ui:ui-tooling:1.3.0",  # Still needed from //tools/base/build-system/integration-tests
     "androidx.compose.ui:ui-tooling:1.4.0",
     "androidx.compose.ui:ui-tooling:1.5.0-alpha04",
+    "androidx.compose.ui:ui-tooling:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.ui:ui-tooling-android:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.ui:ui-tooling-preview:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.ui:ui-tooling-android:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.ui:ui-tooling-preview-android:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.ui:ui-tooling-data-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.constraintlayout:constraintlayout:1.1.3",
     "androidx.constraintlayout:constraintlayout:2.1.3",
     "androidx.constraintlayout:constraintlayout:2.1.4",
@@ -267,6 +287,7 @@ DATA = [
     "androidx.core:core-ktx:1.9.0",
     "androidx.core:core-splashscreen:1.0.1",
     "androidx.core:core-ktx:1.11.0-alpha04",
+    "androidx.core:core-ktx:1.11.0-beta01",  # Necessary for Compose for TV.
     "androidx.customview:customview-poolingcontainer:1.0.0-beta01",
     "androidx.databinding:viewbinding:7.2.0",
     "androidx.databinding:viewbinding:7.4.1",
@@ -346,6 +367,8 @@ DATA = [
     "androidx.test:rules:1.4.0-alpha06",
     "androidx.test:runner:1.4.0-alpha06",
     "androidx.tracing:tracing-perfetto-common:1.0.0-alpha01",
+    "androidx.tv:tv-foundation:1.0.0-alpha07",
+    "androidx.tv:tv-material:1.0.0-alpha07",
     "androidx.wear:wear:1.2.0",
     "androidx.wear.compose:compose-material:1.1.2",
     "androidx.wear.tiles:tiles:1.2.0-alpha05",

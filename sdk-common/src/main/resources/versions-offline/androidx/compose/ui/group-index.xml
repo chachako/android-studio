@@ -1,18 +1,23 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <androidx.compose.ui>
-  <ui versions="1.4.0,1.5.0-alpha01"/>
+  <ui versions="1.4.0,1.5.0-alpha01,1.5.0-beta01"/>
   <ui-android-stubs versions="1.5.0-alpha01"/>
+  <ui-unit-android versions="1.5.0-beta01"/>
   <ui-geometry versions="1.4.0,1.5.0-alpha01"/>
-  <ui-graphics versions="1.4.0,1.5.0-alpha01"/>
+  <ui-graphics versions="1.4.0,1.5.0-alpha01,1.5.0-beta01"/>
   <ui-test versions="1.4.0,1.5.0-alpha01"/>
-  <ui-test-junit4 versions="1.4.0,1.5.0-alpha01"/>
-  <ui-test-manifest versions="1.4.0,1.5.0-alpha01"/>
+  <ui-test-junit4 versions="1.4.0,1.5.0-alpha01,1.5.0-beta01"/>
+  <ui-test-junit4-android versions="1.5.0-beta01"/>
+  <ui-test-manifest versions="1.4.0,1.5.0-alpha01,1.5.0-beta01"/>
+  <ui-test-android versions="1.5.0-beta01" />
   <ui-text versions="1.4.0,1.5.0-alpha01"/>
   <ui-text-android versions="1.0.0-alpha06"/>
   <ui-text-google-fonts versions="1.4.0,1.5.0-alpha01"/>
-  <ui-tooling versions="1.4.0,1.5.0-alpha01"/>
-  <ui-tooling-data versions="1.4.0,1.5.0-alpha01"/>
-  <ui-tooling-preview versions="1.4.0,1.5.0-alpha01"/>
+  <ui-tooling versions="1.4.0,1.5.0-alpha01,1.5.0-beta01"/>
+  <ui-tooling-android versions="1.5.0-beta01"/>
+  <ui-tooling-data versions="1.4.0,1.5.0-alpha01,1.5.0-beta01"/>
+  <ui-tooling-preview versions="1.4.0,1.5.0-alpha01,1.5.0-beta01"/>
+  <ui-tooling-preview-android versions="1.5.0-beta01"/>
   <ui-unit versions="1.4.0,1.5.0-alpha01"/>
   <ui-util versions="1.4.0,1.5.0-alpha01"/>
   <ui-viewbinding versions="1.4.0,1.5.0-alpha01"/>

@@ -22,6 +22,7 @@ import com.android.tools.idea.wizard.template.impl.activities.androidTVActivity.
 import com.android.tools.idea.wizard.template.impl.activities.basicActivity.basicActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.bottomNavigationActivity.bottomNavigationActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.composeActivityMaterial3.composeActivityMaterial3Template
+import com.android.tools.idea.wizard.template.impl.activities.composeTvActivity.composeTvActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.composeWearActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.composeWearActivityWithTileAndComplicationTemplate
 import com.android.tools.idea.wizard.template.impl.activities.cppEmptyActivity.cppEmptyActivityTemplate
@@ -77,6 +78,7 @@ class WizardTemplateProviderImpl : WizardTemplateProvider() {
     basicActivityTemplate,
     composeWearActivityWithTileAndComplicationTemplate,
     composeWearActivityTemplate,
+    composeTvActivityTemplate,
     bottomNavigationActivityTemplate,
     emptyActivityTemplate,
     fullscreenActivityTemplate,
