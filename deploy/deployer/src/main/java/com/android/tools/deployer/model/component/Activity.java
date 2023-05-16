@@ -23,7 +23,6 @@ import com.android.tools.deployer.DeployerException;
 import com.android.tools.manifest.parser.components.ManifestActivityInfo;
 import com.android.utils.ILogger;
 
-
 public class Activity extends AppComponent {
 
     public Activity(@NonNull ManifestActivityInfo info,
@@ -40,7 +39,6 @@ public class Activity extends AppComponent {
             @NonNull IShellOutputReceiver receiver)
             throws DeployerException {
         extraFlags = extraFlags.trim();
-        validate(extraFlags, activationMode);
         logger.info("Activating Activity '%s' %s",
                     info.getQualifiedName(),
                     activationMode.equals(Mode.DEBUG) ? "for debug" : "");
@@ -51,37 +49,6 @@ public class Activity extends AppComponent {
         String command = getStartActivityCommand(extraFlags);
         logger.info("$ adb shell " + command);
         runShellCommand(command, receiver);
-    }
-
-    private void validate(@NonNull String extraFlags, @NonNull Mode activationMode)
-            throws DeployerException {
-        validateFlags(extraFlags, activationMode);
-
-        // TODO: write validation of component
-    }
-
-    private void validateFlags(String rawFlags, Mode mode) throws DeployerException {
-        if (rawFlags.isEmpty()) {
-            return;
-        }
-        String[] flags = rawFlags.split("\\s+");
-        boolean hasArgument = false;
-        for (String current : flags) {
-            if (hasArgument) {
-                hasArgument = false;
-                continue;
-            } try {
-                Flag validFlag = Flag.getFlag(current);
-                hasArgument = validFlag.hasArgument;
-            }
-            catch (Exception e) {
-                throw DeployerException.componentActivationException(
-                        String.format("Unknown flag '%s'", current));
-            }
-        }
-        if (hasArgument) {
-            throw DeployerException.componentActivationException("Invalid flags");
-        }
     }
 
     @NonNull

@@ -15,8 +15,6 @@
  */
 package com.android.tools.deployer.model.component;
 
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -61,24 +59,5 @@ public class ActivityTest {
                         any(IShellOutputReceiver.class),
                         eq(15L),
                         eq(TimeUnit.SECONDS));
-    }
-
-    @Test
-    public void testExceptionOnInvalidFlags() {
-        IDevice device = Mockito.mock(IDevice.class);
-        ManifestActivityInfo info =
-                new ManifestActivityInfo(new XmlNode(), "com.example.myApp") {
-                    @Override
-                    public String getQualifiedName() {
-                        return "com.example.myApp.MainActivity";
-                    }
-                };
-        Activity activity = new Activity(info, "com.example.myApp", device, new TestLogger());
-        try {
-            activity.activate(" --userrr 123", AppComponent.Mode.DEBUG, new NullOutputReceiver());
-            fail();
-        } catch (DeployerException e) {
-            assertThat(e.getDetails()).isEqualTo("Unknown flag '--userrr'");
-        }
     }
 }
