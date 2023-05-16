@@ -88,6 +88,8 @@ class ExtractDeepLinksTaskTest {
         PathSubject.assertThat(outputFile).contains("my.host.example.com")
         PathSubject.assertThat(outputFile).contains("myScheme")
         PathSubject.assertThat(outputFile).contains(appIdPlaceholder)
+        PathSubject.assertThat(outputFile).contains("\"mDescription\": \"navigation.xml\"")
+        PathSubject.assertThat(outputFile).doesNotContain(navigationDir.name)
     }
 
     @Test

@@ -24,7 +24,6 @@ import com.android.manifmerger.DeepLink.DeepLinkException
 import com.android.utils.PositionXmlParser
 import com.android.utils.XmlUtils
 import com.google.common.collect.ImmutableList
-import java.util.ArrayList
 import org.w3c.dom.Element
 import org.w3c.dom.NamedNodeMap
 
@@ -187,7 +186,14 @@ private fun processDeepLinks(
             deepLink.port,
             deepLink.path.performPlaceholderSubstitution(manifestPlaceHolders),
             deepLink.query,
-            if (useUnknownSourceFilePosition) UNKNOWN else deepLink.sourceFilePosition,
+            if (useUnknownSourceFilePosition) {
+                UNKNOWN
+            } else {
+                SourceFilePosition(
+                    SourceFile(deepLink.sourceFilePosition.file.sourceFile.name),
+                    deepLink.sourceFilePosition.position
+                )
+            },
             deepLink.isAutoVerify,
             deepLink.action,
             deepLink.mimeType
