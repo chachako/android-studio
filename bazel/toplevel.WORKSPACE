@@ -142,6 +142,22 @@ http_archive(
 )
 
 http_archive(
+    name = "system_image_android-32_default_x86_64",
+    build_file = "//tools/base/bazel/avd:system_images.BUILD",
+    sha256 = "26be076dcece9ba909f7de6e76099b9d8934f8f4fd21a38c09ade4bd3706dab7",
+    strip_prefix = "x86_64",
+    url = "https://dl.google.com/android/repository/sys-img/google_apis/x86_64-32_r07.zip",
+)
+
+http_archive(
+    name = "system_image_android-33_default_x86_64",
+    build_file = "//tools/base/bazel/avd:system_images.BUILD",
+    sha256 = "71cd5ab0990ae34a98f48d1b282414219ba22160e253f7bf8d91d84a08d4da57",
+    strip_prefix = "x86_64",
+    url = "https://dl.google.com/android/repository/sys-img/google_apis/x86_64-33_r10.zip",
+)
+
+http_archive(
     name = "system_image_android-TiramisuPrivacySandbox_default_x86_64",
     build_file = "//tools/base/bazel/avd:system_images.BUILD",
     sha256 = "cebb267230c4a77cbf3ab984876d9715f11d9e870ebaead486bb58d2a0b28bf1",
