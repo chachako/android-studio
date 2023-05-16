@@ -387,6 +387,20 @@ message ProcessData {
   }
 }
 
+// The type of task initiated. This value will be used to populate the
+// SessionStarted task typefield and read on studio-side to determine
+// the type of task started/initiated.
+enum ProfilerTaskType {
+  UNSPECIFIED_TASK = 0;
+  CALLSTACK_SAMPLE = 1;
+  SYSTEM_TRACE = 2;
+  JAVA_KOTLIN_METHOD_TRACE = 3;
+  JAVA_KOTLIN_METHOD_SAMPLE = 4;
+  HEAP_DUMP = 5;
+  NATIVE_ALLOCATIONS = 6;
+  JAVA_KOTLIN_ALLOCATIONS = 7;
+}
+
 message SessionData {
   message SessionStarted {
     // The session type here maps directly to the SessionMetadata.SessionType.
@@ -417,6 +431,8 @@ message SessionData {
     SessionType type = 9;
     // See SdkConstans.CPU_ARCH_*
     string process_abi = 10;
+    // Session's task type indicating the type of task the session is underlying.
+    ProfilerTaskType task_type = 11;
   }
 
   oneof union {

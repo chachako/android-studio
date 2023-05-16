@@ -131,6 +131,7 @@ message BeginSession {
   string session_name = 3;
   // See SdkConstans.CPU_ARCH_*
   string process_abi = 4;
+  ProfilerTaskType task_type = 5;
 }
 
 message EndSession {

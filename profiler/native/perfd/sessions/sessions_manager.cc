@@ -79,6 +79,7 @@ void SessionsManager::BeginSession(Daemon* daemon, int64_t stream_id,
   session_started->set_jvmti_enabled(data.jvmti_config().attach_agent());
   session_started->set_process_abi(data.process_abi());
   session_started->set_type(proto::SessionData::SessionStarted::FULL);
+  session_started->set_task_type(data.task_type());
   daemon->buffer()->Add(event);
 
   sessions_.push_back(std::move(session));
