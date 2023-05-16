@@ -82,19 +82,19 @@ class FakeAdbRule : ExternalResource() {
     deviceCommandHandlers.add(handler)
   }
 
-    /**
-     * Add a [EmulatorConsole] factory.
-     */
-    fun withEmulatorConsoleFactory(factory: (String, String) -> EmulatorConsole) = apply {
-        consoleFactory = factory
-    }
+  /**
+   * Add a [EmulatorConsole] factory.
+   */
+  fun withEmulatorConsoleFactory(factory: (String, String) -> EmulatorConsole) = apply {
+    consoleFactory = factory
+  }
 
-    /**
-     * Configure whether to enable ClientSupport. Must be called before @Before tasks are run.
-     */
-    fun withClientSupport(enabled: Boolean) = apply { clientSupportEnabled = enabled }
+  /**
+   * Configure whether to enable ClientSupport. Must be called before @Before tasks are run.
+   */
+  fun withClientSupport(enabled: Boolean) = apply { clientSupportEnabled = enabled }
 
-    /**
+  /**
    * Initialize the ADB bridge as part of the setup.
    *
    * Some tests may delay this step and call initialize the AdbBridge separately.
