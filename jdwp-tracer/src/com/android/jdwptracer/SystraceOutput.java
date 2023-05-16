@@ -129,7 +129,7 @@ class SystraceOutput {
             throws IOException {
         String name = event.name();
         emitInstantEvent(root, ns2us(event.time_ns()), event.line(), name);
-        nameThread(root, event.line(), name);
+        emitThreadMetadata(root, event.line(), name);
     }
 
     private static void processTransmission(
@@ -167,7 +167,7 @@ class SystraceOutput {
         }
 
         // Write the thread dictionary via MetaData Event
-        nameThread(root, transmission.line(), name);
+        emitThreadMetadata(root, transmission.line(), name);
     }
 
     private static JsonObject makeMessagePayload(Message message) {
@@ -240,18 +240,33 @@ class SystraceOutput {
         root.add(part);
     }
 
-    private static void nameThread(@NonNull JsonArray root, int threadID, @NonNull String name) {
-        JsonObject args = new JsonObject();
-        args.addProperty("name", name);
+    private static void emitThreadMetadata(@NonNull JsonArray root, int threadID, @NonNull String name) {
+        // 1. Issue thread name
+        JsonObject threadNameMeta = new JsonObject();
+        threadNameMeta.addProperty("name", "thread_name");
+        threadNameMeta.addProperty("ph", "M");
+        threadNameMeta.addProperty("pid", 0);
+        threadNameMeta.addProperty("tid", threadID);
 
+        JsonObject argsName = new JsonObject();
+        argsName.addProperty("name", name);
+        threadNameMeta.add("args", argsName);
+
+        root.add(threadNameMeta);
+
+        // 2. Issue thread drawing order
         JsonObject part = new JsonObject();
-        part.addProperty("name", "thread_name");
+        part.addProperty("name", "thread_sort_index");
         part.addProperty("ph", "M");
         part.addProperty("pid", 0);
         part.addProperty("tid", threadID);
-        part.add("args", args);
+
+        JsonObject argsOrder = new JsonObject();
+        argsOrder.addProperty("sort_index", threadID);
+        part.add("args", argsOrder);
 
         root.add(part);
+
     }
 
     private static void nameProcess(@NonNull JsonArray root, @NonNull String name)
