@@ -78,7 +78,9 @@ abstract class Environment {
 
 private fun ensureInitialized() {
     if (!Environment.initialized) {
-        error("Computer Architecture Environment not initialized properly.")
+        // TODO(b/283002867): log info to let test environments know that the environment was
+        // not initialized.
+        Environment.initialize()
     }
 }
 
