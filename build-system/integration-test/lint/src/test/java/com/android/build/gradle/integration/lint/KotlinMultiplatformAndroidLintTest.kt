@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuil
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.truth.PathSubject
 import com.android.utils.FileUtils
+import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -72,7 +73,12 @@ class KotlinMultiplatformAndroidLintTest {
             """.trimIndent())
 
         // Run twice to catch issues with configuration caching
-        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
+        val result = project.executor().expectFailure().run(
+            ":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain"
+        )
+        Truth.assertThat(result.failureMessage).contains(
+            "Lint found errors in the project; aborting build."
+        )
         project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
 
         val reportFile =
@@ -99,7 +105,12 @@ class KotlinMultiplatformAndroidLintTest {
             """.trimIndent())
 
         // Run twice to catch issues with configuration caching
-        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
+        val result = project.executor().expectFailure().run(
+            ":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain"
+        )
+        Truth.assertThat(result.failureMessage).contains(
+            "Lint found errors in the project; aborting build."
+        )
         project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
 
         val reportFile =
@@ -139,7 +150,12 @@ class KotlinMultiplatformAndroidLintTest {
             """.trimIndent())
 
         // Run twice to catch issues with configuration caching
-        project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
+        val result = project.executor().expectFailure().run(
+            ":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain"
+        )
+        Truth.assertThat(result.failureMessage).contains(
+            "Lint found errors in the project; aborting build."
+        )
         project.executor().expectFailure().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
 
         val reportFile =
@@ -180,7 +196,12 @@ class KotlinMultiplatformAndroidLintTest {
             """.trimIndent())
 
         // Run twice to catch issues with configuration caching
-        project.executor().expectFailure().run(":app:clean", ":app:lintDebug")
+        val result = project.executor().expectFailure().run(
+            ":app:clean", ":app:lintDebug"
+        )
+        Truth.assertThat(result.failureMessage).contains(
+            "Lint found errors in the project; aborting build."
+        )
         project.executor().expectFailure().run(":app:clean", ":app:lintDebug")
 
         val reportFile =
