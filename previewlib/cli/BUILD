@@ -4,6 +4,7 @@ load("//tools/base/sdklib:sdk.bzl", "sdk_java_binary")
 load("//tools/base/common:version.bzl", "BASE_VERSION")
 load("//tools/base/bazel:bazel.bzl", "iml_module")
 load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
+load(":merge_deps.bzl", "merge_deps")
 
 # managed by go/iml_to_build
 jvm_import(
@@ -58,6 +59,69 @@ iml_module(
         "//tools/analytics-library/crash:analytics-crash[module]",
         "//tools/adt/idea/execution/common:intellij.android.execution.common[module]",
     ],
+)
+
+merge_deps(
+    name = "bundled_deps",
+    srcs = [
+        ":lint-cli-psi-prebuilts",
+        ":studio.android.sdktools.screenshot.cli",
+        "//prebuilts/studio/intellij-sdk:studio-sdk",
+        "//prebuilts/studio/intellij-sdk:studio-sdk-plugin-Kotlin",
+        "//tools/adt/idea/.idea/libraries:mockito",
+        "//tools/adt/idea/.idea/libraries:studio-analytics-proto",
+        "//tools/adt/idea/android:intellij.android.core",
+        "//tools/adt/idea/android-common:intellij.android.common",
+        "//tools/adt/idea/build-attribution:intellij.android.build-attribution",
+        "//tools/adt/idea/compose-designer:intellij.android.compose-designer",
+        "//tools/adt/idea/designer:intellij.android.designer",
+        "//tools/adt/idea/jps-model:intellij.android.jps.model",
+        "//tools/adt/idea/layoutlib:intellij.android.layoutlib",
+        "//tools/adt/idea/layoutlib-loader:intellij.android.layoutlib-loader",
+        "//tools/adt/idea/preview-designer:intellij.android.preview-designer",
+        "//tools/adt/idea/project-system:intellij.android.projectSystem",
+        "//tools/adt/idea/project-system-gradle:intellij.android.projectSystem.gradle",
+        "//tools/adt/idea/render-resources:intellij.android.render-resources",
+        "//tools/adt/idea/rendering:intellij.android.rendering",
+        "//tools/adt/idea/server-flags:intellij.android.server-flags",
+        "//tools/analytics-library/crash:analytics-crash",
+        "//tools/analytics-library/shared:analytics-shared",
+        "//tools/analytics-library/tracker:analytics-tracker",
+        "//tools/base/apkparser/analyzer:studio.android.sdktools.analyzer",
+        "//tools/base/build-system:studio.android.sdktools.manifest-merger",
+        "//tools/base/common:studio.android.sdktools.common",
+        "//tools/base/flags:studio.android.sdktools.flags",
+        "//tools/base/layoutlib-api:studio.android.sdktools.layoutlib-api",
+        "//tools/base/lint:studio.android.sdktools.lint-api",
+        "//tools/base/lint:studio.android.sdktools.lint-checks",
+        "//tools/base/lint:studio.android.sdktools.lint-model",
+        "//tools/base/lint/cli:studio.android.sdktools.lint.cli",
+        "//tools/base/resource-repository:studio.android.sdktools.resource-repository",
+        "//tools/base/sdk-common:studio.android.sdktools.sdk-common",
+        "//tools/base/sdklib:studio.android.sdktools.sdklib",
+    ],
+)
+
+java_import(
+    name = "bundled_deps_java_library",
+    jars = ["bundled_deps.jar"],
+)
+
+maven_library(
+    name = "screenshot",
+    srcs = [],
+    bundled_deps = [":bundled_deps_java_library"],
+    coordinates = "com.android.screenshot.cli:screenshot",
+    description = "Screenshot tools",
+    lint_baseline = "lint_baseline.xml",
+    module_name = "screenshot",
+    resource_strip_prefix = "tools/base/previewlib/cli",
+    resources = [
+        "//prebuilts/studio/layoutlib:build.prop",
+        "//prebuilts/studio/layoutlib/data:native_libs",
+    ],
+    version = BASE_VERSION,
+    visibility = ["//visibility:public"],
 )
 
 java_binary(
