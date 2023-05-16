@@ -101,10 +101,10 @@ public class LintDependencyModelTest {
                         ":app:lintReportDebug",
                         ":app:lintAnalyzeDebug",
                         ":androidlib:lintAnalyzeDebug",
-                        ":javalib:lintAnalyze",
-                        ":javalib2:lintAnalyze",
-                        ":indirectlib:lintAnalyze",
-                        ":indirectlib2:lintAnalyze");
+                        ":javalib:lintAnalyzeJvm",
+                        ":javalib2:lintAnalyzeJvm",
+                        ":indirectlib:lintAnalyzeJvm",
+                        ":indirectlib2:lintAnalyzeJvm");
 
         GradleBuildResult firstResult = project.executor().run(":app:lintDebug");
         tasks.forEach(taskName -> assertThat(firstResult.findTask(taskName)).didWork());

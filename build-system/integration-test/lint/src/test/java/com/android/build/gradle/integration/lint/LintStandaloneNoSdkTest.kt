@@ -34,8 +34,8 @@ class LintStandaloneNoSdkTest {
     fun emptyJavaProjectRunLint() {
         val result = project.executor().run(":lint")
         Truth.assertThat(result.failedTasks).isEmpty()
-        assertThat(result.getTask(":lint")).didWork();
-        assertThat(result.getTask(":lintAnalyze")).didWork();
+        assertThat(result.getTask(":lintJvm")).didWork();
+        assertThat(result.getTask(":lintAnalyzeJvm")).didWork();
 
         val file = project.file("lint-results.txt");
         assertThat(file).exists();

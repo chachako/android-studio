@@ -89,31 +89,31 @@ class LintStandaloneTest(private val runLintInProcess: Boolean) {
         getExecutor().expectFailure().run( ":lint")
         ScannerSubject.assertThat(project.buildResult.stderr)
             .contains("Lint found errors in the project; aborting build.")
-        assertThat(project.buildResult.failedTasks).contains(":lint")
-        assertThat(project.buildResult.didWorkTasks).contains(":lintReport")
-        assertThat(project.buildResult.failedTasks).doesNotContain(":lintReport")
+        assertThat(project.buildResult.failedTasks).contains(":lintJvm")
+        assertThat(project.buildResult.didWorkTasks).contains(":lintReportJvm")
+        assertThat(project.buildResult.failedTasks).doesNotContain(":lintReportJvm")
     }
 
     @Test
     fun checkOutputsNotOverlapping() {
         val lintModelDir =
-            FileUtils.join(project.intermediatesDir, "lintReport", "android-lint-model")
+            FileUtils.join(project.intermediatesDir, "lintReportJvm", "android-lint-model")
         val lintFixModelDir =
-            FileUtils.join(project.intermediatesDir, "lintFix", "android-lint-model")
+            FileUtils.join(project.intermediatesDir, "lintFixJvm", "android-lint-model")
         val lintVitalModelDir =
-            FileUtils.join(project.intermediatesDir, "lintVitalReport", "android-lint-model")
+            FileUtils.join(project.intermediatesDir, "lintVitalReportJvm", "android-lint-model")
 
         getExecutor().run(":lint")
         assertThat(lintModelDir).exists()
         assertThat(lintFixModelDir).doesNotExist()
         assertThat(lintVitalModelDir).doesNotExist()
 
-        getExecutor().expectFailure().run(":cleanLintReport", ":lintFix")
+        getExecutor().expectFailure().run(":cleanLintReportJvm", ":lintFix")
         assertThat(lintModelDir).doesNotExist()
         assertThat(lintFixModelDir).exists()
         assertThat(lintVitalModelDir).doesNotExist()
 
-        getExecutor().run(":cleanLintFix", ":lintVital")
+        getExecutor().run(":cleanLintFixJvm", ":lintVital")
         assertThat(lintModelDir).doesNotExist()
         assertThat(lintFixModelDir).doesNotExist()
         assertThat(lintVitalModelDir).exists()

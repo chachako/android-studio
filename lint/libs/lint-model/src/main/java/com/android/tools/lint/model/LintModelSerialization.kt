@@ -1176,7 +1176,7 @@ private abstract class LintModelReader(
       getFiles("manifests").ifEmpty {
         // This field exists for backward compatibility as old AGP versions will write a single
         // manifest entry
-        listOf(getRequiredFile("manifest"))
+        listOfNotNull(getOptionalFile("manifest"))
       }
     val javaDirectories = getFiles("javaDirectories")
     val resDirectories = getFiles("resDirectories")

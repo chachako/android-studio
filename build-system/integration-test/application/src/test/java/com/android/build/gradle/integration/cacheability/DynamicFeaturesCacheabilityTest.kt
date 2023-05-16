@@ -158,7 +158,7 @@ class DynamicFeaturesCacheabilityTest {
                     ":app:checkDebugDuplicateClasses", /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.CheckDuplicateClassesTask] */
                     ":app:createDebugApkListingFileRedirect",
                     ":app:createDebugCompatibleScreenManifests", /** Intentionally not cacheable. See [com.android.build.gradle.tasks.CompatibleScreensManifest] */
-                    ":app:copyDebugAndroidLintReports", // intentionally not cacheable
+                    ":app:copyDebugLintReports", // intentionally not cacheable
                     ":app:extractProguardFiles", // intentionally not cacheable
                     ":app:generateDebugLintModel", // intentionally not cacheable
                     ":app:lintDebug", // intentionally not cacheable

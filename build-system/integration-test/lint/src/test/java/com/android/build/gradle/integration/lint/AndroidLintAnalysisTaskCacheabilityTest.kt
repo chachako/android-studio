@@ -369,7 +369,7 @@ class AndroidLintAnalysisTaskCacheabilityTest {
         assertThat(project1.buildResult.getTask(":app:lintAnalyzeDebug")).wasFromCache()
         assertThat(project1.buildResult.getTask(":feature:lintAnalyzeDebug")).wasFromCache()
         assertThat(project1.buildResult.getTask(":lib:lintAnalyzeDebug")).wasFromCache()
-        assertThat(project1.buildResult.getTask(":java-lib:lintAnalyze")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":java-lib:lintAnalyzeJvm")).wasFromCache()
     }
 }
 

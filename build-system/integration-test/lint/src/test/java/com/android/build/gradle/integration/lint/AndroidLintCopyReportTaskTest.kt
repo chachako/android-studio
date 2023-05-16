@@ -48,7 +48,7 @@ class AndroidLintCopyReportTaskTest {
     // Regression test for b/189877657
     @Test
     fun testRunningTaskDirectly() {
-        project.executor().run("clean", "copyDebugAndroidLintReports")
+        project.executor().run("clean", "copyDebugLintReports")
         ScannerSubject.assertThat(project.buildResult.stdout).contains("BUILD SUCCESSFUL")
         ScannerSubject.assertThat(project.buildResult.stdout)
             .contains("Unable to copy the lint text report")

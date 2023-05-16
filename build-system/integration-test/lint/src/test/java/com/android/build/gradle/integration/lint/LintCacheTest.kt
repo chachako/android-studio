@@ -36,7 +36,7 @@ class LintCacheTest {
      */
     @Test
     fun testLintCache() {
-        project.execute("clean", ":app:lintAnalyzeDebug", ":javalib:lintAnalyze")
+        project.execute("clean", ":app:lintAnalyzeDebug", ":javalib:lintAnalyzeJvm")
         assertThat(project.getSubproject("app").getIntermediateFile("lint-cache")).isDirectory()
         assertThat(project.getSubproject("javalib").getIntermediateFile("lint-cache")).isDirectory()
     }

@@ -74,12 +74,12 @@ class LintStandaloneFixTest {
 
     @Test
     fun checkStandaloneLintFix() {
-        val result = project.executor().expectFailure().run("lintFix")
+        val result = project.executor().expectFailure().run("lintFixJvm")
         assertThat(result.stderr)
             .contains(
                 "Aborting build since sources were modified to apply quickfixes after compilation"
             )
-        Truth.assertThat(result.failedTasks).contains(":lintFix")
+        Truth.assertThat(result.failedTasks).contains(":lintFixJvm")
 
         // Make sure quickfix worked too
         val sourceFile = project.file("src/main/java/com/example/foo/Foo.java")
@@ -93,7 +93,7 @@ class LintStandaloneFixTest {
         //    ...
         PathSubject.assertThat(sourceFile).doesNotContain("private void bar()")
         PathSubject.assertThat(sourceFile).contains("void bar()")
-        val result2 = project.executor().run("clean", "lintFix")
+        val result2 = project.executor().run("clean", "lintFixJvm")
         assertThat(result2.stdout).contains("BUILD SUCCESSFUL")
     }
 }

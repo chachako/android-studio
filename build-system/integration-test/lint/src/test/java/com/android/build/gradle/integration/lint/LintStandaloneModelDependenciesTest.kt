@@ -70,7 +70,7 @@ class LintStandaloneModelDependenciesTest {
         val artifactDependenciesFile =
             FileUtils.join(
                 project.getSubproject("java-lib1").intermediatesDir,
-                "lintReport",
+                "lintReportJvm",
                 "android-lint-model",
                 "main-artifact-dependencies.xml"
             )
@@ -81,7 +81,7 @@ class LintStandaloneModelDependenciesTest {
         val testArtifactDependenciesFile =
             FileUtils.join(
                 project.getSubproject("java-lib1").intermediatesDir,
-                "lintReport",
+                "lintReportJvm",
                 "android-lint-model",
                 "main-testArtifact-dependencies.xml"
             )

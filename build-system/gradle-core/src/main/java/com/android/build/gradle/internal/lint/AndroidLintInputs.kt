@@ -120,6 +120,9 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.workers.WorkerExecutor
+import org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import java.io.File
 import java.nio.file.Files
 
@@ -393,12 +396,16 @@ abstract class ProjectInputs {
         lintOptions.initialize(dslLintOptions, lintMode)
         resourcePrefix.setDisallowChanges("")
         dynamicFeatures.setDisallowChanges(setOf())
-        val mainSourceSet = javaExtension.sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-        val javaCompileTask = project.tasks.named(
-            mainSourceSet.compileJavaTaskName,
-            JavaCompile::class.java
-        )
-        bootClasspath.fromDisallowChanges(javaCompileTask.map { it.options.bootstrapClasspath ?: project.files() })
+        val javaCompileTask =
+            javaExtension.sourceSets.findByName(SourceSet.MAIN_SOURCE_SET_NAME)?.let {
+                project.tasks.named(it.compileJavaTaskName, JavaCompile::class.java)
+            }
+        if (javaCompileTask != null) {
+            bootClasspath.from(
+                javaCompileTask.map { it.options.bootstrapClasspath ?: project.files() }
+            )
+        }
+        bootClasspath.disallowChanges()
         javaSourceLevel.setDisallowChanges(javaExtension.sourceCompatibility)
         compileTarget.setDisallowChanges("")
         neverShrinking.setDisallowChanges(true)
@@ -1134,6 +1141,36 @@ abstract class VariantInputs {
     internal fun initializeForStandalone(
         project: Project,
         javaExtension: JavaPluginExtension,
+        kotlinExtensionWrapper: KotlinMultiplatformExtensionWrapper?,
+        projectOptions: ProjectOptions,
+        fatalOnly: Boolean,
+        useModuleDependencyLintModels: Boolean,
+        lintMode: LintMode
+    ) {
+        if (kotlinExtensionWrapper == null) {
+            initializeForStandalone(
+                project,
+                javaExtension,
+                projectOptions,
+                fatalOnly,
+                useModuleDependencyLintModels,
+                lintMode
+            )
+        } else {
+            initializeForStandaloneWithKotlinMultiplatform(
+                project,
+                kotlinExtensionWrapper,
+                projectOptions,
+                fatalOnly,
+                useModuleDependencyLintModels,
+                lintMode
+            )
+        }
+    }
+
+    private fun initializeForStandalone(
+        project: Project,
+        javaExtension: JavaPluginExtension,
         projectOptions: ProjectOptions,
         fatalOnly: Boolean,
         useModuleDependencyLintModels: Boolean,
@@ -1181,7 +1218,6 @@ abstract class VariantInputs {
         mainSourceProvider.setDisallowChanges(
             project.objects.newInstance(SourceProviderInput::class.java)
                 .initializeForStandalone(
-                    project,
                     mainSourceSet,
                     lintMode,
                     unitTestOnly = false
@@ -1193,7 +1229,6 @@ abstract class VariantInputs {
             unitTestSourceProvider.set(
                 project.objects.newInstance(SourceProviderInput::class.java)
                     .initializeForStandalone(
-                        project,
                         testSourceSet,
                         lintMode,
                         unitTestOnly = true
@@ -1205,6 +1240,111 @@ abstract class VariantInputs {
         testFixturesSourceProvider.disallowChanges()
         buildFeatures.initializeForStandalone()
         libraryDependencyCacheBuildService.setDisallowChanges(getBuildService(project.gradle.sharedServices))
+        mavenCoordinatesCache.setDisallowChanges(getBuildService(project.gradle.sharedServices))
+        proguardFiles.setDisallowChanges(null)
+        extractedProguardFiles.setDisallowChanges(null)
+        consumerProguardFiles.setDisallowChanges(null)
+        resValues.disallowChanges()
+    }
+
+    private fun initializeForStandaloneWithKotlinMultiplatform(
+        project: Project,
+        kotlinExtensionWrapper: KotlinMultiplatformExtensionWrapper,
+        projectOptions: ProjectOptions,
+        fatalOnly: Boolean,
+        useModuleDependencyLintModels: Boolean,
+        lintMode: LintMode
+    ) {
+        // TODO(b/196838286) - support (1) custom-named jvm targets and (2) multiple jvm targets
+        val jvmTarget = kotlinExtensionWrapper.kotlinExtension.targets.findByName("jvm")
+        val jvmMainCompilation = jvmTarget?.compilations?.findByName("main")
+        val jvmTestCompilation = jvmTarget?.compilations?.findByName("test")
+
+        name.setDisallowChanges(jvmTarget?.name)
+        this.useModuleDependencyLintModels.setDisallowChanges(useModuleDependencyLintModels)
+        if (jvmMainCompilation != null) {
+            mainArtifact.set(
+                project.objects
+                    .newInstance(AndroidArtifactInput::class.java)
+                    .initializeForStandaloneWithKotlinMultiplatform(
+                        project,
+                        projectOptions,
+                        KotlinCompilationWrapper(jvmMainCompilation),
+                        lintMode,
+                        useModuleDependencyLintModels,
+                        fatalOnly
+                    )
+            )
+        }
+        if (jvmTestCompilation != null) {
+            testArtifact.setDisallowChanges(
+                project.objects
+                    .newInstance(JavaArtifactInput::class.java)
+                    .initializeForStandaloneWithKotlinMultiplatform(
+                        project,
+                        projectOptions,
+                        KotlinCompilationWrapper(jvmTestCompilation),
+                        lintMode,
+                        useModuleDependencyLintModels,
+                        // analyzing test bytecode is expensive, without much benefit
+                        includeClassesOutputDirectories = false,
+                        fatalOnly
+                    )
+            )
+        }
+        androidTestArtifact.disallowChanges()
+        testFixturesArtifact.disallowChanges()
+        namespace.setDisallowChanges("")
+        minSdkVersion.initializeEmpty()
+        targetSdkVersion.initializeEmpty()
+        manifestPlaceholders.disallowChanges()
+        resourceConfigurations.disallowChanges()
+        debuggable.setDisallowChanges(true)
+        shrinkable.setDisallowChanges(false)
+        useSupportLibraryVectorDrawables.setDisallowChanges(false)
+        mergedManifest.setDisallowChanges(null)
+        manifestMergeReport.setDisallowChanges(null)
+        if (jvmMainCompilation != null) {
+            val sourceDirectories =
+                project.files().also { fileCollection ->
+                    jvmMainCompilation.kotlinSourceSets.forEach {
+                        fileCollection.from(it.kotlin.sourceDirectories)
+                    }
+                }
+            mainSourceProvider.setDisallowChanges(
+                project.objects.newInstance(SourceProviderInput::class.java)
+                    .initializeForStandaloneWithKotlinMultiplatform(
+                        sourceDirectories,
+                        lintMode,
+                        unitTestOnly = false
+                    )
+            )
+        }
+        sourceProviders.add(mainSourceProvider)
+        sourceProviders.disallowChanges()
+        if (!fatalOnly && jvmTestCompilation != null) {
+            val sourceDirectories =
+                project.files().also { fileCollection ->
+                    jvmTestCompilation.kotlinSourceSets.forEach {
+                        fileCollection.from(it.kotlin.sourceDirectories)
+                    }
+                }
+            unitTestSourceProvider.set(
+                project.objects.newInstance(SourceProviderInput::class.java)
+                    .initializeForStandaloneWithKotlinMultiplatform(
+                        sourceDirectories,
+                        lintMode,
+                        unitTestOnly = true
+                    )
+            )
+        }
+        unitTestSourceProvider.disallowChanges()
+        androidTestSourceProvider.disallowChanges()
+        testFixturesSourceProvider.disallowChanges()
+        buildFeatures.initializeForStandalone()
+        libraryDependencyCacheBuildService.setDisallowChanges(
+            getBuildService(project.gradle.sharedServices)
+        )
         mavenCoordinatesCache.setDisallowChanges(getBuildService(project.gradle.sharedServices))
         proguardFiles.setDisallowChanges(null)
         extractedProguardFiles.setDisallowChanges(null)
@@ -1452,20 +1592,38 @@ abstract class SourceProviderInput {
     }
 
     internal fun initializeForStandalone(
-        project: Project,
         sourceSet: SourceSet,
         lintMode: LintMode,
         unitTestOnly: Boolean
     ): SourceProviderInput {
-        val fakeManifestFile =
-            project.layout.buildDirectory.file("fakeAndroidManifest/${sourceSet.name}/AndroidManifest.xml")
-        this.manifestFiles.add(fakeManifestFile.map { it.asFile })
         this.manifestFiles.disallowChanges()
         this.javaDirectories.fromDisallowChanges(sourceSet.allJava.sourceDirectories)
         this.resDirectories.disallowChanges()
         this.assetsDirectories.disallowChanges()
         if (lintMode == LintMode.ANALYSIS) {
             this.javaDirectoriesClasspath.from(sourceSet.allJava.sourceDirectories)
+        }
+        this.javaDirectoriesClasspath.disallowChanges()
+        this.resDirectoriesClasspath.disallowChanges()
+        this.assetsDirectoriesClasspath.disallowChanges()
+        this.debugOnly.setDisallowChanges(false)
+        this.unitTestOnly.setDisallowChanges(unitTestOnly)
+        this.instrumentationTestOnly.setDisallowChanges(false)
+        this.testFixtureOnly.setDisallowChanges(false)
+        return this
+    }
+
+    internal fun initializeForStandaloneWithKotlinMultiplatform(
+        sourceDirectories: FileCollection,
+        lintMode: LintMode,
+        unitTestOnly: Boolean
+    ): SourceProviderInput {
+        this.manifestFiles.disallowChanges()
+        this.javaDirectories.fromDisallowChanges(sourceDirectories)
+        this.resDirectories.disallowChanges()
+        this.assetsDirectories.disallowChanges()
+        if (lintMode == LintMode.ANALYSIS) {
+            this.javaDirectoriesClasspath.from(sourceDirectories)
         }
         this.javaDirectoriesClasspath.disallowChanges()
         this.resDirectoriesClasspath.disallowChanges()
@@ -1703,6 +1861,59 @@ abstract class AndroidArtifactInput : ArtifactInput() {
         return this
     }
 
+    fun initializeForStandaloneWithKotlinMultiplatform(
+        project: Project,
+        projectOptions: ProjectOptions,
+        kotlinCompilationWrapper: KotlinCompilationWrapper,
+        lintMode: LintMode,
+        useModuleDependencyLintModels: Boolean,
+        fatalOnly: Boolean
+    ): AndroidArtifactInput {
+        val compilation = kotlinCompilationWrapper.kotlinCompilation
+        applicationId.setDisallowChanges("")
+        generatedSourceFolders.disallowChanges()
+        generatedResourceFolders.disallowChanges()
+        desugaredMethodsFiles.disallowChanges()
+        classesOutputDirectories.fromDisallowChanges(compilation.output.classesDirs)
+        warnIfProjectTreatedAsExternalDependency.setDisallowChanges(false)
+        val variantDependencies = VariantDependencies(
+            variantName = compilation.name,
+            componentType = ComponentTypeImpl.JAVA_LIBRARY,
+            compileClasspath = project.configurations.getByName(compilation.compileDependencyConfigurationName),
+            runtimeClasspath = project.configurations.getByName(compilation.runtimeDependencyConfigurationName ?: compilation.compileDependencyConfigurationName),
+            sourceSetRuntimeConfigurations = listOf(),
+            sourceSetImplementationConfigurations = listOf(),
+            elements = mapOf(),
+            providedClasspath = project.configurations.getByName(compilation.compileOnlyConfigurationName),
+            annotationProcessorConfiguration = null,
+            reverseMetadataValuesConfiguration = null,
+            wearAppConfiguration = null,
+            testedVariant = null,
+            project = project,
+            projectOptions = projectOptions,
+            isLibraryConstraintsApplied = false,
+            isSelfInstrumenting = false,
+        )
+        artifactCollectionsInputs.setDisallowChanges(
+            ArtifactCollectionsInputsImpl(
+                variantDependencies = variantDependencies,
+                projectPath = project.path,
+                variantName = compilation.name,
+                runtimeType = ArtifactCollectionsInputs.RuntimeType.FULL,
+                buildMapping = project.gradle.computeBuildMapping(),
+            )
+        )
+        initializeProjectDependencyLintArtifacts(
+            useModuleDependencyLintModels,
+            variantDependencies,
+            lintMode,
+            isMainArtifact = true,
+            fatalOnly,
+            projectOptions[BooleanOption.LINT_ANALYSIS_PER_COMPONENT]
+        )
+        return this
+    }
+
     internal fun toLintModel(
         dependencyCaches: DependencyCaches,
         type: LintModelArtifactType
@@ -1856,6 +2067,60 @@ abstract class JavaArtifactInput : ArtifactInput() {
         return this
     }
 
+    fun initializeForStandaloneWithKotlinMultiplatform(
+        project: Project,
+        projectOptions: ProjectOptions,
+        kotlinCompilationWrapper: KotlinCompilationWrapper,
+        lintMode: LintMode,
+        useModuleDependencyLintModels: Boolean,
+        includeClassesOutputDirectories: Boolean,
+        fatalOnly: Boolean
+    ): JavaArtifactInput {
+        val compilation = kotlinCompilationWrapper.kotlinCompilation
+        if (includeClassesOutputDirectories) {
+            classesOutputDirectories.from(compilation.output.classesDirs)
+        }
+        classesOutputDirectories.disallowChanges()
+        warnIfProjectTreatedAsExternalDependency.setDisallowChanges(false)
+        val variantDependencies = VariantDependencies(
+            variantName = compilation.name,
+            componentType = ComponentTypeImpl.JAVA_LIBRARY,
+            compileClasspath = project.configurations.getByName(compilation.compileDependencyConfigurationName),
+            runtimeClasspath = project.configurations.getByName(compilation.runtimeDependencyConfigurationName ?: compilation.compileDependencyConfigurationName),
+            sourceSetRuntimeConfigurations = listOf(),
+            sourceSetImplementationConfigurations = listOf(),
+            elements = mapOf(),
+            providedClasspath = project.configurations.getByName(compilation.compileOnlyConfigurationName),
+            annotationProcessorConfiguration = null,
+            reverseMetadataValuesConfiguration = null,
+            wearAppConfiguration = null,
+            testedVariant = null,
+            project = project,
+            projectOptions = projectOptions,
+            isLibraryConstraintsApplied = false,
+            isSelfInstrumenting = false,
+        )
+        artifactCollectionsInputs.setDisallowChanges(
+            ArtifactCollectionsInputsImpl(
+                variantDependencies = variantDependencies,
+                projectPath = project.path,
+                variantName = compilation.name,
+                runtimeType = ArtifactCollectionsInputs.RuntimeType.FULL,
+                buildMapping = project.gradle.computeBuildMapping(),
+            )
+        )
+        initializeProjectDependencyLintArtifacts(
+            useModuleDependencyLintModels,
+            variantDependencies,
+            lintMode,
+            // TODO(b/197322928) Initialize dependency partial results for unit test components once
+            //  there is a lint analysis task per component.
+            isMainArtifact = false,
+            fatalOnly,
+            projectOptions[BooleanOption.LINT_ANALYSIS_PER_COMPONENT]
+        )
+        return this
+    }
 
     internal fun toLintModel(
         dependencyCaches: DependencyCaches,
@@ -2210,6 +2475,25 @@ internal fun getLintMavenArtifactVersion(
     }
     return normalizedOverride
 }
+
+/**
+ * A class to wrap [KotlinMultiplatformExtension]. If there are method parameters with type
+ * [KotlinMultiplatformExtension] in task or task input classes, Gradle will fail at runtime for
+ * projects without the Kotlin Gradle plugin applied. Using this wrapper class works around that
+ * constraint.
+ *
+ * When using this class, perform a runtime check that the Kotlin Gradle plugin is applied.
+ */
+class KotlinMultiplatformExtensionWrapper(val kotlinExtension: KotlinMultiplatformExtension)
+
+/**
+ * A class to wrap [KotlinCompilation]. If there are method parameters with type [KotlinCompilation]
+ * in task or task input classes, Gradle will fail at runtime for projects without the Kotlin
+ * Gradle plugin applied. Using this wrapper class works around that constraint.
+ *
+ * When using this class, perform a runtime check that the Kotlin Gradle plugin is applied.
+ */
+class KotlinCompilationWrapper(val kotlinCompilation: KotlinCompilation<KotlinCommonOptions>)
 
 enum class LintMode {
     ANALYSIS,

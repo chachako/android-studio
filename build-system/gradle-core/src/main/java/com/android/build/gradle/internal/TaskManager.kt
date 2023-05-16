@@ -163,6 +163,7 @@ import com.android.build.gradle.tasks.VerifyLibraryResourcesTask
 import com.android.buildanalyzer.common.TaskCategoryIssue
 import com.android.builder.core.BuilderConstants
 import com.android.builder.core.ComponentType
+import com.android.builder.core.ComponentTypeImpl
 import com.android.builder.dexing.DexingType
 import com.android.utils.appendCapitalized
 import com.google.common.base.Preconditions
@@ -1998,7 +1999,11 @@ abstract class TaskManager(
             // Don't register global lint or lintFix tasks for dynamic features because dynamic
             // features are analyzed and their lint issues are reported and/or fixed when running
             // lint or lintFix from the base app.
-            if (!componentType.isForTesting && !componentType.isDynamicFeature) {
+            // Don't register global lint or lintFix tasks for KMP Android components because these
+            // global tasks are registered by the standalone lint plugin.
+            if (!componentType.isForTesting
+                && !componentType.isDynamicFeature
+                && componentType != ComponentTypeImpl.KMP_ANDROID) {
                 LintTaskManager(globalConfig, taskFactory, project).createBeforeEvaluateLintTasks()
             }
 

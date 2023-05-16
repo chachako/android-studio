@@ -274,7 +274,6 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
         final override fun configure(task: AndroidLintAnalysisTask) {
             super.configure(task)
 
-            task.group = JavaBasePlugin.VERIFICATION_GROUP
             task.description = description
 
             task.initializeGlobalInputs(
@@ -375,7 +374,6 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
         override fun configure(task: AndroidLintAnalysisTask) {
             super.configure(task)
 
-            task.group = JavaBasePlugin.VERIFICATION_GROUP
             task.description = description
 
             task.initializeGlobalInputs(
@@ -495,6 +493,7 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
     fun configureForStandalone(
         taskCreationServices: TaskCreationServices,
         javaPluginExtension: JavaPluginExtension,
+        kotlinExtensionWrapper: KotlinMultiplatformExtensionWrapper?,
         customLintChecksConfig: FileCollection,
         lintOptions: Lint,
         fatalOnly: Boolean = false
@@ -503,7 +502,6 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
             services = taskCreationServices,
             isAndroid = false
         )
-        this.group = JavaBasePlugin.VERIFICATION_GROUP
         this.variantName = ""
         this.analyticsService.setDisallowChanges(getBuildService(taskCreationServices.buildServiceRegistry))
         this.fatalOnly.setDisallowChanges(fatalOnly)
@@ -520,6 +518,7 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
             .initializeForStandalone(
                 project,
                 javaPluginExtension,
+                kotlinExtensionWrapper,
                 taskCreationServices.projectOptions,
                 fatalOnly,
                 useModuleDependencyLintModels = false,

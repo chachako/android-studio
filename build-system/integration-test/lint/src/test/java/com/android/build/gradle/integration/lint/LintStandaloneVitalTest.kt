@@ -43,9 +43,9 @@ class LintStandaloneVitalTest {
         // Run twice to catch issues with configuration caching
         project.executor().expectFailure().run("clean", "lintVital")
         val result = project.executor().expectFailure().run("clean", "lintVital")
-        Truth.assertThat(result.failedTasks).contains(":lintVital")
-        Truth.assertThat(result.didWorkTasks).contains(":lintVitalReport")
-        Truth.assertThat(result.failedTasks).doesNotContain(":lintVitalReport")
+        Truth.assertThat(result.failedTasks).contains(":lintVitalJvm")
+        Truth.assertThat(result.didWorkTasks).contains(":lintVitalReportJvm")
+        Truth.assertThat(result.failedTasks).doesNotContain(":lintVitalReportJvm")
 
         result.stderr.use {
             assertThat(it).contains("Lint found errors in the project; aborting build.")

@@ -32,6 +32,7 @@ import com.android.build.gradle.internal.coverage.JacocoReportTask
 import com.android.build.gradle.internal.lint.AndroidLintAnalysisTask
 import com.android.build.gradle.internal.lint.LintModelWriterTask
 import com.android.build.gradle.internal.lint.LintTaskManager
+import com.android.build.gradle.internal.plugins.LINT_PLUGIN_ID
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.res.GenerateEmptyResourceFilesTask
 import com.android.build.gradle.internal.res.GenerateLibraryRFileTask
@@ -94,13 +95,17 @@ class KmpTaskManager(
             task.dependsOn(globalConfig.localCustomLintChecks)
         }
 
-        lintTaskManager.createLintTasks(
-            ComponentTypeImpl.KMP_ANDROID,
-            variant.name,
-            listOf(variant),
-            testComponentPropertiesList = emptyList(),
-            isPerComponent = true
-        )
+        // Create lint tasks here only if the lint standalone plugin is applied (to avoid
+        // Android-specific behavior)
+        if (project.plugins.hasPlugin(LINT_PLUGIN_ID)) {
+            lintTaskManager.createLintTasks(
+                ComponentTypeImpl.KMP_ANDROID,
+                variant.name,
+                listOf(variant),
+                testComponentPropertiesList = emptyList(),
+                isPerComponent = true
+            )
+        }
 
         variant.publishBuildArtifacts()
 
@@ -268,7 +273,10 @@ class KmpTaskManager(
             }
         }
 
-        if (globalConfig.lintOptions.ignoreTestSources.not()) {
+        // Create lint tasks here only if the lint standalone plugin is applied (to avoid
+        // Android-specific behavior)
+        if (project.plugins.hasPlugin(LINT_PLUGIN_ID)
+            && globalConfig.lintOptions.ignoreTestSources.not()) {
             project.tasks.registerTask(
                 AndroidLintAnalysisTask.PerComponentCreationAction(component, fatalOnly = false)
             )

@@ -27,6 +27,7 @@ import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dsl.ManagedVirtualDevice
 import com.android.build.gradle.internal.lint.AndroidLintAnalysisTask
 import com.android.build.gradle.internal.lint.LintModelWriterTask
+import com.android.build.gradle.internal.plugins.LINT_PLUGIN_ID
 import com.android.build.gradle.internal.profile.AnalyticsConfiguratorService
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.services.getBuildService
@@ -213,9 +214,16 @@ class AndroidTestTaskManager(
                     .name)
         }
 
+        // Create lint tasks for a KMP component only if the lint standalone plugin is applied (to
+        // avoid Android-specific behavior)
+        val isKmpPerComponentLintAnalysis =
+            androidTestProperties is KmpComponentCreationConfig
+                    && project.plugins.hasPlugin(LINT_PLUGIN_ID)
+        val isNonKmpPerComponentLintAnalysis =
+            androidTestProperties !is KmpComponentCreationConfig
+                    && androidTestProperties.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)
         val isPerComponentLintAnalysis =
-            androidTestProperties.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)
-                    || androidTestProperties is KmpComponentCreationConfig
+            isKmpPerComponentLintAnalysis || isNonKmpPerComponentLintAnalysis
         if (isPerComponentLintAnalysis && globalConfig.lintOptions.ignoreTestSources.not()) {
             taskFactory.register(
                 AndroidLintAnalysisTask.PerComponentCreationAction(

@@ -112,11 +112,11 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
     internal fun configureForStandalone(
         taskCreationServices: TaskCreationServices,
         javaExtension: JavaPluginExtension,
+        kotlinExtensionWrapper: KotlinMultiplatformExtensionWrapper?,
         lintOptions: Lint,
         partialResultsDir: File,
         fatalOnly: Boolean,
     ) {
-        this.group = JavaBasePlugin.VERIFICATION_GROUP
         this.variantName = ""
         this.analyticsService.setDisallowChanges(
             getBuildService(taskCreationServices.buildServiceRegistry)
@@ -127,6 +127,7 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
             .initializeForStandalone(
                 project,
                 javaExtension,
+                kotlinExtensionWrapper,
                 taskCreationServices.projectOptions,
                 fatalOnly = fatalOnly,
                 useModuleDependencyLintModels = true,
