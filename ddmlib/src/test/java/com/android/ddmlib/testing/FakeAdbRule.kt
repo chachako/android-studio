@@ -43,6 +43,9 @@ class FakeAdbRule : ExternalResource() {
   lateinit var bridge: AndroidDebugBridge
     private set
 
+  val fakeAdbServerPort: Int
+    get() = fakeAdbServer.port
+
   private val isJdwpProxyEnabledDefault = DdmPreferences.isJdwpProxyEnabled()
   private var initAdbBridgeDuringSetup = true
   private var clientSupportEnabled = true
@@ -69,28 +72,28 @@ class FakeAdbRule : ExternalResource() {
   )
 
   /**
-   * Add a [HostCommandHandler]. Must be called before @Before tasks are run.
+   * Adds a [HostCommandHandler]. Must be called before @Before tasks are run.
    */
   fun withHostCommandHandler(command: String, handlerConstructor: () -> HostCommandHandler) = apply {
     hostCommandHandlers[command] = handlerConstructor
   }
 
   /**
-   * Add a [DeviceCommandHandler]. Must be called before @Before tasks are run.
+   * Adds a [DeviceCommandHandler]. Must be called before @Before tasks are run.
    */
   fun withDeviceCommandHandler(handler: DeviceCommandHandler) = apply {
     deviceCommandHandlers.add(handler)
   }
 
   /**
-   * Add a [EmulatorConsole] factory.
+   * Adds a [EmulatorConsole] factory.
    */
   fun withEmulatorConsoleFactory(factory: (String, String) -> EmulatorConsole) = apply {
     consoleFactory = factory
   }
 
   /**
-   * Configure whether to enable ClientSupport. Must be called before @Before tasks are run.
+   * Configures whether to enable ClientSupport. Must be called before @Before tasks are run.
    */
   fun withClientSupport(enabled: Boolean) = apply { clientSupportEnabled = enabled }
 
@@ -102,7 +105,7 @@ class FakeAdbRule : ExternalResource() {
   fun initAbdBridgeDuringSetup(initBridge: Boolean) = apply { initAdbBridgeDuringSetup = initBridge }
 
   /**
-   * Close the fake adb server as part of the cleanup.
+   * Closes the fake adb server as part of the cleanup.
    *
    * Some tests may omit this part of the cleanup to avoid closing the server twice.
    */
@@ -145,8 +148,18 @@ class FakeAdbRule : ExternalResource() {
       fakeAdbServer.disconnectDevice(deviceId).get()
   }
 
-  val fakeAdbServerPort: Int
-    get() = fakeAdbServer.port
+  /**
+   * Adds a [DeviceCommandHandler] to an already initialized  [FakeAdbServer].
+   *
+   * The handler is inserted as the first to be evaluated so handlers can override preexisting ones.
+   */
+  fun addDeviceCommandHandler(deviceCommandHandler: DeviceCommandHandler) {
+    fakeAdbServer.handlers.add(0, deviceCommandHandler)
+  }
+
+  fun stop()  {
+    fakeAdbServer.stop()
+  }
 
   override fun before() {
     val builder = FakeAdbServer.Builder().installDefaultCommandHandlers()
@@ -182,19 +195,6 @@ class FakeAdbRule : ExternalResource() {
       }
     }
     EmulatorConsole.clearConsolesForTest()
-  }
-
-  fun stop()  {
-    fakeAdbServer.stop()
-  }
-
-  /**
-   * Add a [DeviceCommandHandler] to an already initialized  [FakeAdbServer].
-   *
-   * The handler is inserted as the first to be evaluated so handlers can override preexisting ones.
-   */
-  fun addDeviceCommandHandler(deviceCommandHandler: DeviceCommandHandler) {
-    fakeAdbServer.handlers.add(0, deviceCommandHandler)
   }
 }
 
