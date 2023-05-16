@@ -15,11 +15,13 @@
  */
 package com.android.sdklib.deviceprovisioner
 
+import com.android.adblib.ConnectedDevice
 import com.android.adblib.DeviceInfo
 import com.android.adblib.DeviceList
 import com.android.adblib.DevicePropertyNames
 import com.android.adblib.DeviceSelector
 import com.android.adblib.DeviceState
+import com.android.adblib.deviceInfo
 import com.android.adblib.serialNumber
 import com.android.adblib.testing.FakeAdbSession
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
@@ -30,11 +32,7 @@ import java.time.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.takeWhile
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import org.junit.Test
@@ -182,8 +180,10 @@ class DeviceProvisionerTest {
 
   @Test
   fun unauthorizedPhysicalDevice() {
-    val channel = Channel<List<DeviceHandle>>(1)
-    fakeSession.scope.launch { provisioner.devices.collect { channel.send(it) } }
+    val handles = Channel<List<DeviceHandle>>(1)
+    val unclaimedDevices = Channel<List<ConnectedDevice>>(1)
+    fakeSession.scope.launch { provisioner.devices.collect { handles.send(it) } }
+    fakeSession.scope.launch { provisioner.unclaimedDevices.collect { unclaimedDevices.send(it) } }
 
     runBlockingWithTimeout {
       // Show the device as unauthorized
@@ -193,41 +193,22 @@ class DeviceProvisionerTest {
           emptyList()
         )
 
-      val offlineHandle =
-        channel.receiveUntilPassing { handles ->
-          assertThat(handles).hasSize(1)
+      unclaimedDevices.receiveUntilPassing { devices ->
+        assertThat(devices).hasSize(1)
 
-          val handle = handles[0]
-          assertThat(handle.state).isInstanceOf(Connected::class.java)
-          assertThat(handle.state.properties.title)
-            .isEqualTo("Unknown device (${SerialNumbers.physicalUsb})")
-
-          handle
-        }
+        val device = devices[0]
+        assertThat(device.deviceInfo.deviceState).isEqualTo(DeviceState.UNAUTHORIZED)
+      }
 
       // Now show the device as online
       setDevices(SerialNumbers.physicalUsb)
 
-      // Verify that we never see the offline handle as online
-      val states = async {
-        offlineHandle.stateFlow
-          .flatMapLatest {
-            when (val device = it.connectedDevice) {
-              null -> flowOf(null)
-              else -> device.deviceInfoFlow.map { info -> info.deviceState }
-            }
-          }
-          .takeWhile { it != null }
-          .toList()
-      }
+      unclaimedDevices.receiveUntilPassing { devices -> assertThat(devices).isEmpty() }
 
-      assertThat(states.await()).doesNotContain(DeviceState.ONLINE)
-
-      channel.receiveUntilPassing { handles ->
+      handles.receiveUntilPassing { handles ->
         assertThat(handles).hasSize(1)
 
         val handle = handles[0]
-        assertThat(handle).isNotSameAs(offlineHandle)
         assertThat(handle.state).isInstanceOf(Connected::class.java)
         assertThat(handle.state.properties).isInstanceOf(PhysicalDeviceProperties::class.java)
       }

@@ -18,11 +18,11 @@ package com.android.sdklib.deviceprovisioner
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.DeviceSelector
+import com.android.adblib.DeviceState
 import com.android.adblib.connectedDevicesTracker
 import com.android.adblib.scope
 import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
-import com.android.sdklib.deviceprovisioner.DeviceState.Connected
 import com.android.sdklib.deviceprovisioner.SetChange.Add
 import java.time.Duration
 import kotlinx.coroutines.CancellationException
@@ -69,10 +69,7 @@ private constructor(
       DeviceProvisioner(
         coroutineScope,
         adbSession,
-        (provisioners +
-            OfflineDeviceProvisionerPlugin(coroutineScope) +
-            DefaultProvisionerPlugin(coroutineScope))
-          .sortedByDescending { it.priority }
+        (provisioners + DefaultProvisionerPlugin(coroutineScope)).sortedByDescending { it.priority }
       )
   }
 
@@ -90,6 +87,18 @@ private constructor(
   /** The [device templates][DeviceTemplate] known to this class, provided by its plugins. */
   val templates: StateFlow<List<DeviceTemplate>> =
     combinedTemplates.stateIn(scope, SharingStarted.Eagerly, emptyList())
+
+  /**
+   * The ConnectedDevices that are not claimed by any plugin (probably because the device is not yet
+   * online, perhaps waiting for authorization).
+   */
+  val unclaimedDevices: StateFlow<List<ConnectedDevice>> =
+    adbSession.connectedDevicesTracker.connectedDevices
+      .combine(devices) { connectedDevices, deviceHandles ->
+        val claimedDevices = deviceHandles.mapNotNull { it.state.connectedDevice }.toSet()
+        connectedDevices - claimedDevices
+      }
+      .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
   /**
    * Finds the DeviceHandle of the connected device with the given serial number, waiting up to
@@ -162,8 +171,14 @@ private constructor(
     device.scope.launch {
       logger.debug { "Offering ${device.serialNumber}" }
       while (currentCoroutineContext().isActive) {
+        // Wait until the device becomes online, then offer it to a plugin.
+        device.deviceInfoFlow.takeWhile { it.deviceState != DeviceState.ONLINE }.collect()
+
         val handle = offer(device)
-        handle.stateFlow.takeWhile { it is Connected }.collect()
+
+        // Once it is claimed, it's the plugin's responsibility; we wait until the plugin no
+        // longer holds the device before re-offering it.
+        handle.stateFlow.takeWhile { it.connectedDevice == device }.collect()
         logger.debug { "Re-offering ${device.serialNumber}" }
       }
     }
