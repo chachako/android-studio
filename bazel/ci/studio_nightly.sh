@@ -72,7 +72,8 @@ function run_bazel() {
     --//tools/adt/idea/studio:version-suffix="${version}" \
     -- \
     //tools/adt/idea/studio:android-studio \
-    //tools/adt/idea/studio:updater
+    //tools/adt/idea/native/installer:android-studio-bundle-data \
+    //tools/adt/idea/studio:updater_deploy.jar
 }
 
 run_bazel
