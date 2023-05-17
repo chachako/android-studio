@@ -12,6 +12,7 @@ readonly BUILD_NUMBER="${BUILD_NUMBER:-SNAPSHOT}"
 readonly AS_BUILD_NUMBER="${BUILD_NUMBER/#P/0}"
 
 readonly SCRIPT_DIR="$(dirname "$0")"
+readonly BAZEL="${SCRIPT_DIR}/../bazel"
 readonly SCRIPT_NAME="$(basename "$0")"
 
 readonly CONFIG_OPTIONS="--config=ci"
@@ -20,7 +21,7 @@ readonly CONFIG_OPTIONS="--config=ci"
 # Copies bazel artifacts to an output directory named 'artifacts'.
 # Globals:
 #   DIST_DIR
-#   SCRIPT_DIR
+#   BAZEL
 #   CONFIG_OPTIONS
 # Arguments:
 #   None
@@ -29,7 +30,7 @@ function copy_bazel_artifacts() {(
   set -e
   local -r artifacts_dir="${DIST_DIR}/artifacts"
   mkdir -p ${artifacts_dir}
-  local -r bin_dir="$("${SCRIPT_DIR}"/bazel info ${CONFIG_OPTIONS} bazel-bin)"
+  local -r bin_dir="$("${BAZEL}" info ${CONFIG_OPTIONS} bazel-bin)"
 
   cp -a ${bin_dir}/tools/adt/idea/studio/android-studio.linux.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/adt/idea/studio/android-studio.win.zip ${artifacts_dir}
@@ -58,7 +59,7 @@ function run_bazel() {
   fi
 
   # Run Bazel
-  "${SCRIPT_DIR}/../bazel" \
+  "${BAZEL}" \
     --max_idle_secs=60 \
     build \
     ${CONFIG_OPTIONS} \
