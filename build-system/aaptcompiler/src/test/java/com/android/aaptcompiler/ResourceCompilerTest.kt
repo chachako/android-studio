@@ -342,6 +342,21 @@ class ResourceCompilerTest {
     }
 
     @Test
+    fun testParseInvalidColorHexCode() {
+        val input = """
+      <resources>
+         <color name="invalid">#0xE1E1E1</color>
+      </resources>
+    """.trimIndent()
+
+        try {
+            testValuesFile(input)
+        } catch (e: ResourceCompilationException) {
+            Truth.assertThat(e.message).contains("Unable to parse hex color '#0xE1E1E1'.")
+        }
+    }
+
+    @Test
     fun parseStyleableWithAndroidAttr() {
         val input = """
       <resources>
