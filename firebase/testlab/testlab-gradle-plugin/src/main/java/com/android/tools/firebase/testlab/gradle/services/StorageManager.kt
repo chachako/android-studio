@@ -104,6 +104,12 @@ class StorageManager (
         }
     }
 
+    fun retrieveFile(fileUri: String): StorageObject? {
+        val matchResult = cloudStorageUrlRegex.find(fileUri) ?: return null
+        val (bucketName, objectName) = matchResult.destructured
+        return storageClient.objects().get(bucketName, objectName).execute()
+    }
+
     fun downloadFile(storageObject: StorageObject, destination: (objectName: String) -> File): File? =
         download(storageObject.bucket, storageObject.name, destination(storageObject.name))
 

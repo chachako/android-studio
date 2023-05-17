@@ -78,15 +78,15 @@ class TestRunner(
 
         val runRequestId = UUID.randomUUID().toString()
 
-        val initSettingsResult = toolResultsManager.initializeSettings(projectSettings.name)
-        val bucketName = projectSettings.storageBucket ?: initSettingsResult.defaultBucket
-
         val testHistoryName = projectSettings.testHistoryName ?:
         testData.testedApplicationId ?: testData.applicationId
 
         val historyId = toolResultsManager.getOrCreateHistory(projectSettings.name, testHistoryName)
 
-        val testRunStorage = storageManager.testRunStorage(runRequestId, bucketName, historyId)
+        val testRunStorage = storageManager.testRunStorage(
+            runRequestId,
+            projectSettings.storageBucket,
+            historyId)
 
         val testApkStorageObject = testRunStorage.uploadToStorage(testData.testApk)
 

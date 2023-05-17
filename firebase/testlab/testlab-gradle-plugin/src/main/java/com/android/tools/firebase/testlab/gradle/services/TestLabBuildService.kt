@@ -123,6 +123,16 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
     internal open val httpTransport: HttpTransport
         get() = GoogleNetHttpTransport.newTrustedTransport()
 
+    private val bucketName: String by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        val specifiedBucket = parameters.cloudStorageBucket.orNull.let {
+            if (it.isNullOrBlank()) { null } else { it }
+        }
+        val initSettingsResult = toolResultsManager.initializeSettings(
+            parameters.quotaProjectName.get()
+        )
+        specifiedBucket ?: initSettingsResult.defaultBucket
+    }
+
     val numUniformShards: Int
         get() = parameters.numUniformShards.get()
 
@@ -174,9 +184,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         TestRunner(
             ProjectSettings(
                 name = parameters.quotaProjectName.get(),
-                storageBucket = parameters.cloudStorageBucket.orNull.let {
-                    if (it.isNullOrBlank()) { null } else { it }
-                },
+                storageBucket = bucketName,
                 testHistoryName = parameters.resultsHistoryName.orNull.let {
                     if (it.isNullOrBlank()) { null } else { it }
                 },
@@ -202,6 +210,15 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             testResultProcessor
         )
     }
+
+    fun getStorageObject(fileUri: String) = storageManager.retrieveFile(fileUri)
+
+    fun uploadSharedFile(projectPath: String, file: File, uploadFileName: String = file.name) =
+        storageManager.retrieveOrUploadSharedFile(
+            file,
+            bucketName,
+            projectPath,
+            uploadFileName)
 
     fun runTestsOnDevice(
         deviceName: String,

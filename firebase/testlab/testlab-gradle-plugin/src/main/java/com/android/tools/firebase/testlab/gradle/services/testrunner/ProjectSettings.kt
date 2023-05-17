@@ -22,7 +22,7 @@ data class ProjectSettings (
 
     val name: String,
 
-    val storageBucket: String?,
+    val storageBucket: String,
 
     val testHistoryName: String?,
 

@@ -56,9 +56,9 @@ class FileHashCacheTest {
         val file2 = temporaryFolderRule.newFile("world")
 
         var hashRunCount = 0
-        val cache = FileHashCache({ file ->
+        val cache = FileHashCache({ fileToCache ->
             ++hashRunCount
-            file.name
+            fileToCache.name
         })
 
         val hash1 = cache.retrieveOrGenerateHash(file1)
@@ -79,9 +79,9 @@ class FileHashCacheTest {
         file.toPath().setLastModifiedTime(FileTime.fromMillis(2000000))
 
         var hashRunCount = 0
-        val cache = FileHashCache({ file ->
+        val cache = FileHashCache({ fileToCache ->
             ++hashRunCount
-            file.readLines().first()
+            fileToCache.readLines().first()
         })
 
         var hash = cache.retrieveOrGenerateHash(file)

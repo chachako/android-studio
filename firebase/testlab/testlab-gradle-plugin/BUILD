@@ -162,6 +162,7 @@ kotlin_test(
         "@maven//:com.google.testing.platform.core-proto",
         "@maven//:com.google.truth.truth",
         "@maven//:junit.junit",
+        "@maven//:nl.jqno.equalsverifier.equalsverifier",
         "@maven//:org.mockito.mockito-core",
     ],
 )
