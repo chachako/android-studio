@@ -447,6 +447,7 @@ class SdkParsingUtilsTest {
             to this project's gradle.properties.
             """.trimIndent()
         )
+        assertThat(issueReporter.syncIssues[0].data).isEqualTo("android.suppressUnsupportedCompileSdk=S")
     }
 
     @Test
@@ -460,6 +461,7 @@ class SdkParsingUtilsTest {
             suppressWarningIfTooNewForVersions = ",,,S,31,",
         )
         assertThat(issueReporter.messages).isEmpty()
+        assertThat(issueReporter.syncIssues).isEmpty()
     }
 
     @Test
@@ -470,7 +472,7 @@ class SdkParsingUtilsTest {
             issueReporter = issueReporter,
             maxVersion = AndroidVersion(30),
             androidGradlePluginVersion = "7.0.0-beta01",
-            suppressWarningIfTooNewForVersions = "S,31,",
+            suppressWarningIfTooNewForVersions = "S , 31 , ,",
         )
         assertThat(issueReporter.messages).containsExactly(
             """
@@ -489,6 +491,8 @@ class SdkParsingUtilsTest {
             to this project's gradle.properties.
             """.trimIndent()
         )
+        assertThat(issueReporter.syncIssues[0].data).isEqualTo("android.suppressUnsupportedCompileSdk=S,31,32")
+
     }
 
     @Test
@@ -501,5 +505,6 @@ class SdkParsingUtilsTest {
             androidGradlePluginVersion = "8.1.0-alpha11",
         )
         assertThat(issueReporter.messages).isEmpty()
+        assertThat(issueReporter.syncIssues).isEmpty()
     }
 }
