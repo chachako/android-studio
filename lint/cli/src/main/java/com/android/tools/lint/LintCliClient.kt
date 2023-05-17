@@ -79,8 +79,6 @@ import com.android.tools.lint.model.LintModelModuleType
 import com.android.tools.lint.model.PathVariables
 import com.android.utils.CharSequences
 import com.android.utils.StdLogger
-import com.google.common.annotations.VisibleForTesting
-import com.google.common.base.Splitter
 import com.google.common.collect.Sets
 import com.intellij.codeInsight.ExternalAnnotationsManager
 import com.intellij.mock.MockProject
