@@ -65,6 +65,7 @@ import java.io.IOException
 import java.util.EnumSet
 import java.util.HashSet
 import java.util.Locale
+import java.util.zip.ZipEntry
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import kotlin.math.max
@@ -688,71 +689,41 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
     classes: MutableList<File>,
     sourceRoots: MutableList<File>
   ) {
-    // Finds any .srcjar files in the first parameter, and if so, removes it, and
-    // then expands the contents (based on the file type) into all the individual lists --
-    // sources, manifests, bytecode, etc:
-    handleSrcJars(sources, sources, resources, manifests, classes, sourceRoots)
-    handleSrcJars(resources, sources, resources, manifests, classes, sourceRoots)
-    handleSrcJars(manifests, sources, resources, manifests, classes, sourceRoots)
-    handleSrcJars(classes, sources, resources, manifests, classes, sourceRoots)
-  }
+    // * Remove any .srcjar files in `source`
+    // * Distribute its unzipped content to the right targets
+    //   (e.g. sources, manifest, bytecode, etc.),
+    // * Add the original .srcjar to `sourceRoots`
+    fun unzipSrcJarsFrom(source: MutableList<File>) {
+      val sourceIterator = source.listIterator()
+      // Avoid ConcurrentModificationException
+      fun MutableList<File>.guardedAdd(file: File): Any =
+        if (this === source) sourceIterator.add(file) else add(file)
 
-  private fun handleSrcJars(
-    list: MutableList<File>,
-    sources: MutableList<File>,
-    resources: MutableList<File>,
-    manifests: MutableList<File>,
-    classes: MutableList<File>,
-    sourceRoots: MutableList<File>
-  ) {
-    val iterator = list.listIterator()
-    while (iterator.hasNext()) {
-      val file = iterator.next()
-      if (file.path.endsWith(DOT_SRCJAR)) {
-        iterator.remove()
+      while (sourceIterator.hasNext()) {
+        val file = sourceIterator.next()
+        if (file.path.endsWith(DOT_SRCJAR)) {
+          sourceIterator.remove()
+          sourceRoots.add(file)
 
-        sourceRoots.add(file)
-
-        // Expand into child content
-        ZipFile(file).use { zipFile ->
-          val entries = zipFile.entries()
-          while (entries.hasMoreElements()) {
-            val zipEntry = entries.nextElement()
-            if (zipEntry.isDirectory) {
-              continue
-            }
+          // Expand into child content
+          forEachZippedFile(file) { _, zipEntry ->
             val path = file.path + URLUtil.JAR_SEPARATOR + zipEntry.name
             val newFile = File(path)
-            // Check for referential equality to avoid ConcurrentModificationException
-            if (path.endsWith(ANDROID_MANIFEST_XML)) {
-              if (list === manifests) {
-                iterator.add(newFile)
-              } else {
-                manifests.add(newFile)
-              }
-            } else if (path.endsWith(DOT_XML)) {
-              if (list === resources) {
-                iterator.add(newFile)
-              } else {
-                resources.add(newFile)
-              }
-            } else if (path.endsWith(DOT_JAVA) || path.endsWith(DOT_KT)) {
-              if (list === sources) {
-                iterator.add(newFile)
-              } else {
-                sources.add(newFile)
-              }
-            } else if (path.endsWith(DOT_CLASS)) {
-              if (list === classes) {
-                iterator.add(newFile)
-              } else {
-                classes.add(newFile)
-              }
+            when {
+              path.endsWith(ANDROID_MANIFEST_XML) -> manifests.guardedAdd(newFile)
+              path.endsWith(DOT_XML) -> resources.guardedAdd(newFile)
+              path.endsWith(DOT_JAVA) || path.endsWith(DOT_KT) -> sources.guardedAdd(newFile)
+              path.endsWith(DOT_CLASS) -> classes.guardedAdd(newFile)
             }
           }
         }
       }
     }
+
+    unzipSrcJarsFrom(sources)
+    unzipSrcJarsFrom(resources)
+    unzipSrcJarsFrom(manifests)
+    unzipSrcJarsFrom(classes)
   }
 
   private fun parseAar(element: Element, dir: File): String? {
@@ -865,18 +836,11 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
 
   @Throws(ZipException::class, IOException::class)
   fun unpackZipFile(zip: File, dir: File) {
-    ZipFile(zip).use { zipFile ->
-      val entries = zipFile.entries()
-      while (entries.hasMoreElements()) {
-        val zipEntry = entries.nextElement()
-        if (zipEntry.isDirectory) {
-          continue
-        }
-        val targetFile = File(dir, zipEntry.name)
-        Files.createParentDirs(targetFile)
-        Files.asByteSink(targetFile).openBufferedStream().use {
-          ByteStreams.copy(zipFile.getInputStream(zipEntry), it)
-        }
+    forEachZippedFile(zip) { zipFile, zipEntry ->
+      val targetFile = File(dir, zipEntry.name)
+      Files.createParentDirs(targetFile)
+      Files.asByteSink(targetFile).openBufferedStream().use {
+        ByteStreams.copy(zipFile.getInputStream(zipEntry), it)
       }
     }
   }
@@ -1365,3 +1329,8 @@ constructor(
     )
   }
 }
+
+private fun forEachZippedFile(file: File, step: (ZipFile, ZipEntry) -> Unit) =
+  ZipFile(file).use { zipFile ->
+    zipFile.entries().asSequence().filterNot(ZipEntry::isDirectory).forEach { step(zipFile, it) }
+  }
