@@ -80,7 +80,7 @@ public class JarTestSuiteRunner extends Suite {
                 .includeJUnit3()
                 .excludeClassNames(classNamesToExclude(suiteClass))
                 .build();
-        List<Class<?>> testClasses = testGroup.scanTestClasses(jarSuffix);
+        List<Class<?>> testClasses = testGroup.scanTestClasses(suiteClass, jarSuffix);
         System.out.printf("Found %d tests in %dms%n", testClasses.size(), (System.currentTimeMillis() - start));
         if (testClasses.isEmpty()) {
             throw new RuntimeException("No tests found in class path using suffix: " + jarSuffix);

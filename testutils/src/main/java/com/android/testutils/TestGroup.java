@@ -71,21 +71,19 @@ public class TestGroup {
         this.classNamesToExclude = firstNonNull(builder.classNamesToExclude, ImmutableSet.of());
     }
 
-    /**
-     * Returns test classes from the classpath, only looking at jars ending with jarSuffix.
-     */
-    public List<Class<?>> scanTestClasses(String jarSuffix)
+    /** Returns test classes from the classpath, only looking at jars ending with jarSuffix. */
+    public List<Class<?>> scanTestClasses(Class<?> suiteClass, String jarSuffix)
             throws IOException, ClassNotFoundException {
-        return excludeClasses(scanClassPath(jarSuffix));
+        return excludeClasses(suiteClass, scanClassPath(jarSuffix));
     }
 
     /** Returns test classes found in testJar. */
-    public List<Class<?>> scanTestClasses(Path testJar)
+    public List<Class<?>> scanTestClasses(Class<?> suiteClass, Path testJar)
             throws IOException, ClassNotFoundException {
-        return excludeClasses(scanTestJar(testJar.toString()));
+        return excludeClasses(suiteClass, scanTestJar(testJar.toString()));
     }
 
-    private List<Class<?>> excludeClasses(List<Class<?>> classes) {
+    private List<Class<?>> excludeClasses(Class<?> suiteClass, List<Class<?>> classes) {
         Set<String> testClassNames = classes.stream()
                 .map(Class::getCanonicalName)
                 .collect(Collectors.toSet());
@@ -95,9 +93,12 @@ public class TestGroup {
                     "Classes excluded but not found: %s", classNamesToExclude
             ));
         }
-        List<Class<?>> filteredClasses = classes.stream()
-                .filter(c -> !classNamesToExclude.contains(c.getCanonicalName()))
-                .collect(Collectors.toList());
+        // Always remove the suite class if present
+        List<Class<?>> filteredClasses =
+                classes.stream()
+                        .filter(c -> !classNamesToExclude.contains(c.getCanonicalName()))
+                        .filter(c -> !c.equals(suiteClass))
+                        .collect(Collectors.toList());
         return filteredClasses;
     }
 
