@@ -53,6 +53,7 @@ import com.android.build.gradle.internal.test.BundleTestDataImpl
 import com.android.build.gradle.internal.test.TestDataImpl
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.BooleanOption.LINT_ANALYSIS_PER_COMPONENT
+import com.android.builder.core.BuilderConstants
 import com.android.builder.core.BuilderConstants.FD_MANAGED_DEVICE_SETUP_RESULTS
 import com.android.utils.FileUtils
 import com.google.common.collect.ImmutableSet
@@ -62,6 +63,8 @@ import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
+import java.io.File
+import java.util.Locale
 import java.util.concurrent.Callable
 
 class AndroidTestTaskManager(
@@ -230,8 +233,6 @@ class AndroidTestTaskManager(
         }
 
         createConnectedTestForVariant(androidTestProperties)
-
-        createScreenshotTestTask(androidTestProperties)
     }
 
     private fun createConnectedTestForVariant(androidTestProperties: AndroidTestCreationConfig) {
@@ -334,6 +335,11 @@ class AndroidTestTaskManager(
         }
 
         createTestDevicesForVariant(
+            androidTestProperties,
+            testData,
+            androidTestProperties.mainVariant.name
+        )
+        createScreenshotTestTask(
             androidTestProperties,
             testData,
             androidTestProperties.mainVariant.name
@@ -466,10 +472,52 @@ class AndroidTestTaskManager(
         super.createVariantPreBuildTask(creationConfig)
     }
 
-    private fun createScreenshotTestTask(androidTestProperties: AndroidTestCreationConfig) {
-        if (androidTestProperties.services.projectOptions
-                        .get(BooleanOption.ENABLE_SCREENSHOT_TEST)) {
-            taskFactory.register(ScreenshotTestTask.CreationAction(androidTestProperties))
+    private fun createScreenshotTestTask(
+            creationConfig: AndroidTestCreationConfig,
+            testData: AbstractTestDataImpl,
+            variantName: String,
+            ) {
+        if (!creationConfig.services.projectOptions.get(BooleanOption.ENABLE_SCREENSHOT_TEST)) {
+            return
         }
+
+        val flavor: String? = testData.flavorName.orNull
+        val buildTarget: String = if (flavor == null) {
+            variantName
+        } else {
+            // build target is the variant with the flavor name stripped from the front.
+            variantName.substring(flavor.length).lowercase(Locale.US)
+        }
+        val resultsRootDir = if (globalConfig.testOptions.resultsDir.isNullOrEmpty()) {
+            creationConfig.paths.outputDir(BuilderConstants.FD_ANDROID_RESULTS)
+                    .get().asFile
+        } else {
+            File(requireNotNull(globalConfig.testOptions.resultsDir))
+        }
+        val flavorDir = if (flavor.isNullOrEmpty()) "" else "${BuilderConstants.FD_FLAVORS}/$flavor"
+        val resultsDir =
+                File(resultsRootDir, "${BuilderConstants.SCREENSHOT}/$buildTarget/$flavorDir")
+
+        val ideExtractionDir =
+                creationConfig.paths.intermediatesDir(
+                        "${BuilderConstants.SCREENSHOT}/$buildTarget/$flavorDir").get().asFile
+
+        val lintModelDir =
+                creationConfig.paths.getIncrementalDir(
+                        "${BuilderConstants.LINT}Analyze${variantName.replaceFirstChar { it.uppercase() }}")
+        val lintCacheDir =
+                creationConfig.paths.intermediatesDir(
+                        "${BuilderConstants.LINT}-cache").get().asFile
+
+        val screenshotTestTask = taskFactory.register(
+                ScreenshotTestTask.CreationAction(
+                        creationConfig,
+                        resultsDir,
+                        ideExtractionDir,
+                        lintModelDir,
+                        lintCacheDir,
+                ))
+
+        screenshotTestTask.dependsOn("lint")
     }
 }

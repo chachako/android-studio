@@ -22,6 +22,7 @@ import com.android.build.gradle.integration.common.fixture.testprojects.prebuilt
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.TestUtils
+import com.android.testutils.truth.PathSubject.assertThat
 import org.junit.Rule
 import org.junit.Test
 
@@ -29,12 +30,14 @@ class ScreenshotTest {
 
     @get:Rule
     val project = createGradleProjectBuilder {
+        withKotlinPlugin = true
         rootProject {
             plugins.add(PluginType.ANDROID_LIB)
-            plugins.add(PluginType.KOTLIN_MPP)
+            plugins.add(PluginType.KOTLIN_ANDROID)
             android {
                 setUpHelloWorld()
                 minSdk = 24
+                hasInstrumentationTests = true
             }
             dependencies {
                 implementation("androidx.compose.ui:ui-tooling:${TaskManager.COMPOSE_UI_VERSION}")
@@ -42,9 +45,6 @@ class ScreenshotTest {
             }
             appendToBuildFile {
                 """
-                    kotlin {
-                        android()
-                    }
                     android {
                         buildFeatures {
                             compose true
@@ -76,6 +76,20 @@ class ScreenshotTest {
                 }
             """.trimIndent()
             )
+            addFile(
+                    "src/androidTest/kotlin/com/ExampleTest.kt", """
+                package foo
+
+                import androidx.compose.ui.tooling.preview.Preview
+                import androidx.compose.runtime.Composable
+
+                @Preview(showBackground = true)
+                @Composable
+                fun MainViewTest() {
+                    MainView()
+                }
+            """.trimIndent()
+            )
         }
     }
             .withKotlinGradlePlugin(true)
@@ -88,5 +102,10 @@ class ScreenshotTest {
                 .with(BooleanOption.USE_ANDROID_X, true)
                 .with(BooleanOption.ENABLE_SCREENSHOT_TEST, true)
                 .run("screenshotTestDebugAndroidTest")
+
+        assertThat(
+                project.getOutputFile(
+                        "androidTest-results","screenshot","debug",
+                        "MainViewTest.png")).exists()
     }
 }

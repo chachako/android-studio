@@ -1,5 +1,5 @@
 load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
-load("//tools/base/bazel:maven.bzl", "maven_library")
+load("//tools/base/bazel:maven.bzl", "maven_library", "maven_repository")
 load("//tools/base/sdklib:sdk.bzl", "sdk_java_binary")
 load("//tools/base/common:version.bzl", "BASE_VERSION")
 load("//tools/base/bazel:bazel.bzl", "iml_module")
@@ -110,6 +110,7 @@ java_import(
 
 maven_library(
     name = "screenshot",
+    testonly = True,  # Mark as test-only so that it doesn't create coverage_baseline rule.
     srcs = [],
     bundled_deps = [":bundled_deps_java_library"],
     coordinates = "com.android.screenshot.cli:screenshot",
@@ -119,6 +120,7 @@ maven_library(
     resource_strip_prefix = "tools/base/previewlib/cli",
     resources = [
         "//prebuilts/studio/layoutlib:build.prop",
+        "//prebuilts/studio/layoutlib/data",
         "//prebuilts/studio/layoutlib/data:native_libs",
     ],
     version = BASE_VERSION,
@@ -139,5 +141,16 @@ java_binary(
     ],
     runtime_deps = [
         ":studio.android.sdktools.screenshot.cli",
+    ],
+)
+
+maven_repository(
+    name = "screenshot_maven_repo",
+    testonly = True,
+    artifacts = [
+        ":screenshot",
+    ],
+    visibility = [
+        "//tools/base/build-system/integration-test:__subpackages__",
     ],
 )
