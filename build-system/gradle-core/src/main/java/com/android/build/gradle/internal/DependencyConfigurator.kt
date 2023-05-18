@@ -18,8 +18,10 @@ package com.android.build.gradle.internal
 
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.attributes.AgpVersionAttr
+import com.android.build.api.attributes.BuildTypeAttr
 import com.android.build.api.attributes.BuildTypeAttr.Companion.ATTRIBUTE
 import com.android.build.api.attributes.ProductFlavorAttr
+import com.android.build.gradle.AndroidConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
@@ -55,6 +57,7 @@ import com.android.build.gradle.internal.dependency.MultiVariantProductFlavorRul
 import com.android.build.gradle.internal.dependency.PlatformAttrTransform
 import com.android.build.gradle.internal.dependency.RecalculateStackFramesTransform.Companion.registerGlobalRecalculateStackFramesTransform
 import com.android.build.gradle.internal.dependency.RecalculateStackFramesTransform.Companion.registerRecalculateStackFramesTransformForComponent
+import com.android.build.gradle.internal.dependency.SingleVariantBuildTypeRule
 import com.android.build.gradle.internal.dependency.VersionedCodeShrinker
 import com.android.build.gradle.internal.dependency.getDexingArtifactConfigurations
 import com.android.build.gradle.internal.dependency.registerDexingOutputSplitTransform
@@ -85,6 +88,7 @@ import com.android.build.gradle.internal.variant.VariantInputModel
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
 import com.android.build.gradle.options.SyncOptions
+import com.android.builder.core.BuilderConstants
 import com.android.repository.Revision
 import com.android.tools.r8.Version
 import com.google.common.collect.Maps
@@ -97,6 +101,7 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.artifacts.transform.TransformAction
 import org.gradle.api.artifacts.transform.TransformSpec
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
+import org.gradle.api.attributes.Attribute
 import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.attributes.AttributesSchema
 import org.gradle.api.attributes.Usage
@@ -551,12 +556,18 @@ class DependencyConfigurator(
                                 *runtimeDependenciesForShimSdk.toTypedArray())
                         configuration.isCanBeConsumed = false
                         configuration.isCanBeResolved = true
-                        params.runtimeDependencies.from(configuration.incoming.artifactView { config: ArtifactView.ViewConfiguration ->
-                            config.attributes { container: AttributeContainer ->
-                                container.attribute(AndroidArtifacts.ARTIFACT_TYPE,
+
+                        configuration.attributes {
+                            it.attribute(BuildTypeAttr.ATTRIBUTE,
+                                    project.objects.named(BuildTypeAttr::class.java,
+                                            BuilderConstants.RELEASE))
+                        }
+                        params.runtimeDependencies.from(configuration.incoming.artifactView {
+                            config: ArtifactView.ViewConfiguration ->
+                            config.attributes.apply {
+                                attribute(AndroidArtifacts.ARTIFACT_TYPE,
                                         AndroidArtifacts.ArtifactType.CLASSES_JAR.type)
                             }
-                            config.componentFilter { true }
                         }.artifacts.artifactFiles.files)
                     }
 
