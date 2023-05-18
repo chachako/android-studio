@@ -32,6 +32,7 @@ import com.android.testutils.TestInputsGenerator
 import com.android.testutils.apk.Apk
 import com.android.testutils.apk.Dex
 import com.android.testutils.apk.Zip
+import com.android.testutils.generateAarWithContent
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.testutils.truth.ZipFileSubject
 import com.android.utils.FileUtils
@@ -53,6 +54,18 @@ class PrivacySandboxSdkTest {
                             TestInputsGenerator.jarWithEmptyClasses(
                                     ImmutableList.of("com/externaldep/externaljar/ExternalClass")
                             )),
+                    MavenRepoGenerator.Library("com.externaldep:externalaar:1",
+                            "aar",
+                            generateAarWithContent("com.externaldep.externalaar",
+                                    // language=xml
+                                    manifest = """
+                                         <manifest package="com.externaldex.externalaar" xmlns:android="http://schemas.android.com/apk/res/android">
+                                             <uses-sdk android:targetSdkVersion="23" android:minSdkVersion="14" />
+                                             <!-- Permission that needs to be removed before ASB packaging -->
+                                             <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+                                         </manifest>
+                                    """.trimIndent()
+                                    ))
             )
     )
 
@@ -78,6 +91,7 @@ class PrivacySandboxSdkTest {
                     include(project(":android-lib1"))
                     include(project(":android-lib2"))
                     include("com.externaldep:externaljar:1")
+                    include("com.externaldep:externalaar:1")
                 }
         }
         privacySandboxSdkLibraryProject(":android-lib2") {
@@ -116,6 +130,13 @@ class PrivacySandboxSdkTest {
             dependencies {
                 implementation("androidx.privacysandbox.tools:tools-apipackager:$androidxPrivacySandboxVersion")
             }
+            addFile("src/main/AndroidManifest.xml", """
+                <?xml version="1.0" encoding="utf-8"?>
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"  xmlns:tools="http://schemas.android.com/tools">
+                    <uses-permission tools:node="removeAll" />
+                </manifest>
+                """.trimIndent()
+            )
             addFile(
                     "src/main/res/values/strings.xml",
                     """<resources>
@@ -346,7 +367,7 @@ class PrivacySandboxSdkTest {
                     .contains(MY_PRIVACY_SANDBOX_SDK_MANIFEST_PACKAGE)
             assertThat(manifestContent).containsAtLeastElementsIn(
                     listOf(
-                            "      E: application (line=14)",
+                            "      E: application (line=10)",
                             "          E: uses-sdk-library (line=0)",
                             "            A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"com.example.privacysandboxsdk\" (Raw: \"com.example.privacysandboxsdk\")",
                             "            A: http://schemas.android.com/apk/res/android:certDigest(0x01010548)=\"$certDigest\" (Raw: \"$certDigest\")",

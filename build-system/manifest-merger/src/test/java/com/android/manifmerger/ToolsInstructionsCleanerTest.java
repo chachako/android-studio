@@ -292,7 +292,7 @@ public class ToolsInstructionsCleanerTest extends TestCase {
 
         Element rootElement = mainDocument.getRootNode().getXml();
         ToolsInstructionsCleaner.cleanToolsReferences(
-                ManifestMerger2.MergeType.PRIVACY_SANDOX_LIBRARY, mainDocument, mockLog);
+                ManifestMerger2.MergeType.PRIVACY_SANDBOX_LIBRARY, mainDocument, mockLog);
 
         Optional<Element> usesPermission = getChildElementByName(rootElement, "uses-permission");
         assertTrue(usesPermission.isPresent());

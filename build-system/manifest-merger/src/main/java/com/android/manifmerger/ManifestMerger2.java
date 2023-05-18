@@ -1401,7 +1401,7 @@ public class ManifestMerger2 {
          * manifest is expected to be processed by aapt2 and shipped into an .asb file to the Play
          * Store.
          */
-        PRIVACY_SANDOX_LIBRARY(true, true);
+        PRIVACY_SANDBOX_LIBRARY(true, true);
 
         private final boolean isKeepToolsAttributeRequired;
         private final boolean isFullPlaceholderSubstitutionRequired;
