@@ -186,6 +186,7 @@ private fun processDeepLinks(
             deepLink.port,
             deepLink.path.performPlaceholderSubstitution(manifestPlaceHolders),
             deepLink.query,
+            deepLink.fragment,
             if (useUnknownSourceFilePosition) {
                 UNKNOWN
             } else {
