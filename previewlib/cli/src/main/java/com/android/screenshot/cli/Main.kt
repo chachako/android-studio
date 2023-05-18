@@ -526,21 +526,7 @@ class Main {
                         return ERRNO_INVALID_ARGS
                     }
                 }
-            } else if ((arg == ARG_LINT_RULE_JARS)) {
-                if (index == args.size - 1) {
-                    System.err.println("Missing lint rule jar")
-                    return ERRNO_INVALID_ARGS
-                }
-                val lintRuleJarsOverride: MutableList<File> = ArrayList()
-                val currentOverrides = flags.lintRuleJarsOverride
-                if (currentOverrides != null) {
-                    lintRuleJarsOverride.addAll(currentOverrides)
-                }
-                for (path: String in splitPath(args[++index])) {
-                    lintRuleJarsOverride.add(getInArgumentPath(path))
-                }
-                flags.lintRuleJarsOverride = lintRuleJarsOverride
-            } else if ((arg == ARG_CACHE_DIR)) {
+            }  else if ((arg == ARG_CACHE_DIR)) {
                 if (index == args.size - 1) {
                     System.err.println("Missing cache directory")
                     return ERRNO_INVALID_ARGS
@@ -553,6 +539,7 @@ class Main {
             }
             index++
         }
+        argumentState.validate()
         return 0
     }
 
@@ -573,19 +560,36 @@ class Main {
     }
 
     inner class ArgumentState {
+
+        fun validate() {
+            var errorMessage = ""
+            if (!this::goldenLocation.isInitialized)
+                errorMessage += "Missing Golden Directory;"
+            if (!this::clientName.isInitialized)
+                errorMessage += "Missing Client Name;"
+            if (!this::clientVersion.isInitialized)
+                errorMessage += "Missing Client Version;"
+            if (!this::filePath.isInitialized)
+                errorMessage += "Missing File Path;"
+            if (jarLocation != null && extractionDir == null)
+                errorMessage += "Missing Extraction Directory;"
+            if (!recordGoldens)
+                errorMessage += "Missing output directory to save diff images;"
+            if (errorMessage != "") {
+                throw InvalidArgumentException(errorMessage)
+            }
+        }
+
         var recordGoldens: Boolean = false
-        var goldenLocation: String? = null
-        var jarLocation: String? =null
+        lateinit var goldenLocation: String
+        var jarLocation: String? = null
         var extractionDir: String? = null
-        var rootModule: LintModelModule? = null
-        var clientVersion: String? = null
-        var clientName: String? = null
-        var filePath: String? = null
+        lateinit var rootModule: LintModelModule
+        lateinit var clientVersion: String
+        lateinit var clientName: String
+        lateinit var filePath: String
         var outputLocation: String? = null
-        var javaLanguageLevel: LanguageLevel? = null
-        var kotlinLanguageLevel: LanguageVersionSettings? = null
         var modules: MutableList<LintModelModule> = mutableListOf()
-        var files: List<File> = mutableListOf()
     }
 
     inner class MainLintClient(flags: LintCliFlags, private val argumentState: ArgumentState) :
@@ -621,14 +625,6 @@ class Main {
                 unexpectedGradleProject = project
             }
             return project
-        }
-
-        override fun getJavaLanguageLevel(project: Project): LanguageLevel {
-            return argumentState.javaLanguageLevel ?: super.getJavaLanguageLevel(project)
-        }
-
-        override fun getKotlinLanguageLevel(project: Project): LanguageVersionSettings {
-            return argumentState.kotlinLanguageLevel ?: super.getKotlinLanguageLevel(project)
         }
 
         override fun getConfiguration(
