@@ -24,6 +24,7 @@ import com.android.adblib.utils.createChildScope
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.junit.After
@@ -115,5 +116,18 @@ class ForwardingDaemonTest {
     )
     // Check if roundTripLatencyMsFlow emits a value.
     assertThat(forwardingDaemon.roundTripLatencyMsFlow.first()).isNotNull()
+  }
+
+  @Test
+  fun testOnStateChangeCalledWithCancelledScope() = runBlockingWithTimeout {
+    val childScope = fakeAdbSession.scope.createChildScope(context = exceptionHandler)
+    forwardingDaemon =
+      ForwardingDaemonImpl(fakeStreamOpener, childScope, fakeAdbSession) { testSocket }
+    forwardingDaemon.start()
+    assertThat(forwardingDaemon.devicePort).isEqualTo(testSocket.localAddress()?.port)
+
+    childScope.cancel()
+    // Implicit assert - Test will fail with JobCancellationException if this call fails.
+    forwardingDaemon.close()
   }
 }

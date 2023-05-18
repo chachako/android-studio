@@ -185,7 +185,7 @@ internal class ForwardingDaemonImpl(
     if (started.get()) {
       adbCommandHandler.cancel()
       streams.values.forEach { it.sendClose() }
-      runBlocking(scope.coroutineContext) { onStateChanged(DeviceState.OFFLINE) }
+      runBlocking { onStateChanged(DeviceState.OFFLINE) }
     }
   }
 
