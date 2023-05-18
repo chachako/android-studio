@@ -144,6 +144,7 @@
       - isEnabled = false
    - flags:
       * "APPLICATION_R_CLASS_CONSTANT_IDS -> false"
+      * "ENABLE_VCS_INFO -> false"
       * "JETPACK_COMPOSE -> false"
       * "ML_MODEL_BINDING -> false"
       * "TEST_R_CLASS_CONSTANT_IDS -> false"

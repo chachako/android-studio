@@ -949,6 +949,10 @@ class ModelBuilder<
             BooleanFlag.USE_ANDROID_X,
             projectOptions[BooleanOption.USE_ANDROID_X]
         )
+        flags.put(
+            BooleanFlag.ENABLE_VCS_INFO,
+            projectOptions[BooleanOption.ENABLE_VCS_INFO]
+        )
 
         return AndroidGradlePluginProjectFlagsImpl(flags.build())
     }
