@@ -86,9 +86,19 @@ public class TestGroup {
     }
 
     private List<Class<?>> excludeClasses(List<Class<?>> classes) {
-        return classes.stream()
+        Set<String> testClassNames = classes.stream()
+                .map(Class::getCanonicalName)
+                .collect(Collectors.toSet());
+        if (!testClassNames.containsAll(classNamesToExclude)) {
+            classNamesToExclude.removeAll(testClassNames);
+            throw new RuntimeException(String.format(
+                    "Classes excluded but not found: %s", classNamesToExclude
+            ));
+        }
+        List<Class<?>> filteredClasses = classes.stream()
                 .filter(c -> !classNamesToExclude.contains(c.getCanonicalName()))
                 .collect(Collectors.toList());
+        return filteredClasses;
     }
 
     private List<Class<?>> scanTestJar(String jarPath) throws IOException, ClassNotFoundException {

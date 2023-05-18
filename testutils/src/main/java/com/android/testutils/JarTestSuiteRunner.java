@@ -137,22 +137,20 @@ public class JarTestSuiteRunner extends Suite {
     }
 
     /** Putatively temporary mechanism to avoid running certain classes. */
-    private static Set<String> classNamesToExclude(Class<?> suiteClass) {
+    private static Set<String> classNamesToExclude(
+            Class<?> suiteClass) {
         Set<String> excludeClassNames = new HashSet<>();
-        excludeClassNames.add(suiteClass.getCanonicalName());
         ExcludeClasses annotation = suiteClass.getAnnotation(ExcludeClasses.class);
         if (annotation != null) {
             for (Class<?> classToExclude : annotation.value()) {
-                if (classToExclude != suiteClass) {
-                    String className = classToExclude.getCanonicalName();
-                    if (!excludeClassNames.add(className)) {
-                        throw new RuntimeException(
-                                String.format(
-                                        "on %s, %s value duplicated: %s",
-                                        suiteClass.getSimpleName(),
-                                        ExcludeClasses.class.getSimpleName(),
-                                        className));
-                    }
+                String className = classToExclude.getCanonicalName();
+                if (!excludeClassNames.add(className)) {
+                    throw new RuntimeException(
+                            String.format(
+                                    "on %s, %s value duplicated: %s",
+                                    suiteClass.getSimpleName(),
+                                    ExcludeClasses.class.getSimpleName(),
+                                    className));
                 }
             }
         }
