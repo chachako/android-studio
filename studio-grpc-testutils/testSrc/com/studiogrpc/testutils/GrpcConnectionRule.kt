@@ -20,16 +20,17 @@ import com.android.tools.idea.io.grpc.ManagedChannel
 import com.android.tools.idea.io.grpc.Server
 import com.android.tools.idea.io.grpc.inprocess.InProcessChannelBuilder
 import com.android.tools.idea.io.grpc.inprocess.InProcessServerBuilder
-import org.junit.rules.ExternalResource
+import com.android.tools.idea.testing.NamedExternalResource
+import org.junit.runner.Description
 
 /** JUnit rule for creating an in-process gRPC client/server connection. */
-class GrpcConnectionRule(val services: List<BindableService>) : ExternalResource() {
+class GrpcConnectionRule(val services: List<BindableService>) : NamedExternalResource() {
   private lateinit var server: Server
 
   lateinit var channel: ManagedChannel
     private set
 
-  override fun before() {
+  override fun before(description: Description) {
     val serverName: String = InProcessServerBuilder.generateName()
     server =
       InProcessServerBuilder.forName(serverName)
@@ -40,7 +41,7 @@ class GrpcConnectionRule(val services: List<BindableService>) : ExternalResource
     channel = InProcessChannelBuilder.forName(serverName).directExecutor().build()
   }
 
-  override fun after() {
+  override fun after(description: Description) {
     server.shutdownNow()
     channel.shutdownNow()
     server.awaitTermination()

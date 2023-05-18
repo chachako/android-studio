@@ -9,5 +9,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" scope="TEST" name="studio-grpc" level="project" />
     <orderEntry type="library" scope="TEST" name="studio-sdk" level="project" />
+    <orderEntry type="module" module-name="intellij.android.testFramework" exported="" scope="TEST" />
   </component>
 </module>

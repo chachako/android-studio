@@ -19,9 +19,11 @@ iml_module(
     test_srcs = ["testSrc"],
     test_tags = ["manual"],  # testSrc is TEST scoped but contains no runnable tests
     visibility = ["//visibility:public"],
+    exports = ["//tools/adt/idea/android-test-framework:intellij.android.testFramework"],
     # do not sort: must match IML order
     deps = [
         "//tools/adt/idea/.idea/libraries:studio-grpc[test]",
         "//prebuilts/studio/intellij-sdk:studio-sdk[test]",
+        "//tools/adt/idea/android-test-framework:intellij.android.testFramework[module, test]",
     ],
 )
