@@ -68,6 +68,7 @@ merge_deps(
         ":studio.android.sdktools.screenshot.cli",
         "//prebuilts/studio/intellij-sdk:studio-sdk",
         "//prebuilts/studio/intellij-sdk:studio-sdk-plugin-Kotlin",
+        "//prebuilts/studio/layoutlib/data:layoutlib",
         "//tools/adt/idea/.idea/libraries:mockito",
         "//tools/adt/idea/.idea/libraries:studio-analytics-proto",
         "//tools/adt/idea/android:intellij.android.core",
