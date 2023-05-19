@@ -63,7 +63,6 @@ import com.android.tools.lint.detector.api.LintMap
 import com.android.tools.lint.detector.api.Location
 import com.android.tools.lint.detector.api.PartialResult
 import com.android.tools.lint.detector.api.Project
-import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.TextFormat
 import com.android.tools.lint.detector.api.describeCounts
@@ -1415,7 +1414,7 @@ open class LintCliClient : LintClient {
    * the files in [allProjects].
    */
   private fun mayNeedKotlinScripting(allProjects: Set<Project>): Boolean {
-    if (::driver.isInitialized && !driver.scope.contains(Scope.GRADLE_FILE)) {
+    if (allProjects.none { it.isGradleProject }) {
       return false
     }
 

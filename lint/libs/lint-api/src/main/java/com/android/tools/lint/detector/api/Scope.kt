@@ -29,6 +29,7 @@ import com.android.SdkConstants.DOT_XML
 import com.android.SdkConstants.FN_PROJECT_PROGUARD_FILE
 import com.android.SdkConstants.OLD_PROGUARD_FILE
 import com.android.SdkConstants.RES_FOLDER
+import com.android.tools.lint.model.LintModelArtifactType
 import java.util.EnumSet
 
 /**
@@ -188,11 +189,11 @@ enum class Scope {
     @JvmStatic
     fun infer(projects: Collection<Project>?): EnumSet<Scope> {
       if (projects == null || projects.isEmpty()) {
-        return ALL
+        return EnumSet.copyOf(ALL)
       }
 
       // Infer the scope
-      var scope = EnumSet.noneOf(Scope::class.java)
+      val scope = EnumSet.noneOf(Scope::class.java)
       for (project in projects) {
         val subset = project.subset
         if (subset != null) {
@@ -223,9 +224,19 @@ enum class Scope {
           }
         } else {
           // Specified a full project: just use the full project scope
-          scope = ALL
+          scope.addAll(ALL)
           break
         }
+      }
+
+      // Exclude the GRADLE_FILE scope when analyzing only test artifacts because the gradle files
+      // will be analyzed when the main artifact is analyzed.
+      if (
+        projects
+          .map { it.buildVariant?.artifact?.type }
+          .none { it == null || it == LintModelArtifactType.MAIN }
+      ) {
+        scope.remove(GRADLE_FILE)
       }
 
       return scope
