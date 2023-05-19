@@ -41,6 +41,7 @@ import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.resolve.diagnostics.DiagnosticSuppressor
+import org.jetbrains.uast.UastContext
 import org.jetbrains.uast.UastLanguagePlugin
 import org.jetbrains.uast.evaluation.UEvaluatorExtension
 import org.jetbrains.uast.java.JavaUastLanguagePlugin
@@ -84,6 +85,10 @@ internal fun configureProjectEnvironment(
   if (javaLanguageLevel != null) {
     LanguageLevelProjectExtension.getInstance(project).languageLevel = javaLanguageLevel
   }
+
+  // TODO(b/283351708): Migrate to using UastFacade/UastLanguagePlugin instead,
+  //  even including lint checks shipped in a binary form?!
+  @Suppress("DEPRECATION") project.registerService(UastContext::class.java, UastContext(project))
 }
 
 // In parallel builds the Kotlin compiler will reuse the application environment
