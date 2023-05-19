@@ -73,6 +73,9 @@ function run_bazel() {
     -- \
     //tools/adt/idea/studio:android-studio \
     //tools/adt/idea/native/installer:android-studio-bundle-data \
+    //tools/vendor/google/adrt:android-studio-cros-skeleton.zip \
+    //tools/vendor/google/adrt:android-studio-nsis-prebuilt.zip \
+    //tools/vendor/intel:android-studio-intel-haxm.zip \
     //tools/adt/idea/studio:updater_deploy.jar
 }
 
