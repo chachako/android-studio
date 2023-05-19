@@ -81,6 +81,7 @@ import org.jetbrains.kotlin.resolve.ModuleAnnotationsResolver
 import org.jetbrains.kotlin.resolve.jvm.extensions.AnalysisHandlerExtension
 import org.jetbrains.kotlin.scripting.compiler.plugin.ScriptingCompilerConfigurationComponentRegistrar
 import org.jetbrains.kotlin.util.slicedMap.WritableSlice
+import org.jetbrains.uast.UastContext
 import org.jetbrains.uast.UastLanguagePlugin
 import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.KotlinUastLanguagePlugin
@@ -275,6 +276,8 @@ private fun configureFe10ProjectEnvironment(
   config: Fe10UastEnvironment.Configuration
 ) {
   // UAST support.
+  @Suppress("DEPRECATION") // TODO: Migrate to using UastFacade instead.
+  project.registerService(UastContext::class.java, UastContext(project))
   AnalysisHandlerExtension.registerExtension(project, UastAnalysisHandlerExtension())
   project.registerService(
     KotlinUastResolveProviderService::class.java,
