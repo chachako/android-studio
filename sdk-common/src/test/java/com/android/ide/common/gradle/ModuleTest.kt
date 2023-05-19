@@ -18,6 +18,10 @@ package com.android.ide.common.gradle
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.fail
 import org.junit.Test
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 
 class ModuleTest {
     @Test
@@ -85,6 +89,26 @@ class ModuleTest {
             val module = Module(group, name)
             assertThat(module.toIdentifier()).isNull()
             assertThat(module.toString()).matches("^Module\\(.*\\)$")
+        }
+    }
+
+    @Test
+    fun testSerialize() {
+        val groups = listOf("abc", ":abc", "a:bc", "ab:c", "abc:")
+        val names = listOf("123", ":123", "1:23", "12:3", "123:")
+        for ((group, name) in groups.zip(names)) {
+            val module = Module(group, name)
+            val output = ByteArrayOutputStream()
+            val objectOutput = ObjectOutputStream(output)
+            objectOutput.writeObject(module)
+            val byteArray = output.toByteArray()
+            objectOutput.close()
+            output.close()
+
+            val input = ByteArrayInputStream(byteArray)
+            val objectInput = ObjectInputStream(input)
+            val deserializedModule = objectInput.readObject()
+            assertThat(deserializedModule).isEqualTo(module)
         }
     }
 }
