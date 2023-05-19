@@ -16,6 +16,10 @@
 package com.android.ide.common.gradle
 
 import com.google.common.truth.Truth.assertThat
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import org.junit.Test
 
 class VersionTest {
@@ -525,5 +529,35 @@ class VersionTest {
         assertThat(Version.prefixInfimum("1").prefixVersion()).isEqualTo(Version.parse("1"))
         assertThat(Version.parse("1-dev").prefixVersion()).isEqualTo(Version.parse("1-dev"))
         assertThat(Version.prefixInfimum("1-dev").prefixVersion()).isEqualTo(Version.parse("1-dev"))
+    }
+
+    @Test
+    fun testSerialize() {
+        listOf(
+            "1.3",
+            "1.3.0-beta3", "1.0-20150201.131010-1",
+            "1.3-DeV", "1.3-Rc", "1.3-SnApShOt", "1.3-FiNaL", "1.3-Ga", "1.3-ReLeAsE", "1.3-Sp",
+            "1.3-alpha01",
+            ".-+_", "",
+            "1.2147483648", "2.4294967296",
+            "3.9223372036854775808", "4.18446744073709551616", "1.2212222019"
+        ).forEach { string ->
+            val output = ByteArrayOutputStream()
+            val objectOutput = ObjectOutputStream(output)
+            val version = Version.parse(string)
+            val prefixInfimum = Version.prefixInfimum(string)
+            objectOutput.writeObject(version)
+            objectOutput.writeObject(prefixInfimum)
+            val byteArray = output.toByteArray()
+            objectOutput.close()
+            output.close()
+
+            val input = ByteArrayInputStream(byteArray)
+            val objectInput = ObjectInputStream(input)
+            val deserializedVersion = objectInput.readObject()
+            val deserializedPrefixInfimum = objectInput.readObject()
+            assertThat(deserializedVersion).isEqualTo(version)
+            assertThat(deserializedPrefixInfimum).isEqualTo(prefixInfimum)
+        }
     }
 }

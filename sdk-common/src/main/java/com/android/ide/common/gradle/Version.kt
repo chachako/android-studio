@@ -17,10 +17,10 @@ package com.android.ide.common.gradle
 
 import com.android.ide.common.repository.GradleVersionRange
 import com.google.common.annotations.Beta
+import java.io.Serializable
 import java.lang.IllegalArgumentException
 import java.math.BigInteger
 import java.math.BigInteger.ONE
-import java.math.BigInteger.ZERO
 import java.util.Locale
 import java.util.Objects
 import kotlin.math.max
@@ -36,7 +36,7 @@ import kotlin.math.max
  * Think of [Version] as representing a single point on the version line.
  */
 @Beta
-class Version: Comparable<Version> {
+class Version: Comparable<Version>, Serializable {
     // TODO:
     // - restartable parser (for re-use in parsing version ranges etc.)
     // - base version extraction (for conflict resolution)
@@ -102,7 +102,7 @@ class Version: Comparable<Version> {
     fun nextPrefix(prefixSize: Int): Version {
         if (parts.size < prefixSize) {
             return Version(
-                parts + List(prefixSize - parts.size) { Numeric("0", ZERO) },
+                parts + List(prefixSize - parts.size) { Numeric("0") },
                 separators.let {
                     it.dropLast(1) + List(prefixSize - parts.size) { Separator.DOT } + it.last()
                 },
@@ -189,7 +189,7 @@ class Version: Comparable<Version> {
             object NUMERIC: ParseState {
                 override fun createPart(sb: StringBuffer): Part {
                     val string = sb.toString()
-                    return Numeric(string, BigInteger(string))
+                    return Numeric(string)
                 }
             }
             object NONNUMERIC: ParseState {
@@ -280,7 +280,7 @@ enum class Separator(val char: Char?) {
     override fun toString() = char?.let { "$it" } ?: ""
 }
 
-sealed class Part(protected val string: String) : Comparable<Part> {
+sealed class Part(protected val string: String) : Comparable<Part>, Serializable {
     abstract fun next(): Part
     override fun toString() = string
 }
@@ -306,7 +306,8 @@ class NonNumeric(string: String) : Part(string) {
     override fun hashCode() = Objects.hash(this.string)
 }
 
-sealed class Special(string: String, val ordinal: Int) : Part(string) {
+sealed class Special(string: String) : Part(string) {
+    abstract val ordinal: Int
     override fun compareTo(other: Part) = when (other) {
         is Special -> this.ordinal.compareTo(other.ordinal)
         is Numeric -> -1
@@ -319,27 +320,58 @@ sealed class Special(string: String, val ordinal: Int) : Part(string) {
     override fun hashCode() = Objects.hash(this.ordinal)
 }
 
-class RC(string: String): Special(string, 0) {
+class RC(string: String): Special(string) {
+    override val ordinal = 0
     override fun next() = SNAPSHOT("snapshot")
 }
-class SNAPSHOT(string: String): Special(string, 1) {
+class SNAPSHOT(string: String): Special(string) {
+    override val ordinal = 1
     override fun next() = FINAL("final")
 }
-class FINAL(string: String): Special(string, 2) {
+class FINAL(string: String): Special(string) {
+    override val ordinal = 2
     override fun next() = GA("ga")
 }
-class GA(string: String): Special(string, 3) {
+class GA(string: String): Special(string) {
+    override val ordinal = 3
     override fun next() = RELEASE("release")
 }
-class RELEASE(string: String): Special(string, 4) {
+class RELEASE(string: String): Special(string) {
+    override val ordinal = 4
     override fun next() = SP("sp")
 }
-class SP(string: String): Special(string, 5) {
-    override fun next() = Numeric("0", ZERO)
+class SP(string: String): Special(string) {
+    override val ordinal = 5
+    override fun next() = Numeric("0")
 }
 
-class Numeric(string: String, val number: BigInteger) : Part(string) {
-    override fun next() = Numeric("${number + ONE}", number + ONE)
+class Numeric(string: String) : Part(string) {
+    // At first glance, this might look like it should be
+    //   val number by lazy { BigInteger(string) }
+    // and at second glance, it might look like it should be
+    //   val number = BigInteger(string)
+    // and at third glance, it might look like things would be
+    // simpler if the numeric representation were primary, or at
+    // least passed at construction time, so that there is no
+    // need to construct the next Numeric by printing
+    // number + ONE to string, and then later parsing that
+    // string.
+    //
+    // However, we want this class to be Serializable using
+    // multiple different mechanisms, including some mechanisms
+    // that serialize small BigInteger values as Int, but fail to
+    // do the reverse conversion when initializing.  Therefore, we
+    // have to hide the BigIntegers from the serialization
+    // mechanism (by marking it as transient), which means we cannot
+    // initialize it directly.
+    @Transient
+    private var _number: BigInteger? = null
+    val number: BigInteger
+        get() = when(val n = _number) {
+            null -> BigInteger(string).also { _number = it }
+            else -> n
+        }
+    override fun next() = Numeric("${number + ONE}")
     override fun compareTo(other: Part) = when (other) {
         is Numeric -> this.number.compareTo(other.number)
         is DEV, is NonNumeric, is Special -> 1
