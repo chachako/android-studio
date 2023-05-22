@@ -5,7 +5,7 @@
     </CLASSES>
     <JAVADOC />
     <SOURCES>
-      <root url="jar://$MAVEN_REPOSITORY$/androidx/inspection/inspection/1.0.0/inspection-1.0.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../prebuilts/tools/common/m2/repository/androidx/inspection/inspection/1.0.0/inspection-1.0.0-sources.jar!/" />
     </SOURCES>
   </library>
 </component>
