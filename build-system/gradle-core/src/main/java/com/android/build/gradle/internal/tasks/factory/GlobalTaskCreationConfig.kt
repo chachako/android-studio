@@ -60,7 +60,7 @@ interface GlobalTaskCreationConfig: BootClasspathConfig {
 
     val compileSdkHashString: String
     val buildToolsRevision: Revision
-    val ndkVersion: String?
+    val ndkVersion: String
     val ndkPath: String?
 
     val productFlavorCount: Int

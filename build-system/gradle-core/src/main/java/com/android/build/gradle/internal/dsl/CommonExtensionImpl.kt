@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.dsl
 
+import com.android.SdkConstants.NDK_DEFAULT_VERSION
 import com.android.build.api.dsl.AndroidResources
 import com.android.build.api.dsl.ApkSigningConfig
 import com.android.build.api.dsl.BuildFeatures
@@ -410,6 +411,8 @@ abstract class CommonExtensionImpl<
             // is not the desired behavior, so normalize e.g. to 20.0.0.
             buildToolsRevision = Revision.parseRevision(version, Revision.Precision.MICRO)
         }
+
+    override var ndkVersion: String = NDK_DEFAULT_VERSION
 
     override fun buildToolsVersion(buildToolsVersion: String) {
         this.buildToolsVersion = buildToolsVersion

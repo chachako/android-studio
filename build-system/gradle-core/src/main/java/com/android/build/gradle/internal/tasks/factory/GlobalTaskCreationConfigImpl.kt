@@ -99,7 +99,7 @@ class GlobalTaskCreationConfigImpl(
         Revision.parseRevision(extension.buildToolsVersion, Revision.Precision.MICRO)
     }
 
-    override val ndkVersion: String?
+    override val ndkVersion: String
         get() = extension.ndkVersion
 
     override val ndkPath: String?

@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.tasks.factory
 
+import com.android.SdkConstants
 import com.android.Version
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.dsl.Bundle
@@ -197,8 +198,8 @@ internal class KmpGlobalTaskCreationConfigImpl(
     // Unsupported properties
     // TODO: Refactor the parent interface so that we don't have to override these values to avoid
     //  accidental calls.
-    override val ndkVersion: String?
-        get() = null
+    override val ndkVersion: String
+        get() = SdkConstants.NDK_DEFAULT_VERSION
     override val ndkPath: String?
         get() = null
     override val aidlPackagedList: Collection<String>?

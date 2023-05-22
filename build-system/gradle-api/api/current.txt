@@ -821,7 +821,7 @@ package com.android.build.api.dsl {
     method @Deprecated @org.gradle.api.Incubating public com.android.build.api.dsl.LintOptions getLintOptions();
     method public String? getNamespace();
     method public String? getNdkPath();
-    method public String? getNdkVersion();
+    method public String getNdkVersion();
     method public com.android.build.api.dsl.Packaging getPackaging();
     method @Deprecated public com.android.build.api.dsl.Packaging getPackagingOptions();
     method public org.gradle.api.NamedDomainObjectContainer<? extends ProductFlavorT> getProductFlavors();
@@ -847,7 +847,7 @@ package com.android.build.api.dsl {
     method public void setCompileSdkPreview(String?);
     method public void setNamespace(String?);
     method public void setNdkPath(String?);
-    method public void setNdkVersion(String?);
+    method public void setNdkVersion(String);
     method public void setResourcePrefix(String?);
     method public void signingConfigs(kotlin.jvm.functions.Function1<? super org.gradle.api.NamedDomainObjectContainer<? extends com.android.build.api.dsl.ApkSigningConfig>,kotlin.Unit> action);
     method public void sourceSets(kotlin.jvm.functions.Function1<? super org.gradle.api.NamedDomainObjectContainer<? extends com.android.build.api.dsl.AndroidSourceSet>,kotlin.Unit> action);
@@ -879,7 +879,7 @@ package com.android.build.api.dsl {
     property @Deprecated @org.gradle.api.Incubating public abstract com.android.build.api.dsl.LintOptions lintOptions;
     property public abstract String? namespace;
     property public abstract String? ndkPath;
-    property public abstract String? ndkVersion;
+    property public abstract String ndkVersion;
     property public abstract com.android.build.api.dsl.Packaging packaging;
     property @Deprecated public abstract com.android.build.api.dsl.Packaging packagingOptions;
     property public abstract org.gradle.api.NamedDomainObjectContainer<? extends ProductFlavorT> productFlavors;

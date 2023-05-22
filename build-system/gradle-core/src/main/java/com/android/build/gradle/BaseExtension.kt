@@ -15,6 +15,7 @@
  */
 package com.android.build.gradle
 
+import com.android.SdkConstants
 import com.android.annotations.NonNull
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.BuildFeatures
@@ -450,7 +451,7 @@ abstract class BaseExtension protected constructor(
 
     abstract override var resourcePrefix: String?
 
-    abstract override var ndkVersion: String?
+    abstract override var ndkVersion: String
 
     abstract var ndkPath: String?
 
