@@ -570,6 +570,37 @@ class IndentationDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
+  @Suppress("ConstantConditionIf")
+  fun testJumps() {
+    // Make sure we don't only handle return expressions but other types of jumps
+    // as well such as continue and break. The below is how ktfmt will actually
+    // indent this code fragment.
+    lint()
+      .files(
+        kotlin(
+            "" +
+              "class Test {\n" +
+              "  private fun test() {\n" +
+              "    while (true) {\n" +
+              "      val r =\n" +
+              "        if (true) {\n" +
+              "          if (false) 100\n" +
+              "          else\n" +
+              "          // Comment\n" +
+              "          continue\n" +
+              "        } else {\n" +
+              "          0\n" +
+              "        }\n" +
+              "    }\n" +
+              "  }\n" +
+              "}"
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
+
   fun testMultiPart() {
     // This is a carefully constructed test case to reproduce a bug similar to the one observed in
     // https://issuetracker.google.com/215741972

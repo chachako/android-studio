@@ -41,9 +41,9 @@ import org.jetbrains.uast.UDoWhileExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UIfExpression
+import org.jetbrains.uast.UJumpExpression
 import org.jetbrains.uast.ULoopExpression
 import org.jetbrains.uast.UPrefixExpression
-import org.jetbrains.uast.UReturnExpression
 import org.jetbrains.uast.UastEmptyExpression
 import org.jetbrains.uast.UastErrorType
 import org.jetbrains.uast.UastPrefixOperator
@@ -172,9 +172,8 @@ class IndentationDetector : Detector(), SourceCodeScanner {
             //   return true
             //   return false
             // while not great, it's obvious that the first return isn't unconditional
-            (body !is UReturnExpression ||
-              i == expressions.size - 1 ||
-              expressions[i + 1] !is UReturnExpression)
+            (body !is UJumpExpression ||
+              i < expressions.size - 1 && expressions[i + 1] !is UJumpExpression)
         ) {
           val nestedStart = body.sourcePsi!!.startOffset
           val nestedLineStart = findLineBeginBackwards(nestedStart)
@@ -209,8 +208,8 @@ class IndentationDetector : Detector(), SourceCodeScanner {
               getLineLocation(statement).withSecondary(secondary, "Previous statement here")
             val prevSummary = describeElement(prevExpression)
             val controlExpression =
-              expressions[i - 1].skipParenthesizedExprDown()?.isControlExpression()
-            val nestedUnder = if (controlExpression == true) "nested under" else "continuing"
+              expressions[i - 1].skipParenthesizedExprDown().isControlExpression()
+            val nestedUnder = if (controlExpression) "nested under" else "continuing"
             val message =
               "Suspicious indentation: This is indented but is not $nestedUnder the previous expression (`$prevSummary`...)"
             context.report(ISSUE, node, location, message)
