@@ -16,8 +16,8 @@
 package com.android.tools.lint
 
 import com.intellij.core.CoreApplicationEnvironment
-import com.intellij.mock.MockApplication
 import com.intellij.ide.highlighter.JavaFileType
+import com.intellij.mock.MockApplication
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
@@ -37,10 +37,7 @@ import java.nio.file.Paths
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 import kotlin.concurrent.withLock
-import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
-import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.impl.base.util.LibraryUtils
-import org.jetbrains.kotlin.analysis.api.lifetime.KtAlwaysAccessibleLifetimeTokenFactory
 import org.jetbrains.kotlin.analysis.api.standalone.StandaloneAnalysisAPISession
 import org.jetbrains.kotlin.analysis.api.standalone.buildStandaloneAnalysisAPISession
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtLibraryModule
@@ -52,7 +49,6 @@ import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
-import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.uast.UastLanguagePlugin
 import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
@@ -254,11 +250,6 @@ private fun configureFirApplicationEnvironment(appEnv: CoreApplicationEnvironmen
     )
   }
 }
-
-// Lint version of `analyzeForUast` in
-// `org.jetbrains.uast.kotlin.internal.firKotlinInternalUastUtils`
-inline fun <R> analyzeForLint(useSiteKtElement: KtElement, action: KtAnalysisSession.() -> R): R =
-  analyze(useSiteKtElement, KtAlwaysAccessibleLifetimeTokenFactory, action)
 
 // Copied over from `org.jetbrains.kotlin.analysis.project.structure.impl.KtModuleUtils.kt`
 private object Helper {

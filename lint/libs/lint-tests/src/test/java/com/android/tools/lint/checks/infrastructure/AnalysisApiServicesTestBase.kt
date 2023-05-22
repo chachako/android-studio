@@ -15,12 +15,12 @@
  */
 package com.android.tools.lint.checks.infrastructure
 
-import com.android.tools.lint.analyzeForLint
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.intellij.openapi.progress.ProgressManager
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.annotations.annotations
 import org.jetbrains.kotlin.analysis.api.calls.singleFunctionCallOrNull
 import org.jetbrains.kotlin.analysis.api.calls.symbol
@@ -56,7 +56,7 @@ abstract class AnalysisApiServicesTestBase {
               node.returnTypeReference?.sourcePsi as? KtTypeReference
                 ?: return super.visitMethod(node)
 
-            analyzeForLint(returnTypeReference) {
+            analyze(returnTypeReference) {
               val ktType = returnTypeReference.getKtType()
               assertTrue(ktType is KtDynamicType)
             }
@@ -78,7 +78,7 @@ abstract class AnalysisApiServicesTestBase {
           override fun visitMethod(node: UMethod): Boolean {
             val ktDeclaration = node.sourcePsi as? KtDeclaration ?: return super.visitMethod(node)
 
-            analyzeForLint(ktDeclaration) {
+            analyze(ktDeclaration) {
               val symbol = ktDeclaration.getSymbol()
               val visibility = (symbol as? KtSymbolWithVisibility)?.visibility
               assertEquals(Visibilities.Internal, visibility)
@@ -109,7 +109,7 @@ abstract class AnalysisApiServicesTestBase {
             override fun visitParameter(node: UParameter): Boolean {
               val ktParameter = node.sourcePsi as? KtParameter ?: return super.visitParameter(node)
 
-              analyzeForLint(ktParameter) {
+              analyze(ktParameter) {
                 val ktType = ktParameter.getParameterSymbol().returnType
                 assertTrue(ktType.isFunctionalInterfaceType)
               }
@@ -146,7 +146,7 @@ abstract class AnalysisApiServicesTestBase {
               val ktLambdaExpression =
                 node.sourcePsi as? KtLambdaExpression ?: return super.visitLambdaExpression(node)
 
-              analyzeForLint(ktLambdaExpression) {
+              analyze(ktLambdaExpression) {
                 val lambdaType = ktLambdaExpression.getKtType()
                 assertTrue(lambdaType is KtFunctionalType && lambdaType.hasReceiver)
               }
@@ -178,7 +178,7 @@ abstract class AnalysisApiServicesTestBase {
 
               val ktClass = node.sourcePsi as? KtClassOrObject ?: return super.visitClass(node)
 
-              analyzeForLint(ktClass) {
+              analyze(ktClass) {
                 val symbol = ktClass.getClassOrObjectSymbol()!!
                 val typeParams = symbol.typeParameters
                 assertEquals(1, typeParams.size)
@@ -215,7 +215,7 @@ abstract class AnalysisApiServicesTestBase {
           object : AbstractUastVisitor() {
             override fun visitCallExpression(node: UCallExpression): Boolean {
               val ktElement = node.sourcePsi as? KtElement ?: return super.visitCallExpression(node)
-              analyzeForLint(ktElement) {
+              analyze(ktElement) {
                 val ktFunctionSymbol =
                   ktElement.resolveCall()?.singleFunctionCallOrNull()?.symbol
                     ?: return super.visitCallExpression(node)
