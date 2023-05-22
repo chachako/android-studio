@@ -129,6 +129,8 @@ public class JDWPTracer {
      * @param the name of the app package being traced.
      */
     public void setName(String name) {
-        session.setName(name);
+        if (session != null) {
+            session.setName(name);
+        }
     }
 }
