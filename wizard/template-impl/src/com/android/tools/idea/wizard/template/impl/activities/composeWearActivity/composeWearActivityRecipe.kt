@@ -28,9 +28,7 @@ import com.android.tools.idea.wizard.template.impl.activities.composeWearActivit
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values.stylesXml
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values.tileStringsXml
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.src.app_package.mainActivityKt
-import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.src.app_package.theme.colorKt
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.src.app_package.theme.themeKt
-import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.src.app_package.theme.typeKt
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.src.app_package.tile.tileServiceKt
 import java.io.File
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values_round.stringsXml as stringsRoundXml
@@ -103,8 +101,6 @@ private fun RecipeExecutor.commonComposeRecipe(
         srcOut.resolve("presentation/${activityClass}.kt")
     )
     val uiThemeFolder = "presentation/theme"
-    save(colorKt(packageName), srcOut.resolve("$uiThemeFolder/Color.kt"))
-    save(typeKt(packageName), srcOut.resolve("$uiThemeFolder/Type.kt"))
     save(themeKt(packageName, themeName), srcOut.resolve("$uiThemeFolder/Theme.kt"))
 
     mergeXml(
