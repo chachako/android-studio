@@ -125,10 +125,11 @@ class ScreenshotProvider(
         val model = ScreenshotRenderModelModule(composeApplication, composeProject, composeModule, sdkPath, rootLintModule, dependencies)
         for (previewElement in instances) {
             val renderResult = renderPreviewElement(previewElement, model)
+            val errorMessage = verifyRenderResult(renderResult!!)
             val fileName = previewElement.displaySettings.name
-            if (recordGoldens) {
-                renderResult!!.renderedImage.copy?.let { saveImage(it, goldenLocation + fileName + ".png") }
-            } else {
+            if (recordGoldens && errorMessage == null) {
+                renderResult.renderedImage.copy?.let { saveImage(it, goldenLocation + fileName + ".png") }
+            } else if (errorMessage == null) {
                 val result = compareImages(
                     renderResult!!,
                     goldenLocation,
@@ -140,6 +141,8 @@ class ScreenshotProvider(
                     renderResult.renderedImage.copy?.let { saveImage(it, outputLocation + fileName + "_actual.png") }
                 }
                 results.add(result)
+            } else {
+                results.add(Verify.AnalysisResult.RenderError(renderResult.renderedImage.copy!!, errorMessage))
             }
         }
         return results
@@ -181,6 +184,26 @@ class ScreenshotProvider(
                 )
                 .build().get()
         return task.render().get()
+    }
+
+    private fun verifyRenderResult(result: RenderResult): String? {
+        var errorMessage: String? = null
+        if (isDefaultSize(result.renderedImage.copy!!)) {
+            errorMessage = if (!result.logger.hasErrors()) {
+                "Unable to render the preview"
+            } else {
+                val errors = mutableListOf<String>()
+                for (message in result.logger.messages) {
+                    message.throwable?.message?.let { errors.add(it) }
+                }
+                errors.distinct().joinToString(", ")
+            }
+        }
+        return errorMessage
+    }
+
+    private fun isDefaultSize(image: BufferedImage): Boolean {
+        return image.height == 1 && image.width == 1
     }
 
     private fun saveImage(image: BufferedImage, fileName: String) {

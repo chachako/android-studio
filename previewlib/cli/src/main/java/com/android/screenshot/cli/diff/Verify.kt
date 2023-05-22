@@ -72,5 +72,10 @@ class Verify (val imageDiffer: ImageDiffer = ImageDiffer.PixelPerfect,
             override val actual: BufferedImage,
             override val message: String
         ) : AnalysisResult
+
+        data class RenderError(
+            override  val actual: BufferedImage,
+            override val message: String
+        ) : AnalysisResult
     }
 }
