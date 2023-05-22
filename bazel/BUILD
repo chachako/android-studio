@@ -444,6 +444,19 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
+bool_flag(
+    name = "without-vendor",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "without_vendor",
+    flag_values = {
+        ":without-vendor": "True",
+    },
+    visibility = ["//visibility:public"],
+)
+
 config_setting(
     name = "kotlin_no_use_ir",
     values = {"define": "kotlin_no_use_ir=true"},

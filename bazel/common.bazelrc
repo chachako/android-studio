@@ -234,6 +234,7 @@ build:dynamic --noverbose_failures
 build:dynamic --noexperimental_worker_multiplex
 
 build:without_vendor --repo_env=SETUP_VENDOR=0
+build:without_vendor --//tools/base/bazel:without-vendor
 
 # TODO: Remove these skia settings when a better approach is supported by the skia code base.
 # TODO:(https://bugs.chromium.org/p/skia/issues/detail?id=13983)
