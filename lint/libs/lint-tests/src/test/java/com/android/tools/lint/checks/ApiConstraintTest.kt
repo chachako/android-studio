@@ -336,6 +336,16 @@ class ApiConstraintTest {
       "API level ≥ 15 or SDK 30: version ≥ 2 or SDK 31: version ≥ 4",
       (multiSdkAnyOf("0:15,30:2") or multiSdkAnyOf("30:3,31:4")).toString()
     )
+
+    assertEquals(
+      "SDK 1000000: version < 5 or API level < 29",
+      (atMost(4, 1000000) or atMost(28, 0)).toString()
+    )
+
+    assertEquals(
+      "API level < 29 or SDK 1000000: version < 5",
+      (atMost(28, 0) or atMost(4, 1000000)).toString()
+    )
   }
 
   @Test
@@ -550,6 +560,20 @@ class ApiConstraintTest {
       "SDK 30: version ≥ 12 and SDK 31: version ≥ 8",
       ApiConstraint.getFromUsesSdk(usesSdkTag as Element).toString()
     )
+  }
+
+  @Test
+  fun testMinMaxMultiConstraint() {
+    // (See 282932318 for more.)
+
+    // Use Android SDK if present
+    assertEquals(34, multiSdk("1000000:4,0:34,33:4").min())
+    assertEquals(34, multiSdk("1000000:4,0:34,33:4").fromInclusive())
+    assertEquals(29, (atMost(4, 1000000) or atMost(28, 0)).toExclusive())
+
+    // Otherwise, just use the first item
+    assertEquals(-1, multiSdk("1000000:4,33:5").fromInclusive())
+    assertEquals(-1, (atMost(4, 1000000) or atMost(28, 34)).toExclusive())
   }
 
   @Test

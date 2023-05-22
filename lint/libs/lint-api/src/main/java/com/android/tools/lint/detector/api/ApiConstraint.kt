@@ -78,8 +78,10 @@ sealed class ApiConstraint {
    * The lowest API level included in the constraint. E.g. for "X >= 21" it's 21, for "X < 15" it's
    * 1, and for [NONE] or [UNKNOWN] it's -1.
    *
-   * If called on a constraint with multiple versions, this will return the lowest API level from
-   * all of them.
+   * **This method should not be called on a multi-version constraint**. For backwards
+   * compatibility, this will attempt to return the lowest API level for the constraint
+   * corresponding to the Android SDK (if included in the multi constraint); otherwise, it will
+   * return -1.
    */
   abstract fun fromInclusive(): Int
 
@@ -88,8 +90,10 @@ sealed class ApiConstraint {
    * will return the highest value representable in the API level data structures; this is not
    * Integer.MAX_VALUE.
    *
-   * If called on a constraint with multiple versions, this will return the highest API level from
-   * all of them.
+   * **This method should not be called on a multi-version constraint**. For backwards
+   * compatibility, this will attempt to return the highest API level for the constraint
+   * corresponding to the Android SDK (if included in the multi constraint); otherwise, it will
+   * return -1.
    */
   abstract fun toExclusive(): Int
 
@@ -546,7 +550,10 @@ sealed class ApiConstraint {
           if (sdkId != other.sdkId) {
             if (isEmpty()) return other
             return MultiSdkApiConstraint(
-              listOf(SdkApiConstraints(sdkId, null, this), SdkApiConstraints(sdkId, null, other))
+              listOf(
+                SdkApiConstraints(sdkId, null, this),
+                SdkApiConstraints(other.sdkId, null, other)
+              )
             )
           }
           return SdkApiConstraint(bits or other.bits, sdkId)
@@ -970,11 +977,13 @@ sealed class ApiConstraint {
     private val apis: Sequence<SdkApiConstraint> = sdkConstraints.asSequence().map { it.lowest() }
 
     override fun fromInclusive(): Int {
-      return sdkConstraints.first().lowest().fromInclusive()
+      val constraint = sdkConstraints.firstOrNull { it.sdkId == ANDROID_SDK_ID } ?: return -1
+      return constraint.lowest().fromInclusive()
     }
 
     override fun toExclusive(): Int {
-      return sdkConstraints.first().highest().toExclusive()
+      val constraint = sdkConstraints.firstOrNull { it.sdkId == ANDROID_SDK_ID } ?: return -1
+      return constraint.highest().toExclusive()
     }
 
     override fun isAtLeast(constraint: ApiConstraint): Boolean {
