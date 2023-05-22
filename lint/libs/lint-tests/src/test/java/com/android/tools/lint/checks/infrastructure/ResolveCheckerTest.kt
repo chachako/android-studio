@@ -220,7 +220,42 @@ class ResolveCheckerTest {
   }
 
   @Test
-  fun testResolveTopLevelFunctionImport() {
+  fun testResolveTopLevelFunctionImportFromSource() {
+    // Regression from b/283693338
+    lint()
+      .files(
+        kotlin(
+          """
+                package test
+
+                import androidx.compose.runtime.remember
+
+                fun test() {
+                    val foo = remember { true }
+                }
+            """
+        ),
+        kotlin(
+          "src/androidx/compose/runtime/Remember.kt",
+          """
+                package androidx.compose.runtime
+
+                inline fun <reified T : Any> remember(calculation: () -> T): T = calculation()
+
+                inline fun <reified V : Any> remember(
+                    vararg inputs: Any?,
+                    calculation: () -> V
+                ): V = calculation()
+            """
+        )
+      )
+      .issues(AlwaysShowActionDetector.ISSUE)
+      .run()
+      .expectClean()
+  }
+
+  @Test
+  fun testResolveTopLevelFunctionImportFromCompiled() {
     lint()
       .files(
         kotlin(

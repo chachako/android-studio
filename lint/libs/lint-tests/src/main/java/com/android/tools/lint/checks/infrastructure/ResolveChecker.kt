@@ -37,8 +37,11 @@ import com.intellij.psi.impl.JavaPsiFacadeEx
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
 import java.io.StringWriter
+import org.jetbrains.kotlin.analysis.api.analyze
+import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.psi.KtDotQualifiedExpression
 import org.jetbrains.kotlin.psi.KtImportDirective
+import org.jetbrains.kotlin.psi.KtNameReferenceExpression
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UFile
@@ -166,6 +169,22 @@ fun JavaContext.checkFile(root: UFile?, task: TestLintTask, isStub: Boolean = fa
               if (pkg.classes.any { it.hasStaticMemberNamed(name) }) {
                 return super.visitImportStatement(node)
               }
+            }
+            // Some top-level declarations are not converted to light classes,
+            // e.g., inline w/ reified parameter
+            // Last resort: Analysis API.
+            analyze(qualifiedExpression) {
+              val reference =
+                (qualifiedExpression.selectorExpression as? KtNameReferenceExpression)
+                  ?.mainReference
+              // Note that, without call arguments, reference may not be resolved to a single
+              // target. Thus, we should try [resolveToSymbols], not [resolveToSymbol].
+              reference
+                ?.resolveToSymbols()
+                ?.takeIf { it.isNotEmpty() }
+                ?.let {
+                  return super.visitImportStatement(node)
+                }
             }
           }
         }
