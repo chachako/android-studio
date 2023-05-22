@@ -18,6 +18,7 @@ package com.android.tools.firebase.testlab.gradle.services
 
 import com.android.tools.firebase.testlab.gradle.services.storage.FileHashCache
 import com.android.tools.firebase.testlab.gradle.services.storage.TestRunStorage
+import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.client.http.InputStreamContent
 import com.google.api.services.storage.Storage
 import com.google.api.services.storage.model.StorageObject
@@ -94,7 +95,11 @@ class StorageManager (
             val hashQualifiedPrefix = "$moduleName/$hash-"
             val hashQualifiedName = hashQualifiedPrefix + uploadFileName
 
-            val storageObject = storageClient.objects().get(bucketName, hashQualifiedName).execute()
+            val storageObject = try {
+                storageClient.objects().get(bucketName, hashQualifiedName).execute()
+            } catch (e: GoogleJsonResponseException) {
+                null
+            }
             if (storageObject != null && storageObject.isNotModified()) {
                 // TODO (b/276517167): check if storage object has become stale.
                 storageObject
@@ -107,7 +112,11 @@ class StorageManager (
     fun retrieveFile(fileUri: String): StorageObject? {
         val matchResult = cloudStorageUrlRegex.find(fileUri) ?: return null
         val (bucketName, objectName) = matchResult.destructured
-        return storageClient.objects().get(bucketName, objectName).execute()
+        return try {
+            storageClient.objects().get(bucketName, objectName).execute()
+        } catch (e: GoogleJsonResponseException) {
+            null
+        }
     }
 
     fun downloadFile(storageObject: StorageObject, destination: (objectName: String) -> File): File? =

@@ -18,10 +18,14 @@ package com.android.tools.firebase.testlab.gradle.device
 
 import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService
 import com.android.tools.firebase.testlab.gradle.ManagedDeviceImpl.Orientation
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 
 abstract class DeviceTestRunInput:
     com.android.build.api.instrumentation.manageddevice.DeviceTestRunInput {
@@ -44,6 +48,7 @@ abstract class DeviceTestRunInput:
     @get: Input
     abstract val numUniformShards: Property<Int>
 
-    @get:Input
-    abstract val extraDeviceFiles: MapProperty<String, String>
+    @get: PathSensitive(PathSensitivity.NONE)
+    @get: InputFile
+    abstract val extraDeviceUrlsFile: RegularFileProperty
 }

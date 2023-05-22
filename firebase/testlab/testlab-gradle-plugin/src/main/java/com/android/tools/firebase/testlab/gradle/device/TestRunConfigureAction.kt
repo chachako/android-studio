@@ -17,8 +17,10 @@
 package com.android.tools.firebase.testlab.gradle.device
 
 import com.android.build.api.instrumentation.manageddevice.DeviceTestRunConfigureAction
+import com.android.tools.firebase.testlab.gradle.TestLabGradlePlugin
 import com.android.tools.firebase.testlab.gradle.ManagedDeviceImpl
 import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService
+import com.android.tools.firebase.testlab.gradle.tasks.ExtraDeviceFilesUploadTask
 import com.google.firebase.testlab.gradle.ManagedDevice
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
@@ -53,8 +55,13 @@ open class TestRunConfigureAction @Inject constructor(
                 providerFactory.provider { buildService.get().numUniformShards })
             numUniformShards.disallowChanges()
 
-            extraDeviceFiles.set(providerFactory.provider {
-                buildService.get().parameters.extraDeviceFiles.get() })
-            extraDeviceFiles.disallowChanges()
+            extraDeviceUrlsFile.set(
+                project.tasks.named(
+                    TestLabGradlePlugin.EXTRA_DEVICE_FILES_UPLOAD_TASK_NAME
+                ).flatMap { task ->
+                    (task as ExtraDeviceFilesUploadTask).outputFile
+                }
+            )
+            extraDeviceUrlsFile.disallowChanges()
         }
 }

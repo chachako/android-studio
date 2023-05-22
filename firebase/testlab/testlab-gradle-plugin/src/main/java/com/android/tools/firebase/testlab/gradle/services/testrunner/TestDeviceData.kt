@@ -29,5 +29,6 @@ data class TestDeviceData (
     val apiLevel: Int,
     val locale: Locale,
     val orientation: ManagedDeviceImpl.Orientation,
-    val ftlModel: AndroidModel
+    val ftlModel: AndroidModel,
+    val extraDeviceFileUrls: Map<String, String>
 )

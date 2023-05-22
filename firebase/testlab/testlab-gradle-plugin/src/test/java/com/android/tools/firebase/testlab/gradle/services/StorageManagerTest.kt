@@ -20,6 +20,7 @@ import com.android.tools.firebase.testlab.gradle.services.storage.FileHashCache
 import com.android.testutils.MockitoKt.any
 import com.android.testutils.MockitoKt.eq
 import com.android.testutils.MockitoKt.mock
+import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.client.util.DateTime
 import com.google.api.services.storage.Storage
 import com.google.api.services.storage.model.StorageObject
@@ -123,6 +124,10 @@ class StorageManagerTest {
 
     @Test
     fun testRetrieveOrUploadShared() {
+        `when`(mockGet.execute()).thenAnswer {
+            throw GoogleJsonResponseException(mock(), mock())
+        }
+
         val storageObject: StorageObject = mock()
 
         val cache = mock<FileHashCache>().apply {
@@ -193,7 +198,7 @@ class StorageManagerTest {
         }
         `when`(mockGet.execute()).thenAnswer {
             assertThat(getFileName).isNotNull()
-            uploadedFiles[getFileName]
+            uploadedFiles[getFileName] ?: throw GoogleJsonResponseException(mock(), mock())
         }
 
         val cache = mock<FileHashCache>().apply {
@@ -266,7 +271,7 @@ class StorageManagerTest {
         }
         `when`(mockGet.execute()).thenAnswer {
             assertThat(getFileName).isNotNull()
-            uploadedFiles[getFileName]
+            uploadedFiles[getFileName] ?: throw GoogleJsonResponseException(mock(), mock())
         }
 
         val cache = mock<FileHashCache>().apply {

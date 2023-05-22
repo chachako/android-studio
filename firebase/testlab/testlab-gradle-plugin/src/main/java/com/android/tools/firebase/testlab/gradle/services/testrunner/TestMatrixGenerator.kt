@@ -87,19 +87,11 @@ class TestMatrixGenerator(private val projectSettings: ProjectSettings) {
                         networkProfile = this
                     }
                     filesToPush = mutableListOf()
-                    projectSettings.extraDeviceFiles.forEach { (onDevicePath, filePath) ->
-                        val gcsFilePath = if (filePath.startsWith("gs://")) {
-                            filePath
-                        } else {
-                            val file = File(filePath)
-                            check(file.exists()) { "$filePath doesn't exist." }
-                            check(file.isFile) { "$filePath must be file." }
-                            testRunStorage.uploadToStorage(file).toUrl()
-                        }
+                    device.extraDeviceFileUrls.forEach { (onDevicePath, gcsUrl) ->
                         filesToPush.add(DeviceFile().apply {
                             regularFile = RegularFile().apply {
                                 content = com.google.api.services.testing.model.FileReference().apply {
-                                    gcsPath = gcsFilePath
+                                    gcsPath = gcsUrl
                                 }
                                 devicePath = onDevicePath
                             }

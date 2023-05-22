@@ -30,8 +30,6 @@ data class ProjectSettings (
 
     val networkProfile: String?,
 
-    val extraDeviceFiles: Map<String, String>,
-
     val directoriesToPull: List<String>,
 
     val useOrchestrator: Boolean,

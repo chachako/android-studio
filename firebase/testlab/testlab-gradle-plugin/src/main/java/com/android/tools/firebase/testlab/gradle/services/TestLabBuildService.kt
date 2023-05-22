@@ -96,7 +96,6 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val numUniformShards: Property<Int>
         val targetedShardDurationMinutes: Property<Int>
         val grantedPermissions: Property<String>
-        val extraDeviceFiles: MapProperty<String, String>
         val networkProfile: Property<String>
         val resultsHistoryName: Property<String>
         val directoriesToPull: ListProperty<String>
@@ -192,7 +191,6 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 networkProfile = parameters.networkProfile.orNull.let {
                     if (it.isNullOrBlank()) { null } else { it }
                 },
-                extraDeviceFiles = parameters.extraDeviceFiles.get(),
                 directoriesToPull = parameters.directoriesToPull.get(),
                 useOrchestrator = parameters.useOrchestrator.get(),
                 ftlTimeoutSeconds = parameters.timeoutMinutes.get() * 60,
@@ -231,6 +229,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         resultsOutDir: File,
         projectPath: String,
         variantName: String,
+        extraDeviceFileUrls: Map<String, String>
     ): List<FtlTestRunResult> {
         resultsOutDir.apply {
             if (!exists()) {
@@ -244,7 +243,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             apiLevel = deviceApiLevel,
             locale = deviceLocale,
             orientation = deviceOrientation,
-            ftlModel = ftlDeviceModel
+            ftlModel = ftlDeviceModel,
+            extraDeviceFileUrls = extraDeviceFileUrls
         )
 
         return testRunner.runTests(
@@ -422,7 +422,6 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             params.grantedPermissions.set(providerFactory.provider {
                 testLabExtension.testOptions.fixture.grantedPermissions
             })
-            params.extraDeviceFiles.set(testLabExtension.testOptions.fixture.extraDeviceFiles)
             params.networkProfile.set(providerFactory.provider {
                 testLabExtension.testOptions.fixture.networkProfile
             })

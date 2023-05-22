@@ -18,6 +18,7 @@ package com.android.tools.firebase.testlab.gradle.device
 
 import com.android.build.api.instrumentation.manageddevice.DeviceTestRunParameters
 import com.android.build.api.instrumentation.manageddevice.DeviceTestRunTaskAction
+import com.android.tools.firebase.testlab.gradle.tasks.ExtraDeviceFilesManager
 import com.google.api.services.testing.model.AndroidModel
 import com.google.gson.GsonBuilder
 import com.google.gson.ToNumberPolicy
@@ -43,6 +44,11 @@ open class TestRunTaskAction: DeviceTestRunTaskAction<DeviceTestRunInput> {
             AndroidModel::class.java
         )
 
+        val extraDeviceFileUrls = ExtraDeviceFilesManager(
+            params.deviceInput.extraDeviceUrlsFile.get().asFile
+        ).devicePathsToUrls()
+
+
         val results = params.deviceInput.buildService.get().runTestsOnDevice(
             params.testRunData.deviceName,
             params.deviceInput.device.get(),
@@ -53,7 +59,8 @@ open class TestRunTaskAction: DeviceTestRunTaskAction<DeviceTestRunInput> {
             params.testRunData.testData,
             params.testRunData.outputDirectory.asFile,
             params.testRunData.projectPath,
-            params.testRunData.variantName
+            params.testRunData.variantName,
+            extraDeviceFileUrls
         )
         return results.all { it.testPassed }
     }

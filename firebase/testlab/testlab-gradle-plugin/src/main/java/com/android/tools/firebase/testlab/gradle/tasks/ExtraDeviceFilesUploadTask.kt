@@ -57,7 +57,6 @@ abstract class ExtraDeviceFilesUploadTask: DefaultTask() {
 
     @TaskAction
     fun validateOrUploadExtraFiles() {
-
         val errorMessage = StringBuilder()
         val extraDeviceFiles = ExtraDeviceFilesManager()
 
