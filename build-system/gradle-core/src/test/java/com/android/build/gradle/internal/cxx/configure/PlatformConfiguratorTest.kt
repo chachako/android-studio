@@ -55,6 +55,74 @@ class PlatformConfiguratorTest {
             "    \"P\": 28\n" +
             "  }\n" +
             "}"
+
+    val ABIS_FROM_META = parseAbiJson(StringReader("""
+            {
+              "armeabi-v7a": {
+                "bitness": 32,
+                "default": true,
+                "deprecated": false,
+                "proc": "armv7-a",
+                "arch": "arm",
+                "triple": "arm-linux-androideabi",
+                "llvm_triple": "armv7-none-linux-androideabi"
+              },
+              "arm64-v8a": {
+                "bitness": 64,
+                "default": true,
+                "deprecated": false,
+                "proc": "aarch64",
+                "arch": "arm64",
+                "triple": "aarch64-linux-android",
+                "llvm_triple": "aarch64-none-linux-android"
+              },
+              "riscv64": {
+                "bitness": 64,
+                "default": true,
+                "deprecated": false,
+                "proc": "riscv64",
+                "arch": "riscv64",
+                "triple": "riscv64-linux-android",
+                "llvm_triple": "riscv64-none-linux-android"
+              },
+              "x86": {
+                "bitness": 32,
+                "default": true,
+                "deprecated": false,
+                "proc": "i686",
+                "arch": "x86",
+                "triple": "i686-linux-android",
+                "llvm_triple": "i686-none-linux-android"
+              },
+              "x86_64": {
+                "bitness": 64,
+                "default": true,
+                "deprecated": false,
+                "proc": "x86_64",
+                "arch": "x86_64",
+                "triple": "x86_64-linux-android",
+                "llvm_triple": "x86_64-none-linux-android"
+              },
+              "mips": {
+                "bitness": 32,
+                "default": false,
+                "deprecated": true,
+                "proc": "mips",
+                "arch": "mips",
+                "triple": "mipsel-linux-android",
+                "llvm_triple": "mipsel-linux-android"
+              },
+              "armeabi": {
+                "bitness": 32,
+                "default": false,
+                "deprecated": true,
+                "proc": "armeabi",
+                "arch": "armeabi",
+                "triple": "arm-linux-androideabi",
+                "llvm_triple": "arm-linux-androideabi"
+              }
+            }
+        """.trimIndent()), "unknown")
     private val logger = PassThroughRecordingLoggingEnvironment()
     private lateinit var ndk17: File
 
@@ -152,9 +220,9 @@ class PlatformConfiguratorTest {
         } else {
             AndroidVersion(minSdkVersion ?: 0, codeName)
         }
-
         return platformConfigurator.findSuitablePlatformVersionLogged(
                 abiName,
+                ABIS_FROM_META,
                 androidVersion,
                 ndkMetaPlatforms)
     }

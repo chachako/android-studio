@@ -24,6 +24,7 @@ import com.android.build.gradle.integration.common.fixture.model.recoverExisting
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.cxx.configure.CMakeVersion
+import com.android.build.gradle.internal.cxx.model.name
 import com.android.build.gradle.internal.cxx.settings.BuildSettingsConfiguration
 import com.android.build.gradle.internal.cxx.settings.EnvironmentVariable
 import com.android.testutils.truth.PathSubject.assertThat
@@ -192,7 +193,7 @@ class CMakeBuildSettingsTest(
                     BuildSettingsConfiguration(
                         environmentVariables = listOf(
                             EnvironmentVariable(name = "TEST_ENV", value = "value for TEST_ENV"),
-                            EnvironmentVariable(name = "abi", value = it.abi.tag)
+                            EnvironmentVariable(name = "abi", value = it.name)
                         )
                     )
                 )

@@ -106,7 +106,7 @@ class StripDebugSymbolsTaskUnitTest {
         )
         projectPath = FakeProviderFactory.factory.provider { ":fake-project" }
         analyticsService = FakeProviderFactory.factory.provider(::FakeNoOpAnalyticsService)
-        stripToolFinderProvider =  FakeProviderFactory.factory.provider { SymbolStripExecutableFinder(mapOf(Pair(Abi.X86, fakeExe), Pair(Abi.ARMEABI, fakeExe))) }
+        stripToolFinderProvider =  FakeProviderFactory.factory.provider { SymbolStripExecutableFinder(mapOf(Pair(Abi.X86.tag, fakeExe), Pair(Abi.ARMEABI.tag, fakeExe))) }
     }
 
     @Test

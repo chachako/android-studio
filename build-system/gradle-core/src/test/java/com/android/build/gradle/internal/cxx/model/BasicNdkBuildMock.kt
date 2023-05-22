@@ -35,7 +35,7 @@ open class BasicNdkBuildMock : BasicModuleModelMock() {
         )
     }
     val variant by lazy { createCxxVariantModel(configurationParameters, module) }
-    val abi by lazy { createCxxAbiModel(sdkComponents, configurationParameters, variant, Abi.X86) }
+    val abi by lazy { createCxxAbiModel(sdkComponents, configurationParameters, variant, "x86") }
 
     init {
         Mockito.doReturn(makeSetProperty(setOf())).`when`(variantExternalNativeBuild).abiFilters

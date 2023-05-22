@@ -66,6 +66,7 @@ import com.android.build.gradle.internal.cxx.model.compileCommandsJsonBinFile
 import com.android.build.gradle.internal.cxx.model.cxxBuildHashKeyFile
 import com.android.build.gradle.internal.cxx.model.jsonGenerationLoggingRecordFile
 import com.android.build.gradle.internal.cxx.model.miniConfigFile
+import com.android.build.gradle.internal.cxx.model.name
 import com.android.build.gradle.internal.cxx.model.ndkMinPlatform
 import com.android.build.gradle.internal.cxx.model.ninjaBuildFile
 import com.android.build.gradle.internal.cxx.model.ninjaDepsFile
@@ -392,7 +393,7 @@ class CmakeBasicProjectTest(
             """.trimIndent()
         )
         project.execute("generateJsonModelDebug")
-        val abi = project.recoverExistingCxxAbiModels().single { it.abi == Abi.ARMEABI_V7A }
+        val abi = project.recoverExistingCxxAbiModels(Abi.ARMEABI_V7A)
         val config = getNativeBuildMiniConfig(abi, null)
         val commands = config.buildTargetsCommandComponents
         assertThat(commands)
@@ -430,7 +431,7 @@ class CmakeBasicProjectTest(
     fun `ensure hashed output paths are stable`() {
         Assume.assumeTrue(mode == Mode.CMake && cmakeVersionInDsl != "3.6.0")
         project.execute("configure${mode.buildFolderTag}Debug[x86_64]")
-        val abi = project.recoverExistingCxxAbiModels().single { it.abi == Abi.X86_64 }
+        val abi = project.recoverExistingCxxAbiModels(Abi.X86_64)
         val minPlatform = abi.variant.module.ndkMinPlatform
         val hashKey = abi.cxxBuildHashKeyFile.readText()
         val hashSegment = abi.cxxBuildHashKeyFile.parentFile.name
@@ -480,7 +481,7 @@ class CmakeBasicProjectTest(
             """.trimIndent()
         )
         project.execute("generateJsonModelDebug")
-        val abi = project.recoverExistingCxxAbiModels().single { it.abi == Abi.X86_64 }
+        val abi = project.recoverExistingCxxAbiModels(Abi.X86_64)
         assertThat(abi.configurationArguments).contains("-DMY_CPU_ARCH=x64")
     }
 
@@ -540,7 +541,7 @@ class CmakeBasicProjectTest(
         // To recreate those conditions, build the project twice, purging only the .cxx directory
         // between runs.
         project.execute("assembleDebug")
-        val abi = project.recoverExistingCxxAbiModels().single { it.abi == Abi.ARMEABI_V7A }
+        val abi = project.recoverExistingCxxAbiModels(Abi.ARMEABI_V7A)
         project.projectDir.resolve(".cxx").deleteRecursively()
         assertThat(abi.soFolder.resolve("libfoo.so")).isFile()
         project.execute("assembleDebug")
@@ -569,7 +570,7 @@ class CmakeBasicProjectTest(
 
         project.execute("generateJsonModelDebug")
 
-        val abi = project.recoverExistingCxxAbiModels().single { it.abi == Abi.X86_64 }
+        val abi = project.recoverExistingCxxAbiModels(Abi.X86_64)
     }
 
     @Test
@@ -595,7 +596,7 @@ class CmakeBasicProjectTest(
 
         project.execute("generateJsonModelDebug")
 
-        val abi = project.recoverExistingCxxAbiModels().single { it.abi == Abi.X86_64 }
+        val abi = project.recoverExistingCxxAbiModels(Abi.X86_64)
         val fooPath = abi.soFolder.resolve("libfoo.so")
         assertThat(fooPath).doesNotExist()
 
@@ -1080,7 +1081,7 @@ apply plugin: 'com.android.application'
             """.trimIndent())
         project.execute("assembleDebug")
 
-        val abi = project.recoverExistingCxxAbiModels().single { it.abi == Abi.ARMEABI_V7A }
+        val abi = project.recoverExistingCxxAbiModels(Abi.ARMEABI_V7A)
         val outputFiles = mutableListOf<String>()
         streamCompileCommands(abi.compileCommandsJsonBinFile) {
             outputFiles.add(outputFile.name)
@@ -1114,7 +1115,7 @@ apply plugin: 'com.android.application'
 
         // Touch the output ninja file.
         deleteExistingStructuredLogs(project)
-        val abi = project.recoverExistingCxxAbiModels().single { it.abi == Abi.X86_64 }
+        val abi = project.recoverExistingCxxAbiModels(Abi.X86_64)
         assertThat(abi.ninjaBuildFile.isFile).isTrue()
         abi.ninjaBuildFile.appendText("\n")
         project.execute("configureNinjaDebug[x86_64]")

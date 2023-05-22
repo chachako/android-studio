@@ -26,7 +26,6 @@ import org.junit.Test
 
 class BuiltInSettingsJsonKtTest {
 
-
     @Test
     fun `NDK-level CMakeSettings does not throw exception when evaluated`() {
         BasicCmakeMock().let {
@@ -40,7 +39,7 @@ class BuiltInSettingsJsonKtTest {
                 it.sdkComponents,
                 it.configurationParameters,
                 variant,
-                Abi.X86)
+                "x86")
             abi.getNdkMetaSettingsJson().toJsonString()
         }
     }
@@ -56,6 +55,13 @@ class BuiltInSettingsJsonKtTest {
     fun `Traditional CMakeSettings does not throw when evaluated`() {
         BasicCmakeMock().apply {
             getCmakeDefaultEnvironment(abi.buildIsPrefabCapable()).toJsonString()
+        }
+    }
+
+    @Test
+    fun `RISCV ABI does not throw when evaluated`() {
+        BasicCmakeMock().apply {
+            getCmakeDefaultEnvironment(riscvAbi.buildIsPrefabCapable()).toJsonString()
         }
     }
 }

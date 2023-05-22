@@ -36,6 +36,7 @@ import com.android.build.gradle.internal.cxx.model.DIFFERENT_MOCK_CMAKE_SETTINGS
 import com.android.build.gradle.internal.cxx.model.createCxxAbiModel
 import com.android.build.gradle.internal.cxx.model.createCxxVariantModel
 import com.android.build.gradle.internal.cxx.model.getBuildCommandArguments
+import com.android.build.gradle.internal.cxx.model.name
 import com.android.build.gradle.internal.cxx.model.toJsonString
 import com.android.build.gradle.internal.cxx.settings.Macro.ENV_THIS_FILE
 import com.android.build.gradle.internal.cxx.settings.Macro.ENV_WORKSPACE_ROOT
@@ -96,7 +97,7 @@ class SettingsConfigurationRewriterKtTest {
                 sdkComponents,
                 configurationParameters,
                 variant,
-                Abi.X86)
+                "x86")
             val rewritten = abi.calculateConfigurationArguments(providers, layout)
             assertThat(rewritten.cxxBuildFolder.path).contains("some other build root folder")
             assertThat(rewritten.variant.module.cmake!!.cmakeExe!!.path
@@ -133,7 +134,7 @@ class SettingsConfigurationRewriterKtTest {
                 sdkComponents,
                 configurationParameters,
                 variant,
-                Abi.X86).calculateConfigurationArguments(providers, layout)
+                "x86").calculateConfigurationArguments(providers, layout)
             val variables = abi.configurationArguments.toCmakeArguments()
             println(variables.joinToString("\n") { it.sourceArgument })
             assertThat(variables.getCmakeGenerator()).isEqualTo("some other generator")
@@ -157,7 +158,7 @@ class SettingsConfigurationRewriterKtTest {
                         providers,
                         layout
                     )
-            val abi = model.single { it.abi == Abi.X86 }
+            val abi = model.single { it.name == Abi.X86.tag }
             val variables = abi.configurationArguments.toCmakeArguments()
             println(variables.joinToString("\n") { it.sourceArgument })
             assertThat(variables.getCmakeProperty(CMAKE_BUILD_TYPE)).isEqualTo("MinSizeRel")
@@ -209,7 +210,7 @@ class SettingsConfigurationRewriterKtTest {
                     sdkComponents,
                     configurationParameters,
                     variant,
-                    Abi.X86).calculateConfigurationArguments(providers, layout)
+                    "x86").calculateConfigurationArguments(providers, layout)
             println(abi.toJsonString())
             assertThat(abi.configurationArguments).contains("-CD:\\Test\\TargetProperties.cmake")
             assertThat(abi.configurationArguments).contains("--log-level=VERBOSE")
@@ -227,7 +228,7 @@ class SettingsConfigurationRewriterKtTest {
                     sdkComponents,
                     configurationParameters,
                     variant,
-                    Abi.X86).calculateConfigurationArguments(providers, layout)
+                    "x86").calculateConfigurationArguments(providers, layout)
             println(abi.toJsonString())
             assertThat(abi.variant.stlType).contains("c++_shared")
             assertThat(abi.stlLibraryFile!!.toString()).endsWith("libc++_shared.so")
@@ -248,7 +249,7 @@ class SettingsConfigurationRewriterKtTest {
                 sdkComponents,
                 configurationParameters,
                 variant,
-                Abi.X86).calculateConfigurationArguments(providers, layout)
+                "x86").calculateConfigurationArguments(providers, layout)
             val variables = abi.configurationArguments.toCmakeArguments()
             println(variables.joinToString("\n") { it.sourceArgument })
             assertThat(abi.variant.optimizationTag).isEqualTo("PrecedenceCheckingBuildType")
@@ -269,7 +270,7 @@ class SettingsConfigurationRewriterKtTest {
                     sdkComponents,
                     configurationParameters,
                     variant,
-                    Abi.X86).calculateConfigurationArguments(providers, layout)
+                    "x86").calculateConfigurationArguments(providers, layout)
             val variables = abi.configurationArguments.toCmakeArguments()
             println(variables.joinToString("\n") { it.sourceArgument })
             assertThat(abi.variant.optimizationTag).isEqualTo("MinSizeRel")
@@ -358,7 +359,7 @@ class SettingsConfigurationRewriterKtTest {
 
             assertThat(rewritten.buildSettings.environmentVariables).isEqualTo(
                 listOf(
-                    EnvironmentVariable("NDK_ABI", abi.abi.tag),
+                    EnvironmentVariable("NDK_ABI", abi.name),
                     EnvironmentVariable("NDK_DIR", abi.variant.module.ndkFolder.path)
                 )
             )
@@ -401,7 +402,7 @@ class SettingsConfigurationRewriterKtTest {
             val variant1 = createCxxVariantModel(configurationModel1, module)
             val result1 = createCxxAbiModel(
                 sdkComponents, configurationModel1,
-                variant1, abi1).calculateConfigurationArguments(providers, layout)
+                variant1, abi1.tag).calculateConfigurationArguments(providers, layout)
             result1.toJsonString() // Force all lazy values
 
             setup(this, 2)
@@ -411,7 +412,7 @@ class SettingsConfigurationRewriterKtTest {
             val variant2 = createCxxVariantModel(configurationModel2, module)
             val result2 = createCxxAbiModel(
                 sdkComponents, configurationModel2,
-                variant2, abi2).calculateConfigurationArguments(providers, layout)
+                variant2, abi2.tag).calculateConfigurationArguments(providers, layout)
             result2.toJsonString() // Force all lazy values
 
             return Pair(result1, result2)

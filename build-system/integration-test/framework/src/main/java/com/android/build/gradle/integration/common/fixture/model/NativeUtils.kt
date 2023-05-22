@@ -53,6 +53,7 @@ import com.android.SdkConstants.GRADLE_LATEST_VERSION
 import com.android.build.gradle.internal.cxx.configure.ConfigureInvalidationState
 import com.android.build.gradle.internal.cxx.configure.decodeConfigureInvalidationState
 import com.android.build.gradle.internal.cxx.configure.shouldConfigure
+import com.android.build.gradle.internal.cxx.model.name
 import com.android.build.gradle.internal.cxx.process.decodeExecuteProcess
 import com.android.builder.model.v2.ide.SyncIssue
 import com.android.utils.SdkUtils.escapePropertyValue
@@ -133,7 +134,7 @@ fun GradleTestProject.goldenConfigurationFlags(abi: Abi) : String {
             modelV2()
                 .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING) // CMake cannot detect compiler attributes
                 .fetchNativeModules(NativeModuleParams(listOf("debug"), listOf(abi.tag)))
-    val recoveredAbiModel = recoverExistingCxxAbiModels().single { it.abi == abi }
+    val recoveredAbiModel = recoverExistingCxxAbiModels().single { it.name == abi.tag }
     val hashToKey = fetchResult.cxxFileVariantSegmentTranslator()
     return hashToKey(recoveredAbiModel.goldenConfigurationFlags())
 }
@@ -246,6 +247,10 @@ fun GradleTestProject.recoverExistingCxxAbiModels(): List<CxxAbiModel> {
     return recoverExistingCxxAbiModels(buildDir.parentFile)
 }
 
+fun GradleTestProject.recoverExistingCxxAbiModels(abi : Abi): CxxAbiModel {
+    return recoverExistingCxxAbiModels(buildDir.parentFile).single { it.name == abi.tag }
+}
+
 /**
  * Search from [rootSearchFolder] level for build_model.json to reconstitute into CxxAbiModels.
  */
@@ -264,7 +269,7 @@ fun recoverExistingCxxAbiModels(rootSearchFolder : File): List<CxxAbiModel> {
  * Mainly a Java helper to avoid writing tons of filter code.
  */
 fun GradleTestProject.getSoFolderFor(abi : Abi) =
-    recoverExistingCxxAbiModels().singleOrNull { it.abi == abi }?.soFolder
+    recoverExistingCxxAbiModels().singleOrNull { it.name == abi.tag }?.soFolder
 
 
 private fun List<Pair<String, String>>.toTranslateFunction() = run {

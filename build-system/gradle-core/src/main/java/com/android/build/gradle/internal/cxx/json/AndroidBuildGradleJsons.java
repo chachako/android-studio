@@ -127,13 +127,19 @@ public class AndroidBuildGradleJsons {
         if (androidGradleBuildJsonFile.isFile()) {
             // Report any lint-check errors against the original full JSON file rather than the mini
             // config file that is derived from it.
-            lint(result, androidGradleBuildJsonFile);
+            lint(
+                    result,
+                    androidGradleBuildJsonFile,
+                    abi.getVariant().getModule().getNdkDefaultAbiList());
         } else {
             // A metadata provider may choose to only supply the mini config (with the rest of the
             // relevant information provided by compile_commands.json). In this case, lint checks
             // should report errors against the mini config file rather than the non-existent full
             // JSON.
-            lint(result, getMiniConfigFile(abi));
+            lint(
+                    result,
+                    getMiniConfigFile(abi),
+                    abi.getVariant().getModule().getNdkDefaultAbiList());
         }
 
         return result;

@@ -50,6 +50,7 @@ import java.io.File
 import com.android.build.gradle.integration.common.truth.GradleTaskSubject.assertThat
 import com.android.build.gradle.internal.cxx.configure.decodeConfigureInvalidationState
 import com.android.build.gradle.internal.cxx.configure.shouldConfigure
+import com.android.build.gradle.internal.cxx.model.name
 
 /**
  * CMake lib<-app project where lib is published as Prefab
@@ -478,7 +479,7 @@ class ModuleToModuleDepsTest(
         }
 
         // Check that the output is known but does not yet exist on disk.
-        val libAbi = recoverExistingCxxAbiModels(libOutputRoot).single { it.abi == Abi.X86 }
+        val libAbi = recoverExistingCxxAbiModels(libOutputRoot).single { it.name == Abi.X86.tag }
         val libConfig = AndroidBuildGradleJsons.getNativeBuildMiniConfig(libAbi, null)
         if (expectNdkBuildProducesNoLibrary()) {
             assertThat(libConfig.libraries.values).isEmpty()

@@ -16,19 +16,20 @@
 
 package com.android.build.gradle.internal.cxx.configure
 
-import com.android.build.gradle.internal.core.Abi
 import com.android.build.gradle.internal.cxx.caching.cache
 import com.android.build.gradle.internal.cxx.logging.errorln
 import com.android.build.gradle.internal.cxx.logging.infoln
 import com.android.build.gradle.internal.cxx.logging.warnln
+import com.android.build.gradle.internal.ndk.AbiInfo
 import com.android.build.gradle.options.StringOption
 import com.android.utils.cxx.CxxDiagnosticCode.ABI_HAS_ONLY_32_BIT_SUPPORT
 import com.android.utils.cxx.CxxDiagnosticCode.ABI_IS_INVALID
 import com.android.utils.cxx.CxxDiagnosticCode.ABI_IS_UNSUPPORTED
 
 data class AbiConfigurationKey(
-    val ndkHandlerSupportedAbis: Collection<Abi>,
-    val ndkHandlerDefaultAbis: Collection<Abi>,
+    val ndkMetaAbiList: List<AbiInfo>,
+    val ndkHandlerSupportedAbis: Set<String>,
+    val ndkHandlerDefaultAbis: Set<String>,
     val externalNativeBuildAbiFilters: Set<String>,
     val ndkConfigAbiFilters: Set<String>,
     val splitsFilterAbis: Set<String>,
@@ -37,8 +38,8 @@ data class AbiConfigurationKey(
 )
 
 data class AbiConfiguration(
-    val allAbis: List<String>,
-    val validAbis: List<Abi>
+    val allAbis: Set<String>,
+    val validAbis: Set<String>
 )
 
 /**
@@ -49,51 +50,50 @@ class AbiConfigurator(
     private val key: AbiConfigurationKey
 ) {
     private val configuration: AbiConfiguration
-    val allAbis: Collection<String> get() = configuration.allAbis
-    val validAbis: Collection<Abi> get() = configuration.validAbis
+    val allAbis: Set<String> get() = configuration.allAbis
+    val validAbis: Set<String> get() = configuration.validAbis
 
     /** Sort and join a list of strings for an error message */
     private fun sortAndJoinAbiStrings(elements: Collection<String>): String {
         return elements.sorted().joinToString(", ")
     }
 
-    private fun sortAndJoinAbi(elements: Collection<Abi>): String {
+    private fun sortAndJoinAbi(elements: Set<String>): String {
         return elements.sorted().joinToString(", ")
     }
 
     init {
         with(key) {
             configuration = cache(key) {
-                val ndkHandlerSupportedAbiStrings = ndkHandlerSupportedAbis.map(Abi::getTag)
+                val supports64Bits = ndkMetaAbiList.filter { it.bitness == 64 }.map { it.name }.toSet()
+                val legalAbiNames = ndkMetaAbiList.map { it.name }.toSet()
                 val userChosenAbis =
                     externalNativeBuildAbiFilters union splitsFilterAbis union ndkConfigAbiFilters
                 val userMistakes =
-                    userChosenAbis subtract ndkHandlerSupportedAbiStrings
+                    userChosenAbis subtract ndkHandlerSupportedAbis
                 if (userMistakes.isNotEmpty()) {
                     errorln(
                         ABI_IS_UNSUPPORTED,
                         "ABIs [${sortAndJoinAbiStrings(userMistakes)}] are not supported for platform. " +
                                 "Supported ABIs are [${
                                     sortAndJoinAbiStrings(
-                                        ndkHandlerSupportedAbiStrings
+                                        ndkHandlerSupportedAbis
                                     )
                                 }]."
                     )
                 }
 
-                val allAbis: List<String>
-                val validAbis: List<Abi>
-                val configurationAbis: Collection<Abi>
+                val allAbis: Set<String>
+                val validAbis: Set<String>
+                val configurationAbis: Set<String>
                 if (userChosenAbis.isEmpty()) {
                     // The user didn't explicitly name any ABIs so return the default set
-                    allAbis = ndkHandlerDefaultAbis.map(Abi::getTag)
+                    allAbis = ndkHandlerDefaultAbis
                     configurationAbis = ndkHandlerDefaultAbis
                 } else {
                     // The user explicitly named some ABIs
-                    val recognizeAbleAbiStrings = Abi.values()
-                        .map(Abi::getTag)
-                        .toSet()
-                    val selectedAbis =
+                    val recognizeAbleAbiStrings = ndkMetaAbiList.map { it.name }.toSet()
+                    val selectedAbis : Set<String> =
                         sequenceOf(
                             externalNativeBuildAbiFilters,
                             ndkConfigAbiFilters,
@@ -104,16 +104,16 @@ class AbiConfigurator(
 
                     // Produce the list of expected JSON files. This list includes possibly invalid ABIs
                     // so that generator can create fallback JSON for them.
-                    allAbis = (selectedAbis union userMistakes).toList()
+                    allAbis = selectedAbis union userMistakes
                     // These are ABIs that are available on the current platform
-                    configurationAbis = selectedAbis.mapNotNull(Abi::getByName)
+                    configurationAbis = selectedAbis
                 }
 
                 // Lastly, if there is an injected ABI set and none of the ABIs is actually buildable by
                 // this project then issue an error.
-                if (ideBuildOnlyTargetAbi && ideBuildTargetAbi != null && ideBuildTargetAbi.isNotEmpty()) {
+                if (ideBuildOnlyTargetAbi && !ideBuildTargetAbi.isNullOrEmpty()) {
                     val injectedAbis = ideBuildTargetAbi.split(",").map { it.trim() }
-                    val injectedLegalAbis = injectedAbis.mapNotNull(Abi::getByName)
+                    val injectedLegalAbis = injectedAbis.filter { legalAbiNames.contains(it) }
                     validAbis = if (injectedLegalAbis.isEmpty()) {
                         // The user (or android studio) didn't select any legal ABIs, that's an error
                         // since there's nothing to build. Fall back to the ABIs from build.gradle so
@@ -125,9 +125,9 @@ class AbiConfigurator(
                                     "flag is not supported. Supported ABIs " +
                                     "are [${sortAndJoinAbiStrings(allAbis)}]."
                         )
-                        configurationAbis.toList()
+                        configurationAbis
                     } else {
-                        val invalidAbis = injectedAbis.filter { Abi.getByName(it) == null }
+                        val invalidAbis = injectedAbis.filter { !legalAbiNames.contains(it) }
                         if (invalidAbis.isNotEmpty()) {
                             // The user (or android studio) selected some illegal ABIs. Give a warning and
                             // continue on.
@@ -161,17 +161,17 @@ class AbiConfigurator(
 
                         // When Android Studio sends multiple ABIs it is meant as a precedence list
                         // we build the first one that is available in this project.
-                        validAbisInPreferenceOrder.take(1)
+                        validAbisInPreferenceOrder.take(1).toSet()
                     }
                 } else {
-                    validAbis = configurationAbis.toList()
+                    validAbis = configurationAbis
 
                     // Warn if validAbis does not include at least one 64-bit ABI.
                     // See: https://android-developers.googleblog.com/2019/01/get-your-apps-ready-for-64-bit.html
-                    if (validAbis.isNotEmpty() && !validAbis.any { it.supports64Bits() }) {
+                    if (validAbis.isNotEmpty() && !validAbis.any { supports64Bits.contains(it) }) {
                         warnln(
                             ABI_HAS_ONLY_32_BIT_SUPPORT,
-                            "This app only has 32-bit [${validAbis.joinToString(",") { it.tag }}] " +
+                            "This app only has 32-bit [${validAbis.joinToString(",") { it }}] " +
                                     "native libraries. Beginning August 1, 2019 Google Play store requires " +
                                     "that all apps that include native libraries must provide 64-bit versions. " +
                                     "For more information, visit https://g.co/64-bit-requirement"

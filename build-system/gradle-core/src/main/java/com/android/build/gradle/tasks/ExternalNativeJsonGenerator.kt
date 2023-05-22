@@ -49,6 +49,7 @@ import com.android.build.gradle.internal.cxx.model.metadataGenerationCommandFile
 import com.android.build.gradle.internal.cxx.model.metadataGenerationTimingFolder
 import com.android.build.gradle.internal.cxx.model.miniConfigFile
 import com.android.build.gradle.internal.cxx.model.modelOutputFile
+import com.android.build.gradle.internal.cxx.model.name
 import com.android.build.gradle.internal.cxx.model.ninjaBuildFile
 import com.android.build.gradle.internal.cxx.model.ninjaBuildLocationFile
 import com.android.build.gradle.internal.cxx.model.predictableRepublishFolder
@@ -126,14 +127,14 @@ abstract class ExternalNativeJsonGenerator internal constructor(
     ) {
         PassThroughPrefixingLoggingEnvironment(
             abi.variant.module.makeFile,
-            abi.variant.variantName + "|" + abi.abi.tag
+            abi.variant.variantName + "|" + abi.name
         ).use { recorder ->
             TimingEnvironment(
                     abi.metadataGenerationTimingFolder,
                     "generate_cxx_metadata").use {
                 val variantStats =
                         NativeBuildConfigInfo.newBuilder()
-                variantStats.abi = AnalyticsUtil.getAbi(abi.abi.tag)
+                variantStats.abi = AnalyticsUtil.getAbi(abi.name)
                 variantStats.debuggable = abi.variant.isDebuggableEnabled
                 val startTime = System.currentTimeMillis()
                 variantStats.generationStartMs = startTime
@@ -141,7 +142,7 @@ abstract class ExternalNativeJsonGenerator internal constructor(
                     infoln(
                             "Start JSON generation. Platform version: %s min SDK version: %s",
                             abi.abiPlatformVersion,
-                            abi.abi.tag,
+                            abi.name,
                             abi.abiPlatformVersion
                     )
 

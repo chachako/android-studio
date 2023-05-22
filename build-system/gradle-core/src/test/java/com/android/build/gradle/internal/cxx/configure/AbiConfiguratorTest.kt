@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.cxx.configure
 
-import com.android.build.gradle.internal.core.Abi
 import com.android.build.gradle.internal.cxx.caching.CachingEnvironment
 import com.android.build.gradle.internal.cxx.codeText
 import com.android.build.gradle.internal.cxx.logging.PassThroughRecordingLoggingEnvironment
@@ -27,6 +26,7 @@ import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.io.StringReader
 
 class AbiConfiguratorTest {
     @Rule
@@ -34,26 +34,91 @@ class AbiConfiguratorTest {
     val tmpFolder = TemporaryFolder()
 
     companion object {
-        val ALL_ABI = Abi.getDefaultValues().toList()
-        val ALL_ABI_AS_STRING = ALL_ABI.map(Abi::getTag)
-        val ALL_ABI_COMMA_STRING = ALL_ABI_AS_STRING.sorted().joinToString(", ")
+        val ALL_ABI = setOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+        val ALL_ABI_COMMA_STRING = ALL_ABI.sorted().joinToString(", ")
+        val ABIS_FROM_META = parseAbiJson(StringReader("""
+            {
+              "armeabi-v7a": {
+                "bitness": 32,
+                "default": true,
+                "deprecated": false,
+                "proc": "armv7-a",
+                "arch": "arm",
+                "triple": "arm-linux-androideabi",
+                "llvm_triple": "armv7-none-linux-androideabi"
+              },
+              "arm64-v8a": {
+                "bitness": 64,
+                "default": true,
+                "deprecated": false,
+                "proc": "aarch64",
+                "arch": "arm64",
+                "triple": "aarch64-linux-android",
+                "llvm_triple": "aarch64-none-linux-android"
+              },
+              "riscv64": {
+                "bitness": 64,
+                "default": true,
+                "deprecated": false,
+                "proc": "riscv64",
+                "arch": "riscv64",
+                "triple": "riscv64-linux-android",
+                "llvm_triple": "riscv64-none-linux-android"
+              },
+              "x86": {
+                "bitness": 32,
+                "default": true,
+                "deprecated": false,
+                "proc": "i686",
+                "arch": "x86",
+                "triple": "i686-linux-android",
+                "llvm_triple": "i686-none-linux-android"
+              },
+              "x86_64": {
+                "bitness": 64,
+                "default": true,
+                "deprecated": false,
+                "proc": "x86_64",
+                "arch": "x86_64",
+                "triple": "x86_64-linux-android",
+                "llvm_triple": "x86_64-none-linux-android"
+              },
+              "mips": {
+                "bitness": 32,
+                "default": false,
+                "deprecated": true,
+                "proc": "mips",
+                "arch": "mips",
+                "triple": "mipsel-linux-android",
+                "llvm_triple": "mipsel-linux-android"
+              },
+              "armeabi": {
+                "bitness": 32,
+                "default": false,
+                "deprecated": true,
+                "proc": "armeabi",
+                "arch": "armeabi",
+                "triple": "arm-linux-androideabi",
+                "llvm_triple": "arm-linux-androideabi"
+              }
+            }
+        """.trimIndent()), "unknown")
     }
 
     private val logger = PassThroughRecordingLoggingEnvironment()
 
     fun configure(
-        ndkHandlerSupportedAbis: Collection<Abi> = ALL_ABI,
-        ndkHandlerDefaultAbis: Collection<Abi> = ALL_ABI,
+        ndkHandlerSupportedAbis: Set<String> = ALL_ABI,
+        ndkHandlerDefaultAbis: Set<String> = ALL_ABI,
         externalNativeBuildAbiFilters: Set<String> = setOf(),
         ndkConfigAbiFilters: Set<String> = setOf(),
-        splitsFilterAbis: Set<String> = Abi.getDefaultValues()
-            .map { abi: Abi -> abi.tag }
-            .toSet(),
+        splitsFilterAbis: Set<String> = ALL_ABI.toSet(),
         ideBuildOnlyTargetAbi: Boolean = false,
         ideBuildTargetAbi: String? = null): AbiConfigurator {
         return CachingEnvironment(tmpFolder.newFolder()).use {
             AbiConfigurator(
                 AbiConfigurationKey(
+                    ABIS_FROM_META,
                     ndkHandlerSupportedAbis,
                     ndkHandlerDefaultAbis,
                     externalNativeBuildAbiFilters,
@@ -77,7 +142,7 @@ class AbiConfiguratorTest {
         assertThat(logger.errors).isEmpty()
         // Should be no messages reported
         assertThat(configurator.validAbis).containsExactlyElementsIn(ALL_ABI)
-        assertThat(configurator.allAbis).containsExactlyElementsIn(ALL_ABI_AS_STRING)
+        assertThat(configurator.allAbis).containsExactlyElementsIn(ALL_ABI)
     }
 
     @Test
@@ -108,7 +173,7 @@ class AbiConfiguratorTest {
             externalNativeBuildAbiFilters = setOf("x86"))
         assertThat(logger.errors).isEmpty()
         // Should be no messages reported
-        assertThat(configurator.validAbis).containsExactly(Abi.X86)
+        assertThat(configurator.validAbis).containsExactly("x86")
         assertThat(configurator.allAbis).containsExactly("x86")
     }
 
@@ -130,7 +195,7 @@ class AbiConfiguratorTest {
             splitsFilterAbis = setOf("x86"))
         assertThat(logger.errors).isEmpty()
         // Should be no messages reported
-        assertThat(configurator.validAbis).containsExactly(Abi.X86)
+        assertThat(configurator.validAbis).containsExactly("x86")
         assertThat(configurator.allAbis).containsExactly("x86")
     }
 
@@ -148,13 +213,13 @@ class AbiConfiguratorTest {
     @Test
     fun testValidAbiThatIsNotInNdk() {
         val configurator = configure(
-            ndkHandlerSupportedAbis = listOf(Abi.X86_64),
+            ndkHandlerSupportedAbis = setOf("x86_64"),
             externalNativeBuildAbiFilters = setOf("x86"),
             splitsFilterAbis = setOf())
         assertThat(logger.errors).containsExactly(
                 "${ABI_IS_UNSUPPORTED.codeText} ABIs [x86] are not supported for platform. " +
                 "Supported ABIs are [x86_64].")
-        assertThat(configurator.validAbis).containsExactly(Abi.X86)
+        assertThat(configurator.validAbis).containsExactly("x86")
         assertThat(configurator.allAbis).containsExactly("x86")
     }
 
@@ -165,7 +230,7 @@ class AbiConfiguratorTest {
             ndkConfigAbiFilters = setOf("x86"))
         assertThat(logger.errors).isEmpty()
         // Should be no messages reported
-        assertThat(configurator.validAbis).containsExactly(Abi.X86)
+        assertThat(configurator.validAbis).containsExactly("x86")
         assertThat(configurator.allAbis).containsExactly("x86")
     }
 
@@ -185,8 +250,8 @@ class AbiConfiguratorTest {
             ideBuildTargetAbi = "x86")
         assertThat(logger.errors).isEmpty()
         // Should be no messages reported
-        assertThat(configurator.validAbis).containsExactly(Abi.X86)
-        assertThat(configurator.allAbis).containsExactlyElementsIn(ALL_ABI_AS_STRING)
+        assertThat(configurator.validAbis).containsExactly("x86")
+        assertThat(configurator.allAbis).containsExactlyElementsIn(ALL_ABI)
     }
 
     @Test
@@ -199,8 +264,8 @@ class AbiConfiguratorTest {
             "[CXX5200] ABIs [bogus,x86] set by 'android.injected.build.abi' gradle flag contained " +
                     "'bogus' which is invalid.")
         assertThat(logger.errors).isEmpty()
-        assertThat(configurator.validAbis).containsExactly(Abi.X86)
-        assertThat(configurator.allAbis).containsExactlyElementsIn(ALL_ABI_AS_STRING)
+        assertThat(configurator.validAbis).containsExactly("x86")
+        assertThat(configurator.allAbis).containsExactlyElementsIn(ALL_ABI)
     }
 
     @Test
@@ -213,7 +278,7 @@ class AbiConfiguratorTest {
                 "flag is not supported. Supported ABIs are " +
                 "[$ALL_ABI_COMMA_STRING].")
         assertThat(configurator.validAbis).containsExactlyElementsIn(ALL_ABI)
-        assertThat(configurator.allAbis).containsExactlyElementsIn(ALL_ABI_AS_STRING)
+        assertThat(configurator.allAbis).containsExactlyElementsIn(ALL_ABI)
     }
 
     @Test
@@ -223,7 +288,7 @@ class AbiConfiguratorTest {
             ideBuildOnlyTargetAbi = true,
             ideBuildTargetAbi = "")
         assertThat(configurator.validAbis).containsExactlyElementsIn(ALL_ABI)
-        assertThat(configurator.allAbis).containsExactlyElementsIn(ALL_ABI_AS_STRING)
+        assertThat(configurator.allAbis).containsExactlyElementsIn(ALL_ABI)
     }
 
     @Test
@@ -233,7 +298,7 @@ class AbiConfiguratorTest {
             ideBuildOnlyTargetAbi = true,
             ideBuildTargetAbi = null)
         assertThat(configurator.validAbis).containsExactlyElementsIn(ALL_ABI)
-        assertThat(configurator.allAbis).containsExactlyElementsIn(ALL_ABI_AS_STRING)
+        assertThat(configurator.allAbis).containsExactlyElementsIn(ALL_ABI)
     }
 
     @Test
@@ -243,7 +308,7 @@ class AbiConfiguratorTest {
             ideBuildOnlyTargetAbi = true,
             ideBuildTargetAbi = null)
         assertThat(configurator.validAbis).containsExactlyElementsIn(ALL_ABI)
-        assertThat(configurator.allAbis).containsExactlyElementsIn(ALL_ABI_AS_STRING)
+        assertThat(configurator.allAbis).containsExactlyElementsIn(ALL_ABI)
     }
 
     @Test
@@ -253,7 +318,7 @@ class AbiConfiguratorTest {
             splitsFilterAbis = setOf("mips"),
             ideBuildOnlyTargetAbi = true,
             ideBuildTargetAbi = null)
-        assertThat(configurator.validAbis).containsExactly(Abi.MIPS)
+        assertThat(configurator.validAbis).containsExactly("mips")
         assertThat(configurator.allAbis).containsExactly("mips")
     }
 
@@ -282,7 +347,7 @@ class AbiConfiguratorTest {
         assertThat(logger.errors).isEmpty()
         assertThat(logger.infos).containsExactly(
             "C/C++: ABIs [armeabi-v7a,armeabi] set by 'android.injected.build.abi' gradle flag " +
-                    "contained 'ARMEABI, ARMEABI_V7A' not targeted by this project.")
+                    "contained 'armeabi, armeabi-v7a' not targeted by this project.")
         assertThat(configurator.validAbis).containsExactly()
     }
 
@@ -296,7 +361,7 @@ class AbiConfiguratorTest {
         assertThat(logger.errors).isEmpty()
         assertThat(logger.infos).containsExactly(
             "C/C++: ABIs [armeabi-v7a,armeabi] set by 'android.injected.build.abi' gradle flag " +
-                    "contained 'ARMEABI, ARMEABI_V7A' not targeted by this project.")
+                    "contained 'armeabi, armeabi-v7a' not targeted by this project.")
         assertThat(configurator.validAbis).containsExactly()
     }
 
@@ -313,8 +378,8 @@ class AbiConfiguratorTest {
         assertThat(logger.errors).isEmpty()
         assertThat(logger.infos).containsExactly(
             "C/C++: ABIs [armeabi-v7a,x86_64] set by 'android.injected.build.abi' gradle flag " +
-                    "contained 'ARMEABI_V7A' not targeted by this project.")
-        assertThat(configurator.validAbis).containsExactly(Abi.X86_64)
+                    "contained 'armeabi-v7a' not targeted by this project.")
+        assertThat(configurator.validAbis).containsExactly("x86_64")
     }
 
     @Test
@@ -324,6 +389,6 @@ class AbiConfiguratorTest {
             ideBuildTargetAbi = " x86, x86_64 ")
         assertThat(logger.errors).isEmpty()
         assertThat(logger.warnings).isEmpty()
-        assertThat(configurator.validAbis).containsExactly(Abi.X86)
+        assertThat(configurator.validAbis).containsExactly("x86")
     }
 }

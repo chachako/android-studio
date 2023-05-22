@@ -347,11 +347,12 @@ fun createInitialCxxModel(
         val variant = time("create-variant-model") {
             createCxxVariantModel(parameters, module)
         }
-        Abi.getDefaultValues().map { abi ->
-            time("create-$abi-model") {
-                createCxxAbiModel(sdkComponents, parameters, variant, abi)
-                        .calculateConfigurationArguments(providers, layout)
-            }
+        module.ndkMetaAbiList
+            .map { abi ->
+                time("create-$abi-model") {
+                    createCxxAbiModel(sdkComponents, parameters, variant, abi.name)
+                            .calculateConfigurationArguments(providers, layout)
+                }
         }
     }
 }

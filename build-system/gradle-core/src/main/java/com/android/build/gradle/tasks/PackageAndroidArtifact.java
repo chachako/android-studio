@@ -1474,7 +1474,7 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
                 return ImmutableSet.of();
             }
             Set<String> allowedAbis =
-                    Abi.getDefaultValues().stream().map(Abi::getTag).collect(Collectors.toSet());
+                    Arrays.stream(Abi.values()).map(Abi::getTag).collect(Collectors.toSet());
             java.util.Optional<String> firstValidAbi =
                     Arrays.stream(abis.split(","))
                             .map(String::trim)

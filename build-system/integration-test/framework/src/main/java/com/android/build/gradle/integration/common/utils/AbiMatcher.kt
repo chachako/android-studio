@@ -25,36 +25,6 @@ class AbiMatcher {
 
     companion object {
         @JvmStatic
-        fun sixtyFourBit(): Matcher<List<Abi>> {
-            return object : BaseMatcher<List<Abi>>() {
-                override fun matches(item: Any): Boolean {
-                    return item is List<*>
-                            && item.any { it is Abi && it.supports64Bits() }
-                }
-
-                override fun describeTo(description: Description) {
-                    description
-                        .appendText("Has at least one 64 bit ABI")
-                }
-            }
-        }
-
-        @JvmStatic
-        fun thirtyTwoBit(): Matcher<List<Abi>> {
-            return object : BaseMatcher<List<Abi>>() {
-                override fun matches(item: Any): Boolean {
-                    return item is List<*>
-                            && item.any { it is Abi && !it.supports64Bits() }
-                }
-
-                override fun describeTo(description: Description) {
-                    description
-                        .appendText("Has at least one 32 bit ABI")
-                }
-            }
-        }
-
-        @JvmStatic
         fun anyAbi(): Matcher<List<Abi>> {
             return object : BaseMatcher<List<Abi>>() {
                 override fun matches(item: Any): Boolean {

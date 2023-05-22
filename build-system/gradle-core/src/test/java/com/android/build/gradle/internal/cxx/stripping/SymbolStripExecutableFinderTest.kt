@@ -26,8 +26,8 @@ class SymbolStripExecutableFinderTest {
     fun testBasicFileLocation() {
         val so = File("my.so")
         val finder = SymbolStripExecutableFinder(hashMapOf(
-                Abi.X86 to File("my-strip.exe")))
-        val stripExePath = finder.stripToolExecutableFile(so, Abi.X86) { null }
+                Abi.X86.tag to File("my-strip.exe")))
+        val stripExePath = finder.stripToolExecutableFile(so, Abi.X86.tag) { null }
         assertThat(stripExePath).isNotNull()
         assertThat(stripExePath).isEqualTo(File("my-strip.exe"))
     }
@@ -36,23 +36,23 @@ class SymbolStripExecutableFinderTest {
     fun testUnrecognizedAbi() {
         val so = File("my.so")
         val finder = SymbolStripExecutableFinder(hashMapOf(
-                Abi.X86 to File("my-strip.exe")))
+                Abi.X86.tag to File("my-strip.exe")))
         val sb = StringBuilder()
-        val stripExePath = finder.stripToolExecutableFile(so, Abi.ARM64_V8A) {
+        val stripExePath = finder.stripToolExecutableFile(so, Abi.ARM64_V8A.tag) {
             sb.append(it)
             null
         }
         assertThat(stripExePath).isNull()
         assertThat(sb.toString())
                 .isEqualTo("Unable to strip library '${so.absolutePath}' due to missing " +
-                        "strip tool for ABI 'ARM64_V8A'.")
+                        "strip tool for ABI 'arm64-v8a'.")
     }
 
     @Test
     fun testNullAbi() {
         val so = File("my.so")
         val finder = SymbolStripExecutableFinder(hashMapOf(
-                Abi.X86 to File("my-strip.exe")))
+                Abi.X86.tag to File("my-strip.exe")))
         val sb = StringBuilder()
         val stripExePath = finder.stripToolExecutableFile(so, null) {
             sb.append(it)

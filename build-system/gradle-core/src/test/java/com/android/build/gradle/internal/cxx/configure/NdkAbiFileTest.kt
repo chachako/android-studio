@@ -18,11 +18,17 @@ package com.android.build.gradle.internal.cxx.configure
 
 import com.android.build.gradle.internal.core.Abi
 import com.android.build.gradle.internal.ndk.AbiInfo
+import com.android.build.gradle.internal.ndk.DefaultNdkInfo
+import com.android.build.gradle.internal.ndk.DefaultNdkInfoTest
+import com.android.build.gradle.internal.ndk.NdkInfo
+import com.google.common.base.Charsets
+import com.google.common.io.Files
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
+import java.io.IOException
 
 class NdkAbiFileTest {
 
@@ -134,9 +140,9 @@ class NdkAbiFileTest {
     @Test
     fun testNdk14() {
         val ndkAbiInfos = ndkAbiInfosNdk14()
-        assertThat(ndkAbiInfos).hasSize(7)
+        assertThat(ndkAbiInfos).hasSize(Abi.values().size)
         val first = ndkAbiInfos.first()
-        assertThat(first.abi).isEqualTo(Abi.ARMEABI)
+        assertThat(first.name).isEqualTo(Abi.ARMEABI.tag)
         assertThat(first.isDeprecated).isEqualTo(false)
         assertThat(first.isDefault).isEqualTo(true)
     }
@@ -146,7 +152,7 @@ class NdkAbiFileTest {
         val ndkAbiInfos = ndkAbiInfosNdk16()
         assertThat(ndkAbiInfos).hasSize(7)
         val first = ndkAbiInfos.first()
-        assertThat(first.abi).isEqualTo(Abi.ARMEABI)
+        assertThat(first.name).isEqualTo(Abi.ARMEABI.tag)
         assertThat(first.isDeprecated).isEqualTo(true)
         assertThat(first.isDefault).isEqualTo(false)
     }
@@ -156,8 +162,16 @@ class NdkAbiFileTest {
         val ndkAbiInfos = ndkAbiInfosNdk17()
         assertThat(ndkAbiInfos).hasSize(4)
         val first = ndkAbiInfos.first()
-        assertThat(first.abi).isEqualTo(Abi.ARMEABI_V7A)
+        assertThat(first.name).isEqualTo(Abi.ARMEABI_V7A.tag)
         assertThat(first.isDeprecated).isEqualTo(false)
         assertThat(first.isDefault).isEqualTo(true)
+    }
+
+    @Test
+    fun `unparseable abis json causes fallback`() {
+        val file = ndkMetaAbisFile(File(temporaryFolder.root, "./invalid-abis-NDK"))
+        file.parentFile.mkdirs()
+        file.writeText("invalid abis json file")
+        assertThat(NdkAbiFile(file).abiInfoList).hasSize(Abi.values().size)
     }
 }

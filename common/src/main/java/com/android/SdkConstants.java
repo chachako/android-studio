@@ -513,6 +513,7 @@ public final class SdkConstants {
     public static final String ABI_INTEL_ATOM64 = "x86_64";
     public static final String ABI_MIPS = "mips";
     public static final String ABI_MIPS64 = "mips64";
+    public static final String ABI_RISCV64 = "riscv64";
     /** Name of the CPU arch to support. */
     public static final String CPU_ARCH_ARM = "arm";
 
@@ -522,6 +523,8 @@ public final class SdkConstants {
     public static final String CPU_ARCH_MIPS = "mips";
     /** TODO double-check this is appropriate value for mips64 */
     public static final String CPU_ARCH_MIPS64 = "mips64";
+
+    public static final String CPU_ARCH_RISCV64 = "riscv64";
     /** Name of the CPU model to support. */
     public static final String CPU_MODEL_CORTEX_A8 = "cortex-a8";
 

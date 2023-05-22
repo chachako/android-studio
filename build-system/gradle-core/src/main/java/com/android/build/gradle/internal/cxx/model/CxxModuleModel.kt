@@ -102,13 +102,13 @@ data class CxxModuleModel(
      * ABIs supported by this NDK
      *   ex, x86, x86_64
      */
-    val ndkSupportedAbiList: List<Abi>,
+    val ndkSupportedAbiList: List<String>,
 
     /**
      * ABIs that are default for this NDK
      *   ex, x86_64
      */
-    val ndkDefaultAbiList: List<Abi>,
+    val ndkDefaultAbiList: List<String>,
 
     /**
      * The default STL that will be used by the given NDK version if the user does not select one.
@@ -145,7 +145,7 @@ data class CxxModuleModel(
      * system STL, and the "none" STL) or for STLs that are not supported by the given NDK. ABIs not
      * supported by the given NDK will also not be present in the map.
      */
-    val stlSharedObjectMap: Map<Stl, Map<Abi, File>>,
+    val stlSharedObjectMap: Map<Stl, Map<String, File>>,
 
     /**
      * The project for this module

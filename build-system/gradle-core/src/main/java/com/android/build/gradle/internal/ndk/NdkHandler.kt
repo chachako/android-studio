@@ -73,6 +73,7 @@ open class NdkHandler(
     private var ndkInstallStatus: NdkInstallStatus? = null
 
     private fun getNdkInfo(ndk: NdkLocatorRecord) = when {
+        ndk.revision.major >= 25 -> NdkR25Info(ndk.ndk)
         ndk.revision.major >= 21 -> NdkR21Info(ndk.ndk)
         ndk.revision.major >= 19 -> NdkR19Info(ndk.ndk)
         ndk.revision.major >= 18 -> NdkR18Info(ndk.ndk)

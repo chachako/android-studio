@@ -305,7 +305,7 @@ class PrefabErrorReportingTest {
     private val prefabs = listOf("1.1.3", "2.0.0", DEFAULT_PREFAB_VERSION).distinct().toTypedArray()
     private val prefabSchemaVersions = arrayOf(1, 2, 100)
     private val buildSystems = arrayOf("cmake", "ndk-build")
-    private val abis = (Abi.getDefaultValues().map { it.tag } + "trash-abi").toTypedArray()
+    private val abis = (Abi.values().map { it.tag } + "trash-abi").toTypedArray()
     private val osVersions = (1 until 35).toList().toTypedArray()
     private val stls = (Stl.values().map { it.argumentName } + "trash-stl").toTypedArray()
     private val ndkMajorVersions = (13 until 25).toList().toTypedArray()

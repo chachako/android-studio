@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.cxx.json
 
+import com.android.build.gradle.internal.core.Abi
 import com.android.build.gradle.internal.cxx.StructuredLog
 import com.android.utils.cxx.CxxDiagnosticCode
 import com.android.utils.cxx.CxxDiagnosticCode.BUILD_FILE_DID_NOT_EXIST
@@ -33,6 +34,7 @@ import org.junit.rules.TemporaryFolder
 import java.io.File
 
 class LintKtTest {
+    private val abis = listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
     private val fileBeingLinted = File("android_gradle_build_mini.json")
     private val filePathThatIsNotCanonicalizableOnAllPlatforms = File("\u0000")
 
@@ -40,7 +42,7 @@ class LintKtTest {
     fun `no error case`() {
         NativeBuildConfigValueMini().apply {
             buildFiles = listOf(tempFolder.newFile("CMakeLists.txt"))
-        }.lint(fileBeingLinted)
+        }.lint(fileBeingLinted, abis)
         log.assertNoErrors()
     }
 
@@ -48,7 +50,7 @@ class LintKtTest {
     fun `non-existent buildFile`() {
         NativeBuildConfigValueMini().apply {
             buildFiles = listOf(File("CMakeLists.txt"))
-        }.lint(fileBeingLinted)
+        }.lint(fileBeingLinted, abis)
         log.assertError(
             BUILD_FILE_DID_NOT_EXIST,
             "expected buildFiles file 'CMakeLists.txt' to exist"
@@ -59,7 +61,7 @@ class LintKtTest {
     fun `non-existent buildTargetsCommandComponents command`() {
         NativeBuildConfigValueMini().apply {
             buildTargetsCommandComponents = listOf("path/to/cmake.exe")
-        }.lint(fileBeingLinted)
+        }.lint(fileBeingLinted, abis)
         log.assertError(
             BUILD_TARGET_COMMAND_COMPONENTS_DID_NOT_EXIST,
             "expected buildTargetsCommandComponents command 'path/to/cmake.exe' to exist"
@@ -71,7 +73,7 @@ class LintKtTest {
         NativeBuildConfigValueMini().apply {
             libraries = mutableMapOf()
             libraries["lib1"] = NativeLibraryValueMini()
-        }.lint(fileBeingLinted)
+        }.lint(fileBeingLinted, abis)
         log.assertError(
             BUILD_TARGET_COMMAND_COMPONENTS_DID_NOT_EXIST,
             "expected buildTargetsCommandComponents or lib1.buildCommandComponents to exist"
@@ -85,7 +87,7 @@ class LintKtTest {
             libraries["lib1"] = NativeLibraryValueMini().apply {
                 buildCommandComponents = listOf("path/to/cmake.exe")
             }
-        }.lint(fileBeingLinted)
+        }.lint(fileBeingLinted, abis)
         log.assertError(
             BUILD_TARGET_COMMAND_COMPONENTS_COMMAND_DID_NOT_EXIST,
             "expected lib1.buildCommandComponents command 'path/to/cmake.exe' to exist"
@@ -97,7 +99,7 @@ class LintKtTest {
         NativeBuildConfigValueMini().apply {
             libraries = mutableMapOf()
             libraries["lib1"] = NativeLibraryValueMini()
-        }.lint(fileBeingLinted)
+        }.lint(fileBeingLinted, abis)
         log.assertError(
             LIBRARY_ARTIFACT_NAME_DID_NOT_EXIST,
             "expected lib1.artifactName to exist"
@@ -111,7 +113,7 @@ class LintKtTest {
             libraries["lib1"] = NativeLibraryValueMini().apply {
                 runtimeFiles = listOf(filePathThatIsNotCanonicalizableOnAllPlatforms)
             }
-        }.lint(fileBeingLinted)
+        }.lint(fileBeingLinted, abis)
         log.assertError(
             COULD_NOT_CANONICALIZE_PATH,
             "Could not canonicalize '\u0000' in lib1.runtimeFiles due to IOException"
@@ -124,7 +126,7 @@ class LintKtTest {
             libraries = mutableMapOf()
             libraries["lib1"] = NativeLibraryValueMini().apply {
             }
-        }.lint(fileBeingLinted)
+        }.lint(fileBeingLinted, abis)
         log.assertError(
             LIBRARY_ABI_NAME_DID_NOT_EXIST,
             "expected lib1.abi to exist"
@@ -142,10 +144,10 @@ class LintKtTest {
                 artifactName = "liblib1"
                 abi = "x86_65"
             }
-        }.lint(fileBeingLinted)
+        }.lint(fileBeingLinted, abis)
         log.assertError(
             LIBRARY_ABI_NAME_IS_INVALID,
-            "lib1.abi 'x86_65' is invalid. Valid values are 'armeabi-v7a, arm64-v8a, x86, x86_64'"
+            "lib1.abi 'x86_65' is invalid. Valid values are 'arm64-v8a, armeabi-v7a, x86, x86_64'"
         )
     }
 
@@ -165,10 +167,10 @@ class LintKtTest {
                 artifactName = "liblib2"
                 abi = "x86"
             }
-        }.lint(fileBeingLinted)
+        }.lint(fileBeingLinted, abis)
         log.assertError(
             LIBRARY_HAD_MULTIPLE_ABIS,
-            "unexpected mismatched library ABIs: x86_64, x86"
+            "unexpected mismatched library ABIs: x86, x86_64"
         )
     }
 
@@ -188,7 +190,7 @@ class LintKtTest {
                 artifactName = "liblib2"
                 abi = "armeabi-v7a"
             }
-        }.lint(fileBeingLinted)
+        }.lint(fileBeingLinted, abis)
         log.assertNoErrors()
     }
 

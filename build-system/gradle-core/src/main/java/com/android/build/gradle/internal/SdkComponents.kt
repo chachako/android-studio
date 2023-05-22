@@ -299,11 +299,11 @@ abstract class SdkComponentsBuildService @Inject constructor(
                 ndkPlatform.getOrThrow().ndkDirectory
             })
 
-        val objcopyExecutableMapProvider: Provider<Map<Abi, File>> = providerFactory.provider {
+        val objcopyExecutableMapProvider: Provider<Map<String, File>> = providerFactory.provider {
             if (!ndkPlatform.isConfigured) {
-                return@provider mapOf<Abi, File>()
+                return@provider mapOf<String, File>()
             }
-            val objcopyExecutables = mutableMapOf<Abi, File>()
+            val objcopyExecutables = mutableMapOf<String, File>()
             for (abi in ndkPlatform.getOrThrow().supportedAbis) {
                 objcopyExecutables[abi] =
                     ndkPlatform.getOrThrow().ndkInfo.getObjcopyExecutable(abi)

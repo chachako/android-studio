@@ -161,7 +161,7 @@ class NdkBuildBuildSettingsTest {
     @Test
     fun `configuration build command golden flags`() {
         val golden = project.goldenConfigurationFlags(Abi.ARMEABI_V7A)
-        val abi = project.recoverExistingCxxAbiModels().single { it.abi == Abi.ARMEABI_V7A }
+        val abi = project.recoverExistingCxxAbiModels(Abi.ARMEABI_V7A)
         val minPlatform = abi.variant.module.ndkMinPlatform
         println(golden)
         assertThat(golden).isEqualTo("""

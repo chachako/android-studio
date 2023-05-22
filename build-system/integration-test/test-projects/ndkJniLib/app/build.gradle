@@ -43,7 +43,7 @@ android {
         abi {
             enable = true
             universalApk = true
-            exclude "x86_64", "mips64", "arm64-v8a", "armeabi"
+            exclude "x86_64", "mips64", "arm64-v8a", "armeabi", "riscv64"
         }
     }
 

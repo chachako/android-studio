@@ -34,10 +34,11 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import java.io.File
 import com.android.build.gradle.internal.cxx.configure.CMakeVersion
+import com.android.build.gradle.internal.cxx.model.name
 
 @RunWith(Parameterized::class)
 class PrefabTest(private val buildSystem: NativeBuildSystem, val cmakeVersion: String) {
-    private val expectedAbis = listOf(Abi.ARMEABI_V7A, Abi.ARM64_V8A, Abi.X86, Abi.X86_64)
+    private val expectedAbis = listOf(Abi.ARMEABI_V7A, Abi.ARM64_V8A, Abi.X86, Abi.X86_64).map { it.tag }.sorted()
 
     @Rule
     @JvmField
@@ -92,9 +93,10 @@ class PrefabTest(private val buildSystem: NativeBuildSystem, val cmakeVersion: S
     }
 
     private fun verifyCMakePackage(pkg: String, abi: CxxAbiModel) {
+        val triple = abi.info.triple
         assertThat(
             abi.prefabFolder.resolve(
-                "prefab/lib/${abi.abi.gccExecutablePrefix}/cmake/$pkg/${pkg}Config.cmake"
+                "prefab/lib/$triple/cmake/$pkg/${pkg}Config.cmake"
             )
         ).exists()
     }
@@ -108,8 +110,8 @@ class PrefabTest(private val buildSystem: NativeBuildSystem, val cmakeVersion: S
     @Test
     fun `build integrations are passed to build system`() {
         project.execute("assembleDebug")
-        val abis = project.recoverExistingCxxAbiModels().sortedBy { it.abi.ordinal }
-        assertThat(abis.map { it.abi }).containsExactlyElementsIn(expectedAbis)
+        val abis = project.recoverExistingCxxAbiModels().sortedBy { it.name }
+        assertThat(abis.map { it.name }).containsExactlyElementsIn(expectedAbis)
         for (abi in abis) {
             val abiDir = abi.prefabFolder
             assertThat(abiDir).exists()
@@ -148,11 +150,11 @@ class PrefabTest(private val buildSystem: NativeBuildSystem, val cmakeVersion: S
         val apk = project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG)
         assertThat(apk.file).exists()
         for (abi in expectedAbis) {
-            assertThatApk(apk).contains("lib/${abi.tag}/libapp.so")
-            assertThatApk(apk).contains("lib/${abi.tag}/libcrypto.so")
-            assertThatApk(apk).contains("lib/${abi.tag}/libcurl.so")
-            assertThatApk(apk).contains("lib/${abi.tag}/libjsoncpp.so")
-            assertThatApk(apk).contains("lib/${abi.tag}/libssl.so")
+            assertThatApk(apk).contains("lib/$abi/libapp.so")
+            assertThatApk(apk).contains("lib/$abi/libcrypto.so")
+            assertThatApk(apk).contains("lib/$abi/libcurl.so")
+            assertThatApk(apk).contains("lib/$abi/libjsoncpp.so")
+            assertThatApk(apk).contains("lib/$abi/libssl.so")
         }
     }
 

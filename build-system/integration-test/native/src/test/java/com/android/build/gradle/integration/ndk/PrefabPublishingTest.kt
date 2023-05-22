@@ -22,6 +22,7 @@ import com.android.build.gradle.internal.core.Abi
 import com.android.build.gradle.internal.cxx.configure.CMakeVersion
 import com.android.build.gradle.internal.cxx.model.CxxAbiModel
 import com.android.build.gradle.internal.cxx.model.minSdkVersion
+import com.android.build.gradle.internal.cxx.model.name
 import com.android.build.gradle.internal.cxx.model.ndkMinPlatform
 import com.android.build.gradle.tasks.NativeBuildSystem
 import com.android.testutils.truth.PathSubject.assertThat
@@ -135,7 +136,7 @@ class PrefabPublishingTest(
         )
 
         for (abiName in expectedAbis) {
-            val abi = project.recoverExistingCxxAbiModels().single { it.abi == abiName }
+            val abi = project.recoverExistingCxxAbiModels(abiName)
             verifyLibrariesForAbi(
                 abi,
                 moduleDir,
@@ -160,14 +161,14 @@ class PrefabPublishingTest(
             LibraryType.HeaderOnly -> return
         }
 
-        val abiDir = moduleDir.resolve("libs/android.${abi.abi.tag}")
+        val abiDir = moduleDir.resolve("libs/android.${abi.name}")
         val abiMetadata = abiDir.resolve("abi.json").readText()
         val apiLevel = abi.minSdkVersion
 
         Truth.assertThat(abiMetadata).isEqualTo(
             """
             {
-              "abi": "${abi.abi.tag}",
+              "abi": "${abi.name}",
               "api": $apiLevel,
               "ndk": $ndkMajor,
               "stl": "c++_shared",

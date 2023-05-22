@@ -32,8 +32,9 @@ fun createCxxVariantModel(
     val validAbiList = CachingEnvironment(configurationParameters.cxxCacheFolder).use {
         AbiConfigurator(
                 AbiConfigurationKey(
-                        module.ndkSupportedAbiList,
-                        module.ndkDefaultAbiList,
+                        module.ndkMetaAbiList,
+                        module.ndkSupportedAbiList.toSet(),
+                        module.ndkDefaultAbiList.toSet(),
                         configurationParameters.nativeVariantConfig.externalNativeBuildAbiFilters,
                         configurationParameters.nativeVariantConfig.ndkAbiFilters,
                         configurationParameters.splitsAbiFilterSet,

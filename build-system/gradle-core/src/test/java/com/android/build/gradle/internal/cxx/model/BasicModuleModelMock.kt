@@ -42,6 +42,7 @@ import com.android.build.gradle.internal.fixtures.FakeGradleProvider
 import com.android.build.gradle.internal.ndk.NdkInstallStatus
 import com.android.build.gradle.internal.ndk.NdkPlatform
 import com.android.build.gradle.internal.ndk.NdkR19Info
+import com.android.build.gradle.internal.ndk.NdkR25Info
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.BuildFeatureValues
 import com.android.build.gradle.internal.scope.ProjectInfo
@@ -83,25 +84,50 @@ import java.util.concurrent.Callable
 open class BasicModuleModelMock {
     private val abisJson = """
     {
-      "armeabi-v7a": {
+     "armeabi-v7a": {
         "bitness": 32,
         "default": true,
-        "deprecated": false
+        "deprecated": false,
+        "proc": "armv7-a",
+        "arch": "arm",
+        "triple": "arm-linux-androideabi",
+        "llvm_triple": "armv7-none-linux-androideabi"
       },
       "arm64-v8a": {
         "bitness": 64,
         "default": true,
-        "deprecated": false
+        "deprecated": false,
+        "proc": "aarch64",
+        "arch": "arm64",
+        "triple": "aarch64-linux-android",
+        "llvm_triple": "aarch64-none-linux-android"
+      },
+      "riscv64": {
+        "bitness": 64,
+        "default": true,
+        "deprecated": false,
+        "proc": "riscv64",
+        "arch": "riscv64",
+        "triple": "riscv64-linux-android",
+        "llvm_triple": "riscv64-none-linux-android"
       },
       "x86": {
         "bitness": 32,
         "default": true,
-        "deprecated": false
+        "deprecated": false,
+        "proc": "i686",
+        "arch": "x86",
+        "triple": "i686-linux-android",
+        "llvm_triple": "i686-none-linux-android"
       },
       "x86_64": {
         "bitness": 64,
         "default": true,
-        "deprecated": false
+        "deprecated": false,
+        "proc": "x86_64",
+        "arch": "x86_64",
+        "triple": "x86_64-linux-android",
+        "llvm_triple": "x86_64-none-linux-android"
       }
     }
     """.trimIndent()
@@ -412,8 +438,8 @@ open class BasicModuleModelMock {
             .`when`(projectOptions).get(StringOption.NATIVE_BUILD_OUTPUT_LEVEL)
 
         doReturn(defaultCmakeVersion.toString()).`when`(cmake).version
-        doReturn(listOf(Abi.X86, Abi.X86_64, Abi.ARMEABI_V7A, Abi.ARM64_V8A)).`when`(ndkInstallStatus.getOrThrow()).supportedAbis
-        doReturn(listOf(Abi.X86)).`when`(ndkInstallStatus.getOrThrow()).defaultAbis
+        doReturn(listOf(Abi.X86.tag, Abi.X86_64.tag, Abi.ARMEABI_V7A.tag, Abi.ARM64_V8A.tag)).`when`(ndkInstallStatus.getOrThrow()).supportedAbis
+        doReturn(listOf(Abi.X86.tag)).`when`(ndkInstallStatus.getOrThrow()).defaultAbis
 
         doReturn(ndkHandler).`when`(sdkComponents).versionedNdkHandler(
             Mockito.anyString(), Mockito.anyString(), Mockito.anyString()
@@ -423,7 +449,7 @@ open class BasicModuleModelMock {
         doReturn(ndkInstallStatus).`when`(ndkHandler).getNdkPlatform(true)
         doReturn(true).`when`(variantImpl).debuggable
 
-        val ndkInfo = NdkR19Info(ndkFolder)
+        val ndkInfo = NdkR25Info(ndkFolder)
         doReturn(ndkInfo).`when`(ndkInstallStatus.getOrThrow()).ndkInfo
         doReturn(ndkFolder).`when`(ndkInstallStatus.getOrThrow()).ndkDirectory
         doReturn(Revision.parseRevision(NDK_DEFAULT_VERSION)).`when`(ndkInstallStatus.getOrThrow()).revision

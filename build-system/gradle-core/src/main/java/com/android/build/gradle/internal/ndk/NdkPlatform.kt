@@ -16,11 +16,9 @@
 
 package com.android.build.gradle.internal.ndk
 
-import com.android.build.gradle.internal.core.Abi
 import com.android.repository.Revision
 import com.android.sdklib.AndroidTargetHash
 import com.android.sdklib.AndroidVersion
-import org.gradle.api.logging.Logging
 import java.io.File
 import java.lang.RuntimeException
 
@@ -56,7 +54,7 @@ data class NdkPlatform(
     /**
      * List of ABIs supported by this NDK + compileSdkVersion.
      */
-    val supportedAbis : List<Abi> by lazy {
+    val supportedAbis : List<String> by lazy {
         (if (supports64Bits) ndkInfo.supportedAbis else ndkInfo.supported32BitsAbis).toList()
     }
 
@@ -64,7 +62,7 @@ data class NdkPlatform(
      * List of default ABIs for this NDK + compileSdkVersion.
      * Default means this is the list to be used when the user specifies no ABIs.
      */
-    val defaultAbis : List<Abi> by lazy {
+    val defaultAbis : List<String> by lazy {
         (if (supports64Bits) ndkInfo.defaultAbis else ndkInfo.default32BitsAbis).toList()
     }
 }

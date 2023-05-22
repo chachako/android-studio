@@ -24,6 +24,7 @@ import com.android.build.gradle.internal.cxx.model.BasicNdkBuildMock
 import com.android.build.gradle.internal.cxx.model.createCxxAbiModel
 import com.android.build.gradle.internal.cxx.model.createCxxModuleModel
 import com.android.build.gradle.internal.cxx.model.createCxxVariantModel
+import com.android.build.gradle.internal.cxx.model.name
 import com.android.build.gradle.internal.cxx.settings.Token.LiteralToken
 import com.android.build.gradle.internal.cxx.settings.Token.MacroToken
 import com.android.build.gradle.tasks.NativeBuildSystem
@@ -54,7 +55,7 @@ class LookupSettingFromModelKtTest {
                 it.sdkComponents,
                 it.configurationParameters,
                 variant,
-                Abi.X86_64)
+                "x86_64")
 
             assertThat(abi.resolveMacroValue(Macro.NDK_PLATFORM_SYSTEM_VERSION))
                 .isEqualTo("19")
@@ -76,7 +77,7 @@ class LookupSettingFromModelKtTest {
                     listOf(parameters),
                     providers,
                     layout)
-                    .single { abi -> abi.abi == Abi.X86_64 }
+                    .single { abi -> abi.name == Abi.X86_64.tag }
 
             Macro.values()
                     .forEach { macro ->
@@ -98,12 +99,12 @@ class LookupSettingFromModelKtTest {
                 it.providers, it.layout
             )
             val abi = allAbis
-                .single { abi -> abi.abi == Abi.X86_64 }
+                .single { abi -> abi.name == Abi.X86_64.tag }
                 .rewriteWithLocations(it.nativeLocationsBuildService)
 
             Macro.values().forEach { macro ->
                 val resolved = abi.resolveMacroValue(macro)
-                        .replace(Macro.NDK_ABI.ref, abi.abi.tag)
+                        .replace(Macro.NDK_ABI.ref, abi.name)
                 val example = StringBuilder()
                 tokenizeMacroString(macro.example) { token ->
                     when(token) {
@@ -142,7 +143,7 @@ class LookupSettingFromModelKtTest {
                         it.layout
                     )
             val abi = allAbis
-                .single { abi -> abi.abi == Abi.X86_64 }
+                .single { abi -> abi.name == Abi.X86_64.tag }
                 .rewriteWithLocations(it.nativeLocationsBuildService)
             if (!abi.variant.module.hasBuildTimeInformation) {
                 error("Expected build time information after rewriteWithLocations")
@@ -150,7 +151,7 @@ class LookupSettingFromModelKtTest {
 
             Macro.values().forEach { macro ->
                 val resolved = abi.resolveMacroValue(macro)
-                        .replace(Macro.NDK_ABI.ref, abi.abi.tag)
+                        .replace(Macro.NDK_ABI.ref, abi.name)
                 val example = StringBuilder()
                 assertThat(macro.ndkBuildExample)
                         .named("ndk-build and CMake examples differ needlessly: ${macro.ref}")

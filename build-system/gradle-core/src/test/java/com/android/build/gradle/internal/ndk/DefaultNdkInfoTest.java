@@ -23,6 +23,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,9 +31,12 @@ import org.junit.rules.TemporaryFolder;
 
 /** Test for DefaultNdkInfo. */
 public class DefaultNdkInfoTest {
-    private static final Object[] ALL_ABIS = (Object[]) Abi.values();
+    private static final Object[] ALL_ABIS =
+            Arrays.stream(Abi.values()).map(it -> it.getTag()).toArray();
     private static final Object[] ALL_32_BITS_ABIS =
-            new Object[] {Abi.ARMEABI, Abi.ARMEABI_V7A, Abi.X86, Abi.MIPS};
+            new Object[] {
+                Abi.ARMEABI.getTag(), Abi.ARMEABI_V7A.getTag(), Abi.X86.getTag(), Abi.MIPS.getTag()
+            };
     @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File ndkFolder;
@@ -74,10 +78,10 @@ public class DefaultNdkInfoTest {
                                 + "    }\n"
                                 + "}");
         NdkInfo info = new DefaultNdkInfo(ndkFolder);
-        assertThat(info.getSupportedAbis()).containsExactly(Abi.ARMEABI);
-        assertThat(info.getSupported32BitsAbis()).containsExactly(Abi.ARMEABI);
-        assertThat(info.getDefaultAbis()).containsExactly(Abi.ARMEABI);
-        assertThat(info.getDefault32BitsAbis()).containsExactly(Abi.ARMEABI);
+        assertThat(info.getSupportedAbis()).containsExactly(Abi.ARMEABI.getTag());
+        assertThat(info.getSupported32BitsAbis()).containsExactly(Abi.ARMEABI.getTag());
+        assertThat(info.getDefaultAbis()).containsExactly(Abi.ARMEABI.getTag());
+        assertThat(info.getDefault32BitsAbis()).containsExactly(Abi.ARMEABI.getTag());
     }
 
     @Test
@@ -102,11 +106,21 @@ public class DefaultNdkInfoTest {
                                 + "}");
         NdkInfo info = new DefaultNdkInfo(ndkFolder);
         assertThat(info.getSupportedAbis())
-                .containsExactly(Abi.ARMEABI, Abi.ARMEABI_V7A, Abi.MIPS, Abi.X86);
+                .containsExactly(
+                        Abi.ARMEABI.getTag(),
+                        Abi.ARMEABI_V7A.getTag(),
+                        Abi.MIPS.getTag(),
+                        Abi.X86.getTag());
         assertThat(info.getSupported32BitsAbis())
-                .containsExactly(Abi.ARMEABI, Abi.ARMEABI_V7A, Abi.MIPS, Abi.X86);
-        assertThat(info.getDefaultAbis()).containsExactly(Abi.ARMEABI, Abi.ARMEABI_V7A);
-        assertThat(info.getDefault32BitsAbis()).containsExactly(Abi.ARMEABI, Abi.ARMEABI_V7A);
+                .containsExactly(
+                        Abi.ARMEABI.getTag(),
+                        Abi.ARMEABI_V7A.getTag(),
+                        Abi.MIPS.getTag(),
+                        Abi.X86.getTag());
+        assertThat(info.getDefaultAbis())
+                .containsExactly(Abi.ARMEABI.getTag(), Abi.ARMEABI_V7A.getTag());
+        assertThat(info.getDefault32BitsAbis())
+                .containsExactly(Abi.ARMEABI.getTag(), Abi.ARMEABI_V7A.getTag());
     }
 
     @Test
@@ -122,10 +136,10 @@ public class DefaultNdkInfoTest {
                                 + "\n"
                                 + "}");
         NdkInfo info = new DefaultNdkInfo(ndkFolder);
-        assertThat(info.getSupportedAbis()).containsExactly(Abi.ARMEABI);
-        assertThat(info.getSupported32BitsAbis()).containsExactly(Abi.ARMEABI);
-        assertThat(info.getDefaultAbis()).containsExactly(Abi.ARMEABI);
-        assertThat(info.getDefault32BitsAbis()).containsExactly(Abi.ARMEABI);
+        assertThat(info.getSupportedAbis()).containsExactly(Abi.ARMEABI.getTag());
+        assertThat(info.getSupported32BitsAbis()).containsExactly(Abi.ARMEABI.getTag());
+        assertThat(info.getDefaultAbis()).containsExactly(Abi.ARMEABI.getTag());
+        assertThat(info.getDefault32BitsAbis()).containsExactly(Abi.ARMEABI.getTag());
     }
 
     @Test
@@ -148,9 +162,15 @@ public class DefaultNdkInfoTest {
                                 + "}");
         NdkInfo info = new DefaultNdkInfo(ndkFolder);
         assertThat(info.getSupportedAbis())
-                .containsExactly(Abi.ARMEABI_V7A, Abi.X86_64, Abi.MIPS, Abi.MIPS64);
-        assertThat(info.getSupported32BitsAbis()).containsExactly(Abi.ARMEABI_V7A, Abi.MIPS);
-        assertThat(info.getDefaultAbis()).containsExactly(Abi.ARMEABI_V7A, Abi.X86_64);
-        assertThat(info.getDefault32BitsAbis()).containsExactly(Abi.ARMEABI_V7A);
+                .containsExactly(
+                        Abi.ARMEABI_V7A.getTag(),
+                        Abi.X86_64.getTag(),
+                        Abi.MIPS.getTag(),
+                        Abi.MIPS64.getTag());
+        assertThat(info.getSupported32BitsAbis())
+                .containsExactly(Abi.ARMEABI_V7A.getTag(), Abi.MIPS.getTag());
+        assertThat(info.getDefaultAbis())
+                .containsExactly(Abi.ARMEABI_V7A.getTag(), Abi.X86_64.getTag());
+        assertThat(info.getDefault32BitsAbis()).containsExactly(Abi.ARMEABI_V7A.getTag());
     }
 }

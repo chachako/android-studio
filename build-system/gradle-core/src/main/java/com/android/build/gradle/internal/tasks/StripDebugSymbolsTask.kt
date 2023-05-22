@@ -194,7 +194,7 @@ abstract class StripDebugSymbolsDelegate : ProfileAwareWorkAction<StripDebugSymb
                         it.initializeFromProfileAwareWorkAction(parameters)
                         it.input.set(change.file)
                         it.output.set(output)
-                        it.abi.set(Abi.getByName(change.file.parentFile.name))
+                        it.abi.set(change.file.parentFile.name)
                         it.justCopyInput.set(justCopyInput)
                         it.sdkBuildService.set(parameters.sdkBuildService)
                         it.ndkHandlerInput.set(parameters.ndkHandlerInput)
@@ -275,7 +275,7 @@ abstract class StripDebugSymbolsRunnable : ProfileAwareWorkAction<StripDebugSymb
     abstract class Params: ProfileAwareWorkAction.Parameters() {
         abstract val input: Property<File>
         abstract val output: Property<File>
-        abstract val abi: Property<Abi>
+        abstract val abi: Property<String>
         abstract val justCopyInput: Property<Boolean>
         abstract val sdkBuildService: Property<SdkComponentsBuildService>
         abstract val ndkHandlerInput: Property<NdkHandlerInput>

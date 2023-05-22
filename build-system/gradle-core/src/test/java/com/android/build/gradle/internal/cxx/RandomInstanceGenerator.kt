@@ -40,6 +40,7 @@ class RandomInstanceGenerator(val seed : Long = 192L) {
     private val defaultSequenceLength = 100
     private val random = Random(seed)
     private val factoryMap = mutableMapOf<Type, (RandomInstanceGenerator) -> Any?>()
+    private val supports64Bits = listOf("arm64-v8a", "x86_64", "riscv64")
 
     init {
         // Revision can't handle negative values
@@ -51,10 +52,13 @@ class RandomInstanceGenerator(val seed : Long = 192L) {
         provide(AbiInfo::class.java) {
             val abi = synthetic(Abi::class.java)
             AbiInfo(
-                abi = synthetic(Abi::class.java),
-                bitness = if (abi.supports64Bits()) 64 else 32,
+                name = abi.tag,
+                bitness = if (supports64Bits.contains(abi.tag)) 64 else 32,
                 isDefault = boolean(),
-                isDeprecated = boolean()
+                isDeprecated = boolean(),
+                architecture = string(),
+                triple = string(),
+                llvmTriple = string()
             )
         }
         provide(File::class.java) { file() }

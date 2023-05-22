@@ -33,6 +33,7 @@ import com.android.build.gradle.options.StringOption;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -144,9 +145,9 @@ public class InjectedAbiSplitTest {
     }
 
     private void checkApkContent(File apk, Abi... abis) throws Exception {
-        List<Abi> abiList = Arrays.asList(abis);
-        for (Abi abi : NdkHelper.getAbiList(sProject)) {
-            String path = "lib/" + abi.getTag() + '/' + "libhello-jni.so";
+        List<String> abiList = Arrays.stream(abis).map(Abi::getTag).collect(Collectors.toList());
+        for (String abi : NdkHelper.getAbiList(sProject)) {
+            String path = "lib/" + abi + '/' + "libhello-jni.so";
             assertThat(
                     apk,
                     it -> {

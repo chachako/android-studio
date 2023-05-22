@@ -19,7 +19,6 @@ package com.android.build.gradle.integration.common.utils;
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.internal.core.Abi;
 import com.android.build.gradle.internal.ndk.DefaultNdkInfo;
 import com.android.build.gradle.internal.ndk.NdkInfo;
 import java.io.File;
@@ -41,7 +40,7 @@ public class NdkHelper {
     }
 
     @NonNull
-    public static Collection<Abi> getAbiList(GradleTestProject project) {
+    public static Collection<String> getAbiList(GradleTestProject project) {
         NdkInfo info = getNdkInfo(project);
         return info.getDefaultAbis();
     }

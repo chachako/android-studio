@@ -56,7 +56,7 @@ class ExtractNativeDebugMetadataTaskTest {
     private lateinit var armeabiNativeLib: File
     private lateinit var outputDir: File
     private lateinit var fakeExe: File
-    private lateinit var objcopyExecutableMap: Map<Abi, File>
+    private lateinit var objcopyExecutableMap: Map<String, File>
     private lateinit var workers: WorkerExecutor
     private lateinit var project: Project
     private lateinit var objectFactory: ObjectFactory
@@ -79,7 +79,7 @@ class ExtractNativeDebugMetadataTaskTest {
         outputDir = temporaryFolder.newFolder("outputDir")
 
         fakeExe = temporaryFolder.newFile("fake.exe")
-        objcopyExecutableMap = mapOf(Pair(Abi.X86, fakeExe), Pair(Abi.ARMEABI, fakeExe))
+        objcopyExecutableMap = mapOf(Pair(Abi.X86.tag, fakeExe), Pair(Abi.ARMEABI.tag, fakeExe))
 
         project = ProjectBuilder.builder().withProjectDir(temporaryFolder.newFolder()).build()
         objectFactory = project.objects
@@ -109,7 +109,7 @@ class ExtractNativeDebugMetadataTaskTest {
                     override val outputDir = objectFactory.directoryProperty()
                         .fileValue(this@ExtractNativeDebugMetadataTaskTest.outputDir)
                     override val objcopyExecutableMap =
-                        objectFactory.mapProperty(Abi::class.java, File::class.java)
+                        objectFactory.mapProperty(String::class.java, File::class.java)
                             .value(this@ExtractNativeDebugMetadataTaskTest.objcopyExecutableMap)
                     override val debugSymbolLevel = FakeGradleProperty(DebugSymbolLevel.FULL)
                     override val maxWorkerCount = FakeGradleProperty(2)
@@ -161,7 +161,7 @@ class ExtractNativeDebugMetadataTaskTest {
                     override val outputDir = objectFactory.directoryProperty()
                         .fileValue(this@ExtractNativeDebugMetadataTaskTest.outputDir)
                     override val objcopyExecutableMap =
-                        objectFactory.mapProperty(Abi::class.java, File::class.java)
+                        objectFactory.mapProperty(String::class.java, File::class.java)
                             .value(this@ExtractNativeDebugMetadataTaskTest.objcopyExecutableMap)
                     override val debugSymbolLevel = FakeGradleProperty(DebugSymbolLevel.FULL)
                     override val maxWorkerCount = FakeGradleProperty(1)
@@ -212,7 +212,7 @@ class ExtractNativeDebugMetadataTaskTest {
                     override val outputDir = objectFactory.directoryProperty()
                         .fileValue(this@ExtractNativeDebugMetadataTaskTest.outputDir)
                     override val objcopyExecutableMap =
-                        objectFactory.mapProperty(Abi::class.java, File::class.java)
+                        objectFactory.mapProperty(String::class.java, File::class.java)
                             .value(this@ExtractNativeDebugMetadataTaskTest.objcopyExecutableMap)
                     override val debugSymbolLevel =
                         FakeGradleProperty(DebugSymbolLevel.SYMBOL_TABLE)

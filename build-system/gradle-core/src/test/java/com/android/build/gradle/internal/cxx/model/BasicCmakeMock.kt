@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.cxx.model
 
-import com.android.build.gradle.internal.core.Abi
 import com.android.utils.FileUtils.join
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.SetProperty
@@ -36,7 +35,8 @@ open class BasicCmakeMock(createFakeNinja : Boolean = true) : BasicModuleModelMo
         )
     }
     val variant by lazy { createCxxVariantModel(configurationParameters, module) }
-    val abi by lazy { createCxxAbiModel(sdkComponents, configurationParameters, variant, Abi.X86) }
+    val abi by lazy { createCxxAbiModel(sdkComponents, configurationParameters, variant, "x86") }
+    val riscvAbi by lazy { createCxxAbiModel(sdkComponents, configurationParameters, variant, "riscv64" ) }
 
     init {
         doReturn(makeSetProperty(setOf())).`when`(variantExternalNativeBuild).abiFilters

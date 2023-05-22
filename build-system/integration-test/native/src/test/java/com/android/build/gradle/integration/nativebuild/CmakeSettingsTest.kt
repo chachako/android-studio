@@ -30,6 +30,7 @@ import com.android.build.gradle.internal.cxx.configure.CmakeProperty.CMAKE_C_FLA
 import com.android.build.gradle.internal.cxx.configure.CMakeVersion
 import com.android.build.gradle.internal.cxx.json.AndroidBuildGradleJsons.getNativeBuildMiniConfig
 import com.android.build.gradle.internal.cxx.json.NativeBuildConfigValueMini
+import com.android.build.gradle.internal.cxx.model.name
 import com.android.build.gradle.internal.cxx.settings.Macro.ENV_WORKSPACE_ROOT
 import com.android.build.gradle.internal.cxx.settings.Macro.NDK_ABI
 import com.android.build.gradle.internal.cxx.settings.Macro.NDK_VARIANT_NAME
@@ -173,7 +174,7 @@ class CmakeSettingsTest(private val cmakeVersionInDsl: String) {
 
     private fun getMiniConfigs() : List<NativeBuildConfigValueMini> {
         return project.recoverExistingCxxAbiModels()
-                .filter { it.abi == Abi.X86_64 || it.abi == Abi.ARMEABI_V7A}
+                .filter { it.name == Abi.X86_64.tag || it.name == Abi.ARMEABI_V7A.tag }
                 .filter { it.variant.variantName == "debug" }
                 .map { getNativeBuildMiniConfig(it, null) }
     }
