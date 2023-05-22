@@ -39438,10 +39438,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.compose.compiler.compiler-hosted_1.3.2",
-    pom = "repository/org/jetbrains/compose/compiler/compiler-hosted/1.3.2/compiler-hosted-1.3.2.pom",
+    name = "org.jetbrains.compose.compiler.compiler-hosted_1.4.5",
+    pom = "repository/org/jetbrains/compose/compiler/compiler-hosted/1.4.5/compiler-hosted-1.4.5.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/compose/compiler/compiler-hosted/1.3.2",
+    repo_path = "org/jetbrains/compose/compiler/compiler-hosted/1.4.5",
     visibility = ["//visibility:public"],
 )
 
@@ -39952,34 +39952,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.kotlin.jvm-abi-gen_1.7.0",
-    pom = "repository/org/jetbrains/kotlin/jvm-abi-gen/1.7.0/jvm-abi-gen-1.7.0.pom",
+    name = "org.jetbrains.kotlin.jvm-abi-gen_1.8.21",
+    pom = "repository/org/jetbrains/kotlin/jvm-abi-gen/1.8.21/jvm-abi-gen-1.8.21.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/jvm-abi-gen/1.7.0",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "org.jetbrains.kotlin.jvm-abi-gen_1.7.20",
-    pom = "repository/org/jetbrains/kotlin/jvm-abi-gen/1.7.20/jvm-abi-gen-1.7.20.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/jvm-abi-gen/1.7.20",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "org.jetbrains.kotlin.jvm-abi-gen_1.8.10",
-    pom = "repository/org/jetbrains/kotlin/jvm-abi-gen/1.8.10/jvm-abi-gen-1.8.10.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/jvm-abi-gen/1.8.10",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "org.jetbrains.kotlin.jvm-abi-gen_1.8.20-Beta",
-    pom = "repository/org/jetbrains/kotlin/jvm-abi-gen/1.8.20-Beta/jvm-abi-gen-1.8.20-Beta.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/jvm-abi-gen/1.8.20-Beta",
+    repo_path = "org/jetbrains/kotlin/jvm-abi-gen/1.8.21",
     visibility = ["//visibility:public"],
 )
 
@@ -40990,6 +40966,20 @@ maven_artifact(
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.20-Beta",
         "org.jetbrains.kotlin.kotlin-script-runtime_1.8.20-Beta",
+        "org.jetbrains.kotlin.kotlin-reflect_1.6.10",
+        "org.jetbrains.intellij.deps.trove4j_1.0.20200330",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-compiler_1.8.21",
+    pom = "repository/org/jetbrains/kotlin/kotlin-compiler/1.8.21/kotlin-compiler-1.8.21.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-compiler/1.8.21",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
+        "org.jetbrains.kotlin.kotlin-script-runtime_1.8.21",
         "org.jetbrains.kotlin.kotlin-reflect_1.6.10",
         "org.jetbrains.intellij.deps.trove4j_1.0.20200330",
     ],
@@ -42729,6 +42719,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-script-runtime_1.8.21",
+    pom = "repository/org/jetbrains/kotlin/kotlin-script-runtime/1.8.21/kotlin-script-runtime-1.8.21.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-script-runtime/1.8.21",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jetbrains.kotlin.kotlin-scripting-common_1.3.41",
     pom = "repository/org/jetbrains/kotlin/kotlin-scripting-common/1.3.41/kotlin-scripting-common-1.3.41.pom",
     repo_root_path = "repository",
@@ -43583,6 +43581,14 @@ maven_artifact(
     pom = "repository/org/jetbrains/kotlin/kotlin-stdlib-common/1.8.20-Beta/kotlin-stdlib-common-1.8.20-Beta.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-stdlib-common/1.8.20-Beta",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
+    pom = "repository/org/jetbrains/kotlin/kotlin-stdlib-common/1.8.21/kotlin-stdlib-common-1.8.21.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-stdlib-common/1.8.21",
     visibility = ["//visibility:public"],
 )
 
@@ -44641,6 +44647,18 @@ maven_artifact(
     repo_path = "org/jetbrains/kotlin/kotlin-stdlib/1.8.20-Beta",
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.20-Beta",
+        "org.jetbrains.annotations_13.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
+    pom = "repository/org/jetbrains/kotlin/kotlin-stdlib/1.8.21/kotlin-stdlib-1.8.21.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-stdlib/1.8.21",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
         "org.jetbrains.annotations_13.0",
     ],
     visibility = ["//visibility:public"],
