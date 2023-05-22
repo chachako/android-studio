@@ -632,7 +632,7 @@ package com.android.build.api.dsl {
     method public boolean isJniDebuggable();
     method public boolean isMinifyEnabled();
     method public boolean isPseudoLocalesEnabled();
-    method public boolean isRenderscriptDebuggable();
+    method @Deprecated public boolean isRenderscriptDebuggable();
     method public boolean isShrinkResources();
     method @Deprecated public boolean isTestCoverageEnabled();
     method @Deprecated public boolean isZipAlignEnabled();
@@ -644,7 +644,7 @@ package com.android.build.api.dsl {
     method @Deprecated public void setMatchingFallbacks(java.util.List<java.lang.String> fallbacks);
     method public void setMinifyEnabled(boolean);
     method public void setPseudoLocalesEnabled(boolean);
-    method public void setRenderscriptDebuggable(boolean);
+    method @Deprecated public void setRenderscriptDebuggable(boolean);
     method public void setRenderscriptOptimLevel(int);
     method public void setShrinkResources(boolean);
     method @Deprecated public void setTestCoverageEnabled(boolean);
@@ -654,7 +654,7 @@ package com.android.build.api.dsl {
     property public abstract boolean isJniDebuggable;
     property public abstract boolean isMinifyEnabled;
     property public abstract boolean isPseudoLocalesEnabled;
-    property public abstract boolean isRenderscriptDebuggable;
+    property @Deprecated public abstract boolean isRenderscriptDebuggable;
     property public abstract boolean isShrinkResources;
     property @Deprecated public abstract boolean isTestCoverageEnabled;
     property @Deprecated public abstract boolean isZipAlignEnabled;
