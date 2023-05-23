@@ -123,9 +123,14 @@ class TestRunner(
             if (printResultsUrl) {
                 val resultsUrl = latestTestMatrix.resultStorage?.get("resultsUrl") as String?
                 if (!resultsUrl.isNullOrBlank()) {
+                    val resultDetailsUrl = if (resultsUrl.endsWith("details")) {
+                        resultsUrl
+                    } else {
+                        "$resultsUrl/details"
+                    }
                     logger.lifecycle(
                         "Test request for device ${device.name} has been submitted to " +
-                                "Firebase TestLab: $resultsUrl")
+                                "Firebase TestLab: $resultDetailsUrl")
                     printResultsUrl = false
                 }
             }
