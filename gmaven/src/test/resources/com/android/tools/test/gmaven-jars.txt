@@ -2815,6 +2815,7 @@ com/android/tools/repository
 com/android/tools/sdk-common
   META-INF/
   META-INF/MANIFEST.MF
+  META-INF/sdk-common.gradle.kotlin_module
   META-INF/sdk-common.kotlin_module
   NOTICE
   README.md

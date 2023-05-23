@@ -15,7 +15,6 @@
  */
 package com.android.ide.common.gradle
 
-import com.android.ide.common.repository.GradleVersionRange
 import com.google.common.annotations.Beta
 import java.io.Serializable
 import java.lang.IllegalArgumentException
@@ -43,7 +42,7 @@ class Version: Comparable<Version>, Serializable {
     private val parts: List<Part>
     private val separators: List<Separator>
     /**
-     * this is only non-private in order to provide error-checking in [GradleVersionRange]
+     * this is only non-private in order to provide error-checking in legacy class
      * constructors; it should not be generally used.  If true, this represents the infimum of
      * the set of versions with the specified parts as a prefix ("infimum" because there is no
      * finite representation of such a version).

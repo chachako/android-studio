@@ -76,7 +76,7 @@ abstract class GoogleMavenRepository @JvmOverloads constructor(
         allowPreview: Boolean = false
     ): Version? {
         fun predicate(version: Version) = predicate?.test(version) ?: true
-        dependency.group ?: return null
+        val group = dependency.group ?: return null
         val filter = when {
             dependency.hasExplicitDistinctUpperBound -> {
                 { v: Version -> predicate(v) && dependency.version?.contains(v) ?: true }
@@ -86,7 +86,7 @@ abstract class GoogleMavenRepository @JvmOverloads constructor(
             }
         }
 
-        if (dependency.group == "androidx.work") {
+        if (group == "androidx.work") {
             // NB not VersionRange.parse("[2.7,2.7.0)")
             val range = Range.closedOpen(Version.parse("2.7"), Version.parse("2.7.0"))
             val excludedRange = VersionRange(range)
@@ -95,7 +95,7 @@ abstract class GoogleMavenRepository @JvmOverloads constructor(
             //  but that's currently a bit tricky to express.  We know that versions have the form
             //  2.7.0-alpha01 so we can afford to be a bit loose here.
             if (dependency.version?.accepts(Version.prefixInfimum("2.7.0")) == true) {
-                val artifactInfo = findArtifact(dependency.group, dependency.name) ?: return null
+                val artifactInfo = findArtifact(group, dependency.name) ?: return null
                 val snapshotFilter = getSnapshotVersionFilter(null)
                 artifactInfo.getVersions()
                     .filter { v -> !excludedRange.contains(v) && filter(v) }
@@ -107,7 +107,7 @@ abstract class GoogleMavenRepository @JvmOverloads constructor(
         }
 
         val compositeFilter = getSnapshotVersionFilter(filter)
-        return findVersion(dependency.group, dependency.name, compositeFilter, allowPreview)
+        return findVersion(group, dependency.name, compositeFilter, allowPreview)
     }
 
     // In addition to the optional filter, add in filtering to disable suggestions to

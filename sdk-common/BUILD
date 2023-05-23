@@ -22,6 +22,7 @@ iml_module(
         "//tools/base/build-system/builder-model:studio.android.sdktools.builder-model",
         "//tools/base/common:studio.android.sdktools.common",
         "//tools/base/sdklib:studio.android.sdktools.sdklib",
+        "//tools/base/sdk-common/gradle:studio.android.sdktools.sdk-common.gradle",
         "//tools/adt/idea/.idea/libraries:kxml2",
     ],
     # do not sort: must match IML order
@@ -33,6 +34,7 @@ iml_module(
         "//tools/base/build-system/builder-model:studio.android.sdktools.builder-model[module]",
         "//tools/base/common:studio.android.sdktools.common[module]",
         "//tools/base/sdklib:studio.android.sdktools.sdklib[module]",
+        "//tools/base/sdk-common/gradle:studio.android.sdktools.sdk-common.gradle[module]",
         "//tools/adt/idea/.idea/libraries:kxml2",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
         "//tools/adt/idea/.idea/libraries:mockito[test]",
@@ -65,6 +67,7 @@ maven_library(
     ]),
     bundled_deps = [
         "//tools/base/sdk-common/aia-manifest-jar-generator:tools.proto",
+        "//tools/base/sdk-common/gradle:tools.sdk-common.gradle.lib",
         "//tools/base/sdk-common:filebased.buildproperties",
     ],
     coordinates = "com.android.tools:sdk-common",
@@ -108,6 +111,8 @@ kotlin_test(
     srcs = glob([
         "src/test/java/**/*.kt",
         "src/test/java/**/*.java",
+        "gradle/src/test/java/**/*.kt",
+        "gradle/src/test/java/**/*.java",
     ]),
     data = ["//prebuilts/studio/sdk:platform-tools"],
     friends = [":tools.sdk-common"],
