@@ -565,6 +565,8 @@ class DependencyConfigurator(
                         params.runtimeDependencies.from(configuration.incoming.artifactView {
                             config: ArtifactView.ViewConfiguration ->
                             config.attributes.apply {
+                                attribute(Usage.USAGE_ATTRIBUTE,
+                                        project.objects.named(Usage::class.java, Usage.JAVA_API))
                                 attribute(AndroidArtifacts.ARTIFACT_TYPE,
                                         AndroidArtifacts.ArtifactType.CLASSES_JAR.type)
                             }
