@@ -485,7 +485,7 @@ open class LintCliClient : LintClient {
     // Load any partial results from dependencies we've already analyzed
     fun Project.modulePath() = buildModule?.modulePath
     fun Project.artifactType() = buildVariant?.artifact?.type
-    val dependentsMap: Map<Project, List<Project>> =
+    val dependentsMap: Map<Project, Project> =
       if (driver.checkDependencies) {
         // modulePathToMainProject is a map of modulePath to "main" Project, we need this map
         // because partial results from test components should be considered with respect to
@@ -503,8 +503,8 @@ open class LintCliClient : LintClient {
             dependencyType != null &&
               dependencyType != LintModelArtifactType.MAIN &&
               dependencyModulePath != null ->
-              listOf(modulePathToMainProject[dependencyModulePath] ?: root)
-            else -> listOf(root)
+              modulePathToMainProject[dependencyModulePath] ?: root
+            else -> root
           }
         }
       } else {
@@ -517,7 +517,7 @@ open class LintCliClient : LintClient {
             dependency.type == LintModelModuleType.DYNAMIC_FEATURE ||
               root.modulePath()?.let { it == dependency.modulePath() } == true
           }
-          .associateWith { listOf(root) }
+          .associateWith { root }
       }
     val projects = dependentsMap.keys + root
 
@@ -555,24 +555,22 @@ open class LintCliClient : LintClient {
     }
 
     // Merge incidents into the report
-    for ((library, dependents) in dependentsMap.entries) {
+    for ((library, main) in dependentsMap.entries) {
       val libraryConfig = library.getConfiguration(driver)
       val libraryConfigLeaf = configurations.getScopeLeaf(libraryConfig)
       val libraryConfigPrevParent = libraryConfigLeaf.parent
       try {
-        for (main in dependents) {
-          val mainConfig = main.getConfiguration(driver)
-          // The two configurations could be the same object, such
-          // as if the two projects share the same root directory;
-          // we avoid creating a self-loop in this case.
-          if (mainConfig !== libraryConfigLeaf) {
-            libraryConfigLeaf.setParent(mainConfig)
-          }
-          val mainContext = Context(driver, main, main, main.dir)
-          mergeIncidents(library, main, mainContext, definiteMap, provisionalMap)
-          val libraryIssues = issueMap[library] ?: emptyMap()
-          checkConfigured(library, libraryIssues, main, mainContext)
+        val mainConfig = main.getConfiguration(driver)
+        // The two configurations could be the same object, such
+        // as if the two projects share the same root directory;
+        // we avoid creating a self-loop in this case.
+        if (mainConfig !== libraryConfigLeaf) {
+          libraryConfigLeaf.setParent(mainConfig)
         }
+        val mainContext = Context(driver, main, main, main.dir)
+        mergeIncidents(library, main, mainContext, definiteMap, provisionalMap)
+        val libraryIssues = issueMap[library] ?: emptyMap()
+        checkConfigured(library, libraryIssues, main, mainContext)
       } finally {
         configurations.setParent(libraryConfigLeaf, libraryConfigPrevParent)
       }
