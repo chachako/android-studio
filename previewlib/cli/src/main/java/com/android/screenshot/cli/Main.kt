@@ -378,168 +378,145 @@ class Main {
         args: Array<String>,
         client: LintCliClient,
         argumentState: ArgumentState
-    ): Int {
+    ) {
         var index = 0
         while (index < args.size) {
             val arg = args[index]
             if (arg == ARG_CLIENT_ID) {
                 if (index == args.size - 1) {
-                    System.err.println("Missing client id")
-                    return ERRNO_INVALID_ARGS
+                    throw InvalidArgumentException("Missing client id")
                 }
                 clientName = args[++index]
             } else if (arg == ARG_CLIENT_NAME) {
                 if (index == args.size - 1) {
-                    System.err.println("Missing client name")
-                    return ERRNO_INVALID_ARGS
+                    throw InvalidArgumentException("Missing client name")
                 }
                 argumentState.clientName = args[++index]
             } else if (arg == ARG_OUTPUT_LOCATION) {
                 if (index == args.size - 1) {
-                    System.err.println("Missing argument location")
-                    return ERRNO_INVALID_ARGS
+                    throw InvalidArgumentException("Missing argument location")
                 }
                 argumentState.outputLocation = args[++index]
             } else if (arg == ARG_GOLDEN_LOCATION) {
                 if (index == args.size - 1) {
-                    System.err.println("Missing argument location")
-                    return ERRNO_INVALID_ARGS
+                    throw InvalidArgumentException("Missing argument location")
                 }
                 argumentState.goldenLocation = args[++index]
             } else if (arg == ARG_RECORD_GOLDENS) {
                 argumentState.recordGoldens = true
             } else if (arg == ARG_FILE_PATH) {
                 if (index == args.size - 1) {
-                    System.err.println("Missing input file path")
-                    return ERRNO_INVALID_ARGS
+                    throw InvalidArgumentException("Missing input file path")
                 }
                 argumentState.filePath = args[++index]
             } else if (arg == ARG_CLIENT_VERSION) {
                 if (index == args.size - 1) {
-                    System.err.println("Missing client version")
-                    return ERRNO_INVALID_ARGS
+                    throw InvalidArgumentException("Missing client version")
                 }
                 argumentState.clientVersion = args[++index]
             } else if (arg == ARG_EXTRACTION_DIR) {
                 if (index == args.size - 1) {
-                    System.err.println("Missing client version")
-                    return ERRNO_INVALID_ARGS
+                    throw InvalidArgumentException("Missing client version")
                 }
                 argumentState.extractionDir = args[++index]
             } else if (arg == ARG_JAR_LOCATION) {
                 if (index == args.size - 1) {
-                    System.err.println("Missing client version")
-                    return ERRNO_INVALID_ARGS
+                    throw InvalidArgumentException("Missing client version")
                 }
                 argumentState.jarLocation = args[++index]
             } else if (arg == ARG_ROOT_LINT_MODEL) {
                 if (index == args.size - 1) {
-                    System.err.println("Missing lint model argument after $ARG_LINT_MODEL")
-                    return ERRNO_INVALID_ARGS
+                    throw InvalidArgumentException("Missing lint model argument after $ARG_LINT_MODEL")
                 }
                 val paths = args[++index]
                 for (path: String in splitPath(paths)) {
                     val input: File = getInArgumentPath(path)
                     if (!input.exists()) {
-                        System.err.println("Lint model $input does not exist.")
-                        return ERRNO_INVALID_ARGS
+                        throw InvalidArgumentException("Lint model $input does not exist.")
                     }
                     if (!input.isDirectory) {
-                        System.err.println(
+                        throw InvalidArgumentException(
                             "Lint model "
                                     + input
                                     + " should be a folder containing the XML descriptor files"
                                     + if (input.isDirectory) ", not a file" else ""
                         )
-                        return ERRNO_INVALID_ARGS
                     }
                     try {
                         val reader = LintModelSerialization
                         val module = reader.readModule(input, null, true, client.pathVariables)
                         argumentState.rootModule = module
                     } catch (error: Throwable) {
-                        System.err.println(
+                        throw InvalidArgumentException(
                             ("Could not deserialize "
                                     + input
                                     + " to a lint model: "
                                     + error.toString())
                         )
-                        return ERRNO_INVALID_ARGS
                     }
                 }
             } else if (arg == ARG_SDK_HOME) {
                 if (index == args.size - 1) {
-                    System.err.println("Missing SDK home directory")
-                    return ERRNO_INVALID_ARGS
+                    throw InvalidArgumentException("Missing SDK home directory")
                 }
                 sdkHomePath = File(args[++index])
                 if (!sdkHomePath!!.isDirectory) {
-                    System.err.println(sdkHomePath.toString() + " is not a directory")
-                    return ERRNO_INVALID_ARGS
+                    throw InvalidArgumentException(sdkHomePath.toString() + " is not a directory")
                 }
             } else if (arg == ARG_JDK_HOME) {
                 if (index == args.size - 1) {
-                    System.err.println("Missing JDK home directory")
-                    return ERRNO_INVALID_ARGS
+                    throw InvalidArgumentException("Missing JDK home directory")
                 }
                 jdkHomePath = File(args[++index])
                 if (!jdkHomePath!!.isDirectory) {
-                    System.err.println(jdkHomePath.toString() + " is not a directory")
-                    return ERRNO_INVALID_ARGS
+                    throw InvalidArgumentException(jdkHomePath.toString() + " is not a directory")
                 }
                 if (!isJreFolder(jdkHomePath!!)) {
-                    System.err.println(jdkHomePath.toString() + " is not a JRE/JDK")
-                    return ERRNO_INVALID_ARGS
+                    throw InvalidArgumentException(jdkHomePath.toString() + " is not a JRE/JDK")
                 }
             } else if (arg == ARG_LINT_MODEL) {
                 if (index == args.size - 1) {
-                    System.err.println("Missing lint model argument after $ARG_LINT_MODEL")
-                    return ERRNO_INVALID_ARGS
+                    throw InvalidArgumentException("Missing lint model argument after $ARG_LINT_MODEL")
                 }
                 val paths = args[++index]
                 for (path: String in splitPath(paths)) {
                     val input: File = getInArgumentPath(path)
                     if (!input.exists()) {
-                        System.err.println("Lint model $input does not exist.")
-                        return ERRNO_INVALID_ARGS
+                        throw InvalidArgumentException("Lint model $input does not exist.")
                     }
                     if (!input.isDirectory) {
-                        System.err.println(
+                        throw InvalidArgumentException(
                             "Lint model "
                                     + input
                                     + " should be a folder containing the XML descriptor files"
                         )
-                        return ERRNO_INVALID_ARGS
                     }
                     try {
                         val reader = LintModelSerialization
                         val module = reader.readModule(input, null, true, client.pathVariables)
                         argumentState.modules.add(module)
                     } catch (error: Throwable) {
-                        System.err.println(
+                        throw InvalidArgumentException(
                             ("Could not deserialize "
                                     + input
                                     + " to a lint model: "
                                     + error.toString())
                         )
-                        return ERRNO_INVALID_ARGS
                     }
                 }
             }  else if ((arg == ARG_CACHE_DIR)) {
                 if (index == args.size - 1) {
-                    System.err.println("Missing cache directory")
-                    return ERRNO_INVALID_ARGS
+                    throw InvalidArgumentException("Missing cache directory")
                 }
                 val path = args[++index]
                 val input: File = getInArgumentPath(path)
                 flags.setCacheDir(input)
             } else {
-                return ERRNO_ERRORS
+                throw InvalidArgumentException("Unexpected argument: " + args[index])
             }
             index++
         }
         argumentState.validate()
-        return 0
     }
 
     /**
@@ -572,7 +549,7 @@ class Main {
                 errorMessage += "Missing File Path;"
             if (jarLocation != null && extractionDir == null)
                 errorMessage += "Missing Extraction Directory;"
-            if (!recordGoldens)
+            if (!recordGoldens && outputLocation == null)
                 errorMessage += "Missing output directory to save diff images;"
             if (errorMessage != "") {
                 throw InvalidArgumentException(errorMessage)
