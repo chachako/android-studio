@@ -533,21 +533,21 @@ open class LintCliClient : LintClient {
     // above data structures
     for (project in projects) {
       driver.computeDetectors(project)
-      val xmlReader = xmlReader(driver.registry, project)
-
-      xmlReader(XmlFileType.CONDITIONAL_INCIDENTS)?.let {
+      xmlReader(project, XmlFileType.CONDITIONAL_INCIDENTS)?.let {
         provisionalMap[project] = it.getIncidents()
       }
 
-      xmlReader(XmlFileType.INCIDENTS)?.let { definiteMap[project] = it.getIncidents() }
+      xmlReader(project, XmlFileType.INCIDENTS)?.let {
+        definiteMap[project] = it.getIncidents()
+      }
 
-      xmlReader(XmlFileType.PARTIAL_RESULTS)?.let {
+      xmlReader(project, XmlFileType.PARTIAL_RESULTS)?.let {
         for ((issue, list) in it.getPartialResults()) {
           dataMap.getOrPut(issue, ::HashMap)[project] = list
         }
       }
 
-      xmlReader(XmlFileType.CONFIGURED_ISSUES)?.let {
+      xmlReader(project, XmlFileType.CONFIGURED_ISSUES)?.let {
         for ((issue, severity) in it.getConfiguredIssues()) {
           issueMap.getOrPut(project, ::HashMap)[issue] = severity
         }
@@ -1054,7 +1054,7 @@ open class LintCliClient : LintClient {
       // partial results from disk.
       if (!driver.isGlobalAnalysis()) {
         for (dep in project.allLibraries.filter { !it.isExternalLibrary }) {
-          xmlReader(driver.registry, project, dep)(XmlFileType.PARTIAL_RESULTS)?.let { reader ->
+          xmlReader(dep, XmlFileType.PARTIAL_RESULTS)?.let { reader ->
             for ((loadedIssue, map) in reader.getPartialResults()) {
               partialResult(dep, loadedIssue).mapFor(dep).putAll(map)
             }
@@ -1069,15 +1069,10 @@ open class LintCliClient : LintClient {
     return PartialResult.withRequestedProject(partialResult(project, issue), project)
   }
 
-  private fun xmlReader(
-    registry: IssueRegistry,
-    project: Project,
-    dep: Project = project
-  ): (XmlFileType) -> XmlReader? = { type ->
-    getSerializationFile(dep, type).takeIf(File::isFile)?.let { file ->
-      XmlReader(this, registry, project, file)
+  private fun xmlReader(project: Project, type : XmlFileType) : XmlReader? =
+    getSerializationFile(project, type).takeIf(File::isFile)?.let { file ->
+      XmlReader(this, driver.registry, project, file)
     }
-  }
 
   override fun readFile(file: File): CharSequence {
     val contents =
