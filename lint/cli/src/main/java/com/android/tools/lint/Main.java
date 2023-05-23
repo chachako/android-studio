@@ -1354,8 +1354,7 @@ public class Main {
                         System.err.println(
                                 "Lint model "
                                         + input
-                                        + " should be a folder containing the XML descriptor files"
-                                        + (input.isDirectory() ? ", not a file" : ""));
+                                        + " should be a folder containing the XML descriptor files");
                         return ERRNO_INVALID_ARGS;
                     }
                     try {

@@ -508,7 +508,6 @@ class Main {
                             "Lint model "
                                     + input
                                     + " should be a folder containing the XML descriptor files"
-                                    + if (input.isDirectory) ", not a file" else ""
                         )
                         return ERRNO_INVALID_ARGS
                     }
