@@ -53,10 +53,10 @@ public class WearStandaloneAppDetectorTest extends AbstractCheckTest {
     public void testMissingMetadata() {
         String expected =
                 ""
-                        + "AndroidManifest.xml:5: Warning: Missing <meta-data android:name=\"com.google.android.wearable.standalone\" ../> element [WearStandaloneAppFlag]\n"
+                        + "AndroidManifest.xml:5: Error: Missing <meta-data android:name=\"com.google.android.wearable.standalone\" ../> element [WearStandaloneAppFlag]\n"
                         + "    <application>\n"
                         + "     ~~~~~~~~~~~\n"
-                        + "0 errors, 1 warnings";
+                        + "1 errors, 0 warnings";
         //noinspection all // Sample code
         lint().files(
                         manifest(
@@ -76,10 +76,10 @@ public class WearStandaloneAppDetectorTest extends AbstractCheckTest {
     public void testInvalidAttributeValueForStandaloneMetadata() {
         String expected =
                 ""
-                        + "AndroidManifest.xml:7: Warning: Expecting a boolean value for attribute android:value [WearStandaloneAppFlag]\n"
+                        + "AndroidManifest.xml:7: Error: Expecting a boolean value for attribute android:value [WearStandaloneAppFlag]\n"
                         + "            android:value=\"@string/foo\" />\n"
                         + "                           ~~~~~~~~~~~\n"
-                        + "0 errors, 1 warnings\n";
+                        + "1 errors, 0 warnings\n";
         //noinspection all // Sample code
         lint().files(
                         manifest(
@@ -128,10 +128,10 @@ public class WearStandaloneAppDetectorTest extends AbstractCheckTest {
     public void testMissingAndroidValue() {
         String expected =
                 ""
-                        + "AndroidManifest.xml:7: Warning: Missing android:value attribute [WearStandaloneAppFlag]\n"
+                        + "AndroidManifest.xml:7: Error: Missing android:value attribute [WearStandaloneAppFlag]\n"
                         + "      <meta-data\n"
                         + "       ~~~~~~~~~\n"
-                        + "0 errors, 1 warnings";
+                        + "1 errors, 0 warnings";
 
         //noinspection all // Sample code
         lint().files(

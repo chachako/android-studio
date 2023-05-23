@@ -81,7 +81,7 @@ public class WearStandaloneAppDetector extends Detector implements XmlScanner {
                                     + "```\n",
                             Category.CORRECTNESS,
                             6,
-                            Severity.WARNING,
+                            Severity.ERROR,
                             IMPLEMENTATION)
                     .addMoreInfo(
                             "https://developer.android.com/training/wearables/apps/packaging.html");
