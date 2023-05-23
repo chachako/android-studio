@@ -45,6 +45,7 @@ import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -324,14 +325,16 @@ public final class LocalRepoLoaderImpl implements LocalRepoLoader {
         Repository repo;
         try {
             progress.logVerbose("Parsing " + packageXml);
-            repo =
-                    (Repository)
-                            SchemaModuleUtil.unmarshal(
-                                    CancellableFileIo.newInputStream(packageXml),
-                                    mRepoManager.getSchemaModules(),
-                                    false,
-                                    progress,
-                                    packageXml.getFileName().toString());
+            try (InputStream stream = CancellableFileIo.newInputStream(packageXml)) {
+                repo =
+                        (Repository)
+                                SchemaModuleUtil.unmarshal(
+                                        stream,
+                                        mRepoManager.getSchemaModules(),
+                                        false,
+                                        progress,
+                                        packageXml.getFileName().toString());
+            }
         } catch (IOException e) {
             // This shouldn't ever happen
             progress.logError(String.format("XML file %s doesn't exist", packageXml), e);
