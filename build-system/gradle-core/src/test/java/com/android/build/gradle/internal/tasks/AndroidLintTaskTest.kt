@@ -75,6 +75,7 @@ class AndroidLintTaskTest {
         task.lintTool.version.set(Version.ANDROID_TOOLS_BASE_VERSION)
         task.lintMode.set(LintMode.REPORTING)
         task.missingBaselineIsEmptyBaseline.set(true)
+        task.baselineOmitLineNumbers.set(true)
         task.offline.set(true)
         val commandLineArguments = task.generateCommandLineArguments().joinToString(" ")
         assertThat(commandLineArguments).contains("--client-id gradle")
@@ -84,5 +85,6 @@ class AndroidLintTaskTest {
         assertThat(commandLineArguments).contains("--missing-baseline-is-empty-baseline")
         assertThat(commandLineArguments).contains("--offline")
         assertThat(commandLineArguments).contains("--stacktrace")
+        assertThat(commandLineArguments).contains("--baseline-omit-line-numbers")
     }
 }

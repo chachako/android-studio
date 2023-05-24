@@ -211,6 +211,9 @@ abstract class AndroidLintTask : NonIncrementalTask() {
     @get:Input
     abstract val missingBaselineIsEmptyBaseline: Property<Boolean>
 
+    @get:Input
+    abstract val baselineOmitLineNumbers: Property<Boolean>
+
     override fun doTaskAction() {
         lintTool.lintClassLoaderBuildService.get().shouldDispose = true
         if (systemPropertyInputs.lintAutofix.orNull == VALUE_TRUE) {
@@ -414,6 +417,9 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         }
         if (missingBaselineIsEmptyBaseline.get()) {
             arguments += "--missing-baseline-is-empty-baseline"
+        }
+        if (baselineOmitLineNumbers.get()) {
+            arguments += "--baseline-omit-line-numbers"
         }
 
         // Pass information to lint using the --client-id, --client-name, and --client-version flags
@@ -811,6 +817,12 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                         .projectOptions
                         .getProvider(BooleanOption.MISSING_LINT_BASELINE_IS_EMPTY_BASELINE)
                 )
+            task.baselineOmitLineNumbers
+                .setDisallowChanges(
+                    creationConfig.services
+                        .projectOptions
+                        .getProvider(BooleanOption.LINT_BASELINE_OMIT_LINE_NUMBERS)
+                )
         }
 
         abstract fun configureOutputSettings(task: AndroidLintTask)
@@ -986,6 +998,11 @@ abstract class AndroidLintTask : NonIncrementalTask() {
             .setDisallowChanges(
                 taskCreationServices.projectOptions
                     .getProvider(BooleanOption.MISSING_LINT_BASELINE_IS_EMPTY_BASELINE)
+            )
+        this.baselineOmitLineNumbers
+            .setDisallowChanges(
+                taskCreationServices.projectOptions
+                    .getProvider(BooleanOption.LINT_BASELINE_OMIT_LINE_NUMBERS)
             )
     }
 

@@ -242,6 +242,15 @@ enum class BooleanOption(
      */
     ENABLE_VCS_INFO("android.enableVcsInfo", false, FeatureStage.Experimental),
 
+    /**
+     * Whether to omit line numbers when writing lint baselines
+     */
+    LINT_BASELINE_OMIT_LINE_NUMBERS(
+        "android.lint.baselineOmitLineNumbers",
+        false,
+        FeatureStage.Experimental
+    ),
+
     /* ------------------------
      * SOFTLY-ENFORCED FEATURES
      */

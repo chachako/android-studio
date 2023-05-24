@@ -198,4 +198,26 @@ class UpdateLintBaselineTest {
             .run("lint")
         ScannerSubject.assertThat(result.stdout).contains("MissingApplicationIcon")
     }
+
+    /**
+     * Test that android.lint.baselineOmitLineNumbers has the desired effect.
+     */
+    @Test
+    fun testOmitLineNumbers() {
+        // First run updateLintBaseline without the boolean flag and check that the baseline file
+        // specifies line numbers.
+        val baselineFile = File(project.getSubproject("app").projectDir, "lint-baseline.xml")
+        PathSubject.assertThat(baselineFile).doesNotExist()
+        project.executor().run(":app:updateLintBaseline")
+        PathSubject.assertThat(baselineFile).exists()
+        PathSubject.assertThat(baselineFile).contains("line=")
+
+        // Then run updateLinBaseline with the boolean flag and check that the baseline file does
+        // not specify line numbers.
+        project.executor()
+            .with(BooleanOption.LINT_BASELINE_OMIT_LINE_NUMBERS, true)
+            .run(":app:updateLintBaseline")
+        PathSubject.assertThat(baselineFile).exists()
+        PathSubject.assertThat(baselineFile).doesNotContain("line=")
+    }
 }
