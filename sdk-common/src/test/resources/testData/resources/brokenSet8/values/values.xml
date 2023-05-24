@@ -1,0 +1,4 @@
+<resources>
+    <string name="oma_download_content_not_supported" product="tablet">Download is not supported</string>
+    <string name="oma_download_content_not_supported" product="default">Download is not supported. Because ...</string>
+</resources>

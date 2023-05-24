@@ -304,6 +304,31 @@ public class ResourceSetTest extends BaseTestCase {
                      XmlUtils.getSourceFilePosition(resources.get(0).getValue()));
     }
 
+    // b/37052227
+    @Test
+    public void testBrokenSetWithProductAttribute() throws Exception {
+        File root = TestResources.getDirectory(getClass(), "/testData/resources/brokenSet8");
+
+        ResourceSet set = createResourceSet();
+        set.addSource(root);
+
+        boolean gotException = false;
+        RecordingLogger logger = new RecordingLogger();
+        try {
+            set.loadFromFiles(logger);
+        } catch (MergingException e) {
+            gotException = true;
+            assertEquals(
+                    new File(root, "values" + separator + "values.xml").getAbsolutePath()
+                            + ": Error: Found item String/oma_download_content_not_supported more than one time. "
+                            + "Probably you want to define a new flavor for building multiple APKs with different values for the same resource",
+                    e.getMessage());
+        }
+
+        assertTrue("ResourceSet processing should have failed, but didn't", gotException);
+        assertFalse(logger.getErrorMsgs().isEmpty());
+    }
+
     static ResourceSet getBaseResourceSet() throws MergingException, IOException {
         File root = TestResources
                 .getDirectory(ResourceSetTest.class, "/testData/resources/baseSet");
