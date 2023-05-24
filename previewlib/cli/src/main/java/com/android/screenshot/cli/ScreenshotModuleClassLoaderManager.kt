@@ -26,7 +26,6 @@ import com.intellij.openapi.module.Module
 import com.intellij.psi.PsiFile
 import org.jetbrains.android.uipreview.ClassBinaryCacheManager.Companion.getInstance
 import java.lang.ref.WeakReference
-import java.nio.file.Path
 import java.util.function.Supplier
 
 class ScreenshotModuleClassLoaderManager(private val dependencies: Dependencies) :
@@ -93,6 +92,8 @@ class ScreenshotModuleClassLoaderManager(private val dependencies: Dependencies)
     ): ModuleClassLoader = getPrivate(parent, moduleRenderContext, holder, ClassTransform.identity, ClassTransform.identity)
 
     override fun release(moduleClassLoader: ModuleClassLoader, holder: Any) {
+        // TODO: ModuleClassLoader must be disposed
+        //(moduleClassLoader as? ScreenshotModuleClassLoader)?.disposable?.let { Disposer.dispose(it) }
     }
 
     override fun clearCache(module: Module) {

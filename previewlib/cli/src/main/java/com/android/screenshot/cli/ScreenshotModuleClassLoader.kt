@@ -26,6 +26,7 @@ import com.intellij.util.concurrency.AppExecutorUtil
 import org.jetbrains.android.uipreview.StudioModuleClassLoader
 import java.net.URL
 import java.util.Enumeration
+import java.util.concurrent.atomic.AtomicBoolean
 
 class ScreenshotModuleClassLoader(parent: ClassLoader?, loader: ScreenshotModuleClassLoaderImpl,
     val diagnostics: ModuleClassLoaderDiagnosticsWrite
@@ -33,6 +34,10 @@ class ScreenshotModuleClassLoader(parent: ClassLoader?, loader: ScreenshotModule
 
     private val LOG: Logger = Logger.getInstance(ScreenshotModuleClassLoader::class.java)
     private val myImpl = loader
+
+    private val _isDisposed = AtomicBoolean(false)
+    override val isDisposed: Boolean
+        get() = _isDisposed.get()
 
     /**
      * Package name used to "re-package" certain classes that would conflict with the ones in the Studio class loader.
@@ -71,7 +76,8 @@ class ScreenshotModuleClassLoader(parent: ClassLoader?, loader: ScreenshotModule
             LOG.warn(t)
         }
     }
-    override fun dispose() {
+    fun dispose() {
+        _isDisposed.set(true)
         ourDisposeService.submit {
             waitForCoroutineThreadToStop()
             val threadLocals: Set<ThreadLocal<*>>? =
