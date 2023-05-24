@@ -480,6 +480,7 @@ public class GradleVersion implements Comparable<GradleVersion> {
      *
      * @deprecated see the deprecation notice on {@link GradleVersion}.
      */
+    @Deprecated
     public boolean isAtLeast(
             int major,
             int minor,
