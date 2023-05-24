@@ -83,11 +83,11 @@ private constructor(
 
   /** The [device handles][DeviceHandle] known to this class, provided by its plugins. */
   val devices: StateFlow<List<DeviceHandle>> =
-    combinedDevices.stateIn(adbSession.scope, SharingStarted.Eagerly, emptyList())
+    combinedDevices.stateIn(scope, SharingStarted.Eagerly, emptyList())
 
   /** The [device templates][DeviceTemplate] known to this class, provided by its plugins. */
   val templates: StateFlow<List<DeviceTemplate>> =
-    combinedTemplates.stateIn(adbSession.scope, SharingStarted.Eagerly, emptyList())
+    combinedTemplates.stateIn(scope, SharingStarted.Eagerly, emptyList())
 
   /**
    * Finds the DeviceHandle of the connected device with the given serial number, waiting up to
