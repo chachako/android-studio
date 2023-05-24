@@ -246,7 +246,7 @@ public class DeviceManager {
      * @return A copy of the list of {@link Device}s. Can be empty but not null.
      */
     @NonNull
-    public Collection<Device> getDevices(@NonNull EnumSet<DeviceFilter> deviceFilter) {
+    public Collection<Device> getDevices(@NonNull Collection<DeviceFilter> deviceFilter) {
         initDevicesLists();
         Table<String, String, Device> devices = HashBasedTable.create();
         if (mUserDevices != null && (deviceFilter.contains(DeviceFilter.USER))) {
