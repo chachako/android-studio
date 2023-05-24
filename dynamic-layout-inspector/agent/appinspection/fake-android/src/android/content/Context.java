@@ -16,7 +16,9 @@
 package android.content;
 
 import android.content.res.Resources;
+import android.graphics.Point;
 import android.hardware.SensorManager;
+import android.view.Display;
 import android.view.WindowManager;
 import android.view.WindowManagerImpl;
 import androidx.annotation.VisibleForTesting;
@@ -68,5 +70,9 @@ public class Context {
     @VisibleForTesting
     public int generateViewId() {
         return mViewIdGenerator.addAndGet(1);
+    }
+
+    public Display getDisplay() {
+        return new Display(new Point(1440, 3120));
     }
 }

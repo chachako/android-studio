@@ -170,6 +170,8 @@ message AppContext {
     Resource theme = 1;
     int32 screen_width = 2; // includes window decor
     int32 screen_height = 3; // includes window decor
+    // The orientation of the main display, in degrees.
+    int32 main_display_orientation = 4;
 }
 
 // Handles properties whose values are bit flags, e.g. "top|left"

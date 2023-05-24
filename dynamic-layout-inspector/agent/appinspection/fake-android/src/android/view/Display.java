@@ -29,4 +29,8 @@ public class Display {
         outSize.x = mRealSize.x;
         outSize.y = mRealSize.y;
     }
+
+    public int getRotation() {
+        return Surface.ROTATION_90;
+    }
 }

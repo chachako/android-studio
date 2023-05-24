@@ -21,6 +21,7 @@ import android.graphics.Matrix
 import android.graphics.Point
 import android.os.Build
 import android.util.AndroidRuntimeException
+import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -153,6 +154,7 @@ fun View.createAppContext(stringTable: StringTable): AppContext {
         }
         screenWidth = size.x
         screenHeight = size.y
+        mainDisplayOrientation = getDefaultDisplayRotation()
     }.build()
 }
 
@@ -172,6 +174,24 @@ private val View.windowSize: Point
 
 fun View.createConfiguration(stringTable: StringTable) =
     context.resources.configuration.convert(stringTable)
+
+fun View.getDefaultDisplayRotation(): Int {
+    val windowManager = context.getSystemService(WindowManager::class.java)
+    val display = if (Build.VERSION.SDK_INT >= 30) {
+        context.display
+    }
+    else {
+        null
+    } ?: windowManager.defaultDisplay
+
+    return when (display.rotation) {
+        Surface.ROTATION_0 -> 0
+        Surface.ROTATION_90 -> 90
+        Surface.ROTATION_180 -> 180
+        Surface.ROTATION_270 -> 270
+        else -> -1
+    }
+}
 
 fun View.createGetPropertiesResponse(): GetPropertiesResponse {
     val stringTable = StringTable()
