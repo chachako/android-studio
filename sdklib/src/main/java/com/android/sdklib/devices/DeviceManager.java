@@ -43,7 +43,6 @@ import com.android.sdklib.repository.LoggerProgressIndicatorWrapper;
 import com.android.sdklib.repository.PkgProps;
 import com.android.sdklib.repository.meta.DetailsTypes;
 import com.android.utils.ILogger;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
@@ -71,7 +70,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.parsers.ParserConfigurationException;
@@ -249,14 +247,6 @@ public class DeviceManager {
      */
     @NonNull
     public Collection<Device> getDevices(@NonNull EnumSet<DeviceFilter> deviceFilter) {
-        return getDevices(deviceFilter, Boolean::getBoolean);
-    }
-
-    @NonNull
-    @VisibleForTesting
-    Collection<Device> getDevices(
-            @NonNull EnumSet<DeviceFilter> deviceFilter,
-            @NonNull Function<String, Boolean> getBoolean) {
         initDevicesLists();
         Table<String, String, Device> devices = HashBasedTable.create();
         if (mUserDevices != null && (deviceFilter.contains(DeviceFilter.USER))) {
