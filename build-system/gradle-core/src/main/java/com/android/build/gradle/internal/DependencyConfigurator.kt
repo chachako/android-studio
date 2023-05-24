@@ -526,7 +526,7 @@ class DependencyConfigurator(
                                         ?: (projectServices.projectOptions
                                                 .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES)
                                                 ?.split(",")
-                                                ?: listOf("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1")).map {
+                                                ?: listOf("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")).map {
                                             project.dependencies.create(it)
                                         }
 
