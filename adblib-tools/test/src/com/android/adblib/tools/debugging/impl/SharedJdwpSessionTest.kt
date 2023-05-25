@@ -228,7 +228,9 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
                         activationCount.incrementAndGet()
                         // If activations were serialized, this condition would never be satisfied
                         yieldUntil { activationCount.get() == receiverCount }
-                    }.flow().first()
+                    }.flow()
+                    .map { it.clone() /* clone needed to ensure packet is ours to keep */ }
+                    .first()
             }
         }
 
