@@ -459,53 +459,137 @@ class VersionTest {
     }
 
     @Test
-    fun testPreviewPrefix() {
-        assertThat(Version.parse("2").previewPrefix).isNull()
-        assertThat(Version.parse("2-alpha1").previewPrefix).isEqualTo(Version.prefixInfimum("2"))
-        assertThat(Version.parse("2-alpha1-SNAPSHOT").previewPrefix)
+    fun testPreviewInfimum() {
+        assertThat(Version.parse("2").previewInfimum).isNull()
+        Version.parse("2-alpha1").previewInfimum.let {
+            assertThat(it).isEqualTo(Version.prefixInfimum("2"))
+            assertThat(it?.toString()).isEqualTo("prefix infimum version for \"2\"")
+        }
+        assertThat(Version.parse("2-alpha1").previewInfimum).isEqualTo(Version.prefixInfimum("2"))
+        assertThat(Version.parse("2-alpha1-SNAPSHOT").previewInfimum)
             .isEqualTo(Version.prefixInfimum("2"))
-        assertThat(Version.parse("2-SNAPSHOT").previewPrefix)
+        assertThat(Version.parse("2-SNAPSHOT").previewInfimum)
             .isEqualTo(Version.prefixInfimum("2"))
-        assertThat(Version.parse("2-snapshot").previewPrefix)
+        assertThat(Version.parse("2-snapshot").previewInfimum)
             .isEqualTo(Version.prefixInfimum("2"))
-        assertThat(Version.parse("2-dev").previewPrefix)
+        assertThat(Version.parse("2-dev").previewInfimum)
             .isEqualTo(Version.prefixInfimum("2"))
-        assertThat(Version.parse("1.2").previewPrefix).isNull()
-        assertThat(Version.parse("1.2-alpha3").previewPrefix)
+        assertThat(Version.parse("1.2").previewInfimum).isNull()
+        assertThat(Version.parse("1.2-alpha3").previewInfimum)
             .isEqualTo(Version.prefixInfimum("1.2"))
-        assertThat(Version.parse("1.2-alpha3-SNAPSHOT").previewPrefix)
+        assertThat(Version.parse("1.2-alpha3-SNAPSHOT").previewInfimum)
             .isEqualTo(Version.prefixInfimum("1.2"))
-        assertThat(Version.parse("1.2-SNAPSHOT").previewPrefix)
+        assertThat(Version.parse("1.2-SNAPSHOT").previewInfimum)
             .isEqualTo(Version.prefixInfimum("1.2"))
-        assertThat(Version.parse("1.2.3").previewPrefix).isNull()
-        assertThat(Version.parse("1.2.3-alpha4").previewPrefix)
+        assertThat(Version.parse("1.2.3").previewInfimum).isNull()
+        assertThat(Version.parse("1.2.3-alpha4").previewInfimum)
             .isEqualTo(Version.prefixInfimum("1.2.3"))
-        assertThat(Version.parse("1.2.3-alpha-4").previewPrefix)
+        assertThat(Version.parse("1.2.3-alpha-4").previewInfimum)
             .isEqualTo(Version.prefixInfimum("1.2.3"))
-        assertThat(Version.parse("1.2.3-alpha4-SNAPSHOT").previewPrefix)
+        assertThat(Version.parse("1.2.3-alpha4-SNAPSHOT").previewInfimum)
             .isEqualTo(Version.prefixInfimum("1.2.3"))
-        assertThat(Version.parse("1.2.3-alpha-4-SNAPSHOT").previewPrefix)
+        assertThat(Version.parse("1.2.3-alpha-4-SNAPSHOT").previewInfimum)
             .isEqualTo(Version.prefixInfimum("1.2.3"))
-        assertThat(Version.parse("1.2.3-SNAPSHOT").previewPrefix)
+        assertThat(Version.parse("1.2.3-SNAPSHOT").previewInfimum)
             .isEqualTo(Version.prefixInfimum("1.2.3"))
-        assertThat(Version.parse("1.2.3.4").previewPrefix).isNull()
-        assertThat(Version.parse("1.2.3.4.5-SNAPSHOT").previewPrefix)
+        assertThat(Version.parse("1.2.3.4").previewInfimum).isNull()
+        assertThat(Version.parse("1.2.3.4.5-SNAPSHOT").previewInfimum)
             .isEqualTo(Version.prefixInfimum("1.2.3.4.5"))
-        assertThat(Version.parse("1.2.3.4.5.6-alpha9-SNAPSHOT").previewPrefix)
+        assertThat(Version.parse("1.2.3.4.5.6-alpha9-SNAPSHOT").previewInfimum)
             .isEqualTo(Version.prefixInfimum("1.2.3.4.5.6"))
-        assertThat(Version.parse("7.0.0-dev03").previewPrefix)
+        assertThat(Version.parse("7.0.0-dev03").previewInfimum)
             .isEqualTo(Version.prefixInfimum("7.0.0"))
 
-        assertThat(Version.parse("1-SNAPSHOT.3").previewPrefix)
+        assertThat(Version.parse("1-SNAPSHOT.3").previewInfimum)
             .isEqualTo(Version.prefixInfimum("1"))
-        assertThat(Version.parse("1-dev.3").previewPrefix)
+        assertThat(Version.parse("1-dev.3").previewInfimum)
             .isEqualTo(Version.prefixInfimum("1"))
-        assertThat(Version.parse("1.2.3-alpha4-beta5").previewPrefix)
+        assertThat(Version.parse("1.2.3-alpha4-beta5").previewInfimum)
             .isEqualTo(Version.prefixInfimum("1.2.3"))
-        assertThat(Version.parse("1.2.3-beta4-alpha5").previewPrefix)
+        assertThat(Version.parse("1.2.3-beta4-alpha5").previewInfimum)
             .isEqualTo(Version.prefixInfimum("1.2.3"))
-        assertThat(Version.parse("1.2.3-alpha.10").previewPrefix)
+        assertThat(Version.parse("1.2.3-alpha.10").previewInfimum)
             .isEqualTo(Version.prefixInfimum("1.2.3"))
+
+        Version.parse("-alpha01").previewInfimum.let {
+            assertThat(it).isEqualTo(Version.prefixInfimum("dev"))
+            assertThat(it?.toString()).isEqualTo("prefix infimum version for \"dev\"")
+        }
+        Version.parse("alpha01").previewInfimum.let {
+            assertThat(it).isEqualTo(Version.prefixInfimum("dev"))
+            assertThat(it?.toString()).isEqualTo("prefix infimum version for \"dev\"")
+        }
+        Version.parse("").previewInfimum.let {
+            assertThat(it).isEqualTo(Version.prefixInfimum("dev"))
+            assertThat(it?.toString()).isEqualTo("prefix infimum version for \"dev\"")
+        }
+    }
+
+    @Test
+    fun testPreviewSupremum() {
+        assertThat(Version.parse("2").previewSupremum).isNull()
+        Version.parse("2-alpha1").previewSupremum.let {
+            assertThat(it).isEqualTo(Version.parse("2"))
+            assertThat(it?.toString()).isEqualTo("2")
+        }
+        assertThat(Version.parse("2-alpha1").previewSupremum).isEqualTo(Version.parse("2"))
+        assertThat(Version.parse("2-alpha1-SNAPSHOT").previewSupremum)
+            .isEqualTo(Version.parse("2"))
+        assertThat(Version.parse("2-SNAPSHOT").previewSupremum)
+            .isEqualTo(Version.parse("2"))
+        assertThat(Version.parse("2-snapshot").previewSupremum)
+            .isEqualTo(Version.parse("2"))
+        assertThat(Version.parse("2-dev").previewSupremum)
+            .isEqualTo(Version.parse("2"))
+        assertThat(Version.parse("1.2").previewSupremum).isNull()
+        assertThat(Version.parse("1.2-alpha3").previewSupremum)
+            .isEqualTo(Version.parse("1.2"))
+        assertThat(Version.parse("1.2-alpha3-SNAPSHOT").previewSupremum)
+            .isEqualTo(Version.parse("1.2"))
+        assertThat(Version.parse("1.2-SNAPSHOT").previewSupremum)
+            .isEqualTo(Version.parse("1.2"))
+        assertThat(Version.parse("1.2.3").previewSupremum).isNull()
+        assertThat(Version.parse("1.2.3-alpha4").previewSupremum)
+            .isEqualTo(Version.parse("1.2.3"))
+        assertThat(Version.parse("1.2.3-alpha-4").previewSupremum)
+            .isEqualTo(Version.parse("1.2.3"))
+        assertThat(Version.parse("1.2.3-alpha4-SNAPSHOT").previewSupremum)
+            .isEqualTo(Version.parse("1.2.3"))
+        assertThat(Version.parse("1.2.3-alpha-4-SNAPSHOT").previewSupremum)
+            .isEqualTo(Version.parse("1.2.3"))
+        assertThat(Version.parse("1.2.3-SNAPSHOT").previewSupremum)
+            .isEqualTo(Version.parse("1.2.3"))
+        assertThat(Version.parse("1.2.3.4").previewSupremum).isNull()
+        assertThat(Version.parse("1.2.3.4.5-SNAPSHOT").previewSupremum)
+            .isEqualTo(Version.parse("1.2.3.4.5"))
+        assertThat(Version.parse("1.2.3.4.5.6-alpha9-SNAPSHOT").previewSupremum)
+            .isEqualTo(Version.parse("1.2.3.4.5.6"))
+        assertThat(Version.parse("7.0.0-dev03").previewSupremum)
+            .isEqualTo(Version.parse("7.0.0"))
+
+        assertThat(Version.parse("1-SNAPSHOT.3").previewSupremum)
+            .isEqualTo(Version.parse("1"))
+        assertThat(Version.parse("1-dev.3").previewSupremum)
+            .isEqualTo(Version.parse("1"))
+        assertThat(Version.parse("1.2.3-alpha4-beta5").previewSupremum)
+            .isEqualTo(Version.parse("1.2.3"))
+        assertThat(Version.parse("1.2.3-beta4-alpha5").previewSupremum)
+            .isEqualTo(Version.parse("1.2.3"))
+        assertThat(Version.parse("1.2.3-alpha.10").previewSupremum)
+            .isEqualTo(Version.parse("1.2.3"))
+
+        Version.parse("-alpha01").previewSupremum.let {
+            assertThat(it).isEqualTo(Version.parse("0"))
+            assertThat(it?.toString()).isEqualTo("0")
+        }
+        Version.parse("alpha01").previewSupremum.let {
+            assertThat(it).isEqualTo(Version.parse("0"))
+            assertThat(it?.toString()).isEqualTo("0")
+        }
+        Version.parse("").previewSupremum.let {
+            assertThat(it).isEqualTo(Version.parse("0"))
+            assertThat(it?.toString()).isEqualTo("0")
+        }
     }
 
     @Test

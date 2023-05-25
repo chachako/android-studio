@@ -52,6 +52,8 @@ class Version: Comparable<Version>, Serializable {
 
     private constructor(parts: List<Part>, separators: List<Separator>, isPrefixInfimum: Boolean) {
         if (parts.size != separators.size) throw IllegalArgumentException()
+        if (parts.isEmpty()) throw IllegalArgumentException()
+        if (separators.last() != Separator.EMPTY) throw IllegalArgumentException()
         this.parts = parts
         this.separators = separators
         this.isPrefixInfimum = isPrefixInfimum
@@ -67,9 +69,25 @@ class Version: Comparable<Version>, Serializable {
     val isPreview
         get() = parts.any { it !is Numeric }
     // This is as well-defined as isPreview.
-    val previewPrefix
-        get() = parts.indexOfFirst { it !is Numeric }.takeIf { it > -1 }
-            ?.let { Version(parts.subList(0, it), separators.subList(0, it), true) }
+    val previewInfimum
+        get() = parts.indexOfFirst { it !is Numeric }.takeIf { it > -1 }?.let {
+            when (it) {
+                0 -> prefixInfimum("dev")
+                else -> Version(
+                    parts.subList(0, it), separators.subList(0, it-1) + Separator.EMPTY, true
+                )
+            }
+        }
+    // This is also as well-defined as isPreview.
+    val previewSupremum
+        get() = parts.indexOfFirst { it !is Numeric }.takeIf { it > -1 }?.let {
+                when (it) {
+                    0 -> parse("0")
+                    else -> Version(
+                        parts.subList(0, it), separators.subList(0, it-1) + Separator.EMPTY, false
+                    )
+                }
+            }
     // This is moderately well-defined as a contributor to UI elements, though probably not for any
     // automated computation.  This returns the least non-numeric part (in Gradle comparison
     // terms), if any, of the version, with the intuition that this corresponds to the degree of

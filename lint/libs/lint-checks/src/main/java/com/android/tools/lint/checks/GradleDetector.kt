@@ -1316,9 +1316,10 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       // series" doesn't really exist.  It also guards against the fact that the
       // "revision" that we've parsed into a Version isn't known to be a version,
       // and in fact has more of the character of a RichVersion.
-      version.previewPrefix?.let { prefix ->
-        val next = prefix.nextPrefix()
-        return Predicate { v -> if (v.isPreview) (prefix < v && v < next) else true }
+      val infimum = version.previewInfimum
+      val supremum = version.previewSupremum
+      if (infimum != null && supremum != null) {
+        return Predicate { v -> if (v.isPreview) (infimum < v && v < supremum) else true }
       }
     }
 
