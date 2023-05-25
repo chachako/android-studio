@@ -20,7 +20,7 @@ import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.truth.checkSingleIssue
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.StringOption
-import com.google.common.truth.Truth
+import com.android.zipflinger.ZipArchive
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -165,5 +165,103 @@ class AbiRelatedDslUsageTest {
             severity = com.android.builder.model.v2.ide.SyncIssue.SEVERITY_WARNING,
             message = "Cannot build selected target ABI: x86, supported ABIs are: FilterConfiguration(filterType=ABI, identifier=armeabi-v7a)"
         )
+    }
+
+    // b/124109638
+    @Test
+    fun testAbiFiltersInheritance() {
+        // Add placeholder .so files
+        project.file("src/main/jniLibs/x86/foo.so").also {
+            it.parentFile.mkdirs()
+            it.writeText("foo")
+        }
+        project.file("src/main/jniLibs/x86_64/foo.so").also {
+            it.parentFile.mkdirs()
+            it.writeText("foo")
+        }
+        project.file("src/main/jniLibs/armeabi-v7a/foo.so").also {
+            it.parentFile.mkdirs()
+            it.writeText("foo")
+        }
+        project.file("src/main/jniLibs/arm64-v8a/foo.so").also {
+            it.parentFile.mkdirs()
+            it.writeText("foo")
+        }
+
+        TestFileUtils.appendToFile(
+            project.buildFile,
+            // language=groovy
+            """
+                apply plugin: "com.android.application"
+                android {
+                    namespace "${HelloWorldApp.NAMESPACE}"
+                    compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}
+                    defaultConfig {
+                        minSdkVersion 21
+                        targetSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}
+                        ndk {
+                            abiFilters "x86"
+                        }
+                    }
+                    buildTypes {
+                        debug {
+                            ndk {
+                                abiFilters "x86_64"
+                            }
+                        }
+                        foo {
+                            initWith(buildTypes.debug)
+                            ndk {
+                                abiFilters "armeabi-v7a"
+                            }
+                        }
+                        bar {
+                            initWith(buildTypes.debug)
+                            ndk {
+                                abiFilters.clear()
+                                abiFilters "armeabi-v7a"
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        // Build all variants and check APKs for expected .so file entries
+        project.executor().run("assembleRelease", "assembleDebug", "assembleFoo", "assembleBar")
+
+        project.getApk(GradleTestProject.ApkType.RELEASE).use { apk ->
+            val entryMap = ZipArchive.listEntries(apk.file)
+            assertThat(entryMap).containsKey("lib/x86/foo.so")
+            assertThat(entryMap).doesNotContainKey("lib/x86_64/foo.so")
+            assertThat(entryMap).doesNotContainKey("lib/armeabi-v7a/foo.so")
+            assertThat(entryMap).doesNotContainKey("lib/arm64-v8a/foo.so")
+        }
+
+        project.getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
+            val entryMap = ZipArchive.listEntries(apk.file)
+            assertThat(entryMap).containsKey("lib/x86/foo.so")
+            assertThat(entryMap).containsKey("lib/x86_64/foo.so")
+            assertThat(entryMap).doesNotContainKey("lib/armeabi-v7a/foo.so")
+            assertThat(entryMap).doesNotContainKey("lib/arm64-v8a/foo.so")
+        }
+
+        project.getApk(GradleTestProject.ApkType.of("foo", isSigned = true)).use { apk ->
+            val entryMap = ZipArchive.listEntries(apk.file)
+            assertThat(entryMap).containsKey("lib/x86/foo.so")
+            assertThat(entryMap).containsKey("lib/x86_64/foo.so")
+            assertThat(entryMap).containsKey("lib/armeabi-v7a/foo.so")
+            assertThat(entryMap).doesNotContainKey("lib/arm64-v8a/foo.so")
+        }
+
+        project.getApk(GradleTestProject.ApkType.of("bar", isSigned = true)).use { apk ->
+            val entryMap = ZipArchive.listEntries(apk.file)
+            // Still contains x86 ABI because calling abiFilters.clear() only clears the buildType's
+            // set of ABI filters, not the defaultConfig's ABI filters.
+            assertThat(entryMap).containsKey("lib/x86/foo.so")
+            assertThat(entryMap).doesNotContainKey("lib/x86_64/foo.so")
+            assertThat(entryMap).containsKey("lib/armeabi-v7a/foo.so")
+            assertThat(entryMap).doesNotContainKey("lib/arm64-v8a/foo.so")
+        }
     }
 }
