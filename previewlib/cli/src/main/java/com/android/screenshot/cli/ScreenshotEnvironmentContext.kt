@@ -131,7 +131,7 @@ class ScreenshotEnvironmentContext(private val project: ComposeProject, private 
     // Can be anything, used for RenderErrorContributor
     override fun getOriginalFile(psiFile: PsiFile): PsiFile = psiFile
 
-    override fun getModuleClassLoaderManager(): ModuleClassLoaderManager {
+    override fun getModuleClassLoaderManager(): ModuleClassLoaderManager<ScreenshotModuleClassLoader> {
         return classLoaderManager
     }
 
