@@ -88,14 +88,28 @@ class TestRunner(
             projectSettings.storageBucket,
             historyId)
 
-        val testApkStorageObject = testRunStorage.uploadToStorage(testData.testApk)
+        val testApkStorageObject = storageManager.retrieveOrUploadSharedFile(
+            testData.testApk,
+            projectSettings.storageBucket,
+            projectPath,
+            uploadFileName = "$variantName-${testData.testApk.name}"
+        )
 
         val configProvider = createConfigProvider(device)
 
         // If tested apk is null, this is a self-instrument test (e.g. library module).
         val testedApkFile = testData.testedApkFinder(configProvider).firstOrNull()
-        val appApkStorageObject =
-            testRunStorage.uploadToStorage(testedApkFile ?: projectSettings.stubAppApk)
+        // If the test apk is a stub, then it can be shared between gradle projects.
+        val (testedApkName, storageModule) = testedApkFile?.run {
+            Pair("$variantName-${testedApkFile.name}", projectPath)
+        } ?: Pair("stub", "shared")
+
+        val appApkStorageObject = storageManager.retrieveOrUploadSharedFile(
+            testedApkFile ?: projectSettings.stubAppApk,
+            projectSettings.storageBucket,
+            storageModule,
+            uploadFileName = testedApkName
+        )
 
         val updatedTestMatrix = testingManager.createTestMatrixRun(
             projectSettings.name,
