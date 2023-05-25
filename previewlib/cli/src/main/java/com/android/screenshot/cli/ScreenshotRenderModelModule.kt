@@ -78,8 +78,6 @@ class ScreenshotRenderModelModule(
         }
     override val resourceIdManager: ResourceIdManager
         get() = resourceManager
-    override val moduleKey: Any
-        get() = composeModule.module
     override val resourcePackage: String?
         get() = composeModule.module.getModuleSystem().getPackageName()
 
