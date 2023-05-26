@@ -151,7 +151,7 @@ private val PACKAGE_PATTERN = Pattern.compile("""package\s+([\S&&[^;]]*)""")
 
 private val CLASS_PATTERN =
   Pattern.compile(
-    """(\bclass\b|\binterface\b|\benum class\b|\benum\b|\bobject\b)+?\s*([^\s:(]+)""",
+    """(\bclass\b|\binterface\b|\benum class\b|\benum\b|\bobject\b|\brecord\b)+?\s*([^\s:(]+)""",
     Pattern.MULTILINE
   )
 

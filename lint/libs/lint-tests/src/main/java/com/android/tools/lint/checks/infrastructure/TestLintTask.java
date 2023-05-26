@@ -54,6 +54,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.errorprone.annotations.CheckReturnValue;
+import com.intellij.pom.java.LanguageLevel;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -71,6 +72,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.jetbrains.kotlin.config.ApiVersion;
+import org.jetbrains.kotlin.config.LanguageVersion;
+import org.jetbrains.kotlin.config.LanguageVersionSettings;
+import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl;
 
 @SuppressWarnings({"SameParameterValue", "ComplexBooleanConstant"})
 public class TestLintTask {
@@ -153,6 +158,8 @@ public class TestLintTask {
     boolean allowAbsolutePathsInMessages = false;
     boolean allowNonAlphabeticalFixOrder = false;
     boolean allowKotlinClassStubs = false;
+    @Nullable LanguageLevel javaLanguageLevel = null;
+    @Nullable LanguageVersionSettings kotlinLanguageLevel = null;
 
     /** Creates a new lint test task */
     public TestLintTask() {
@@ -401,6 +408,64 @@ public class TestLintTask {
     public TestLintTask baseline(@NonNull TestFile baseline) {
         ensurePreRun();
         this.baseline = baseline;
+        return this;
+    }
+
+    /**
+     * Configures the test task to run with the given Java language level as a string, such as "17".
+     *
+     * @param javaLanguageLevel the Java language level to be used
+     * @return this, for constructor chaining
+     */
+    public TestLintTask javaLanguageLevel(@NonNull String javaLanguageLevel) {
+        ensurePreRun();
+        LanguageLevel level = LanguageLevel.parse(javaLanguageLevel);
+        if (level == null) {
+            throw new IllegalArgumentException(
+                    "Invalid Java language level \"" + javaLanguageLevel + "\"");
+        }
+        return javaLanguageLevel(level);
+    }
+
+    /**
+     * Configures the test task to run with the given Java language level
+     *
+     * @param javaLanguageLevel the Java language level to be used
+     * @return this, for constructor chaining
+     */
+    public TestLintTask javaLanguageLevel(@NonNull LanguageLevel javaLanguageLevel) {
+        ensurePreRun();
+        this.javaLanguageLevel = javaLanguageLevel;
+        return this;
+    }
+
+    /**
+     * Configures the test task to run with the given Kotlin language level
+     *
+     * @param kotlinLanguageLevel the Kotlin language level to be used as a string, such as "1.9".
+     * @return this, for constructor chaining
+     */
+    public TestLintTask kotlinLanguageLevel(@NonNull String kotlinLanguageLevel) {
+        ensurePreRun();
+
+        LanguageVersion languageLevel = LanguageVersion.fromVersionString(kotlinLanguageLevel);
+        if (languageLevel == null) {
+            throw new IllegalArgumentException(
+                    "Invalid Kotlin language level \"" + kotlinLanguageLevel + "\"");
+        }
+        ApiVersion apiVersion = ApiVersion.createByLanguageVersion(languageLevel);
+        return kotlinLanguageLevel(new LanguageVersionSettingsImpl(languageLevel, apiVersion));
+    }
+
+    /**
+     * Configures the test task to run with the given Kotlin language level
+     *
+     * @param kotlinLanguageLevel the Kotlin language level to be used
+     * @return this, for constructor chaining
+     */
+    public TestLintTask kotlinLanguageLevel(@NonNull LanguageVersionSettings kotlinLanguageLevel) {
+        ensurePreRun();
+        this.kotlinLanguageLevel = kotlinLanguageLevel;
         return this;
     }
 

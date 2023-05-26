@@ -1941,6 +1941,24 @@ public class TestLintClient extends LintCliClient {
         return super.openConnection(url, timeout);
     }
 
+    @NonNull
+    @Override
+    public LanguageVersionSettings getKotlinLanguageLevel(@NonNull Project project) {
+        if (task.kotlinLanguageLevel != null) {
+            return task.kotlinLanguageLevel;
+        }
+        return super.getKotlinLanguageLevel(project);
+    }
+
+    @NonNull
+    @Override
+    public LanguageLevel getJavaLanguageLevel(@NonNull Project project) {
+        if (task.javaLanguageLevel != null) {
+            return task.javaLanguageLevel;
+        }
+        return super.getJavaLanguageLevel(project);
+    }
+
     public static class TestProject extends Project {
         @Nullable public final GradleModelMocker mocker;
         private final ProjectDescription projectDescription;
