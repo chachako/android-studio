@@ -29,7 +29,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Answers
 import org.mockito.Mock
 import org.mockito.Mockito.inOrder
 import org.mockito.Mockito.times

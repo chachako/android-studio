@@ -44,7 +44,7 @@ class ToolResultsManager (
     // TODO(b/???): remove once able to access
     // toolResultsClient.projects().histories().executions().steps().testCases().list()
     private val httpRequestFactory: HttpRequestFactory,
-    private val parser: JsonObjectParser = JsonObjectParser(Utils.getDefaultJsonFactory())
+    private val objectParser: JsonObjectParser = JsonObjectParser(Utils.getDefaultJsonFactory())
 ) {
     data class RequestInfo(
         val projectId: String,
@@ -131,9 +131,9 @@ class ToolResultsManager (
         httpRequestFactory.buildGetRequest(
             GenericUrl(getTestCaseUrl(requestInfo))
         ).apply {
-            setParser(parser)
+            parser = objectParser
         }.execute().content.use { response ->
-            parser.parseAndClose<TestCases>(
+            objectParser.parseAndClose<TestCases>(
                 response, StandardCharsets.UTF_8, TestCases::class.java)
         }
 
