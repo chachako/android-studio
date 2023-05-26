@@ -50,8 +50,8 @@ internal class KotlinMultiplatformAndroidCompilationFactory(
             defaultSourceSet = kotlinExtension.sourceSets.getByName(
                 target.targetName.appendCapitalized(name)
             )
-            decoratedKotlinCompilationFactory =
-                ExternalKotlinCompilationDescriptor.DecoratedKotlinCompilationFactory(
+            compilationFactory =
+                ExternalKotlinCompilationDescriptor.CompilationFactory(
                     ::KotlinMultiplatformAndroidCompilationImpl
                 )
             compileTaskName = "compile".appendCapitalized(

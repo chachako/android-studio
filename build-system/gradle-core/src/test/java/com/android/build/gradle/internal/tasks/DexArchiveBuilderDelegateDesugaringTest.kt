@@ -120,7 +120,6 @@ class DexArchiveBuilderDelegateDesugaringTest {
     }
 
     internal interface WithDefault {
-        @JvmDefault
         fun foo() {
         }
     }

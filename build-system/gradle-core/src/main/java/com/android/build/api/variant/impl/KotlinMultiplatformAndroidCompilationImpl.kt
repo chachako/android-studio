@@ -19,12 +19,12 @@ package com.android.build.api.variant.impl
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions
-import org.jetbrains.kotlin.gradle.plugin.mpp.external.ExternalDecoratedKotlinCompilation
+import org.jetbrains.kotlin.gradle.plugin.mpp.external.DecoratedExternalKotlinCompilation
 
 @OptIn(ExternalKotlinTargetApi::class)
 class KotlinMultiplatformAndroidCompilationImpl(
     delegate: Delegate
-) : ExternalDecoratedKotlinCompilation(delegate), KotlinMultiplatformAndroidCompilation {
+) : DecoratedExternalKotlinCompilation(delegate), KotlinMultiplatformAndroidCompilation {
 
     // This is a workaround for non-removable parametrization for compiler options, it should be
     // safe to cast as the type will always be KotlinJvmCompilerOptions

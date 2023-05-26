@@ -52,9 +52,9 @@ object KotlinIdeImportConfigurator {
     ) {
         val resolutionPhase =
             IdeMultiplatformImport.DependencyResolutionPhase.BinaryDependencyResolution
-        // we want to completely control IDE resolution, so specify a high priority for all our
+        // we want to completely control IDE resolution, so specify a very high priority for all our
         // resolvers.
-        val resolutionLevel = IdeMultiplatformImport.DependencyResolutionLevel.Overwrite
+        val resolutionPriority = IdeMultiplatformImport.Priority.veryHigh
 
         val androidSourceSetFilter = IdeMultiplatformImport.SourceSetConstraint { sourceSet ->
             sourceSet.android != null || extraSourceSetsToIncludeInResolution().contains(sourceSet)
@@ -66,7 +66,7 @@ object KotlinIdeImportConfigurator {
             ),
             constraint = androidSourceSetFilter,
             phase = resolutionPhase,
-            level = resolutionLevel
+            priority = resolutionPriority
         )
 
         service.registerDependencyResolver(
@@ -75,14 +75,14 @@ object KotlinIdeImportConfigurator {
             ),
             constraint = androidSourceSetFilter,
             phase = resolutionPhase,
-            level = resolutionLevel
+            priority = resolutionPriority
         )
 
         service.registerDependencyResolver(
-            resolver = IdeDependencyResolver.Empty,
+            resolver = IdeDependencyResolver.empty,
             constraint = androidSourceSetFilter,
             phase = IdeMultiplatformImport.DependencyResolutionPhase.SourcesAndDocumentationResolution,
-            level = resolutionLevel
+            priority = resolutionPriority
         )
     }
 

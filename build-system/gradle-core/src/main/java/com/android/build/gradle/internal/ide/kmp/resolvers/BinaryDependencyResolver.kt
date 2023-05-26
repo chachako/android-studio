@@ -34,7 +34,6 @@ import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinResolvedBinaryDependency
 import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinUnresolvedBinaryDependency
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver
-import org.jetbrains.kotlin.gradle.plugin.ide.IdeaKotlinBinaryCoordinates
 import org.jetbrains.kotlin.tooling.core.mutableExtrasOf
 
 /**
@@ -75,7 +74,11 @@ internal class BinaryDependencyResolver(
             when (val componentId = artifact.id.componentIdentifier) {
                 is ModuleComponentIdentifier -> {
                     IdeaKotlinResolvedBinaryDependency(
-                        coordinates = IdeaKotlinBinaryCoordinates(componentId),
+                        coordinates = IdeaKotlinBinaryCoordinates(
+                            group = componentId.group,
+                            module = componentId.module,
+                            version = componentId.version
+                        ),
                         binaryType = IdeaKotlinBinaryDependency.KOTLIN_COMPILE_BINARY_TYPE,
                         classpath = IdeaKotlinClasspath(artifact.file),
                     )

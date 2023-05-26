@@ -14,7 +14,8 @@
                 "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpSecondLib/src/androidMain/AndroidManifest.xml"
               }
             }
-          }
+          },
+          "org.jetbrains.kotlin.gradle.utils.Future\u003ckotlin.Boolean\u003e;isNativeSourceSet": "org.jetbrains.kotlin.gradle.utils.FutureImpl@15d663a6"
         }
       },
       "allSourceSets": [
@@ -26,6 +27,7 @@
         }
       ],
       "extras": {
+        "org.jetbrains.kotlin.gradle.plugin.mpp.targetHierarchy.SourceSetTreeClassifier": {},
         "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidCompilation?\u003e;android-compilation-model": {
           "type": "MAIN",
           "mainDslInfo": {

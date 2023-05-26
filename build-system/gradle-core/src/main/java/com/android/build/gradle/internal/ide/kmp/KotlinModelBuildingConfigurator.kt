@@ -46,10 +46,7 @@ import com.android.kotlin.multiplatform.models.MainVariantDslInfo
 import com.android.kotlin.multiplatform.models.SourceProvider
 import com.android.kotlin.multiplatform.models.UnitTestDslInfo
 import org.gradle.api.Project
-import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
-import org.jetbrains.kotlin.gradle.plugin.mpp.external.extras
 
-@OptIn(ExternalKotlinTargetApi::class)
 object KotlinModelBuildingConfigurator {
     private fun KmpComponentCreationConfig.toType() = when (this) {
         is KmpCreationConfig -> AndroidCompilation.CompilationType.MAIN

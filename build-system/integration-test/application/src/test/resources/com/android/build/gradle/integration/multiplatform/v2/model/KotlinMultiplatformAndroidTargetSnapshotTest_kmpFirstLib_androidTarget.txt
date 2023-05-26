@@ -14,7 +14,8 @@
                 "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/src/androidInstrumentedTest/AndroidManifest.xml"
               }
             }
-          }
+          },
+          "org.jetbrains.kotlin.gradle.utils.Future\u003ckotlin.Boolean\u003e;isNativeSourceSet": "org.jetbrains.kotlin.gradle.utils.FutureImpl@2ae8fe77"
         }
       },
       "allSourceSets": [
@@ -23,6 +24,7 @@
         }
       ],
       "extras": {
+        "org.jetbrains.kotlin.gradle.plugin.mpp.targetHierarchy.SourceSetTreeClassifier": {},
         "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidCompilation?\u003e;android-compilation-model": {
           "type": "INSTRUMENTED_TEST",
           "instrumentedTestDslInfo": {
@@ -62,7 +64,8 @@
                 "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/src/androidMain/AndroidManifest.xml"
               }
             }
-          }
+          },
+          "org.jetbrains.kotlin.gradle.utils.Future\u003ckotlin.Boolean\u003e;isNativeSourceSet": "org.jetbrains.kotlin.gradle.utils.FutureImpl@609f55be"
         }
       },
       "allSourceSets": [
@@ -74,6 +77,7 @@
         }
       ],
       "extras": {
+        "org.jetbrains.kotlin.gradle.plugin.mpp.targetHierarchy.SourceSetTreeClassifier": {},
         "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidCompilation?\u003e;android-compilation-model": {
           "type": "MAIN",
           "mainDslInfo": {
@@ -108,7 +112,8 @@
                 "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/src/androidUnitTest/AndroidManifest.xml"
               }
             }
-          }
+          },
+          "org.jetbrains.kotlin.gradle.utils.Future\u003ckotlin.Boolean\u003e;isNativeSourceSet": "org.jetbrains.kotlin.gradle.utils.FutureImpl@485a445c"
         }
       },
       "allSourceSets": [
@@ -120,6 +125,7 @@
         }
       ],
       "extras": {
+        "org.jetbrains.kotlin.gradle.plugin.mpp.targetHierarchy.SourceSetTreeClassifier": {},
         "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidCompilation?\u003e;android-compilation-model": {
           "type": "UNIT_TEST",
           "unitTestDslInfo": {

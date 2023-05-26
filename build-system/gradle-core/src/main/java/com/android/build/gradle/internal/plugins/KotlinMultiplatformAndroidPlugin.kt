@@ -498,9 +498,15 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         project = project,
         projectOptions = projectServices.projectOptions,
         dslInfo = dslInfo,
-        apiClasspath = androidKotlinCompilation.configurations.apiConfiguration,
-        compileClasspath = androidKotlinCompilation.configurations.compileDependencyConfiguration,
-        runtimeClasspath = androidKotlinCompilation.configurations.runtimeDependencyConfiguration!!,
+        apiClasspath = project.configurations.getByName(
+            androidKotlinCompilation.apiConfigurationName
+        ),
+        compileClasspath = project.configurations.getByName(
+            androidKotlinCompilation.compileDependencyConfigurationName
+        ),
+        runtimeClasspath = project.configurations.getByName(
+            androidKotlinCompilation.runtimeDependencyConfigurationName!!
+        ),
         apiElements = androidTarget.apiElementsConfiguration.forMainVariantConfiguration(dslInfo),
         runtimeElements = androidTarget.runtimeElementsConfiguration.forMainVariantConfiguration(dslInfo),
         sourcesElements = project.configurations.findByName(

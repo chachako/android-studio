@@ -20,12 +20,14 @@ import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.component.ComponentIdentifier
+import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver
 
 /**
  * Base class for shared logic between kmp IDE dependency resolvers.
  */
+@OptIn(ExternalKotlinTargetApi::class)
 internal abstract class BaseIdeDependencyResolver(
     protected val sourceSetToCreationConfigMap: () -> Map<KotlinSourceSet, KmpComponentCreationConfig>
 ): IdeDependencyResolver {

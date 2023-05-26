@@ -90,7 +90,7 @@ class KotlinSourcesModelTest {
                 android()
 
                 sourceSets {
-                    named("androidTest") {
+                    named("androidInstrumentedTest") {
                         dependencies {
                         }
                     }
@@ -117,7 +117,8 @@ class KotlinSourcesModelTest {
         assertThat(deviceTestsKotlinDirs)
                 .containsExactly(
                         project.file("src/androidTest/java"),
-                        project.file("src/androidAndroidTest/kotlin"),
+                        project.file("src/androidTest/kotlin"),
+                        project.file("src/androidInstrumentedTest/kotlin"),
                 )
         val unitTestsKotlinDirs =
             basicProject.mainSourceSet!!.unitTestSourceProvider!!.kotlinDirectories
@@ -125,7 +126,7 @@ class KotlinSourcesModelTest {
                 .containsExactly(
                         project.file("src/test/java"),
                         project.file("src/test/kotlin"),
-                        project.file("src/androidTest/kotlin"),
+                        project.file("src/androidUnitTest/kotlin"),
                 )
     }
 }
