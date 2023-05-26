@@ -1578,10 +1578,10 @@ public class Project {
     }
 
     public void setEnv(CoreApplicationEnvironment env) {
-      this.env = env;
+        this.env = env;
     }
 
     public CoreApplicationEnvironment getEnv() {
-      return env;
+        return env;
     }
 }
