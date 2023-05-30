@@ -32,6 +32,7 @@ import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoots
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.config.languageVersionSettings
+import org.jetbrains.uast.UastFacade
 
 /** JVM system property to enable FIR UAST or K2 UAST, as per the new compiler name */
 const val FIR_UAST_KEY = "lint.use.fir.uast"
@@ -160,6 +161,8 @@ interface UastEnvironment {
       Disposer.dispose(appEnv.parentDisposable)
       checkApplicationEnvironmentDisposed()
       ZipHandler.clearFileAccessorCache()
+      // https://youtrack.jetbrains.com/issue/KTIJ-24467
+      UastFacade.clearCachedPlugin()
     }
 
     @JvmStatic

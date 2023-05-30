@@ -128,6 +128,9 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
     @get:Optional
     abstract val desugaredMethodsFiles: ConfigurableFileCollection
 
+    @get:Input
+    abstract val useK2Uast: Property<Boolean>
+
     override fun doTaskAction() {
         lintTool.lintClassLoaderBuildService.get().shouldDispose = true
         writeLintModelFile()
@@ -191,6 +194,9 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
             arguments += "--stacktrace"
         }
         arguments += lintTool.initializeLintCacheDir()
+        if (useK2Uast.get()) {
+            arguments += "--XuseK2Uast"
+        }
 
         // Pass information to lint using the --client-id, --client-name, and --client-version flags
         // so that lint can apply gradle-specific and version-specific behaviors.
@@ -484,6 +490,9 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
         }
         systemPropertyInputs.initialize(project.providers, LintMode.ANALYSIS)
         environmentVariableInputs.initialize(project.providers, LintMode.ANALYSIS)
+        useK2Uast.setDisallowChanges(
+            services.projectOptions.getProvider(BooleanOption.LINT_USE_K2_UAST)
+        )
         this.usesService(
             services.buildServiceRegistry.getLintParallelBuildService(services.projectOptions)
         )

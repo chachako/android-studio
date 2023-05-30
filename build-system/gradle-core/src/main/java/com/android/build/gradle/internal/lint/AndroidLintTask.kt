@@ -214,6 +214,9 @@ abstract class AndroidLintTask : NonIncrementalTask() {
     @get:Input
     abstract val baselineOmitLineNumbers: Property<Boolean>
 
+    @get:Input
+    abstract val useK2Uast: Property<Boolean>
+
     override fun doTaskAction() {
         lintTool.lintClassLoaderBuildService.get().shouldDispose = true
         if (systemPropertyInputs.lintAutofix.orNull == VALUE_TRUE) {
@@ -420,6 +423,9 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         }
         if (baselineOmitLineNumbers.get()) {
             arguments += "--baseline-omit-line-numbers"
+        }
+        if (useK2Uast.get()) {
+            arguments += "--XuseK2Uast"
         }
 
         // Pass information to lint using the --client-id, --client-name, and --client-version flags
@@ -913,6 +919,9 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         }
         systemPropertyInputs.initialize(project.providers, lintMode)
         environmentVariableInputs.initialize(project.providers, lintMode)
+        useK2Uast.setDisallowChanges(
+            services.projectOptions.getProvider(BooleanOption.LINT_USE_K2_UAST)
+        )
         this.usesService(
             services.buildServiceRegistry.getLintParallelBuildService(services.projectOptions)
         )

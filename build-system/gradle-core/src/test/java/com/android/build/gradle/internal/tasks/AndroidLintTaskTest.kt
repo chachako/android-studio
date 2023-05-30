@@ -76,6 +76,7 @@ class AndroidLintTaskTest {
         task.lintMode.set(LintMode.REPORTING)
         task.missingBaselineIsEmptyBaseline.set(true)
         task.baselineOmitLineNumbers.set(true)
+        task.useK2Uast.set(true)
         task.offline.set(true)
         val commandLineArguments = task.generateCommandLineArguments().joinToString(" ")
         assertThat(commandLineArguments).contains("--client-id gradle")
@@ -86,5 +87,6 @@ class AndroidLintTaskTest {
         assertThat(commandLineArguments).contains("--offline")
         assertThat(commandLineArguments).contains("--stacktrace")
         assertThat(commandLineArguments).contains("--baseline-omit-line-numbers")
+        assertThat(commandLineArguments).contains("--XuseK2Uast")
     }
 }

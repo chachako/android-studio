@@ -148,6 +148,19 @@ class LintStandaloneTest(private val runLintInProcess: Boolean) {
         ScannerSubject.assertThat(result.stderr).doesNotContain("Gradle detected a problem")
     }
 
+    @Test
+    fun checkK2Uast() {
+        getExecutor().with(BooleanOption.LINT_USE_K2_UAST, true).run( ":lint")
+
+        val file = project.file("lint-results.txt")
+        assertThat(file).exists()
+        assertThat(file).contains("build.gradle:4: Warning: no Java language level directives")
+        // TODO(b/285413332)
+        //  assertThat(file).contains("MyClass.java:5: Warning: Use Boolean.valueOf(true) instead")
+        //  assertThat(file).contains("0 errors, 3 warnings")
+    }
+
+
     private fun getExecutor(): GradleTaskExecutor =
         project.executor().with(BooleanOption.RUN_LINT_IN_PROCESS, runLintInProcess)
 }

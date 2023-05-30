@@ -53,7 +53,6 @@ import kotlin.io.path.isRegularFile
 import kotlin.io.path.readText
 import kotlin.streams.toList
 import org.intellij.lang.annotations.Language
-import org.jetbrains.uast.UastFacade
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -2758,7 +2757,6 @@ class ProjectInitializerTest {
   @After
   fun tearDown() {
     UastEnvironment.disposeApplicationEnvironment()
-    UastFacade.clearCachedPlugin()
   }
 
   companion object {

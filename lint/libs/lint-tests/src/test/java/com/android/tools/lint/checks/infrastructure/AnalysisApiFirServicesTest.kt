@@ -40,7 +40,6 @@ class AnalysisApiFirServicesTest : AnalysisApiServicesTestBase() {
       lastKey?.let { System.setProperty(FIR_UAST_KEY, it) }
       lastKey = null
       UastEnvironment.disposeApplicationEnvironment()
-      UastFacade.clearCachedPlugin()
     }
   }
 

@@ -66,6 +66,7 @@ class AndroidLintAnalysisTaskTest {
         task.lintTool.versionKey.set(Version.ANDROID_TOOLS_BASE_VERSION + "_foo")
         task.lintTool.version.set(Version.ANDROID_TOOLS_BASE_VERSION)
         task.offline.set(true)
+        task.useK2Uast.set(true)
         val commandLineArguments = task.generateCommandLineArguments().joinToString(" ")
         assertThat(commandLineArguments).contains("--client-id gradle")
         assertThat(commandLineArguments).contains("--client-name AGP")
@@ -73,5 +74,6 @@ class AndroidLintAnalysisTaskTest {
             .contains("--client-version ${Version.ANDROID_GRADLE_PLUGIN_VERSION}")
         assertThat(commandLineArguments).contains("--offline")
         assertThat(commandLineArguments).contains("--stacktrace")
+        assertThat(commandLineArguments).contains("--XuseK2Uast")
     }
 }

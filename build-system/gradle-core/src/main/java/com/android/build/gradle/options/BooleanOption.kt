@@ -251,6 +251,15 @@ enum class BooleanOption(
         FeatureStage.Experimental
     ),
 
+    /**
+     * Whether to use K2 UAST when running lint
+     */
+    LINT_USE_K2_UAST(
+        "android.lint.useK2Uast",
+        false,
+        FeatureStage.Experimental
+    ),
+
     /* ------------------------
      * SOFTLY-ENFORCED FEATURES
      */
