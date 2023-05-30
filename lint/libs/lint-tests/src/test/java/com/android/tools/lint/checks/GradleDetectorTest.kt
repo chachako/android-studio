@@ -2819,6 +2819,45 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testPathsKts() {
+    val expected =
+      "" +
+        "build.gradle.kts:6: Warning: Do not use Windows file separators in .gradle files; use / instead [GradlePath]\n" +
+        "    compile(files(\"my\\\\libs\\\\http.jar\"))\n" +
+        "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+        "build.gradle.kts:7: Warning: Avoid using absolute paths in .gradle files [GradlePath]\n" +
+        "    compile(files(\"/libs/android-support-v4.jar\"))\n" +
+        "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+        "0 errors, 2 warnings\n"
+
+    lint()
+      .files(
+        kts(
+          "" +
+            "plugins {\n" +
+            "    id(\"com.android.application\")\n" +
+            "}\n" +
+            "\n" +
+            "dependencies {\n" +
+            "    compile(files(\"my\\\\libs\\\\http.jar\"))\n" +
+            "    compile(files(\"/libs/android-support-v4.jar\"))\n" +
+            "}\n"
+        )
+      )
+      .issues(PATH)
+      .ignoreUnknownGradleConstructs()
+      .run()
+      .expect(expected)
+      .expectFixDiffs(
+        """
+            Fix for build.gradle.kts line 6: Replace with my/libs/http.jar:
+            @@ -6 +6
+            -     compile(files("my\\libs\\http.jar"))
+            +     compile(files("my/libs/http.jar"))
+            """
+      )
+  }
+
   fun testIdSuffix() {
     val expected =
       "" +

@@ -482,7 +482,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         }
       }
     } else if (parent == "dependencies") {
-      if (value.startsWith("files('") && value.endsWith("')")) {
+      if (value.startsWith("files") && value.matches("^files\\(['\"].*[\"']\\)$".toRegex())) {
         val path = value.substring("files('".length, value.length - 2)
         if (path.contains("\\\\")) {
           val fix = fix().replace().text(path).with(path.replace("\\\\", "/")).build()
