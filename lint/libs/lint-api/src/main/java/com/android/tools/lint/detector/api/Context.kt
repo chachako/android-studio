@@ -18,6 +18,7 @@ package com.android.tools.lint.detector.api
 
 import com.android.SdkConstants.DOT_GRADLE
 import com.android.SdkConstants.DOT_JAVA
+import com.android.SdkConstants.DOT_KTS
 import com.android.SdkConstants.DOT_XML
 import com.android.SdkConstants.SUPPRESS_ALL
 import com.android.SdkConstants.TAG_APPLICATION
@@ -484,7 +485,7 @@ open class Context(
   protected open val suppressCommentPrefix: String?
     get() {
       val path = file.path
-      if (path.endsWith(DOT_JAVA) || path.endsWith(DOT_GRADLE)) {
+      if (path.endsWith(DOT_JAVA) || path.endsWith(DOT_GRADLE) || path.endsWith(DOT_KTS)) {
         return SUPPRESS_JAVA_COMMENT_PREFIX
       } else if (path.endsWith(DOT_XML)) {
         return SUPPRESS_XML_COMMENT_PREFIX
