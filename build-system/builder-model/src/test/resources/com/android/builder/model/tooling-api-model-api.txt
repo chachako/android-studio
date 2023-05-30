@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-651d046af5a01145827cc9d687aaa2daebe6b4a6a501ac051d5c5a474e0473ec
+2d8a2d891cc572d212a35f3093a712861827fe34d7736de73472a53ccb1824fd
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -824,10 +824,20 @@ com.android.builder.model.v2.models.BasicAndroidProject.getProjectType: com.andr
 com.android.builder.model.v2.models.BasicAndroidProject.getVariants: java.util.Collection<com.android.builder.model.v2.ide.BasicVariant> ()
 com.android.builder.model.v2.models.BuildMap implements com.android.builder.model.v2.AndroidModel
 com.android.builder.model.v2.models.BuildMap.getBuildIdMap: java.util.Map<java.lang.String, java.io.File> ()
+com.android.builder.model.v2.models.ClasspathParameterConfig extends java.lang.Enum
+com.android.builder.model.v2.models.ClasspathParameterConfig.applyTo: void (com.android.builder.model.v2.models.ModelBuilderParameter)
+com.android.builder.model.v2.models.ClasspathParameterConfig.valueOf: com.android.builder.model.v2.models.ClasspathParameterConfig (java.lang.String)
+com.android.builder.model.v2.models.ClasspathParameterConfig.values: com.android.builder.model.v2.models.ClasspathParameterConfig[] ()
 com.android.builder.model.v2.models.ModelBuilderParameter
+com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildAndroidTestRuntimeClasspath: boolean ()
 com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildRuntimeClasspath: boolean ()
+com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildTestFixtureRuntimeClasspath: boolean ()
+com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildUnitTestRuntimeClasspath: boolean ()
 com.android.builder.model.v2.models.ModelBuilderParameter.getVariantName: java.lang.String ()
+com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildAndroidTestRuntimeClasspath: void (boolean)
 com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildRuntimeClasspath: void (boolean)
+com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildTestFixtureRuntimeClasspath: void (boolean)
+com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildUnitTestRuntimeClasspath: void (boolean)
 com.android.builder.model.v2.models.ModelBuilderParameter.setVariantName: void (java.lang.String)
 com.android.builder.model.v2.models.ProjectSyncIssues implements com.android.builder.model.v2.AndroidModel
 com.android.builder.model.v2.models.ProjectSyncIssues.getSyncIssues: java.util.Collection<com.android.builder.model.v2.ide.SyncIssue> ()

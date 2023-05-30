@@ -83,6 +83,7 @@ import com.android.builder.model.v2.ide.BasicArtifact
 import com.android.builder.model.v2.ide.BundleInfo
 import com.android.builder.model.v2.ide.CodeShrinker
 import com.android.builder.model.v2.ide.JavaArtifact
+import com.android.builder.model.v2.ide.Library
 import com.android.builder.model.v2.ide.PrivacySandboxSdkInfo
 import com.android.builder.model.v2.ide.ProjectType
 import com.android.builder.model.v2.ide.SourceSetContainer
@@ -567,53 +568,81 @@ class ModelBuilder<
         val graphEdgeCache = globalLibraryBuildService.graphEdgeCache
         val libraryService = LibraryServiceImpl(globalLibraryBuildService.libraryCache)
 
-        val dontBuildRuntimeClasspath = parameter.dontBuildRuntimeClasspath
-        return if (adjacencyList) {
-            VariantDependenciesAdjacencyListImpl(
-                name = variantName,
-                mainArtifact = createDependenciesWithAdjacencyList(
-                    variant,
-                    buildMapping,
-                    libraryService,
-                    graphEdgeCache,
-                    dontBuildRuntimeClasspath
-                ),
-                androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
-                    // dontBuildRuntimeClasspath doesn't apply to androidTestArtifacts since their
-                    // runtime classpaths are required by the IDE (for resources) but can't be obtained
-                    // from the apps runtime classpath.
-                    createDependenciesWithAdjacencyList(it, buildMapping, libraryService, graphEdgeCache, false)
-                },
-                unitTestArtifact = (variant as? HasUnitTest)?.unitTest?.let {
-                    createDependenciesWithAdjacencyList(it, buildMapping, libraryService, graphEdgeCache, dontBuildRuntimeClasspath)
-                },
-                testFixturesArtifact = (variant as? HasTestFixtures)?.testFixtures?.let {
-                    createDependenciesWithAdjacencyList(it, buildMapping, libraryService, graphEdgeCache, dontBuildRuntimeClasspath)
-                },
-                libraryService.getAllLibraries()
+        if (adjacencyList) {
+            return VariantDependenciesAdjacencyListImpl(
+                    name = variantName,
+                    mainArtifact = createDependenciesWithAdjacencyList(
+                            variant,
+                            buildMapping,
+                            libraryService,
+                            graphEdgeCache,
+                            parameter.dontBuildRuntimeClasspath
+                    ),
+                    androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
+                        createDependenciesWithAdjacencyList(
+                                it,
+                                buildMapping,
+                                libraryService,
+                                graphEdgeCache,
+                                parameter.dontBuildAndroidTestRuntimeClasspath
+                        )
+                    },
+                    unitTestArtifact = (variant as? HasUnitTest)?.unitTest?.let {
+                        createDependenciesWithAdjacencyList(
+                                it,
+                                buildMapping,
+                                libraryService,
+                                graphEdgeCache,
+                                parameter.dontBuildUnitTestRuntimeClasspath
+                        )
+                    },
+                    testFixturesArtifact = (variant as? HasTestFixtures)?.testFixtures?.let {
+                        createDependenciesWithAdjacencyList(
+                                it,
+                                buildMapping,
+                                libraryService,
+                                graphEdgeCache,
+                                parameter.dontBuildTestFixtureRuntimeClasspath
+                        )
+                    },
+                    libraryService.getAllLibraries()
             )
-        } else VariantDependenciesImpl(
-            name = variantName,
-            mainArtifact = createDependencies(
-                variant,
-                buildMapping,
-                libraryService,
-                dontBuildRuntimeClasspath
-            ),
-            androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
-                // dontBuildRuntimeClasspath doesn't apply to androidTestArtifacts since their
-                // runtime classpaths are required by the IDE (for resources) but can't be obtained
-                // from the apps runtime classpath.
-                createDependencies(it, buildMapping, libraryService, false)
-            },
-            unitTestArtifact = (variant as? HasUnitTest)?.unitTest?.let {
-                createDependencies(it, buildMapping, libraryService, dontBuildRuntimeClasspath)
-            },
-            testFixturesArtifact = (variant as? HasTestFixtures)?.testFixtures?.let {
-                createDependencies(it, buildMapping, libraryService, dontBuildRuntimeClasspath)
-            },
-            libraryService.getAllLibraries()
-        )
+        } else {
+            return VariantDependenciesImpl(
+                    name = variantName,
+                    mainArtifact = createDependencies(
+                            variant,
+                            buildMapping,
+                            libraryService,
+                            parameter.dontBuildRuntimeClasspath
+                    ),
+                    androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
+                        createDependencies(
+                                it,
+                                buildMapping,
+                                libraryService,
+                                parameter.dontBuildAndroidTestRuntimeClasspath
+                        )
+                    },
+                    unitTestArtifact = (variant as? HasUnitTest)?.unitTest?.let {
+                        createDependencies(
+                                it,
+                                buildMapping,
+                                libraryService,
+                                parameter.dontBuildUnitTestRuntimeClasspath
+                        )
+                    },
+                    testFixturesArtifact = (variant as? HasTestFixtures)?.testFixtures?.let {
+                        createDependencies(
+                                it,
+                                buildMapping,
+                                libraryService,
+                                parameter.dontBuildTestFixtureRuntimeClasspath
+                        )
+                    },
+                    libraryService.getAllLibraries()
+            )
+        }
     }
 
     private fun createBasicVariant(

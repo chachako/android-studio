@@ -21,6 +21,7 @@ import com.android.builder.model.v2.models.AndroidDsl
 import com.android.builder.model.v2.models.AndroidProject
 import com.android.builder.model.v2.models.BasicAndroidProject
 import com.android.builder.model.v2.models.BuildMap
+import com.android.builder.model.v2.models.ClasspathParameterConfig
 import com.android.builder.model.v2.models.ModelBuilderParameter
 import com.android.builder.model.v2.models.ProjectSyncIssues
 import com.android.builder.model.v2.models.VariantDependencies
@@ -41,7 +42,7 @@ import java.io.File
  */
 class GetAndroidModelV2Action(
     private val variantName: String? = null,
-    private val dontBuildRuntimeClasspath: Boolean = false,
+    private val classpathParameterConfig: ClasspathParameterConfig = ClasspathParameterConfig.ALL,
     private val nativeParams: ModelBuilderV2.NativeModuleParams? = null
 ) : BuildAction<ModelContainerV2> {
 
@@ -132,7 +133,7 @@ class GetAndroidModelV2Action(
                         ModelBuilderParameter::class.java
                     ) {
                         it.variantName = variantName
-                        it.dontBuildRuntimeClasspath = dontBuildRuntimeClasspath
+                        classpathParameterConfig.applyTo(it)
                     }
                 } else null
 

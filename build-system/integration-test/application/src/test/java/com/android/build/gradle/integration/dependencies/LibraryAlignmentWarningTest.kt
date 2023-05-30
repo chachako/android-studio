@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.options.BooleanOption
 import com.android.builder.model.v2.ide.SyncIssue
+import com.android.builder.model.v2.models.ClasspathParameterConfig
 import com.android.testutils.MavenRepoGenerator
 import com.google.common.truth.Truth
 import org.junit.Before
@@ -36,7 +37,7 @@ class LibraryAlignmentWarningTest {
 
     @Test
     fun `warning issued when runtime classpath is built but libraries constrained`() {
-        val model = project.modelV2().ignoreSyncIssues(SyncIssue.SEVERITY_WARNING).fetchModels("debug", dontBuildRuntimeClasspath = true)
+        val model = project.modelV2().ignoreSyncIssues(SyncIssue.SEVERITY_WARNING).fetchModels("debug", ClasspathParameterConfig.ANDROID_TEST_ONLY)
         val issueModel = model.container.singleProjectInfo.issues
         Truth.assertThat(issueModel).isNotNull()
         Truth.assertThat(issueModel!!.syncIssues.map {it.message}).containsExactly("""
@@ -59,11 +60,11 @@ class LibraryAlignmentWarningTest {
         project.modelV2()
             // allowing experimental option warning
             .allowOptionWarning(BooleanOption.EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS)
-            .fetchModels("debug", dontBuildRuntimeClasspath = true)
+            .fetchModels("debug", ClasspathParameterConfig.ANDROID_TEST_ONLY)
     }
 
     @Test
     fun `warning not issued when runtime classpath is built`() {
-        project.modelV2().fetchModels("debug", dontBuildRuntimeClasspath = false)
+        project.modelV2().fetchModels("debug", ClasspathParameterConfig.ALL)
     }
 }

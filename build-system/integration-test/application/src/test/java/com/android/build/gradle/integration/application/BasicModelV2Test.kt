@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.application
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.builder
 import com.android.build.gradle.integration.common.fixture.model.ModelComparator
 import com.android.builder.model.v2.ide.SyncIssue
+import com.android.builder.model.v2.models.ClasspathParameterConfig
 import org.junit.Rule
 import org.junit.Test
 
@@ -41,10 +42,22 @@ class BasicModelV2Test: ModelComparator() {
     }
 
     @Test
+    fun `test models no java runtime classpath`() {
+        val result = project.modelV2()
+            .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
+            .fetchModels(variantName = "debug", classpathParameterConfig = ClasspathParameterConfig.ANDROID_TEST_ONLY)
+
+        with(result).compareBasicAndroidProject(goldenFile = "basicAndroidProject")
+        with(result).compareAndroidProject(goldenFile = "testProject")
+        with(result).compareAndroidDsl(goldenFile = "AndroidDsl")
+        with(result).compareVariantDependencies(goldenFile = "testDepAndroidRuntime")
+    }
+
+    @Test
     fun `test models no runtime classpath`() {
         val result = project.modelV2()
             .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
-            .fetchModels(variantName = "debug", dontBuildRuntimeClasspath = true)
+            .fetchModels(variantName = "debug", classpathParameterConfig = ClasspathParameterConfig.NONE)
 
         with(result).compareBasicAndroidProject(goldenFile = "basicAndroidProject")
         with(result).compareAndroidProject(goldenFile = "testProject")

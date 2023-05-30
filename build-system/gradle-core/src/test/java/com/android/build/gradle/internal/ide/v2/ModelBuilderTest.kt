@@ -255,6 +255,9 @@ class ModelBuilderTest {
 
     data class FakeModelBuilderParameter(
         override var variantName: String = "foo",
-        override var dontBuildRuntimeClasspath: Boolean = false
+        override var dontBuildRuntimeClasspath: Boolean = false,
+        override var dontBuildUnitTestRuntimeClasspath: Boolean = false,
+        override var dontBuildAndroidTestRuntimeClasspath: Boolean = false,
+        override var dontBuildTestFixtureRuntimeClasspath: Boolean = false,
     ) : ModelBuilderParameter
 }

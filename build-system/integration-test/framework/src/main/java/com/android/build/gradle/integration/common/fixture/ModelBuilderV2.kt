@@ -24,6 +24,7 @@ import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.Option
 import com.android.builder.model.v2.ide.SyncIssue
 import com.android.builder.model.v2.models.AndroidProject
+import com.android.builder.model.v2.models.ClasspathParameterConfig
 import com.android.builder.model.v2.models.VariantDependencies
 import com.android.builder.model.v2.models.ndk.NativeModule
 import com.google.common.collect.Sets
@@ -113,7 +114,7 @@ class ModelBuilderV2 internal constructor(
      */
     fun fetchModels(
         variantName: String? = null,
-        dontBuildRuntimeClasspath: Boolean = false,
+        classpathParameterConfig: ClasspathParameterConfig = ClasspathParameterConfig.ALL,
         nativeParams: NativeModuleParams? = null
     ): FetchResult<ModelContainerV2> {
         val container =
@@ -121,7 +122,7 @@ class ModelBuilderV2 internal constructor(
                     buildModelV2(
                         GetAndroidModelV2Action(
                             variantName,
-                            dontBuildRuntimeClasspath,
+                            classpathParameterConfig,
                             nativeParams
                         )
                     )
@@ -134,13 +135,13 @@ class ModelBuilderV2 internal constructor(
     }
 
     /** Java interop friendly signature, as default parameters are not respected. */
-    fun fetchModels() = fetchModels(null, false, null)
+    fun fetchModels() = fetchModels(null, ClasspathParameterConfig.ALL, null)
 
     /** Java interop friendly signature, as default parameters are not respected. */
     fun fetchModels(
         variantName: String?,
         nativeParams: NativeModuleParams?
-    ) = fetchModels(variantName, false, nativeParams)
+    ) = fetchModels(variantName, ClasspathParameterConfig.ALL, nativeParams)
 
     /**
      * Fetches the [AndroidProject], [VariantDependencies] and [ProjectSyncIssues] for each project
