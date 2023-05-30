@@ -234,4 +234,6 @@ class ScreenshotProjectSystem(private val project: ComposeProject) : AndroidProj
     }
 
     override fun isNamespaceOrParentPackage(packageName: String): Boolean = TODO()
+    override fun getKnownApplicationIds(): Set<String> = TODO()
+    override fun findModulesWithApplicationId(applicationId: String): Collection<Module> = TODO()
 }
