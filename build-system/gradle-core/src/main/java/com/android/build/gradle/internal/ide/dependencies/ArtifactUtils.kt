@@ -95,7 +95,7 @@ class ArtifactCollectionsInputsImpl constructor(
         runtimeType,
     )
 
-    override val projectBuildPath: Provider<String> = getBuildName(variantDependencies)
+    override val projectBuildPath: Provider<String> = getBuildPath(variantDependencies)
 
     override val compileClasspath: ArtifactCollections = ArtifactCollections(
         variantDependencies,

@@ -48,7 +48,6 @@ internal fun buildGraph(
 interface DependencyBuilder {
     fun project(
         path: String,
-        buildName: String = "defaultBuildName",
         action: ProjectDependencyNodeBuilder.() -> Unit
     ): ProjectDependencyNodeBuilder
 
@@ -84,10 +83,9 @@ open class DependencyBuilderImpl: DependencyBuilder {
 
     override fun project(
         path: String,
-        buildName: String,
         action: ProjectDependencyNodeBuilder.() -> Unit
     ): ProjectDependencyNodeBuilder {
-        return ProjectDependencyBuilderImpl(path, buildName).also {
+        return ProjectDependencyBuilderImpl(path).also {
             action(it)
             children.add(it)
         }
@@ -228,14 +226,13 @@ abstract class DependencyNodeBuilderImpl: DependencyBuilderImpl(), DependencyNod
 }
 
 private class ProjectDependencyBuilderImpl(
-    val projectPath: String,
-    val buildName: String
+    val projectPath: String
 ): DependencyNodeBuilderImpl(), ProjectDependencyNodeBuilder {
 
     override fun getComponentIdentifier(): ComponentIdentifier {
         return FakeProjectComponentIdentifier(
             projectPath = projectPath,
-            buildIdentifier = FakeBuildIdentifier(buildName)
+            buildIdentifier = FakeBuildIdentifier()
         )
     }
 }

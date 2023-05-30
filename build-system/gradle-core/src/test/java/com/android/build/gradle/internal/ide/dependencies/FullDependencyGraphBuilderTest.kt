@@ -131,14 +131,14 @@ internal class FullDependencyGraphBuilderTest {
         Truth
             .assertThat(compileDependencies.map { it.key })
             .containsExactly(
-                "defaultBuildName|:foo||foo:bar:1.0",
-                "defaultBuildName|:foo||foo:bar-test-fixtures:1.0"
+                "defaultBuildPath|:foo||foo:bar:1.0",
+                "defaultBuildPath|:foo||foo:bar-test-fixtures:1.0"
             )
 
         // check that the dependency instance of the fixture is the same instance as the main
         val fixture =
-            compileDependencies.single { it.key == "defaultBuildName|:foo||foo:bar-test-fixtures:1.0" }
-        val main = compileDependencies.single { it.key == "defaultBuildName|:foo||foo:bar:1.0" }
+            compileDependencies.single { it.key == "defaultBuildPath|:foo||foo:bar-test-fixtures:1.0" }
+        val main = compileDependencies.single { it.key == "defaultBuildPath|:foo||foo:bar:1.0" }
 
         Truth.assertThat(fixture.dependencies.single()).isSameInstanceAs(main)
     }

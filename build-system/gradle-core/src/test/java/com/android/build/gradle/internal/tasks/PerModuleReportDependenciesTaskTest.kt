@@ -33,23 +33,15 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.build.gradle.internal.fixtures.FakeArtifactCollection
-import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import com.android.build.gradle.internal.fixtures.FakeResolutionResult
 import com.android.build.gradle.internal.fixtures.addDependencyEdge
 import com.android.build.gradle.internal.fixtures.createModuleComponent
 import com.android.build.gradle.internal.fixtures.createProjectComponent
 import com.android.build.gradle.internal.tasks.bundle.appDependencies
-import com.android.testutils.MockitoKt.any
 import com.android.testutils.MockitoKt.mock
 import com.android.tools.build.libraries.metadata.AppDependencies
 import com.google.common.truth.Truth.assertThat
-import java.io.FileInputStream
-import java.io.IOException
-import java.net.URI
 import org.gradle.api.Project
-import org.gradle.api.artifacts.ArtifactCollection
-import org.gradle.api.artifacts.ArtifactView
-import org.gradle.api.artifacts.ResolvableDependencies
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.api.artifacts.result.ResolvedComponentResult
@@ -62,11 +54,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mock
 import org.mockito.Mockito
-import org.mockito.junit.MockitoJUnit
-import org.mockito.junit.MockitoRule
-import org.mockito.quality.Strictness
+import java.io.FileInputStream
+import java.io.IOException
+import java.net.URI
 
 class PerModuleReportDependenciesTaskTest {
 
@@ -217,9 +208,13 @@ private fun ivyRepoMock(repoName: String, repoUrl: String): IvyArtifactRepositor
 private fun createModuleComponentInternal(group:String, name:String, version:String, repositoryName:String) =
     FakeResolvedComponentResultInternal(createModuleComponent(group,name,version), repositoryName)
 
-private class FakeResolvedComponentResultInternal(thingy: ResolvedComponentResult, private val repositoryName:String ) :
+private class FakeResolvedComponentResultInternal(thingy: ResolvedComponentResult, private val repositoryName:String) :
     ResolvedComponentResult by thingy, ResolvedComponentResultInternal {
+    @Deprecated("This property is deprecated starting with Gradle 8.2")
     override fun getRepositoryName(): String = repositoryName
+    override fun getRepositoryId(): String? {
+        TODO("Not yet implemented")
+    }
     override fun getAllVariants(): MutableList<ResolvedVariantResult> {
         TODO("Not yet implemented")
     }

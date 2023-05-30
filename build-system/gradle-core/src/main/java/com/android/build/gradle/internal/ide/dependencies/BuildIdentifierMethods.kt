@@ -14,34 +14,32 @@
  * limitations under the License.
  */
 
-@file:JvmName("BuildMappingUtils")
+@file:JvmName("BuildIdentifierMethods")
 package com.android.build.gradle.internal.ide.dependencies
 
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
-import org.gradle.api.artifacts.component.BuildIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.provider.Provider
 
 // For Gradle source dependencies we cannot get a name, so use this one.
 const val UNKNOWN_BUILD_NAME = "__unknown__"
 
+// This does not take build path into account, tracked in http://b/196226533.
 fun ProjectComponentIdentifier.getIdString(): String {
-    return projectPath.apply {
-        (build as BuildIdentifier?)?.let { plus(":${it.name}") }
-    }
+    return projectPath
 }
 
 /**
- * Gets the name of the Gradle build for the project. This relies on the fact that the current project is always
+ * Gets the path of the Gradle build for the project. This relies on the fact that the current project is always
  * the root of resolved configuration.
  *
  * Once we upgrade to Gradle 8.3 (http://b/290584180), we should use Project.buildTreePath instead.
  */
-fun getBuildName(variantDependencies: VariantDependencies): Provider<String> {
+fun getBuildPath(variantDependencies: VariantDependencies): Provider<String> {
    return variantDependencies.getResolutionResult(
         AndroidArtifacts.ConsumedConfigType.COMPILE_CLASSPATH
     ).rootComponent.map {
-        (it.id as? ProjectComponentIdentifier)?.build?.name ?: UNKNOWN_BUILD_NAME
+        (it.id as? ProjectComponentIdentifier)?.build?.buildPath ?: UNKNOWN_BUILD_NAME
     }
 }

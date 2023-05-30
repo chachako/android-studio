@@ -45,7 +45,7 @@ internal fun createProjectComponent(projectPath: String) =
     FakeResolvedComponentResult(
         id = FakeProjectComponentIdentifier(
             projectPath = projectPath,
-            buildIdentifier = FakeBuildIdentifier("defaultBuildName")
+            buildIdentifier = FakeBuildIdentifier()
         ),
     )
 

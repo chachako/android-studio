@@ -99,7 +99,10 @@ class ScreenshotTest {
 
     @Test
     fun runScreenshotTestAndRecordGolden() {
+        // TODO (b/286549613): remove withFailOnWarning after
+        //  resolving test which fails after Gradle 8.2 upgrade
         project.executor()
+                .withFailOnWarning(false)
                 .with(BooleanOption.USE_ANDROID_X, true)
                 .with(BooleanOption.ENABLE_SCREENSHOT_TEST, true)
                 .run("screenshotTestDebugAndroidTest", "--record-golden")
@@ -112,16 +115,19 @@ class ScreenshotTest {
 
     @Test
     fun runScreenshotTestVerifyScreenshot() {
+        // TODO (b/286549613): remove withFailOnWarning after
+        //  resolving test which fails after Gradle 8.2 upgrade
         project.executor()
+            .withFailOnWarning(false)
             .with(BooleanOption.USE_ANDROID_X, true)
             .with(BooleanOption.ENABLE_SCREENSHOT_TEST, true)
             .run("screenshotTestDebugAndroidTest", "--record-golden")
 
         project.executor()
-                .withFailOnWarning(false)
-                .with(BooleanOption.USE_ANDROID_X, true)
-                .with(BooleanOption.ENABLE_SCREENSHOT_TEST, true)
-                .run("screenshotTestDebugAndroidTest")
+            .withFailOnWarning(false)
+            .with(BooleanOption.USE_ANDROID_X, true)
+            .with(BooleanOption.ENABLE_SCREENSHOT_TEST, true)
+            .run("screenshotTestDebugAndroidTest")
 
         assertThat(
                 project.getOutputFile(

@@ -34,7 +34,6 @@ import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.result.ResolvedVariantResult
 import org.gradle.internal.component.local.model.OpaqueComponentArtifactIdentifier
 import java.io.File
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * a Service that can create a [Library] for a given [ResolvedArtifact].
@@ -178,7 +177,7 @@ class LibraryCacheImpl(
                 productFlavors,
                 getAttributeMap(it, productFlavors),
                 getCapabilityList(it),
-                stringCache.cacheString(component.build.name),
+                stringCache.cacheString(component.build.buildPath),
                 stringCache.cacheString(component.projectPath),
                 it.capabilities.any { capability ->
                     capability.isProjectTestFixturesCapability(component.projectName)

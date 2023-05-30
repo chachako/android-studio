@@ -19,9 +19,11 @@ package com.android.build.gradle.internal.fixtures
 import org.gradle.api.artifacts.component.BuildIdentifier
 
 data class FakeBuildIdentifier(
-    private val _name: String,
-    private val _isCurrentBuild: Boolean = true
+    private val _buildPath: String = "defaultBuildPath"
 ): BuildIdentifier {
-    override fun getName(): String = _name
-    override fun isCurrentBuild(): Boolean = _isCurrentBuild
+    @Deprecated("This property is deprecated starting with Gradle 8.2", ReplaceWith("\"\""))
+    override fun getName(): String = ""
+    @Deprecated("This property is deprecated starting with Gradle 8.2", ReplaceWith("false"))
+    override fun isCurrentBuild(): Boolean = false
+    override fun getBuildPath(): String = _buildPath
 }

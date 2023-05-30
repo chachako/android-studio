@@ -157,7 +157,7 @@ data class ResolvedArtifact internal constructor(
         is ProjectComponentIdentifier -> {
 
             StringBuilder(100)
-                .append(componentIdentifier.build.name)
+                .append(componentIdentifier.build.buildPath)
                 .append("@@")
                 .append(componentIdentifier.projectPath)
                 .also { sb ->

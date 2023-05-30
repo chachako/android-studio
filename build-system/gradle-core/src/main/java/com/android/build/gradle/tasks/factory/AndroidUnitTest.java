@@ -31,6 +31,7 @@ import com.android.build.gradle.internal.component.ComponentCreationConfig;
 import com.android.build.gradle.internal.component.UnitTestCreationConfig;
 import com.android.build.gradle.internal.component.VariantCreationConfig;
 import com.android.build.gradle.internal.core.dsl.features.UnitTestOptionsDslInfo;
+import com.android.build.gradle.internal.coverage.JacocoOptions;
 import com.android.build.gradle.internal.publishing.AndroidArtifacts;
 import com.android.build.gradle.internal.scope.BootClasspathBuilder;
 import com.android.build.gradle.internal.scope.InternalArtifactType;
@@ -62,6 +63,7 @@ import org.gradle.api.tasks.testing.JUnitXmlReport;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.api.tasks.testing.TestTaskReports;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
+import org.gradle.testing.jacoco.plugins.JacocoPluginExtension;
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension;
 import org.jetbrains.annotations.NotNull;
 
@@ -155,6 +157,13 @@ public abstract class AndroidUnitTest extends Test implements VariantAwareTask {
         @Override
         public void configure(@NonNull AndroidUnitTest task) {
             super.configure(task);
+
+            JacocoPluginExtension pluginExtension =
+                    task.getProject().getExtensions().findByType(JacocoPluginExtension.class);
+            if (pluginExtension != null) {
+                pluginExtension.setToolVersion(JacocoOptions.DEFAULT_VERSION);
+            }
+
             unitTestCreationConfig.onTestedVariant(
                     testedConfig -> {
                         if (unitTestCreationConfig.isUnitTestCoverageEnabled()) {

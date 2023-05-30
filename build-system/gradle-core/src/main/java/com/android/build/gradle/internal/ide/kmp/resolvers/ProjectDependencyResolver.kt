@@ -18,7 +18,7 @@ package com.android.build.gradle.internal.ide.kmp.resolvers
 
 import com.android.build.api.attributes.AgpVersionAttr
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
-import com.android.build.gradle.internal.ide.dependencies.getBuildName
+import com.android.build.gradle.internal.ide.dependencies.getBuildPath
 import com.android.build.gradle.internal.ide.kmp.LibraryResolver
 import com.android.build.gradle.internal.ide.proto.convert
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
@@ -64,7 +64,7 @@ internal class ProjectDependencyResolver(
             it is ProjectComponentIdentifier
         }
 
-        val currentBuildName = getBuildName(component.variantDependencies).get()
+        val currentBuildPath = getBuildPath(component.variantDependencies).get()
         return artifacts.mapNotNull { artifact ->
             val componentId = artifact.id.componentIdentifier as ProjectComponentIdentifier
 
@@ -72,14 +72,14 @@ internal class ProjectDependencyResolver(
             // the main module. This should be handled as a friend dependency which will allow the
             // test components to view the internals of the main. So we just ignore this case here.
             if (currentProjectPath == componentId.projectPath &&
-                currentBuildName == componentId.build.name) {
+                currentBuildPath == componentId.build.buildPath) {
                 return@mapNotNull  null
             }
 
             IdeaKotlinProjectArtifactDependency(
                 type = IdeaKotlinSourceDependency.Type.Regular,
                 coordinates = IdeaKotlinProjectCoordinates(
-                    buildId = componentId.build.name,
+                    buildId = componentId.build.buildPath,
                     projectPath = componentId.projectPath,
                     projectName = componentId.projectName
                 )

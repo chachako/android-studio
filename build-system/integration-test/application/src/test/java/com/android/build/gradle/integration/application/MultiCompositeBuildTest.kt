@@ -84,13 +84,6 @@ class MultiCompositeBuildTest {
 
     lateinit var modelContainer: ModelContainer<AndroidProject>
 
-    // build identifiers for root and included builds
-    lateinit var testCompositeApp: String
-    lateinit var testCompositeLib1: String
-    lateinit var testCompositeLib2: String
-    lateinit var testCompositeLib3: String
-    lateinit var testCompositeLib4: String
-
     @Before
     fun setup() {
         modelContainer = project.getSubproject("TestCompositeApp")
@@ -98,14 +91,6 @@ class MultiCompositeBuildTest {
             .withFailOnWarning(false)
             .level(modelLevel)
             .fetchAndroidProjects()
-
-        val rootDir = project.projectDir
-
-        testCompositeApp = File(rootDir, "TestCompositeApp").absolutePath
-        testCompositeLib1 = File(rootDir, "TestCompositeLib1").absolutePath
-        testCompositeLib2 = File(rootDir, "TestCompositeLib2").absolutePath
-        testCompositeLib3 = File(rootDir, "TestCompositeLib3").absolutePath
-        testCompositeLib4 = File(rootDir, "TestCompositeLib4").absolutePath
     }
 
     @Test
@@ -122,17 +107,18 @@ class MultiCompositeBuildTest {
                 moduleName = "<root>:app",
                 expectedAndroidModules = listOf(
                     ":" to ":composite0",
-                    "TestCompositeLib1" to ":composite1",
-                    "TestCompositeLib3" to ":composite3"),
+                    ":TestCompositeLib1" to ":composite1",
+                    ":TestCompositeLib3" to ":composite3"),
                 expectedJavaModules = listOf(
-                    "TestCompositeLib2" to ":",
-                    "TestCompositeLib4" to ":"),
+                    ":TestCompositeLib2" to ":",
+                    ":TestCompositeLib4" to ":"),
                 globalLibrary = getGlobalLibrary())
     }
 
     @Test
     fun `dependencies for included build module`() {
-        val modelMap = findModelMapByRootDir(testCompositeLib1)
+        val modelMap =
+            findModelMapByRootDir(File(project.projectDir, "TestCompositeLib1").absolutePath)
 
         assertThat(modelMap.entries).hasSize(2)
         assertThat(modelMap.keys).containsExactly(":app", ":composite1")
@@ -140,10 +126,10 @@ class MultiCompositeBuildTest {
         // test the composite1 module
         modelMap[":composite1"]!!.getVariantByName("debug").testSubModuleDependencies(
             moduleName = "TestCompositeLib1:composite1",
-            expectedAndroidModules = listOf("TestCompositeLib3" to ":composite3"),
+            expectedAndroidModules = listOf(":TestCompositeLib3" to ":composite3"),
             expectedJavaModules = listOf(
-                "TestCompositeLib2" to ":",
-                "TestCompositeLib4" to ":"
+                ":TestCompositeLib2" to ":",
+                ":TestCompositeLib4" to ":"
             ),
             globalLibrary = getGlobalLibrary()
         )
@@ -152,12 +138,12 @@ class MultiCompositeBuildTest {
         modelMap[":app"]!!.getVariantByName("debug").testSubModuleDependencies(
             moduleName = "TestCompositeLib1:app",
             expectedAndroidModules = listOf(
-                "TestCompositeLib1" to ":composite1",
-                "TestCompositeLib3" to ":composite3"
+                ":TestCompositeLib1" to ":composite1",
+                ":TestCompositeLib3" to ":composite3"
             ),
             expectedJavaModules = listOf(
-                "TestCompositeLib2" to ":",
-                "TestCompositeLib4" to ":"
+                ":TestCompositeLib2" to ":",
+                ":TestCompositeLib4" to ":"
             ),
             globalLibrary = getGlobalLibrary()
         )

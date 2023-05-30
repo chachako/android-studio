@@ -104,6 +104,7 @@ import org.gradle.api.attributes.AttributesSchema
 import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.Usage
 import org.gradle.api.internal.artifacts.ArtifactAttributes
+import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import java.lang.Boolean.FALSE
 import java.lang.Boolean.TRUE
 
@@ -624,6 +625,8 @@ class DependencyConfigurator(
     }
 
     fun configureJacocoTransforms() : DependencyConfigurator {
+        project.extensions.findByType(JacocoPluginExtension::class.java)?.toolVersion =
+            JacocoOptions.DEFAULT_VERSION
         val jacocoTransformParametersConfig: (JacocoTransform.Params) -> Unit = {
             val jacocoVersion = JacocoOptions.DEFAULT_VERSION
             val jacocoConfiguration = JacocoConfigurations

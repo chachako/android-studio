@@ -24,7 +24,7 @@ import static org.gradle.internal.logging.text.StyledTextOutput.Style.Info;
 import com.android.annotations.NonNull;
 import com.android.build.gradle.internal.component.ComponentCreationConfig;
 import com.android.build.gradle.internal.ide.dependencies.ArtifactUtils;
-import com.android.build.gradle.internal.ide.dependencies.BuildMappingUtils;
+import com.android.build.gradle.internal.ide.dependencies.BuildIdentifierMethods;
 import com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService;
 import com.android.build.gradle.internal.ide.dependencies.ResolvedArtifact;
 import com.android.build.gradle.internal.ide.dependencies.ResolvedArtifact.DependencyType;
@@ -131,7 +131,8 @@ public class AndroidDependenciesRenderer extends TextReportRenderer {
 
                         if (id instanceof ProjectComponentIdentifier) {
                             String projectId =
-                                    BuildMappingUtils.getIdString((ProjectComponentIdentifier) id);
+                                    BuildIdentifierMethods.getIdString(
+                                            (ProjectComponentIdentifier) id);
                             if (artifact.isWrappedModule()) {
                                 if (artifact.getArtifactFile() == null) {
                                     text = String.format("%s", projectId);

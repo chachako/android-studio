@@ -82,13 +82,12 @@ abstract class ArtifactHandler<DependencyItemT> protected constructor(
                 )
             }
         } else {
-
             if (artifact.dependencyType === ResolvedArtifact.DependencyType.ANDROID) {
                 val lintJar = lintJarMap?.get(id)
 
                 handleAndroidModule(
                     id.projectPath,
-                    id.build.name,
+                    id.build.buildPath,
                     artifact.variantName,
                     artifact.isTestFixturesArtifact,
                     artifact.artifactFile,
@@ -107,7 +106,7 @@ abstract class ArtifactHandler<DependencyItemT> protected constructor(
             } else {
                 handleJavaModule(
                     id.projectPath,
-                    id.build.name,
+                    id.build.buildPath,
                     artifact.variantName,
                     artifact.isTestFixturesArtifact,
                     modelAddressSupplier

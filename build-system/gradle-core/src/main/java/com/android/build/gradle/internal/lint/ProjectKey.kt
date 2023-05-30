@@ -40,7 +40,7 @@ internal data class ProjectKey(val buildId: String, val projectPath: String, val
 
 internal fun asProjectKey(artifact: ResolvedArtifactResult): ProjectKey {
     val id = artifact.id.componentIdentifier as ProjectComponentIdentifier
-    return ProjectKey(id.build.name, id.projectPath, artifact.getVariantName())
+    return ProjectKey(id.build.buildPath, id.projectPath, artifact.getVariantName())
 }
 
 internal fun ArtifactCollection.asProjectKeyedMap(): Map<ProjectKey, File> {
@@ -78,7 +78,7 @@ internal data class ProjectSourceSetKey(
 internal fun asProjectSourceSetKey(artifact: ResolvedArtifactResult): ProjectSourceSetKey {
     val id = artifact.id.componentIdentifier as ProjectComponentIdentifier
     return ProjectSourceSetKey(
-        id.build.name,
+        id.build.buildPath,
         id.projectPath,
         artifact.getVariantName(),
         artifact.hasProjectTestFixturesCapability()
