@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.SdkConstants.AAR_FORMAT_VERSION_PROPERTY
 import com.android.SdkConstants.AAR_METADATA_VERSION_PROPERTY
+import com.android.SdkConstants.CORE_LIBRARY_DESUGARING_ENABLED_PROPERTY
 import com.android.SdkConstants.FORCE_COMPILE_SDK_PREVIEW_PROPERTY
 import com.android.SdkConstants.MIN_ANDROID_GRADLE_PLUGIN_VERSION_PROPERTY
 import com.android.SdkConstants.MIN_COMPILE_SDK_EXTENSION_PROPERTY
@@ -77,6 +78,7 @@ class AarMetadataTaskTest {
         task.minCompileSdkExtension.set(1)
         task.minAgpVersion.set("7.0.0")
         task.forceCompileSdkPreview.set("TiramisuPrivacySandbox")
+        task.coreLibraryDesugaringEnabled.set(true)
         task.taskAction()
 
         checkAarMetadataFile(
@@ -86,7 +88,8 @@ class AarMetadataTaskTest {
             minCompileSdk = "28",
             minCompileSdkExtension = "1",
             minAgpVersion = "7.0.0",
-            compileSdkPreview = "TiramisuPrivacySandbox"
+            compileSdkPreview = "TiramisuPrivacySandbox",
+            coreLibraryDesugaringEnabled = "true"
         )
     }
 
@@ -98,6 +101,7 @@ class AarMetadataTaskTest {
         task.minCompileSdk.set(28)
         task.minCompileSdkExtension.set(1)
         task.minAgpVersion.set("7.0.0-beta01")
+        task.coreLibraryDesugaringEnabled.set(false)
         try {
             task.taskAction()
             fail("expecting RuntimeException")
@@ -118,6 +122,7 @@ class AarMetadataTaskTest {
         task.minCompileSdk.set(28)
         task.minCompileSdkExtension.set(1)
         task.minAgpVersion.set("10000.0.0")
+        task.coreLibraryDesugaringEnabled.set(false)
         try {
             task.taskAction()
             fail("expecting RuntimeException")
@@ -138,6 +143,7 @@ class AarMetadataTaskTest {
         minCompileSdkExtension: String,
         minAgpVersion: String,
         compileSdkPreview: String? = null,
+        coreLibraryDesugaringEnabled: String
     ) {
         assertThat(file).exists()
         val properties = Properties()
@@ -154,5 +160,8 @@ class AarMetadataTaskTest {
             assertThat(properties.getProperty(FORCE_COMPILE_SDK_PREVIEW_PROPERTY))
                 .isEqualTo(compileSdkPreview)
         }
+        assertThat(properties.getProperty(CORE_LIBRARY_DESUGARING_ENABLED_PROPERTY)).isEqualTo(
+            coreLibraryDesugaringEnabled
+        )
     }
 }

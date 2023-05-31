@@ -15,6 +15,7 @@
  */
 package com.android.build.gradle.integration.lint
 
+import com.android.build.gradle.integration.common.fixture.DESUGAR_DEPENDENCY_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.truth.PathSubject.assertThat
@@ -87,6 +88,9 @@ class LintModelIntegrationTest {
                 android {
                     compileOptions {
                         coreLibraryDesugaringEnabled true
+                    }
+                    dependencies {
+                        coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$DESUGAR_DEPENDENCY_VERSION"
                     }
                 }
             """.trimIndent()

@@ -71,7 +71,8 @@ class CheckAarMetadataTaskTest {
                                 aarMetadataVersion = AarMetadataTask.AAR_METADATA_VERSION,
                                 minCompileSdk = 28,
                                 minCompileSdkExtension = 0,
-                                minAgpVersion = "3.0.0"
+                                minAgpVersion = "3.0.0",
+                                coreLibraryDesugaringEnabled = true,
                             )
                         },
                         identifier = FakeComponentIdentifier("displayName")
@@ -84,6 +85,7 @@ class CheckAarMetadataTaskTest {
         task.disableCompileSdkChecks.set(false)
         task.agpVersion.set(Version.ANDROID_GRADLE_PLUGIN_VERSION)
         task.projectPath.set(":app")
+        task.coreLibraryDesugaringEnabled.set(true)
         task.taskAction()
     }
 
@@ -96,7 +98,8 @@ class CheckAarMetadataTaskTest {
                 aarMetadataVersion = AarMetadataTask.AAR_METADATA_VERSION,
                 minCompileSdk = 28,
                 minCompileSdkExtension = 0,
-                minAgpVersion = "3.0.0"
+                minAgpVersion = "3.0.0",
+                coreLibraryDesugaringEnabled = false,
             )
         }
         task.aarMetadataArtifacts =
@@ -113,10 +116,10 @@ class CheckAarMetadataTaskTest {
         task.compileSdkVersion.set("android-28")
         task.disableCompileSdkChecks.set(false)
         task.agpVersion.set(Version.ANDROID_GRADLE_PLUGIN_VERSION)
+        task.coreLibraryDesugaringEnabled.set(false)
         task.projectPath.set(":app")
         try {
             task.taskAction()
-            fail("Expected RuntimeException")
         } catch (e: RuntimeException) {
             assertThat(e.message).isEqualTo("""
                 An issue was found when checking AAR metadata:
@@ -139,7 +142,8 @@ class CheckAarMetadataTaskTest {
                 aarMetadataVersion = "2.0",
                 minCompileSdk = 28,
                 minCompileSdkExtension = 0,
-                minAgpVersion = "3.0.0"
+                minAgpVersion = "3.0.0",
+                coreLibraryDesugaringEnabled = false,
             )
         }
         task.aarMetadataArtifacts =
@@ -156,10 +160,10 @@ class CheckAarMetadataTaskTest {
         task.compileSdkVersion.set("android-28")
         task.disableCompileSdkChecks.set(false)
         task.agpVersion.set(Version.ANDROID_GRADLE_PLUGIN_VERSION)
+        task.coreLibraryDesugaringEnabled.set(false)
         task.projectPath.set(":app")
         try {
             task.taskAction()
-            fail("Expected RuntimeException")
         } catch (e: RuntimeException) {
             assertThat(e.message).isEqualTo("""
                 An issue was found when checking AAR metadata:
@@ -186,7 +190,8 @@ class CheckAarMetadataTaskTest {
                                 aarMetadataVersion = AarMetadataTask.AAR_METADATA_VERSION,
                                 minCompileSdk = 28,
                                 minCompileSdkExtension = 0,
-                                minAgpVersion = "3.0.0"
+                                minAgpVersion = "3.0.0",
+                                coreLibraryDesugaringEnabled = false,
                             )
                         },
                         identifier = FakeComponentIdentifier("displayName")
@@ -199,10 +204,10 @@ class CheckAarMetadataTaskTest {
         task.disableCompileSdkChecks.set(false)
         task.agpVersion.set("7.2.0")
         task.maxRecommendedStableCompileSdkVersionForThisAgp.set(30)
+        task.coreLibraryDesugaringEnabled.set(false)
         task.projectPath.set(":app")
         try {
             task.taskAction()
-            fail("Expected RuntimeException")
         } catch (e: RuntimeException) {
             assertThat(e.message).isEqualTo(
                 """
@@ -241,7 +246,8 @@ class CheckAarMetadataTaskTest {
                                 aarMetadataVersion = AarMetadataTask.AAR_METADATA_VERSION,
                                 minCompileSdk = 47,
                                 minCompileSdkExtension = 0,
-                                minAgpVersion = "3.0.0"
+                                minAgpVersion = "3.0.0",
+                                coreLibraryDesugaringEnabled = false,
                             )
                         },
                         identifier = FakeComponentIdentifier("displayName")
@@ -254,10 +260,10 @@ class CheckAarMetadataTaskTest {
         task.disableCompileSdkChecks.set(false)
         task.agpVersion.set("7.2.0")
         task.maxRecommendedStableCompileSdkVersionForThisAgp.set(30)
+        task.coreLibraryDesugaringEnabled.set(false)
         task.projectPath.set(":app")
         try {
             task.taskAction()
-            fail("Expected RuntimeException")
         } catch (e: RuntimeException) {
             assertThat(e.message).isEqualTo("""
                 An issue was found when checking AAR metadata:
@@ -297,7 +303,8 @@ class CheckAarMetadataTaskTest {
                                 aarMetadataVersion = AarMetadataTask.AAR_METADATA_VERSION,
                                 minCompileSdk = 47,
                                 minCompileSdkExtension = 0,
-                                minAgpVersion = "3.0.0"
+                                minAgpVersion = "3.0.0",
+                                coreLibraryDesugaringEnabled = false,
                             )
                         },
                         identifier = FakeComponentIdentifier("displayName")
@@ -311,10 +318,10 @@ class CheckAarMetadataTaskTest {
         task.platformSdkApiLevel.set(46)
         task.agpVersion.set("7.2.0")
         task.maxRecommendedStableCompileSdkVersionForThisAgp.set(30)
+        task.coreLibraryDesugaringEnabled.set(false)
         task.projectPath.set(":app")
         try {
             task.taskAction()
-            fail("Expected RuntimeException")
         } catch (e: RuntimeException) {
             assertThat(e.message).isEqualTo("""
                 An issue was found when checking AAR metadata:
@@ -354,7 +361,8 @@ class CheckAarMetadataTaskTest {
                                 aarMetadataVersion = AarMetadataTask.AAR_METADATA_VERSION,
                                 minCompileSdk = 47,
                                 minCompileSdkExtension = 0,
-                                minAgpVersion = "3.0.0"
+                                minAgpVersion = "3.0.0",
+                                coreLibraryDesugaringEnabled = false,
                             )
                         },
                         identifier = FakeComponentIdentifier("displayName")
@@ -367,6 +375,7 @@ class CheckAarMetadataTaskTest {
         task.disableCompileSdkChecks.set(false)
         task.platformSdkApiLevel.set(47)
         task.agpVersion.set(Version.ANDROID_GRADLE_PLUGIN_VERSION)
+        task.coreLibraryDesugaringEnabled.set(false)
         task.projectPath.set(":app")
         task.taskAction()
     }
@@ -384,7 +393,8 @@ class CheckAarMetadataTaskTest {
                                 aarMetadataVersion = AarMetadataTask.AAR_METADATA_VERSION,
                                 minCompileSdk = 28,
                                 minCompileSdkExtension = 0,
-                                minAgpVersion = "3.0.0"
+                                minAgpVersion = "3.0.0",
+                                coreLibraryDesugaringEnabled = false,
                             )
                         },
                         identifier = FakeComponentIdentifier("displayName")
@@ -396,10 +406,10 @@ class CheckAarMetadataTaskTest {
         task.compileSdkVersion.set("android-28")
         task.disableCompileSdkChecks.set(false)
         task.agpVersion.set("3.0.0-beta1")
+        task.coreLibraryDesugaringEnabled.set(false)
         task.projectPath.set(":app")
         try {
             task.taskAction()
-            fail("Expected RuntimeException")
         } catch (e: RuntimeException) {
             assertThat(e.message).isEqualTo(
                 """
@@ -426,7 +436,8 @@ class CheckAarMetadataTaskTest {
                                 minCompileSdk = 28,
                                 minCompileSdkExtension = 0,
                                 minAgpVersion = "3.0.0",
-                                forceCompileSdkPreview = "Tiramisu"
+                                forceCompileSdkPreview = "Tiramisu",
+                                coreLibraryDesugaringEnabled = false,
                             )
                         },
                         identifier = FakeComponentIdentifier("displayName")
@@ -439,6 +450,7 @@ class CheckAarMetadataTaskTest {
         task.disableCompileSdkChecks.set(false)
         task.agpVersion.set(Version.ANDROID_GRADLE_PLUGIN_VERSION)
         task.projectPath.set(":app")
+        task.coreLibraryDesugaringEnabled.set(false)
         task.taskAction()
     }
 
@@ -456,7 +468,8 @@ class CheckAarMetadataTaskTest {
                                 minCompileSdk = 28,
                                 minCompileSdkExtension = 0,
                                 minAgpVersion = "3.0.0",
-                                forceCompileSdkPreview = "TiramisuPrivacySandbox"
+                                forceCompileSdkPreview = "TiramisuPrivacySandbox",
+                                coreLibraryDesugaringEnabled = false,
                             )
                         },
                         identifier = FakeComponentIdentifier("displayName")
@@ -467,11 +480,11 @@ class CheckAarMetadataTaskTest {
         task.aarMetadataVersion.set(AarMetadataTask.AAR_METADATA_VERSION)
         task.compileSdkVersion.set("android-28")
         task.disableCompileSdkChecks.set(false)
+        task.coreLibraryDesugaringEnabled.set(false)
         task.agpVersion.set("7.2.0")
         task.projectPath.set(":app")
         try {
             task.taskAction()
-            fail("Expected RuntimeException")
         } catch (e: RuntimeException) {
             assertThat(e.message).isEqualTo(
                 """
@@ -505,6 +518,7 @@ class CheckAarMetadataTaskTest {
                                 minCompileSdk = 28,
                                 minCompileSdkExtension = 1,
                                 minAgpVersion = "3.0.0",
+                                coreLibraryDesugaringEnabled = false,
                             )
                         },
                         identifier = FakeComponentIdentifier("displayName")
@@ -515,6 +529,7 @@ class CheckAarMetadataTaskTest {
         task.aarMetadataVersion.set(AarMetadataTask.AAR_METADATA_VERSION)
         task.compileSdkVersion.set("android-28-ext1")
         task.disableCompileSdkChecks.set(false)
+        task.coreLibraryDesugaringEnabled.set(false)
         task.agpVersion.set("3.0.0")
         task.projectPath.set(":app")
         task.taskAction()
@@ -534,6 +549,7 @@ class CheckAarMetadataTaskTest {
                                 minCompileSdk = 28,
                                 minCompileSdkExtension = 1,
                                 minAgpVersion = "3.0.0",
+                                coreLibraryDesugaringEnabled = false,
                             )
                         },
                         identifier = FakeComponentIdentifier("displayName")
@@ -544,6 +560,7 @@ class CheckAarMetadataTaskTest {
         task.aarMetadataVersion.set(AarMetadataTask.AAR_METADATA_VERSION)
         task.compileSdkVersion.set("android-28")
         task.disableCompileSdkChecks.set(false)
+        task.coreLibraryDesugaringEnabled.set(false)
         task.platformSdkExtension.set(1)
         task.agpVersion.set("3.0.0")
         task.projectPath.set(":app")
@@ -563,7 +580,8 @@ class CheckAarMetadataTaskTest {
                                 aarMetadataVersion = AarMetadataTask.AAR_METADATA_VERSION,
                                 minCompileSdk = 28,
                                 minCompileSdkExtension = 1,
-                                minAgpVersion = "3.0.0"
+                                minAgpVersion = "3.0.0",
+                                coreLibraryDesugaringEnabled = false,
                             )
                         },
                         identifier = FakeComponentIdentifier("displayName")
@@ -574,11 +592,11 @@ class CheckAarMetadataTaskTest {
         task.aarMetadataVersion.set(AarMetadataTask.AAR_METADATA_VERSION)
         task.compileSdkVersion.set("android-28")
         task.disableCompileSdkChecks.set(false)
+        task.coreLibraryDesugaringEnabled.set(false)
         task.agpVersion.set("3.0.0")
         task.projectPath.set(":app")
         try {
             task.taskAction()
-            fail("Expected RuntimeException")
         } catch (e: RuntimeException) {
             assertThat(e.message).isEqualTo(
                 """
@@ -603,7 +621,8 @@ class CheckAarMetadataTaskTest {
                 aarMetadataVersion = "2.0",
                 minCompileSdk = 28,
                 minCompileSdkExtension = 0,
-                minAgpVersion = "3.0.0"
+                minAgpVersion = "3.0.0",
+                coreLibraryDesugaringEnabled = false,
             )
         }
         task.aarMetadataArtifacts =
@@ -619,12 +638,12 @@ class CheckAarMetadataTaskTest {
         task.aarMetadataVersion.set(AarMetadataTask.AAR_METADATA_VERSION)
         task.compileSdkVersion.set("android-27")
         task.disableCompileSdkChecks.set(false)
+        task.coreLibraryDesugaringEnabled.set(false)
         task.agpVersion.set("3.0.0-beta1")
         task.projectPath.set(":app")
         task.maxRecommendedStableCompileSdkVersionForThisAgp.set(30)
         try {
             task.taskAction()
-            fail("Expected RuntimeException")
         } catch (e: RuntimeException) {
             assertThat(e.message).isEqualTo("""
                 4 issues were found when checking AAR metadata:
@@ -659,6 +678,49 @@ class CheckAarMetadataTaskTest {
                   4.  Dependency 'displayName' requires Android Gradle plugin 3.0.0 or higher.
 
                       This build currently uses Android Gradle plugin 3.0.0-beta1.
+            """.trimIndent())
+        }
+    }
+
+    @Test
+    fun testFailsOnCoreLibraryDesugaring() {
+        task.aarMetadataArtifacts =
+            FakeArtifactCollection(
+                mutableSetOf(
+                    FakeResolvedArtifactResult(
+                        file = temporaryFolder.newFile().also {
+                            writeAarMetadataFile(
+                                file = it,
+                                aarFormatVersion = AarMetadataTask.AAR_FORMAT_VERSION,
+                                aarMetadataVersion = AarMetadataTask.AAR_METADATA_VERSION,
+                                minCompileSdk = 28,
+                                minCompileSdkExtension = 0,
+                                minAgpVersion = "3.0.0",
+                                coreLibraryDesugaringEnabled = true,
+                            )
+                        },
+                        identifier = FakeComponentIdentifier("displayName")
+                    )
+                )
+            )
+        task.aarFormatVersion.set(AarMetadataTask.AAR_FORMAT_VERSION)
+        task.aarMetadataVersion.set(AarMetadataTask.AAR_METADATA_VERSION)
+        task.compileSdkVersion.set("android-28")
+        task.disableCompileSdkChecks.set(false)
+        task.agpVersion.set(Version.ANDROID_GRADLE_PLUGIN_VERSION)
+        task.projectPath.set(":app")
+        task.coreLibraryDesugaringEnabled.set(false)
+        try {
+            task.taskAction()
+        } catch (e: RuntimeException) {
+            assertThat(e.message).isEqualTo("""
+                An issue was found when checking AAR metadata:
+
+                  1.  Dependency 'displayName' requires core library desugaring to be enabled
+                      for :app.
+
+                      See https://developer.android.com/studio/write/java8-support.html for more
+                      details.
             """.trimIndent())
         }
     }

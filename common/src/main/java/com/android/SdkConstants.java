@@ -98,6 +98,9 @@ public final class SdkConstants {
             "minAndroidGradlePluginVersion";
     public static final String FORCE_COMPILE_SDK_PREVIEW_PROPERTY = "forceCompileSdkPreview";
     public static final String MIN_COMPILE_SDK_EXTENSION_PROPERTY = "minCompileSdkExtension";
+    public static final String CORE_LIBRARY_DESUGARING_ENABLED_PROPERTY =
+            "coreLibraryDesugaringEnabled";
+    public static final String DESUGAR_JDK_LIB_PROPERTY = "desugarJdkLib";
 
     /** Properties in app-metadata.properties file */
     public static final String APP_METADATA_VERSION_PROPERTY = "appMetadataVersion";

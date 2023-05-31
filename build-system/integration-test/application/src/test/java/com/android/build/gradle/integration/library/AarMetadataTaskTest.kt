@@ -18,11 +18,14 @@ package com.android.build.gradle.integration.library
 import com.android.SdkConstants
 import com.android.SdkConstants.AAR_FORMAT_VERSION_PROPERTY
 import com.android.SdkConstants.AAR_METADATA_VERSION_PROPERTY
+import com.android.SdkConstants.CORE_LIBRARY_DESUGARING_ENABLED_PROPERTY
+import com.android.SdkConstants.DESUGAR_JDK_LIB_PROPERTY
 import com.android.SdkConstants.FORCE_COMPILE_SDK_PREVIEW_PROPERTY
 import com.android.SdkConstants.MIN_ANDROID_GRADLE_PLUGIN_VERSION_PROPERTY
 import com.android.SdkConstants.MIN_COMPILE_SDK_EXTENSION_PROPERTY
 import com.android.SdkConstants.MIN_COMPILE_SDK_PROPERTY
 import com.android.apksig.internal.util.ByteBufferUtils.toByteArray
+import com.android.build.gradle.integration.common.fixture.DESUGAR_DEPENDENCY_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldLibraryApp
 import com.android.build.gradle.internal.scope.InternalArtifactType
@@ -49,6 +52,7 @@ class AarMetadataTaskTest {
                 |$MIN_COMPILE_SDK_PROPERTY=1
                 |$MIN_COMPILE_SDK_EXTENSION_PROPERTY=0
                 |$MIN_ANDROID_GRADLE_PLUGIN_VERSION_PROPERTY=1.0.0
+                |$CORE_LIBRARY_DESUGARING_ENABLED_PROPERTY=false
                 |"""
                 .trimMargin()
                 .toByteArray()
@@ -73,6 +77,8 @@ class AarMetadataTaskTest {
                 |$MIN_COMPILE_SDK_PROPERTY=27
                 |$MIN_COMPILE_SDK_EXTENSION_PROPERTY=2
                 |$MIN_ANDROID_GRADLE_PLUGIN_VERSION_PROPERTY=3.0.0
+                |$CORE_LIBRARY_DESUGARING_ENABLED_PROPERTY=true
+                |$DESUGAR_JDK_LIB_PROPERTY=com.android.tools:desugar_jdk_libs:$DESUGAR_DEPENDENCY_VERSION
                 |"""
                  .trimMargin()
                  .toByteArray()
@@ -80,11 +86,19 @@ class AarMetadataTaskTest {
             """
                 android {
                     defaultConfig {
+                        multiDexEnabled true
                         aarMetadata {
                             minCompileSdk 27
                             minAgpVersion '3.0.0'
                             minCompileSdkExtension 2
                         }
+                    }
+                    compileOptions {
+                        coreLibraryDesugaringEnabled true
+                    }
+
+                    dependencies {
+                        coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:$DESUGAR_DEPENDENCY_VERSION'
                     }
                 }
                 """.trimIndent()
@@ -110,6 +124,7 @@ class AarMetadataTaskTest {
                 |$MIN_COMPILE_SDK_PROPERTY=28
                 |$MIN_COMPILE_SDK_EXTENSION_PROPERTY=3
                 |$MIN_ANDROID_GRADLE_PLUGIN_VERSION_PROPERTY=3.1.0
+                |$CORE_LIBRARY_DESUGARING_ENABLED_PROPERTY=false
                 |"""
                 .trimMargin()
                 .toByteArray()
@@ -159,6 +174,7 @@ class AarMetadataTaskTest {
                 |$MIN_COMPILE_SDK_PROPERTY=29
                 |$MIN_COMPILE_SDK_EXTENSION_PROPERTY=4
                 |$MIN_ANDROID_GRADLE_PLUGIN_VERSION_PROPERTY=3.2.0
+                |$CORE_LIBRARY_DESUGARING_ENABLED_PROPERTY=false
                 |"""
                 .trimMargin()
                 .toByteArray()
@@ -217,6 +233,7 @@ class AarMetadataTaskTest {
                 |$MIN_COMPILE_SDK_PROPERTY=27
                 |$MIN_COMPILE_SDK_EXTENSION_PROPERTY=2
                 |$MIN_ANDROID_GRADLE_PLUGIN_VERSION_PROPERTY=3.0.0
+                |$CORE_LIBRARY_DESUGARING_ENABLED_PROPERTY=false
                 |"""
                 .trimMargin()
                 .toByteArray()

@@ -17,10 +17,13 @@ package com.android.build.gradle.integration.application
 
 import com.android.SdkConstants.AAR_FORMAT_VERSION_PROPERTY
 import com.android.SdkConstants.AAR_METADATA_VERSION_PROPERTY
+import com.android.SdkConstants.CORE_LIBRARY_DESUGARING_ENABLED_PROPERTY
+import com.android.SdkConstants.DESUGAR_JDK_LIB_PROPERTY
 import com.android.SdkConstants.FORCE_COMPILE_SDK_PREVIEW_PROPERTY
 import com.android.SdkConstants.MIN_ANDROID_GRADLE_PLUGIN_VERSION_PROPERTY
 import com.android.SdkConstants.MIN_COMPILE_SDK_EXTENSION_PROPERTY
 import com.android.SdkConstants.MIN_COMPILE_SDK_PROPERTY
+import com.android.build.gradle.integration.common.fixture.DESUGAR_DEPENDENCY_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.compileSdkHash
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldLibraryApp
@@ -542,13 +545,57 @@ class CheckAarMetadataTaskTest {
             .run(":app:checkDebugAarMetadata")
     }
 
+    @Test
+    fun testCheckingCoreLibraryDesugaring() {
+        addAarWithPossiblyInvalidAarMetadataToAppProject(
+            aarFormatVersion = AarMetadataTask.AAR_FORMAT_VERSION,
+            aarMetadataVersion = AarMetadataTask.AAR_METADATA_VERSION,
+            coreLibraryDesugaringEnabled = "true",
+        )
+
+        val result = project.executor().expectFailure().run(":app:checkDebugAarMetadata")
+        ScannerSubject.assertThat(result.stderr).contains(
+            """
+                An issue was found when checking AAR metadata:
+
+                  1.  Dependency 'library.aar' requires core library desugaring to be enabled
+                      for :app.
+
+                      See https://developer.android.com/studio/write/java8-support.html for more
+                      details.
+
+            """.trimIndent()
+        )
+
+        // Ensure checkAndroidTestAarMetadata passes for the android test component if core library
+        // desugaring is only enabled for instrumented tests
+        TestFileUtils.appendToFile(
+            project.gradlePropertiesFile,
+            "${BooleanOption.ENABLE_INSTRUMENTATION_TEST_DESUGARING.propertyName}=true"
+        )
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").buildFile,
+            """
+                android.compileOptions.coreLibraryDesugaringEnabled = false
+            """.trimIndent()
+        )
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("app").buildFile,
+            "implementation files('libs/library.aar')",
+            "androidTestImplementation files('libs/library.aar')"
+        )
+        project.executor().run(":app:checkAndroidTestAarMetadata")
+    }
+
     private fun addAarWithPossiblyInvalidAarMetadataToAppProject(
         aarFormatVersion: String?,
         aarMetadataVersion: String?,
         minCompileSdk: String? = null,
         minAgpVersion: String? = null,
         forceCompileSdkPreview: String? = null,
-        minCompileSdkExtension: String? = null
+        minCompileSdkExtension: String? = null,
+        coreLibraryDesugaringEnabled: String? = null,
+        minDesugarJdkLib: String? = null,
     ) {
         project.executor().run(":lib:assembleDebug")
         // Copy lib's .aar build output to the app's libs directory
@@ -569,6 +616,8 @@ class CheckAarMetadataTaskTest {
             minCompileSdkExtension?.let { sb.appendln("$MIN_COMPILE_SDK_EXTENSION_PROPERTY=$it") }
             minAgpVersion?.let { sb.appendln("$MIN_ANDROID_GRADLE_PLUGIN_VERSION_PROPERTY=$it") }
             forceCompileSdkPreview?.let { sb.appendln("$FORCE_COMPILE_SDK_PREVIEW_PROPERTY=$it") }
+            coreLibraryDesugaringEnabled?.let { sb.appendln("$CORE_LIBRARY_DESUGARING_ENABLED_PROPERTY=$it") }
+            minDesugarJdkLib?.let { sb.appendln("$DESUGAR_JDK_LIB_PROPERTY=$it") }
             aar.add(
                 BytesSource(
                     sb.toString().toByteArray(),

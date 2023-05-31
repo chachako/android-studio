@@ -175,6 +175,12 @@ class CoreLibraryDesugarTest {
             android.lint.checkTestSources = true
         """.trimIndent())
 
+        TestFileUtils.searchAndReplace(
+            app.buildFile,
+            "implementation project(\"$LIBRARY_MODULE\")",
+            ""
+        )
+
         TestFileUtils.addMethod(
                 FileUtils.join(app.projectDir, "src/androidTest/java/com/example/helloworld/HelloWorldTest.java"),
                 """
@@ -319,6 +325,13 @@ class CoreLibraryDesugarTest {
             android.compileOptions.coreLibraryDesugaringEnabled = false
             android.lintOptions.abortOnError = true
         """.trimIndent())
+
+        TestFileUtils.searchAndReplace(
+            app.buildFile,
+            "implementation project(\"$LIBRARY_MODULE\")",
+            ""
+        )
+
         val result =
             executor()
                 .expectFailure().run("app:lintDebug")

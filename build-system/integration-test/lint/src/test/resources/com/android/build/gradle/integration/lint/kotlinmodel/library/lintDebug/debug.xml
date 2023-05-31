@@ -39,12 +39,12 @@
       applicationId="com.example.android.lint.kotlin.library"
       generatedSourceFolders="build/generated/ap_generated_sources/debug/out"
       generatedResourceFolders="build/generated/res/resValues/debug"
-      desugaredMethodsFiles="${gradleCacheDir}/<digest>/transformed/D8BackportedDesugaredMethods.txt">
+      desugaredMethodsFiles="${gradleCacheDir}/<digest>/transformed/desugar_jdk_libs_configuration-1.1.5-desugar-lint.txt:${gradleCacheDir}/<digest>/transformed/D8BackportedDesugaredMethods.txt">
   </artifact>
   <androidTestArtifact
       applicationId="com.example.android.lint.kotlin.library.test"
       generatedResourceFolders="build/generated/res/resValues/androidTest/debug"
-      desugaredMethodsFiles="${gradleCacheDir}/<digest>/transformed/D8BackportedDesugaredMethods.txt">
+      desugaredMethodsFiles="${gradleCacheDir}/<digest>/transformed/desugar_jdk_libs_configuration-1.1.5-desugar-lint.txt:${gradleCacheDir}/<digest>/transformed/D8BackportedDesugaredMethods.txt">
   </androidTestArtifact>
   <testArtifact>
   </testArtifact>
