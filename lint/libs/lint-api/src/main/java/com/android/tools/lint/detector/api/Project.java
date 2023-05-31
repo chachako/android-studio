@@ -571,6 +571,16 @@ public class Project {
     }
 
     /**
+     * Returns the list of Java libraries (typically .jar files) that this project depends on.
+     *
+     * @return a list of .jar files (or class folders) that this project depends on.
+     */
+    @NonNull
+    public List<File> getJavaLibraries() {
+        return getJavaLibraries(true);
+    }
+
+    /**
      * Returns the list of Java libraries (typically .jar files) that this project depends on. Note
      * that this refers to jar libraries, not Android library projects which are processed in a
      * separate pass with their own source and class folders.

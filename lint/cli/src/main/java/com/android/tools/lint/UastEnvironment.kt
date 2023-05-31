@@ -199,7 +199,7 @@ interface UastEnvironment {
     val classpathRoots: Set<File> =
       with(project) {
         setFrom(
-          getJavaLibraries(true),
+          javaLibraries,
           testLibraries.takeIf { includeTests },
           testFixturesLibraries.takeIf { includeTestFixtureSources },
 
