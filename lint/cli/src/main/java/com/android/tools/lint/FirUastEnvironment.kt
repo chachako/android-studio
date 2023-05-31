@@ -141,28 +141,30 @@ private fun createAnalysisSession(
     ) {
       val theProject = project
       val thePlatform = JvmPlatforms.defaultJvmPlatform // TODO(b/283271025)
-      // TODO: Avoid creating AA session per test mode, while app env. is not disposed,
-      //  which led to duplicate app-level service registration.
-      if (application.getServiceIfCreated(VirtualFileSetFactory::class.java) == null) {
-        // Note that this app-level service should be initialized before any other entities attempt
-        // to instantiate [FilesScope]
-        // For FIR UAST, the first attempt will be made while building the module structure below.
-        registerApplicationService(VirtualFileSetFactory::class.java, LintVirtualFileSetFactory)
+      appLock.withLock {
+        // TODO: Avoid creating AA session per test mode, while app env. is not disposed,
+        //  which led to duplicate app-level service registration.
+        if (application.getServiceIfCreated(VirtualFileSetFactory::class.java) == null) {
+          // Note that this app-level service should be initialized before any other entities
+          // attempt to instantiate [FilesScope]
+          // For FIR UAST, the first attempt will be made while building the module structure below.
+          registerApplicationService(VirtualFileSetFactory::class.java, LintVirtualFileSetFactory)
+        }
+        // This app-level service should be registered before building project structure
+        // which attempt to read JvmRoots for java files
+        if (
+          application.getServiceIfCreated(
+            InternalPersistentJavaLanguageLevelReaderService::class.java
+          ) == null
+        ) {
+          registerApplicationService(
+            InternalPersistentJavaLanguageLevelReaderService::class.java,
+            InternalPersistentJavaLanguageLevelReaderService.DefaultImpl()
+          )
+        }
+        // We need to re-register Application-level service before AA session is built.
+        reRegisterProgressManager(application as MockApplication)
       }
-      // This app-level service should be registered before building project structure
-      // which attempt to read JvmRoots for java files
-      if (
-        application.getServiceIfCreated(
-          InternalPersistentJavaLanguageLevelReaderService::class.java
-        ) == null
-      ) {
-        registerApplicationService(
-          InternalPersistentJavaLanguageLevelReaderService::class.java,
-          InternalPersistentJavaLanguageLevelReaderService.DefaultImpl()
-        )
-      }
-      // We need to re-register Application-level service before AA session is built.
-      reRegisterProgressManager(application as MockApplication)
 
       buildKtModuleProvider {
         platform = thePlatform
