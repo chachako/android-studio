@@ -914,6 +914,7 @@ def _gen_split_tests(
         shard_count = split_target.get("shard_count")
         tags = list(split_target.get("tags", default = []))
         data = list(split_target.get("data", default = []))
+        additional_jvm_args = list(split_target.get("additional_jvm_args", default = []))
         split_timeout = split_target.get("timeout", default = timeout)
         flaky = split_target.get("flaky")
         if "manual" not in tags:
@@ -925,6 +926,7 @@ def _gen_split_tests(
 
         test_jvm_flags = []
         test_jvm_flags.extend(jvm_flags)
+        test_jvm_flags.extend(additional_jvm_args)
         test_jvm_flags.extend(_gen_split_test_jvm_flags(split_name, split_test_targets))
         test_exec_properties = split_target.get("exec_properties", default = exec_properties)
 
