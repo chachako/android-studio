@@ -1425,7 +1425,7 @@ open class LintCliClient : LintClient {
         useFirUast = flags.useK2Uast() || useFirUast()
       )
     config.javaLanguageLevel = maxLevel
-    config.addModules(allModules, getBootClassPath(knownProjects) ?: setOf())
+    config.addModules(allModules, getBootClassPath(knownProjects))
     config.kotlinCompilerConfig.putIfNotNull(PERF_MANAGER, kotlinPerformanceManager)
     jdkHome?.let {
       config.kotlinCompilerConfig.put(JVMConfigurationKeys.JDK_HOME, it)

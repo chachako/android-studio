@@ -79,9 +79,12 @@ private constructor(
     val modules = mutableListOf<UastEnvironment.Module>()
     val classPaths = mutableSetOf<File>()
 
-    override fun addModules(modules: List<UastEnvironment.Module>, bootClassPaths: Iterable<File>) {
+    override fun addModules(
+      modules: List<UastEnvironment.Module>,
+      bootClassPaths: Iterable<File>?
+    ) {
       this.modules.addAll(modules)
-      this.classPaths.addAll(bootClassPaths)
+      bootClassPaths?.let(this.classPaths::addAll)
     }
 
     companion object {

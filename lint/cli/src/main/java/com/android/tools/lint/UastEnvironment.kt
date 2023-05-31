@@ -80,17 +80,18 @@ interface UastEnvironment {
 
       fun mergeRoots(
         modules: List<Module>,
-        bootClassPaths: Iterable<File>
+        bootClassPaths: Iterable<File>?
       ): Pair<Set<File>, Set<File>> {
-        fun mergedFiles(prop: (Module) -> Collection<File>) =
+        fun mergedFiles(prop: (Module) -> Collection<File>): MutableSet<File> =
           modules.flatMapTo(mutableSetOf(), prop)
         val sourceRoots = mergedFiles(Module::sourceRoots)
-        val classPathRoots = mergedFiles(Module::classpathRoots) + bootClassPaths
+        val classPathRoots =
+          mergedFiles(Module::classpathRoots).also { bootClassPaths?.let(it::addAll) }
         return sourceRoots to classPathRoots
       }
     }
 
-    fun addModules(modules: List<Module>, bootClassPaths: Iterable<File>)
+    fun addModules(modules: List<Module>, bootClassPaths: Iterable<File>? = null)
 
     val kotlinCompilerConfig: CompilerConfiguration
 

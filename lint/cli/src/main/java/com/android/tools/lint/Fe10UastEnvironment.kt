@@ -117,7 +117,10 @@ private constructor(
     override var javaLanguageLevel: LanguageLevel? = null
 
     // Legacy merging behavior for Fe 1.0
-    override fun addModules(modules: List<UastEnvironment.Module>, bootClassPaths: Iterable<File>) =
+    override fun addModules(
+      modules: List<UastEnvironment.Module>,
+      bootClassPaths: Iterable<File>?
+    ) =
       UastEnvironment.Configuration.mergeRoots(modules, bootClassPaths).let { (sources, classPaths)
         ->
         addSourceRoots(sources.toList())
