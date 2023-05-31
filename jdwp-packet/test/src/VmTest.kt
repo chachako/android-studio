@@ -2,6 +2,8 @@ import com.android.jdwppacket.vm.AllClassesWithGenericsReply
 import com.android.jdwppacket.vm.ClassesBySignatureReply
 import com.android.jdwppacket.vm.ClassesBySignatureReply.Class
 import com.android.jdwppacket.vm.IDSizesReply
+import com.android.jdwppacket.vm.ResumeCmd
+import com.android.jdwppacket.vm.ResumeReply
 import org.junit.Test
 
 /*
@@ -48,5 +50,17 @@ class VmTest {
       )
     val packet = AllClassesWithGenericsReply(classes)
     assertJDWPObjectAndWireEquals(packet, AllClassesWithGenericsReply::parse)
+  }
+
+  @Test
+  fun testResumeCmd() {
+    val packet = ResumeCmd()
+    assertJDWPObjectAndWireEquals(packet, ResumeCmd::parse)
+  }
+
+  @Test
+  fun testResumeReply() {
+    val packet = ResumeReply()
+    assertJDWPObjectAndWireEquals(packet, ResumeReply::parse)
   }
 }

@@ -5,6 +5,8 @@ import com.android.jdwppacket.threadreference.FramesCountReply
 import com.android.jdwppacket.threadreference.FramesReply
 import com.android.jdwppacket.threadreference.NameCmd
 import com.android.jdwppacket.threadreference.NameReply
+import com.android.jdwppacket.threadreference.ResumeCmd
+import com.android.jdwppacket.threadreference.ResumeReply
 import org.junit.Test
 
 /*
@@ -58,5 +60,17 @@ class ThreadReferenceTest {
   fun testNameReply() {
     val packet = NameReply("foo")
     assertJDWPObjectAndWireEquals(packet, NameReply::parse)
+  }
+
+  @Test
+  fun testResumeCmd() {
+    val packet = ResumeCmd(0)
+    assertJDWPObjectAndWireEquals(packet, ResumeCmd::parse)
+  }
+
+  @Test
+  fun testResumeReply() {
+    val packet = ResumeReply()
+    assertJDWPObjectAndWireEquals(packet, ResumeReply::parse)
   }
 }
