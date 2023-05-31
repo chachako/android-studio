@@ -212,7 +212,17 @@ private fun createAnalysisSession(
               platform = thePlatform
               project = theProject
               moduleName = m.name
-              addSourceRoots(ktFiles)
+              // NB: This should include both .kt and .java sources if any,
+              //  and thus we don't need to specify the reified type for the return file type.
+              addSourceRoots(
+                getPsiFilesFromPaths(
+                  project,
+                  Helper.getSourceFilePaths(
+                    m.sourceRoots.map(File::getPath),
+                    includeDirectoryRoot = true
+                  )
+                )
+              )
             }
           )
         }
