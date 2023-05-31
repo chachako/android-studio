@@ -181,12 +181,14 @@ interface DeviceProperties {
  * The category of hardware of a device. Only variations that require different releases of Android
  * are represented, not minor differences like phone / tablet / foldable.
  */
-enum class DeviceType {
+enum class DeviceType(val stringValue: String) {
   /** Handheld devices, e.g. phone, tablet, foldable. */
-  HANDHELD,
-  WEAR,
-  TV,
-  AUTOMOTIVE
+  HANDHELD("Handheld"),
+  WEAR("Wear"),
+  TV("TV"),
+  AUTOMOTIVE("Automotive");
+
+  override fun toString() = stringValue
 }
 
 data class Resolution(val width: Int, val height: Int) {
