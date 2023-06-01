@@ -15,6 +15,8 @@
  */
 package com.android.ide.common.gradle
 
+import com.google.common.collect.Range
+
 /**
  * Represents a rich version in the sense of Gradle's dependency specifier concept, documented
  * in the [Gradle manual](https://docs.gradle.org/current/userguide/rich_versions.html)
@@ -133,6 +135,13 @@ data class RichVersion(
                 }
             }
         }
+
+        /**
+         * Return a [RichVersion] with a [Kind.REQUIRE] declaration on the singleton (given)
+         * version.
+         */
+        fun require(version: Version): RichVersion =
+            RichVersion(Declaration(Kind.REQUIRE, VersionRange(Range.singleton(version))))
     }
 
     enum class Kind {

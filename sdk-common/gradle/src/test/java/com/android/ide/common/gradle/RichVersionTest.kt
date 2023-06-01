@@ -150,6 +150,17 @@ class RichVersionTest {
     }
 
     @Test
+    fun testRequire() {
+        val version = RichVersion.require(Version.parse("12.34"))
+        assertThat(version.strictly).isNull()
+        assertThat(version.require).isEqualTo(VersionRange.parse("12.34"))
+        assertThat(version.prefer).isNull()
+        assertThat(version.exclude).isEmpty()
+        assertThat(version.toIdentifier()).isEqualTo("12.34")
+        assertThat(version.toString()).isEqualTo("12.34")
+    }
+
+    @Test
     fun testRequiredContains() {
         RichVersion.parse("1.2.3").let { version ->
             assertThat(version.contains(Version.parse("1"))).isFalse()
