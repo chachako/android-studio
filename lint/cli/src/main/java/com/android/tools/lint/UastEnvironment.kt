@@ -190,7 +190,8 @@ interface UastEnvironment {
         // dependencies that could have the same dependencies (e.g. lib1 and lib2 both
         // referencing guava.jar)
         setFrom(
-          javaSourceFolders,
+          javaSourceFolders.takeIf { it.isNotEmpty() }
+            ?: listOfNotNull(project.dir.takeIf { it.isDirectory }),
           testSourceFolders.takeIf { includeTests },
           generatedSourceFolders,
           testFixturesSourceFolders.takeIf { includeTestFixtureSources }

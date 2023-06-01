@@ -41,7 +41,9 @@ import org.jetbrains.kotlin.analysis.api.impl.base.util.LibraryUtils
 import org.jetbrains.kotlin.analysis.api.resolve.extensions.KtResolveExtensionProvider
 import org.jetbrains.kotlin.analysis.api.standalone.StandaloneAnalysisAPISession
 import org.jetbrains.kotlin.analysis.api.standalone.buildStandaloneAnalysisAPISession
+import org.jetbrains.kotlin.analysis.project.structure.builder.KtModuleBuilder
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtLibraryModule
+import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtScriptModule
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtSdkModule
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtSourceModule
 import org.jetbrains.kotlin.analysis.project.structure.impl.getPsiFilesFromPaths
@@ -49,6 +51,7 @@ import org.jetbrains.kotlin.cli.common.CompilerSystemProperties
 import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.idea.KotlinFileType
+import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.uast.UastLanguagePlugin
@@ -177,50 +180,65 @@ private fun createAnalysisSession(
         platform = thePlatform
         project = theProject
         config.modules.forEach { m ->
-          addModule(
-            buildKtSourceModule {
+          fun KtModuleBuilder.addModuleDependencies(moduleName: String) {
+            addRegularDependency(
+              buildKtLibraryModule {
+                contentScope = ProjectScope.getLibrariesScope(theProject)
+                platform = thePlatform
+                project = theProject
+                binaryRoots =
+                  when {
+                    m.isAndroid -> m.classpathRoots + config.classPaths
+                    else -> m.classpathRoots
+                  }.map(File::toPath)
+                libraryName = "Library for $moduleName"
+              }
+            )
+
+            m.jdkHome?.let { jdkHome ->
+              val vfm = VirtualFileManager.getInstance()
+              val jdkHomePath = jdkHome.toPath()
+              val jdkHomeVirtualFile = vfm.findFileByNioPath(jdkHomePath)
+
               addRegularDependency(
-                buildKtLibraryModule {
-                  contentScope = ProjectScope.getLibrariesScope(theProject)
+                buildKtSdkModule {
+                  contentScope = GlobalSearchScope.fileScope(theProject, jdkHomeVirtualFile)
                   platform = thePlatform
                   project = theProject
                   binaryRoots =
-                    when {
-                      m.isAndroid -> m.classpathRoots + config.classPaths
-                      else -> m.classpathRoots
-                    }.map(File::toPath)
-                  libraryName = "Library for ${m.name}"
+                    LibraryUtils.findClassesFromJdkHome(jdkHomePath).map {
+                      Paths.get(URLUtil.extractPath(it))
+                    }
+                  sdkName = "JDK for $moduleName"
                 }
               )
+            }
+          }
 
-              m.jdkHome?.let { jdkHome ->
-                val vfm = VirtualFileManager.getInstance()
-                val jdkHomePath = jdkHome.toPath()
-                val jdkHomeVirtualFile = vfm.findFileByNioPath(jdkHomePath)
-
-                addRegularDependency(
-                  buildKtSdkModule {
-                    contentScope = GlobalSearchScope.fileScope(theProject, jdkHomeVirtualFile)
-                    platform = thePlatform
-                    project = theProject
-                    binaryRoots =
-                      LibraryUtils.findClassesFromJdkHome(jdkHomePath).map {
-                        Paths.get(URLUtil.extractPath(it))
-                      }
-                    sdkName = "JDK for ${m.name}"
-                  }
-                )
+          val ktFiles =
+            getPsiFilesFromPaths<KtFile>(
+              theProject,
+              Helper.getSourceFilePaths(
+                m.sourceRoots.map(File::getPath),
+                includeDirectoryRoot = true
+              )
+            )
+          val (scriptFiles, ordinaryKtFiles) = ktFiles.partition { it.isScript() }
+          for (scriptFile in scriptFiles) {
+            addModule(
+              buildKtScriptModule {
+                platform = thePlatform
+                project = theProject
+                file = scriptFile
+                addModuleDependencies("Script " + scriptFile.name)
               }
-
-              val ktFiles =
-                getPsiFilesFromPaths<KtFile>(
-                  theProject,
-                  Helper.getSourceFilePaths(
-                    m.sourceRoots.map(File::getPath),
-                    includeDirectoryRoot = true
-                  )
-                )
-              contentScope = TopDownAnalyzerFacadeForJVM.newModuleSearchScope(theProject, ktFiles)
+            )
+          }
+          addModule(
+            buildKtSourceModule {
+              addModuleDependencies(m.name)
+              contentScope =
+                TopDownAnalyzerFacadeForJVM.newModuleSearchScope(theProject, ordinaryKtFiles)
               platform = thePlatform
               project = theProject
               moduleName = m.name
@@ -299,8 +317,8 @@ private object Helper {
   /**
    * Collect source file path from the given [root] store them in [result].
    *
-   * E.g., for `project/app/src` as a [root], this will walk the file tree and collect all `.kt` and
-   * `.java` files under that folder.
+   * E.g., for `project/app/src` as a [root], this will walk the file tree and collect all `.kt`,
+   * `.kts`, and `.java` files under that folder.
    *
    * Note that this util gracefully skips [IOException] during file tree traversal.
    */
@@ -318,7 +336,11 @@ private object Helper {
         override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
           if (!Files.isRegularFile(file) || !Files.isReadable(file)) return FileVisitResult.CONTINUE
           val ext = com.google.common.io.Files.getFileExtension(file.fileName.toString())
-          if (ext == KotlinFileType.EXTENSION || ext == JavaFileType.DEFAULT_EXTENSION) {
+          if (
+            ext == KotlinFileType.EXTENSION ||
+              ext == KotlinParserDefinition.STD_SCRIPT_SUFFIX ||
+              ext == JavaFileType.DEFAULT_EXTENSION
+          ) {
             result.add(file.toString())
           }
           return FileVisitResult.CONTINUE
