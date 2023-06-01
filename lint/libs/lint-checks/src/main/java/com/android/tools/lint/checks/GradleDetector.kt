@@ -1165,52 +1165,82 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
     val sdkIndex = getGooglePlaySdkIndex(context.client)
     if (sdkIndex.isReady()) {
       val versionString = version.toString()
-      var reportCreated = false
       val buildFile = context.file
+      val isBlocking = sdkIndex.hasLibraryBlockingIssues(groupId, artifactId, versionString)
+
+      // Get the full list of issue types present, so we can try to show a more appropriate message
+      // when two or more types are present.
+      // If the multiple message issue is disabled, then it will fall back to the following
+      // priority:
+      //  - Policy
+      //  - Critical (if blocking)
+      //  - Outdated
+      val issueTypes = mutableListOf<Issue>()
       if (sdkIndex.isLibraryNonCompliant(groupId, artifactId, versionString, buildFile)) {
-        val message = sdkIndex.generatePolicyMessage(groupId, artifactId, versionString)
-        val fix = sdkIndex.generateSdkLinkLintFix(groupId, artifactId, versionString, buildFile)
-        reportCreated = report(context, cookie, PLAY_SDK_INDEX_NON_COMPLIANT, message, fix)
+        issueTypes.add(PLAY_SDK_INDEX_NON_COMPLIANT)
       }
-      if (!reportCreated) {
-        val isBlocking = sdkIndex.hasLibraryBlockingIssues(groupId, artifactId, versionString)
-        if (isBlocking) {
-          if (sdkIndex.hasLibraryCriticalIssues(groupId, artifactId, versionString, buildFile)) {
+      if (
+        isBlocking &&
+          sdkIndex.hasLibraryCriticalIssues(groupId, artifactId, versionString, buildFile)
+      ) {
+        // Messages from developer that are not-blocking are not shown in lint
+        issueTypes.add(RISKY_LIBRARY)
+      }
+      if (sdkIndex.isLibraryOutdated(groupId, artifactId, versionString, buildFile)) {
+        issueTypes.add(DEPRECATED_LIBRARY)
+      }
+      if (issueTypes.size >= 2) {
+        // Try to generate generic message first when two or more types are present
+        issueTypes.add(0, PLAY_SDK_INDEX_GENERIC_ISSUES)
+      }
+      if (issueTypes.isNotEmpty()) {
+        val fix = sdkIndex.generateSdkLinkLintFix(groupId, artifactId, versionString, buildFile)
+        var reportCreated = false
+        var typeIndex = 0
+        while ((!reportCreated) && typeIndex < issueTypes.size) {
+          if (isBlocking) {
             val message =
-              sdkIndex.generateBlockingCriticalMessage(groupId, artifactId, versionString)
-            val fix = sdkIndex.generateSdkLinkLintFix(groupId, artifactId, versionString, buildFile)
+              when (issueTypes[typeIndex]) {
+                PLAY_SDK_INDEX_NON_COMPLIANT ->
+                  sdkIndex.generateBlockingPolicyMessage(groupId, artifactId, versionString)
+                RISKY_LIBRARY ->
+                  sdkIndex.generateBlockingCriticalMessage(groupId, artifactId, versionString)
+                DEPRECATED_LIBRARY ->
+                  sdkIndex.generateBlockingOutdatedMessage(groupId, artifactId, versionString)
+                else ->
+                  sdkIndex.generateBlockingGenericIssueMessage(groupId, artifactId, versionString)
+              }
             reportCreated =
               report(
                 context,
                 cookie,
-                RISKY_LIBRARY,
+                issueTypes[typeIndex],
                 message,
                 fix,
                 overrideSeverity = Severity.ERROR
               )
-          }
-          if (
-            (!reportCreated) &&
-              sdkIndex.isLibraryOutdated(groupId, artifactId, versionString, buildFile)
-          ) {
+          } else {
             val message =
-              sdkIndex.generateBlockingOutdatedMessage(groupId, artifactId, versionString)
-            val fix = sdkIndex.generateSdkLinkLintFix(groupId, artifactId, versionString, buildFile)
-            report(
-              context,
-              cookie,
-              DEPRECATED_LIBRARY,
-              message,
-              fix,
-              overrideSeverity = Severity.ERROR
-            )
+              when (issueTypes[typeIndex]) {
+                PLAY_SDK_INDEX_NON_COMPLIANT ->
+                  sdkIndex.generatePolicyMessage(groupId, artifactId, versionString)
+                RISKY_LIBRARY ->
+                  sdkIndex.generateCriticalMessage(groupId, artifactId, versionString)
+                DEPRECATED_LIBRARY ->
+                  sdkIndex.generateOutdatedMessage(groupId, artifactId, versionString)
+                else -> sdkIndex.generateGenericIssueMessage(groupId, artifactId, versionString)
+              }
+            reportCreated =
+              report(
+                context,
+                cookie,
+                issueTypes[typeIndex],
+                message,
+                fix,
+                overrideSeverity = Severity.WARNING
+              )
           }
-        } else {
-          if (sdkIndex.isLibraryOutdated(groupId, artifactId, versionString, buildFile)) {
-            val message = sdkIndex.generateOutdatedMessage(groupId, artifactId, versionString)
-            val fix = sdkIndex.generateSdkLinkLintFix(groupId, artifactId, versionString, buildFile)
-            report(context, cookie, DEPRECATED_LIBRARY, message, fix)
-          }
+          typeIndex++
         }
       }
     }
@@ -3333,9 +3363,22 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         id = "PlaySdkIndexNonCompliant",
         briefDescription = "Library has policy issues in SDK Index",
         explanation =
-          """
-                This library version has policy issues that will block publishing in the Google Play Store.
-            """,
+          "This library version has policy issues that will block publishing in the Google Play Store.",
+        category = Category.COMPLIANCE,
+        priority = 8,
+        severity = Severity.ERROR,
+        implementation = IMPLEMENTATION_WITH_TOML,
+        moreInfo = GOOGLE_PLAY_SDK_INDEX_URL,
+        androidSpecific = true
+      )
+
+    @JvmField
+    val PLAY_SDK_INDEX_GENERIC_ISSUES =
+      Issue.create(
+        id = "PlaySdkIndexGenericIssues",
+        briefDescription = "Library has issues in SDK Index",
+        explanation =
+          "This library version has issues that could block publishing in the Google Play Store.",
         category = Category.COMPLIANCE,
         priority = 8,
         severity = Severity.ERROR,

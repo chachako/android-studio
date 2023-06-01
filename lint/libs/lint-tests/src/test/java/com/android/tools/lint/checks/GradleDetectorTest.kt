@@ -5082,15 +5082,17 @@ class GradleDetectorTest : AbstractCheckTest() {
                     compile 'com.example.ads.third.party:example:8.0.0' // OK
                     compile 'com.example.ads.third.party:example:7.2.2' // OK
                     compile 'com.example.ads.third.party:example:7.2.1' // OK
-                    compile 'com.example.ads.third.party:example:7.2.0' // Outdated + Critical + Policy (user Data)
-                    compile 'com.example.ads.third.party:example:7.1.0' // Policy (Ads)
-                    compile 'com.example.ads.third.party:example:7.1.1' // Policy (Device and Network Abuse)
-                    compile 'com.example.ads.third.party:example:7.1.2' // Policy (Deceptive Behavior)
-                    compile 'com.example.ads.third.party:example:7.1.3' // Policy (User Data)
-                    compile 'com.example.ads.third.party:example:7.1.4' // Policy (Permissions)
-                    compile 'com.example.ads.third.party:example:7.1.5' // Policy (Mobile Unwanted Software)
-                    compile 'com.example.ads.third.party:example:7.1.6' // Policy (Malware)
-                    compile 'com.example.ads.third.party:example:7.1.7' // Policy (multiple)
+                    compile 'com.example.ads.third.party:example:7.2.0' // Outdated + Critical + Policy (user Data), no severity
+                    compile 'com.example.ads.third.party:example:7.1.0' // Policy (Ads), non-blocking
+                    compile 'com.example.ads.third.party:example:7.1.1' // Policy (Device and Network Abuse), blocking
+                    compile 'com.example.ads.third.party:example:7.1.2' // Policy (Deceptive Behavior), no severity
+                    compile 'com.example.ads.third.party:example:7.1.3' // Policy (User Data), non-blocking
+                    compile 'com.example.ads.third.party:example:7.1.4' // Policy (Permissions), blocking
+                    compile 'com.example.ads.third.party:example:7.1.5' // Policy (Mobile Unwanted Software), no-severity
+                    compile 'com.example.ads.third.party:example:7.1.6' // Policy (Malware), non-blocking
+                    compile 'com.example.ads.third.party:example:7.1.7' // Policy (multiple), non-blocking
+                    compile 'com.example.ads.third.party:example:7.1.8' // Policy (multiple), blocking
+                    compile 'com.example.ads.third.party:example:7.1.9' // Policy (multiple), no severity
 
                     compile 'log4j:log4j:latest.release' // OK
                     compile 'log4j:log4j' // OK
@@ -5117,7 +5119,7 @@ class GradleDetectorTest : AbstractCheckTest() {
               compile 'log4j:log4j:1.2.15' // Outdated NON_BLOCKING
                       ~~~~~~~~~~~~~~~~~~~~
           build.gradle:13: Warning: com.example.ads.third.party:example version 7.2.0 has been marked as outdated by its author [OutdatedLibrary]
-              compile 'com.example.ads.third.party:example:7.2.0' // Outdated + Critical + Policy (user Data)
+              compile 'com.example.ads.third.party:example:7.2.0' // Outdated + Critical + Policy (user Data), no severity
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           2 errors, 2 warnings
         """
@@ -7240,7 +7242,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                           .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
                       )
                   )
-                  // Policy
+                  // Policy (deprecated)
                   .addVersions(
                     LibraryVersion.newBuilder()
                       .setVersionString("1.2.14")
@@ -7317,7 +7319,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                           )
                       )
                   )
-                  // Non-compliant (Ads)
+                  // Non-compliant (Ads, non-blocking)
                   .addVersions(
                     LibraryVersion.newBuilder()
                       .setVersionString("7.1.0")
@@ -7330,9 +7332,10 @@ class GradleDetectorTest : AbstractCheckTest() {
                                 LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_ADS
                               )
                           )
+                          .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
                       )
                   )
-                  // Non-compliant (Device and Network Abuse)
+                  // Non-compliant (Device and Network Abuse, blocking)
                   .addVersions(
                     LibraryVersion.newBuilder()
                       .setVersionString("7.1.1")
@@ -7346,9 +7349,10 @@ class GradleDetectorTest : AbstractCheckTest() {
                                   .SDK_POLICY_DEVICE_AND_NETWORK_ABUSE
                               )
                           )
+                          .setSeverity(LibraryVersionLabels.Severity.BLOCKING_SEVERITY)
                       )
                   )
-                  // Non-compliant (Deceptive Behavior)
+                  // Non-compliant (Deceptive Behavior, no severity)
                   .addVersions(
                     LibraryVersion.newBuilder()
                       .setVersionString("7.1.2")
@@ -7364,7 +7368,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                           )
                       )
                   )
-                  // Non-compliant (User Data)
+                  // Non-compliant (User Data, non-blocking)
                   .addVersions(
                     LibraryVersion.newBuilder()
                       .setVersionString("7.1.3")
@@ -7377,9 +7381,10 @@ class GradleDetectorTest : AbstractCheckTest() {
                                 LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_USER_DATA
                               )
                           )
+                          .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
                       )
                   )
-                  // Non-compliant (Permissions)
+                  // Non-compliant (Permissions, blocking)
                   .addVersions(
                     LibraryVersion.newBuilder()
                       .setVersionString("7.1.4")
@@ -7393,9 +7398,10 @@ class GradleDetectorTest : AbstractCheckTest() {
                                   .SDK_POLICY_PERMISSIONS
                               )
                           )
+                          .setSeverity(LibraryVersionLabels.Severity.BLOCKING_SEVERITY)
                       )
                   )
-                  // Non-compliant (Mobile Unwanted Software)
+                  // Non-compliant (Mobile Unwanted Software, no severity)
                   .addVersions(
                     LibraryVersion.newBuilder()
                       .setVersionString("7.1.5")
@@ -7411,7 +7417,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                           )
                       )
                   )
-                  // Non-compliant (Malware)
+                  // Non-compliant (Malware, non-blocking)
                   .addVersions(
                     LibraryVersion.newBuilder()
                       .setVersionString("7.1.6")
@@ -7424,9 +7430,10 @@ class GradleDetectorTest : AbstractCheckTest() {
                                 LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE
                               )
                           )
+                          .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
                       )
                   )
-                  // Non-compliant (Multiple violations)
+                  // Non-compliant (Multiple violations, non-blocking)
                   .addVersions(
                     LibraryVersion.newBuilder()
                       .setVersionString("7.1.7")
@@ -7444,6 +7451,45 @@ class GradleDetectorTest : AbstractCheckTest() {
                               .addViolatedSdkPolicies(
                                 LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy
                                   .SDK_POLICY_PERMISSIONS
+                              )
+                          )
+                          .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
+                      )
+                  )
+                  // Non-compliant (Multiple violations, blocking)
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("7.1.8")
+                      .setIsLatestVersion(false)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setPolicyIssuesInfo(
+                            LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                              .addViolatedSdkPolicies(
+                                LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_USER_DATA
+                              )
+                              .addViolatedSdkPolicies(
+                                LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE
+                              )
+                          )
+                          .setSeverity(LibraryVersionLabels.Severity.BLOCKING_SEVERITY)
+                      )
+                  )
+                  // Non-compliant (Multiple violations, no severity)
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("7.1.9")
+                      .setIsLatestVersion(false)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setPolicyIssuesInfo(
+                            LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                              .addViolatedSdkPolicies(
+                                LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy
+                                  .SDK_POLICY_PERMISSIONS
+                              )
+                              .addViolatedSdkPolicies(
+                                LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE
                               )
                           )
                       )

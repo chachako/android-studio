@@ -129,7 +129,7 @@ class GooglePlaySdkIndexTest {
                         )
                     )
                 )
-                // Non-compliant (Ads)
+                // Non-compliant (Ads, non-blocking)
                 .addVersions(
                   LibraryVersion.newBuilder()
                     .setVersionString("7.1.0")
@@ -142,9 +142,10 @@ class GooglePlaySdkIndexTest {
                               LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_ADS
                             )
                         )
+                        .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
                     )
                 )
-                // Non-compliant (Device and Network Abuse)
+                // Non-compliant (Device and Network Abuse, blocking)
                 .addVersions(
                   LibraryVersion.newBuilder()
                     .setVersionString("7.1.1")
@@ -158,9 +159,10 @@ class GooglePlaySdkIndexTest {
                                 .SDK_POLICY_DEVICE_AND_NETWORK_ABUSE
                             )
                         )
+                        .setSeverity(LibraryVersionLabels.Severity.BLOCKING_SEVERITY)
                     )
                 )
-                // Non-compliant (Deceptive Behavior)
+                // Non-compliant (Deceptive Behavior, no severity)
                 .addVersions(
                   LibraryVersion.newBuilder()
                     .setVersionString("7.1.2")
@@ -176,7 +178,7 @@ class GooglePlaySdkIndexTest {
                         )
                     )
                 )
-                // Non-compliant (User Data)
+                // Non-compliant (User Data, non-blocking)
                 .addVersions(
                   LibraryVersion.newBuilder()
                     .setVersionString("7.1.3")
@@ -189,9 +191,10 @@ class GooglePlaySdkIndexTest {
                               LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_USER_DATA
                             )
                         )
+                        .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
                     )
                 )
-                // Non-compliant (Permissions)
+                // Non-compliant (Permissions, blocking)
                 .addVersions(
                   LibraryVersion.newBuilder()
                     .setVersionString("7.1.4")
@@ -204,9 +207,10 @@ class GooglePlaySdkIndexTest {
                               LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_PERMISSIONS
                             )
                         )
+                        .setSeverity(LibraryVersionLabels.Severity.BLOCKING_SEVERITY)
                     )
                 )
-                // Non-compliant (Mobile Unwanted Software)
+                // Non-compliant (Mobile Unwanted Software, no severity)
                 .addVersions(
                   LibraryVersion.newBuilder()
                     .setVersionString("7.1.5")
@@ -222,7 +226,7 @@ class GooglePlaySdkIndexTest {
                         )
                     )
                 )
-                // Non-compliant (Malware)
+                // Non-compliant (Malware, non-blocking)
                 .addVersions(
                   LibraryVersion.newBuilder()
                     .setVersionString("7.1.6")
@@ -235,9 +239,10 @@ class GooglePlaySdkIndexTest {
                               LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE
                             )
                         )
+                        .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
                     )
                 )
-                // Non-compliant (Multiple violations)
+                // Non-compliant (Multiple violations, non-blocking)
                 .addVersions(
                   LibraryVersion.newBuilder()
                     .setVersionString("7.1.7")
@@ -254,6 +259,44 @@ class GooglePlaySdkIndexTest {
                             )
                             .addViolatedSdkPolicies(
                               LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_PERMISSIONS
+                            )
+                        )
+                        .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
+                    )
+                )
+                // Non-compliant (Multiple violations, blocking)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.8")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setPolicyIssuesInfo(
+                          LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_USER_DATA
+                            )
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE
+                            )
+                        )
+                        .setSeverity(LibraryVersionLabels.Severity.BLOCKING_SEVERITY)
+                    )
+                )
+                // Non-compliant (Multiple violations, no severity)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.9")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setPolicyIssuesInfo(
+                          LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_PERMISSIONS
+                            )
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE
                             )
                         )
                     )
@@ -292,7 +335,7 @@ class GooglePlaySdkIndexTest {
   @Test
   fun `policy issues shown if showPolicyIssues is enabled`() {
     index.showPolicyIssues = true
-    assertThat(countPolicyIssues()).isEqualTo(10)
+    assertThat(countPolicyIssues()).isEqualTo(12)
   }
 
   @Test
@@ -342,7 +385,7 @@ class GooglePlaySdkIndexTest {
     index.showPolicyIssues = true
     assertThat(index.generatePolicyMessage("logj4", "logj4", "1.2.14"))
       .isEqualTo(
-        "logj4:logj4 version 1.2.14 has policy issues that will block publishing of your app to Play Console"
+        "logj4:logj4 version 1.2.14 has policy issues that will block publishing of your app to Play Console in the future"
       )
   }
 
@@ -441,9 +484,15 @@ class GooglePlaySdkIndexTest {
 
   private fun verifyPolicyMessage(version: String, policyType: String) {
     index.showPolicyIssues = true
-    val expectedMessage =
+    val expectedBlockingMessage =
       "com.example.ads.third.party:example version $version has $policyType issues that will block publishing of your app to Play Console"
+    assertThat(
+        index.generateBlockingPolicyMessage("com.example.ads.third.party", "example", version)
+      )
+      .isEqualTo(expectedBlockingMessage)
+    val expectedNonBlockingMessage =
+      "com.example.ads.third.party:example version $version has $policyType issues that will block publishing of your app to Play Console in the future"
     assertThat(index.generatePolicyMessage("com.example.ads.third.party", "example", version))
-      .isEqualTo(expectedMessage)
+      .isEqualTo(expectedNonBlockingMessage)
   }
 }

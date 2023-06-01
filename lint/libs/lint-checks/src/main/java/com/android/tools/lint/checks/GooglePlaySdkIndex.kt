@@ -237,13 +237,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   ): Boolean {
     val labels = getLabels(groupId, artifactId, versionString) ?: return false
     val severity = labels.severity
-    if (severity != null && severity == LibraryVersionLabels.Severity.BLOCKING_SEVERITY) {
-      return true
-    }
-    // Non-compliant issues are always blocking
-    val isLibraryNonCompliant =
-      getLabels(groupId, artifactId, versionString)?.hasPolicyIssuesInfo() ?: false
-    return showPolicyIssues && isLibraryNonCompliant
+    return severity == LibraryVersionLabels.Severity.BLOCKING_SEVERITY
   }
 
   /**
@@ -362,27 +356,49 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     return if (url != null) LintFix.ShowUrl(VIEW_DETAILS_MESSAGE, null, url) else null
   }
 
+  /** Generate a message for a library that has blocking policy issues */
+  fun generateBlockingPolicyMessage(
+    groupId: String,
+    artifactId: String,
+    versionString: String
+  ): String {
+    val policyTypeLabel = getPolicyLabel(getLabels(groupId, artifactId, versionString))
+    return "$groupId:$artifactId version $versionString has $policyTypeLabel issues that will block publishing of your app to Play Console"
+  }
+
   /** Generate a message for a library that has policy issues */
   fun generatePolicyMessage(groupId: String, artifactId: String, versionString: String): String {
     val policyTypeLabel = getPolicyLabel(getLabels(groupId, artifactId, versionString))
-    return "$groupId:$artifactId version $versionString has $policyTypeLabel issues that will block publishing of your app to Play Console"
+    return "$groupId:$artifactId version $versionString has $policyTypeLabel issues that will block publishing of your app to Play Console in the future"
   }
 
   /** Generate a message for a library that has blocking critical issues */
   fun generateBlockingCriticalMessage(groupId: String, artifactId: String, versionString: String) =
     "$groupId:$artifactId version $versionString has been reported as problematic by its author and will block publishing of your app to Play Console"
 
+  /** Generate a message for a library that has non-blocking critical issues */
+  fun generateCriticalMessage(groupId: String, artifactId: String, versionString: String) =
+    "$groupId:$artifactId version $versionString has an associated message from its author"
+
   /** Generate a message for a library that has blocking outdated issues */
   fun generateBlockingOutdatedMessage(groupId: String, artifactId: String, versionString: String) =
     "$groupId:$artifactId version $versionString has been marked as outdated by its author and will block publishing of your app to Play Console"
 
-  /** Generate a message for a library that has blocking outdated issues */
+  /** Generate a message for a library that has non-blocking outdated issues */
   fun generateOutdatedMessage(groupId: String, artifactId: String, versionString: String) =
     "$groupId:$artifactId version $versionString has been marked as outdated by its author"
 
-  /** Generate a message for a library that has blocking critical issues */
-  fun generateCriticalMessage(groupId: String, artifactId: String, versionString: String) =
-    "$groupId:$artifactId version $versionString has an associated message from its author"
+  /** Generate a message for a library that has blocking issues */
+  fun generateBlockingGenericIssueMessage(
+    groupId: String,
+    artifactId: String,
+    versionString: String
+  ) =
+    "$groupId:$artifactId version $versionString has one or more issues that will block publishing of your app to Play Console"
+
+  /** Generate a message for a library that has non-blocking issues */
+  fun generateGenericIssueMessage(groupId: String, artifactId: String, versionString: String) =
+    "$groupId:$artifactId version $versionString has one or more issues that could block publishing of your app to Play Console in the future"
 
   protected open fun logHasCriticalIssues(
     groupId: String,
