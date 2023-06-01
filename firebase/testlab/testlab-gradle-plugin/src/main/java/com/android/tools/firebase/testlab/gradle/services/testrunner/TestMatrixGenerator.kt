@@ -123,30 +123,31 @@ class TestMatrixGenerator(private val projectSettings: ProjectSettings) {
                         this.set(INSTRUMENTATION_TEST_SHARD_FIELD, sharding)
                     }
                 }
-                environmentMatrix = EnvironmentMatrix().apply {
-                    androidDeviceList = AndroidDeviceList().apply {
-                        androidDevices = listOf(
-                            AndroidDevice().apply {
-                                androidModelId = device.deviceId
-                                androidVersionId = device.apiLevel.toString()
-                                locale = device.locale.toString()
-                                orientation = device.orientation.toString().lowercase()
-                            }
-                        )
-                    }
-                }
-                resultStorage = ResultStorage().apply {
-                    googleCloudStorage = GoogleCloudStorage().apply {
-                        gcsPath = testRunStorage.resultStoragePath
-                    }
-                    toolResultsHistory = ToolResultsHistory().apply {
-                        projectId = projectSettings.name
-                        this.historyId = testRunStorage.historyId
-                    }
-                }
+
                 testTimeout = "${projectSettings.ftlTimeoutSeconds}s"
                 disablePerformanceMetrics = !projectSettings.performanceMetrics
                 disableVideoRecording = !projectSettings.videoRecording
+            }
+            environmentMatrix = EnvironmentMatrix().apply {
+                androidDeviceList = AndroidDeviceList().apply {
+                    androidDevices = listOf(
+                        AndroidDevice().apply {
+                            androidModelId = device.deviceId
+                            androidVersionId = device.apiLevel.toString()
+                            locale = device.locale.toString()
+                            orientation = device.orientation.toString().lowercase()
+                        }
+                    )
+                }
+            }
+            resultStorage = ResultStorage().apply {
+                googleCloudStorage = GoogleCloudStorage().apply {
+                    gcsPath = testRunStorage.resultStoragePath
+                }
+                toolResultsHistory = ToolResultsHistory().apply {
+                    projectId = projectSettings.name
+                    this.historyId = testRunStorage.historyId
+                }
             }
             set(TEST_MATRIX_FLAKY_TEST_ATTEMPTS_FIELD, projectSettings.maxTestReruns)
             set(TEST_MATRIX_FAIL_FAST_FIELD, projectSettings.failFast)
@@ -158,9 +159,9 @@ class TestMatrixGenerator(private val projectSettings: ProjectSettings) {
         return when {
             numUniformShards != 0 && targetShardDuration != 0 -> {
                 error("""
-                Only one sharding option should be set for "numUniformShards" or
-                "targetedShardDurationMinutes" in firebaseTestLab.testOptions.execution.
-            """.trimIndent())
+                    Only one sharding option should be set for "numUniformShards" or
+                    "targetedShardDurationMinutes" in firebaseTestLab.testOptions.execution.
+                """.trimIndent())
 
             }
             numUniformShards != 0 -> ShardingOption().apply {
