@@ -18,7 +18,12 @@ package com.android.build.gradle.internal.ide.kmp.resolvers
 
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService.Companion.getMavenCoordForLocalFile
+import com.android.build.gradle.internal.ide.kmp.LibraryResolver
+import com.android.build.gradle.internal.ide.proto.convert
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import com.android.builder.model.v2.ide.LibraryType
+import com.android.kotlin.multiplatform.ide.models.serialization.androidDependencyKey
+import com.android.kotlin.multiplatform.models.DependencyInfo
 import org.gradle.api.artifacts.component.LibraryBinaryIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentSelector
@@ -40,14 +45,18 @@ import org.jetbrains.kotlin.tooling.core.mutableExtrasOf
  * An implementation of [IdeDependencyResolver] that resolves library dependencies.
  */
 internal class BinaryDependencyResolver(
+    libraryResolver: LibraryResolver,
     sourceSetToCreationConfigMap: () -> Map<KotlinSourceSet, KmpComponentCreationConfig>
 ) : BaseIdeDependencyResolver(
+    libraryResolver,
     sourceSetToCreationConfigMap
 ) {
     private val logger = Logging.getLogger(BinaryDependencyResolver::class.java)
 
     override fun resolve(sourceSet: KotlinSourceSet): Set<IdeaKotlinDependency> {
         val component = sourceSetToCreationConfigMap()[sourceSet] ?: return emptySet()
+
+        libraryResolver.registerSourceSetArtifacts(sourceSet)
 
         val artifacts =
             getArtifactsForComponent(
@@ -121,6 +130,21 @@ internal class BinaryDependencyResolver(
                 else -> {
                     logger.warn("Unhandled componentId: ${componentId.javaClass}")
                     null
+                }
+            }?.also { dependency ->
+                val library = libraryResolver.getLibrary(
+                    artifact.variant,
+                    sourceSet
+                )
+
+                if (library?.type == LibraryType.ANDROID_LIBRARY) {
+                    dependency.extras[androidDependencyKey] =
+                        DependencyInfo.newBuilder()
+                            .setLibrary(
+                                // The key is redundant since we depend on the kotlin definition.
+                                library.convert().clearKey()
+                            )
+                            .build()
                 }
             }
         }.toSet()

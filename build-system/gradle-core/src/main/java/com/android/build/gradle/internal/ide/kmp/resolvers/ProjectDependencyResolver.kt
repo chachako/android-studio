@@ -16,8 +16,13 @@
 
 package com.android.build.gradle.internal.ide.kmp.resolvers
 
+import com.android.build.api.attributes.AgpVersionAttr
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
+import com.android.build.gradle.internal.ide.kmp.LibraryResolver
+import com.android.build.gradle.internal.ide.proto.convert
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import com.android.kotlin.multiplatform.ide.models.serialization.androidDependencyKey
+import com.android.kotlin.multiplatform.models.DependencyInfo
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinDependency
 import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinProjectArtifactDependency
@@ -31,13 +36,17 @@ import org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver
  * An implementation of [IdeDependencyResolver] that resolves project dependencies.
  */
 internal class ProjectDependencyResolver(
+    libraryResolver: LibraryResolver,
     sourceSetToCreationConfigMap: () -> Map<KotlinSourceSet, KmpComponentCreationConfig>
 ) : BaseIdeDependencyResolver(
+    libraryResolver,
     sourceSetToCreationConfigMap
 ) {
 
     override fun resolve(sourceSet: KotlinSourceSet): Set<IdeaKotlinDependency> {
         val component = sourceSetToCreationConfigMap()[sourceSet] ?: return emptySet()
+
+        libraryResolver.registerSourceSetArtifacts(sourceSet)
 
         // The actual artifact type doesn't matter, this will be picked up on the IDE side and
         // mapped to a project dependency. We query for jar artifacts since both android and
@@ -58,11 +67,24 @@ internal class ProjectDependencyResolver(
                     projectName = componentId.projectName
                 )
             ).also { dependency ->
-                // TODO(b/269755640): Kotlin IDE plugin resolvers will not be able to map the
-                //  file back to an android project dependency, once we have our own IDE
-                //  resolvers, we should send more data to help the resolver map the dependency
-                //  back to the project.
-                dependency.artifactsClasspath.add(artifact.file)
+                val library = libraryResolver.getLibrary(
+                    variant = artifact.variant,
+                    sourceSet = sourceSet
+                )
+                if (library != null && artifact.variant.attributes.contains(AgpVersionAttr.ATTRIBUTE)) {
+                    // Android project, could be kmp or android lib, let the IDE extension points
+                    // handle each case
+                    dependency.extras[androidDependencyKey] =
+                        DependencyInfo.newBuilder()
+                            .setLibrary(
+                                // The key is redundant since we depend on the kotlin definition.
+                                library.convert().clearKey()
+                            )
+                            .build()
+                } else {
+                    // Not android, let kmp resolvers handle the resolution
+                    dependency.artifactsClasspath.add(artifact.file)
+                }
             }
         }.toSet()
     }

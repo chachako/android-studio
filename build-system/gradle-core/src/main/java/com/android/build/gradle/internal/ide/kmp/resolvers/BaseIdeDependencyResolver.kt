@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.ide.kmp.resolvers
 
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
+import com.android.build.gradle.internal.ide.kmp.LibraryResolver
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.component.ComponentIdentifier
@@ -29,6 +30,7 @@ import org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver
  */
 @OptIn(ExternalKotlinTargetApi::class)
 internal abstract class BaseIdeDependencyResolver(
+    protected val libraryResolver: LibraryResolver,
     protected val sourceSetToCreationConfigMap: () -> Map<KotlinSourceSet, KmpComponentCreationConfig>
 ): IdeDependencyResolver {
 

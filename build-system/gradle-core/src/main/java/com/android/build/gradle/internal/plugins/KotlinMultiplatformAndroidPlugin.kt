@@ -42,6 +42,7 @@ import com.android.build.gradle.internal.core.dsl.impl.KmpUnitTestDslInfoImpl
 import com.android.build.gradle.internal.core.dsl.impl.KmpVariantDslInfoImpl
 import com.android.build.gradle.internal.dependency.AgpVersionCompatibilityRule
 import com.android.build.gradle.internal.dependency.JacocoInstrumentationService
+import com.android.build.gradle.internal.dependency.ModelArtifactCompatibilityRule.Companion.setUp
 import com.android.build.gradle.internal.dependency.SingleVariantBuildTypeRule
 import com.android.build.gradle.internal.dependency.SingleVariantProductFlavorRule
 import com.android.build.gradle.internal.dependency.VariantDependencies
@@ -50,10 +51,11 @@ import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.gradle.internal.dsl.decorator.androidPluginDslDecorator
 import com.android.build.gradle.internal.ide.dependencies.LibraryDependencyCacheBuildService
 import com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService
-import com.android.build.gradle.internal.ide.kmp.KotlinIdeImportConfigurator
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker.Companion.android
+import com.android.build.gradle.internal.ide.kmp.KotlinIdeImportConfigurator
 import com.android.build.gradle.internal.ide.kmp.KotlinModelBuildingConfigurator
+import com.android.build.gradle.internal.ide.v2.GlobalSyncService
 import com.android.build.gradle.internal.lint.LintFixBuildService
 import com.android.build.gradle.internal.manifest.LazyManifestParser
 import com.android.build.gradle.internal.scope.KotlinMultiplatformBuildFeaturesValuesImpl
@@ -155,6 +157,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         LibraryDependencyCacheBuildService.RegistrationAction(
             project, mavenCoordinatesCacheBuildService
         ).execute()
+        GlobalSyncService.RegistrationAction(project, mavenCoordinatesCacheBuildService).execute()
+
         LintClassLoaderBuildService.RegistrationAction(project).execute()
         LintFixBuildService.RegistrationAction(project).execute()
 
@@ -252,6 +256,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
                 }
                 configureIdeImport {
                     KotlinIdeImportConfigurator.configure(
+                        project,
                         this,
                         sourceSetToCreationConfigMapProvider = { sourceSetToCreationConfigMap },
                         extraSourceSetsToIncludeInResolution = {
@@ -699,6 +704,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             schema.attribute(AgpVersionAttr.ATTRIBUTE)
                 .compatibilityRules
                 .add(AgpVersionCompatibilityRule::class.java)
+
+            setUp(schema)
         }
     }
 

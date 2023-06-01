@@ -16,6 +16,7 @@
 
 package com.buildsrc.plugin
 
+import com.android.kotlin.multiplatform.models.DependencyInfo
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
@@ -61,12 +62,28 @@ abstract class DumpSourceSetDependenciesTask: DefaultTask() {
 
     private object ExtrasAdapter : JsonSerializer<Extras> {
 
+        private val jsonFormat =
+            JsonFormat.printer()
+                .usingTypeRegistry(
+                    JsonFormat.TypeRegistry.newBuilder()
+                        .add(DependencyInfo.getDescriptor())
+                        .build()
+                )
+                .includingDefaultValueFields()
+                .sortingMapKeys()
+
         override fun serialize(src: Extras, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
             return JsonObject().apply {
                 src.entries.forEach { entry ->
 
-                    val valueElement = runCatching { context.serialize(entry.value) }.getOrElse {
-                        JsonPrimitive(entry.value.toString())
+                    val valueElement = when (entry.value) {
+                        is DependencyInfo ->
+                            JsonParser.parseString(
+                                jsonFormat.print(entry.value as DependencyInfo)
+                            )
+                        else -> runCatching { context.serialize(entry.value) }.getOrElse {
+                            JsonPrimitive(entry.value.toString())
+                        }
                     }
 
                     add(entry.key.stableString, valueElement)

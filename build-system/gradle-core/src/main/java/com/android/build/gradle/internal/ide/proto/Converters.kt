@@ -21,7 +21,20 @@ import com.android.builder.model.proto.ide.AndroidGradlePluginProjectFlags
 import com.android.builder.model.proto.ide.AndroidVersion
 import com.android.builder.model.proto.ide.SigningConfig
 import com.android.builder.model.proto.ide.TestInfo
+import com.android.builder.model.v2.ide.AndroidLibraryData
+import com.android.builder.model.v2.ide.ComponentInfo
+import com.android.builder.model.v2.ide.Library
+import com.android.builder.model.v2.ide.LibraryInfo
+import com.android.builder.model.v2.ide.LibraryType
+import com.android.builder.model.v2.ide.ProjectInfo
 import java.io.File
+
+import com.android.builder.model.proto.ide.AndroidLibraryData as AndroidLibraryDataProto
+import com.android.builder.model.proto.ide.ComponentInfo as ComponentInfoProto
+import com.android.builder.model.proto.ide.Library as LibraryProto
+import com.android.builder.model.proto.ide.LibraryInfo as LibraryInfoProto
+import com.android.builder.model.proto.ide.LibraryType as LibraryTypeProto
+import com.android.builder.model.proto.ide.ProjectInfo as ProjectInfoProto
 
 internal fun<T, R> R.setIfNotNull(
     value: T?,
@@ -97,7 +110,6 @@ internal fun com.android.build.api.variant.AndroidVersion.convert() =
         .setApiLevel(apiLevel)
         .setIfNotNull(codename, AndroidVersion.Builder::setCodename)
 
-
 internal fun SigningConfigImpl.convert() =
     SigningConfig.newBuilder()
         .setIfNotNull(name, SigningConfig.Builder::setName)
@@ -110,3 +122,84 @@ internal fun SigningConfigImpl.convert() =
         .setEnableV3Signing(enableV3Signing.get())
         .setEnableV4Signing(enableV4Signing.get())
         .setIsSigningReady(isSigningReady())
+
+private fun LibraryType.convert() =
+    when (this) {
+        LibraryType.PROJECT -> LibraryTypeProto.PROJECT
+        LibraryType.ANDROID_LIBRARY -> LibraryTypeProto.ANDROID_LIBRARY
+        LibraryType.JAVA_LIBRARY -> LibraryTypeProto.JAVA_LIBRARY
+        LibraryType.RELOCATED -> LibraryTypeProto.RELOCATED
+        LibraryType.NO_ARTIFACT_FILE -> LibraryTypeProto.NO_ARTIFACT_FILE
+    }
+
+private fun ComponentInfo.convertComponentInfo() =
+    ComponentInfoProto.newBuilder()
+        .setIfNotNull(
+            buildType, ComponentInfoProto.Builder::setBuildType
+        )
+        .putAllProductFlavors(productFlavors)
+        .putAllAttributes(attributes)
+        .addAllCapabilities(capabilities)
+        .setIsTestFixtures(isTestFixtures)
+
+private fun ProjectInfo.convert() =
+    ProjectInfoProto.newBuilder()
+        .setBuildId(buildId)
+        .setProjectPath(projectPath)
+        .setComponentInfo(
+            convertComponentInfo()
+        )
+
+private fun LibraryInfo.convert() =
+    LibraryInfoProto.newBuilder()
+        .setComponentInfo(
+            convertComponentInfo()
+        )
+        .setGroup(group)
+        .setName(name)
+        .setVersion(version)
+
+private fun AndroidLibraryData.convert() =
+    AndroidLibraryDataProto.newBuilder()
+        .setManifest(manifest.convert())
+        .addAllCompileJarFiles(compileJarFiles.map { it.convert() })
+        .addAllRuntimeJarFiles(runtimeJarFiles.map { it.convert() })
+        .setResFolder(resFolder.convert())
+        .setResStaticLibrary(resStaticLibrary.convert())
+        .setAssetsFolder(assetsFolder.convert())
+        .setJniFolder(jniFolder.convert())
+        .setAidlFolder(aidlFolder.convert())
+        .setRenderscriptFolder(renderscriptFolder.convert())
+        .setProguardRules(proguardRules.convert())
+        .setExternalAnnotations(externalAnnotations.convert())
+        .setPublicResources(publicResources.convert())
+        .setSymbolFile(symbolFile.convert())
+
+internal fun Library.convert() =
+    LibraryProto.newBuilder()
+        .setKey(key)
+        .setType(type.convert())
+        .setIfNotNull(
+            projectInfo?.convert(), LibraryProto.Builder::setProjectInfo
+        )
+        .setIfNotNull(
+            libraryInfo?.convert(), LibraryProto.Builder::setLibraryInfo
+        )
+        .setIfNotNull(
+            artifact?.convert(), LibraryProto.Builder::setArtifact
+        )
+        .setIfNotNull(
+            lintJar?.convert(), LibraryProto.Builder::setLintJar
+        )
+        .setIfNotNull(
+            srcJar?.convert(), LibraryProto.Builder::setSrcJar
+        )
+        .setIfNotNull(
+            docJar?.convert(), LibraryProto.Builder::setDocJar
+        )
+        .setIfNotNull(
+            samplesJar?.convert(), LibraryProto.Builder::setSamplesJar
+        )
+        .setIfNotNull(
+            androidLibraryData?.convert(), LibraryProto.Builder::setAndroidLibraryData
+        )

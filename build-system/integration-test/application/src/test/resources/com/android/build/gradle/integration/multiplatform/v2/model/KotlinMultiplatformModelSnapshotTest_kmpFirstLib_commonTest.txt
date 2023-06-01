@@ -97,9 +97,33 @@
       "projectName": "kmpFirstLib"
     },
     "extras": {
-      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;artifactsClasspath": [
-        "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/build/intermediates/full_jar/androidMain/full.jar"
-      ],
+      "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
+        "library": {
+          "type": "PROJECT",
+          "projectInfo": {
+            "componentInfo": {
+              "productFlavors": {},
+              "attributes": {
+                "com.android.build.api.attributes.AgpVersionAttr": "{AGP_Version}",
+                "org.gradle.category": "library",
+                "org.gradle.jvm.environment": "android",
+                "org.gradle.libraryelements": "jar",
+                "org.gradle.usage": "java-api",
+                "org.jetbrains.kotlin.platform.type": "jvm"
+              },
+              "capabilities": [
+                "Kotlin Multiplatform:kmpFirstLib:unspecified"
+              ],
+              "isTestFixtures": false
+            },
+            "buildId": ":",
+            "projectPath": ":kmpFirstLib"
+          },
+          "lintJar": {
+            "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/build/intermediates/lint_publish_jar/global/lint.jar"
+          }
+        }
+      },
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
     }
   },
@@ -111,9 +135,34 @@
       "projectName": "androidLib"
     },
     "extras": {
-      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;artifactsClasspath": [
-        "{INCLUDED_BUILD(kotlinMultiplatform)}/androidLib/build/intermediates/full_jar/typeoneModetwoDebug/full.jar"
-      ],
+      "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
+        "library": {
+          "type": "PROJECT",
+          "projectInfo": {
+            "componentInfo": {
+              "buildType": "debug",
+              "productFlavors": {
+                "mode": "modetwo",
+                "type": "typeone"
+              },
+              "attributes": {
+                "com.android.build.api.attributes.AgpVersionAttr": "{AGP_Version}",
+                "com.android.build.gradle.internal.attributes.VariantAttr": "typeoneModetwoDebug",
+                "org.gradle.usage": "java-api"
+              },
+              "capabilities": [
+                "Kotlin Multiplatform:androidLib:unspecified"
+              ],
+              "isTestFixtures": false
+            },
+            "buildId": ":",
+            "projectPath": ":androidLib"
+          },
+          "lintJar": {
+            "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/androidLib/build/intermediates/lint_publish_jar/global/lint.jar"
+          }
+        }
+      },
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
     }
   }

@@ -18,6 +18,7 @@ package com.android.kotlin.multiplatform.ide.models.serialization
 import com.android.kotlin.multiplatform.models.AndroidCompilation
 import com.android.kotlin.multiplatform.models.AndroidSourceSet
 import com.android.kotlin.multiplatform.models.AndroidTarget
+import com.android.kotlin.multiplatform.models.DependencyInfo
 import org.jetbrains.kotlin.tooling.core.extrasKeyOf
 
 /**
@@ -43,3 +44,11 @@ val androidCompilationKey = extrasKeyOf<() -> AndroidCompilation?>("android-comp
  * This is part of the contract between build and sync, and must not change.
  */
 val androidSourceSetKey = extrasKeyOf<() -> AndroidSourceSet?>("android-source-set-model")
+
+/**
+ * The extras map key that is used to serialize the models sent with the dependencies outgoing from
+ * android source sets during build import action and deserialize it during IDE project resolution.
+ *
+ * This is part of the contract between build and sync, and must not change.
+ */
+val androidDependencyKey = extrasKeyOf<DependencyInfo>("android-dependency-model")

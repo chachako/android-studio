@@ -140,3 +140,8 @@ message AndroidCompilation {
 message AndroidSourceSet {
     optional SourceProvider source_provider = 1;
 }
+
+// Extra information to identify a dependency that is outgoing from an android kotlin sourceSet.
+message DependencyInfo {
+    optional Library library = 1;
+}

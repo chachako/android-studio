@@ -17,10 +17,15 @@
 package com.android.build.gradle.internal.ide.kmp
 
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
+import com.android.build.gradle.internal.ide.dependencies.LibraryCacheImpl
+import com.android.build.gradle.internal.ide.dependencies.LibraryServiceImpl
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker.Companion.android
 import com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver
 import com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver
 import com.android.build.gradle.internal.ide.kmp.serialization.AndroidExtrasSerializationExtension
+import com.android.build.gradle.internal.ide.v2.GlobalSyncService
+import com.android.build.gradle.internal.services.getBuildService
+import org.gradle.api.Project
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver
@@ -30,11 +35,13 @@ import org.jetbrains.kotlin.gradle.plugin.ide.IdeMultiplatformImport
 object KotlinIdeImportConfigurator {
 
     fun configure(
+        project: Project,
         service: IdeMultiplatformImport,
         sourceSetToCreationConfigMapProvider: () -> Map<KotlinSourceSet, KmpComponentCreationConfig>,
         extraSourceSetsToIncludeInResolution: () -> Set<KotlinSourceSet>
     ) {
         registerDependencyResolvers(
+            project,
             service,
             sourceSetToCreationConfigMapProvider,
             extraSourceSetsToIncludeInResolution
@@ -46,10 +53,27 @@ object KotlinIdeImportConfigurator {
     }
 
     private fun registerDependencyResolvers(
+        project: Project,
         service: IdeMultiplatformImport,
         sourceSetToCreationConfigMapProvider: () -> Map<KotlinSourceSet, KmpComponentCreationConfig>,
         extraSourceSetsToIncludeInResolution: () -> Set<KotlinSourceSet>
     ) {
+        val libraryResolver = LibraryResolver(
+            project = project,
+            libraryService = getBuildService(
+                project.gradle.sharedServices,
+                GlobalSyncService::class.java
+            ).get().let { globalLibraryBuildService ->
+                LibraryServiceImpl(
+                    LibraryCacheImpl(
+                        globalLibraryBuildService.stringCache,
+                        globalLibraryBuildService.localJarCache
+                    )
+                )
+            },
+            sourceSetToCreationConfigMap = sourceSetToCreationConfigMapProvider
+        )
+
         val resolutionPhase =
             IdeMultiplatformImport.DependencyResolutionPhase.BinaryDependencyResolution
         // we want to completely control IDE resolution, so specify a very high priority for all our
@@ -62,6 +86,7 @@ object KotlinIdeImportConfigurator {
 
         service.registerDependencyResolver(
             resolver = BinaryDependencyResolver(
+                libraryResolver = libraryResolver,
                 sourceSetToCreationConfigMap = sourceSetToCreationConfigMapProvider
             ),
             constraint = androidSourceSetFilter,
@@ -71,6 +96,7 @@ object KotlinIdeImportConfigurator {
 
         service.registerDependencyResolver(
             resolver = ProjectDependencyResolver(
+                libraryResolver = libraryResolver,
                 sourceSetToCreationConfigMap = sourceSetToCreationConfigMapProvider
             ),
             constraint = androidSourceSetFilter,

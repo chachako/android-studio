@@ -28,7 +28,7 @@ class KotlinAndroidSourceSetMarker {
 
         var KotlinSourceSet.android: KotlinAndroidSourceSetMarker?
             get() = extras[extrasKey]
-            set(value) {
+            internal set(value) {
                 if (value != null) extras[extrasKey] = value
                 else extras.remove(extrasKey)
             }

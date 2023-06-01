@@ -143,3 +143,163 @@ message SigningConfig {
     // i.e. all the required information are present.
     bool is_signing_ready = 10;
 }
+
+// Basic information about dependency components
+message ComponentInfo {
+    // The build type attribute of this component.
+    // Null if the component does not have Android variants
+    optional string build_type = 1;
+    // The product flavor attributes of this component, keyed by flavor dimension name.
+    // May be empty if the component does not have Android product flavors.
+    map<string, string> product_flavors = 2;
+    // The list of attributes associated with the component.
+    // Build types and product flavor attributes are handled explicitly in [buildType] and
+    // [productFlavors], so they are not included here
+    map<string, string> attributes = 3;
+    // The list of capabilities associated with the component
+    repeated string capabilities = 4;
+    // Indicates whether this component (library or module) is a test fixtures component (i.e. has
+    // a test fixtures capability).
+    bool is_test_fixtures = 5;
+}
+message ProjectInfo {
+    optional ComponentInfo component_info = 1;
+    // The build id.
+    optional string build_id = 2;
+    // The project path.
+    optional string project_path = 3;
+}
+
+// Information to identify an external library dependencies
+message LibraryInfo {
+    optional ComponentInfo component_info = 1;
+    optional string group = 2;
+    optional string name = 3;
+    optional string version = 4;
+}
+
+// The type of Library dependency.
+enum LibraryType {
+    // The dependency is an external dependency with no artifact, but it may depend on other
+    // libraries.
+    NO_ARTIFACT_FILE = 0;
+    // The dependency is a sub-project of the build.
+    PROJECT = 1;
+    // The dependency is an external Android Library (AAR)
+    ANDROID_LIBRARY = 2;
+    // The dependency is an external Java Library (JAR)
+    JAVA_LIBRARY = 3;
+    // The dependency is an external dependency with no artifact, pointing to a different artifact
+    // (via Gradle's available-at feature, and possibly via POM's relocation feature.)
+    RELOCATED = 4;
+}
+
+// Data for Android external Libraries
+message AndroidLibraryData {
+    // The location of the manifest file.
+    optional File manifest = 1;
+    // The list of jar files for compilation.
+    repeated File compile_jar_files = 2;
+    // The list of jar files for runtime/packaging.
+    repeated File runtime_jar_files = 3;
+    // The android resource folder.
+    //
+    // The folder may not exist.
+    optional File res_folder = 4;
+    // The namespaced resources static library (res.apk).
+    optional File res_static_library = 5;
+    // The assets folder.
+    //
+    // The folder may not exist.
+    optional File assets_folder = 6;
+
+    // The jni libraries folder.
+    //
+    // The folder may not exist.
+    optional File jni_folder = 7;
+
+    // The AIDL import folder
+    //
+    // The folder may not exist.
+    optional File aidl_folder = 8;
+
+    // The RenderScript import folder
+    //
+    // The folder may not exist.
+    optional File renderscript_folder = 9;
+
+    // The proguard file rule.
+    //
+    // The file may not exist.
+    optional File proguard_rules = 10;
+
+    // the zip file with external annotations
+    //
+    // The file may not exist.
+    optional File external_annotations = 11;
+
+    // The file listing the public resources
+    //
+    // The file may not exist.
+    optional File public_resources = 12;
+
+    // The symbol list file
+    //
+    // The file may not exist.
+    optional File symbol_file = 13;
+}
+
+// Represent a variant/module/artifact dependency.
+message Library {
+    // A Unique key representing the library, and allowing to match it with [GraphItem] instances
+    optional string key = 1;
+
+    // The type of the dependency.
+    optional LibraryType type = 2;
+
+    // Returns the project info to uniquely identify it (and its variant)
+    //
+    // Only valid for instances where [type] is [LibraryType.PROJECT]. It is null in other cases.
+    optional ProjectInfo project_info = 3;
+
+    // Returns the external library info to uniquely identify it (and its variant)
+    //
+    // Only valid for instances where [type] is [LibraryType.ANDROID_LIBRARY], or
+    // [LibraryType.JAVA_LIBRARY]. It is null in other cases.
+    optional LibraryInfo library_info = 4;
+
+    // The artifact location.
+    //
+    // Only valid for instances where [type] is [LibraryType.JAVA_LIBRARY] or
+    // [LibraryType.ANDROID_LIBRARY]
+    optional File artifact = 5;
+
+    // The jar containing custom lint checks for consumers to use. This is filled by the
+    // lintPublish configuration.
+    //
+    // The file may not exist.
+    //
+    // Only valid for instances where [type] is [LibraryType.ANDROID_LIBRARY]
+    optional File lint_jar = 6;
+
+    // The jar containing the sources for the [artifact]
+    //
+    // Only valid for instances where [type] is [LibraryType.JAVA_LIBRARY] or
+    // [LibraryType.ANDROID_LIBRARY]
+    optional File src_jar = 7;
+
+    // The jar containing the documentation for the [artifact]
+    //
+    // Only valid for instances where [type] is [LibraryType.JAVA_LIBRARY] or
+    // [LibraryType.ANDROID_LIBRARY]
+    optional File doc_jar = 8;
+
+    // The jar containing samples for the [artifact]
+    //
+    // Only valid for instance where [type] is [LibraryType.JAVA_LIBRARY] or
+    // [LibraryType.ANDROID_LIBRARY]
+    optional File samples_jar = 9;
+
+    // Data for libraries of type [LibraryType.ANDROID_LIBRARY]. It is null in other cases.
+    optional AndroidLibraryData android_library_data = 10;
+}

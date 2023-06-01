@@ -19,6 +19,7 @@ package com.android.kotlin.multiplatform.ide.models.serialization
 import com.android.kotlin.multiplatform.models.AndroidCompilation
 import com.android.kotlin.multiplatform.models.AndroidSourceSet
 import com.android.kotlin.multiplatform.models.AndroidTarget
+import com.android.kotlin.multiplatform.models.DependencyInfo
 import com.google.protobuf.InvalidProtocolBufferException
 import org.jetbrains.kotlin.gradle.idea.serialize.IdeaKotlinExtrasSerializer
 import org.jetbrains.kotlin.gradle.idea.serialize.IdeaKotlinSerializationContext
@@ -100,3 +101,21 @@ object AndroidSourceSetModelSerializer: IdeaKotlinExtrasSerializer<() -> Android
     ): ByteArray? = value()?.toByteArray()
 }
 
+object AndroidDependencyModelSerializer: IdeaKotlinExtrasSerializer<DependencyInfo> {
+
+    override fun deserialize(
+        context: IdeaKotlinSerializationContext,
+        data: ByteArray
+    ): DependencyInfo? =
+        try {
+            DependencyInfo.parseFrom(data)
+        } catch (e: InvalidProtocolBufferException) {
+            context.logger.handleException("Android Dependency Info Model", e)
+            null
+        }
+
+    override fun serialize(
+        context: IdeaKotlinSerializationContext,
+        value: DependencyInfo
+    ): ByteArray = value.toByteArray()
+}

@@ -24,6 +24,77 @@
       "version": "1.3.0"
     },
     "extras": {
+      "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
+        "library": {
+          "type": "ANDROID_LIBRARY",
+          "libraryInfo": {
+            "componentInfo": {
+              "productFlavors": {},
+              "attributes": {
+                "org.gradle.category": "library",
+                "org.gradle.libraryelements": "jar",
+                "org.gradle.status": "release",
+                "org.gradle.usage": "java-api"
+              },
+              "capabilities": [
+                "androidx.test:runner:1.3.0"
+              ],
+              "isTestFixtures": false
+            },
+            "group": "androidx.test",
+            "name": "runner",
+            "version": "1.3.0"
+          },
+          "artifact": {
+            "absolutePath": "{LOCAL_REPO}/androidx/test/runner/1.3.0/runner-1.3.0.aar"
+          },
+          "androidLibraryData": {
+            "manifest": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/runner-1.3.0/AndroidManifest.xml"
+            },
+            "compileJarFiles": [
+              {
+                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/runner-1.3.0/jars/classes.jar"
+              }
+            ],
+            "runtimeJarFiles": [
+              {
+                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/runner-1.3.0/jars/classes.jar"
+              }
+            ],
+            "resFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/runner-1.3.0/res"
+            },
+            "resStaticLibrary": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/runner-1.3.0/res.apk"
+            },
+            "assetsFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/runner-1.3.0/assets"
+            },
+            "jniFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/runner-1.3.0/jni"
+            },
+            "aidlFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/runner-1.3.0/aidl"
+            },
+            "renderscriptFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/runner-1.3.0/rs"
+            },
+            "proguardRules": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/runner-1.3.0/proguard.txt"
+            },
+            "externalAnnotations": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/runner-1.3.0/annotations.zip"
+            },
+            "publicResources": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/runner-1.3.0/public.txt"
+            },
+            "symbolFile": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/runner-1.3.0/R.txt"
+            }
+          }
+        }
+      },
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
     }
   },
@@ -38,6 +109,77 @@
       "version": "1.1.2"
     },
     "extras": {
+      "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
+        "library": {
+          "type": "ANDROID_LIBRARY",
+          "libraryInfo": {
+            "componentInfo": {
+              "productFlavors": {},
+              "attributes": {
+                "org.gradle.category": "library",
+                "org.gradle.libraryelements": "jar",
+                "org.gradle.status": "release",
+                "org.gradle.usage": "java-api"
+              },
+              "capabilities": [
+                "androidx.test.ext:junit:1.1.2"
+              ],
+              "isTestFixtures": false
+            },
+            "group": "androidx.test.ext",
+            "name": "junit",
+            "version": "1.1.2"
+          },
+          "artifact": {
+            "absolutePath": "{LOCAL_REPO}/androidx/test/ext/junit/1.1.2/junit-1.1.2.aar"
+          },
+          "androidLibraryData": {
+            "manifest": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/junit-1.1.2/AndroidManifest.xml"
+            },
+            "compileJarFiles": [
+              {
+                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/junit-1.1.2/jars/classes.jar"
+              }
+            ],
+            "runtimeJarFiles": [
+              {
+                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/junit-1.1.2/jars/classes.jar"
+              }
+            ],
+            "resFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/junit-1.1.2/res"
+            },
+            "resStaticLibrary": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/junit-1.1.2/res.apk"
+            },
+            "assetsFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/junit-1.1.2/assets"
+            },
+            "jniFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/junit-1.1.2/jni"
+            },
+            "aidlFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/junit-1.1.2/aidl"
+            },
+            "renderscriptFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/junit-1.1.2/rs"
+            },
+            "proguardRules": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/junit-1.1.2/proguard.txt"
+            },
+            "externalAnnotations": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/junit-1.1.2/annotations.zip"
+            },
+            "publicResources": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/junit-1.1.2/public.txt"
+            },
+            "symbolFile": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/junit-1.1.2/R.txt"
+            }
+          }
+        }
+      },
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
     }
   },
@@ -52,6 +194,77 @@
       "version": "1.3.0"
     },
     "extras": {
+      "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
+        "library": {
+          "type": "ANDROID_LIBRARY",
+          "libraryInfo": {
+            "componentInfo": {
+              "productFlavors": {},
+              "attributes": {
+                "org.gradle.category": "library",
+                "org.gradle.libraryelements": "jar",
+                "org.gradle.status": "release",
+                "org.gradle.usage": "java-api"
+              },
+              "capabilities": [
+                "androidx.test:core:1.3.0"
+              ],
+              "isTestFixtures": false
+            },
+            "group": "androidx.test",
+            "name": "core",
+            "version": "1.3.0"
+          },
+          "artifact": {
+            "absolutePath": "{LOCAL_REPO}/androidx/test/core/1.3.0/core-1.3.0.aar"
+          },
+          "androidLibraryData": {
+            "manifest": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/core-1.3.0/AndroidManifest.xml"
+            },
+            "compileJarFiles": [
+              {
+                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/core-1.3.0/jars/classes.jar"
+              }
+            ],
+            "runtimeJarFiles": [
+              {
+                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/core-1.3.0/jars/classes.jar"
+              }
+            ],
+            "resFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/core-1.3.0/res"
+            },
+            "resStaticLibrary": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/core-1.3.0/res.apk"
+            },
+            "assetsFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/core-1.3.0/assets"
+            },
+            "jniFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/core-1.3.0/jni"
+            },
+            "aidlFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/core-1.3.0/aidl"
+            },
+            "renderscriptFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/core-1.3.0/rs"
+            },
+            "proguardRules": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/core-1.3.0/proguard.txt"
+            },
+            "externalAnnotations": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/core-1.3.0/annotations.zip"
+            },
+            "publicResources": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/core-1.3.0/public.txt"
+            },
+            "symbolFile": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/core-1.3.0/R.txt"
+            }
+          }
+        }
+      },
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
     }
   },
@@ -94,6 +307,77 @@
       "version": "1.3.0"
     },
     "extras": {
+      "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
+        "library": {
+          "type": "ANDROID_LIBRARY",
+          "libraryInfo": {
+            "componentInfo": {
+              "productFlavors": {},
+              "attributes": {
+                "org.gradle.category": "library",
+                "org.gradle.libraryelements": "jar",
+                "org.gradle.status": "release",
+                "org.gradle.usage": "java-api"
+              },
+              "capabilities": [
+                "androidx.test:monitor:1.3.0"
+              ],
+              "isTestFixtures": false
+            },
+            "group": "androidx.test",
+            "name": "monitor",
+            "version": "1.3.0"
+          },
+          "artifact": {
+            "absolutePath": "{LOCAL_REPO}/androidx/test/monitor/1.3.0/monitor-1.3.0.aar"
+          },
+          "androidLibraryData": {
+            "manifest": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/monitor-1.3.0/AndroidManifest.xml"
+            },
+            "compileJarFiles": [
+              {
+                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/monitor-1.3.0/jars/classes.jar"
+              }
+            ],
+            "runtimeJarFiles": [
+              {
+                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/monitor-1.3.0/jars/classes.jar"
+              }
+            ],
+            "resFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/monitor-1.3.0/res"
+            },
+            "resStaticLibrary": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/monitor-1.3.0/res.apk"
+            },
+            "assetsFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/monitor-1.3.0/assets"
+            },
+            "jniFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/monitor-1.3.0/jni"
+            },
+            "aidlFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/monitor-1.3.0/aidl"
+            },
+            "renderscriptFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/monitor-1.3.0/rs"
+            },
+            "proguardRules": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/monitor-1.3.0/proguard.txt"
+            },
+            "externalAnnotations": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/monitor-1.3.0/annotations.zip"
+            },
+            "publicResources": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/monitor-1.3.0/public.txt"
+            },
+            "symbolFile": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/monitor-1.3.0/R.txt"
+            }
+          }
+        }
+      },
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
     }
   },
@@ -184,9 +468,33 @@
       "projectName": "kmpFirstLib"
     },
     "extras": {
-      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;artifactsClasspath": [
-        "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/build/intermediates/full_jar/androidMain/full.jar"
-      ],
+      "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
+        "library": {
+          "type": "PROJECT",
+          "projectInfo": {
+            "componentInfo": {
+              "productFlavors": {},
+              "attributes": {
+                "com.android.build.api.attributes.AgpVersionAttr": "{AGP_Version}",
+                "org.gradle.category": "library",
+                "org.gradle.jvm.environment": "android",
+                "org.gradle.libraryelements": "jar",
+                "org.gradle.usage": "java-api",
+                "org.jetbrains.kotlin.platform.type": "jvm"
+              },
+              "capabilities": [
+                "Kotlin Multiplatform:kmpFirstLib:unspecified"
+              ],
+              "isTestFixtures": false
+            },
+            "buildId": ":",
+            "projectPath": ":kmpFirstLib"
+          },
+          "lintJar": {
+            "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/build/intermediates/lint_publish_jar/global/lint.jar"
+          }
+        }
+      },
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
     }
   },
@@ -198,9 +506,34 @@
       "projectName": "androidLib"
     },
     "extras": {
-      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;artifactsClasspath": [
-        "{INCLUDED_BUILD(kotlinMultiplatform)}/androidLib/build/intermediates/full_jar/typeoneModetwoDebug/full.jar"
-      ],
+      "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
+        "library": {
+          "type": "PROJECT",
+          "projectInfo": {
+            "componentInfo": {
+              "buildType": "debug",
+              "productFlavors": {
+                "mode": "modetwo",
+                "type": "typeone"
+              },
+              "attributes": {
+                "com.android.build.api.attributes.AgpVersionAttr": "{AGP_Version}",
+                "com.android.build.gradle.internal.attributes.VariantAttr": "typeoneModetwoDebug",
+                "org.gradle.usage": "java-api"
+              },
+              "capabilities": [
+                "Kotlin Multiplatform:androidLib:unspecified"
+              ],
+              "isTestFixtures": false
+            },
+            "buildId": ":",
+            "projectPath": ":androidLib"
+          },
+          "lintJar": {
+            "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/androidLib/build/intermediates/lint_publish_jar/global/lint.jar"
+          }
+        }
+      },
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
     }
   }

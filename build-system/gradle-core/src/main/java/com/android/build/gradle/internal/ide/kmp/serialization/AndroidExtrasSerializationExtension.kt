@@ -17,9 +17,11 @@
 package com.android.build.gradle.internal.ide.kmp.serialization
 
 import com.android.kotlin.multiplatform.ide.models.serialization.AndroidCompilationModelSerializer
+import com.android.kotlin.multiplatform.ide.models.serialization.AndroidDependencyModelSerializer
 import com.android.kotlin.multiplatform.ide.models.serialization.AndroidSourceSetModelSerializer
 import com.android.kotlin.multiplatform.ide.models.serialization.AndroidTargetModelSerializer
 import com.android.kotlin.multiplatform.ide.models.serialization.androidCompilationKey
+import com.android.kotlin.multiplatform.ide.models.serialization.androidDependencyKey
 import com.android.kotlin.multiplatform.ide.models.serialization.androidSourceSetKey
 import com.android.kotlin.multiplatform.ide.models.serialization.androidTargetKey
 import org.jetbrains.kotlin.gradle.idea.serialize.IdeaKotlinExtrasSerializationExtension
@@ -38,6 +40,7 @@ class AndroidExtrasSerializationExtension : IdeaKotlinExtrasSerializationExtensi
             androidTargetKey -> AndroidTargetModelSerializer as IdeaKotlinExtrasSerializer<T>
             androidCompilationKey -> AndroidCompilationModelSerializer as IdeaKotlinExtrasSerializer<T>
             androidSourceSetKey -> AndroidSourceSetModelSerializer as IdeaKotlinExtrasSerializer<T>
+            androidDependencyKey -> AndroidDependencyModelSerializer as IdeaKotlinExtrasSerializer<T>
             else -> null
         }
     }

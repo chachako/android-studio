@@ -31,6 +31,7 @@ import com.android.build.gradle.internal.testFixtures.isProjectTestFixturesCapab
 import com.android.builder.model.v2.ide.ArtifactDependencies
 import com.android.builder.model.v2.ide.Edge
 import com.android.builder.model.v2.ide.GraphItem
+import com.android.builder.model.v2.ide.Library
 import com.android.builder.model.v2.ide.UnresolvedDependency
 import org.gradle.api.artifacts.component.ComponentIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
@@ -187,99 +188,20 @@ class FullDependencyGraphBuilder(
             return graphItem
         }
 
-        val variantKey = variant.toKey()
-        val artifact = artifactMap[variantKey]
         val variantDependencies by lazy {
             dependency.selected.getDependenciesForVariant(variant)
         }
 
-        val javadoc = javadocArtifacts[variant.owner]
-        val source = sourceArtifacts[variant.owner]
-        val sample = sampleArtifacts[variant.owner]
-        val additionalArtifacts = AdditionalArtifacts(javadoc, source, sample)
-
-        val library = if (artifact == null) {
-            val owner = variant.owner
-
-            // There are 4 (currently known) reasons this can happen:
-            // 1. when an artifact is relocated via Gradle's module "available-at" feature.
-            // 2. when resolving a test graph, as one of the roots will be the same module and this
-            //    is not included in the other artifact-based API.
-            // 3. when an external dependency is without artifact file, but with transitive
-            //    dependencies
-            // 4. when resolving a dynamic-feature dependency graph; e.g., the app module does not
-            //    publish an ArtifactType.JAR artifact to runtimeElements
-            //
-            // In cases 1, 2, and 3, there are still dependencies, so we need to create a library
-            // object, and traverse the dependencies.
-            //
-            // In case 4, we want to ignore the app dependency and any transitive dependencies.
-            if (variant.externalVariant.isPresent) {
-                // Scenario 1
-                libraryService.getLibrary(
-                    ResolvedArtifact(
-                        owner,
-                        variant,
-                        variantName = "unknown",
-                        artifactFile = null,
-                        isTestFixturesArtifact = false,
-                        extractedFolder = null,
-                        publishedLintJar = null,
-                        dependencyType = ResolvedArtifact.DependencyType.RELOCATED_ARTIFACT,
-                        isWrappedModule = false,
-                        buildMapping = inputs.buildMapping
-                    ),
-                    additionalArtifacts
-                )
-            } else if (owner is ProjectComponentIdentifier && inputs.projectPath == owner.projectPath) {
-                // Scenario 2
-                // create on the fly a ResolvedArtifact around this project
-                // and get the matching library item
-                libraryService.getLibrary(
-                    ResolvedArtifact(
-                        owner,
-                        variant,
-                        variantName = variant.attributes
-                            .getAttribute(VariantAttr.ATTRIBUTE)
-                            ?.toString()
-                            ?: "unknown",
-                        artifactFile = File("wont/matter"),
-                        isTestFixturesArtifact = variant.capabilities.any {
-                            it.isProjectTestFixturesCapability(owner.projectName)
-                        },
-                        extractedFolder = null,
-                        publishedLintJar = null,
-                        dependencyType = ResolvedArtifact.DependencyType.ANDROID,
-                        isWrappedModule = false,
-                        buildMapping = inputs.buildMapping
-                    ),
-                    additionalArtifacts
-                )
-            } else if (owner !is ProjectComponentIdentifier && variantDependencies.isNotEmpty()) {
-                // Scenario 3
-                libraryService.getLibrary(
-                    ResolvedArtifact(
-                        owner,
-                        variant,
-                        variantName = "unknown",
-                        artifactFile = null,
-                        isTestFixturesArtifact = false,
-                        extractedFolder = null,
-                        publishedLintJar = null,
-                        dependencyType = ResolvedArtifact.DependencyType.NO_ARTIFACT_FILE,
-                        isWrappedModule = false,
-                        buildMapping = inputs.buildMapping
-                    ),
-                    additionalArtifacts
-                )
-            } else {
-                // Scenario 4 or other unknown scenario
-                null
-            }
-        } else {
-            // get the matching library item
-            libraryService.getLibrary(artifact, additionalArtifacts)
-        }
+        val library = getLibrary(
+            inputs = inputs,
+            libraryService = libraryService,
+            variant = variant,
+            variantDependencies = variantDependencies,
+            artifactMap = artifactMap,
+            javadocArtifacts = javadocArtifacts,
+            sourceArtifacts = sourceArtifacts,
+            sampleArtifacts = sampleArtifacts
+        )
 
         if (library != null) {
             // Create GraphItem for the library first and add it to cache in order to avoid cycles.
@@ -326,5 +248,107 @@ private sealed class Graph {
     companion object {
         fun Graph.graphItems() = (this as GraphItemList).graphItems
         fun Graph.edges() = (this as AdjacencyList).edges
+    }
+}
+
+fun getLibrary(
+    inputs: ArtifactCollectionsInputs,
+    libraryService: LibraryService,
+    variant: ResolvedVariantResult,
+    variantDependencies: List<DependencyResult>,
+    artifactMap: Map<VariantKey, ResolvedArtifact>,
+    javadocArtifacts: Map<ComponentIdentifier, File>,
+    sourceArtifacts: Map<ComponentIdentifier, File>,
+    sampleArtifacts: Map<ComponentIdentifier, File>,
+): Library? {
+    val variantKey = variant.toKey()
+    val artifact = artifactMap[variantKey]
+
+    val javadoc = javadocArtifacts[variant.owner]
+    val source = sourceArtifacts[variant.owner]
+    val sample = sampleArtifacts[variant.owner]
+    val additionalArtifacts = AdditionalArtifacts(javadoc, source, sample)
+
+    return if (artifact == null) {
+        val owner = variant.owner
+
+        // There are 4 (currently known) reasons this can happen:
+        // 1. when an artifact is relocated via Gradle's module "available-at" feature.
+        // 2. when resolving a test graph, as one of the roots will be the same module and this
+        //    is not included in the other artifact-based API.
+        // 3. when an external dependency is without artifact file, but with transitive
+        //    dependencies
+        // 4. when resolving a dynamic-feature dependency graph; e.g., the app module does not
+        //    publish an ArtifactType.JAR artifact to runtimeElements
+        //
+        // In cases 1, 2, and 3, there are still dependencies, so we need to create a library
+        // object, and traverse the dependencies.
+        //
+        // In case 4, we want to ignore the app dependency and any transitive dependencies.
+        if (variant.externalVariant.isPresent) {
+            // Scenario 1
+            libraryService.getLibrary(
+                ResolvedArtifact(
+                    owner,
+                    variant,
+                    variantName = "unknown",
+                    artifactFile = null,
+                    isTestFixturesArtifact = false,
+                    extractedFolder = null,
+                    publishedLintJar = null,
+                    dependencyType = ResolvedArtifact.DependencyType.RELOCATED_ARTIFACT,
+                    isWrappedModule = false,
+                    buildMapping = inputs.buildMapping
+                ),
+                additionalArtifacts
+            )
+        } else if (owner is ProjectComponentIdentifier && inputs.projectPath == owner.projectPath) {
+            // Scenario 2
+            // create on the fly a ResolvedArtifact around this project
+            // and get the matching library item
+            libraryService.getLibrary(
+                ResolvedArtifact(
+                    owner,
+                    variant,
+                    variantName = variant.attributes
+                        .getAttribute(VariantAttr.ATTRIBUTE)
+                        ?.toString()
+                        ?: "unknown",
+                    artifactFile = File("wont/matter"),
+                    isTestFixturesArtifact = variant.capabilities.any {
+                        it.isProjectTestFixturesCapability(owner.projectName)
+                    },
+                    extractedFolder = null,
+                    publishedLintJar = null,
+                    dependencyType = ResolvedArtifact.DependencyType.ANDROID,
+                    isWrappedModule = false,
+                    buildMapping = inputs.buildMapping
+                ),
+                additionalArtifacts
+            )
+        } else if (owner !is ProjectComponentIdentifier && variantDependencies.isNotEmpty()) {
+            // Scenario 3
+            libraryService.getLibrary(
+                ResolvedArtifact(
+                    owner,
+                    variant,
+                    variantName = "unknown",
+                    artifactFile = null,
+                    isTestFixturesArtifact = false,
+                    extractedFolder = null,
+                    publishedLintJar = null,
+                    dependencyType = ResolvedArtifact.DependencyType.NO_ARTIFACT_FILE,
+                    isWrappedModule = false,
+                    buildMapping = inputs.buildMapping
+                ),
+                additionalArtifacts
+            )
+        } else {
+            // Scenario 4 or other unknown scenario
+            null
+        }
+    } else {
+        // get the matching library item
+        libraryService.getLibrary(artifact, additionalArtifacts)
     }
 }

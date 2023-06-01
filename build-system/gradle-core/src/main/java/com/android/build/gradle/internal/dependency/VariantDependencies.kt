@@ -160,7 +160,9 @@ class VariantDependencies internal constructor(
             val objects = project.objects
 
             view.attributes.apply {
-                attribute(BuildTypeAttr.ATTRIBUTE, buildType)
+                buildType?.let {
+                    attribute(BuildTypeAttr.ATTRIBUTE, buildType)
+                }
                 flavorMap.entries.forEach {
                     attribute(it.key, it.value)
                 }

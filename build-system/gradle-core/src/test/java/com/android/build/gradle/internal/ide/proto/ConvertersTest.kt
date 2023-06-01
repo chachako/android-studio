@@ -16,8 +16,13 @@
 
 package com.android.build.gradle.internal.ide.proto
 
+import com.android.build.gradle.internal.ide.v2.LibraryImpl
+import com.android.build.gradle.internal.ide.v2.LibraryInfoImpl
+import com.android.build.gradle.internal.ide.v2.ProjectInfoImpl
 import com.android.build.gradle.internal.ide.v2.TestInfoImpl
 import com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags
+import com.android.builder.model.v2.ide.ComponentInfo
+import com.android.builder.model.v2.ide.Library
 import com.android.builder.model.v2.ide.TestInfo
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth
@@ -76,6 +81,159 @@ class ConvertersTest {
         "The proto representation of $className doesn't contain all values that the original class" +
                 " contains. Update the proto file with the missing enum."
 
+    @Test
+    fun testAndroidLibraryConversion() {
+        val library = LibraryImpl.createAndroidLibrary(
+            key = nextString(),
+            libraryInfo = LibraryInfoImpl(
+                buildType = nextString(),
+                productFlavors = mapOf(nextString() to nextString()),
+                attributes = mapOf(nextString() to nextString()),
+                capabilities = listOf(nextString(), nextString()),
+                group = nextString(),
+                name = nextString(),
+                version = nextString(),
+                isTestFixtures = true
+            ),
+            artifact = nextFile(),
+            manifest = nextFile(),
+            compileJarFiles = listOf(nextFile(), nextFile()),
+            runtimeJarFiles = listOf(nextFile(), nextFile()),
+            resFolder = nextFile(),
+            resStaticLibrary = nextFile(),
+            assetsFolder = nextFile(),
+            jniFolder = nextFile(),
+            aidlFolder = nextFile(),
+            renderscriptFolder = nextFile(),
+            proguardRules = nextFile(),
+            lintJar = nextFile(),
+            srcJar = nextFile(),
+            docJar = nextFile(),
+            samplesJar = nextFile(),
+            externalAnnotations = nextFile(),
+            publicResources = nextFile(),
+            symbolFile = nextFile(),
+        )
+
+        val result = assertAllGettersMatch(
+            obj = library,
+            convertedObj = library.convert().build(),
+            objType = Library::class.java,
+            callChain = "Library"
+        )
+
+        Truth.assertThat(result.gettersCalled).isEqualTo(30)
+    }
+
+    @Test
+    fun testJavaLibraryConversion() {
+        val library = LibraryImpl.createJavaLibrary(
+            key = nextString(),
+            libraryInfo = LibraryInfoImpl(
+                buildType = nextString(),
+                productFlavors = mapOf(nextString() to nextString()),
+                attributes = mapOf(nextString() to nextString()),
+                capabilities = listOf(nextString(), nextString()),
+                group = nextString(),
+                name = nextString(),
+                version = nextString(),
+                isTestFixtures = true
+            ),
+            artifact = nextFile(),
+            srcJar = nextFile(),
+            docJar = nextFile(),
+            samplesJar = nextFile(),
+        )
+
+        val result = assertAllGettersMatch(
+            obj = library,
+            convertedObj = library.convert().build(),
+            objType = Library::class.java,
+            callChain = "Library"
+        )
+
+        Truth.assertThat(result.gettersCalled).isEqualTo(14)
+    }
+
+    @Test
+    fun testProjectLibraryConversion() {
+        val library = LibraryImpl.createProjectLibrary(
+            key = nextString(),
+            projectInfo = ProjectInfoImpl(
+                buildType = nextString(),
+                productFlavors = mapOf(nextString() to nextString()),
+                attributes = mapOf(nextString() to nextString()),
+                capabilities = listOf(nextString(), nextString()),
+                buildId = nextString(),
+                projectPath = nextString(),
+                isTestFixtures = true
+            ),
+            artifactFile = nextFile(),
+            lintJar = nextFile()
+        )
+
+        val result = assertAllGettersMatch(
+            obj = library,
+            convertedObj = library.convert().build(),
+            objType = Library::class.java,
+            callChain = "Library"
+        )
+
+        Truth.assertThat(result.gettersCalled).isEqualTo(11)
+    }
+
+    @Test
+    fun testRelocatedLibraryConversion() {
+        val library = LibraryImpl.createRelocatedLibrary(
+            key = nextString(),
+            libraryInfo = LibraryInfoImpl(
+                buildType = nextString(),
+                productFlavors = mapOf(nextString() to nextString()),
+                attributes = mapOf(nextString() to nextString()),
+                capabilities = listOf(nextString(), nextString()),
+                group = nextString(),
+                name = nextString(),
+                version = nextString(),
+                isTestFixtures = true
+            ),
+        )
+
+        val result = assertAllGettersMatch(
+            obj = library,
+            convertedObj = library.convert().build(),
+            objType = Library::class.java,
+            callChain = "Library"
+        )
+
+        Truth.assertThat(result.gettersCalled).isEqualTo(10)
+    }
+
+    @Test
+    fun testNoArtifactLibraryConversion() {
+        val library = LibraryImpl.createNoArtifactFileLibrary(
+            key = nextString(),
+            libraryInfo = LibraryInfoImpl(
+                buildType = nextString(),
+                productFlavors = mapOf(nextString() to nextString()),
+                attributes = mapOf(nextString() to nextString()),
+                capabilities = listOf(nextString(), nextString()),
+                group = nextString(),
+                name = nextString(),
+                version = nextString(),
+                isTestFixtures = true
+            ),
+        )
+
+        val result = assertAllGettersMatch(
+            obj = library,
+            convertedObj = library.convert().build(),
+            objType = Library::class.java,
+            callChain = "Library"
+        )
+
+        Truth.assertThat(result.gettersCalled).isEqualTo(10)
+    }
+
     private val methodMapper = { method: Method ->
         if (Collection::class.java.isAssignableFrom(method.returnType)) {
             method.name + "List"
@@ -85,6 +243,14 @@ class ConvertersTest {
             "getIs" + method.name.removePrefix("is")
         } else {
             method.name
+        }
+    }
+
+    private val objectMapper = { obj: Any, method: Method ->
+        if (method.declaringClass == ComponentInfo::class.java) {
+            obj::class.java.getMethod("getComponentInfo").invoke(obj)
+        } else {
+            obj
         }
     }
 
@@ -175,7 +341,7 @@ class ConvertersTest {
             val currentCallChain = "$callChain.${method.name}"
             val original = method.invoke(obj)
             val converted = getProtoEquivalent(
-                convertedObj, methodMapper(method)
+                objectMapper(convertedObj, method), methodMapper(method)
             )
 
             if (original == null) {
