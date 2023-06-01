@@ -1619,6 +1619,8 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/checkers.js.kotlin_module
   META-INF/checkers.jvm.kotlin_module
   META-INF/checkers.kotlin_module
+  META-INF/checkers.native.kotlin_module
+  META-INF/cli-base.kotlin_module
   META-INF/cli-common.kotlin_module
   META-INF/cli-js.kotlin_module
   META-INF/cli.kotlin_module
@@ -1666,6 +1668,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/js.translator.kotlin_module
   META-INF/jvm-backend.kotlin_module
   META-INF/kotlin-build-common.kotlin_module
+  META-INF/kotlin-build-statistics.kotlin_module
   META-INF/kotlin-compiler-runner-unshaded.kotlin_module
   META-INF/kotlin-daemon-client.kotlin_module
   META-INF/kotlin-native-utils.kotlin_module
@@ -1743,7 +1746,6 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/services/org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
   META-INF/services/org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
   META-INF/services/org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
-  META-INF/services/org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages$Extension
   META-INF/services/org.jetbrains.kotlin.resolve.ExternalOverridabilityCondition
   META-INF/services/org.jetbrains.kotlin.resolve.jvm.jvmSignature.KotlinToJvmSignatureMapper
   META-INF/services/org.jetbrains.kotlin.util.ModuleVisibilityHelper
@@ -1753,6 +1755,8 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/tree.kotlin_module
   META-INF/util.kotlin_module
   META-INF/util.runtime.kotlin_module
+  META-INF/wasm.config.kotlin_module
+  META-INF/wasm.frontend.kotlin_module
   NOTICE
   com/
   com/google/
@@ -1917,6 +1921,8 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/api/renderer/types/
   org/jetbrains/kotlin/analysis/api/renderer/types/impl/
   org/jetbrains/kotlin/analysis/api/renderer/types/renderers/
+  org/jetbrains/kotlin/analysis/api/resolve/
+  org/jetbrains/kotlin/analysis/api/resolve/extensions/
   org/jetbrains/kotlin/analysis/api/scopes/
   org/jetbrains/kotlin/analysis/api/session/
   org/jetbrains/kotlin/analysis/api/signatures/
@@ -1946,6 +1952,8 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/low/level/api/fir/
   org/jetbrains/kotlin/analysis/low/level/api/fir/api/
   org/jetbrains/kotlin/analysis/low/level/api/fir/api/services/
+  org/jetbrains/kotlin/analysis/low/level/api/fir/api/targets/
+  org/jetbrains/kotlin/analysis/low/level/api/fir/caches/
   org/jetbrains/kotlin/analysis/low/level/api/fir/diagnostics/
   org/jetbrains/kotlin/analysis/low/level/api/fir/diagnostics/fir/
   org/jetbrains/kotlin/analysis/low/level/api/fir/element/
@@ -1960,6 +1968,8 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/low/level/api/fir/project/
   org/jetbrains/kotlin/analysis/low/level/api/fir/project/structure/
   org/jetbrains/kotlin/analysis/low/level/api/fir/providers/
+  org/jetbrains/kotlin/analysis/low/level/api/fir/resolve/
+  org/jetbrains/kotlin/analysis/low/level/api/fir/resolve/extensions/
   org/jetbrains/kotlin/analysis/low/level/api/fir/resolver/
   org/jetbrains/kotlin/analysis/low/level/api/fir/sessions/
   org/jetbrains/kotlin/analysis/low/level/api/fir/state/
@@ -1976,6 +1986,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/utils/collections/
   org/jetbrains/kotlin/analysis/utils/errors/
   org/jetbrains/kotlin/analysis/utils/printer/
+  org/jetbrains/kotlin/analysis/utils/relfection/
   org/jetbrains/kotlin/analysis/utils/trackers/
   org/jetbrains/kotlin/analyzer/
   org/jetbrains/kotlin/analyzer/common/
@@ -1988,11 +1999,13 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/backend/
   org/jetbrains/kotlin/backend/common/
   org/jetbrains/kotlin/backend/common/bridges/
+  org/jetbrains/kotlin/backend/common/linkage/
+  org/jetbrains/kotlin/backend/common/linkage/issues/
+  org/jetbrains/kotlin/backend/common/linkage/partial/
   org/jetbrains/kotlin/backend/common/output/
   org/jetbrains/kotlin/backend/common/overrides/
   org/jetbrains/kotlin/backend/common/serialization/
   org/jetbrains/kotlin/backend/common/serialization/encodings/
-  org/jetbrains/kotlin/backend/common/serialization/linkerissues/
   org/jetbrains/kotlin/backend/common/serialization/mangle/
   org/jetbrains/kotlin/backend/common/serialization/mangle/descriptor/
   org/jetbrains/kotlin/backend/common/serialization/mangle/ir/
@@ -2000,10 +2013,10 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/backend/common/serialization/metadata/impl/
   org/jetbrains/kotlin/backend/common/serialization/proto/
   org/jetbrains/kotlin/backend/common/serialization/signature/
-  org/jetbrains/kotlin/backend/common/serialization/unlinked/
   org/jetbrains/kotlin/backend/jvm/
   org/jetbrains/kotlin/backend/jvm/caches/
   org/jetbrains/kotlin/backend/jvm/codegen/
+  org/jetbrains/kotlin/backend/jvm/extensions/
   org/jetbrains/kotlin/backend/jvm/intrinsics/
   org/jetbrains/kotlin/backend/jvm/ir/
   org/jetbrains/kotlin/backend/jvm/lower/
@@ -2013,6 +2026,8 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/build/
   org/jetbrains/kotlin/build/report/
   org/jetbrains/kotlin/build/report/metrics/
+  org/jetbrains/kotlin/build/report/statistics/
+  org/jetbrains/kotlin/build/report/statistics/file/
   org/jetbrains/kotlin/builtins/
   org/jetbrains/kotlin/builtins/functions/
   org/jetbrains/kotlin/builtins/jvm/
@@ -2085,6 +2100,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/compiler/plugin/
   org/jetbrains/kotlin/compilerRunner/
   org/jetbrains/kotlin/config/
+  org/jetbrains/kotlin/constant/
   org/jetbrains/kotlin/container/
   org/jetbrains/kotlin/context/
   org/jetbrains/kotlin/contracts/
@@ -2134,6 +2150,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/fir/analysis/diagnostics/
   org/jetbrains/kotlin/fir/analysis/diagnostics/js/
   org/jetbrains/kotlin/fir/analysis/diagnostics/jvm/
+  org/jetbrains/kotlin/fir/analysis/diagnostics/native/
   org/jetbrains/kotlin/fir/analysis/extensions/
   org/jetbrains/kotlin/fir/analysis/js/
   org/jetbrains/kotlin/fir/analysis/js/checkers/
@@ -2144,6 +2161,8 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/fir/analysis/jvm/checkers/declaration/
   org/jetbrains/kotlin/fir/analysis/jvm/checkers/expression/
   org/jetbrains/kotlin/fir/analysis/jvm/checkers/type/
+  org/jetbrains/kotlin/fir/analysis/native/
+  org/jetbrains/kotlin/fir/analysis/native/checkers/
   org/jetbrains/kotlin/fir/backend/
   org/jetbrains/kotlin/fir/backend/generators/
   org/jetbrains/kotlin/fir/backend/jvm/
@@ -2243,6 +2262,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/ir/expressions/
   org/jetbrains/kotlin/ir/expressions/impl/
   org/jetbrains/kotlin/ir/linkage/
+  org/jetbrains/kotlin/ir/linkage/partial/
   org/jetbrains/kotlin/ir/overrides/
   org/jetbrains/kotlin/ir/symbols/
   org/jetbrains/kotlin/ir/symbols/impl/
@@ -2307,8 +2327,10 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/kdoc/psi/api/
   org/jetbrains/kotlin/kdoc/psi/impl/
   org/jetbrains/kotlin/konan/
+  org/jetbrains/kotlin/konan/exec/
   org/jetbrains/kotlin/konan/file/
   org/jetbrains/kotlin/konan/library/
+  org/jetbrains/kotlin/konan/library/impl/
   org/jetbrains/kotlin/konan/properties/
   org/jetbrains/kotlin/konan/target/
   org/jetbrains/kotlin/konan/util/
@@ -2367,6 +2389,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/platform/js/
   org/jetbrains/kotlin/platform/jvm/
   org/jetbrains/kotlin/platform/konan/
+  org/jetbrains/kotlin/platform/wasm/
   org/jetbrains/kotlin/plugin/
   org/jetbrains/kotlin/plugin/references/
   org/jetbrains/kotlin/preloading/
@@ -2505,6 +2528,11 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/utils/kapt/
   org/jetbrains/kotlin/utils/repl/
   org/jetbrains/kotlin/utils/strings/
+  org/jetbrains/kotlin/wasm/
+  org/jetbrains/kotlin/wasm/analyze/
+  org/jetbrains/kotlin/wasm/resolve/
+  org/jetbrains/kotlin/wasm/resolve/diagnostics/
+  org/jetbrains/kotlin/wasm/util/
   org/jline/
   org/jline/builtins/
   org/jline/builtins/nano-browser-help.txt
