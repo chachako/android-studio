@@ -16,11 +16,11 @@
 package com.android.screenshot.cli
 
 import com.android.sdklib.IAndroidTarget
+import com.android.tools.configurations.ThemeInfoProvider
 import com.android.tools.idea.configurations.ConfigurationManager
 import com.android.tools.idea.configurations.ConfigurationModelModule
 import com.android.tools.idea.configurations.ConfigurationStateManager
 import com.android.tools.idea.configurations.StudioConfigurationStateManager
-import com.android.tools.idea.configurations.ThemeInfoProvider
 import com.android.tools.idea.projectsystem.getModuleSystem
 import com.android.tools.module.AndroidModuleInfo
 import com.android.tools.module.ModuleDependencies

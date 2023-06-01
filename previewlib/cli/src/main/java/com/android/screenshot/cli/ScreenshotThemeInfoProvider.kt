@@ -19,8 +19,8 @@ import com.android.SdkConstants
 import com.android.resources.ScreenSize
 import com.android.sdklib.IAndroidTarget
 import com.android.sdklib.devices.Device
+import com.android.tools.configurations.ThemeInfoProvider
 import com.android.tools.dom.ActivityAttributesSnapshot
-import com.android.tools.idea.configurations.ThemeInfoProvider
 import com.android.tools.idea.configurations.getDefaultTheme
 import com.android.tools.idea.model.MergedManifestManager
 import com.android.tools.module.AndroidModuleInfo
