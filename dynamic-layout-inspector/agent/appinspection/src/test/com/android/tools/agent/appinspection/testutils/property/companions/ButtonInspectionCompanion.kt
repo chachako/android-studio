@@ -31,7 +31,7 @@ class ButtonInspectionCompanion : InspectionCompanion<Button> {
         val NUM_PROPERTIES = Property.values().size
 
         fun addResourceNames(resourceNames: MutableMap<Int, String>) {
-            resourceNames[ATTR_OFFSET + OFFSET] = "android.attr/backgroundTint"
+            resourceNames[ATTR_OFFSET + OFFSET] = "android:attr/backgroundTint"
         }
     }
 

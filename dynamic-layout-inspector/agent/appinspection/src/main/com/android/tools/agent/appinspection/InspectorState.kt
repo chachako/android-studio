@@ -115,7 +115,20 @@ class SnapshotRequest {
 
 /**
  * Wrapper class to hold information about the device.
- * @param appContext holds things like the theme of the app and the screen size.
- * @param configuration holds other device configurations like screen density, keyboard state etc.
  */
-data class DeviceInfo(var appContext: AppContext, var configuration: Configuration)
+class DeviceInfo {
+    private var appContext = AppContext.getDefaultInstance()
+    private var configuration = Configuration.getDefaultInstance()
+
+    /**
+     * Update the device info and returns true if a change was detected.
+     */
+    fun update(newAppContext: AppContext, newConfiguration: Configuration): Boolean {
+        if (newAppContext == appContext && newConfiguration == configuration) {
+            return false
+        }
+        appContext = newAppContext
+        configuration = newConfiguration
+        return true
+    }
+}

@@ -31,7 +31,7 @@ class TextViewInspectionCompanion : InspectionCompanion<TextView> {
         val NUM_PROPERTIES = Property.values().size
 
         fun addResourceNames(resourceNames: MutableMap<Int, String>) {
-            resourceNames[ATTR_OFFSET + OFFSET] = "android.attr/text"
+            resourceNames[ATTR_OFFSET + OFFSET] = "android:attr/text"
         }
     }
 

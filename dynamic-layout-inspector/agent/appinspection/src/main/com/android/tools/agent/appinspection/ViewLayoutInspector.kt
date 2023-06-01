@@ -122,10 +122,7 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
 
     private val rootsDetector = RootsDetector(connection, ::onRootsChanged) { checkpoint = it }
 
-    private val deviceInfo = DeviceInfo(
-        LayoutInspectorViewProtocol.AppContext.getDefaultInstance(),
-        LayoutInspectorViewProtocol.Configuration.getDefaultInstance()
-    )
+    private val deviceInfo = DeviceInfo()
 
     override fun onReceiveCommand(data: ByteArray, callback: CommandCallback) {
         val command = Command.parseFrom(data)

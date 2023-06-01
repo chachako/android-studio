@@ -171,7 +171,7 @@ class CaptureExecutor(
         }
 
         val stringTable = StringTable()
-        val appContext = rootView.createAppContext(stringTable)
+        val appContext = rootView.createAppContext()
         val configuration = rootView.createConfiguration(stringTable)
 
         val (rootViewNode, rootOffset) = ThreadUtils.runOnMainThread {
@@ -241,9 +241,7 @@ class CaptureExecutor(
         screenshot: ByteString?
     ) = LayoutInspectorViewProtocol.LayoutEvent.newBuilder().apply {
         addAllStrings(stringTable.toStringEntries())
-        if (appContext != previousDeviceInfo.appContext || configuration != previousDeviceInfo.configuration) {
-            previousDeviceInfo.configuration = configuration
-            previousDeviceInfo.appContext = appContext
+        if (previousDeviceInfo.update(appContext, configuration)) {
             this.configuration = configuration
             this.appContext = appContext
         }
