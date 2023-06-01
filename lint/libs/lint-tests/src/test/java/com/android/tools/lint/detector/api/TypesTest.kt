@@ -392,9 +392,10 @@ class TypesTest : TestCase() {
         "        UMethod (name = KotlinEnum) [private fun KotlinEnum(@org.jetbrains.annotations.NotNull resId: int) = UastEmptyExpression]\n" +
         "            UParameter (name = resId) [@org.jetbrains.annotations.NotNull var resId: int] : PsiType:int\n" +
         "                UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]\n" +
+        "        UMethod (name = getEntries) [public static fun getEntries() : kotlin.enums.EnumEntries<test.pkg.KotlinEnum> = UastEmptyExpression] : PsiType:EnumEntries<KotlinEnum>\n" +
         "        UMethod (name = values) [public static fun values() : test.pkg.KotlinEnum[] = UastEmptyExpression] : PsiType:KotlinEnum[]\n" +
-        "        UMethod (name = valueOf) [public static fun valueOf(name: java.lang.String) : test.pkg.KotlinEnum = UastEmptyExpression] : PsiType:KotlinEnum\n" +
-        "            UParameter (name = name) [var name: java.lang.String] : PsiType:String\n",
+        "        UMethod (name = valueOf) [public static fun valueOf(value: java.lang.String) : test.pkg.KotlinEnum = UastEmptyExpression] : PsiType:KotlinEnum\n" +
+        "            UParameter (name = value) [var value: java.lang.String] : PsiType:String\n",
       file?.asLogTypes()
     )
     Disposer.dispose(pair.second)

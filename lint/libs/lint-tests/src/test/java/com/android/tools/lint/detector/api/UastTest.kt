@@ -853,7 +853,7 @@ class UastTest : TestCase() {
                             UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]
                             UAnnotation (fqName = kotlin.jvm.JvmField) [@kotlin.jvm.JvmField]
                             ULiteralExpression (value = 42) [42] : PsiType:int
-                        UMethod (name = sayHello) [public static default fun sayHello() : void {...}] : PsiType:void
+                        UMethod (name = sayHello) [public static fun sayHello() : void {...}] : PsiType:void
                             UBlockExpression [{...}] : PsiType:void
                                 UCallExpression (kind = UastCallKind(name='method_call'), argCount = 1)) [println("Hello, world!")] : PsiType:Unit
                                     UIdentifier (Identifier (println)) [UIdentifier (Identifier (println))]
@@ -885,9 +885,10 @@ class UastTest : TestCase() {
                                 UAnnotation (fqName = null) [@null]
                                 USimpleNameReferenceExpression (identifier = Direction) [Direction]
                             UMethod (name = Direction) [private fun Direction() = UastEmptyExpression]
+                            UMethod (name = getEntries) [public static fun getEntries() : kotlin.enums.EnumEntries<test.pkg.FooAnnotation.Direction> = UastEmptyExpression] : PsiType:EnumEntries<Direction>
                             UMethod (name = values) [public static fun values() : test.pkg.FooAnnotation.Direction[] = UastEmptyExpression] : PsiType:Direction[]
-                            UMethod (name = valueOf) [public static fun valueOf(name: java.lang.String) : test.pkg.FooAnnotation.Direction = UastEmptyExpression] : PsiType:Direction
-                                UParameter (name = name) [var name: java.lang.String] : PsiType:String
+                            UMethod (name = valueOf) [public static fun valueOf(value: java.lang.String) : test.pkg.FooAnnotation.Direction = UastEmptyExpression] : PsiType:Direction
+                                UParameter (name = value) [var value: java.lang.String] : PsiType:String
                         UClass (name = Bar) [public static abstract annotation Bar {...}]
                         UClass (name = Companion) [public static final class Companion {...}]
                             UField (name = bar) [@org.jetbrains.annotations.NotNull private static final var bar: int = 42] : PsiType:int

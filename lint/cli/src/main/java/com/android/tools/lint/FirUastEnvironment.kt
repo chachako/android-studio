@@ -38,6 +38,7 @@ import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 import kotlin.concurrent.withLock
 import org.jetbrains.kotlin.analysis.api.impl.base.util.LibraryUtils
+import org.jetbrains.kotlin.analysis.api.resolve.extensions.KtResolveExtensionProvider
 import org.jetbrains.kotlin.analysis.api.standalone.StandaloneAnalysisAPISession
 import org.jetbrains.kotlin.analysis.api.standalone.buildStandaloneAnalysisAPISession
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtLibraryModule
@@ -139,6 +140,12 @@ private fun createAnalysisSession(
       projectDisposable = parentDisposable,
       withPsiDeclarationFromBinaryModuleProvider = true
     ) {
+      CoreApplicationEnvironment.registerExtensionPoint(
+        project.extensionArea,
+        KtResolveExtensionProvider.EP_NAME.name,
+        KtResolveExtensionProvider::class.java
+      )
+
       val theProject = project
       val thePlatform = JvmPlatforms.defaultJvmPlatform // TODO(b/283271025)
       appLock.withLock {
