@@ -25,7 +25,7 @@ import com.android.tools.idea.compose.preview.ComposePreviewElement
 import com.android.tools.idea.compose.preview.ComposePreviewElementInstance
 import com.android.tools.idea.compose.preview.ComposePreviewElementTemplate
 import com.android.tools.idea.compose.preview.applyTo
-import com.android.tools.idea.configurations.Configuration
+import com.android.tools.configurations.Configuration
 import com.android.tools.idea.rendering.ShowFixFactory
 import com.android.tools.idea.rendering.StudioHtmlLinkManager
 import com.android.tools.idea.rendering.StudioRenderConfiguration
@@ -42,14 +42,7 @@ import com.intellij.workspaceModel.ide.impl.legacyBridge.module.ModuleManagerCom
 import org.mockito.Mockito
 import java.awt.image.BufferedImage
 import java.io.File
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.attribute.BasicFileAttributes
 import javax.imageio.ImageIO
-import kotlin.io.path.name
-import kotlin.io.path.pathString
 
 /**
  * This is the main driver behind capturing screenshots, and saving them to disk.

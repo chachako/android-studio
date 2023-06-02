@@ -15,7 +15,7 @@
  */
 package com.android.screenshot.cli
 
-import com.android.tools.idea.configurations.ConfigurationStateManager
+import com.android.tools.configurations.ConfigurationStateManager
 import com.android.tools.idea.configurations.StudioConfigurationStateManager
 import com.android.tools.idea.editors.fast.FastPreviewManager
 import com.android.tools.idea.projectsystem.AndroidProjectSystemProvider
@@ -27,27 +27,18 @@ import com.android.tools.idea.res.ResourceClassRegistry
 import com.android.tools.idea.res.ResourceFolderRegistry
 import com.android.tools.idea.res.SampleDataListener
 import com.intellij.core.CoreApplicationEnvironment
-import com.intellij.core.CoreFileTypeRegistry
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.ide.startup.impl.StartupManagerImpl
 import com.intellij.mock.MockComponentManager
-import com.intellij.openapi.Disposable
-import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.roots.ModuleExtension
 import com.intellij.openapi.roots.ModuleRootManagerEx
 import com.intellij.openapi.roots.ProjectFileIndex
-import com.intellij.openapi.roots.ProjectRootManager
-import com.intellij.openapi.roots.impl.DirectoryIndex
 import com.intellij.openapi.roots.impl.DirectoryIndexExcludePolicy
-import com.intellij.openapi.roots.impl.DirectoryIndexImpl
-import com.intellij.openapi.roots.impl.ProjectFileIndexImpl
 import com.intellij.openapi.startup.StartupManager
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndex
-import com.intellij.workspaceModel.core.fileIndex.impl.WorkspaceFileIndexImpl
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.ide.impl.IdeVirtualFileUrlManagerImpl
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.ModuleDependencyIndexImpl
-import com.intellij.workspaceModel.ide.impl.legacyBridge.project.ProjectRootManagerBridge
 import com.intellij.workspaceModel.ide.legacyBridge.ModuleDependencyIndex
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
 import com.intellij.workspaceModel.storage.impl.VersionedEntityStorageOnStorage
