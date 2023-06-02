@@ -277,6 +277,9 @@ def _iml_module_impl(ctx):
             test_form_deps += this_dep[ImlModuleInfo].test_forms
             test_java_deps += [this_dep[ImlModuleInfo].test_provider]
 
+    # Runtime dependencies.
+    java_runtime_deps = [dep[JavaInfo] for dep in ctx.attr.runtime_deps]
+
     # Exports.
     exports = []
     test_exports = []
@@ -312,7 +315,7 @@ def _iml_module_impl(ctx):
         res_zips = ctx.files.res_zips,
         output_jar = ctx.outputs.production_jar,
         java_deps = java_deps,
-        java_runtime_deps = [dep[JavaInfo] for dep in ctx.attr.runtime_deps],
+        java_runtime_deps = java_runtime_deps,
         form_deps = form_deps,
         exports = exports,
         friend_jars = [],
@@ -334,7 +337,7 @@ def _iml_module_impl(ctx):
         res_zips = [],
         output_jar = ctx.outputs.test_jar,
         java_deps = [main_provider_no_deps] + test_java_deps,
-        java_runtime_deps = [],  # Runtime deps already inherited from prod module.
+        java_runtime_deps = java_runtime_deps,
         form_deps = test_form_deps,
         exports = exports + test_exports,
         friend_jars = friend_jars,
