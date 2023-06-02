@@ -1008,19 +1008,8 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
     return null
   }
 
-  private fun pathMatchesPackage(pkg: String, path: String, packageStart: Int): Boolean {
-    var i = 0
-    var j = packageStart
-    while (i < pkg.length) {
-      if (pkg[i] != path[j] && pkg[i] != '.') {
-        return false
-      }
-      i++
-      j++
-    }
-
-    return true
-  }
+  private fun pathMatchesPackage(pkg: String, path: String, packageStart: Int): Boolean =
+    pkg.indices.all { i -> pkg[i] == path[i + packageStart] || pkg[i] == '.' }
 
   private fun findPackage(file: File): String? {
     return findPackage(file.readText(), file)
