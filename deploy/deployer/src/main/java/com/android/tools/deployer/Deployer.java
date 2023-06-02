@@ -478,7 +478,9 @@ public class Deployer {
 
         String deploySessionUID = UUID.randomUUID().toString();
         logger.info(
-                "Deploy Optimistic Apply " + (argRestart ? "" : "Code ") + "Session %s",
+                "Deploy Optimistic Apply "
+                        + (argRestart ? "Changes." : "Code Changes.")
+                        + " Session %s",
                 deploySessionUID);
 
         // Inputs
