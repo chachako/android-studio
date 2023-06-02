@@ -894,10 +894,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
         // findRoot returns null. Let's say the file we passed in was
         // "src/Foo.java". In that case, we can just take its parent
         // file, "src", as the source root.
-        // But what if the source file itself was just passed as "Foo.java" ?
-        // In that case it is relative to the pwd, so we get the *absolute*
-        // path of the file instead, and take its parent path.
-        val root = findRoot(file) ?: file.parentFile ?: file.absoluteFile.parentFile ?: continue
+        val root = findRoot(file) ?: parent
 
         dirToRootCache[parent.path] = root
 
