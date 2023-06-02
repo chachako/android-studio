@@ -106,7 +106,6 @@ function run_bazel_test() {
   if [[ " ${ARGV[@]} " =~ " --detect_flakes " ]];
   then
     conditional_flags+=(--flaky_test_attempts=3)
-    conditional_flags+=(--nocache_test_results)
     conditional_flags+=(--build_tests_only)
   # Only run tests tagged with `very_flaky`, this is different than tests using
   # the 'Flaky' attribute/tag. Tests that are excessively flaky use this tag to
@@ -116,7 +115,9 @@ function run_bazel_test() {
     conditional_flags+=(--build_tests_only)
     target_name="studio-linux_very_flaky"
     test_tag_filters=-no_linux,-no_test_linux,very_flaky
-  elif [[ $BUILD_TYPE == "POSTSUBMIT" ]]; then
+  fi
+
+  if [[ $BUILD_TYPE == "POSTSUBMIT" ]]; then
     conditional_flags+=(--bes_keywords=ab-postsubmit)
     conditional_flags+=(--nocache_test_results)
   fi
