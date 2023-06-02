@@ -128,6 +128,7 @@ function run_bazel_test() {
   if [[ -d "${DIST_DIR}" ]]; then
     # Generate a simple html page that redirects to the test results page.
     echo "<head><meta http-equiv=\"refresh\" content=\"0; URL='https://fusion2.corp.google.com/invocations/${invocation_id}'\" /></head>" > "${DIST_DIR}"/upsalite_test_results.html
+    echo "${invocation_id}" > "${DIST_DIR}/sponge-invocations.txt"
   fi
 
   # Workaround: This invocation [ab]uses --runs_per_test to disable caching for the

@@ -65,6 +65,7 @@ setlocal
   )
   if exist %DISTDIR%\ (
     echo ^<head^>^<meta http-equiv="refresh" content="0; url='https://fusion2.corp.google.com/invocations/%INVOCATIONID%'" /^>^</head^> > %DISTDIR%\upsalite_test_results.html
+    echo %INVOCATIONID% > "%DISTDIR%\sponge-invocations.txt"
   )
 
   set TARGETS=

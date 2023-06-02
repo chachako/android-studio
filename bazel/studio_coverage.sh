@@ -46,6 +46,7 @@ readonly invocation_id="$(uuidgen)"
 if [[ -d "${dist_dir}" ]]; then
   # Link to test results
   echo "<head><meta http-equiv=\"refresh\" content=\"0; URL='https://fusion2.corp.google.com/invocations/${invocation_id}'\" /></head>" > "${dist_dir}"/upsalite_test_results.html
+  echo "${invocation_id}" > "${dist_dir}/sponge-invocations.txt"
 fi
 
 declare -a extra_test_flags
