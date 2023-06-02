@@ -1,0 +1,2 @@
+# Declarative Gradle related file
+
