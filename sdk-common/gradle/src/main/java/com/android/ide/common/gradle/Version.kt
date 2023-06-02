@@ -49,6 +49,13 @@ class Version: Comparable<Version>, Serializable {
      */
     val isPrefixInfimum: Boolean
 
+    // Used for serialization by the IDE.
+    private constructor() : this(
+        parts = listOf(DEV("dev")),
+        separators = listOf(Separator.EMPTY),
+        isPrefixInfimum = true,
+    )
+
     private constructor(parts: List<Part>, separators: List<Separator>, isPrefixInfimum: Boolean) {
         if (parts.size != separators.size) throw IllegalArgumentException()
         if (parts.isEmpty()) throw IllegalArgumentException()
