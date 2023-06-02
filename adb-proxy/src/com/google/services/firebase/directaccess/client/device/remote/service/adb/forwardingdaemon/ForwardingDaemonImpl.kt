@@ -19,6 +19,7 @@ package com.google.services.firebase.directaccess.client.device.remote.service.a
 import com.android.adblib.AdbChannel
 import com.android.adblib.AdbServerSocket
 import com.android.adblib.AdbSession
+import com.android.adblib.DeviceAddress
 import com.android.adblib.DeviceSelector
 import com.android.adblib.shellCommand
 import com.android.adblib.withInputChannelCollector
@@ -123,6 +124,8 @@ internal class ForwardingDaemonImpl(
             logger.info("Waiting for remote device to come online.")
             deviceState.takeWhile { it !in onlineStates }.collect()
             logger.info("Device is online at port: $devicePort!")
+            // Connect this "device" on the given port to the local ADB server using `adb connect`.
+            adbSession.hostServices.connect(DeviceAddress(serialNumber))
             // A mutex is added to the wrapped AdbChannel for concurrent write calling.
             localAdbChannel =
               serverSocket.accept().let { adbChannel ->

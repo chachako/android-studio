@@ -20,6 +20,7 @@ import com.android.adblib.AdbServerSocket
 import com.android.adblib.DeviceSelector
 import com.android.adblib.testing.FakeAdbSession
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
+import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.android.adblib.utils.createChildScope
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.atomic.AtomicReference
@@ -90,6 +91,11 @@ class ForwardingDaemonTest {
     assertThat(forwardingDaemon.devicePort).isEqualTo(-1)
     forwardingDaemon.start()
     assertThat(forwardingDaemon.devicePort).isEqualTo(testSocket.localAddress()?.port)
+    yieldUntil {
+      fakeAdbSession.hostServices.devices.entries.any {
+        it.serialNumber == "localhost:${forwardingDaemon.devicePort}"
+      }
+    }
     fakeAdbSession.channelFactory.connectSocket(testSocket.localAddress()!!).use { channel ->
       inputList.forEach { channel.writeExactly(it) }
       // CNXN response
