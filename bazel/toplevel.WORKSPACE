@@ -158,6 +158,14 @@ http_archive(
 )
 
 http_archive(
+    name = "system_image_android-33PlayStore_default_x86_64",
+    build_file = "//tools/base/bazel/avd:system_images.BUILD",
+    sha256 = "74b0a57c2cfee755dcf7645e5da9d5468a2982af0bf012dfb46f661bc8b9f84a",
+    strip_prefix = "x86_64",
+    url = "https://dl.google.com/android/repository/sys-img/google_apis_playstore/x86_64-33_r07.zip",
+)
+
+http_archive(
     name = "system_image_android-TiramisuPrivacySandbox_default_x86_64",
     build_file = "//tools/base/bazel/avd:system_images.BUILD",
     sha256 = "cebb267230c4a77cbf3ab984876d9715f11d9e870ebaead486bb58d2a0b28bf1",
