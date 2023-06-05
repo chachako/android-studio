@@ -36,13 +36,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -89,7 +92,6 @@ internal class ForwardingDaemonImpl(
         val device = DeviceSelector.fromSerialNumber(serialNumber)
         val stdinInputChannel = adbSession.channelFactory.createPipedChannel()
         val byteArray = "Foo".toByteArray()
-        val buffer = ByteBuffer.wrap(byteArray)
         adbSession.deviceServices
           .shellCommand(device, "cat")
           .withInputChannelCollector()
@@ -98,19 +100,27 @@ internal class ForwardingDaemonImpl(
             val input = result.stdout
             val output = stdinInputChannel.pipeSource
             while (true) {
-              emit(
-                measureTimeMillis {
-                  output.writeExactly(buffer)
-                  buffer.flip()
-                  input.readExactly(buffer)
+              try {
+                val buffer = ByteBuffer.wrap(byteArray)
+                withTimeout(ROUND_TRIP_LATENCY_LIMIT.toMillis()) {
+                  emit(
+                    measureTimeMillis {
+                      output.writeExactly(buffer)
+                      buffer.flip()
+                      input.readExactly(buffer)
+                    }
+                  )
                 }
-              )
-              buffer.flip()
+              } catch (e: Exception) {
+                emit(ROUND_TRIP_LATENCY_LIMIT.toMillis())
+                continue
+              }
               delay(LATENCY_COLLECTION_INTERVAL.toMillis())
             }
           }
       }
       .flowOn(Dispatchers.IO)
+      .shareIn(scope, SharingStarted.WhileSubscribed(), 1)
 
   private suspend fun run() {
     streamOpener.connect(this)
@@ -182,13 +192,32 @@ internal class ForwardingDaemonImpl(
     } catch (ignored: TimeoutCancellationException) {
       throw TimeoutException("Device not started after $timeout")
     }
+    scope.launch {
+      var consecutiveConnectionLostCount = 0
+      roundTripLatencyMsFlow.collect {
+        if (it < ROUND_TRIP_LATENCY_LIMIT.toMillis()) {
+          consecutiveConnectionLostCount = 0
+        } else {
+          // Close connection if latency exceed ROUND_TRIP_LATENCY_LIMIT for more than 3 times.
+          if (++consecutiveConnectionLostCount >= 3) {
+            close()
+          }
+        }
+      }
+    }
   }
 
   override fun close() {
     if (started.get()) {
       adbCommandHandler.cancel()
+      scope.cancel()
       streams.values.forEach { it.sendClose() }
-      runBlocking { onStateChanged(DeviceState.OFFLINE) }
+      runBlocking {
+        onStateChanged(DeviceState.OFFLINE)
+        if (adbSession.hostServices.devices().any { it.serialNumber == serialNumber }) {
+          adbSession.hostServices.disconnect(DeviceAddress(serialNumber))
+        }
+      }
     }
   }
 

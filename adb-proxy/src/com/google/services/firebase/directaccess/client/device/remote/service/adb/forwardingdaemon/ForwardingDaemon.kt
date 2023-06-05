@@ -22,6 +22,7 @@ import java.util.concurrent.TimeoutException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 
+internal val ROUND_TRIP_LATENCY_LIMIT: Duration = Duration.ofSeconds(5)
 val LATENCY_COLLECTION_INTERVAL: Duration = Duration.ofSeconds(10)
 
 /**

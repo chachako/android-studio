@@ -23,6 +23,7 @@ import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.android.adblib.utils.createChildScope
 import com.google.common.truth.Truth.assertThat
+import java.net.InetSocketAddress
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.cancel
@@ -71,10 +72,28 @@ class ForwardingDaemonTest {
   private lateinit var forwardingDaemon: ForwardingDaemonImpl
   private val payloadAssertException = AtomicReference<Throwable>()
   private val exceptionHandler = CoroutineExceptionHandler { _, t -> payloadAssertException.set(t) }
+  private var port = -1
 
   @Before
   fun setUp(): Unit = runBlockingWithTimeout {
-    testSocket = fakeAdbSession.channelFactory.createServerSocket()
+    port = -1
+    val socket = fakeAdbSession.channelFactory.createServerSocket()
+    testSocket =
+      object : AdbServerSocket by socket {
+        override suspend fun bind(local: InetSocketAddress?, backLog: Int): InetSocketAddress {
+          val address = socket.bind(local, backLog)
+          // Setup commands with socket bind.
+          if (port != address.port) {
+            port = address.port
+            fakeAdbSession.deviceServices.configureShellV2Command(
+              DeviceSelector.fromSerialNumber("localhost:$port"),
+              "cat",
+              "Foo"
+            )
+          }
+          return address
+        }
+      }
   }
 
   @After
@@ -115,11 +134,6 @@ class ForwardingDaemonTest {
       ForwardingDaemonImpl(fakeStreamOpener, childScope, fakeAdbSession) { testSocket }
     assertThat(forwardingDaemon.devicePort).isEqualTo(-1)
     forwardingDaemon.start()
-    fakeAdbSession.deviceServices.configureShellV2Command(
-      DeviceSelector.fromSerialNumber("localhost:${testSocket.localAddress()!!.port}"),
-      "cat",
-      "Foo"
-    )
     // Check if roundTripLatencyMsFlow emits a value.
     assertThat(forwardingDaemon.roundTripLatencyMsFlow.first()).isNotNull()
   }
