@@ -373,6 +373,8 @@ private val errorMatchers : List<Pair<Regex, ErrorMatchBehavior>> = run {
                     to informational,
             "Picked up _JAVA_OPTIONS: .*"
                     to informational,
+            "Picked up JAVA_TOOL_OPTIONS: .*"
+                    to informational,
             ".*" to ErrorMatchBehavior(Unrecognized)
         ).map { Regex(it.first) to it.second }
     }
