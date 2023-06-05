@@ -16,6 +16,7 @@
 
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.checks.infrastructure.TestFiles
 import com.android.tools.lint.detector.api.Detector
 
 class ViewTypeDetectorTest : AbstractCheckTest() {
@@ -382,6 +383,57 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "        android:layout_height=\"wrap_content\" />\n" +
             "\n" +
             "</LinearLayout>"
+        )
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun test273250r732() {
+    lint()
+      .files(
+        kotlin(
+          """
+        package test.pkg
+
+        import android.widget.TextView
+        class MultipleTypeParametersTest : MyActivityStub() {
+          private lateinit var textViewMap: Map<Int, TextView>
+
+          fun test() {
+            textViewMap = mapOf(0 to findViewById(R.id.textView))
+          }
+        }
+        """
+        ),
+        xml(
+          "res/layout/my_layout.xml",
+          "" +
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+            "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+            "    android:orientation=\"vertical\"\n" +
+            "    android:layout_width=\"match_parent\"\n" +
+            "    android:layout_height=\"match_parent\">\n" +
+            "\n" +
+            "    <TextView\n" +
+            "        android:id=\"@+id/textView\"\n" +
+            "        android:layout_width=\"wrap_content\"\n" +
+            "        android:layout_height=\"wrap_content\"\n" +
+            "        android:text=\"TextView\" />\n" +
+            "</LinearLayout>"
+        ),
+        TestFiles.rClass("test.pkg", "@id/textview"),
+        java(
+          "" +
+            "package test.pkg;\n" +
+            "\n" +
+            "import android.view.View;\n" +
+            "\n" +
+            "public class MyActivityStub {\n" +
+            "    public <T extends View> T findViewById(int id) {\n" +
+            "        throw new RuntimeException(\"Stub!\");\n" +
+            "    }\n" +
+            "}\n"
         )
       )
       .run()

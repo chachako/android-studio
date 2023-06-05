@@ -36,6 +36,7 @@ import com.android.ide.common.resources.ResourceItem
 import com.android.ide.common.util.PathString
 import com.android.resources.ResourceFolderType
 import com.android.resources.ResourceType
+import com.android.resources.ResourceUrl
 import com.android.tools.lint.client.api.JavaEvaluator
 import com.android.tools.lint.client.api.ResourceRepositoryScope.LOCAL_DEPENDENCIES
 import com.android.tools.lint.detector.api.Category
@@ -53,7 +54,6 @@ import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.XmlContext
 import com.android.tools.lint.detector.api.getLanguageLevel
-import com.android.tools.lint.detector.api.stripIdPrefix
 import com.google.common.base.Joiner
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.Multimap
@@ -66,15 +66,15 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiTypeParameter
 import com.intellij.psi.util.TypeConversionUtil
 import java.io.IOException
-import java.util.ArrayList
 import java.util.EnumSet
-import java.util.HashMap
+import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UBinaryExpressionWithType
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UQualifiedReferenceExpression
 import org.jetbrains.uast.UVariable
+import org.jetbrains.uast.UastBinaryOperator
 import org.jetbrains.uast.skipParenthesizedExprDown
 import org.jetbrains.uast.skipParenthesizedExprUp
 import org.w3c.dom.Attr
@@ -184,7 +184,7 @@ open class ViewTypeDetector : ResourceXmlDetector(), SourceCodeScanner {
         val cast = parent
         val type = cast.type as? PsiClassType ?: return
         castType = type
-        errorNode = cast.skipParenthesizedExprDown() ?: cast
+        errorNode = cast.skipParenthesizedExprDown()
       }
       is UExpression -> {
         if (parent is UCallExpression) {
@@ -200,16 +200,19 @@ open class ViewTypeDetector : ResourceXmlDetector(), SourceCodeScanner {
           }
 
           parent = skipParenthesizedExprUp(parent.uastParent)
-          if (parent !is UBinaryExpressionWithType) {
-            return
-          }
         }
 
-        // Implicit cast?
-        val variable = parent as? UExpression ?: return
-        val type = variable.getExpressionType() as? PsiClassType ?: return
-        castType = type
-        errorNode = parent
+        if (
+          parent is UBinaryExpressionWithType ||
+            // Implicit cast?
+            (parent is UBinaryExpression && parent.operator == UastBinaryOperator.ASSIGN)
+        ) {
+          val type = (parent as UExpression).getExpressionType() as? PsiClassType ?: return
+          castType = type
+          errorNode = parent
+        } else {
+          return
+        }
       }
       is UVariable -> {
         // Implicit cast?
@@ -238,7 +241,7 @@ open class ViewTypeDetector : ResourceXmlDetector(), SourceCodeScanner {
 
     val args = node.valueArguments
     if (args.size == 1) {
-      val first = args[0].skipParenthesizedExprDown() ?: return
+      val first = args[0].skipParenthesizedExprDown()
       var tag: String? = null
       var id: String? = null
       if (findTag) {
@@ -423,7 +426,7 @@ open class ViewTypeDetector : ResourceXmlDetector(), SourceCodeScanner {
       if (event == XmlPullParser.START_TAG) {
         var id: String? = parser.getAttributeValue(ANDROID_URI, ATTR_ID)
         if (id != null && id.isNotEmpty()) {
-          id = stripIdPrefix(id)
+          id = ResourceUrl.parse(id)?.name
           var tag = parser.name ?: continue
           if (tag == VIEW_TAG || tag == VIEW_FRAGMENT) {
             tag = parser.getAttributeValue(null, ATTR_CLASS) ?: continue
