@@ -62,6 +62,8 @@
       <module fileurl="file://$PROJECT_DIR$/pixelprobe/android.sdktools.pixelprobe.iml" filepath="$PROJECT_DIR$/pixelprobe/android.sdktools.pixelprobe.iml" />
       <module fileurl="file://$PROJECT_DIR$/repository/android.sdktools.repository-base.iml" filepath="$PROJECT_DIR$/repository/android.sdktools.repository-base.iml" />
       <module fileurl="file://$PROJECT_DIR$/resource-repository/android.sdktools.resource-repository-base.iml" filepath="$PROJECT_DIR$/resource-repository/android.sdktools.resource-repository-base.iml" />
+      <module fileurl="file://$PROJECT_DIR$/previewlib/cli/android.sdktools.screenshot.cli.iml" filepath="$PROJECT_DIR$/previewlib/cli/android.sdktools.screenshot.cli.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sdk-common/gradle/android.sdktools.sdk-common.gradle.iml" filepath="$PROJECT_DIR$/sdk-common/gradle/android.sdktools.sdk-common.gradle.iml" />
       <module fileurl="file://$PROJECT_DIR$/signflinger/android.sdktools.signflinger.iml" filepath="$PROJECT_DIR$/signflinger/android.sdktools.signflinger.iml" />
       <module fileurl="file://$PROJECT_DIR$/signflinger/tools/android.sdktools.signflinger_tools.iml" filepath="$PROJECT_DIR$/signflinger/tools/android.sdktools.signflinger_tools.iml" />
       <module fileurl="file://$PROJECT_DIR$/testutils/android.sdktools.testutils.iml" filepath="$PROJECT_DIR$/testutils/android.sdktools.testutils.iml" />
@@ -76,7 +78,6 @@
       <module fileurl="file://$PROJECT_DIR$/app-inspection/inspectors/common/app-inspection.inspectors.common.iml" filepath="$PROJECT_DIR$/app-inspection/inspectors/common/app-inspection.inspectors.common.iml" />
       <module fileurl="file://$PROJECT_DIR$/app-inspection/inspectors/network/app-inspection.inspectors.network.iml" filepath="$PROJECT_DIR$/app-inspection/inspectors/network/app-inspection.inspectors.network.iml" />
       <module fileurl="file://$PROJECT_DIR$/app-inspection/inspectors/network/fake-android/app-inspection.inspectors.network.fake-android.iml" filepath="$PROJECT_DIR$/app-inspection/inspectors/network/fake-android/app-inspection.inspectors.network.fake-android.iml" />
-      <module fileurl="file://$PROJECT_DIR$/previewlib/cli/android.sdktools.screenshot.cli.iml" filepath="$PROJECT_DIR$/previewlib/cli/android.sdktools.screenshot.cli.iml" />
       <module fileurl="file://$PROJECT_DIR$/../data-binding/baseLibrary/db-baseLibrary.iml" filepath="$PROJECT_DIR$/../data-binding/baseLibrary/db-baseLibrary.iml" />
       <module fileurl="file://$PROJECT_DIR$/../data-binding/baseLibrarySupport/db-baseLibrarySupport.iml" filepath="$PROJECT_DIR$/../data-binding/baseLibrarySupport/db-baseLibrarySupport.iml" />
       <module fileurl="file://$PROJECT_DIR$/../data-binding/compilerCommon/db-compilerCommon.iml" filepath="$PROJECT_DIR$/../data-binding/compilerCommon/db-compilerCommon.iml" />
