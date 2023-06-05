@@ -644,7 +644,7 @@ def iml_module(
         visibility = visibility,
     )
 
-    lint_srcs = srcs.javas + srcs.kotlins
+    lint_srcs = srcs.javas + srcs.kotlins + srcs.resources
     if lint_baseline:
         if not lint_srcs:
             fail("lint_baseline set for iml_module that has no sources")

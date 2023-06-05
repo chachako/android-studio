@@ -94,6 +94,7 @@ class StudioIssueRegistry : IssueRegistry() {
       LintDetectorDetector.USE_KOTLIN,
       LintDetectorDetector.USE_UAST,
       PathAsIterableDetector.ISSUE,
+      PluginXmlDetector.ISSUE,
       RegexpPathDetector.ISSUE,
       ShortNameCacheDetector.ISSUE,
       SwingWorkerDetector.ISSUE,
