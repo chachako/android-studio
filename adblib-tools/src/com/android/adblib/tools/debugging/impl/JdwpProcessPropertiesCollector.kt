@@ -180,17 +180,7 @@ internal class JdwpProcessPropertiesCollector(
             collectWithSession(jdwpSession, collectState)
 
             if (collectState.hasCollectedEverything) {
-                // If app boot stage information IS NOT available then the WAIT packet was received
-                // and process is waiting for debugger (see `hasCollectedEverything` implementation).
-                // If app boot stage information IS available then use it to determine whether
-                // the process is waiting for debugger.
-                assert(collectState.propertiesFlow.value.stage != null || collectState.waitReceived)
-                var isWaitingForDebugger = true
-                if (collectState.propertiesFlow.value.stage != null) {
-                    isWaitingForDebugger = collectState.propertiesFlow.value.stage == AppStage.DEBG
-                }
-
-                if (isWaitingForDebugger) {
+                if (collectState.propertiesFlow.value.isWaitingForDebugger) {
                     // See b/271466829: We need to keep the JDWP session open until an external
                     // debugger attaches to the Android process, because a JDWP session in a
                     // `WAIT` state needs to remain open until at least one "real" JDWP command
