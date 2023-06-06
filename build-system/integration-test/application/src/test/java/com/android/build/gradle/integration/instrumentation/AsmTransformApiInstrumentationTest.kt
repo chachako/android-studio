@@ -385,4 +385,82 @@ class AsmTransformApiInstrumentationTest {
                 expectedInstrumentedClasses = listOf("InterfaceExtendsI")
         )
     }
+
+    /**
+     * regression test for b/285170632.
+     */
+    @Test
+    fun testInteractionWithVariantApi() {
+        configureExtensionForAnnotationAddingVisitor(project)
+        configureExtensionForInterfaceAddingVisitor(project)
+
+        TestFileUtils.searchAndReplace(
+            project.getSubproject(":app").buildFile,
+            "plugins {",
+            """
+                buildscript {
+                    apply from: '../../commonBuildScript.gradle'
+                    apply from: '../../commonHeader.gradle'
+                    dependencies {
+                        classpath("org.javassist:javassist:3.26.0-GA")
+                    }
+                }
+
+                plugins {
+            """.trimIndent()
+        )
+
+        TestFileUtils.appendToFile(
+            project.getSubproject(":app").buildFile,
+            // language=groovy
+            """
+                import com.android.build.api.variant.ScopedArtifacts
+                import com.android.build.api.artifact.ScopedArtifact
+
+                import org.gradle.api.DefaultTask
+                import org.gradle.api.tasks.OutputDirectory
+                import org.gradle.api.tasks.TaskAction
+                import javassist.ClassPool
+                import javassist.CtClass
+
+                abstract class AddClassesTask extends DefaultTask {
+
+                    @OutputDirectory
+                    abstract DirectoryProperty getOutput();
+
+                    @TaskAction
+                    void taskAction() {
+
+                        ClassPool pool = new ClassPool(ClassPool.getDefault())
+                        CtClass interfaceClass = pool.makeInterface(
+                            "com.android.api.tests.SomeInterface"
+                        )
+                        System.out.println("Adding ${'$'}interfaceClass")
+                        interfaceClass.writeFile(output.get().asFile.absolutePath)
+                    }
+                }
+
+                androidComponents {
+                    onVariants(selector().all(), { variant ->
+                        TaskProvider<AddClassesTask> taskProvider = project.tasks.register(
+                            variant.getName() + "AddAllClasses", AddClassesTask.class
+                        )
+                        variant.artifacts
+                            .forScope(ScopedArtifacts.Scope.PROJECT)
+                            .use(taskProvider)
+                            .toAppend(
+                                ScopedArtifact.CLASSES.INSTANCE,
+                                { it.getOutput() }
+                            )
+                    })
+                }
+            """.trimIndent()
+        )
+
+        // run twice to catch recursive input
+        project.executor().run(":app:assembleDebug")
+        project.executor().run(":app:assembleDebug")
+
+        assertClassesAreInstrumentedInDebugVariant()
+    }
 }
