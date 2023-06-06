@@ -10,6 +10,10 @@
     <string name="clear_log">Clear</string>
     <string name="export_log">Export to Logcat</string>
 
+    <string name="ui_refresh_info">There\'s an intentional leak when switching Fragments.
+        The gray rectangle below is expected to be updated every 100 ms. The shown update
+        intervals can illustrate the UI responsiveness at a high level.</string>
+
     <string name="fragment_a_title">Fragment A</string>
     <string name="nav_to_b">Go to Fragment B</string>
 
