@@ -27,9 +27,6 @@ import org.jetbrains.android.uipreview.ClassBinaryCacheManager.Companion.getInst
 import java.lang.ref.WeakReference
 import java.util.function.Supplier
 
-private class ModuleClassLoaderReferenceImpl(override val classLoader: ScreenshotModuleClassLoader):
-    ModuleClassLoaderManager.Reference<ScreenshotModuleClassLoader>
-
 class ScreenshotModuleClassLoaderManager(private val dependencies: Dependencies) :
     ModuleClassLoaderManager<ScreenshotModuleClassLoader> {
 
@@ -56,7 +53,7 @@ class ScreenshotModuleClassLoaderManager(private val dependencies: Dependencies)
             diagnostics,
             dependencies)
         lastClassLoader = ScreenshotModuleClassLoader(parent, screenshotModuleClassLoaderImpl, diagnostics)
-        return ModuleClassLoaderReferenceImpl(lastClassLoader!!)
+        return ModuleClassLoaderManager.Reference(this, lastClassLoader!!)
     }
 
     override fun getShared(
@@ -81,7 +78,7 @@ class ScreenshotModuleClassLoaderManager(private val dependencies: Dependencies)
             diagnostics,
             dependencies)
         lastClassLoader = (ScreenshotModuleClassLoader(parent, screenshotModuleClassLoaderImpl, diagnostics))
-        return ModuleClassLoaderReferenceImpl(lastClassLoader!!)
+        return ModuleClassLoaderManager.Reference(this, lastClassLoader!!)
     }
 
     override fun getPrivate(
