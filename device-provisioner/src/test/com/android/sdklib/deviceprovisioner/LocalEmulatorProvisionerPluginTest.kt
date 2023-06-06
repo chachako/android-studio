@@ -56,7 +56,11 @@ class LocalEmulatorProvisionerPluginTest {
   }
 
   var avdIndex = 1
-  fun makeAvdInfo(index: Int): AvdInfo {
+  fun makeAvdInfo(
+    index: Int,
+    androidVersion: AndroidVersion = API_LEVEL,
+    hasPlayStore: Boolean = true
+  ): AvdInfo {
     val basePath = Path.of("/tmp/fake_avds/$index")
     return AvdInfo(
       "fake_avd_$index",
@@ -66,9 +70,10 @@ class LocalEmulatorProvisionerPluginTest {
       mapOf(
         AvdManager.AVD_INI_DEVICE_MANUFACTURER to MANUFACTURER,
         AvdManager.AVD_INI_DEVICE_NAME to MODEL,
-        AvdManager.AVD_INI_ANDROID_API to API_LEVEL.apiString,
+        AvdManager.AVD_INI_ANDROID_API to androidVersion.apiStringWithoutExtension,
         AvdManager.AVD_INI_ABI_TYPE to ABI.toString(),
         AvdManager.AVD_INI_DISPLAY_NAME to "Fake Device $index",
+        AvdManager.AVD_INI_PLAYSTORE_ENABLED to hasPlayStore.toString(),
       ),
       AvdInfo.AvdStatus.OK
     )
@@ -234,6 +239,16 @@ class LocalEmulatorProvisionerPluginTest {
     handle.coldBootAction?.activate()
 
     assertThat(handle.state.connectedDevice).isNotNull()
+  }
+
+  @Test
+  fun isPairable() {
+    val api29WithPlay = makeAvdInfo(1, AndroidVersion(29), hasPlayStore = true)
+    val api31NoPlay = makeAvdInfo(2, AndroidVersion(29), hasPlayStore = false)
+    val api30WithPlay = makeAvdInfo(3, AndroidVersion(30), hasPlayStore = true)
+    assertThat(LocalEmulatorProperties.build(api29WithPlay).wearPairingId).isNull()
+    assertThat(LocalEmulatorProperties.build(api31NoPlay).wearPairingId).isNull()
+    assertThat(LocalEmulatorProperties.build(api30WithPlay).wearPairingId).isNotNull()
   }
 
   private fun checkProperties(properties: LocalEmulatorProperties) {

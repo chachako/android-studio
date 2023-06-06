@@ -135,7 +135,7 @@ class LocalEmulatorProvisionerPlugin(
             deviceHandles[path] =
               LocalEmulatorDeviceHandle(
                 scope.createChildScope(isSupervisor = true),
-                Disconnected(toDeviceProperties(avdInfo)),
+                Disconnected(LocalEmulatorProperties.build(avdInfo)),
                 avdInfo
               )
           else ->
@@ -144,7 +144,7 @@ class LocalEmulatorProvisionerPlugin(
             // shutdown.
             if (handle.avdInfo != avdInfo && handle.state is Disconnected) {
               handle.avdInfo = avdInfo
-              handle.stateFlow.value = Disconnected(toDeviceProperties(avdInfo))
+              handle.stateFlow.value = Disconnected(LocalEmulatorProperties.build(avdInfo))
             }
         }
       }
@@ -213,53 +213,15 @@ class LocalEmulatorProvisionerPlugin(
       // compute androidRelease. Now read them from the device.
       val deviceProperties = device.deviceProperties().all().asMap()
       val properties =
-        LocalEmulatorProperties.build {
+        LocalEmulatorProperties.build(handle.avdInfo) {
           readCommonProperties(deviceProperties)
           density = deviceProperties[DevicePropertyNames.QEMU_SF_LCD_DENSITY]?.toIntOrNull()
           resolution = Resolution.readFromDevice(device)
-          avdName = handle.avdInfo.name
-          displayName = handle.avdInfo.displayName
           disambiguator = port.toString()
-          wearPairingId = path.toString()
+          wearPairingId = path.toString().takeIf { isPairable() }
         }
       handle.stateFlow.value = Connected(properties, device)
       handle
-    }
-
-  private fun toDeviceProperties(avdInfo: AvdInfo) =
-    LocalEmulatorProperties.build {
-      manufacturer = avdInfo.deviceManufacturer
-      model = avdInfo.deviceName
-      androidVersion = avdInfo.androidVersion
-      androidRelease = SdkVersionInfo.getVersionString(avdInfo.androidVersion.apiLevel)
-      abi = Abi.getEnum(avdInfo.abiType)
-      avdName = avdInfo.name
-      displayName = avdInfo.displayName
-      deviceType = avdInfo.tag.toDeviceType()
-      wearPairingId = avdInfo.id
-      density = avdInfo.density
-      resolution = avdInfo.resolution
-    }
-
-  private val AvdInfo.density
-    get() = properties[HardwareProperties.HW_LCD_DENSITY]?.toIntOrNull()
-
-  private val AvdInfo.resolution
-    get() =
-      properties[HardwareProperties.HW_LCD_WIDTH]?.toIntOrNull()?.let { width ->
-        properties[HardwareProperties.HW_LCD_HEIGHT]?.toIntOrNull()?.let { height ->
-          Resolution(width, height)
-        }
-      }
-
-  private fun IdDisplay.toDeviceType(): DeviceType =
-    when (this) {
-      ANDROID_TV_TAG,
-      GOOGLE_TV_TAG -> DeviceType.TV
-      AUTOMOTIVE_TAG,
-      AUTOMOTIVE_PLAY_STORE_TAG -> DeviceType.AUTOMOTIVE
-      WEAR_TAG -> DeviceType.WEAR
-      else -> DeviceType.HANDHELD
     }
 
   private fun refreshDevices() {
@@ -457,20 +419,69 @@ class LocalEmulatorProperties(
   override val title = displayName
 
   companion object {
-    inline fun build(block: Builder.() -> Unit) =
-      Builder()
-        .apply { isVirtual = true }
-        .apply(block)
-        .run {
-          LocalEmulatorProperties(buildBase(), checkNotNull(avdName), checkNotNull(displayName))
-        }
+    fun build(avdInfo: AvdInfo) = build(avdInfo) {}
+
+    inline fun build(avdInfo: AvdInfo, block: Builder.() -> Unit) =
+      buildPartial(avdInfo).apply(block).run {
+        LocalEmulatorProperties(buildBase(), checkNotNull(avdName), checkNotNull(displayName))
+      }
+
+    fun buildPartial(avdInfo: AvdInfo) =
+      Builder().apply {
+        isVirtual = true
+        manufacturer = avdInfo.deviceManufacturer
+        model = avdInfo.deviceName
+        androidVersion = avdInfo.androidVersion
+        androidRelease = SdkVersionInfo.getVersionString(avdInfo.androidVersion.apiLevel)
+        abi = Abi.getEnum(avdInfo.abiType)
+        avdName = avdInfo.name
+        displayName = avdInfo.displayName
+        deviceType = avdInfo.tag.toDeviceType()
+        hasPlayStore = avdInfo.hasPlayStore()
+        wearPairingId = avdInfo.id.takeIf { isPairable() }
+        density = avdInfo.density
+        resolution = avdInfo.resolution
+      }
   }
 
   class Builder : DeviceProperties.Builder() {
     var avdName: String? = null
     var displayName: String? = null
+    var hasPlayStore: Boolean = false
+
+    fun isPairable(): Boolean {
+      val apiLevel = androidVersion?.apiLevel ?: return false
+      return when (deviceType) {
+        DeviceType.TV,
+        DeviceType.AUTOMOTIVE,
+        null -> false
+        DeviceType.HANDHELD -> apiLevel >= 30 && hasPlayStore
+        DeviceType.WEAR -> apiLevel >= 28
+      }
+    }
   }
 }
+
+private val AvdInfo.density
+  get() = properties[HardwareProperties.HW_LCD_DENSITY]?.toIntOrNull()
+
+private val AvdInfo.resolution
+  get() =
+    properties[HardwareProperties.HW_LCD_WIDTH]?.toIntOrNull()?.let { width ->
+      properties[HardwareProperties.HW_LCD_HEIGHT]?.toIntOrNull()?.let { height ->
+        Resolution(width, height)
+      }
+    }
+
+private fun IdDisplay.toDeviceType(): DeviceType =
+  when (this) {
+    ANDROID_TV_TAG,
+    GOOGLE_TV_TAG -> DeviceType.TV
+    AUTOMOTIVE_TAG,
+    AUTOMOTIVE_PLAY_STORE_TAG -> DeviceType.AUTOMOTIVE
+    WEAR_TAG -> DeviceType.WEAR
+    else -> DeviceType.HANDHELD
+  }
 
 private val LOCAL_EMULATOR_REGEX = "emulator-(\\d+)".toRegex()
 
