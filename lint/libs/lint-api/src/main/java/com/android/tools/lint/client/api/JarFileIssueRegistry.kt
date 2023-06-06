@@ -68,7 +68,9 @@ private constructor(
     }
   }
 
-  override val api: Int = CURRENT_API
+  override val api: Int = registry.api
+  override val minApi: Int = registry.minApi
+  override val maxApi: Int = registry.maxApi
 
   companion object Factory {
     /**
@@ -191,7 +193,7 @@ private constructor(
         val jarIssueRegistry = JarFileIssueRegistry(client, jarFile, userRegistry, vendor)
         for (issue in userRegistry.issues) {
           issue.registry = jarIssueRegistry
-          if (issue.defaultSeverity === Severity.IGNORE) {
+          if (issue.defaultSeverity === Severity.IGNORE && logJarProblems()) {
             client.log(
               Severity.ERROR,
               null,
@@ -496,7 +498,7 @@ private constructor(
      * Returns a map from issue registry qualified name to the corresponding jar file that contains
      * it.
      */
-    private fun findRegistries(client: LintClient, jarFiles: Collection<File>): Map<String, File> {
+    fun findRegistries(client: LintClient, jarFiles: Collection<File>): Map<String, File> {
       val registryClassToJarFile = HashMap<String, File>()
       for (jarFile in jarFiles) {
         JarFile(jarFile).use { file ->

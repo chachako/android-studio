@@ -16,15 +16,21 @@
 
 package com.android.tools.lint
 
+import com.android.SdkConstants.DOT_AAR
+import com.android.SdkConstants.DOT_CLASS
 import com.android.SdkConstants.DOT_GRADLE
 import com.android.SdkConstants.DOT_JAR
 import com.android.SdkConstants.DOT_JAVA
 import com.android.SdkConstants.DOT_KT
 import com.android.SdkConstants.DOT_KTS
 import com.android.SdkConstants.DOT_XML
+import com.android.SdkConstants.DOT_ZIP
 import com.android.SdkConstants.FN_LINT_JAR
 import com.android.SdkConstants.TAG_MANIFEST
 import com.android.SdkConstants.TAG_RESOURCES
+import com.android.ide.common.gradle.Version
+import com.android.ide.common.repository.GoogleMavenRepository
+import com.android.ide.common.repository.GradleCoordinate
 import com.android.resources.ResourceFolderType
 import com.android.support.AndroidxNameUtils
 import com.android.tools.lint.LintCliClient.Companion.printWriter
@@ -32,10 +38,10 @@ import com.android.tools.lint.LintCliFlags.ERRNO_ERRORS
 import com.android.tools.lint.LintCliFlags.ERRNO_SUCCESS
 import com.android.tools.lint.LintCliFlags.ERRNO_USAGE
 import com.android.tools.lint.checks.BuiltinIssueRegistry
-import com.android.tools.lint.client.api.CompositeIssueRegistry
 import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.JarFileIssueRegistry
 import com.android.tools.lint.client.api.LintClient
+import com.android.tools.lint.client.api.LintJarVerifier
 import com.android.tools.lint.client.api.Vendor
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.ConstantEvaluator
@@ -47,24 +53,47 @@ import com.android.tools.lint.detector.api.ResourceXmlDetector
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.TextFormat
+import com.android.tools.lint.detector.api.describeApi
 import com.android.tools.lint.detector.api.formatList
+import com.android.tools.lint.detector.api.readUrlData
+import com.android.tools.lint.detector.api.readUrlDataAsString
 import com.android.tools.lint.detector.api.splitPath
 import com.android.utils.SdkUtils.wrap
+import com.android.utils.XmlUtils
+import com.android.utils.iterator
+import com.google.common.io.ByteStreams
 import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.psi.PsiManager
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.File.pathSeparator
 import java.io.File.separator
 import java.io.File.separatorChar
+import java.io.FileNotFoundException
+import java.io.IOException
 import java.io.PrintWriter
+import java.io.UnsupportedEncodingException
+import java.net.HttpURLConnection
+import java.net.SocketTimeoutException
+import java.net.URL
+import java.net.URLEncoder
+import java.text.SimpleDateFormat
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.Base64
+import java.util.Date
 import java.util.EnumSet
 import java.util.Locale
+import java.util.TreeMap
+import java.util.jar.JarFile
+import java.util.jar.JarInputStream
 import java.util.regex.Pattern
+import java.util.zip.ZipFile
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.system.exitProcess
+import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.kotlin.psi.psiUtil.startOffset
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
@@ -78,36 +107,47 @@ import org.jetbrains.uast.UVariable
 import org.jetbrains.uast.toUElement
 import org.jetbrains.uast.toUElementOfType
 import org.jetbrains.uast.visitor.AbstractUastVisitor
+import org.w3c.dom.Element
 
 /**
  * Generates markdown pages documenting lint checks.
  *
  * There is more documentation for this tool in lint/docs/internal/document-checks.md.html
  */
-class LintIssueDocGenerator
-constructor(
+class LintIssueDocGenerator(
   private val output: File,
-  private val registry: IssueRegistry,
+  private val registryMap: Map<IssueRegistry, String?>,
   private val onlyIssues: List<String>,
   private val singleDoc: Boolean,
   private val format: DocFormat,
   private val includeStats: Boolean,
   private val sourcePath: Map<String, List<File>>,
   private val testPath: Map<String, List<File>>,
-  private var includeIndices: Boolean,
-  private var includeSuppressInfo: Boolean,
-  private var includeExamples: Boolean,
-  private var includeSourceLinks: Boolean,
-  private var includeSeverityColor: Boolean
+  private val includeIndices: Boolean,
+  private val includeSuppressInfo: Boolean,
+  private val includeExamples: Boolean,
+  private val includeSourceLinks: Boolean,
+  private val includeSeverityColor: Boolean
 ) {
-  private val aliases: Map<String, Issue>
+  private val allIssues: List<Issue> = registryMap.keys.flatMap { it.issues }
+
+  private val issueToRegistry: Map<String, List<IssueRegistry>> =
+    registryMap.keys
+      .flatMap { registry -> registry.issues.map { issue -> issue.id to registry } }
+      .groupBy({ it.first }, { it.second })
+
+  private val aliasMap: Map<IssueRegistry, Map<String, Issue>>
 
   init {
-    val aliases = mutableMapOf<String, Issue>()
-    for (issue in registry.issues) {
-      issue.getAliases()?.forEach { aliases[it] = issue }
+    val map = mutableMapOf<IssueRegistry, MutableMap<String, Issue>>()
+    for (registry in registryMap.keys) {
+      val aliases = mutableMapOf<String, Issue>()
+      for (issue in registry.issues) {
+        issue.getAliases()?.forEach { aliases[it] = issue }
+      }
+      map[registry] = aliases
     }
-    this.aliases = aliases
+    this.aliasMap = map
   }
 
   private val singleIssueDetectors: Set<Issue>
@@ -115,22 +155,24 @@ constructor(
   init {
     val all = mutableMapOf<Class<*>, Int>()
     val singleIssueDetectors: MutableSet<Issue> = mutableSetOf()
-    for (issue in registry.issues) {
-      val clz = issue.implementation.detectorClass
-      all[clz] = (all[clz] ?: 0) + 1
-    }
-    for (issue in registry.issues) {
-      val clz = issue.implementation.detectorClass
-      val count = all[clz] ?: 0
-      if (count == 1) {
-        singleIssueDetectors.add(issue)
+    for (registry in registryMap.keys) {
+      for (issue in registry.issues) {
+        val clz = issue.implementation.detectorClass
+        all[clz] = (all[clz] ?: 0) + 1
+      }
+      for (issue in registry.issues) {
+        val clz = issue.implementation.detectorClass
+        val count = all[clz] ?: 0
+        if (count == 1) {
+          singleIssueDetectors.add(issue)
+        }
       }
     }
     this.singleIssueDetectors = singleIssueDetectors
   }
 
-  private val knownIds: Set<String> = registry.issues.map { it.id }.toSet()
-  private val issues = registry.issues.filter { !skipIssue(it) }.toList()
+  private val knownIds: Set<String> = allIssues.map { it.id }.toSet()
+  private val issues = allIssues.filter { !skipIssue(it) }.toList()
   private var environment: UastEnvironment = createUastEnvironment()
   private val issueMap = analyzeSource()
 
@@ -150,12 +192,19 @@ constructor(
         }
       }
 
+      for ((registry, artifact) in registryMap) {
+        artifact ?: continue // e.g. built-in checks; no artifact page
+        writeArtifactPage(registry, artifact, registry.vendor)
+      }
+
       if (includeStats) {
         writeStatsPage()
       }
 
-      for (id in registry.deletedIssues.filter { !skipIssue(it) }) {
-        writeDeletedIssuePage(id)
+      for (registry in registryMap.keys) {
+        for (id in registry.deletedIssues.filter { !skipIssue(it) }) {
+          writeDeletedIssuePage(registry, id)
+        }
       }
     }
 
@@ -182,7 +231,7 @@ constructor(
 
     sb.append("# Lint Issues\n")
 
-    if (registry is BuiltinIssueRegistry) {
+    if (registryMap.size == 1 && registryMap.keys.first() is BuiltinIssueRegistry) {
       sb.append(
         "This document lists the built-in issues for Lint. Note that lint also reads additional\n"
       )
@@ -300,7 +349,7 @@ constructor(
 
   private fun writeIssuePage(issue: Issue) {
     assert(!singleDoc)
-    val file = File(output, format.getFileName(issue))
+    val file = File(output, getFileName(issue, format))
     val sb = StringBuilder(1000)
     sb.append(format.header)
     describeIssue(sb, issue)
@@ -309,9 +358,9 @@ constructor(
     file.writeText(sb.trim().toString())
   }
 
-  private fun writeDeletedIssuePage(id: String) {
+  private fun writeDeletedIssuePage(registry: IssueRegistry, id: String) {
     assert(!singleDoc)
-    val file = File(output, format.getFileName(id))
+    val file = File(output, getFileName(id, format))
     val sb = StringBuilder(1000)
     sb.append(format.header)
     if (format == DocFormat.MARKDEEP) {
@@ -321,7 +370,7 @@ constructor(
     }
     sb.append(" $id\n\n")
 
-    val now = aliases[id]
+    val now = aliasMap[registry]?.get(id)
 
     if (now != null) {
       sb.append(wrap("This issue id is an alias for [${now.id}](${now.id}${format.extension})."))
@@ -349,7 +398,251 @@ constructor(
     CATEGORY("By category", "categories"),
     VENDOR("By vendor", "vendors"),
     SEVERITY("By severity", "severity"),
-    YEAR("By year", "year")
+    YEAR("By year", "year"),
+    ARTIFACTS("Libraries", "libraries")
+  }
+
+  private fun getXmlValue(element: Element?, vararg path: String): String? {
+    var current = element ?: return null
+    loop@ for (name in path) {
+      for (child in current) {
+        val childTag = child.tagName
+        if (childTag == name) {
+          current = child
+          continue@loop
+        }
+      }
+      return null
+    }
+
+    return current.textContent.trim()
+  }
+
+  private fun writeArtifactPage(registry: IssueRegistry, artifact: String, vendor: Vendor?) {
+    val library = (registry as? DocIssueRegistry)?.library ?: return
+
+    val sb = StringBuilder(1000)
+
+    val name: String?
+    val description: String?
+    val license: String?
+
+    val pom = library.versions.values.firstOrNull()?.pom ?: ""
+    if (pom.isNotBlank()) {
+      val document = XmlUtils.parseDocumentSilently(pom, true)?.documentElement
+      name = getXmlValue(document, "name")
+      description =
+        getXmlValue(document, "description")?.let {
+          wrap(it).trim().split("\n").joinToString("\n:   ")
+        }
+      val licenseName = getXmlValue(document, "licenses", "license", "name")
+      val licenseUrl = getXmlValue(document, "licenses", "license", "url")
+      license =
+        if (licenseName != null && licenseUrl != null) {
+          "[$licenseName]($licenseUrl)"
+        } else {
+          licenseName
+        }
+    } else {
+      name = null
+      description = null
+      license = null
+    }
+
+    val projectUrl = (library as? MavenCentralLibrary)?.projectUrl?.ifBlank { null }
+
+    // TODO: Convert TextFormat.RAW to TextFormat.MARKDEEP
+    val isMarkDeep = this.format == DocFormat.MARKDEEP
+    val vendorInfo =
+      listOfNotNull(
+          name?.let { "Name" to escapeXml(it) },
+          description?.let { "Description" to escapeXml(it) },
+          projectUrl?.let { "Project" to escapeXml(it) },
+          license?.let { "License" to escapeXml(it) },
+          vendor?.vendorName?.let { "Vendor" to it },
+          vendor?.identifier?.let { "Identifier" to it },
+          vendor?.contact?.let {
+            if (vendor != IssueRegistry.AOSP_VENDOR) "Contact" to it else null
+          },
+          vendor?.feedbackUrl?.let { "Feedback" to it },
+        )
+        .toTypedArray()
+    val artifactMap = arrayOf("Artifact" to artifact)
+    val atLeastMap =
+      arrayOf(
+        "Min" to "Lint ${describeApi(registry.minApi)}",
+        "Compiled" to "Lint ${describeApi(registry.api)}"
+      )
+
+    val array = arrayOf(*vendorInfo, *atLeastMap, *artifactMap)
+
+    val table = if (isMarkDeep) markdeepTable(*array) else markdownTable(*array)
+    if (singleDoc) {
+      sb.append("###")
+    } else {
+      if (isMarkDeep) {
+        sb.append("(#)")
+      } else {
+        sb.append("#")
+      }
+    }
+
+    val artifactName = artifact.substringBeforeLast(':')
+    sb.append(" $artifactName\n\n")
+    sb.append(table)
+    sb.append("\n")
+
+    sb.append("(##) Included Issues\n\n")
+
+    val issues = mutableListOf<Pair<String, String>>()
+    var keyWidth = 0
+    var valueWidth = 0
+    for (issue in registry.issues) {
+      val key = "[${issue.id}](${getFileName(issue, format)})"
+      val value = issue.getBriefDescription(TextFormat.RAW)
+      keyWidth = max(keyWidth, key.length)
+      valueWidth = max(valueWidth, value.length)
+      issues.add(Pair(key, value))
+    }
+    sb.append("|%-${keyWidth}s|%-${valueWidth}s|\n".format("Issue Id", "Issue Description"))
+    sb.append("|${"-".repeat(keyWidth)}|${"-".repeat(valueWidth)}|\n")
+    for ((key, value) in issues) {
+      sb.append("|%-${keyWidth}s|%-${valueWidth}s|\n".format(key, value))
+    }
+    sb.append("\n")
+    addLibraryInclude(sb, artifact, library.lintLibrary)
+    sb.append("\n\n")
+
+    if (library.versions.size > 1) {
+      val versionTable = StringBuilder()
+
+      versionTable.append(
+        "" +
+          "| Version            | Date     | Issues | Compatible | Compiled      | Requires |\n" +
+          "|-------------------:|----------|-------:|------------|--------------:|---------:|\n"
+      )
+
+      val client = createClient()
+
+      var incompatibilityNumber = 0
+      val incompatibilities = mutableMapOf<String, Int>()
+
+      val versionIssues = mutableListOf<Pair<String, List<String>>>()
+
+      for ((v, entry) in registry.library.versions.asSequence().sortedByDescending { it.key }) {
+        val versionString = v.toString()
+        val bytes = entry.jarBytes
+        val file = File.createTempFile(artifact, DOT_JAR)
+        file.deleteOnExit()
+        file.writeBytes(bytes)
+        val r =
+          JarFileIssueRegistry.get(client, listOf(file), skipVerification = true).firstOrNull()
+            ?: continue
+
+        versionIssues.add(versionString to r.issues.map { it.id }.sorted())
+
+        val verifier = LintJarVerifier(client, file, bytes)
+        val compatible =
+          if (verifier.isCompatible()) {
+            "Yes"
+          } else {
+            val message =
+              verifier.describeFirstIncompatibleReference() +
+                if (verifier.isInaccessible()) {
+                  " is not accessible"
+                } else {
+                  " is not available"
+                }
+            val num =
+              incompatibilities[message]
+                ?: run {
+                  incompatibilities[message] = ++incompatibilityNumber
+                  incompatibilityNumber
+                }
+
+            "No[^$num]"
+          }
+
+        // Also check bytecode level; when built with recent versions of Android
+        var minApiFromBytecodeLevel = -1
+        val registries = JarFileIssueRegistry.findRegistries(client, listOf(file))
+        if (registries.size == 1) {
+          JarFile(file).use {
+            val registryClass = registries.keys.first()
+            val registryEntry = it.getJarEntry(registryClass.replace('.', '/') + DOT_CLASS)
+            if (registryEntry != null) {
+              val stream = it.getInputStream(registryEntry)
+              val registryBytes = stream.readAllBytes()
+              if (registryBytes.size >= 8) {
+                val bytecodeLevel = (registryBytes[6].toInt() shl 8) + registryBytes[7].toInt()
+                if (bytecodeLevel >= 61) { // 61: Java 17
+                  minApiFromBytecodeLevel = 14 // lint api level 14: AGP 8.0
+                }
+                // We could also check for JDK 11 (api level 11), since very old versions
+                // of lint can't handle that, but those versions aren't relevant anymore at this
+                // point.
+              }
+            }
+          }
+        }
+
+        try {
+          versionTable.append(
+            "|%20s|%10s|%8s|%12s|%15s|%10s|\n".format(
+              v.toString(),
+              entry.date,
+              r.issues.size.toString(),
+              compatible,
+              describeApi(r.api),
+              describeApi(max(r.minApi, minApiFromBytecodeLevel)),
+            )
+          )
+        } catch (ignore: Throwable) {}
+      }
+
+      if (incompatibilities.isNotEmpty()) {
+        versionTable.append("\nCompatibility Problems:\n\n")
+        for ((message, number) in incompatibilities.entries.sortedBy { it.value }) {
+          versionTable.append("[^$number]: $message  \n")
+        }
+      }
+
+      sb.append("(##) Changes\n\n")
+      var prev = emptyList<String>()
+
+      versionIssues.reverse()
+
+      for ((versionString, versionIds) in versionIssues) {
+        val added = versionIds.filter { !prev.contains(it) }
+        val removed = prev.filter { !versionIds.contains(it) }
+        if (added.isNotEmpty() || removed.isNotEmpty()) {
+          val itemString = StringBuilder("* $versionString:")
+          if (prev.isEmpty()) {
+            itemString.append(" First version includes ${added.joinToString()}.")
+          } else {
+            if (added.isNotEmpty()) {
+              itemString.append(" Adds ${added.joinToString()}.")
+            }
+            if (removed.isNotEmpty()) {
+              itemString.append(" Removes ${removed.joinToString()}.")
+            }
+          }
+          sb.append(wrap(itemString.toString()))
+        }
+
+        prev = versionIds
+      }
+
+      sb.append("\n(##) Version Compatibility\n\n")
+      sb.append("There are multiple older versions available of this library:\n\n")
+      sb.append(versionTable.toString())
+    }
+
+    sb.append("\n")
+
+    sb.append(format.footer)
+    val outputFile = File(output, getArtifactPageName(library.id))
+    outputFile.writeText(sb.trim().toString())
   }
 
   private fun writeIndexPage(type: IndexType) {
@@ -393,10 +686,15 @@ constructor(
       for (issue in issues.sortedBy { it.id }) {
         val id = issue.id
         val summary = issue.getBriefDescription(TextFormat.RAW)
-        sb.append("  - [$id: $summary]($id${format.extension})\n")
+        sb.append("  - [$id: $summary]($id${format.extension})")
+        val registries = issueToRegistry[id]
+        val artifact = issue.registry?.let { registryMap[it] }
+        if (artifact != null && registries != null && registries.size > 1) {
+          sb.append(" (from $artifact)")
+        }
+        sb.append("\n")
       }
     } else if (type == IndexType.SEVERITY) {
-      sb.append("\n")
       for (severity in Severity.values().reversed()) {
         val applicable = issues.filter { it.defaultSeverity == severity }.toList()
         if (applicable.isNotEmpty()) {
@@ -418,7 +716,7 @@ constructor(
       }
     } else if (type == IndexType.VENDOR) {
       val vendors = getVendors(issues)
-      for (vendor in vendors.keys.sortedBy { it.describe(TextFormat.RAW) }) {
+      for (vendor in vendors.keys.sortedBy { it.describe(TextFormat.RAW).lowercase(Locale.US) }) {
         val vendorIssues = vendors[vendor]?.sortedBy { it.id } ?: continue
         val vendorName = vendor.vendorName
         val identifier = vendor.identifier
@@ -459,13 +757,53 @@ constructor(
           sb.append("  - [$id: $summary]($id${format.extension})\n")
         }
       }
+    } else if (type == IndexType.ARTIFACTS) {
+      val aars = mutableListOf<DocIssueRegistry>()
+      val jars = mutableListOf<DocIssueRegistry>()
+      for (registry in registryMap.keys) {
+        if (registry is DocIssueRegistry) {
+          val library = registry.library
+          val list =
+            if (library.lintLibrary || library.id.contains("-lint") || library.id.contains(":lint"))
+              jars
+            else aars
+          list.add(registry)
+        }
+      }
+
+      fun listLibraries(registries: List<DocIssueRegistry>) {
+        for (registry in registries) {
+          sb.append("\n$bullet")
+          val count = registry.issues.size
+          val name = registry.library.id
+          sb.append("[$name](${getArtifactPageName(name)}) ($count checks)")
+        }
+        sb.append("\n\n")
+      }
+
+      if (jars.isNotEmpty() || aars.isNotEmpty()) {
+        sb.append("\n")
+      }
+
+      if (jars.isNotEmpty()) {
+        sb.append("Lint-specific libraries:\n")
+        listLibraries(jars)
+      }
+      if (aars.isNotEmpty()) {
+        sb.append("Android archive libraries which also contain bundled lint checks:\n")
+        listLibraries(aars)
+      }
     }
 
-    val deleted = registry.deletedIssues.filter { !skipIssue(it) }
-    if (deleted.isNotEmpty()) {
-      sb.append("\n${bullet}Withdrawn or Obsolete Issues (${deleted.size})\n\n")
-      for (id in deleted) {
-        sb.append("  - [$id]($id${format.extension})\n")
+    if (type != IndexType.ARTIFACTS) {
+      for (registry in registryMap.keys) {
+        val deleted = registry.deletedIssues.filter { !skipIssue(it) }
+        if (deleted.isNotEmpty()) {
+          sb.append("\n${bullet}Withdrawn or Obsolete Issues (${deleted.size})\n\n")
+          for (id in deleted) {
+            sb.append("  - [$id]($id${format.extension})\n")
+          }
+        }
       }
     }
 
@@ -559,7 +897,7 @@ constructor(
     }
     val scopeDescription =
       if (!scope.contains(Scope.OTHER) && scope != Scope.ALL) {
-        formatList(appliesTo, useConjunction = true).capitalize()
+        formatList(appliesTo, useConjunction = true).replaceFirstChar(Char::titlecase)
       } else {
         null
       }
@@ -584,9 +922,12 @@ constructor(
       }
     }
 
-    val deleted = registry.deletedIssues
+    val registry = issue.registry
+    val library = (registry as? DocIssueRegistry)?.library
+    val deleted = registry?.deletedIssues ?: emptyList()
+    val aliasMap = registry?.let { aliasMap[it] } ?: emptyMap()
     val aliases =
-      aliases
+      aliasMap
         .filter { it.value == issue }
         .map {
           val name = if (deleted.contains(it.key)) "Previously" else "Alias"
@@ -595,6 +936,23 @@ constructor(
         .toTypedArray()
     val moreInfoUrls = moreInfo.map { Pair("See", it) }.toTypedArray()
     val sourceUrls = if (includeSourceLinks) findSourceFiles(issue) else emptyArray()
+    val artifact = registry?.let { registryMap[it] }
+    val artifactId = artifact?.substringBeforeLast(":")
+
+    val artifactMap =
+      if (artifactId != null) {
+        val artifactUrl = "[$artifactId](${getArtifactPageName(artifactId)})\n"
+        arrayOf("Artifact" to artifactUrl)
+      } else emptyArray()
+    val atLeastMap =
+      if (registry !is BuiltinIssueRegistry && registry != null) {
+        arrayOf(
+          "Min" to "Lint ${describeApi(registry.minApi)}",
+          "Compiled" to "Lint ${describeApi(registry.api)}"
+        )
+      } else {
+        emptyArray()
+      }
 
     val array =
       arrayOf(
@@ -606,6 +964,8 @@ constructor(
         "Category" to category,
         "Platform" to platforms,
         *vendorInfo,
+        *atLeastMap,
+        *artifactMap,
         "Affects" to scopeDescription,
         "Editing" to inEditor,
         *moreInfoUrls,
@@ -692,9 +1052,134 @@ constructor(
       }
     }
 
+    val others = issueToRegistry[id] ?: emptyList()
+    if (others.size > 1) {
+      val registryNames = mutableMapOf<IssueRegistry, String>()
+      for (r in others) {
+        if (r !is BuiltinIssueRegistry) {
+          val desc =
+            registryMap[r]?.let { "$id from $it" }
+              ?: if (vendor?.vendorName != null && vendor.identifier != null)
+                "$id from ${vendor.vendorName} ${vendor.identifier}"
+              else null ?: (vendor?.vendorName ?: vendor?.identifier)?.let { "$id from $it" }
+          desc?.let { registryNames[r] = it }
+        }
+      }
+
+      val detectorClass = issue.implementation.detectorClass.name
+      val sameDetector = mutableListOf<Issue>()
+      val differentDetector = mutableListOf<Issue>()
+
+      for (r in others) {
+        val conflict = r.issues.first { it.id == id }
+        val list =
+          if (conflict.implementation.detectorClass.name == detectorClass) {
+            sameDetector
+          } else {
+            differentDetector
+          }
+        list.add(conflict)
+      }
+
+      fun listIssues(conflicts: List<Issue>) {
+        sb.append("* $id: ${issue.getBriefDescription(TextFormat.RAW)} (this issue)\n")
+        for (conflict in conflicts) {
+          val builtin = if (conflict.registry is BuiltinIssueRegistry) "$id: Built-in" else null
+          val desc =
+            builtin
+              ?: registryNames[conflict.registry]
+                ?: "$id: ${conflict.getBriefDescription(TextFormat.RAW)}"
+          sb.append("* [$desc](${getFileName(conflict, this.format)})\n")
+        }
+        sb.append("\n\n")
+      }
+
+      if (differentDetector.size > 1) {
+        sb.append("(##) Conflicts\n\n")
+        sb.append(
+          wrap(
+            "This issue id has also been used by other, unrelated lint checks. Issue id's must be unique, so you cannot " +
+              "combine these libraries. Also defined in:"
+          )
+        )
+        listIssues(differentDetector)
+      }
+      if (sameDetector.size > 1) {
+        sb.append("(##) Repackaged\n\n")
+        sb.append(
+          wrap(
+            "This lint check appears to have been packaged in other artifacts as well. Issue id's must be unique, so you cannot " +
+              "combine these libraries. Also defined in:"
+          )
+        )
+        listIssues(sameDetector)
+      }
+    }
+
+    if (artifactId != null) {
+      addLibraryInclude(sb, artifact, library?.lintLibrary ?: false)
+      sb.append(
+        "\n\n[Additional details about ${artifactId}](${getArtifactPageName(artifactId)}).\n"
+      )
+    }
+
     if (includeSuppressInfo) {
       writeSuppressInfo(sb, issue, id, issueData?.suppressExample)
     }
+  }
+
+  private fun addLibraryInclude(sb: StringBuilder, artifact: String, lintLibrary: Boolean) {
+    sb.append("(##) Including\n\n")
+
+    val endorsed = !artifact.startsWith("androidx.") && !artifact.startsWith("com.google")
+    val version = artifact.substringAfterLast(':')
+    val artifactId = artifact.substringAfter(':').substringBefore(':')
+    val groupId = artifact.substringBefore(':')
+    sb.append(
+      """
+      !!!
+         This is not a built-in check. To include it, add the below dependency
+         to your project.${if (endorsed) """ This lint check is included in the lint documentation,
+         but the Android team may or may not agree with its recommendations.""" else ""}
+      """
+        .trimIndent()
+    )
+    sb.append("\n\n")
+
+    val dependency = if (lintLibrary) "lintChecks" else "implementation"
+
+    sb.append(
+      """
+      ```
+      // build.gradle.kts
+      $dependency("$artifact")
+
+      // build.gradle
+      $dependency '$artifact'
+
+      // build.gradle.kts with version catalogs:
+      $dependency(libs.$artifactId)
+
+      # libs.versions.toml
+      [versions]
+      $artifactId = "$version"
+      [libraries]
+      $artifactId = {
+          module = "$groupId:$artifactId",
+          version.ref = "$artifactId"
+      }
+      ```
+
+      $version is the version this documentation was generated from;
+      there may be newer versions available.
+      """
+        .trimIndent()
+    )
+  }
+
+  private fun getArtifactPageName(artifactName: String): String {
+    val filename = artifactName.replace(':', '_').replace('.', '_')
+    return "${filename}${this.format.extension}"
   }
 
   private fun writeOptions(sb: StringBuilder, issue: Issue, options: List<Option>) {
@@ -1070,14 +1555,12 @@ constructor(
     // in one file type, so we want to make it maximally likely that the message
     // here meets that expectation)
     val sorted =
-      if (language == "java" || language == "kotlin")
-        listOfNotNull(annotation, comment, attribute, general)
-      else if (language == "xml") {
-        listOfNotNull(attribute, annotation, comment, general)
-      } else if (language == "groovy") {
-        listOfNotNull(comment, annotation, attribute, general)
-      } else {
-        listOfNotNull(annotation, comment, attribute, general)
+      when (language) {
+        "java",
+        "kotlin" -> listOfNotNull(annotation, comment, attribute, general)
+        "xml" -> listOfNotNull(attribute, annotation, comment, general)
+        "groovy" -> listOfNotNull(comment, annotation, attribute, general)
+        else -> listOfNotNull(annotation, comment, attribute, general)
       }
 
     sorted.forEach { sb.append('\n').append(it).append('\n') }
@@ -1136,10 +1619,12 @@ constructor(
     println("Analyzing ${issueData.issue.id}")
     val (sourceFiles, testFiles) = sources
     val (detectorClass, detectorName) = getDetectorRelativePath(issueData.issue)
+
     findSource(detectorClass, detectorName, sourceFiles) { file, url ->
       issueData.sourceUrl = url
       if (file != null) {
-        issueData.detectorSource = file
+        issueData.detectorSourceFile = file
+        issueData.detectorSource = file.readText()
         issueData.copyrightYear = findCopyrightYear(file)
       }
     }
@@ -1147,7 +1632,8 @@ constructor(
     findSource(detectorClass, detectorName + "Test", testFiles) { file, url ->
       issueData.testUrl = url
       if (file != null) {
-        issueData.detectorTestSource = file
+        issueData.detectorTestSourceFile = file
+        issueData.detectorTestSource = file.readText()
         initializeExamples(issueData)
       }
     }
@@ -1155,38 +1641,7 @@ constructor(
 
   private fun findCopyrightYear(file: File): Int {
     val lines = file.readLines()
-    for (line in lines) {
-      if (
-        line.contains("opyright") ||
-          line.contains("(C)") ||
-          line.contains("(c)") ||
-          line.contains('\u00a9') // Copyright unicode symbol, ©
-      ) {
-        val matcher = YEAR_PATTERN.matcher(line)
-        var start = 0
-        var maxYear = -1
-        // Match on all years on the line and take the max -- that way we handle
-        //   (c) 2020 Android
-        //   Copyright 2007-2020 Android
-        //   © 2018, 2019, 2020, 2021 Android
-        // etc.
-        while (matcher.find(start)) {
-          val year = matcher.group(1).toInt()
-          maxYear = max(maxYear, year)
-          start = matcher.end()
-        }
-
-        if (maxYear != -1) {
-          return maxYear
-        }
-      }
-    }
-
-    // Couldn't find a copyright
-    val prefix = lines.subList(0, min(8, lines.size)).joinToString("\n")
-    println("Couldn't find copyright year in ${file.name} (${file.path}):\n$prefix\n\n")
-
-    return -1
+    return findCopyrightYear(lines)
   }
 
   private fun findSourceFiles(issue: Issue): Array<Pair<String, String>> {
@@ -1244,7 +1699,7 @@ constructor(
         continue
       }
       if (path.isEmpty()) {
-        // If there is a prefix but no URI, the assumption is that the relative
+        // If there is a prefix, but no URI, the assumption is that the relative
         // path for the detector should be appended to the URI as is
         val full =
           if (detectorClass.isKotlinClass()) {
@@ -1262,7 +1717,20 @@ constructor(
     this.declaredAnnotations.any { it.annotationClass == Metadata::class }
 
   private fun initializeExamples(issueData: IssueData) {
-    val source = issueData.detectorTestSource ?: return
+    val detectorTestSource = issueData.detectorTestSource
+    val detectorTestSourceFile = issueData.detectorTestSourceFile
+    if (detectorTestSource == null || detectorTestSourceFile == null) {
+      return
+    }
+
+    val source: File =
+      if (detectorTestSourceFile.isAbsolute) {
+        detectorTestSourceFile
+      } else {
+        val file = File(System.getProperty("java.io.tmpdir"), detectorTestSourceFile.name)
+        file.writeText(detectorTestSource)
+        file
+      }
     val ktFiles = if (source.path.endsWith(DOT_KT)) listOf(source) else emptyList()
     environment.analyzeFiles(ktFiles)
     val local = StandardFileSystems.local()
@@ -1276,7 +1744,7 @@ constructor(
     val methods: MutableList<UMethod> = mutableListOf()
 
     for (testClass in file.classes) {
-      val className = testClass.name ?: continue
+      val className = testClass.javaPsi.name ?: continue
       if (!className.endsWith("Test")) {
         continue
       }
@@ -1308,7 +1776,7 @@ constructor(
     if (suppressExample != null) {
       methods.remove(suppressExample)
       issueData.suppressExample =
-        findExampleInMethod(suppressExample, source, issueData, inferred = false, suppress = true)
+        findExampleInMethod(suppressExample, issueData, inferred = false, suppress = true)
     }
 
     methods.sortWith(
@@ -1327,21 +1795,15 @@ constructor(
 
     for (method in methods) {
       val inferred = method.rank() >= 3
-      issueData.example = findExampleInMethod(method, source, issueData, inferred, false)
+      issueData.example = findExampleInMethod(method, issueData, inferred, false)
       if (issueData.example != null) {
         break
       }
     }
-
-    // if (issueData.example == null && issueData.issue.implementation.detectorClass !=
-    // IconDetector::class.java) {
-    //    println("  ** Couldn't extract sample for ${issueData.issue.id}")
-    // }
   }
 
   private fun findExampleInMethod(
     method: UMethod,
-    source: File,
     issueData: IssueData,
     inferred: Boolean,
     suppress: Boolean
@@ -1353,7 +1815,7 @@ constructor(
         override fun visitCallExpression(node: UCallExpression): Boolean {
           val name = node.methodName ?: node.methodIdentifier?.name
           if (example == null && name == "expect") {
-            example = findExample(source, issue, method, node, inferred, suppress)
+            example = findExample(issue, method, node, inferred, suppress)
           }
           if ((name == "expectFixDiffs" || name == "verifyFixes") && singleIssueDetector(issue)) {
             // If we find a unit test for quickfixes, we assume that this issue
@@ -1428,12 +1890,19 @@ constructor(
       initializeSources(data, sources)
     }
 
+    for (data in map.values) {
+      if (
+        data.sourceUrl == null || data.detectorSource == null && data.detectorTestSource == null
+      ) {
+        data.initialize()
+      }
+    }
+
     return map
   }
 
   // Given an expect() call in a lint unit test, returns the example metadata
   private fun findExample(
-    file: File,
     issue: Issue,
     method: UMethod,
     node: UCallExpression,
@@ -1446,7 +1915,7 @@ constructor(
       return null
     }
 
-    val map = computeResultMap(issue, expected)
+    val map = computeResultMap(issue.id, expected)
     if (!suppress && map.isEmpty()) {
       return null
     }
@@ -1457,7 +1926,7 @@ constructor(
         override fun visitCallExpression(node: UCallExpression): Boolean {
           val name = node.methodName ?: node.methodIdentifier?.name
           if (example == null && name == "files") {
-            example = findExample(file, node, map, issue, method, inferred, suppress)
+            example = findExample(node, map, issue, method, inferred, suppress)
           }
           return super.visitCallExpression(node)
         }
@@ -1506,7 +1975,6 @@ constructor(
   }
 
   private fun findExample(
-    file: File,
     node: UCallExpression,
     outputMap: MutableMap<String, MutableMap<Int, MutableList<String>>>,
     issue: Issue,
@@ -1559,7 +2027,7 @@ constructor(
               // instead of / (and a Java file in src/main/java/ instead of just src/, etc.)
               if (outputMap[path] == null) {
                 for (p in outputMap.keys) {
-                  if (p.endsWith(relative)) {
+                  if (p.endsWith(relative) && (!p.contains("/") || p.endsWith("/$relative"))) {
                     path = p
                     break
                   }
@@ -1575,7 +2043,8 @@ constructor(
 
         val lang = getLanguage(path)
         val contents: String = if (lang == "xml") escapeXml(source) else source
-        val exampleFile = ExampleFile(path, contents, lang)
+        val exampleFile =
+          ExampleFile(path, contents.split("\n").joinToString("\n") { it.trimEnd() }, lang)
         exampleFiles.add(exampleFile)
       }
     }
@@ -1585,7 +2054,6 @@ constructor(
         return Example(
           testClass = issue.implementation.detectorClass.simpleName,
           testMethod = method.name,
-          file = file,
           files = exampleFiles,
           output = null,
           inferred = inferred
@@ -1658,9 +2126,8 @@ constructor(
         return Example(
           testClass = issue.implementation.detectorClass.simpleName,
           testMethod = method.name,
-          file = file,
           files = listOf(exampleFile),
-          output = errors.toString(),
+          output = errors.toString().trimEnd() + "\n",
           inferred = true
         )
       }
@@ -1670,9 +2137,8 @@ constructor(
       return Example(
         testClass = issue.implementation.detectorClass.simpleName,
         testMethod = method.name,
-        file = file,
         files = exampleFiles,
-        output = errors.toString(),
+        output = errors.toString().trimEnd() + "\n",
         inferred = false
       )
     }
@@ -1718,28 +2184,274 @@ constructor(
     }
   }
 
-  private fun computeResultMap(
-    issue: Issue,
-    expected: String
-  ): MutableMap<String, MutableMap<Int, MutableList<String>>> {
-    // Map from path to map from line number to errors and sources
-    val map = HashMap<String, MutableMap<Int, MutableList<String>>>()
+  private fun canAnalyzeInEditor(issue: Issue): Boolean {
+    val implementation = issue.implementation
+    val allScopes: Array<EnumSet<Scope>> = implementation.analysisScopes + implementation.scope
+    return allScopes.any { Scope.checkSingleFile(it) }
+  }
 
-    var index = 0
-    while (true) {
-      index = expected.indexOf("[${issue.id}]", index + 1)
-      if (index == -1) {
-        break
+  companion object {
+    const val SKIP_NETWORK = false
+
+    private val MESSAGE_PATTERN: Pattern =
+      Pattern.compile(
+        """([^\n]+): (Error|Warning|Information): (.+?) \[([^]]+?)]$""",
+        Pattern.MULTILINE or Pattern.DOTALL
+      )
+    private val LOCATION_PATTERN: Pattern = Pattern.compile("""(.+):(\d+)""")
+    private val YEAR_PATTERN = Pattern.compile("""\b(\d\d\d\d)\b""")
+    private val ANDROID_SUPPORT_SYMBOL_PATTERN =
+      Pattern.compile("\\b(android.support.[a-zA-Z0-9_.]+)\\b")
+    /** Pattern recognizing lint quickfix test output messages */
+    private val FIX_PATTERN: Pattern = Pattern.compile("((Fix|Data) for .* line )(\\d+)(: .+)")
+
+    @Suppress("SpellCheckingInspection")
+    private const val AOSP_CS =
+      "https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-main"
+
+    private val PACKAGE_PATTERN = Pattern.compile("""package\s+(\S&&[^;]*)""")
+
+    private val CLASS_PATTERN =
+      Pattern.compile(
+        """(\bclass\b|\binterface\b|\benum class\b|\benum\b|\bobject\b)+?\s*([^\s:(]+)""",
+        Pattern.MULTILINE
+      )
+
+    private val NUMBER_PATTERN = Pattern.compile("^\\d+\\. ")
+
+    private val thirdPartyChecks: List<MavenCentralLibrary> =
+      listOf(
+        MavenCentralLibrary(
+          "com.slack.lint",
+          "slack-lint-checks",
+          Type.JAR,
+          projectUrl = "https://github.com/slackhq/slack-lints",
+          sourceUrl =
+            "https://github.com/slackhq/slack-lints/blob/main/slack-lint-checks/src/main/java",
+          testUrl =
+            "https://github.com/slackhq/slack-lints/tree/main/slack-lint-checks/src/test/java",
+          sourceContentUrl =
+            "https://raw.githubusercontent.com/slackhq/slack-lints/main/slack-lint-checks/src/main/java",
+          testContentUrl =
+            "https://raw.githubusercontent.com/slackhq/slack-lints/main/slack-lint-checks/src/test/java",
+          lintLibrary = true
+        ),
+        MavenCentralLibrary(
+          "com.slack.lint.compose",
+          "compose-lint-checks",
+          Type.JAR,
+          projectUrl = "https://github.com/slackhq/compose-lints",
+          sourceUrl =
+            "https://github.com/slackhq/compose-lints/tree/main/compose-lint-checks/src/main/java",
+          testUrl =
+            "https://github.com/slackhq/compose-lints/tree/main/compose-lint-checks/src/test/java",
+          sourceContentUrl =
+            "https://raw.githubusercontent.com/slackhq/compose-lints/main/compose-lint-checks/src/main/java",
+          testContentUrl =
+            "https://raw.githubusercontent.com/slackhq/compose-lints/main/compose-lint-checks/src/test/java",
+          lintLibrary = true
+        ),
+        MavenCentralLibrary(
+          "com.vanniktech",
+          "lint-rules-android",
+          Type.AAR,
+          projectUrl = "https://github.com/vanniktech/lint-rules",
+          sourceUrl =
+            "https://github.com/vanniktech/lint-rules/tree/master/lint-rules-android-lint/src/main/java",
+          testUrl =
+            "https://github.com/vanniktech/lint-rules/tree/master/lint-rules-android-lint/src/test/java",
+          sourceContentUrl =
+            "https://raw.githubusercontent.com/vanniktech/lint-rules/master/lint-rules-android-lint/src/main/java",
+          testContentUrl =
+            "https://raw.githubusercontent.com/vanniktech/lint-rules/master/lint-rules-android-lint/src/test/java",
+          lintLibrary = true
+        ),
+        MavenCentralLibrary(
+          "com.vanniktech",
+          "lint-rules-kotlin",
+          Type.AAR,
+          projectUrl = "https://github.com/vanniktech/lint-rules",
+          sourceUrl =
+            "https://github.com/vanniktech/lint-rules/tree/master/lint-rules-kotlin-lint/src/main/java",
+          testUrl =
+            "https://github.com/vanniktech/lint-rules/tree/master/lint-rules-kotlin-lint/src/test/java",
+          sourceContentUrl =
+            "https://raw.githubusercontent.com/vanniktech/lint-rules/master/lint-rules-kotlin-lint/src/main/java",
+          testContentUrl =
+            "https://raw.githubusercontent.com/vanniktech/lint-rules/master/lint-rules-kotlin-lint/src/test/java",
+          lintLibrary = true
+        ),
+        MavenCentralLibrary(
+          "com.vanniktech",
+          "lint-rules-rxjava2",
+          Type.AAR,
+          projectUrl = "https://github.com/vanniktech/lint-rules",
+          sourceUrl =
+            "https://github.com/vanniktech/lint-rules/tree/master/lint-rules-rxjava2-lint/src/main/java",
+          testUrl =
+            "https://github.com/vanniktech/lint-rules/tree/master/lint-rules-rxjava2-lint/src/test/java",
+          sourceContentUrl =
+            "https://raw.githubusercontent.com/vanniktech/lint-rules/master/lint-rules-rxjava2-lint/src/main/java",
+          testContentUrl =
+            "https://raw.githubusercontent.com/vanniktech/lint-rules/master/lint-rules-rxjava2-lint/src/test/java",
+          lintLibrary = true
+        ),
+        MavenCentralLibrary(
+          "com.google.dagger",
+          "dagger-lint",
+          Type.JAR,
+          projectUrl = "https://github.com/google/dagger",
+          sourceUrl = "https://github.com/google/dagger/tree/master/java",
+          testUrl = "https://github.com/google/dagger/tree/master/javatests",
+          sourceContentUrl = "https://raw.githubusercontent.com/google/dagger/master/java",
+          testContentUrl = "https://raw.githubusercontent.com/google/dagger/master/javatests",
+          lintLibrary = false
+        ),
+        MavenCentralLibrary(
+          "com.jakewharton.timber",
+          "timber",
+          Type.AAR,
+          projectUrl = "https://github.com/JakeWharton/timber",
+          sourceUrl = "https://github.com/JakeWharton/timber/tree/trunk/timber-lint/src/main/java",
+          testUrl = "https://github.com/JakeWharton/timber/tree/trunk/timber-lint/src/test/java",
+          sourceContentUrl =
+            "https://raw.githubusercontent.com/JakeWharton/timber/trunk/timber-lint/src/main/java",
+          testContentUrl =
+            "https://raw.githubusercontent.com/JakeWharton/timber/trunk/timber-lint/src/test/java",
+          lintLibrary = false
+        ),
+        MavenCentralLibrary(
+          "com.uber.autodispose2",
+          "autodispose-lint",
+          Type.JAR,
+          projectUrl = "https://github.com/uber/AutoDispose",
+          sourceUrl =
+            "https://github.com/uber/AutoDispose/tree/main/static-analysis/autodispose-lint/src/main/kotlin",
+          testUrl =
+            "https://github.com/uber/AutoDispose/tree/main/static-analysis/autodispose-lint/src/test/kotlin",
+          sourceContentUrl =
+            "https://raw.githubusercontent.com/uber/AutoDispose/main/static-analysis/autodispose-lint/src/main/kotlin",
+          testContentUrl =
+            "https://raw.githubusercontent.com/uber/AutoDispose/main/static-analysis/autodispose-lint/src/test/kotlin",
+          lintLibrary = true
+        ),
+      )
+
+    private fun createClient(): LintCliClient {
+      return if (LintClient.isClientNameInitialized() && LintClient.isUnitTest) {
+        LintCliClient(LintClient.CLIENT_UNIT_TESTS)
+      } else {
+        LintCliClient("generate-docs")
+      }
+    }
+
+    /**
+     * Given lint unit test output, returns a map from file path to line number to list of errors
+     * for that line
+     */
+    @VisibleForTesting
+    fun computeResultMap(
+      issueId: String,
+      expected: String
+    ): MutableMap<String, MutableMap<Int, MutableList<String>>> {
+      val map = HashMap<String, MutableMap<Int, MutableList<String>>>()
+
+      for (incident in getOutputIncidents(expected)) {
+        if (incident.id == issueId) {
+          val strings = ArrayList<String>()
+          strings.add(incident.severity + ": " + incident.message + " [$issueId]")
+          incident.sourceLine1?.let { strings.add(it) }
+          incident.sourceLine2?.let { strings.add(it) }
+          val path = incident.path
+          val lineNumber = incident.lineNumber
+          val lineNumberMap =
+            map[path] ?: HashMap<Int, MutableList<String>>().also { map[path] = it }
+          lineNumberMap[lineNumber] = strings
+        }
       }
 
-      val lineBegin = expected.lastIndexOf('\n', index) + 1
-      val lineEnd = expected.indexOf('\n', index).let { if (it == -1) expected.length else it }
-      val line = expected.substring(lineBegin, lineEnd)
-      val matcher = MESSAGE_PATTERN.matcher(line)
-      if (matcher.find()) {
+      return map
+    }
+
+    /**
+     * Given lint test output (lint CLI text report output), return the corresponding lines
+     * (including only the error lines, not for example source code snippets)
+     */
+    fun getOutputLines(output: String): List<String> {
+      return getOutputIncidents(output).map { it.message }
+    }
+
+    fun findCopyrightYear(lines: List<String>): Int {
+      for (line in lines) {
+        if (
+          line.contains("opyright") ||
+            line.contains("(C)") ||
+            line.contains("(c)") ||
+            line.contains('\u00a9') // Copyright unicode symbol, ©
+        ) {
+          val matcher = YEAR_PATTERN.matcher(line)
+          var start = 0
+          var maxYear = -1
+          // Match on all years on the line and take the max -- that way we handle
+          //   (c) 2020 Android
+          //   Copyright 2007-2020 Android
+          //   © 2018, 2019, 2020, 2021 Android
+          // etc.
+          while (matcher.find(start)) {
+            val year = matcher.group(1).toInt()
+            maxYear = max(maxYear, year)
+            start = matcher.end()
+          }
+
+          if (maxYear != -1) {
+            return maxYear
+          }
+        }
+      }
+
+      // Couldn't find a copyright
+      val prefix = lines.subList(0, min(8, lines.size)).joinToString("\n")
+      if (
+        !prefix.contains("vannik") && !prefix.contains("timber.lint")
+      ) { // known to not contain years in copyrights
+        println("Couldn't find copyright year in $prefix\n\n")
+      }
+
+      return -1
+    }
+
+    data class ReportedIncident(
+      /** Relative path, always using unix file separators */
+      val path: String,
+      val severity: String,
+      /** Line number (0-based) */
+      val lineNumber: Int,
+      /** Column number (0-based) */
+      val column: Int,
+      /** The lint error message */
+      val message: String,
+      /** Lint issue id */
+      val id: String,
+      /** First source line, if present */
+      val sourceLine1: String?,
+      /** Second source line, if present */
+      val sourceLine2: String?
+    )
+
+    fun getOutputIncidents(output: String): List<ReportedIncident> {
+      val list = mutableListOf<ReportedIncident>()
+      var index = 0
+      val matcher = MESSAGE_PATTERN.matcher(output)
+      while (true) {
+        if (!matcher.find(index)) {
+          break
+        }
+        index = matcher.end()
+
         // group 2 is severity, group 3 is message and group 4 is the id
         val path: String
         val lineNumber: Int
+        var column: Int = -1
         val location = matcher.group(1)
         val locationMatcher = LOCATION_PATTERN.matcher(location)
         if (locationMatcher.find()) {
@@ -1749,124 +2461,38 @@ constructor(
           path = location
           lineNumber = -1
         }
-        val nextStart = lineEnd + 1
-        val nextEnd =
-          expected.indexOf('\n', nextStart).let { if (it == -1) expected.length else it }
-        val sourceLine1 = expected.substring(nextStart, nextEnd)
-        val strings = ArrayList<String>()
-        strings.add(line.substring(matcher.start(2))) // Text from "Error:" and on
-        if (
-          !MESSAGE_PATTERN.matcher(sourceLine1).matches()
-        ) { // else: no source included in error output
-          val nextStart2 = min(expected.length, nextEnd + 1)
+        val nextStart = index + 1
+        val nextEnd = output.indexOf('\n', nextStart).let { if (it == -1) output.length else it }
+        val sourceLine1 = output.substring(nextStart, nextEnd)
+        // Text from "Error:" and on
+        var sourceLine2: String? = null
+        // no source included in error output?
+        if (!MESSAGE_PATTERN.matcher(sourceLine1).matches()) {
+          val nextStart2 = min(output.length, nextEnd + 1)
           val nextEnd2 =
-            expected.indexOf('\n', nextStart2).let { if (it == -1) expected.length else it }
-          val sourceLine2 = expected.substring(nextStart2, nextEnd2)
-          strings.add(sourceLine1)
-          strings.add(sourceLine2)
+            output.indexOf('\n', nextStart2).let { if (it == -1) output.length else it }
+          sourceLine2 = output.substring(nextStart2, nextEnd2)
+          column = sourceLine2.indexOfFirst { !it.isWhitespace() }
         }
-        val lineNumberMap = map[path] ?: HashMap<Int, MutableList<String>>().also { map[path] = it }
-        lineNumberMap[lineNumber] = strings
+
+        val severity = matcher.group(2)
+        val id = matcher.group(4).substringBefore(' ') // Sometimes output includes library source
+        val message = matcher.group(3)
+        list.add(
+          ReportedIncident(
+            path,
+            severity,
+            lineNumber,
+            column,
+            message,
+            id,
+            sourceLine1,
+            sourceLine2
+          )
+        )
       }
-    }
 
-    return map
-  }
-
-  private fun canAnalyzeInEditor(issue: Issue): Boolean {
-    val implementation = issue.implementation
-    val allScopes: Array<EnumSet<Scope>> = implementation.analysisScopes + implementation.scope
-    return allScopes.any { Scope.checkSingleFile(it) }
-  }
-
-  companion object {
-    val MESSAGE_PATTERN: Pattern =
-      Pattern.compile("""(.+): (Error|Warning|Information): (.+) \[(.+)]""")
-    val LOCATION_PATTERN: Pattern = Pattern.compile("""(.+):(\d+)""")
-    private val YEAR_PATTERN = Pattern.compile("""\b(\d\d\d\d)\b""")
-    private val ANDROID_SUPPORT_SYMBOL_PATTERN =
-      Pattern.compile("\\b(android.support.[a-zA-Z0-9_.]+)\\b")
-    /** Pattern recognizing lint quickfix test output messages */
-    val FIX_PATTERN: Pattern = Pattern.compile("((Fix|Data) for .* line )(\\d+)(: .+)")
-
-    @Suppress("SpellCheckingInspection")
-    private const val AOSP_CS =
-      "https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-main"
-
-    private val PACKAGE_PATTERN = Pattern.compile("""package\s+([\S&&[^;]]*)""")
-
-    @Suppress("SpellCheckingInspection")
-    private val CLASS_PATTERN =
-      Pattern.compile(
-        """(\bclass\b|\binterface\b|\benum class\b|\benum\b|\bobject\b)+?\s*([^\s:(]+)""",
-        Pattern.MULTILINE
-      )
-
-    private val NUMBER_PATTERN = Pattern.compile("^\\d+\\. ")
-
-    /**
-     * Given lint test output (lint CLI text report output), return the corresponding lines
-     * (including only the error lines, not for example source code snippets)
-     */
-    fun getOutputLines(output: String): List<String> {
-      return output
-        .lines()
-        .mapNotNull {
-          val matcher = MESSAGE_PATTERN.matcher(it)
-          if (matcher.matches()) matcher.group(3) else null
-        }
-        .toList()
-    }
-
-    data class ReportedIncident(
-      /** Relative path, always using unix file separators */
-      val path: String,
-      /** Line number (0-based) */
-      val lineNumber: Int,
-      /** Column number (0-based) */
-      val column: Int,
-      /** The lint error message */
-      val message: String,
-      /** Lint issue id */
-      val id: String
-    )
-
-    fun getOutputIncidents(output: String): List<ReportedIncident> {
-      val lines = output.lines()
-      return lines
-        .mapIndexedNotNull { i, line ->
-          val matcher = MESSAGE_PATTERN.matcher(line)
-          if (matcher.matches()) {
-            val message = matcher.group(3)
-            val location = matcher.group(1)
-            val locationMatcher = LOCATION_PATTERN.matcher(location)
-            val path: String
-            var lineNumber: Int = -1
-            var column = -1
-            if (locationMatcher.find()) {
-              path = locationMatcher.group(1)
-              lineNumber = locationMatcher.group(2).toInt()
-              if (i < lines.size - 2) {
-                val next1 = lines[i + 1]
-                if (
-                  next1.startsWith(" ") ||
-                    next1.indexOf(':') == -1 ||
-                    !MESSAGE_PATTERN.matcher(next1).matches()
-                ) {
-                  val next2 = lines[i + 2]
-                  column = next2.indexOfFirst { !it.isWhitespace() }
-                }
-              }
-            } else {
-              path = location
-              lineNumber = -1
-            }
-            val id =
-              matcher.group(4).substringBefore(' ') // Sometimes output includes library source
-            ReportedIncident(path.replace('\\', '/'), lineNumber, column, message, id)
-          } else null
-        }
-        .toList()
+      return list
     }
 
     /** Given lint unit test quickfix output, return just the fix lines. */
@@ -1887,25 +2513,20 @@ constructor(
         firstOrNull()?.isDigit() == true && NUMBER_PATTERN.matcher(this).find()
     }
 
-    private fun getRegistry(
-      client: LintCliClient,
-      jars: List<File>,
-      includeBuiltins: Boolean
-    ): IssueRegistry? {
-      if (jars.isEmpty()) {
-        return BuiltinIssueRegistry()
-      }
-      val registries =
-        JarFileIssueRegistry.get(client, jars, skipVerification = true) +
-          if (includeBuiltins) listOf(BuiltinIssueRegistry()) else emptyList()
+    private fun getRegistry(client: LintCliClient, jarFile: File): IssueRegistry? {
+      val registries = JarFileIssueRegistry.get(client, listOf(jarFile), skipVerification = true)
+      return registries.firstOrNull()
+    }
 
-      return when {
-        registries.isEmpty() -> {
-          println("Could not find any lint issue registries in ${jars.joinToString(",")}")
-          null
-        }
-        registries.size == 1 -> registries[0]
-        else -> CompositeIssueRegistry(registries)
+    private fun getRegistries(
+      registryMap: Map<IssueRegistry, String?>,
+      includeBuiltins: Boolean
+    ): Map<IssueRegistry, String?> {
+      return if (includeBuiltins) {
+        val builtIns = mapOf<IssueRegistry, String?>(BuiltinIssueRegistry() to null)
+        builtIns + registryMap
+      } else {
+        registryMap
       }
     }
 
@@ -1988,6 +2609,8 @@ constructor(
       var includeSourceLinks = true
       var includeBuiltins = false
       var includeSeverityColor = true
+      var searchGmaven = false
+      var searchMavenCentral = false
 
       var index = 0
       while (index < args.size) {
@@ -2010,6 +2633,8 @@ constructor(
           ARG_NO_SUPPRESS_INFO -> includeSuppressInfo = false
           ARG_NO_EXAMPLES -> includeExamples = false
           ARG_NO_SOURCE_LINKS -> includeSourceLinks = false
+          ARG_GMAVEN -> searchGmaven = true
+          ARG_MAVEN_CENTRAL -> searchMavenCentral = true
           ARG_LINT_JARS -> {
             if (index == args.size - 1) {
               System.err.println("Missing lint jar path")
@@ -2123,32 +2748,40 @@ constructor(
         }
       }
 
-      val jars: List<File> =
-        if (jarPath == null) {
+      val client = createClient()
+      val registries: Map<IssueRegistry, String?> =
+        if (jarPath == null && !searchGmaven) {
           println(
             "Note: No lint jars specified: creating documents for the built-in lint checks instead ($ARG_INCLUDE_BUILTINS)"
           )
-          emptyList()
+          includeBuiltins = true
+          emptyMap()
         } else {
-          findLintJars(jarPath)
+          val gmavenMap =
+            if (searchGmaven) findLintIssueRegistriesFromGmaven(client) else emptyMap()
+          val mavenCentralMap =
+            if (searchMavenCentral) findLintIssueRegistriesFromMavenCentral(client) else emptyMap()
+          val jarMap =
+            if (jarPath != null)
+              findLintIssueRegistries(
+                client,
+                jarPath,
+                { id, lintLibrary -> GmavenLibrary(id, lintLibrary) }
+              )
+            else emptyMap()
+          jarMap + gmavenMap + mavenCentralMap
         }
 
-      val client =
-        if (LintClient.isClientNameInitialized() && LintClient.isUnitTest) {
-          LintCliClient(LintClient.CLIENT_UNIT_TESTS)
-        } else {
-          LintCliClient("generate-docs")
-        }
-      val registry = getRegistry(client, jars, includeBuiltins) ?: return ERRNO_ERRORS
+      val registryMap = getRegistries(registries, includeBuiltins)
 
-      if (sourcePath.isEmpty() && registry is BuiltinIssueRegistry) {
+      if (sourcePath.isEmpty() && registryMap is BuiltinIssueRegistry) {
         addAospUrls(sourcePath, testPath)
       }
 
       val generator =
         LintIssueDocGenerator(
           output,
-          registry,
+          registryMap,
           issues,
           singleDoc,
           format,
@@ -2167,27 +2800,762 @@ constructor(
       return ERRNO_SUCCESS
     }
 
-    private fun findLintJars(jarPath: String): List<File> {
-      val files = mutableListOf<File>()
-      splitPath(jarPath).forEach { path ->
-        val file = File(path)
-        if (file.isFile && file.path.endsWith(DOT_JAR)) {
-          files.add(file)
-        } else {
-          addLintJars(files, file)
-        }
-      }
-      return files
+    private fun findLintIssueRegistriesFromGmaven(
+      client: LintCliClient
+    ): Map<IssueRegistry, String?> {
+      val cacheDir = File(getGmavenCache(), "m2repository")
+      populateGmavenOfflineRepo(client, cacheDir)
+      return findLintIssueRegistries(
+        client,
+        cacheDir.path,
+        { id, lintLibrary -> GmavenLibrary(id, lintLibrary) },
+        searchWithinArchives = false
+      )
     }
 
-    private fun addLintJars(into: MutableList<File>, file: File) {
-      if (file.isDirectory) {
-        file.listFiles()?.forEach { addLintJars(into, it) }
-      } else if (file.isFile) {
-        if (file.name == FN_LINT_JAR) {
-          into.add(file)
+    private fun findLintIssueRegistriesFromMavenCentral(
+      client: LintCliClient
+    ): Map<IssueRegistry, String?> {
+      val cacheDir = File(getMavenCentralCache(), "m2repository")
+      populateMavenCentralOfflineRepo(client, cacheDir)
+
+      return findLintIssueRegistries(
+        client,
+        cacheDir.path,
+        { id, _ ->
+          thirdPartyChecks.firstOrNull { it.id == id }
+            ?: error("Couldn't find registration info for $id")
+        },
+        searchWithinArchives = true,
+        allJarsAreLintChecks = true
+      )
+    }
+
+    private fun populateMavenCentralOfflineRepo(client: LintCliClient, cacheDir: File) {
+      if (SKIP_NETWORK) return
+      for (library in thirdPartyChecks) {
+        val versions = library.getVersions(client)
+        for (version in versions) {
+          val dir =
+            File(
+              library.group.replace('.', separatorChar) +
+                separator +
+                library.artifact +
+                separator +
+                version
+            )
+          val extension = library.type.getExtension()
+          val name = library.artifact + "-" + version + extension
+          val file = File(cacheDir, dir.path + separator + name)
+
+          if (file.exists()) {
+            println("Cached ${library.group}:${library.artifact}:$version in $dir:$name")
+            continue
+          }
+
+          val downloaded = downloadMavenFile(library, version) ?: continue
+          file.parentFile.mkdirs()
+          file.writeBytes(downloaded)
+          println(
+            "Stored ${library.group}:${library.artifact}:$version: ${downloaded.size} bytes in $dir:$name"
+          )
+          val pomUrl = library.getUrl(version, ".pom")
+          val pom = downloadMavenFile(library, version, pomUrl)
+          if (pom != null) {
+            val pomFile = File(file.path.substringBeforeLast('.') + ".pom")
+            pomFile.writeBytes(pom)
+            writePomDate(pomUrl, File(file.path.substringBeforeLast('.') + ".date"))
+          }
         }
-        // TODO: Support AAR files?
+      }
+    }
+
+    private fun downloadMavenFile(
+      library: MavenCentralLibrary,
+      version: String,
+      url: URL = library.getUrl(version)
+    ): ByteArray? {
+      if (SKIP_NETWORK) return null
+
+      try {
+        return url.readBytes()
+      } catch (e: IOException) {
+        val urlString = url.toExternalForm()
+        val dot = urlString.lastIndexOf('.')
+        try {
+          return URL(urlString.substring(0, dot) + "-release" + urlString.substring(dot))
+            .readBytes()
+        } catch (e2: IOException) {
+          if (urlString.endsWith(DOT_JAR)) {
+            try {
+              // Try looking for .aar instead
+              return URL(urlString.removeSuffix(DOT_JAR) + DOT_AAR).readBytes()
+            } catch (ignore: IOException) {}
+          }
+
+          if (
+            library.group == "com.vanniktech" &&
+              library.artifact == "lint-rules-android" &&
+              version == "0.7.0"
+          ) {
+            // looks like this version didn't include a library, only sources & javadocs:
+            // https://search.maven.org/artifact/com.vanniktech/lint-rules-android/0.7.0/aar
+            return null
+          }
+          println("Couldn't find ${library.group}:${library.artifact}:$version at $url: $e")
+        }
+      }
+
+      return null
+    }
+
+    /**
+     * Uses the [GoogleMavenRepository] to fetch the various lint libraries from maven.google.com.
+     * It also inserts empty files for all the remote artifacts that aren't lint jars, such that
+     * running it multiple times only fetches new artifacts.
+     */
+    private fun populateGmavenOfflineRepo(client: LintCliClient, cacheDir: File) {
+      if (SKIP_NETWORK) return
+
+      val repository: GoogleMavenRepository =
+        object : GoogleMavenRepository(cacheDir.toPath()) {
+          public override fun readUrlData(url: String, timeout: Int): ByteArray? =
+            readUrlData(client, url, timeout)
+
+          public override fun error(throwable: Throwable, message: String?) =
+            client.log(throwable, message)
+        }
+
+      for (group in repository.getGroups().sorted()) {
+        // Note that as of today, only AndroidX libraries ship with lint.jars so
+        // you can run this test much faster by skipping any group that doesn't start with
+        // "androidx."
+        for (artifact in repository.getArtifacts(group).sorted()) {
+          println("Checking artifact $group:$artifact")
+          val versions = repository.getVersions(group, artifact).sorted().reversed()
+          for (version in versions) {
+            val groupPath = group.replace('.', '/')
+            val relative = "$groupPath/$artifact/$version/$artifact-$version"
+            val url = "https://dl.google.com/android/maven2/$relative.aar"
+            val aarTarget = File(cacheDir, "$relative.aar")
+            aarTarget.parentFile?.mkdirs()
+            val lintTarget = File(cacheDir, "$relative-lint.jar")
+            lintTarget.parentFile?.mkdirs()
+
+            if (!lintTarget.isFile) {
+              // Don't try again:
+              lintTarget.createNewFile()
+
+              if (!aarTarget.isFile) {
+                // Download and create it
+                aarTarget.createNewFile() // or don't try again if it doesn't exist
+                try {
+                  println("Read $url")
+                  val bytes =
+                    try {
+                      readUrlData(client, url, 30 * 1000)
+                    } catch (e: FileNotFoundException) {
+                      aarTarget.createNewFile() // don't try again if it doesn't exist
+                      continue
+                    }
+                  var lintJarBytes: ByteArray? = null
+                  if (bytes != null) {
+                    aarTarget.writeBytes(bytes)
+
+                    // Try to get the POM
+                    val pomUrl =
+                      "https://dl.google.com/android/maven2/$groupPath/$artifact/$version/$artifact-$version.pom"
+                    val pom =
+                      try {
+                        readUrlData(client, pomUrl, 30 * 1000)
+                      } catch (e: IOException) {
+                        null
+                      }
+                    if (pom != null) {
+                      val pomTarget = File(cacheDir, "$relative.pom")
+                      pomTarget.writeBytes(pom)
+                      writePomDate(URL(pomUrl), File(cacheDir, "$relative.date"))
+                    }
+
+                    // Try to extract lint.jar
+                    JarFile(aarTarget).use { jarFile ->
+                      val lintJar = jarFile.getJarEntry("lint.jar")
+                      if (lintJar != null) {
+                        jarFile.getInputStream(lintJar).use { stream ->
+                          lintJarBytes = ByteStreams.toByteArray(stream)
+                        }
+                      }
+                    }
+                  }
+                  if (lintJarBytes == null) {
+                    // No lint jar: stop checking these versions
+                    lintTarget.createNewFile()
+
+                    // Also write empty files for all older files so we don't keep trying
+                    for (v in versions) {
+                      val versionKey = "$groupPath/$artifact/$v/$artifact-$v"
+                      val olderLintJar = File(cacheDir, "$versionKey-lint.jar")
+                      if (!olderLintJar.isFile) {
+                        olderLintJar.parentFile?.mkdirs()
+                        olderLintJar.createNewFile()
+                        val olderAar = File(cacheDir, "$versionKey.aar")
+                        olderAar.createNewFile()
+                      }
+                    }
+
+                    // Also null out the AAR file; we don't need to sit on a non-zero sized file
+                    // here
+                    aarTarget.delete()
+                    aarTarget.createNewFile()
+                    break
+                  }
+                  lintTarget.writeBytes(lintJarBytes!!)
+                } catch (ignore: Throwable) {
+                  // Couldn't read URL -- probably not an aar but a jar
+                  continue
+                }
+              }
+            }
+          }
+        }
+      }
+
+      println("Done searching remote index.")
+    }
+
+    private fun writePomDate(pomUrl: URL, dateTarget: File) {
+      val connection = pomUrl.openConnection() as HttpURLConnection
+      connection.requestMethod = "HEAD"
+      if (connection.responseCode == 200) {
+        val lastModifiedHeader = connection.getHeaderField("Last-Modified")
+        if (lastModifiedHeader != null) {
+          val lastModifiedDate =
+            SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z").parse(lastModifiedHeader)!!.time
+          val localDate = Date(lastModifiedDate)
+          val localTime = LocalDateTime.ofInstant(localDate.toInstant(), ZoneOffset.UTC)
+          dateTarget.writeText(
+            "%4d/%02d/%02d".format(localTime.year, localTime.monthValue, localTime.dayOfMonth)
+          )
+        }
+        connection.disconnect()
+      }
+    }
+
+    private fun findLintIssueRegistries(
+      client: LintCliClient,
+      jarPath: String,
+      libraryFactory: (String, Boolean) -> Library,
+      searchWithinArchives: Boolean = true,
+      allJarsAreLintChecks: Boolean = false
+    ): Map<IssueRegistry, String?> {
+      val into =
+        mutableMapOf<String, LibraryVersionEntry>() // Issue registry to (optional) maven artifact
+      splitPath(jarPath).forEach { path ->
+        addLintIssueRegistries(into, File(path), searchWithinArchives, allJarsAreLintChecks)
+      }
+
+      val artifacts = mutableMapOf<String, Library>()
+      val artifactIds = into.keys.map { it.substringBeforeLast(':') }.toSet()
+
+      for (entry in into.values) {
+        var id = entry.id
+        // Multiplatform: creates -android artifacts; you're not supposed
+        // to directly include this in your dependency, so remove it here
+        // (but we can't just ignore these entries because at least for
+        // AndroidX, they've *moved* the issues from :x to :x-android,
+        // so without the below adjustment we'd see issues disappearing from
+        // :x and appearing in :x-android.)
+        if (id.endsWith("-android")) {
+          val withoutSuffix = id.removeSuffix("-android")
+          if (artifactIds.contains(withoutSuffix)) {
+            id = withoutSuffix
+          }
+        }
+        val artifact =
+          artifacts[id] ?: libraryFactory(id, entry.lintLibrary).also { artifacts[id] = it }
+        artifact.addVersion(entry)
+      }
+
+      for (library in artifacts.values) {
+        library.removeOldPreviews()
+      }
+
+      // Write our byte arrays as jar files we can map to
+      val result = mutableMapOf<IssueRegistry, String?>()
+
+      for ((_, library) in artifacts) {
+        val versions = library.versions.keys
+
+        val latest = versions.firstOrNull()
+        val bytes = library.versions[latest]!!.jarBytes
+        val key = library.id
+        val file = File.createTempFile(key.replace(':', '_'), DOT_JAR)
+        file.deleteOnExit()
+        file.writeBytes(bytes)
+        val registry = getRegistry(client, file)
+        if (registry == null) {
+          println(
+            "Error: Unexpectedly got null issue registry for $key with $file and version $latest"
+          )
+          continue
+        }
+        val wrapped = DocIssueRegistry(registry, library)
+        result[wrapped] = "$key:$latest"
+      }
+      return result
+    }
+
+    /** Data about a library which can have multiple versions, each one a [LibraryVersionEntry] */
+    abstract class Library(
+      /** Maven group:artifact for this library */
+      val id: String,
+      /**
+       * If true, this is a lint jar library (which you would use via `lintChecks`); if false, it's
+       * an AAR library (usually not lint related) which also includes a lint payload
+       */
+      val lintLibrary: Boolean
+    ) {
+      val versions: MutableMap<Version, LibraryVersionEntry> = TreeMap { o1, o2 ->
+        -o1.compareTo(o2)
+      }
+      var registry: IssueRegistry? = null
+      fun addVersion(entry: LibraryVersionEntry) {
+        versions[entry.version] = entry
+      }
+
+      fun removeOldPreviews() {
+        val relevantVersions = versionsWithoutOldPreviews()
+        val remove = versions.keys.filter { !relevantVersions.contains(it) }
+        for (version in remove) {
+          versions.remove(version)
+        }
+      }
+
+      abstract fun getUrl(
+        view: Boolean,
+        test: Boolean,
+        issue: Issue,
+        detectorPath: String,
+        sourceSet: String = "java",
+        extension: String = ".kt"
+      ): String
+
+      private fun versionsWithoutOldPreviews(): List<Version> {
+        val v = versions.keys
+        return v.filter { version ->
+          if (version.isPreview) {
+            val key = version.toString()
+            val index = key.indexOf('-')
+            val stable = Version.parse(key.substring(0, index))
+            !versions.containsKey(stable)
+          } else {
+            true
+          }
+        }
+      }
+    }
+
+    class GmavenLibrary(id: String, lintLibrary: Boolean) : Library(id, lintLibrary) {
+      override fun getUrl(
+        view: Boolean,
+        test: Boolean,
+        issue: Issue,
+        detectorPath: String,
+        sourceSet: String,
+        extension: String
+      ): String {
+        val url = StringBuilder()
+        if (view) {
+          url.append(
+            "https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:/"
+          )
+        } else {
+          url.append(
+            "https://android.googlesource.com/platform/frameworks/support/+/androidx-main/"
+          )
+        }
+
+        var m =
+          id
+            .removePrefix("androidx.")
+            .replace(':', '/')
+            .replace('.', '/')
+            .removeSuffix("-android") + "-lint"
+        // workaround: androidx generally places lint checks in a predictable place except for one
+        // weird exception. Work around this for now (and get androidx updated.)
+        if (m == "work/work-runtime-lint") {
+          m = "work/work-lint"
+        }
+        url.append(m)
+        url.append("/src/")
+        if (test) {
+          url.append("test")
+        } else {
+          url.append("main")
+        }
+        url.append('/')
+        url.append(sourceSet)
+        url.append('/')
+
+        val path =
+          if (test) {
+            // A few androidx detectors put their tests in weird places; work around this:
+            when (detectorPath) {
+              "androidx/fragment/lint/UnsafeFragmentLifecycleObserverDetector" -> {
+                when (issue.id) {
+                  "FragmentLiveDataObserve" ->
+                    "androidx/fragment/lint/FragmentLiveDataObserveDetector"
+                  "FragmentAddMenuProvider" -> "androidx/fragment/lint/AddMenuProviderDetector"
+                  "FragmentBackPressedCallback" ->
+                    "androidx/fragment/lint/BackPressedDispatcherCallbackDetector"
+                  else -> detectorPath
+                }
+              }
+              "androidx/lifecycle/lint/NonNullableMutableLiveDataDetector" ->
+                "androidx/lifecycle/livedata/core/lint/NonNullableMutableLiveDataDetector"
+              "androidx/lifecycle/lint/LifecycleWhenChecks" ->
+                "androidx/lifecycle/runtime/lint/LifecycleWhenChecks"
+              "androidx/lifecycle/lint/RepeatOnLifecycleDetector" ->
+                "androidx/lifecycle/runtime/lint/RepeatOnLifecycleDetector"
+              "androidx/recyclerview/lint/InvalidSetHasFixedSizeDetector" ->
+                "androidx/recyclerview/lint/InvalidSetHasFixedSize"
+              "androidx/activity/compose/lint/ActivityResultLaunchDetector" ->
+                "androidx/activity/compose/lint/ActivityResultLaunchDetector"
+              "androidx/activity/lint/ActivityResultFragmentVersionDetector" ->
+                "androidx/activity/lint/ActivityResultFragmentVersionDetector"
+              "androidx/compose/ui/lint/ComposedModifierDetector" ->
+                "androidx/compose/ui/lint/ComposedModifierDetector"
+              "androidx/work/lint/BadConfigurationProviderIssueDetector" ->
+                "androidx/work/lint/BadConfigurationProvider"
+              "androidx/startup/lint/InitializerConstructorDetector" ->
+                "androidx/startup/lint/InitializerConstructor"
+              "androidx/startup/lint/EnsureInitializerMetadataDetector" ->
+                "androidx/startup/lint/EnsureInitializerMetadata"
+              "androidx/compose/ui/test/manifest/lint/GradleDebugConfigurationDetector" ->
+                // Typo: androix
+                "androix/compose/ui/test/manifest/lint/GradleDebugConfigurationDetector"
+              else -> {
+                // All the appcompat lint check tests are in the wrong package; fix that here
+                if (
+                  detectorPath.startsWith("androidx/appcompat/") &&
+                    !detectorPath.startsWith("androidx/appcompat/lint/")
+                ) {
+                  "androidx/appcompat/lint/" + detectorPath.substring("androidx/appcompat/".length)
+                } else {
+                  detectorPath
+                }
+              }
+            }
+          } else {
+            detectorPath
+          }
+
+        url.append(path)
+        if (test) {
+          url.append("Test")
+        }
+        url.append(extension)
+
+        if (!view) {
+          // gitiles doesn't support fetching text directly, but we can get it as base64 encoded
+          // data
+          url.append("?format=TEXT")
+        }
+
+        return url.toString()
+      }
+    }
+
+    enum class Type {
+      JAR,
+      AAR;
+      fun getExtension(): String {
+        return when (this) {
+          JAR -> DOT_JAR
+          AAR -> DOT_AAR
+        }
+      }
+    }
+
+    class MavenCentralLibrary(
+      val group: String,
+      val artifact: String,
+      val type: Type = Type.JAR,
+      val projectUrl: String = "",
+      val sourceUrl: String = "",
+      val testUrl: String = "",
+      val sourceContentUrl: String = "",
+      val testContentUrl: String = "",
+      lintLibrary: Boolean
+    ) : Library("$group:$artifact", lintLibrary) {
+      override fun getUrl(
+        view: Boolean,
+        test: Boolean,
+        issue: Issue,
+        detectorPath: String,
+        sourceSet: String,
+        extension: String
+      ): String {
+        val url = StringBuilder()
+        if (view) {
+          if (test) {
+            url.append(testUrl)
+          } else {
+            url.append(sourceUrl)
+          }
+        } else {
+          if (test) {
+            url.append(testContentUrl)
+          } else {
+            url.append(sourceContentUrl)
+          }
+        }
+        url.append('/')
+
+        val path =
+          if (test) {
+            // A few detectors put their tests in weird places; work around this:
+            when (detectorPath) {
+              // Stuff from the vanniktech checks
+              "com/vanniktech/lintrules/kotlin/KotlinRequireNotNullUseMessageDetector" ->
+                "com/vanniktech/lintrules/rxjava2/KotlinRequireNotNullUseMessageDetector"
+
+              // Stuff from the slack lint checks:
+              "slack/lint/mocking/ErrorProneDoNotMockDetector" ->
+                "slack/lint/mocking/DoNotMockUsageDetector"
+              "slack/lint/mocking/MockDetector" -> "slack/lint/mocking/DoNotMockMockDetector"
+              else -> {
+                detectorPath
+              }
+            }
+          } else {
+            detectorPath
+          }
+
+        url.append(path)
+        if (test) url.append("Test")
+        url.append(extension)
+        return url.toString()
+      }
+
+      fun getVersions(client: LintClient): List<String> {
+        val gc = GradleCoordinate.parseCoordinateString("$group:$artifact:+")!!
+        return getLatestVersionFromRemoteRepo(client, gc)
+      }
+
+      fun getUrl(version: String, extension: String) =
+        URL(getUrl(version).toExternalForm().substringBeforeLast('.') + extension)
+
+      fun getUrl(version: String): URL {
+        val groupPath = group.replace('.', '/')
+        val ext = type.getExtension()
+        return URL(
+          "https://search.maven.org/remotecontent?filepath=$groupPath/$artifact/$version/$artifact-$version$ext"
+        )
+        // https://search.maven.org/remotecontent?filepath=com/faithlife/android-lint/1.1.6/android-lint-1.1.6.aar
+        // https://search.maven.org/remotecontent?filepath=com/faithlife/android-lint/1.1.5/android-lint-1.1.5-debug.aar
+        // https://search.maven.org/remotecontent?filepath=com/faithlife/android-lint/1.1.5/android-lint-1.1.5-release.aar
+        // https://search.maven.org/remotecontent?filepath=com/vanniktech/lint-rules-android/0.22.0/lint-rules-android-0.22.0.aar
+        // https://search.maven.org/remotecontent?filepath=com/vanniktech/lint-rules-android/0.22.0/lint-rules-android-0.22.0.jar
+        // https://search.maven.org/remotecontent?filepath=com/github/guilhe/styling-lint/2.0.1/styling-lint-2.0.1.aar
+      }
+
+      private fun getLatestVersionFromRemoteRepo(
+        client: LintClient,
+        dependency: GradleCoordinate
+      ): List<String> {
+        val groupId = dependency.groupId
+        val artifactId = dependency.artifactId
+        val query = StringBuilder()
+        val encoding = Charsets.UTF_8.name()
+        try {
+          query.append("https://search.maven.org/solrsearch/select?q=g:%22")
+          query.append(URLEncoder.encode(groupId, encoding))
+          query.append("%22+AND+a:%22")
+          query.append(URLEncoder.encode(artifactId, encoding))
+        } catch (e: UnsupportedEncodingException) {
+          return emptyList()
+        }
+        query.append("%22&core=gav")
+        query.append("&wt=json")
+
+        val response =
+          try {
+            println("Reading $query")
+            readUrlDataAsString(client, query.toString(), 20000) ?: return emptyList()
+          } catch (e: SocketTimeoutException) {
+            println("Couldn't download $query; read timed out")
+            return emptyList()
+          }
+
+        // Look for version info:  This is just a cheap skim of the above JSON results.
+        var index = response.indexOf("\"response\"")
+        val versions = mutableListOf<String>()
+        while (index != -1) {
+          index = response.indexOf("\"v\":", index)
+          if (index != -1) {
+            index += 4
+            val start = response.indexOf('"', index) + 1
+            val end = response.indexOf('"', start + 1)
+            if (start in 0 until end) {
+              val substring = response.substring(start, end)
+              try {
+                // Try parsing to see if it's a valid version
+                Version.parse(substring)
+                versions.add(substring)
+              } catch (ignore: IllegalArgumentException) {
+                // Not a version
+              }
+            }
+          }
+        }
+
+        return versions
+      }
+    }
+
+    /** Data about a specific version of the library */
+    class LibraryVersionEntry(
+      val artifact: String,
+      val jarBytes: ByteArray,
+      val pom: String,
+      val date: String,
+      val lintLibrary: Boolean
+    ) {
+      val id = artifact.substringBeforeLast(':')
+      val version = Version.parse(artifact.substringAfterLast(':').removeSuffix("-lint"))
+      var registry: IssueRegistry? = null
+    }
+
+    private fun addLintIssueRegistry(
+      into: MutableMap<String, LibraryVersionEntry>,
+      file: File,
+      artifact: String?,
+      bytes: ByteArray = file.readBytes()
+    ) {
+      artifact ?: return
+      val base = file.path.removeSuffix(".jar").removeSuffix(".aar").removeSuffix("-lint")
+      val pomFile = File("$base.pom")
+      val pom = if (pomFile.isFile) pomFile.readText() else ""
+      val dateFile = File("$base.date")
+      val date =
+        if (dateFile.isFile) {
+          dateFile.readText()
+        } else {
+          ""
+        }
+      val lintLibrary = !File("$base.aar").exists()
+      into[artifact] = LibraryVersionEntry(artifact, bytes, pom, date, lintLibrary)
+    }
+
+    private fun addLintIssueRegistries(
+      into: MutableMap<String, LibraryVersionEntry>,
+      file: File,
+      searchWithinArchives: Boolean,
+      allJarsAreLintChecks: Boolean
+    ) {
+      if (file.isDirectory) {
+        val children = file.listFiles() ?: return
+        children.forEach { child ->
+          addLintIssueRegistries(into, child, searchWithinArchives, allJarsAreLintChecks)
+        }
+      } else if (file.isFile) {
+        // file length of 0 means it's not a valid jar but is deliberately there
+        // as a cache entry to record the fact that this library does *not*
+        // have a nested lint issue registry
+        val fileName = file.name
+        if (fileName.endsWith(DOT_JAR) && file.length() > 0) {
+          val artifact =
+            if (fileName.count { it == ':' } == 2) {
+              fileName.removeSuffix(DOT_JAR).removeSuffix(DOT_AAR)
+            } else {
+              file.path.path2maven()
+            }
+          addLintIssueRegistry(into, file, artifact)
+        } else if (searchWithinArchives && fileName.endsWith(DOT_AAR) && file.length() > 0) {
+          JarFile(file).use { jarFile ->
+            val lintJar = jarFile.getJarEntry("lint.jar")
+            if (lintJar != null) {
+              jarFile.getInputStream(lintJar).use { stream ->
+                val bytes = ByteStreams.toByteArray(stream)
+                val artifact =
+                  if (fileName.count { it == ':' } == 2) {
+                    fileName.removeSuffix(DOT_AAR)
+                  } else {
+                    file.path.path2maven()
+                  }
+                addLintIssueRegistry(into, file, artifact, bytes)
+              }
+            }
+          }
+        } else if (searchWithinArchives && fileName.endsWith(DOT_ZIP)) {
+          ZipFile(file).use { zipFile ->
+            val entries = zipFile.entries()
+            while (entries.hasMoreElements()) {
+              val zipEntry = entries.nextElement()
+              if (zipEntry.isDirectory) {
+                continue
+              }
+              val name = zipEntry.name
+              if (name.endsWith(DOT_JAR) && name.contains("lint")) {
+                zipFile.getInputStream(zipEntry).use { stream ->
+                  val bytes = ByteStreams.toByteArray(stream)
+                  addLintIssueRegistry(into, file, name.path2maven(), bytes)
+                }
+              } else if (name.endsWith(DOT_AAR)) {
+                zipFile.getInputStream(zipEntry).use { stream ->
+                  val aarBytes = ByteStreams.toByteArray(stream)
+                  JarInputStream(ByteArrayInputStream(aarBytes)).use { zis ->
+                    var entry = zis.nextEntry
+                    while (entry != null) {
+                      val entryName = entry.name
+                      if (entryName == FN_LINT_JAR) {
+                        val bytes = ByteStreams.toByteArray(zis)
+                        addLintIssueRegistry(into, file, name.path2maven(), bytes)
+                      }
+                      entry = zis.nextEntry
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    private fun String.path2maven(): String? {
+      // m2repository/androidx/resourceinspection/resourceinspection-annotation/1.1.0-alpha01/resourceinspection-annotation-1.1.0-alpha01.jar.sha1
+      //    => androidx.resourceinspection:resourceinspection-annotation:1.1.0-alpha01
+      val name = this.replace("\\", "/")
+      val index = name.indexOf("m2repository/").let { if (it == -1) name.indexOf("m2/") else it }
+      if (index != -1) {
+        return name.substring(index).split("/").let {
+          it.subList(1, it.size - 3).joinToString(".") +
+            ":" +
+            it[it.size - 3] +
+            ":" +
+            it[it.size - 2]
+        }
+      }
+
+      return null
+    }
+
+    private class DocIssueRegistry(original: IssueRegistry, val library: Library) :
+      IssueRegistry() {
+      override val issues: List<Issue> = original.issues
+      override val api: Int = original.api
+      override val minApi: Int = original.minApi
+      override val maxApi: Int = original.maxApi
+      override val vendor: Vendor? = original.vendor
+      override val deletedIssues: List<String> = original.deletedIssues
+      override val isUpToDate: Boolean = true
+      override fun cacheable(): Boolean = true
+      init {
+        for (issue in issues) {
+          issue.registry = this
+        }
       }
     }
 
@@ -2206,6 +3574,10 @@ constructor(
     private const val ARG_NO_SEVERITY = "--no-severity"
     private const val ARG_NO_INDEX = "--no-index"
     private const val ARG_OUTPUT = "--output"
+    /** Whether to search maven.google.com for lint libraries to include */
+    private const val ARG_GMAVEN = "--gmaven"
+    /** Whether to search mavenCentral for lint libraries to include */
+    private const val ARG_MAVEN_CENTRAL = "--maven-central"
 
     private fun markdownTable(vararg rows: Pair<String, String?>): String {
       val sb = StringBuilder()
@@ -2329,7 +3701,7 @@ constructor(
       }
 
       @Suppress("LocalVariableName")
-      fun stripComments(source: String, stripLineComments: Boolean = true): String {
+      private fun stripComments(source: String, stripLineComments: Boolean = true): String {
         val sb = StringBuilder(source.length)
         var state = 0
         val INIT = 0
@@ -2448,6 +3820,38 @@ constructor(
 
       return null
     }
+
+    private fun getCacheDir(): File {
+      val root = File("${System.getProperty("user.home")}/Desktop/doc-cache")
+      if (root.isDirectory) {
+        return root
+      }
+      return File(System.getProperty("java.io.tmpdir"), "lint-doc-cache")
+    }
+
+    fun getSourceCache(): File {
+      val dir = File(getCacheDir(), "sources")
+      if (!dir.isDirectory) {
+        dir.mkdirs()
+      }
+      return dir
+    }
+
+    fun getGmavenCache(): File {
+      val dir = File(getCacheDir(), "gmaven")
+      if (!dir.isDirectory) {
+        dir.mkdirs()
+      }
+      return dir
+    }
+
+    private fun getMavenCentralCache(): File {
+      val dir = File(getCacheDir(), "mavenCentral")
+      if (!dir.isDirectory) {
+        dir.mkdirs()
+      }
+      return dir
+    }
   }
 
   class ExampleFile(val path: String?, val source: String, val language: String)
@@ -2455,15 +3859,16 @@ constructor(
   class Example(
     val testClass: String,
     val testMethod: String,
-    val file: File,
     val files: List<ExampleFile>,
     val output: String?,
     val inferred: Boolean = true
   )
 
-  class IssueData(val issue: Issue) {
-    var detectorSource: File? = null
-    var detectorTestSource: File? = null
+  inner class IssueData(val issue: Issue) {
+    var detectorSource: String? = null
+    var detectorTestSource: String? = null
+    var detectorSourceFile: File? = null
+    var detectorTestSourceFile: File? = null
 
     var sourceUrl: String? = null
     var testUrl: String? = null
@@ -2472,6 +3877,126 @@ constructor(
     var suppressExample: Example? = null
     var quickFixable: Boolean = false
     var copyrightYear: Int = -1
+
+    fun library(): Library? = (issue.registry as? DocIssueRegistry)?.library
+
+    fun initialize() {
+      val library = library() ?: return
+      val detectorClass = issue.implementation.detectorClass
+      val detectorPath =
+        detectorClass.name.replace('.', '/').let {
+          val innerClass = it.indexOf('$')
+          if (innerClass == -1) it else it.substring(0, innerClass)
+        }
+
+      findDetectorSource(library, detectorPath, test = false) { viewUrl, sourceFile, source ->
+        sourceUrl = viewUrl
+        detectorSourceFile = sourceFile
+        detectorSource = source
+        copyrightYear = findCopyrightYear(source.lines())
+      }
+      findDetectorSource(library, detectorPath, test = true) { viewUrl, sourceFile, source ->
+        testUrl = viewUrl
+        detectorTestSourceFile = sourceFile
+        detectorTestSource = source
+        initializeExamples(this)
+      }
+    }
+
+    private fun findDetectorSource(
+      library: Library,
+      detectorPath: String,
+      test: Boolean,
+      assign: (String, File, String) -> Unit
+    ) {
+      var url: String? = null
+      val cacheDir = getSourceCache()
+      val testResult =
+        // We don't know if the detector is in a .kt or .java file, and we also don't know if it's
+        // in
+        // src/main/java or
+        // src/main/kotlin, so look in all these combinations (results are cached)
+        findDetectorSource(library, detectorPath, test, "java", ".kt", cacheDir)?.also {
+          url = library.getUrl(true, test, issue, detectorPath, "java", ".kt")
+        }
+          ?: findDetectorSource(library, detectorPath, test, "java", ".java", cacheDir)?.also {
+            url = library.getUrl(true, test, issue, detectorPath, "java", ".java")
+          }
+            ?: findDetectorSource(library, detectorPath, test, "kotlin", ".kt", cacheDir)?.also {
+            url = library.getUrl(true, test, issue, detectorPath, "kotlin", ".kt")
+          }
+            ?: run {
+            println("Couldn't find ${if (test) "test " else ""}sources for $detectorPath")
+            null
+          }
+      if (testResult != null) {
+        assign(url!!, testResult.first, testResult.second)
+      }
+    }
+
+    private fun findDetectorSource(
+      library: Library,
+      detectorPath: String,
+      test: Boolean,
+      sourceSet: String,
+      extension: String,
+      cacheDir: File
+    ): Pair<File, String>? {
+      val relative =
+        (if (test) "test" else "main") +
+          "/" +
+          sourceSet +
+          "/" +
+          detectorPath +
+          (if (test) "Test" else "") +
+          extension
+
+      val cached = File(cacheDir, relative)
+      if (cached.isFile) {
+        if (cached.length() == 0L) {
+          return null
+        }
+        return cached to cached.readText()
+      }
+
+      if (SKIP_NETWORK) return null
+
+      cached.parentFile.mkdirs()
+      val url = library.getUrl(view = false, test, issue, detectorPath, sourceSet, extension)
+      print("Reading $url")
+      val bytes =
+        try {
+          URL(url).readBytes()
+        } catch (exception: IOException) {
+          println(": failed")
+          cached.createNewFile()
+          return null
+        }
+      println(": OK")
+      var source = String(bytes)
+      if (url.endsWith("?format=TEXT")) {
+        source = String(Base64.getDecoder().decode(source))
+      }
+
+      cached.writeText(source)
+      return cached to source
+    }
+  }
+
+  private fun getFileName(issueId: String, format: DocFormat): String =
+    "$issueId${format.extension}"
+  private fun getFileName(issue: Issue, format: DocFormat): String {
+    val fileName = getFileName(issue.id, format)
+    // If there are multiple issues with the same id, link them together
+    val registries = issueToRegistry[issue.id]!!
+    if (registries.size > 1) {
+      val index = registries.indexOf(issue.registry)
+      if (index > 0) {
+        return "${issue.id}-${index+1}${format.extension}"
+      }
+    }
+
+    return fileName
   }
 
   enum class DocFormat(val extension: String, val header: String = "", val footer: String = "") {
@@ -2487,9 +4012,6 @@ constructor(
           "<script>window.alreadyProcessedMarkdeep||(document.body.style.visibility=\"visible\")</script>"
     ),
     MARKDOWN(".md"),
-    HTML(".html");
-
-    fun getFileName(issueId: String): String = "$issueId$extension"
-    fun getFileName(issue: Issue): String = getFileName(issue.id)
+    HTML(".html")
   }
 }

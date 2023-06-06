@@ -21,6 +21,7 @@ package com.android.tools.lint.client.api
 import com.android.SdkConstants.CONSTRUCTOR_NAME
 import com.android.SdkConstants.DOT_CLASS
 import com.google.common.io.ByteStreams
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.lang.Byte
 import java.lang.Double
@@ -32,7 +33,7 @@ import java.lang.reflect.Executable
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.net.URLClassLoader
-import java.util.jar.JarFile
+import java.util.jar.JarInputStream
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassReader.SKIP_DEBUG
 import org.objectweb.asm.ClassReader.SKIP_FRAMES
@@ -49,8 +50,14 @@ import org.objectweb.asm.Type
 class LintJarVerifier(
   private val client: LintClient,
   private val jarFile: File,
+  bytes: ByteArray,
   private val skip: Boolean = false
 ) : ClassVisitor(ASM9) {
+  constructor(
+    client: LintClient,
+    jarFile: File,
+    skip: Boolean = false
+  ) : this(client, jarFile, jarFile.readBytes(), skip)
   /**
    * Is the class with the given [internal] class name part of an API we want to check for validity?
    */
@@ -84,8 +91,7 @@ class LintJarVerifier(
 
   fun getVerificationThrowable(): Throwable? = verifyProblem
 
-  /** Performs the actual verification and stores the results into various result properties */
-  private fun verify(lintJar: File) {
+  private fun verify(lintJarBytes: ByteArray) {
     if (skip) {
       return
     }
@@ -93,23 +99,24 @@ class LintJarVerifier(
     // checks any class, method or field reference accessing the Lint API
     // and makes sure that API is found in the bytecode
     val classes = mutableMapOf<String, ByteArray>()
-    JarFile(lintJar).use { jar ->
-      jar.entries().also { entries ->
-        while (entries.hasMoreElements()) {
-          (entries.nextElement() as java.util.jar.JarEntry).also { entry ->
-            val directory = entry.isDirectory
-            val name = entry.name
-            if (!directory && name.endsWith(DOT_CLASS)) {
-              jar.getInputStream(entry).use { stream ->
-                val bytes = ByteStreams.toByteArray(stream)
-                classes[name] = bytes
-              }
-            }
-          }
+    JarInputStream(ByteArrayInputStream(lintJarBytes)).use { jar ->
+      var entry = jar.nextEntry
+      while (entry != null) {
+        val directory = entry.isDirectory
+        val name = entry.name
+        if (!directory && name.endsWith(DOT_CLASS)) {
+          val bytes = ByteStreams.toByteArray(jar)
+          classes[name] = bytes
         }
+
+        entry = jar.nextEntry
       }
     }
 
+    verify(classes)
+  }
+
+  private fun verify(classes: Map<String, ByteArray>) {
     classes.forEach { (name, _) ->
       // Note that jar file internal names always use forward slash, not File.separator,
       // so we can compute the internal name by just dropping the .class suffix
@@ -400,7 +407,7 @@ class LintJarVerifier(
 
   init {
     try {
-      verify(jarFile)
+      verify(bytes)
     } catch (throwable: Throwable) {
       verifyProblem = throwable
     }

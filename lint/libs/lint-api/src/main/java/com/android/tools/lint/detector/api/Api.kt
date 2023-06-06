@@ -29,7 +29,8 @@ const val CURRENT_API = 14
 /** Describes the given API level. */
 fun describeApi(api: Int): String {
   return when (api) {
-    14 -> "8.0+" // 8.0.0-alpha06
+    15 -> "8.2+" // 8.2.0-alpha06
+    14 -> "8.0 and 8.1" // 8.0.0-alpha06
     13 -> "7.3 and 7.4" // 7.3.0-alpha02
     12 -> "7.2" // 7.2.0-beta02
     11 -> "7.1" // 7.1.0-alpha06

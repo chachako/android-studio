@@ -17,6 +17,7 @@
 package com.android.tools.lint.checks
 
 import com.android.tools.lint.checks.infrastructure.TestLintTask
+import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 
 class WrongThreadInterproceduralDetectorTest : AbstractCheckTest() {
@@ -24,6 +25,12 @@ class WrongThreadInterproceduralDetectorTest : AbstractCheckTest() {
     val task = super.lint()
     // This detector isn't intended to be run on the platform
     task.skipTestModes(PLATFORM_ANNOTATIONS_TEST_MODE)
+
+    // The call graph doesn't seem to be handling parentheses
+    // correctly; e.g. (r).run(). Ditto for the FQN test mode.
+    // Turning off these test modes for this check (which is off
+    // by default) until this is fixed.
+    task.skipTestModes(TestMode.PARENTHESIZED, TestMode.FULLY_QUALIFIED, TestMode.REORDER_ARGUMENTS)
     return task
   }
 

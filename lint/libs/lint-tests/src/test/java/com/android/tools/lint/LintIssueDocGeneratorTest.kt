@@ -17,6 +17,9 @@
 package com.android.tools.lint
 
 import com.android.testutils.TestUtils
+import com.android.tools.lint.LintIssueDocGenerator.Companion.computeResultMap
+import com.android.tools.lint.LintIssueDocGenerator.Companion.getOutputIncidents
+import com.android.tools.lint.LintIssueDocGenerator.Companion.getOutputLines
 import com.android.tools.lint.checks.infrastructure.dos2unix
 import com.android.tools.lint.client.api.LintClient
 import java.io.File
@@ -328,7 +331,7 @@ class LintIssueDocGeneratorTest {
     val files = outputFolder.listFiles()!!.sortedBy { it.name }
     val names = files.joinToString { it.name }
     assertEquals(
-      "LambdaLast.md, MissingClass.md, SdCardPath.md, ViewTag.md, categories.md, index.md, severity.md, vendors.md, year.md",
+      "LambdaLast.md, MissingClass.md, SdCardPath.md, ViewTag.md, categories.md, index.md, libraries.md, severity.md, vendors.md, year.md",
       names
     )
     val alphabetical = files[5].readText()
@@ -336,7 +339,7 @@ class LintIssueDocGeneratorTest {
       """
             # Lint Issue Index
 
-            Order: Alphabetical | [By category](categories.md) | [By vendor](vendors.md) | [By severity](severity.md) | [By year](year.md)
+            Order: Alphabetical | [By category](categories.md) | [By vendor](vendors.md) | [By severity](severity.md) | [By year](year.md) | [Libraries](libraries.md)
 
               - [LambdaLast: Lambda Parameters Last](LambdaLast.md)
               - [MissingClass: Missing registered class](MissingClass.md)
@@ -354,7 +357,7 @@ class LintIssueDocGeneratorTest {
       """
             # Lint Issue Index
 
-            Order: [Alphabetical](index.md) | By category | [By vendor](vendors.md) | [By severity](severity.md) | [By year](year.md)
+            Order: [Alphabetical](index.md) | By category | [By vendor](vendors.md) | [By severity](severity.md) | [By year](year.md) | [Libraries](libraries.md)
 
             * Correctness (2)
 
@@ -372,13 +375,12 @@ class LintIssueDocGeneratorTest {
         .trimIndent(),
       categories
     )
-    val severities = files[6].readText()
+    val severities = files[7].readText()
     assertEquals(
       """
             # Lint Issue Index
 
-            Order: [Alphabetical](index.md) | [By category](categories.md) | [By vendor](vendors.md) | By severity | [By year](year.md)
-
+            Order: [Alphabetical](index.md) | [By category](categories.md) | [By vendor](vendors.md) | By severity | [By year](year.md) | [Libraries](libraries.md)
 
             * Error (1)
 
@@ -400,12 +402,12 @@ class LintIssueDocGeneratorTest {
         .trimIndent(),
       severities
     )
-    val vendors = files[7].readText()
+    val vendors = files[8].readText()
     assertEquals(
       """
             # Lint Issue Index
 
-            Order: [Alphabetical](index.md) | [By category](categories.md) | By vendor | [By severity](severity.md) | [By year](year.md)
+            Order: [Alphabetical](index.md) | [By category](categories.md) | By vendor | [By severity](severity.md) | [By year](year.md) | [Libraries](libraries.md)
 
             * Built In (3)
 
@@ -420,12 +422,12 @@ class LintIssueDocGeneratorTest {
         .trimIndent(),
       vendors
     )
-    val years = files[8].readText()
+    val years = files[9].readText()
     assertEquals(
       """
             # Lint Issue Index
 
-            Order: [Alphabetical](index.md) | [By category](categories.md) | [By vendor](vendors.md) | [By severity](severity.md) | By year
+            Order: [Alphabetical](index.md) | [By category](categories.md) | [By vendor](vendors.md) | [By severity](severity.md) | By year | [Libraries](libraries.md)
 
             * 2020 (1)
 
@@ -771,7 +773,6 @@ class LintIssueDocGeneratorTest {
 
                 val s: String = "/sdcard/mydir"
                                  ~~~~~~~~~~~~~
-
             ```
 
             Here is the source file referenced above:
@@ -918,7 +919,6 @@ class LintIssueDocGeneratorTest {
 
                 String output4 = String.format(score, true);  // wrong
                                                       ~~~~
-
             ```
 
             Here are the relevant source files:
@@ -1032,6 +1032,172 @@ class LintIssueDocGeneratorTest {
   }
 
   @Test
+  fun testVendor() {
+    val outputFolder = temporaryFolder.root
+    val fragmentFolder =
+      File("${LintIssueDocGenerator.getGmavenCache()}/m2repository/androidx/fragment/fragment")
+    if (!fragmentFolder.isDirectory) {
+      println("Skipping testVendor: no cache available")
+      return
+    }
+    val jars = fragmentFolder.walkTopDown().filter { it.name.endsWith(".jar") && it.length() > 0L }
+    val jarArgument = jars.joinToString(";") { it.path }
+
+    LintIssueDocGenerator.run(arrayOf("--lint-jars", jarArgument, "--output", outputFolder.path))
+    val files = outputFolder.listFiles()!!.sortedBy { it.name }
+    val names = files.joinToString { it.name }
+    assertEquals(
+      "DetachAndAttachSameFragment.md.html, DialogFragmentCallbacksDetector.md.html, FragmentAddMenuProvider.md.html, " +
+        "FragmentBackPressedCallback.md.html, FragmentLiveDataObserve.md.html, FragmentTagUsage.md.html, " +
+        "UnsafeRepeatOnLifecycleDetector.md.html, UseGetLayoutInflater.md.html, UseRequireInsteadOfGet.md.html, " +
+        "androidx_fragment_fragment.md.html, categories.md.html, index.md.html, libraries.md.html, " +
+        "severity.md.html, vendors.md.html, year.md.html",
+      names
+    )
+    val vendor = files.first { it.name == "androidx_fragment_fragment.md.html" }
+    val text = vendor.readText()
+    assertEquals(
+      """
+      (#) androidx.fragment:fragment
+
+      Name
+      :   fragment
+      Description
+      :   The Support Library is a static library that you can add to your Android
+      :   application in order to use APIs that are either not available for older
+      :   platform versions or utility APIs that aren't a part of the framework
+      :   APIs. Compatible on devices running API 14 or later.
+      License
+      :   [The Apache Software License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+      Vendor
+      :   Android Open Source Project
+      Identifier
+      :   androidx.fragment
+      Feedback
+      :   https://issuetracker.google.com/issues/new?component=460964
+      Min
+      :   Lint 7.0
+      Compiled
+      :   Lint 8.0 and 8.1
+      Artifact
+      :   androidx.fragment:fragment:1.7.0-alpha01
+
+      (##) Included Issues
+
+      |Issue Id                                                                  |Issue Description                                                                                                       |
+      |--------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+      |[FragmentTagUsage](FragmentTagUsage.md.html)                              |Use FragmentContainerView instead of the <fragment> tag                                                                 |
+      |[FragmentAddMenuProvider](FragmentAddMenuProvider.md.html)                |Use getViewLifecycleOwner() as the LifecycleOwner instead of a Fragment instance.                                       |
+      |[FragmentBackPressedCallback](FragmentBackPressedCallback.md.html)        |Use getViewLifecycleOwner() as the LifecycleOwner instead of a Fragment instance.                                       |
+      |[FragmentLiveDataObserve](FragmentLiveDataObserve.md.html)                |Use getViewLifecycleOwner() as the LifecycleOwner instead of a Fragment instance when observing a LiveData object.      |
+      |[UseRequireInsteadOfGet](UseRequireInsteadOfGet.md.html)                  |Use the 'require_____()' API rather than 'get____()' API for more descriptive error messages when it's null.            |
+      |[UseGetLayoutInflater](UseGetLayoutInflater.md.html)                      |Use getLayoutInflater() to get the LayoutInflater instead of calling LayoutInflater.from(Context).                      |
+      |[DialogFragmentCallbacksDetector](DialogFragmentCallbacksDetector.md.html)|Use onCancel() and onDismiss() instead of calling setOnCancelListener() and setOnDismissListener() from onCreateDialog()|
+      |[UnsafeRepeatOnLifecycleDetector](UnsafeRepeatOnLifecycleDetector.md.html)|RepeatOnLifecycle should be used with viewLifecycleOwner in Fragments.                                                  |
+      |[DetachAndAttachSameFragment](DetachAndAttachSameFragment.md.html)        |Separate attach() and detach() into separate FragmentTransactions                                                       |
+
+      (##) Including
+
+      !!!
+         This is not a built-in check. To include it, add the below dependency
+         to your project.
+
+      ```
+      // build.gradle.kts
+      implementation("androidx.fragment:fragment:1.7.0-alpha01")
+
+      // build.gradle
+      implementation 'androidx.fragment:fragment:1.7.0-alpha01'
+
+      // build.gradle.kts with version catalogs:
+      implementation(libs.fragment)
+
+      # libs.versions.toml
+      [versions]
+      fragment = "1.7.0-alpha01"
+      [libraries]
+      fragment = {
+          module = "androidx.fragment:fragment",
+          version.ref = "fragment"
+      }
+      ```
+
+      1.7.0-alpha01 is the version this documentation was generated from;
+      there may be newer versions available.
+
+      (##) Changes
+
+      * 1.2.0: First version includes FragmentLiveDataObserve,
+        FragmentTagUsage.
+      * 1.2.2: Adds FragmentBackPressedCallback, UseRequireInsteadOfGet.
+      * 1.4.0: Adds DetachAndAttachSameFragment,
+        DialogFragmentCallbacksDetector, FragmentAddMenuProvider,
+        UnsafeRepeatOnLifecycleDetector, UseGetLayoutInflater.
+
+      (##) Version Compatibility
+
+      There are multiple older versions available of this library:
+
+      | Version            | Date     | Issues | Compatible | Compiled      | Requires |
+      |-------------------:|----------|-------:|------------|--------------:|---------:|
+      |       1.7.0-alpha01|2023/06/07|       9|         Yes|    8.0 and 8.1|8.0 and 8.1|
+      |               1.6.0|2023/06/07|       9|         Yes|    8.0 and 8.1|8.0 and 8.1|
+      |               1.5.7|2023/04/19|       9|         Yes|    7.3 and 7.4|       7.0|
+      |               1.5.6|2023/03/22|       9|         Yes|    7.3 and 7.4|       7.0|
+      |               1.5.5|2022/12/07|       9|         Yes|    7.3 and 7.4|       7.0|
+      |               1.5.4|2022/10/24|       9|         Yes|    7.3 and 7.4|       7.0|
+      |               1.5.3|2022/09/21|       9|         Yes|    7.3 and 7.4|       7.0|
+      |               1.5.2|2022/08/10|       9|         Yes|    7.3 and 7.4|       7.0|
+      |               1.5.1|2022/07/27|       9|         Yes|    7.3 and 7.4|       7.0|
+      |               1.5.0|2022/06/29|       9|      No[^1]|    7.3 and 7.4|       7.0|
+      |               1.4.1|2022/01/26|       9|      No[^1]|            7.1|       7.1|
+      |               1.4.0|2021/11/17|       9|      No[^1]|            7.1|       7.1|
+      |               1.3.6|2021/07/21|       4|         Yes|            4.1|       3.3|
+      |               1.3.5|2021/06/16|       4|         Yes|            4.1|       3.3|
+      |               1.3.4|2021/05/18|       4|         Yes|            4.1|       3.3|
+      |               1.3.3|2021/04/21|       4|         Yes|            4.1|       3.3|
+      |               1.3.2|2021/03/24|       4|         Yes|            4.1|       3.3|
+      |               1.3.1|2021/03/10|       4|         Yes|            4.1|       3.3|
+      |               1.3.0|2021/02/10|       4|         Yes|            4.1|       3.3|
+      |               1.2.5|2020/06/10|       4|         Yes|            3.6|       3.3|
+      |               1.2.4|2020/04/01|       4|         Yes|            3.6|       3.3|
+      |               1.2.3|2020/03/18|       4|         Yes|            3.6|       3.3|
+      |               1.2.2|2020/02/19|       4|         Yes|            3.6|       3.3|
+      |               1.2.1|2020/02/05|       2|         Yes|            3.6|       3.3|
+      |               1.2.0|2020/01/22|       2|         Yes|            3.6|       3.3|
+
+      Compatibility Problems:
+
+      [^1]: org.jetbrains.uast.kotlin.KotlinUClass: org.jetbrains.kotlin.psi.KtClassOrObject getKtClass() is not accessible
+
+      <!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://morgan3d.github.io/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
+      """
+        .trimIndent(),
+      text.replace("  \n", "\n") // intentional trailing spaces to force markdown new lines
+    )
+
+    val libraries = files.first { it.name == "libraries.md.html" }
+    assertEquals(
+      """
+      <meta charset="utf-8">
+      (#) Lint Issue Index
+
+      Order: [Alphabetical](index.md.html) | [By category](categories.md.html) | [By vendor](vendors.md.html) | [By severity](severity.md.html) | [By year](year.md.html) | Libraries
+
+      Android archive libraries which also contain bundled lint checks:
+
+      * [androidx.fragment:fragment](androidx_fragment_fragment.md.html) (9 checks)
+
+      <!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://morgan3d.github.io/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
+      """
+        .trimIndent(),
+      libraries
+        .readText()
+        .replace("  \n", "\n") // intentional trailing spaces to force markdown new lines
+    )
+  }
+
+  @Test
   fun testUsageUpToDate() {
     val root = TestUtils.getWorkspaceRoot().toFile() ?: findSourceTree()
     val relativePath = "tools/base/lint/docs/usage/flags.md.html"
@@ -1060,6 +1226,158 @@ class LintIssueDocGeneratorTest {
         "in the test run config) this test can automatically create/edit the files for you!***",
       newContents.dos2unix(),
       fileContents.dos2unix(),
+    )
+  }
+
+  @Test
+  fun testOutputParsing() {
+    // Checks the various output parsing utilities in LintIssueDocGenerator
+    val expected =
+      """
+        src/test/pkg/ConditionalApiTest.java:27: Warning: Unnecessary; SDK_INT is always >= 14 [ObsoleteSdkInt]
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/AlarmTest.java:9: Warning: Value will be forced up to 5000 as of Android 5.1; don't rely on this to be exact [ShortAlarm]
+                alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 50, 10, null); // ERROR
+                                                                         ~~
+        src/test/pkg/AlarmTest.java:9: Warning: Value will be forced up to 60000 as of Android 5.1; don't rely on this to be exact [ShortAlarm from mylibrary-1.0]
+                alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 50, 10, null); // ERROR
+                                                                             ~~
+        0 errors, 3 warnings
+        """
+        .trimIndent()
+
+    val incidents = getOutputIncidents(expected)
+    assertEquals(3, incidents.size)
+    assertEquals(
+      "" +
+        "[ReportedIncident(path=src/test/pkg/ConditionalApiTest.java, severity=Warning, lineNumber=27, column=12," +
+        " message=Unnecessary; SDK_INT is always >= 14, id=ObsoleteSdkInt," +
+        " sourceLine1=        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {," +
+        " sourceLine2=            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~), " +
+        "ReportedIncident(path=src/test/pkg/AlarmTest.java, severity=Warning, lineNumber=9, column=65," +
+        " message=Value will be forced up to 5000 as of Android 5.1; don't rely on this to be exact, id=ShortAlarm," +
+        " sourceLine1=        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 50, 10, null); // ERROR," +
+        " sourceLine2=                                                                 ~~), " +
+        "ReportedIncident(path=src/test/pkg/AlarmTest.java, severity=Warning, lineNumber=9, column=69," +
+        " message=Value will be forced up to 60000 as of Android 5.1; don't rely on this to be exact, id=ShortAlarm," +
+        " sourceLine1=        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 50, 10, null); // ERROR," +
+        " sourceLine2=                                                                     ~~)]",
+      incidents.toString()
+    )
+
+    val lines = getOutputLines(expected)
+    assertEquals(3, lines.size)
+    assertEquals(
+      "" +
+        "[Unnecessary; SDK_INT is always >= 14, " +
+        "Value will be forced up to 5000 as of Android 5.1; don't rely on this to be exact, " +
+        "Value will be forced up to 60000 as of Android 5.1; don't rely on this to be exact]",
+      lines.toString()
+    )
+
+    val map = computeResultMap("ShortAlarm", expected)
+    assertEquals(
+      "" +
+        "{" +
+        "src/test/pkg/AlarmTest.java={9=[Warning: Value will be forced up to 60000 as of Android 5.1; don't rely on this to be exact [ShortAlarm]," +
+        "         alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 50, 10, null); // ERROR," +
+        "                                                                      ~~]}" +
+        "}",
+      map.toString()
+    )
+  }
+
+  @Test
+  fun testOutputParsingMultiline() {
+    val expected =
+      """
+        src/test.kt:2: Error: This @Composable function has a modifier parameter but it doesn't have a default value.
+        See https://slackhq.github.io/compose-lints/rules/#modifiers-should-have-default-parameters for more information. [ComposeModifierWithoutDefault]
+        fun Something(modifier: Modifier) { }
+                      ~~~~~~~~~~~~~~~~~~
+        src/test.kt:4: Error: This @Composable function has a modifier parameter but it doesn't have a default value.
+        See https://slackhq.github.io/compose-lints/rules/#modifiers-should-have-default-parameters for more information. [ComposeModifierWithoutDefault]
+        fun Something(modifier: Modifier = Modifier, modifier2: Modifier) { }
+                                                     ~~~~~~~~~~~~~~~~~~~
+        2 errors, 0 warnings
+        """
+        .trimIndent()
+
+    val incidents = getOutputIncidents(expected)
+    assertEquals(2, incidents.size)
+    assertEquals(
+      "" +
+        "[ReportedIncident(path=src/test.kt, severity=Error, lineNumber=2, column=14," +
+        " message=This @Composable function has a modifier parameter but it doesn't have a default value.\n" +
+        "See https://slackhq.github.io/compose-lints/rules/#modifiers-should-have-default-parameters for more information.," +
+        " id=ComposeModifierWithoutDefault," +
+        " sourceLine1=fun Something(modifier: Modifier) { }," +
+        " sourceLine2=              ~~~~~~~~~~~~~~~~~~), " +
+        "ReportedIncident(path=src/test.kt, severity=Error, lineNumber=4, column=45," +
+        " message=This @Composable function has a modifier parameter but it doesn't have a default value.\n" +
+        "See https://slackhq.github.io/compose-lints/rules/#modifiers-should-have-default-parameters for more information.," +
+        " id=ComposeModifierWithoutDefault," +
+        " sourceLine1=fun Something(modifier: Modifier = Modifier, modifier2: Modifier) { }," +
+        " sourceLine2=                                             ~~~~~~~~~~~~~~~~~~~)]",
+      incidents.toString()
+    )
+
+    val lines = getOutputLines(expected)
+    assertEquals(2, lines.size)
+    assertEquals(
+      "" +
+        "[This @Composable function has a modifier parameter but it doesn't have a default value.\n" +
+        "See https://slackhq.github.io/compose-lints/rules/#modifiers-should-have-default-parameters for more information., " +
+        "This @Composable function has a modifier parameter but it doesn't have a default value.\n" +
+        "See https://slackhq.github.io/compose-lints/rules/#modifiers-should-have-default-parameters for more information.]",
+      lines.toString()
+    )
+
+    val map = computeResultMap("ComposeModifierWithoutDefault", expected)
+    assertEquals(
+      "" +
+        "{src/test.kt={" +
+        "2=[Error: This @Composable function has a modifier parameter but it doesn't have a default value.\n" +
+        "See https://slackhq.github.io/compose-lints/rules/#modifiers-should-have-default-parameters for more information. [ComposeModifierWithoutDefault]," +
+        " fun Something(modifier: Modifier) { }," +
+        "               ~~~~~~~~~~~~~~~~~~], " +
+        "4=[Error: This @Composable function has a modifier parameter but it doesn't have a default value.\n" +
+        "See https://slackhq.github.io/compose-lints/rules/#modifiers-should-have-default-parameters for more information. [ComposeModifierWithoutDefault]," +
+        " fun Something(modifier: Modifier = Modifier, modifier2: Modifier) { }," +
+        "                                              ~~~~~~~~~~~~~~~~~~~]}" +
+        "}",
+      map.toString()
+    )
+  }
+
+  @Test
+  fun testOutputWithBracketsInErrorMessage() {
+    val expected =
+      """
+      res/layout/layout2.xml:18: Warning: Duplicate id @+id/button1, defined or included multiple times in layout/layout2.xml: [layout/layout2.xml => layout/layout3.xml defines @+id/button1, layout/layout2.xml => layout/layout4.xml defines @+id/button1] [DuplicateIncludedIds]
+          <include
+          ^
+          res/layout/layout3.xml:8: Defined here, included via layout/layout2.xml => layout/layout3.xml defines @+id/button1
+              android:id="@+id/button1"
+              ~~~~~~~~~~~~~~~~~~~~~~~~~
+          res/layout/layout4.xml:8: Defined here, included via layout/layout2.xml => layout/layout4.xml defines @+id/button1
+              android:id="@+id/button1"
+              ~~~~~~~~~~~~~~~~~~~~~~~~~
+      0 errors, 1 warnings
+        """
+        .trimIndent()
+
+    val incidents = getOutputIncidents(expected)
+    assertEquals(1, incidents.size)
+    assertEquals(
+      "" +
+        "[ReportedIncident(path=res/layout/layout2.xml, severity=Warning, lineNumber=18, column=4," +
+        " message=Duplicate id @+id/button1, defined or included multiple times in layout/layout2.xml: [layout/layout2.xml => layout/layout3.xml defines @+id/button1, layout/layout2.xml => layout/layout4.xml defines @+id/button1]," +
+        " id=DuplicateIncludedIds," +
+        " sourceLine1=    <include," +
+        " sourceLine2=    ^)]",
+      incidents.toString()
     )
   }
 
