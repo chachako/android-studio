@@ -20,6 +20,7 @@ import static com.android.ide.common.repository.KnownVersionStabilityKt.getStabi
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.ide.common.gradle.Component;
+import com.android.ide.common.gradle.RichVersion;
 import com.android.ide.common.gradle.Version;
 import com.android.ide.common.gradle.VersionRange;
 import com.google.common.base.Joiner;
@@ -407,6 +408,17 @@ public final class GradleCoordinate {
         return new GradleCoordinate(groupId, artifactId, revisions, type);
     }
 
+    /**
+     * Parse a String into a GradleCoordinate with empty groupId and artifactId, null type,
+     * and the revision denoted by the String.
+     *
+     * @param revision a String identifying a specific software revision
+     *
+     * @deprecated use {@link Version.Companion#parse(String)} if dealing with single versions
+     *             of software artifacts, or {@link RichVersion.Companion#parse(String)} when
+     *             dealing with user-provided Gradle dependency specifiers.
+     */
+    @Deprecated
     public static GradleCoordinate parseVersionOnly(@NonNull String revision) {
         return new GradleCoordinate(NONE, NONE, parseRevisionNumber(revision), null);
     }
