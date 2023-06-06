@@ -241,6 +241,10 @@ class AgpVersionTest {
             assertThat(version.isAtLeast(2, 3, 0, "beta", 2, false)).isFalse()
             assertThat(version.isAtLeast(2, 3, 0, "rc", 1, false)).isFalse()
         }
+
+        AgpVersion.parse("7.1.1").let { version ->
+            assertThat(version.isAtLeast(7, 2, 0, "alpha", 1, true)).isFalse()
+        }
     }
 
     @Test
