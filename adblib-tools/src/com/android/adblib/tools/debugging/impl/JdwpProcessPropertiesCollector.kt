@@ -314,7 +314,6 @@ internal class JdwpProcessPropertiesCollector(
                 jvmFlags = heloChunk.jvmFlags,
                 isNativeDebuggable = heloChunk.isNativeDebuggable,
                 stage = heloChunk.stage,
-                isWaitingForDebugger = if (heloChunk.stage != null) heloChunk.stage == AppStage.DEBG else it.isWaitingForDebugger
             )
         }
     }
@@ -341,7 +340,7 @@ internal class JdwpProcessPropertiesCollector(
             DdmsWaitChunk.parse(chunkCopy, workBuffer)
         }
         logger.debug { "`WAIT` command: $waitChunk" }
-        collectState.propertiesFlow.update { it.copy(isWaitingForDebugger = true) }
+        collectState.propertiesFlow.update { it.copy(waitCommandReceived = true) }
     }
 
     private suspend fun processApnmCommand(
@@ -374,7 +373,6 @@ internal class JdwpProcessPropertiesCollector(
         collectState.propertiesFlow.update {
             it.copy(
                 stage = stagChunk.stage,
-                isWaitingForDebugger = stagChunk.stage == AppStage.DEBG
             )
         }
     }

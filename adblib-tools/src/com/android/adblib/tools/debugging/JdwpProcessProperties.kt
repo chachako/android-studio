@@ -77,10 +77,9 @@ data class JdwpProcessProperties(
     val isNativeDebuggable: Boolean = false,
 
     /**
-     * `true` if the process is waiting for a debugger to attach.
-     * `false` if we don't know or if a debugger is already attached.
+     * `true` if the `WAIT` command was received.
      */
-    var isWaitingForDebugger: Boolean = false,
+    var waitCommandReceived: Boolean = false,
 
     /**
      * The process boot stage if available
@@ -116,7 +115,14 @@ data class JdwpProcessProperties(
      * from the Android VM if there is already a JDWP session active for that process.
      */
     val exception: Throwable? = null,
-)
+) {
+    /**
+     * `true` if the process is waiting for a debugger to attach.
+     * `false` if we don't know or if a debugger is already attached.
+     */
+    val isWaitingForDebugger: Boolean
+        get() = if (stage != null) stage == AppStage.DEBG else waitCommandReceived
+}
 
 /**
  * Status of JDWP Session proxy external Java debuggers can use to connect to a
