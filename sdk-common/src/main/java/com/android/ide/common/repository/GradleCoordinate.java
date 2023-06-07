@@ -672,7 +672,11 @@ public final class GradleCoordinate {
     /**
      * Returns true if this fully-specified coordinate matches the given (optionally including +)
      * coordinate.
+     *
+     * @deprecated compare entities using specialized classes and operators from the {@link
+     *     com.android.ide.common.gradle} package.
      */
+    @Deprecated
     public boolean matches(@NonNull GradleCoordinate pattern) {
         if (!isSameArtifact(pattern)) {
             return false;
