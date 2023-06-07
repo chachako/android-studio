@@ -27,10 +27,13 @@ import com.android.sdklib.AndroidVersion
 import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import com.android.sdklib.devices.Abi
 import com.android.sdklib.internal.avd.AvdInfo
+import com.android.sdklib.internal.avd.AvdInfo.AvdStatus
 import com.android.sdklib.internal.avd.AvdManager
 import com.google.common.truth.Truth.assertThat
 import java.nio.file.Path
 import java.time.Duration
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import org.junit.After
 import org.junit.Test
@@ -59,7 +62,8 @@ class LocalEmulatorProvisionerPluginTest {
   fun makeAvdInfo(
     index: Int,
     androidVersion: AndroidVersion = API_LEVEL,
-    hasPlayStore: Boolean = true
+    hasPlayStore: Boolean = true,
+    avdStatus: AvdStatus = AvdStatus.OK,
   ): AvdInfo {
     val basePath = Path.of("/tmp/fake_avds/$index")
     return AvdInfo(
@@ -75,7 +79,7 @@ class LocalEmulatorProvisionerPluginTest {
         AvdManager.AVD_INI_DISPLAY_NAME to "Fake Device $index",
         AvdManager.AVD_INI_PLAYSTORE_ENABLED to hasPlayStore.toString(),
       ),
-      AvdInfo.AvdStatus.OK
+      avdStatus
     )
   }
 
@@ -249,6 +253,25 @@ class LocalEmulatorProvisionerPluginTest {
     assertThat(LocalEmulatorProperties.build(api29WithPlay).wearPairingId).isNull()
     assertThat(LocalEmulatorProperties.build(api31NoPlay).wearPairingId).isNull()
     assertThat(LocalEmulatorProperties.build(api30WithPlay).wearPairingId).isNotNull()
+  }
+
+  @Test
+  fun isActivatable() = runBlockingWithTimeout {
+    avdManager.createAvd()
+
+    yieldUntil { provisioner.devices.value.size == 1 }
+
+    val handle = provisioner.devices.value[0]
+    val activationAction = handle.activationAction!!
+
+    activationAction.presentation.takeWhile { !it.enabled }.collect()
+
+    avdManager.avds[0] = makeAvdInfo(1, avdStatus = AvdStatus.ERROR_IMAGE_MISSING)
+
+    // The action should become disabled.
+    // (Note that yieldUntil { presentation.value.enabled == false } doesn't work: the
+    // WhileSubscribed flow doesn't change from its default value unless it is collected.)
+    activationAction.presentation.takeWhile { it.enabled }.collect()
   }
 
   private fun checkProperties(properties: LocalEmulatorProperties) {

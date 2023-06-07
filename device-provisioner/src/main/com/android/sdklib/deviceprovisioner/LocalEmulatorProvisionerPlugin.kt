@@ -43,13 +43,13 @@ import java.io.IOException
 import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.job
@@ -250,12 +250,14 @@ class LocalEmulatorProvisionerPlugin(
   ) : DeviceHandle {
     override val stateFlow = MutableStateFlow(initialState)
 
-    private val _avdInfo = AtomicReference(initialAvdInfo)
+    private val avdInfoFlow = MutableStateFlow(initialAvdInfo)
 
     /** AvdInfo can be updated when the device is edited on-disk and rescanned. */
     var avdInfo: AvdInfo
-      get() = _avdInfo.get()
-      set(value) = _avdInfo.set(value)
+      get() = avdInfoFlow.value
+      set(value) {
+        avdInfoFlow.value = value
+      }
 
     /** The emulator console is present when the device is connected. */
     val emulatorConsole: EmulatorConsole?
@@ -263,7 +265,7 @@ class LocalEmulatorProvisionerPlugin(
 
     override val activationAction =
       object : ActivationAction {
-        override val presentation = defaultPresentation.fromContext().enabledIfStopped()
+        override val presentation = defaultPresentation.fromContext().enabledIfActivatable()
 
         override suspend fun activate() {
           activate(coldBoot = false)
@@ -272,7 +274,7 @@ class LocalEmulatorProvisionerPlugin(
 
     override val coldBootAction =
       object : ColdBootAction {
-        override val presentation = defaultPresentation.fromContext().enabledIfStopped()
+        override val presentation = defaultPresentation.fromContext().enabledIfActivatable()
 
         override suspend fun activate() {
           activate(coldBoot = true)
@@ -404,9 +406,15 @@ class LocalEmulatorProvisionerPlugin(
         .map { this.copy(enabled = condition(it)) }
         .stateIn(scope, SharingStarted.WhileSubscribed(), this)
 
-    private fun DeviceAction.Presentation.enabledIfStopped() = enabledIf {
-      it is Disconnected && !it.isTransitioning
-    }
+    private fun DeviceState.isStopped() = this is Disconnected && !this.isTransitioning
+
+    private fun DeviceAction.Presentation.enabledIfStopped() = enabledIf { it.isStopped() }
+
+    private fun DeviceAction.Presentation.enabledIfActivatable() =
+      combine(stateFlow, avdInfoFlow) { state, avdInfo ->
+          this.copy(enabled = state.isStopped() && avdInfo.status == AvdStatus.OK)
+        }
+        .stateIn(scope, SharingStarted.WhileSubscribed(), this)
   }
 }
 
