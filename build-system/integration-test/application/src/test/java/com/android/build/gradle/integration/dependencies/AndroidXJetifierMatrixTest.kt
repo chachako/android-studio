@@ -195,37 +195,4 @@ class AndroidXJetifierMatrixTest {
         )
     }
 
-    @Test
-    fun `AndroidX=true, Jetifier=false, support library dependencies present, expect sync issue`() {
-        addSupportLibDependencies()
-
-        val model = project.model()
-                .with(BooleanOption.USE_ANDROID_X, true)
-                .with(BooleanOption.ENABLE_JETIFIER, false)
-                .ignoreSyncIssues().fetchAndroidProjects()
-        expectSyncIssue(
-            model,
-            IssueReporter.Type.ANDROID_X_PROPERTY_NOT_ENABLED,
-            IssueReporter.Severity.WARNING,
-            message = "Your project has set `android.useAndroidX=true`, but configuration `:debugRuntimeClasspath` still contains legacy support libraries, which may cause runtime issues.\n" +
-                    "This behavior will not be allowed in Android Gradle plugin 8.0.\n" +
-                    "Please use only AndroidX dependencies or set `android.enableJetifier=true` in the `gradle.properties` file to migrate your project to AndroidX (see https://developer.android.com/jetpack/androidx/migrate for more info).\n" +
-                    "The following legacy support libraries are detected:\n" +
-                    ":debugRuntimeClasspath -> depends-on-support-lib:lib1:1.0 -> com.android.support:support-annotations:$SUPPORT_LIB_VERSION\n" +
-                    ":debugRuntimeClasspath -> depends-on-support-lib:lib2:1.0 -> com.android.support:collections:$SUPPORT_LIB_VERSION",
-            data = ":debugRuntimeClasspath -> depends-on-support-lib:lib1:1.0 -> com.android.support:support-annotations:$SUPPORT_LIB_VERSION," +
-                    ":debugRuntimeClasspath -> depends-on-support-lib:lib2:1.0 -> com.android.support:collections:$SUPPORT_LIB_VERSION"
-        )
-    }
-
-    @Test
-    fun `AndroidX=true, Jetifier=false, support library dependencies not present, expect no issues`() {
-        addAndroidXDependencies()
-
-        val model = project.model()
-                .with(BooleanOption.USE_ANDROID_X, true)
-                .with(BooleanOption.ENABLE_JETIFIER, false)
-                .ignoreSyncIssues().fetchAndroidProjects()
-        assertThat(model.onlyModelSyncIssues).isEmpty()
-    }
 }

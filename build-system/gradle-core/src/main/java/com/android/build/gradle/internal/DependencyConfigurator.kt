@@ -21,7 +21,6 @@ import com.android.build.api.attributes.AgpVersionAttr
 import com.android.build.api.attributes.BuildTypeAttr
 import com.android.build.api.attributes.BuildTypeAttr.Companion.ATTRIBUTE
 import com.android.build.api.attributes.ProductFlavorAttr
-import com.android.build.gradle.AndroidConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
@@ -57,7 +56,6 @@ import com.android.build.gradle.internal.dependency.MultiVariantProductFlavorRul
 import com.android.build.gradle.internal.dependency.PlatformAttrTransform
 import com.android.build.gradle.internal.dependency.RecalculateStackFramesTransform.Companion.registerGlobalRecalculateStackFramesTransform
 import com.android.build.gradle.internal.dependency.RecalculateStackFramesTransform.Companion.registerRecalculateStackFramesTransformForComponent
-import com.android.build.gradle.internal.dependency.SingleVariantBuildTypeRule
 import com.android.build.gradle.internal.dependency.VersionedCodeShrinker
 import com.android.build.gradle.internal.dependency.getDexingArtifactConfigurations
 import com.android.build.gradle.internal.dependency.registerDexingOutputSplitTransform
@@ -101,8 +99,6 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.artifacts.transform.TransformAction
 import org.gradle.api.artifacts.transform.TransformSpec
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
-import org.gradle.api.attributes.Attribute
-import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.attributes.AttributesSchema
 import org.gradle.api.attributes.Usage
 import org.gradle.api.internal.artifacts.ArtifactAttributes
@@ -133,27 +129,14 @@ class DependencyConfigurator(
         val useAndroidX = projectServices.projectOptions.get(BooleanOption.USE_ANDROID_X)
         val enableJetifier = projectServices.projectOptions.get(BooleanOption.ENABLE_JETIFIER)
 
-        when {
-            !useAndroidX && !enableJetifier -> {
-                project.configurations.all { configuration ->
-                    if (configuration.isCanBeResolved) {
-                        configuration.incoming.afterResolve(
-                                AndroidXDependencyCheck.AndroidXDisabledJetifierDisabled(
-                                        project, configuration.name, projectServices.issueReporter
-                                )
+        if (!useAndroidX && !enableJetifier) {
+            project.configurations.all { configuration ->
+                if (configuration.isCanBeResolved) {
+                    configuration.incoming.afterResolve(
+                        AndroidXDependencyCheck.AndroidXDisabledJetifierDisabled(
+                            project, configuration.name, projectServices.issueReporter
                         )
-                    }
-                }
-            }
-            useAndroidX && !enableJetifier -> {
-                project.configurations.all { configuration ->
-                    if (configuration.isCanBeResolved) {
-                        configuration.incoming.afterResolve(
-                                AndroidXDependencyCheck.AndroidXEnabledJetifierDisabled(
-                                        project, configuration.name, projectServices.issueReporter
-                                )
-                        )
-                    }
+                    )
                 }
             }
         }
