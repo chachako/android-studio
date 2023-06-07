@@ -229,8 +229,7 @@ public final class FolderConfiguration implements Comparable<FolderConfiguration
             // TODO: Perform case normalization later (on a per qualifier basis)
             seg = seg.toLowerCase(Locale.US); // no-op if string is already in lower case
 
-            while (qualifierIndex < INDEX_LOCALE &&
-                    !DEFAULT_QUALIFIERS[qualifierIndex].checkAndSet(seg, config)) {
+            while (qualifierIndex < INDEX_LOCALE && !checkQualifier(config, qualifierIndex, seg)) {
                 qualifierIndex++;
             }
 
@@ -295,8 +294,8 @@ public final class FolderConfiguration implements Comparable<FolderConfiguration
 
             seg = seg.toLowerCase(Locale.US); // no-op if string is already in lower case
 
-            while (qualifierIndex < qualifierCount &&
-                    !DEFAULT_QUALIFIERS[qualifierIndex].checkAndSet(seg, config)) {
+            while (qualifierIndex < qualifierCount
+                    && !checkQualifier(config, qualifierIndex, seg)) {
                 qualifierIndex++;
             }
 

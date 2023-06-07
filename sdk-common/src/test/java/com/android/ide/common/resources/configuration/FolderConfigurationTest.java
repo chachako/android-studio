@@ -24,11 +24,13 @@ import com.android.ide.common.resources.ResourceFile;
 import com.android.ide.common.resources.ResourceMergerItem;
 import com.android.resources.Density;
 import com.android.resources.GrammaticalGender;
+import com.android.resources.HighDynamicRange;
 import com.android.resources.ResourceFolderType;
 import com.android.resources.ResourceType;
 import com.android.resources.ScreenOrientation;
 import com.android.resources.ScreenRound;
 import com.android.resources.UiMode;
+import com.android.resources.WideGamutColor;
 import com.google.common.base.Joiner;
 import java.io.File;
 import java.util.ArrayList;
@@ -39,6 +41,7 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 public class FolderConfigurationTest {
+
     /*
      * Test createDefault creates all the qualifiers.
      */
@@ -288,68 +291,38 @@ public class FolderConfigurationTest {
         assertThat(config).named("FoldeR Config for 'values-en-round'").isNotNull();
         assertThat(config).hasScreenRound(ScreenRound.ROUND);
 
-        runConfigMatchTest("en-rgb-Round-Port-HDPI-notouch-12key", 4,
+        runConfigMatchTest(
+                "en-rgb-Round-Port-HDPI-notouch-12key",
+                4,
                 "",
                 "en",
                 "fr-rCa",
                 "en-notround-hdpi",
                 "en-notouch");
 
-        runConfigMatchTest("en-rgb-Round-Port-HDPI-notouch-12key", 2,
-                "",
-                "en",
-                "en-round-hdpi",
-                "port-12key");
+        runConfigMatchTest(
+                "en-rgb-Round-Port-HDPI-notouch-12key", 2, "", "en", "en-round-hdpi", "port-12key");
     }
 
     @Test
     public void densityQualifier() {
         // test find correct density
-        runConfigMatchTest("hdpi", 2,
-                "ldpi",
-                "mdpi",
-                "hdpi",
-                "xhdpi");
+        runConfigMatchTest("hdpi", 2, "ldpi", "mdpi", "hdpi", "xhdpi");
 
         // test mdpi matches no-density
-        runConfigMatchTest("mdpi", 0,
-                "",
-                "ldpi",
-                "hdpi");
+        runConfigMatchTest("mdpi", 0, "", "ldpi", "hdpi");
 
         // test, if there is no no-density, that we match the higher dpi
-        runConfigMatchTest("mdpi", 1,
-                "ldpi",
-                "hdpi");
+        runConfigMatchTest("mdpi", 1, "ldpi", "hdpi");
 
         // mdpi is better than no-density
-        runConfigMatchTest("mdpi", 1,
-                "",
-                "mdpi",
-                "hdpi");
-        runConfigMatchTest("xhdpi", 2,
-                "ldpi",
-                "",
-                "mdpi");
+        runConfigMatchTest("mdpi", 1, "", "mdpi", "hdpi");
+        runConfigMatchTest("xhdpi", 2, "ldpi", "", "mdpi");
 
         // scale down better than scale up
-        runConfigMatchTest("xhdpi", 4,
-                "",
-                "ldpi",
-                "mdpi",
-                "hdpi",
-                "xxxhdpi");
-        runConfigMatchTest("hdpi", 3,
-                "",
-                "ldpi",
-                "mdpi",
-                "xhdpi",
-                "xxhdpi");
-        runConfigMatchTest("mdpi", 0,
-                "ldpi",
-                "400dpi",
-                "xxhdpi",
-                "xxxhdpi");
+        runConfigMatchTest("xhdpi", 4, "", "ldpi", "mdpi", "hdpi", "xxxhdpi");
+        runConfigMatchTest("hdpi", 3, "", "ldpi", "mdpi", "xhdpi", "xxhdpi");
+        runConfigMatchTest("mdpi", 0, "ldpi", "400dpi", "xxhdpi", "xxxhdpi");
     }
 
     @Test
@@ -378,6 +351,7 @@ public class FolderConfigurationTest {
     // --- helper methods
 
     private static final class MockConfigurable implements Configurable {
+
         private final FolderConfiguration mConfig;
 
         MockConfigurable(String config) {
@@ -440,15 +414,16 @@ public class FolderConfigurationTest {
         // Test case from
         // http://developer.android.com/guide/topics/resources/providing-resources.html#BestMatch
         List<FolderConfiguration> configs = new ArrayList<>();
-        for (String name : new String[] {
-                "drawable",
-                "drawable-en",
-                "drawable-fr-rCA",
-                "drawable-en-port",
-                "drawable-en-notouch-12key",
-                "drawable-port-ldpi",
-                "drawable-port-notouch-12key"
-         }) {
+        for (String name :
+                new String[] {
+                    "drawable",
+                    "drawable-en",
+                    "drawable-fr-rCA",
+                    "drawable-en-port",
+                    "drawable-en-notouch-12key",
+                    "drawable-port-ldpi",
+                    "drawable-port-notouch-12key"
+                }) {
             FolderConfiguration config = FolderConfiguration.getConfigForFolder(name);
             assertThat(config).named(name).isNotNull();
             configs.add(config);
@@ -542,7 +517,8 @@ public class FolderConfigurationTest {
                         return "itemBlank";
                     }
                 };
-        ResourceFile sourceBlank = ResourceFile.createSingle(new File("sourceBlank"), itemBlank, "");
+        ResourceFile sourceBlank =
+                ResourceFile.createSingle(new File("sourceBlank"), itemBlank, "");
         itemBlank.setSourceFile(sourceBlank);
         FolderConfiguration configBlank = itemBlank.getConfiguration();
 
@@ -564,7 +540,8 @@ public class FolderConfigurationTest {
                         return "itemBcpEn";
                     }
                 };
-        ResourceFile sourceBcpEn = ResourceFile.createSingle(new File("sourceBcpEn"), itemBlank, "b+en");
+        ResourceFile sourceBcpEn =
+                ResourceFile.createSingle(new File("sourceBcpEn"), itemBlank, "b+en");
         itemBcpEn.setSourceFile(sourceBcpEn);
         FolderConfiguration configBcpEn = itemBcpEn.getConfiguration();
 
@@ -742,5 +719,37 @@ public class FolderConfigurationTest {
 
         assertThat(defaultConfig.getQualifierString())
                 .isEqualTo("feminine-sw-1dp-w-1dp-h-1dp-land-mdpi--1x-1-v34");
+    }
+
+    @Test
+    public void wideGamutIsAfterHDROnMostDevices() {
+        // Most devices return HDR before WideGamut.
+        // b/78136980 & b/78136980
+
+        // Example: this string is taken from the output of "am get-config" (API 26 system image)
+        FolderConfiguration config =
+                FolderConfiguration.getConfigForQualifierString(
+                        "mcc310-mnc260-en-rUS-ldltr-sw392dp-w392dp-h778dp-normal-long-notround-lowdr-nowidecg-port-notnight-440dpi-finger-keysexposed-qwerty-navhidden-nonav-v26");
+        assertThat(config).isNotNull();
+        assertThat(config.getWideColorGamutQualifier())
+                .isEqualTo(new WideGamutColorQualifier(WideGamutColor.NOWIDECG));
+        assertThat(config.getHighDynamicRangeQualifier())
+                .isEqualTo(new HighDynamicRangeQualifier(HighDynamicRange.LOWDR));
+        assertThat(config.getVersionQualifier()).isEqualTo(VersionQualifier.getQualifier("v26"));
+    }
+
+    @Test
+    public void wideGamutBeforeHDR() {
+        // Most devices return HDR before WideGamut.
+        // Make sure we can parse the opposite order as well:
+        FolderConfiguration config =
+                FolderConfiguration.getConfigForQualifierString(
+                        "mcc310-mnc260-en-rUS-ldltr-sw392dp-w392dp-h778dp-normal-long-notround-nowidecg-lowdr-port-notnight-440dpi-finger-keysexposed-qwerty-navhidden-nonav-v26");
+        assertThat(config).isNotNull();
+        assertThat(config.getWideColorGamutQualifier())
+                .isEqualTo(new WideGamutColorQualifier(WideGamutColor.NOWIDECG));
+        assertThat(config.getHighDynamicRangeQualifier())
+                .isEqualTo(new HighDynamicRangeQualifier(HighDynamicRange.LOWDR));
+        assertThat(config.getVersionQualifier()).isEqualTo(VersionQualifier.getQualifier("v26"));
     }
 }
