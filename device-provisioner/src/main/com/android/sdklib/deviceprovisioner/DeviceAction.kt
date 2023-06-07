@@ -56,6 +56,7 @@ interface DeviceAction {
     val editTemplateAction: Presentation
     val reservationAction: Presentation
     val templateActivationAction: Presentation
+    val repairDeviceAction: Presentation
   }
 }
 
@@ -192,6 +193,14 @@ interface TemplateActivationAction : DeviceAction {
   val durationUsed: Boolean
 
   override fun DefaultPresentation.fromContext() = templateActivationAction
+}
+
+interface RepairDeviceAction : DeviceAction {
+
+  /** Attempts to repair the error. If the error is repaired, the DeviceState should change. */
+  suspend fun repair()
+
+  override fun DefaultPresentation.fromContext() = repairDeviceAction
 }
 
 /**

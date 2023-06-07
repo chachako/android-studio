@@ -49,6 +49,12 @@ sealed interface DeviceState {
    */
   val status: String
 
+  /**
+   * If present, there is a problem with the device. Some operations may be unavailable. The
+   * [RepairDeviceAction] may be able to resolve it.
+   */
+  val error: DeviceError?
+
   fun isOnline(): Boolean =
     connectedDevice?.deviceInfo?.deviceState == com.android.adblib.DeviceState.ONLINE
 
@@ -57,6 +63,7 @@ sealed interface DeviceState {
     override val isTransitioning: Boolean,
     override val status: String,
     override val reservation: Reservation? = null,
+    override val error: DeviceError? = null,
   ) : DeviceState {
     constructor(properties: DeviceProperties) : this(properties, false, "Offline")
 
@@ -65,7 +72,8 @@ sealed interface DeviceState {
       isTransitioning: Boolean = this.isTransitioning,
       status: String = this.status,
       reservation: Reservation? = this.reservation,
-    ) = Disconnected(properties, isTransitioning, status, reservation)
+      error: DeviceError? = this.error,
+    ) = Disconnected(properties, isTransitioning, status, reservation, error)
   }
 
   /**
@@ -78,6 +86,7 @@ sealed interface DeviceState {
     override val status: String,
     override val connectedDevice: ConnectedDevice,
     override val reservation: Reservation? = null,
+    override val error: DeviceError? = null,
   ) : DeviceState {
     constructor(
       properties: DeviceProperties,
@@ -91,8 +100,15 @@ sealed interface DeviceState {
       status: String = this.status,
       connectedDevice: ConnectedDevice = this.connectedDevice,
       reservation: Reservation? = this.reservation,
-    ) = Connected(properties, isTransitioning, status, connectedDevice, reservation)
+      error: DeviceError? = this.error,
+    ) = Connected(properties, isTransitioning, status, connectedDevice, reservation, error)
   }
+}
+
+/** A problem with a device. */
+interface DeviceError {
+  /** User-visible representation of the device error. */
+  val message: String
 }
 
 inline fun <R> DeviceState.ifOnline(block: (ConnectedDevice) -> R): R? =

@@ -90,11 +90,14 @@ class LocalEmulatorProvisionerPluginTest {
 
     override suspend fun rescanAvds(): List<AvdInfo> = synchronized(avds) { avds.toList() }
 
-    override suspend fun createAvd(): Boolean =
-      synchronized(avds) {
-        avds += makeAvdInfo(avdIndex++)
-        return true
-      }
+    override suspend fun createAvd(): Boolean {
+      createAvd(makeAvdInfo(avdIndex++))
+      return true
+    }
+
+    fun createAvd(avdInfo: AvdInfo) {
+      synchronized(avds) { avds += avdInfo }
+    }
 
     override suspend fun editAvd(avdInfo: AvdInfo): Boolean =
       synchronized(avds) {
@@ -151,6 +154,18 @@ class LocalEmulatorProvisionerPluginTest {
 
     override suspend fun deleteAvd(avdInfo: AvdInfo) {
       synchronized(avds) { avds.remove(avdInfo) }
+    }
+
+    override suspend fun downloadAvdSystemImage(avdInfo: AvdInfo) {
+      avds[avds.indexOf(avdInfo)] =
+        AvdInfo(
+          avdInfo.name,
+          avdInfo.iniFile,
+          avdInfo.dataFolderPath,
+          avdInfo.systemImage,
+          avdInfo.properties,
+          AvdStatus.OK
+        )
     }
 
     fun close() {
@@ -272,6 +287,25 @@ class LocalEmulatorProvisionerPluginTest {
     // (Note that yieldUntil { presentation.value.enabled == false } doesn't work: the
     // WhileSubscribed flow doesn't change from its default value unless it is collected.)
     activationAction.presentation.takeWhile { it.enabled }.collect()
+  }
+
+  @Test
+  fun repair() = runBlockingWithTimeout {
+    avdManager.createAvd(makeAvdInfo(1, avdStatus = AvdStatus.ERROR_IMAGE_MISSING))
+
+    yieldUntil { provisioner.devices.value.size == 1 }
+
+    val handle = provisioner.devices.value[0]
+    val activationAction = handle.activationAction!!
+    val repairAction = handle.repairDeviceAction!!
+
+    repairAction.presentation.takeWhile { !it.enabled }.collect()
+
+    repairAction.repair()
+
+    // Should become possible to activate the device
+    activationAction.presentation.takeWhile { !it.enabled }.collect()
+    repairAction.presentation.takeWhile { it.enabled }.collect()
   }
 
   private fun checkProperties(properties: LocalEmulatorProperties) {

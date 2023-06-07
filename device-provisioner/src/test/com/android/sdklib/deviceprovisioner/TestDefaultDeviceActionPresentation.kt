@@ -30,4 +30,5 @@ object TestDefaultDeviceActionPresentation : DeviceAction.DefaultPresentation {
   override val editTemplateAction = DeviceAction.Presentation("Edit", icon, true)
   override val reservationAction = DeviceAction.Presentation("Start", icon, true)
   override val templateActivationAction = DeviceAction.Presentation("Start", icon, true)
+  override val repairDeviceAction = DeviceAction.Presentation("Repair", icon, true)
 }

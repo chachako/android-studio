@@ -87,4 +87,8 @@ interface DeviceHandle {
 
   val deleteAction: DeleteAction?
     get() = null
+
+  /** Attempts to repair a problem with the device. */
+  val repairDeviceAction: RepairDeviceAction?
+    get() = null
 }
