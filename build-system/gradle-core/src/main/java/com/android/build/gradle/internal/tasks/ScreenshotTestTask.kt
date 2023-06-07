@@ -32,6 +32,7 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestFramework
 import org.gradle.api.plugins.JavaBasePlugin
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFiles
@@ -42,6 +43,8 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.testing.Test
 import java.io.File
+import org.gradle.api.tasks.options.Option
+import org.gradle.api.tasks.Input
 
 /**
  * Runs screenshot tests of a variant.
@@ -81,10 +84,19 @@ abstract class ScreenshotTestTask : Test(), VariantAwareTask {
     @get:OutputDirectory
     abstract val imageOutputDir: DirectoryProperty
 
+    @get:Input
+    abstract val recordGolden: Property<Boolean>
+
+    @Option(
+            option = "record-golden",
+            description = "If this option is present, record snapshots and update golden images instead of running an image differ against existing golden images.")
+    fun setRecordGoldenOption(value: Boolean) = recordGolden.set(value)
+
     @TaskAction
     override fun executeTests() {
         setTestEngineParam("previewJar", screenshotCliJar.singleFile.absolutePath)
-
+        val recordGoldenValue = if (recordGolden.get()) "--record-golden" else ""
+        setTestEngineParam("record.golden", recordGoldenValue)
         super.executeTests()
     }
 
@@ -104,6 +116,8 @@ abstract class ScreenshotTestTask : Test(), VariantAwareTask {
         override val type = ScreenshotTestTask::class.java
 
         override fun configure(task: ScreenshotTestTask) {
+            task.recordGolden.convention(false)
+
             val testedConfig = (creationConfig as? AndroidTestCreationConfig)?.mainVariant
             task.variantName = testedConfig?.name ?: creationConfig.name
 

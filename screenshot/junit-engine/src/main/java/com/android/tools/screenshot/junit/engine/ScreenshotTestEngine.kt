@@ -37,8 +37,7 @@ class ScreenshotTestEngine : TestEngine {
         val descriptor = request.rootTestDescriptor
         val listener = request.engineExecutionListener
 
-        val process = ProcessBuilder(
-                getParam("java"),
+        val commands = mutableListOf(getParam("java"),
                 "-cp", getParam("previewJar"), "com.android.screenshot.cli.Main",
                 "--client-name", getParam("client.name"),
                 "--client-version", getParam("client.version"),
@@ -51,8 +50,12 @@ class ScreenshotTestEngine : TestEngine {
                 "--root-lint-model", getParam("lint.model"),
                 "--output-location", getParam("output.location") + "/",
                 "--golden-location", getParam("output.location") + "/",
-                "--file-path", getParam("sources").split(",").first(),
-                "--record-golden",
+                "--file-path", getParam("sources").split(",").first())
+        if (getParam("record.golden").isNotEmpty()) {
+          commands.add(getParam("record.golden"))
+        }
+        val process = ProcessBuilder(
+            commands
         ).apply {
             environment().remove("TEST_WORKSPACE")
             redirectErrorStream(true)

@@ -140,6 +140,7 @@ class TaskMethodModifiersAndAnnotationsTest {
                 "com.android.build.gradle.internal.tasks.NdkTask::setNdkConfig",
                 "com.android.build.gradle.internal.tasks.NonIncrementalGlobalTask::setVariantName",
                 "com.android.build.gradle.internal.tasks.PackageRenderscriptTask::setVariantName",
+                "com.android.build.gradle.internal.tasks.ScreenshotTestTask::setRecordGoldenOption",
                 "com.android.build.gradle.internal.tasks.ProcessJavaResTask::setVariantName",
                 "com.android.build.gradle.internal.tasks.ScreenshotTestTask::setVariantName",
                 "com.android.build.gradle.internal.tasks.SigningReportTask::setComponents",
