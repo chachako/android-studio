@@ -17,9 +17,15 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.gradle.internal.fixtures.FakeGradleDirectory
+import com.android.build.gradle.internal.testing.ConnectedDevice
 import com.android.builder.testing.api.DeviceConnector
 import com.android.builder.testing.api.DeviceProvider
+import com.android.ddmlib.AndroidDebugBridge
+import com.android.ddmlib.internal.FakeAdbTestRule
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.services.PackageManager
 import com.android.sdklib.AndroidVersion
+import com.android.utils.StdLogger
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import org.gradle.api.logging.Logger
@@ -28,6 +34,8 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import org.mockito.ArgumentMatchers
 import org.mockito.Mock
 import org.mockito.Mockito
@@ -35,8 +43,16 @@ import org.mockito.internal.verification.VerificationModeFactory.times
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import java.io.File
+import java.util.concurrent.TimeUnit
 
-class InstallVariantTaskTest {
+@RunWith(Parameterized::class)
+class InstallVariantTaskTest(deviceVersion: String) {
+
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "deviceVersion_{0}")
+        fun parameters() = listOf("19", "21")
+    }
 
     @JvmField
     @Rule
@@ -47,32 +63,28 @@ class InstallVariantTaskTest {
     var temporaryFolder = TemporaryFolder()
 
     @Mock
-    lateinit var kitkatDevice: DeviceConnector
-
-    @Mock
-    lateinit var lollipopDevice: DeviceConnector
-
-    @Mock
     lateinit var logger: Logger
 
+    @get:Rule
+    val fakeAdb = FakeAdbTestRule(deviceVersion)
+
+    private lateinit var deviceConnector: DeviceConnector
+    private lateinit var deviceState: DeviceState
+    private lateinit var mainOutputFileApk: File
+
     @Before
-    fun setUpMocks() {
-        Mockito.`when`(lollipopDevice.apiLevel).thenReturn(21)
-        Mockito.`when`(lollipopDevice.name).thenReturn("lollipop_device")
-        Mockito.`when`(kitkatDevice.apiLevel).thenReturn(19)
-        Mockito.`when`(kitkatDevice.name).thenReturn("kitkat_device")
+    fun setUp() {
+        deviceState = fakeAdb.connectAndWaitForDevice()
+        deviceState.setActivityManager(PackageManager())
+        val device = AndroidDebugBridge.getBridge()!!.devices.single()
+        deviceConnector = ConnectedDevice(
+            device, StdLogger(StdLogger.Level.VERBOSE),  10000, TimeUnit.MILLISECONDS)
     }
 
     @Test
     @Throws(Exception::class)
-    fun checkPreLSingleApkInstall() {
-        checkSingleApk(kitkatDevice)
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun checkPostKSingleApkInstall() {
-        checkSingleApk(lollipopDevice)
+    fun checkSingleApkInstall() {
+        checkSingleApk(deviceConnector)
     }
 
     @Test
@@ -84,7 +96,7 @@ class InstallVariantTaskTest {
         InstallVariantTask.install(
             "project",
             "variant",
-            FakeDeviceProvider(ImmutableList.of(lollipopDevice)),
+            FakeDeviceProvider(ImmutableList.of(deviceConnector)),
             AndroidVersion(1),
             FakeGradleDirectory(temporaryFolder.root),
             ImmutableSet.of(listingFile),
@@ -94,31 +106,31 @@ class InstallVariantTaskTest {
             logger
         )
         Mockito.verify(logger, times(3)).quiet("Installed on {} {}.", 1, "device")
-        Mockito.verify(lollipopDevice, Mockito.atLeastOnce()).name
-        Mockito.verify(lollipopDevice, Mockito.atLeastOnce()).apiLevel
-        Mockito.verify(lollipopDevice, Mockito.atLeastOnce()).abis
-        Mockito.verify(lollipopDevice, Mockito.atLeastOnce()).deviceConfig
-        val inOrder = Mockito.inOrder(lollipopDevice)
+        Mockito.verify(deviceConnector, Mockito.atLeastOnce()).name
+        Mockito.verify(deviceConnector, Mockito.atLeastOnce()).apiLevel
+        Mockito.verify(deviceConnector, Mockito.atLeastOnce()).abis
+        Mockito.verify(deviceConnector, Mockito.atLeastOnce()).deviceConfig
+        val inOrder = Mockito.inOrder(deviceConnector)
 
-        inOrder.verify(lollipopDevice).installPackage(
+        inOrder.verify(deviceConnector).installPackage(
             ArgumentMatchers.eq(temporaryFolder.root.resolve("dependency1.apk")),
             ArgumentMatchers.any(),
             ArgumentMatchers.anyInt(),
             ArgumentMatchers.any()
         )
-        inOrder.verify(lollipopDevice).installPackage(
+        inOrder.verify(deviceConnector).installPackage(
             ArgumentMatchers.eq(temporaryFolder.root.resolve("dependency2.apk")),
             ArgumentMatchers.any(),
             ArgumentMatchers.anyInt(),
             ArgumentMatchers.any()
         )
-        inOrder.verify(lollipopDevice).installPackage(
+        inOrder.verify(deviceConnector).installPackage(
             ArgumentMatchers.eq(temporaryFolder.root.resolve("main.apk")),
             ArgumentMatchers.any(),
             ArgumentMatchers.anyInt(),
             ArgumentMatchers.any()
         )
-        Mockito.verifyNoMoreInteractions(lollipopDevice)
+        Mockito.verifyNoMoreInteractions(deviceConnector)
     }
 
     private fun checkSingleApk(deviceConnector: DeviceConnector) {
@@ -135,6 +147,9 @@ class InstallVariantTaskTest {
             4000,
             logger
         )
+        assert(deviceState.pmLogs.filter {
+            it.startsWith("install -r -t") && it.contains("main.apk") }.isNotEmpty())
+
         Mockito.verify(logger)
             .lifecycle(
                 "Installing APK '{}' on '{}' for {}:{}",
@@ -145,17 +160,6 @@ class InstallVariantTaskTest {
             )
         Mockito.verify(logger).quiet("Installed on {} {}.", 1, "device")
         Mockito.verifyNoMoreInteractions(logger)
-        Mockito.verify(deviceConnector, Mockito.atLeastOnce()).name
-        Mockito.verify(deviceConnector, Mockito.atLeastOnce()).apiLevel
-        Mockito.verify(deviceConnector, Mockito.atLeastOnce()).abis
-        Mockito.verify(deviceConnector, Mockito.atLeastOnce()).deviceConfig
-        Mockito.verify(deviceConnector).installPackage(
-            ArgumentMatchers.eq(temporaryFolder.root.resolve("main.apk")),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.anyInt(),
-            ArgumentMatchers.any()
-        )
-        Mockito.verifyNoMoreInteractions(deviceConnector)
     }
 
     internal class FakeDeviceProvider(private val devices: List<DeviceConnector>) : DeviceProvider() {
@@ -183,7 +187,7 @@ class InstallVariantTaskTest {
     }
 
     private fun createMainApkListingFile() {
-        val mainOutputFileApk = temporaryFolder.newFile("main.apk")
+        mainOutputFileApk = temporaryFolder.newFile("main.apk")
         temporaryFolder.newFile(BuiltArtifactsImpl.METADATA_FILE_NAME).writeText("""
 {
   "version": 1,

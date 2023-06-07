@@ -192,6 +192,8 @@ kotlin_test(
         "//tools/base/build-system/shrinker",
         "//tools/base/common:tools.common",
         "//tools/base/ddmlib:tools.ddmlib",
+        "//tools/base/ddmlib:tools.ddmlib.test",
+        "//tools/base/fakeadbserver:tools.fakeadbserver",
         "//tools/base/layoutlib-api:tools.layoutlib-api",
         "//tools/base/lint:tools.lint-model",
         "//tools/base/repository:tools.repository",

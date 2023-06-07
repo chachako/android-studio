@@ -50,11 +50,19 @@ public class FakeAdbTestRule extends ExternalResource {
 
     public static final String RELEASE = "8.0";
 
-    public static final String SDK = "26";
-
     public static final int PID = 1234;
 
     private FakeAdbServer myServer;
+
+    private final String sdk;
+
+    public FakeAdbTestRule() {
+        this("26");
+    }
+
+    public FakeAdbTestRule(String sdk) {
+        this.sdk = sdk;
+    }
 
     @Override
     public void before() throws Throwable {
@@ -115,14 +123,15 @@ public class FakeAdbTestRule extends ExternalResource {
             public void deviceChanged(@NonNull IDevice device, int changeMask) { }
         };
         AndroidDebugBridge.addDeviceChangeListener(deviceListener);
-        DeviceState state = myServer.connectDevice(
-                        SERIAL,
-                        MANUFACTURER,
-                        MODEL,
-                        RELEASE,
-                        SDK,
-                        DeviceState.HostConnectionType.USB)
-                .get();
+        DeviceState state =
+                myServer.connectDevice(
+                                SERIAL,
+                                MANUFACTURER,
+                                MODEL,
+                                RELEASE,
+                                sdk,
+                                DeviceState.HostConnectionType.USB)
+                        .get();
         assertThat(deviceLatch.await(TEST_TIMEOUT_MS, TimeUnit.MILLISECONDS)).isTrue();
         AndroidDebugBridge.removeDeviceChangeListener(deviceListener);
         state.setDeviceStatus(DeviceState.DeviceStatus.ONLINE);

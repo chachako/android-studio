@@ -210,6 +210,8 @@ dependencies {
     testImplementation libs.kotlin_gradle_plugin
     testImplementation externalTestFixtures.repository
     testImplementation testFixtures(project(":base:builder"))
+    testImplementation libs.com.android.tools.fakeadbserver.fakeadbserver
+    testImplementation libs.com.android.tools.ddms.ddmlibtest
     apiTestImplementation libs.com.android.tools.apkparser.apkanalyzer
     apiTestImplementation externalTestFixtures.apkanalyzer
     testCompileOnly project(':base:profile')

@@ -138,18 +138,53 @@ maven_library(
     ],
 )
 
+filegroup(
+    name = "fake-adb-test-rule",
+    srcs = [
+        "src/test/java/com/android/ddmlib/IntegrationTest.java",
+        "src/test/java/com/android/ddmlib/internal/FakeAdbTestRule.java",
+    ],
+)
+
+# A maven library which only contains FakeAdbTestRule and its dependencies. This is
+# to allow other consumers(e.g. AGP) to re-use the FakeAdbTestRule.
+maven_library(
+    name = "tools.ddmlib.test",
+    srcs = [":fake-adb-test-rule"],
+    coordinates = "com.android.tools.ddms:ddmlib-test",
+    description = "FakeAdb test utils for talking to Android devices",
+    module_name = "ddmlib-test",
+    notice = "NOTICE",
+    pom_name = "Android Tools ddmlib test",
+    version = BASE_VERSION,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":tools.ddmlib",
+        "//tools/base/common:tools.common",
+        "//tools/base/fakeadbserver:tools.fakeadbserver",
+        "//tools/base/testutils:tools.testutils",
+        "@maven//:junit.junit",
+    ],
+)
+
 kotlin_test(
     name = "tools.tests",
-    srcs = glob([
-        "src/test/java/**/*.kt",
-        "src/test/java/**/*.java",
-    ]),
+    srcs = glob(
+        [
+            "src/test/java/**/*.kt",
+            "src/test/java/**/*.java",
+        ],
+        # Avoid compiling sources twice by adding tools.ddmlib.test as deps
+        # and exclude its sources.
+        exclude = [":fake-adb-test-rule"],
+    ),
     data = ["//prebuilts/studio/sdk:platform-tools"],
     jvm_flags = ["-Dtest.suite.jar=tools.tests.jar"],
     resources = glob(["src/test/resources/**"]),
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
         ":tools.ddmlib",
+        ":tools.ddmlib.test",
         "//tools/base/annotations",
         "//tools/base/common:tools.common",
         "//tools/base/fakeadbserver:tools.fakeadbserver",

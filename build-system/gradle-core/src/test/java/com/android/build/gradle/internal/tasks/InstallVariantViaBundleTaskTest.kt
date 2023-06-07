@@ -19,14 +19,18 @@ package com.android.build.gradle.internal.tasks
 import com.android.build.gradle.internal.fixtures.FakeGradleProperty
 import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
 import com.android.build.gradle.internal.profile.AnalyticsService
+import com.android.build.gradle.internal.testing.ConnectedDevice
 import com.android.builder.testing.api.DeviceConfigProviderImpl
 import com.android.builder.testing.api.DeviceConnector
 import com.android.builder.testing.api.DeviceProvider
+import com.android.ddmlib.AndroidDebugBridge
+import com.android.ddmlib.internal.FakeAdbTestRule
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.services.PackageManager
 import com.android.utils.ILogger
+import com.android.utils.StdLogger
 import com.google.common.collect.ImmutableList
 import org.gradle.api.Project
-import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -35,16 +39,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.ArgumentMatchers
-import org.mockito.Mock
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.atLeastOnce
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoMoreInteractions
-import org.mockito.MockitoAnnotations
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.TimeUnit
 
 class InstallVariantViaBundleTaskTest {
 
@@ -52,18 +50,21 @@ class InstallVariantViaBundleTaskTest {
     @Rule
     var tmp = TemporaryFolder()
 
-    @Mock
-    private lateinit var deviceConnector: DeviceConnector
+    @get:Rule
+    val fakeAdb = FakeAdbTestRule("21")
 
     private lateinit var project: Project
+    private lateinit var deviceConnector: DeviceConnector
+    private lateinit var deviceState: DeviceState
 
     @Before
-    @Throws(Exception::class)
-    fun setUpMocks() {
-        MockitoAnnotations.initMocks(this)
-        `when`(deviceConnector.apiLevel).thenReturn(21)
-        `when`(deviceConnector.name).thenReturn("fake_device")
+    fun setUp() {
         project = ProjectBuilder.builder().withProjectDir(tmp.newFolder()).build()
+        deviceState = fakeAdb.connectAndWaitForDevice()
+        deviceState.setActivityManager(PackageManager())
+        val device = AndroidDebugBridge.getBridge()!!.devices.single()
+        deviceConnector = ConnectedDevice(
+            device, StdLogger(StdLogger.Level.VERBOSE),  10000, TimeUnit.MILLISECONDS)
     }
 
     private fun getParams(privacySandboxSdkApksFiles: List<File> = emptyList()) =
@@ -105,20 +106,10 @@ class InstallVariantViaBundleTaskTest {
         )
 
         val runnable = TestInstallRunnable(getParams(), deviceConnector, outputPath)
-
         runnable.run()
 
-        verify(deviceConnector, atLeastOnce()).name
-        verify(deviceConnector, atLeastOnce()).apiLevel
-        verify(deviceConnector).deviceConfig
-
-        verify(deviceConnector).installPackage(
-            ArgumentMatchers.eq(outputPath.toFile()),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.anyInt(),
-            ArgumentMatchers.any()
-        )
-        verifyNoMoreInteractions(deviceConnector)
+        assert(deviceState.pmLogs.filter {
+            it.startsWith("install -r -t") && it.contains("extract-apk") }.size == 1)
     }
 
     @Test
@@ -134,20 +125,10 @@ class InstallVariantViaBundleTaskTest {
         )
 
         val runnable = TestInstallRunnable(getParams(), deviceConnector, outputPath, outputPath2)
-
         runnable.run()
 
-        verify(deviceConnector, atLeastOnce()).name
-        verify(deviceConnector, atLeastOnce()).apiLevel
-        verify(deviceConnector).deviceConfig
-
-        verify(deviceConnector).installPackages(
-            ArgumentMatchers.eq(listOf(outputPath.toFile(), outputPath2.toFile())),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.anyInt(),
-            ArgumentMatchers.any()
-        )
-        verifyNoMoreInteractions(deviceConnector)
+        assert(deviceState.pmLogs.filter {
+            it.startsWith("install-write") && it.contains("extract-apk") }.size == 2)
     }
 
     @Test
@@ -158,7 +139,7 @@ class InstallVariantViaBundleTaskTest {
             ""
         )
         val sdk1Apks = File("sdk1.apks")
-        val sdk1ExtractedApk = File("sdk1-extracted.apk")
+        val sdk1ExtractedApk = tmp.newFile("sdk1-extracted.apk")
         val runnable = TestInstallRunnable(
             getParams(listOf(sdk1Apks)),
             deviceConnector,
@@ -167,27 +148,12 @@ class InstallVariantViaBundleTaskTest {
                 sdk1Apks to listOf(sdk1ExtractedApk)
             )
         )
-
         runnable.run()
 
-        verify(deviceConnector, atLeastOnce()).name
-        verify(deviceConnector, atLeastOnce()).apiLevel
-        verify(deviceConnector).deviceConfig
-
-        verify(deviceConnector).installPackages(
-            ArgumentMatchers.eq(listOf(sdk1ExtractedApk)),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.anyInt(),
-            ArgumentMatchers.any()
-        )
-
-        verify(deviceConnector).installPackage(
-            ArgumentMatchers.eq(outputPath.toFile()),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.anyInt(),
-            ArgumentMatchers.any()
-        )
-        verifyNoMoreInteractions(deviceConnector)
+        assert(deviceState.pmLogs.filter {
+            it.startsWith("install-write") && it.contains("sdk_-extracted") }.size == 1)
+        assert(deviceState.pmLogs.filter {
+            it.startsWith("install -r -t") && it.contains("extract-apk") }.size == 1)
     }
 
     @Test
@@ -198,12 +164,12 @@ class InstallVariantViaBundleTaskTest {
             ""
         )
         val sdk1Apks = File("sdk1.apks")
-        val sdk1ExtractedApk1 = File("sdk1-extracted1.apk")
-        val sdk1ExtractedApk2 = File("sdk1-extracted2.apk")
+        val sdk1ExtractedApk1 = tmp.newFile("sdk1-extracted1.apk")
+        val sdk1ExtractedApk2 = tmp.newFile("sdk1-extracted2.apk")
 
         val sdk2Apks = File("sdk2.apks")
-        val sdk2ExtractedApk1 = File("sdk2-extracted1.apk")
-        val sdk2ExtractedApk2 = File("sdk2-extracted2.apk")
+        val sdk2ExtractedApk1 = tmp.newFile("sdk2-extracted1.apk")
+        val sdk2ExtractedApk2 = tmp.newFile("sdk2-extracted2.apk")
         val runnable = TestInstallRunnable(
             getParams(listOf(sdk1Apks, sdk2Apks)),
             deviceConnector,
@@ -216,31 +182,12 @@ class InstallVariantViaBundleTaskTest {
 
         runnable.run()
 
-        verify(deviceConnector, atLeastOnce()).name
-        verify(deviceConnector, atLeastOnce()).apiLevel
-        verify(deviceConnector).deviceConfig
-
-        verify(deviceConnector).installPackages(
-            ArgumentMatchers.eq(listOf(sdk1ExtractedApk1, sdk1ExtractedApk2)),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.anyInt(),
-            ArgumentMatchers.any()
-        )
-
-        verify(deviceConnector).installPackages(
-            ArgumentMatchers.eq(listOf(sdk2ExtractedApk1, sdk2ExtractedApk2)),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.anyInt(),
-            ArgumentMatchers.any()
-        )
-
-        verify(deviceConnector).installPackage(
-            ArgumentMatchers.eq(outputPath.toFile()),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.anyInt(),
-            ArgumentMatchers.any()
-        )
-        verifyNoMoreInteractions(deviceConnector)
+        assert(deviceState.pmLogs.filter {
+            it.startsWith("install-write") && it.contains("0_sdk_-extracted") }.size == 2)
+        assert(deviceState.pmLogs.filter {
+            it.startsWith("install-write") && it.contains("1_sdk_-extracted") }.size == 2)
+        assert(deviceState.pmLogs.filter {
+            it.startsWith("install -r -t") && it.contains("extract-apk") }.size == 1)
     }
 
     private class TestInstallRunnable(
