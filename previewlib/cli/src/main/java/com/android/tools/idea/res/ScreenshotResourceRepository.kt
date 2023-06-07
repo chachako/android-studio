@@ -21,6 +21,7 @@ import com.android.screenshot.cli.ComposeModule
 import com.android.screenshot.cli.ComposeProject
 import com.android.tools.idea.util.toVirtualFile
 import com.android.tools.lint.model.LintModelAndroidLibrary
+import com.android.tools.res.MultiResourceRepository
 
 class ScreenshotResourceRepository(private val composeProject: ComposeProject, private val composeModule: ComposeModule) : MultiResourceRepository("ScreenshotTesting"),
                                                                                                                            SingleNamespaceResourceRepository {
