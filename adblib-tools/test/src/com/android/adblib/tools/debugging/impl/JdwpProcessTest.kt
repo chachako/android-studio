@@ -356,6 +356,11 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
     fun startMonitoringDoesNotReleaseJdwpSessionIfAppBootStageIsWaitForDebugger() = runBlockingWithTimeout {
         // Prepare
         val (fakeAdb, _, process) = createJdwpProcess(deviceApi = 34, waitForDebugger = false)
+        setHostPropertyValue(
+            process.device.session.host,
+            AdbLibToolsProperties.SUPPORT_STAG_PACKETS,
+            true
+        )
         val clientState = fakeAdb.device(process.device.serialNumber).getClient(process.pid)!!
         clientState.setStage(AppStage.DEBG)
 
@@ -380,6 +385,11 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
     fun startMonitoringReleasesJdwpSessionIfAppBootStageIsA_go() = runBlockingWithTimeout {
         // Prepare
         val (fakeAdb, _, process) = createJdwpProcess(deviceApi = 34, waitForDebugger = false)
+        setHostPropertyValue(
+            process.device.session.host,
+            AdbLibToolsProperties.SUPPORT_STAG_PACKETS,
+            true
+        )
         val clientState = fakeAdb.device(process.device.serialNumber).getClient(process.pid)!!
         clientState.setStage(AppStage.A_GO)
 
@@ -404,6 +414,11 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
     fun startMonitoringNeverEndsIfLongTimeoutAndAppBootStageIsNamd() = runBlockingWithTimeout {
         // Prepare
         val (fakeAdb, _, process) = createJdwpProcess(deviceApi = 34, waitForDebugger = false)
+        setHostPropertyValue(
+            process.device.session.host,
+            AdbLibToolsProperties.SUPPORT_STAG_PACKETS,
+            true
+        )
         val clientState = fakeAdb.device(process.device.serialNumber).getClient(process.pid)!!
         clientState.setStage(AppStage.NAMD)
 
@@ -431,6 +446,11 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
     fun startMonitoringWaitsUntilAppStageA_go() = runBlockingWithTimeout {
         // Prepare
         val (fakeAdb, _, process) = createJdwpProcess(deviceApi = 34, waitForDebugger = false)
+        setHostPropertyValue(
+            process.device.session.host,
+            AdbLibToolsProperties.SUPPORT_STAG_PACKETS,
+            true
+        )
         val clientState = fakeAdb.device(process.device.serialNumber).getClient(process.pid)!!
         clientState.setStage(AppStage.BOOT)
         // Set up to send updated stage for transitions to AppStage.ATCH and AppStage.A_GO
@@ -475,6 +495,11 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
     fun startMonitoringWaitsUntilAppStageDebg() = runBlockingWithTimeout {
         // Prepare (Note waitForDebugger is false since we rely only on AppStage in this test)
         val (fakeAdb, _, process) = createJdwpProcess(deviceApi = 34, waitForDebugger = false)
+        setHostPropertyValue(
+            process.device.session.host,
+            AdbLibToolsProperties.SUPPORT_STAG_PACKETS,
+            true
+        )
         val clientState = fakeAdb.device(process.device.serialNumber).getClient(process.pid)!!
         clientState.setStage(AppStage.BOOT)
         // Set up to send updated stage for transition to AppStage.DEBG
@@ -504,6 +529,84 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         assertProcessPropertiesComplete(properties)
         assertTrue(properties.isWaitingForDebugger)
     }
+
+    @Test
+    fun startMonitoringIgnoresAppStageInHeloResponseIfStagPacketsNotEnabledByProperty() =
+        runBlockingWithTimeout {
+            // Prepare: Have a stage to be set to A_GO
+            val (fakeAdb, _, process) = createJdwpProcess(deviceApi = 34)
+            setHostPropertyValue(
+                process.device.session.host,
+                AdbLibToolsProperties.SUPPORT_STAG_PACKETS,
+                false
+            )
+            val clientState = fakeAdb.device(process.device.serialNumber).getClient(process.pid)!!
+            clientState.setStage(AppStage.A_GO)
+            // Delay a WAIT command by half a second
+            clientState.sendWaitCommandAfterHelo = Duration.ofMillis(500)
+
+            // Act: Start monitoring
+            setHostPropertyValue(
+                process.device.session.host,
+                AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT,
+                Duration.ofSeconds(60) // long timeout
+            )
+            process.startMonitoring()
+            yieldUntil { process.properties.processName != null }
+
+            // Assert: Stage is ignored
+            assertNull(process.properties.stage)
+            assertFalse(process.properties.isWaitingForDebugger)
+            assertFalse(process.properties.completed)
+
+            // Act: Wait until the WAIT command is received
+            yieldUntil { process.properties.waitCommandReceived }
+
+            // Assert
+            assertTrue(process.properties.isWaitingForDebugger)
+            assertProcessPropertiesComplete(process.properties)
+        }
+
+    @Test
+    fun startMonitoringIgnoresAppStageInStagCommandIfStagPacketsNotEnabledByProperty() =
+        runBlockingWithTimeout {
+            // Prepare
+            val (fakeAdb, _, process) = createJdwpProcess(deviceApi = 34)
+            setHostPropertyValue(
+                process.device.session.host,
+                AdbLibToolsProperties.SUPPORT_STAG_PACKETS,
+                false
+            )
+            val clientState = fakeAdb.device(process.device.serialNumber).getClient(process.pid)!!
+            clientState.setStage(AppStage.BOOT)
+            // Delay a app stage A_GO by 250ms and WAIT command by half a second
+            clientState.sendStagCommandAfterHelo.addAll(listOf(Duration.ofMillis(250)))
+            clientState.sendWaitCommandAfterHelo = Duration.ofMillis(500)
+
+            // Act: Start monitoring
+            setHostPropertyValue(
+                process.device.session.host,
+                AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT,
+                Duration.ofSeconds(60) // long timeout
+            )
+            process.startMonitoring()
+            yieldUntil { process.properties.processName != null }
+
+            // Assert: Stage is ignored
+            assertFalse(process.properties.isWaitingForDebugger)
+            assertFalse(process.properties.completed)
+
+            // Prepare
+            clientState.setStage(AppStage.A_GO)
+
+            // Act: Wait until the WAIT command is received
+            yieldUntil { process.properties.waitCommandReceived }
+
+            // Assert: A_GO was ignored and WAIT was interpreted correctly
+            assertTrue(process.properties.isWaitingForDebugger)
+            assertNull(process.properties.stage)
+            assertProcessPropertiesComplete(process.properties)
+        }
 
     private suspend fun createJdwpProcess(
         deviceApi: Int = 30,

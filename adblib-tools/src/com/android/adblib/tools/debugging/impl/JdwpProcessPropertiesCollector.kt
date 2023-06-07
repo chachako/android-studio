@@ -26,6 +26,7 @@ import com.android.adblib.tools.AdbLibToolsProperties.PROCESS_PROPERTIES_COLLECT
 import com.android.adblib.tools.AdbLibToolsProperties.PROCESS_PROPERTIES_COLLECTOR_DELAY_USE_SHORT
 import com.android.adblib.tools.AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT
 import com.android.adblib.tools.AdbLibToolsProperties.PROCESS_PROPERTIES_RETRY_DURATION
+import com.android.adblib.tools.AdbLibToolsProperties.SUPPORT_STAG_PACKETS
 import com.android.adblib.tools.debugging.AtomicStateFlow
 import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.SharedJdwpSession
@@ -304,6 +305,9 @@ internal class JdwpProcessPropertiesCollector(
             DdmsHeloChunk.parse(heloChunkView, workBuffer)
         }
         logger.debug { "`HELO` reply: $heloChunk" }
+        if (heloChunk.stage != null && !session.property(SUPPORT_STAG_PACKETS)) {
+            logger.debug { "Not using STAG value since it's disabled by a 'SUPPORT_STAG_PACKETS' property" }
+        }
         collectState.propertiesFlow.update {
             it.copy(
                 processName = filterFakeName(heloChunk.processName),
@@ -313,7 +317,7 @@ internal class JdwpProcessPropertiesCollector(
                 abi = heloChunk.abi,
                 jvmFlags = heloChunk.jvmFlags,
                 isNativeDebuggable = heloChunk.isNativeDebuggable,
-                stage = heloChunk.stage,
+                stage = if (session.property(SUPPORT_STAG_PACKETS)) heloChunk.stage else null,
             )
         }
     }
@@ -370,6 +374,10 @@ internal class JdwpProcessPropertiesCollector(
             DdmsStagChunk.parse(chunkCopy, workBuffer)
         }
         logger.debug { "`STAG` command: $stagChunk" }
+        if(!session.property(SUPPORT_STAG_PACKETS)) {
+            logger.debug { "Discarding STAG reply since it's disabled by a 'SUPPORT_STAG_PACKETS' property" }
+            return
+        }
         collectState.propertiesFlow.update {
             it.copy(
                 stage = stagChunk.stage,

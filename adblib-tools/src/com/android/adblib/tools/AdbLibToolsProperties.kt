@@ -135,4 +135,12 @@ object AdbLibToolsProperties {
         defaultValue = Duration.ofSeconds(2)
     )
 
+    /**
+     * If true then we use app boot stage signal when available (i.e. in API 34+)
+     */
+    val SUPPORT_STAG_PACKETS = AdbSessionHost.BooleanProperty(
+        name = "$NAME_PREFIX.support.stag.packets",
+        defaultValue = false
+    )
+
 }
