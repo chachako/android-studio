@@ -269,7 +269,12 @@ public class InvalidPackageDetector extends Detector implements ClassScanner {
             DefaultJavaEvaluator evaluator = new DefaultJavaEvaluator(null, project);
             LintModelMavenName library = evaluator.getLibrary(jarFile);
             String libraryString;
-            if (library != null && !LintModelMavenName.LOCAL_AARS.equals(library.getGroupId())) {
+            // TODO(xof): NON_MAVEN is provided from the IDE when we know (because this information
+            //  was derived in sync) that there is no coordinate for this artifact.  Lint running
+            //  from the command-line doesn't have this information, and might be working with
+            //  library information taken directly from AGP, which hasn't had this step applied and
+            //  so might be returning names involving __local_aars__, __local_asars__ or similar.
+            if (library != null && !LintModelMavenName.NON_MAVEN.equals(library.getGroupId())) {
                 libraryString = library.getGroupId() + ':' + library.getArtifactId();
             } else {
                 libraryString = "library";
