@@ -23,11 +23,15 @@ import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import com.android.processmonitor.common.ProcessEvent.ProcessAdded
 import com.android.processmonitor.common.ProcessEvent.ProcessRemoved
+import com.android.processmonitor.monitor.SharedProcessTracker
 import com.android.processmonitor.testutils.toChannel
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.Futures
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -100,6 +104,22 @@ class ClientProcessTrackerTest {
             device2.startClient(pid = 101, "package1", "process1")
             assertThat(channel.receiveOrNull()).named("Expected to time out").isNull()
         }
+    }
+
+    @Test
+    fun trackAsSharedFlow_deviceDisconnects_unregistersListener(): Unit = runTest {
+        val fakeAdbAdapter = FakeAdbAdapter()
+        val device = mockDevice("device")
+        val tracker = ClientProcessTracker(device, fakeAdbAdapter, logger)
+        val sharedTracker = SharedProcessTracker(this, tracker)
+
+        val job = launch { sharedTracker.trackProcesses().collect() }
+        advanceUntilIdle()
+        fakeAdbAdapter.fireDeviceDisconnected(device)
+        advanceUntilIdle()
+
+        assertThat(fakeAdbAdapter.deviceChangeListeners).isEmpty()
+        job.cancel()
     }
 
     private fun DeviceState.iDevice(): IDevice =

@@ -25,6 +25,7 @@ import com.android.processmonitor.common.ProcessEvent.ProcessRemoved
 import com.android.processmonitor.common.ProcessTracker
 import com.android.processmonitor.monitor.ddmlib.ClientMonitorListener.ClientEvent.ClientChanged
 import com.android.processmonitor.monitor.ddmlib.ClientMonitorListener.ClientEvent.ClientListChanged
+import com.android.processmonitor.monitor.ddmlib.ClientMonitorListener.ClientEvent.DeviceDisconnected
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.channels.trySendBlocking
@@ -32,6 +33,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.transform
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * A [ProcessTracker] that tracks clients Ddmlib [Client]s
@@ -55,7 +57,6 @@ internal class ClientProcessTracker(
             // Adding a listener does not fire events about existing clients, so we have to add them manually.
             trySendBlocking(ClientListChanged(device.clients))
                 .onFailure { logger.warn(it, "Failed to send a ClientEvent") }
-
             awaitClose {
                 adbAdapter.removeDeviceChangeListener(listener)
                 adbAdapter.removeClientChangeListener(listener)
@@ -64,6 +65,7 @@ internal class ClientProcessTracker(
             when (clientEvent) {
                 is ClientListChanged -> handleClientListChanged(clientEvent, clients)
                 is ClientChanged -> handleClientChanged(clientEvent, clients)
+                DeviceDisconnected -> throw CancellationException()
             }
         }
     }

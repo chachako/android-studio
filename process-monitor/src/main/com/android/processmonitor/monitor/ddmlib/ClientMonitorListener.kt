@@ -25,6 +25,7 @@ import com.android.ddmlib.IDevice.CHANGE_CLIENT_LIST
 import com.android.processmonitor.monitor.ddmlib.ClientMonitorListener.ClientEvent
 import com.android.processmonitor.monitor.ddmlib.ClientMonitorListener.ClientEvent.ClientChanged
 import com.android.processmonitor.monitor.ddmlib.ClientMonitorListener.ClientEvent.ClientListChanged
+import com.android.processmonitor.monitor.ddmlib.ClientMonitorListener.ClientEvent.DeviceDisconnected
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.channels.trySendBlocking
@@ -44,7 +45,11 @@ internal class ClientMonitorListener(
 
     override fun deviceConnected(device: IDevice) {}
 
-    override fun deviceDisconnected(device: IDevice) {}
+    override fun deviceDisconnected(device: IDevice) {
+        if (this.device == device) {
+            send(DeviceDisconnected)
+        }
+    }
 
     override fun deviceChanged(device: IDevice, changeMask: Int) {
         if (this.device == device && changeMask and CHANGE_CLIENT_LIST != 0) {
@@ -91,5 +96,11 @@ internal class ClientMonitorListener(
                 return "ClientChanged: ${client.clientData.pid}: ${client.clientData.packageName} ${client.clientData.clientDescription}"
             }
         }
+
+        /**
+         * Sent when the device disconnects. We use this to cancel the tracking flow because the
+         * flow is shared and doesn't end when the consumer cancels
+         */
+        object DeviceDisconnected: ClientEvent()
     }
 }
