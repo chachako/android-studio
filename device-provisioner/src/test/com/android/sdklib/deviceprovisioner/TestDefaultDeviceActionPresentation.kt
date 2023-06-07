@@ -15,11 +15,8 @@
  */
 package com.android.sdklib.deviceprovisioner
 
-import javax.swing.UIManager
-
 object TestDefaultDeviceActionPresentation : DeviceAction.DefaultPresentation {
-  // A rather arbitrary icon that is part of Swing:
-  private val icon = UIManager.getIcon("Tree.collapsedIcon")
+  private val icon = EmptyIcon.DEFAULT
   override val createDeviceAction = DeviceAction.Presentation("Create", icon, true)
   override val createDeviceTemplateAction = DeviceAction.Presentation("Create", icon, true)
   override val activationAction = DeviceAction.Presentation("Start", icon, true)
