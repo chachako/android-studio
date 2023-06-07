@@ -382,7 +382,7 @@ gradle_integration_test(
         "//tools/base/build-system/integration-test/application:prebuilts",
     ],
     resources = glob(["src/test/resources/**"]),
-    shard_count = 5,
+    shard_count = 7,
     deps = TEST_DEPS,
 )
 
