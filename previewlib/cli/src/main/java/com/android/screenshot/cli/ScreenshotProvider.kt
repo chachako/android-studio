@@ -19,6 +19,10 @@ import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.resources.configuration.FolderConfiguration
 import com.android.screenshot.cli.diff.ImageDiffer
 import com.android.screenshot.cli.diff.Verify
+import com.android.screenshot.cli.util.CODE_ERROR
+import com.android.screenshot.cli.util.CODE_SUCCESS
+import com.android.screenshot.cli.util.PreviewResult
+import com.android.screenshot.cli.util.toPreviewResponse
 import com.android.tools.idea.AndroidPsiUtils
 import com.android.tools.idea.compose.preview.ComposeAdapterLightVirtualFile
 import com.android.tools.idea.compose.preview.ComposePreviewElement
@@ -106,8 +110,8 @@ class ScreenshotProvider(
         outputLocation: String,
         recordGoldens: Boolean,
         rootLintModule: LintModelModule
-    ): List<Verify.AnalysisResult> {
-        val results = mutableListOf<Verify.AnalysisResult>()
+    ): List<PreviewResult> {
+        val results = mutableListOf<PreviewResult>()
         val instances =
             previewNodes.filterIsInstance<ComposePreviewElementTemplate>()
                 .flatMap { it.instances(ModuleRenderContext.forFile(composeModule) { it.previewElementDefinitionPsi?.containingFile }) }
@@ -120,21 +124,26 @@ class ScreenshotProvider(
             val errorMessage = verifyRenderResult(renderResult!!)
             val fileName = previewElement.displaySettings.name
             if (recordGoldens && errorMessage == null) {
-                renderResult.renderedImage.copy?.let { saveImage(it, goldenLocation + fileName + ".png") }
+                try {
+                    renderResult.renderedImage.copy?.let { saveImage(it, "$goldenLocation$fileName.png") }
+                    results.add(PreviewResult(CODE_SUCCESS, "Golden image saved"))
+                } catch (e: Exception) {
+                    results.add(PreviewResult(CODE_ERROR, "Error saving golden image"))
+                }
             } else if (errorMessage == null) {
                 val result = compareImages(
                     renderResult!!,
                     goldenLocation,
                     outputLocation,
-                    fileName + ".png"
+                    "$fileName.png"
                 )
                 if ( result is Verify.AnalysisResult.Failed) {
                     saveImage(result.imageDiff.highlights, outputLocation + fileName + "_diff.png")
                     renderResult.renderedImage.copy?.let { saveImage(it, outputLocation + fileName + "_actual.png") }
                 }
-                results.add(result)
+                results.add(result.toPreviewResponse())
             } else {
-                results.add(Verify.AnalysisResult.RenderError(renderResult.renderedImage.copy!!, errorMessage))
+                results.add(PreviewResult(CODE_ERROR, errorMessage))
             }
         }
         return results

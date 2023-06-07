@@ -64,7 +64,13 @@ class ScreenshotTestEngine : TestEngine {
         process.waitFor()
 
         listener.executionStarted(descriptor)
-        var testSuiteExecutionResult: TestExecutionResult = TestExecutionResult.successful()
+        var testSuiteExecutionResult: TestExecutionResult = when {
+            process.exitValue() in listOf(0,3) -> TestExecutionResult.successful()
+            process.exitValue() in listOf(1,2) -> {
+                TestExecutionResult.failed(Exception("Tests failed. See report for details"))
+            }
+            else -> TestExecutionResult.aborted(Exception("Unknown error code ${process.exitValue()} returned"))
+        }
         listener.executionFinished(descriptor, testSuiteExecutionResult)
     }
 

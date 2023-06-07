@@ -111,7 +111,12 @@ class ScreenshotTest {
     }
 
     @Test
-    fun runScreenshotTestDoesNotRecordGoldenByDefault() {
+    fun runScreenshotTestVerifyScreenshot() {
+        project.executor()
+            .with(BooleanOption.USE_ANDROID_X, true)
+            .with(BooleanOption.ENABLE_SCREENSHOT_TEST, true)
+            .run("screenshotTestDebugAndroidTest", "--record-golden")
+
         project.executor()
                 .withFailOnWarning(false)
                 .with(BooleanOption.USE_ANDROID_X, true)
@@ -121,6 +126,7 @@ class ScreenshotTest {
         assertThat(
                 project.getOutputFile(
                         "androidTest-results","screenshot","debug",
-                        "MainViewTest.png")).doesNotExist()
+                        "MainViewTest_diff.png")).doesNotExist()
     }
+
 }

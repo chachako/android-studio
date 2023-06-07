@@ -15,7 +15,13 @@
  */
 package com.android.screenshot.cli
 
+import com.android.screenshot.cli.util.CODE_ERROR
+import com.android.screenshot.cli.util.CODE_FAILURE
+import com.android.screenshot.cli.util.CODE_NO_PREVIEWS
+import com.android.screenshot.cli.util.CODE_SUCCESS
 import com.android.screenshot.cli.util.Decompressor
+import com.android.screenshot.cli.util.PreviewResult
+import com.android.screenshot.cli.util.Response
 import com.android.tools.idea.AndroidPsiUtils
 import com.android.tools.idea.compose.preview.ComposePreviewElement
 import com.android.tools.idea.compose.preview.getPreviewNodes
@@ -107,35 +113,65 @@ class Main {
     }
     fun run(args: Array<String>) {
         val argumentState = ArgumentState()
-        val client: LintCliClient = MainLintClient(flags, argumentState)
-        parseArguments(args, client, argumentState)
-        if (argumentState.extractionDir != null && argumentState.jarLocation != null){
-            extractJar(argumentState)
+        try {
+            val client: LintCliClient = MainLintClient(flags, argumentState)
+            parseArguments(args, client, argumentState)
+            if (argumentState.extractionDir != null && argumentState.jarLocation != null){
+                extractJar(argumentState)
+            }
+            initializePathVariables(argumentState, client)
+            initializeConfigurations(client, argumentState)
+            setupPaths(argumentState)
+            val projects: List<Project> = configureProject(client, argumentState)
+            val driver: LintDriver = createDriver(projects, client as MainLintClient)
+            client.initializeProjects(driver, projects)
+
+            ComposeApplication.setupEnvVars(argumentState.extractionDir)
+            CoreApplicationEnvironment.registerExtensionPointAndExtensions(PathUtil.getResourcePathForClass(this::class.java).toPath(), "plugin.xml",
+                                                                           Extensions.getRootArea())
+
+            driver.computeDetectors(projects[0])
+            ProjectDriver(driver, projects[0]).prepareUastFileList()
+            initializeEnv(projects, client)
+            val dependencies = Dependencies(projects[0], argumentState.rootModule!!)
+            val screenshot = ScreenshotProvider(projects[0], sdkHomePath!!.absolutePath, dependencies)
+            val results = screenshot.verifyScreenshot(findPreviewNodes(projects[0], argumentState.filePath!!),
+                                                      argumentState.goldenLocation!!,
+                                                      argumentState.outputLocation!!,
+                                                      argumentState.recordGoldens,
+                                                      argumentState.rootModule!!)
+            argumentState.extractionDir?.let { deleteTempFiles(it) }
+            val response = processResults(results)
+            saveResults(response, argumentState.outputLocation!!)
+            exitProcess(response.status)
+        } catch (e: Exception) {
+            val response = Response(2, e.message!!, null)
+            saveResults(response, argumentState.outputLocation!!)
+            exitProcess(response.status)
         }
-        initializePathVariables(argumentState, client)
-        initializeConfigurations(client, argumentState)
-        setupPaths(argumentState)
-        val projects: List<Project> = configureProject(client, argumentState)
-        val driver: LintDriver = createDriver(projects, client as MainLintClient)
-        client.initializeProjects(driver, projects)
+    }
 
-        ComposeApplication.setupEnvVars(argumentState.extractionDir)
-        CoreApplicationEnvironment.registerExtensionPointAndExtensions(PathUtil.getResourcePathForClass(this::class.java).toPath(), "plugin.xml",
-                                                                       Extensions.getRootArea())
+    private fun saveResults(response: Response, outputLocation: String) {
+        //TODO - find a XMLParser to be used here
+        val xmlString = response.toString()
+        val outputFile = File("$outputLocation/response.xml")
+        if (!outputFile.exists()) {
+            outputFile.createNewFile()
+        }
+        outputFile.writeText(xmlString)
+    }
 
-        driver.computeDetectors(projects[0])
-        ProjectDriver(driver, projects[0]).prepareUastFileList()
-        initializeEnv(projects, client)
-        val dependencies = Dependencies(projects[0], argumentState.rootModule!!)
-        val screenshot = ScreenshotProvider(projects[0], sdkHomePath!!.absolutePath, dependencies)
-        val results = screenshot.verifyScreenshot(findPreviewNodes(projects[0], argumentState.filePath!!),
-                                  argumentState.goldenLocation!!,
-                                  argumentState.outputLocation!!,
-                                  argumentState.recordGoldens,
-                                  argumentState.rootModule!!)
-        argumentState.extractionDir?.let { deleteTempFiles(it) }
-        //save or return results
-        exitProcess(0)
+    private fun processResults(results: List<PreviewResult>): Response {
+        if (results.isEmpty()) {
+            return Response(CODE_NO_PREVIEWS, "Unable to find previews in file", null)
+        }
+        if (!results.none { it.responseCode == CODE_ERROR }) {
+            return Response(CODE_ERROR, "Error rendering 1 or more previews", results)
+        }
+        if (!results.none { it.responseCode == CODE_FAILURE }) {
+            return Response(CODE_FAILURE, "One or more previews failed to match reference", results)
+        }
+        return Response(CODE_SUCCESS, "Test run successfully", results)
     }
 
     private fun setupPaths(argumentState: Main.ArgumentState) {
