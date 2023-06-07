@@ -855,6 +855,16 @@ coverage_report(
     ],
 )
 
+coverage_report(
+    name = "url-assistant",
+    srcpath_include = [
+        "tools/vendor/google/url-assistant",
+    ],
+    tests = [
+        "//tools/vendor/google/url-assistant:url-assistant.tests_tests",
+    ],
+)
+
 # Coverage report for UTP test execution.
 coverage_report(
     name = "utp",
@@ -982,6 +992,7 @@ combine_report_definitions(
         "test-recorder",
         "tsdkv",
         "upgrade-assistant",
+        "url-assistant",
         "utp",
         "validation",
         "visual-lint",
@@ -1238,5 +1249,6 @@ coverage_report(
         "//tools/vendor/google/directaccess-client:directaccess-client_tests",
         "//tools/vendor/google/firebase:firebase_tests",
         "//tools/vendor/google/targetsdkversion-upgrade-assistant:targetsdkversion-upgrade-assistant_tests",
+        "//tools/vendor/google/url-assistant:url-assistant.tests_tests",
     ],
 )
