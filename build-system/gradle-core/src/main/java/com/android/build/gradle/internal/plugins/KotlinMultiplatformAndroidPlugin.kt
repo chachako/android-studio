@@ -34,6 +34,7 @@ import com.android.build.gradle.internal.CompileOptions
 import com.android.build.gradle.internal.DependencyConfigurator
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.TaskManager
+import com.android.build.gradle.internal.VariantManager.Companion.finalizeAllComponents
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.impl.KmpAndroidTestDslInfoImpl
@@ -465,6 +466,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             unitTest,
             androidTest
         )
+
+        finalizeAllComponents(listOfNotNull(mainVariant, unitTest, androidTest))
 
         KotlinModelBuildingConfigurator.setupAndroidTargetModels(
             project,

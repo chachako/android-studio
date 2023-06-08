@@ -321,5 +321,15 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
                 )
             )
         }
+
+        val apkIdeRedirectFile = FileUtils.join(
+            project.getSubproject("kmpFirstLib").intermediatesDir,
+            "apk_ide_redirect_file",
+            "androidInstrumentedTest",
+            "redirect.txt"
+        )
+        assertThat(apkIdeRedirectFile.exists()).isTrue()
+        assertThat(apkIdeRedirectFile.readText())
+            .contains("listingFile=../../../outputs/apk/androidTest/main/output-metadata.json")
     }
 }

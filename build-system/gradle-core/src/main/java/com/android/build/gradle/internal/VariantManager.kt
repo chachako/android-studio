@@ -41,6 +41,7 @@ import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
 import com.android.build.gradle.internal.api.ReadOnlyObjectProvider
 import com.android.build.gradle.internal.api.VariantFilter
 import com.android.build.gradle.internal.component.ApkCreationConfig
+import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.LibraryCreationConfig
 import com.android.build.gradle.internal.component.NestedComponentCreationConfig
 import com.android.build.gradle.internal.component.TestComponentCreationConfig
@@ -108,7 +109,6 @@ import java.util.function.BooleanSupplier
 import java.util.stream.Collectors
 
 /** Class to create, manage variants.  */
-@Suppress("UnstableApiUsage")
 class VariantManager<
         CommonExtensionT: CommonExtension<*, *, *, *, *>,
         VariantBuilderT : VariantBuilder,
@@ -987,16 +987,9 @@ class VariantManager<
     }
 
     fun finalizeAllVariants() {
-        variants.forEach { variant ->
-            variant.variant.artifacts.finalizeAndLock()
-            ArtifactMetadataProcessor.wireAllFinalizedBy(variant.variant)
-        }
-        testComponents.forEach { testComponent ->
-            testComponent.artifacts.finalizeAndLock()
-        }
-        testFixturesComponents.forEach { testFixturesComponent ->
-            testFixturesComponent.artifacts.finalizeAndLock()
-        }
+        finalizeAllComponents(
+            variants.map { it.variant } + testComponents + testFixturesComponents
+        )
     }
 
     init {
@@ -1009,5 +1002,14 @@ class VariantManager<
             forUnitTesting = project.providers.gradleProperty("_agp_internal_test_mode_").isPresent
         )
         taskCreationServices = TaskCreationServicesImpl(projectServices)
+    }
+
+    companion object {
+        fun finalizeAllComponents(components: List<ComponentCreationConfig>) {
+            components.forEach { component ->
+                component.artifacts.finalizeAndLock()
+                ArtifactMetadataProcessor.wireAllFinalizedBy(component)
+            }
+        }
     }
 }
