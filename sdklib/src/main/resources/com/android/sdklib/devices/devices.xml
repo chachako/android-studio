@@ -31,16 +31,6 @@
                     <d:y-folded-dimension>2208</d:y-folded-dimension>
                 </d:foldable-region>
             </d:screen>
-            <d:hinge>
-                <d:count>1</d:count>
-                <d:type>1</d:type>
-                <d:sub-type>1</d:sub-type>
-                <d:ranges>0-180</d:ranges>
-                <d:defaults>180</d:defaults>
-                <d:areas>884-0-1-2208</d:areas>
-                <d:posture-list>1, 2, 3</d:posture-list>
-                <d:hinge-angles-posture-definitions>0-30, 30-150, 150-180</d:hinge-angles-posture-definitions>
-            </d:hinge>
             <d:networking>
                 Wifi
                 Bluetooth
