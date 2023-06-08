@@ -23,6 +23,7 @@ import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpCommands
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
+import com.android.adblib.tools.debugging.packets.PayloadProvider
 import com.android.adblib.tools.debugging.packets.clone
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
@@ -177,7 +178,7 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
         val heloChunk = MutableDdmsChunk()
         heloChunk.type = DdmsChunkType.HELO
         heloChunk.length = 0
-        heloChunk.payload = AdbBufferedInputChannel.empty()
+        heloChunk.payloadProvider = PayloadProvider.emptyPayload()
 
         val packet = MutableJdwpPacket()
         packet.id = jdwpSession.nextPacketId()

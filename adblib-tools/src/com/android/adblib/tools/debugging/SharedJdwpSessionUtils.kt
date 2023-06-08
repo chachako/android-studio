@@ -32,6 +32,7 @@ import com.android.adblib.tools.debugging.packets.ddms.JdwpPacketFactory
 import com.android.adblib.tools.debugging.packets.ddms.clone
 import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
 import com.android.adblib.tools.debugging.packets.ddms.throwFailException
+import com.android.adblib.tools.debugging.packets.ddms.withPayload
 import com.android.adblib.tools.debugging.packets.payloadLength
 import com.android.adblib.withPrefix
 import kotlinx.coroutines.CompletableDeferred
@@ -183,7 +184,7 @@ suspend fun SharedJdwpSession.handleDdmsREAE(
  */
 suspend fun SharedJdwpSession.handleDdmsREAQ(progress: JdwpCommandProgress? = null): Boolean {
     return handleDdmsCommand(DdmsChunkType.REAQ, emptyByteBuffer, progress) { chunkReply ->
-        val buffer = chunkReply.payload.toByteBuffer(chunkReply.length)
+        val buffer = chunkReply.withPayload { it.toByteBuffer(chunkReply.length) }
         buffer.get() != 0.toByte()
     }
 }
@@ -202,13 +203,15 @@ suspend fun <R> SharedJdwpSession.handleDdmsREAL(
     replyHandler: suspend (data: AdbInputChannel, length: Int) -> R
 ): R {
     return handleDdmsCommand(DdmsChunkType.REAL, emptyByteBuffer, progress) {
-        replyHandler(it.payload, it.length)
+        it.withPayload { payload ->
+            replyHandler(payload, it.length)
+        }
     }
 }
 
 suspend fun SharedJdwpSession.handleDdmsMPRQ(progress: JdwpCommandProgress? = null): Int {
     return handleDdmsCommand(MPRQ, emptyByteBuffer, progress) { chunkReply ->
-        val replyPayload = chunkReply.payload.toByteBuffer(chunkReply.length)
+        val replyPayload = chunkReply.withPayload { it.toByteBuffer(chunkReply.length) }
         val result = replyPayload.get()
         result.toInt()
     }

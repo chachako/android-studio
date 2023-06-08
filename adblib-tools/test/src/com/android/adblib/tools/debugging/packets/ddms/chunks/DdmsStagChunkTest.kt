@@ -17,6 +17,7 @@ package com.android.adblib.tools.debugging.packets.ddms.chunks
 
 import com.android.adblib.testingutils.CoroutineTestUtils
 import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.packets.PayloadProvider
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.MutableDdmsChunk
 import com.android.adblib.utils.ResizableBuffer
@@ -39,7 +40,7 @@ class DdmsStagChunkTest {
         val chunk = MutableDdmsChunk().apply {
             type = DdmsChunkType.STAG
             length = payload.remaining()
-            this.payload = AdbBufferedInputChannel.forByteBuffer(payload)
+            this.payloadProvider = PayloadProvider.forByteBuffer(payload)
         }
 
         // Act

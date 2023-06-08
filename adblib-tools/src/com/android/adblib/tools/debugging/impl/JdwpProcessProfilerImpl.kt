@@ -36,6 +36,7 @@ import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
 import com.android.adblib.tools.debugging.packets.ddms.isDdmsCommand
+import com.android.adblib.tools.debugging.packets.ddms.withPayload
 import com.android.adblib.tools.debugging.processEmptyDdmsReplyPacket
 import kotlinx.coroutines.flow.first
 import java.util.concurrent.TimeUnit
@@ -151,7 +152,9 @@ internal class JdwpProcessProfilerImpl(
                 if (packet.isDdmsCommand) {
                     packet.ddmsChunks().collect { chunk ->
                         if (chunk.type == DdmsChunkType.MPSE) {
-                            val blockResult = block(chunk.payload, chunk.length)
+                            val blockResult = chunk.withPayload {
+                                payload -> block(payload, chunk.length)
+                            }
 
                             // We got the result we want, signal so that the timeout waiting for
                             // reply packet starts now.

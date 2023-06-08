@@ -15,6 +15,7 @@
  */
 package com.android.adblib.tools.debugging.impl
 
+import com.android.adblib.AdbInputChannel
 import com.android.adblib.ByteBufferAdbOutputChannel
 import com.android.adblib.skipRemaining
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
@@ -23,6 +24,7 @@ import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
+import com.android.adblib.tools.debugging.packets.PayloadProvider
 import com.android.adblib.tools.debugging.packets.clone
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
@@ -258,7 +260,7 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
         val heloChunk = MutableDdmsChunk()
         heloChunk.type = DdmsChunkType.HELO
         heloChunk.length = 0
-        heloChunk.payload = AdbBufferedInputChannel.empty()
+        heloChunk.payloadProvider = PayloadProvider.emptyPayload()
 
         val packet = MutableJdwpPacket()
         packet.id = jdwpSession.nextPacketId()
@@ -270,9 +272,9 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
         return packet
     }
 
-    private suspend fun AdbBufferedInputChannel.countBytes(): Int {
+    private suspend fun AdbInputChannel.countBytes(): Int {
         return skipRemaining().also {
-            rewind()
+            (this as? AdbBufferedInputChannel)?.rewind()
         }
     }
 }

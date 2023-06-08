@@ -31,6 +31,7 @@ import com.android.adblib.tools.debugging.handleDdmsCaptureView
 import com.android.adblib.tools.debugging.handleDdmsDumpViewHierarchy
 import com.android.adblib.tools.debugging.handleDdmsListViewRoots
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
+import com.android.adblib.tools.debugging.packets.ddms.withPayload
 import com.android.adblib.tools.debugging.profiler
 import com.android.adblib.tools.debugging.properties
 import com.android.adblib.tools.debugging.sendDdmsExit
@@ -444,7 +445,7 @@ internal class AdblibClientWrapper(
                 // to the socket of the underlying JDWP session.
                 // We clone it into an in-memory ByteBuffer (which is wasteful)
                 // only because the ddmlib API requires it.
-                chunkReply.payload.toByteBuffer(chunkReply.length)
+                chunkReply.withPayload { it.toByteBuffer(chunkReply.length) }
             }
 
             // Invoke the handler with the packet result payload
@@ -463,7 +464,7 @@ internal class AdblibClientWrapper(
                 // to the socket of the underlying JDWP session.
                 // We clone it into an in-memory ByteBuffer (which is wasteful)
                 // only because the ddmlib API requires it.
-                chunkReply.payload.toByteBuffer(chunkReply.length)
+                chunkReply.withPayload { it.toByteBuffer(chunkReply.length) }
             }
 
             // Invoke the handler with the packet result payload
@@ -489,7 +490,7 @@ internal class AdblibClientWrapper(
                 // to the socket of the underlying JDWP session.
                 // We clone it into an in-memory ByteBuffer (which is wasteful)
                 // only because the ddmlib API requires it.
-                chunkReply.payload.toByteBuffer(chunkReply.length)
+                chunkReply.withPayload { it.toByteBuffer(chunkReply.length) }
             }
 
             // Invoke the handler with the packet result payload

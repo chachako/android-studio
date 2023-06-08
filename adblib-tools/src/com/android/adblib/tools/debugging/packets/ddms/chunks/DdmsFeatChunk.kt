@@ -15,12 +15,14 @@
  */
 package com.android.adblib.tools.debugging.packets.ddms.chunks
 
+import com.android.adblib.readNBytes
 import com.android.adblib.readRemaining
 import com.android.adblib.tools.debugging.packets.ddms.ChunkDataParsing.readInt
 import com.android.adblib.tools.debugging.packets.ddms.ChunkDataParsing.readString
 import com.android.adblib.tools.debugging.packets.ddms.ChunkDataWriting
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CHUNK_BYTE_ORDER
+import com.android.adblib.tools.debugging.packets.ddms.withPayload
 import com.android.adblib.utils.ResizableBuffer
 
 internal data class DdmsFeatChunk(val features: List<String>) {
@@ -31,9 +33,12 @@ internal data class DdmsFeatChunk(val features: List<String>) {
             chunk: DdmsChunkView,
             workBuffer: ResizableBuffer = ResizableBuffer()
         ): DdmsFeatChunk {
+            // Read payload into "buffer"
             workBuffer.clear()
-            chunk.payload.readRemaining(workBuffer)
-            val buffer = workBuffer.afterChannelRead(useMarkedPosition = false)
+            val buffer = chunk.withPayload { payload ->
+                payload.readNBytes(workBuffer, chunk.length)
+                workBuffer.afterChannelRead()
+            }
 
             buffer.order(DDMS_CHUNK_BYTE_ORDER)
             val count = readInt(buffer)

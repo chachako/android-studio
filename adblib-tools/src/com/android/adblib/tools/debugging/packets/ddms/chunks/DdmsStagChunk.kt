@@ -15,11 +15,13 @@
  */
 package com.android.adblib.tools.debugging.packets.ddms.chunks
 
+import com.android.adblib.readNBytes
 import com.android.adblib.readRemaining
 import com.android.adblib.tools.debugging.packets.ddms.ChunkDataParsing
 import com.android.adblib.tools.debugging.packets.ddms.ChunkDataWriting
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
+import com.android.adblib.tools.debugging.packets.ddms.withPayload
 import com.android.adblib.utils.ResizableBuffer
 
 @JvmInline
@@ -100,10 +102,12 @@ internal data class DdmsStagChunk(
             chunk: DdmsChunkView,
             workBuffer: ResizableBuffer = ResizableBuffer()
         ): DdmsStagChunk {
+            // Read payload into "buffer"
             workBuffer.clear()
-            chunk.payload.rewind()
-            chunk.payload.readRemaining(workBuffer)
-            val buffer = workBuffer.afterChannelRead(useMarkedPosition = false)
+            val buffer = chunk.withPayload { payload ->
+                payload.readNBytes(workBuffer, chunk.length)
+                workBuffer.afterChannelRead()
+            }
 
             buffer.order(DdmsPacketConstants.DDMS_CHUNK_BYTE_ORDER)
             val stage = AppStage(ChunkDataParsing.readInt(buffer))

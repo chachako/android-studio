@@ -17,6 +17,7 @@ package com.android.adblib.tools.debugging.packets.ddms.chunks
 
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.packets.PayloadProvider
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.MutableDdmsChunk
 import com.android.adblib.utils.ResizableBuffer
@@ -42,7 +43,7 @@ class DdmsApnmChunkTest {
         val chunk = MutableDdmsChunk().apply {
             type = DdmsChunkType.APNM
             length = payload.remaining()
-            this.payload = AdbBufferedInputChannel.forByteBuffer(payload)
+            this.payloadProvider = PayloadProvider.forByteBuffer(payload)
         }
 
         // Act
@@ -70,7 +71,7 @@ class DdmsApnmChunkTest {
         val chunk = MutableDdmsChunk().apply {
             type = DdmsChunkType.APNM
             length = payload.remaining()
-            this.payload = AdbBufferedInputChannel.forByteBuffer(payload)
+            this.payloadProvider = PayloadProvider.forByteBuffer(payload)
         }
 
         // Act
@@ -98,7 +99,7 @@ class DdmsApnmChunkTest {
         val chunk = MutableDdmsChunk().apply {
             type = DdmsChunkType.APNM
             length = payload.remaining()
-            this.payload = AdbBufferedInputChannel.forByteBuffer(payload)
+            this.payloadProvider = PayloadProvider.forByteBuffer(payload)
         }
 
         // Act

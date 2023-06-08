@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,29 +15,18 @@
  */
 package com.android.adblib.tools.debugging.packets.ddms
 
-import com.android.adblib.AdbInputChannel
 import com.android.adblib.tools.debugging.packets.PayloadProvider
 
 /**
- * A mutable version of [DdmsChunkView], to be used when creating DDMS "chunks"
+ * A [DdmsChunkView] implementation that is immutable and allows on-demand access to the
+ * chunk payload.
  */
-internal class MutableDdmsChunk : DdmsChunkView {
-
-    override var type: DdmsChunkType = DdmsChunkType.NULL
-
-    override var length: Int = 0
-
-    var payloadProvider: PayloadProvider = PayloadProvider.emptyPayload()
-
-    override suspend fun acquirePayload(): AdbInputChannel {
-        return payloadProvider.acquirePayload()
-    }
-
-    override suspend fun releasePayload() {
-        payloadProvider.releasePayload()
-    }
-
+internal class EphemeralDdmsChunk(
+  override val type: DdmsChunkType,
+  override val length: Int,
+  private val payloadProvider: PayloadProvider
+): DdmsChunkView, PayloadProvider by payloadProvider {
     override fun toString(): String {
-        return "DDMS Chunk: type=$type (${type.value}), length=$length"
+        return "DDMS Chunk: type=$type (${type.value}), length=$length, payloadProvider=$payloadProvider"
     }
 }

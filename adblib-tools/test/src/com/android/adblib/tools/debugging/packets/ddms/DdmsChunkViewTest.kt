@@ -21,9 +21,15 @@ import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
+import com.android.adblib.tools.debugging.packets.PayloadProvider
+import com.android.adblib.tools.debugging.toByteArray
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.adblib.utils.ResizableBuffer
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.nio.ByteBuffer
@@ -78,7 +84,7 @@ class DdmsChunkViewTest : AdbLibToolsTestBase() {
         // Assert: payload
         val outputBuffer = ResizableBuffer()
         val output = ByteBufferAdbOutputChannel(outputBuffer)
-        packet.payload.forwardTo(output)
+        packet.withPayload { it.forwardTo(output) }
 
         var index = 0
         assertEquals(128.toByte(), outputBuffer[index++])
@@ -95,19 +101,27 @@ class DdmsChunkViewTest : AdbLibToolsTestBase() {
         val jdwpPacket = createJdwpPacketWithThreeDdmsChunks()
 
         // Act
-        val chunks = jdwpPacket.ddmsChunks().toList()
+        val payloads = mutableListOf<ByteArray>()
+        val chunks = jdwpPacket.ddmsChunks().filter {
+            payloads.add(it.payloadByteArray())
+            true
+        }.toList()
 
         // Assert
         assertEquals(3, chunks.size)
+        assertEquals(3, payloads.size)
 
         assertEquals(DdmsChunkType.REAQ, chunks[0].type)
         assertEquals(4, chunks[0].length)
+        assertArrayEquals(byteArrayOf(127, 128.toByte(), 255.toByte(), 0), payloads[0])
 
         assertEquals(DdmsChunkType.APNM, chunks[1].type)
         assertEquals(0, chunks[1].length)
+        assertArrayEquals(byteArrayOf(), payloads[1])
 
         assertEquals(DdmsChunkType.HELO, chunks[2].type)
         assertEquals(8, chunks[2].length)
+        assertArrayEquals(byteArrayOf(1, 2, 3, 4, 5, 6, 7, 8), payloads[2])
     }
 
     @Test
@@ -117,19 +131,52 @@ class DdmsChunkViewTest : AdbLibToolsTestBase() {
         jdwpPacket.ddmsChunks().toList()
 
         // Act
-        val chunks = jdwpPacket.ddmsChunks().toList()
+        val payloads = mutableListOf<ByteArray>()
+        val chunks = jdwpPacket.ddmsChunks().filter {
+            payloads.add(it.payloadByteArray())
+            true
+        }.toList()
 
         // Assert
         assertEquals(3, chunks.size)
+        assertEquals(3, payloads.size)
 
         assertEquals(DdmsChunkType.REAQ, chunks[0].type)
         assertEquals(4, chunks[0].length)
+        assertArrayEquals(byteArrayOf(127, 128.toByte(), 255.toByte(), 0), payloads[0])
 
         assertEquals(DdmsChunkType.APNM, chunks[1].type)
         assertEquals(0, chunks[1].length)
+        assertArrayEquals(byteArrayOf(), payloads[1])
 
         assertEquals(DdmsChunkType.HELO, chunks[2].type)
         assertEquals(8, chunks[2].length)
+        assertArrayEquals(byteArrayOf(1, 2, 3, 4, 5, 6, 7, 8), payloads[2])
+    }
+
+    @Test
+    fun test_JdwpPacketView_ddmsChunks_ChunkPayloadThrowsAfterFlowIsTerminated() = runBlockingWithTimeout {
+        // Prepare
+        val jdwpPacket = createJdwpPacketWithThreeDdmsChunks()
+
+        // Act
+        val chunk = jdwpPacket.ddmsChunks().first()
+
+        // Assert: withPayload should throw since flow is terminated
+        exceptionRule.expect(IllegalStateException::class.java)
+        chunk.withPayload {  }
+    }
+
+    @Test
+    fun test_JdwpPacketView_ddmsChunks_ChunkPayloadIsValidAfterClone() = runBlockingWithTimeout {
+        // Prepare
+        val jdwpPacket = createJdwpPacketWithThreeDdmsChunks()
+
+        // Act
+        val chunk = jdwpPacket.ddmsChunks().map { it.clone() }.first()
+
+        // Assert: withPayload should work since we cloned the chunk
+        assertArrayEquals(byteArrayOf(127, 128.toByte(), 255.toByte(), 0), chunk.payloadByteArray())
     }
 
     private suspend fun createJdwpPacketWithThreeDdmsChunks(): MutableJdwpPacket {
@@ -159,7 +206,7 @@ class DdmsChunkViewTest : AdbLibToolsTestBase() {
         val ddmsChunk = MutableDdmsChunk()
         ddmsChunk.type = chunkType
         ddmsChunk.length = bytes.size
-        ddmsChunk.payload = bytesToBufferedInputChannel(bytes)
+        ddmsChunk.payloadProvider = PayloadProvider.forBufferedInputChannel(bytesToBufferedInputChannel(bytes))
         return ddmsChunk
     }
 
@@ -170,5 +217,11 @@ class DdmsChunkViewTest : AdbLibToolsTestBase() {
         }
         buffer.flip()
         return AdbBufferedInputChannel.forByteBuffer(buffer)
+    }
+
+    private suspend fun DdmsChunkView.payloadByteArray() : ByteArray {
+        return withPayload { input ->
+            input.toByteArray(length)
+        }
     }
 }
