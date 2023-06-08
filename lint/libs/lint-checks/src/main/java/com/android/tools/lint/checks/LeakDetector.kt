@@ -171,7 +171,7 @@ class LeakDetector : Detector(), SourceCodeScanner {
         if (
           isLeakCandidate(cls, context.evaluator) &&
             !isAppContext(cls, node) &&
-            !isInitializedToAppContext(node, cls)
+            !isInitializedToAppContext(context, node, cls)
         ) {
           val message =
             "Do not place Android context classes in static fields; " + "this is a memory leak"
@@ -214,71 +214,6 @@ class LeakDetector : Detector(), SourceCodeScanner {
       }
     }
 
-    private fun isInitializedToAppContext(
-      context: JavaContext,
-      field: PsiField,
-      typeClass: PsiClass
-    ): Boolean {
-      if (!context.evaluator.extendsClass(typeClass, CLASS_CONTEXT, false)) {
-        return false
-      }
-
-      val uField = field.toUElement(UField::class.java) ?: return true
-      return isInitializedToAppContext(uField, typeClass)
-    }
-
-    /**
-     * If it's a static field see if it's initialized to an app context in one of the constructors.
-     */
-    private fun isInitializedToAppContext(field: UField, typeClass: PsiClass): Boolean {
-      val containingClass = field.getContainingUClass() ?: return false
-
-      // Only check for app context if we're dealing with a Context field -- there's
-      // no chance Fragments, Views etc will be the app context.
-      if (!context.evaluator.extendsClass(typeClass, CLASS_CONTEXT, false)) {
-        return false
-      }
-
-      for (method in containingClass.uastDeclarations) {
-        if (method !is UMethod || !method.isConstructor) {
-          continue
-        }
-        val methodBody = method.uastBody ?: continue
-        val assignedToAppContext = Ref(false)
-
-        methodBody.accept(
-          object : AbstractUastVisitor() {
-            override fun visitBinaryExpression(node: UBinaryExpression): Boolean {
-              if (
-                node.isAssignment() &&
-                  node.leftOperand is UResolvable &&
-                  field.sourcePsi == (node.leftOperand as UResolvable).resolve()
-              ) {
-                // Yes, assigning to this field
-                // See if the right hand side looks like an app context
-                var rhs: UElement = node.rightOperand
-                while (rhs is UQualifiedReferenceExpression) {
-                  rhs = rhs.selector
-                }
-                if (rhs is UCallExpression) {
-                  if ("getApplicationContext" == getMethodName(rhs)) {
-                    assignedToAppContext.set(true)
-                  }
-                }
-              }
-              return super.visitBinaryExpression(node)
-            }
-          }
-        )
-
-        if (assignedToAppContext.get()) {
-          return true
-        }
-      }
-
-      return false
-    }
-
     private fun report(field: PsiField, modifierList: PsiModifierList, message: String) {
       var locationNode: PsiElement = field
       // Try to find the static modifier itself
@@ -305,7 +240,11 @@ class LeakDetector : Detector(), SourceCodeScanner {
     }
     val cls = type.resolve() ?: return
 
-    if (isLeakCandidate(cls, context.evaluator)) {
+    if (
+      isLeakCandidate(cls, context.evaluator) &&
+        !isAppContext(cls, field) &&
+        !isInitializedToAppContext(context, field, cls)
+    ) {
       context.report(
         LeakDetector.ISSUE,
         field,
@@ -352,52 +291,119 @@ class LeakDetector : Detector(), SourceCodeScanner {
         "android.arch.lifecycle.ViewModel",
         "androidx.lifecycle.ViewModel"
       )
+  }
+}
 
-    private const val CLASS_LIFECYCLE = "androidx.lifecycle.Lifecycle"
-    private const val CLASS_LIFECYCLE_OLD = "android.arch.lifecycle.Lifecycle"
+private const val CLASS_LIFECYCLE = "androidx.lifecycle.Lifecycle"
+private const val CLASS_LIFECYCLE_OLD = "android.arch.lifecycle.Lifecycle"
 
-    private fun isAppContext(cls: PsiClass, field: PsiField): Boolean {
-      //noinspection ExternalAnnotations
-      if (field.annotations.any { it.qualifiedName?.endsWith("ApplicationContext") == true }) {
-        // dagger.hilt.android.qualifiers.ApplicationContext
-        // and various other ones like
-        // com.google.android.apps.common.inject.annotation.ApplicationContext;
-        // see b/159130139
-        return true
-      } else if (field is KtLightFieldForSourceDeclarationSupport) {
-        val origin = field.kotlinOrigin
-        if (
-          origin != null &&
-            origin.annotationEntries.any { it.shortName?.identifier == "ApplicationContext" }
-        ) {
-          return true
-        }
-      }
-
-      // Don't flag names like "sAppContext" or "applicationContext".
-      val name = field.name
-      val lower = name.toLowerCase(Locale.US)
-      if (lower.contains("appcontext") || lower.contains("application")) {
-        if (CLASS_CONTEXT == cls.qualifiedName) {
-          return true
-        }
-      }
-
-      return false
-    }
-
-    private fun isLeakCandidate(cls: PsiClass, evaluator: JavaEvaluator): Boolean {
-      return (evaluator.extendsClass(cls, CLASS_CONTEXT, false) &&
-        !evaluator.extendsClass(cls, CLASS_APPLICATION, false)) ||
-        evaluator.extendsClass(cls, CLASS_VIEW, false) ||
-        evaluator.extendsClass(cls, CLASS_FRAGMENT, false) ||
-        // TODO: Include androidx fragments here?
-
-        // From https://developer.android.com/topic/libraries/architecture/viewmodel:
-        // Caution: A ViewModel must never reference a view, Lifecycle, or any
-        // class that may hold a reference to the activity context
-        evaluator.extendsClass(cls, CLASS_LIFECYCLE, false) ||
-        evaluator.extendsClass(cls, CLASS_LIFECYCLE_OLD, false)
+private fun isAppContext(cls: PsiClass, field: PsiField): Boolean {
+  //noinspection ExternalAnnotations
+  if (field.annotations.any { it.qualifiedName?.endsWith("ApplicationContext") == true }) {
+    // dagger.hilt.android.qualifiers.ApplicationContext
+    // and various other ones like
+    // com.google.android.apps.common.inject.annotation.ApplicationContext;
+    // see b/159130139
+    return true
+  } else if (field is KtLightFieldForSourceDeclarationSupport) {
+    val origin = field.kotlinOrigin
+    if (
+      origin != null &&
+        origin.annotationEntries.any { it.shortName?.identifier == "ApplicationContext" }
+    ) {
+      return true
     }
   }
+
+  // Don't flag names like "sAppContext" or "applicationContext".
+  val name = field.name
+  val lower = name.toLowerCase(Locale.US)
+  if (lower.contains("appcontext") || lower.contains("application")) {
+    if (CLASS_CONTEXT == cls.qualifiedName) {
+      return true
+    }
+  }
+
+  return false
+}
+
+private fun isInitializedToAppContext(
+  context: JavaContext,
+  field: PsiField,
+  typeClass: PsiClass
+): Boolean {
+  if (!context.evaluator.extendsClass(typeClass, CLASS_CONTEXT, false)) {
+    return false
+  }
+
+  val uField = field.toUElement(UField::class.java) ?: return true
+  return isInitializedToAppContext(context, uField, typeClass)
+}
+
+/** If it's a static field see if it's initialized to an app context in one of the constructors. */
+private fun isInitializedToAppContext(
+  context: JavaContext,
+  field: UField,
+  typeClass: PsiClass
+): Boolean {
+  val containingClass = field.getContainingUClass() ?: return false
+
+  // Only check for app context if we're dealing with a Context field -- there's
+  // no chance Fragments, Views etc will be the app context.
+  if (!context.evaluator.extendsClass(typeClass, CLASS_CONTEXT, false)) {
+    return false
+  }
+
+  for (method in containingClass.uastDeclarations) {
+    if (method !is UMethod || !method.isConstructor) {
+      continue
+    }
+    val methodBody = method.uastBody ?: continue
+    val assignedToAppContext = Ref(false)
+
+    methodBody.accept(
+      object : AbstractUastVisitor() {
+        override fun visitBinaryExpression(node: UBinaryExpression): Boolean {
+          if (
+            node.isAssignment() &&
+              node.leftOperand is UResolvable &&
+              field.sourcePsi == (node.leftOperand as UResolvable).resolve()
+          ) {
+            // Yes, assigning to this field
+            // See if the right hand side looks like an app context
+            var rhs: UElement = node.rightOperand
+            while (rhs is UQualifiedReferenceExpression) {
+              rhs = rhs.selector
+            }
+            if (rhs is UCallExpression) {
+              if ("getApplicationContext" == getMethodName(rhs)) {
+                assignedToAppContext.set(true)
+              }
+            }
+          }
+          return super.visitBinaryExpression(node)
+        }
+      }
+    )
+
+    if (assignedToAppContext.get()) {
+      return true
+    }
+  }
+
+  return false
+}
+
+private fun isLeakCandidate(cls: PsiClass, evaluator: JavaEvaluator): Boolean {
+  return (evaluator.extendsClass(cls, CLASS_CONTEXT, false) &&
+    !evaluator.extendsClass(cls, CLASS_APPLICATION, false)) ||
+    evaluator.extendsClass(cls, CLASS_VIEW, false) ||
+    evaluator.extendsClass(cls, CLASS_FRAGMENT, false) ||
+    // TODO: Include androidx fragments here?
+
+    // From https://developer.android.com/topic/libraries/architecture/viewmodel:
+    // Caution: A ViewModel must never reference a view, Lifecycle, or any
+    // class that may hold a reference to the activity context
+    evaluator.extendsClass(cls, CLASS_LIFECYCLE, false) ||
+    evaluator.extendsClass(cls, CLASS_LIFECYCLE_OLD, false)
 }

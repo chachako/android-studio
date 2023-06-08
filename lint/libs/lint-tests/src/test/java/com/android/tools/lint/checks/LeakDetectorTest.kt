@@ -367,6 +367,14 @@ class LeakDetectorTest : AbstractCheckTest() {
                     public static class InnerClass2 {
                         public View view; // OK
                     }
+
+                    // Regression tests for b/262841842:
+                    private Context appContext; // OK
+                    private Context lateAssignedContext; // OK
+
+                    public StaticFieldTest(Context c) {
+                        lateAssignedContext = c.getApplicationContext();
+                    }
                 }
                 """
           )
@@ -642,6 +650,7 @@ class LeakDetectorTest : AbstractCheckTest() {
   fun testHilt() {
     // Regression test for
     // 206207283: StaticFieldLeak should not report usage of hilt annotated @ApplicationContext
+    // 262841842: Not useful finding for JavaAndKotlinLint:StaticFieldLeak
     lint()
       .files(
         kotlin(
@@ -650,6 +659,7 @@ class LeakDetectorTest : AbstractCheckTest() {
 
                 import android.content.Context
                 import dagger.hilt.android.qualifiers.ApplicationContext
+                import androidx.lifecycle.ViewModel
 
                 class Model constructor(
                     @ApplicationContext private val context: Context // OK
@@ -666,6 +676,10 @@ class LeakDetectorTest : AbstractCheckTest() {
                         var model: Model2? = null
                     }
                 }
+
+                class ViewModelExtension : ViewModel {
+                   @ApplicationContext private val context: Context // OK
+                }
                 """
           )
           .indented(),
@@ -677,6 +691,14 @@ class LeakDetectorTest : AbstractCheckTest() {
                 import java.lang.annotation.Target;
                 @Target({ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
                 public @interface ApplicationContext {}
+                """
+          )
+          .indented(),
+        java(
+            // Stub
+            """
+                package androidx.lifecycle;
+                public class ViewModel { }
                 """
           )
           .indented()
