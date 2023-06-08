@@ -182,7 +182,7 @@ interface AdbBufferedInputChannel : AdbInputChannel {
             }
 
             override fun close() {
-                this.input.close()
+                input.close()
             }
 
             private fun ensureRoom(count: Int) {

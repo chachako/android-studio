@@ -15,7 +15,10 @@
  */
 package com.android.adblib.tools.debugging.packets
 
+import com.android.adblib.AdbInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_HEADER_LENGTH
+import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
+import com.android.adblib.tools.debugging.packets.ddms.withPayload
 
 /**
  * Provides access to various elements of a JDWP packet. A JDWP packet always starts with
@@ -57,10 +60,25 @@ interface JdwpPacketView {
     val errorCode: Int
 
     /**
-     * [AdbBufferedInputChannel] to access the payload associated to the packet. If the packet is
-     * valid, [payload] should contain exactly [length] minus 11 bytes.
+     * **Note: Do NOT use directly, use [withPayload] instead**
+     *
+     * Returns the payload of this [JdwpPacketView] as an [AdbInputChannel] instance.
+     * [releasePayload] must be called when the returned [AdbInputChannel] is not used anymore.
+     *
+     * @throws IllegalStateException if the `payload` of this [JdwpPacketView] instance is not
+     *  available anymore.
+     * @see [PayloadProvider.acquirePayload]
      */
-    val payload: AdbBufferedInputChannel
+    suspend fun acquirePayload(): AdbInputChannel
+
+    /**
+     * **Note: Do NOT use directly, use [withPayload] instead**
+     *
+     * Releases the [AdbInputChannel] previously returned by [acquirePayload].
+     *
+     * @see [PayloadProvider.releasePayload]
+     */
+    suspend fun releasePayload()
 
     /**
      * Returns `true` is the packet is a "command" packet matching the given [cmdSet] and [cmd]
@@ -91,3 +109,43 @@ interface JdwpPacketView {
 
 val JdwpPacketView.payloadLength
     get() = length - PACKET_HEADER_LENGTH
+
+/**
+ * Invokes [block] with payload of this [JdwpPacketView]. The payload is passed to [block]
+ * as an [AdbInputChannel] instance that is valid only during the [block] invocation.
+ *
+ * @throws IllegalStateException if the `payload` of this [JdwpPacketView] instance is not
+ *  available anymore.
+ */
+suspend inline fun <R> JdwpPacketView.withPayload(block: (AdbInputChannel) -> R): R {
+    val payload = acquirePayload()
+    return try {
+        block(payload)
+    } finally {
+        releasePayload()
+    }
+}
+
+/**
+ * Helper method for implementations for [JdwpPacketView]
+ */
+internal fun JdwpPacketView.toStringImpl(): String {
+    return "JdwpPacket(id=%d, length=%d, flags=0x%02X, %s)".format(
+        id,
+        length,
+        flags,
+        if (isReply) {
+            "isReply=true, errorCode=%s[%d]".format(
+                JdwpErrorCode.errorName(errorCode),
+                errorCode
+            )
+        } else {
+            "isCommand=true, cmdSet=%s[%d], cmd=%s[%d]".format(
+                JdwpCommands.cmdSetToString(cmdSet),
+                cmdSet,
+                JdwpCommands.cmdToString(cmdSet, cmd),
+                cmd
+            )
+        }
+    )
+}

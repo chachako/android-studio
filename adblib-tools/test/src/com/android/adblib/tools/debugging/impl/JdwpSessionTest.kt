@@ -33,6 +33,7 @@ import com.android.adblib.tools.debugging.packets.ddms.MutableDdmsChunk
 import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
 import com.android.adblib.tools.debugging.packets.ddms.isDdmsCommand
 import com.android.adblib.tools.debugging.packets.ddms.writeToChannel
+import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
 import com.android.adblib.utils.ResizableBuffer
@@ -105,11 +106,11 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
         // Assert
         assertEquals(0, reply.errorCode)
         assertEquals(122, reply.length)
-        assertEquals(111, reply.payload.countBytes())
+        assertEquals(111, reply.withPayload { it.countBytes() })
     }
 
     @Test
-    fun receivePacketRewindsTheCorrectPayload() = runBlockingWithTimeout {
+    fun receivePacketMakesPreviousPacketPayloadInvalid() = runBlockingWithTimeout {
         val fakeDevice = addFakeDevice(fakeAdb, 30)
         fakeDevice.startClient(10, 0, "a.b.c", false)
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
@@ -125,13 +126,12 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
         sendPacket.id = jdwpSession.nextPacketId()
         jdwpSession.sendPacket(sendPacket)
 
-        // Override payload (in an unfriendly way)
-        (reply as MutableJdwpPacket).payload = AdbBufferedInputChannel.empty()
-        val reply2 = waitForReplyPacket(jdwpSession, sendPacket)
+        // Read another packet to invalidate the previous one
+        waitForReplyPacket(jdwpSession, sendPacket)
 
         // Assert
-        assertEquals(0, reply.errorCode)
-        assertEquals(0, reply2.errorCode)
+        exceptionRule.expect(IllegalStateException::class.java)
+        reply.withPayload {  }
     }
 
     @Test
@@ -268,7 +268,7 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
         packet.isCommand = true
         packet.cmdSet = DdmsPacketConstants.DDMS_CMD_SET
         packet.cmd = DdmsPacketConstants.DDMS_CMD
-        packet.payload = heloChunk.toBufferedInputChannel()
+        packet.payloadProvider = PayloadProvider.forBufferedInputChannel(heloChunk.toBufferedInputChannel())
         return packet
     }
 

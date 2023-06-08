@@ -15,6 +15,7 @@
  */
 package com.android.adblib.tools.debugging.impl
 
+import com.android.adblib.AdbInputChannel
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.scope
@@ -27,10 +28,12 @@ import com.android.adblib.tools.debugging.SharedJdwpSessionFilter
 import com.android.adblib.tools.debugging.SharedJdwpSessionMonitor
 import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
-import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
+import com.android.adblib.tools.debugging.packets.PayloadProvider
 import com.android.adblib.tools.debugging.packets.clone
+import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.tools.debugging.sharedJdwpSessionMonitorFactoryList
+import com.android.adblib.utils.ResizableBuffer
 import com.android.adblib.utils.createChildScope
 import com.android.adblib.utils.withReentrantLock
 import com.android.adblib.withPrefix
@@ -79,7 +82,8 @@ internal class SharedJdwpSessionImpl(
     override val device: ConnectedDevice
         get() = jdwpSession.device
 
-    private val logger = thisLogger(session).withPrefix("device='${device.serialNumber}' pid=$pid: ")
+    private val logger =
+        thisLogger(session).withPrefix("device='${device.serialNumber}' pid=$pid: ")
 
     /**
      * The scope used to run coroutines for sending and receiving packets
@@ -220,18 +224,15 @@ internal class SharedJdwpSessionImpl(
 
     private suspend fun sendReceivedPackets() {
         withContext(CoroutineName("Shared JDWP Session: Send received packets job")) {
-            val localPacket = MutableJdwpPacket()
-            var scopedPayload = AdbBufferedInputChannel.empty()
-
+            val workBuffer = ResizableBuffer()
             while (true) {
-                (scopedPayload as? ScopedAdbBufferedInputChannel)?.waitForPendingRead()
 
                 // Wait until "isActive" is `true`
                 hasReceiversStateFlow.waitUntil(true)
                 sendReplayPlacketsToReceivers()
 
                 logger.verbose { "Waiting for next JDWP packet from session" }
-                val packet = try {
+                val sessionPacket = try {
                     jdwpSession.receivePacket()
                 } catch (t: Throwable) {
                     // Cancellation cancels the jdwp session scope, which cancel the scope
@@ -250,21 +251,32 @@ internal class SharedJdwpSessionImpl(
                     break
                 }
 
-                // Copy packet info
-                packet.copyHeaderTo(localPacket)
-                ScopedAdbBufferedInputChannel(scope, packet.payload).also {
-                    localPacket.payload = it
-                    scopedPayload = it
-                }
+                // "Emit" a thread-safe version of "sessionPacket" to all receivers
+                sessionPacket.withPayload { sessionPacketPayload ->
+                    // Note: "sessionPacketPayload" is an input channel directly connected to the
+                    // underlying connection.
+                    // We create a scoped payload channel so that
+                    // 1) the payload is thread-safe for all receivers, and
+                    // 2) cancellation of any receiver does not close the underlying socket
+                    // 3) "shutdown" does not close the underlying PayloadProvider (that is taken
+                    // care of by the JdwpSession class)
+                    val payloadProvider = ScopedPayloadProvider(scope, sessionPacketPayload)
+                    EphemeralJdwpPacket.fromPacket(sessionPacket, payloadProvider).use { packet ->
 
-                // Send to each receiver
-                sendReplayPlacketsToReceivers()
-                jdwpMonitor?.onReceivePacket(localPacket)
-                activeReceivers.forEach { receiver ->
-                    logger.verbose { "Emitting session packet $localPacket to receiver '${receiver.name}'" }
-                    sendPacketResultToReceiver(receiver, Result.success(localPacket))
+                            // Send to each receiver
+                            sendReplayPlacketsToReceivers()
+                            jdwpMonitor?.onReceivePacket(packet)
+                            activeReceivers.forEach { receiver ->
+                                logger.verbose { "Emitting session packet $packet to receiver '${receiver.name}'" }
+                                sendPacketResultToReceiver(receiver, Result.success(packet))
+                            }
+                            jdwpFilter.afterReceivePacket(packet)
+
+                            // Packet should not be used after this, because payload of the jdwp packet
+                            // from the underlying jdwp session is about to become invalid.
+                            packet.shutdown(workBuffer)
+                        }
                 }
-                jdwpFilter.afterReceivePacket(localPacket)
             }
         }
     }
@@ -285,18 +297,6 @@ internal class SharedJdwpSessionImpl(
             activeReceivers.forEach { receiver ->
                 sendPacketResultToReceiver(receiver, Result.failure(t))
             }
-        }
-    }
-
-    private fun JdwpPacketView.copyHeaderTo(destination: MutableJdwpPacket) {
-        destination.id = this.id
-        destination.length = this.length
-        destination.flags = this.flags
-        if (destination.isCommand) {
-            destination.cmdSet = this.cmdSet
-            destination.cmd = this.cmd
-        } else {
-            destination.errorCode = this.errorCode
         }
     }
 
@@ -325,7 +325,6 @@ internal class SharedJdwpSessionImpl(
     ) {
         runCatching {
             logger.verbose { "Sending packet to receiver '${receiver.name}': $packet" }
-            packet.onSuccess { it.payload.rewind() }
             receiver.sendPacketResult(packet)
         }.onFailure { t ->
             if (t !is CancellationException) {
@@ -449,13 +448,63 @@ internal class SharedJdwpSessionImpl(
         }
     }
 
+    private class ScopedPayloadProvider(
+        scope: CoroutineScope,
+        payload: AdbInputChannel
+    ) : PayloadProvider {
+
+        private var closed = false
+
+        /**
+         * Locks access to [scopedPayload] to guarantee there is at most a single reader
+         */
+        private val mutex = Mutex()
+
+        /**
+         * The [ScopedAdbBufferedInputChannel] wrapping the original [AdbInputChannel], to ensure
+         * cancellation of [AdbInputChannel.read] operations don't close the [AdbInputChannel].
+         */
+        private var scopedPayload = ScopedAdbBufferedInputChannel(scope, payload)
+
+        override suspend fun acquirePayload(): AdbInputChannel {
+            throwIfClosed()
+            mutex.lock()
+            return scopedPayload
+        }
+
+        override suspend fun releasePayload() {
+            scopedPayload.waitForPendingRead()
+            scopedPayload.rewind()
+            mutex.unlock()
+        }
+
+        override suspend fun shutdown(workBuffer: ResizableBuffer) {
+            closed = true
+            mutex.withLock {
+                scopedPayload.waitForPendingRead()
+            }
+            // Note: We don't shut down [scopedPayload] as we don't own it
+        }
+
+        override fun close() {
+            closed = true
+            // Note: We don't close [scopedPayload] as we don't own it
+        }
+
+        private fun throwIfClosed() {
+            if (closed) {
+                throw IllegalStateException("Payload is not available anymore because the provider has been closed")
+            }
+        }
+    }
+
     /**
      * An [AdbBufferedInputChannel] that reads from another [AdbBufferedInputChannel] in a custom
      * [CoroutineScope] so that cancellation does not affect the initial [input].
      */
     private class ScopedAdbBufferedInputChannel(
         private val scope: CoroutineScope,
-        private val input: AdbBufferedInputChannel
+        private val input: AdbInputChannel
     ) : AdbBufferedInputChannel {
 
         private var currentReadJob: Job? = null
@@ -463,17 +512,23 @@ internal class SharedJdwpSessionImpl(
 
         override suspend fun rewind() {
             currentReadJob?.join()
-            input.rewind()
+            (input as? AdbBufferedInputChannel)?.rewind()
         }
 
         override suspend fun finalRewind() {
             currentReadJob?.join()
-            input.finalRewind()
+            (input as? AdbBufferedInputChannel)?.finalRewind()
         }
 
         override suspend fun read(buffer: ByteBuffer, timeout: Long, unit: TimeUnit): Int {
             return readMutex.withLock {
-                readAsync(buffer).await()
+                readAsync(buffer) { input, buffer -> input.read(buffer) }.await()
+            }
+        }
+
+        override suspend fun readExactly(buffer: ByteBuffer, timeout: Long, unit: TimeUnit) {
+            return readMutex.withLock {
+                readAsync(buffer) { input, buffer -> input.readExactly(buffer) }.await()
             }
         }
 
@@ -481,15 +536,20 @@ internal class SharedJdwpSessionImpl(
             input.close()
         }
 
-        private suspend fun readAsync(buffer: ByteBuffer): Deferred<Int> {
-            val deferred = CompletableDeferred<Int>(scope.coroutineContext.job)
+        private suspend fun <R> readAsync(
+            buffer: ByteBuffer,
+            reader: suspend (AdbInputChannel, ByteBuffer) -> R
+        ): Deferred<R> {
+            val deferred = CompletableDeferred<R>(scope.coroutineContext.job)
             currentReadJob?.join()
             scope.launch {
-                val count = input.read(buffer)
-                deferred.complete(count)
+                val readerResult = reader(input, buffer)
+                deferred.complete(readerResult)
             }.also { job ->
                 job.invokeOnCompletion { throwable ->
-                    throwable?.also { deferred.completeExceptionally(it) }
+                    throwable?.also {
+                        deferred.completeExceptionally(it)
+                    }
                 }
                 currentReadJob = job
             }
@@ -531,7 +591,7 @@ internal class SharedJdwpSessionImpl(
     private class ActiveReceiver(
         private val jdwpSession: SharedJdwpSessionImpl,
         val name: String
-        ) : AutoCloseable {
+    ) : AutoCloseable {
 
         private val logger = jdwpSession.logger.withPrefix("ActiveReceiver '$name': ")
 

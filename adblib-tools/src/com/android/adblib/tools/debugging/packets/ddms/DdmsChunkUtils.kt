@@ -27,8 +27,10 @@ import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CHUNK_HEADER_LENGTH
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CMD
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CMD_SET
+import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.toByteBuffer
 import com.android.adblib.utils.ResizableBuffer
+import com.android.adblib.utils.firstCollecting
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.EOFException
@@ -109,30 +111,31 @@ internal fun JdwpPacketView.ddmsChunks(
             throw IllegalArgumentException("JDWP packet is not a DDMS command packet (and is not a reply packet)")
         }
 
-        jdwpPacketView.payload.rewind()
-        workBuffer.clear()
-        workBuffer.order(DDMS_CHUNK_BYTE_ORDER)
-        while (true) {
-            try {
-                jdwpPacketView.payload.readNBytes(workBuffer, DDMS_CHUNK_HEADER_LENGTH)
-            } catch (e: EOFException) {
-                // Regular exit: there are no more chunks to be read
-                break
-            }
-            val payloadBuffer = workBuffer.afterChannelRead()
+        jdwpPacketView.withPayload  { jdwpPayload ->
+            while (true) {
+                workBuffer.clear()
+                workBuffer.order(DDMS_CHUNK_BYTE_ORDER)
+                try {
+                    jdwpPayload.readNBytes(workBuffer, DDMS_CHUNK_HEADER_LENGTH)
+                } catch (e: EOFException) {
+                    // Regular exit: there are no more chunks to be read
+                    break
+                }
+                val payloadBuffer = workBuffer.afterChannelRead()
 
-            // Prepare chunk source
-            val chunkType = DdmsChunkType(payloadBuffer.getInt())
-            val payloadLength = payloadBuffer.getInt()
-            val payload = AdbInputChannelSlice(jdwpPacketView.payload, payloadLength)
-            val payloadProvider = PayloadProvider.forInputChannel(payload)
-            EphemeralDdmsChunk(chunkType, payloadLength, payloadProvider).use { chunk ->
-                // Emit it to collector
-                emit(chunk)
+                // Prepare chunk source
+                val chunkType = DdmsChunkType(payloadBuffer.getInt())
+                val payloadLength = payloadBuffer.getInt()
+                val payload = AdbInputChannelSlice(jdwpPayload, payloadLength)
+                val payloadProvider = PayloadProvider.forInputChannel(payload)
+                EphemeralDdmsChunk(chunkType, payloadLength, payloadProvider).use { chunk ->
+                    // Emit it to collector
+                    emit(chunk)
 
-                // Ensure we consume all bytes from the chunk payload in case the collector did not
-                // do anything with it
-                chunk.shutdown(workBuffer)
+                    // Ensure we consume all bytes from the chunk payload in case the collector did not
+                    // do anything with it
+                    chunk.shutdown(workBuffer)
+                }
             }
         }
     }

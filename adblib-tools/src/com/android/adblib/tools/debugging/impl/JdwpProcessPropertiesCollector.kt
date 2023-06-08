@@ -30,7 +30,6 @@ import com.android.adblib.tools.AdbLibToolsProperties.SUPPORT_STAG_PACKETS
 import com.android.adblib.tools.debugging.AtomicStateFlow
 import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.SharedJdwpSession
-import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_HEADER_LENGTH
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
@@ -431,7 +430,7 @@ internal class JdwpProcessPropertiesCollector(
         packet.length = PACKET_HEADER_LENGTH + serializedChunk.remaining()
         packet.cmdSet = DDMS_CMD_SET
         packet.cmd = DDMS_CMD
-        packet.payload = AdbBufferedInputChannel.forByteBuffer(serializedChunk)
+        packet.payloadProvider = PayloadProvider.forByteBuffer(serializedChunk)
 
         logger.debug { "Preparing to send $chunk" }
         return packet

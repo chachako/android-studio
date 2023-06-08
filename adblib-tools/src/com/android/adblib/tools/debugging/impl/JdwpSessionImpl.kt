@@ -22,16 +22,17 @@ import com.android.adblib.AdbLogger
 import com.android.adblib.AdbOutputChannel
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.readNBytes
 import com.android.adblib.serialNumber
-import com.android.adblib.skipRemaining
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.JdwpSession
-import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_BYTE_ORDER
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_HEADER_LENGTH
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
+import com.android.adblib.tools.debugging.packets.PayloadProvider
 import com.android.adblib.tools.debugging.packets.parseHeader
+import com.android.adblib.tools.debugging.packets.payloadLength
 import com.android.adblib.tools.debugging.packets.writeToChannel
 import com.android.adblib.utils.ResizableBuffer
 import com.android.adblib.withPrefix
@@ -206,7 +207,8 @@ internal class JdwpSessionImpl(
                 val packet = MutableJdwpPacket()
                 packet.parseHeader(buffer)
                 if (packet.length - PACKET_HEADER_LENGTH <= buffer.remaining()) {
-                    packet.payload = AdbBufferedInputChannel.forByteBuffer(buffer)
+                    //TODO: We don't really need this, as we don't use this packet
+                    packet.payloadProvider = PayloadProvider.forByteBuffer(buffer)
                     logger.debug { "Skipping JDWP packet received before JDWP handshake: $packet" }
                     bytesSoFar.clear()
                 }
@@ -246,39 +248,57 @@ internal class JdwpSessionImpl(
 
     class Receiver(private val channel: AdbInputChannel) {
 
+        /**
+         * The [ResizableBuffer] we re-use during each call to [receivePacket] to temporarily
+         * store data read from [channel].
+         */
         private val workBuffer = ResizableBuffer().order(PACKET_BYTE_ORDER)
 
-        private val jdwpPacket = MutableJdwpPacket()
-        private var previousPayload = AdbBufferedInputChannel.empty()
+        /**
+         * The [MutableJdwpPacket] we re-use during each call to [receivePacket] to temporarily
+         * parse and store JDWP packet headers.
+         */
+        private val workJdwpPacket = MutableJdwpPacket()
+
+        /**
+         * The [EphemeralJdwpPacket] returned from the last call to [receivePacket]
+         */
+        private var previousEphemeralJdwpPacket: EphemeralJdwpPacket? = null
 
         suspend fun receivePacket(): JdwpPacketView {
-            // Ensure we consume all bytes from the previous payload
-            previousPayload.finalRewind()
-            previousPayload.skipRemaining(workBuffer)
-            previousPayload = AdbBufferedInputChannel.empty()
+            // Note: The code below is not thread-safe by design, because JdwpSession is
+            // not supposed to be thread-safe. This means we don't have to worry about
+            // concurrent usages of "previousEphemeralJdwpPacket", for example.
+
+            // Ensure we consume all bytes from the previous packet payload
+            previousEphemeralJdwpPacket?.shutdown(workBuffer)
+            previousEphemeralJdwpPacket = null
 
             // Read next packet
-            readOnePacket(workBuffer, jdwpPacket)
-            return jdwpPacket
+            return readOnePacket(workBuffer).also {
+                previousEphemeralJdwpPacket = it
+            }
         }
 
-        private suspend fun readOnePacket(workBuffer: ResizableBuffer, packet: MutableJdwpPacket) {
+        private suspend fun readOnePacket(workBuffer: ResizableBuffer): EphemeralJdwpPacket {
             workBuffer.clear()
-            channel.readExactly(workBuffer.forChannelRead(PACKET_HEADER_LENGTH))
-            packet.parseHeader(workBuffer.afterChannelRead())
-            packet.payload =
-                AdbBufferedInputChannel.forInputChannel(
-                    AdbInputChannelSlice(
-                        channel,
-                        packet.length - PACKET_HEADER_LENGTH
-                    )
-                )
-            previousPayload = packet.payload
+
+            // Read and parse header
+            channel.readNBytes(workBuffer, PACKET_HEADER_LENGTH)
+            workJdwpPacket.parseHeader(workBuffer.afterChannelRead())
+
+            // Wrap payload
+            val payload = AdbInputChannelSlice(channel, workJdwpPacket.payloadLength)
+
+            // Return new JDWP packet
+            return EphemeralJdwpPacket.fromPacket(workJdwpPacket, payload)
         }
+
     }
 
     companion object {
 
         private val HANDSHAKE = "JDWP-Handshake".toByteArray(Charsets.US_ASCII)
     }
+
 }

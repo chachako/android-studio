@@ -15,6 +15,7 @@
  */
 package com.android.adblib.tools.debugging.packets
 
+import com.android.adblib.AdbInputChannel
 import java.nio.ByteBuffer
 
 /**
@@ -105,27 +106,18 @@ class MutableJdwpPacket : JdwpPacketView {
             field = value and 0xffff
         }
 
-    override var payload = AdbBufferedInputChannel.empty()
+    var payloadProvider: PayloadProvider = PayloadProvider.emptyPayload()
+
+    override suspend fun acquirePayload(): AdbInputChannel {
+        return payloadProvider.acquirePayload()
+    }
+
+    override suspend fun releasePayload() {
+        payloadProvider.releasePayload()
+    }
 
     override fun toString(): String {
-        return "JdwpPacket(id=%d, length=%d, flags=0x%02X, %s)".format(
-            id,
-            length,
-            flags,
-            if (isReply) {
-                "isReply=true, errorCode=%s[%d]".format(
-                    JdwpErrorCode.errorName(errorCode),
-                    errorCode
-                )
-            } else {
-                "isCommand=true, cmdSet=%s[%d], cmd=%s[%d]".format(
-                    JdwpCommands.cmdSetToString(cmdSet),
-                    cmdSet,
-                    JdwpCommands.cmdToString(cmdSet, cmd),
-                    cmd
-                )
-            }
-        )
+        return toStringImpl()
     }
 
     fun setCommand(cmdSet: Int, cmd: Int) {
@@ -149,7 +141,7 @@ class MutableJdwpPacket : JdwpPacketView {
                 this.id = packetId
                 this.length = JdwpPacketConstants.PACKET_HEADER_LENGTH + payload.remaining()
                 this.setCommand(cmdSet, cmd)
-                this.payload = AdbBufferedInputChannel.forByteBuffer(payload)
+                this.payloadProvider = PayloadProvider.forByteBuffer(payload)
             }
         }
     }

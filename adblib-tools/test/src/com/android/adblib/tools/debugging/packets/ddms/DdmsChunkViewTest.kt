@@ -195,7 +195,7 @@ class DdmsChunkViewTest : AdbLibToolsTestBase() {
         jdwpPacket.id = 10
         jdwpPacket.cmdSet = DdmsPacketConstants.DDMS_CMD_SET
         jdwpPacket.cmd = DdmsPacketConstants.DDMS_CMD
-        jdwpPacket.payload = AdbBufferedInputChannel.forByteBuffer(buffer)
+        jdwpPacket.payloadProvider = PayloadProvider.forByteBuffer(buffer)
         return jdwpPacket
     }
 

@@ -219,7 +219,7 @@ class JdwpPacketViewTest : AdbLibToolsTestBase() {
         assert(buffer.position() == 0)
         assert(buffer.limit() == size)
         assert(buffer.capacity() == size)
-        packet.payload = AdbBufferedInputChannel.forByteBuffer(buffer)
+        packet.payloadProvider = PayloadProvider.forByteBuffer(buffer)
         return packet
     }
 }

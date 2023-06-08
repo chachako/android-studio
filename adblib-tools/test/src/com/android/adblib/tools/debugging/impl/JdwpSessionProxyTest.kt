@@ -186,7 +186,7 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
         packet.isCommand = true
         packet.cmdSet = DdmsPacketConstants.DDMS_CMD_SET
         packet.cmd = DdmsPacketConstants.DDMS_CMD
-        packet.payload = heloChunk.toBufferedInputChannel()
+        packet.payloadProvider = PayloadProvider.forBufferedInputChannel(heloChunk.toBufferedInputChannel())
         return packet
     }
 

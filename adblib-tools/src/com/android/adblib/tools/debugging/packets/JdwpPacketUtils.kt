@@ -42,17 +42,18 @@ suspend fun JdwpPacketView.writeToChannel(
 
     // If packet is somewhat large, write incrementally, otherwise write in a single
     // "write" operation
-    if (length >= DEFAULT_CHANNEL_BUFFER_SIZE) {
-        channel.writeExactly(workBuffer.forChannelWrite())
-        workBuffer.clear()
-        val byteCount = channel.write(payload, workBuffer)
-        checkPacketLength(byteCount)
-    } else {
-        val byteCount = payload.readRemaining(workBuffer)
-        checkPacketLength(byteCount)
-        channel.writeExactly(workBuffer.afterChannelRead(useMarkedPosition = false))
+    withPayload { payload ->
+        if (length >= DEFAULT_CHANNEL_BUFFER_SIZE) {
+            channel.writeExactly(workBuffer.forChannelWrite())
+            workBuffer.clear()
+            val byteCount = channel.write(payload, workBuffer)
+            checkPacketLength(byteCount)
+        } else {
+            val byteCount = payload.readRemaining(workBuffer)
+            checkPacketLength(byteCount)
+            channel.writeExactly(workBuffer.afterChannelRead(useMarkedPosition = false))
+        }
     }
-    this.payload.rewind()
 }
 
 /**
@@ -88,8 +89,9 @@ fun ResizableBuffer.appendJdwpHeader(jdwpPacketView: JdwpPacketView) {
 suspend fun ResizableBuffer.appendJdwpPacket(packet: JdwpPacketView) {
     this.appendJdwpHeader(packet)
     val byteBuffer = forChannelRead(packet.payloadLength)
-    packet.payload.readExactly(byteBuffer)
-    packet.payload.rewind()
+    packet.withPayload { payload ->
+        payload.readExactly(byteBuffer)
+    }
 }
 
 /**
@@ -114,16 +116,17 @@ internal suspend fun JdwpPacketView.clone(
     // Copy payload into our workBuffer
     workBuffer.clear()
     val copyChannel = ByteBufferAdbOutputChannel(workBuffer)
-    val byteCount = copyChannel.write(this.payload)
+    val byteCount = withPayload { payload ->
+        copyChannel.write(payload)
+    }
     checkPacketLength(byteCount)
 
     // Make a copy into our own ByteBuffer
     val bufferCopy = workBuffer.forChannelWrite().copy()
 
     // Make an input channel for it
-    mutableJdwpPacket.payload = AdbBufferedInputChannel.forByteBuffer(bufferCopy)
+    mutableJdwpPacket.payloadProvider = PayloadProvider.forByteBuffer(bufferCopy)
 
-    this.payload.rewind()
     return mutableJdwpPacket
 }
 

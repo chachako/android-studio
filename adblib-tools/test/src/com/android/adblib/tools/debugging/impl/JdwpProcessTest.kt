@@ -27,6 +27,7 @@ import com.android.adblib.tools.debugging.packets.JdwpCommands
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.clone
 import com.android.adblib.tools.debugging.packets.payloadLength
+import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.properties
 import com.android.adblib.tools.debugging.toByteArray
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
@@ -92,7 +93,7 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         // Assert
         assertEquals(true, reply.isReply)
         assertEquals(42, reply.payloadLength)
-        assertEquals(42, reply.payload.toByteArray(reply.payloadLength).size)
+        assertEquals(42, reply.withPayload { it.toByteArray(reply.payloadLength).size })
     }
 
     @Test
