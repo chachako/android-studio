@@ -50,6 +50,10 @@ LONG_RUNNING_TESTS = [
     "src/test/java/com/android/build/gradle/integration/lint/LintWithAnalyticsEnabledTest.kt",
 ]
 
+KOTLIN_MULTIPLATFORM_TESTS = [
+    "src/test/java/com/android/build/gradle/integration/lint/KotlinMultiplatformAndroidLintTest.kt",
+]
+
 # create a bazel target for some long-running tests
 gradle_integration_test(
     name = "long-running-tests",
@@ -65,6 +69,21 @@ gradle_integration_test(
     deps = DEPS,
 )
 
+# create a separate bazel target for long-running KMP tests (b/281652623)
+gradle_integration_test(
+    name = "kotlin-multiplatform-tests",
+    timeout = "long",
+    srcs = glob(
+        include = KOTLIN_MULTIPLATFORM_TESTS,
+    ),
+    data = DATA + [
+        "//tools/base/build-system/integration-test:test-projects/kotlinMultiplatform",
+    ],
+    maven_repo_zips = MAVEN_REPO_ZIPS,
+    maven_repos = MAVEN_REPOS,
+    deps = DEPS,
+)
+
 gradle_integration_test(
     name = "tests",
     timeout = "long",
@@ -73,11 +92,10 @@ gradle_integration_test(
             "src/test/java/**/*.java",
             "src/test/java/**/*.kt",
         ],
-        exclude = LONG_RUNNING_TESTS,
+        exclude = LONG_RUNNING_TESTS + KOTLIN_MULTIPLATFORM_TESTS,
     ),
     data = DATA + [
         "//tools/base/build-system/integration-test:test-projects/dynamicApp",
-        "//tools/base/build-system/integration-test:test-projects/kotlinMultiplatform",
         "//tools/base/build-system/integration-test:test-projects/lintBaseline",
         "//tools/base/build-system/integration-test:test-projects/lintCustomLocalAndPublishRules",
         "//tools/base/build-system/integration-test:test-projects/lintCustomRules",
@@ -100,7 +118,7 @@ gradle_integration_test(
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = MAVEN_REPOS,
     resources = glob(["src/test/resources/**"]),
-    shard_count = 8,
+    shard_count = 7,
     deps = DEPS,
 )
 
