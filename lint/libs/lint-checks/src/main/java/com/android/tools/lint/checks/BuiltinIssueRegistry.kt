@@ -471,6 +471,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           WakelockDetector.TIMEOUT,
           WearableConfigurationActionDetector.ACTION_DUPLICATE,
           WearableConfigurationActionDetector.CONFIGURATION_ACTION,
+          WearPasswordInputDetector.ISSUE,
           WatchFaceForAndroidXDetector.ISSUE,
           WatchFaceEditorDetector.ISSUE,
           WearStandaloneAppDetector.INVALID_WEAR_FEATURE_ATTRIBUTE,
