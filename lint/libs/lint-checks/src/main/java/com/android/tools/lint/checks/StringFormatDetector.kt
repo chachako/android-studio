@@ -913,43 +913,25 @@ This will ensure that in other languages the right set of translations are provi
       val sb = StringBuilder()
       var isEscaped = false
       var isQuotedBlock = false
-      var i = 0
-      val len = s.length
-      while (i < len) {
-        val current = s[i]
+      s.forEach { current ->
         if (isEscaped) {
           sb.append(current)
           isEscaped = false
         } else {
           isEscaped = current == '\\' // Next char will be escaped so we will just copy it
-          if (current == '"') {
-            isQuotedBlock = !isQuotedBlock
-          } else if (current == '\'') {
-            if (isQuotedBlock) {
-              // We only add single quotes when they are within a quoted block
-              sb.append(current)
-            }
-          } else {
-            sb.append(current)
+          when (current) {
+            '"' -> isQuotedBlock = !isQuotedBlock
+            // We only add single quotes when they are within a quoted block
+            '\'' -> if (isQuotedBlock) sb.append(current)
+            else -> sb.append(current)
           }
         }
-        i++
       }
       return sb.toString()
     }
 
-    private fun isReference(text: String): Boolean {
-      var i = 0
-      val n = text.length
-      while (i < n) {
-        val c = text[i]
-        if (!Character.isWhitespace(c)) {
-          return c == '@' || c == '?'
-        }
-        i++
-      }
-      return false
-    }
+    private fun isReference(text: String): Boolean =
+      text.find { !it.isWhitespace() }?.let { it == '@' || it == '?' } ?: false
 
     /**
      * Checks whether the text begins with a non-unit word, pointing to a string that should
@@ -1033,13 +1015,7 @@ This will ensure that in other languages the right set of translations are provi
 
     private fun isSuppressed(context: Context, issue: Issue, handle: Location.Handle?): Boolean {
       val source = handle!!.clientData
-      return if (isSuppressed(context, issue, source)) {
-        true
-      } else isSuppressed(
-        context,
-        issue,
-        handle.resolve()
-      )
+      return isSuppressed(context, issue, source) || isSuppressed(context, issue, handle.resolve())
     }
 
     private fun checkTypes(
