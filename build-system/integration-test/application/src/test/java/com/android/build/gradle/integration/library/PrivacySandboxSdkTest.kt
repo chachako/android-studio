@@ -21,12 +21,10 @@ import com.android.build.gradle.integration.common.fixture.testprojects.PluginTy
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.truth.ApkSubject
 import com.android.build.gradle.integration.common.truth.ApkSubject.assertThat
-import com.android.build.gradle.integration.common.utils.SdkHelper
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
 import com.android.ide.common.signing.KeystoreHelper
-import com.android.sdklib.BuildToolInfo
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
 import com.android.testutils.apk.Apk
@@ -133,7 +131,8 @@ class PrivacySandboxSdkTest {
             addFile("src/main/AndroidManifest.xml", """
                 <?xml version="1.0" encoding="utf-8"?>
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"  xmlns:tools="http://schemas.android.com/tools">
-                    <uses-permission tools:node="removeAll" />
+                    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:node="remove" />
+                    <uses-permission android:name="android.permission.INTERNET" />
                 </manifest>
                 """.trimIndent()
             )
@@ -181,6 +180,14 @@ class PrivacySandboxSdkTest {
                     }
                 """.trimIndent()
             }
+            // TODO(b/249047617): Also inject tools attribute in app manifest merger when needed
+            addFile("src/main/AndroidManifest.xml", """
+                <?xml version="1.0" encoding="utf-8"?>
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    xmlns:tools="http://schemas.android.com/tools" >
+                </manifest>
+                """.trimIndent()
+            )
         }
         rootProject {
             useNewPluginsDsl = true
@@ -235,6 +242,25 @@ class PrivacySandboxSdkTest {
     @Test
     fun testAsb() {
         executor().run(":privacy-sandbox-sdk:assemble")
+        val asbManifest =
+                project.getSubproject(":privacy-sandbox-sdk")
+                        .getIntermediateFile("merged_manifest", "single", "AndroidManifest.xml")
+        assertThat(asbManifest).hasContents(
+        """
+            <?xml version="1.0" encoding="utf-8"?>
+            <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                package="com.example.privacysandboxsdk" >
+
+                <uses-sdk
+                    android:minSdkVersion="14"
+                    android:targetSdkVersion="23" />
+
+                <uses-permission android:name="android.permission.INTERNET" />
+
+                <application android:appComponentFactory="androidx.core.app.CoreComponentFactory" />
+
+            </manifest>
+        """.trimIndent())
         val asbFile =
             project.getSubproject(":privacy-sandbox-sdk")
                     .getOutputFile("asb", "single", "privacy-sandbox-sdk.asb")
@@ -368,13 +394,15 @@ class PrivacySandboxSdkTest {
                     .contains(MY_PRIVACY_SANDBOX_SDK_MANIFEST_PACKAGE)
             assertThat(manifestContent).containsAtLeastElementsIn(
                     listOf(
-                            "      E: application (line=10)",
                             "          E: uses-sdk-library (line=0)",
                             "            A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"com.example.privacysandboxsdk\" (Raw: \"com.example.privacysandboxsdk\")",
                             "            A: http://schemas.android.com/apk/res/android:certDigest(0x01010548)=\"$certDigest\" (Raw: \"$certDigest\")",
                             "            A: http://schemas.android.com/apk/res/android:versionMajor(0x01010577)=\"10002\" (Raw: \"10002\")"
                     )
             )
+            assertThat(manifestContentStr).doesNotContain(INTERNET_PERMISSION)
+            assertThat(manifestContentStr).doesNotContain(FOREGROUND_SERVICE)
+
         }
 
         // Check building the bundle to deploy to a non-privacy sandbox device:
@@ -410,13 +438,15 @@ class PrivacySandboxSdkTest {
             val manifestContent = ApkSubject.getManifestContent(it.file)
             assertThat(manifestContent).containsAtLeastElementsIn(
                 listOf(
-                "      E: application (line=14)",
-                "          E: uses-sdk-library (line=18)",
+                "          E: uses-sdk-library (line=22)",
                 "            A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"com.example.privacysandboxsdk\" (Raw: \"com.example.privacysandboxsdk\")",
                 "            A: http://schemas.android.com/apk/res/android:certDigest(0x01010548)=\"$certDigest\" (Raw: \"$certDigest\")",
                 "            A: http://schemas.android.com/apk/res/android:versionMajor(0x01010577)=10002"
                 )
             )
+            val manifestContentString = manifestContent.joinToString("\n")
+            assertThat(manifestContentString).contains(INTERNET_PERMISSION)
+            assertThat(manifestContentString).doesNotContain(FOREGROUND_SERVICE)
         }
     }
 
@@ -478,6 +508,8 @@ class PrivacySandboxSdkTest {
         private const val ANDROID_LIB1_CLASS = "Lcom/example/androidlib1/Example;"
         private const val USES_SDK_LIBRARY_MANIFEST_ELEMENT = "uses-sdk-library"
         private const val MY_PRIVACY_SANDBOX_SDK_MANIFEST_PACKAGE = "=\"com.example.privacysandboxsdk\""
+        private const val INTERNET_PERMISSION = "A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"android.permission.INTERNET\" (Raw: \"android.permission.INTERNET\")"
+        private const val FOREGROUND_SERVICE = "FOREGROUND_SERVICE"
     }
 }
 
