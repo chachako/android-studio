@@ -195,6 +195,8 @@ interface UastEnvironment {
         setFrom(
           javaSourceFolders.takeIf { it.isNotEmpty() }
             ?: listOfNotNull(project.dir.takeIf { it.isDirectory }),
+          unitTestSourceFolders.takeIf { includeTests },
+          instrumentationTestSourceFolders.takeIf { includeTests },
           testSourceFolders.takeIf { includeTests },
           generatedSourceFolders,
           testFixturesSourceFolders.takeIf { includeTestFixtureSources }

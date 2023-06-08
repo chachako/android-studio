@@ -225,6 +225,7 @@ class ResolveCheckerTest {
     lint()
       .files(
         kotlin(
+          "test/test/test.kt",
           """
                 package test
 
@@ -250,6 +251,7 @@ class ResolveCheckerTest {
         )
       )
       .issues(AlwaysShowActionDetector.ISSUE)
+      .configureDriver { it.checkTestSources = true }
       .run()
       .expectClean()
   }
