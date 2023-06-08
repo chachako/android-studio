@@ -23,6 +23,7 @@ import com.android.build.gradle.integration.common.truth.ScannerSubject.Companio
 import com.android.build.gradle.integration.common.truth.forEachLine
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption.LINT_ANALYSIS_PER_COMPONENT
+import com.android.build.gradle.options.StringOption
 import com.android.testutils.truth.PathSubject
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth
@@ -35,7 +36,10 @@ import java.io.File
 
 @RunWith(Parameterized::class)
 class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: Boolean) {
-    @Suppress("DEPRECATION") // kmp doesn't support configuration caching for now (b/276472789)
+    // TODO(b/276472789) kmp doesn't support configuration caching for now. Once configuration cache
+    //  is enabled for these tests, consider adding a test running lint twice in a row as a smoke
+    //  test for configuration cache issues, but avoid causing timeouts (b/281652623).
+    @Suppress("DEPRECATION")
     @get:Rule
     val project = GradleTestProjectBuilder()
         .fromTestProject("kotlinMultiplatform")
@@ -87,8 +91,6 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
                 }
             """.trimIndent())
 
-        // Run twice to catch issues with configuration caching
-        getExecutor().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
         getExecutor().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
 
         val reportFile =
@@ -114,8 +116,6 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
                 }
             """.trimIndent())
 
-        // Run twice to catch issues with configuration caching
-        getExecutor().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
         getExecutor().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
 
         val reportFile =
@@ -154,8 +154,6 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
                 }
             """.trimIndent())
 
-        // Run twice to catch issues with configuration caching
-        getExecutor().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
         getExecutor().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
 
         val reportFile =
@@ -223,8 +221,6 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
             """.trimIndent()
         )
 
-        // Run twice to catch issues with configuration caching
-        getExecutor().run(":app:clean", ":app:lintDebug")
         getExecutor().run(":app:clean", ":app:lintDebug")
 
         val reportFile =
@@ -270,8 +266,6 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
             """.trimIndent()
         )
 
-        // Run twice to catch issues with configuration caching
-        getExecutor().run(":kmpJvmOnly:clean", ":kmpJvmOnly:lint")
         getExecutor().run(":kmpJvmOnly:clean", ":kmpJvmOnly:lint")
 
         val reportFile =
@@ -331,8 +325,6 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
             """.trimIndent()
         )
 
-        // Run twice to catch issues with configuration caching
-        getExecutor().run(":kmpFirstLib:clean", ":kmpFirstLib:lint")
         getExecutor().run(":kmpFirstLib:clean", ":kmpFirstLib:lint")
 
         val jvmReportFile =
@@ -417,8 +409,6 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
             """.trimIndent()
         )
 
-        // Run twice to catch issues with configuration caching
-        getExecutor().run(":app:clean", ":app:lintDebug")
         getExecutor().run(":app:clean", ":app:lintDebug")
 
         val reportFile =
@@ -460,6 +450,9 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
 
 
     private fun getExecutor(): GradleTaskExecutor {
-        return project.executor().with(LINT_ANALYSIS_PER_COMPONENT, lintAnalysisPerComponent)
+        // Set LINT_RESERVED_MEMORY_PER_TASK to "256M" to reduce time required to run the tests
+        return project.executor()
+            .with(LINT_ANALYSIS_PER_COMPONENT, lintAnalysisPerComponent)
+            .with(StringOption.LINT_RESERVED_MEMORY_PER_TASK, "256M")
     }
 }
