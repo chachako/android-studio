@@ -34,12 +34,49 @@ class TomlUtilitiesTest {
   @Test
   fun testPickLibraryName() {
     libraryName("foo", "com.google:foo:1.0")
+    libraryName("foo-v10", "com.google:foo:1.0", includeVersions = true)
 
     libraryName("foo", "com.google:foo:1.0", "bar")
+    libraryName("foo-v10", "com.google:foo:1.0", "bar", includeVersions = true)
     libraryName("google-foo", "com.google:foo:1.0", "foo")
+    libraryName("foo-v10", "com.google:foo:1.0", "foo", includeVersions = true)
 
     GradleDetector.reservedQuickfixNames = mutableMapOf("libraries" to mutableSetOf("foo"))
     libraryName("google-foo", "com.google:foo:1.0")
+    GradleDetector.reservedQuickfixNames = mutableMapOf("libraries" to mutableSetOf("foo"))
+    libraryName("foo-v10", "com.google:foo:1.0", includeVersions = true)
+    GradleDetector.reservedQuickfixNames =
+      mutableMapOf("libraries" to mutableSetOf("foo", "foo-v10"))
+    libraryName("google-foo", "com.google:foo:1.0")
+    GradleDetector.reservedQuickfixNames =
+      mutableMapOf("libraries" to mutableSetOf("foo", "foo-v10"))
+    libraryName("google-foo-v10", "com.google:foo:1.0", includeVersions = true)
+    GradleDetector.reservedQuickfixNames =
+      mutableMapOf(
+        "libraries" to
+          mutableSetOf(
+            "foo",
+            "foo-v10",
+            "google-foo",
+            "google-foo-v10",
+            "com-google-foo",
+            "com-google-foo-v10"
+          )
+      )
+    libraryName("com-google-foo2", "com.google:foo:1.0")
+    GradleDetector.reservedQuickfixNames =
+      mutableMapOf(
+        "libraries" to
+          mutableSetOf(
+            "foo",
+            "foo-v10",
+            "google-foo",
+            "google-foo-v10",
+            "com-google-foo",
+            "com-google-foo-v10"
+          )
+      )
+    libraryName("com-google-foo-v10-x2", "com.google:foo:1.0", includeVersions = true)
   }
 
   @Test

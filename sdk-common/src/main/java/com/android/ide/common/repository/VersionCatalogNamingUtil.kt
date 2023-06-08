@@ -46,7 +46,7 @@ fun pickLibraryVariableName(
     val reserved = TreeSet(String.CASE_INSENSITIVE_ORDER)
     reserved.addAll(caseSensitiveReserved)
     val versionSuffix =
-        if (includeVersionInKey) "-" + gc.revision.replace('.', '_').toSafeKey() else ""
+        if (includeVersionInKey) "-v" + gc.revision.replace("[-.+_]".toRegex(), "").toSafeKey() else ""
 
     if (gc.isAndroidX() && (reserved.isEmpty() || reserved.any { it.startsWith("androidx-") })) {
         val key = "androidx-${gc.artifactId.toSafeKey()}$versionSuffix"
@@ -88,7 +88,7 @@ fun pickLibraryVariableName(
     // Final fallback; this is unlikely but JUST to be sure we get a unique version
     var id = 2
     while (true) {
-        val name = "${full}${if (versionSuffix.isNotEmpty()) "-" else ""}${id++}"
+        val name = "${full}${if (versionSuffix.isNotEmpty()) "-x" else ""}${id++}"
         // Will eventually succeed
         if (!reserved.contains(name)) {
             return name

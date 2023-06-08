@@ -38,30 +38,30 @@ class VersionCatalogNamingUtilTest {
             "com-google-foo2"
         )
 
-        libraryName("foo-1_0", "com.google:foo:1.0", includeVersions = true)
-        libraryName("google-foo-1_0", "com.google:foo:1.0", "foo-1_0", includeVersions = true)
+        libraryName("foo-v10", "com.google:foo:1.0", includeVersions = true)
+        libraryName("google-foo-v10", "com.google:foo:1.0", "foo-v10", includeVersions = true)
         libraryName(
-            "com-google-foo-1_0",
+            "com-google-foo-v10",
             "com.google:foo:1.0",
-            "foo-1_0",
-            "google-foo-1_0",
+            "foo-v10",
+            "google-foo-v10",
             includeVersions = true
         )
         libraryName(
-            "com-google-foo-1_0-2",
+            "com-google-foo-v10-x2",
             "com.google:foo:1.0",
-            "foo-1_0",
-            "google-foo-1_0",
-            "com-google-foo-1_0",
+            "foo-v10",
+            "google-foo-v10",
+            "com-google-foo-v10",
             includeVersions = true
         )
         libraryName(
-            "com-google-foo-1_0-3",
+            "com-google-foo-v10-x3",
             "com.google:foo:1.0",
-            "foo-1_0",
-            "google-foo-1_0",
-            "com-google-foo-1_0",
-            "com-google-foo-1_0-2",
+            "foo-v10",
+            "google-foo-v10",
+            "com-google-foo-v10",
+            "com-google-foo-v10-x2",
             includeVersions = true
         )
 

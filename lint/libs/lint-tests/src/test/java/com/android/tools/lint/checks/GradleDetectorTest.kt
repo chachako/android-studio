@@ -1267,11 +1267,11 @@ class GradleDetectorTest : AbstractCheckTest() {
       .window(1)
       .expectFixDiffs(
         """
-                Autofix for build.gradle line 3: Replace with new library catalog declaration for androidx-appcompat-1_5_2:
+                Autofix for build.gradle line 3: Replace with new library catalog declaration for androidx-appcompat-v152:
                 @@ -3 +3
                       // higher version: fix should replace with version catalog *and* update version variable
                 -     implementation 'androidx.appcompat:appcompat:1.5.2'
-                +     implementation libs.androidx.appcompat.1_5_2
+                +     implementation libs.androidx.appcompat.v152
                   }
                 gradle/libs.versions.toml:
                 @@ -5 +5
@@ -1280,7 +1280,7 @@ class GradleDetectorTest : AbstractCheckTest() {
 
                 @@ -8 +9
                   androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
-                + androidx-appcompat-1_5_2 = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
+                + androidx-appcompat-v152 = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
                   androidx-appCompat149 = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
                 Fix for build.gradle line 3: Change appCompat to 1.5.2:
                 gradle/libs.versions.toml:
