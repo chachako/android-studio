@@ -544,6 +544,62 @@ class AnnotationHandlerTest {
   }
 
   @Test
+  fun testTypeReferences() {
+    lint()
+      .files(
+        java(
+            """
+                package test.api;
+                import pkg.java.MyJavaAnnotation;
+
+                @MyJavaAnnotation
+                public class Api { }
+                """
+          )
+          .indented(),
+        java(
+            """
+                package test.usage;
+                import test.api.Api;
+
+                public class JavaUsage {
+                    private void use(Api api) { }
+                    public void test(Object o) {
+                        use((Api) o); // ERROR
+                    }
+                }
+                """
+          )
+          .indented(),
+        kotlin(
+            """
+                package test.usage
+                import test.api.Api
+
+                private fun use(api: Api) {}
+                fun test(o: Object) {
+                    use(o as Api)  // ERROR2
+                }
+                """
+          )
+          .indented(),
+        javaAnnotation
+      )
+      .run()
+      .expect(
+        """
+            src/test/usage/JavaUsage.java:7: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+                    use((Api) o); // ERROR
+                         ~~~
+            src/test/usage/test.kt:6: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+                use(o as Api)  // ERROR2
+                         ~~~
+            2 errors, 0 warnings
+            """
+      )
+  }
+
+  @Test
   fun testObjectLiteral() {
     lint()
       .files(

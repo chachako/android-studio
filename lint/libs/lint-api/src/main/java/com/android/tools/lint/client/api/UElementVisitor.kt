@@ -1174,6 +1174,11 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
       return super.visitClassLiteralExpression(node)
     }
 
+    override fun visitTypeReferenceExpression(node: UTypeReferenceExpression): Boolean {
+      annotationHandler?.visitTypeReferenceExpression(mContext, node)
+      return super.visitTypeReferenceExpression(node)
+    }
+
     override fun visitObjectLiteralExpression(node: UObjectLiteralExpression): Boolean {
       annotationHandler?.visitObjectLiteralExpression(mContext, node)
       return super.visitObjectLiteralExpression(node)

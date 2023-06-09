@@ -103,6 +103,7 @@ import org.jetbrains.uast.UReferenceExpression
 import org.jetbrains.uast.UReturnExpression
 import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.jetbrains.uast.USuperExpression
+import org.jetbrains.uast.UTypeReferenceExpression
 import org.jetbrains.uast.UUnaryExpression
 import org.jetbrains.uast.UVariable
 import org.jetbrains.uast.UastBinaryOperator
@@ -266,6 +267,16 @@ internal class AnnotationHandler(
   fun visitClassLiteralExpression(context: JavaContext, node: UClassLiteralExpression) {
     val containingClass = context.evaluator.getTypeClass(node.type) ?: return
     visitClassReference(context, node, containingClass)
+  }
+
+  fun visitTypeReferenceExpression(context: JavaContext, node: UTypeReferenceExpression) {
+    if (node.getParentOfType<UClassLiteralExpression>() != null) {
+      // To avoid duplicate errors in Java class literal expressions, which contain type reference
+      // expressions in their UAST tree
+      return
+    }
+    val cls = context.evaluator.getTypeClass(node.type) ?: return
+    visitClassReference(context, node, cls)
   }
 
   private fun visitClassReference(context: JavaContext, node: UElement, cls: PsiClass) {

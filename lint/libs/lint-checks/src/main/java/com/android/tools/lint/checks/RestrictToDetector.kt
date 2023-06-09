@@ -33,6 +33,7 @@ import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.UastLintUtils
 import com.android.tools.lint.detector.api.isKotlin
+import com.intellij.lang.java.JavaLanguage
 import com.intellij.lang.jvm.annotation.JvmAnnotationConstantValue
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiCompiledElement
@@ -40,8 +41,10 @@ import com.intellij.psi.PsiField
 import com.intellij.psi.PsiLiteralExpression
 import com.intellij.psi.PsiMember
 import com.intellij.psi.PsiMethod
+import com.intellij.psi.PsiModifier
 import com.intellij.psi.impl.compiled.ClsAnnotationImpl
 import com.intellij.psi.util.PsiTypesUtil
+import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.uast.UAnnotated
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UCallExpression
@@ -137,17 +140,35 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     return false
   }
 
+  private fun getVisibility(member: PsiMember): Int {
+    val defaultForLanguage =
+      when (member.language) {
+        is KotlinLanguage -> VISIBILITY_PUBLIC
+        is JavaLanguage -> VISIBILITY_PACKAGE_PRIVATE
+        else -> VISIBILITY_NONE
+      }
+
+    val modifierList = member.modifierList ?: return defaultForLanguage
+
+    return when {
+      modifierList.hasExplicitModifier(PsiModifier.PUBLIC) -> VISIBILITY_PUBLIC
+      modifierList.hasExplicitModifier(PsiModifier.PROTECTED) -> VISIBILITY_PROTECTED
+      modifierList.hasExplicitModifier(PsiModifier.PRIVATE) -> VISIBILITY_PRIVATE
+      modifierList.hasExplicitModifier(PsiModifier.DEFAULT) -> defaultForLanguage
+      else -> defaultForLanguage
+    }
+  }
+
   private fun checkVisibleForTesting(
     context: JavaContext,
     node: UElement,
-    method: PsiMember,
+    member: PsiMember,
     annotation: UAnnotation,
     usageInfo: AnnotationUsageInfo
   ) {
-
-    val visibility = getVisibilityForTesting(annotation)
+    val visibility = getVisibilityForTesting(annotation, getVisibility(member))
     if (visibility == VISIBILITY_NONE) { // not the default
-      checkRestrictTo(context, node, method, annotation, usageInfo, RESTRICT_TO_TESTS)
+      checkRestrictTo(context, node, member, annotation, usageInfo, RESTRICT_TO_TESTS)
     } else {
       // Check that the target method is available
       // (1) private is available in the same compilation unit
@@ -156,7 +177,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
 
       val uFile = node.getContainingUFile()
       val containingFile1 = UastLintUtils.getPsiFile(uFile)
-      val containingFile2 = UastLintUtils.getContainingFile(method)
+      val containingFile2 = UastLintUtils.getContainingFile(member)
       if (containingFile1 == containingFile2 || containingFile2 == null) {
         // Same compilation unit
         return
@@ -170,14 +191,14 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
 
       if (visibility == VISIBILITY_PRIVATE) {
         if (!isTestContext(context, node)) {
-          reportVisibilityError(context, node, "private")
+          reportVisibilityError(context, node, annotation, "private")
         }
         return
       }
 
       val evaluator = context.evaluator
       val pkg = evaluator.getPackage(node)
-      val methodPackage = evaluator.getPackage(method)
+      val methodPackage = evaluator.getPackage(member)
       // can't compare pkg == methodPackage because PsiPackageImpl#equals only returns
       // true for other instances of the exact same class
       if (pkg?.qualifiedName == methodPackage?.qualifiedName) {
@@ -186,14 +207,14 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       }
       if (visibility == VISIBILITY_PACKAGE_PRIVATE) {
         if (!isTestContext(context, node)) {
-          reportVisibilityError(context, node, "package private")
+          reportVisibilityError(context, node, annotation, "package private")
         }
         return
       }
 
       assert(visibility == VISIBILITY_PROTECTED)
 
-      val methodClass = method.containingClass
+      val methodClass = member.containingClass
       val thisClass = node.getParentOfType<UClass>(UClass::class.java, true)
       if (thisClass == null || methodClass == null) {
         return
@@ -204,13 +225,23 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       }
 
       if (!isTestContext(context, node)) {
-        reportVisibilityError(context, node, "protected")
+        reportVisibilityError(context, node, annotation, "protected")
       }
     }
   }
 
-  private fun reportVisibilityError(context: JavaContext, node: UElement, desc: String) {
-    val message = "This method should only be accessed from tests or within $desc scope"
+  private fun reportVisibilityError(
+    context: JavaContext,
+    node: UElement,
+    annotation: UAnnotation,
+    desc: String
+  ) {
+    val type =
+      when (node) {
+        is UTypeReferenceExpression -> "class"
+        else -> "method"
+      }
+    val message = "This $type should only be accessed from tests or within $desc scope"
     val location: Location =
       if (node is UCallExpression) {
         context.getCallLocation(node, false, false)
@@ -218,7 +249,13 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         context.getLocation(node)
       }
 
-    report(context, TEST_VISIBILITY, node, location, message)
+    val issue =
+      when (annotation.qualifiedName) {
+        INTELLIJ_VISIBLE_FOR_TESTING_ANNOTATION -> TEST_VISIBILITY_INTELLIJ
+        else -> TEST_VISIBILITY
+      }
+
+    report(context, issue, node, location, message)
   }
 
   // TODO: Test XML access of restricted classes
@@ -480,6 +517,9 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     private val IMPLEMENTATION =
       Implementation(RestrictToDetector::class.java, Scope.JAVA_FILE_SCOPE)
 
+    private const val INTELLIJ_VISIBLE_FOR_TESTING_ANNOTATION =
+      "org.jetbrains.annotations.VisibleForTesting"
+
     private const val VISIBLE_FOR_TESTING_SUFFIX = ".VisibleForTesting"
     private const val ATTR_OTHERWISE = "otherwise"
     private const val ATTR_PRODUCTION_VISIBILITY = "productionVisibility"
@@ -490,62 +530,97 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     private const val VISIBILITY_PACKAGE_PRIVATE = 3
     private const val VISIBILITY_PROTECTED = 4
     private const val VISIBILITY_NONE = 5
+    private const val VISIBILITY_PUBLIC = 6
     // TODO: Kotlin "module" visibility
 
-    private fun getVisibilityForTesting(annotation: UAnnotation): Int {
-      val value =
-        annotation.findDeclaredAttributeValue(ATTR_OTHERWISE)
-        // Guava within Google3:
-        ?: annotation.findDeclaredAttributeValue(ATTR_PRODUCTION_VISIBILITY)
-          // Used in many android versions like com.android.internal.annotations.VisibleForTesting
-          ?: annotation.findDeclaredAttributeValue(ATTR_VISIBILITY)
-      if (value is ULiteralExpression) {
-        val v = value.value
-        if (v is Int) {
-          return v
-        }
-      } else if (value is UReferenceExpression) {
-        // Not compiled; this is unlikely (but can happen when editing the support
-        // library project itself)
-        when (value.resolvedName) {
-          "NONE" -> return VISIBILITY_NONE
-          "PRIVATE" -> return VISIBILITY_PRIVATE
-          "PROTECTED" -> return VISIBILITY_PROTECTED
-          "PACKAGE_PRIVATE" -> return VISIBILITY_PACKAGE_PRIVATE
-          "PACKAGE" -> return VISIBILITY_PACKAGE_PRIVATE
-        }
-      } else if (value is UUnknownExpression) {
-        // Workaround for https://youtrack.jetbrains.com/issue/KT-47290 -- see
-        // https://issuetracker.google.com/190113936 for an applicable scenario
-        val sourcePsi = value.sourcePsi
-        if (sourcePsi is PsiLiteralExpression) {
-          val v = sourcePsi.value
-          if (v is Int) {
-            return v
+    private fun getVisibilityForTesting(annotation: UAnnotation, visibility: Int): Int {
+      // The VisibleForTesting annotations from AndroidX and IntelliJ have slightly
+      // different specs:
+      //
+      //  - org.jetbrains.annotations.VisibleForTesting implies that the production visibility
+      //    is 'one step down' from the testing visibility. e.g. if the testing visibility
+      //    is public, the production visibility is assumed to be package-private. There is no
+      //    parameter to change what the production visibility is assumed to be.
+      //
+      //  - androidx.annotations.VisibleForTesting implies that the production visibility
+      //    is private, unless explicitly specified with the "otherwise=" parameter.
+      //
+      //  - com.google.common.annotations.VisibleForTesting is the same, except
+      //    its parameter is called "productionVisibility"
+      //
+      //  - and com.android.internal.annotations.VisibleForTesting is the same with its "visibility"
+      // parameter
+      //
+      // Here we check which one we are dealing with and then specify behavior based on their specs.
+      when (annotation.qualifiedName) {
+        // The IntelliJ annotation
+        INTELLIJ_VISIBLE_FOR_TESTING_ANNOTATION -> {
+          return when (visibility) {
+            VISIBILITY_PUBLIC -> VISIBILITY_PACKAGE_PRIVATE
+            VISIBILITY_PROTECTED -> VISIBILITY_PACKAGE_PRIVATE
+            VISIBILITY_PACKAGE_PRIVATE -> VISIBILITY_PRIVATE
+            else -> VISIBILITY_PRIVATE // the default
           }
         }
-      } else if (value is UastEmptyExpression) {
-        // Some kind of error in UAST; try harder. JavaUAnnotation is used to wrap
-        // class file annotations and in findDeclaredAttributeValue it returns
-        // UastEmptyExpression if it cannot convert it to UAST.
-        // (This may be an older version of KT-47290; it doesn't seem to trigger
-        // from the tests anymore)
-        val psi = annotation.sourcePsi
-        if (psi is ClsAnnotationImpl) {
-          val otherwise =
-            psi.findAttribute(ATTR_OTHERWISE)
-              ?: psi.findAttribute(ATTR_PRODUCTION_VISIBILITY) ?: psi.findAttribute(ATTR_VISIBILITY)
-          val v = otherwise?.attributeValue
-          if (v is JvmAnnotationConstantValue) {
-            val constant = v.constantValue
-            if (constant is Number) {
-              return constant.toInt()
+
+        // The other annotations, which have parameters to specify production visibility
+        else -> {
+          val value =
+            annotation.findDeclaredAttributeValue(ATTR_OTHERWISE)
+            // Guava within Google3:
+            ?: annotation.findDeclaredAttributeValue(ATTR_PRODUCTION_VISIBILITY)
+              // Used in many android versions like
+              // com.android.internal.annotations.VisibleForTesting
+              ?: annotation.findDeclaredAttributeValue(ATTR_VISIBILITY)
+          if (value is ULiteralExpression) {
+            val v = value.value
+            if (v is Int) {
+              return v
+            }
+          } else if (value is UReferenceExpression) {
+            // Not compiled; this is unlikely (but can happen when editing the support
+            // library project itself)
+            when (value.resolvedName) {
+              "NONE" -> return VISIBILITY_NONE
+              "PRIVATE" -> return VISIBILITY_PRIVATE
+              "PROTECTED" -> return VISIBILITY_PROTECTED
+              "PACKAGE_PRIVATE" -> return VISIBILITY_PACKAGE_PRIVATE
+              "PACKAGE" -> return VISIBILITY_PACKAGE_PRIVATE
+            }
+          } else if (value is UUnknownExpression) {
+            // Workaround for https://youtrack.jetbrains.com/issue/KT-47290 -- see
+            // https://issuetracker.google.com/190113936 for an applicable scenario
+            val sourcePsi = value.sourcePsi
+            if (sourcePsi is PsiLiteralExpression) {
+              val v = sourcePsi.value
+              if (v is Int) {
+                return v
+              }
+            }
+          } else if (value is UastEmptyExpression) {
+            // Some kind of error in UAST; try harder. JavaUAnnotation is used to wrap
+            // class file annotations and in findDeclaredAttributeValue it returns
+            // UastEmptyExpression if it cannot convert it to UAST.
+            // (This may be an older version of KT-47290; it doesn't seem to trigger
+            // from the tests anymore)
+            val psi = annotation.sourcePsi
+            if (psi is ClsAnnotationImpl) {
+              val otherwise =
+                psi.findAttribute(ATTR_OTHERWISE)
+                  ?: psi.findAttribute(ATTR_PRODUCTION_VISIBILITY)
+                    ?: psi.findAttribute(ATTR_VISIBILITY)
+              val v = otherwise?.attributeValue
+              if (v is JvmAnnotationConstantValue) {
+                val constant = v.constantValue
+                if (constant is Number) {
+                  return constant.toInt()
+                }
+              }
             }
           }
+          return VISIBILITY_PRIVATE // the default
         }
       }
-
-      return VISIBILITY_PRIVATE // the default
     }
 
     /** `RestrictTo(RestrictTo.Scope.GROUP_ID` */
@@ -657,7 +732,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         implementation = IMPLEMENTATION
       )
 
-    /** Using an intended-for-tests API. */
+    /** Using an intended-for-tests API */
     @JvmField
     val TEST_VISIBILITY =
       Issue.create(
@@ -672,6 +747,22 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
                 This check looks for accesses from production code (e.g. not tests) where \
                 the access would not have been allowed with the intended production \
                 visibility.""",
+        category = Category.CORRECTNESS,
+        priority = 4,
+        severity = Severity.WARNING,
+        implementation = IMPLEMENTATION
+      )
+
+    @JvmField
+    val TEST_VISIBILITY_INTELLIJ =
+      Issue.create(
+        id = "VisibleForTests",
+        briefDescription = "Visible Only For Tests",
+        explanation =
+          """
+                This check looks for accesses from production code (e.g. not tests) where \
+                the access would not have been allowed if its visibility was not relaxed for \
+                testing purposes.""",
         category = Category.CORRECTNESS,
         priority = 4,
         severity = Severity.WARNING,

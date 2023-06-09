@@ -930,7 +930,6 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                                          ~~~~~~~~~~~
             0 errors, 4 warnings
             """
-        .trimIndent()
     lint()
       .files(
         java(
@@ -2262,6 +2261,16 @@ class RestrictToDetectorTest : AbstractCheckTest() {
       )
       .indented()
 
+  private val intellijVisibleForTestingAnnotation: TestFile =
+    java(
+        """
+        package org.jetbrains.annotations;
+        @SuppressWarnings("ClassNameDiffersFromFileName")
+        public @interface VisibleForTesting { }
+        """
+      )
+      .indented()
+
   private val androidVisibleForTestingAnnotation: TestFile =
     java(
         """
@@ -2432,6 +2441,120 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                        ~~~~~~
         2 errors, 0 warnings
         """
+      )
+  }
+
+  fun testCastWithVisibleForTestingType() {
+    // Regression test for b/286595849 and b/287350230
+    lint()
+      .files(
+        kotlin(
+            """
+                package pkg
+
+                import androidx.annotation.VisibleForTesting
+                class ExternalClass
+
+                @VisibleForTesting
+                class InternalClass: ExternalClass {
+                  fun internalMethod(): Int = 1
+                }
+                """
+          )
+          .indented(),
+        kotlin(
+          """
+                package pkg
+
+                class Code {
+                    fun test(clazz: ExternalClass) {
+                      val x = clazz as? InternalClass
+                    }
+                }
+                """
+        ),
+        java(
+            """
+            package pkg;
+
+            class CodeJava {
+              void test(ExternalClass clazz) {
+                int x = (InternalClass) clazz;
+              }
+            }
+          """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
+            src/pkg/Code.kt:6: Warning: This class should only be accessed from tests or within private scope [VisibleForTests]
+                                  val x = clazz as? InternalClass
+                                                    ~~~~~~~~~~~~~
+            src/pkg/CodeJava.java:5: Warning: This class should only be accessed from tests or within private scope [VisibleForTests]
+                int x = (InternalClass) clazz;
+                         ~~~~~~~~~~~~~
+            0 errors, 2 warnings
+            """
+      )
+  }
+
+  fun testIntelliJAnnotation() {
+    // Regression test for b/287350230
+    lint()
+      .files(
+        kotlin(
+            """
+                package pkg1
+                import org.jetbrains.annotations.VisibleForTesting
+
+                class ProductionCode {
+                    fun compute() {
+                        initialize() // OK
+                    }
+
+                    @VisibleForTesting
+                    fun initialize() {
+                    }
+                }
+                """
+          )
+          .indented(),
+        kotlin(
+          """
+                package pkg1
+                class Code {
+                    fun test() {
+                        ProductionCode().initialize() // OK, the production visibility is assumed to be package-private
+                    }
+                }
+                """
+        ),
+        kotlin(
+            """
+            package pkg2
+            import pkg1.ProductionCode
+
+            class Code {
+              fun test() {
+                ProductionCode().initialize() // Not OK
+              }
+            }
+          """
+          )
+          .indented(),
+        intellijVisibleForTestingAnnotation
+      )
+      .run()
+      .expect(
+        """
+            src/pkg2/Code.kt:6: Warning: This method should only be accessed from tests or within package private scope [VisibleForTests]
+                ProductionCode().initialize() // Not OK
+                                 ~~~~~~~~~~
+            0 errors, 1 warnings
+            """
       )
   }
 }

@@ -25,6 +25,7 @@ import com.android.tools.lint.checks.InteroperabilityDetector
 import com.android.tools.lint.checks.KotlincFE10Detector
 import com.android.tools.lint.checks.LintDetectorDetector
 import com.android.tools.lint.checks.NoOpDetector
+import com.android.tools.lint.checks.RestrictToDetector
 import com.android.tools.lint.checks.SamDetector
 import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.LintClient.Companion.isStudio
@@ -96,6 +97,7 @@ class StudioIssueRegistry : IssueRegistry() {
       PathAsIterableDetector.ISSUE,
       PluginXmlDetector.ISSUE,
       RegexpPathDetector.ISSUE,
+      RestrictToDetector.TEST_VISIBILITY_INTELLIJ,
       ShortNameCacheDetector.ISSUE,
       SwingWorkerDetector.ISSUE,
       TerminologyDetector.ISSUE,
