@@ -1179,7 +1179,7 @@ public class ModelBuilder<Extension extends BaseExtension>
                 .java(
                         javaSources -> {
                             fileCollection.from(
-                                    javaSources.variantSourcesForModel$gradle_core(
+                                    javaSources.variantSourcesFileCollectionForModel$gradle_core(
                                             directoryEntry ->
                                                     directoryEntry.isGenerated()
                                                             && directoryEntry

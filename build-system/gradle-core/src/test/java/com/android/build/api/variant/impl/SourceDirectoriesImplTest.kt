@@ -72,7 +72,6 @@ internal class SourceDirectoriesImplTest {
             .thenReturn(project.objects.listProperty(DirectoryEntry::class.java))
         Mockito.`when`(variantServices.newListPropertyForInternalUse(Directory::class.java))
             .thenReturn(project.objects.listProperty(Directory::class.java))
-
     }
 
     @Test
@@ -94,6 +93,8 @@ internal class SourceDirectoriesImplTest {
 
     @Test
     fun testVariantSourcesForModel() {
+        Mockito.`when`(variantServices.fileCollection())
+            .thenReturn(project.objects.fileCollection())
         val addedSourceFromTask = project.layout.buildDirectory.dir("generated/_for_test/srcAddingTask").get().asFile
         val addedSrcDir = temporaryFolder.newFolder("somewhere/safe")
         val testTarget = createTestTarget(addedSrcDir)
@@ -107,6 +108,8 @@ internal class SourceDirectoriesImplTest {
 
     @Test
     fun testVariantSourcesWithFilteringForModel() {
+        Mockito.`when`(variantServices.fileCollection())
+            .thenReturn(project.objects.fileCollection())
         val addedSourceFromTask = project.layout.buildDirectory.dir("generated/_for_test/srcAddingTask").get().asFile
         val addedSrcDir = temporaryFolder.newFolder("somewhere/safe")
         val testTarget = createTestTarget(addedSrcDir)
