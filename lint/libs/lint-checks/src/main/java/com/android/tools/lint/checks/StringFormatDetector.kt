@@ -83,6 +83,7 @@ import org.w3c.dom.Node
 import java.util.Collections
 import java.util.EnumSet
 import java.util.Locale
+import java.util.regex.MatchResult
 import java.util.regex.Pattern
 
 /**
@@ -1023,131 +1024,89 @@ This will ensure that in other languages the right set of translations are provi
       checkValid: Boolean,
       checkTypes: Boolean,
       name: String,
-      list: List<Pair<Location.Handle, String>>?
+      list: List<Pair<Location.Handle, String>>
     ) {
       val types: MutableMap<Int, String> = HashMap()
       val typeDefinition: MutableMap<Int, Location.Handle> = HashMap()
-      for (pair in list!!) {
-        val handle = pair.first
-        val formatString = pair.second
 
-        // boolean warned = false;
-        val matcher = FORMAT.matcher(formatString)
-        var index = 0
-        var prevIndex = 0
-        var nextNumber = 1
-        while (true) {
-          if (matcher.find(index)) {
-            val matchStart = matcher.start()
-            // Make sure this is not an escaped '%'
-            while (prevIndex < matchStart) {
-              val c = formatString[prevIndex]
-              if (c == '\\') {
-                prevIndex++
-              }
-              prevIndex++
-            }
-            if (prevIndex > matchStart) {
-              // We're in an escape, ignore this result
-              index = prevIndex
-              continue
-            }
-            index = matcher.end() // Ensure loop proceeds
-            val str = formatString.substring(matchStart, matcher.end())
-            if (str == "%%" || str == "%n") {
-              // Just an escaped %
-              continue
-            }
-            if (checkValid) {
-              // Make sure it's a valid format string
-              if (str.length > 2 && str[str.length - 2] == ' ') {
-                val last = str[str.length - 1]
-                // If you forget to include the conversion character, e.g.
-                //   "Weight=%1$ g" instead of "Weight=%1$d g", then
-                // you're going to end up with a format string interpreted as
-                // "%1$ g". This means that the space character is interpreted
-                // as a flag character, but it can only be a flag character
-                // when used in conjunction with the numeric conversion
-                // formats (d, o, x, X). If that's not the case, make a
-                // dedicated error message
-                if (last != 'd' && last != 'o' && last != 'x' && last != 'X') {
-                  if (isSuppressed(context, INVALID, handle)) {
-                    return
-                  }
-                  val location = handle.resolve()
-                  val message = String.format(
-                    "Incorrect formatting string `%1\$s`; missing conversion "
-                      + "character in '`%2\$s`'?",
-                    name, str
-                  )
-                  context.report(INVALID, location, message)
-                  // warned = true;
-                  continue
+      for ((handle, formatString) in list) {
+        for ((number, matcher) in getFormatArgumentSequenceWithIndex(formatString)) {
+          val str = formatString.substring(matcher.start(), matcher.end())
+          if (checkValid) {
+            // Make sure it's a valid format string
+            if (str.length > 2 && str[str.length - 2] == ' ') {
+              val last = str[str.length - 1]
+              // If you forget to include the conversion character, e.g.
+              //   "Weight=%1$ g" instead of "Weight=%1$d g", then
+              // you're going to end up with a format string interpreted as
+              // "%1$ g". This means that the space character is interpreted
+              // as a flag character, but it can only be a flag character
+              // when used in conjunction with the numeric conversion
+              // formats (d, o, x, X). If that's not the case, make a
+              // dedicated error message
+              if (last != 'd' && last != 'o' && last != 'x' && last != 'X') {
+                if (isSuppressed(context, INVALID, handle)) {
+                  return
                 }
+                val location = handle.resolve()
+                val message = String.format(
+                  "Incorrect formatting string `%1\$s`; missing conversion "
+                      + "character in '`%2\$s`'?",
+                  name, str
+                )
+                context.report(INVALID, location, message)
+                // warned = true;
+                continue
               }
             }
-            if (!checkTypes) {
-              continue
+          }
+          if (!checkTypes) {
+            continue
+          }
+
+          val format = matcher.group(6)
+          val currentFormat = types[number]
+          if (currentFormat == null) {
+            types[number] = format
+            typeDefinition[number] = handle
+          } else if (currentFormat != format
+            && isIncompatible(currentFormat[0], format[0])
+          ) {
+            if (isSuppressed(context, ARG_TYPES, handle)) {
+              return
+            }
+            var location = handle.resolve()
+            if (isSuppressed(context, ARG_TYPES, location)) {
+              return
             }
 
-            // Shouldn't throw a number format exception since we've already
-            // matched the pattern in the regexp
-            var number: Int
-            var numberString = matcher.group(1)
-            if (numberString != null) {
-              // Strip off trailing $
-              numberString = numberString.substring(0, numberString.length - 1)
-              number = numberString.toInt()
-              nextNumber = number + 1
-            } else {
-              number = nextNumber++
-            }
-            val format = matcher.group(6)
-            val currentFormat = types[number]
-            if (currentFormat == null) {
-              types[number] = format
-              typeDefinition[number] = handle
-            } else if (currentFormat != format
-              && isIncompatible(currentFormat[0], format[0])
-            ) {
-              if (isSuppressed(context, ARG_TYPES, handle)) {
-                return
-              }
-              var location = handle.resolve()
-              if (isSuppressed(context, ARG_TYPES, location)) {
-                return
-              }
-
-              // Attempt to limit the location range to just the formatting
-              // string in question
-              location = refineLocation(
-                context,
-                location,
-                formatString,
-                matcher.start(),
-                matcher.end()
-              )
-              val otherLocation = typeDefinition[number]!!.resolve()
-              otherLocation.message = "Conflicting argument type (`$currentFormat') here"
-              location.secondary = otherLocation
-              val f = otherLocation.file
-              val message = String.format(
-                Locale.US,
-                "Inconsistent formatting types for argument #%1\$d in "
+            // Attempt to limit the location range to just the formatting
+            // string in question
+            location = refineLocation(
+              context,
+              location,
+              formatString,
+              matcher.start(),
+              matcher.end()
+            )
+            val otherLocation = typeDefinition[number]!!.resolve()
+            otherLocation.message = "Conflicting argument type (`$currentFormat') here"
+            location.secondary = otherLocation
+            val f = otherLocation.file
+            val message = String.format(
+              Locale.US,
+              "Inconsistent formatting types for argument #%1\$d in "
                   + "format string `%2\$s` ('%3\$s'): Found both '`%4\$s`' here and '`%5\$s`' "
                   + "in %6\$s",
-                number,
-                name,
-                str,
-                format,
-                currentFormat,
-                getFileNameWithParent(context.client, f)
-              )
-              // warned = true;
-              context.report(ARG_TYPES, location, message)
-              break
-            }
-          } else {
+              number,
+              name,
+              str,
+              format,
+              currentFormat,
+              getFileNameWithParent(context.client, f)
+            )
+            // warned = true;
+            context.report(ARG_TYPES, location, message)
             break
           }
         }
@@ -1313,171 +1272,70 @@ This will ensure that in other languages the right set of translations are provi
         "([a-zA-Z%])"
     )
 
+    // Return a sequence of match results at different arguments.
+    // The user of this sequence is not supposed to save references to the match results.
+    private fun getFormatArgumentSequence(s : String) : Sequence<MatchResult> = sequence {
+      val matcher = FORMAT.matcher(s)
+      var index = 0
+      while (matcher.find(index)) {
+        index = when {
+          matcher.group(6).let { it == "%" || it == "n"} -> matcher.end()
+          // Make sure this is not an escaped '%'. If we're in an escape, ignore this result
+          0 <= matcher.start() - 1 && s[matcher.start() - 1] == '\\' -> matcher.start() + 1
+          else -> matcher.end().also { yield(matcher) }
+        }
+      }
+    }
+
+    private fun getFormatArgumentSequenceWithIndex(s : String) : Sequence<Pair<Int, MatchResult>> {
+      var nextNumber = 1
+      return getFormatArgumentSequence(s)
+        .map { matcher ->
+          // Shouldn't throw a number format exception since we've already
+          // matched the pattern in the regexp
+          val number = when (val numberString = matcher.group(1)) {
+            null -> nextNumber++
+            // Strip off trailing $
+            else -> numberString.substring(0, numberString.length - 1).toInt().also {
+              nextNumber = it + 1
+            }
+          }
+          number to matcher
+        }
+    }
+
     /** Given a format string returns the format type of the given argument  */
     @JvmStatic
     @VisibleForTesting
-    fun getFormatArgumentType(s: String, argument: Int): String? {
-      val matcher = FORMAT.matcher(s)
-      var index = 0
-      var prevIndex = 0
-      var nextNumber = 1
-      while (true) {
-        if (matcher.find(index)) {
-          val value = matcher.group(6)
-          if ("%" == value || "n" == value) {
-            index = matcher.end()
-            continue
-          }
-          val matchStart = matcher.start()
-          // Make sure this is not an escaped '%'
-          while (prevIndex < matchStart) {
-            val c = s[prevIndex]
-            if (c == '\\') {
-              prevIndex++
-            }
-            prevIndex++
-          }
-          if (prevIndex > matchStart) {
-            // We're in an escape, ignore this result
-            index = prevIndex
-            continue
-          }
-
-          // Shouldn't throw a number format exception since we've already
-          // matched the pattern in the regexp
-          var number: Int
-          var numberString = matcher.group(1)
-          if (numberString != null) {
-            // Strip off trailing $
-            numberString = numberString.substring(0, numberString.length - 1)
-            number = numberString.toInt()
-            nextNumber = number + 1
-          } else {
-            number = nextNumber++
-          }
-          if (number == argument) {
-            return matcher.group(6)
-          }
-          index = matcher.end()
-        } else {
-          break
-        }
-      }
-      return null
-    }
+    fun getFormatArgumentType(s: String, argument: Int): String? =
+      getFormatArgumentSequenceWithIndex(s)
+        .find { (number, _) -> number == argument }
+        ?.let { (_, matcher) -> matcher.group(6) }
 
     /**
      * Given a format string returns the number of required arguments. If the `seenArguments`
      * parameter is not null, put the indices of any observed arguments into it.
      */
     @JvmStatic
-    fun getFormatArgumentCount(s: String, seenArguments: MutableSet<Int>?): Int {
-      val matcher = FORMAT.matcher(s)
-      var index = 0
-      var prevIndex = 0
-      var nextNumber = 1
-      var max = 0
-      while (true) {
-        if (matcher.find(index)) {
-          val value = matcher.group(6)
-          if ("%" == value || "n" == value) {
-            index = matcher.end()
-            continue
-          }
-          val matchStart = matcher.start()
-          // Make sure this is not an escaped '%'
-          while (prevIndex < matchStart) {
-            val c = s[prevIndex]
-            if (c == '\\') {
-              prevIndex++
-            }
-            prevIndex++
-          }
-          if (prevIndex > matchStart) {
-            // We're in an escape, ignore this result
-            index = prevIndex
-            continue
-          }
-
-          // Shouldn't throw a number format exception since we've already
-          // matched the pattern in the regexp
-          var number: Int
-          var numberString = matcher.group(1)
-          if (numberString != null) {
-            // Strip off trailing $
-            numberString = numberString.substring(0, numberString.length - 1)
-            number = numberString.toInt()
-            nextNumber = number + 1
-          } else {
-            number = nextNumber++
-          }
-          if (number > max) {
-            max = number
-          }
-          seenArguments?.add(number)
-          index = matcher.end()
-        } else {
-          break
-        }
-      }
-      return max
-    }
+    fun getFormatArgumentCount(s: String, seenArguments: MutableSet<Int>?): Int =
+      getFormatArgumentSequenceWithIndex(s)
+        .map { (number, _) -> number }
+        .onEach { seenArguments?.add(it) }
+        .maxOrNull()
+        ?: 0
 
     /** Given a format string returns whether it has any flags/width/precision modifiers.  */
-    fun hasFormatArgumentModifiers(s: String, argument: Int): Boolean {
-      val matcher = FORMAT.matcher(s)
-      var index = 0
-      var prevIndex = 0
-      var nextNumber = 1
-      while (true) {
-        if (matcher.find(index)) {
-          val value = matcher.group(6)
-          if ("%" == value || "n" == value) {
-            index = matcher.end()
-            continue
-          }
-          val matchStart = matcher.start()
-          // Make sure this is not an escaped '%'
-          while (prevIndex < matchStart) {
-            val c = s[prevIndex]
-            if (c == '\\') {
-              prevIndex++
-            }
-            prevIndex++
-          }
-          if (prevIndex > matchStart) {
-            // We're in an escape, ignore this result
-            index = prevIndex
-            continue
-          }
-
-          // Shouldn't throw a number format exception since we've already
-          // matched the pattern in the regexp
-          var number: Int
-          var numberString = matcher.group(1)
-          if (numberString != null) {
-            // Strip off trailing $
-            numberString = numberString.substring(0, numberString.length - 1)
-            number = numberString.toInt()
-            nextNumber = number + 1
-          } else {
-            number = nextNumber++
-          }
-          if (number == argument) {
-            // The regex for matching flags uses '*', so a format argument with no flags
-            // returns "".
-            val flags = matcher.group(2)
-            val width = matcher.group(3)
-            val precision = matcher.group(4)
-            return flags != null && flags.length > 0 || width != null && width.length > 0 || precision != null && precision.length > 0
-          }
-          index = matcher.end()
-        } else {
-          break
+    fun hasFormatArgumentModifiers(s: String, argument: Int): Boolean =
+      getFormatArgumentSequenceWithIndex(s)
+        .find { (number, _) -> number == argument }
+        ?.let { (_, matcher) ->
+          // The regex for matching flags uses '*', so a format argument with no flags
+          // returns "".
+          !matcher.group(2).isNullOrEmpty() ||
+              !matcher.group(3).isNullOrEmpty() ||
+              !matcher.group(4).isNullOrEmpty()
         }
-      }
-      return false
-    }
+        ?: false
 
     /**
      * Determines whether the given [String.format] formatting string is
@@ -1488,43 +1346,13 @@ This will ensure that in other languages the right set of translations are provi
      * @return true if the format is locale sensitive, false otherwise
      */
     @JvmStatic
-    fun isLocaleSpecific(format: String): Boolean {
-      if (format.indexOf('%') == -1) {
-        return false
-      }
-      val matcher = FORMAT.matcher(format)
-      var index = 0
-      var prevIndex = 0
-      while (true) {
-        if (matcher.find(index)) {
-          val matchStart = matcher.start()
-          // Make sure this is not an escaped '%'
-          while (prevIndex < matchStart) {
-            val c = format[prevIndex]
-            if (c == '\\') {
-              prevIndex++
-            }
-            prevIndex++
-          }
-          if (prevIndex > matchStart) {
-            // We're in an escape, ignore this result
-            index = prevIndex
-            continue
-          }
-          val type = matcher.group(6)
-          if (!type.isEmpty()) {
-            val t = type[0]
-            when (t) {
-              'd', 'e', 'E', 'f', 'g', 'G', 't', 'T' -> return true
-            }
-          }
-          index = matcher.end()
-        } else {
-          break
+    fun isLocaleSpecific(format: String): Boolean =
+      getFormatArgumentSequence(format).any { matcher ->
+        when (matcher.group(6).firstOrNull()) {
+          'd', 'e', 'E', 'f', 'g', 'G', 't', 'T' -> true
+          else -> false
         }
       }
-      return false
-    }
 
     /**
      * Checks a String.format call that is using a string that doesn't contain format placeholders.
