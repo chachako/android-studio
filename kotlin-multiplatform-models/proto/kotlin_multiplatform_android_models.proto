@@ -63,6 +63,16 @@ message AndroidTarget {
     // Files listing any D8 backported desugared methods or core library desugared methods for this
     // artifact.
     repeated File desugared_methods_files = 12;
+
+    // The name of the build this project belongs to.
+    optional string build_name = 13;
+
+    // The build ID (directory containing the settings file) of the root build of this project.
+    optional File root_build_id = 14;
+
+    // The build ID (directory containing the settings file) of the (included) build containing this
+    // project.
+    optional File build_id = 15;
 }
 
 // Sources included in a kotlin multiplatform sourceSet.
@@ -75,8 +85,8 @@ message GeneratedSources {
     repeated File source_folders = 1;
 }
 
-// The dsl info of the main variant of the android kotlin multiplatform target.
-message MainVariantDslInfo {
+// The info of the main variant of the android kotlin multiplatform target.
+message MainVariantInfo {
     optional string namespace = 1;
 
     // The compilation target as a string. This is the full extended target hash string.
@@ -99,36 +109,48 @@ message MainVariantDslInfo {
 
     // The collection of proguard rule files for consumers of the library to use.
     repeated File consumer_proguard_files = 6;
+
+    // Whether code shrinking is enabled.
+    optional bool minification_enabled = 7;
 }
 
-// The dsl info of the unit test component of the android kotlin multiplatform target.
-message UnitTestDslInfo {
+// The info of the unit test component of the android kotlin multiplatform target.
+message UnitTestInfo {
     optional string namespace = 1;
+
+    // Path to the mockable platform generated jar if present.
+    optional File mockable_platform_jar = 2;
 }
 
-// The dsl info of the instrumented test component of the android kotlin multiplatform target.
-message InstrumentedTestDslInfo {
+// The info of the instrumented test component of the android kotlin multiplatform target.
+message InstrumentedTestInfo {
     optional string namespace = 1;
     optional string test_instrumentation_runner = 2;
     map<string, string> test_instrumentation_runner_arguments = 3;
 
     // The signing config used to sign the test apk.
     optional SigningConfig signing_config = 4;
+
+    // Returns the absolute path for the listing file that will get updated after each build. The
+    // model file will contain deployment related information like applicationId, list of APKs.
+    optional File assemble_task_output_listing_file = 5;
 }
 
 message AndroidCompilation {
     // The type of the compilation.
     optional CompilationType type = 1;
-    // The dsl info of the main variant, will be available iff compilation type is MAIN.
-    optional MainVariantDslInfo main_dsl_info = 2;
-    // The dsl info of the unit test component, will be available iff compilation type is UNIT_TEST.
-    optional UnitTestDslInfo unit_test_dsl_info = 3;
-    // The dsl info of the instrumented test component, will be available iff compilation type is INSTRUMENTED_TEST.
-    optional InstrumentedTestDslInfo instrumented_test_dsl_info = 4;
+    // The info of the main variant, will be available iff compilation type is MAIN.
+    optional MainVariantInfo main_info = 2;
+    // The info of the unit test component, will be available iff compilation type is UNIT_TEST.
+    optional UnitTestInfo unit_test_info = 3;
+    // The info of the instrumented test component, will be available iff compilation type is INSTRUMENTED_TEST.
+    optional InstrumentedTestInfo instrumented_test_info = 4;
     // The name of the default sourceSet of the compilation.
     optional string default_source_set_name = 5;
     // The gradle assemble task name.
     optional string assemble_task_name = 6;
+    // The kotlin gradle compilation task name.
+    optional string kotlin_compile_task_name = 7;
 
     enum CompilationType {
         MAIN = 0;

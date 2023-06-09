@@ -29,7 +29,7 @@
         "org.jetbrains.kotlin.gradle.plugin.mpp.targetHierarchy.SourceSetTreeClassifier": {},
         "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidCompilation?\u003e;android-compilation-model": {
           "type": "MAIN",
-          "mainDslInfo": {
+          "mainInfo": {
             "namespace": "com.example.kmpsecondlib",
             "compileSdkTarget": "android-33",
             "minSdkVersion": {
@@ -41,10 +41,12 @@
                 "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpSecondLib/build/intermediates/default_proguard_files/global/proguard-android.txt-{AGP_Version}"
               }
             ],
-            "consumerProguardFiles": []
+            "consumerProguardFiles": [],
+            "minificationEnabled": false
           },
           "defaultSourceSetName": "androidMain",
-          "assembleTaskName": "assembleAndroidMain"
+          "assembleTaskName": "assembleAndroidMain",
+          "kotlinCompileTaskName": "compileAndroidMain"
         }
       }
     }
@@ -112,7 +114,14 @@
         {
           "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/D8BackportedDesugaredMethods.txt"
         }
-      ]
+      ],
+      "buildName": ":",
+      "rootBuildId": {
+        "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}"
+      },
+      "buildId": {
+        "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}"
+      }
     }
   }
 }

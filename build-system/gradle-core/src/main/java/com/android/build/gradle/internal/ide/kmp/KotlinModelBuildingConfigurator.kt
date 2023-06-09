@@ -28,9 +28,11 @@ import com.android.build.gradle.internal.component.UnitTestCreationConfig
 import com.android.build.gradle.internal.ide.proto.convert
 import com.android.build.gradle.internal.ide.proto.setIfNotNull
 import com.android.build.gradle.internal.ide.v2.ModelBuilder.Companion.getAgpFlags
+import com.android.build.gradle.internal.ide.v2.ModelBuilder.Companion.getBuildName
 import com.android.build.gradle.internal.ide.v2.TestInfoImpl
 import com.android.build.gradle.internal.ide.v2.convertToExecution
 import com.android.build.gradle.internal.lint.getLocalCustomLintChecksForModel
+import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.utils.getDesugarLibConfigFile
 import com.android.build.gradle.internal.utils.getDesugaredMethods
 import com.android.build.gradle.options.ProjectOptions
@@ -41,10 +43,10 @@ import com.android.kotlin.multiplatform.ide.models.serialization.androidTargetKe
 import com.android.kotlin.multiplatform.models.AndroidCompilation
 import com.android.kotlin.multiplatform.models.AndroidSourceSet
 import com.android.kotlin.multiplatform.models.AndroidTarget
-import com.android.kotlin.multiplatform.models.InstrumentedTestDslInfo
-import com.android.kotlin.multiplatform.models.MainVariantDslInfo
+import com.android.kotlin.multiplatform.models.InstrumentedTestInfo
+import com.android.kotlin.multiplatform.models.MainVariantInfo
 import com.android.kotlin.multiplatform.models.SourceProvider
-import com.android.kotlin.multiplatform.models.UnitTestDslInfo
+import com.android.kotlin.multiplatform.models.UnitTestInfo
 import org.gradle.api.Project
 
 object KotlinModelBuildingConfigurator {
@@ -72,19 +74,22 @@ object KotlinModelBuildingConfigurator {
                     .setAssembleTaskName(
                         component.taskContainer.assembleTask.name
                     )
-                    .setIfNotNull(
-                        (component as? KmpCreationConfig)?.toDslInfo(),
-                        AndroidCompilation.Builder::setMainDslInfo
+                    .setKotlinCompileTaskName(
+                        component.androidKotlinCompilation.compileKotlinTaskName
                     )
                     .setIfNotNull(
-                        (component as? UnitTestCreationConfig)?.toDslInfo(),
-                        AndroidCompilation.Builder::setUnitTestDslInfo
+                        (component as? KmpCreationConfig)?.toInfo(),
+                        AndroidCompilation.Builder::setMainInfo
                     )
                     .setIfNotNull(
-                        (component as? AndroidTestCreationConfig)?.toDslInfo(
+                        (component as? UnitTestCreationConfig)?.toInfo(),
+                        AndroidCompilation.Builder::setUnitTestInfo
+                    )
+                    .setIfNotNull(
+                        (component as? AndroidTestCreationConfig)?.toInfo(
                             testInstrumentationRunner, testInstrumentationRunnerArguments
                         ),
-                        AndroidCompilation.Builder::setInstrumentedTestDslInfo
+                        AndroidCompilation.Builder::setInstrumentedTestInfo
                     )
                     .build()
             }
@@ -111,6 +116,11 @@ object KotlinModelBuildingConfigurator {
             AndroidTarget.newBuilder()
                 .setAgpVersion(Version.ANDROID_GRADLE_PLUGIN_VERSION)
                 .setProjectPath(project.path)
+                .setBuildName(getBuildName(project))
+                .setRootBuildId(
+                    (project.gradle.parent ?: project.gradle).rootProject.projectDir.convert()
+                )
+                .setBuildId(project.gradle.rootProject.projectDir.convert())
                 .setBuildDir(project.layout.buildDirectory.get().asFile.convert())
                 .setBuildToolsVersion(mainVariant.global.buildToolsRevision.toString())
                 .setGroupId(
@@ -166,14 +176,14 @@ object KotlinModelBuildingConfigurator {
         }
     }
 
-    private fun KmpCreationConfig.toDslInfo() =
-        MainVariantDslInfo.newBuilder()
+    private fun KmpCreationConfig.toInfo() =
+        MainVariantInfo.newBuilder()
             .setNamespace(namespace.get())
             .setCompileSdkTarget(global.compileSdkHashString)
             .setMinSdkVersion(minSdk.convert())
             .setIfNotNull(
                 maxSdk,
-                MainVariantDslInfo.Builder::setMaxSdkVersion
+                MainVariantInfo.Builder::setMaxSdkVersion
             )
             .addAllProguardFiles(
                 optimizationCreationConfig.proguardFiles.get().map { it.asFile.convert() }
@@ -181,27 +191,37 @@ object KotlinModelBuildingConfigurator {
             .addAllConsumerProguardFiles(
                 optimizationCreationConfig.consumerProguardFiles.map { it.convert() }
             )
+            .setMinificationEnabled(
+                optimizationCreationConfig.minifiedEnabled
+            )
             .build()
 
-    private fun UnitTestCreationConfig.toDslInfo() =
-        UnitTestDslInfo.newBuilder()
+    private fun UnitTestCreationConfig.toInfo() =
+        UnitTestInfo.newBuilder()
             .setNamespace(namespace.get())
+            .setIfNotNull(
+                global.mockableJarArtifact.files.singleOrNull()?.convert(),
+                UnitTestInfo.Builder::setMockablePlatformJar
+            )
             .build()
 
-    private fun AndroidTestCreationConfig.toDslInfo(
+    private fun AndroidTestCreationConfig.toInfo(
         testInstrumentationRunner: String?,
         testInstrumentationRunnerArguments: Map<String, String>
     ) =
-        InstrumentedTestDslInfo.newBuilder()
+        InstrumentedTestInfo.newBuilder()
             .setNamespace(namespace.get())
             .setIfNotNull(
                 testInstrumentationRunner,
-                InstrumentedTestDslInfo.Builder::setTestInstrumentationRunner
+                InstrumentedTestInfo.Builder::setTestInstrumentationRunner
             )
             .setIfNotNull(
                 signingConfigImpl?.convert(),
-                InstrumentedTestDslInfo.Builder::setSigningConfig
+                InstrumentedTestInfo.Builder::setSigningConfig
             )
             .putAllTestInstrumentationRunnerArguments(testInstrumentationRunnerArguments)
+            .setAssembleTaskOutputListingFile(
+                artifacts.get(InternalArtifactType.APK_IDE_REDIRECT_FILE).get().asFile.convert()
+            )
             .build()
 }

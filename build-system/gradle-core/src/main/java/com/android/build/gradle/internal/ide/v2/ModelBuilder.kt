@@ -423,27 +423,6 @@ class ModelBuilder<
             desugarLibConfig = desugarLibConfig,
         )
     }
-    /**
-     * Returns the current build name
-     */
-    private fun getBuildName(project: Project): String {
-        val currentGradle = project.gradle
-        val parentGradle = currentGradle.parent
-
-        return if (parentGradle != null) {
-            // search for the parent included builds for the current gradle, matching by the
-            // root dir
-            parentGradle.includedBuilds.singleOrNull {
-                // these values already canonicalized
-                //noinspection FileComparisons
-                it.projectDir == currentGradle.rootProject.projectDir
-            }?.name
-                ?: throw RuntimeException("Failed to get Gradle name for ${project.path}")
-        } else {
-            // this is top gradle so name is ":"
-            ":"
-        }
-    }
 
     /**
      * Returns the build map and the current name
@@ -1160,6 +1139,28 @@ class ModelBuilder<
             )
 
             return AndroidGradlePluginProjectFlagsImpl(flags.build())
+        }
+
+        /**
+         * Returns the current build name
+         */
+        internal fun getBuildName(project: Project): String {
+            val currentGradle = project.gradle
+            val parentGradle = currentGradle.parent
+
+            return if (parentGradle != null) {
+                // search for the parent included builds for the current gradle, matching by the
+                // root dir
+                parentGradle.includedBuilds.singleOrNull {
+                    // these values already canonicalized
+                    //noinspection FileComparisons
+                    it.projectDir == currentGradle.rootProject.projectDir
+                }?.name
+                    ?: throw RuntimeException("Failed to get Gradle name for ${project.path}")
+            } else {
+                // this is top gradle so name is ":"
+                ":"
+            }
         }
     }
 }
