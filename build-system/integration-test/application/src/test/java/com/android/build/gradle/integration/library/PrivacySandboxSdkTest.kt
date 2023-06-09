@@ -180,14 +180,6 @@ class PrivacySandboxSdkTest {
                     }
                 """.trimIndent()
             }
-            // TODO(b/249047617): Also inject tools attribute in app manifest merger when needed
-            addFile("src/main/AndroidManifest.xml", """
-                <?xml version="1.0" encoding="utf-8"?>
-                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-                    xmlns:tools="http://schemas.android.com/tools" >
-                </manifest>
-                """.trimIndent()
-            )
         }
         rootProject {
             useNewPluginsDsl = true

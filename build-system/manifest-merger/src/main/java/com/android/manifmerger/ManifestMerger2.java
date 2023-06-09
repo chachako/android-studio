@@ -459,9 +459,9 @@ public class ManifestMerger2 {
             }
         }
 
-        if (!mOptionalFeatures.contains(Invoker.Feature.REMOVE_TOOLS_DECLARATIONS)) {
-            PostValidator.enforceToolsNamespaceDeclaration(finalMergedDocument);
-        }
+        // This will be removed again later when using Invoker.Feature.REMOVE_TOOLS_DECLARATIONS
+        // As long as it is not used by tools:requiredByPrivacySandboxSdk.
+        PostValidator.enforceToolsNamespaceDeclaration(finalMergedDocument);
 
         mProcessCancellationChecker.check();
 

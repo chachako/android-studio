@@ -49,6 +49,9 @@ import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.google.common.truth.Expect;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -197,6 +200,9 @@ public class ManifestMerger2Test {
         this.fileName = fileName;
     }
 
+    @Rule
+    public Expect expect = Expect.create();
+
     @Test
     public void processTestFiles() throws Exception {
         ManifestMergerTestUtil.TestFiles testFiles =
@@ -292,17 +298,16 @@ public class ManifestMerger2Test {
                 Files.writeString(fileToUpdate, newContents, StandardCharsets.UTF_8);
             }
         }
-        String xml = testFiles.getExpectedResult();
-        assertEquals(xml.trim(), xmlDocument.trim().replace("\r\n", "\n"));
-        assertNotNull(PositionXmlParser.parse(xml));
+        String expectedResult = testFiles.getExpectedResult();
+        String actualResult = xmlDocument.trim().replace("\r\n", "\n");
+        expect.that(actualResult).isEqualTo(expectedResult.trim());
+        expect.that(PositionXmlParser.parse(actualResult)).named("output xml can be parsed").isNotNull();
 
         // process any warnings.
         compareExpectedAndActualErrors(mergeReport, testFiles.getExpectedErrors());
-        if (mergeReport.getResult().isSuccess()) {
-            assertFalse(expectingError);
-        } else {
-            assertTrue(expectingError);
-        }
+        expect.that(mergeReport.getResult().isSuccess())
+                .named("mergeReport.getResult().isSuccess()")
+                .isEqualTo(!expectingError);
 
     }
 
