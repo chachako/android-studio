@@ -105,7 +105,7 @@ abstract class ExternalNativeJsonGenerator internal constructor(
             errorln(
                 METADATA_GENERATION_GRADLE_EXCEPTION,
                 "exception while building Json %s",
-                e.message!!
+                "${e.message} : ${e.stackTraceToString()}"
             )
         } catch (e: ProcessException) {
             errorln(
@@ -113,7 +113,7 @@ abstract class ExternalNativeJsonGenerator internal constructor(
                 "error when building with %s using %s: %s",
                 abi.variant.module.buildSystemTag,
                 abi.variant.module.makeFile,
-                e.message!!
+                "${e.message} : ${e.stackTraceToString()}"
             )
         }
     }
