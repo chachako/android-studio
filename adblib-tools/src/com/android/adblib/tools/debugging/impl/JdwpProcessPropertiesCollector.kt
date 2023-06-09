@@ -39,7 +39,7 @@ import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CMD
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CMD_SET
-import com.android.adblib.tools.debugging.packets.ddms.MutableDdmsChunk
+import com.android.adblib.tools.debugging.packets.ddms.EphemeralDdmsChunk
 import com.android.adblib.tools.debugging.packets.ddms.chunks.AppStage
 import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsApnmChunk
 import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsFeatChunk
@@ -416,10 +416,11 @@ internal class JdwpProcessPropertiesCollector(
         chunkType: DdmsChunkType,
         chunkData: ByteBuffer
     ): JdwpPacketView {
-        val chunk = MutableDdmsChunk()
-        chunk.type = chunkType
-        chunk.length = chunkData.remaining()
-        chunk.payloadProvider = PayloadProvider.forByteBuffer(chunkData)
+        val chunk = EphemeralDdmsChunk(
+            type = chunkType,
+            length = chunkData.remaining(),
+            payloadProvider = PayloadProvider.forByteBuffer(chunkData)
+        )
         val workBuffer = ResizableBuffer()
         val outputChannel = ByteBufferAdbOutputChannel(workBuffer)
         chunk.writeToChannel(outputChannel)

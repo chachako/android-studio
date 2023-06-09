@@ -203,11 +203,11 @@ class DdmsChunkViewTest : AdbLibToolsTestBase() {
         chunkType: DdmsChunkType = DdmsChunkType.REAQ,
         bytes: List<Int> = listOf(128, 0, 255, 10)
     ): DdmsChunkView {
-        val ddmsChunk = MutableDdmsChunk()
-        ddmsChunk.type = chunkType
-        ddmsChunk.length = bytes.size
-        ddmsChunk.payloadProvider = PayloadProvider.forBufferedInputChannel(bytesToBufferedInputChannel(bytes))
-        return ddmsChunk
+        return EphemeralDdmsChunk(
+            type = chunkType,
+            length = bytes.size,
+            payloadProvider = PayloadProvider.forBufferedInputChannel(bytesToBufferedInputChannel(bytes))
+        )
     }
 
     private fun bytesToBufferedInputChannel(bytes: List<Int>): AdbBufferedInputChannel {

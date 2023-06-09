@@ -16,10 +16,9 @@
 package com.android.adblib.tools.debugging.packets.ddms.chunks
 
 import com.android.adblib.testingutils.CoroutineTestUtils
-import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.PayloadProvider
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
-import com.android.adblib.tools.debugging.packets.ddms.MutableDdmsChunk
+import com.android.adblib.tools.debugging.packets.ddms.EphemeralDdmsChunk
 import com.android.adblib.utils.ResizableBuffer
 import org.junit.Assert
 import org.junit.Test
@@ -37,11 +36,11 @@ class DdmsStagChunkTest {
             )
             buffer.forChannelWrite()
         }
-        val chunk = MutableDdmsChunk().apply {
-            type = DdmsChunkType.STAG
-            length = payload.remaining()
-            this.payloadProvider = PayloadProvider.forByteBuffer(payload)
-        }
+        val chunk = EphemeralDdmsChunk(
+            type = DdmsChunkType.STAG,
+            length = payload.remaining(),
+            payloadProvider = PayloadProvider.forByteBuffer(payload)
+        )
 
         // Act
         val stagChunk = DdmsStagChunk.parse(chunk)

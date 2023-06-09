@@ -16,10 +16,9 @@
 package com.android.adblib.tools.debugging.packets.ddms.chunks
 
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
-import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.PayloadProvider
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
-import com.android.adblib.tools.debugging.packets.ddms.MutableDdmsChunk
+import com.android.adblib.tools.debugging.packets.ddms.EphemeralDdmsChunk
 import com.android.adblib.utils.ResizableBuffer
 import org.junit.Assert
 import org.junit.Test
@@ -46,11 +45,11 @@ class DdmsHeloChunkTest {
             )
             buffer.forChannelWrite()
         }
-        val chunk = MutableDdmsChunk().apply {
-            type = DdmsChunkType.HELO
-            length = payload.remaining()
-            this.payloadProvider = PayloadProvider.forByteBuffer(payload)
-        }
+        val chunk = EphemeralDdmsChunk(
+            type = DdmsChunkType.HELO,
+            length = payload.remaining(),
+            payloadProvider = PayloadProvider.forByteBuffer(payload)
+        )
 
         // Act
         val heloChunk = DdmsHeloChunk.parse(chunk)
@@ -82,11 +81,11 @@ class DdmsHeloChunkTest {
             )
             buffer.forChannelWrite()
         }
-        val chunk = MutableDdmsChunk().apply {
-            type = DdmsChunkType.HELO
-            length = payload.remaining()
-            this.payloadProvider = PayloadProvider.forByteBuffer(payload)
-        }
+        val chunk = EphemeralDdmsChunk(
+            type = DdmsChunkType.HELO,
+            length = payload.remaining(),
+            payloadProvider = PayloadProvider.forByteBuffer(payload)
+        )
 
         // Act
         val heloChunk = DdmsHeloChunk.parse(chunk)
@@ -119,11 +118,11 @@ class DdmsHeloChunkTest {
             )
             buffer.forChannelWrite()
         }
-        val chunk = MutableDdmsChunk().apply {
-            type = DdmsChunkType.HELO
-            length = payload.remaining()
-            this.payloadProvider = PayloadProvider.forByteBuffer(payload)
-        }
+        val chunk = EphemeralDdmsChunk(
+            type = DdmsChunkType.HELO,
+            length = payload.remaining(),
+            payloadProvider = PayloadProvider.forByteBuffer(payload)
+        )
 
         // Act
         val heloChunk = DdmsHeloChunk.parse(chunk)
@@ -157,11 +156,11 @@ class DdmsHeloChunkTest {
             )
             buffer.forChannelWrite()
         }
-        val chunk = MutableDdmsChunk().apply {
-            type = DdmsChunkType.HELO
-            length = payload.remaining()
-            this.payloadProvider = PayloadProvider.forByteBuffer(payload)
-        }
+        val chunk = EphemeralDdmsChunk(
+            type = DdmsChunkType.HELO,
+            length = payload.remaining(),
+            payloadProvider = PayloadProvider.forByteBuffer(payload)
+        )
 
         // Act
         val heloChunk = DdmsHeloChunk.parse(chunk)
@@ -196,11 +195,11 @@ class DdmsHeloChunkTest {
             )
             buffer.forChannelWrite()
         }
-        val chunk = MutableDdmsChunk().apply {
-            type = DdmsChunkType.HELO
-            length = payload.remaining()
-            this.payloadProvider = PayloadProvider.forByteBuffer(payload)
-        }
+        val chunk = EphemeralDdmsChunk(
+            type = DdmsChunkType.HELO,
+            length = payload.remaining(),
+            payloadProvider = PayloadProvider.forByteBuffer(payload)
+        )
 
         // Act
         val heloChunk = DdmsHeloChunk.parse(chunk)
@@ -236,11 +235,11 @@ class DdmsHeloChunkTest {
             )
             buffer.forChannelWrite()
         }
-        val chunk = MutableDdmsChunk().apply {
-            type = DdmsChunkType.HELO
-            length = payload.remaining()
-            this.payloadProvider = PayloadProvider.forByteBuffer(payload)
-        }
+        val chunk = EphemeralDdmsChunk(
+            type = DdmsChunkType.HELO,
+            length = payload.remaining(),
+            payloadProvider = PayloadProvider.forByteBuffer(payload)
+        )
 
         // Act
         val heloChunk = DdmsHeloChunk.parse(chunk)
@@ -277,11 +276,11 @@ class DdmsHeloChunkTest {
             )
             buffer.forChannelWrite()
         }
-        val chunk = MutableDdmsChunk().apply {
-            type = DdmsChunkType.HELO
-            length = payload.remaining()
-            this.payloadProvider = PayloadProvider.forByteBuffer(payload)
-        }
+        val chunk = EphemeralDdmsChunk(
+            type = DdmsChunkType.HELO,
+            length = payload.remaining(),
+            payloadProvider = PayloadProvider.forByteBuffer(payload)
+        )
 
         // Act
         val heloChunk = DdmsHeloChunk.parse(chunk)

@@ -28,7 +28,7 @@ import com.android.adblib.tools.debugging.packets.clone
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
-import com.android.adblib.tools.debugging.packets.ddms.MutableDdmsChunk
+import com.android.adblib.tools.debugging.packets.ddms.EphemeralDdmsChunk
 import com.android.adblib.tools.debugging.packets.ddms.writeToChannel
 import com.android.adblib.tools.debugging.properties
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
@@ -175,10 +175,11 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
     }
 
     private suspend fun createDdmsHeloPacket(jdwpSession: JdwpSession): MutableJdwpPacket {
-        val heloChunk = MutableDdmsChunk()
-        heloChunk.type = DdmsChunkType.HELO
-        heloChunk.length = 0
-        heloChunk.payloadProvider = PayloadProvider.emptyPayload()
+        val heloChunk = EphemeralDdmsChunk(
+            type = DdmsChunkType.HELO,
+            length = 0,
+            payloadProvider = PayloadProvider.emptyPayload()
+        )
 
         val packet = MutableJdwpPacket()
         packet.id = jdwpSession.nextPacketId()

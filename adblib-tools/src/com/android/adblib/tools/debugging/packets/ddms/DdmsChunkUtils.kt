@@ -30,7 +30,6 @@ import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.toByteBuffer
 import com.android.adblib.utils.ResizableBuffer
-import com.android.adblib.utils.firstCollecting
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.EOFException
@@ -71,25 +70,20 @@ internal suspend fun DdmsChunkView.writeToChannel(
 internal suspend fun DdmsChunkView.clone(
     workBuffer: ResizableBuffer = ResizableBuffer()
 ): DdmsChunkView {
-    val ddmsChunk = MutableDdmsChunk()
-
-    // Copy header
-    ddmsChunk.length = length
-    ddmsChunk.type = type
-
     // Copy payload to "workBuffer"
     workBuffer.clear()
     val dataCopy = ByteBufferAdbOutputChannel(workBuffer)
-    val byteCount = withPayload { payload -> payload.forwardTo(dataCopy) }
-    ddmsChunk.checkChunkLength(byteCount)
+    withPayload { payload -> payload.forwardTo(dataCopy) }
 
     // Make a copy into our own ByteBuffer
     val bufferCopy = workBuffer.forChannelWrite().copy()
 
     // Create rewindable channel for payload
-    ddmsChunk.payloadProvider = PayloadProvider.forByteBuffer(bufferCopy)
-
-    return ddmsChunk
+    return EphemeralDdmsChunk(
+        type = type,
+        length = length,
+        payloadProvider = PayloadProvider.forByteBuffer(bufferCopy)
+    )
 }
 
 /**
