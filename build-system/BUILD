@@ -116,7 +116,7 @@ filegroup(
 filegroup(
     name = "gradle-distrib-7.4",
     srcs = ["//tools/external/gradle:gradle-distrib-7.4"],
-    visibility = ["//tools/adt/idea/old-agp-tests:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
