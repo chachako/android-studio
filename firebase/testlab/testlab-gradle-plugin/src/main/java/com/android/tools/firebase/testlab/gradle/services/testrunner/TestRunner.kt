@@ -25,12 +25,10 @@ import com.android.tools.firebase.testlab.gradle.services.TestingManager
 import com.android.tools.firebase.testlab.gradle.services.ToolResultsManager
 import com.android.tools.firebase.testlab.gradle.services.passed
 import com.android.tools.firebase.testlab.gradle.services.storage.TestRunStorage
-import com.android.tools.utp.plugins.host.device.info.proto.AndroidTestDeviceInfoProto
 import com.android.builder.testing.api.DeviceConfigProvider
-import com.google.api.services.testing.model.TestExecution
+import com.google.api.services.testing.model.ToolResultsStep
 import com.google.api.services.testing.model.TestMatrix
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
-import org.gradle.api.logging.Logging
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.io.File
@@ -57,15 +55,67 @@ class TestRunner(
     private val testingManager: TestingManager,
     private val storageManager: StorageManager,
     private val testResultProcessor: TestResultProcessor,
-    private val testMatrixGenerator: TestMatrixGenerator = TestMatrixGenerator(projectSettings)
+    private val testMatrixGenerator: TestMatrixGenerator = TestMatrixGenerator(projectSettings),
+    private val matrixRunProcessTracker: TestMatrixRunProcessTracker =
+        TestMatrixRunProcessTracker(testingManager, projectSettings.name),
+    private val deviceInfoFileManager: DeviceInfoFileManager = DeviceInfoFileManager(),
+    private val testSuiteMergerFactory: () -> UtpTestSuiteResultMerger = {
+        UtpTestSuiteResultMerger()
+    },
+    private val xmlHandlerFactory: (TestDeviceData) -> TestResultsXmlHandler = {
+        getDefaultHandler(it)
+    }
 ) {
-
-    private val logger = Logging.getLogger(this.javaClass)
 
     companion object {
         const val TEST_RESULT_PB_FILE_NAME = "test-result.pb"
 
-        const val CHECK_TEST_STATE_WAIT_MS = 10 * 1000L;
+        fun getDefaultHandler(device: TestDeviceData): TestResultsXmlHandler =
+            object: TestResultsXmlHandler {
+                override fun updateXml(xml: File, variantName: String, projectPath: String) {
+                    val builder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+                    val document = builder.parse(xml)
+                    val testSuiteElements = document.getElementsByTagName("testsuite").let { nodeList ->
+                        List(nodeList.length) { index ->
+                            nodeList.item(index)
+                        }
+                    }
+                    testSuiteElements.forEach { testSuite ->
+                        val propertyNode = testSuite.childNodes.let { nodeList ->
+                            List(nodeList.length) { index ->
+                                nodeList.item(index)
+                            }
+                        }.firstOrNull { node ->
+                            node.nodeType == Node.ELEMENT_NODE && node.nodeName.lowercase() == "properties"
+                        }
+
+                        val propertyElement = if (propertyNode == null) {
+                            document.createElement("properties").also {
+                                testSuite.appendChild(it)
+                            }
+                        } else {
+                            propertyNode as Element
+                        }
+
+                        propertyElement.appendChild(document.createElement("property").apply {
+                            setAttribute("name", "device")
+                            setAttribute("value", device.name)
+                        })
+                        propertyElement.appendChild(document.createElement("property").apply {
+                            setAttribute("name", "flavor")
+                            setAttribute("value", variantName)
+                        })
+                        propertyElement.appendChild(document.createElement("property").apply {
+                            setAttribute("name", "project")
+                            setAttribute("value", projectPath)
+                        })
+                    }
+
+                    val transformerFactory = TransformerFactory.newInstance()
+                    val transformer = transformerFactory.newTransformer()
+                    transformer.transform(DOMSource(document), StreamResult(xml))
+                }
+            }
     }
 
     fun runTests(
@@ -99,6 +149,7 @@ class TestRunner(
 
         // If tested apk is null, this is a self-instrument test (e.g. library module).
         val testedApkFile = testData.testedApkFinder(configProvider).firstOrNull()
+
         // If the test apk is a stub, then it can be shared between gradle projects.
         val (testedApkName, storageModule) = testedApkFile?.run {
             Pair("$variantName-${testedApkFile.name}", projectPath)
@@ -111,7 +162,7 @@ class TestRunner(
             uploadFileName = testedApkName
         )
 
-        val updatedTestMatrix = testingManager.createTestMatrixRun(
+        val testMatrix = testingManager.createTestMatrixRun(
             projectSettings.name,
             testMatrixGenerator.createTestMatrix(
                 device,
@@ -124,65 +175,21 @@ class TestRunner(
             runRequestId
         )
 
-        lateinit var resultTestMatrix: TestMatrix
-        var previousTestMatrixState = ""
-        var printResultsUrl = true
-        while (true) {
-            val latestTestMatrix =
-                testingManager.getTestMatrix(projectSettings.name, updatedTestMatrix)
-            if (previousTestMatrixState != latestTestMatrix.state) {
-                previousTestMatrixState = latestTestMatrix.state
-                logger.lifecycle("Firebase TestLab Test execution state: $previousTestMatrixState")
-            }
-            if (printResultsUrl) {
-                val resultsUrl = latestTestMatrix.resultStorage?.get("resultsUrl") as String?
-                if (!resultsUrl.isNullOrBlank()) {
-                    val resultDetailsUrl = if (resultsUrl.endsWith("details")) {
-                        resultsUrl
-                    } else {
-                        "$resultsUrl/details"
-                    }
-                    logger.lifecycle(
-                        "Test request for device ${device.name} has been submitted to " +
-                                "Firebase TestLab: $resultDetailsUrl")
-                    printResultsUrl = false
-                }
-            }
-            val testFinished = when (latestTestMatrix.state) {
-                "VALIDATING", "PENDING", "RUNNING" -> false
-                else -> true
-            }
-            logger.info("Test execution: ${latestTestMatrix.state}")
-            if (testFinished) {
-                resultTestMatrix = latestTestMatrix
-                break
-            }
-            Thread.sleep (CHECK_TEST_STATE_WAIT_MS)
-        }
-
-        val deviceInfoFile =
-            createDeviceInfoFile(resultsOutDir, device.name, device.deviceId, device.apiLevel)
+        val resultTestMatrix =
+            matrixRunProcessTracker.waitForTestResults(device.name, testMatrix)
 
         val ftlTestRunResults: MutableList<FtlTestRunResult> = mutableListOf()
 
         resultTestMatrix.testExecutions.forEach { testExecution ->
-            if (testExecution.toolResultsStep != null) {
-                val executionStep = toolResultsManager.requestStep(
-                    ToolResultsManager.requestFrom(testExecution.toolResultsStep))
-                executionStep.testExecutionStep.testSuiteOverviews?.forEach { suiteOverview ->
-                    testRunStorage.downloadFromStorage(suiteOverview.xmlSource.fileUri) {
-                        File(resultsOutDir, "TEST-${it.replace("/", "_")}")
-                    }?.also {
-                        updateTestResultXmlFile(it, device.name, projectPath, variantName)
-                    }
-                }
-            }
-            val testSuiteResult = getTestSuiteResult(
+
+            val testSuiteResult = handleTestSuiteResult(
                 resultTestMatrix,
-                testExecution,
-                deviceInfoFile,
+                testExecution.toolResultsStep,
+                device,
                 testRunStorage,
-                resultsOutDir
+                resultsOutDir,
+                projectPath,
+                variantName
             )
 
             ftlTestRunResults.add(FtlTestRunResult(testSuiteResult.passed(), testSuiteResult))
@@ -190,7 +197,7 @@ class TestRunner(
 
         val resultProtos = ftlTestRunResults.mapNotNull(FtlTestRunResult::resultsProto)
         if (resultProtos.isNotEmpty()) {
-            val resultsMerger = UtpTestSuiteResultMerger()
+            val resultsMerger = testSuiteMergerFactory()
             resultProtos.forEach(resultsMerger::merge)
 
             val mergedTestResultPbFile = File(resultsOutDir, TEST_RESULT_PB_FILE_NAME)
@@ -202,22 +209,34 @@ class TestRunner(
         return ftlTestRunResults
     }
 
-    private fun getTestSuiteResult(
+    private fun handleTestSuiteResult(
         testMatrix: TestMatrix,
-        testExecution: TestExecution,
-        deviceInfoFile: File,
+        results: ToolResultsStep?,
+        device: TestDeviceData,
         testRunStorage: TestRunStorage,
-        resultsOutDir: File
+        resultsOutDir: File,
+        projectPath: String,
+        variantName: String
     ): TestSuiteResult {
+        val xmlHandler = xmlHandlerFactory(device)
 
-        val results = testExecution.toolResultsStep
+        val deviceInfoFile = deviceInfoFileManager.createFile(resultsOutDir, device)
+
         return if (results != null) {
 
             val requestInfo = ToolResultsManager.requestFrom(results)
+            val executionStep = toolResultsManager.requestStep(requestInfo)
+            executionStep.testExecutionStep.testSuiteOverviews?.forEach { suiteOverview ->
+                testRunStorage.downloadFromStorage(suiteOverview.xmlSource.fileUri) {
+                    File(resultsOutDir, "TEST-${it.replace("/", "_")}")
+                }?.also {
+                    xmlHandler.updateXml(it, projectPath, variantName)
+                }
+            }
 
             testResultProcessor.toUtpResult(
                 resultsOutDir,
-                toolResultsManager.requestStep(requestInfo),
+                executionStep,
                 toolResultsManager.requestThumbnails(requestInfo)?.thumbnails,
                 testRunStorage,
                 deviceInfoFile,
@@ -229,74 +248,6 @@ class TestRunner(
                 testMatrix.invalidMatrixDetails
             )
         }
-    }
-
-    private fun createDeviceInfoFile(
-        resultsOutDir: File,
-        deviceName: String,
-        deviceId: String,
-        deviceApiLevel: Int
-    ): File {
-        val deviceInfoFile = File(resultsOutDir, "device-info.pb")
-        val androidTestDeviceInfo = AndroidTestDeviceInfoProto.AndroidTestDeviceInfo.newBuilder()
-            .setName(deviceName)
-            .setApiLevel(deviceApiLevel.toString())
-            .setGradleDslDeviceName(deviceName)
-            .setModel(deviceId)
-            .build()
-        FileOutputStream(deviceInfoFile).use {
-            androidTestDeviceInfo.writeTo(it)
-        }
-        return deviceInfoFile
-    }
-
-    private fun updateTestResultXmlFile(
-        xmlFile: File,
-        deviceName: String,
-        projectPath: String,
-        variantName: String,
-    ) {
-        val builder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-        val document = builder.parse(xmlFile)
-        val testSuiteElements = document.getElementsByTagName("testsuite").let { nodeList ->
-            List(nodeList.length) { index ->
-                nodeList.item(index)
-            }
-        }
-        testSuiteElements.forEach { testSuite ->
-            val propertyNode = testSuite.childNodes.let { nodeList ->
-                List(nodeList.length) { index ->
-                    nodeList.item(index)
-                }
-            }.firstOrNull { node ->
-                node.nodeType == Node.ELEMENT_NODE && node.nodeName.lowercase() == "properties"
-            }
-
-            val propertyElement = if (propertyNode == null) {
-                document.createElement("properties").also {
-                    testSuite.appendChild(it)
-                }
-            } else {
-                propertyNode as Element
-            }
-
-            propertyElement.appendChild(document.createElement("property").apply {
-                setAttribute("name", "device")
-                setAttribute("value", deviceName)
-            })
-            propertyElement.appendChild(document.createElement("property").apply {
-                setAttribute("name", "flavor")
-                setAttribute("value", variantName)
-            })
-            propertyElement.appendChild(document.createElement("property").apply {
-                setAttribute("name", "project")
-                setAttribute("value", projectPath)
-            })
-        }
-
-        val transformerFactory = TransformerFactory.newInstance()
-        val transformer = transformerFactory.newTransformer()
-        transformer.transform(DOMSource(document), StreamResult(xmlFile))
     }
 
     private fun createConfigProvider(device: TestDeviceData) =
