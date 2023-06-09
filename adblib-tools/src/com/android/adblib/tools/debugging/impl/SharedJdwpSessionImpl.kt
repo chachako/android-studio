@@ -26,6 +26,7 @@ import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSessionFilter
 import com.android.adblib.tools.debugging.SharedJdwpSessionMonitor
+import com.android.adblib.tools.debugging.impl.SharedJdwpSessionImpl.ScopedPayloadProvider.ScopedAdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.PayloadProvider
@@ -38,11 +39,10 @@ import com.android.adblib.utils.createChildScope
 import com.android.adblib.utils.withReentrantLock
 import com.android.adblib.withPrefix
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
@@ -448,8 +448,20 @@ internal class SharedJdwpSessionImpl(
         }
     }
 
+    /**
+     * A [PayloadProvider] that wraps a [payload][AdbInputChannel] using a
+     * [ScopedAdbBufferedInputChannel] so that cancellation of pending read operations
+     * never close the initial [payload][AdbInputChannel].
+     */
     private class ScopedPayloadProvider(
+        /**
+         * The [CoroutineScope] used to asynchronously read from the [payload]. This scope
+         * should be active as long as [payload] is active.
+         */
         scope: CoroutineScope,
+        /**
+         * The [AdbInputChannel] being wrapped.
+         */
         payload: AdbInputChannel
     ) : PayloadProvider {
 
@@ -483,12 +495,11 @@ internal class SharedJdwpSessionImpl(
             mutex.withLock {
                 scopedPayload.waitForPendingRead()
             }
-            // Note: We don't shut down [scopedPayload] as we don't own it
         }
 
         override fun close() {
             closed = true
-            // Note: We don't close [scopedPayload] as we don't own it
+            scopedPayload.close()
         }
 
         private fun throwIfClosed() {
@@ -496,68 +507,75 @@ internal class SharedJdwpSessionImpl(
                 throw IllegalStateException("Payload is not available anymore because the provider has been closed")
             }
         }
-    }
 
-    /**
-     * An [AdbBufferedInputChannel] that reads from another [AdbBufferedInputChannel] in a custom
-     * [CoroutineScope] so that cancellation does not affect the initial [input].
-     */
-    private class ScopedAdbBufferedInputChannel(
-        private val scope: CoroutineScope,
-        private val input: AdbInputChannel
-    ) : AdbBufferedInputChannel {
+        /**
+         * An [AdbBufferedInputChannel] that reads from another [AdbBufferedInputChannel] in a custom
+         * [CoroutineScope] so that cancellation does not affect the initial [bufferedInput].
+         */
+        private class ScopedAdbBufferedInputChannel(
+            private val scope: CoroutineScope,
+            input: AdbInputChannel
+        ) : AdbBufferedInputChannel {
 
-        private var currentReadJob: Job? = null
-        private val readMutex = Mutex()
+            private var currentReadJob: Job? = null
 
-        override suspend fun rewind() {
-            currentReadJob?.join()
-            (input as? AdbBufferedInputChannel)?.rewind()
-        }
-
-        override suspend fun finalRewind() {
-            currentReadJob?.join()
-            (input as? AdbBufferedInputChannel)?.finalRewind()
-        }
-
-        override suspend fun read(buffer: ByteBuffer, timeout: Long, unit: TimeUnit): Int {
-            return readMutex.withLock {
-                readAsync(buffer) { input, buffer -> input.read(buffer) }.await()
+            /**
+             * Ensure we have a [AdbBufferedInputChannel] so we support
+             * [AdbBufferedInputChannel.rewind]
+             */
+            private val bufferedInput = if (input is AdbBufferedInputChannel) {
+                input
+            } else {
+                AdbBufferedInputChannel.forInputChannel(input)
             }
-        }
 
-        override suspend fun readExactly(buffer: ByteBuffer, timeout: Long, unit: TimeUnit) {
-            return readMutex.withLock {
-                readAsync(buffer) { input, buffer -> input.readExactly(buffer) }.await()
+            override suspend fun rewind() {
+                throwIfPendingRead()
+                bufferedInput.rewind()
             }
-        }
 
-        override fun close() {
-            input.close()
-        }
+            override suspend fun finalRewind() {
+                throw IllegalStateException("finalRewind should never be called on ${this::class}")
+            }
 
-        private suspend fun <R> readAsync(
-            buffer: ByteBuffer,
-            reader: suspend (AdbInputChannel, ByteBuffer) -> R
-        ): Deferred<R> {
-            val deferred = CompletableDeferred<R>(scope.coroutineContext.job)
-            currentReadJob?.join()
-            scope.launch {
-                val readerResult = reader(input, buffer)
-                deferred.complete(readerResult)
-            }.also { job ->
-                job.invokeOnCompletion { throwable ->
-                    throwable?.also {
-                        deferred.completeExceptionally(it)
-                    }
+            override suspend fun read(buffer: ByteBuffer, timeout: Long, unit: TimeUnit): Int {
+                return scopedRead { bufferedInput.read(buffer) }
+            }
+
+            override suspend fun readExactly(buffer: ByteBuffer, timeout: Long, unit: TimeUnit) {
+                return scopedRead { bufferedInput.readExactly(buffer) }
+            }
+
+            suspend fun waitForPendingRead() {
+                currentReadJob?.join()
+            }
+
+            override fun close() {
+                // We cancel any pending job if there is one, so that we support prompt
+                // cancellation if the owner of this instance if cancelled. In non-exceptional
+                // code paths, "currentReadJob" is already completed (because of the
+                // "waitForPendingRead" call) and the "cancel" call below is a no-op.
+                currentReadJob?.cancel("${this::class} has been closed")
+            }
+
+            private suspend inline fun <R> scopedRead(crossinline reader: suspend () -> R): R {
+                throwIfPendingRead()
+
+                // Start new job in parent scope and wait for its completion
+                return scope.async {
+                    reader()
+                }.also { job ->
+                    currentReadJob = job
+                }.await().also {
+                    currentReadJob = null
                 }
-                currentReadJob = job
             }
-            return deferred
-        }
 
-        suspend fun waitForPendingRead() {
-            currentReadJob?.join()
+            private fun throwIfPendingRead() {
+                check(!(currentReadJob?.isActive ?: false)) {
+                    "Operation is not supported if there is a pending read operation"
+                }
+            }
         }
     }
 
@@ -571,20 +589,11 @@ internal class SharedJdwpSessionImpl(
     ) {
 
         suspend fun sendPacket(packet: JdwpPacketView) {
-            sendPacketAsync(packet).await()
-        }
-
-        private suspend fun sendPacketAsync(packet: JdwpPacketView): Deferred<Unit> {
-            val deferred = CompletableDeferred<Unit>(scope.coroutineContext.job)
-            scope.launch {
+            scope.async {
                 sharedJdwpSession.jdwpMonitor?.onSendPacket(packet)
                 sharedJdwpSession.jdwpFilter.beforeSendPacket(packet)
                 sharedJdwpSession.jdwpSession.sendPacket(packet)
-                deferred.complete(Unit)
-            }.invokeOnCompletion {
-                it?.also { deferred.completeExceptionally(it) }
-            }
-            return deferred
+            }.await()
         }
     }
 
