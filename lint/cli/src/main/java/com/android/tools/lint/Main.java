@@ -1475,7 +1475,7 @@ public class Main {
                     argumentState.desugaredMethodsPaths = new ArrayList<>();
                 }
                 argumentState.desugaredMethodsPaths.add(path);
-            } else if (arg.equals("-XskipJarVerification")) {
+            } else if (arg.equals("--XskipJarVerification")) {
                 System.setProperty("android.lint.skip.bytecode.verifier", VALUE_TRUE);
             } else if (arg.equals("--XgenerateApiLookup")) {
                 if (index > args.length - 3) {

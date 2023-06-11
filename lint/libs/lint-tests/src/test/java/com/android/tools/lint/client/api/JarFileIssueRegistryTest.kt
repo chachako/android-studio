@@ -701,7 +701,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
         "--lint-rule-jars",
         lintJar.path,
         dir.path,
-        "-XskipJarVerification",
+        "--XskipJarVerification",
         "--disable",
         "_TestIssueId"
       ),
