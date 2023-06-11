@@ -479,7 +479,7 @@ class TestRunnerTest {
         val mockReference = mock<FileReference>().also {
             `when`(it.fileUri).thenReturn("some/long/fileUri")
         }
-        val testSuiteOverview = mock<TestSuiteOverview>().also {
+        mock<TestSuiteOverview>().also {
             `when`(it.xmlSource).thenReturn(mockReference)
             `when`(mockTestExecutionStep.testSuiteOverviews).thenReturn(listOf(it))
         }
@@ -496,6 +496,10 @@ class TestRunnerTest {
             "project",
             "variant"
         )
+
+        assertThat(result).hasSize(1)
+        assertThat(result[0].testPassed).isTrue()
+        assertThat(result[0].resultsProto).isEqualTo(mockUtpResult)
 
         verifyTestRun(
             basicVerifySuiteOverview = false

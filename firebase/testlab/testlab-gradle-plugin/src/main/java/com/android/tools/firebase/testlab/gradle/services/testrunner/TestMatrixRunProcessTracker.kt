@@ -18,19 +18,24 @@ package com.android.tools.firebase.testlab.gradle.services.testrunner
 
 import com.android.tools.firebase.testlab.gradle.services.TestingManager
 import com.google.api.services.testing.model.TestMatrix
+import com.google.common.annotations.VisibleForTesting
+import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 
 
 class TestMatrixRunProcessTracker(
     private val testingManager: TestingManager,
     private val projectName: String,
-    private val checkTestStateWaitMs: Long = DEFAULT_CHECK_STATE_WAIT_MS
+    @VisibleForTesting
+    private val checkTestStateWaitMs: Long = DEFAULT_CHECK_STATE_WAIT_MS,
+    @VisibleForTesting
+    private val logger: Logger = DEFAULT_LOGGER
 ) {
-
-    private val logger = Logging.getLogger(this.javaClass)
 
     companion object {
         const val DEFAULT_CHECK_STATE_WAIT_MS = 10 * 1000L
+
+        val DEFAULT_LOGGER = Logging.getLogger(TestMatrixRunProcessTracker::class.java)
     }
 
     fun waitForTestResults(deviceName: String, testRunMatrix: TestMatrix): TestMatrix {
