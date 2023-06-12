@@ -285,7 +285,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
              * Copied from
              * com.android.build.gradle.internal.services.BuildServicesKt.getBuildServiceName.
              */
-            private fun getBuildServiceName(type: Class<*>, project: Project): String {
+            @VisibleForTesting
+            fun getBuildServiceName(type: Class<*>, project: Project): String {
                 return type.name + "_" + perClassLoaderConstant + "_" + project.path
             }
 

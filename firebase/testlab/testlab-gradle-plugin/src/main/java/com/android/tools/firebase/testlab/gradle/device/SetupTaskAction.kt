@@ -37,8 +37,10 @@ open class SetupTaskAction : DeviceSetupTaskAction<DeviceSetupInput> {
                 .joinToString(", ") {
                     "${it.id} (${it.name})"
                 }
-            "Device: $deviceId is not a valid input. Available devices for API level $apiLevel " +
-            "are: [$availableDeviceNames]"
+            """
+                Device: $deviceId is not a valid input. Available devices for API level $apiLevel are:
+                [$availableDeviceNames]
+            """.trimIndent()
         }
 
         if (!ftlDeviceModel.supportedVersionIds.contains(apiLevel.toString())) {
