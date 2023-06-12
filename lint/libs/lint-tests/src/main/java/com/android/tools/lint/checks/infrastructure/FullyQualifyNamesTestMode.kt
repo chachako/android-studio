@@ -195,8 +195,8 @@ class FullyQualifyNamesTestMode :
           }
         ) {
           // Probably something like a MutableMap reference or other Kotlin syntactic
-          // sugar such that the source reference (e.g. MutableMap<String>) does not
-          // match the underlying resolved type (e.g. java.util.Map<String>)
+          // sugar such that the source reference (e.g. MutableMap<String> or Array<File>)
+          // does not match the underlying resolved type (e.g. java.util.Map<String> or File[])
           return
         }
       }
@@ -339,6 +339,7 @@ class FullyQualifyNamesTestMode :
       if (type is PsiDisjunctionType) {
         return
       } else {
+        // Use deepComponentType to find innermost one, e.g., `File` from `File[][]`
         val erased = context.evaluator.erasure(type.deepComponentType)
         val cls = context.evaluator.getTypeClass(erased)
         cls?.let { replaceClassReference(it, typeReference, typeReference.type) }
@@ -388,7 +389,7 @@ class FullyQualifyNamesTestMode :
 
     override fun visitClassLiteralExpression(node: UClassLiteralExpression): Boolean {
       node.type?.let { type ->
-        val erased = context.evaluator.erasure(type.deepComponentType)
+        val erased = context.evaluator.erasure(type)
         val cls = context.evaluator.getTypeClass(erased)
         val sourcePsi = node.sourcePsi
         val typeReference =

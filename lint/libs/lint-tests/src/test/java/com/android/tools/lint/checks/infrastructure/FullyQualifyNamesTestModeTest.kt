@@ -636,4 +636,90 @@ class FullyQualifyNamesTestModeTest {
       )
     )
   }
+
+  @Test
+  fun testComponentTypes_Kotlin() {
+    @Language("kotlin")
+    val kotlin =
+      """
+            package test.pkg
+
+            import java.io.File
+            import java.util.List
+            import java.util.Map
+
+            class Foo(val cache: Map<String, List<String>>) {
+                fun foo(files: Array<Array<File>>, vararg vFiles: Array<File>) {
+                    val t = File::class.java
+                }
+            }
+        """
+        .trimIndent()
+        .trim()
+
+    @Language("kotlin")
+    val expected =
+      """
+            package test.pkg
+
+            import java.io.File
+            import java.util.List
+            import java.util.Map
+
+            class Foo(val cache: Map<String, List<String>>) {
+                fun foo(files: Array<Array<File>>, vararg vFiles: Array<File>) {
+                    val t = java.io.File::class.java
+                }
+            }
+        """
+        .trimIndent()
+        .trim()
+
+    val expanded = expandKotlin(kotlin)
+    assertEquals(expected, expanded)
+  }
+
+  @Test
+  fun testComponentTypes_Java() {
+    @Language("java")
+    val java =
+      """
+            package test.pkg;
+
+            import java.io.File;
+            import java.util.List;
+            import java.util.Map;
+
+            class Foo(Map<String, List<String>> cache) {
+                fun foo(File[][] files, File[]... vFiles) {
+                    Class<File> t = File.class;
+                    Class<File[][]> u = File[][].class;
+                }
+            }
+        """
+        .trimIndent()
+        .trim()
+
+    @Language("java")
+    val expected =
+      """
+            package test.pkg;
+
+            import java.io.File;
+            import java.util.List;
+            import java.util.Map;
+
+            class Foo(Map<String, List<String>> cache) {
+                fun foo(java.io.File[][] files, java.io.File[]... vFiles) {
+                    java.lang.Class<File> t = java.io.File.class;
+                    java.lang.Class<File[][]> u = java.io.File[][].class;
+                }
+            }
+        """
+        .trimIndent()
+        .trim()
+
+    val expanded = expandJava(java)
+    assertEquals(expected, expanded)
+  }
 }

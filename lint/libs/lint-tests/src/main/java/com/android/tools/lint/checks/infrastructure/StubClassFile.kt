@@ -562,10 +562,9 @@ internal open class StubClassFile(
     val element = attribute.value
 
     val attributeType = annotationType?.findMethodsByName(name, false)?.firstOrNull()?.returnType
-    val isArray = attributeType is PsiArrayType
-    if (isArray) {
+    if (attributeType is PsiArrayType) {
       val arrayVisitor = visitor.visitArray(name)
-      writeAttribute(null, element, arrayVisitor, attributeType?.deepComponentType)
+      writeAttribute(null, element, arrayVisitor, attributeType.componentType)
       arrayVisitor.visitEnd()
     } else {
       writeAttribute(name, element, visitor, attributeType)
@@ -617,7 +616,7 @@ internal open class StubClassFile(
         }
       } else {
         val arrayVisitor = visitor.visitArray(name)
-        val componentType = type?.deepComponentType
+        val componentType = (type as? PsiArrayType)?.componentType ?: type
         for (initializer in initializers) {
           writeAttribute(null, initializer, arrayVisitor, componentType)
         }
