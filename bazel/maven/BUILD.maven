@@ -11529,16 +11529,13 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.benchmark.benchmark-baseline-profile-gradle-plugin_1.2.0-alpha13",
-    pom = "repository/androidx/benchmark/benchmark-baseline-profile-gradle-plugin/1.2.0-alpha13/benchmark-baseline-profile-gradle-plugin-1.2.0-alpha13.pom",
+    name = "androidx.benchmark.benchmark-baseline-profile-gradle-plugin_1.2.0-alpha15",
+    pom = "repository/androidx/benchmark/benchmark-baseline-profile-gradle-plugin/1.2.0-alpha15/benchmark-baseline-profile-gradle-plugin-1.2.0-alpha15.pom",
     repo_root_path = "repository",
-    repo_path = "androidx/benchmark/benchmark-baseline-profile-gradle-plugin/1.2.0-alpha13",
+    repo_path = "androidx/benchmark/benchmark-baseline-profile-gradle-plugin/1.2.0-alpha15",
     deps = [
-        "com.android.tools.build.gradle_8.0.0-beta03",
         "com.google.protobuf.protobuf-java_3.21.8",
         "com.google.testing.platform.core-proto_0.0.8-alpha08",
-        "org.jetbrains.kotlin.kotlin-gradle-plugin_1.8.10",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.10",
     ],
     visibility = ["//visibility:public"],
 )
