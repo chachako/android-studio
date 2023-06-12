@@ -22,8 +22,10 @@ import com.android.utils.appendCapitalized
 import org.gradle.api.NamedDomainObjectFactory
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinTargetHierarchy
 import org.jetbrains.kotlin.gradle.plugin.mpp.external.ExternalKotlinCompilationDescriptor
 import org.jetbrains.kotlin.gradle.plugin.mpp.external.createCompilation
+import org.jetbrains.kotlin.gradle.plugin.mpp.targetHierarchy.SourceSetTreeClassifier
 
 @OptIn(ExternalKotlinTargetApi::class)
 internal class KotlinMultiplatformAndroidCompilationFactory(
@@ -57,6 +59,21 @@ internal class KotlinMultiplatformAndroidCompilationFactory(
             compileTaskName = "compile".appendCapitalized(
                 target.targetName.appendCapitalized(name)
             )
+            sourceSetTreeClassifier = getSourceSetTreeClassifierFromConfiguration(name)
+        }
+    }
+
+    private fun getSourceSetTreeClassifierFromConfiguration(name: String): SourceSetTreeClassifier {
+        return when {
+            androidExtension.androidTestOnJvmConfiguration?.compilationName == name ->
+                androidExtension.androidTestOnJvmConfiguration?.sourceSetTree?.let {
+                    SourceSetTreeClassifier.Name(it)
+                } ?: SourceSetTreeClassifier.Value(KotlinTargetHierarchy.SourceSetTree.test)
+            androidExtension.androidTestOnDeviceConfiguration?.compilationName == name ->
+                androidExtension.androidTestOnDeviceConfiguration?.sourceSetTree?.let {
+                    SourceSetTreeClassifier.Name(it)
+                } ?: SourceSetTreeClassifier.None
+            else -> SourceSetTreeClassifier.Default
         }
     }
 }

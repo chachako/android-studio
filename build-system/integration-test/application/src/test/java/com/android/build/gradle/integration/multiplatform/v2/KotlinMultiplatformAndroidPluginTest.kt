@@ -60,6 +60,53 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
     }
 
     @Test
+    fun testChangingTheSourceSetTreeForAndroidUnitTests() {
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            """
+                withAndroidTestOnJvm(compilationName = "unitTest")
+            """.trimIndent(),
+            """
+                withAndroidTestOnJvm(compilationName = "unitTest") {
+                    sourceSetTree = "unitTest"
+                }
+            """.trimIndent()
+        )
+
+        TestFileUtils.appendToFile(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            """
+                kotlin.androidExperimental {
+                    enableUnitTestCoverage = true
+                }
+
+                kotlin.sourceSets.getByName("androidUnitTest") {
+                    dependencies {
+                        implementation("junit:junit:4.13.2")
+                    }
+                }
+            """.trimIndent()
+        )
+
+        project.executor().run(":kmpFirstLib:createAndroidUnitTestCoverageReport")
+
+        assertWithMessage(
+            "Running android unit tests should not run common tests because they are not part of the" +
+            " same source set tree"
+        ).that(
+            FileUtils.join(
+                project.getSubproject("kmpFirstLib").buildDir,
+                "reports",
+                "tests",
+                "testAndroidUnitTest",
+                "classes"
+            ).listFiles()!!.map { it.name }
+        ).containsExactly(
+            "com.example.kmpfirstlib.KmpAndroidFirstLibClassTest.html",
+        )
+    }
+
+    @Test
     fun testRunningUnitTests() {
         TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
