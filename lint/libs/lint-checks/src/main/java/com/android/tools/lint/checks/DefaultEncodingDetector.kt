@@ -122,7 +122,7 @@ class DefaultEncodingDetector : Detector(), SourceCodeScanner {
       name == "getBytes" && evaluator.isMemberInClass(method, TYPE_STRING) && !haveCharset(node, 0)
     ) {
       val constant = node.receiver?.evaluateString()
-      if (constant != null && constant.all { it.toInt() <= 128 }) {
+      if (constant != null && constant.all { it.code <= 128 }) {
         return
       }
       report(context, node, method, TYPE_STRING)
@@ -278,7 +278,7 @@ class DefaultEncodingDetector : Detector(), SourceCodeScanner {
       Incident(
         ISSUE,
         context.getLocation(node),
-        "$message; ${fixSuggestion?.decapitalize(Locale.US)}?"
+        "$message; ${fixSuggestion?.replaceFirstChar { it.lowercase(Locale.US) }}?"
       )
     incident.fix(fix)
     context.report(incident, notAndroidProject())
