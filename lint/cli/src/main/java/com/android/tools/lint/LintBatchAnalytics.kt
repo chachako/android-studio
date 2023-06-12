@@ -53,6 +53,13 @@ class LintBatchAnalytics {
     if (LintClient.isUnitTest) {
       return
     }
+    // If running lint from Gradle and analytics *should* be collected,
+    // AnalyticsSettings.initialized will be true at this point. If it's false, analytics
+    // should not be collected, and we should return early here to avoid creating an
+    // analytics.settings file, which can cause a configuration cache miss (b/278767328).
+    if (LintClient.isGradle && !AnalyticsSettings.initialized) {
+      return
+    }
 
     try {
       if (!AnalyticsSettings.initialized) {

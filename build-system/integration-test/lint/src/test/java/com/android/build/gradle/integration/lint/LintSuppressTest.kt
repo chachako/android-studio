@@ -43,6 +43,7 @@ class LintSuppressTest {
         // Run twice to catch issues with configuration caching
         project.execute("clean", ":app:lintDebug")
         project.execute("clean", ":app:lintDebug")
+        project.buildResult.assertConfigurationCacheHit()
         val app = project.getSubproject("app")
         val file = File(app.projectDir, "lint-report.xml")
         assertThat(file).exists()

@@ -18,7 +18,6 @@ package com.android.build.gradle.integration.lint
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
-import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
 import org.junit.Rule
 import org.junit.Test
 
@@ -67,8 +66,7 @@ class LintConfigurationCacheTest {
     @Test
     fun testLintConfigurationCache() {
         project.executor().run("generateDebugLintModel")
-        project.executor().run("generateDebugLintModel").stdout.use {
-            assertThat(it).doesNotContain("configuration cache cannot be reused")
-        }
+        project.executor().run("generateDebugLintModel")
+        project.buildResult.assertConfigurationCacheHit()
     }
 }

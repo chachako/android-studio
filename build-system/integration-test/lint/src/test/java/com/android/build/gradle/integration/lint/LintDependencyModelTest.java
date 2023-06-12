@@ -59,6 +59,7 @@ public class LintDependencyModelTest {
         // Run twice to catch issues with configuration caching
         project.executor().run(":app:clean", ":app:lintDebug");
         project.executor().run(":app:clean", ":app:lintDebug");
+        project.getBuildResult().assertConfigurationCacheHit();
 
         String textReport = readTextReportToString();
 

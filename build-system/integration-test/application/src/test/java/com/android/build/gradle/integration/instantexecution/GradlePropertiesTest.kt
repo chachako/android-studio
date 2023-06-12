@@ -49,9 +49,7 @@ class GradlePropertiesTest {
             .with(BooleanOption.USE_ANDROID_X, true)
             .with(BooleanOption.ENABLE_JETIFIER, true)
             .run("assembleDebug")
-        result.stdout.use {
-            ScannerSubject.assertThat(it).contains("Reusing configuration cache")
-        }
+        result.assertConfigurationCacheHit()
         result = executor()
             .with(BooleanOption.USE_ANDROID_X, true)
             .with(BooleanOption.ENABLE_JETIFIER, false)
@@ -81,9 +79,7 @@ class GradlePropertiesTest {
         result = executor()
             .withArgument("-Pandroid.testInstrumentationRunnerArguments.size=medium")
             .run("assembleDebug")
-        result.stdout.use {
-            ScannerSubject.assertThat(it).contains("Reusing configuration cache")
-        }
+        result.assertConfigurationCacheHit()
     }
 
     @Test
@@ -100,9 +96,7 @@ class GradlePropertiesTest {
         result = executor()
             .withArgument("-Pandroid.testInstrumentationRunnerArguments.foo=origin")
             .run("assembleDebug")
-        result.stdout.use {
-            ScannerSubject.assertThat(it).contains("Reusing configuration cache")
-        }
+        result.assertConfigurationCacheHit()
         // Make sure we are able to capture changes to the arguments exist in the "first" build to
         // make it partially compatible with configuration caching.
         result = executor()

@@ -49,6 +49,7 @@ public class LintCustomLocalAndPublishTest {
         // Run twice to catch issues with configuration caching
         project.executor().withFailOnWarning(false).expectFailure().run(":library:lintDebug");
         project.executor().withFailOnWarning(false).expectFailure().run(":library:lintDebug");
+        project.getBuildResult().assertConfigurationCacheHit();
 
         String libexpected =
                 ""

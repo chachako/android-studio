@@ -131,6 +131,7 @@ class LintCompileOnlyTest {
         // Run twice to catch issues with configuration caching
         project.executor().run("clean", ":app:lint")
         project.executor().run("clean", ":app:lint")
+        project.buildResult.assertConfigurationCacheHit()
         Truth.assertThat(project.buildResult.failedTasks).isEmpty()
     }
 
@@ -150,6 +151,7 @@ class LintCompileOnlyTest {
         // Run twice to catch issues with configuration caching
         project.executor().run("clean", ":app:lintRelease")
         project.executor().run("clean", ":app:lintRelease")
+        project.buildResult.assertConfigurationCacheHit()
         Truth.assertThat(project.buildResult.failedTasks).isEmpty()
         val reportFile = File(project.getSubproject(":app").projectDir, "lint-results.txt")
         PathSubject.assertThat(reportFile).exists()

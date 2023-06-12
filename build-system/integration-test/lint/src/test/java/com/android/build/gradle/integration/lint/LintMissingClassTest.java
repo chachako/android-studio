@@ -39,6 +39,7 @@ public class LintMissingClassTest {
         // Run twice to catch issues with configuration caching
         project.executor().run(":app:clean", ":app:lintRelease");
         project.executor().run(":app:clean", ":app:lintRelease");
+        project.getBuildResult().assertConfigurationCacheHit();
         File file = project.getSubproject("app").file("build/reports/lint-results.txt");
         assertThat(file).exists();
         assertThat(file).contentWithUnixLineSeparatorsIsExactly("No issues found.");

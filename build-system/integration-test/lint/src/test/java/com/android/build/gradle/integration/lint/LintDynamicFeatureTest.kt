@@ -119,6 +119,7 @@ class LintDynamicFeatureTest {
         // Run twice to catch issues with configuration caching
         projectWithLibs.executor().run("clean", "lint")
         projectWithLibs.executor().run("clean", "lint")
+        projectWithLibs.buildResult.assertConfigurationCacheHit()
         assertThat(projectWithLibs.buildResult.failedTasks).isEmpty()
 
         assertThat(projectWithLibs.buildResult.tasks).contains(":app:lint")
@@ -152,6 +153,7 @@ class LintDynamicFeatureTest {
         // Run twice to catch issues with configuration caching
         project.executor().run(":app:clean", ":app:lint")
         project.executor().run(":app:clean", ":app:lint")
+        project.buildResult.assertConfigurationCacheHit()
         assertThat(project.buildResult.failedTasks).isEmpty()
 
         assertThat(project.file("app/lint-results.txt")).containsAllOf(

@@ -164,4 +164,9 @@ class GradleBuildResult(
             ScannerSubject.assertThat(it).doesNotContain(text)
         }
     }
+
+    /** Checks that the [GradleBuildResult] hit the configuration cache */
+    fun assertConfigurationCacheHit() {
+        assertOutputContains("Reusing configuration cache")
+    }
 }

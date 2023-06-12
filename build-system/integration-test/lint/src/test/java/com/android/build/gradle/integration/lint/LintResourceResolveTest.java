@@ -40,6 +40,7 @@ public class LintResourceResolveTest {
         // Run twice to catch issues with configuration caching
         project.executor().run(":app:clean", ":app:lintDebug");
         project.executor().run(":app:clean", ":app:lintDebug");
+        project.getBuildResult().assertConfigurationCacheHit();
         File file = new File(project.getSubproject("app").getProjectDir(), "lint-report.txt");
         assertThat(file).exists();
         assertThat(file).contentWithUnixLineSeparatorsIsExactly("No issues found.");

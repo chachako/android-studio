@@ -73,6 +73,7 @@ class LintStandaloneTest(private val runLintInProcess: Boolean) {
         // Run twice to catch issues with configuration caching
         getExecutor().run(":lint")
         getExecutor().run(":lint")
+        project.buildResult.assertConfigurationCacheHit()
         val secondFile = project.file("lint-results2.txt")
         assertThat(secondFile).exists()
         assertThat(secondFile).contains("MyClass.java:5: Warning: Use Boolean.valueOf(true) instead")

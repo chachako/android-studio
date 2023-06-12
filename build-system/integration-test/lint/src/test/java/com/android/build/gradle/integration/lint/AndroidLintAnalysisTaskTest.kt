@@ -38,6 +38,7 @@ class AndroidLintAnalysisTaskTest {
         // Run twice to catch issues with configuration caching
         lintKotlinProject.execute(":app:clean", ":app:lintAnalyzeDebug")
         lintKotlinProject.execute(":app:clean", ":app:lintAnalyzeDebug")
+        lintKotlinProject.buildResult.assertConfigurationCacheHit()
         val partialResultsDir =
             FileUtils.join(
                 lintKotlinProject.getSubproject(":app")
@@ -62,6 +63,7 @@ class AndroidLintAnalysisTaskTest {
         // Run twice to catch issues with configuration caching
         lintKotlinProject.execute(":library:clean", ":library:lintAnalyzeDebug")
         lintKotlinProject.execute(":library:clean", ":library:lintAnalyzeDebug")
+        lintKotlinProject.buildResult.assertConfigurationCacheHit()
         val partialResultsDir =
             FileUtils.join(
                 lintKotlinProject.getSubproject(":library")
