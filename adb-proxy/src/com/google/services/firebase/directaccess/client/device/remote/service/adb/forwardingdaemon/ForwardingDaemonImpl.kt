@@ -21,6 +21,9 @@ import com.android.adblib.AdbServerSocket
 import com.android.adblib.AdbSession
 import com.android.adblib.DeviceAddress
 import com.android.adblib.DeviceSelector
+import com.android.adblib.connectedDevicesTracker
+import com.android.adblib.isOnline
+import com.android.adblib.serialNumber
 import com.android.adblib.shellCommand
 import com.android.adblib.withInputChannelCollector
 import java.nio.ByteBuffer
@@ -87,7 +90,10 @@ internal class ForwardingDaemonImpl(
 
   override val roundTripLatencyMsFlow: Flow<Long> =
     flow {
-        deviceState.takeWhile { it !in onlineStates }.collect()
+        // Wait for the connected device to be online so that it can respond to pings below
+        adbSession.connectedDevicesTracker.connectedDevices
+          .takeWhile { !it.any { entry -> entry.serialNumber == serialNumber && entry.isOnline } }
+          .collect()
 
         val device = DeviceSelector.fromSerialNumber(serialNumber)
         val stdinInputChannel = adbSession.channelFactory.createPipedChannel()
