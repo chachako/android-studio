@@ -100,8 +100,11 @@ internal class SharedJdwpSessionImpl(
     /**
      * The [MutableSerializedSharedFlow] used to [MutableSerializedSharedFlow.emit] JDWP packets
      * to all active [JdwpPacketReceiver] instances.
+     *
+     * Note: We use [Any] as the type parameter, but we only emit either [Throwable] or
+     * [JdwpPacketView] instances. We don't use [Result] to avoid extra allocations.
      */
-    private val jdwpPacketSharedFlow = MutableSerializedSharedFlow<Result<JdwpPacketView>>()
+    private val jdwpPacketSharedFlow = MutableSerializedSharedFlow<Any>()
 
     /**
      * The [Mutex] used to ensure active [JdwpPacketReceiver] collectors are invoked
@@ -176,18 +179,18 @@ internal class SharedJdwpSessionImpl(
                 logger.verbose { "Waiting for next JDWP packet from session" }
                 val sessionPacket = try {
                     jdwpSession.receivePacket()
-                } catch (t: Throwable) {
+                } catch (throwable: Throwable) {
                     // Cancellation cancels the jdwp session scope, which cancel the scope
                     // of all receivers, so they will terminate with cancellation too.
-                    t.rethrowCancellation()
+                    throwable.rethrowCancellation()
 
                     // Reached EOF, flow terminates
-                    if (t is EOFException) {
+                    if (throwable is EOFException) {
                         logger.debug { "JDWP session has ended with EOF" }
                     }
-                    logger.verbose(t) { "Emitting JDWP session exception '$t' to shared flow of receivers" }
-                    jdwpPacketSharedFlow.emit(Result.failure(t))
-                    sendFailureUntilCancelled(t)
+                    logger.verbose(throwable) { "Emitting JDWP session exception '$throwable' to shared flow of receivers" }
+                    jdwpPacketSharedFlow.emit(throwable)
+                    sendFailureUntilCancelled(throwable)
                     break
                 }
 
@@ -205,7 +208,7 @@ internal class SharedJdwpSessionImpl(
 
                         jdwpMonitor?.onReceivePacket(packet)
                         logger.verbose { "Emitting session packet $packet to shared flow of receivers" }
-                        jdwpPacketSharedFlow.emit(Result.success(packet))
+                        jdwpPacketSharedFlow.emit(packet)
                         jdwpFilter.afterReceivePacket(packet)
 
                         // Packet should not be used after this, because payload of the jdwp packet
@@ -221,7 +224,7 @@ internal class SharedJdwpSessionImpl(
      * Once the underlying [JdwpSession] has ended with an exception, keep sending
      * that exception to any new or existing receiver.
      */
-    private suspend fun sendFailureUntilCancelled(t: Throwable) {
+    private suspend fun sendFailureUntilCancelled(throwable: Throwable) {
         // We use our "scope" context so that we are cancelled when this session
         // is closed.
         withContext(scope.coroutineContext) {
@@ -229,8 +232,8 @@ internal class SharedJdwpSessionImpl(
             // completed collector), we (re-)emit the exception to all receivers.
             jdwpPacketSharedFlow.subscriptionCount.collect {
                 if (it > 0) {
-                    logger.verbose { "Sending failure to active receivers ($t)" }
-                    jdwpPacketSharedFlow.emit(Result.failure(t))
+                    logger.verbose { "Sending failure to active receivers ($throwable)" }
+                    jdwpPacketSharedFlow.emit(throwable)
                 }
             }
         }
@@ -285,7 +288,7 @@ internal class SharedJdwpSessionImpl(
          */
         private fun CoroutineScope.launchActivationJob(
             flowLogger: AdbLogger,
-            sharedFlow: MutableSerializedSharedFlow<Result<JdwpPacketView>>,
+            sharedFlow: MutableSerializedSharedFlow<Any>,
             activationJobStartPacket: StartPacket,
             activationJobStartSignal: CompletableDeferred<Unit>
         ): Job {
@@ -295,7 +298,7 @@ internal class SharedJdwpSessionImpl(
                 // Note that to avoid a race condition (the collector may take a few millis
                 // to start), we need to retry sending `startPacket` until it is acknowledged.
                 while (true) {
-                    sharedFlow.emit(Result.success(activationJobStartPacket))
+                    sharedFlow.emit(activationJobStartPacket)
                     if (activationJobStartSignal.isCompleted) {
                         flowLogger.verbose { "calling 'activation' callback" }
                         this@JdwpPacketReceiverImpl.activation()
@@ -334,43 +337,55 @@ internal class SharedJdwpSessionImpl(
          */
         private suspend fun FlowCollector<JdwpPacketView>.collectSharedFlow(
             flowLogger: AdbLogger,
-            sharedFlow: SerializedSharedFlow<Result<JdwpPacketView>>,
+            sharedFlow: SerializedSharedFlow<Any>,
             startPacket: StartPacket,
             activationJobStartSignal: CompletableDeferred<Unit>
         ) {
             sharedFlow
-                .takeWhile { packetResult ->
-                    flowLogger.verbose { "Processing packet from shared flow $packetResult" }
-
-                    try {
-                        val packet = packetResult.getOrThrow()
-                        when {
-                            packet === startPacket -> {
+                .takeWhile { anyValue ->
+                    flowLogger.verbose { "Processing value from shared flow $anyValue" }
+                    when(anyValue) {
+                        is JdwpPacketView -> {
+                            @Suppress("UnnecessaryVariable") // readability
+                            val packet = anyValue
+                            when {
                                 // This is the "StartPacket" send to this collector by its
                                 // "activation", wake up the "activation" coroutine and emit
                                 // replay packets to downstream flow.
-                                flowLogger.verbose { "Deferred starts is completed" }
-                                activationJobStartSignal.complete(Unit)
+                                packet === startPacket -> {
+                                    flowLogger.verbose { "Deferred starts is completed" }
+                                    activationJobStartSignal.complete(Unit)
+                                    flowLogger.verbose { "Emitting ${jdwpSession.replayPackets.size} replay packet(s)" }
+                                    jdwpSession.replayPackets.forEach { replyPacket ->
+                                        safeEmit(flowLogger, replyPacket)
+                                    }
+                                }
 
-                                flowLogger.verbose { "Emitting ${jdwpSession.replayPackets.size} replay packet(s)" }
-                                jdwpSession.replayPackets.forEach { replyPacket ->
-                                    safeEmit(flowLogger, replyPacket)
+                                packet is StartPacket -> {
+                                    // This is a "StartPacket" sent to another collector, ignore it
+                                }
+
+                                else -> {
+                                    // This is a "real" JDWP packet, emit it to the downstream flow
+                                    safeEmit(flowLogger, packet)
                                 }
                             }
-
-                            packet is StartPacket -> {
-                                // This is a "StartPacket" sent to another collector, ignore it
-                            }
-
-                            else -> {
-                                // This is a "real" JDWP packet, emit it to the downstream flow
-                                safeEmit(flowLogger, packet)
-                            }
+                            true // Keep collecting the shared flow
                         }
-                        true // Keep collecting the shared flow
-                    } catch (e: EOFException) {
-                        flowLogger.debug { "EOF reached, ending flow" }
-                        false // We are done collecting the shared flow
+
+                        is EOFException -> {
+                            flowLogger.debug { "EOF reached, ending flow" }
+                            false // We are done collecting the shared flow
+                        }
+
+                        is Throwable -> {
+                            throw anyValue
+                        }
+
+                        else -> {
+                            flowLogger.error("Unknown value in share flow: $anyValue")
+                            throw IllegalStateException("Invalid value in flow: $anyValue")
+                        }
                     }
                 }
                 .collect()
