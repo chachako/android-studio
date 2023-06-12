@@ -65,6 +65,11 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypes
 import com.intellij.psi.PsiVariable
+import java.util.Collections
+import java.util.EnumSet
+import java.util.Locale
+import java.util.regex.MatchResult
+import java.util.regex.Pattern
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtStringTemplateEntry
 import org.jetbrains.uast.UCallExpression
@@ -80,33 +85,23 @@ import org.jetbrains.uast.util.isNewArrayWithDimensions
 import org.jetbrains.uast.util.isNewArrayWithInitializer
 import org.w3c.dom.Element
 import org.w3c.dom.Node
-import java.util.Collections
-import java.util.EnumSet
-import java.util.Locale
-import java.util.regex.MatchResult
-import java.util.regex.Pattern
 
 /**
  * Check which looks for problems with formatting strings such as inconsistencies between
  * translations or between string declaration and string usage in Java.
  *
- *
  * TODO
- *
- *
- *  * Handle Resources.getQuantityString as well
- *  * Remove all the batch mode handling here; instead of accumulating all strings we can now
- * limit the analysis directly to resolving strings from String#format calls, so there's no
- * longer any ambiguity about what is a formatting string and what is not. One small challenge
- * is what to do about formatted= attributes which we can't look up later; maybe only flag
- * these in batch mode. (It's also unlikely to happen; these strings tend not to be used from
- * String#format).
- *  * Add support for Kotlin strings
- *
+ * * Handle Resources.getQuantityString as well
+ * * Remove all the batch mode handling here; instead of accumulating all strings we can now limit
+ *   the analysis directly to resolving strings from String#format calls, so there's no longer any
+ *   ambiguity about what is a formatting string and what is not. One small challenge is what to do
+ *   about formatted= attributes which we can't look up later; maybe only flag these in batch mode.
+ *   (It's also unlikely to happen; these strings tend not to be used from String#format).
+ * * Add support for Kotlin strings
  */
 class StringFormatDetector
-/** Constructs a new [StringFormatDetector] check  */
-  : ResourceXmlDetector(), SourceCodeScanner {
+/** Constructs a new [StringFormatDetector] check */
+: ResourceXmlDetector(), SourceCodeScanner {
   /**
    * Map from a format string name to a list of declaration file and actual formatting string
    * content. We're using a list since a format string can be defined multiple times, usually for
@@ -114,12 +109,12 @@ class StringFormatDetector
    */
   private var mFormatStrings: MutableMap<String, MutableList<Pair<Location.Handle, String>>>? = null
 
-  /** Map of strings that do not contain any formatting.  */
+  /** Map of strings that do not contain any formatting. */
   private val mNotFormatStrings: MutableMap<String, Location.Handle> = LinkedHashMap()
 
   /**
-   * Set of strings that have an unknown format such as date formatting; we should not flag these
-   * as invalid when used from a String#format call
+   * Set of strings that have an unknown format such as date formatting; we should not flag these as
+   * invalid when used from a String#format call
    */
   private var mIgnoreStrings: MutableSet<String>? = null
   override fun appliesTo(folderType: ResourceFolderType): Boolean {
@@ -266,10 +261,11 @@ class StringFormatDetector
         if (checkCount) {
           val notFormatted = mNotFormatStrings[name]
           if (notFormatted != null) {
-            list = ImmutableList.builder<Pair<Location.Handle, String>>()
-              .add(notFormatted to name)
-              .addAll(list)
-              .build()
+            list =
+              ImmutableList.builder<Pair<Location.Handle, String>>()
+                .add(notFormatted to name)
+                .addAll(list)
+                .build()
           }
           checkArity(context, name, list)
         }
@@ -286,11 +282,7 @@ class StringFormatDetector
     return listOf(SdkConstants.FORMAT_METHOD, SdkConstants.GET_STRING_METHOD)
   }
 
-  override fun visitMethodCall(
-    context: JavaContext,
-    node: UCallExpression,
-    method: PsiMethod
-  ) {
+  override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
     val evaluator = context.evaluator
     val methodName = method.name
     if (methodName == SdkConstants.FORMAT_METHOD) {
@@ -298,9 +290,7 @@ class StringFormatDetector
         // Check formatting parameters for
         //   java.lang.String#format(String format, Object... formatArgs)
         //   java.lang.String#format(Locale locale, String format, Object... formatArgs)
-        checkStringFormatCall(
-          context, method, node, method.parameterList.parametersCount == 3
-        )
+        checkStringFormatCall(context, method, node, method.parameterList.parametersCount == 3)
 
         // TODO: Consider also enforcing
         // java.util.Formatter#format(String string, Object... formatArgs)
@@ -321,11 +311,20 @@ class StringFormatDetector
       if (method.parameterList.parametersCount < 2) {
         return
       }
-      if (evaluator.isMemberInSubClassOf(method, SdkConstants.CLASS_RESOURCES, false)
-        || evaluator.isMemberInSubClassOf(method, SdkConstants.CLASS_CONTEXT, false)
-        || evaluator.isMemberInSubClassOf(method, SdkConstants.CLASS_FRAGMENT, false)
-        || evaluator.isMemberInSubClassOf(method, AndroidXConstants.CLASS_V4_FRAGMENT.oldName(), false)
-        || evaluator.isMemberInSubClassOf(method, AndroidXConstants.CLASS_V4_FRAGMENT.newName(), false)
+      if (
+        evaluator.isMemberInSubClassOf(method, SdkConstants.CLASS_RESOURCES, false) ||
+          evaluator.isMemberInSubClassOf(method, SdkConstants.CLASS_CONTEXT, false) ||
+          evaluator.isMemberInSubClassOf(method, SdkConstants.CLASS_FRAGMENT, false) ||
+          evaluator.isMemberInSubClassOf(
+            method,
+            AndroidXConstants.CLASS_V4_FRAGMENT.oldName(),
+            false
+          ) ||
+          evaluator.isMemberInSubClassOf(
+            method,
+            AndroidXConstants.CLASS_V4_FRAGMENT.newName(),
+            false
+          )
       ) {
         checkStringFormatCall(context, method, node, false)
       }
@@ -380,9 +379,7 @@ class StringFormatDetector
       var lastArg: UExpression? = args[args.size - 1].skipParenthesizedExprDown()
       val parameterList = calledMethod.parameterList
       val parameterCount = parameterList.parametersCount
-      if (parameterCount > 0
-        && parameterList.parameters[parameterCount - 1].isVarArgs
-      ) {
+      if (parameterCount > 0 && parameterList.parameters[parameterCount - 1].isVarArgs) {
         var knownArity = false
         var argWasReference = false
         if (lastArg is UReferenceExpression) {
@@ -392,9 +389,8 @@ class StringFormatDetector
             if (initializer != null) {
               initializer = initializer.skipParenthesizedExprDown()
             }
-            if (initializer != null
-              && (initializer.isNewArray()
-                || initializer.isArrayInitializer())
+            if (
+              initializer != null && (initializer.isNewArray() || initializer.isArrayInitializer())
             ) {
               argWasReference = true
               // Now handled by check below
@@ -402,14 +398,9 @@ class StringFormatDetector
             }
           }
         }
-        if (lastArg != null
-          && (lastArg.isNewArray()
-            || lastArg.isArrayInitializer())
-        ) {
+        if (lastArg != null && (lastArg.isNewArray() || lastArg.isArrayInitializer())) {
           val arrayInitializer = lastArg as UCallExpression
-          if (lastArg.isNewArrayWithInitializer()
-            || lastArg.isArrayInitializer()
-          ) {
+          if (lastArg.isNewArrayWithInitializer() || lastArg.isArrayInitializer()) {
             callCount = arrayInitializer.valueArgumentCount
             knownArity = true
           } else if (lastArg.isNewArrayWithDimensions()) {
@@ -448,8 +439,8 @@ class StringFormatDetector
       val items: List<ResourceItem>
       items = resources.getResources(ResourceNamespace.TODO(), ResourceType.STRING, name)
       for (item in items) {
-        var v : ResourceValue? = item.resourceValue ?: continue
-        var value : String? = v?.rawXmlValue ?: continue
+        var v: ResourceValue? = item.resourceValue ?: continue
+        var value: String? = v?.rawXmlValue ?: continue
         // Attempt to resolve indirection
         if (isReference(value!!)) {
           // Only resolve a few indirections
@@ -458,9 +449,7 @@ class StringFormatDetector
             if (url == null || url.isFramework) {
               break
             }
-            val l = resources.getResources(
-              ResourceNamespace.TODO(), url.type, url.name
-            )
+            val l = resources.getResources(ResourceNamespace.TODO(), url.type, url.name)
             if (!l.isEmpty()) {
               v = l[0].resourceValue
               if (v != null) {
@@ -493,9 +482,7 @@ class StringFormatDetector
               } else {
                 val conversion = matcher.group(6)
                 val conversionClass = getConversionClass(conversion[0])
-                if (conversionClass == CONVERSION_CLASS_UNKNOWN
-                  || matcher.group(5) != null
-                ) {
+                if (conversionClass == CONVERSION_CLASS_UNKNOWN || matcher.group(5) != null) {
                   // Some date format etc - don't process
                   return
                 }
@@ -522,7 +509,9 @@ class StringFormatDetector
     }
     if (list != null && !list.isEmpty()) {
       list.sortWith(
-        java.util.Comparator<Pair<Location.Handle, String>> { o1: Pair<Location.Handle, String>, o2: Pair<Location.Handle, String> ->
+        java.util.Comparator<Pair<Location.Handle, String>> {
+          o1: Pair<Location.Handle, String>,
+          o2: Pair<Location.Handle, String> ->
           val h1 = o1.first
           val h2 = o2.first
           if (h1 is ResourceItemHandle && h2 is ResourceItemHandle) {
@@ -533,11 +522,10 @@ class StringFormatDetector
             val delta = f1.compareTo(f2)
             if (delta != 0) {
               delta
-            }
-            else item1.toString().compareTo(item2.toString())
-          }
-          else o1.toString().compareTo(o2.toString())
-        })
+            } else item1.toString().compareTo(item2.toString())
+          } else o1.toString().compareTo(o2.toString())
+        }
+      )
       var reported: MutableSet<String>? = null
       for (pair in list) {
         val s = pair.second
@@ -549,20 +537,23 @@ class StringFormatDetector
         if (count != callCount) {
           val location = context.getLocation(call)
           val secondary = handle.resolve()
-          secondary.message = String.format(
-            Locale.US,
-            "This definition requires %1\$d argument%2\$s",
-            count,
-            if (count != 1) "s" else ""
-          )
+          secondary.message =
+            String.format(
+              Locale.US,
+              "This definition requires %1\$d argument%2\$s",
+              count,
+              if (count != 1) "s" else ""
+            )
           location.secondary = secondary
-          val message = String.format(
-            Locale.US, "Wrong argument count, format string `%1\$s` requires `%2\$d` but format "
-              + "call supplies `%3\$d`",
-            name,
-            count,
-            callCount
-          )
+          val message =
+            String.format(
+              Locale.US,
+              "Wrong argument count, format string `%1\$s` requires `%2\$d` but format " +
+                "call supplies `%3\$d`",
+              name,
+              count,
+              callCount
+            )
           context.report(ARG_TYPES, call, location, message)
           if (reported == null) {
             reported = Sets.newHashSet()
@@ -585,21 +576,32 @@ class StringFormatDetector
               var valid = true
               val formatType = getFormatArgumentType(s, i) ?: continue
               val last = formatType[formatType.length - 1]
-              if (formatType.length >= 2
-                &&
-                formatType[formatType.length - 2].lowercaseChar() == 't'
+              if (
+                formatType.length >= 2 && formatType[formatType.length - 2].lowercaseChar() == 't'
               ) {
                 // Date time conversion.
                 // TODO
                 continue
               }
               when (last) {
-                'b', 'B' -> valid = isBooleanType(type)
-                'x', 'X', 'd', 'o', 'e', 'E', 'f', 'g', 'G', 'a', 'A' -> valid = isNumericType(type, true)
-                'c', 'C' ->                                     // Unicode character
-                  valid = isCharacterType(type)
-
-                'h', 'H' ->                                     // From
+                'b',
+                'B' -> valid = isBooleanType(type)
+                'x',
+                'X',
+                'd',
+                'o',
+                'e',
+                'E',
+                'f',
+                'g',
+                'G',
+                'a',
+                'A' -> valid = isNumericType(type, true)
+                'c',
+                'C' -> // Unicode character
+                valid = isCharacterType(type)
+                'h',
+                'H' -> // From
                   // https://developer.android.com/reference/java/util/Formatter.html
                   // """The following general conversions may be applied to any
                   // argument type: 'b', 'B', 'h', 'H', 's', 'S' """
@@ -607,8 +609,8 @@ class StringFormatDetector
                   // numeric formatting, but hex printing seems pretty well
                   // intended.
                   continue
-
-                's', 'S' ->                                     // String. Can pass anything, but warn about
+                's',
+                'S' -> // String. Can pass anything, but warn about
                   // numbers since you may have meant more
                   // specific formatting. Use special issue
                   // explanation for this?
@@ -627,13 +629,23 @@ class StringFormatDetector
                   suggestion = "`b`"
                 } else if (isCharacterType(type)) {
                   suggestion = "'c'"
-                } else if (PsiTypes.intType() == type || PsiTypes.longType() == type || PsiTypes.byteType() == type || PsiTypes.shortType() == type) {
+                } else if (
+                  PsiTypes.intType() == type ||
+                    PsiTypes.longType() == type ||
+                    PsiTypes.byteType() == type ||
+                    PsiTypes.shortType() == type
+                ) {
                   suggestion = "`d`, 'o' or `x`"
                 } else if (PsiTypes.floatType() == type || PsiTypes.doubleType() == type) {
                   suggestion = "`e`, 'f', 'g' or `a`"
                 } else if (type is PsiClassType) {
                   val fqn = type.getCanonicalText()
-                  if (TYPE_INTEGER_WRAPPER == fqn || TYPE_LONG_WRAPPER == fqn || TYPE_BYTE_WRAPPER == fqn || TYPE_SHORT_WRAPPER == fqn) {
+                  if (
+                    TYPE_INTEGER_WRAPPER == fqn ||
+                      TYPE_LONG_WRAPPER == fqn ||
+                      TYPE_BYTE_WRAPPER == fqn ||
+                      TYPE_SHORT_WRAPPER == fqn
+                  ) {
                     suggestion = "`d`, 'o' or `x`"
                   } else if (TYPE_FLOAT_WRAPPER == fqn || TYPE_DOUBLE_WRAPPER == fqn) {
                     suggestion = "`d`, 'o' or `x`"
@@ -641,33 +653,20 @@ class StringFormatDetector
                     suggestion = "'s' or 'h'"
                   }
                 }
-                suggestion = if (suggestion != null) {
-                  (" (Did you mean formatting character "
-                    + suggestion
-                    + "?)")
-                } else {
-                  ""
-                }
+                suggestion =
+                  if (suggestion != null) {
+                    (" (Did you mean formatting character " + suggestion + "?)")
+                  } else {
+                    ""
+                  }
                 var canonicalText = type.canonicalText
                 canonicalText = canonicalText.substring(canonicalText.lastIndexOf('.') + 1)
-                var message = String.format(
-                  Locale.US,
-                  "Wrong argument type for formatting argument '#%1\$d' "
-                    + "in `%2\$s`: conversion is '`%3\$s`', received `%4\$s` "
-                    + "(argument #%5\$d in method call)%6\$s",
-                  i,
-                  name,
-                  formatType,
-                  canonicalText,
-                  argumentIndex + 1,
-                  suggestion
-                )
-                if ((last == 's' || last == 'S') && isNumericType(type, false)) {
-                  message = String.format(
+                var message =
+                  String.format(
                     Locale.US,
-                    "Suspicious argument type for formatting argument #%1\$d "
-                      + "in `%2\$s`: conversion is `%3\$s`, received `%4\$s` "
-                      + "(argument #%5\$d in method call)%6\$s",
+                    "Wrong argument type for formatting argument '#%1\$d' " +
+                      "in `%2\$s`: conversion is '`%3\$s`', received `%4\$s` " +
+                      "(argument #%5\$d in method call)%6\$s",
                     i,
                     name,
                     formatType,
@@ -675,6 +674,20 @@ class StringFormatDetector
                     argumentIndex + 1,
                     suggestion
                   )
+                if ((last == 's' || last == 'S') && isNumericType(type, false)) {
+                  message =
+                    String.format(
+                      Locale.US,
+                      "Suspicious argument type for formatting argument #%1\$d " +
+                        "in `%2\$s`: conversion is `%3\$s`, received `%4\$s` " +
+                        "(argument #%5\$d in method call)%6\$s",
+                      i,
+                      name,
+                      formatType,
+                      canonicalText,
+                      argumentIndex + 1,
+                      suggestion
+                    )
                 }
                 context.report(ARG_TYPES, call, location, message)
                 if (reported == null) {
@@ -694,9 +707,7 @@ class StringFormatDetector
    * This works around a bug in UAST, described in
    * https://issuetracker.google.com/217570491#comment2.
    */
-  private fun isInStringExpression(
-    call: UCallExpression, expression: UExpression
-  ): Boolean {
+  private fun isInStringExpression(call: UCallExpression, expression: UExpression): Boolean {
     val sourcePsi = expression.sourcePsi ?: return false
     val parent = sourcePsi.parent as? KtStringTemplateEntry ?: return false
     val stringElement = parent.parent
@@ -743,14 +754,25 @@ class StringFormatDetector
       if (type != null) {
         val formatType = getFormatArgumentType(s, i) ?: return
         val last = formatType[formatType.length - 1]
-        if (formatType.length >= 2
-          && formatType[formatType.length - 2].lowercaseChar() == 't'
-        ) {
+        if (formatType.length >= 2 && formatType[formatType.length - 2].lowercaseChar() == 't') {
           return
         }
         when (last) {
-          'x', 'X', 'd', 'o', 'e', 'E', 'f', 'g', 'G', 'a', 'A', 'h', 'H' -> return
-          'b', 'B' ->                         // '+' concatenation of Booleans does not exist in Kotlin,
+          'x',
+          'X',
+          'd',
+          'o',
+          'e',
+          'E',
+          'f',
+          'g',
+          'G',
+          'a',
+          'A',
+          'h',
+          'H' -> return
+          'b',
+          'B' -> // '+' concatenation of Booleans does not exist in Kotlin,
             // so "%b" should not be flagged as a trivial conversion.
             if (isKotlin(calledMethod)) {
               return
@@ -772,9 +794,10 @@ class StringFormatDetector
     }
 
     // Creates the lint check message based on the conversions in the format string.
-    var message = ("This formatting string is trivial. Rather than using "
-      + "`String.format` to create your String, it will be more "
-      + "performant to concatenate your arguments with `+`. ")
+    var message =
+      ("This formatting string is trivial. Rather than using " +
+        "`String.format` to create your String, it will be more " +
+        "performant to concatenate your arguments with `+`. ")
     if (uppercase) {
       message += "If uppercase formatting is necessary, use `String.toUpperCase()`."
     }
@@ -782,21 +805,22 @@ class StringFormatDetector
   }
 
   companion object {
-    private val IMPLEMENTATION_XML = Implementation(
-      StringFormatDetector::class.java, Scope.ALL_RESOURCES_SCOPE
-    )
-    private val IMPLEMENTATION_XML_AND_JAVA = Implementation(
-      StringFormatDetector::class.java,
-      EnumSet.of(Scope.ALL_RESOURCE_FILES, Scope.JAVA_FILE),
-      Scope.JAVA_FILE_SCOPE
-    )
+    private val IMPLEMENTATION_XML =
+      Implementation(StringFormatDetector::class.java, Scope.ALL_RESOURCES_SCOPE)
+    private val IMPLEMENTATION_XML_AND_JAVA =
+      Implementation(
+        StringFormatDetector::class.java,
+        EnumSet.of(Scope.ALL_RESOURCE_FILES, Scope.JAVA_FILE),
+        Scope.JAVA_FILE_SCOPE
+      )
 
-    /** Whether formatting strings are invalid  */
+    /** Whether formatting strings are invalid */
     @JvmField
-    val INVALID = create(
-      "StringFormatInvalid",
-      "Invalid format string",
-      """
+    val INVALID =
+      create(
+        "StringFormatInvalid",
+        "Invalid format string",
+        """
           If a string contains a '%' character, then the string may be a formatting string which will be passed to `String.format` from Java code to replace each '%' occurrence with specific values.
 
           This lint warning checks for two related problems:
@@ -805,67 +829,71 @@ class StringFormatDetector
 
           NOTE: Not all Strings which look like formatting strings are intended for use by `String.format`; for example, they may contain date formats intended for `android.text.format.Time#format()`. Lint cannot always figure out that a String is a date format, so you may get false warnings in those scenarios. See the suppress help topic for information on how to suppress errors in that case.
           """,
-      Category.MESSAGES,
-      9,
-      Severity.ERROR,
-      IMPLEMENTATION_XML
-    )
+        Category.MESSAGES,
+        9,
+        Severity.ERROR,
+        IMPLEMENTATION_XML
+      )
 
-    /** Whether formatting argument types are consistent across translations  */
+    /** Whether formatting argument types are consistent across translations */
     @JvmField
-    val ARG_COUNT = create(
-      "StringFormatCount",
-      "Formatting argument types incomplete or inconsistent",
-      """
+    val ARG_COUNT =
+      create(
+        "StringFormatCount",
+        "Formatting argument types incomplete or inconsistent",
+        """
           When a formatted string takes arguments, it usually needs to reference the same arguments in all translations (or all arguments if there are no translations.
 
           There are cases where this is not the case, so this issue is a warning rather than an error by default. However, this usually happens when a language is not translated or updated correctly.
           """,
-      Category.MESSAGES,
-      5,
-      Severity.WARNING,
-      IMPLEMENTATION_XML
-    )
+        Category.MESSAGES,
+        5,
+        Severity.WARNING,
+        IMPLEMENTATION_XML
+      )
 
-    /** Whether the string format used in a String.format call is trivial  */
-    val TRIVIAL = create(
-      "StringFormatTrivial",
-      "`String.format` string only contains trivial conversions",
-      "Every call to `String.format` creates a new `Formatter` instance, which will "
-        + "decrease the performance of your app. `String.format` should only be used when "
-        + "necessary--if the formatted string contains only trivial conversions "
-        + "(e.g. `b`, `s`, `c`) and there are no translation concerns, it will be "
-        + "more efficient to replace them and concatenate with `+`.",
-      Category.PERFORMANCE,
-      5,
-      Severity.WARNING,
-      IMPLEMENTATION_XML_AND_JAVA
-    )
-      .setAndroidSpecific(true)
-      .setEnabledByDefault(false)
+    /** Whether the string format used in a String.format call is trivial */
+    val TRIVIAL =
+      create(
+          "StringFormatTrivial",
+          "`String.format` string only contains trivial conversions",
+          "Every call to `String.format` creates a new `Formatter` instance, which will " +
+            "decrease the performance of your app. `String.format` should only be used when " +
+            "necessary--if the formatted string contains only trivial conversions " +
+            "(e.g. `b`, `s`, `c`) and there are no translation concerns, it will be " +
+            "more efficient to replace them and concatenate with `+`.",
+          Category.PERFORMANCE,
+          5,
+          Severity.WARNING,
+          IMPLEMENTATION_XML_AND_JAVA
+        )
+        .setAndroidSpecific(true)
+        .setEnabledByDefault(false)
 
-    /** Whether the string format supplied in a call to String.format matches the format string  */
+    /** Whether the string format supplied in a call to String.format matches the format string */
     @JvmField
-    val ARG_TYPES = create(
-      "StringFormatMatches",
-      "`String.format` string doesn't match the XML format string",
-      """
+    val ARG_TYPES =
+      create(
+        "StringFormatMatches",
+        "`String.format` string doesn't match the XML format string",
+        """
           This lint check ensures the following:
           (1) If there are multiple translations of the format string, then all translations use the same type for the same numbered arguments
           (2) The usage of the format string in Java is consistent with the format string, meaning that the parameter types passed to String.format matches those in the format string.
           """,
-      Category.MESSAGES,
-      9,
-      Severity.ERROR,
-      IMPLEMENTATION_XML_AND_JAVA
-    )
+        Category.MESSAGES,
+        9,
+        Severity.ERROR,
+        IMPLEMENTATION_XML_AND_JAVA
+      )
 
-    /** This plural does not use the quantity value  */
+    /** This plural does not use the quantity value */
     @JvmField
-    val POTENTIAL_PLURAL = create(
-      "PluralsCandidate",
-      "Potential Plurals",
-      """This lint check looks for potential errors in internationalization where you have translated a message which involves a quantity and it looks like other parts of the string may need grammatical changes.
+    val POTENTIAL_PLURAL =
+      create(
+          "PluralsCandidate",
+          "Potential Plurals",
+          """This lint check looks for potential errors in internationalization where you have translated a message which involves a quantity and it looks like other parts of the string may need grammatical changes.
 
 For example, rather than something like this:
 ```xml
@@ -881,14 +909,14 @@ you should be using a plural:
 This will ensure that in other languages the right set of translations are provided for the different quantity classes.
 
 (This check depends on some heuristics, so it may not accurately determine whether a string really should be a quantity. You can use tools:ignore to filter out false positives.""",
-      Category.MESSAGES,
-      5,
-      Severity.WARNING,
-      IMPLEMENTATION_XML
-    )
-      .addMoreInfo(
-        "https://developer.android.com/guide/topics/resources/string-resource.html#Plurals"
-      )
+          Category.MESSAGES,
+          5,
+          Severity.WARNING,
+          IMPLEMENTATION_XML
+        )
+        .addMoreInfo(
+          "https://developer.android.com/guide/topics/resources/string-resource.html#Plurals"
+        )
 
     fun addText(sb: StringBuilder, node: Node) {
       val nodeType = node.nodeType
@@ -906,8 +934,8 @@ This will ensure that in other languages the right set of translations are provi
     }
 
     /**
-     * Removes all the unescaped quotes. See [Escaping
- * apostrophes and quotes](http://developer.android.com/guide/topics/resources/string-resource.html#FormattingAndStyling)
+     * Removes all the unescaped quotes. See
+     * [Escaping apostrophes and quotes](http://developer.android.com/guide/topics/resources/string-resource.html#FormattingAndStyling)
      */
     @JvmStatic
     fun stripQuotes(s: String): String {
@@ -939,7 +967,10 @@ This will ensure that in other languages the right set of translations are provi
      * probably be a plural instead. This
      */
     private fun checkPotentialPlural(
-      context: XmlContext, element: Element, text: String, wordBegin: Int
+      context: XmlContext,
+      element: Element,
+      text: String,
+      wordBegin: Int
     ): Boolean {
       // This method should only be called if the text is known to start with a word
       assert(Character.isLetter(text[wordBegin]))
@@ -990,11 +1021,12 @@ This will ensure that in other languages the right set of translations are provi
 
       // This heuristic only works in English!
       if (isEnglishResource(context, true)) {
-        val message = String.format(
-          "Formatting %%d followed by words (\"%1\$s\"): "
-            + "This should probably be a plural rather than a string",
-          word
-        )
+        val message =
+          String.format(
+            "Formatting %%d followed by words (\"%1\$s\"): " +
+              "This should probably be a plural rather than a string",
+            word
+          )
         context.report(POTENTIAL_PLURAL, element, context.getLocation(element), message)
         // Avoid reporting multiple errors on the same string
         // (if it contains more than one %d)
@@ -1049,11 +1081,13 @@ This will ensure that in other languages the right set of translations are provi
                   return
                 }
                 val location = handle.resolve()
-                val message = String.format(
-                  "Incorrect formatting string `%1\$s`; missing conversion "
-                      + "character in '`%2\$s`'?",
-                  name, str
-                )
+                val message =
+                  String.format(
+                    "Incorrect formatting string `%1\$s`; missing conversion " +
+                      "character in '`%2\$s`'?",
+                    name,
+                    str
+                  )
                 context.report(INVALID, location, message)
                 // warned = true;
                 continue
@@ -1069,9 +1103,7 @@ This will ensure that in other languages the right set of translations are provi
           if (currentFormat == null) {
             types[number] = format
             typeDefinition[number] = handle
-          } else if (currentFormat != format
-            && isIncompatible(currentFormat[0], format[0])
-          ) {
+          } else if (currentFormat != format && isIncompatible(currentFormat[0], format[0])) {
             if (isSuppressed(context, ARG_TYPES, handle)) {
               return
             }
@@ -1082,29 +1114,25 @@ This will ensure that in other languages the right set of translations are provi
 
             // Attempt to limit the location range to just the formatting
             // string in question
-            location = refineLocation(
-              context,
-              location,
-              formatString,
-              matcher.start(),
-              matcher.end()
-            )
+            location =
+              refineLocation(context, location, formatString, matcher.start(), matcher.end())
             val otherLocation = typeDefinition[number]!!.resolve()
             otherLocation.message = "Conflicting argument type (`$currentFormat') here"
             location.secondary = otherLocation
             val f = otherLocation.file
-            val message = String.format(
-              Locale.US,
-              "Inconsistent formatting types for argument #%1\$d in "
-                  + "format string `%2\$s` ('%3\$s'): Found both '`%4\$s`' here and '`%5\$s`' "
-                  + "in %6\$s",
-              number,
-              name,
-              str,
-              format,
-              currentFormat,
-              getFileNameWithParent(context.client, f)
-            )
+            val message =
+              String.format(
+                Locale.US,
+                "Inconsistent formatting types for argument #%1\$d in " +
+                  "format string `%2\$s` ('%3\$s'): Found both '`%4\$s`' here and '`%5\$s`' " +
+                  "in %6\$s",
+                number,
+                name,
+                str,
+                format,
+                currentFormat,
+                getFileNameWithParent(context.client, f)
+              )
             // warned = true;
             context.report(ARG_TYPES, location, message)
             break
@@ -1122,7 +1150,9 @@ This will ensure that in other languages the right set of translations are provi
     private fun isIncompatible(conversion1: Char, conversion2: Char): Boolean {
       val class1 = getConversionClass(conversion1)
       val class2 = getConversionClass(conversion2)
-      return class1 != class2 && class1 != CONVERSION_CLASS_UNKNOWN && class2 != CONVERSION_CLASS_UNKNOWN
+      return class1 != class2 &&
+        class1 != CONVERSION_CLASS_UNKNOWN &&
+        class2 != CONVERSION_CLASS_UNKNOWN
     }
 
     private const val CONVERSION_CLASS_UNKNOWN = 0
@@ -1138,13 +1168,27 @@ This will ensure that in other languages the right set of translations are provi
     private fun getConversionClass(conversion: Char): Int {
       // See http://developer.android.com/reference/java/util/Formatter.html
       when (conversion) {
-        't', 'T' -> return CONVERSION_CLASS_DATETIME
-        's', 'S' -> return CONVERSION_CLASS_STRING
-        'c', 'C' -> return CONVERSION_CLASS_CHARACTER
-        'd', 'o', 'x', 'X' -> return CONVERSION_CLASS_INTEGER
-        'f', 'e', 'E', 'g', 'G', 'a', 'A' -> return CONVERSION_CLASS_FLOAT
-        'b', 'B' -> return CONVERSION_CLASS_BOOLEAN
-        'h', 'H' -> return CONVERSION_CLASS_HASHCODE
+        't',
+        'T' -> return CONVERSION_CLASS_DATETIME
+        's',
+        'S' -> return CONVERSION_CLASS_STRING
+        'c',
+        'C' -> return CONVERSION_CLASS_CHARACTER
+        'd',
+        'o',
+        'x',
+        'X' -> return CONVERSION_CLASS_INTEGER
+        'f',
+        'e',
+        'E',
+        'g',
+        'G',
+        'a',
+        'A' -> return CONVERSION_CLASS_FLOAT
+        'b',
+        'B' -> return CONVERSION_CLASS_BOOLEAN
+        'h',
+        'H' -> return CONVERSION_CLASS_HASHCODE
         '%' -> return CONVERSION_CLASS_PERCENT
         'n' -> return CONVERSION_CLASS_NEWLINE
       }
@@ -1185,7 +1229,11 @@ This will ensure that in other languages the right set of translations are provi
      * Check that the number of arguments in the format string is consistent across translations,
      * and that all arguments are used
      */
-    private fun checkArity(context: Context, name: String, list: List<Pair<Location.Handle, String>>?) {
+    private fun checkArity(
+      context: Context,
+      name: String,
+      list: List<Pair<Location.Handle, String>>?
+    ) {
       // Check to make sure that the argument counts and types are consistent
       var prevCount = -1
       for (pair in list!!) {
@@ -1207,14 +1255,16 @@ This will ensure that in other languages the right set of translations are provi
           secondary.message = "Conflicting number of arguments ($prevCount) here"
           location.secondary = secondary
           val path = getFileNameWithParent(context.client, secondary.file)
-          val message = String.format(
-            Locale.US, "Inconsistent number of arguments in formatting string `%1\$s`; "
-              + "found both %2\$d here and %3\$d in %4\$s",
-            name,
-            count,
-            prevCount,
-            path
-          )
+          val message =
+            String.format(
+              Locale.US,
+              "Inconsistent number of arguments in formatting string `%1\$s`; " +
+                "found both %2\$d here and %3\$d in %4\$s",
+              name,
+              count,
+              prevCount,
+              path
+            )
           context.report(ARG_COUNT, location, message)
           break
         }
@@ -1231,10 +1281,12 @@ This will ensure that in other languages the right set of translations are provi
             val sorted: List<Int> = ArrayList(all)
             Collections.sort(sorted)
             val location = handle.resolve()
-            val message = String.format(
-              "Formatting string '`%1\$s`' is not referencing numbered arguments %2\$s",
-              name, sorted
-            )
+            val message =
+              String.format(
+                "Formatting string '`%1\$s`' is not referencing numbered arguments %2\$s",
+                name,
+                sorted
+              )
             context.report(ARG_COUNT, location, message)
             break
           }
@@ -1245,66 +1297,63 @@ This will ensure that in other languages the right set of translations are provi
 
     // See java.util.Formatter docs
     @JvmField
-    val FORMAT = Pattern.compile( // Generic format:
-      //   %[argument_index$][flags][width][.precision]conversion
-      //
-      "%"
-        +  // Argument Index
-        "(\\d+\\$)?"
-        +  // Flags
-        "([-+#, 0(<]*)?"
-        +  // Width
-        "(\\d+)?"
-        +  // Precision
-        "(\\.\\d+)?"
-        +  // Conversion. These are all a single character, except date/time
-        // conversions
-        // which take a prefix of t/T:
-        "([tT])?"
-        +  // The current set of conversion characters are
-        // b,h,s,c,d,o,x,e,f,g,a,t (as well as all those as upper-case
-        // characters), plus
-        // n for newlines and % as a literal %. And then there are all the
-        // time/date
-        // characters: HIKLm etc. Just match on all characters here since there
-        // should
-        // be at least one.
-        "([a-zA-Z%])"
-    )
+    val FORMAT =
+      Pattern.compile( // Generic format:
+        //   %[argument_index$][flags][width][.precision]conversion
+        //
+        "%" + // Argument Index
+        "(\\d+\\$)?" + // Flags
+          "([-+#, 0(<]*)?" + // Width
+          "(\\d+)?" + // Precision
+          "(\\.\\d+)?" + // Conversion. These are all a single character, except date/time
+          // conversions
+          // which take a prefix of t/T:
+          "([tT])?" + // The current set of conversion characters are
+          // b,h,s,c,d,o,x,e,f,g,a,t (as well as all those as upper-case
+          // characters), plus
+          // n for newlines and % as a literal %. And then there are all the
+          // time/date
+          // characters: HIKLm etc. Just match on all characters here since there
+          // should
+          // be at least one.
+          "([a-zA-Z%])"
+      )
 
     // Return a sequence of match results at different arguments.
     // The user of this sequence is not supposed to save references to the match results.
-    private fun getFormatArgumentSequence(s : String) : Sequence<MatchResult> = sequence {
+    private fun getFormatArgumentSequence(s: String): Sequence<MatchResult> = sequence {
       val matcher = FORMAT.matcher(s)
       var index = 0
       while (matcher.find(index)) {
-        index = when {
-          matcher.group(6).let { it == "%" || it == "n"} -> matcher.end()
-          // Make sure this is not an escaped '%'. If we're in an escape, ignore this result
-          0 <= matcher.start() - 1 && s[matcher.start() - 1] == '\\' -> matcher.start() + 1
-          else -> matcher.end().also { yield(matcher) }
-        }
+        index =
+          when {
+            matcher.group(6).let { it == "%" || it == "n" } -> matcher.end()
+            // Make sure this is not an escaped '%'. If we're in an escape, ignore this result
+            0 <= matcher.start() - 1 && s[matcher.start() - 1] == '\\' -> matcher.start() + 1
+            else -> matcher.end().also { yield(matcher) }
+          }
       }
     }
 
-    private fun getFormatArgumentSequenceWithIndex(s : String) : Sequence<Pair<Int, MatchResult>> {
+    private fun getFormatArgumentSequenceWithIndex(s: String): Sequence<Pair<Int, MatchResult>> {
       var nextNumber = 1
-      return getFormatArgumentSequence(s)
-        .map { matcher ->
-          // Shouldn't throw a number format exception since we've already
-          // matched the pattern in the regexp
-          val number = when (val numberString = matcher.group(1)) {
+      return getFormatArgumentSequence(s).map { matcher ->
+        // Shouldn't throw a number format exception since we've already
+        // matched the pattern in the regexp
+        val number =
+          when (val numberString = matcher.group(1)) {
             null -> nextNumber++
             // Strip off trailing $
-            else -> numberString.substring(0, numberString.length - 1).toInt().also {
-              nextNumber = it + 1
-            }
+            else ->
+              numberString.substring(0, numberString.length - 1).toInt().also {
+                nextNumber = it + 1
+              }
           }
-          number to matcher
-        }
+        number to matcher
+      }
     }
 
-    /** Given a format string returns the format type of the given argument  */
+    /** Given a format string returns the format type of the given argument */
     @JvmStatic
     @VisibleForTesting
     fun getFormatArgumentType(s: String, argument: Int): String? =
@@ -1324,7 +1373,7 @@ This will ensure that in other languages the right set of translations are provi
         .maxOrNull()
         ?: 0
 
-    /** Given a format string returns whether it has any flags/width/precision modifiers.  */
+    /** Given a format string returns whether it has any flags/width/precision modifiers. */
     fun hasFormatArgumentModifiers(s: String, argument: Int): Boolean =
       getFormatArgumentSequenceWithIndex(s)
         .find { (number, _) -> number == argument }
@@ -1332,15 +1381,15 @@ This will ensure that in other languages the right set of translations are provi
           // The regex for matching flags uses '*', so a format argument with no flags
           // returns "".
           !matcher.group(2).isNullOrEmpty() ||
-              !matcher.group(3).isNullOrEmpty() ||
-              !matcher.group(4).isNullOrEmpty()
+            !matcher.group(3).isNullOrEmpty() ||
+            !matcher.group(4).isNullOrEmpty()
         }
         ?: false
 
     /**
-     * Determines whether the given [String.format] formatting string is
-     * "locale dependent", meaning that its output depends on the locale. This is the case if it for
-     * example references decimal numbers of dates and times.
+     * Determines whether the given [String.format] formatting string is "locale dependent", meaning
+     * that its output depends on the locale. This is the case if it for example references decimal
+     * numbers of dates and times.
      *
      * @param format the format string
      * @return true if the format is locale sensitive, false otherwise
@@ -1349,7 +1398,14 @@ This will ensure that in other languages the right set of translations are provi
     fun isLocaleSpecific(format: String): Boolean =
       getFormatArgumentSequence(format).any { matcher ->
         when (matcher.group(6).firstOrNull()) {
-          'd', 'e', 'E', 'f', 'g', 'G', 't', 'T' -> true
+          'd',
+          'e',
+          'E',
+          'f',
+          'g',
+          'G',
+          't',
+          'T' -> true
           else -> false
         }
       }
@@ -1363,7 +1419,10 @@ This will ensure that in other languages the right set of translations are provi
      * @param handle the string location
      */
     private fun checkNotFormattedHandle(
-      context: JavaContext, call: UCallExpression, name: String, handle: Location.Handle?
+      context: JavaContext,
+      call: UCallExpression,
+      name: String,
+      handle: Location.Handle?
     ) {
       if (isSuppressed(context, INVALID, handle)) {
         return
@@ -1372,11 +1431,12 @@ This will ensure that in other languages the right set of translations are provi
       val secondary = handle!!.resolve()
       secondary.message = "This definition does not require arguments"
       location.secondary = secondary
-      val message = String.format(
-        "Format string '`%1\$s`' is not a valid format string so it should not be "
-          + "passed to `String.format`",
-        name
-      )
+      val message =
+        String.format(
+          "Format string '`%1\$s`' is not a valid format string so it should not be " +
+            "passed to `String.format`",
+          name
+        )
       context.report(INVALID, call, location, message)
     }
 
@@ -1406,17 +1466,26 @@ This will ensure that in other languages the right set of translations are provi
 
     // PsiType:java.lang.Boolean
     private fun isNumericType(type: PsiType, allowBigNumbers: Boolean): Boolean {
-      if (PsiTypes.intType() == type || PsiTypes.floatType() == type || PsiTypes.doubleType() == type || PsiTypes.longType() == type || PsiTypes.byteType() == type || PsiTypes.shortType() == type) {
+      if (
+        PsiTypes.intType() == type ||
+          PsiTypes.floatType() == type ||
+          PsiTypes.doubleType() == type ||
+          PsiTypes.longType() == type ||
+          PsiTypes.byteType() == type ||
+          PsiTypes.shortType() == type
+      ) {
         return true
       }
       if (type is PsiClassType) {
         val fqn = type.getCanonicalText()
-        if (TYPE_INTEGER_WRAPPER == fqn ||
-          TYPE_FLOAT_WRAPPER == fqn ||
-          TYPE_DOUBLE_WRAPPER == fqn ||
-          TYPE_LONG_WRAPPER == fqn ||
-          TYPE_BYTE_WRAPPER == fqn ||
-          TYPE_SHORT_WRAPPER == fqn) {
+        if (
+          TYPE_INTEGER_WRAPPER == fqn ||
+            TYPE_FLOAT_WRAPPER == fqn ||
+            TYPE_DOUBLE_WRAPPER == fqn ||
+            TYPE_LONG_WRAPPER == fqn ||
+            TYPE_BYTE_WRAPPER == fqn ||
+            TYPE_SHORT_WRAPPER == fqn
+        ) {
           return true
         }
         if (allowBigNumbers) {
