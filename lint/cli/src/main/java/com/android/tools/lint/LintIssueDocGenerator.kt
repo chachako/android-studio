@@ -1528,7 +1528,7 @@ constructor(
           if (path == null) {
             // Attempt some other guesses
             val text = first.sourcePsi?.text
-            if (text?.toUpperCase(Locale.US)?.contains("MANIFEST") == true) {
+            if (text?.uppercase(Locale.US)?.contains("MANIFEST") == true) {
               path = "AndroidManifest.xml"
               if (outputMap.containsKey("src/main/AndroidManifest.xml"))
                 path = "src/main/AndroidManifest.xml"

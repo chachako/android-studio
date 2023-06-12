@@ -508,7 +508,7 @@ open class ConfigurationHierarchy(
     val keys = mutableMapOf<Configuration, String>()
     var key = 0xA
     for (configuration in configs) {
-      val id = Integer.toHexString(key++).toUpperCase(Locale.ROOT)
+      val id = Integer.toHexString(key++).uppercase(Locale.ROOT)
       keys[configuration] = id
       sb.append("  ").append(id).append(" [label=\"")
       val vars = client.pathVariables

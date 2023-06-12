@@ -317,7 +317,7 @@ private fun isAppContext(cls: PsiClass, field: PsiField): Boolean {
 
   // Don't flag names like "sAppContext" or "applicationContext".
   val name = field.name
-  val lower = name.toLowerCase(Locale.US)
+  val lower = name.lowercase(Locale.US)
   if (lower.contains("appcontext") || lower.contains("application")) {
     if (CLASS_CONTEXT == cls.qualifiedName) {
       return true

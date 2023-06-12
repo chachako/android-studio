@@ -230,7 +230,7 @@ class TerminologyDetectorTest {
     prefixSet.add("") // init sat
     for (state in names) {
       for (i in 1 until state.length + 1) {
-        val prefix = state.substring(0, i).toLowerCase(Locale.ROOT)
+        val prefix = state.substring(0, i).lowercase(Locale.ROOT)
         prefixSet.add(prefix)
       }
     }
@@ -252,7 +252,7 @@ class TerminologyDetectorTest {
             readableStateNames -> {
               val escape = prefix.mustEscapeIdentifier()
               val surround = if (escape) "`" else ""
-              surround + "STATE_" + prefix.toUpperCase(Locale.ROOT) + surround
+              surround + "STATE_" + prefix.uppercase(Locale.ROOT) + surround
             }
             stateVariables -> "state${++stateNameNumber}"
             else -> (++stateNameNumber).toString()

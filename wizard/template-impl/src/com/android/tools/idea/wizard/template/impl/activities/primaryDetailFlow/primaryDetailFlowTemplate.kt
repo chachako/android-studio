@@ -87,8 +87,8 @@ val primaryDetailFlowTemplate
     val detailNameFragmentLayout = stringParameter {
       name = "Detail layout name"
       constraints = listOf(Constraint.LAYOUT, Constraint.UNIQUE, NONEMPTY)
-      default = "fragment_${extractLetters(objectKind.value.toLowerCase(Locale.getDefault()))}_detail"
-      suggest = { "fragment_${extractLetters(objectKind.value.toLowerCase(Locale.getDefault()))}_detail" }
+      default = "fragment_${extractLetters(objectKind.value.lowercase(Locale.getDefault()))}_detail"
+      suggest = { "fragment_${extractLetters(objectKind.value.lowercase(Locale.getDefault()))}_detail" }
       visible = { false }
     }
 

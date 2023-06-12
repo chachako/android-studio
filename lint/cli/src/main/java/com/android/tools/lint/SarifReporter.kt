@@ -156,7 +156,7 @@ constructor(client: LintCliClient, output: File) : Reporter(client, output) {
         issues.add(issue)
       }
     }
-    issues.sortBy { it.id.toLowerCase(Locale.US) }
+    issues.sortBy { it.id.lowercase(Locale.US) }
     return issues
   }
 

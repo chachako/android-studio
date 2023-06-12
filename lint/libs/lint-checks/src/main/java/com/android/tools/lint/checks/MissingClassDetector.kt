@@ -445,7 +445,7 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
           XML -> "preference header file"
           VALUES -> "analytics file"
           else -> {
-            "${type.getName().toLowerCase(Locale.US)} file"
+            "${type.getName().lowercase(Locale.US)} file"
           }
         }
       } else {

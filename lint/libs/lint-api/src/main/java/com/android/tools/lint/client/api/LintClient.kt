@@ -1773,8 +1773,8 @@ abstract class LintClient {
     // sensitive one, but it's not the default.
     val caseSensitive = CURRENT_PLATFORM == PLATFORM_LINUX
     val l = Locale.getDefault()
-    val basePathToCompare = if (caseSensitive) basePath else basePath.toLowerCase(l)
-    val filePathToCompare = if (caseSensitive) filePath else filePath.toLowerCase(l)
+    val basePathToCompare = if (caseSensitive) basePath else basePath.lowercase(l)
+    val filePathToCompare = if (caseSensitive) filePath else filePath.lowercase(l)
     if (
       basePathToCompare ==
         (if (

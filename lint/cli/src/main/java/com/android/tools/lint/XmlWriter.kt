@@ -103,7 +103,7 @@ constructor(
     return listOfNotNull(
       ATTR_FORMAT to "6",
       client.getClientDisplayRevision()?.let { "by" to "lint $it" },
-      "type" to if (type != XmlFileType.REPORT) type.name.toLowerCase(Locale.ROOT) else null,
+      "type" to if (type != XmlFileType.REPORT) type.name.lowercase(Locale.ROOT) else null,
     )
   }
 

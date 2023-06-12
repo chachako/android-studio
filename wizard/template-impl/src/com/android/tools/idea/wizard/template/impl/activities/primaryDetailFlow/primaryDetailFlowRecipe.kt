@@ -63,10 +63,10 @@ fun RecipeExecutor.primaryDetailFlowRecipe(
   val useAndroidX = moduleData.projectTemplateData.androidXSupport
   val ktOrJavaExt = projectData.language.extension
   val collection = extractLetters(objectKind)
-  val itemListLayout = collection.toLowerCase() + "_list"
+  val itemListLayout = collection.lowercase() + "_list"
   val collectionName = "${collection}List"
   val detailName = "${collection}Detail"
-  val detailNameLayout = collection.toLowerCase() + "_detail"
+  val detailNameLayout = collection.lowercase() + "_detail"
   val itemListContentLayout = "${itemListLayout}_content"
   val applicationPackage = projectData.applicationPackage
   val generateKotlin = projectData.language == Language.Kotlin

@@ -48,7 +48,7 @@ class MultiProjectHtmlReporter(
 
     // Set of unique file names: lowercase names to avoid case conflicts in web environment
     val unique: MutableSet<String> = Sets.newHashSet()
-    unique.add(INDEX_NAME.toLowerCase(Locale.US))
+    unique.add(INDEX_NAME.lowercase(Locale.US))
     val projects: MutableList<ProjectEntry> = Lists.newArrayList()
     for (project in projectToIncidents.keys) {
       // TODO: Can I get the project name from the Android manifest file instead?
@@ -60,7 +60,7 @@ class MultiProjectHtmlReporter(
       while (true) {
         val numberString = if (number > 1) number.toString() else ""
         fileName = String.format("%1\$s%2\$s.html", projectName, numberString)
-        val lowercase = fileName.toLowerCase(Locale.US)
+        val lowercase = fileName.lowercase(Locale.US)
         if (!unique.contains(lowercase)) {
           unique.add(lowercase)
           break

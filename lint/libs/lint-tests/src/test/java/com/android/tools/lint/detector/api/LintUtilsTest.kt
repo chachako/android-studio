@@ -778,7 +778,7 @@ class LintUtilsTest : TestCase() {
       val writer = OutputStreamWriter(stream, encoding)
 
       if (writeBom) {
-        val normalized = encoding.toLowerCase(Locale.US).replace("-", "_")
+        val normalized = encoding.lowercase(Locale.US).replace("-", "_")
         when (normalized) {
           "utf_8" -> {
             stream.write(0xef)

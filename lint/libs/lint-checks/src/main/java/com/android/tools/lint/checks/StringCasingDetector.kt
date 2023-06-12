@@ -110,8 +110,8 @@ class StringCasingDetector : ResourceXmlDetector() {
 
     val locale = getLocale(context)
     val key =
-      if (locale != null) Pair.of(locale.full, text.toLowerCase(Locale.forLanguageTag(locale.tag)))
-      else Pair.of("default", text.toLowerCase(Locale.US))
+      if (locale != null) Pair.of(locale.full, text.lowercase(Locale.forLanguageTag(locale.tag)))
+      else Pair.of("default", text.lowercase(Locale.US))
     val handle = context.createLocationHandle(element)
     handle.clientData = element
     val handleList = allStrings.getOrDefault(key, ArrayList())

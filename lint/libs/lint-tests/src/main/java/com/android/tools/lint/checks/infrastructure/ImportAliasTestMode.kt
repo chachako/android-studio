@@ -106,7 +106,7 @@ class ImportAliasTestMode :
         private fun getImportAlias(qualified: String?): String? {
           return if (qualified != null && imported.contains(qualified)) {
             aliasNames[qualified]
-              ?: "IMPORT_ALIAS_${aliasNames.size + 1}_${qualified.substring(qualified.lastIndexOf('.') + 1).toUpperCase(Locale.US)}".also {
+              ?: "IMPORT_ALIAS_${aliasNames.size + 1}_${qualified.substring(qualified.lastIndexOf('.') + 1).uppercase(Locale.US)}".also {
                 aliasNames[qualified] = it
               }
           } else {

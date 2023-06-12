@@ -1678,7 +1678,7 @@ class LintModelSerializationTest {
     artifactName: String = ""
   ): String {
     //noinspection DefaultLocale
-    val key = StringBuilder(target.name.toLowerCase())
+    val key = StringBuilder(target.name.lowercase())
     if (variantName.isNotEmpty() && target != TargetFile.MODULE) {
       key.append("-")
       key.append(variantName)

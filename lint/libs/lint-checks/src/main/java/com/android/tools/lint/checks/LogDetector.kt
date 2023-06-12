@@ -355,7 +355,7 @@ class LogDetector : Detector(), SourceCodeScanner {
         return
       }
 
-      val expectedCall = resolved.getName()!!.substring(0, 1).toLowerCase(Locale.getDefault())
+      val expectedCall = resolved.getName()!!.substring(0, 1).lowercase(Locale.getDefault())
 
       val message =
         String.format(

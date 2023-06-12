@@ -1195,7 +1195,7 @@ constructor(
       }
       context.startsWith("android.splits.") &&
         context.indexOf('.', "android.splits.".length) == -1 -> {
-        val type = context.substring("android.splits.".length).toUpperCase(Locale.ROOT)
+        val type = context.substring("android.splits.".length).uppercase(Locale.ROOT)
         if (line == "reset") {
           splits.removeAll(type)
         } else if (line.startsWith("include ")) {

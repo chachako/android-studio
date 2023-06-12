@@ -855,7 +855,7 @@ class LintDetectorDetector : Detector(), UastScanner {
       } else {
         try {
           val parsed = URL(url)
-          val protocol = parsed.protocol?.toLowerCase(Locale.US)
+          val protocol = parsed.protocol?.lowercase(Locale.US)
           if (protocol == "mailto") {
             return
           } else if (protocol != null && protocol != "http" && protocol != "https") {

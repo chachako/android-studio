@@ -926,8 +926,8 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
       var regionCode: String? = null
       var languageCode = locale
       if (index != -1) {
-        regionCode = locale.substring(index + 1).toUpperCase(Locale.US)
-        languageCode = locale.substring(0, index).toLowerCase(Locale.US)
+        regionCode = locale.substring(index + 1).uppercase(Locale.US)
+        languageCode = locale.substring(0, index).lowercase(Locale.US)
       }
 
       var languageName = LocaleManager.getLanguageName(languageCode)

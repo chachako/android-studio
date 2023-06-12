@@ -1261,7 +1261,7 @@ fun computeResourceName(
   // Regardless of the prefix, if creating a file based resource such as a layout,
   // the name must be lower-case only
   if (folderType != null && folderType != ResourceFolderType.VALUES) {
-    newName = newName.toLowerCase(Locale.ROOT)
+    newName = newName.lowercase(Locale.ROOT)
     var underlined = camelCaseToUnderlines(newPrefix)
     if (newPrefix != underlined) {
       if (!underlined.endsWith("_")) {

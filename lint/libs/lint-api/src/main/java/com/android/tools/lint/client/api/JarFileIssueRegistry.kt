@@ -460,7 +460,7 @@ private constructor(
                 .removeSuffix("Registry")
                 .removeSuffix(".My") // MyIssueRegistry common from sample
                 .removeSuffix(".")
-                .toLowerCase(Locale.US)
+                .lowercase(Locale.US)
             }
 
           val inferredVendor: Vendor? =

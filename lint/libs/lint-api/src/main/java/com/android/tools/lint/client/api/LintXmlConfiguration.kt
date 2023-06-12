@@ -1316,7 +1316,7 @@ protected constructor(
           writeAttribute(writer, ATTR_ID, id)
           val severity = data.severity
           if (severity != null) {
-            writeAttribute(writer, ATTR_SEVERITY, severity.name.toLowerCase(Locale.ROOT))
+            writeAttribute(writer, ATTR_SEVERITY, severity.name.lowercase(Locale.ROOT))
           }
           val regexps = data.patterns
           val paths = data.paths
