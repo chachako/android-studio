@@ -507,6 +507,7 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
             addDeviceHandler(GetPropCommandHandler(ShellProtocolType.SHELL_V2))
             addDeviceHandler(SetPropCommandHandler(ShellProtocolType.SHELL))
             addDeviceHandler(WriteNoStopCommandHandler(ShellProtocolType.SHELL))
+            addDeviceHandler(PackageManagerCommandHandler(ShellProtocolType.EXEC))
             addDeviceHandler(PackageManagerCommandHandler(ShellProtocolType.SHELL))
             addDeviceHandler(WindowManagerCommandHandler(ShellProtocolType.SHELL))
             addDeviceHandler(CmdCommandHandler(ShellProtocolType.EXEC))
