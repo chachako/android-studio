@@ -162,7 +162,7 @@ open class DefaultUastParser(
       return null
     }
 
-    return UastFacade.convertElementWithParent(psiFile, UFile::class.java) as? UFile ?: return null
+    return UastFacade.convertElementWithParent(psiFile, UFile::class.java) as? UFile
   }
 
   /**
