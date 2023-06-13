@@ -23,9 +23,9 @@ import com.android.tools.idea.projectsystem.EP_NAME
 import com.android.tools.idea.projectsystem.ProjectSyncModificationTracker
 import com.android.tools.idea.projectsystem.ProjectSystemService
 import com.android.tools.idea.res.AndroidFileChangeListener
-import com.android.tools.idea.res.ResourceClassRegistry
 import com.android.tools.idea.res.ResourceFolderRegistry
 import com.android.tools.idea.res.SampleDataListener
+import com.android.tools.res.ResourceClassRegistry
 import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.ide.startup.impl.StartupManagerImpl
