@@ -39,7 +39,7 @@ import kotlinx.coroutines.launch
  * We cannot do anything with them, but we can alert the user to their presence, and in the
  * UNAUTHORIZED state, prompt them to accept connection on the device.
  */
-class OfflineDeviceProvisionerPlugin : DeviceProvisionerPlugin {
+class OfflineDeviceProvisionerPlugin(val scope: CoroutineScope) : DeviceProvisionerPlugin {
   // High priority so that this claims offline devices before other plugins
   override val priority = 1000
 
@@ -56,13 +56,18 @@ class OfflineDeviceProvisionerPlugin : DeviceProvisionerPlugin {
           )
         devices.update { it + handle }
 
-        // When the device goes online, remove this handle; it should be claimed by another plugin.
-        device.scope.launch {
-          device.deviceInfoFlow.takeWhile { it.deviceState != ONLINE }.collect()
-          handle.stateFlow.update { Disconnected(it.properties) }
+        scope.launch {
+          // When the device goes online, remove this handle; it should be claimed by another
+          // plugin.
+          device.scope.launch {
+            device.deviceInfoFlow.takeWhile { it.deviceState != ONLINE }.collect()
+            handle.stateFlow.update { Disconnected(it.properties) }
+            devices.update { it - handle }
+          }
+
+          device.awaitDisconnection()
           devices.update { it - handle }
         }
-        device.invokeOnDisconnection { devices.update { it - handle } }
         return handle
       }
     }

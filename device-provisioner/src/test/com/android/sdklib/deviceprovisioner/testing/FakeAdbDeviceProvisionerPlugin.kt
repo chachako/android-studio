@@ -29,10 +29,12 @@ import com.android.sdklib.deviceprovisioner.DeviceState
 import com.android.sdklib.deviceprovisioner.DeviceState.Connected
 import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import com.android.sdklib.deviceprovisioner.TestDefaultDeviceActionPresentation
-import com.android.sdklib.deviceprovisioner.invokeOnDisconnection
+import com.android.sdklib.deviceprovisioner.awaitDisconnection
+import com.android.sdklib.deviceprovisioner.testing.FakeAdbDeviceProvisionerPlugin.FakeDeviceHandle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
  * A [DeviceProvisionerPlugin] that allows creating [FakeDeviceHandle]s that can be activated and
@@ -48,7 +50,10 @@ class FakeAdbDeviceProvisionerPlugin(
   override suspend fun claim(device: ConnectedDevice): DeviceHandle? {
     val handle = devices.value.find { it.serialNumber == device.serialNumber } ?: return null
     handle.stateFlow.update { Connected(it.properties, device) }
-    device.invokeOnDisconnection { handle.stateFlow.update { Disconnected(it.properties) } }
+    scope.launch {
+      device.awaitDisconnection()
+      handle.stateFlow.update { Disconnected(it.properties) }
+    }
     return handle
   }
 

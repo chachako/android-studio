@@ -69,7 +69,9 @@ private constructor(
       DeviceProvisioner(
         coroutineScope,
         adbSession,
-        (provisioners + OfflineDeviceProvisionerPlugin() + DefaultProvisionerPlugin())
+        (provisioners +
+            OfflineDeviceProvisionerPlugin(coroutineScope) +
+            DefaultProvisionerPlugin(coroutineScope))
           .sortedByDescending { it.priority }
       )
   }

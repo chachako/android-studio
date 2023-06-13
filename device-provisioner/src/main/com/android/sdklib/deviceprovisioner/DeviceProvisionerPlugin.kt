@@ -15,16 +15,14 @@
  */
 package com.android.sdklib.deviceprovisioner
 
-import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.DeviceProperty
 import com.android.adblib.scope
 import com.android.adblib.utils.toImmutableMap
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.job
 
 /** A component of [DeviceProvisioner] responsible for a particular class of device. */
 interface DeviceProvisionerPlugin {
@@ -67,11 +65,7 @@ interface DeviceProvisionerPlugin {
 
 fun List<DeviceProperty>.asMap() = associate { it.name to it.value }.toImmutableMap()
 
-/** On device disconnection, runs the given block in the [AdbSession] scope. */
-fun ConnectedDevice.invokeOnDisconnection(block: suspend () -> Unit) {
-  scope.coroutineContext[Job]?.invokeOnCompletion {
-    // Run the block in the AdbSession scope, since this CompletionHandler must
-    // be fast, non-blocking, and thread-safe, and not throw exceptions.
-    session.scope.launch { block() }
-  }
+/** Blocks until the device is disconnected from ADB. */
+suspend fun ConnectedDevice.awaitDisconnection() {
+  scope.coroutineContext.job.join()
 }

@@ -55,6 +55,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -202,7 +203,8 @@ class LocalEmulatorProvisionerPlugin(
     }
 
     // We need to make sure that emulators change to Disconnected state once they are terminated.
-    device.invokeOnDisconnection {
+    scope.launch {
+      device.awaitDisconnection()
       handle.stateFlow.value = disconnectedState(handle.avdInfo)
       logger.debug { "Device ${device.serialNumber} closed; disconnecting from console" }
       emulatorConsoles.remove(device)?.close()

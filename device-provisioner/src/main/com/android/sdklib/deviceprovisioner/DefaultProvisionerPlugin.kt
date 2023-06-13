@@ -26,13 +26,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
  * Plugin which provides handles for devices when no other plugin claims them. This will offer a
  * handle for any device, but offers no operations on that device and does not have any memory of
  * devices.
  */
-class DefaultProvisionerPlugin : DeviceProvisionerPlugin {
+class DefaultProvisionerPlugin(val scope: CoroutineScope) : DeviceProvisionerPlugin {
   override val priority: Int = Int.MIN_VALUE
 
   private val _devices = MutableStateFlow<List<DefaultDeviceHandle>>(emptyList())
@@ -54,7 +55,8 @@ class DefaultProvisionerPlugin : DeviceProvisionerPlugin {
 
     _devices.update { it + handle }
 
-    device.invokeOnDisconnection {
+    scope.launch {
+      device.awaitDisconnection()
       handle.stateFlow.value = Disconnected(deviceProperties)
       _devices.update { it - handle }
     }

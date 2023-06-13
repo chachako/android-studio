@@ -24,6 +24,7 @@ import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 /** Plugin providing access to physical devices, connected over USB or WiFi. */
 class PhysicalDeviceProvisionerPlugin(val scope: CoroutineScope) : DeviceProvisionerPlugin {
@@ -86,8 +87,11 @@ class PhysicalDeviceProvisionerPlugin(val scope: CoroutineScope) : DeviceProvisi
 
     updateDevices()
 
-    // Update device state on termination. We keep it around in case it reconnects.
-    device.invokeOnDisconnection { handle.stateFlow.value = Disconnected(handle.state.properties) }
+    scope.launch {
+      // Update device state on termination. We keep it around in case it reconnects.
+      device.awaitDisconnection()
+      handle.stateFlow.value = Disconnected(handle.state.properties)
+    }
     return handle
   }
 
