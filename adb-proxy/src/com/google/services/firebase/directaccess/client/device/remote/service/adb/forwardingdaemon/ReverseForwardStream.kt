@@ -282,10 +282,14 @@ internal class ReverseForwardStream(
         }
       }
 
-      outputLock.withLock {
-        output.writeExactly(
-          ByteBuffer.wrap(StreamDataHeader(MessageType.CLSE, streamId, 0).toByteArray())
-        )
+      try {
+        outputLock.withLock {
+          output.writeExactly(
+            ByteBuffer.wrap(StreamDataHeader(MessageType.CLSE, streamId, 0).toByteArray())
+          )
+        }
+      } catch (ignore: IOException) {
+        // Output channel might be closed while writing CLSE message
       }
     }
   }
