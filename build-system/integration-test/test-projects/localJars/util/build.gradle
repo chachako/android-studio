@@ -4,5 +4,7 @@ dependencies {
     api 'com.google.guava:guava:11.0.2'
 }
 
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_7
+    targetCompatibility = JavaVersion.VERSION_1_7
+}

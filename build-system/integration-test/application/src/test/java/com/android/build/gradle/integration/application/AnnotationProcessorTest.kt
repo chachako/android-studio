@@ -81,6 +81,7 @@ class AnnotationProcessorTest {
                     }
                 }
                 dependencies {
+                    testImplementation("junit:junit:4.13.2")
                     androidTestImplementation (
                         "com.android.support.test:runner:$testSupportLibVersion"
                     )

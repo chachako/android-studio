@@ -142,8 +142,10 @@ public class Processor extends AbstractProcessor {
                 "build.gradle",
                 """
 apply plugin: "java"
-targetCompatibility = '1.7'
-sourceCompatibility = '1.7'
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_7
+    targetCompatibility = JavaVersion.VERSION_1_7
+}
 """)
 
         fun createCompiler(): AnnotationProcessorLib {

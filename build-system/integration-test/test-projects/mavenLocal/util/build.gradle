@@ -5,8 +5,10 @@ group = 'com.example.android.multiproject'
 archivesBaseName = 'util'
 version = '1.0'
 
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_7
+    targetCompatibility = JavaVersion.VERSION_1_7
+}
 
 uploadArchives {
   repositories {

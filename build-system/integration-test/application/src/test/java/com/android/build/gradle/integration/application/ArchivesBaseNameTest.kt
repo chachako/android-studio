@@ -35,7 +35,7 @@ private const val OLD_NAME = "random_name"
 private const val NEW_NAME = "changed_name"
 
 /**
- * Ensures that archivesBaseName setting on android project is used when choosing the apk file names
+ * Ensures that base.archivesName setting on android project is used when choosing the apk file names
  */
 @RunWith(FilterableParameterized::class)
 class ArchivesBaseNameTest(plugin: String, private val extension: String) {
@@ -49,7 +49,7 @@ class ArchivesBaseNameTest(plugin: String, private val extension: String) {
         checkApkName("project", extension)
 
         TestFileUtils.appendToFile(
-            project.buildFile, "\narchivesBaseName = \'$OLD_NAME\'"
+            project.buildFile, "\nbase.archivesName = \'$OLD_NAME\'"
         )
         checkApkName(OLD_NAME, extension)
 

@@ -104,7 +104,7 @@ public abstract class AndroidUnitTest extends Test implements VariantAwareTask {
     @Override
     @TaskAction
     public void executeTests() {
-        // Get the Jacoco extension to determine later if we have cove coverage enabled.
+        // Get the Jacoco extension to determine later if we have code coverage enabled.
         JacocoTaskExtension jcoExtension = getExtensions().findByType(JacocoTaskExtension.class);
         AndroidAnalyticsTestListener testListener =
                 new AndroidAnalyticsTestListener(

@@ -18,8 +18,8 @@
 
 package com.android.build.gradle.internal.utils
 
+import com.android.build.api.dsl.AndroidSourceSet
 import com.android.build.gradle.BaseExtension
-import com.android.build.gradle.api.AndroidSourceSet
 import com.android.build.gradle.internal.api.DefaultAndroidSourceDirectorySet
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
@@ -281,14 +281,11 @@ fun syncAgpAndKgpSources(
                 // so we can skip doing that.
                 return null
             }
-            val convention = this::class.java.getMethod("getConvention").invoke(this)
-            val plugins =
-                convention::class.java.getMethod("getPlugins")
-                    .invoke(convention) as Map<String, Any>
+            val extensions = this::class.java.getMethod("getExtensions").invoke(this)
+            val plugins = extensions::class.java.getMethod("getAsMap").invoke(extensions) as Map<String, Any>
             val kotlinConvention = plugins["kotlin"] ?: return null
 
-            return kotlinConvention::class.java.getMethod("getKotlin")
-                .invoke(kotlinConvention) as SourceDirectorySet
+            return kotlinConvention as SourceDirectorySet
         } else {
             val kotlinSourceSet: Any = kotlinSourceSets?.findByName(this.name) ?: return null
 

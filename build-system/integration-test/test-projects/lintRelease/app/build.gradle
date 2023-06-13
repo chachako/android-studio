@@ -18,7 +18,7 @@ android {
         xmlReport true
         xmlOutput file("lint-report.xml")
         textReport true
-        textOutput file("$reportsDir/lint-results.txt")
+        textOutput file("$buildDir/reports/lint-results.txt")
     }
 
     buildTypes {

@@ -808,7 +808,7 @@ class DynamicAppTest {
         val bundleFile = project.locateBundleFileViaModel("debug", ":app")
         assertThat(bundleFile).exists()
 
-        project.getSubproject(":app").buildFile.appendText("\narchivesBaseName ='foo'")
+        project.getSubproject(":app").buildFile.appendText("\nbase.archivesName ='foo'")
 
         project.execute("app:$bundleTaskName")
 

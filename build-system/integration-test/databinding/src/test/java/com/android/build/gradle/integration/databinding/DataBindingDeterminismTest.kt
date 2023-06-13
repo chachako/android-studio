@@ -126,7 +126,7 @@ class DataBindingDeterminismTest {
             // project name, which would break relocatability. To fix that, we need to apply the
             // following workaround to use a generic name for the APK that is independent of the
             // project name.
-            TestFileUtils.appendToFile(project.buildFile, "archivesBaseName = 'project'")
+            TestFileUtils.appendToFile(project.buildFile, "base.archivesName = 'project'")
         }
     }
 

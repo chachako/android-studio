@@ -40,6 +40,7 @@ class ScreenshotTest {
                 hasInstrumentationTests = true
             }
             dependencies {
+                testImplementation("junit:junit:4.13.2")
                 implementation("androidx.compose.ui:ui-tooling:${TaskManager.COMPOSE_UI_VERSION}")
                 implementation("androidx.compose.material:material:${TaskManager.COMPOSE_UI_VERSION}")
             }
@@ -99,6 +100,7 @@ class ScreenshotTest {
     @Test
     fun runScreenshotTest() {
         project.executor()
+                .withFailOnWarning(false)
                 .with(BooleanOption.USE_ANDROID_X, true)
                 .with(BooleanOption.ENABLE_SCREENSHOT_TEST, true)
                 .run("screenshotTestDebugAndroidTest")
