@@ -82,6 +82,7 @@ private const val TAG_PROJECT = "project"
 private const val TAG_MODULE = "module"
 private const val TAG_CLASSES = "classes"
 private const val TAG_CLASSPATH = "classpath"
+private const val TAG_KLIB = "klib"
 private const val TAG_SRC = "src"
 private const val TAG_DEP = "dep"
 private const val TAG_ROOT = "root"
@@ -189,6 +190,9 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
   /** list of global classpath jars to add to all modules */
   private val globalClasspath = mutableListOf<File>()
 
+  /** list of global klibs to add to all modules */
+  private val globalKlibs = mutableListOf<File>()
+
   /** map from module instance to names of modules it depends on, along with dependency kinds */
   private val dependencies: Multimap<ManualProject, Pair<String, DependencyKind>> =
     ArrayListMultimap.create()
@@ -289,6 +293,9 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
         TAG_CLASSPATH -> {
           globalClasspath.add(getFile(child, this.root))
         }
+        TAG_KLIB -> {
+          globalKlibs.add(getFile(child, this.root))
+        }
         TAG_LINT_CHECKS -> {
           globalLintChecks.add(getFile(child, this.root))
         }
@@ -371,6 +378,14 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
           // Only allow the .class files in the classpath to be bytecode analyzed once;
           // for the remainder we only use it for type resolution
           useForAnalysis = false
+        }
+      }
+    }
+
+    if (globalKlibs.isNotEmpty()) {
+      for (module in sortedModules) {
+        if (module.klibs.isEmpty()) {
+          module.klibs.addAll(globalKlibs)
         }
       }
     }
@@ -618,6 +633,9 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
           // Specifying a <jar> dependency in the file is an implicit dependency
           val jar = parseJar(child, dir)
           jar?.let { dependencies.put(module, jar to DependencyKind.Regular) }
+        }
+        TAG_KLIB -> {
+          module.klibs.add(getFile(child, dir))
         }
         TAG_BASELINE -> {
           baseline = getFile(child, dir)

@@ -441,6 +441,9 @@ object TestFiles {
   }
 
   @JvmStatic
+  fun klib(to : String, encoded : String? = null) : KlibTestFile = KlibTestFile(to, encoded)
+
+  @JvmStatic
   fun jar(to: String): JarTestFile {
     return JarTestFile(to)
   }

@@ -32,6 +32,7 @@ import com.android.tools.lint.checks.infrastructure.ProjectDescription
 import com.android.tools.lint.checks.infrastructure.ProjectDescription.Type.LIBRARY
 import com.android.tools.lint.checks.infrastructure.TestFile
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
+import com.android.tools.lint.checks.infrastructure.TestFiles.klib
 import com.android.tools.lint.checks.infrastructure.TestFiles.kt
 import com.android.tools.lint.checks.infrastructure.TestFiles.manifest
 import com.android.tools.lint.checks.infrastructure.TestFiles.source
@@ -2476,7 +2477,11 @@ class ProjectInitializerTest {
             actual fun getPlatform(): Platform = IOSPlatform()
           """
               .trimIndent()
-          )
+          ),
+        klib(
+          "libs/BlankKlib.klib",
+          ""
+        ),
         )
         .type(LIBRARY)
         .name("shared")
@@ -2733,6 +2738,7 @@ class ProjectInitializerTest {
             <src file="shared/src/commonMain/kotlin/pkg/Platform.kt" />
             <src file="shared/src/androidMain/kotlin/pkg/Platform.kt" />
             <src file="shared/src/iosMain/kotlin/pkg/Platform.kt" />
+            <klib file="libs/BlankKlib.klib" />
           </module>
         </project>
       """

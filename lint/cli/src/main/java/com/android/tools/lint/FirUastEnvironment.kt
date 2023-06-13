@@ -15,6 +15,7 @@
  */
 package com.android.tools.lint
 
+import com.android.tools.lint.UastEnvironment.Companion.getKlibPaths
 import com.android.tools.lint.UastEnvironment.Module.Variant
 import com.android.tools.lint.detector.api.GraphUtils
 import com.android.tools.lint.detector.api.Project
@@ -31,15 +32,6 @@ import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 import com.intellij.util.io.URLUtil
-import java.io.File
-import java.io.IOException
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.attribute.BasicFileAttributes
-import kotlin.concurrent.withLock
 import org.jetbrains.kotlin.analysis.api.impl.base.util.LibraryUtils
 import org.jetbrains.kotlin.analysis.api.resolve.extensions.KtResolveExtensionProvider
 import org.jetbrains.kotlin.analysis.api.standalone.StandaloneAnalysisAPISession
@@ -68,6 +60,15 @@ import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.FirKotlinUastLanguagePlugin
 import org.jetbrains.uast.kotlin.FirKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.internal.FirCliKotlinUastResolveProviderService
+import java.io.File
+import java.io.IOException
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
+import kotlin.concurrent.withLock
 
 /**
  * This class is FIR (or K2) version of [UastEnvironment]
@@ -195,6 +196,7 @@ private fun createAnalysisSession(
             uastEnvModuleByName[it]!!.directDependencies.map { (depName, _) -> depName }
           }
         val builtKtModuleByName = hashMapOf<String, KtModule>() // incrementally added below
+        val configKlibPaths = config.kotlinCompilerConfig.getKlibPaths().map(Path::of)
 
         uastEnvModuleOrder.forEach { name ->
           val m = uastEnvModuleByName[name]!!
@@ -243,6 +245,18 @@ private fun createAnalysisSession(
                   sdkName = "JDK for $moduleName"
                 }
               )
+            }
+
+            val moduleKlibPaths = m.klibs.map(File::toPath)
+            val allKlibPaths = (moduleKlibPaths + configKlibPaths).distinct()
+            if (allKlibPaths.isNotEmpty()) {
+              addRegularDependency(buildKtLibraryModule {
+                platform = mPlatform
+                project = theProject
+                contentScope = ProjectScope.getLibrariesScope(theProject)
+                binaryRoots = allKlibPaths
+                libraryName = "Klibs for $moduleName"
+              })
             }
           }
 

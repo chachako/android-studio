@@ -18,6 +18,7 @@ package com.android.tools.lint
 
 import com.android.SdkConstants
 import com.android.SdkConstants.EXT_JAR
+import com.android.tools.lint.UastEnvironment.Companion.disposeApplicationEnvironment
 import com.android.tools.lint.UastEnvironment.Module.Variant.Companion.toModuleVariant
 import com.android.tools.lint.detector.api.Project
 import com.intellij.core.CoreApplicationEnvironment
@@ -26,14 +27,19 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.impl.ZipHandler
 import com.intellij.pom.java.LanguageLevel
-import java.io.File
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.cli.jvm.config.addJavaSourceRoots
 import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoots
 import org.jetbrains.kotlin.config.CompilerConfiguration
+import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.config.languageVersionSettings
+import org.jetbrains.kotlin.konan.library.KLIB_INTEROP_IR_PROVIDER_IDENTIFIER
+import org.jetbrains.kotlin.library.CompilerSingleFileKlibResolveAllowingIrProvidersStrategy
+import org.jetbrains.kotlin.library.KotlinLibrary
+import org.jetbrains.kotlin.util.Logger
 import org.jetbrains.uast.UastFacade
+import java.io.File
 
 /** JVM system property to enable FIR UAST or K2 UAST, as per the new compiler name */
 const val FIR_UAST_KEY = "lint.use.fir.uast"
@@ -170,6 +176,22 @@ interface UastEnvironment {
     fun checkApplicationEnvironmentDisposed() {
       check(KotlinCoreEnvironment.applicationEnvironment == null)
     }
+
+    @JvmStatic
+    fun kotlinLibrary(path : String) : KotlinLibrary =
+      CompilerSingleFileKlibResolveAllowingIrProvidersStrategy(listOf(KLIB_INTEROP_IR_PROVIDER_IDENTIFIER))
+        .resolve(org.jetbrains.kotlin.konan.file.File(path), logger)
+
+    @JvmStatic
+    fun CompilerConfiguration.getKlibPaths() : List<String> =
+      get(JVMConfigurationKeys.KLIB_PATHS) ?: listOf()
+
+    private val logger = object : Logger {
+      override fun error(message: String) = kotlin.error(message)
+      override fun fatal(message: String) = kotlin.error(message)
+      override fun log(message: String) {}
+      override fun warning(message: String) {}
+    }
   }
 
   /** Analyzes the given files so that PSI/UAST resolve works correctly. */
@@ -281,6 +303,9 @@ interface UastEnvironment {
 
     val allRoots: Sequence<File>
       get() = sourceRoots.asSequence() + classpathRoots.asSequence()
+
+    val klibs : List<File>
+      get() = project.klibs
 
     val name
       get() = project.name

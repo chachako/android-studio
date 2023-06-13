@@ -142,6 +142,7 @@ public class Project {
     protected List<File> javaClassFolders;
     protected List<File> nonProvidedJavaLibraries;
     protected List<File> javaLibraries;
+    protected List<File> klibs;
     protected List<File> testSourceFolders;
     protected List<File> instrumentationTestSourceFolders;
     protected List<File> unitTestSourceFolders;
@@ -603,6 +604,17 @@ public class Project {
             }
             return nonProvidedJavaLibraries;
         }
+    }
+
+    /**
+     * Returns the list of klibs that this project depends on.
+     */
+    @NonNull
+    public List<File> getKlibs() {
+        if (klibs == null) {
+            klibs = client.getKlibs(this);
+        }
+        return klibs;
     }
 
     /**
