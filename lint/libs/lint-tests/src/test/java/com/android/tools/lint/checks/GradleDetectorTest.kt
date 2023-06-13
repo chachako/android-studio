@@ -1282,13 +1282,6 @@ class GradleDetectorTest : AbstractCheckTest() {
                   androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
                 + androidx-appcompat-v152 = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
                   androidx-appCompat149 = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
-                Fix for build.gradle line 3: Change appCompat to 1.5.2:
-                gradle/libs.versions.toml:
-                @@ -2 +2
-                  [versions]
-                - appCompat = "1.5.1"
-                + appCompat = "1.5.2"
-                  appCompat149 = "1.4.9"
                 Fix for build.gradle line 3: Replace with existing version catalog reference `androidx-appCompat` (version 1.5.1):
                 @@ -3 +3
                       // higher version: fix should replace with version catalog *and* update version variable

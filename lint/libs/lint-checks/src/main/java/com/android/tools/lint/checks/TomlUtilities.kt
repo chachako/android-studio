@@ -183,11 +183,7 @@ fun createMoveToTomlFix(
         versionVar,
         includeVersionInKey = true
       )
-    // (2) Change the version catalog's artifact variable to point to this new version (if higher)
-    val higher = artifactVersion != null && gc.lowerBoundVersion > artifactVersion
-    val changeVersionFix =
-      if (higher) createChangeVersionFix(revision, artifactVersionNode!!) else null
-    // (3) Change this gradle dependency reference to instead point to the version catalog
+    // (2) Change this gradle dependency reference to instead point to the version catalog
     val key = artifactLibrary.getKey()!!
     val switchToVersion =
       createSwitchToLibraryFix(
@@ -199,7 +195,7 @@ fun createMoveToTomlFix(
         libraryVersion = artifactVersion,
         safe = false
       )
-    val fix = LintFix.create().alternatives(addNew, changeVersionFix, switchToVersion)
+    val fix = LintFix.create().alternatives(addNew, switchToVersion)
     val artifact = "${gc.groupId}:${gc.artifactId}"
     val message =
       "Use version catalog instead ($artifact is already available as `$key`, but using version $artifactVersion instead)"
