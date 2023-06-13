@@ -190,7 +190,15 @@ fun createMoveToTomlFix(
     // (3) Change this gradle dependency reference to instead point to the version catalog
     val key = artifactLibrary.getKey()!!
     val switchToVersion =
-      createSwitchToLibraryFix(document, artifactLibrary, key, context, valueCookie, safe = false)
+      createSwitchToLibraryFix(
+        document,
+        artifactLibrary,
+        key,
+        context,
+        valueCookie,
+        libraryVersion = artifactVersion,
+        safe = false
+      )
     val fix = LintFix.create().alternatives(addNew, changeVersionFix, switchToVersion)
     val artifact = "${gc.groupId}:${gc.artifactId}"
     val message =
@@ -405,6 +413,7 @@ private fun createSwitchToLibraryFix(
   key: String,
   context: GradleContext,
   valueCookie: Any,
+  libraryVersion: Version? = null,
   safe: Boolean
 ): LintFix.ReplaceString? {
   val variableName = library.getFullKey()?.removePrefix("libraries.") ?: return null
@@ -414,7 +423,7 @@ private fun createSwitchToLibraryFix(
     valueCookie,
     variableName,
     safe,
-    "Replace with existing version catalog reference `$key`"
+    "Replace with existing version catalog reference `$key`${libraryVersion?.let { " (version $it)"} ?: ""}"
   )
 }
 
