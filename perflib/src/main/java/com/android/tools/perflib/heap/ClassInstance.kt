@@ -15,7 +15,7 @@
  */
 package com.android.tools.perflib.heap
 
-import com.android.annotations.VisibleForTesting
+import com.google.common.annotations.VisibleForTesting
 import java.io.UnsupportedEncodingException
 import java.util.Locale
 import kotlin.math.max

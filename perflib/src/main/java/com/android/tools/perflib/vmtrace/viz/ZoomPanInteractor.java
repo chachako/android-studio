@@ -17,8 +17,7 @@
 package com.android.tools.perflib.vmtrace.viz;
 
 import com.android.annotations.NonNull;
-import com.android.annotations.VisibleForTesting;
-
+import com.google.common.annotations.VisibleForTesting;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;

@@ -17,9 +17,8 @@
 package com.android.tools.perflib.captures;
 
 import com.android.annotations.NonNull;
-import com.android.annotations.VisibleForTesting;
 import com.android.ddmlib.ByteBufferUtil;
-
+import com.google.common.annotations.VisibleForTesting;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

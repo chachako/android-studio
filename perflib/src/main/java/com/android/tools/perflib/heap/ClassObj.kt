@@ -15,7 +15,7 @@
  */
 package com.android.tools.perflib.heap
 
-import com.android.annotations.VisibleForTesting
+import com.google.common.annotations.VisibleForTesting
 import gnu.trove.TIntObjectHashMap
 
 open class ClassObj(
@@ -95,19 +95,19 @@ open class ClassObj(
         }
     }
 
-    override fun compareTo(o: ClassObj): Int {
-        if (id == o.id) {
+    override fun compareTo(other: ClassObj): Int {
+        if (id == other.id) {
             return 0
         }
-        val nameCompareResult = className.compareTo(o.className)
+        val nameCompareResult = className.compareTo(other.className)
         return when {
             nameCompareResult != 0 -> nameCompareResult
-            id - o.id > 0 -> 1
+            id - other.id > 0 -> 1
             else -> -1
         }
     }
 
-    override fun equals(o: Any?) = o is ClassObj && compareTo(o) == 0
+    override fun equals(other: Any?) = other is ClassObj && compareTo(other) == 0
     override fun hashCode(): Int = className.hashCode()
 
     @VisibleForTesting

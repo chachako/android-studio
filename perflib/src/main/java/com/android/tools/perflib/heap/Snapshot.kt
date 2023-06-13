@@ -15,7 +15,7 @@
  */
 package com.android.tools.perflib.heap
 
-import com.android.annotations.VisibleForTesting
+import com.google.common.annotations.VisibleForTesting
 import com.android.tools.perflib.analyzer.Capture
 import com.android.tools.perflib.captures.DataBuffer
 import com.android.tools.perflib.heap.analysis.LinkEvalDominators

@@ -39,7 +39,7 @@ public class GzipSizeCalculatorParsingTest {
 
         // Make sure the archive has one virtual entry.
         VirtualEntryCalculator veCalculator = new VirtualEntryCalculator(apkWithVirtualEntry);
-        assertThat(veCalculator.getCount()).isEqualTo(new Long(1));
+        assertThat(veCalculator.getCount()).isEqualTo(1L);
 
         Map<String, Long> entries = calculator.getDownloadSizePerFile(apkWithVirtualEntry);
         assertThat(entries.size()).isNotEqualTo(0);
@@ -53,7 +53,7 @@ public class GzipSizeCalculatorParsingTest {
 
         // Make sure the archive has more than one virtual entries.
         VirtualEntryCalculator veCalculator = new VirtualEntryCalculator(apkWithVirtualEntries);
-        assertThat(veCalculator.getCount()).isEqualTo(new Long(3));
+        assertThat(veCalculator.getCount()).isEqualTo(3L);
 
         Map<String, Long> entries = calculator.getDownloadSizePerFile(apkWithVirtualEntries);
         assertThat(entries.size()).isNotEqualTo(0);
