@@ -219,7 +219,7 @@ private fun createAnalysisSession(
             getPsiFilesFromPaths<KtFile>(
               theProject,
               Helper.getSourceFilePaths(
-                m.sourceRoots.map(File::getPath),
+                (m.sourceRoots + m.gradleBuildScripts).map(File::getPath),
                 includeDirectoryRoot = true
               )
             )

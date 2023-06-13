@@ -179,13 +179,14 @@ interface UastEnvironment {
   }
 
   class Module(
-    project: Project,
-    val jdkHome: File?,
+    internal val project: Project,
+    internal val jdkHome: File?,
     includeTests: Boolean,
     includeTestFixtureSources: Boolean,
     isUnitTest: Boolean
   ) {
-    val isAndroid = project.isAndroidProject
+    val isAndroid
+      get() = project.isAndroidProject
 
     val sourceRoots: Set<File> =
       with(project) {
@@ -230,10 +231,14 @@ interface UastEnvironment {
         )
       }
 
+    val gradleBuildScripts: Collection<File>
+      get() = project.gradleBuildScripts
+
     val allRoots: Sequence<File>
       get() = sourceRoots.asSequence() + classpathRoots.asSequence()
 
-    val name = project.name
+    val name
+      get() = project.name
   }
 }
 

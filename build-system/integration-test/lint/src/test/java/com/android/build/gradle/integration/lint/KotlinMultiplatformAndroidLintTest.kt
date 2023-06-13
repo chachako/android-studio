@@ -449,7 +449,6 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
         }
     }
 
-    // TODO(b/283870344) - fix 3 LintErrors in reportFile
     @Test
     fun `test K2 UAST`() {
         TestFileUtils.appendToFile(
@@ -479,6 +478,7 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
             "Error: Call requires API level 26 (current min is 24): java.time.LocalDate#getMonth [NewApi]",
             "Error: Call requires API level 26 (current min is 24): java.time.LocalDate#now [NewApi]"
         )
+        PathSubject.assertThat(reportFile).doesNotContain("[LintError]")
     }
 
     private fun addNewApiIssuesToKmpFirstLib(
