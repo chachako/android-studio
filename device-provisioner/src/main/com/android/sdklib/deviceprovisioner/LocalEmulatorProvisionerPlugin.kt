@@ -91,6 +91,8 @@ internal constructor(
   private val scope: CoroutineScope,
   private val adbSession: AdbSession,
   rescanPeriod: Duration = Duration.ofSeconds(10),
+  pluginExtensions: List<ExtensionProvider<LocalEmulatorProvisionerPlugin, *>> = emptyList(),
+  private val handleExtensions: List<ExtensionProvider<LocalEmulatorDeviceHandle, *>> = emptyList(),
 ) : DeviceProvisionerPlugin {
 
   constructor(
@@ -101,6 +103,8 @@ internal constructor(
     defaultPresentation: DeviceAction.DefaultPresentation,
     diskIoThread: CoroutineDispatcher,
     rescanPeriod: Duration = Duration.ofSeconds(10),
+    pluginExtensions: List<ExtensionProvider<LocalEmulatorProvisionerPlugin, *>> = emptyList(),
+    handleExtensions: List<ExtensionProvider<LocalEmulatorDeviceHandle, *>> = emptyList(),
   ) : this(
     LocalEmulatorContext(
       adbSession.host.loggerFactory.createLogger(LocalEmulatorProvisionerPlugin::class.java),
@@ -113,6 +117,8 @@ internal constructor(
     scope,
     adbSession,
     rescanPeriod,
+    pluginExtensions,
+    handleExtensions,
   )
 
   private val logger by context::logger
@@ -167,6 +173,11 @@ internal constructor(
   // TODO: Consider if it would be better to use a filesystem watcher here instead of polling.
   private val avdScanner = PeriodicAction(scope, rescanPeriod, ::rescanAvds)
 
+  private val extensionRegistry = ExtensionRegistry(this, pluginExtensions)
+
+  override fun <T : Extension> extension(extensionClass: Class<T>) =
+    extensionRegistry.extension(extensionClass)
+
   init {
     avdScanner.runNow()
 
@@ -201,6 +212,7 @@ internal constructor(
                 context,
                 ::refreshDevices,
                 scope.createChildScope(isSupervisor = true),
+                handleExtensions,
                 avdInfo,
               )
           else -> handle.updateAvdInfo(avdInfo)
@@ -288,10 +300,12 @@ private data class InternalState(
  * A handle for a local AVD stored in the SDK's AVD directory. These are only created when reading
  * an AVD off the disk; only devices that have already been read from disk will be claimed.
  */
-internal class LocalEmulatorDeviceHandle(
+class LocalEmulatorDeviceHandle
+internal constructor(
   private val context: LocalEmulatorContext,
   private val refreshDevices: () -> Unit,
   override val scope: CoroutineScope,
+  extensions: List<ExtensionProvider<LocalEmulatorDeviceHandle, *>> = emptyList(),
   initialAvdInfo: AvdInfo,
   initialDeviceProperties: LocalEmulatorProperties =
     context.disconnectedDeviceProperties(initialAvdInfo),
@@ -300,6 +314,11 @@ internal class LocalEmulatorDeviceHandle(
   private val avdManager: LocalEmulatorProvisionerPlugin.AvdManager by context::avdManager
   private val defaultPresentation: DeviceAction.DefaultPresentation by context::defaultPresentation
   private val clock by context::clock
+
+  private val extensionRegistry = ExtensionRegistry(this, extensions)
+
+  override fun <T : Extension> extension(extensionClass: Class<T>) =
+    extensionRegistry.extension(extensionClass)
 
   private val messageChannel: Channel<LocalEmulatorMessage> = Channel()
 

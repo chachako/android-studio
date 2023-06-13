@@ -53,6 +53,7 @@ class LocalEmulatorDeviceHandleTest {
         context,
         {},
         this.createChildScope(),
+        emptyList(),
         makeAvdInfo(createInMemoryFileSystemAndFolder("avds"), 1),
       )
 

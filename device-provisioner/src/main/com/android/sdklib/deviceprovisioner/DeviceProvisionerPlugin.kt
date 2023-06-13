@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.job
 
 /** A component of [DeviceProvisioner] responsible for a particular class of device. */
-interface DeviceProvisionerPlugin {
+interface DeviceProvisionerPlugin : Extensible {
 
   /**
    * The relative priority of this plugin for claiming devices; the [DeviceProvisioner] will offer a

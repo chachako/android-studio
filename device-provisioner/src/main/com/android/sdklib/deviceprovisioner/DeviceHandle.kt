@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.takeWhile
  * This is stateful and has identity: if a device corresponding to this DeviceHandle is connected,
  * disconnected, and reconnected, this DeviceHandle should remain linked to it.
  */
-interface DeviceHandle {
+interface DeviceHandle : Extensible {
   val id: DeviceId
 
   /**

@@ -75,6 +75,8 @@ class LocalEmulatorProvisionerPluginTest {
         TestDefaultDeviceActionPresentation,
         Dispatchers.IO,
         Duration.ofMillis(100),
+        pluginExtensions = listOf(TestExtension::class providedBy { LocalEmulatorTestExtension() }),
+        handleExtensions = listOf(TestExtension::class providedBy { LocalEmulatorTestExtension() }),
       )
     provisioner = DeviceProvisioner.create(session, listOf(plugin), deviceIcons)
   }
@@ -450,6 +452,19 @@ class LocalEmulatorProvisionerPluginTest {
     assertThat(updateCount.get()).isEqualTo(1)
   }
 
+  @Test
+  fun extension() {
+    checkNotNull(plugin.extension<TestExtension>())
+    runBlockingWithTimeout {
+      avdManager.createAvd()
+
+      yieldUntil { provisioner.devices.value.size == 1 }
+
+      val handle = provisioner.devices.value[0]
+      checkNotNull(handle.extension<TestExtension>())
+    }
+  }
+
   private fun checkProperties(properties: LocalEmulatorProperties) {
     assertThat(properties.manufacturer).isEqualTo(MANUFACTURER)
     assertThat(properties.avdConfigProperties[AvdManager.AVD_INI_DEVICE_MANUFACTURER])
@@ -480,4 +495,10 @@ class LocalEmulatorProvisionerPluginTest {
     val ABI = Abi.ARM64_V8A
     const val RELEASE = "12.0"
   }
+}
+
+private interface TestExtension : Extension
+
+private class LocalEmulatorTestExtension : TestExtension {
+  // Don't need to do anything, this is just testing the extension mechanism
 }

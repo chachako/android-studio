@@ -227,4 +227,10 @@ private constructor(
    */
   fun createTemplateActions(): List<CreateDeviceTemplateAction> =
     provisioners.mapNotNull { it.createDeviceTemplateAction }
+
+  /** Provides access to extensions, which may be defined and implemented in higher layers. */
+  fun <T : Extension> extensions(extensionClass: Class<T>): List<T> =
+    provisioners.mapNotNull { it.extension(extensionClass) }
 }
+
+inline fun <reified T : Extension> DeviceProvisioner.extensions() = extensions(T::class.java)
