@@ -426,7 +426,7 @@ class LocalEmulatorProvisionerPlugin(
     private fun DeviceAction.Presentation.enabledIf(condition: (DeviceState) -> Boolean) =
       stateFlow
         .map { this.copy(enabled = condition(it)) }
-        .stateIn(scope, SharingStarted.WhileSubscribed(), this)
+        .stateIn(scope, SharingStarted.Eagerly, this)
 
     private fun DeviceState.isStopped() = this is Disconnected && !this.isTransitioning
 
@@ -436,7 +436,7 @@ class LocalEmulatorProvisionerPlugin(
       combine(stateFlow, avdInfoFlow) { state, avdInfo ->
           this.copy(enabled = state.isStopped() && avdInfo.status == AvdStatus.OK)
         }
-        .stateIn(scope, SharingStarted.WhileSubscribed(), this)
+        .stateIn(scope, SharingStarted.Eagerly, this)
   }
 }
 

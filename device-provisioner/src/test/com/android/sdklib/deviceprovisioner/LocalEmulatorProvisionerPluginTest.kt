@@ -284,9 +284,7 @@ class LocalEmulatorProvisionerPluginTest {
     avdManager.avds[0] = makeAvdInfo(1, avdStatus = AvdStatus.ERROR_IMAGE_MISSING)
 
     // The action should become disabled.
-    // (Note that yieldUntil { presentation.value.enabled == false } doesn't work: the
-    // WhileSubscribed flow doesn't change from its default value unless it is collected.)
-    activationAction.presentation.takeWhile { it.enabled }.collect()
+    yieldUntil { activationAction.presentation.value.enabled == false }
   }
 
   @Test
