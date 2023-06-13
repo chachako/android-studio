@@ -42,7 +42,7 @@ ARTIFACTS = [
     "com.google.guava:guava:31.1-jre",
     "com.google.guava:guava-testlib:25.1-jre",
     "com.google.jimfs:jimfs:1.1",
-    "com.google.protobuf:protobuf-gradle-plugin:0.8.15",
+    "com.google.protobuf:protobuf-gradle-plugin:0.9.3",
     "com.google.protobuf:protobuf-bom:3.17.2",  # Necessary for old agp tests
     "com.google.protobuf:protobuf-bom:3.19.3",
     "com.google.protobuf:protobuf-java:3.19.3",

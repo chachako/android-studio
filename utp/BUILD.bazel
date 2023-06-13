@@ -46,6 +46,7 @@ maven_repository(
         "@maven//:com.google.testing.platform.launcher",
         "@maven//:com.googlecode.jarjar.jarjar",
         "@maven//:commons-io.commons-io",
+        "@maven//:commons-lang.commons-lang",
         "@maven//:gradle.plugin.org.jetbrains.gradle.plugin.idea-ext.gradle-idea-ext",
         "@maven//:org.jetbrains.kotlin.kotlin-compiler",
         "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin",
