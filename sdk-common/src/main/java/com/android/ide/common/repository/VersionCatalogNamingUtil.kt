@@ -15,11 +15,12 @@
  */
 package com.android.ide.common.repository
 
+import com.android.ide.common.gradle.Dependency
 import com.google.common.base.CaseFormat
 import java.util.TreeSet
 import com.google.common.annotations.VisibleForTesting
 
-private fun GradleCoordinate.isAndroidX(): Boolean = groupId.startsWith("androidx.")
+private fun Dependency.isAndroidX(): Boolean = group?.startsWith("androidx.") ?: false
 
 /**
  * Pick name with next steps. Each step generates name and check whether it
@@ -39,17 +40,19 @@ private fun GradleCoordinate.isAndroidX(): Boolean = groupId.startsWith("android
  *   "jetbrains-kotlin-reflect" => "jetbrains-kotlin-reflect2".
  */
 fun pickLibraryVariableName(
-    gc: GradleCoordinate,
+    dependency: Dependency,
     includeVersionInKey: Boolean,
     caseSensitiveReserved: Set<String>
 ): String {
     val reserved = TreeSet(String.CASE_INSENSITIVE_ORDER)
     reserved.addAll(caseSensitiveReserved)
     val versionSuffix =
-        if (includeVersionInKey) "-v" + gc.revision.replace("[-.+_]".toRegex(), "").toSafeKey() else ""
+        if (includeVersionInKey) "-v" + (dependency.version?.toIdentifier()
+            ?.replace("[^A-Za-z0-9]".toRegex(), "")
+            ?.toSafeKey() ?: "") else ""
 
-    if (gc.isAndroidX() && (reserved.isEmpty() || reserved.any { it.startsWith("androidx-") })) {
-        val key = "androidx-${gc.artifactId.toSafeKey()}$versionSuffix"
+    if (dependency.isAndroidX() && (reserved.isEmpty() || reserved.any { it.startsWith("androidx-") })) {
+        val key = "androidx-${dependency.name.toSafeKey()}$versionSuffix"
         if (!reserved.contains(key)) {
             return key
         }
@@ -57,7 +60,7 @@ fun pickLibraryVariableName(
 
     // Try a few combinations: just the artifact name, just the group-suffix and the artifact name,
     // just the group-prefix and the artifact name, etc.
-    val artifactId = gc.artifactId.toSafeKey()
+    val artifactId = dependency.name.toSafeKey()
     val artifactKey = artifactId + versionSuffix
     if (!reserved.contains(artifactKey)) {
         return artifactKey
@@ -65,7 +68,7 @@ fun pickLibraryVariableName(
 
     // Normally the groupId suffix plus artifact is used if it's not similar to artifact, e.g.
     // "com.google.libraries:guava" => "libraries-guava"
-    val groupSuffix = gc.groupId.substringAfterLast('.').toSafeKey()
+    val groupSuffix = dependency.group?.substringAfterLast('.')?.toSafeKey() ?: "nogroup"
     val withGroupSuffix = "$groupSuffix-$artifactId$versionSuffix"
     if (!(artifactId.startsWith(groupSuffix))) {
         if (!reserved.contains(withGroupSuffix)) {
@@ -73,13 +76,13 @@ fun pickLibraryVariableName(
         }
     }
 
-    val groupPrefix = getGroupPrefix(gc)
+    val groupPrefix = getGroupPrefix(dependency)
     val withGroupPrefix = "$groupPrefix-$artifactId$versionSuffix"
     if (!reserved.contains(withGroupPrefix)) {
         return withGroupPrefix
     }
 
-    val groupId = gc.groupId.toSafeKey()
+    val groupId = dependency.group?.toSafeKey() ?: "nogroup"
     val full = "$groupId-$artifactId$versionSuffix"
     if (!reserved.contains(full)) {
         return full
@@ -111,11 +114,12 @@ internal fun String.toSafeKey(): String {
     return sb.toString()
 }
 
-private fun getGroupPrefix(gc: GradleCoordinate): String {
+private fun getGroupPrefix(dependency: Dependency): String {
     // For com.google etc., use "google" instead of "com"
-    val groupPrefix = gc.groupId.substringBefore('.').toSafeKey()
+    val group = dependency.group ?: return "nogroup"
+    val groupPrefix = group.substringBefore('.').toSafeKey()
     if (groupPrefix == "com" || groupPrefix == "org" || groupPrefix == "io") {
-        return gc.groupId.substringAfter('.').substringBefore('.').toSafeKey()
+        return group.substringAfter('.').substringBefore('.').toSafeKey()
     }
     return groupPrefix.toSafeKey()
 }
@@ -136,9 +140,9 @@ private fun getGroupPrefix(gc: GradleCoordinate): String {
  * - use group name + "-" + artifactId;
  * - use group name + "-" + artifactId + /number/.
  */
- fun pickVersionVariableName(gc: GradleCoordinate, caseSensitiveReserved: Set<String>): String {
+ fun pickVersionVariableName(dependency: Dependency, caseSensitiveReserved: Set<String>): String {
     // If using the artifactVersion convention, follow that
-    val artifact = gc.artifactId.toSafeKey()
+    val artifact = dependency.name.toSafeKey()
     val reserved = TreeSet(String.CASE_INSENSITIVE_ORDER)
     reserved.addAll(caseSensitiveReserved)
 
@@ -187,7 +191,7 @@ private fun getGroupPrefix(gc: GradleCoordinate): String {
         }
     }
 
-    val groupPrefix = getGroupPrefix(gc)
+    val groupPrefix = getGroupPrefix(dependency)
     val withGroupIdPrefix = "$groupPrefix-$artifactName"
     if (!reserved.contains(withGroupIdPrefix)) {
         return withGroupIdPrefix
@@ -201,7 +205,7 @@ private fun getGroupPrefix(gc: GradleCoordinate): String {
     }
 
     // With full group
-    val groupId = gc.groupId.toSafeKey()
+    val groupId = dependency.group?.toSafeKey() ?: "nogroup"
     val withGroupId = "$groupId-$artifactName"
     if (!reserved.contains(withGroupId)) {
         return withGroupId

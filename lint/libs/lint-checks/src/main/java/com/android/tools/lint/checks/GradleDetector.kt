@@ -28,11 +28,11 @@ import com.android.SdkConstants.TAG_USES_FEATURE
 import com.android.SdkConstants.currentPlatform
 import com.android.ide.common.gradle.Component
 import com.android.ide.common.gradle.Dependency
+import com.android.ide.common.gradle.RichVersion
 import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.GoogleMavenRepository
 import com.android.ide.common.repository.GoogleMavenRepository.Companion.MAVEN_GOOGLE_CACHE_DIR_KEY
 import com.android.ide.common.repository.GradleCoordinate
-import com.android.ide.common.repository.GradleCoordinate.COMPARE_PLUS_HIGHER
 import com.android.ide.common.repository.MavenRepositories
 import com.android.io.CancellableFileIo
 import com.android.sdklib.AndroidTargetHash
@@ -94,6 +94,11 @@ import java.util.Calendar
 import java.util.Collections
 import java.util.function.Predicate
 import kotlin.text.Charsets.UTF_8
+
+private val Dependency.majorVersion: Int
+  get() =
+    version?.lowerBound?.major
+      ?: if (version == RichVersion.parse("+")) GradleCoordinate.PLUS_REV_VALUE else Int.MIN_VALUE
 
 /** Checks Gradle files for potential errors. */
 open class GradleDetector : Detector(), GradleScanner, TomlScanner {
@@ -181,7 +186,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
     val newerVersion: Version,
     val newerVersionIsSafe: Boolean,
     val safeReplacement: Version?,
-    val dependency: GradleCoordinate,
+    val dependency: Dependency,
     val isResolved: Boolean,
     val cookie: Any
   )
@@ -484,20 +489,16 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
           report(context, valueCookie, PATH, message)
         }
       } else {
-        var dependency = getStringLiteralValue(value, valueCookie)
-        if (dependency == null) {
-          dependency = getNamedDependency(value)
+        var dependencyString = getStringLiteralValue(value, valueCookie)
+        if (dependencyString == null) {
+          dependencyString = getNamedDependency(value)
         }
         // If the dependency is a GString (i.e. it uses Groovy variable substitution,
         // with a $variable_name syntax) then don't try to parse it.
-        if (dependency != null) {
-          dependency =
-            dependency.removeSuffix(
-              "!!"
-            ) // Strip Gradle 'strict' version syntax (see b/257726238 and b/259279612).
-          var gc = GradleCoordinate.parseCoordinateString(dependency)
+        if (dependencyString != null) {
+          var dependency: Dependency? = Dependency.parse(dependencyString)
           var isResolved = false
-          if (gc != null && dependency.contains("$")) {
+          if (dependency != null && dependency.version?.toIdentifier()?.contains("$") == true) {
             if (
               value.startsWith("'") && value.endsWith("'") && context.isEnabled(NOT_INTERPOLATED)
             ) {
@@ -515,19 +516,28 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
               report(context, statementCookie, NOT_INTERPOLATED, message, fix)
             }
 
-            gc = resolveCoordinate(context, property, gc)
+            dependency = resolveCoordinate(context, property, dependency)
             isResolved = true
-          } else if (gc != null && !value.contains(gc.revision)) {
+          } else if (dependency?.version?.toIdentifier()?.let { !value.contains(it) } != false) {
             isResolved = true
           }
-          if (gc != null) {
-            if (gc.acceptsGreaterRevisions()) {
+          if (dependency != null) {
+            if (
+              dependency.version?.run { require ?: strictly }?.toIdentifier()?.endsWith("+") == true
+            ) {
               val message =
                 "Avoid using + in version numbers; can lead " +
                   "to unpredictable and unrepeatable builds (" +
-                  dependency +
+                  dependencyString +
                   ")"
-              val fix = fix().data(KEY_COORDINATE, gc.toString(), KEY_REVISION, gc.revision)
+              val fix =
+                fix()
+                  .data(
+                    KEY_COORDINATE,
+                    dependency.toString(),
+                    KEY_REVISION,
+                    dependency.version?.toIdentifier()
+                  )
               report(context, valueCookie, PLUS, message, fix)
             }
 
@@ -535,11 +545,12 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
             if (
               tomlLibraries != null &&
                 !context.file.name.startsWith("settings.gradle") &&
-                !dependency.contains("+") &&
-                (!dependency.contains("$") || isResolved)
+                !dependencyString.contains("+") &&
+                (!dependencyString.contains("$") || isResolved)
             ) {
               val versionVar = getVersionVariable(value)
-              val result = createMoveToTomlFix(context, tomlLibraries, gc, valueCookie, versionVar)
+              val result =
+                createMoveToTomlFix(context, tomlLibraries, dependency, valueCookie, versionVar)
               val message = result?.first ?: "Use version catalog instead"
               val fix = result?.second
               report(context, valueCookie, SWITCH_TO_TOML, message, fix)
@@ -548,10 +559,12 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
             // Check dependencies without the PSI read lock, because we
             // may need to make network requests to retrieve version info.
             context.driver.runLaterOutsideReadAction {
-              checkDependency(context, gc, isResolved, valueCookie, statementCookie)
+              checkDependency(context, dependency, isResolved, valueCookie, statementCookie)
             }
           }
-          if (hasLifecycleAnnotationProcessor(dependency) && targetJava8Plus(context.project)) {
+          if (
+            hasLifecycleAnnotationProcessor(dependencyString) && targetJava8Plus(context.project)
+          ) {
             report(
               context,
               valueCookie,
@@ -562,25 +575,25 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
               null
             )
           }
-          checkAnnotationProcessorOnCompilePath(property, dependency, context, propertyCookie)
+          checkAnnotationProcessorOnCompilePath(property, dependencyString, context, propertyCookie)
         }
         checkDeprecatedConfigurations(property, context, propertyCookie)
 
         // If we haven't managed to parse the dependency yet, try getting it from version catalog
         var libTomlValue: LintTomlValue? = null
-        if (dependency == null) {
+        if (dependencyString == null) {
           val dependencyFromVc = getDependencyFromVersionCatalog(value, context)
           if (dependencyFromVc != null) {
-            dependency = dependencyFromVc.coordinates
+            dependencyString = dependencyFromVc.coordinates
             libTomlValue = dependencyFromVc.tomlValue
           }
         }
 
-        if (dependency != null) {
+        if (dependencyString != null) {
           if (property == "kapt") {
-            checkKaptUsage(dependency, libTomlValue, context, statementCookie)
+            checkKaptUsage(dependencyString, libTomlValue, context, statementCookie)
           }
-          checkForBomUsageWithoutPlatform(property, dependency, value, context, valueCookie)
+          checkForBomUsageWithoutPlatform(property, dependencyString, value, context, valueCookie)
         }
       }
     } else if (property == "packageNameSuffix") {
@@ -959,19 +972,19 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
   // Any interaction with PSI or issue reporting should be wrapped in a read action.
   private fun checkDependency(
     context: Context,
-    dependency: GradleCoordinate,
+    dependency: Dependency,
     isResolved: Boolean,
     cookie: Any,
     statementCookie: Any
   ) {
-    val version = dependency.lowerBoundVersion
-    val groupId = dependency.groupId
-    val artifactId = dependency.artifactId
-    val revision = dependency.revision
+    val version = dependency.version?.lowerBound ?: return
+    val groupId = dependency.group ?: return
+    val artifactId = dependency.name
+    val richVersionIdentifier = dependency.version?.toIdentifier() ?: return
     var safeReplacement: Version? = null
     var newerVersion: Version? = null
 
-    val filter = getUpgradeVersionFilter(context, groupId, artifactId, revision)
+    val filter = getUpgradeVersionFilter(context, groupId, artifactId, version)
 
     when (groupId) {
       GMS_GROUP_ID,
@@ -980,7 +993,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       ANDROID_WEAR_GROUP_ID -> {
         // Play services
 
-        checkPlayServices(context, dependency, version, revision, cookie, statementCookie)
+        checkPlayServices(context, dependency, version, cookie, statementCookie)
       }
       "com.android.tools.build" -> {
         if ("gradle" == artifactId) {
@@ -1068,24 +1081,14 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       }
       "io.fabric.tools" -> {
         if ("gradle" == artifactId) {
-          // TODO(b/242691473): semantically I think this should be close to
-          //    richVersion = RichVersion.parse(revision)
-          //    if (richVersion.run { strictly ?: require }
-          //                   ?.intersection(VersionRange.parse("[1.21.6,]")
-          //                   ?.isEmpty() == true
-          //       ) {
-          //      ...
-          //  and the GradleCoordinate version will fail on dependency expressions using
-          //  RichVersion features.
-          val upper = dependency.upperBoundVersion
-          if (upper < Version.parse("1.21.6")) {
-            val fix = getUpdateDependencyFix(revision, "1.22.1")
+          if (Version.parse("1.21.6").isNewerThan(dependency)) {
+            val fix = getUpdateDependencyFix(richVersionIdentifier, "1.22.1")
             report(
               context,
               statementCookie,
               DEPENDENCY,
               "Use Fabric Gradle plugin version 1.21.6 or later to " +
-                "improve Instant Run performance (was $revision)",
+                "improve Instant Run performance (was $richVersionIdentifier)",
               fix
             )
           } else {
@@ -1098,13 +1101,13 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       "com.bugsnag" -> {
         if ("bugsnag-android-gradle-plugin" == artifactId) {
           if (version < Version.parse("2.1.2")) {
-            val fix = getUpdateDependencyFix(revision, "2.4.1")
+            val fix = getUpdateDependencyFix(richVersionIdentifier, "2.4.1")
             report(
               context,
               statementCookie,
               DEPENDENCY,
               "Use BugSnag Gradle plugin version 2.1.2 or later to " +
-                "improve Instant Run performance (was $revision)",
+                "improve Instant Run performance (was $richVersionIdentifier)",
               fix
             )
           } else {
@@ -1119,7 +1122,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       "org.robolectric" -> {
         if ("robolectric" == artifactId && currentPlatform() == PLATFORM_WINDOWS) {
           if (version < Version.parse("4.2.1")) {
-            val fix = getUpdateDependencyFix(revision, "4.2.1")
+            val fix = getUpdateDependencyFix(richVersionIdentifier, "4.2.1")
             report(
               context,
               cookie,
@@ -1218,7 +1221,12 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         !groupId.startsWith("androidx.")
     ) {
       val latest =
-        getLatestVersionFromRemoteRepo(context.client, dependency, filter, dependency.isPreview)
+        getLatestVersionFromRemoteRepo(
+          context.client,
+          dependency,
+          filter,
+          dependency.version?.lowerBound?.isPreview ?: true
+        )
       if (latest != null && version < latest) {
         newerVersion = latest
         issue = REMOTE_VERSION
@@ -1246,19 +1254,18 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       val versionString = newerVersion.toString()
       val message =
         if (
-          dependency.groupId == "androidx.slidingpanelayout" &&
-            dependency.artifactId == "slidingpanelayout"
+          dependency.group == "androidx.slidingpanelayout" && dependency.name == "slidingpanelayout"
         ) {
           "Upgrade `androidx.slidingpanelayout` for keyboard and mouse support"
         } else if (
-          dependency.groupId == "androidx.compose.foundation" &&
-            dependency.artifactId == "foundation"
+          dependency.group == "androidx.compose.foundation" && dependency.name == "foundation"
         ) {
           "Upgrade `androidx.compose.foundation` for keyboard and mouse support"
         } else {
           getNewerVersionAvailableMessage(dependency, versionString, null)
         }
-      val fix = if (!isResolved) getUpdateDependencyFix(revision, versionString) else null
+      val fix =
+        if (!isResolved) getUpdateDependencyFix(richVersionIdentifier, versionString) else null
       report(context, cookie, issue, message, fix)
     }
   }
@@ -1271,7 +1278,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
     context: Context,
     groupId: String,
     artifactId: String,
-    revision: String
+    version: Version
   ): Predicate<Version>? {
     // Logic here has to match checkSupportLibraries method to avoid creating contradictory
     // warnings.
@@ -1285,8 +1292,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         return Predicate { version -> version > Version.prefixInfimum("$targetSdkVersion") }
       }
     }
-
-    val version = Version.parse(revision)
 
     if (groupId == "com.android.tools.build" && LintClient.isStudio) {
       val clientRevision = context.client.getClientRevision() ?: return null
@@ -1334,16 +1339,15 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
   }
 
   private fun findCachedNewerVersion(
-    dependency: GradleCoordinate,
+    dependency: Dependency,
     filter: Predicate<Version>?
   ): Version? {
+    val group = dependency.group ?: return null
     val versionDir =
-      getArtifactCacheHome()
-        .toPath()
-        .resolve(dependency.groupId + File.separator + dependency.artifactId)
+      getArtifactCacheHome().toPath().resolve(group + File.separator + dependency.name)
     val f =
       when {
-        dependency.groupId == "commons-io" && dependency.artifactId == "commons-io" -> {
+        dependency.group == "commons-io" && dependency.name == "commons-io" -> {
           // For a (long) while, users could get this spurious recommendation of an "upgrade" to
           // commons-io to this very old version (with a very high version number).  This
           // recommendation is no longer given as of mid-2023, except if a user has previously
@@ -1355,9 +1359,13 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         else -> filter
       }
     return if (CancellableFileIo.exists(versionDir)) {
-      val component =
-        Component(dependency.groupId, dependency.artifactId, Version.parse(dependency.revision))
-      MavenRepositories.getHighestVersion(versionDir, f, MavenRepositories.isPreview(component))
+      val isPreview =
+        when (val richVersion = dependency.version) {
+          null -> true
+          else ->
+            MavenRepositories.isPreview(Component(group, dependency.name, richVersion.lowerBound))
+        }
+      MavenRepositories.getHighestVersion(versionDir, f, isPreview)
     } else null
   }
 
@@ -1379,17 +1387,17 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
   // Any interaction with PSI or issue reporting should be wrapped in a read action.
   private fun checkGradlePluginDependency(
     context: Context,
-    dependency: GradleCoordinate,
+    dependency: Dependency,
     cookie: Any
   ): Boolean {
-    val minimum =
-      GradleCoordinate.parseCoordinateString(
-        SdkConstants.GRADLE_PLUGIN_NAME + GRADLE_PLUGIN_MINIMUM_VERSION
-      )
-    if (minimum != null && COMPARE_PLUS_HIGHER.compare(dependency, minimum) < 0) {
+    val minimum = Version.parse(GRADLE_PLUGIN_MINIMUM_VERSION)
+    val dependencyVersion = dependency.version ?: return false
+    if (dependencyVersion.lowerBound >= minimum) return false
+    if (!dependencyVersion.contains(minimum)) {
+      val query = Dependency("com.android.tools.build", "gradle", RichVersion.require(minimum))
       val recommended =
         Version.parse(GRADLE_PLUGIN_RECOMMENDED_VERSION).let { recommended ->
-          getGoogleMavenRepoVersion(context, minimum, null)?.takeIf { it > recommended }
+          getGoogleMavenRepoVersion(context, query, null)?.takeIf { it > recommended }
             ?: recommended
         }
       val message =
@@ -1406,13 +1414,13 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
 
   private fun checkSupportLibraries(
     context: Context,
-    dependency: GradleCoordinate,
+    dependency: Dependency,
     version: Version,
     newerVersion: Version?,
     cookie: Any
   ) {
-    val groupId = dependency.groupId
-    val artifactId = dependency.artifactId
+    val groupId = dependency.group ?: return
+    val artifactId = dependency.name
 
     // For artifacts that follow the platform numbering scheme, check that it matches the SDK
     // versions used.
@@ -1437,12 +1445,13 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         }
 
         var fix: LintFix? = null
-        if (newerVersion != null) {
+        val richVersionIdentifier = dependency.version?.toIdentifier()
+        if (newerVersion != null && richVersionIdentifier != null) {
           fix =
             fix()
               .name("Replace with $newerVersion")
               .replace()
-              .text(version.toString())
+              .text(richVersionIdentifier)
               .with(newerVersion.toString())
               .build()
         }
@@ -1507,24 +1516,25 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
 
   private fun checkPlayServices(
     context: Context,
-    dependency: GradleCoordinate,
+    dependency: Dependency,
     version: Version,
-    revision: String,
     cookie: Any,
     statementCookie: Any
   ) {
-    val groupId = dependency.groupId
-    val artifactId = dependency.artifactId
+    val groupId = dependency.group ?: return
+    val artifactId = dependency.name
+    val richVersion = dependency.version ?: return
+    val richVersionIdentifier = richVersion.toIdentifier() ?: return
 
     // 5.2.08 is not supported; special case and warn about this
-    if ("5.2.08" == revision && context.isEnabled(COMPATIBILITY)) {
+    if (Version.parse("5.2.08") == version && context.isEnabled(COMPATIBILITY)) {
       // This specific version is actually a preview version which should
       // not be used (https://code.google.com/p/android/issues/detail?id=75292)
       val maxVersion =
         Version.parse("10.2.1").let { v ->
           getGoogleMavenRepoVersion(context, dependency, null)?.takeIf { it > v } ?: v
         }
-      val fix = getUpdateDependencyFix(revision, maxVersion.toString())
+      val fix = getUpdateDependencyFix(richVersionIdentifier, maxVersion.toString())
       val message =
         "Version `5.2.08` should not be used; the app " +
           "can not be published with this version. Use version `$maxVersion` " +
@@ -1534,8 +1544,10 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
 
     if (
       context.isEnabled(BUNDLED_GMS) &&
-        PLAY_SERVICES_V650.isSameArtifact(dependency) &&
-        COMPARE_PLUS_HIGHER.compare(dependency, PLAY_SERVICES_V650) >= 0
+        PLAY_SERVICES_V650.group == dependency.group &&
+        PLAY_SERVICES_V650.name == dependency.name &&
+        (richVersion.lowerBound >= PLAY_SERVICES_V650.version ||
+          richVersion.contains(PLAY_SERVICES_V650.version))
     ) {
       // Play services 6.5.0 is the first version to allow un-bundling, so if the user is
       // at or above 6.5.0, recommend un-bundling
@@ -1548,14 +1560,14 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         "Deprecated: Replace '" +
           GMS_GROUP_ID +
           ":play-services-appindexing:" +
-          revision +
+          richVersionIdentifier +
           "' with 'com.google.firebase:firebase-appindexing:10.0.0' or above. " +
           "More info: http://firebase.google.com/docs/app-indexing/android/migrate"
       val fix =
         fix()
           .name("Replace with Firebase")
           .replace()
-          .text("$GMS_GROUP_ID:play-services-appindexing:$revision")
+          .text("$GMS_GROUP_ID:play-services-appindexing:$richVersionIdentifier")
           .with("com.google.firebase:firebase-appindexing:10.2.1")
           .build()
       report(context, cookie, DEPRECATED, message, fix)
@@ -1900,11 +1912,11 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       val versions = document.getValue(VC_VERSIONS) as? LintTomlMapValue
       for ((_, library) in libraries.getMappedValues()) {
         val (coordinate, versionNode) = getLibraryFromTomlEntry(versions, library) ?: continue
-        val gc = GradleCoordinate.parseCoordinateString(coordinate) ?: return
+        val dependency = Dependency.parse(coordinate) ?: return
         // Check dependencies without the PSI read lock, because we
         // may need to make network requests to retrieve version info.
         context.driver.runLaterOutsideReadAction {
-          checkDependency(context, gc, false, versionNode, versionNode)
+          checkDependency(context, dependency, false, versionNode, versionNode)
         }
       }
     }
@@ -1959,14 +1971,16 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
     if (mDeclaredGoogleMavenRepository || context is TomlContext) {
       agpVersionCheckInfo?.let {
         val versionString = it.newerVersion.toString()
+        val currentIdentifier = it.dependency.version?.toIdentifier()
         val message =
           getNewerVersionAvailableMessage(it.dependency, versionString, it.safeReplacement)
         val fix =
           when {
             it.isResolved -> null
+            currentIdentifier == null -> null
             else ->
               getUpdateDependencyFix(
-                it.dependency.revision,
+                currentIdentifier,
                 versionString,
                 it.newerVersionIsSafe,
                 it.safeReplacement
@@ -2294,13 +2308,23 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
     return version
   }
 
+  // TODO(b/279886738): resolving a Dependency against the project's artifacts should
+  //  from a theoretical point of view return a Component.  However, here, we're not
+  //  really *conceptually* resolving a Dependency, because what this is actually used
+  //  for is to guess what the value of a version variable in an interpolated String
+  //  might be, and rather than model variables and their values, we pull the resolved
+  //  version and hope for the best.  For our purposes, that's not completely wrong.
   @SuppressWarnings("ExpensiveAssertion")
   private fun resolveCoordinate(
     context: GradleContext,
     property: String,
-    gc: GradleCoordinate
-  ): GradleCoordinate? {
-    assert(gc.revision.contains("$")) { gc.revision }
+    dependency: Dependency
+  ): Dependency? {
+    fun Component.toDependency() = Dependency(group, name, RichVersion.require(version))
+    assert(dependency.version?.toIdentifier()?.contains("$") ?: false) {
+      dependency.version.toString()
+    }
+
     val project = context.project
     val variant = project.buildVariant
     if (variant != null) {
@@ -2315,12 +2339,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       for (library in artifact.dependencies.getAll()) {
         if (library is LintModelExternalLibrary) {
           val mc = library.resolvedCoordinates
-          if (mc.groupId == gc.groupId && mc.artifactId == gc.artifactId) {
-            val revisions = GradleCoordinate.parseRevisionNumber(mc.version)
-            if (revisions.isNotEmpty()) {
-              return GradleCoordinate(mc.groupId, mc.artifactId, revisions, null)
-            }
-            break
+          if (mc.groupId == dependency.group && mc.artifactId == dependency.name) {
+            val version = Version.parse(mc.version)
+            return Component(mc.groupId, mc.artifactId, version).toDependency()
           }
         }
       }
@@ -2373,18 +2394,16 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
   }
 
   private fun getNewerVersionAvailableMessage(
-    dependency: GradleCoordinate,
+    dependency: Dependency,
     version: String,
     stable: Version?
   ): String {
     val message = StringBuilder()
     with(message) {
       append("A newer version of ")
-      append(dependency.groupId)
-      append(":")
-      append(dependency.artifactId)
+      append("${dependency.group}:${dependency.name}")
       append(" than ")
-      append(dependency.revision)
+      append("${dependency.version}")
       append(" is available: ")
       append(version)
       if (stable != null) {
@@ -2500,11 +2519,10 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
 
   private fun getGoogleMavenRepoVersion(
     context: Context,
-    coordinate: GradleCoordinate,
+    dependency: Dependency,
     filter: Predicate<Version>?
   ): Version? {
     val repository = getGoogleMavenRepository(context.client)
-    val dependency = Dependency.parse(coordinate.toString())
     return repository.findVersion(dependency, filter, dependency.explicitlyIncludesPreview)
   }
 
@@ -3369,8 +3387,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
     const val ANDROID_WEAR_GROUP_ID = "com.google.android.wearable"
     private const val WEARABLE_ARTIFACT_ID = "wearable"
 
-    private val PLAY_SERVICES_V650 =
-      GradleCoordinate.parseCoordinateString("$GMS_GROUP_ID:play-services:6.5.0")!!
+    private val PLAY_SERVICES_V650 = Component.parse("$GMS_GROUP_ID:play-services:6.5.0")
 
     /**
      * Threshold to consider a versionCode very high and issue a warning.
@@ -4006,15 +4023,14 @@ private infix fun Version?.maxOrNull(other: Version?): Version? =
  * getLowerBoundVersion and getUpperBoundVersion (both of which are computable) and to use the
  * appropriate one in the right context (in most of this file, the upper bound).
  */
-private fun Version?.isNewerThan(dependency: GradleCoordinate) =
-  dependency.lowerBoundVersion.let { version ->
-    if (this == null) return false
-    GradleCoordinate(dependency.groupId, dependency.artifactId, this.toString()).let {
-      newerCoordinate ->
-      when {
-        dependency.acceptsGreaterRevisions() ->
-          this > version && COMPARE_PLUS_HIGHER.compare(newerCoordinate, dependency) > 0
-        else -> this > version
-      }
-    }
+private fun Version?.isNewerThan(dependency: Dependency): Boolean {
+  val richVersion = dependency.version
+  val maybeSingleton = dependency.explicitSingletonVersion
+  return when {
+    richVersion == null -> true
+    this == null -> false
+    maybeSingleton != null -> this > maybeSingleton
+    richVersion.lowerBound > this -> false
+    else -> !richVersion.contains(this)
   }
+}

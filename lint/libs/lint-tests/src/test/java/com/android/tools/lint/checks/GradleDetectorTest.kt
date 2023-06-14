@@ -17,9 +17,9 @@ package com.android.tools.lint.checks
 
 import com.android.SdkConstants.GRADLE_PLUGIN_MINIMUM_VERSION
 import com.android.SdkConstants.GRADLE_PLUGIN_RECOMMENDED_VERSION
+import com.android.ide.common.gradle.Dependency
 import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.GoogleMavenRepository.Companion.MAVEN_GOOGLE_CACHE_DIR_KEY
-import com.android.ide.common.repository.GradleCoordinate
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.IAndroidTarget
 import com.android.sdklib.SdkVersionInfo.LOWEST_ACTIVE_API
@@ -2431,8 +2431,9 @@ class GradleDetectorTest : AbstractCheckTest() {
                 testRunner = { module= "com.android.support.test:runner", version= { prefer = "0.1" } }
                 testRunner2 = { module = "com.android.support.test:runner", version = { strictly ="0.3" } }
                 testRunner3 = { module = "com.android.support.test:runner", version.ref ="testRunnerVersion" }
-                # TODO: Support more complex version constraints ([] syntax)
-                testRunner4 = { module = "com.android.support.test:runner", version = { strictly = "[0.3, 0.4[", prefer="0.35" } }
+                testRunner4 = { module = "com.android.support.test:runner", version = { strictly = "[0.3,0.4)", prefer="0.35" } }
+                # TODO: support rich versions expressed in non-canonical form (e.g. [0.3,0.4[ or [,])
+                # testRunner5 = { module = "com.android.support.test:runner", version = "[0.3,0.4["}
                 """
           )
           .indented()
@@ -7297,15 +7298,15 @@ class GradleDetectorTest : AbstractCheckTest() {
           }
 
           override fun getHighestKnownVersion(
-            coordinate: GradleCoordinate,
+            dependency: Dependency,
             filter: Predicate<Version>?
           ): Version? {
             // Hardcoded for unit test to ensure stable data
             return if (
-              "com.android.support.constraint" == coordinate.groupId &&
-                "constraint-layout" == coordinate.artifactId
+              "com.android.support.constraint" == dependency.group &&
+                "constraint-layout" == dependency.name
             ) {
-              if (coordinate.isPreview) {
+              if (dependency.version?.lowerBound?.isPreview != false) {
                 Version.parse("1.0.3-alpha8")
               } else {
                 Version.parse("1.0.2")

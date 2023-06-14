@@ -32,6 +32,7 @@ import com.android.SdkConstants.LIBS_FOLDER
 import com.android.SdkConstants.PLATFORM_LINUX
 import com.android.SdkConstants.RES_FOLDER
 import com.android.SdkConstants.SRC_FOLDER
+import com.android.ide.common.gradle.Dependency
 import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.AgpVersion
 import com.android.ide.common.repository.GradleCoordinate
@@ -1483,14 +1484,18 @@ abstract class LintClient {
   protected val sourceNodeCache: MutableMap<Node, Pair<File, out Node>> =
     Maps.newIdentityHashMap<Node, Pair<File, out Node>>()
 
+  @Suppress("DeprecatedCallableAddReplaceWith")
+  @Deprecated("Use the Dependency version")
+  open fun getHighestKnownVersion(
+    coordinate: GradleCoordinate,
+    filter: Predicate<Version>?
+  ): Version? = getHighestKnownVersion(Dependency.parse(coordinate.toString()), filter)
+
   /**
    * Looks up the highest known version of the given library if possible, possibly applying the
    * given [filter]
    */
-  open fun getHighestKnownVersion(
-    coordinate: GradleCoordinate,
-    filter: Predicate<Version>?
-  ): Version? {
+  open fun getHighestKnownVersion(dependency: Dependency, filter: Predicate<Version>?): Version? {
     // Overridden in Studio to consult SDK manager's cache
     return null
   }

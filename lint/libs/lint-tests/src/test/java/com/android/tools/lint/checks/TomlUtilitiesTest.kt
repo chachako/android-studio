@@ -15,7 +15,7 @@
  */
 package com.android.tools.lint.checks
 
-import com.android.ide.common.repository.GradleCoordinate
+import com.android.ide.common.gradle.Dependency
 import com.android.tools.lint.client.api.LintTomlValue
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -113,7 +113,9 @@ class TomlUtilitiesTest {
     check(
       expected,
       coordinateString,
-      { gc, libraries, include, _, _ -> pickLibraryVariableName(gc, libraries, include) },
+      { dependency, libraries, include, _, _ ->
+        pickLibraryVariableName(dependency, libraries, include)
+      },
       includeVersions,
       null,
       false,
@@ -147,7 +149,7 @@ class TomlUtilitiesTest {
     coordinateString: String,
     suggestName:
       (
-        gc: GradleCoordinate,
+        dependency: Dependency,
         libraryMap: Map<String, LintTomlValue>,
         includeVersionInKey: Boolean,
         preferred: String?,
@@ -158,13 +160,13 @@ class TomlUtilitiesTest {
     allowExisting: Boolean,
     vararg variableNames: String
   ) {
-    val gc = GradleCoordinate.parseCoordinateString(coordinateString)!!
+    val dependency = Dependency.parse(coordinateString)
     val map = LinkedHashMap<String, LintTomlValue>()
     val value = Mockito.mock(LintTomlValue::class.java) // map values are unused here
     for (variable in variableNames) {
       map[variable] = value
     }
-    val name = suggestName(gc, map, includeVersions, versionVariable, allowExisting)
+    val name = suggestName(dependency, map, includeVersions, versionVariable, allowExisting)
     assertEquals(expected, name)
     GradleDetector.reservedQuickfixNames = null
   }

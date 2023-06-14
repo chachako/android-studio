@@ -15,9 +15,9 @@
  */
 package com.android.ide.common.repository
 
+import com.android.ide.common.gradle.Dependency
 import org.junit.Test
 import org.junit.Assert.assertEquals
-import kotlin.test.assertNotNull
 
 class VersionCatalogNamingUtilTest {
 
@@ -160,10 +160,6 @@ class VersionCatalogNamingUtilTest {
 
     }
 
-    /**
-     * Need to test it separately as now GradleCoordinates cannot parse some coordinates
-     * that toSafeKey can safely transform.
-     */
     @Test
     fun testToSafeKey() {
         assertEquals("org-company_all","org.company+all".toSafeKey())
@@ -179,7 +175,8 @@ class VersionCatalogNamingUtilTest {
         check(
             expected,
             coordinateString,
-            { gc, libraries, include -> pickLibraryVariableName(gc, include, libraries) },
+            { dependency, libraries, include ->
+                pickLibraryVariableName(dependency, include, libraries) },
             includeVersions,
             *variableNames
         )
@@ -194,8 +191,8 @@ class VersionCatalogNamingUtilTest {
         check(
             expected,
             coordinateString,
-            { gc, set, _ ->
-                pickVersionVariableName(gc, set)
+            { dependency, set, _ ->
+                pickVersionVariableName(dependency, set)
             },
             includeVersions,
             *variableNames
@@ -207,17 +204,16 @@ class VersionCatalogNamingUtilTest {
         coordinateString: String,
         suggestName:
             (
-            gc: GradleCoordinate,
+            dependency: Dependency,
             reserved: Set<String>,
             allowExisting: Boolean
         ) -> String,
         includeVersions: Boolean,
         vararg variableNames: String
     ) {
-        val gc = GradleCoordinate.parseCoordinateString(coordinateString)
-        assertNotNull(gc) { "$coordinateString is not valid GradleCoordinate" }
+        val dependency = Dependency.parse(coordinateString)
         val reserved = setOf(*variableNames)
-        val name = suggestName(gc, reserved, includeVersions)
+        val name = suggestName(dependency, reserved, includeVersions)
         assertEquals(expected, name)
     }
 }
