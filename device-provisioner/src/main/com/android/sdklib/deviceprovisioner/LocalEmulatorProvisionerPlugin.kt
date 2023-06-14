@@ -366,6 +366,7 @@ class LocalEmulatorProvisionerPlugin(
 
         override suspend fun repair() {
           avdManager.downloadAvdSystemImage(avdInfo)
+          refreshDevices()
         }
       }
 
@@ -402,6 +403,7 @@ class LocalEmulatorProvisionerPlugin(
 
         override suspend fun duplicate() {
           avdManager.duplicateAvd(avdInfo)
+          refreshDevices()
         }
       }
 
@@ -420,6 +422,7 @@ class LocalEmulatorProvisionerPlugin(
 
         override suspend fun delete() {
           avdManager.deleteAvd(avdInfo)
+          refreshDevices()
         }
       }
 
