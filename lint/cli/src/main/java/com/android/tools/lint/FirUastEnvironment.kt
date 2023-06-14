@@ -236,6 +236,8 @@ private fun createAnalysisSession(
           }
           addModule(
             buildKtSourceModule {
+              // TODO: per-module language version setting? e.g., [Project.kotlinLanguageLevel]
+              languageVersionSettings = config.kotlinLanguageLevel
               addModuleDependencies(m.name)
               contentScope =
                 TopDownAnalyzerFacadeForJVM.newModuleSearchScope(theProject, ordinaryKtFiles)
