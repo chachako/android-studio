@@ -313,14 +313,14 @@ class LocaleConfigGenerationTest {
         ).execute("assembleDebug")
 
         assertLocaleList("app", "debug")
-            .isEqualTo(listOf("de-DE", "en-GB", "es-ES", "zh-Hans-SG"))
+            .isEqualTo(listOf("de-DE", "es-ES", "zh-Hans-SG", "en-GB"))
         assertLocaleList("lib1", "debug")
             .isEqualTo(listOf("ru-RU"))
         assertLocaleList("lib2", "debug")
             .isEqualTo(listOf("pt-BR"))
         // Final xml adds default locale (de-DE)
         assertLocaleConfig("debug")
-            .isEqualTo(listOf("de-DE", "en-GB", "es-ES", "pt-BR", "ru-RU", "zh-Hans-SG"))
+            .isEqualTo(listOf("de-DE", "es-ES", "zh-Hans-SG", "en-GB", "ru-RU", "pt-BR"))
     }
 
     @Test
@@ -334,13 +334,13 @@ class LocaleConfigGenerationTest {
         ).execute("assembleDebug")
 
         assertLocaleList("app", "debug")
-            .isEqualTo(listOf("en-US", "en-GB", "es-ES", "zh-Hans-SG"))
+            .isEqualTo(listOf("en-US", "es-ES", "zh-Hans-SG", "en-GB"))
         assertLocaleList("lib1", "debug")
             .isEqualTo(listOf("es-ES", "ru-RU"))
         assertLocaleList("lib2", "debug")
             .isEqualTo(listOf("en-US", "pt-BR"))
         assertLocaleConfig("debug")
-            .isEqualTo(listOf("en-GB", "en-US", "es-ES", "pt-BR", "ru-RU", "zh-Hans-SG"))
+            .isEqualTo(listOf("en-US", "es-ES", "zh-Hans-SG", "en-GB", "ru-RU", "pt-BR"))
     }
 
     @Test
@@ -492,7 +492,7 @@ class LocaleConfigGenerationTest {
 
         // london flavor res should not be included
         assertLocaleList("app", "tokyoDebug").isEqualTo(listOf("en-US", "jp-JP"))
-        assertLocaleConfig("tokyo/debug").isEqualTo(listOf("en-US", "es-ES", "jp-JP", "pt-BR"))
+        assertLocaleConfig("tokyo/debug").isEqualTo(listOf("en-US", "jp-JP", "es-ES", "pt-BR"))
     }
 
     @Test

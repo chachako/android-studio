@@ -69,7 +69,7 @@ class LocaleGenerationTest {
         addResFolder(res3, "values-b+zh+Hans+SG", false)
 
         assertThat(generateLocaleList(listOf(res1, res2, res3)))
-            .isEqualTo(listOf("en-US", "es-ES", "pt-BR", "ru-RU", "zh-Hans-SG"))
+            .isEqualTo(listOf("es-ES", "en-US", "ru-RU", "pt-BR", "zh-Hans-SG"))
     }
 
     @Test
@@ -86,17 +86,17 @@ class LocaleGenerationTest {
         val outfile = temporaryFolder.newFile("locale_config.xml")
         writeLocaleConfig(
             output = outfile,
-            locales = listOf("en-US", "ru-RU", "es-ES", "pt-BR", "zh-Hans-SG", "en-GB")
+            locales = setOf("en-US", "ru-RU", "es-ES", "pt-BR", "zh-Hans-SG", "en-GB")
         )
         assertThat(
             listOf(
                 """<locale-config xmlns:android="http://schemas.android.com/apk/res/android">""",
-                """    <locale android:name="en-GB"/>""",
                 """    <locale android:name="en-US"/>""",
+                """    <locale android:name="ru-RU"/>""",
                 """    <locale android:name="es-ES"/>""",
                 """    <locale android:name="pt-BR"/>""",
-                """    <locale android:name="ru-RU"/>""",
                 """    <locale android:name="zh-Hans-SG"/>""",
+                """    <locale android:name="en-GB"/>""",
                 """</locale-config>""")).isEqualTo(outfile.readLines())
     }
 

@@ -38,7 +38,9 @@ fun generateLocaleList(resources: Collection<File>): List<String> {
     // Fold all root resource directories into a one-dimensional
     // list of qualified resource directories (main/res -> main/res/values-en-rUS, etc.)
     val allResources = resources.fold(mutableListOf<File>()) { acc, it ->
-        acc.addAll(it.listFiles()?.toList() ?: listOf())
+        if (it.isDirectory()) {
+          acc.addAll(it.listFiles()!!.sortedBy { file -> file.invariantSeparatorsPath })
+        }
         acc
     }.filter {
         it.isDirectory && it.listFiles()!!.isNotEmpty() // Ignore empty folders and files
@@ -50,7 +52,7 @@ fun generateLocaleList(resources: Collection<File>): List<String> {
             ?.let { folderConfig -> localeQualifiers.add(folderConfig.localeQualifier) }
     }
     // Finally, extract the locale name to be used in the configuration file
-    val supportedLocales = sortedSetOf<String>()
+    val supportedLocales = mutableSetOf<String>()
     localeQualifiers.forEach {
         it?.let { localeQualifier ->
             supportedLocales.add(generateLocaleString(localeQualifier))
@@ -59,12 +61,12 @@ fun generateLocaleList(resources: Collection<File>): List<String> {
     return supportedLocales.toList()
 }
 
-fun mergeLocaleLists(allLocales: Collection<Collection<String>>): List<String> {
+fun mergeLocaleLists(allLocales: Collection<Collection<String>>): Set<String> {
     val foldedLocales = allLocales.fold(mutableSetOf<String>()) { acc, it ->
         acc.addAll(it)
         acc
     }
-    return foldedLocales.toList()
+    return foldedLocales
 }
 
 fun writeSupportedLocales(output: File, locales: Collection<String>, defaultLocale: String?) {
@@ -91,10 +93,10 @@ fun validateLocale(locale: String): String? {
     return localeQualifier?.run { generateLocaleString(localeQualifier) }
 }
 
-fun writeLocaleConfig(output: File, locales: Collection<String>) {
+fun writeLocaleConfig(output: File, locales: Set<String>) {
     val outLines = mutableListOf<String>()
     outLines.add("<locale-config xmlns:android=\"http://schemas.android.com/apk/res/android\">")
-    locales.sorted().forEach { localeString ->
+    locales.forEach { localeString ->
         outLines.add("    <locale android:name=\"$localeString\"/>")
     }
     outLines.add("</locale-config>")
