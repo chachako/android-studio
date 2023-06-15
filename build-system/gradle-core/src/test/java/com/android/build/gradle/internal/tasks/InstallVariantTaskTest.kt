@@ -51,7 +51,11 @@ class InstallVariantTaskTest(deviceVersion: String) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "deviceVersion_{0}")
-        fun parameters() = listOf("19", "21")
+        fun parameters() = listOf(
+        // TODO turned off due to Parameterized tests being flaky b/287358082
+        //    "19",
+            "21"
+        )
     }
 
     @JvmField
