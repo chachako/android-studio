@@ -167,12 +167,11 @@ message FoldEvent {
 // Various data about the current app, which can be used to resolve resource references for the
 // device's Configuration.
 message AppContext {
-    Resource theme = 1 [deprecated = true]; // Deprecated: Use theme_string instead.
+    Resource theme = 1;
     int32 screen_width = 2; // includes window decor
     int32 screen_height = 3; // includes window decor
     // The orientation of the main display, in degrees.
     int32 main_display_orientation = 4;
-    string theme_string = 5; // The theme as a string
 }
 
 // Handles properties whose values are bit flags, e.g. "top|left"

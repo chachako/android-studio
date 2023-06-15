@@ -126,7 +126,7 @@ private fun View.toNodeImpl(
 }
 
 /**
- * Search this view for a resource with matching [resourceId] and, if found return its
+ * Search this view for a resource with matching [resourceId] and, if found, return its
  * proto representation.
  */
 fun View.createResource(stringTable: StringTable, resourceId: Int): Resource? {
@@ -143,30 +143,18 @@ fun View.createResource(stringTable: StringTable, resourceId: Int): Resource? {
     }
 }
 
-/**
- * Search this view for a resource with matching [resourceId], and if found return its
- * string representation.
- * Note: The proto version of this method is preferred in most places.
- */
-fun View.createResourceString(resourceId: Int): String? {
-    if (resourceId <= 0) return null
-
-    val type = resources.getResourceTypeName(resourceId)
-    val namespace = resources.getResourcePackageName(resourceId)
-    val name = resources.getResourceEntryName(resourceId)
-    return "@$namespace:$type/$name"
-}
-
 fun View.getNamespace(attributeId: Int): String =
     if (attributeId != 0) resources.getResourcePackageName(attributeId) else ""
 
-fun View.createAppContext(): AppContext {
+fun View.createAppContext(stringTable: StringTable): AppContext {
     val size = windowSize
     return AppContext.newBuilder().apply {
+        createResource(stringTable, context.themeResId)?.let { themeResource ->
+            theme = themeResource
+        }
         screenWidth = size.x
         screenHeight = size.y
         mainDisplayOrientation = getDefaultDisplayRotation()
-        createResourceString(context.themeResId)?.let { themeString = it }
     }.build()
 }
 

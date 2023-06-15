@@ -31,7 +31,6 @@ public class Context {
 
     private final String mPackageName;
     private final Resources mResources;
-    private final int mThemeId;
 
     @VisibleForTesting public SensorManager sensorManager = new SensorManager();
 
@@ -41,14 +40,6 @@ public class Context {
     public Context(String packageName, Resources resources) {
         mPackageName = packageName;
         mResources = resources;
-        mThemeId = 0;
-    }
-
-    @VisibleForTesting
-    public Context(String packageName, Resources resources, int themeId) {
-        mPackageName = packageName;
-        mResources = resources;
-        mThemeId = themeId;
     }
 
     public String getPackageName() {
@@ -60,7 +51,7 @@ public class Context {
     }
 
     public int getThemeResId() {
-        return mThemeId;
+        return 0;
     }
 
     public <T> T getSystemService(Class<T> serviceClass) {

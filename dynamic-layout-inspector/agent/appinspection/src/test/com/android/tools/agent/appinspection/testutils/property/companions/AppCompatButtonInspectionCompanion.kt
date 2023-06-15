@@ -30,7 +30,7 @@ class AppCompatButtonInspectionCompanion : InspectionCompanion<AppCompatButton> 
         val OFFSET = ButtonInspectionCompanion.OFFSET + ButtonInspectionCompanion.NUM_PROPERTIES
 
         fun addResourceNames(packageName: String, resourceNames: MutableMap<Int, String>) {
-            resourceNames[ATTR_OFFSET + OFFSET] = "$packageName:attr/backgroundTint"
+            resourceNames[ATTR_OFFSET + OFFSET] = "$packageName.attr/backgroundTint"
         }
     }
 

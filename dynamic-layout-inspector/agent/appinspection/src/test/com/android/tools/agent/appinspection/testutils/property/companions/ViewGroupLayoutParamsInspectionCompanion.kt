@@ -30,8 +30,8 @@ class ViewGroupLayoutParamsInspectionCompanion : InspectionCompanion<ViewGroup.L
         const val OFFSET = 0 // Start index of layout properties
 
         fun addResourceNames(resourceNames: MutableMap<Int, String>) {
-            resourceNames[ATTR_OFFSET + OFFSET] = "android:attr/layout_width"
-            resourceNames[ATTR_OFFSET + OFFSET + 1] = "android:attr/layout_height"
+            resourceNames[ATTR_OFFSET + OFFSET] = "android.attr/layout_width"
+            resourceNames[ATTR_OFFSET + OFFSET + 1] = "android.attr/layout_height"
         }
     }
 

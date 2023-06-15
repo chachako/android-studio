@@ -53,7 +53,6 @@ import com.android.tools.layoutinspector.BitmapType
 import com.android.tools.layoutinspector.toBytes
 import com.google.common.truth.Truth.assertThat
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol
-import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.AppContext
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Command
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.ErrorCode
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Event
@@ -2410,10 +2409,8 @@ abstract class ViewLayoutInspectorTestBase {
     }
 
     @Suppress("SameParameterValue")
-    private fun createResources(
-        packageName: String,
-        resourceNames: MutableMap<Int, String> = mutableMapOf()
-    ): Resources {
+    private fun createResources(packageName: String): Resources {
+        val resourceNames = mutableMapOf<Int, String>()
         ViewInspectionCompanion.addResourceNames(resourceNames)
         ViewGroupLayoutParamsInspectionCompanion.addResourceNames(resourceNames)
         TextViewInspectionCompanion.addResourceNames(resourceNames)

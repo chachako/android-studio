@@ -30,7 +30,7 @@ public final class Resources {
     private final Map<Integer, String> mResourceNames;
     private final Configuration mConfiguration;
 
-    /** @param resourceNames name format: "namespace:type/entry", e.g. "android:id/next_button" */
+    /** @param resourceNames name format: "namespace.type/entry", e.g. "android.id/next_button" */
     @VisibleForTesting
     public Resources(Map<Integer, String> resourceNames) {
         mResourceNames = resourceNames;
@@ -46,19 +46,19 @@ public final class Resources {
 
     public String getResourceTypeName(int resourceId) throws NotFoundException {
         String name = getResourceName(resourceId);
-        String typeName = name.substring(name.indexOf(':'));
-        typeName = typeName.substring(1, typeName.indexOf('/'));
+        String typeName = name.substring(name.indexOf('.'));
+        typeName = typeName.substring(0, name.indexOf('/'));
         return typeName;
     }
 
     public String getResourcePackageName(int resourceId) throws NotFoundException {
         String name = getResourceName(resourceId);
-        return name.substring(0, name.indexOf(':'));
+        return name.substring(0, name.lastIndexOf('.'));
     }
 
     public String getResourceEntryName(int resourceId) throws NotFoundException {
         String name = getResourceName(resourceId);
-        return name.substring(name.indexOf('/') + 1);
+        return name.substring(name.indexOf('/'));
     }
 
     public Configuration getConfiguration() {

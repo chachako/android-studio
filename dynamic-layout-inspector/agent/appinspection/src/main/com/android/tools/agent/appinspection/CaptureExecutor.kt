@@ -170,7 +170,7 @@ class CaptureExecutor(
         }
 
         val stringTable = StringTable()
-        val appContext = rootView.createAppContext()
+        val appContext = rootView.createAppContext(stringTable)
         val configuration = rootView.createConfiguration(stringTable)
 
         val (rootViewNode, rootOffset) = ThreadUtils.runOnMainThread {
