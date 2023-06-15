@@ -1798,8 +1798,10 @@ class ProjectInitializerTest {
     // immediately, while partial and provisional issues propagate to dependent targets. We use
     // `UnusedResources` to check that partial issues are reported correctly. We use
     // `LongLogTag` and `MissingSuperCall` to check that provisional and definite issues are
-    // reported correctly. Each project has an unused resource, as well as one resource that is
-    // used in each dependent project. Project `c` is the app/binary project.
+    // reported correctly. We use `ExactAlarm` to check that the project's targetSdkVersion is
+    // correctly initialized from the merged manifest file. Each project has an unused resource,
+    // as well as one resource that is used in each dependent project. Project `c` is the
+    // app/binary project.
     //
     // Depends-on: `a` <- `b` <- `c` -> `onlyres`
     //              ^____________/
@@ -1846,6 +1848,7 @@ class ProjectInitializerTest {
                 <issue id="UnusedResources" severity="error" />
                 <issue id="LongLogTag" severity="error" />
                 <issue id="MissingSuperCall" severity="error" />
+                <issue id="ExactAlarm" severity="error" />
             </lint>"""
       )
 
@@ -2068,7 +2071,10 @@ class ProjectInitializerTest {
 
                 <uses-sdk
                     android:minSdkVersion="14"
-                    android:targetSdkVersion="28" />
+                    android:targetSdkVersion="33" />
+
+                <!-- This permission will trigger an error if the targetSdkVersion fails to be read -->
+                <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
                 <application>
                     <activity
@@ -2096,7 +2102,10 @@ class ProjectInitializerTest {
 
                 <uses-sdk
                     android:minSdkVersion="14"
-                    android:targetSdkVersion="28" />
+                    android:targetSdkVersion="33" />
+
+                <!-- This permission will trigger an error if the targetSdkVersion fails to be read -->
+                <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
                 <application>
                     <activity

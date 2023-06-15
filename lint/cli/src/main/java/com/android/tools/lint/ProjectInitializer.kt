@@ -47,6 +47,7 @@ import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceSetType
 import com.android.tools.lint.model.LintModelSerialization
 import com.android.tools.lint.model.LintModelVariant
+import com.android.utils.XmlUtils
 import com.android.utils.XmlUtils.getFirstSubTag
 import com.android.utils.XmlUtils.getNextTag
 import com.android.utils.usLocaleCapitalize
@@ -73,6 +74,7 @@ import org.jetbrains.kotlin.config.ApiVersion
 import org.jetbrains.kotlin.config.LanguageVersion
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
+import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 
@@ -673,6 +675,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
     javaLanguageLevel?.let { module.javaLanguageLevel = it }
     kotlinLanguageLevel?.let { module.kotlinLanguageLevel = it }
     module.setCompileSdkVersion(buildApi)
+    module.initializeSdkLevelInfo(mergedManifest, manifests.getOrNull(0))
 
     this.lintChecks[module] = lintChecks
     this.mergedManifests[module] = mergedManifest
@@ -775,6 +778,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
     val manifest = File(expanded, ANDROID_MANIFEST_XML)
     if (manifest.isFile) {
       project.setManifests(listOf(manifest))
+      project.initializeSdkLevelInfo(manifest, null)
     }
     val resources = File(expanded, FD_RES)
     if (resources.isDirectory) {
@@ -1108,8 +1112,7 @@ fun findPackage(source: String, file: File): String? {
  * A special subclass of lint's [Project] class which can be manually configured with custom source
  * locations, custom library types, etc.
  */
-private class ManualProject
-constructor(
+private class ManualProject(
   client: LintClient,
   dir: File,
   name: String,
@@ -1313,6 +1316,40 @@ constructor(
       generatedContexts,
       gradleKtsContexts
     )
+  }
+
+  override fun readManifest(document: Document) {
+    // Do nothing. LintDriver calls this method (possibly multiple times)
+    // passing (possibly multiple) manifest files. The super implementation
+    // initializes fields, such as manifestTargetSdk. We instead do this just
+    // once from ProjectInitializer via initializeSdkLevelInfo.
+  }
+
+  fun initializeSdkLevelInfo(mergedManifest: File?, manifest: File?) {
+    if (dom != null) {
+      client.log(
+        Severity.WARNING,
+        IllegalStateException("Tried to initialize project SDK level info more than once"),
+        null
+      )
+      return
+    }
+
+    fun File.parseSilently(): Document? = XmlUtils.parseDocumentSilently(this.readText(), true)
+
+    val mergedManifestDoc = mergedManifest?.parseSilently()
+    val manifestDoc = manifest?.parseSilently()
+
+    // There seems to be some ambiguity in whether the merged manifest can be
+    // used to initialize manifestTargetSdk and manifestMinTargetSdk. We prefer
+    // the merged manifest, but otherwise fall back to the manifest.
+    val initFrom = mergedManifestDoc ?: manifestDoc
+    initFrom?.let { super.readManifest(it) }
+
+    // In super.readManifest, the dom is set to whichever document was passed,
+    // but we set it to the manifest document, if present, as this seems to be
+    // used by detectors to get the manifest.
+    manifestDoc?.let { dom = it }
   }
 }
 
