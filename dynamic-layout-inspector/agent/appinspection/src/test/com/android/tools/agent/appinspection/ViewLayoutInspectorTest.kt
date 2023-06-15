@@ -516,7 +516,6 @@ abstract class ViewLayoutInspectorTestBase {
             event.layoutEvent.let { layoutEvent ->
                 assertThat(layoutEvent.rootView.id).isEqualTo(tree2.uniqueDrawingId)
                 assertThat(layoutEvent.screenshot.bytes.toByteArray()).isEqualTo(tree2FakePicture.bytes)
-                assertThat(layoutEvent.appContext).isEqualTo(LayoutInspectorViewProtocol.AppContext.getDefaultInstance())
             }
         }
 
@@ -538,7 +537,6 @@ abstract class ViewLayoutInspectorTestBase {
             event.layoutEvent.let { layoutEvent ->
                 assertThat(layoutEvent.rootView.id).isEqualTo(tree1.uniqueDrawingId)
                 assertThat(layoutEvent.screenshot.bytes.toByteArray()).isEqualTo(tree1FakePicture2.bytes)
-                assertThat(layoutEvent.appContext).isEqualTo(LayoutInspectorViewProtocol.AppContext.getDefaultInstance())
             }
         }
 
@@ -559,7 +557,6 @@ abstract class ViewLayoutInspectorTestBase {
             event.layoutEvent.let { layoutEvent ->
                 assertThat(layoutEvent.rootView.id).isEqualTo(tree1.uniqueDrawingId)
                 assertThat(layoutEvent.screenshot.bytes.toByteArray()).isEqualTo(tree1FakePicture3.bytes)
-                assertThat(layoutEvent.appContext).isEqualTo(LayoutInspectorViewProtocol.AppContext.getDefaultInstance())
             }
         }
 
@@ -581,7 +578,6 @@ abstract class ViewLayoutInspectorTestBase {
             event.layoutEvent.let { layoutEvent ->
                 assertThat(layoutEvent.rootView.id).isEqualTo(tree1.uniqueDrawingId)
                 assertThat(layoutEvent.screenshot.bytes.toByteArray()).isEqualTo(tree1FakePicture4.bytes)
-                assertThat(layoutEvent.appContext).isEqualTo(LayoutInspectorViewProtocol.AppContext.getDefaultInstance())
             }
         }
         checkNonProgressEvent(eventQueue) { event ->
@@ -595,123 +591,11 @@ abstract class ViewLayoutInspectorTestBase {
             event.layoutEvent.let { layoutEvent ->
                 assertThat(layoutEvent.rootView.id).isEqualTo(tree3.uniqueDrawingId)
                 assertThat(layoutEvent.screenshot.bytes.toByteArray()).isEqualTo(tree3FakePicture.bytes)
-                assertThat(layoutEvent.appContext).isEqualTo(LayoutInspectorViewProtocol.AppContext.getDefaultInstance())
             }
         }
         checkNonProgressEvent(eventQueue) { event ->
             assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.PROPERTIES_EVENT)
             assertThat(event.propertiesEvent.rootId).isEqualTo(tree3.uniqueDrawingId)
-        }
-    }
-
-    @Test
-    fun themeChangesDetected() = createViewInspector { viewInspector ->
-        val eventQueue = ArrayBlockingQueue<ByteArray>(7)
-        inspectorRule.connection.eventListeners.add { bytes ->
-            eventQueue.add(bytes)
-        }
-
-        val packageName = "view.inspector.test"
-        val themeIdA = 123
-        val themeIdB = 124
-        val resourceNames = mutableMapOf<Int, String>().apply {
-            put(themeIdA, "view.inspector.test:style/BasicTree.Dark.Theme")
-            put(themeIdB, "view.inspector.test:style/BasicTree.Light.Theme")
-        }
-        val resources = createResources(packageName, resourceNames)
-        val contextA = Context(packageName, resources, themeIdA)
-        val contextB = Context(packageName, resources, themeIdB)
-        contextB.generateViewId()
-        contextB.generateViewId()
-        val tree1 = View(contextA).apply { setAttachInfo(View.AttachInfo() )}
-        val tree2 = View(contextA).apply { setAttachInfo(View.AttachInfo() )}
-        val tree3 = View(contextB).apply { setAttachInfo(View.AttachInfo() )}
-        val tree4 = View(contextB).apply { setAttachInfo(View.AttachInfo() )}
-        WindowManagerGlobal.getInstance().rootViews.addAll(listOf(tree1, tree2, tree3, tree4))
-
-        val startFetchCommand = Command.newBuilder().apply {
-            startFetchCommandBuilder.apply {
-                continuous = true
-            }
-        }.build()
-        viewInspector.onReceiveCommand(
-            startFetchCommand.toByteArray(),
-            inspectorRule.commandCallback
-        )
-        val updateScreenshotTypeCommand = Command.newBuilder().apply {
-            updateScreenshotTypeCommandBuilder.apply {
-                type = Screenshot.Type.SKP
-            }
-        }.build()
-        viewInspector.onReceiveCommand(
-            updateScreenshotTypeCommand.toByteArray(),
-            inspectorRule.commandCallback
-        )
-
-        ThreadUtils.runOnMainThread { }.get() // Wait for startCommand to finish initializing
-
-        val treeFakePicture = Picture(byteArrayOf(1, 1))
-        tree1.forcePictureCapture(treeFakePicture)
-
-        checkNonProgressEvent(eventQueue) { event ->
-            assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.ROOTS_EVENT)
-        }
-        // tree1 includes AppContext for the Dark.Theme:
-        checkNonProgressEvent(eventQueue) { event ->
-            assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.LAYOUT_EVENT)
-            event.layoutEvent.let { layoutEvent ->
-                assertThat(layoutEvent.rootView.id).isEqualTo(tree1.uniqueDrawingId)
-                assertThat(layoutEvent.appContext.screenHeight).isEqualTo(3120)
-                assertThat(layoutEvent.appContext.screenWidth).isEqualTo(1440)
-                assertThat(layoutEvent.appContext.hasTheme()).isFalse()
-                assertThat(layoutEvent.appContext.themeString).isEqualTo("@view.inspector.test:style/BasicTree.Dark.Theme")
-            }
-        }
-
-        // tree2 has the same context as tree1; so AppContext should be excluded:
-        tree2.forcePictureCapture(treeFakePicture)
-        checkNonProgressEvent(eventQueue) { event ->
-            assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.LAYOUT_EVENT)
-            event.layoutEvent.let { layoutEvent ->
-                assertThat(layoutEvent.rootView.id).isEqualTo(tree2.uniqueDrawingId)
-                assertThat(layoutEvent.appContext).isEqualTo(AppContext.getDefaultInstance())
-            }
-        }
-
-        // tree3 has a different context; so AppContext should be included with the Light.Theme:
-        tree3.forcePictureCapture(treeFakePicture)
-        checkNonProgressEvent(eventQueue) { event ->
-            assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.LAYOUT_EVENT)
-            event.layoutEvent.let { layoutEvent ->
-                assertThat(layoutEvent.rootView.id).isEqualTo(tree3.uniqueDrawingId)
-                assertThat(layoutEvent.appContext.screenHeight).isEqualTo(3120)
-                assertThat(layoutEvent.appContext.screenWidth).isEqualTo(1440)
-                assertThat(layoutEvent.appContext.hasTheme()).isFalse()
-                assertThat(layoutEvent.appContext.themeString).isEqualTo("@view.inspector.test:style/BasicTree.Light.Theme")
-            }
-        }
-
-        // tree4 has the same context as tree3; so AppContext should be excluded:
-        tree4.forcePictureCapture(treeFakePicture)
-        checkNonProgressEvent(eventQueue) { event ->
-            assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.LAYOUT_EVENT)
-            event.layoutEvent.let { layoutEvent ->
-                assertThat(layoutEvent.rootView.id).isEqualTo(tree4.uniqueDrawingId)
-                assertThat(layoutEvent.appContext).isEqualTo(AppContext.getDefaultInstance())
-            }
-        }
-
-        // tree3 has a different context; so AppContext should be included with the Dark.Theme:
-        tree2.forcePictureCapture(treeFakePicture)
-        checkNonProgressEvent(eventQueue) { event ->
-            assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.LAYOUT_EVENT)
-            event.layoutEvent.let { layoutEvent ->
-                assertThat(layoutEvent.rootView.id).isEqualTo(tree2.uniqueDrawingId)
-                assertThat(layoutEvent.appContext.screenHeight).isEqualTo(3120)
-                assertThat(layoutEvent.appContext.screenWidth).isEqualTo(1440)
-                assertThat(layoutEvent.appContext.hasTheme()).isFalse()
-                assertThat(layoutEvent.appContext.themeString).isEqualTo("@view.inspector.test:style/BasicTree.Dark.Theme")
-            }
         }
     }
 

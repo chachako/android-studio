@@ -112,23 +112,3 @@ class SnapshotRequest {
     val result = CompletableDeferred<LayoutInspectorViewProtocol.CaptureSnapshotResponse.WindowSnapshot>()
     val state = AtomicReference(State.NEW)
 }
-
-/**
- * Wrapper class to hold information about the device.
- */
-class DeviceInfo {
-    private var appContext = AppContext.getDefaultInstance()
-    private var configuration = Configuration.getDefaultInstance()
-
-    /**
-     * Update the device info and returns true if a change was detected.
-     */
-    fun update(newAppContext: AppContext, newConfiguration: Configuration): Boolean {
-        if (newAppContext == appContext && newConfiguration == configuration) {
-            return false
-        }
-        appContext = newAppContext
-        configuration = newConfiguration
-        return true
-    }
-}
