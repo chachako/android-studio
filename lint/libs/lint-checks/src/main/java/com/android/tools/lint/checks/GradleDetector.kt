@@ -3463,41 +3463,30 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       return location1
     }
 
+    /** TODO: Cache these results somewhere! */
     @JvmStatic
     fun getLatestVersionFromRemoteRepo(
       client: LintClient,
       dependency: Dependency,
       filter: Predicate<Version>?,
       allowPreview: Boolean
-    ): Version? =
-      dependency
-        .toIdentifier()
-        ?.let { GradleCoordinate.parseCoordinateString(it) }
-        ?.let { getLatestVersionFromRemoteRepo(client, it, filter, allowPreview) }
-
-    /** TODO: Cache these results somewhere! */
-    @JvmStatic
-    fun getLatestVersionFromRemoteRepo(
-      client: LintClient,
-      dependency: GradleCoordinate,
-      filter: Predicate<Version>?,
-      allowPreview: Boolean
     ): Version? {
-      val groupId = dependency.groupId
-      val artifactId = dependency.artifactId
+      val group = dependency.group ?: return null
+      val name = dependency.name
+      val richVersion = dependency.version ?: return null
       val query = StringBuilder()
       val encoding = UTF_8.name()
       try {
         query.append("https://search.maven.org/solrsearch/select?q=g:%22")
-        query.append(URLEncoder.encode(groupId, encoding))
+        query.append(URLEncoder.encode(group, encoding))
         query.append("%22+AND+a:%22")
-        query.append(URLEncoder.encode(artifactId, encoding))
+        query.append(URLEncoder.encode(name, encoding))
       } catch (e: UnsupportedEncodingException) {
         return null
       }
 
       query.append("%22&core=gav")
-      if (groupId == "com.google.guava" || artifactId == "kotlinx-coroutines-core") {
+      if (group == "com.google.guava" || name == "kotlinx-coroutines-core") {
         // These libraries aren't releasing previews in their version strings;
         // instead, the suffix is used to indicate different variants (JRE vs Android,
         // JVM vs Kotlin Native)
@@ -3578,37 +3567,33 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       // whereas Gradle will just use an alphabetical sort on these). See
       // 171369798 for an example.
 
-      if (groupId == "com.google.guava") {
-        val version = dependency.lowerBoundVersion
+      if (group == "com.google.guava") {
+        val version = richVersion.lowerBound
         val suffix = version.toString()
         val jre: (Version) -> Boolean = { v -> v.toString().endsWith("-jre") }
         val android: (Version) -> Boolean = { v -> !v.toString().endsWith("-jre") }
         return versions.filter(if (suffix.endsWith("-jre")) jre else android).maxOrNull()
-      } else if (artifactId == "kotlinx-coroutines-core") {
-        val version = dependency.lowerBoundVersion
-        if (version != null) {
-          val suffix = version.toString()
-          return versions
-            .filter(
-              when {
-                suffix.indexOf('-') == -1 -> {
-                  { (allowPreview || !it.isPreview) && !it.toString().contains("-native-mt") }
-                }
-                suffix.contains("-native-mt-2") -> {
-                  { it.toString().contains("-native-mt-2") }
-                }
-                suffix.contains("-native-mt") -> {
-                  {
-                    it.toString().contains("-native-mt") && !it.toString().contains("-native-mt-2")
-                  }
-                }
-                else -> {
-                  { (allowPreview || !it.isPreview) && !it.toString().contains("-native-mt") }
-                }
+      } else if (name == "kotlinx-coroutines-core") {
+        val version = richVersion.lowerBound
+        val suffix = version.toString()
+        return versions
+          .filter(
+            when {
+              suffix.indexOf('-') == -1 -> {
+                { (allowPreview || !it.isPreview) && !it.toString().contains("-native-mt") }
               }
-            )
-            .maxOrNull()
-        }
+              suffix.contains("-native-mt-2") -> {
+                { it.toString().contains("-native-mt-2") }
+              }
+              suffix.contains("-native-mt") -> {
+                { it.toString().contains("-native-mt") && !it.toString().contains("-native-mt-2") }
+              }
+              else -> {
+                { (allowPreview || !it.isPreview) && !it.toString().contains("-native-mt") }
+              }
+            }
+          )
+          .maxOrNull()
       }
 
       return versions
