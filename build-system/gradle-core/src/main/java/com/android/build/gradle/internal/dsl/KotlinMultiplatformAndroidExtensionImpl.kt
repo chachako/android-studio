@@ -215,6 +215,5 @@ internal abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLaz
     ): KotlinMultiplatformAndroidTestOnJvmConfiguration, KotlinMultiplatformAndroidTestOnDeviceConfiguration {
 
         override var defaultSourceSetName: String = compilationName.getNamePrefixedWithTarget()
-        override var sourceSetTree: String? = null
     }
 }

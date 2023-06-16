@@ -115,12 +115,6 @@ interface KotlinMultiplatformAndroidTestConfiguration {
      * default sourceSet name will be "androidTestOnJvm").
      */
     var defaultSourceSetName: String
-
-    /**
-     * Configure the SourceSetTree for test components/sourceset in order to change the default
-     * behaviour of source set hierarchies
-     */
-    var sourceSetTree: String?
 }
 
 interface KotlinMultiplatformAndroidTestOnJvmConfiguration: KotlinMultiplatformAndroidTestConfiguration
