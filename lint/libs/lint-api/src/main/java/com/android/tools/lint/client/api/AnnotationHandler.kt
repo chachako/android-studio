@@ -78,6 +78,7 @@ import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.psi.KtConstructorDelegationCall
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtSuperTypeCallEntry
@@ -737,7 +738,11 @@ internal class AnnotationHandler(
     */
 
     val field = node.resolve() as? PsiModifierListOwner
-    if (field is PsiField || field is PsiMethod) {
+    if (
+      field is PsiField ||
+        field is PsiMethod ||
+        field?.toUElement()?.sourcePsi is KtObjectDeclaration
+    ) {
       if (isOverloadedMethodCall(node)) return
       val annotations = getMemberAnnotations(context, field)
       checkAnnotations(context, node, FIELD_REFERENCE, field, annotations)

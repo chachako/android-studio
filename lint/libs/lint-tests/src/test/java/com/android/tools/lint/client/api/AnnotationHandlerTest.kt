@@ -776,6 +776,46 @@ class AnnotationHandlerTest {
   }
 
   @Test
+  fun testKotlinObjectUsage() {
+    // Regression test for b/282811891
+    lint()
+      .files(
+        kotlin(
+            """
+                package test.obj
+                import pkg.kotlin.MyKotlinAnnotation
+
+                @MyKotlinAnnotation
+                object Obj
+                """
+          )
+          .indented(),
+        kotlin(
+            """
+                package test.usage
+                import test.obj.Obj
+
+                private fun use(o: Any) {}
+                fun test() {
+                    use(Obj)  // ERROR
+                }
+                """
+          )
+          .indented(),
+        kotlinAnnotation
+      )
+      .run()
+      .expect(
+        """
+            src/test/usage/test.kt:6: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+                use(Obj)  // ERROR
+                    ~~~
+            1 errors, 0 warnings
+            """
+      )
+  }
+
+  @Test
   fun testObjectLiteral() {
     lint()
       .files(
