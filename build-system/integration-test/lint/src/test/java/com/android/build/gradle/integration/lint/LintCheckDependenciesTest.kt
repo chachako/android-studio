@@ -35,6 +35,7 @@ class LintCheckDependenciesTest {
 
     private val app = MinimalSubProject.app("com.example.app")
     private val lib = MinimalSubProject.lib("com.example.lib")
+    private val javaLib = MinimalSubProject.javaLibrary()
 
     @get:Rule
     val project: GradleTestProject =
@@ -43,7 +44,9 @@ class LintCheckDependenciesTest {
                 MultiModuleTestProject.builder()
                     .subproject(":app", app)
                     .subproject(":lib", lib)
+                    .subproject(":javaLib", javaLib)
                     .dependency(app, lib)
+                    .dependency(app, javaLib)
                     .build()
             ).create()
 
@@ -154,5 +157,22 @@ class LintCheckDependenciesTest {
         project.executor().expectFailure().run(":app:lintVitalRelease")
         ScannerSubject.assertThat(project.buildResult.stderr)
             .contains("Lib.java:4: Error: STOPSHIP comment found")
+    }
+
+    @Test
+    fun testWarningForJavaLibDependencyWithoutLintPlugin() {
+        val warning =
+            "Warning: Lint will treat :javaLib as an external dependency and not analyze it."
+        // We expect no warning when checkDependencies is false
+        project.executor().run(":app:lintDebug")
+        project.buildResult.stdout.use { ScannerSubject.assertThat(it).doesNotContain(warning) }
+        TestFileUtils.searchAndReplace(
+            project.getSubproject(":app").buildFile,
+            "checkDependencies false",
+            "checkDependencies true",
+        )
+        // We expect the warning when checkDependencies is true
+        project.executor().run(":app:lintDebug")
+        project.buildResult.stdout.use { ScannerSubject.assertThat(it).contains(warning) }
     }
 }

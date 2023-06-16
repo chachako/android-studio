@@ -61,7 +61,6 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.configuration.ShowStacktrace
-import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -613,6 +612,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                         || task.missingBaselineIsEmptyBaseline.get()
             }
             val hasDynamicFeatures = creationConfig.global.hasDynamicFeatures
+            val checkDependencies = creationConfig.global.lintOptions.checkDependencies
             val isLintAnalysisPerComponent =
                 variant.main.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)
                         || variant.main is KmpCreationConfig
@@ -625,7 +625,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                     services = variant.main.services,
                     variantName = variant.main.name,
                     useModuleDependencyLintModels = true,
-                    warnIfProjectTreatedAsExternalDependency = true,
+                    warnIfProjectTreatedAsExternalDependency = checkDependencies,
                     lintMode = lintMode,
                     fatalOnly = fatalOnly,
                     includeMainArtifact = true,
@@ -635,7 +635,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                 task.variantInputs.initialize(
                     variant,
                     useModuleDependencyLintModels = true,
-                    warnIfProjectTreatedAsExternalDependency = true,
+                    warnIfProjectTreatedAsExternalDependency = checkDependencies,
                     lintMode = lintMode,
                     fatalOnly = fatalOnly
                 )
