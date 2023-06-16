@@ -390,7 +390,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             }
         }
 
-        private fun configure(params: Parameters) {
+        @VisibleForTesting
+        fun configure(params: Parameters) {
             params.credentialFile.fileProvider(providerFactory.provider {
                 if (testLabExtension.serviceAccountCredentials.isPresent) {
                     testLabExtension.serviceAccountCredentials.get().asFile
