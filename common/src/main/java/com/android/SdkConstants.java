@@ -16,6 +16,7 @@
 
 package com.android;
 
+import com.android.sdklib.AndroidVersion;
 import java.io.File;
 
 /**
@@ -66,6 +67,12 @@ public final class SdkConstants {
 
     /** Property in local.properties file that specifies the path of the Android SDK. */
     public static final String SDK_DIR_PROPERTY = "sdk.dir";
+
+    /**
+     * A maximum version of the Android SDK that this version of AGP and Android Studio IDE can
+     * safely recommend during its development cycle.
+     */
+    public static final AndroidVersion RECOMMENDED_MAXIMUM_SDK_VERSION = new AndroidVersion(34);
 
     /** Property in local.properties file that specifies the path of the Android NDK. */
     public static final String NDK_DIR_PROPERTY = "ndk.dir";
