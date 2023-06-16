@@ -22,6 +22,9 @@ import com.android.build.api.dsl.SigningConfig
 import com.android.build.gradle.internal.dsl.PrivacySandboxSdkBundleImpl
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryConfigurations
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryDependencies
+import com.android.build.gradle.internal.fusedlibrary.NAMESPACED_ANDROID_RESOURCES_FOR_PRIVACY_SANDBOX_ENABLED
+import com.android.build.gradle.internal.publishing.AarOrJarTypeToConsume
+import com.android.build.gradle.internal.publishing.getAarOrJarTypeToConsume
 import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.services.ProjectServices
 import com.android.build.gradle.internal.services.TaskCreationServices
@@ -88,5 +91,10 @@ class PrivacySandboxSdkVariantScopeImpl(
                 String::class.java,
                 Any::class.java,
                 extension.experimentalProperties
+        )
+    override val aarOrJarTypeToConsume: AarOrJarTypeToConsume
+        get() = getAarOrJarTypeToConsume(
+                projectServices.projectOptions,
+                namespacedAndroidResources = NAMESPACED_ANDROID_RESOURCES_FOR_PRIVACY_SANDBOX_ENABLED
         )
 }

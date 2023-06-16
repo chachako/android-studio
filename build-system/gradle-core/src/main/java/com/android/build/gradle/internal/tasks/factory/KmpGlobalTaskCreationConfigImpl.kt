@@ -39,6 +39,8 @@ import com.android.build.gradle.internal.dsl.LanguageSplitOptions
 import com.android.build.gradle.internal.instrumentation.ASM_API_VERSION_FOR_INSTRUMENTATION
 import com.android.build.gradle.internal.lint.getLocalCustomLintChecks
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import com.android.build.gradle.internal.publishing.AarOrJarTypeToConsume
+import com.android.build.gradle.internal.publishing.getAarOrJarTypeToConsume
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.BaseServices
 import com.android.build.gradle.internal.services.FakeDependencyJarBuildService
@@ -94,6 +96,9 @@ internal class KmpGlobalTaskCreationConfigImpl(
 
     override val namespacedAndroidResources: Boolean
         get() = false
+
+    override val aarOrJarTypeToConsume: AarOrJarTypeToConsume
+        get() = getAarOrJarTypeToConsume(services.projectOptions, namespacedAndroidResources)
 
     override val platformAttrs: FileCollection by lazy {
         val attributes =

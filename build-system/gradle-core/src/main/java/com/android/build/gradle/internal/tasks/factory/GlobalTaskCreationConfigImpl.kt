@@ -40,6 +40,8 @@ import com.android.build.gradle.internal.dsl.LanguageSplitOptions
 import com.android.build.gradle.internal.instrumentation.ASM_API_VERSION_FOR_INSTRUMENTATION
 import com.android.build.gradle.internal.lint.getLocalCustomLintChecks
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import com.android.build.gradle.internal.publishing.AarOrJarTypeToConsume
+import com.android.build.gradle.internal.publishing.getAarOrJarTypeToConsume
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.BaseServices
 import com.android.build.gradle.internal.services.VersionedSdkLoaderService
@@ -252,4 +254,7 @@ class GlobalTaskCreationConfigImpl(
         services.projectOptions.get(IntegerOption.IDE_TARGET_DEVICE_API)
 
     override val taskNames: GlobalTaskNames = GlobalTaskNamesImpl
+
+    override val aarOrJarTypeToConsume: AarOrJarTypeToConsume
+        get() = getAarOrJarTypeToConsume(services.projectOptions, namespacedAndroidResources)
 }

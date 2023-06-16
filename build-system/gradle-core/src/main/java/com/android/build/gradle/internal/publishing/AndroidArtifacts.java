@@ -21,6 +21,7 @@ import static com.android.build.gradle.internal.publishing.AndroidArtifacts.Publ
 import static com.android.build.gradle.internal.publishing.AndroidArtifacts.PublishedConfigType.RUNTIME_ELEMENTS;
 
 import com.android.annotations.NonNull;
+import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig;
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition;
 import org.gradle.api.attributes.Attribute;
 
@@ -326,8 +327,7 @@ public class AndroidArtifacts {
          * Original (unprocessed) jar.
          *
          * <p>JAR vs. {@link #PROCESSED_JAR}: Jars usually need to be processed (e.g., jetified,
-         * namespaced) before they can be used. Therefore, consumers should generally use {@link
-         * #PROCESSED_JAR}.
+         * namespaced) before they can be used.
          *
          * <p>In a few cases, consumers may want to use unprocessed jars (be sure to document the
          * reason in those cases). Common reasons are:
@@ -336,6 +336,9 @@ public class AndroidArtifacts {
          *   <li>Correctness: Some tasks want to work with unprocessed jars.
          *   <li>Performance: Some jars don't need to be processed (e.g., android.jar, lint.jar).
          * </ul>
+         *
+         * Only use when specifically the unprocessed artifact is needed, otherwise use {@link
+         * GlobalTaskCreationConfig#getAarOrJarTypeToConsume() }
          */
         JAR(TYPE_JAR),
 
@@ -345,9 +348,12 @@ public class AndroidArtifacts {
         JACOCO_ASM_INSTRUMENTED_JARS(TYPE_JACOCO_ASM_INSTRUMENTED_JARS),
 
         /**
-         * Processed jar.
+         * A processed jar.
          *
          * <p>See {@link #JAR} for context on processed/unprocessed artifacts.
+         *
+         * <p>Don't use directly, use {@link GlobalTaskCreationConfig#getAarOrJarTypeToConsume() }
+         * instead.
          */
         PROCESSED_JAR(TYPE_PROCESSED_JAR),
 
@@ -533,20 +539,23 @@ public class AndroidArtifacts {
          * Original (unprocessed) aar.
          *
          * <p>See {@link #JAR} for context on processed/unprocessed artifacts.
+         *
+         * <p>Only use when specifically the unprocessed artifact is needed, otherwise use {@link
+         * GlobalTaskCreationConfig#getAarOrJarTypeToConsume() }
          */
         AAR(TYPE_AAR),
 
         /**
-         * Processed aar.
+         * A possibly-processed aar.
          *
          * <p>See {@link #JAR} for context on processed/unprocessed artifacts.
+         *
+         * <p>Don't use directly, use {@link GlobalTaskCreationConfig#getAarOrJarTypeToConsume() }
+         * instead.
          */
         PROCESSED_AAR(TYPE_PROCESSED_AAR),
 
-        /**
-         * Directory containing the extracted contents of a <em>processed</em> aar ({@link
-         * #PROCESSED_AAR}).
-         */
+        /** Directory containing the extracted contents of a possibly processed AAR */
         EXPLODED_AAR(TYPE_EXPLODED_AAR),
 
         /**

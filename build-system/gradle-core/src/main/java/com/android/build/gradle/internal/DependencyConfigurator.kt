@@ -67,6 +67,7 @@ import com.android.build.gradle.internal.dsl.ProductFlavor
 import com.android.build.gradle.internal.dsl.SigningConfig
 import com.android.build.gradle.internal.packaging.getDefaultDebugKeystoreSigningConfig
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import com.android.build.gradle.internal.publishing.AarOrJarTypeToConsume
 import com.android.build.gradle.internal.res.namespaced.AutoNamespacePreProcessTransform
 import com.android.build.gradle.internal.res.namespaced.AutoNamespaceTransform
 import com.android.build.gradle.internal.scope.InternalArtifactType
@@ -100,6 +101,7 @@ import org.gradle.api.artifacts.transform.TransformAction
 import org.gradle.api.artifacts.transform.TransformSpec
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.AttributesSchema
+import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.Usage
 import org.gradle.api.internal.artifacts.ArtifactAttributes
 import java.lang.Boolean.FALSE
@@ -146,6 +148,7 @@ class DependencyConfigurator(
 
     fun configureGeneralTransforms(
             namespacedAndroidResources: Boolean,
+            aarOrJarTypeToConsume: AarOrJarTypeToConsume
     ): DependencyConfigurator {
         val dependencies: DependencyHandler = project.dependencies
 
@@ -155,7 +158,6 @@ class DependencyConfigurator(
         // used
         val autoNamespaceDependencies =
             namespacedAndroidResources && projectOptions[BooleanOption.CONVERT_NON_NAMESPACED_DEPENDENCIES]
-
         val jetifiedAarOutputType = if (autoNamespaceDependencies) {
             AndroidArtifacts.ArtifactType.MAYBE_NON_NAMESPACED_PROCESSED_AAR
         } else {
@@ -178,21 +180,22 @@ class DependencyConfigurator(
             ) { params ->
                 params.ignoreListOption.setDisallowChanges(jetifierIgnoreList)
             }
+        } else if (autoNamespaceDependencies) {
+            // Namespaced resources code path is not optimized. Identity transforms are removed
+            // otherwise.
+            registerIdentityTransformWhenJetifierIsDisabled(jetifiedAarOutputType)
         } else {
-            registerTransform(
-                IdentityTransform::class.java,
-                AndroidArtifacts.ArtifactType.AAR,
-                jetifiedAarOutputType
-            )
-            registerTransform(
-                IdentityTransform::class.java,
-                AndroidArtifacts.ArtifactType.JAR,
-                AndroidArtifacts.ArtifactType.PROCESSED_JAR
-            )
+            // Still register the transform if/when dagger plugin is applied
+            // TODO(b/288221106): Dagger plugin depends on our internal implementation,
+            // we need to eliminate their dependency on this to be able to remove the following.
+            project.plugins.withId("dagger.hilt.android.plugin") {
+                registerIdentityTransformWhenJetifierIsDisabled(jetifiedAarOutputType)
+            }
         }
+
         registerTransform(
             ExtractAarTransform::class.java,
-            AndroidArtifacts.ArtifactType.PROCESSED_AAR,
+            aarOrJarTypeToConsume.aar,
             AndroidArtifacts.ArtifactType.EXPLODED_AAR
         )
         registerTransform(
@@ -257,14 +260,18 @@ class DependencyConfigurator(
 
         val sharedLibSupport = projectOptions[BooleanOption.CONSUME_DEPENDENCIES_AS_SHARED_LIBRARIES]
 
-        for (transformTarget in AarTransform.getTransformTargets()) {
-            registerTransform(
-                AarTransform::class.java,
-                AndroidArtifacts.ArtifactType.EXPLODED_AAR,
-                transformTarget
-            ) { params ->
-                params.targetType.setDisallowChanges(transformTarget)
-                params.sharedLibSupport.setDisallowChanges(sharedLibSupport)
+        val libraryCategory = project.objects.named(Category::class.java, Category.LIBRARY)
+        for (transformTarget in AarTransform.getTransformTargets(aarOrJarTypeToConsume)) {
+            dependencies.registerTransform(
+                AarTransform::class.java
+            ) { spec ->
+                spec.from.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, AndroidArtifacts.ArtifactType.EXPLODED_AAR.type)
+                spec.from.attribute(Category.CATEGORY_ATTRIBUTE, libraryCategory)
+                spec.to.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, transformTarget.type)
+                spec.to.attribute(Category.CATEGORY_ATTRIBUTE, libraryCategory)
+                spec.parameters.projectName.setDisallowChanges(project.name)
+                spec.parameters.targetType.setDisallowChanges(transformTarget)
+                spec.parameters.sharedLibSupport.setDisallowChanges(sharedLibSupport)
             }
         }
         if (projectOptions[BooleanOption.PRECOMPILE_DEPENDENCIES_RESOURCES]) {
@@ -284,7 +291,7 @@ class DependencyConfigurator(
         ) { reg: TransformSpec<AarToClassTransform.Params> ->
             reg.from.attribute(
                 ArtifactAttributes.ARTIFACT_FORMAT,
-                AndroidArtifacts.ArtifactType.PROCESSED_AAR.type
+                aarOrJarTypeToConsume.aar.type
             )
             reg.from.attribute(
                 Usage.USAGE_ATTRIBUTE,
@@ -311,7 +318,7 @@ class DependencyConfigurator(
         ) { reg: TransformSpec<AarToClassTransform.Params> ->
             reg.from.attribute(
                 ArtifactAttributes.ARTIFACT_FORMAT,
-                AndroidArtifacts.ArtifactType.PROCESSED_AAR.type
+                aarOrJarTypeToConsume.aar.type
             )
             reg.from.attribute(
                 Usage.USAGE_ATTRIBUTE,
@@ -335,7 +342,7 @@ class DependencyConfigurator(
         if (projectOptions[BooleanOption.ENABLE_PROGUARD_RULES_EXTRACTION]) {
             registerTransform(
                 ExtractProGuardRulesTransform::class.java,
-                AndroidArtifacts.ArtifactType.PROCESSED_JAR,
+                aarOrJarTypeToConsume.jar,
                 AndroidArtifacts.ArtifactType.UNFILTERED_PROGUARD_RULES
             )
         }
@@ -376,13 +383,13 @@ class DependencyConfigurator(
         )) {
             registerTransform(
                 IdentityTransform::class.java,
-                AndroidArtifacts.ArtifactType.PROCESSED_JAR,
+                aarOrJarTypeToConsume.jar,
                 classesOrResources
             )
         }
         registerTransform(
             ExtractJniTransform::class.java,
-            AndroidArtifacts.ArtifactType.PROCESSED_JAR,
+            aarOrJarTypeToConsume.jar,
             AndroidArtifacts.ArtifactType.JNI
         )
         // The Kotlin Kapt plugin should query for PROCESSED_JAR, but it is currently querying for
@@ -394,7 +401,7 @@ class DependencyConfigurator(
                     .attributes
                     .attribute(
                         ArtifactAttributes.ARTIFACT_FORMAT,
-                        AndroidArtifacts.ArtifactType.PROCESSED_JAR.type
+                        aarOrJarTypeToConsume.jar.type
                     )
             }
         }
@@ -435,6 +442,21 @@ class DependencyConfigurator(
         )
 
         return this
+    }
+
+    /** Produce the artifact type jetifier would have produced if it was enabled. */
+    private fun registerIdentityTransformWhenJetifierIsDisabled(
+            jetifiedAarOutputType: AndroidArtifacts.ArtifactType) {
+        registerTransform(
+                IdentityTransform::class.java,
+                AndroidArtifacts.ArtifactType.AAR,
+                jetifiedAarOutputType
+        )
+        registerTransform(
+                IdentityTransform::class.java,
+                AndroidArtifacts.ArtifactType.JAR,
+                AndroidArtifacts.ArtifactType.PROCESSED_JAR
+        )
     }
 
     fun configurePrivacySandboxSdkConsumerTransforms(): DependencyConfigurator {

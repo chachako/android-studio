@@ -42,10 +42,6 @@ import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
 import com.android.build.gradle.internal.component.TestComponentCreationConfig
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
-import com.android.build.gradle.internal.core.DEFAULT_EXECUTION_PROFILE
-import com.android.build.gradle.internal.core.ExecutionProfileOptions
-import com.android.build.gradle.internal.core.SettingsOptions
-import com.android.build.gradle.internal.core.ToolExecutionOptions
 import com.android.build.gradle.internal.core.dsl.VariantDslInfo
 import com.android.build.gradle.internal.crash.afterEvaluate
 import com.android.build.gradle.internal.crash.runAction
@@ -740,7 +736,7 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
         )
             .configureDependencySubstitutions()
             .configureDependencyChecks()
-            .configureGeneralTransforms(globalConfig.namespacedAndroidResources)
+            .configureGeneralTransforms(globalConfig.namespacedAndroidResources, globalConfig.aarOrJarTypeToConsume)
             .configureVariantTransforms(
                 variants.map { it.variant },
                 variantManager.nestedComponents,

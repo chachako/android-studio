@@ -20,6 +20,7 @@ import com.android.build.api.artifact.Artifact
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.gradle.internal.DependencyConfigurator
 import com.android.build.gradle.internal.SdkComponentsBuildService
+import com.android.build.gradle.internal.publishing.getAarOrJarTypeToConsume
 import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.services.DslServicesImpl
 import com.android.build.gradle.internal.services.ProjectServices
@@ -29,6 +30,8 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
+
+const val NAMESPACED_ANDROID_RESOURCES_FOR_PRIVACY_SANDBOX_ENABLED = false
 
 internal fun createTasks(
         project: Project,
@@ -51,8 +54,12 @@ internal fun createTasks(
 }
 
 internal fun configureTransforms(project: Project, projectServices: ProjectServices) {
-    DependencyConfigurator(project, projectServices)
-            .configureGeneralTransforms(namespacedAndroidResources = false)
+    DependencyConfigurator(project, projectServices).configureGeneralTransforms(
+            NAMESPACED_ANDROID_RESOURCES_FOR_PRIVACY_SANDBOX_ENABLED,
+            getAarOrJarTypeToConsume(
+                    projectServices.projectOptions,
+                    NAMESPACED_ANDROID_RESOURCES_FOR_PRIVACY_SANDBOX_ENABLED)
+    )
 }
 
 internal fun getDslServices(project: Project, projectServices: ProjectServices): DslServices {

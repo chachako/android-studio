@@ -29,7 +29,6 @@ import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope.EXTERNAL
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope.PROJECT
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType.JAR
-import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType.PROCESSED_JAR
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType.ANNOTATION_PROCESSOR
 import com.android.builder.errors.DefaultIssueReporter
 import com.android.builder.errors.IssueReporter
@@ -142,7 +141,8 @@ fun JavaCompile.configureAnnotationProcessorPath(creationConfig: ComponentCreati
     val projectJars = creationConfig.variantDependencies
             .getArtifactFileCollection(ANNOTATION_PROCESSOR, PROJECT, JAR)
     val externalJars = creationConfig.variantDependencies
-            .getArtifactFileCollection(ANNOTATION_PROCESSOR, EXTERNAL, PROCESSED_JAR)
+            .getArtifactFileCollection(ANNOTATION_PROCESSOR, EXTERNAL,
+                    creationConfig.global.aarOrJarTypeToConsume.jar)
     options.annotationProcessorPath = projectJars.plus(externalJars)
 }
 

@@ -32,6 +32,7 @@ import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.attribution.BuildAnalyzerIssueReporter
 import com.android.build.gradle.internal.core.SettingsOptions
 import com.android.build.gradle.internal.dsl.LanguageSplitOptions
+import com.android.build.gradle.internal.publishing.AarOrJarTypeToConsume
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.BaseServices
 import com.android.build.gradle.internal.testing.ManagedDeviceRegistry
@@ -113,6 +114,8 @@ interface GlobalTaskCreationConfig: BootClasspathConfig {
     val createdBy: String
 
     val asmApiVersion: Int
+
+    val aarOrJarTypeToConsume: AarOrJarTypeToConsume
 
     /**
      * Queries the given configuration for platform attributes from the jar(s) in it.
