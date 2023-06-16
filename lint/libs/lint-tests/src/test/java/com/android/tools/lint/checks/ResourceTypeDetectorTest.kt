@@ -2489,10 +2489,16 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             src/test/pkg/AnnotationTest.kt:18: Error: Expected resource of type color [ResourceType]
                         test.color0 = string // ERROR 6
                                       ~~~~~~
+            src/test/pkg/AnnotationTest.kt:18: Error: Expected resource of type string [ResourceType]
+                        test.color0 = string // ERROR 6
+                        ~~~~~~~~~~~
             src/test/pkg/AnnotationTest.kt:19: Error: Expected resource of type color [ResourceType]
                         test.color2 = string // ERROR 7
                                       ~~~~~~
-            7 errors, 0 warnings
+            src/test/pkg/AnnotationTest.kt:19: Error: Expected resource of type string [ResourceType]
+                        test.color2 = string // ERROR 7
+                        ~~~~~~~~~~~
+            9 errors, 0 warnings
             """
       )
   }

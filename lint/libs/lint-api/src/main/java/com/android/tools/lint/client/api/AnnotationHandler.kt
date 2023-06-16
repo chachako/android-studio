@@ -114,6 +114,7 @@ import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.isNullLiteral
 import org.jetbrains.uast.skipParenthesizedExprDown
 import org.jetbrains.uast.skipParenthesizedExprUp
+import org.jetbrains.uast.toUElement
 import org.jetbrains.uast.tryResolve
 import org.jetbrains.uast.util.isAssignment
 import org.jetbrains.uast.visitor.AbstractUastVisitor
@@ -223,19 +224,30 @@ internal class AnnotationHandler(
   }
 
   fun visitBinaryExpression(context: JavaContext, node: UBinaryExpression) {
-    // Assigning to an annotated field?
+    // Assigning from/to an annotated field?
     if (node.isAssignment()) {
       // We're only processing fields, not local variables, since those are
       // already visited
-      val resolved = node.leftOperand.tryResolve()
+      val lhsResolved = node.leftOperand.tryResolve()
       if (
-        resolved != null &&
-          resolved is PsiModifierListOwner &&
-          resolved !is PsiLocalVariable &&
+        lhsResolved != null &&
+          lhsResolved is PsiModifierListOwner &&
+          lhsResolved !is PsiLocalVariable &&
           !isOverloadedMethodCall(node.leftOperand)
       ) {
-        val annotations = getMemberAnnotations(context, resolved)
-        checkAnnotations(context, node.rightOperand, ASSIGNMENT_RHS, resolved, annotations)
+        val annotations = getMemberAnnotations(context, lhsResolved)
+        checkAnnotations(context, node.rightOperand, ASSIGNMENT_RHS, lhsResolved, annotations)
+      }
+
+      val rhsResolved = node.rightOperand.tryResolve()
+      if (
+        rhsResolved != null &&
+          rhsResolved is PsiModifierListOwner &&
+          rhsResolved !is PsiLocalVariable &&
+          !isOverloadedMethodCall(node.rightOperand)
+      ) {
+        val annotations = getMemberAnnotations(context, rhsResolved)
+        checkAnnotations(context, node.leftOperand, ASSIGNMENT_LHS, rhsResolved, annotations)
       }
     }
 
@@ -861,6 +873,28 @@ internal class AnnotationHandler(
     val methodAnnotations = getRelevantAnnotations(evaluator, variable as UAnnotated, VARIABLE)
     if (methodAnnotations.isNotEmpty()) {
       checkContextAnnotations(context, variable, methodAnnotations, variable)
+    }
+
+    // Check the initializer to see if it is an annotated element
+    // (AnnotationUsageType.ASSIGNMENT_LHS)
+    val initializer = variable.uastInitializer
+    if (initializer is USimpleNameReferenceExpression) {
+      val resolved = initializer.tryResolve()
+      if (
+        resolved != null && resolved is PsiModifierListOwner && !isOverloadedMethodCall(initializer)
+      ) {
+        val initializerAnnotations =
+          if (resolved is PsiLocalVariable)
+            getRelevantAnnotations(
+              context.evaluator,
+              resolved as? UAnnotated ?: resolved.toUElement() as UAnnotated,
+              VARIABLE
+            )
+          else getMemberAnnotations(context, resolved)
+        if (initializerAnnotations.isNotEmpty()) {
+          checkAnnotations(context, variable, ASSIGNMENT_LHS, resolved, initializerAnnotations)
+        }
+      }
     }
   }
 

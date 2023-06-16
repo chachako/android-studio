@@ -95,7 +95,9 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     )
 
   override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean =
-    type != AnnotationUsageType.BINARY && type != AnnotationUsageType.DEFINITION
+    type != AnnotationUsageType.BINARY &&
+      type != AnnotationUsageType.DEFINITION &&
+      type != AnnotationUsageType.ASSIGNMENT_LHS
 
   override fun visitAnnotationUsage(
     context: JavaContext,
