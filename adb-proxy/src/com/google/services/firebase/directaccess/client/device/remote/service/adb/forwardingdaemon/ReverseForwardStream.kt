@@ -263,12 +263,12 @@ internal class ReverseForwardStream(
 
     suspend fun run() {
       while (true) {
-        val bytesRead: Int
-        try {
-          bytesRead = input.read(buffer)
-        } catch (e: IOException) {
-          break
-        }
+        val bytesRead =
+          try {
+            withContext(Dispatchers.IO) { input.read(buffer) }
+          } catch (e: IOException) {
+            -1
+          }
         if (bytesRead == -1) break
 
         outputLock.withLock {
