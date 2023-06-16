@@ -19,6 +19,8 @@ package com.android.tools.firebase.testlab.gradle.services.testrunner
 import com.android.testutils.MockitoKt.mock
 import com.android.tools.firebase.testlab.gradle.services.TestingManager
 import com.google.api.services.testing.model.ResultStorage
+import com.google.api.services.testing.model.TestDetails
+import com.google.api.services.testing.model.TestExecution
 import com.google.api.services.testing.model.TestMatrix
 import org.gradle.api.logging.Logger
 import com.google.common.truth.Truth.assertThat
@@ -29,6 +31,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.inOrder
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
@@ -46,9 +49,6 @@ class TestMatrixRunProcessTrackerTest {
     lateinit var testRunMatrix: TestMatrix
 
     @Mock
-    lateinit var finishedMatrix: TestMatrix
-
-    @Mock
     lateinit var mockResultStorage: ResultStorage
 
     @Mock
@@ -60,12 +60,25 @@ class TestMatrixRunProcessTrackerTest {
     fun setup() {
         resultUri = "path/to/the/results/details"
 
-        finishedMatrix.apply {
-            `when`(state).thenReturn("FINISHED")
-            `when`(resultStorage).thenReturn(mockResultStorage)
-        }
-
         `when`(mockResultStorage.get("resultsUrl")).thenAnswer { resultUri }
+    }
+
+    fun createTestMatrix(
+        newState: String,
+        progressMessageList: List<String> = listOf(),
+        showStorage: Boolean = true
+    ) = TestMatrix().apply {
+        state = newState
+        if (showStorage) {
+            resultStorage = mockResultStorage
+        }
+        testExecutions = listOf(
+            TestExecution().apply {
+                testDetails = TestDetails().apply {
+                    progressMessages = progressMessageList
+                }
+            }
+        )
     }
 
     fun getMatrixRunTracker(
@@ -80,14 +93,36 @@ class TestMatrixRunProcessTrackerTest {
 
     @Test
     fun test_waitForTestResults() {
-        `when`(testing.getTestMatrix("project", testRunMatrix)).thenReturn(finishedMatrix)
+        lateinit var expectedMatrix: TestMatrix
+
+        `when`(testing.getTestMatrix("project", testRunMatrix)).thenReturn(
+            createTestMatrix(
+                "FINISHED",
+                listOf(
+                    "Done. Test time = 23 (secs)",
+                    "started results processing. Attempt 1",
+                    "Completed results processing. Time taken = 3 (secs)"
+                )
+            ).apply {
+                expectedMatrix = this
+            }
+        )
 
         val result = getMatrixRunTracker().waitForTestResults("device", testRunMatrix)
 
-        assertThat(result).isSameInstanceAs(finishedMatrix)
+        assertThat(result).isSameInstanceAs(expectedMatrix)
 
         inOrder(logger).also {
-            it.verify(logger).lifecycle("Firebase TestLab Test execution state: FINISHED")
+            it.verify(logger).lifecycle("Firebase Testlab Test for device: state FINISHED")
+            it.verify(logger).lifecycle(
+                "Firebase Testlab Test for device: Done. Test time = 23 (secs)"
+            )
+            it.verify(logger).lifecycle(
+                "Firebase Testlab Test for device: started results processing. Attempt 1"
+            )
+            it.verify(logger).lifecycle(
+                "Firebase Testlab Test for device: Completed results processing. Time taken = 3 (secs)"
+            )
             it.verify(logger).lifecycle(
                 "Test request for device device has been submitted to Firebase TestLab: path/to/the/results/details"
             )
@@ -98,68 +133,163 @@ class TestMatrixRunProcessTrackerTest {
 
     @Test
     fun test_waitForTestResults_alwaysGivesDetails() {
-        `when`(testing.getTestMatrix("project", testRunMatrix)).thenReturn(finishedMatrix)
+        lateinit var expectedMatrix: TestMatrix
+
+        `when`(testing.getTestMatrix("project", testRunMatrix)).thenReturn(
+            createTestMatrix(
+                "FINISHED",
+                listOf(
+                    "Done. Test time = 23 (secs)",
+                    "started results processing. Attempt 1",
+                    "Completed results processing. Time taken = 3 (secs)"
+                )
+            ).apply {
+                expectedMatrix = this
+            }
+        )
         resultUri = "results"
 
         val result = getMatrixRunTracker().waitForTestResults("device", testRunMatrix)
 
-        assertThat(result).isSameInstanceAs(finishedMatrix)
+        assertThat(result).isSameInstanceAs(expectedMatrix)
 
         inOrder(logger).also {
-            it.verify(logger).lifecycle("Firebase TestLab Test execution state: FINISHED")
-            // "/details" will be appended to the url
-            it.verify(logger).lifecycle(
-                "Test request for device device has been submitted to Firebase TestLab: results/details"
-            )
-            it.verify(logger).info("Test execution: FINISHED")
-            verifyNoMoreInteractions(logger)
+            inOrder(logger).also {
+                it.verify(logger).lifecycle("Firebase Testlab Test for device: state FINISHED")
+                it.verify(logger).lifecycle(
+                    "Firebase Testlab Test for device: Done. Test time = 23 (secs)"
+                )
+                it.verify(logger).lifecycle(
+                    "Firebase Testlab Test for device: started results processing. Attempt 1"
+                )
+                it.verify(logger).lifecycle(
+                    "Firebase Testlab Test for device: Completed results processing. Time taken = 3 (secs)"
+                )
+                it.verify(logger).lifecycle(
+                    "Test request for device device has been submitted to Firebase TestLab: results/details"
+                )
+                it.verify(logger).info("Test execution: FINISHED")
+                verifyNoMoreInteractions(logger)
+            }
         }
     }
 
     @Test
     fun test_waitForTestResults_robust() {
-        val validatingMatrix = mock<TestMatrix>().apply {
-            `when`(state).thenReturn("VALIDATING")
-        }
-        val pendingMatrix = mock<TestMatrix>().apply {
-            `when`(state).thenReturn("PENDING")
-        }
-        // Although, how TestMatrix doesn't have a "running" state
-        // instead it is based on test cases, it is shown here to represent when the url
-        // starts becoming available.
-        val runningMatrix = mock<TestMatrix>().apply {
-            `when`(state).thenReturn("RUNNING")
-            `when`(resultStorage).thenReturn(mockResultStorage)
-        }
+        lateinit var expectedMatrix: TestMatrix
 
         `when`(testing.getTestMatrix("project", testRunMatrix)).thenReturn(
-            validatingMatrix,
-            validatingMatrix,
-            validatingMatrix,
-            pendingMatrix,
-            runningMatrix,
-            runningMatrix,
-            finishedMatrix
+            createTestMatrix("VALIDATING", showStorage = false),
+            createTestMatrix("VALIDATING", showStorage = false),
+            createTestMatrix("VALIDATING", showStorage = false),
+            createTestMatrix("PENDING"),
+            createTestMatrix(
+                "PENDING",
+                listOf(
+                    "Starting attempt 1.",
+                    "Started logcat recording.",
+                    "Preparing device.",
+                    "Retrieving Performance Environment information from the device."
+                )
+            ),
+            createTestMatrix(
+                "PENDING",
+                listOf(
+                    "Starting attempt 1.",
+                    "Started logcat recording.",
+                    "Preparing device.",
+                    "Retrieving Performance Environment information from the device.",
+                    "Enabled network logging on device.",
+                    "Setting up Android test.",
+                    "Starting Android test.",
+                    "Completed Android test.",
+                    "Tearing down Android test.",
+                    "Downloading network logs from device.",
+                    "Stopped logcat recording.",
+                )
+            ),
+            createTestMatrix(
+                "FINISHED",
+                listOf(
+                    "Starting attempt 1.",
+                    "Started logcat recording.",
+                    "Preparing device.",
+                    "Retrieving Performance Environment information from the device.",
+                    "Enabled network logging on device.",
+                    "Setting up Android test.",
+                    "Starting Android test.",
+                    "Completed Android test.",
+                    "Tearing down Android test.",
+                    "Downloading network logs from device.",
+                    "Stopped logcat recording.",
+                    "Done. Test time = 32 (secs)",
+                    "Starting results processing. Attempt: 1",
+                    "Completed results processing. Time taken = 5 (secs)"
+                )
+            ).apply {
+                expectedMatrix = this
+            }
         )
 
         val result = getMatrixRunTracker().waitForTestResults("different", testRunMatrix)
 
-        assertThat(result).isSameInstanceAs(finishedMatrix)
+        assertThat(result).isSameInstanceAs(expectedMatrix)
 
         inOrder(logger).also {
-            it.verify(logger).lifecycle("Firebase TestLab Test execution state: VALIDATING")
+            it.verify(logger).lifecycle("Firebase Testlab Test for different: state VALIDATING")
             it.verify(logger, times(3)).info("Test execution: VALIDATING")
 
-            it.verify(logger).lifecycle("Firebase TestLab Test execution state: PENDING")
-            it.verify(logger).info("Test execution: PENDING")
-
-            it.verify(logger).lifecycle("Firebase TestLab Test execution state: RUNNING")
+            // first PENDING matrix
+            it.verify(logger).lifecycle("Firebase Testlab Test for different: state PENDING")
             it.verify(logger).lifecycle(
                 "Test request for device different has been submitted to Firebase TestLab: path/to/the/results/details"
             )
-            it.verify(logger, times(2)).info("Test execution: RUNNING")
+            it.verify(logger).info("Test execution: PENDING")
+            it.verify(logger).lifecycle("Firebase Testlab Test for different: Starting attempt 1.")
+            it.verify(logger).lifecycle(
+                "Firebase Testlab Test for different: Started logcat recording."
+            )
+            it.verify(logger).lifecycle("Firebase Testlab Test for different: Preparing device.")
+            it.verify(logger).lifecycle(
+                "Firebase Testlab Test for different: Retrieving Performance Environment information from the device."
+            )
+            it.verify(logger).info("Test execution: PENDING")
 
-            it.verify(logger).lifecycle("Firebase TestLab Test execution state: FINISHED")
+            // second PENDING matrix
+            it.verify(logger).lifecycle(
+                "Firebase Testlab Test for different: Enabled network logging on device."
+            )
+            it.verify(logger).lifecycle(
+                "Firebase Testlab Test for different: Setting up Android test."
+            )
+            it.verify(logger).lifecycle(
+                "Firebase Testlab Test for different: Starting Android test."
+            )
+            it.verify(logger).lifecycle(
+                "Firebase Testlab Test for different: Completed Android test."
+            )
+            it.verify(logger).lifecycle(
+                "Firebase Testlab Test for different: Tearing down Android test."
+            )
+            it.verify(logger).lifecycle(
+                "Firebase Testlab Test for different: Downloading network logs from device."
+            )
+            it.verify(logger).lifecycle(
+                "Firebase Testlab Test for different: Stopped logcat recording."
+            )
+            it.verify(logger).info("Test execution: RUNNING")
+
+            // finished matrix
+            it.verify(logger).lifecycle("Firebase Testlab Test for different: state FINISHED")
+            it.verify(logger).lifecycle(
+                "Firebase Testlab Test for different: Done. Test time = 32 (secs)"
+            )
+            it.verify(logger).lifecycle(
+                "Firebase Testlab Test for different: Starting results processing. Attempt: 1"
+            )
+            it.verify(logger).lifecycle(
+                "Firebase Testlab Test for different: Completed results processing. Time taken = 5 (secs)"
+            )
             it.verify(logger).info("Test execution: FINISHED")
             verifyNoMoreInteractions(logger)
         }

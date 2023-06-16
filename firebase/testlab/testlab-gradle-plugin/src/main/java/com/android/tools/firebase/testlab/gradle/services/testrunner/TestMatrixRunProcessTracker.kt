@@ -40,13 +40,27 @@ class TestMatrixRunProcessTracker(
 
     fun waitForTestResults(deviceName: String, testRunMatrix: TestMatrix): TestMatrix {
         var previousTestMatrixState = ""
+        // Since, test matrices from FTL will never say they've entered the "RUNNING" state,
+        // we check the progress messages to determine when the tests start running.
+        var actualTestMatrixState = ""
         var printResultsUrl = true
+        var currentProgressStatus = 0
         while (true) {
             val latestTestMatrix =
                 testingManager.getTestMatrix(projectName, testRunMatrix)
             if (previousTestMatrixState != latestTestMatrix.state) {
                 previousTestMatrixState = latestTestMatrix.state
-                logger.lifecycle("Firebase TestLab Test execution state: $previousTestMatrixState")
+                actualTestMatrixState = latestTestMatrix.state
+                lifecycleExecution("state $actualTestMatrixState", deviceName)
+            }
+            latestTestMatrix.testExecutions.firstOrNull()?.testDetails?.apply {
+                while (currentProgressStatus < progressMessages.size) {
+                    val message = progressMessages[currentProgressStatus++]
+                    if (message == "Starting Android test.") {
+                        actualTestMatrixState = "RUNNING"
+                    }
+                    lifecycleExecution("$message", deviceName)
+                }
             }
             if (printResultsUrl) {
                 val resultsUrl = latestTestMatrix.resultStorage?.get("resultsUrl") as String?
@@ -62,15 +76,18 @@ class TestMatrixRunProcessTracker(
                     printResultsUrl = false
                 }
             }
+            logger.info("Test execution: ${actualTestMatrixState}")
             val testFinished = when (latestTestMatrix.state) {
                 "VALIDATING", "PENDING", "RUNNING" -> false
                 else -> true
             }
-            logger.info("Test execution: ${latestTestMatrix.state}")
             if (testFinished) {
                 return latestTestMatrix
             }
             Thread.sleep(checkTestStateWaitMs)
         }
     }
+
+    private fun lifecycleExecution(message: String, device: String) =
+        logger.lifecycle("Firebase Testlab Test for $device: $message")
 }
