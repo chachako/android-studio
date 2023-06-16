@@ -14,8 +14,7 @@
                 "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/src/androidInstrumentedTest/AndroidManifest.xml"
               }
             }
-          },
-          "org.jetbrains.kotlin.gradle.utils.Future\u003ckotlin.Boolean\u003e;isNativeSourceSet": "org.jetbrains.kotlin.gradle.utils.FutureImpl@549df323"
+          }
         }
       },
       "allSourceSets": [
@@ -64,8 +63,7 @@
                 "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/src/androidMain/AndroidManifest.xml"
               }
             }
-          },
-          "org.jetbrains.kotlin.gradle.utils.Future\u003ckotlin.Boolean\u003e;isNativeSourceSet": "org.jetbrains.kotlin.gradle.utils.FutureImpl@116314aa"
+          }
         }
       },
       "allSourceSets": [
@@ -112,8 +110,7 @@
                 "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/src/androidUnitTest/AndroidManifest.xml"
               }
             }
-          },
-          "org.jetbrains.kotlin.gradle.utils.Future\u003ckotlin.Boolean\u003e;isNativeSourceSet": "org.jetbrains.kotlin.gradle.utils.FutureImpl@30fab939"
+          }
         }
       },
       "allSourceSets": [

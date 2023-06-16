@@ -301,7 +301,8 @@ class FileNormalizerImpl(
     androidNdkSxSRoot: File?,
     localRepos: List<Path>,
     additionalMavenRepo: Path?,
-    defaultNdkSideBySideVersion: String
+    defaultNdkSideBySideVersion: String,
+    private val extraNormalizer: ((String) -> String)? = null
 ) : FileNormalizer {
 
     private data class RootData(
@@ -378,7 +379,11 @@ class FileNormalizerImpl(
             mutableList.add(RootData(it, "ANDROID_PREFS"))
         }
 
-        localRepos.asSequence().map { it.toFile() }.forEach {
+        // Sort by length to make sure that the longest path is always chosen first
+        // (example: android_gradle_plugin vs android_gradle_plugin_runtime_dependencies)
+        localRepos.asSequence().map { it.toFile() }.sortedByDescending {
+            it.absolutePath.length
+        }.forEach {
             mutableList.add(RootData(it, "LOCAL_REPO"))
         }
 
@@ -473,6 +478,10 @@ class FileNormalizerImpl(
 
                 s = "$stringBefore{$varName}/$modifiedStringAfter"
             }
+        }
+
+        extraNormalizer?.let {
+            s = it(s)
         }
         return s
     }

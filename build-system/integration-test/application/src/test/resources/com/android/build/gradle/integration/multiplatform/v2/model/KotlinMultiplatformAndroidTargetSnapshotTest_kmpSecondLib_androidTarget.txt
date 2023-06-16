@@ -14,8 +14,7 @@
                 "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpSecondLib/src/androidMain/AndroidManifest.xml"
               }
             }
-          },
-          "org.jetbrains.kotlin.gradle.utils.Future\u003ckotlin.Boolean\u003e;isNativeSourceSet": "org.jetbrains.kotlin.gradle.utils.FutureImpl@3b94e1c0"
+          }
         }
       },
       "allSourceSets": [

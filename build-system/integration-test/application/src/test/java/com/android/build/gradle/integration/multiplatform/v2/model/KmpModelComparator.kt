@@ -57,7 +57,19 @@ class KmpModelComparator(
             localRepos = GradleTestProject.localRepositories,
             additionalMavenRepo = project.additionalMavenRepoDir,
             defaultNdkSideBySideVersion = GradleTestProject.DEFAULT_NDK_SIDE_BY_SIDE_VERSION
-        )
+        ) {
+            // the normalizer doesn't cover the modules-2 files, since the path contains the library
+            // itself, we just override it here.
+            if (it.startsWith(
+                    "{GRADLE}/caches/modules-2/files-2.1/com.example/kmpSecondLib-android/1.0/"
+                )) {
+                "{GRADLE_CACHE}/{MODULES_2}/{LIBRARY_COORDINATES}/{CHECKSUM}" + it.removePrefix(
+                    "{GRADLE}/caches/modules-2/files-2.1/com.example/kmpSecondLib-android/1.0/"
+                ).substring(40) // remove the hash
+            } else {
+                it
+            }
+        }
 
         val gson = GsonBuilder().setPrettyPrinting().create()
 

@@ -121,7 +121,7 @@
 +             "version": "1.0"
 +           },
 +           "artifact": {
-+             "absolutePath": "{GRADLE}/caches/modules-2/files-2.1/com.example/kmpSecondLib-android/1.0/bef144f9153f476a713e81b47c2524d3b848adc2/kmpSecondLib.aar"
++             "absolutePath": "{GRADLE_CACHE}/{MODULES_2}/{LIBRARY_COORDINATES}/{CHECKSUM}/kmpSecondLib.aar"
 +           },
 +           "androidLibraryData": {
 +             "manifest": {

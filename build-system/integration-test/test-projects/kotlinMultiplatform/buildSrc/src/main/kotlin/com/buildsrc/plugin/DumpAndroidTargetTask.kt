@@ -101,6 +101,10 @@ abstract class DumpAndroidTargetTask: DefaultTask() {
                     // skip since this is reported anyways.
                     if (!entry.key.stableString.contains(
                             "org.jetbrains.kotlin.gradle.plugin.mpp.compilationImpl.KotlinCompilationSourceSetInclusion"
+                        ) &&
+                        // An object reference is dumped which changes on different runs
+                        !entry.key.stableString.startsWith(
+                            "org.jetbrains.kotlin.gradle.utils.Future"
                         )) {
                         add(entry.key.stableString, valueElement)
                     }

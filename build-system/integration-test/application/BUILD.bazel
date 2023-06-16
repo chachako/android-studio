@@ -596,7 +596,7 @@ gradle_integration_test(
     timeout = "long",
     srcs = glob(
         [
-            "src/test/java/com/android/build/gradle/integration/multiplatform/v2/*.kt",
+            "src/test/java/com/android/build/gradle/integration/multiplatform/v2/**/*.kt",
         ],
     ),
     data = TEST_DATA,
@@ -611,6 +611,7 @@ gradle_integration_test(
         "//tools/base/build-system/integration-test:support_library_latest",
         "//tools/base/build-system/integration-test/application:prebuilts",
     ],
+    resources = glob(["src/test/resources/**"]),
     shard_count = 2,
     #keep sorted
     tags = [
