@@ -298,7 +298,7 @@ fun NativeModule.sorted() : NativeModule {
     val module = this
     fun sorted(variant : NativeVariant) = object : NativeVariant by variant {
         override val abis = variant.abis
-                .sortedBy { abi -> Abi.getByName(abi.name)!!.ordinal }
+                .sortedBy { abi -> Abi.getByName(abi.name)?.ordinal ?: Int.MAX_VALUE }
     }
     return object : NativeModule by module {
         override val variants = module.variants

@@ -36,7 +36,8 @@ public enum Abi {
     X86(SdkConstants.ABI_INTEL_ATOM),
     X86_64(SdkConstants.ABI_INTEL_ATOM64),
     MIPS(SdkConstants.ABI_MIPS),
-    MIPS64(SdkConstants.ABI_MIPS64);
+    MIPS64(SdkConstants.ABI_MIPS64),
+    RISCV64(SdkConstants.ABI_RISCV64);
 
     @NonNull
     private final String name;

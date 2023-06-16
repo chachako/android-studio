@@ -140,7 +140,7 @@ class NdkAbiFileTest {
     @Test
     fun testNdk14() {
         val ndkAbiInfos = ndkAbiInfosNdk14()
-        assertThat(ndkAbiInfos).hasSize(Abi.values().size)
+        assertThat(ndkAbiInfos).hasSize(7)
         val first = ndkAbiInfos.first()
         assertThat(first.name).isEqualTo(Abi.ARMEABI.tag)
         assertThat(first.isDeprecated).isEqualTo(false)
@@ -172,6 +172,6 @@ class NdkAbiFileTest {
         val file = ndkMetaAbisFile(File(temporaryFolder.root, "./invalid-abis-NDK"))
         file.parentFile.mkdirs()
         file.writeText("invalid abis json file")
-        assertThat(NdkAbiFile(file).abiInfoList).hasSize(Abi.values().size)
+        assertThat(NdkAbiFile(file).abiInfoList).hasSize(7)
     }
 }

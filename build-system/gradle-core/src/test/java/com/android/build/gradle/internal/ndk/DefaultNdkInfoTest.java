@@ -31,8 +31,11 @@ import org.junit.rules.TemporaryFolder;
 
 /** Test for DefaultNdkInfo. */
 public class DefaultNdkInfoTest {
-    private static final Object[] ALL_ABIS =
-            Arrays.stream(Abi.values()).map(it -> it.getTag()).toArray();
+    private static final Object[] ALL_FALLBACK_ABIS =
+            Arrays.stream(Abi.values())
+                    .map(it -> it.getTag())
+                    .filter(it -> !it.equals("riscv64"))
+                    .toArray();
     private static final Object[] ALL_32_BITS_ABIS =
             new Object[] {
                 Abi.ARMEABI.getTag(), Abi.ARMEABI_V7A.getTag(), Abi.X86.getTag(), Abi.MIPS.getTag()
@@ -52,9 +55,9 @@ public class DefaultNdkInfoTest {
     @Test
     public void testMissingAbiFile() throws IOException {
         NdkInfo info = new DefaultNdkInfo(ndkFolder);
-        assertThat(info.getSupportedAbis()).containsExactly(ALL_ABIS);
+        assertThat(info.getSupportedAbis()).containsExactly(ALL_FALLBACK_ABIS);
         assertThat(info.getSupported32BitsAbis()).containsExactly(ALL_32_BITS_ABIS);
-        assertThat(info.getDefaultAbis()).containsExactly(ALL_ABIS);
+        assertThat(info.getDefaultAbis()).containsExactly(ALL_FALLBACK_ABIS);
         assertThat(info.getDefault32BitsAbis()).containsExactly(ALL_32_BITS_ABIS);
     }
 
@@ -62,9 +65,9 @@ public class DefaultNdkInfoTest {
     public void testParseFailureResultInDefaultAbiList() throws IOException {
         Files.asCharSink(abiListFile, Charsets.UTF_8).write("invalid json file\n");
         NdkInfo info = new DefaultNdkInfo(ndkFolder);
-        assertThat(info.getSupportedAbis()).containsExactly(ALL_ABIS);
+        assertThat(info.getSupportedAbis()).containsExactly(ALL_FALLBACK_ABIS);
         assertThat(info.getSupported32BitsAbis()).containsExactly(ALL_32_BITS_ABIS);
-        assertThat(info.getDefaultAbis()).containsExactly(ALL_ABIS);
+        assertThat(info.getDefaultAbis()).containsExactly(ALL_FALLBACK_ABIS);
         assertThat(info.getDefault32BitsAbis()).containsExactly(ALL_32_BITS_ABIS);
     }
 

@@ -130,7 +130,8 @@ public class AndroidBuildGradleJsons {
             lint(
                     result,
                     androidGradleBuildJsonFile,
-                    abi.getVariant().getModule().getNdkDefaultAbiList());
+                    abi.getVariant().getModule().getNdkDefaultAbiList(),
+                    abi.getVariant().getModule().getNdkSupportedAbiList());
         } else {
             // A metadata provider may choose to only supply the mini config (with the rest of the
             // relevant information provided by compile_commands.json). In this case, lint checks
@@ -139,7 +140,8 @@ public class AndroidBuildGradleJsons {
             lint(
                     result,
                     getMiniConfigFile(abi),
-                    abi.getVariant().getModule().getNdkDefaultAbiList());
+                    abi.getVariant().getModule().getNdkDefaultAbiList(),
+                    abi.getVariant().getModule().getNdkSupportedAbiList());
         }
 
         return result;

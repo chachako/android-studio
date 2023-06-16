@@ -70,6 +70,7 @@ class NdkAbiFile(abiFile: File) {
      * Produce a default set of ABIs if there was a problem.
      */
     private fun fallbackAbis() = Abi.values()
+        .filter { it.isFallbackAbi }
         .map { AbiInfo(
             name = it.tag,
             bitness = it.bitness,
@@ -143,6 +144,17 @@ private val Abi.bitness : Int get() = when(this) {
     else -> 64
 }
 
+private val Abi.isFallbackAbi get() = when(this) {
+    Abi.ARMEABI,
+    Abi.ARMEABI_V7A,
+    Abi.ARM64_V8A,
+    Abi.MIPS,
+    Abi.MIPS64,
+    Abi.X86,
+    Abi.X86_64 -> true
+    else -> false
+}
+
 val Abi.architecture : String get() = when(this) {
     Abi.ARMEABI -> "arm"
     Abi.ARMEABI_V7A -> "arm"
@@ -151,6 +163,7 @@ val Abi.architecture : String get() = when(this) {
     Abi.MIPS64 -> "mips64"
     Abi.X86 -> "x86"
     Abi.X86_64 -> "x86_64"
+    else -> error("Should only use for fallback")
 }
 
 val Abi.triple : String get() = when(this) {
@@ -161,6 +174,7 @@ val Abi.triple : String get() = when(this) {
     Abi.MIPS64 -> "mips64el-linux-android"
     Abi.X86 -> "i686-linux-android"
     Abi.X86_64 -> "x86_64-linux-android"
+    else -> error("Should only use for fallback")
 }
 
 private val Abi.llvmTriple : String get() = when(this) {
