@@ -4,6 +4,7 @@
 platform-tools:{adb*,api/*,package.xml,*.dll,sqlite3*,lib64/*}
 
 # Build tools
+build-tools;34.0.0
 build-tools;34.0.0-rc3
 build-tools;33.0.1
 build-tools;30.0.3
