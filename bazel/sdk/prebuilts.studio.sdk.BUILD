@@ -22,14 +22,14 @@ java_binary(
 
 filegroup(
     name = "build-tools/latest",
-    srcs = [":build-tools/34.0.0-rc3"],
+    srcs = [":build-tools/34.0.0"],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "build-tools/latest/aidl",
     srcs = sdk_glob(
-        include = ["build-tools/34.0.0-rc3/aidl"],
+        include = ["build-tools/34.0.0/aidl"],
     ),
     visibility = ["//visibility:public"],
 )
@@ -38,14 +38,6 @@ filegroup(
     name = "build-tools/34.0.0",
     srcs = glob(
         include = ["*/build-tools/34.0.0/**"],
-    ),
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "build-tools/34.0.0-rc3",
-    srcs = glob(
-        include = ["*/build-tools/34.0.0-rc3/**"],
     ),
     visibility = ["//visibility:public"],
 )
