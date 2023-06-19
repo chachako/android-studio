@@ -30,10 +30,14 @@ import com.android.testutils.file.InMemoryFileSystems;
 import com.android.utils.PathUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
+
 import junit.framework.TestCase;
 import org.apache.commons.compress.archivers.zip.UnixStat;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -573,6 +577,39 @@ public class InstallerUtilTest extends TestCase {
         progress.assertNoErrorsOrWarnings();
     }
 
+    private static void zipDirectory(Path outZip, Path root, boolean includeDirectoryEntries)
+            throws IOException {
+        try (ZipArchiveOutputStream out = new ZipArchiveOutputStream(outZip.toFile());
+                Stream<Path> walk = Files.walk(root)) {
+            walk.forEach(
+                    path -> {
+                        try {
+                            if (!includeDirectoryEntries && Files.isDirectory(path)) return;
+                            ZipArchiveEntry archiveEntry =
+                                    (ZipArchiveEntry)
+                                            out.createArchiveEntry(
+                                                    path.toFile(),
+                                                    root.relativize(path).toString());
+                            out.putArchiveEntry(archiveEntry);
+                            if (Files.isSymbolicLink(path)) {
+                                archiveEntry.setUnixMode(
+                                        UnixStat.LINK_FLAG | archiveEntry.getUnixMode());
+                                out.write(
+                                        path.getParent()
+                                                .relativize(Files.readSymbolicLink(path))
+                                                .toString()
+                                                .getBytes());
+                            } else if (!Files.isDirectory(path)) {
+                                out.write(Files.readAllBytes(path));
+                            }
+                            out.closeArchiveEntry();
+                        } catch (Exception e) {
+                            fail();
+                        }
+                    });
+        }
+    }
+
     public void testUnzip() throws Exception {
         if (FileOpUtils.isWindows()) {
             // can't run on windows.
@@ -596,27 +633,7 @@ public class InstallerUtilTest extends TestCase {
             Files.createSymbolicLink(outRoot.resolve("qux"), outRoot.resolve("qux.target"));
 
             Path outZip = outRoot.resolve("out.zip");
-            try (ZipArchiveOutputStream out = new ZipArchiveOutputStream(outZip.toFile())) {
-                Files.walk(root).forEach(path -> {
-                    try {
-                        ZipArchiveEntry archiveEntry = (ZipArchiveEntry) out
-                                .createArchiveEntry(path.toFile(),
-                                        root.relativize(path).toString());
-                        out.putArchiveEntry(archiveEntry);
-                        if (Files.isSymbolicLink(path)) {
-                            archiveEntry
-                                    .setUnixMode(UnixStat.LINK_FLAG | archiveEntry.getUnixMode());
-                            out.write(path.getParent().relativize(
-                                    Files.readSymbolicLink(path)).toString().getBytes());
-                        } else if (!Files.isDirectory(path)) {
-                            out.write(Files.readAllBytes(path));
-                        }
-                        out.closeArchiveEntry();
-                    } catch (Exception e) {
-                        fail();
-                    }
-                });
-            }
+            zipDirectory(outZip, root, true);
             Path unzipped = outRoot.resolve("unzipped");
             Files.createDirectories(unzipped);
             InstallerUtil.unzip(outZip, unzipped, 0, new FakeProgressIndicator(true));
@@ -640,5 +657,38 @@ public class InstallerUtilTest extends TestCase {
             PathUtils.deleteRecursivelyIfExists(root);
             PathUtils.deleteRecursivelyIfExists(outRoot);
         }
+    }
+    public void testUnzipSymlink() throws Exception {
+        if (FileOpUtils.isWindows()) {
+            // can't run on windows.
+            return;
+        }
+        Path tmp = Files.createTempDirectory("InstallerUtilTest_testUnzipSymlink");
+        Path outDir = tmp.resolve("out");
+        Files.createDirectory(outDir);
+        Path root = tmp.resolve("to_zip");
+        Files.createDirectory(root);
+        Path dir1 = root.resolve("dir1");
+        Files.createDirectory(dir1);
+        Path file = dir1.resolve("file.txt");
+        Files.write(file, "content".getBytes());
+        Path dir2 = root.resolve("dir2");
+        Files.createDirectory(dir2);
+        Path link = dir2.resolve("link");
+        Files.createSymbolicLink(link, file);
+        Path outZip = outDir.resolve("zip with symlink.zip");
+        zipDirectory(outZip, root, false);
+        Path unzipped = tmp.resolve("unzipped");
+        Files.createDirectories(unzipped);
+
+        InstallerUtil.unzip(outZip, unzipped, 0, new FakeProgressIndicator(true));
+
+        Path resultFile = unzipped.resolve("dir1/file.txt");
+        assertEquals("content", new String(Files.readAllBytes(resultFile)));
+        Path resultLink = unzipped.resolve("dir2/link");
+        assertTrue(Files.isRegularFile(resultLink));
+        assertTrue(Files.isSymbolicLink(resultLink));
+        assertTrue(Files.isSameFile(resultLink, resultFile));
+        assertEquals("content", new String(Files.readAllBytes(resultLink)));
     }
 }
