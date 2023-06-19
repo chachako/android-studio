@@ -72,7 +72,8 @@ public final class SdkConstants {
      * A maximum version of the Android SDK that this version of AGP and Android Studio IDE can
      * safely recommend during its development cycle.
      */
-    public static final AndroidVersion RECOMMENDED_MAXIMUM_SDK_VERSION = new AndroidVersion(34);
+    public static final AndroidVersion MAX_SUPPORTED_ANDROID_PLATFORM_VERSION =
+            new AndroidVersion(34);
 
     /** Property in local.properties file that specifies the path of the Android NDK. */
     public static final String NDK_DIR_PROPERTY = "ndk.dir";
