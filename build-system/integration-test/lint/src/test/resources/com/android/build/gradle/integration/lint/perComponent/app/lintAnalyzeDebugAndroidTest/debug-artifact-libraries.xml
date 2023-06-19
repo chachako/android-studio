@@ -14,8 +14,7 @@
       proguardRules="proguard.txt"/>
   <library
       name="${projectDir}@@:app::debug"
-      jars="${projectDir}/app/build/intermediates/compile_app_classes_jar/debug/classes.jar"
-      resolved="::"/>
+      project=":app"/>
   <library
       name="${projectDir}@@:library::debug"
       jars="${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/classes.jar:${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/libs/R.jar"

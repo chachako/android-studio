@@ -59,6 +59,7 @@ data class ResolvedArtifact internal constructor(
 
     constructor(
         mainArtifactResult: ResolvedArtifactResult,
+        artifactFile: File?,
         extractedFolder: File?,
         publishedLintJar: File?,
         dependencyType: DependencyType,
@@ -69,7 +70,7 @@ data class ResolvedArtifact internal constructor(
                 mainArtifactResult.id.componentIdentifier,
                 mainArtifactResult.variant,
                 mainArtifactResult.getVariantName(),
-                mainArtifactResult.file,
+                artifactFile,
                 mainArtifactResult.hasProjectTestFixturesCapability() ||
                         mainArtifactResult.hasLibraryTestFixturesCapability(),
                 extractedFolder,

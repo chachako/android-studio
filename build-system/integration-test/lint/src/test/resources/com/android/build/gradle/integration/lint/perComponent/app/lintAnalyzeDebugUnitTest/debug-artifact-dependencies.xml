@@ -6,7 +6,7 @@
         simpleName="artifacts::app"/>
     <dependency
         name="${projectDir}@@:app::debug"
-        simpleName=":"/>
+        simpleName="artifacts::app"/>
     <dependency
         name="${projectDir}@@:library::debug"
         simpleName="lintKotlin:library"/>

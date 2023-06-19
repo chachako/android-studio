@@ -141,6 +141,7 @@
               "attributes": {
                 "com.android.build.api.attributes.AgpVersionAttr": "{AGP_Version}",
                 "com.android.build.gradle.internal.attributes.VariantAttr": "typeoneModetwoDebug",
+                "org.gradle.libraryelements": "jar",
                 "org.gradle.usage": "java-api"
               },
               "capabilities": [

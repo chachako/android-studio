@@ -2,11 +2,11 @@
    - name                 = "debug"
    > mainArtifact:
       - compileDependencies:
-         - other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-api|com.composite-build:lib:1.2:
+         - other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|com.composite-build:lib:1.2:
             - requestedCoordinates = (null)
             - dependencies         = []
       - runtimeDependencies:
-         - other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|com.composite-build:lib:1.2:
+         - other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|com.composite-build:lib:1.2:
             - requestedCoordinates = (null)
             - dependencies         = []
       - unresolvedDependencies = []
@@ -16,7 +16,7 @@
          - :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|project:app:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
-         - other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-api|com.composite-build:lib:1.2:
+         - other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|com.composite-build:lib:1.2:
             - requestedCoordinates = (null)
             - dependencies         = []
       - runtimeDependencies    = []
@@ -27,17 +27,17 @@
          - :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|project:app:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
-         - other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-api|com.composite-build:lib:1.2:
+         - other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|com.composite-build:lib:1.2:
             - requestedCoordinates = (null)
             - dependencies         = []
       - runtimeDependencies:
          - :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|project:app:unspecified:
             - requestedCoordinates = (null)
             - dependencies:
-               - other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|com.composite-build:lib:1.2:
+               - other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|com.composite-build:lib:1.2:
                   - requestedCoordinates = (null)
                   - dependencies         = []
-         - other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|com.composite-build:lib:1.2:
+         - other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|com.composite-build:lib:1.2:
             - dependencies = "*visited*"
       - unresolvedDependencies = []
    < unitTestArtifact
@@ -45,7 +45,7 @@
    > libraries:
       > :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|project:app:unspecified:
          - type               = PROJECT
-         - artifact           = {PROJECT}/app/build/intermediates/compile_app_classes_jar/debug/classes.jar{!}
+         - artifact           = (null)
          > projectInfo:
             - buildId        = ":"
             - projectPath    = ":app"
@@ -84,7 +84,7 @@
          - lintJar            = (null)
          - androidLibraryData = (null)
       < :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|project:app:unspecified
-      > other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-api|com.composite-build:lib:1.2:
+      > other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|com.composite-build:lib:1.2:
          - type               = PROJECT
          - artifact           = (null)
          > projectInfo:
@@ -96,6 +96,7 @@
             - attributes:
                * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
                * "com.android.build.gradle.internal.attributes.VariantAttr -> debug"
+               * "org.gradle.libraryelements -> jar"
                * "org.gradle.usage -> java-api"
             - capabilities:
                * "com.composite-build:lib:1.2"
@@ -103,8 +104,8 @@
          - libraryInfo        = (null)
          - lintJar            = {INCLUDED_BUILD(other-build)}/lib/build/intermediates/lint_publish_jar/global/lint.jar{!}
          - androidLibraryData = (null)
-      < other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-api|com.composite-build:lib:1.2
-      > other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|com.composite-build:lib:1.2:
+      < other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|com.composite-build:lib:1.2
+      > other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|com.composite-build:lib:1.2:
          - type               = PROJECT
          - artifact           = (null)
          > projectInfo:
@@ -116,6 +117,7 @@
             - attributes:
                * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
                * "com.android.build.gradle.internal.attributes.VariantAttr -> debug"
+               * "org.gradle.libraryelements -> jar"
                * "org.gradle.usage -> java-runtime"
             - capabilities:
                * "com.composite-build:lib:1.2"
@@ -123,6 +125,6 @@
          - libraryInfo        = (null)
          - lintJar            = {INCLUDED_BUILD(other-build)}/lib/build/intermediates/lint_publish_jar/global/lint.jar{!}
          - androidLibraryData = (null)
-      < other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|com.composite-build:lib:1.2
+      < other-build|:lib|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|com.composite-build:lib:1.2
    < libraries
 < VariantDependencies

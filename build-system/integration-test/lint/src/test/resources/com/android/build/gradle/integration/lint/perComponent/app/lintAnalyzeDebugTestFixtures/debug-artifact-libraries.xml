@@ -1,6 +1,5 @@
 <libraries>
   <library
       name="${projectDir}@@:app::debug"
-      jars="${projectDir}/app/build/intermediates/compile_app_classes_jar/debug/classes.jar"
-      resolved="::"/>
+      project=":app"/>
 </libraries>

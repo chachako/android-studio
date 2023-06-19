@@ -95,7 +95,7 @@ class ExternalLintModelArtifactHandler private constructor(
         buildId: String,
         variantName: String?,
         isTestFixtures: Boolean,
-        aarFile: File,
+        aarFile: File?,
         lintJar: File?,
         isProvided: Boolean,
         coordinatesSupplier: () -> MavenCoordinates,
@@ -107,12 +107,23 @@ class ExternalLintModelArtifactHandler private constructor(
             variantName = variantName,
             isTestFixtures = isTestFixtures
         )
-        val folder = projectExplodedAarsMap[sourceSetKey] ?: throw IllegalStateException("unable to find project exploded aar for $sourceSetKey")
         val mainKey = ProjectKey(
-            buildId = buildId,
-            projectPath = projectPath,
-            variantName = variantName
+                buildId = buildId,
+                projectPath = projectPath,
+                variantName = variantName
         )
+        if (mainKey in baseModuleModelFileMap || (sourceSetKey !in projectExplodedAarsMap && sourceSetKey in projectJarsMap)) {
+            return DefaultLintModelModuleLibrary(
+                identifier = identitySupplier(),
+                projectPath = projectPath,
+                lintJar = null,
+                provided = false
+            )
+        }
+        val folder = projectExplodedAarsMap[sourceSetKey] ?:
+            throw IllegalStateException("unable to find project exploded aar for $sourceSetKey")
+
+
         val resolvedCoordinates: LintModelMavenName =
             lintModelMetadataMap[mainKey]?.let { file ->
                 val properties = Properties()
@@ -174,10 +185,10 @@ class ExternalLintModelArtifactHandler private constructor(
         val mainKey = ProjectKey(buildId, projectPath, variantName)
         if (mainKey in baseModuleModelFileMap) {
             return DefaultLintModelModuleLibrary(
-                identifier = identitySupplier(),
-                projectPath = projectPath,
-                lintJar = null,
-                provided = false
+                    identifier = identitySupplier(),
+                    projectPath = projectPath,
+                    lintJar = null,
+                    provided = false
             )
         }
         val jar = getProjectJar(sourceSetKey)

@@ -3,6 +3,6 @@
       roots="${projectDir}@@:app::debug">
     <dependency
         name="${projectDir}@@:app::debug"
-        simpleName=":"/>
+        simpleName="artifacts::app"/>
   </compile>
 </dependencies>

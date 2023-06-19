@@ -6,7 +6,7 @@
         simpleName="artifacts::app"/>
     <dependency
         name="${projectDir}@@:app::release"
-        simpleName=":"/>
+        simpleName="artifacts::app"/>
     <dependency
         name="${projectDir}@@:javaLib::testFixtures"
         simpleName=":"/>
