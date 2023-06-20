@@ -114,6 +114,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
     private lateinit var androidExtension: KotlinMultiplatformAndroidExtensionImpl
     private lateinit var androidTarget: KotlinMultiplatformAndroidTargetImpl
 
+    private lateinit var mainVariant: KmpVariantImpl
+
     private val sourceSetToCreationConfigMap = mutableMapOf<KotlinSourceSet, KmpComponentCreationConfig>()
     private val extraSourceSetsToIncludeInResolution = mutableSetOf<KotlinSourceSet>()
 
@@ -269,8 +271,12 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
                     KotlinIdeImportConfigurator.configure(
                         project,
                         this,
-                        sourceSetToCreationConfigMapProvider = { sourceSetToCreationConfigMap },
-                        extraSourceSetsToIncludeInResolution = {
+                        sourceSetToCreationConfigMap = lazy {
+                            checkIfCommonSourceSetsShouldBeAndroid()
+                            sourceSetToCreationConfigMap
+                        },
+                        extraSourceSetsToIncludeInResolution = lazy {
+                            checkIfCommonSourceSetsShouldBeAndroid()
                             extraSourceSetsToIncludeInResolution
                         }
                     )
@@ -394,7 +400,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             project, global
         )
 
-        val mainVariant = createVariant(
+        mainVariant = createVariant(
             project,
             global,
             variantServices,
@@ -407,8 +413,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             global,
             variantServices,
             taskServices,
-            androidTarget,
-            mainVariant
+            androidTarget
         )
 
         val androidTest = createAndroidTestComponent(
@@ -417,8 +422,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             variantServices,
             taskServices,
             taskManager,
-            androidTarget,
-            mainVariant
+            androidTarget
         )
 
         mainVariant.unitTest = unitTest
@@ -443,32 +447,6 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
 
             it.androidKotlinCompilation.kotlinSourceSets.forEach { sourceSet ->
                 sourceSetToCreationConfigMap[sourceSet] = it
-            }
-        }
-
-        // Here we check if the common sourceSets are included only in the androidTarget, this means
-        // that the sourceSet should be treated as android sourceSet in IDE Import and its
-        // dependencies should be resolved from the component that maps to the compilation
-        // containing this sourceSet.
-        listOf(
-            COMMON_MAIN_SOURCE_SET_NAME,
-            COMMON_TEST_SOURCE_SET_NAME
-        ).mapNotNull {
-            val sourceSet = kotlinExtension.sourceSets.getByName(it)
-            val targetsContainingSourceSet = kotlinExtension.targets.filter { target ->
-                target.platformType != KotlinPlatformType.common &&
-                        target.compilations.any { compilation ->
-                            compilation.allKotlinSourceSets.contains(sourceSet)
-                        }
-            }
-            sourceSet.takeIf { targetsContainingSourceSet.singleOrNull() == androidTarget }
-        }.forEach { commonSourceSet ->
-            for (component in listOfNotNull(mainVariant, unitTest, androidTest)) {
-                if (component.androidKotlinCompilation.allKotlinSourceSets.contains(commonSourceSet)) {
-                    sourceSetToCreationConfigMap[commonSourceSet] = component
-                    extraSourceSetsToIncludeInResolution.add(commonSourceSet)
-                    break
-                }
             }
         }
 
@@ -506,6 +484,34 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             androidExtension.testInstrumentationRunner,
             androidExtension.testInstrumentationRunnerArguments
         )
+    }
+
+    private fun checkIfCommonSourceSetsShouldBeAndroid() {
+        // Here we check if the common sourceSets are included only in the androidTarget, this means
+        // that the sourceSet should be treated as android sourceSet in IDE Import and its
+        // dependencies should be resolved from the component that maps to the compilation
+        // containing this sourceSet.
+        listOf(
+            COMMON_MAIN_SOURCE_SET_NAME,
+            COMMON_TEST_SOURCE_SET_NAME
+        ).mapNotNull {
+            val sourceSet = kotlinExtension.sourceSets.getByName(it)
+            val targetsContainingSourceSet = kotlinExtension.targets.filter { target ->
+                target.platformType != KotlinPlatformType.common &&
+                        target.compilations.any { compilation ->
+                            compilation.allKotlinSourceSets.contains(sourceSet)
+                        }
+            }
+            sourceSet.takeIf { targetsContainingSourceSet.singleOrNull() == androidTarget }
+        }.forEach { commonSourceSet ->
+            for (component in listOfNotNull(mainVariant, mainVariant.unitTest, mainVariant.androidTest)) {
+                if (component.androidKotlinCompilation.allKotlinSourceSets.contains(commonSourceSet)) {
+                    sourceSetToCreationConfigMap[commonSourceSet] = component
+                    extraSourceSetsToIncludeInResolution.add(commonSourceSet)
+                    break
+                }
+            }
+        }
     }
 
     private fun Configuration.forMainVariantConfiguration(
@@ -598,8 +604,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         global: GlobalTaskCreationConfig,
         variantServices: VariantServices,
         taskCreationServices: TaskCreationServices,
-        androidTarget: KotlinMultiplatformAndroidTargetImpl,
-        mainVariant: KmpVariantImpl
+        androidTarget: KotlinMultiplatformAndroidTargetImpl
     ): KmpUnitTestImpl? {
         if (!mainVariant.dslInfo.enabledUnitTest) {
             return null
@@ -645,8 +650,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         variantServices: VariantServices,
         taskCreationServices: TaskCreationServices,
         taskManager: KmpTaskManager,
-        androidTarget: KotlinMultiplatformAndroidTargetImpl,
-        mainVariant: KmpVariantImpl
+        androidTarget: KotlinMultiplatformAndroidTargetImpl
     ): KmpAndroidTestImpl? {
         if (!mainVariant.dslInfo.enableAndroidTest) {
             return null

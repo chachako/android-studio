@@ -31,7 +31,7 @@ import org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver
 @OptIn(ExternalKotlinTargetApi::class)
 internal abstract class BaseIdeDependencyResolver(
     protected val libraryResolver: LibraryResolver,
-    protected val sourceSetToCreationConfigMap: () -> Map<KotlinSourceSet, KmpComponentCreationConfig>
+    protected val sourceSetToCreationConfigMap: Lazy<Map<KotlinSourceSet, KmpComponentCreationConfig>>
 ): IdeDependencyResolver {
 
     protected fun getArtifactsForComponent(

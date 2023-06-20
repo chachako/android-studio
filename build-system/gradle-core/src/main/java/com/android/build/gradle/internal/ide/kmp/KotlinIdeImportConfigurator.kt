@@ -37,13 +37,13 @@ object KotlinIdeImportConfigurator {
     fun configure(
         project: Project,
         service: IdeMultiplatformImport,
-        sourceSetToCreationConfigMapProvider: () -> Map<KotlinSourceSet, KmpComponentCreationConfig>,
-        extraSourceSetsToIncludeInResolution: () -> Set<KotlinSourceSet>
+        sourceSetToCreationConfigMap: Lazy<Map<KotlinSourceSet, KmpComponentCreationConfig>>,
+        extraSourceSetsToIncludeInResolution: Lazy<Set<KotlinSourceSet>>
     ) {
         registerDependencyResolvers(
             project,
             service,
-            sourceSetToCreationConfigMapProvider,
+            sourceSetToCreationConfigMap,
             extraSourceSetsToIncludeInResolution
         )
 
@@ -55,8 +55,8 @@ object KotlinIdeImportConfigurator {
     private fun registerDependencyResolvers(
         project: Project,
         service: IdeMultiplatformImport,
-        sourceSetToCreationConfigMapProvider: () -> Map<KotlinSourceSet, KmpComponentCreationConfig>,
-        extraSourceSetsToIncludeInResolution: () -> Set<KotlinSourceSet>
+        sourceSetToCreationConfigMap: Lazy<Map<KotlinSourceSet, KmpComponentCreationConfig>>,
+        extraSourceSetsToIncludeInResolution: Lazy<Set<KotlinSourceSet>>
     ) {
         val libraryResolver = LibraryResolver(
             project = project,
@@ -71,7 +71,7 @@ object KotlinIdeImportConfigurator {
                     )
                 )
             },
-            sourceSetToCreationConfigMap = sourceSetToCreationConfigMapProvider
+            sourceSetToCreationConfigMap = sourceSetToCreationConfigMap
         )
 
         val resolutionPhase =
@@ -81,13 +81,14 @@ object KotlinIdeImportConfigurator {
         val resolutionPriority = IdeMultiplatformImport.Priority.veryHigh
 
         val androidSourceSetFilter = IdeMultiplatformImport.SourceSetConstraint { sourceSet ->
-            sourceSet.android != null || extraSourceSetsToIncludeInResolution().contains(sourceSet)
+            sourceSet.android != null ||
+                    extraSourceSetsToIncludeInResolution.value.contains(sourceSet)
         }
 
         service.registerDependencyResolver(
             resolver = BinaryDependencyResolver(
                 libraryResolver = libraryResolver,
-                sourceSetToCreationConfigMap = sourceSetToCreationConfigMapProvider
+                sourceSetToCreationConfigMap = sourceSetToCreationConfigMap
             ),
             constraint = androidSourceSetFilter,
             phase = resolutionPhase,
@@ -97,7 +98,7 @@ object KotlinIdeImportConfigurator {
         service.registerDependencyResolver(
             resolver = ProjectDependencyResolver(
                 libraryResolver = libraryResolver,
-                sourceSetToCreationConfigMap = sourceSetToCreationConfigMapProvider
+                sourceSetToCreationConfigMap = sourceSetToCreationConfigMap
             ),
             constraint = androidSourceSetFilter,
             phase = resolutionPhase,

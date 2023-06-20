@@ -37,14 +37,14 @@ import org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver
  */
 internal class ProjectDependencyResolver(
     libraryResolver: LibraryResolver,
-    sourceSetToCreationConfigMap: () -> Map<KotlinSourceSet, KmpComponentCreationConfig>
+    sourceSetToCreationConfigMap: Lazy<Map<KotlinSourceSet, KmpComponentCreationConfig>>
 ) : BaseIdeDependencyResolver(
     libraryResolver,
     sourceSetToCreationConfigMap
 ) {
 
     override fun resolve(sourceSet: KotlinSourceSet): Set<IdeaKotlinDependency> {
-        val component = sourceSetToCreationConfigMap()[sourceSet] ?: return emptySet()
+        val component = sourceSetToCreationConfigMap.value[sourceSet] ?: return emptySet()
 
         libraryResolver.registerSourceSetArtifacts(sourceSet)
 

@@ -46,7 +46,7 @@ import org.jetbrains.kotlin.tooling.core.mutableExtrasOf
  */
 internal class BinaryDependencyResolver(
     libraryResolver: LibraryResolver,
-    sourceSetToCreationConfigMap: () -> Map<KotlinSourceSet, KmpComponentCreationConfig>
+    sourceSetToCreationConfigMap: Lazy<Map<KotlinSourceSet, KmpComponentCreationConfig>>
 ) : BaseIdeDependencyResolver(
     libraryResolver,
     sourceSetToCreationConfigMap
@@ -54,7 +54,7 @@ internal class BinaryDependencyResolver(
     private val logger = Logging.getLogger(BinaryDependencyResolver::class.java)
 
     override fun resolve(sourceSet: KotlinSourceSet): Set<IdeaKotlinDependency> {
-        val component = sourceSetToCreationConfigMap()[sourceSet] ?: return emptySet()
+        val component = sourceSetToCreationConfigMap.value[sourceSet] ?: return emptySet()
 
         libraryResolver.registerSourceSetArtifacts(sourceSet)
 

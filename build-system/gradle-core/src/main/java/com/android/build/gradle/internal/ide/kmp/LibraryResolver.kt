@@ -35,7 +35,7 @@ import java.io.File
 class LibraryResolver(
     private val project: Project,
     private val libraryService: LibraryService,
-    private val sourceSetToCreationConfigMap: () -> Map<KotlinSourceSet, KmpComponentCreationConfig>,
+    private val sourceSetToCreationConfigMap: Lazy<Map<KotlinSourceSet, KmpComponentCreationConfig>>,
 ) {
     private val inputsMap = mutableMapOf<KotlinSourceSet, ArtifactCollectionsInputs>()
     private val artifactsMap = mutableMapOf<KotlinSourceSet, Map<VariantKey, ResolvedArtifact>>()
@@ -50,7 +50,7 @@ class LibraryResolver(
             return
         }
 
-        val component = sourceSetToCreationConfigMap()[sourceSet]
+        val component = sourceSetToCreationConfigMap.value[sourceSet]
             ?: throw IllegalArgumentException("Unable to find a component attached to sourceSet ${sourceSet.name}")
 
         val configType = AndroidArtifacts.ConsumedConfigType.COMPILE_CLASSPATH
