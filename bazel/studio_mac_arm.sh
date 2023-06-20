@@ -27,6 +27,7 @@ readonly config_options="--config=release --config=ants"
 
 "${script_dir}/bazel" \
         --max_idle_secs=60 \
+        --output_base="${TMPDIR}" \
         test \
         ${config_options} \
         --invocation_id=${invocation_id} \
