@@ -16,11 +16,13 @@
 
 package com.android.build.api.variant.impl
 
+import com.android.build.gradle.internal.CompileOptions
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.androidExtensionOnKotlinExtensionName
 import com.android.utils.appendCapitalized
 import org.gradle.api.NamedDomainObjectFactory
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.external.ExternalKotlinCompilationDescriptor
 import org.jetbrains.kotlin.gradle.plugin.mpp.external.createCompilation
@@ -45,7 +47,7 @@ internal class KotlinMultiplatformAndroidCompilationFactory(
             )
         }
 
-        return target.createCompilation {
+        return target.createCompilation<KotlinMultiplatformAndroidCompilationImpl> {
             compilationName = name
             defaultSourceSet = kotlinExtension.sourceSets.getByName(
                 target.targetName.appendCapitalized(name)
@@ -56,6 +58,10 @@ internal class KotlinMultiplatformAndroidCompilationFactory(
                 )
             compileTaskName = "compile".appendCapitalized(
                 target.targetName.appendCapitalized(name)
+            )
+        }.also {
+            it.compilerOptions.options.jvmTarget.set(
+                JvmTarget.fromTarget(CompileOptions.DEFAULT_JAVA_VERSION.toString())
             )
         }
     }
