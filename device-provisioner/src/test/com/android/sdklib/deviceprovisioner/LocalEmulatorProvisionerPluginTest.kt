@@ -29,6 +29,9 @@ import com.android.sdklib.devices.Abi
 import com.android.sdklib.internal.avd.AvdInfo
 import com.android.sdklib.internal.avd.AvdInfo.AvdStatus
 import com.android.sdklib.internal.avd.AvdManager
+import com.android.sdklib.repository.IdDisplay
+import com.android.sdklib.repository.targets.SystemImage
+import com.android.sdklib.repository.targets.SystemImage.DEFAULT_TAG
 import com.google.common.truth.Truth.assertThat
 import java.nio.file.Path
 import java.time.Duration
@@ -64,6 +67,7 @@ class LocalEmulatorProvisionerPluginTest {
     androidVersion: AndroidVersion = API_LEVEL,
     hasPlayStore: Boolean = true,
     avdStatus: AvdStatus = AvdStatus.OK,
+    tag: IdDisplay = DEFAULT_TAG,
   ): AvdInfo {
     val basePath = Path.of("/tmp/fake_avds/$index")
     return AvdInfo(
@@ -78,6 +82,8 @@ class LocalEmulatorProvisionerPluginTest {
         AvdManager.AVD_INI_ABI_TYPE to ABI.toString(),
         AvdManager.AVD_INI_DISPLAY_NAME to "Fake Device $index",
         AvdManager.AVD_INI_PLAYSTORE_ENABLED to hasPlayStore.toString(),
+        AvdManager.AVD_INI_TAG_ID to tag.id,
+        AvdManager.AVD_INI_TAG_DISPLAY to tag.display,
       ),
       avdStatus
     )
@@ -304,6 +310,20 @@ class LocalEmulatorProvisionerPluginTest {
     // Should become possible to activate the device
     activationAction.presentation.takeWhile { !it.enabled }.collect()
     repairAction.presentation.takeWhile { it.enabled }.collect()
+  }
+
+  @Test
+  fun tvDeviceType() = runBlockingWithTimeout {
+    avdManager.createAvd(makeAvdInfo(1, tag = SystemImage.GOOGLE_TV_TAG))
+
+    yieldUntil { provisioner.devices.value.size == 1 }
+
+    val handle = provisioner.devices.value[0]
+    assertThat(handle.state.properties.deviceType).isEqualTo(DeviceType.TV)
+
+    handle.activationAction?.activate()
+
+    assertThat(handle.state.properties.deviceType).isEqualTo(DeviceType.TV)
   }
 
   private fun checkProperties(properties: LocalEmulatorProperties) {
