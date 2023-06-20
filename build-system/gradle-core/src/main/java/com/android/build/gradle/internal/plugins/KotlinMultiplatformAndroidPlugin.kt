@@ -222,7 +222,10 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
                     createCompilation(
                         compilationName = jvmConfiguration.compilationName,
                         defaultSourceSetName = jvmConfiguration.defaultSourceSetName,
-                        sourceSetsToDependOn = listOf(COMMON_TEST_SOURCE_SET_NAME)
+                        sourceSetsToDependOn = listOf(COMMON_TEST_SOURCE_SET_NAME),
+                        compilationToAssociateWith = listOf(androidTarget.compilations.getByName(
+                            KmpPredefinedAndroidCompilation.MAIN.compilationName
+                        ))
                     )
                 }
             },
@@ -231,7 +234,10 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
                     createCompilation(
                         compilationName = deviceConfiguration.compilationName,
                         defaultSourceSetName = deviceConfiguration.defaultSourceSetName,
-                        sourceSetsToDependOn = emptyList()
+                        sourceSetsToDependOn = emptyList(),
+                        compilationToAssociateWith = listOf(androidTarget.compilations.getByName(
+                            KmpPredefinedAndroidCompilation.MAIN.compilationName
+                        ))
                     )
                 }
             }
@@ -272,17 +278,19 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
                 androidTarget
             )
 
-            createCompilation(
+            val mainCompilation = createCompilation(
                 compilationName = KmpPredefinedAndroidCompilation.MAIN.compilationName,
                 defaultSourceSetName = KmpPredefinedAndroidCompilation.MAIN.compilationName.getNamePrefixedWithTarget(),
-                sourceSetsToDependOn = listOf(COMMON_MAIN_SOURCE_SET_NAME)
+                sourceSetsToDependOn = listOf(COMMON_MAIN_SOURCE_SET_NAME),
+                compilationToAssociateWith = emptyList()
             )
 
             androidExtension.androidTestOnJvmConfiguration?.let { jvmConfiguration ->
                 createCompilation(
                     compilationName = jvmConfiguration.compilationName,
                     defaultSourceSetName = jvmConfiguration.defaultSourceSetName,
-                    sourceSetsToDependOn = listOf(COMMON_TEST_SOURCE_SET_NAME)
+                    sourceSetsToDependOn = listOf(COMMON_TEST_SOURCE_SET_NAME),
+                    compilationToAssociateWith = listOf(mainCompilation)
                 )
             }
 
@@ -290,7 +298,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
                 createCompilation(
                     compilationName = deviceConfiguration.compilationName,
                     defaultSourceSetName = deviceConfiguration.defaultSourceSetName,
-                    sourceSetsToDependOn = emptyList()
+                    sourceSetsToDependOn = emptyList(),
+                    compilationToAssociateWith = listOf(mainCompilation)
                 )
             }
         }
@@ -327,8 +336,9 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
     private fun createCompilation(
         compilationName: String,
         defaultSourceSetName: String,
-        sourceSetsToDependOn: List<String>
-    ) {
+        sourceSetsToDependOn: List<String>,
+        compilationToAssociateWith: List<KotlinMultiplatformAndroidCompilation>
+    ): KotlinMultiplatformAndroidCompilation {
         kotlinExtension.sourceSets.maybeCreate(
             defaultSourceSetName
         ).apply {
@@ -337,9 +347,13 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
                 dependsOn(kotlinExtension.sourceSets.getByName(it))
             }
         }
-        androidTarget.compilations.maybeCreate(
+        return androidTarget.compilations.maybeCreate(
             compilationName
-        )
+        ).also { main ->
+            compilationToAssociateWith.forEach { other ->
+                main.associateWith(other)
+            }
+        }
     }
 
     private fun getCompileSdkVersion(): String =

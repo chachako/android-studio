@@ -1,4 +1,4 @@
-@@ -302 +302
+@@ -330 +330
 +       "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug-api.jar"
 +     ],
 +     "coordinates": {
@@ -89,7 +89,7 @@
 +   {
 +     "binaryType": "KOTLIN_COMPILE",
 +     "classpath": [
-@@ -500 +590
+@@ -528 +618
 -   },
 -   {
 -     "type": "Regular",
