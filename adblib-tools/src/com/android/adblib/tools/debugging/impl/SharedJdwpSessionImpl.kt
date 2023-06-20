@@ -107,12 +107,6 @@ internal class SharedJdwpSessionImpl(
     private val jdwpPacketSharedFlow = MutableSerializedSharedFlow<Any>()
 
     /**
-     * The [Mutex] used to ensure active [JdwpPacketReceiver] collectors are invoked
-     * non-concurrently.
-     */
-    private val activeReceiversEmitMutex = Mutex()
-
-    /**
      * The [SharedJdwpSessionMonitor] to invoke when sending or receiving [JdwpPacketView] packets,
      * or `null` if there are no active monitors from [AdbSession.sharedJdwpSessionMonitorFactoryList].
      *
@@ -397,9 +391,7 @@ internal class SharedJdwpSessionImpl(
         ) {
             if (jdwpSession.jdwpFilter.filterReceivedPacket(filterId, packet)) {
                 flowLogger.verbose { "Emitting packet flow: $packet" }
-                jdwpSession.activeReceiversEmitMutex.withLock {
-                    emit(packet)
-                }
+                emit(packet)
             } else {
                 flowLogger.verbose { "Skipping packet due to filter: $packet" }
             }

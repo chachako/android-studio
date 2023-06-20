@@ -59,7 +59,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
@@ -71,11 +70,11 @@ import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.toList
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 import java.io.IOException
+import java.time.Duration
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -181,7 +180,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
 
 
     @Test
-    fun receiversCollectionIsSerialized(): Unit = runBlockingWithTimeout {
+    fun receiversCollectionIsNotSerialized(): Unit = runBlockingWithTimeout {
         // Prepare
         val fakeDevice = addFakeDevice(fakeAdb, 30)
         fakeDevice.startClient(10, 0, "a.b.c", false)
@@ -199,7 +198,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
                     .flow()
                     .map {
                         val start = System.nanoTime()
-                        delay(5)
+                        delay(500)
                         val end = System.nanoTime()
                         timeSpan = FlowTimeSpan(start, end)
                     }.first()
@@ -218,7 +217,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         def.awaitAll()
 
         // Assert
-        assertFlowTimeSpansAreSorted(def, receiverCount)
+        assertFlowTimeSpansAreInterleaved(def, receiverCount, 500)
     }
 
     @Test
@@ -737,6 +736,27 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
             )
             cur
         }
+    }
+
+    private suspend fun assertFlowTimeSpansAreInterleaved(
+        timeSpans: List<Deferred<FlowTimeSpan>>,
+        expectedEntryCount: Int,
+        entryDurationMillis: Int,
+    ) {
+        // Assert expected number of time spans
+        assertEquals(expectedEntryCount, timeSpans.size)
+
+        // Given each "entry" is expected to run at least "entryDurationMillis" and we want to
+        // assert their execution were not serialized, we can assert the range of time span
+        // collected by each entry is not as large as the expected duration if they were
+        // executed sequentially.
+        val minStartNano = timeSpans.minOf { it.await().startNano }
+        val maxEndNano = timeSpans.maxOf { it.await().endNano }
+        val measuredDuration = Duration.ofNanos(maxEndNano - minStartNano)
+        val maximumExpectedDuration = Duration.ofMillis(expectedEntryCount * entryDurationMillis.toLong())
+
+        assertTrue("$measuredDuration <= $maximumExpectedDuration (Time spans should be interleaved)",
+                   measuredDuration <= maximumExpectedDuration)
     }
 
     private suspend fun JdwpPacketView.isApnmCommand(): Boolean {
