@@ -21,7 +21,9 @@ import com.android.build.gradle.integration.common.fixture.FileNormalizerImpl
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.model.BaseModelComparator
 import com.android.build.gradle.integration.common.fixture.model.BasicComparator
+import com.android.build.gradle.integration.common.fixture.model.normaliseCompileTarget
 import com.android.build.gradle.integration.common.fixture.model.normalizeAgpVersion
+import com.android.build.gradle.integration.common.fixture.model.normalizeBuildToolsVersion
 import com.android.build.gradle.integration.multiplatform.v2.getBuildMap
 import com.android.testutils.TestUtils
 import com.google.common.truth.Truth
@@ -58,16 +60,20 @@ class KmpModelComparator(
             additionalMavenRepo = project.additionalMavenRepoDir,
             defaultNdkSideBySideVersion = GradleTestProject.DEFAULT_NDK_SIDE_BY_SIDE_VERSION
         ) {
+            val normalizedString = normalizeBuildToolsVersion(
+                normaliseCompileTarget(it).toString()
+            ).toString()
+
             // the normalizer doesn't cover the modules-2 files, since the path contains the library
             // itself, we just override it here.
-            if (it.startsWith(
+            if (normalizedString.startsWith(
                     "{GRADLE}/caches/modules-2/files-2.1/com.example/kmpSecondLib-android/1.0/"
                 )) {
-                "{GRADLE_CACHE}/{MODULES_2}/{LIBRARY_COORDINATES}/{CHECKSUM}" + it.removePrefix(
+                "{GRADLE_CACHE}/{MODULES_2}/{LIBRARY_COORDINATES}/{CHECKSUM}" + normalizedString.removePrefix(
                     "{GRADLE}/caches/modules-2/files-2.1/com.example/kmpSecondLib-android/1.0/"
                 ).substring(40) // remove the hash
             } else {
-                it
+                normalizedString
             }
         }
 

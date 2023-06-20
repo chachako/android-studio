@@ -172,7 +172,9 @@ internal fun ModelSnapshotter<AndroidProject>.snapshotAndroidProject() {
 }
 internal fun ModelSnapshotter<AndroidDsl>.snapshotAndroidDsl() {
     item("groupId", AndroidDsl::groupId)
-    item("compileTarget", AndroidDsl::compileTarget, ::normaliseCompileTarget)
+    item("compileTarget", AndroidDsl::compileTarget) { version ->
+        version?.let { normaliseCompileTarget(it) }
+    }
     item("buildToolsVersion", AndroidDsl::buildToolsVersion) { version ->
         version?.let { normalizeBuildToolsVersion(it) }
     }
@@ -688,14 +690,14 @@ private fun ModelSnapshotter<GraphItem>.snapshotGraphItem(visited: MutableSet<St
     }
 }
 
-private fun normalizeBuildToolsVersion(version: String): Any {
+fun normalizeBuildToolsVersion(version: String): Any {
     if (version == ToolsRevisionUtils.DEFAULT_BUILD_TOOLS_REVISION.toString()) {
         return PredefinedModelValues.DEFAULT_BUILD_TOOLS_REVISION
     }
     return version
 }
 
-private fun normaliseCompileTarget(target: String?): Any? {
+fun normaliseCompileTarget(target: String): Any {
     if (target == "android-$DEFAULT_COMPILE_SDK_VERSION") {
         return PredefinedModelValues.DEFAULT_COMPILE_SDK_VERSION
     }

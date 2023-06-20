@@ -31,7 +31,7 @@
           "type": "MAIN",
           "mainInfo": {
             "namespace": "com.example.kmpsecondlib",
-            "compileSdkTarget": "android-33",
+            "compileSdkTarget": "DEFAULT_COMPILE_SDK_VERSION",
             "minSdkVersion": {
               "apiLevel": 22,
               "codename": ""
@@ -109,7 +109,7 @@
       "isCoreLibraryDesugaringEnabled": false,
       "desugarLibConfig": [],
       "groupId": "Kotlin Multiplatform",
-      "buildToolsVersion": "34.0.0-rc3",
+      "buildToolsVersion": "DEFAULT_BUILD_TOOLS_REVISION",
       "desugaredMethodsFiles": [
         {
           "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/D8BackportedDesugaredMethods.txt"
