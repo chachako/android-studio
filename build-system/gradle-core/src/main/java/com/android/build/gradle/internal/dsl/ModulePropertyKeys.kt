@@ -62,6 +62,33 @@ sealed interface ModulePropertyKey<OutputT> {
         }
     }
 
+    enum class OptionalString(override val key: String) : ModulePropertyKey<String?> {
+        ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_NAME(
+                "android.privacy_sandbox.local_deployment_signing_name"
+        ),
+        ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_STORE_TYPE(
+                "android.privacy_sandbox.local_deployment_signing_store_type"
+        ),
+        ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_STORE_FILE(
+                "android.privacy_sandbox.local_deployment_signing_store_file"
+        ),
+        ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_STORE_PASSWORD(
+                "android.privacy_sandbox.local_deployment_signing_store_password"
+        ),
+        ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_KEY_ALIAS(
+                "android.privacy_sandbox.local_deployment_signing_key_alias"
+        ),
+        ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_KEY_PASSOWRD(
+                "android.privacy_sandbox.local_deployment_signing_key_password"
+        ),
+        ;
+
+        override fun getValue(properties: Map<String, Any>): String? {
+            return properties[key] as String?
+        }
+    }
+
+
 
     enum class BooleanWithDefault(override val key: String, private val default: Boolean) : ModulePropertyKey<Boolean> {
         /**
@@ -92,3 +119,4 @@ sealed interface ModulePropertyKey<OutputT> {
 
     val key: String
 }
+
