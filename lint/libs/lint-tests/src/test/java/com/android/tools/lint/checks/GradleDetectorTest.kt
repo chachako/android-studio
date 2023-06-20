@@ -4871,7 +4871,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         .run()
         .expect(
           """
-                    build.gradle:6: Error: Google Play will soon require that apps target API level $MINIMUM_TARGET_SDK_VERSION or higher. This will be required for new apps in August $MINIMUM_TARGET_SDK_VERSION_YEAR, and for updates to existing apps in November $MINIMUM_TARGET_SDK_VERSION_YEAR. [ExpiringTargetSdkVersion]
+                    build.gradle:6: Error: Google Play will soon require that apps target API level $MINIMUM_TARGET_SDK_VERSION or higher. This will be required for new apps and updates starting on August 31, $MINIMUM_TARGET_SDK_VERSION_YEAR. [ExpiringTargetSdkVersion]
                             targetSdkVersion $PREVIOUS_MINIMUM_TARGET_SDK_VERSION
                             ~~~~~~~~~~~~~~~~~~~
                     1 errors, 0 warnings

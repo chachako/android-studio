@@ -237,17 +237,16 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
             val year = now.get(Calendar.YEAR)
             val month = now.get(Calendar.MONTH)
 
-            // After November 1st 2022, the apps are required to use 31 or higher
-            // https://developer.android.com/distribute/play-policies
+            // Starting on August 31, 2023, the apps are required to use API 33 or higher, except
+            // for Wear OS apps, which must target 30
+            // https://developer.android.com/google/play/requirements/target-sdk
             val required: Int
             val issue: Issue
             if (
               year > MINIMUM_TARGET_SDK_VERSION_YEAR ||
-                year == MINIMUM_TARGET_SDK_VERSION_YEAR && month >= 10
+                year == MINIMUM_TARGET_SDK_VERSION_YEAR && month >= 9
             ) {
-              // 10: November, the field is zero-based
-              // On or after November 1st of the target requirement year, enforce with error
-              // severity
+              // Doesn't meet this year requirement after deadline (August 31 for 2023)
               required = MINIMUM_TARGET_SDK_VERSION
               issue = EXPIRED_TARGET_SDK_VERSION
             } else if (
@@ -258,13 +257,8 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
               // severity
               required = PREVIOUS_MINIMUM_TARGET_SDK_VERSION
               issue = EXPIRED_TARGET_SDK_VERSION
-            } else if (
-              year == MINIMUM_TARGET_SDK_VERSION_YEAR && month >= 10 - 6
-            ) { // 6 months before October
+            } else if (year == MINIMUM_TARGET_SDK_VERSION_YEAR) {
               // Meets last year's requirement but not yet the upcoming one.
-              // Start warning 6 months in advance.
-              // (Check for 2022 here: no, we don't have a time machine, but let's
-              // allow developers to go back in time with their system clock.)
               required = MINIMUM_TARGET_SDK_VERSION
               issue = EXPIRING_TARGET_SDK_VERSION
             } else {
@@ -277,11 +271,8 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
                   "Google Play requires that apps target API level $required or higher.\n"
                 else
                   "Google Play will soon require that apps target API " +
-                    "level 31 or higher. This will be required for new apps " +
-                    "in August $MINIMUM_TARGET_SDK_VERSION_YEAR, and for updates to existing apps in " +
-                    "November $MINIMUM_TARGET_SDK_VERSION_YEAR."
-
-              val highest = context.client.highestKnownApiLevel
+                    "level $MINIMUM_TARGET_SDK_VERSION or higher. This will be required for new apps and updates " +
+                    "starting on August 31, $MINIMUM_TARGET_SDK_VERSION_YEAR."
 
               // Don't report if already suppressed with EXPIRING
               val alreadySuppressed =
@@ -2991,17 +2982,13 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
      * [MINIMUM_TARGET_SDK_VERSION_YEAR]. See
      * https://developer.android.com/google/play/requirements/target-sdk.
      */
-    val MINIMUM_TARGET_SDK_VERSION = 31
+    val MINIMUM_TARGET_SDK_VERSION = 33
 
-    /**
-     * The API requirement the previous year. This is normally -1, but we have a separate constant
-     * in case we rev the API level more than one level in a year (such that we don't have to find
-     * all the "- 1" logic throughout the code.)
-     */
-    val PREVIOUS_MINIMUM_TARGET_SDK_VERSION = MINIMUM_TARGET_SDK_VERSION - 1
+    /** The API requirement the previous year. */
+    val PREVIOUS_MINIMUM_TARGET_SDK_VERSION = 31
 
     /** The year that the API requirement of [MINIMUM_TARGET_SDK_VERSION] is enforced. */
-    val MINIMUM_TARGET_SDK_VERSION_YEAR = 2022
+    val MINIMUM_TARGET_SDK_VERSION_YEAR = 2023
 
     /**
      * Reserved variable names used by [pickLibraryVariableName] and [pickVersionVariableName]
