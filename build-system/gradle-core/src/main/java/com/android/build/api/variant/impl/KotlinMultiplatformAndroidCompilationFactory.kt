@@ -21,8 +21,6 @@ import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.androidExtensionOnKotlinExtensionName
 import com.android.utils.appendCapitalized
 import org.gradle.api.NamedDomainObjectFactory
-import org.gradle.api.Project
-import org.gradle.api.artifacts.Dependency
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -36,6 +34,7 @@ internal class KotlinMultiplatformAndroidCompilationFactory(
     private val androidExtension: KotlinMultiplatformAndroidExtensionImpl
 ): NamedDomainObjectFactory<KotlinMultiplatformAndroidCompilation> {
 
+    @Suppress("INVISIBLE_MEMBER")
     override fun create(name: String): KotlinMultiplatformAndroidCompilationImpl {
         if (KmpPredefinedAndroidCompilation.MAIN.compilationName != name &&
             androidExtension.androidTestOnJvmConfiguration?.compilationName != name &&
@@ -71,18 +70,12 @@ internal class KotlinMultiplatformAndroidCompilationFactory(
                     // add a dependency from the configurations of the test components on the main
                     // project later.
                     if (main.compilationName != KmpPredefinedAndroidCompilation.MAIN.compilationName) {
-                        auxiliary.compileDependencyConfigurationName.addAllDependenciesFromOtherConfigurations(
-                            target.project,
-                            main.apiConfigurationName,
-                            main.implementationConfigurationName,
-                            main.compileOnlyConfigurationName
-                        )
-
-                        auxiliary.runtimeDependencyConfigurationName?.addAllDependenciesFromOtherConfigurations(
-                            target.project,
-                            main.apiConfigurationName,
-                            main.implementationConfigurationName,
-                            main.runtimeOnlyConfigurationName
+                        // TODO(KT-59562): kotlin will provide an external API of this at some point
+                        val defaultAssociator = org.jetbrains.kotlin.gradle.plugin.mpp.compilationImpl.DefaultKotlinCompilationAssociator
+                        defaultAssociator.associate(
+                            target,
+                            auxiliary,
+                            main
                         )
                     }
                 }
@@ -90,25 +83,6 @@ internal class KotlinMultiplatformAndroidCompilationFactory(
         }.also {
             it.compilerOptions.options.jvmTarget.set(
                 JvmTarget.fromTarget(CompileOptions.DEFAULT_JAVA_VERSION.toString())
-            )
-        }
-    }
-
-    private fun String.addAllDependenciesFromOtherConfigurations(
-        project: Project,
-        vararg configurationNames: String
-    ) {
-        project.configurations.named(this).configure { receiverConfiguration ->
-            receiverConfiguration.dependencies.addAllLater(
-                project.objects.listProperty(Dependency::class.java).apply {
-                    set(
-                        project.provider {
-                            configurationNames
-                                .map { project.configurations.getByName(it) }
-                                .flatMap { it.allDependencies }
-                        }
-                    )
-                }
             )
         }
     }
