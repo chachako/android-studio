@@ -272,6 +272,8 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           ManifestDetector.DEVICE_ADMIN,
           ManifestDetector.DUPLICATE_ACTIVITY,
           ManifestDetector.DUPLICATE_USES_FEATURE,
+          ManifestDetector.EXPIRED_TARGET_SDK_VERSION,
+          ManifestDetector.EXPIRING_TARGET_SDK_VERSION,
           ManifestDetector.GRADLE_OVERRIDES,
           ManifestDetector.ILLEGAL_REFERENCE,
           ManifestDetector.MIPMAP,

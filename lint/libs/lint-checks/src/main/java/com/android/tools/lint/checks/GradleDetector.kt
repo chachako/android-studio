@@ -38,8 +38,6 @@ import com.android.sdklib.SdkVersionInfo.LOWEST_ACTIVE_API
 import com.android.tools.lint.checks.GooglePlaySdkIndex.Companion.GOOGLE_PLAY_SDK_INDEX_KEY
 import com.android.tools.lint.checks.GooglePlaySdkIndex.Companion.GOOGLE_PLAY_SDK_INDEX_URL
 import com.android.tools.lint.checks.ManifestDetector.Companion.TARGET_NEWER
-import com.android.tools.lint.checks.WearDetector.Companion.isWearProject
-import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.LintTomlDocument
 import com.android.tools.lint.client.api.LintTomlMapValue
@@ -233,70 +231,35 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       if (property == "targetSdkVersion" || property == "targetSdk") {
         val version = getSdkVersion(value, valueCookie)
         if (version > 0 && version < context.client.highestKnownApiLevel) {
-          var warned = false
-          val isWearProject = isWearProject(context)
-          val minimumTargetSdkVersion =
-            if (isWearProject) MINIMUM_WEAR_TARGET_SDK_VERSION else MINIMUM_TARGET_SDK_VERSION
-          val previousMinimumTargetSdkVersion =
-            if (isWearProject) PREVIOUS_WEAR_MINIMUM_TARGET_SDK_VERSION
-            else PREVIOUS_MINIMUM_TARGET_SDK_VERSION
+          val targetSdkCheckResult =
+            checkTargetSdk(context, calendar ?: Calendar.getInstance(), version)
+          if (targetSdkCheckResult is TargetSdkCheckResult.Expired) {
+            // Don't report if already suppressed with EXPIRING
+            val alreadySuppressed =
+              context.containsCommentSuppress() &&
+                context.isSuppressedWithComment(statementCookie, EXPIRED_TARGET_SDK_VERSION)
 
-          if (version < minimumTargetSdkVersion) {
-            val now = calendar ?: Calendar.getInstance()
-            val year = now.get(Calendar.YEAR)
-            val month = now.get(Calendar.MONTH)
-
-            // Starting on August 31, 2023, the apps are required to use API 33 or higher, except
-            // for Wear OS apps, which must target 30
-            // https://developer.android.com/google/play/requirements/target-sdk
-            val required: Int
-            val issue: Issue
-            if (
-              year > MINIMUM_TARGET_SDK_VERSION_YEAR ||
-                year == MINIMUM_TARGET_SDK_VERSION_YEAR && month >= 9
-            ) {
-              // Doesn't meet this year requirement after deadline (August 31 for 2023)
-              required = minimumTargetSdkVersion
-              issue = EXPIRED_TARGET_SDK_VERSION
-            } else if (
-              version < previousMinimumTargetSdkVersion &&
-                year >= MINIMUM_TARGET_SDK_VERSION_YEAR - 1
-            ) {
-              // If you're not meeting the previous year's requirement, also enforce with error
-              // severity
-              required = previousMinimumTargetSdkVersion
-              issue = EXPIRED_TARGET_SDK_VERSION
-            } else if (year == MINIMUM_TARGET_SDK_VERSION_YEAR) {
-              // Meets last year's requirement but not yet the upcoming one.
-              required = minimumTargetSdkVersion
-              issue = EXPIRING_TARGET_SDK_VERSION
-            } else {
-              required = -1
-              issue = IssueRegistry.LINT_ERROR
-            }
-            if (required != -1) {
-              val message =
-                if (issue == EXPIRED_TARGET_SDK_VERSION)
-                  "Google Play requires that apps target API level $required or higher.\n"
-                else
-                  "Google Play will soon require that apps target API " +
-                    "level $minimumTargetSdkVersion or higher. This will be required for new apps and updates " +
-                    "starting on August 31, $MINIMUM_TARGET_SDK_VERSION_YEAR."
-
-              // Don't report if already suppressed with EXPIRING
-              val alreadySuppressed =
-                issue != EXPIRING_TARGET_SDK_VERSION &&
-                  context.containsCommentSuppress() &&
-                  context.isSuppressedWithComment(statementCookie, issue)
-
-              if (!alreadySuppressed) {
-                report(context, statementCookie, issue, message, null)
-              }
-              warned = true
+            if (!alreadySuppressed) {
+              report(
+                context,
+                statementCookie,
+                EXPIRED_TARGET_SDK_VERSION,
+                targetSdkCheckResult.message,
+                null
+              )
             }
           }
+          if (targetSdkCheckResult is TargetSdkCheckResult.Expiring) {
+            report(
+              context,
+              statementCookie,
+              EXPIRING_TARGET_SDK_VERSION,
+              targetSdkCheckResult.message,
+              null
+            )
+          }
 
-          if (!warned) {
+          if (targetSdkCheckResult is TargetSdkCheckResult.NoIssue) {
             val message =
               "Not targeting the latest versions of Android; compatibility " +
                 "modes apply. Consider testing and updating this version. " +
@@ -3016,30 +2979,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       )
 
     /**
-     * The minimum API required of the year [MINIMUM_TARGET_SDK_VERSION_YEAR]. See
-     * https://developer.android.com/google/play/requirements/target-sdk.
-     */
-    val MINIMUM_TARGET_SDK_VERSION = 33
-
-    /**
-     * The minimum API required for wear app of the year [MINIMUM_TARGET_SDK_VERSION_YEAR]. See
-     * https://developer.android.com/google/play/requirements/target-sdk.
-     */
-    val MINIMUM_WEAR_TARGET_SDK_VERSION = 30
-
-    /** The API requirement the previous year. */
-    val PREVIOUS_MINIMUM_TARGET_SDK_VERSION = 31
-
-    /** The API requirement the previous year. */
-    val PREVIOUS_WEAR_MINIMUM_TARGET_SDK_VERSION = 30
-
-    /**
-     * The year that the API requirement of [MINIMUM_TARGET_SDK_VERSION] and
-     * [MINIMUM_WEAR_TARGET_SDK_VERSION] is enforced.
-     */
-    val MINIMUM_TARGET_SDK_VERSION_YEAR = 2023
-
-    /**
      * Reserved variable names used by [pickLibraryVariableName] and [pickVersionVariableName]
      * suggesting library and version variable names; we need to make sure we keep track of previous
      * suggestions made such that we don't have multiple quickfixes making the same suggestion and
@@ -3065,7 +3004,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
                 """,
           category = Category.COMPLIANCE,
           priority = 8,
-          severity = Severity.ERROR,
+          severity = Severity.WARNING,
           androidSpecific = true,
           implementation = IMPLEMENTATION
         )

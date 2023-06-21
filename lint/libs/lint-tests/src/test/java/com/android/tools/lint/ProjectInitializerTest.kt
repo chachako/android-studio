@@ -586,13 +586,13 @@ class ProjectInitializerTest {
             C.java:7: Error: Call requires API level 23 (current min is 15): android.app.Fragment#getHost [NewApi]
                 Object host = fragment.getHost(); // Requires API 23
                                        ~~~~~~~
-            AndroidManifest.xml:7: Warning: Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the android.os.Build.VERSION_CODES javadoc for details. [OldTargetApi]
-                    android:targetSdkVersion="22" />
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             C.java:5: Warning: Do not hardcode "/sdcard/"; use Environment.getExternalStorageDirectory().getPath() instead [SdCardPath]
               String path = "/sdcard/file";
                             ~~~~~~~~~~~~~~
-            1 errors, 2 warnings
+            AndroidManifest.xml:7: Error: Google Play requires that apps target API level 31 or higher. [ExpiredTargetSdkVersionManifest]
+                    android:targetSdkVersion="22" />
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            2 errors, 1 warnings
             """,
       "",
 

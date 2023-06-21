@@ -16,11 +16,15 @@
 package com.android.tools.lint.checks
 
 import com.android.testutils.TestUtils
+import com.android.tools.lint.checks.GradleDetector.Companion.EXPIRED_TARGET_SDK_VERSION
 import com.android.tools.lint.checks.GradleDetectorTest.Companion.createRelativePaths
+import com.android.tools.lint.checks.TargetSdkRequirements.MINIMUM_TARGET_SDK_VERSION
+import com.android.tools.lint.checks.TargetSdkRequirements.MINIMUM_TARGET_SDK_VERSION_YEAR
 import com.android.tools.lint.checks.infrastructure.ProjectDescription
 import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 import java.io.File
+import java.util.Calendar
 
 class ManifestDetectorTest : AbstractCheckTest() {
   private var sdkDir: File? = null
@@ -87,8 +91,14 @@ class ManifestDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
-  fun testOldTargetSdk() {
+  fun testNotTheNewestTargetSdk() {
     val expectedTarget = createClient().highestKnownApiLevel.toString()
+    if (createClient().highestKnownApiLevel <= MINIMUM_TARGET_SDK_VERSION) {
+      // test make sense only if highestKnownApiLevel > MINIMUM_TARGET_SDK_VERSION, otherwise we
+      // will always have
+      // [EXPIRED_TARGET_SDK_VERSION] first
+      return
+    }
     val expected =
       """
             AndroidManifest.xml:6: Warning: Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the android.os.Build.VERSION_CODES javadoc for details. [OldTargetApi]
@@ -105,7 +115,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                     android:versionCode="1"
                     android:versionName="1.0" >
 
-                    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="14" />
+                    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="$MINIMUM_TARGET_SDK_VERSION" />
 
                     <application
                         android:icon="@drawable/ic_launcher"
@@ -138,6 +148,54 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 +     <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="$expectedTarget" />
                 """
       )
+  }
+
+  fun testExpiredTargetSdk() {
+    val calendar = Calendar.getInstance()
+    ManifestDetector.calendar = calendar
+    calendar.set(Calendar.YEAR, MINIMUM_TARGET_SDK_VERSION_YEAR + 1)
+
+    val expected =
+      """
+      AndroidManifest.xml:6: Error: Google Play requires that apps target API level 33 or higher. [ExpiredTargetSdkVersionManifest]
+          <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="17" />
+                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      1 errors, 0 warnings
+       """
+    lint()
+      .files(
+        manifest(
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="test.bytecode"
+                    android:versionCode="1"
+                    android:versionName="1.0" >
+
+                    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="17" />
+
+                    <application
+                        android:icon="@drawable/ic_launcher"
+                        android:label="@string/app_name" >
+                        <activity
+                            android:name=".BytecodeTestsActivity"
+                            android:label="@string/app_name" >
+                            <intent-filter>
+                                <action android:name="android.intent.action.MAIN" />
+
+                                <category android:name="android.intent.category.LAUNCHER" />
+                            </intent-filter>
+                        </activity>
+                    </application>
+
+                </manifest>
+                """
+          )
+          .indented(),
+        strings
+      )
+      .issues(ManifestDetector.EXPIRED_TARGET_SDK_VERSION)
+      .run()
+      .expect(expected)
   }
 
   fun testMultipleSdk() {

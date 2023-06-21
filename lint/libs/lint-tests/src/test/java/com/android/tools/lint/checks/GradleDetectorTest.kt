@@ -49,21 +49,21 @@ import com.android.tools.lint.checks.GradleDetector.Companion.JCENTER_REPOSITORY
 import com.android.tools.lint.checks.GradleDetector.Companion.KAPT_USAGE_INSTEAD_OF_KSP
 import com.android.tools.lint.checks.GradleDetector.Companion.KTX_EXTENSION_AVAILABLE
 import com.android.tools.lint.checks.GradleDetector.Companion.LIFECYCLE_ANNOTATION_PROCESSOR_WITH_JAVA8
-import com.android.tools.lint.checks.GradleDetector.Companion.MINIMUM_TARGET_SDK_VERSION
-import com.android.tools.lint.checks.GradleDetector.Companion.MINIMUM_TARGET_SDK_VERSION_YEAR
-import com.android.tools.lint.checks.GradleDetector.Companion.MINIMUM_WEAR_TARGET_SDK_VERSION
 import com.android.tools.lint.checks.GradleDetector.Companion.MIN_SDK_TOO_LOW
 import com.android.tools.lint.checks.GradleDetector.Companion.NOT_INTERPOLATED
 import com.android.tools.lint.checks.GradleDetector.Companion.PATH
 import com.android.tools.lint.checks.GradleDetector.Companion.PLAY_SDK_INDEX_GENERIC_ISSUES
 import com.android.tools.lint.checks.GradleDetector.Companion.PLAY_SDK_INDEX_NON_COMPLIANT
 import com.android.tools.lint.checks.GradleDetector.Companion.PLUS
-import com.android.tools.lint.checks.GradleDetector.Companion.PREVIOUS_MINIMUM_TARGET_SDK_VERSION
 import com.android.tools.lint.checks.GradleDetector.Companion.REMOTE_VERSION
 import com.android.tools.lint.checks.GradleDetector.Companion.RISKY_LIBRARY
 import com.android.tools.lint.checks.GradleDetector.Companion.STRING_INTEGER
 import com.android.tools.lint.checks.GradleDetector.Companion.SWITCH_TO_TOML
 import com.android.tools.lint.checks.GradleDetector.Companion.getNamedDependency
+import com.android.tools.lint.checks.TargetSdkRequirements.MINIMUM_TARGET_SDK_VERSION
+import com.android.tools.lint.checks.TargetSdkRequirements.MINIMUM_TARGET_SDK_VERSION_YEAR
+import com.android.tools.lint.checks.TargetSdkRequirements.MINIMUM_WEAR_TARGET_SDK_VERSION
+import com.android.tools.lint.checks.TargetSdkRequirements.PREVIOUS_MINIMUM_TARGET_SDK_VERSION
 import com.android.tools.lint.checks.infrastructure.TestFiles.gradleToml
 import com.android.tools.lint.checks.infrastructure.TestIssueRegistry
 import com.android.tools.lint.checks.infrastructure.TestLintTask
@@ -4829,12 +4829,10 @@ class GradleDetectorTest : AbstractCheckTest() {
         .run()
         .expect(
           """
-                    build.gradle:5: Error: Google Play requires that apps target API level $PREVIOUS_MINIMUM_TARGET_SDK_VERSION or higher.
-                     [ExpiredTargetSdkVersion]
+                    build.gradle:5: Error: Google Play requires that apps target API level $PREVIOUS_MINIMUM_TARGET_SDK_VERSION or higher. [ExpiredTargetSdkVersion]
                             targetSdkVersion 17
                             ~~~~~~~~~~~~~~~~~~~
-                    build.gradle:6: Error: Google Play requires that apps target API level $PREVIOUS_MINIMUM_TARGET_SDK_VERSION or higher.
-                     [ExpiredTargetSdkVersion]
+                    build.gradle:6: Error: Google Play requires that apps target API level $PREVIOUS_MINIMUM_TARGET_SDK_VERSION or higher. [ExpiredTargetSdkVersion]
                             targetSdk 17
                             ~~~~~~~~~~~~
                     2 errors, 0 warnings
@@ -4874,10 +4872,10 @@ class GradleDetectorTest : AbstractCheckTest() {
         .run()
         .expect(
           """
-                    build.gradle:6: Error: Google Play will soon require that apps target API level $MINIMUM_TARGET_SDK_VERSION or higher. This will be required for new apps and updates starting on August 31, $MINIMUM_TARGET_SDK_VERSION_YEAR. [ExpiringTargetSdkVersion]
+                    build.gradle:6: Warning: Google Play will soon require that apps target API level $MINIMUM_TARGET_SDK_VERSION or higher. This will be required for new apps and updates starting on August 31, $MINIMUM_TARGET_SDK_VERSION_YEAR. [ExpiringTargetSdkVersion]
                             targetSdkVersion $PREVIOUS_MINIMUM_TARGET_SDK_VERSION
                             ~~~~~~~~~~~~~~~~~~~
-                    1 errors, 0 warnings
+                    0 errors, 1 warnings
                     """
         )
     } finally {
@@ -4910,8 +4908,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         .run()
         .expect(
           """
-                    build.gradle:5: Error: Google Play requires that apps target API level $PREVIOUS_MINIMUM_TARGET_SDK_VERSION or higher.
-                     [ExpiredTargetSdkVersion]
+                    build.gradle:5: Error: Google Play requires that apps target API level $PREVIOUS_MINIMUM_TARGET_SDK_VERSION or higher. [ExpiredTargetSdkVersion]
                             targetSdkVersion 17
                             ~~~~~~~~~~~~~~~~~~~
                     1 errors, 0 warnings
@@ -4947,8 +4944,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         .run()
         .expect(
           """
-                    build.gradle:5: Error: Google Play requires that apps target API level $PREVIOUS_MINIMUM_TARGET_SDK_VERSION or higher.
-                     [ExpiredTargetSdkVersion]
+                    build.gradle:5: Error: Google Play requires that apps target API level $PREVIOUS_MINIMUM_TARGET_SDK_VERSION or higher. [ExpiredTargetSdkVersion]
                             targetSdkVersion 'O'
                             ~~~~~~~~~~~~~~~~~~~~
                     1 errors, 0 warnings
@@ -5043,8 +5039,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         .run()
         .expect(
           """
-                    build.gradle:5: Error: Google Play requires that apps target API level $MINIMUM_WEAR_TARGET_SDK_VERSION or higher.
-                     [ExpiredTargetSdkVersion]
+                    build.gradle:5: Error: Google Play requires that apps target API level $MINIMUM_WEAR_TARGET_SDK_VERSION or higher. [ExpiredTargetSdkVersion]
                             targetSdkVersion 19
                             ~~~~~~~~~~~~~~~~~~~
                     1 errors, 0 warnings

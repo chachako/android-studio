@@ -445,6 +445,8 @@ protected constructor(
             LocaleDetector.STRING_LOCALE,
             ManifestDetector.APPLICATION_ICON,
             ManifestDetector.DATA_EXTRACTION_RULES,
+            ManifestDetector.EXPIRED_TARGET_SDK_VERSION,
+            ManifestDetector.EXPIRING_TARGET_SDK_VERSION,
             ManifestDetector.MIPMAP,
             ManifestDetector.MOCK_LOCATION,
             ManifestDetector.SET_VERSION,

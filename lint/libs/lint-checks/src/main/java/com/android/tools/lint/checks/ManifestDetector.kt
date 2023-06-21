@@ -77,6 +77,7 @@ import com.android.utils.visitAttributes
 import com.android.xml.AndroidManifest
 import java.io.File
 import java.io.File.separator
+import java.util.Calendar
 import org.intellij.lang.annotations.Language
 import org.w3c.dom.Attr
 import org.w3c.dom.Document
@@ -87,6 +88,66 @@ import org.w3c.dom.Node
 class ManifestDetector : Detector(), XmlScanner {
   companion object {
     private val IMPLEMENTATION = Implementation(ManifestDetector::class.java, Scope.MANIFEST_SCOPE)
+
+    /** Calendar to use to look up the current time (used by tests to set specific time. */
+    var calendar: Calendar? = null
+
+    /** targetSdkVersion about to expire */
+    @JvmField
+    val EXPIRING_TARGET_SDK_VERSION =
+      Issue.create(
+          id = "ExpiringTargetSdkVersionManifest",
+          briefDescription = "TargetSdkVersion Soon Expiring",
+          explanation =
+            """
+                Configuring your app to target a recent API level ensures that users benefit \
+                from significant security and performance improvements, while still allowing \
+                your app to run on older Android versions (down to the `minSdkVersion`).
+
+                To update your `targetSdkVersion`, follow the steps from \
+                "Meeting Google Play requirements for target API level", \
+                https://developer.android.com/distribute/best-practices/develop/target-sdk.html
+                """,
+          category = Category.COMPLIANCE,
+          priority = 8,
+          severity = Severity.WARNING,
+          androidSpecific = true,
+          implementation = IMPLEMENTATION
+        )
+        .addMoreInfo(
+          "https://support.google.com/googleplay/android-developer/answer/113469#targetsdk"
+        )
+        .addMoreInfo(
+          "https://developer.android.com/distribute/best-practices/develop/target-sdk.html"
+        )
+
+    /** targetSdkVersion no longer supported */
+    @JvmField
+    val EXPIRED_TARGET_SDK_VERSION =
+      Issue.create(
+          id = "ExpiredTargetSdkVersionManifest",
+          briefDescription = "TargetSdkVersion No Longer Supported",
+          moreInfo =
+            "https://support.google.com/googleplay/android-developer/answer/113469#targetsdk",
+          explanation =
+            """
+                Configuring your app to target a recent API level ensures that users benefit \
+                from significant security and performance improvements, while still allowing \
+                your app to run on older Android versions (down to the `minSdkVersion`).
+
+                To update your `targetSdkVersion`, follow the steps from \
+                "Meeting Google Play requirements for target API level", \
+                https://developer.android.com/distribute/best-practices/develop/target-sdk.html
+                """,
+          category = Category.COMPLIANCE,
+          priority = 8,
+          severity = Severity.FATAL,
+          androidSpecific = true,
+          implementation = IMPLEMENTATION
+        )
+        .addMoreInfo(
+          "https://developer.android.com/distribute/best-practices/develop/target-sdk.html"
+        )
 
     /** Wrong order of elements in the manifest */
     @JvmField
@@ -1230,36 +1291,50 @@ class ManifestDetector : Detector(), XmlScanner {
       }
       if (element.hasAttributeNS(ANDROID_URI, ATTR_TARGET_SDK_VERSION)) {
         checkOverride(context, element, ATTR_TARGET_SDK_VERSION)
-        if (context.isEnabled(TARGET_NEWER)) {
-          val targetSdkVersionNode =
-            element.getAttributeNodeNS(ANDROID_URI, ATTR_TARGET_SDK_VERSION)
-          if (targetSdkVersionNode != null) {
-            val target = targetSdkVersionNode.value
-            try {
-              val api = target.toInt()
-              val highest = context.client.highestKnownApiLevel
-              if (api < highest) {
-                val fix =
-                  fix()
-                    .name("Update targetSdkVersion to $highest")
-                    .replace()
-                    .pattern("targetSdkVersion\\s*=\\s*[\"'](.*)[\"']")
-                    .with(highest.toString())
-                    .build()
-                val location = context.getLocation(targetSdkVersionNode)
-                context.report(
-                  TARGET_NEWER,
-                  element,
-                  location,
-                  "Not targeting the latest versions of Android; compatibility " +
-                    "modes apply. Consider testing and updating this version. " +
-                    "Consult the `android.os.Build.VERSION_CODES` javadoc for details.",
-                  fix
-                )
-              }
-            } catch (ignore: NumberFormatException) {
-              // Ignore: AAPT will enforce this.
+        val targetSdkVersionNode = element.getAttributeNodeNS(ANDROID_URI, ATTR_TARGET_SDK_VERSION)
+        if (targetSdkVersionNode != null) {
+          val target = targetSdkVersionNode.value
+          try {
+            val targetSdkVersion = target.toInt()
+            val highest = context.client.highestKnownApiLevel
+            val targetSdkCheckResult =
+              checkTargetSdk(context, calendar ?: Calendar.getInstance(), targetSdkVersion)
+            val location = context.getLocation(targetSdkVersionNode)
+            if (targetSdkCheckResult is TargetSdkCheckResult.Expired) {
+              context.report(
+                EXPIRED_TARGET_SDK_VERSION,
+                element,
+                location,
+                targetSdkCheckResult.message,
+                targetSdkLintFix(targetSdkCheckResult.requiredVersion)
+              )
             }
+            if (targetSdkCheckResult is TargetSdkCheckResult.Expiring) {
+              context.report(
+                EXPIRING_TARGET_SDK_VERSION,
+                element,
+                location,
+                targetSdkCheckResult.message,
+                targetSdkLintFix(targetSdkCheckResult.requiredVersion)
+              )
+            }
+            if (
+              context.isEnabled(TARGET_NEWER) &&
+                targetSdkCheckResult is TargetSdkCheckResult.NoIssue &&
+                targetSdkVersion < highest
+            ) {
+              context.report(
+                TARGET_NEWER,
+                element,
+                location,
+                "Not targeting the latest versions of Android; compatibility " +
+                  "modes apply. Consider testing and updating this version. " +
+                  "Consult the `android.os.Build.VERSION_CODES` javadoc for details.",
+                targetSdkLintFix(highest)
+              )
+            }
+          } catch (ignore: NumberFormatException) {
+            // Ignore: AAPT will enforce this.
           }
         }
       }
@@ -1336,6 +1411,14 @@ class ManifestDetector : Detector(), XmlScanner {
       }
     }
   }
+
+  private fun targetSdkLintFix(target: Int) =
+    fix()
+      .name("Update targetSdkVersion to $target")
+      .replace()
+      .pattern("targetSdkVersion\\s*=\\s*[\"'](.*)[\"']")
+      .with(target.toString())
+      .build()
 
   private var checkedUniquePermissions = false
 
