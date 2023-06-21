@@ -87,6 +87,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
      * Parameters of [TestLabBuildService].
      */
     interface Parameters : BuildServiceParameters {
+        val offlineMode: Property<Boolean>
         val quotaProjectName: Property<String>
         val credentialFile: RegularFileProperty
         val cloudStorageBucket: Property<String>
@@ -209,14 +210,19 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         )
     }
 
-    fun getStorageObject(fileUri: String) = storageManager.retrieveFile(fileUri)
+    fun getStorageObject(fileUri: String) =
+        requireOnline("Download file from storage") {
+            storageManager.retrieveFile(fileUri)
+        }
 
     fun uploadSharedFile(projectPath: String, file: File, uploadFileName: String = file.name) =
-        storageManager.retrieveOrUploadSharedFile(
-            file,
-            bucketName,
-            projectPath,
-            uploadFileName)
+        requireOnline("Upload file to storage") {
+            storageManager.retrieveOrUploadSharedFile(
+                file,
+                bucketName,
+                projectPath,
+                uploadFileName)
+        }
 
     fun runTestsOnDevice(
         deviceName: String,
@@ -230,34 +236,44 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         projectPath: String,
         variantName: String,
         extraDeviceFileUrls: Map<String, String>
-    ): List<FtlTestRunResult> {
-        resultsOutDir.apply {
-            if (!exists()) {
-                mkdirs()
+    ): List<FtlTestRunResult> =
+        requireOnline("Run tests on $deviceName") {
+            resultsOutDir.apply {
+                if (!exists()) {
+                    mkdirs()
+                }
             }
+
+            val deviceData = TestDeviceData(
+                name = deviceName,
+                deviceId = deviceId,
+                apiLevel = deviceApiLevel,
+                locale = deviceLocale,
+                orientation = deviceOrientation,
+                ftlModel = ftlDeviceModel,
+                extraDeviceFileUrls = extraDeviceFileUrls
+            )
+
+            testRunner.runTests(
+                deviceData,
+                testData,
+                resultsOutDir,
+                projectPath,
+                variantName
+            )
         }
 
-        val deviceData = TestDeviceData(
-            name = deviceName,
-            deviceId = deviceId,
-            apiLevel = deviceApiLevel,
-            locale = deviceLocale,
-            orientation = deviceOrientation,
-            ftlModel = ftlDeviceModel,
-            extraDeviceFileUrls = extraDeviceFileUrls
-        )
-
-        return testRunner.runTests(
-            deviceData,
-            testData,
-            resultsOutDir,
-            projectPath,
-            variantName
-        )
-    }
-
     fun catalog(): AndroidDeviceCatalog =
-        testingManager.catalog(parameters.quotaProjectName.get())
+        requireOnline("Access Firebase device catalog") {
+            testingManager.catalog(parameters.quotaProjectName.get())
+        }
+
+    private fun <T> requireOnline(actionName: String, action: () -> T): T =
+        if (parameters.offlineMode.get()) {
+            error("Cannot $actionName while in offline mode.")
+        } else {
+            action()
+        }
 
     /**
      * An action to register TestLabBuildService to a project.
@@ -392,6 +408,9 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
         @VisibleForTesting
         fun configure(params: Parameters) {
+            params.offlineMode.set(providerFactory.provider {
+                project.gradle.startParameter.isOffline
+            })
             params.credentialFile.fileProvider(providerFactory.provider {
                 if (testLabExtension.serviceAccountCredentials.isPresent) {
                     testLabExtension.serviceAccountCredentials.get().asFile

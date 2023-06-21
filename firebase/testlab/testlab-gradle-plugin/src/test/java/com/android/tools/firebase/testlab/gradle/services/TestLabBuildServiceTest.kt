@@ -166,6 +166,9 @@ class TestLabBuildServiceTest {
                         val mockProperty: Property<String> = mock()
                         `when`(mockProperty.get()).thenReturn("projectName")
                         `when`(quotaProjectName).thenReturn(mockProperty)
+                        val mockOffline: Property<Boolean> = mock()
+                        `when`(mockOffline.get()).thenReturn(false)
+                        `when`(offlineMode).thenReturn(mockOffline)
                     }
         }
 
