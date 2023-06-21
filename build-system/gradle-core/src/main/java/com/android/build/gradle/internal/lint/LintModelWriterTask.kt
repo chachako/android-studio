@@ -45,12 +45,12 @@ import com.android.build.gradle.internal.tasks.NonIncrementalTask
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.buildanalyzer.common.TaskCategory
+import com.android.tools.lint.model.LintModelArtifactType
 import com.android.tools.lint.model.LintModelModule
 import com.android.tools.lint.model.LintModelSerialization
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -109,12 +109,17 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
         )
     }
 
+    /**
+     * If [lintModelArtifactType] is not null, only the corresponding artifact is initialized; if
+     * it's null, both the main and test artifacts are initialized.
+     */
     internal fun configureForStandalone(
         taskCreationServices: TaskCreationServices,
         javaExtension: JavaPluginExtension,
         kotlinExtensionWrapper: KotlinMultiplatformExtensionWrapper?,
         lintOptions: Lint,
         partialResultsDir: File,
+        lintModelArtifactType: LintModelArtifactType?,
         fatalOnly: Boolean,
     ) {
         this.variantName = ""
@@ -131,7 +136,8 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
                 taskCreationServices.projectOptions,
                 fatalOnly = fatalOnly,
                 useModuleDependencyLintModels = true,
-                LintMode.MODEL_WRITING
+                LintMode.MODEL_WRITING,
+                lintModelArtifactType
             )
         this.partialResultsDir.set(partialResultsDir)
         this.partialResultsDir.disallowChanges()

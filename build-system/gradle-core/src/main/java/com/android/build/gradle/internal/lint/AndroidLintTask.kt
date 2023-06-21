@@ -51,6 +51,7 @@ import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.BooleanOption.LINT_ANALYSIS_PER_COMPONENT
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.ide.common.repository.GradleVersion
+import com.android.tools.lint.model.LintModelArtifactType
 import com.android.tools.lint.model.LintModelSerialization
 import com.android.utils.FileUtils
 import com.google.common.annotations.VisibleForTesting
@@ -806,7 +807,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
             task.dependencyPartialResults.disallowChanges()
             task.nestedComponentLintModels.disallowChanges()
             task.nestedComponentPartialResults.disallowChanges()
-            task.lintTool.initialize(creationConfig.services)
+            task.lintTool.initialize(creationConfig.services, task.name)
             if (autoFix) {
                 task.outputs.upToDateWhen {
                     it.logger.debug("Lint fix task potentially modifies sources so cannot be up-to-date")
@@ -934,6 +935,8 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         customLintChecksConfig: FileCollection,
         lintOptions: Lint,
         partialResults: Provider<Directory>,
+        unitTestPartialResults: Provider<Directory>?,
+        unitTestLintModel: Provider<Directory>?,
         lintMode: LintMode,
         fatalOnly: Boolean = false,
         autoFix: Boolean = false,
@@ -956,7 +959,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         }
         this.lintFixBuildService.disallowChanges()
         this.checkOnly.setDisallowChanges(lintOptions.checkOnly)
-        this.lintTool.initialize(taskCreationServices)
+        this.lintTool.initialize(taskCreationServices, this.name)
         this.projectInputs
             .initializeForStandalone(project, javaPluginExtension, lintOptions, lintMode)
         // Workaround for b/193244776 - Ensure the task runs if a baseline file is set and the file
@@ -976,13 +979,18 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                 taskCreationServices.projectOptions,
                 fatalOnly,
                 useModuleDependencyLintModels = true,
-                lintMode
+                lintMode,
+                lintModelArtifactType = unitTestLintModel?.let { LintModelArtifactType.MAIN }
             )
         this.lintRuleJars.fromDisallowChanges(customLintChecksConfig)
         this.lintModelDirectory.setDisallowChanges(
             projectInfo.buildDirectory.dir("intermediates/${this.name}/android-lint-model")
         )
         this.partialResults.setDisallowChanges(partialResults)
+        unitTestPartialResults?.let { this.nestedComponentPartialResults.from(it) }
+        this.nestedComponentPartialResults.disallowChanges()
+        unitTestLintModel?.let { this.nestedComponentLintModels.from(it) }
+        this.nestedComponentLintModels.disallowChanges()
         this.initializeOutputTypesConvention()
         when {
             fatalOnly -> {

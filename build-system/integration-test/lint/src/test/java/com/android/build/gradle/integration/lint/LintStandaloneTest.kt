@@ -41,12 +41,19 @@ import org.junit.runners.Parameterized
  * </pre>
  */
 @RunWith(FilterableParameterized::class)
-class LintStandaloneTest(private val runLintInProcess: Boolean) {
+class LintStandaloneTest(
+    private val runLintInProcess: Boolean,
+    private val lintAnalysisPerComponent: Boolean
+) {
 
     companion object {
-        @Parameterized.Parameters(name = "runLintInProcess = {0}")
+        @Parameterized.Parameters(name = "runLintInProcess_{0}_lintAnalysisPerComponent_{1}")
         @JvmStatic
-        fun params() = listOf(true, false)
+        fun params() = listOf(
+            arrayOf(true, true),
+            arrayOf(true, false),
+            arrayOf(false, false),
+        )
     }
 
     @get:Rule
@@ -163,5 +170,8 @@ class LintStandaloneTest(private val runLintInProcess: Boolean) {
 
 
     private fun getExecutor(): GradleTaskExecutor =
-        project.executor().with(BooleanOption.RUN_LINT_IN_PROCESS, runLintInProcess)
+        project.executor()
+            .with(BooleanOption.RUN_LINT_IN_PROCESS, runLintInProcess)
+            .with(BooleanOption.LINT_ANALYSIS_PER_COMPONENT, lintAnalysisPerComponent)
+
 }

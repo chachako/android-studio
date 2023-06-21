@@ -79,6 +79,8 @@ import com.android.tools.lint.model.DefaultLintModelSourceProvider
 import com.android.tools.lint.model.DefaultLintModelVariant
 import com.android.tools.lint.model.LintModelAndroidArtifact
 import com.android.tools.lint.model.LintModelArtifactType
+import com.android.tools.lint.model.LintModelArtifactType.MAIN
+import com.android.tools.lint.model.LintModelArtifactType.UNIT_TEST
 import com.android.tools.lint.model.LintModelBuildFeatures
 import com.android.tools.lint.model.LintModelDependencies
 import com.android.tools.lint.model.LintModelJavaArtifact
@@ -196,7 +198,7 @@ abstract class LintTool {
     @get:Internal
     abstract val lintClassLoaderBuildService: Property<LintClassLoaderBuildService>
 
-    fun initialize(taskCreationServices: TaskCreationServices) {
+    fun initialize(taskCreationServices: TaskCreationServices, taskName: String) {
         classpath.fromDisallowChanges(taskCreationServices.lintFromMaven.files)
         lintClassLoaderBuildService.setDisallowChanges(getBuildService(taskCreationServices.buildServiceRegistry))
         versionKey.setDisallowChanges(deriveVersionKey(taskCreationServices, lintClassLoaderBuildService))
@@ -210,7 +212,9 @@ abstract class LintTool {
         runInProcess.setDisallowChanges(projectOptions.getProvider(BooleanOption.RUN_LINT_IN_PROCESS))
         workerHeapSize.setDisallowChanges(projectOptions.getProvider(StringOption.LINT_HEAP_SIZE))
         lintCacheDirectory.setDisallowChanges(
-            taskCreationServices.projectInfo.buildDirectory.dir("${SdkConstants.FD_INTERMEDIATES}/lint-cache")
+            taskCreationServices.projectInfo
+                .buildDirectory
+                .dir("${SdkConstants.FD_INTERMEDIATES}/lint-cache/$taskName")
         )
     }
 
@@ -1137,7 +1141,6 @@ abstract class VariantInputs {
         mavenCoordinatesCache.setDisallowChanges(getBuildService(variantCreationConfig.services.buildServiceRegistry))
     }
 
-    // TODO - support per component analysis for java libraries
     internal fun initializeForStandalone(
         project: Project,
         javaExtension: JavaPluginExtension,
@@ -1145,7 +1148,8 @@ abstract class VariantInputs {
         projectOptions: ProjectOptions,
         fatalOnly: Boolean,
         useModuleDependencyLintModels: Boolean,
-        lintMode: LintMode
+        lintMode: LintMode,
+        lintModelArtifactType: LintModelArtifactType?
     ) {
         if (kotlinExtensionWrapper == null) {
             initializeForStandalone(
@@ -1154,7 +1158,8 @@ abstract class VariantInputs {
                 projectOptions,
                 fatalOnly,
                 useModuleDependencyLintModels,
-                lintMode
+                lintMode,
+                lintModelArtifactType
             )
         } else {
             initializeForStandaloneWithKotlinMultiplatform(
@@ -1163,7 +1168,8 @@ abstract class VariantInputs {
                 projectOptions,
                 fatalOnly,
                 useModuleDependencyLintModels,
-                lintMode
+                lintMode,
+                lintModelArtifactType!!
             )
         }
     }
@@ -1174,35 +1180,68 @@ abstract class VariantInputs {
         projectOptions: ProjectOptions,
         fatalOnly: Boolean,
         useModuleDependencyLintModels: Boolean,
-        lintMode: LintMode
+        lintMode: LintMode,
+        lintModelArtifactType: LintModelArtifactType?
     ) {
         val mainSourceSet = javaExtension.sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
         val testSourceSet = javaExtension.sourceSets.getByName(SourceSet.TEST_SOURCE_SET_NAME)
 
         name.setDisallowChanges(mainSourceSet.name)
         this.useModuleDependencyLintModels.setDisallowChanges(useModuleDependencyLintModels)
-        mainArtifact.set(
-            project.objects
-                .newInstance(AndroidArtifactInput::class.java)
-                .initializeForStandalone(
-                    project,
-                    projectOptions,
-                    mainSourceSet,
-                    lintMode,
-                    useModuleDependencyLintModels,
-                    fatalOnly
+        if (lintModelArtifactType == MAIN || lintModelArtifactType == null) {
+            mainArtifact.set(
+                project.objects
+                    .newInstance(AndroidArtifactInput::class.java)
+                    .initializeForStandalone(
+                        project,
+                        projectOptions,
+                        mainSourceSet,
+                        lintMode,
+                        useModuleDependencyLintModels,
+                        fatalOnly
+                    )
+            )
+            mainSourceProvider.set(
+                project.objects
+                    .newInstance(SourceProviderInput::class.java)
+                    .initializeForStandalone(
+                        mainSourceSet,
+                        lintMode,
+                        unitTestOnly = false
+                    )
+            )
+        }
+        mainArtifact.disallowChanges()
+        mainSourceProvider.disallowChanges()
+        if (lintModelArtifactType == UNIT_TEST || lintModelArtifactType == null) {
+            testArtifact.set(
+                project.objects
+                    .newInstance(JavaArtifactInput::class.java)
+                    .initializeForStandalone(
+                        project,
+                        projectOptions,
+                        testSourceSet,
+                        lintMode,
+                        useModuleDependencyLintModels,
+                        // analyzing test bytecode is expensive, without much benefit
+                        includeClassesOutputDirectories = false,
+                        fatalOnly
+                    )
+            )
+            if (!fatalOnly) {
+                unitTestSourceProvider.set(
+                    project.objects
+                        .newInstance(SourceProviderInput::class.java)
+                        .initializeForStandalone(
+                            testSourceSet,
+                            lintMode,
+                            unitTestOnly = true
+                        )
                 )
-        )
-        testArtifact.setDisallowChanges(project.objects.newInstance(JavaArtifactInput::class.java).initializeForStandalone(
-            project,
-            projectOptions,
-            testSourceSet,
-            lintMode,
-            useModuleDependencyLintModels,
-            // analyzing test bytecode is expensive, without much benefit
-            includeClassesOutputDirectories = false,
-            fatalOnly
-        ))
+            }
+        }
+        testArtifact.disallowChanges()
+        unitTestSourceProvider.disallowChanges()
         androidTestArtifact.disallowChanges()
         testFixturesArtifact.disallowChanges()
         namespace.setDisallowChanges("")
@@ -1215,27 +1254,8 @@ abstract class VariantInputs {
         useSupportLibraryVectorDrawables.setDisallowChanges(false)
         mergedManifest.setDisallowChanges(null)
         manifestMergeReport.setDisallowChanges(null)
-        mainSourceProvider.setDisallowChanges(
-            project.objects.newInstance(SourceProviderInput::class.java)
-                .initializeForStandalone(
-                    mainSourceSet,
-                    lintMode,
-                    unitTestOnly = false
-                )
-        )
         sourceProviders.add(mainSourceProvider)
         sourceProviders.disallowChanges()
-        if (!fatalOnly) {
-            unitTestSourceProvider.set(
-                project.objects.newInstance(SourceProviderInput::class.java)
-                    .initializeForStandalone(
-                        testSourceSet,
-                        lintMode,
-                        unitTestOnly = true
-                    )
-            )
-        }
-        unitTestSourceProvider.disallowChanges()
         androidTestSourceProvider.disallowChanges()
         testFixturesSourceProvider.disallowChanges()
         buildFeatures.initializeForStandalone()
@@ -1253,7 +1273,8 @@ abstract class VariantInputs {
         projectOptions: ProjectOptions,
         fatalOnly: Boolean,
         useModuleDependencyLintModels: Boolean,
-        lintMode: LintMode
+        lintMode: LintMode,
+        lintModelArtifactType: LintModelArtifactType
     ) {
         // TODO(b/196838286) - support (1) custom-named jvm targets and (2) multiple jvm targets
         val jvmTarget = kotlinExtensionWrapper.kotlinExtension.targets.findByName("jvm")
@@ -1262,7 +1283,7 @@ abstract class VariantInputs {
 
         name.setDisallowChanges(jvmTarget?.name)
         this.useModuleDependencyLintModels.setDisallowChanges(useModuleDependencyLintModels)
-        if (jvmMainCompilation != null) {
+        if (jvmMainCompilation != null && lintModelArtifactType == MAIN) {
             mainArtifact.set(
                 project.objects
                     .newInstance(AndroidArtifactInput::class.java)
@@ -1275,9 +1296,26 @@ abstract class VariantInputs {
                         fatalOnly
                     )
             )
+            val sourceDirectories =
+                project.files().also { fileCollection ->
+                    jvmMainCompilation.kotlinSourceSets.forEach {
+                        fileCollection.from(it.kotlin.sourceDirectories)
+                    }
+                }
+            mainSourceProvider.set(
+                project.objects
+                    .newInstance(SourceProviderInput::class.java)
+                    .initializeForStandaloneWithKotlinMultiplatform(
+                        sourceDirectories,
+                        lintMode,
+                        unitTestOnly = false
+                    )
+            )
         }
-        if (jvmTestCompilation != null) {
-            testArtifact.setDisallowChanges(
+        mainArtifact.disallowChanges()
+        mainSourceProvider.disallowChanges()
+        if (jvmTestCompilation != null && lintModelArtifactType == UNIT_TEST) {
+            testArtifact.set(
                 project.objects
                     .newInstance(JavaArtifactInput::class.java)
                     .initializeForStandaloneWithKotlinMultiplatform(
@@ -1291,7 +1329,24 @@ abstract class VariantInputs {
                         fatalOnly
                     )
             )
+            val sourceDirectories =
+                project.files().also { fileCollection ->
+                    jvmTestCompilation.kotlinSourceSets.forEach {
+                        fileCollection.from(it.kotlin.sourceDirectories)
+                    }
+                }
+            unitTestSourceProvider.set(
+                project.objects
+                    .newInstance(SourceProviderInput::class.java)
+                    .initializeForStandaloneWithKotlinMultiplatform(
+                        sourceDirectories,
+                        lintMode,
+                        unitTestOnly = true
+                    )
+            )
         }
+        testArtifact.disallowChanges()
+        unitTestSourceProvider.disallowChanges()
         androidTestArtifact.disallowChanges()
         testFixturesArtifact.disallowChanges()
         namespace.setDisallowChanges("")
@@ -1304,41 +1359,8 @@ abstract class VariantInputs {
         useSupportLibraryVectorDrawables.setDisallowChanges(false)
         mergedManifest.setDisallowChanges(null)
         manifestMergeReport.setDisallowChanges(null)
-        if (jvmMainCompilation != null) {
-            val sourceDirectories =
-                project.files().also { fileCollection ->
-                    jvmMainCompilation.kotlinSourceSets.forEach {
-                        fileCollection.from(it.kotlin.sourceDirectories)
-                    }
-                }
-            mainSourceProvider.setDisallowChanges(
-                project.objects.newInstance(SourceProviderInput::class.java)
-                    .initializeForStandaloneWithKotlinMultiplatform(
-                        sourceDirectories,
-                        lintMode,
-                        unitTestOnly = false
-                    )
-            )
-        }
         sourceProviders.add(mainSourceProvider)
         sourceProviders.disallowChanges()
-        if (!fatalOnly && jvmTestCompilation != null) {
-            val sourceDirectories =
-                project.files().also { fileCollection ->
-                    jvmTestCompilation.kotlinSourceSets.forEach {
-                        fileCollection.from(it.kotlin.sourceDirectories)
-                    }
-                }
-            unitTestSourceProvider.set(
-                project.objects.newInstance(SourceProviderInput::class.java)
-                    .initializeForStandaloneWithKotlinMultiplatform(
-                        sourceDirectories,
-                        lintMode,
-                        unitTestOnly = true
-                    )
-            )
-        }
-        unitTestSourceProvider.disallowChanges()
         androidTestSourceProvider.disallowChanges()
         testFixturesSourceProvider.disallowChanges()
         buildFeatures.initializeForStandalone()
@@ -1365,8 +1387,8 @@ abstract class VariantInputs {
             module,
             name.get(),
             useSupportLibraryVectorDrawables.get(),
-            mainArtifact.orNull?.toLintModel(dependencyCaches, LintModelArtifactType.MAIN),
-            testArtifact.orNull?.toLintModel(dependencyCaches, LintModelArtifactType.UNIT_TEST),
+            mainArtifact.orNull?.toLintModel(dependencyCaches, MAIN),
+            testArtifact.orNull?.toLintModel(dependencyCaches, UNIT_TEST),
             androidTestArtifact.orNull
                 ?.toLintModel(dependencyCaches, LintModelArtifactType.INSTRUMENTATION_TEST),
             testFixturesArtifact.orNull

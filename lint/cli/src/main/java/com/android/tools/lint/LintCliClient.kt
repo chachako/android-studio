@@ -73,7 +73,6 @@ import com.android.tools.lint.detector.api.isJdkFolder
 import com.android.tools.lint.gradle.GroovyGradleVisitor
 import com.android.tools.lint.helpers.DefaultJavaEvaluator
 import com.android.tools.lint.helpers.DefaultUastParser
-import com.android.tools.lint.model.LintModelArtifactType
 import com.android.tools.lint.model.LintModelModuleType
 import com.android.tools.lint.model.PathVariables
 import com.android.utils.CharSequences
@@ -487,25 +486,7 @@ open class LintCliClient : LintClient {
     fun Project.artifactType() = buildVariant?.artifact?.type
     val dependentsMap: Map<Project, Project> =
       if (driver.checkDependencies) {
-        // modulePathToMainProject is a map of modulePath to "main" Project, we need this map
-        // because partial results from test components should be considered with respect to
-        // their own "main" project, not the "root" project.
-        val modulePathToMainProject =
-          (root.allLibraries.asSequence() + root)
-            .filter { it.artifactType() == LintModelArtifactType.MAIN }
-            .associateBy { it.modulePath() }
-
-        root.allLibraries.asSequence().filterNot(Project::isExternalLibrary).associateWith {
-          dependency ->
-          val dependencyType = dependency.artifactType()
-          val dependencyModulePath = dependency.modulePath()
-          when {
-            dependencyType != null &&
-              dependencyType != LintModelArtifactType.MAIN &&
-              dependencyModulePath != null -> modulePathToMainProject[dependencyModulePath] ?: root
-            else -> root
-          }
-        }
+        root.allLibraries.asSequence().filterNot(Project::isExternalLibrary).associateWith { root }
       } else {
         // Even in non-check-dependencies scenarios we have to add in any dynamic
         // features and test components since we've transferred them in as dependencies

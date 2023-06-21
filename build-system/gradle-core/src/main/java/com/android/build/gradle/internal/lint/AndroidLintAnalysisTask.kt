@@ -46,6 +46,7 @@ import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.ide.common.repository.GradleVersion
+import com.android.tools.lint.model.LintModelArtifactType
 import com.android.tools.lint.model.LintModelSerialization
 import com.android.utils.FileUtils
 import com.google.common.annotations.VisibleForTesting
@@ -54,7 +55,6 @@ import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.configuration.ShowStacktrace
-import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -321,7 +321,7 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
                 LintMode.ANALYSIS,
                 fatalOnly = fatalOnly
             )
-            task.lintTool.initialize(creationConfig.services)
+            task.lintTool.initialize(creationConfig.services, name)
             task.desugaredMethodsFiles.from(
                 getDesugaredMethods(
                     creationConfig.services,
@@ -436,7 +436,7 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
                 isPerComponentLintAnalysis = true
             )
 
-            task.lintTool.initialize(mainVariant.services)
+            task.lintTool.initialize(mainVariant.services, name)
             task.desugaredMethodsFiles.from(
                 getDesugaredMethods(
                     mainVariant.services,
@@ -498,13 +498,17 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
         )
     }
 
-    // TODO - support per component analysis for java libraries
+    /**
+     * If [lintModelArtifactType] is not null, only the corresponding artifact is initialized; if
+     * it's null, both the main and test artifacts are initialized.
+     */
     fun configureForStandalone(
         taskCreationServices: TaskCreationServices,
         javaPluginExtension: JavaPluginExtension,
         kotlinExtensionWrapper: KotlinMultiplatformExtensionWrapper?,
         customLintChecksConfig: FileCollection,
         lintOptions: Lint,
+        lintModelArtifactType: LintModelArtifactType?,
         fatalOnly: Boolean = false
     ) {
         initializeGlobalInputs(
@@ -515,7 +519,7 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
         this.analyticsService.setDisallowChanges(getBuildService(taskCreationServices.buildServiceRegistry))
         this.fatalOnly.setDisallowChanges(fatalOnly)
         this.checkOnly.setDisallowChanges(lintOptions.checkOnly)
-        this.lintTool.initialize(taskCreationServices)
+        this.lintTool.initialize(taskCreationServices, this.name)
         this.projectInputs
             .initializeForStandalone(
                 project,
@@ -531,7 +535,8 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
                 taskCreationServices.projectOptions,
                 fatalOnly,
                 useModuleDependencyLintModels = false,
-                LintMode.ANALYSIS
+                LintMode.ANALYSIS,
+                lintModelArtifactType
             )
         this.lintRuleJars.fromDisallowChanges(customLintChecksConfig)
         this.lintModelDirectory
