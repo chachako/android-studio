@@ -35,6 +35,7 @@ import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.CancellationException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
@@ -187,7 +188,11 @@ internal class ReverseForwardStream(
         try {
           input.readExactly(byteBuffer)
         } catch (e: Throwable) {
-          logger.log(Level.WARNING, "Reverse daemon exited. Closing stream.", e)
+          // CoroutineScope in which run() was called might have been cancelled.
+          // Don't log in that case
+          if (e !is CancellationException) {
+            logger.log(Level.WARNING, "Reverse daemon exited. Closing stream.", e)
+          }
           output.close()
           input.close()
           return
