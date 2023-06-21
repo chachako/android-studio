@@ -1313,6 +1313,9 @@ public final class SdkConstants {
     public static final String ATTR_MIMETYPE = "mimeType";
     public static final String ATTR_LOCALE_CONFIG = "localeConfig";
     public static final String ATTR_FOREGROUND_SERVICE_TYPE = "foregroundServiceType";
+    public static final String ATTR_TASK_AFFINITY = "taskAffinity";
+    public static final String ATTR_EXCLUDE_FROM_RECENTS = "excludeFromRecents";
+    public static final String ATTR_NO_HISTORY = "noHistory";
 
     // Attributes: Resources
     public static final String ATTR_ATTR = "attr";
@@ -2607,6 +2610,11 @@ public final class SdkConstants {
                 "TYPE_TEXT_VARIATION_VISIBLE_PASSWORD";
         public static final String REF_TYPE_TEXT_VARIATION_WEB_PASSWORD =
                 "TYPE_TEXT_VARIATION_WEB_PASSWORD";
+    }
+
+    public static final class Intent {
+        public static final String REF_FLAG_ACTIVITY_NEW_TASK = "FLAG_ACTIVITY_NEW_TASK";
+        public static final String REF_FLAG_ACTIVITY_CLEAR_TOP = "FLAG_ACTIVITY_CLEAR_TOP";
     }
 
     public static final class ViewAttributes {
