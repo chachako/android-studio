@@ -24,6 +24,7 @@ import com.android.builder.testing.api.DeviceConfigProviderImpl
 import com.android.builder.testing.api.DeviceConnector
 import com.android.builder.testing.api.DeviceProvider
 import com.android.ddmlib.AndroidDebugBridge
+import com.android.ddmlib.IDevice
 import com.android.ddmlib.internal.FakeAdbTestRule
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.services.PackageManager
@@ -50,8 +51,10 @@ class InstallVariantViaBundleTaskTest {
     @Rule
     var tmp = TemporaryFolder()
 
+    private val sdkVersion = 21
+
     @get:Rule
-    val fakeAdb = FakeAdbTestRule("21")
+    val fakeAdb = FakeAdbTestRule(sdkVersion.toString())
 
     private lateinit var project: Project
     private lateinit var deviceConnector: DeviceConnector
@@ -63,8 +66,13 @@ class InstallVariantViaBundleTaskTest {
         deviceState = fakeAdb.connectAndWaitForDevice()
         deviceState.setActivityManager(PackageManager())
         val device = AndroidDebugBridge.getBridge()!!.devices.single()
-        deviceConnector = ConnectedDevice(
-            device, StdLogger(StdLogger.Level.VERBOSE),  10000, TimeUnit.MILLISECONDS)
+        deviceConnector = CustomConnectedDevice(
+            device,
+            StdLogger(StdLogger.Level.VERBOSE),
+            10000,
+            TimeUnit.MILLISECONDS,
+            sdkVersion
+        )
     }
 
     private fun getParams(privacySandboxSdkApksFiles: List<File> = emptyList()) =
@@ -188,6 +196,23 @@ class InstallVariantViaBundleTaskTest {
             it.startsWith("install-write") && it.contains("1_sdk_-extracted") }.size == 2)
         assert(deviceState.pmLogs.filter {
             it.startsWith("install -r -t") && it.contains("extract-apk") }.size == 1)
+    }
+
+    private class CustomConnectedDevice(
+        iDevice: IDevice,
+        logger: ILogger,
+        timeout: Long,
+        timeUnit: TimeUnit,
+        private val sdkVersion: Int,
+    ): ConnectedDevice(iDevice, logger, timeout, timeUnit) {
+
+        /**
+         * "Mock" the original function which causes tests to be flaky when installing multiple
+         * APKs.
+         */
+        override fun getApiLevel(): Int {
+            return sdkVersion
+        }
     }
 
     private class TestInstallRunnable(
