@@ -272,11 +272,11 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
                         project,
                         this,
                         sourceSetToCreationConfigMap = lazy {
-                            checkIfCommonSourceSetsShouldBeAndroid()
+                            addSourceSetsThatShouldBeResolvedAsAndroid()
                             sourceSetToCreationConfigMap
                         },
                         extraSourceSetsToIncludeInResolution = lazy {
-                            checkIfCommonSourceSetsShouldBeAndroid()
+                            addSourceSetsThatShouldBeResolvedAsAndroid()
                             extraSourceSetsToIncludeInResolution
                         }
                     )
@@ -486,16 +486,12 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         )
     }
 
-    private fun checkIfCommonSourceSetsShouldBeAndroid() {
-        // Here we check if the common sourceSets are included only in the androidTarget, this means
-        // that the sourceSet should be treated as android sourceSet in IDE Import and its
+    private fun addSourceSetsThatShouldBeResolvedAsAndroid() {
+        // Here we check if there are sourceSets that are included only in the androidTarget, this
+        // means that the sourceSet should be treated as android sourceSet in IDE Import and its
         // dependencies should be resolved from the component that maps to the compilation
         // containing this sourceSet.
-        listOf(
-            COMMON_MAIN_SOURCE_SET_NAME,
-            COMMON_TEST_SOURCE_SET_NAME
-        ).mapNotNull {
-            val sourceSet = kotlinExtension.sourceSets.getByName(it)
+        kotlinExtension.sourceSets.mapNotNull { sourceSet ->
             val targetsContainingSourceSet = kotlinExtension.targets.filter { target ->
                 target.platformType != KotlinPlatformType.common &&
                         target.compilations.any { compilation ->
