@@ -16,22 +16,18 @@
 package com.android.build.gradle.integration.dependencies
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.truth.TruthHelper
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import com.android.build.gradle.integration.common.utils.getVariantByName
-import com.android.builder.model.AndroidProject
+import com.android.builder.model.v2.ide.GraphItem
+import com.android.builder.model.v2.ide.Library
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
 import com.android.testutils.generateAarWithContent
-import com.android.utils.PathUtils
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
-import com.google.common.collect.Iterables
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.io.File
-import java.util.stream.Collectors
 
 /**
  * Test for runtime only dependencies. Test project structure: app -> library (implementation) ----
@@ -82,35 +78,48 @@ class AppWithRuntimeDependencyTest {
 
 
     @Test
-    fun checkRuntimeClasspathWithLevel1Model() {
-        val models = project.model()
-                .level(AndroidProject.MODEL_LEVEL_3_VARIANT_OUTPUT_POST_BUILD)
-                .fetchAndroidProjects()
-                .onlyModelMap
-        val appDebug = models[":app"]!!.getVariantByName("debug")
-        val deps = appDebug.mainArtifact.dependencies
+    fun checkRuntimeClasspath() {
+        val models = project.modelV2().fetchModels("debug").container
+
+        val app = models.getProject(":app")
+        val dependencies = app.variantDependencies!!
 
         // Verify that app has one AndroidLibrary dependency, :library.
-        val libs = deps.libraries
-        TruthHelper.assertThat(libs).named("app android library deps count").hasSize(1)
-        TruthHelper.assertThat(Iterables.getOnlyElement(libs).project)
-                .named("app android library deps path")
-                .isEqualTo(":library")
+        val compileDeps = dependencies.mainArtifact.compileDependencies.traverse(dependencies.libraries)
+        val library = compileDeps.single()
 
-        // Verify that app doesn't have module dependency.
-        TruthHelper.assertThat(deps.javaModules).named("app module dependency count").isEmpty()
+        assertThat(library.projectInfo!!.projectPath).isEqualTo(":library")
 
-        // Verify that app doesn't have JavaLibrary dependency.
-        TruthHelper.assertThat(deps.javaLibraries).named("app java dependency count").isEmpty()
+        // Verify that app has runtime only dependencies on guava and the example aar.
+        val runtimeDeps = dependencies.mainArtifact.runtimeDependencies!!.traverse(dependencies.libraries)
+        val runtimeOnlyLibraries = (runtimeDeps.toSet() - compileDeps.toSet()).mapNotNull {
+            it.toDependency()
+        }
 
-        // Verify that app has runtime only dependencies on guava and the aar.
-        val runtimeOnlyClasses = deps.runtimeOnlyClasses
-                .stream()
-                .map { file: File -> PathUtils.toSystemIndependentPath(file.toPath()) }
-                .collect(Collectors.toList())
-        TruthHelper.assertThat(runtimeOnlyClasses).hasSize(2)
-        // Verify the order of the artifacts too.
-        TruthHelper.assertThat(runtimeOnlyClasses[0]).endsWith("/guava-19.0.jar")
-        TruthHelper.assertThat(runtimeOnlyClasses[1]).endsWith("/aar-1/jars/classes.jar")
+        assertThat(runtimeOnlyLibraries).containsExactly(
+                "com.google.guava:guava:19.0",
+                "com.example:aar:1"
+        ).inOrder()
     }
 }
+
+// Returns all dependencies in the graph as library objects
+private fun List<GraphItem>.traverse(libraries: Map<String, Library>): List<Library> {
+    // Do everything in reverse order since VariantDependencies has the deepest element first
+    // in dependency graph.
+    val seen = HashSet<String>()
+    val queue = ArrayDeque(this.reversed())
+    while (queue.isNotEmpty()) {
+        val from = queue.removeLast()
+        if (seen.add(from.key)) {
+            queue.addAll(from.dependencies.reversed())
+        }
+    }
+    //
+    return seen.reversed().map {
+        libraries[it]!!
+    }
+}
+
+private fun Library.toDependency() =
+        libraryInfo?.let { listOf(it.group, it.name, it.version).joinToString(":") }
