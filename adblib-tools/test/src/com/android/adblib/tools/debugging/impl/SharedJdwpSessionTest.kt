@@ -147,7 +147,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
             .onActivation {
                 val sendPacket = createHeloDdmsPacket(jdwpSession)
                 jdwpSession.sendPacket(sendPacket)
-            }.collect {
+            }.receive {
                 throw Exception("My Message")
             }
 
@@ -170,7 +170,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
             .onActivation {
                 val sendPacket = createHeloDdmsPacket(jdwpSession)
                 jdwpSession.sendPacket(sendPacket)
-            }.collect {
+            }.receive {
                 cancel("My Message")
             }
 
@@ -276,7 +276,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
                 delay(5)
                 throw IOException("My Exception")
             }
-            .collect {
+            .receive {
             }
 
         // Assert
@@ -297,7 +297,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
             .onActivation {
                 throw CancellationException("My Cancellation")
             }
-            .collect {
+            .receive {
             }
 
         // Assert
@@ -667,7 +667,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
             .onActivation {
                 val sendPacket = createHeloDdmsPacket(jdwpSession)
                 jdwpSession.sendPacket(sendPacket)
-            }.collect {
+            }.receive {
                 // We got our reply packet, terminate the process so this collector terminates.
                 jdwpSession.sendVmExit(5)
             }

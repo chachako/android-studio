@@ -140,7 +140,7 @@ suspend fun SharedJdwpSession.sendDdmsExit(status: Int) {
     newPacketReceiver()
         .withName("sendDdmsExit")
         .onActivation { sendPacket(packet) }
-        .collect { }
+        .receive { }
 }
 
 /**

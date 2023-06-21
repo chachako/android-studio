@@ -47,13 +47,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -241,33 +243,65 @@ internal class SharedJdwpSessionImpl(
         private val jdwpSession: SharedJdwpSessionImpl
     ) : JdwpPacketReceiver() {
 
-        override fun flow(): Flow<JdwpPacketView> = flow {
-            coroutineScope {
-                val flowScope = this
-                val flowLogger = jdwpSession.logger.withPrefix("Receiver flow '$name': ")
-                val sharedFlow = jdwpSession.jdwpPacketSharedFlow
-                val activationJobStartPacket = StartPacket()
-                val activationJobStartSignal = CompletableDeferred<Unit>()
+        override suspend fun receive(receiver: suspend (JdwpPacketView) -> Unit) {
+            withContext(jdwpSession.session.ioDispatcher) {
+                coroutineScope {
+                    val receiveScope = this
+                    val receiveLogger = jdwpSession.logger.withPrefix("Receiver '$name': ")
+                    val sharedFlow = jdwpSession.jdwpPacketSharedFlow
+                    val activationJobStartPacket = StartPacket()
+                    val activationJobStartSignal = CompletableDeferred<Unit>()
 
-                // Launch a coroutine that invokes the "activation" when the collector is ready
-                val activationJob = flowScope.launchActivationJob(
-                    flowLogger,
-                    sharedFlow,
-                    activationJobStartPacket,
-                    activationJobStartSignal
-                )
+                    // Launch a coroutine that invokes the "activation" when the collector is ready
+                    val activationJob = receiveScope.launchActivationJob(
+                        receiveLogger,
+                        sharedFlow,
+                        activationJobStartPacket,
+                        activationJobStartSignal
+                    )
 
-                // Collect the shared flow and emit to the local flow
-                collectSharedFlow(
-                    flowLogger,
-                    sharedFlow,
-                    activationJobStartPacket,
-                    activationJobStartSignal
-                )
+                    // Collect the shared flow and emit to the local flow
+                    collectSharedFlow(
+                        receiver,
+                        receiveLogger,
+                        sharedFlow,
+                        activationJobStartPacket,
+                        activationJobStartSignal
+                    )
 
-                // We reached EOF: Send a custom "EOFCancellationException" to terminate the
-                // "activation" coroutine (in case it has not completed yet)
-                activationJob.cancel(EOFCancellationException("Reached EOF"))
+                    // We reached EOF: Send a custom "EOFCancellationException" to terminate the
+                    // "activation" coroutine (in case it has not completed yet)
+                    activationJob.cancel(EOFCancellationException("Reached EOF"))
+                }
+            }
+        }
+
+        override fun flow(): Flow<JdwpPacketView> {
+            // We use a custom packet to ensure packets are delivered to the flow
+            // collector before moving on to the next JDWP packet.
+            val syncPacket = EphemeralJdwpPacket.Command(
+                id = -100,
+                length = JdwpPacketConstants.PACKET_HEADER_LENGTH,
+                cmdSet = 0,
+                cmd = 0,
+                payloadProvider = PayloadProvider.emptyPayload()
+            )
+            return channelFlow {
+                receive { packet ->
+                    // Send "real" packet, then send "skipPacket" to ensure the packet remains active
+                    // to the duration of the collector call.
+                    send(packet)
+                    send(syncPacket)
+                }
+            }.buffer(
+                // Use "RENDEZVOUS" to ensure no buffering
+                capacity = Channel.RENDEZVOUS
+            ).filter { packet ->
+                // Filter out all "syncPacket" occurrences
+                when {
+                    packet === syncPacket -> false
+                    else -> true
+                }
             }
         }
 
@@ -281,7 +315,7 @@ internal class SharedJdwpSessionImpl(
          * be propagated to this [CoroutineScope].
          */
         private fun CoroutineScope.launchActivationJob(
-            flowLogger: AdbLogger,
+            receiveLogger: AdbLogger,
             sharedFlow: MutableSerializedSharedFlow<Any>,
             activationJobStartPacket: StartPacket,
             activationJobStartSignal: CompletableDeferred<Unit>
@@ -294,7 +328,7 @@ internal class SharedJdwpSessionImpl(
                 while (true) {
                     sharedFlow.emit(activationJobStartPacket)
                     if (activationJobStartSignal.isCompleted) {
-                        flowLogger.verbose { "calling 'activation' callback" }
+                        receiveLogger.verbose { "calling 'activation' callback" }
                         this@JdwpPacketReceiverImpl.activation()
                         break
                     }
@@ -329,15 +363,16 @@ internal class SharedJdwpSessionImpl(
          * Collects [sharedFlow], emitting [JdwpPacketView] using [safeEmit] to ensure serialized
          * invocations of all active collectors.
          */
-        private suspend fun FlowCollector<JdwpPacketView>.collectSharedFlow(
-            flowLogger: AdbLogger,
+        private suspend fun collectSharedFlow(
+            receiver: suspend (JdwpPacketView) -> Unit,
+            receiveLogger: AdbLogger,
             sharedFlow: SerializedSharedFlow<Any>,
             startPacket: StartPacket,
             activationJobStartSignal: CompletableDeferred<Unit>
         ) {
             sharedFlow
                 .takeWhile { anyValue ->
-                    flowLogger.verbose { "Processing value from shared flow $anyValue" }
+                    receiveLogger.verbose { "Processing value from shared flow $anyValue" }
                     when(anyValue) {
                         is JdwpPacketView -> {
                             @Suppress("UnnecessaryVariable") // readability
@@ -347,11 +382,11 @@ internal class SharedJdwpSessionImpl(
                                 // "activation", wake up the "activation" coroutine and emit
                                 // replay packets to downstream flow.
                                 packet === startPacket -> {
-                                    flowLogger.verbose { "Deferred starts is completed" }
+                                    receiveLogger.verbose { "Deferred starts is completed" }
                                     activationJobStartSignal.complete(Unit)
-                                    flowLogger.verbose { "Emitting ${jdwpSession.replayPackets.size} replay packet(s)" }
+                                    receiveLogger.verbose { "Emitting ${jdwpSession.replayPackets.size} replay packet(s)" }
                                     jdwpSession.replayPackets.forEach { replyPacket ->
-                                        safeEmit(flowLogger, replyPacket)
+                                        safeEmit(receiver, receiveLogger, replyPacket)
                                     }
                                 }
 
@@ -361,14 +396,14 @@ internal class SharedJdwpSessionImpl(
 
                                 else -> {
                                     // This is a "real" JDWP packet, emit it to the downstream flow
-                                    safeEmit(flowLogger, packet)
+                                    safeEmit(receiver, receiveLogger, packet)
                                 }
                             }
                             true // Keep collecting the shared flow
                         }
 
                         is EOFException -> {
-                            flowLogger.debug { "EOF reached, ending flow" }
+                            receiveLogger.debug { "EOF reached, ending flow" }
                             false // We are done collecting the shared flow
                         }
 
@@ -377,7 +412,7 @@ internal class SharedJdwpSessionImpl(
                         }
 
                         else -> {
-                            flowLogger.error("Unknown value in share flow: $anyValue")
+                            receiveLogger.error("Unknown value in share flow: $anyValue")
                             throw IllegalStateException("Invalid value in flow: $anyValue")
                         }
                     }
@@ -385,15 +420,16 @@ internal class SharedJdwpSessionImpl(
                 .collect()
         }
 
-        private suspend fun FlowCollector<JdwpPacketView>.safeEmit(
-            flowLogger: AdbLogger,
+        private suspend fun safeEmit(
+            receiver: suspend (JdwpPacketView) -> Unit,
+            receiveLogger: AdbLogger,
             packet: JdwpPacketView
         ) {
             if (jdwpSession.jdwpFilter.filterReceivedPacket(filterId, packet)) {
-                flowLogger.verbose { "Emitting packet flow: $packet" }
-                emit(packet)
+                receiveLogger.verbose { "Emitting packet flow: $packet" }
+                receiver(packet)
             } else {
-                flowLogger.verbose { "Skipping packet due to filter: $packet" }
+                receiveLogger.verbose { "Skipping packet due to filter: $packet" }
             }
         }
 

@@ -183,7 +183,7 @@ internal class JdwpSessionProxy(
             .onActivation {
                 logger.debug { "device->debugger: Device session is ready to receive packets" }
                 startStateFlow.value = true
-            }.collect { packet ->
+            }.receive { packet ->
                 logger.verbose { "device->debugger: Forwarding packet to session: $packet" }
                 debuggerSession.sendPacket(packet)
             }

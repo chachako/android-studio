@@ -78,7 +78,7 @@ interface SharedJdwpSession : AutoShutdown {
      *              // Receiver has been activated and is guaranteed to receive all
      *              // received packets from this point on
      *          }
-     *          .collect { packet ->
+     *          .receive { packet ->
      *              // Receiver is active and a packet has been received.
      *              // The receiver has exclusive access to the packet until this block
      *              // ends.
@@ -89,7 +89,7 @@ interface SharedJdwpSession : AutoShutdown {
      * A [JdwpPacketReceiver] is initially **inactive**, i.e. does not collect packets and
      * does not make this [SharedJdwpSession] start consuming packets from the underlying
      * [JdwpSession]. A [JdwpPacketReceiver] is **activated** by calling [JdwpPacketReceiver.flow]
-     * (or the [JdwpPacketReceiver.collect] shortcut).
+     * (or the [JdwpPacketReceiver.receive] shortcut).
      *
      * * All active [JdwpPacketReceiver]s are guaranteed to be invoked sequentially, meaning
      *   they can freely use any field of the [JdwpPacketView], as well as consume the
@@ -194,6 +194,8 @@ abstract class JdwpPacketReceiver {
     /**
      * Sets a [block] that is invoked when this receiver is activated, but before
      * any [JdwpPacketView] is received.
+     *
+     * Note: [block] is executed on the [AdbSession.ioDispatcher] dispatcher
      */
     fun onActivation(block: suspend () -> Unit): JdwpPacketReceiver {
         activation = block
@@ -201,36 +203,38 @@ abstract class JdwpPacketReceiver {
     }
 
     /**
-     * Returns a [Flow] of [JdwpPacketView] for this [JdwpPacketReceiver].
+     * Starts receiving [packets][JdwpPacketView] from the underlying [JdwpSession] and invokes
+     * [receiver] on [AdbSession.ioDispatcher] for each received packet.
      *
-     * When the flow is collected,
-     * 1. the (optional) lambda passed to [onActivation] is invoked,
-     * 1. all replay packets are sent to the collector,
-     * 1. the underlying [SharedJdwpSession] is activated if needed, i.e. [JdwpPacketView]
-     * are read from the underlying [JdwpSession],
-     * 1. all [JdwpPacketView] received from the underlying [JdwpSession] are emitted to the
-     * flow collector, except for the packets filtered by the (optional) [SharedJdwpSessionFilter]
+     * ### Detailed behavior
+     *
+     * * First, [onActivation] is launched concurrently and is guaranteed to be invoked **after**
+     * [receiver] is ready to be invoked. This means [onActivation] can use
+     * [SharedJdwpSession.sendPacket] that will be processed in [receiver].
+     * * Then, all replay packets from [SharedJdwpSession.addReplayPacket] are sent to [receiver]
+     * * Then, the underlying [SharedJdwpSession] is activated if needed, i.e. [JdwpPacketView]
+     * are read from the underlying [JdwpSession], and [receiver] is invoked on
+     * [AdbSession.ioDispatcher] for each [JdwpPacketView] received from the underlying
+     * [JdwpSession], except for the packets filtered by the (optional) [SharedJdwpSessionFilter]
      * specified in [withFilter].
      *
-     * ### Notes
+     * ### Accessing packet payload
      *
-     * * The returned [Flow] ends when the underlying [SharedJdwpSession] reaches EOF.
-     * * The returned [Flow] throws when the underlying [SharedJdwpSession] ends for
-     *   any other reason than EOF.
-     * * This flow implementation guarantees all active [JdwpPacketReceiver] flow collectors
-     *   are invoked sequentially, allowing them to consume [JdwpPacketView.payload] without
-     *   explicit synchronization.
+     * The payload of the [JdwpPacketView] passed to [receiver] is guaranteed to be valid only
+     * for the duration of the [receiver] call. This is because, most of the time, the
+     * [JdwpPacketView] payload is directly connected to the underlying network socket and
+     * will be invalidated once the next [JdwpPacketView] is read from that socket.
+     *
+     * ### Exceptions
+     *
+     * * This function returns when the underlying [SharedJdwpSession] reaches EOF.
+     * * This function re-throws any other exception from the underlying [SharedJdwpSession].
      */
-    abstract fun flow(): Flow<JdwpPacketView>
+    abstract suspend fun receive(receiver: suspend (JdwpPacketView) -> Unit)
 
     /**
-     * Shortcut for
-     *
-     *    flow().collect { action(it) }
-     *
-     * @see flow
+     * Wraps [JdwpPacketReceiver.receive] into a [Flow] of [JdwpPacketView] for ease of use,
+     * at the cost of a minor memory and CPU overhead.
      */
-    suspend inline fun collect(crossinline action: suspend (value: JdwpPacketView) -> Unit) {
-        flow().collect { action(it) }
-    }
+    abstract fun flow(): Flow<JdwpPacketView>
 }
