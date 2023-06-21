@@ -202,6 +202,11 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             global
         )
 
+        // enable the gradle property that enables the kgp IDE import APIs that we rely on.
+        project.extensions.extraProperties.set(
+            "kotlin.mpp.import.enableKgpDependencyResolution", "true"
+        )
+
         project.afterEvaluate {
             if (!project.plugins.hasPlugin(KOTLIN_MPP_PLUGIN_ID)) {
                 throw RuntimeException("Kotlin multiplatform plugin was not found. This plugin needs" +
