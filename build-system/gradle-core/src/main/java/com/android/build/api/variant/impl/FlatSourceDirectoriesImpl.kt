@@ -33,7 +33,7 @@ import java.io.File
  * @param variantDslFilters filters set on the variant specific source directory in the DSL, may be null if
  * the is no variant specific source directory.
  */
-class FlatSourceDirectoriesImpl(
+open class FlatSourceDirectoriesImpl(
     _name: String,
     private val variantServices: VariantServices,
     variantDslFilters: PatternFilterable?
@@ -68,7 +68,7 @@ class FlatSourceDirectoriesImpl(
         )
     }
 
-    internal fun getAsFileTrees(): Provider<List<Provider<List<ConfigurableFileTree>>>> {
+    internal open fun getAsFileTrees(): Provider<List<Provider<List<ConfigurableFileTree>>>> {
         val fileTreeFactory = variantServices.fileTreeFactory()
         return variantSources.map { entries: MutableList<DirectoryEntry> ->
             entries.map { sourceDirectory ->
@@ -93,7 +93,7 @@ class FlatSourceDirectoriesImpl(
         }
     }
 
-    internal fun getVariantSources(): List<DirectoryEntry> = variantSources.get()
+    internal open fun getVariantSources(): List<DirectoryEntry> = variantSources.get()
 
     internal fun addSources(sourceDirectories: Iterable<DirectoryEntry>) {
         sourceDirectories.forEach(::addSource)

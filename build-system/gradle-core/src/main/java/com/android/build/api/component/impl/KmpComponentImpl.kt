@@ -30,6 +30,7 @@ import com.android.build.api.variant.SourceDirectories
 import com.android.build.api.variant.impl.FileBasedDirectoryEntryImpl
 import com.android.build.api.variant.impl.FlatSourceDirectoriesImpl
 import com.android.build.api.variant.impl.KotlinMultiplatformAndroidCompilation
+import com.android.build.api.variant.impl.KotlinMultiplatformFlatSourceDirectoriesImpl
 import com.android.build.api.variant.impl.LayeredSourceDirectoriesImpl
 import com.android.build.api.variant.impl.SourceType
 import com.android.build.api.variant.impl.SourcesImpl
@@ -76,7 +77,7 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
     override val taskContainer: MutableTaskContainer,
     override val services: TaskCreationServices,
     override val global: GlobalTaskCreationConfig,
-    override val androidKotlinCompilation: KotlinMultiplatformAndroidCompilation,
+    final override val androidKotlinCompilation: KotlinMultiplatformAndroidCompilation,
     manifestFile: File
 ): KmpComponentCreationConfig, ComponentIdentity by dslInfo.componentIdentity {
 
@@ -123,7 +124,7 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
     override val minSdk: AndroidVersion
         get() = dslInfo.minSdkVersion
 
-    override val sources = KmpSourcesImpl(internalServices, manifestFile)
+    override val sources = KmpSourcesImpl(internalServices, manifestFile, androidKotlinCompilation)
 
     final override fun getJavaClasspath(
         configType: AndroidArtifacts.ConsumedConfigType,
@@ -205,31 +206,29 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
 
     class KmpSourcesImpl(
         variantServices: VariantServices,
-        manifestFile: File
+        manifestFile: File,
+        compilation: KotlinMultiplatformAndroidCompilation
     ): InternalSources {
 
-        override val java = FlatSourceDirectoriesImpl(
-            SourceType.JAVA.folder,
-            variantServices,
-            PatternSet().also { filter ->
-                filter.include("**/*.java")
-            },
-        )
+        // TODO(b/287454815): Support `withJava` to add java sources
+        override val java = null
 
-        override val kotlin = FlatSourceDirectoriesImpl(
-            SourceType.KOTLIN.folder,
-            variantServices,
-            PatternSet().also { filter ->
+        override val kotlin = KotlinMultiplatformFlatSourceDirectoriesImpl(
+            name = SourceType.KOTLIN.folder,
+            variantServices = variantServices,
+            variantDslFilters = PatternSet().also { filter ->
                 filter.include("**/*.kt", "**/*.kts")
             },
+            compilation = compilation
         )
 
-        override val resources = FlatSourceDirectoriesImpl(
-            SourceType.JAVA_RESOURCES.folder,
-            variantServices,
-            PatternSet().also { filter ->
+        override val resources = KotlinMultiplatformFlatSourceDirectoriesImpl(
+            name = SourceType.JAVA_RESOURCES.folder,
+            variantServices = variantServices,
+            variantDslFilters = PatternSet().also { filter ->
                 filter.exclude("**/*.java", "**/*.kt")
             },
+            compilation = compilation
         )
 
         override fun resources(action: (FlatSourceDirectoriesImpl) -> Unit) {
@@ -240,9 +239,7 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
             action(kotlin)
         }
 
-        override fun java(action: (FlatSourceDirectoriesImpl) -> Unit) {
-            action(java)
-        }
+        override fun java(action: (FlatSourceDirectoriesImpl) -> Unit) { }
 
         override val manifestFile: Provider<File> = variantServices.provider {
             manifestFile
@@ -303,29 +300,36 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
 
         // Include all kotlin sourceSets (the ones added directly to the compilation and the ones
         // that added transitively through a dependsOn dependency).
-        androidKotlinCompilation.allKotlinSourceSets.forEach { sourceSet ->
-            sources.kotlin { kotlin ->
-                sourceSet.kotlin.srcDirs.forEach { srcDir ->
-                    kotlin.addSource(
-                        FileBasedDirectoryEntryImpl(
-                            name = "Kotlin",
-                            directory = srcDir
-                        )
-                    )
-                }
-            }
 
-            sources.resources { resources ->
-                sourceSet.resources.srcDirs.forEach { srcDir ->
-                    resources.addSource(
-                        FileBasedDirectoryEntryImpl(
-                            name = "Java resources",
-                            directory = srcDir,
-                            filter = PatternSet().exclude("**/*.java", "**/*.kt"),
-                        )
-                    )
+        sources.kotlin { kotlin ->
+            (kotlin as KotlinMultiplatformFlatSourceDirectoriesImpl).initSourcesFromKotlinPlugin(
+                services.provider {
+                    androidKotlinCompilation.allKotlinSourceSets.flatMap { sourceSet ->
+                        sourceSet.kotlin.srcDirs.map { srcDir ->
+                            FileBasedDirectoryEntryImpl(
+                                name = "Kotlin",
+                                directory = srcDir
+                            )
+                        }
+                    }
                 }
-            }
+            )
+        }
+
+        sources.resources { resources ->
+            (resources as KotlinMultiplatformFlatSourceDirectoriesImpl).initSourcesFromKotlinPlugin(
+                services.provider {
+                    androidKotlinCompilation.allKotlinSourceSets.flatMap { sourceSet ->
+                        sourceSet.resources.srcDirs.map { srcDir ->
+                            FileBasedDirectoryEntryImpl(
+                                name = "Java resources",
+                                directory = srcDir,
+                                filter = PatternSet().exclude("**/*.java", "**/*.kt"),
+                            )
+                        }
+                    }
+                }
+            )
         }
     }
 }
