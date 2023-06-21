@@ -20,7 +20,7 @@ import com.android.tools.idea.model.MergedManifestManager
 import com.android.tools.idea.projectsystem.getModuleSystem
 import com.android.tools.idea.rendering.RenderMergedManifest
 import com.android.tools.idea.rendering.StudioModuleDependencies
-import com.android.tools.idea.res.AssetRepositoryImpl
+import com.android.tools.idea.res.StudioAssetFileOpener
 import com.android.tools.idea.res.ScreenshotResourceIdManager
 import com.android.tools.idea.res.ScreenshotResourceRepositoryManager
 import com.android.tools.lint.model.LintModelModule
@@ -31,6 +31,7 @@ import com.android.tools.module.ModuleKeyManager
 import com.android.tools.rendering.api.EnvironmentContext
 import com.android.tools.rendering.api.RenderModelManifest
 import com.android.tools.rendering.api.RenderModelModule
+import com.android.tools.res.AssetRepositoryBase
 import com.android.tools.res.ResourceRepositoryManager
 import com.android.tools.res.ids.ResourceIdManager
 import com.android.tools.sdk.AndroidPlatform
@@ -101,7 +102,11 @@ class ScreenshotRenderModelModule(
     }
 
     override val assetRepository: AssetRepository?
-        get() = AssetRepositoryImpl(composeModule.facet)
+        get() = AssetRepositoryBase(
+            StudioAssetFileOpener(
+                composeModule.facet
+            )
+        )
     override val resourceRepositoryManager: ResourceRepositoryManager
         get() = ScreenshotResourceRepositoryManager(composeProject, composeModule)
     override val info: AndroidModuleInfo
