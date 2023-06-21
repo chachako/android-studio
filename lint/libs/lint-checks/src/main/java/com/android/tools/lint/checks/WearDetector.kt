@@ -36,20 +36,24 @@ open class WearDetector : Detector() {
 
   override fun beforeCheckEachProject(context: Context) {
     super.beforeCheckEachProject(context)
-    isWearProject =
+    isWearProject = isWearProject(context)
+  }
+
+  companion object {
+    fun isWearProject(context: Context) =
       containsWearFeature(
         if (context.isGlobalAnalysis()) context.mainProject.mergedManifest?.documentElement
         else context.project.manifestDom?.documentElement
       )
-  }
 
-  private fun containsWearFeature(manifest: Element?): Boolean {
-    if (manifest == null) {
+    private fun containsWearFeature(manifest: Element?): Boolean {
+      if (manifest == null) {
+        return false
+      }
+      for (element in manifest) {
+        if (isWearFeature(element)) return true
+      }
       return false
     }
-    for (element in manifest) {
-      if (isWearFeature(element)) return true
-    }
-    return false
   }
 }

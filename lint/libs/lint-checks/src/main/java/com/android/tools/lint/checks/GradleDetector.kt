@@ -17,14 +17,11 @@ package com.android.tools.lint.checks
 
 import com.android.SdkConstants
 import com.android.SdkConstants.ANDROIDX_PKG_PREFIX
-import com.android.SdkConstants.ANDROID_URI
-import com.android.SdkConstants.ATTR_NAME
 import com.android.SdkConstants.FD_BUILD_TOOLS
 import com.android.SdkConstants.GRADLE_PLUGIN_MINIMUM_VERSION
 import com.android.SdkConstants.GRADLE_PLUGIN_RECOMMENDED_VERSION
 import com.android.SdkConstants.PLATFORM_WINDOWS
 import com.android.SdkConstants.SUPPORT_LIB_GROUP_ID
-import com.android.SdkConstants.TAG_USES_FEATURE
 import com.android.SdkConstants.currentPlatform
 import com.android.ide.common.gradle.Component
 import com.android.ide.common.gradle.Dependency
@@ -41,6 +38,7 @@ import com.android.sdklib.SdkVersionInfo.LOWEST_ACTIVE_API
 import com.android.tools.lint.checks.GooglePlaySdkIndex.Companion.GOOGLE_PLAY_SDK_INDEX_KEY
 import com.android.tools.lint.checks.GooglePlaySdkIndex.Companion.GOOGLE_PLAY_SDK_INDEX_URL
 import com.android.tools.lint.checks.ManifestDetector.Companion.TARGET_NEWER
+import com.android.tools.lint.checks.WearDetector.Companion.isWearProject
 import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.LintTomlDocument
@@ -78,7 +76,6 @@ import com.android.tools.lint.model.LintModelLibrary
 import com.android.tools.lint.model.LintModelMavenName
 import com.android.tools.lint.model.LintModelModuleType
 import com.android.utils.appendCapitalized
-import com.android.utils.iterator
 import com.android.utils.usLocaleCapitalize
 import com.google.common.base.Joiner
 import com.google.common.base.Splitter
@@ -237,7 +234,14 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         val version = getSdkVersion(value, valueCookie)
         if (version > 0 && version < context.client.highestKnownApiLevel) {
           var warned = false
-          if (version < MINIMUM_TARGET_SDK_VERSION) {
+          val isWearProject = isWearProject(context)
+          val minimumTargetSdkVersion =
+            if (isWearProject) MINIMUM_WEAR_TARGET_SDK_VERSION else MINIMUM_TARGET_SDK_VERSION
+          val previousMinimumTargetSdkVersion =
+            if (isWearProject) PREVIOUS_WEAR_MINIMUM_TARGET_SDK_VERSION
+            else PREVIOUS_MINIMUM_TARGET_SDK_VERSION
+
+          if (version < minimumTargetSdkVersion) {
             val now = calendar ?: Calendar.getInstance()
             val year = now.get(Calendar.YEAR)
             val month = now.get(Calendar.MONTH)
@@ -252,19 +256,19 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
                 year == MINIMUM_TARGET_SDK_VERSION_YEAR && month >= 9
             ) {
               // Doesn't meet this year requirement after deadline (August 31 for 2023)
-              required = MINIMUM_TARGET_SDK_VERSION
+              required = minimumTargetSdkVersion
               issue = EXPIRED_TARGET_SDK_VERSION
             } else if (
-              version < PREVIOUS_MINIMUM_TARGET_SDK_VERSION &&
+              version < previousMinimumTargetSdkVersion &&
                 year >= MINIMUM_TARGET_SDK_VERSION_YEAR - 1
             ) {
               // If you're not meeting the previous year's requirement, also enforce with error
               // severity
-              required = PREVIOUS_MINIMUM_TARGET_SDK_VERSION
+              required = previousMinimumTargetSdkVersion
               issue = EXPIRED_TARGET_SDK_VERSION
             } else if (year == MINIMUM_TARGET_SDK_VERSION_YEAR) {
               // Meets last year's requirement but not yet the upcoming one.
-              required = MINIMUM_TARGET_SDK_VERSION
+              required = minimumTargetSdkVersion
               issue = EXPIRING_TARGET_SDK_VERSION
             } else {
               required = -1
@@ -276,7 +280,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
                   "Google Play requires that apps target API level $required or higher.\n"
                 else
                   "Google Play will soon require that apps target API " +
-                    "level $MINIMUM_TARGET_SDK_VERSION or higher. This will be required for new apps and updates " +
+                    "level $minimumTargetSdkVersion or higher. This will be required for new apps and updates " +
                     "starting on August 31, $MINIMUM_TARGET_SDK_VERSION_YEAR."
 
               // Don't report if already suppressed with EXPIRING
@@ -286,7 +290,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
                   context.isSuppressedWithComment(statementCookie, issue)
 
               if (!alreadySuppressed) {
-                report(context, statementCookie, issue, message, null, true)
+                report(context, statementCookie, issue, message, null)
               }
               warned = true
             }
@@ -2441,26 +2445,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
     val issue = incident.issue
     if (issue === DUPLICATE_CLASSES) {
       return context.mainProject.minSdk < 23 || usesLegacyHttpLibrary(context.mainProject)
-    } else if (issue == EXPIRING_TARGET_SDK_VERSION || issue == EXPIRED_TARGET_SDK_VERSION) {
-      // These checks only apply if the merged manifest does not mark this app as a wear app
-      // (which may not appear in the manifest of the app module)
-      return !isWearApp(context)
     } else {
       error(issue.id)
     }
-  }
-
-  private fun isWearApp(context: Context): Boolean {
-    val manifest = context.mainProject.mergedManifest?.documentElement ?: return false
-    for (element in manifest) {
-      if (
-        element.tagName == TAG_USES_FEATURE &&
-          element.getAttributeNS(ANDROID_URI, ATTR_NAME) == "android.hardware.type.watch"
-      ) {
-        return true
-      }
-    }
-    return false
   }
 
   override fun checkMergedProject(context: Context) {
@@ -2996,16 +2983,27 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       )
 
     /**
-     * The minimum API required as of August (new apps) and November (updated apps) of the year
-     * [MINIMUM_TARGET_SDK_VERSION_YEAR]. See
+     * The minimum API required of the year [MINIMUM_TARGET_SDK_VERSION_YEAR]. See
      * https://developer.android.com/google/play/requirements/target-sdk.
      */
     val MINIMUM_TARGET_SDK_VERSION = 33
 
+    /**
+     * The minimum API required for wear app of the year [MINIMUM_TARGET_SDK_VERSION_YEAR]. See
+     * https://developer.android.com/google/play/requirements/target-sdk.
+     */
+    val MINIMUM_WEAR_TARGET_SDK_VERSION = 30
+
     /** The API requirement the previous year. */
     val PREVIOUS_MINIMUM_TARGET_SDK_VERSION = 31
 
-    /** The year that the API requirement of [MINIMUM_TARGET_SDK_VERSION] is enforced. */
+    /** The API requirement the previous year. */
+    val PREVIOUS_WEAR_MINIMUM_TARGET_SDK_VERSION = 30
+
+    /**
+     * The year that the API requirement of [MINIMUM_TARGET_SDK_VERSION] and
+     * [MINIMUM_WEAR_TARGET_SDK_VERSION] is enforced.
+     */
     val MINIMUM_TARGET_SDK_VERSION_YEAR = 2023
 
     /**

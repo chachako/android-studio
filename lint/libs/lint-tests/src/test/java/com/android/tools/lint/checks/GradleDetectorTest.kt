@@ -51,6 +51,7 @@ import com.android.tools.lint.checks.GradleDetector.Companion.KTX_EXTENSION_AVAI
 import com.android.tools.lint.checks.GradleDetector.Companion.LIFECYCLE_ANNOTATION_PROCESSOR_WITH_JAVA8
 import com.android.tools.lint.checks.GradleDetector.Companion.MINIMUM_TARGET_SDK_VERSION
 import com.android.tools.lint.checks.GradleDetector.Companion.MINIMUM_TARGET_SDK_VERSION_YEAR
+import com.android.tools.lint.checks.GradleDetector.Companion.MINIMUM_WEAR_TARGET_SDK_VERSION
 import com.android.tools.lint.checks.GradleDetector.Companion.MIN_SDK_TOO_LOW
 import com.android.tools.lint.checks.GradleDetector.Companion.NOT_INTERPOLATED
 import com.android.tools.lint.checks.GradleDetector.Companion.PATH
@@ -4985,7 +4986,7 @@ class GradleDetectorTest : AbstractCheckTest() {
 
                     android {
                         defaultConfig {
-                            targetSdkVersion 17
+                            targetSdkVersion $MINIMUM_WEAR_TARGET_SDK_VERSION
                         }
                     }
                     """
@@ -4996,6 +4997,58 @@ class GradleDetectorTest : AbstractCheckTest() {
         .sdkHome(mockSupportLibraryInstallation)
         .run()
         .expectClean()
+    } finally {
+      GradleDetector.calendar = null
+    }
+  }
+
+  fun testWearExpired() {
+    try {
+      val calendar = Calendar.getInstance()
+      GradleDetector.calendar = calendar
+      // Make sure test doesn't fail on computers without a correct date set
+      calendar.set(Calendar.YEAR, MINIMUM_TARGET_SDK_VERSION_YEAR)
+      calendar.set(Calendar.MONTH, 2)
+
+      lint()
+        .files(
+          manifest(
+              """
+                        <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="test.pkg">
+                            <uses-feature android:name="android.hardware.type.watch" />
+                            <application
+                                android:icon="@mipmap/ic_launcher"
+                                android:label="@string/app_name">
+                            </application>
+                        </manifest>
+                        """
+            )
+            .indented(),
+          gradle(
+              """
+                    apply plugin: 'com.android.application'
+
+                    android {
+                        defaultConfig {
+                            targetSdkVersion 19
+                        }
+                    }
+                    """
+            )
+            .indented()
+        )
+        .issues(EXPIRED_TARGET_SDK_VERSION, EXPIRING_TARGET_SDK_VERSION)
+        .sdkHome(mockSupportLibraryInstallation)
+        .run()
+        .expect(
+          """
+                    build.gradle:5: Error: Google Play requires that apps target API level $MINIMUM_WEAR_TARGET_SDK_VERSION or higher.
+                     [ExpiredTargetSdkVersion]
+                            targetSdkVersion 19
+                            ~~~~~~~~~~~~~~~~~~~
+                    1 errors, 0 warnings
+                    """
+        )
     } finally {
       GradleDetector.calendar = null
     }
