@@ -155,8 +155,8 @@ class TileProviderDetectorTest : AbstractCheckTest() {
   fun testRoundAndSquare() {
     lint()
       .files(
-        image("res/drawable-ldpi/ic_walk.png", 48, 48).fill(10, 10, 20, 20, -0xff0001),
-        image("res/drawable-round/ic_walk.png", 48, 48).fill(10, 10, 20, 20, -0xff0001),
+        image("res/drawable-ldpi/ic_walk.png", 400, 400).fill(10, 10, 20, 20, -0xff0001),
+        image("res/drawable-round/ic_walk.png", 400, 400).fill(10, 10, 20, 20, -0xff0001),
         manifest(
             """
                     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -178,6 +178,187 @@ class TileProviderDetectorTest : AbstractCheckTest() {
       )
       .run()
       .expectClean()
+  }
+
+  fun testAspectRatioAndSize() {
+    lint()
+      .files(
+        image("res/drawable-ldpi/ic_walk.png", 350, 400).fill(10, 10, 20, 20, -0xff0001),
+        image("res/drawable-round/ic_walk.png", 400, 400).fill(10, 10, 20, 20, -0xff0001),
+        manifest(
+            """
+                    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                        package="test.pkg">
+                        <application android:icon="@drawable/ic_launcher"
+                                     android:label="@string/app_name" >
+                        </application>
+                        <service android:name=".MyTileProvider"
+                                 android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+                            <intent-filter>
+                                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+                            </intent-filter>
+                            <meta-data android:name="androidx.wear.tiles.PREVIEW"
+                                       android:resource="@drawable/ic_walk" />
+                        </service>
+                    </manifest>"""
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+          AndroidManifest.xml:12: Error: Tile previews should be at least 384px by 384px [TilePreviewImageFormat]
+                             android:resource="@drawable/ic_walk" />
+                                               ~~~~~~~~~~~~~~~~~
+          AndroidManifest.xml:12: Error: Tile previews should have 1:1 aspect ratio [TilePreviewImageFormat]
+                             android:resource="@drawable/ic_walk" />
+                                               ~~~~~~~~~~~~~~~~~
+          2 errors, 0 warnings
+      """
+      )
+  }
+
+  fun testAspectRatioSquare() {
+    lint()
+      .files(
+        image("res/drawable-ldpi/ic_walk.png", 450, 400).fill(10, 10, 20, 20, -0xff0001),
+        image("res/drawable-round/ic_walk.png", 400, 400).fill(10, 10, 20, 20, -0xff0001),
+        manifest(
+            """
+                    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                        package="test.pkg">
+                        <application android:icon="@drawable/ic_launcher"
+                                     android:label="@string/app_name" >
+                        </application>
+                        <service android:name=".MyTileProvider"
+                                 android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+                            <intent-filter>
+                                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+                            </intent-filter>
+                            <meta-data android:name="androidx.wear.tiles.PREVIEW"
+                                       android:resource="@drawable/ic_walk" />
+                        </service>
+                    </manifest>"""
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+          AndroidManifest.xml:12: Error: Tile previews should have 1:1 aspect ratio [TilePreviewImageFormat]
+                             android:resource="@drawable/ic_walk" />
+                                               ~~~~~~~~~~~~~~~~~
+          1 errors, 0 warnings
+      """
+      )
+  }
+
+  fun testImageSizeRound() {
+    lint()
+      .files(
+        image("res/drawable-ldpi/ic_walk.png", 300, 300).fill(10, 10, 20, 20, -0xff0001),
+        image("res/drawable-round/ic_walk.png", 400, 400).fill(10, 10, 20, 20, -0xff0001),
+        manifest(
+            """
+                    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                        package="test.pkg">
+                        <application android:icon="@drawable/ic_launcher"
+                                     android:label="@string/app_name" >
+                        </application>
+                        <service android:name=".MyTileProvider"
+                                 android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+                            <intent-filter>
+                                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+                            </intent-filter>
+                            <meta-data android:name="androidx.wear.tiles.PREVIEW"
+                                       android:resource="@drawable/ic_walk" />
+                        </service>
+                    </manifest>"""
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml:12: Error: Tile previews should be at least 384px by 384px [TilePreviewImageFormat]
+                           android:resource="@drawable/ic_walk" />
+                                             ~~~~~~~~~~~~~~~~~
+        1 errors, 0 warnings
+      """
+      )
+  }
+
+  fun testImageSizeSquare() {
+    lint()
+      .files(
+        image("res/drawable-ldpi/ic_walk.png", 400, 400).fill(10, 10, 20, 20, -0xff0001),
+        image("res/drawable-round/ic_walk.png", 300, 300).fill(10, 10, 20, 20, -0xff0001),
+        manifest(
+            """
+                    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                        package="test.pkg">
+                        <application android:icon="@drawable/ic_launcher"
+                                     android:label="@string/app_name" >
+                        </application>
+                        <service android:name=".MyTileProvider"
+                                 android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+                            <intent-filter>
+                                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+                            </intent-filter>
+                            <meta-data android:name="androidx.wear.tiles.PREVIEW"
+                                       android:resource="@drawable/ic_walk" />
+                        </service>
+                    </manifest>"""
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml:12: Error: Tile previews should be at least 384px by 384px [TilePreviewImageFormat]
+                           android:resource="@drawable/ic_walk" />
+                                             ~~~~~~~~~~~~~~~~~
+        1 errors, 0 warnings
+      """
+      )
+  }
+
+  fun testAspectRatioRound() {
+    lint()
+      .files(
+        image("res/drawable-ldpi/ic_walk.png", 400, 400).fill(10, 10, 20, 20, -0xff0001),
+        image("res/drawable-round/ic_walk.png", 250, 200).fill(10, 10, 20, 20, -0xff0001),
+        manifest(
+            """
+                    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                        package="test.pkg">
+                        <application android:icon="@drawable/ic_launcher"
+                                     android:label="@string/app_name" >
+                        </application>
+                        <service android:name=".MyTileProvider"
+                                 android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+                            <intent-filter>
+                                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+                            </intent-filter>
+                            <meta-data android:name="androidx.wear.tiles.PREVIEW"
+                                       android:resource="@drawable/ic_walk" />
+                        </service>
+                    </manifest>"""
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml:12: Error: Tile previews should be at least 384px by 384px [TilePreviewImageFormat]
+                           android:resource="@drawable/ic_walk" />
+                                             ~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:12: Error: Tile previews should have 1:1 aspect ratio [TilePreviewImageFormat]
+                           android:resource="@drawable/ic_walk" />
+                                             ~~~~~~~~~~~~~~~~~
+        2 errors, 0 warnings
+      """
+      )
   }
 
   fun testMissingMetaData() {
@@ -214,7 +395,7 @@ class TileProviderDetectorTest : AbstractCheckTest() {
   fun testOnlySquareIcons() {
     lint()
       .files(
-        image("res/drawable-ldpi/ic_walk.png", 48, 48).fill(10, 10, 20, 20, -0xff0001),
+        image("res/drawable-ldpi/ic_walk.png", 400, 400).fill(10, 10, 20, 20, -0xff0001),
         xml(
           "res/drawable-xhdpi/ic_walk.xml",
           """<selector xmlns:android="http://schemas.android.com/apk/res/android">

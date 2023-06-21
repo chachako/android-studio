@@ -42,6 +42,7 @@ import com.android.tools.lint.detector.api.XmlScanner
 import com.android.utils.XmlUtils.getFirstSubTagByName
 import com.android.utils.XmlUtils.getNextTagByName
 import java.util.EnumSet
+import javax.imageio.ImageIO
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 
@@ -74,20 +75,42 @@ class TileProviderDetector : Detector(), XmlScanner, BinaryResourceScanner {
     @JvmField
     val SQUARE_AND_ROUND_TILE_PREVIEWS =
       Issue.create(
-        id = "SquareAndRoundTilePreviews",
-        briefDescription = "TileProvider does not have round and square previews",
-        explanation =
-          """
+          id = "SquareAndRoundTilePreviews",
+          briefDescription = "TileProvider does not have round and square previews",
+          explanation =
+            """
                 Tile projects should specify preview resources for different screen shapes. \
                 The preview resource is specified in the manifest under tile service. \
                 And you have to make sure they have resources for different screen shapes.
             """,
-        category = Category.ICONS,
-        priority = 6,
-        severity = Severity.WARNING,
-        implementation = IMPLEMENTATION,
-        androidSpecific = true
-      )
+          category = Category.ICONS,
+          priority = 6,
+          severity = Severity.WARNING,
+          implementation = IMPLEMENTATION,
+          androidSpecific = true
+        )
+        .addMoreInfo(
+          "https://developer.android.com/design/ui/wear/guides/surfaces/tiles#tile-previews"
+        )
+
+    @JvmField
+    val TILE_PREVIEW_IMAGE_FORMAT =
+      Issue.create(
+          id = "TilePreviewImageFormat",
+          briefDescription = "Tile preview is not compliant with standards",
+          explanation =
+            """
+                Tile projects should specify preview resources with aspect ratio 1:1 and at least 384px by 384px in size.
+            """,
+          category = Category.ICONS,
+          priority = 6,
+          severity = Severity.ERROR,
+          implementation = IMPLEMENTATION,
+          androidSpecific = true
+        )
+        .addMoreInfo(
+          "https://developer.android.com/design/ui/wear/guides/surfaces/tiles#tile-previews"
+        )
 
     const val BIND_TILE_PROVIDER_PERMISSION =
       "com.google.android.wearable.permission.BIND_TILE_PROVIDER"
@@ -95,7 +118,7 @@ class TileProviderDetector : Detector(), XmlScanner, BinaryResourceScanner {
     const val BIND_TILE_PROVIDER_ACTION = "androidx.wear.tiles.action.BIND_TILE_PROVIDER"
 
     class TagIterator(element: Element, val tag: String) : Iterator<Element> {
-      var subElement: Element? = getFirstSubTagByName(element, tag)
+      private var subElement: Element? = getFirstSubTagByName(element, tag)
 
       override fun hasNext(): Boolean = subElement != null
 
@@ -115,21 +138,44 @@ class TileProviderDetector : Detector(), XmlScanner, BinaryResourceScanner {
     val issueScope: Node,
     val issueLocation: Location,
     var foundRoundPreview: Boolean = false,
-    var foundSquarePreview: Boolean = false
+    var foundSquarePreview: Boolean = false,
+    var wrongAspectRatio: Boolean = false,
+    var smallImageSize: Boolean = false,
   )
 
-  var foundIcons: MutableMap<String, IconInfo> = mutableMapOf()
-  var foundIconLocations: MutableList<Location> = ArrayList()
+  private var foundIcons: MutableMap<String, IconInfo> = mutableMapOf()
 
   override fun afterCheckRootProject(context: Context) {
-    for ((icon, metadata) in this.foundIcons) {
-      if (!metadata.foundRoundPreview || !metadata.foundSquarePreview) {
+    for ((_, metadata) in this.foundIcons) {
+      // Only report if one of them is missing. If both are missing, this will already be flagged as
+      // a missing resource.
+      if (metadata.foundRoundPreview xor metadata.foundSquarePreview) {
         context.report(
           Incident(
             SQUARE_AND_ROUND_TILE_PREVIEWS,
             metadata.issueScope,
             metadata.issueLocation,
             "Tiles need a preview asset in both drawable-round and drawable",
+          )
+        )
+      }
+      if (metadata.wrongAspectRatio) {
+        context.report(
+          Incident(
+            TILE_PREVIEW_IMAGE_FORMAT,
+            metadata.issueScope,
+            metadata.issueLocation,
+            "Tile previews should have 1:1 aspect ratio",
+          )
+        )
+      }
+      if (metadata.smallImageSize) {
+        context.report(
+          Incident(
+            TILE_PREVIEW_IMAGE_FORMAT,
+            metadata.issueScope,
+            metadata.issueLocation,
+            "Tile previews should be at least 384px by 384px",
           )
         )
       }
@@ -157,6 +203,17 @@ class TileProviderDetector : Detector(), XmlScanner, BinaryResourceScanner {
     val iconFileName = context.file.name
     val iconName = iconFileName.dropLast(iconFileName.substringAfterLast(".").length + 1)
     val dirName = context.file.parentFile.name
+
+    // Check aspect ratio and size of tile previews
+    val image = ImageIO.read(context.file)
+    if (image != null) {
+      if (image.width != image.height) {
+        foundIcons[iconName]?.wrongAspectRatio = true
+      }
+      if (image.width < 384 || image.height < 384) {
+        foundIcons[iconName]?.smallImageSize = true
+      }
+    }
     if (dirName.startsWith("drawable-round")) {
       this.foundIcons[iconName]?.foundRoundPreview = true
     } else if (dirName.startsWith("drawable")) {

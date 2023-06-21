@@ -429,6 +429,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           ThreadDetector.THREAD,
           TileProviderDetector.TILE_PROVIDER_PERMISSIONS,
           TileProviderDetector.SQUARE_AND_ROUND_TILE_PREVIEWS,
+          TileProviderDetector.TILE_PREVIEW_IMAGE_FORMAT,
           TitleDetector.ISSUE,
           ToastDetector.ISSUE,
           TooManyViewsDetector.TOO_DEEP,
