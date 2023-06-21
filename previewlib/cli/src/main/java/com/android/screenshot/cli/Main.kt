@@ -416,12 +416,12 @@ class Main {
                 argumentState.clientVersion = args[++index]
             } else if (arg == ARG_EXTRACTION_DIR) {
                 if (index == args.size - 1) {
-                    throw InvalidArgumentException("Missing client version")
+                    throw InvalidArgumentException("Missing extraction directory")
                 }
                 argumentState.extractionDir = args[++index]
             } else if (arg == ARG_JAR_LOCATION) {
                 if (index == args.size - 1) {
-                    throw InvalidArgumentException("Missing client version")
+                    throw InvalidArgumentException("Missing jar location")
                 }
                 argumentState.jarLocation = args[++index]
             } else if (arg == ARG_ROOT_LINT_MODEL) {
