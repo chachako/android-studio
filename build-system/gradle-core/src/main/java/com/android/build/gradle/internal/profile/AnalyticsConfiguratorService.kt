@@ -65,7 +65,8 @@ abstract class AnalyticsConfiguratorService : BuildService<AnalyticsConfigurator
 
     open fun getProjectBuilder(projectPath: String) : GradleBuildProject.Builder? {
         if (state == State.ANALYTICS_SERVICE_CREATED && configureOnDemandDisabled()) {
-            LoggerWrapper.getLogger(this::class.java).warning(
+            //TODO Consider turn this into warnings. See b/286859043 for more details.
+            LoggerWrapper.getLogger(this::class.java).info(
                 "GradleBuildProject.Builder should not be accessed through " +
                         "AnalyticsConfiguratorService after AnalyticsService is created." +
                         " Analytics information of this build might be incomplete."
@@ -76,7 +77,7 @@ abstract class AnalyticsConfiguratorService : BuildService<AnalyticsConfigurator
 
     open fun getVariantBuilder(projectPath: String, variantName: String) : GradleBuildVariant.Builder? {
         if (state == State.ANALYTICS_SERVICE_CREATED && configureOnDemandDisabled()) {
-            LoggerWrapper.getLogger(this::class.java).warning(
+            LoggerWrapper.getLogger(this::class.java).info(
                 "GradleBuildProject.Builder should not be accessed through " +
                         "AnalyticsConfiguratorService after AnalyticsService is created." +
                         " Analytics information of this build might be incomplete."
