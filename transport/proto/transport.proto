@@ -202,6 +202,8 @@ message DaemonConfig {
     int32 art_stop_timeout_sec = 1;
     // equivalent to StudioFlags.PROFILER_USE_PERFETTO
     bool use_perfetto = 2 [deprecated = true];
+    // equivalent to StudioFlags.PROFILER_TRACEBOX
+    bool use_tracebox = 3;
   }
   message LayoutInspectorConfig {
     // equivalent to StudioFlags.LAYOUT_INSPECTOR_AUTOCONNECT_ENABLED
