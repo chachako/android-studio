@@ -99,8 +99,8 @@ public class MavenRepositories {
                 continue;
             }
             Version version = Version.Companion.parse(name);
-            if ((allowPreview || !version.isPreview()
-                    && (filter == null || filter.test(version)))
+            if ((allowPreview || !version.isPreview())
+                    && (filter == null || filter.test(version))
                     && (maxVersion == null || version.compareTo(maxVersion) > 0)) {
                 maxVersion = version;
             }

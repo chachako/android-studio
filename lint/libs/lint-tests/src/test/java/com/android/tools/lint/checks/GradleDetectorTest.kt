@@ -6819,6 +6819,81 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testCachedFilter() {
+    // Regression test for b/282127516
+    lint()
+      .files(
+        gradle(
+            """
+          dependencies {
+            implementation 'com.example.cached:library:1.0-alpha01'
+            implementation 'com.example.cached:library:1.0-beta01'
+            implementation 'com.example.cached:library:1.0'
+            implementation 'com.example.cached:library:1.1-alpha01'
+            implementation 'com.example.cached:library:1.1-beta01'
+          }
+        """
+          )
+          .indented()
+      )
+      .issues(DEPENDENCY)
+      .run()
+      .expect(
+        """
+        build.gradle:2: Warning: A newer version of com.example.cached:library than 1.0-alpha01 is available: 1.0 [GradleDependency]
+          implementation 'com.example.cached:library:1.0-alpha01'
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle:3: Warning: A newer version of com.example.cached:library than 1.0-beta01 is available: 1.0 [GradleDependency]
+          implementation 'com.example.cached:library:1.0-beta01'
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle:5: Warning: A newer version of com.example.cached:library than 1.1-alpha01 is available: 1.1-SNAPSHOT [GradleDependency]
+          implementation 'com.example.cached:library:1.1-alpha01'
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle:6: Warning: A newer version of com.example.cached:library than 1.1-beta01 is available: 1.1-SNAPSHOT [GradleDependency]
+          implementation 'com.example.cached:library:1.1-beta01'
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 4 warnings
+        """
+      )
+      .expectFixDiffs(
+        """
+        Fix for build.gradle line 2: Change to 1.0:
+        @@ -2 +2
+        -   implementation 'com.example.cached:library:1.0-alpha01'
+        +   implementation 'com.example.cached:library:1.0'
+        Fix for build.gradle line 3: Change to 1.0:
+        @@ -3 +3
+        -   implementation 'com.example.cached:library:1.0-beta01'
+        +   implementation 'com.example.cached:library:1.0'
+        Fix for build.gradle line 5: Change to 1.1-SNAPSHOT:
+        @@ -5 +5
+        -   implementation 'com.example.cached:library:1.1-alpha01'
+        +   implementation 'com.example.cached:library:1.1-SNAPSHOT'
+        Fix for build.gradle line 6: Change to 1.1-SNAPSHOT:
+        @@ -6 +6
+        -   implementation 'com.example.cached:library:1.1-beta01'
+        +   implementation 'com.example.cached:library:1.1-SNAPSHOT'
+      """
+      )
+  }
+
+  fun testCachedFilterCommonsIo() {
+    // regression test for b/218605730
+    lint()
+      .files(
+        gradle(
+          """
+          dependencies {
+            implementation 'commons-io:commons-io:2.12.0'
+          }
+        """
+        )
+      )
+      .issues(DEPENDENCY)
+      .run()
+      .expectClean()
+  }
+
   // -------------------------------------------------------------------------------------------
   // Test infrastructure below here
   // -------------------------------------------------------------------------------------------
@@ -6908,7 +6983,14 @@ class GradleDetectorTest : AbstractCheckTest() {
             "caches/modules-2/files-2.1/com.android.tools.build/gradle/2.4.0-alpha3/sample",
             "caches/modules-2/files-2.1/com.android.tools.build/gradle/2.4.0-alpha5/sample",
             "caches/modules-2/files-2.1/com.android.tools.build/gradle/2.4.0-alpha6/sample",
+            "caches/modules-2/files-2.1/com.example.cached/library/1.0-alpha02/sample",
+            "caches/modules-2/files-2.1/com.example.cached/library/1.0-beta01/sample",
+            "caches/modules-2/files-2.1/com.example.cached/library/1.0/sample",
+            "caches/modules-2/files-2.1/com.example.cached/library/1.1-alpha02/sample",
+            "caches/modules-2/files-2.1/com.example.cached/library/1.1-beta01/sample",
+            "caches/modules-2/files-2.1/com.example.cached/library/1.1-SNAPSHOT/sample",
             "caches/modules-2/files-2.1/com.google.guava/guava/17.0/sample",
+            "caches/modules-2/files-2.1/commons-io/commons-io/20030203.000550/sample",
             "caches/modules-2/files-2.1/org.apache.httpcomponents/httpcomponents-core/4.1/sample",
             "caches/modules-2/files-2.1/org.apache.httpcomponents/httpcomponents-core/4.2.1/sample",
             "caches/modules-2/files-2.1/org.apache.httpcomponents/httpcomponents-core/4.2.5/sample",
