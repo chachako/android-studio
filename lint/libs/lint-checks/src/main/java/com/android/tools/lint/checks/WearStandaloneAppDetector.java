@@ -131,8 +131,7 @@ public class WearStandaloneAppDetector extends Detector implements XmlScanner {
                             "`android:required=\"false\"` is not supported for this feature");
                 }
             }
-        } else if (sawWearUsesFeature
-                && NODE_METADATA.equals(tagName)
+        } else if (NODE_METADATA.equals(tagName)
                 && WEARABLE_STANDALONE_ATTR.equals(attrName)
                 && element.getParentNode() != null
                 && element.getParentNode().getNodeName().equals(NODE_APPLICATION)) {

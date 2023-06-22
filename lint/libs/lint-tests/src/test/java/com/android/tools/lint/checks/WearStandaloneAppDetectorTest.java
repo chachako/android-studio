@@ -73,6 +73,29 @@ public class WearStandaloneAppDetectorTest extends AbstractCheckTest {
                 .expect(expected);
     }
 
+    public void testMissingMetadataUsesFeatureAfterApplication() {
+        String expected =
+                ""
+                        + "AndroidManifest.xml:4: Error: Missing <meta-data android:name=\"com.google.android.wearable.standalone\" ../> element [WearStandaloneAppFlag]\n"
+                        + "    <application>\n"
+                        + "     ~~~~~~~~~~~\n"
+                        + "1 errors, 0 warnings";
+        //noinspection all // Sample code
+        lint().files(
+                        manifest(
+                                ""
+                                        + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                                        + "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\" >\n"
+                                        + "    <uses-sdk android:targetSdkVersion=\"23\" />\n"
+                                        + "    <application>\n"
+                                        + "        <!-- Missing meta-data element -->\n"
+                                        + "    </application>\n"
+                                        + "    <uses-feature android:name=\"android.hardware.type.watch\"/>\n"
+                                        + "</manifest>\n"))
+                .run()
+                .expect(expected);
+    }
+
     public void testInvalidAttributeValueForStandaloneMetadata() {
         String expected =
                 ""
@@ -120,6 +143,24 @@ public class WearStandaloneAppDetectorTest extends AbstractCheckTest {
                                         + "            android:name=\"com.google.android.wearable.standalone\" \n"
                                         + "            android:value=\"true\" />\n"
                                         + "    </application>\n"
+                                        + "</manifest>\n"))
+                .run()
+                .expectClean();
+    }
+
+    public void testValidUsesFeatureAndMetadataDifferentManifestOrder() {
+        //noinspection all // Sample code
+        lint().files(
+                        manifest(
+                                ""
+                                        + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                                        + "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\" >\n"
+                                        + "    <application>\n"
+                                        + "        <meta-data \n"
+                                        + "            android:name=\"com.google.android.wearable.standalone\" \n"
+                                        + "            android:value=\"true\" />\n"
+                                        + "    </application>\n"
+                                        + "    <uses-feature android:name=\"android.hardware.type.watch\"/>\n"
                                         + "</manifest>\n"))
                 .run()
                 .expectClean();
