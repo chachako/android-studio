@@ -43,7 +43,7 @@ class KotlinMultiplatformAndroidDexingTest {
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
                 kotlin {
-                    androidExperimental {
+                    androidLibrary {
                         compilations.all {
                             compilerOptions.configure {
                                 jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)

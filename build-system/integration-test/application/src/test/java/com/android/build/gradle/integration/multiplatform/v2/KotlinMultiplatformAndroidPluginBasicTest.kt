@@ -38,7 +38,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
                 kotlin {
-                    androidExperimental {
+                    androidLibrary {
                         compilations.create("release")
                     }
                 }
@@ -59,7 +59,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
                 kotlin {
-                    androidExperimental {
+                    androidLibrary {
                         withAndroidTestOnJvm()
                     }
                 }
@@ -80,7 +80,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
                 kotlin {
-                    androidExperimental {
+                    androidLibrary {
                         afterEvaluate {
                             compilations {
                                 val main by getting {

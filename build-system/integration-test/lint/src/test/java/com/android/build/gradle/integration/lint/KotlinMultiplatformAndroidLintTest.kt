@@ -61,7 +61,7 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
                 kotlin {
-                    androidExperimental {
+                    androidLibrary {
                         compilations.all {
                             compilerOptions.configure {
                                 jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
@@ -117,7 +117,7 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
                 kotlin {
-                    androidExperimental {
+                    androidLibrary {
                         lint {
                             checkTestSources = true
                         }

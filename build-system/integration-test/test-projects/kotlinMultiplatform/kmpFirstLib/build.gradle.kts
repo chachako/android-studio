@@ -6,7 +6,7 @@ plugins {
 }
 
 kotlin {
-  androidExperimental {
+  androidLibrary {
     withAndroidTestOnJvm(compilationName = "unitTest")
     withAndroidTestOnDevice(compilationName = "instrumentedTest")
 
