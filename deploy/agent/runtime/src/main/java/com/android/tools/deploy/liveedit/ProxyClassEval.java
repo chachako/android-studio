@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
 
-class ProxyClassEval extends BackPorterEval {
+class ProxyClassEval extends AndroidEval {
 
     private final LiveEditContext context;
 
