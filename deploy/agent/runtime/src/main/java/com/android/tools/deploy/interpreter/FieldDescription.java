@@ -25,7 +25,7 @@ public class FieldDescription {
     private final String name;
     private final String desc;
 
-    public FieldDescription(
+    private FieldDescription(
             @NonNull String ownerInternalName, @NonNull String name, @NonNull String desc) {
         this.ownerInternalName = ownerInternalName;
         this.name = name;
