@@ -157,18 +157,53 @@ interface AndroidComponentsExtension<
      * https://docs.gradle.org/current/userguide/custom_plugins.html#sec:getting_input_from_the_build
      *
      * A lambda must be provided to create and configure the variant scoped object
-     * that will be stored with the Android Gradle Plugin [com.android.build.api.variant.Variant]
+     * that will be stored alongside the Android Gradle Plugin's [com.android.build.api.variant.Variant]
      * instance.
      *
      * Variant Scoped objects should use [org.gradle.api.provider.Property<T>] for its mutable
      * state to allow for late binding. (see [com.android.build.api.variant.Variant] for examples).
      *
+     * The [DslExtension.Builder] allow you to choose if you want to extend Project, BuiltType or
+     * ProductFlavor. You can extend just one or up to all of them.
+     *
+     * A BuildType extension of type BuildTypeDslExtension will allow users to have the following
+     * declarations in their build files:
+     * ```
+     * android {
+     *     buildTypes {
+     *         debug {
+     *             extensions.configure<BuildTypeDslExtension> {
+     *                 buildTypeSettingOne = "build_type_debug"
+     *             }
+     *         }
+     *     }
+     * }
+     * ```
+     *
+     * A Product flavor extension of type ProductFlavorDslExtension will allow users to specify the
+     * following declarations in their build files:
+     * ```
+     * android {
+     *     flavorDimensions += "version"
+     *     productFlavors {
+     *         create("demo")  {
+     *             dimension = "version"
+     *             extensions.configure<ProductFlavorDslExtension> {
+     *                 productFlavorSettingOne = "product_flavor_demo"
+     *                 productFlavorSettingTwo = 99
+     *             }
+     *         }
+     *     }
+     * }
+     * ```
+     *
      * @param dslExtension the DSL extension configuration.
      * @param configurator a lambda to create a variant scoped object. The lambda is
      * provided with the [VariantExtensionConfig] that can be used to retrieve the [VariantT]
      * instance as well as DSL extensions registered with [DslExtension]
-     * @return an sub type of [VariantExtension] instance that will be stored with the [VariantT]
+     * @return an instance of a sub type of [VariantExtension] that will be stored with the [VariantT]
      * instance and can be retrieved by [Variant.getExtension] API.
+     *
      */
     @Incubating
     fun registerExtension(
