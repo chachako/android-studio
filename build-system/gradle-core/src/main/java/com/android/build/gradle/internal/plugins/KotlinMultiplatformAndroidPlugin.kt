@@ -229,7 +229,6 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
                     createCompilation(
                         compilationName = jvmConfiguration.compilationName,
                         defaultSourceSetName = jvmConfiguration.defaultSourceSetName,
-                        sourceSetsToDependOn = listOf(COMMON_TEST_SOURCE_SET_NAME),
                         compilationToAssociateWith = listOf(androidTarget.compilations.getByName(
                             KmpPredefinedAndroidCompilation.MAIN.compilationName
                         ))
@@ -241,7 +240,6 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
                     createCompilation(
                         compilationName = deviceConfiguration.compilationName,
                         defaultSourceSetName = deviceConfiguration.defaultSourceSetName,
-                        sourceSetsToDependOn = emptyList(),
                         compilationToAssociateWith = listOf(androidTarget.compilations.getByName(
                             KmpPredefinedAndroidCompilation.MAIN.compilationName
                         ))
@@ -292,7 +290,6 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             val mainCompilation = createCompilation(
                 compilationName = KmpPredefinedAndroidCompilation.MAIN.compilationName,
                 defaultSourceSetName = KmpPredefinedAndroidCompilation.MAIN.compilationName.getNamePrefixedWithTarget(),
-                sourceSetsToDependOn = listOf(COMMON_MAIN_SOURCE_SET_NAME),
                 compilationToAssociateWith = emptyList()
             )
 
@@ -300,7 +297,6 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
                 createCompilation(
                     compilationName = jvmConfiguration.compilationName,
                     defaultSourceSetName = jvmConfiguration.defaultSourceSetName,
-                    sourceSetsToDependOn = listOf(COMMON_TEST_SOURCE_SET_NAME),
                     compilationToAssociateWith = listOf(mainCompilation)
                 )
             }
@@ -309,7 +305,6 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
                 createCompilation(
                     compilationName = deviceConfiguration.compilationName,
                     defaultSourceSetName = deviceConfiguration.defaultSourceSetName,
-                    sourceSetsToDependOn = emptyList(),
                     compilationToAssociateWith = listOf(mainCompilation)
                 )
             }
@@ -347,16 +342,12 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
     private fun createCompilation(
         compilationName: String,
         defaultSourceSetName: String,
-        sourceSetsToDependOn: List<String>,
         compilationToAssociateWith: List<KotlinMultiplatformAndroidCompilation>
     ): KotlinMultiplatformAndroidCompilation {
         kotlinExtension.sourceSets.maybeCreate(
             defaultSourceSetName
         ).apply {
             android = KotlinAndroidSourceSetMarker()
-            sourceSetsToDependOn.forEach {
-                dependsOn(kotlinExtension.sourceSets.getByName(it))
-            }
         }
         return androidTarget.compilations.maybeCreate(
             compilationName

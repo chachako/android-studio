@@ -1616,7 +1616,9 @@ com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.withAn
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.withAndroidTestOnJvm: void (java.lang.String, kotlin.jvm.functions.Function1<? super com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnJvmConfiguration, kotlin.Unit>)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfiguration
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfiguration.getDefaultSourceSetName: java.lang.String ()
+com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfiguration.getSourceSetTree: java.lang.String ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfiguration.setDefaultSourceSetName: void (java.lang.String)
+com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfiguration.setSourceSetTree: void (java.lang.String)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnDeviceConfiguration implements com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfiguration
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnJvmConfiguration implements com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfiguration
 com.android.build.gradle.internal.dsl.LanguageSplitOptions
