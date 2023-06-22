@@ -96,6 +96,6 @@ class KotlinMultiplatformAndroidPluginBasicTest {
             """.trimIndent()
         )
 
-        project.executor().run(":kmpFirstLib:prebuild")
+        project.executor().run(":kmpFirstLib:androidPrebuild")
     }
 }

@@ -114,7 +114,7 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
         createPrepareLintJarForPublishTask()
 
         // create a lifecycle task to build the lintChecks dependencies
-        taskFactory.register(COMPILE_LINT_CHECKS_TASK) { task: Task ->
+        taskFactory.register(globalConfig.taskNames.compileLintChecks) { task: Task ->
             task.dependsOn(globalConfig.localCustomLintChecks)
         }
 

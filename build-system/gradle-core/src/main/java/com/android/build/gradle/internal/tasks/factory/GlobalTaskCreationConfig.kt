@@ -149,4 +149,6 @@ interface GlobalTaskCreationConfig: BootClasspathConfig {
      * This has no relation with targetSdkVersion from build.gradle/manifest.
      */
     val targetDeployApiFromIDE: Int?
+
+    val taskNames: GlobalTaskNames
 }

@@ -91,7 +91,7 @@ class KmpTaskManager(
                 globalConfig.globalArtifacts
             )
 
-        taskFactory.register(COMPILE_LINT_CHECKS_TASK) { task: Task ->
+        taskFactory.register(globalConfig.taskNames.compileLintChecks) { task: Task ->
             task.dependsOn(globalConfig.localCustomLintChecks)
         }
 

@@ -914,7 +914,7 @@ abstract class TaskManager(
             allDevicesVariant.group = JavaBasePlugin.VERIFICATION_GROUP
         }
         taskFactory.configure(
-            ALL_DEVICES_CHECK
+            globalConfig.taskNames.allDevicesCheck
         ) { allDevices: Task ->
             allDevices.dependsOn(allDevicesVariantTask)
         }
@@ -1058,7 +1058,7 @@ abstract class TaskManager(
                     it.mustRunAfter(managedDeviceTestTask)
                 }
             }
-            taskFactory.configure(ALL_DEVICES_CHECK) { allDevices: Task ->
+            taskFactory.configure(globalConfig.taskNames.allDevicesCheck) { allDevices: Task ->
                 allDevices.dependsOn(reportTask)
             }
         }
@@ -1585,7 +1585,7 @@ abstract class TaskManager(
 
         // add an uninstall task
         val uninstallTask = taskFactory.register(UninstallTask.CreationAction(creationConfig))
-        taskFactory.configure(UNINSTALL_ALL) { uninstallAll: Task ->
+        taskFactory.configure(creationConfig.global.taskNames.uninstallAll) { uninstallAll: Task ->
             uninstallAll.dependsOn(uninstallTask)
         }
     }
@@ -1768,7 +1768,7 @@ abstract class TaskManager(
                 .sourceGenTask = taskFactory.register(
                 creationConfig.computeTaskName("generate", "Sources")
         ) { task: Task ->
-            task.dependsOn(COMPILE_LINT_CHECKS_TASK)
+            task.dependsOn(creationConfig.global.taskNames.compileLintChecks)
             if (creationConfig.componentType.isAar) {
                 task.dependsOn(PrepareLintJarForPublish.NAME)
             }
@@ -1828,7 +1828,7 @@ abstract class TaskManager(
 
         override fun configure(task: TaskT) {
             super.configure(task)
-            task.dependsOn(MAIN_PREBUILD)
+            task.dependsOn(creationConfig.global.taskNames.mainPreBuild)
         }
     }
 
@@ -1923,29 +1923,20 @@ abstract class TaskManager(
     }
 
     companion object {
-        // name of the task that triggers compilation of the custom lint Checks
-        const val COMPILE_LINT_CHECKS_TASK = "compileLintChecks"
         const val INSTALL_GROUP = "Install"
         const val BUILD_GROUP = BasePlugin.BUILD_GROUP
         const val ANDROID_GROUP = "Android"
 
         // Task names. These cannot be AndroidTasks as in the component model world there is nothing to
         // force generateTasksBeforeEvaluate to happen before the variant tasks are created.
-        const val MAIN_PREBUILD = "preBuild"
-        const val UNINSTALL_ALL = "uninstallAll"
-        const val DEVICE_CHECK = "deviceCheck"
         const val DEVICE_ANDROID_TEST = BuilderConstants.DEVICE + ComponentType.ANDROID_TEST_SUFFIX
-        const val CONNECTED_CHECK = "connectedCheck"
-        const val ALL_DEVICES_CHECK = "allDevicesCheck"
         const val CONNECTED_ANDROID_TEST =
                 BuilderConstants.CONNECTED + ComponentType.ANDROID_TEST_SUFFIX
         const val ASSEMBLE_ANDROID_TEST = "assembleAndroidTest"
-        const val LINT = "lint"
 
         // Temporary static variables for Kotlin+Compose configuration
         const val COMPOSE_KOTLIN_COMPILER_EXTENSION_VERSION = "1.3.2"
         const val COMPOSE_UI_VERSION = "1.3.0"
-        const val CREATE_MOCKABLE_JAR_TASK_NAME = "createMockableJar"
 
         /**
          * Create tasks before the evaluation (on plugin apply). This is useful for tasks that could be
@@ -1963,21 +1954,21 @@ abstract class TaskManager(
         )  {
             val taskFactory = TaskFactoryImpl(project.tasks)
             taskFactory.register(
-                    UNINSTALL_ALL
+                globalConfig.taskNames.uninstallAll
             ) { uninstallAllTask: Task ->
                 uninstallAllTask.description = "Uninstall all applications."
                 uninstallAllTask.group = INSTALL_GROUP
             }
             taskFactory.register(
-                    DEVICE_CHECK
+                globalConfig.taskNames.deviceCheck
             ) { deviceCheckTask: Task ->
                 deviceCheckTask.description =
                         "Runs all device checks using Device Providers and Test Servers."
                 deviceCheckTask.group = JavaBasePlugin.VERIFICATION_GROUP
             }
             taskFactory.register(
-                    CONNECTED_CHECK,
-                    DeviceSerialTestTask::class.java
+                globalConfig.taskNames.connectedCheck,
+                DeviceSerialTestTask::class.java
             ) { connectedCheckTask: DeviceSerialTestTask ->
                 connectedCheckTask.description =
                         "Runs all device checks on currently connected devices."
@@ -1985,12 +1976,13 @@ abstract class TaskManager(
             }
 
             // Make sure MAIN_PREBUILD runs first:
-            taskFactory.register(MAIN_PREBUILD)
-            taskFactory.register(ExtractProguardFiles.CreationAction(globalConfig))
-                .configure { it: ExtractProguardFiles -> it.dependsOn(MAIN_PREBUILD) }
+            taskFactory.register(globalConfig.taskNames.mainPreBuild)
+            taskFactory.register(ExtractProguardFiles.CreationAction(globalConfig)).configure {
+                it.dependsOn(globalConfig.taskNames.mainPreBuild)
+            }
             taskFactory.register(SourceSetsTask.CreationAction(sourceSetContainer))
             taskFactory.register(
-                    ASSEMBLE_ANDROID_TEST
+                ASSEMBLE_ANDROID_TEST
             ) { assembleAndroidTestTask: Task ->
                 assembleAndroidTestTask.group = BasePlugin.BUILD_GROUP
                 assembleAndroidTestTask.description = "Assembles all the Test applications."
@@ -2017,7 +2009,7 @@ abstract class TaskManager(
             createCoreLibraryDesugaringConfig(project)
         }
 
-        fun createCoreLibraryDesugaringConfig(project: Project) {
+        private fun createCoreLibraryDesugaringConfig(project: Project) {
             var coreLibraryDesugaring =
                     project.configurations.findByName(VariantDependencies.CONFIG_NAME_CORE_LIBRARY_DESUGARING)
             if (coreLibraryDesugaring == null) {

@@ -250,4 +250,6 @@ class GlobalTaskCreationConfigImpl(
 
     override val targetDeployApiFromIDE: Int? =
         services.projectOptions.get(IntegerOption.IDE_TARGET_DEVICE_API)
+
+    override val taskNames: GlobalTaskNames = GlobalTaskNamesImpl
 }

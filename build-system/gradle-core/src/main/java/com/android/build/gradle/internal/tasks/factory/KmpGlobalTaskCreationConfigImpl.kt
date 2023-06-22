@@ -195,6 +195,8 @@ internal class KmpGlobalTaskCreationConfigImpl(
         getLocalCustomLintChecks(lintChecks)
     }
 
+    override val taskNames: GlobalTaskNames = KmpAndroidGlobalTaskNamesImpl
+
     // Unsupported properties
     // TODO: Refactor the parent interface so that we don't have to override these values to avoid
     //  accidental calls.

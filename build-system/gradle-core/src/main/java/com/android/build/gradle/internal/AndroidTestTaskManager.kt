@@ -98,8 +98,9 @@ class AndroidTestTaskManager(
                                 + "for all flavors on connected devices.")
             }
         }
-        taskFactory.configure(
-            CONNECTED_CHECK) { check: Task -> check.dependsOn(connectedAndroidTestTask.name) }
+        taskFactory.configure(globalConfig.taskNames.connectedCheck) {
+            it.dependsOn(connectedAndroidTestTask.name)
+        }
         val deviceAndroidTestTask: TaskProvider<out Task>
         // if more than one provider tasks, either because of several flavors, or because of
         // more than one providers, then create an aggregate report tasks for all of them.
@@ -119,8 +120,9 @@ class AndroidTestTaskManager(
                                 + "using all Device Providers.")
             }
         }
-        taskFactory.configure(
-            DEVICE_CHECK) { check: Task -> check.dependsOn(deviceAndroidTestTask.name) }
+        taskFactory.configure(globalConfig.taskNames.deviceCheck) {
+            it.dependsOn(deviceAndroidTestTask.name)
+        }
 
         // If gradle is launched with --continue, we want to run all tests and generate an
         // aggregate report (to help with the fact that we may have several build variants, or
@@ -282,7 +284,7 @@ class AndroidTestTaskManager(
         }
         configureTestData(androidTestProperties, testData)
         val connectedCheckSerials: Provider<List<String>> =
-            taskFactory.named(CONNECTED_CHECK).flatMap { test ->
+            taskFactory.named(globalConfig.taskNames.connectedCheck).flatMap { test ->
                 (test as DeviceSerialTestTask).serialValues
             }
         val connectedTask = taskFactory.register(
@@ -336,9 +338,8 @@ class AndroidTestTaskManager(
                 )
             )
             serverTask.dependsOn<Task>(androidTestProperties.taskContainer.assembleTask)
-            taskFactory.configure(
-                DEVICE_CHECK) { deviceAndroidTest: Task ->
-                deviceAndroidTest.dependsOn(serverTask)
+            taskFactory.configure(globalConfig.taskNames.deviceCheck) {
+                it.dependsOn(serverTask)
             }
         }
 
@@ -366,7 +367,7 @@ class AndroidTestTaskManager(
                 globalConfig,
                 managedDevices.filterIsInstance<ManagedVirtualDevice>()))
         val allDevices = taskFactory.register(
-            ALL_DEVICES_CHECK
+            globalConfig.taskNames.allDevicesCheck
         ) { allDevicesCheckTask: Task ->
             allDevicesCheckTask.description =
                 "Runs all device checks on all managed devices defined in the TestOptions dsl."
@@ -442,7 +443,7 @@ class AndroidTestTaskManager(
 
         // Adding this task to help the IDE find the mockable JAR.
         taskFactory.register(
-            CREATE_MOCKABLE_JAR_TASK_NAME
+            globalConfig.taskNames.createMockableJar
         ) { task: Task ->
             task.dependsOn(globalConfig.mockableJarArtifact)
         }

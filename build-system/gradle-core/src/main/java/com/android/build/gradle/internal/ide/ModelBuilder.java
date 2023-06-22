@@ -913,7 +913,7 @@ public class ModelBuilder<Extension extends BaseExtension>
                 ComponentTypeImpl.UNIT_TEST.getArtifactName(),
                 component.getTaskContainer().getAssembleTask().getName(),
                 component.getTaskContainer().getCompileTask().getName(),
-                Sets.newHashSet(TaskManager.CREATE_MOCKABLE_JAR_TASK_NAME),
+                Sets.newHashSet(component.getGlobal().getTaskNames().getCreateMockableJar()),
                 getGeneratedSourceFoldersForUnitTests(component),
                 artifacts.get(JAVAC.INSTANCE).get().getAsFile(),
                 additionalTestClasses,
