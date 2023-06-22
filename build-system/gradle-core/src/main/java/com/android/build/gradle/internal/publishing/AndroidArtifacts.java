@@ -203,6 +203,7 @@ public class AndroidArtifacts {
     private static final String TYPE_JAVA_DOC_JAR = "android-java-doc-jar";
 
     private static final String TYPE_SUPPORTED_LOCALE_LIST = "supported-locale-list";
+    private static final String TYPE_R_CLASS_JAR = "r-class-jar";
 
     public enum ConsumedConfigType {
         COMPILE_CLASSPATH("compileClasspath", API_ELEMENTS, true),
@@ -605,7 +606,9 @@ public class AndroidArtifacts {
 
         // The file describing the supported locales in the module
         SUPPORTED_LOCALE_LIST(TYPE_SUPPORTED_LOCALE_LIST),
-        ;
+
+        // The compilation only R class jar which is already part of the compile jar
+        R_CLASS_JAR(TYPE_R_CLASS_JAR);
 
         @NonNull private final String type;
         @Nullable private final ArtifactCategory category;

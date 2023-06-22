@@ -64,6 +64,7 @@ class PublishingSpecsTest {
             AndroidArtifacts.ArtifactType.PREFAB_PACKAGE_CONFIGURATION,
             AndroidArtifacts.ArtifactType.PREFAB_PACKAGE,
             AndroidArtifacts.ArtifactType.RENDERSCRIPT,
+            AndroidArtifacts.ArtifactType.R_CLASS_JAR,
             AndroidArtifacts.ArtifactType.SOURCES_JAR,
             AndroidArtifacts.ArtifactType.SUPPORTED_LOCALE_LIST,
             AndroidArtifacts.ArtifactType.TEST_FIXTURES_LINT_MODEL,

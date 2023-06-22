@@ -39,6 +39,7 @@ import com.android.build.gradle.internal.scope.InternalArtifactType.BASE_MODULE_
 import com.android.build.gradle.internal.scope.InternalArtifactType.COMPILED_LOCAL_RESOURCES
 import com.android.build.gradle.internal.scope.InternalArtifactType.COMPILE_APP_CLASSES_JAR
 import com.android.build.gradle.internal.scope.InternalArtifactType.COMPILE_LIBRARY_CLASSES_JAR
+import com.android.build.gradle.internal.scope.InternalArtifactType.COMPILE_R_CLASS_JAR
 import com.android.build.gradle.internal.scope.InternalArtifactType.COMPILE_SYMBOL_LIST
 import com.android.build.gradle.internal.scope.InternalArtifactType.CONSUMER_PROGUARD_DIR
 import com.android.build.gradle.internal.scope.InternalArtifactType.DATA_BINDING_ARTIFACT
@@ -236,6 +237,7 @@ class PublishingSpecs {
                 api(COMPILE_LIBRARY_CLASSES_JAR, ArtifactType.CLASSES_JAR)
                 api(PREFAB_PACKAGE_CONFIGURATION, ArtifactType.PREFAB_PACKAGE_CONFIGURATION)
                 api(PREFAB_PACKAGE, ArtifactType.PREFAB_PACKAGE)
+                api(COMPILE_R_CLASS_JAR, ArtifactType.R_CLASS_JAR)
 
                 // manifest is published to both to compare and detect provided-only library
                 // dependencies.
