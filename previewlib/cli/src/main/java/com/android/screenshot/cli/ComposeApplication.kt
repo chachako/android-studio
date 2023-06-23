@@ -23,7 +23,7 @@ import com.android.tools.idea.diagnostics.crash.ExceptionDataConfiguration
 import com.android.tools.idea.diagnostics.crash.ExceptionDataConfigurationImpl
 import com.android.tools.idea.diagnostics.crash.StudioCrashReporter
 import com.android.tools.idea.flags.StudioFlagSettings
-import com.android.tools.idea.fonts.DownloadableFontCacheServiceImpl
+import com.android.tools.idea.fonts.StudioDownloadableFontCacheService
 import com.android.tools.idea.gradle.util.EmbeddedDistributionPaths
 import com.android.tools.idea.res.AarResourceRepositoryCache
 import com.android.tools.idea.res.ResourceFolderRepositoryFileCache
@@ -56,7 +56,6 @@ import com.intellij.util.download.DownloadableFileService
 import com.intellij.util.indexing.FileBasedIndex
 import org.jetbrains.kotlin.utils.PathUtil
 import org.mockito.Mockito
-import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
@@ -156,7 +155,7 @@ class ComposeApplication(private val applicationManager: CoreApplicationEnvironm
         )
         applicationManager.registerApplicationService(
             DownloadableFontCacheService::class.java,
-            DownloadableFontCacheServiceImpl()
+            StudioDownloadableFontCacheService()
         )
         applicationManager.registerApplicationService(
             ExceptionDataConfiguration::class.java,
