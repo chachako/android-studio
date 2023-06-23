@@ -16,6 +16,16 @@
 
 package com.android.tools.bazel.lnzipper;
 
+import static com.android.zipflinger.Source.UNX_IRGRP;
+import static com.android.zipflinger.Source.UNX_IROTH;
+import static com.android.zipflinger.Source.UNX_IRUSR;
+import static com.android.zipflinger.Source.UNX_IWGRP;
+import static com.android.zipflinger.Source.UNX_IWOTH;
+import static com.android.zipflinger.Source.UNX_IWUSR;
+import static com.android.zipflinger.Source.UNX_IXGRP;
+import static com.android.zipflinger.Source.UNX_IXOTH;
+import static com.android.zipflinger.Source.UNX_IXUSR;
+
 import com.android.zipflinger.FullFileSource;
 import com.android.zipflinger.Source;
 import com.android.zipflinger.Sources;
@@ -25,11 +35,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.Deflater;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -43,7 +55,11 @@ import org.apache.commons.cli.ParseException;
  *
  * <p>If the zip_path is not given for a file, it is assumed to be the path of the file.
  *
- * <p>Usage: ziplinker [--compress] [--symlinks] [(@argfile | [zip_path=]file ...)]
+ * <p>Usage: lnzipper [--compress] [--symlinks] [--attributes] [(@argfile | [zip_path[attr]=]file
+ * ...)]
+ *
+ * <p>Ex. lnzipper --compress path/in/zip=/path/on/disk lnzipper --compress
+ * path/in/zip[664]=/path/on/disk
  */
 public class LnZipper {
 
@@ -66,7 +82,7 @@ public class LnZipper {
     }
 
     public static final String CMD_SYNTAX =
-            "ziplinker [options] foo.zip [(@argfile | [zip_path=]file ...)]";
+            "lnzipper [options] foo.zip [(@argfile | [zip_path[attr]=]file ...)]";
 
     public static final Option compress =
             Option.builder("C")
@@ -84,11 +100,19 @@ public class LnZipper {
                     .desc("Whether to preserve symlinks in new archives")
                     .build();
 
+    public static final Option attributes =
+            Option.builder("a")
+                    .argName("attributes")
+                    .longOpt("attributes")
+                    .desc("Whether to preserve attributes in new archives")
+                    .build();
+
     static Options getCliOptions() {
         Options opts = new Options();
         opts.addOption(compress);
         opts.addOption(create);
         opts.addOption(symlinks);
+        opts.addOption(attributes);
         return opts;
     }
 
@@ -107,17 +131,22 @@ public class LnZipper {
             throw new IllegalArgumentException("Missing ZIP archive argument");
         }
         Path archive = Paths.get(argList.get(0));
-        Map<String, Path> fileMap = getFileMapping(argList);
+        Map<String, Entry> fileMap = getFileMapping(argList);
 
         createArchive(
                 archive,
                 fileMap,
                 cmdLine.hasOption(compress.getOpt()),
-                cmdLine.hasOption(symlinks.getOpt()));
+                cmdLine.hasOption(symlinks.getOpt()),
+                cmdLine.hasOption(attributes.getOpt()));
     }
 
     private static void createArchive(
-            Path dest, Map<String, Path> fileMap, boolean compress, boolean preserveSymlinks)
+            Path dest,
+            Map<String, Entry> fileMap,
+            boolean compress,
+            boolean preserveSymlinks,
+            boolean preserveAttributes)
             throws IOException {
         try (ZipArchive archive = new ZipArchive(dest)) {
             BytesSourceFactory bytesSourceFactory =
@@ -131,16 +160,43 @@ public class LnZipper {
                             : Sources::from;
             int compressionLevel = compress ? Deflater.BEST_COMPRESSION : Deflater.NO_COMPRESSION;
 
-            for (Map.Entry<String, Path> fileEntry : fileMap.entrySet()) {
-                archive.add(
+            for (Map.Entry<String, Entry> fileEntry : fileMap.entrySet()) {
+                Source source =
                         bytesSourceFactory.create(
-                                fileEntry.getValue(), fileEntry.getKey(), compressionLevel));
+                                fileEntry.getValue().path, fileEntry.getKey(), compressionLevel);
+                int attr = source.getExternalAttributes();
+                if (preserveAttributes) {
+                    attr = readFileAttributes(attr, fileEntry.getValue().path);
+                }
+                if (fileEntry.getValue().attr != 0) {
+                    // Override file attributes, but leave anything else the same
+                    attr = attr & ~(0x1FF0000);
+                    attr |= (fileEntry.getValue().attr & 0x1FF) << 16;
+                }
+                source.setExternalAttributes(attr);
+                archive.add(source);
             }
         }
     }
 
+    private static int readFileAttributes(int attr, Path path) throws IOException {
+        // Keep the link attribute as decided before
+        attr = attr & Source.TYPE_FLNK;
+        if (Files.isDirectory(path)) {
+            attr |= Source.TYPE_FDIR;
+        } else {
+            attr |= Source.TYPE_FREG;
+        }
+        try {
+            attr |= toExternalAttribute(Files.getPosixFilePermissions(path));
+        } catch (UnsupportedOperationException e) {
+            attr |= Source.PERMISSION_DEFAULT;
+        }
+        return attr;
+    }
+
     /** Returns a mapping of ZIP entry name -> file path */
-    private static Map<String, Path> getFileMapping(List<String> args) throws IOException {
+    private static Map<String, Entry> getFileMapping(List<String> args) throws IOException {
         if (args.size() < 2) {
             throw new IllegalArgumentException("No file inputs given");
         }
@@ -155,24 +211,76 @@ public class LnZipper {
         } else {
             fileArgs.addAll(args.subList(1, args.size()));
         }
-        Map<String, Path> fileMap = new HashMap<>();
+        Map<String, Entry> fileMap = new HashMap<>();
         for (String fileArg : fileArgs) {
+            Entry entry = new Entry();
             // check if file arguments are in the format zip_path=file
             if (fileArg.contains("=")) {
                 String[] split = fileArg.split("=");
-                Path filePath = Paths.get(split[1]);
-                fileMap.put(split[0], filePath);
+                entry.path = Paths.get(split[1]);
+                String entryPath = split[0];
+                if (entryPath.endsWith("]")) {
+                    int ix = entryPath.lastIndexOf('[');
+                    String octal = entryPath.substring(ix + 1, entryPath.length() - 1);
+                    if (octal.length() != 3) {
+                        throw new IllegalArgumentException("Permissions must be of length 3.");
+                    }
+                    entry.attr = Integer.parseInt(octal, 8);
+                    entryPath = entryPath.substring(0, ix);
+                }
+                fileMap.put(entryPath, entry);
             } else {
-                Path filePath = Paths.get(fileArg);
-                fileMap.put(fileArg, filePath);
+                entry.path = Paths.get(fileArg);
+                fileMap.put(fileArg, entry);
             }
         }
 
         return Collections.unmodifiableMap(fileMap);
     }
 
+    private static class Entry {
+        public Path path;
+        public int attr;
+    }
+
     private interface BytesSourceFactory {
 
         Source create(Path file, String entryName, int compressionLevel) throws IOException;
+    }
+
+    public static int toExternalAttribute(Set<PosixFilePermission> permissions) {
+        int mask = 0;
+        for (PosixFilePermission p : permissions) {
+            switch (p) {
+                case OWNER_READ:
+                    mask |= UNX_IRUSR;
+                    break;
+                case OWNER_WRITE:
+                    mask |= UNX_IWUSR;
+                    break;
+                case OWNER_EXECUTE:
+                    mask |= UNX_IXUSR;
+                    break;
+                case GROUP_READ:
+                    mask |= UNX_IRGRP;
+                    break;
+                case GROUP_WRITE:
+                    mask |= UNX_IWGRP;
+                    break;
+                case GROUP_EXECUTE:
+                    mask |= UNX_IXGRP;
+                    break;
+                case OTHERS_READ:
+                    mask |= UNX_IROTH;
+                    break;
+                case OTHERS_WRITE:
+                    mask |= UNX_IWOTH;
+                    break;
+                case OTHERS_EXECUTE:
+                    mask |= UNX_IXOTH;
+                    break;
+            }
+        }
+        return mask;
     }
 }
