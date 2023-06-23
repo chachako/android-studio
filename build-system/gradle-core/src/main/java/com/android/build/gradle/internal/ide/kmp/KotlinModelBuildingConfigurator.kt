@@ -36,6 +36,7 @@ import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.utils.getDesugarLibConfigFile
 import com.android.build.gradle.internal.utils.getDesugaredMethods
 import com.android.build.gradle.options.ProjectOptions
+import com.android.builder.core.ComponentType
 import com.android.builder.errors.IssueReporter
 import com.android.kotlin.multiplatform.ide.models.serialization.androidCompilationKey
 import com.android.kotlin.multiplatform.ide.models.serialization.androidSourceSetKey
@@ -202,6 +203,9 @@ object KotlinModelBuildingConfigurator {
             .setIfNotNull(
                 global.mockableJarArtifact.files.singleOrNull()?.convert(),
                 UnitTestInfo.Builder::setMockablePlatformJar
+            )
+            .setUnitTestTaskName(
+                computeTaskName(ComponentType.UNIT_TEST_PREFIX)
             )
             .build()
 

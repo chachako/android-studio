@@ -120,6 +120,9 @@ message UnitTestInfo {
 
     // Path to the mockable platform generated jar if present.
     optional File mockable_platform_jar = 2;
+
+    // name of the gradle task that runs the unit tests.
+    optional string unit_test_task_name = 3;
 }
 
 // The info of the instrumented test component of the android kotlin multiplatform target.

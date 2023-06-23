@@ -139,7 +139,8 @@
             "namespace": "com.example.kmpfirstlib.test",
             "mockablePlatformJar": {
               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/android.jar"
-            }
+            },
+            "unitTestTaskName": "testAndroidUnitTest"
           },
           "defaultSourceSetName": "androidUnitTest",
           "assembleTaskName": "assembleAndroidUnitTest",
