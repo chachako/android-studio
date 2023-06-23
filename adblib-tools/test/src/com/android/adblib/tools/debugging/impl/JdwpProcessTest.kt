@@ -25,7 +25,6 @@ import com.android.adblib.tools.AdbLibToolsProperties
 import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.packets.JdwpCommands
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
-import com.android.adblib.tools.debugging.packets.clone
 import com.android.adblib.tools.debugging.packets.payloadLength
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.properties
@@ -86,7 +85,6 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
                 .onActivation {
                     sendPacket(versionCommand)
                 }.flow()
-                .map { reply -> reply.clone() }
                 .first { reply -> reply.id == versionCommand.id }
         }
 

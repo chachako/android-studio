@@ -23,7 +23,7 @@ import com.android.adblib.CoroutineScopeCache
 import com.android.adblib.tools.debugging.SharedJdwpSessionFilter.FilterId
 import com.android.adblib.tools.debugging.impl.SharedJdwpSessionImpl
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
-import com.android.adblib.tools.debugging.packets.clone
+import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.utils.NoDdmsPacketFilterFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -96,7 +96,7 @@ interface SharedJdwpSession : AutoShutdown {
      *
      * * All active [JdwpPacketReceiver]s are guaranteed to be invoked sequentially, meaning
      *   they can freely use any field of the [JdwpPacketView], as well as consume the
-     *   [JdwpPacketView.payload] without any explicit synchronization. This also
+     *   [JdwpPacketView.withPayload] without any explicit synchronization. This also
      *   implies that **receivers should process packets quickly** to prevent blocking
      *   other receivers. Conceptually, the [SharedJdwpSession] works like this
      *
@@ -242,7 +242,7 @@ abstract class JdwpPacketReceiver {
      *
      * To ensure all [JdwpPacketView] instances of the flow are guaranteed to be valid in
      * downstream flows (e.g. [`take(n)`][Flow.take] or [`buffer(n)`][Flow.buffer]), as well as
-     * after the flow completes, [JdwpPacketView.clone] is invoked on each packet of the flow,
+     * after the flow completes, [JdwpPacketView.toOffline] is invoked on each packet of the flow,
      * so there is a cost in terms of memory usage versus using the [receive] method.
      */
     abstract fun flow(): Flow<JdwpPacketView>

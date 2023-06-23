@@ -19,6 +19,7 @@ import com.android.adblib.AdbInputChannel
 import com.android.adblib.tools.debugging.impl.EphemeralJdwpPacket
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_HEADER_LENGTH
 import com.android.adblib.tools.debugging.packets.ddms.withPayload
+import com.android.adblib.utils.ResizableBuffer
 
 /**
  * Provides access to various elements of a JDWP packet. A JDWP packet always starts with
@@ -27,7 +28,7 @@ import com.android.adblib.tools.debugging.packets.ddms.withPayload
 interface JdwpPacketView {
 
     /**
-     * The total number of bytes of this JDWP packet, including header (11 bytes) and [payload].
+     * The total number of bytes of this JDWP packet, including header (11 bytes) and [withPayload].
      */
     val length: Int
 
@@ -81,6 +82,13 @@ interface JdwpPacketView {
     suspend fun releasePayload()
 
     /**
+     * Creates an "offline" version of this [JdwpPacketView] that is thread-safe, immutable and has
+     * an [withPayload] that is detached from any underlying volatile data source (e.g.
+     * a network socket).
+     */
+    suspend fun toOffline(workBuffer: ResizableBuffer = ResizableBuffer()): JdwpPacketView
+
+    /**
      * Returns `true` is the packet is a "command" packet matching the given [cmdSet] and [cmd]
      * values.
      */
@@ -101,7 +109,7 @@ interface JdwpPacketView {
         get() = !isReply
 
     /**
-     * Returns `true` if the packet does not contain any [payload].
+     * Returns `true` if the packet [withPayload] is empty
      */
     val isEmpty: Boolean
         get() = length == PACKET_HEADER_LENGTH
@@ -179,7 +187,8 @@ suspend inline fun <R> JdwpPacketView.withPayload(block: (AdbInputChannel) -> R)
  * Helper method for implementations for [JdwpPacketView]
  */
 internal fun JdwpPacketView.toStringImpl(): String {
-    return "JdwpPacket(id=%d, length=%d, flags=0x%02X, %s)".format(
+    return "%s(id=%d, length=%d, flags=0x%02X, %s)".format(
+        this::class.simpleName,
         id,
         length,
         flags,

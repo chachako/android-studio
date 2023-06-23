@@ -16,6 +16,8 @@
 package com.android.adblib.tools.debugging.packets
 
 import com.android.adblib.AdbInputChannel
+import com.android.adblib.tools.debugging.impl.EphemeralJdwpPacket
+import com.android.adblib.utils.ResizableBuffer
 import java.nio.ByteBuffer
 
 /**
@@ -60,6 +62,15 @@ internal class MutableJdwpPacket : JdwpPacketView {
         set(value) {
             isReply = !value
         }
+
+    override suspend fun toOffline(workBuffer: ResizableBuffer): JdwpPacketView {
+        // Note: We go through 2 instances here to get to a "thread-safe" implementation,
+        // which is sub-optimal, but this class (i.e. `MutableJdwpPacket`) is mostly only
+        // used in test and will eventually be removed entirely.
+        return EphemeralJdwpPacket
+            .fromPacket(this, payloadProvider)
+            .toOffline(workBuffer)
+    }
 
     override var cmdSet: Int = 0
         get() {

@@ -94,43 +94,7 @@ suspend fun ResizableBuffer.appendJdwpPacket(packet: JdwpPacketView) {
     }
 }
 
-/**
- * Returns an in-memory copy of this [JdwpPacketView].
- *
- * @throws IllegalArgumentException if [JdwpPacketView.payload] does not contain exactly
- * [JdwpPacketView.length] minus [JdwpPacketConstants.PACKET_HEADER_LENGTH] bytes
- *
- * @param workBuffer (Optional) The [ResizableBuffer] used to transfer data
- */
-internal suspend fun JdwpPacketView.clone(
-    workBuffer: ResizableBuffer = ResizableBuffer()
-): MutableJdwpPacket {
-
-    // Copy header
-    workBuffer.clear()
-    workBuffer.appendJdwpHeader(this)
-
-    val mutableJdwpPacket = MutableJdwpPacket()
-    mutableJdwpPacket.parseHeader(workBuffer.forChannelWrite())
-
-    // Copy payload into our workBuffer
-    workBuffer.clear()
-    val copyChannel = ByteBufferAdbOutputChannel(workBuffer)
-    val byteCount = withPayload { payload ->
-        copyChannel.write(payload)
-    }
-    checkPacketLength(byteCount)
-
-    // Make a copy into our own ByteBuffer
-    val bufferCopy = workBuffer.forChannelWrite().copy()
-
-    // Make an input channel for it
-    mutableJdwpPacket.payloadProvider = PayloadProvider.forByteBuffer(bufferCopy)
-
-    return mutableJdwpPacket
-}
-
-private fun JdwpPacketView.checkPacketLength(byteCount: Int) {
+internal fun JdwpPacketView.checkPacketLength(byteCount: Int) {
     val expectedByteCount = length - JdwpPacketConstants.PACKET_HEADER_LENGTH
     if (byteCount != expectedByteCount) {
         throw IllegalArgumentException(

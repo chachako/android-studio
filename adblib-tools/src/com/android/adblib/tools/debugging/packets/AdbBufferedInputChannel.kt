@@ -17,6 +17,11 @@ package com.android.adblib.tools.debugging.packets
 
 import com.android.adblib.AdbInputChannel
 import com.android.adblib.ByteBufferAdbInputChannel
+import com.android.adblib.readRemaining
+import com.android.adblib.skipRemaining
+import com.android.adblib.tools.debugging.impl.SupportsOffline
+import com.android.adblib.tools.debugging.impl.toOfflineOrNull
+import com.android.adblib.utils.ResizableBuffer
 import java.nio.ByteBuffer
 import java.util.concurrent.TimeUnit
 import kotlin.math.min
@@ -86,8 +91,10 @@ interface AdbBufferedInputChannel : AdbInputChannel {
             }
         }
 
-        private class ForByteBuffer(private val buffer: ByteBuffer) : AdbBufferedInputChannel {
-
+        private class ForByteBuffer(
+            private val sourceBuffer: ByteBuffer
+        ) : AdbBufferedInputChannel, SupportsOffline<AdbBufferedInputChannel> {
+            private val buffer = sourceBuffer.asReadOnlyBuffer()
             private val rewindPosition = buffer.position()
             private val input = ByteBufferAdbInputChannel(buffer)
 
@@ -106,13 +113,20 @@ interface AdbBufferedInputChannel : AdbInputChannel {
             override fun close() {
                 input.close()
             }
+
+            override suspend fun toOffline(workBuffer: ResizableBuffer): AdbBufferedInputChannel {
+                // Use the same source buffer, same position, same limit
+                return forByteBuffer(sourceBuffer)
+            }
         }
 
         /**
          * A [AdbBufferedInputChannel] that wraps an [AdbInputChannel] and buffers data in memory
          * to allow [rewinding][rewind].
          */
-        private class ForInputChannel(private val input: AdbInputChannel) : AdbBufferedInputChannel {
+        private class ForInputChannel(
+            private val input: AdbInputChannel
+        ) : AdbBufferedInputChannel, SupportsOffline<AdbBufferedInputChannel> {
 
             /**
              * Buffer contains previously read data from [0, limit].
@@ -185,6 +199,21 @@ interface AdbBufferedInputChannel : AdbInputChannel {
                 return count
             }
 
+            override suspend fun toOffline(workBuffer: ResizableBuffer): AdbBufferedInputChannel {
+                if (!buffering) {
+                    throw IllegalStateException("toOffline is not supported after finalRewind has been invoked")
+                }
+
+                // Buffer everything into "bufferedData"
+                rewind()
+                workBuffer.clear()
+                skipRemaining(workBuffer)
+                rewind()
+
+                // Use a "ByteBuffer" based input channel
+                return forByteBuffer(bufferedData.duplicate())
+            }
+
             override fun close() {
                 input.close()
             }
@@ -217,6 +246,22 @@ interface AdbBufferedInputChannel : AdbInputChannel {
                 return newCapacity
             }
         }
+    }
+}
 
+/**
+ * Returns an [SupportsOffline.toOffline] version of this [AdbBufferedInputChannel] instance.
+ */
+internal suspend fun AdbBufferedInputChannel.toOffline(
+    workBuffer: ResizableBuffer = ResizableBuffer()
+): AdbBufferedInputChannel {
+    return toOfflineOrNull(workBuffer) ?: run {
+        // General purpose, less efficient, code path
+        rewind()
+        workBuffer.clear()
+        readRemaining(workBuffer)
+        rewind()
+        val buffer = workBuffer.afterChannelRead(useMarkedPosition = false)
+        AdbBufferedInputChannel.forByteBuffer(buffer.copy())
     }
 }

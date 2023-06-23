@@ -24,37 +24,16 @@ import com.android.adblib.tools.debugging.packets.PayloadProvider
 import com.android.adblib.tools.debugging.packets.toStringImpl
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.utils.ResizableBuffer
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
- * A [JdwpPacketView] implementation that is immutable and wraps the [JdwpPacketView] payload
- * with an [AdbBufferedInputChannel] so that [JdwpPacketView.withPayload] can be called
- * an arbitrary number of times.
- *
- * Producers of [EphemeralJdwpPacket] instances call [shutdown] when a packet payload is
- * not available anymore (e.g. when the underlying socket data has been consumed), at which
- * point consumers won't have access to the packet payload, i.e. [JdwpPacketView.withPayload]
- * throws an [IllegalStateException].
- *
- * Note: This implementation is *not* thread-safe.
+ * Base class for [JdwpPacketView] implementation that are immutable and wrap the
+ * [JdwpPacketView] `payload` with a [PayloadProvider] instance.
  */
-internal class EphemeralJdwpPacket(
-    override val id: Int,
-    override val length: Int,
-    flags: Int,
-    cmdSet: Int,
-    cmd: Int,
-    errorCode: Int,
-    private val payloadProvider: PayloadProvider
-) : JdwpPacketView, AutoCloseable {
-
-    init {
-        require(length >= PACKET_HEADER_LENGTH) { "length  value '$flags' should be within greater than $PACKET_HEADER_LENGTH" }
-        require(flags in 0..255) { "flags value '$flags' should be within the [0..255] range" }
-        require(cmdSet in 0..255) { "cmdSet value '$cmdSet' should be within the [0..255] range" }
-        require(cmd in 0..255) { "cmd value '$cmd' should be within the [0..255] range" }
-        require(errorCode in 0..65535) { "errorCode value '$errorCode' should be within the [0..65535] range" }
-    }
-
+internal abstract class AbstractJdwpPacketView protected constructor(
+    final override val id: Int,
+    final override val length: Int,
     /**
      * Instead of using 4 integer fields for [flags], [cmdSet], [cmd] and [errorCode], we pack
      * them into the 24 lower bits of this field:
@@ -63,7 +42,9 @@ internal class EphemeralJdwpPacket(
      *
      * Note: This matches the packing format used in the JDWP protocol.
      */
-    private val flagsAndWord: Int = makeFlagsAndWord(flags, cmdSet, cmd, errorCode)
+    protected val flagsAndWord: Int,
+    protected val payloadProvider: PayloadProvider
+) : JdwpPacketView, AutoCloseable {
 
     override val flags: Int
         get() = (flagsAndWord and 0xff0000) shr 16
@@ -94,12 +75,63 @@ internal class EphemeralJdwpPacket(
         payloadProvider.releasePayload()
     }
 
-    suspend fun shutdown(workBuffer: ResizableBuffer) {
-        payloadProvider.shutdown(workBuffer)
-    }
+    abstract override suspend fun toOffline(workBuffer: ResizableBuffer): JdwpPacketView
 
     override fun close() {
         payloadProvider.close()
+    }
+
+    override fun toString(): String {
+        return toStringImpl()
+    }
+}
+
+/**
+ * A [JdwpPacketView] implementation that is immutable and wraps the [JdwpPacketView] `payload`
+ * with a [PayloadProvider] instance.
+ *
+ * Producers of [EphemeralJdwpPacket] instances call [shutdown] when a packet payload is
+ * not available anymore (e.g. when the underlying socket data has been consumed), at which
+ * point consumers won't have access to the packet payload, i.e. [JdwpPacketView.withPayload]
+ * throws an [IllegalStateException].
+ *
+ * Note: This implementation is *not* thread-safe.
+ */
+internal open class EphemeralJdwpPacket private constructor(
+    id: Int,
+    length: Int,
+    flagsAndWord: Int,
+    payloadProvider: PayloadProvider
+) : AbstractJdwpPacketView(id, length, flagsAndWord, payloadProvider), AutoCloseable {
+
+    private constructor(
+        id: Int,
+        length: Int,
+        flags: Int,
+        cmdSet: Int,
+        cmd: Int,
+        errorCode: Int,
+        payloadProvider: PayloadProvider
+    ): this(id, length, makeFlagsAndWord(flags, cmdSet, cmd, errorCode), payloadProvider) {
+        require(length >= PACKET_HEADER_LENGTH) { "length  value '$flags' should be within greater than $PACKET_HEADER_LENGTH" }
+        require(flags in 0..255) { "flags value '$flags' should be within the [0..255] range" }
+        require(cmdSet in 0..255) { "cmdSet value '$cmdSet' should be within the [0..255] range" }
+        require(cmd in 0..255) { "cmd value '$cmd' should be within the [0..255] range" }
+        require(errorCode in 0..65535) { "errorCode value '$errorCode' should be within the [0..65535] range" }
+    }
+
+    override suspend fun toOffline(workBuffer: ResizableBuffer): JdwpPacketView {
+        // Returns an offline, thread-safe version of this instance
+        return OfflineJdwpPacket(
+            id = id,
+            length = length,
+            flagsAndWord = flagsAndWord,
+            payloadProvider = payloadProvider.toOffline(workBuffer)
+        )
+    }
+
+    open suspend fun shutdown(workBuffer: ResizableBuffer = ResizableBuffer()) {
+        payloadProvider.shutdown(workBuffer)
     }
 
     override fun toString(): String {
@@ -175,6 +207,36 @@ internal class EphemeralJdwpPacket(
                     payloadProvider = payloadProvider
                 )
             }
+        }
+    }
+
+    /**
+     * An implementation of [JdwpPacketView] that is immutable and offer thread-safe access to
+     * [withPayload].
+     */
+    private class OfflineJdwpPacket(
+        id: Int,
+        length: Int,
+        flagsAndWord: Int,
+        payloadProvider: PayloadProvider
+    ) : AbstractJdwpPacketView(id, length, flagsAndWord, payloadProvider) {
+
+        private val payloadMutex = Mutex()
+
+        override suspend fun acquirePayload(): AdbInputChannel {
+            return payloadMutex.withLock {
+                super.acquirePayload()
+            }
+        }
+
+        override suspend fun releasePayload() {
+            return payloadMutex.withLock {
+                super.releasePayload()
+            }
+        }
+
+        override suspend fun toOffline(workBuffer: ResizableBuffer): OfflineJdwpPacket {
+            return this
         }
     }
 }

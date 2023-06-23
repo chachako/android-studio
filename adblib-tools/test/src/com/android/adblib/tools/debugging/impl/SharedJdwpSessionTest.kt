@@ -17,6 +17,7 @@ package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.AdbInputChannel
 import com.android.adblib.AdbSession
+import com.android.adblib.ByteBufferAdbInputChannel
 import com.android.adblib.ByteBufferAdbOutputChannel
 import com.android.adblib.skipRemaining
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
@@ -33,10 +34,10 @@ import com.android.adblib.tools.debugging.ddmsProtocolKind
 import com.android.adblib.tools.debugging.handleDdmsCaptureView
 import com.android.adblib.tools.debugging.handleDdmsHPGC
 import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.PayloadProvider
-import com.android.adblib.tools.debugging.packets.clone
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
@@ -53,6 +54,7 @@ import com.android.adblib.tools.debugging.sendVmExit
 import com.android.adblib.tools.debugging.toByteArray
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.adblib.tools.testutils.FakeJdwpCommandProgress
+import com.android.adblib.tools.testutils.toMutable
 import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
 import com.android.adblib.utils.ResizableBuffer
 import kotlinx.coroutines.CancellationException
@@ -68,12 +70,14 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 import java.io.IOException
+import java.nio.ByteBuffer
 import java.time.Duration
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
@@ -446,7 +450,6 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
                 jdwpSession.sendPacket(sendPacket)
             }.flow()
             .map {
-                it.clone()
                 if (it.isApnmCommand()) {
                     fakeDevice.stopClient(10)
                 }
@@ -471,7 +474,6 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
                 jdwpSession.sendPacket(sendPacket)
             }.flow()
             .map {
-                it.clone()
                 if (it.isApnmCommand()) {
                     fakeDevice.stopClient(10)
                 }
@@ -518,8 +520,8 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         // Act
         val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
         val sendPacket3 = createHeloDdmsPacket(jdwpSession)
-        val sendPacket1 = sendPacket3.clone().also { it.id = jdwpSession.nextPacketId() }
-        val sendPacket2 = sendPacket3.clone().also { it.id = jdwpSession.nextPacketId() }
+        val sendPacket1 = sendPacket3.toMutable().also { it.id = jdwpSession.nextPacketId() }
+        val sendPacket2 = sendPacket3.toMutable().also { it.id = jdwpSession.nextPacketId() }
         jdwpSession.addReplayPacket(sendPacket1)
         jdwpSession.addReplayPacket(sendPacket2)
 
@@ -551,7 +553,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
     }
 
     @Test
-    fun packetReceiverFlowEmitsClonedPackets() = runBlockingWithTimeout {
+    fun packetReceiverFlowEmitsOfflinePackets() = runBlockingWithTimeout {
         // Prepare
         val fakeDevice = addFakeDevice(fakeAdb, 30)
         fakeDevice.startClient(10, 0, "a.b.c", false)
@@ -573,7 +575,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
 
 
         // Assert: We access the payloads of all received packets to make sure they are
-        // all still available even after  the flow is completed
+        // all still available even after the flow is completed
         assertEquals(heloCount * 2, packets.size)
         val payloads = packets.map { packet ->
             packet.withPayload { payload ->
@@ -587,25 +589,38 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
     }
 
     @Test
-    fun addReplayPacketDoesCloneJdwpPacket() = runBlockingWithTimeout {
+    fun addReplayPacketStoresOfflineJdwpPacket() = runBlockingWithTimeout {
+        // Prepare
         val fakeDevice = addFakeDevice(fakeAdb, 30)
         fakeDevice.startClient(10, 0, "a.b.c", false)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
+        val payloadBytes = byteArrayOf(1, 2, 3, 4, 5)
+        val payloadBuffer = ByteBuffer.wrap(payloadBytes)
+        val payloadInputChannel = ByteBufferAdbInputChannel(payloadBuffer)
+        val tempPacket = EphemeralJdwpPacket.Command(
+            id = jdwpSession.nextPacketId(),
+            length = JdwpPacketConstants.PACKET_HEADER_LENGTH + payloadBytes.size,
+            cmdSet = 10,
+            cmd = 10,
+            payloadProvider = PayloadProvider.forInputChannel(payloadInputChannel)
+        )
 
         // Act
-        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
-        val packetToReplay = createHeloDdmsPacket(jdwpSession)
-        jdwpSession.addReplayPacket(packetToReplay)
+        jdwpSession.addReplayPacket(tempPacket)
 
-        // Change packet ID to see if replay packet was cloned
-        packetToReplay.id++
+        // Change packet ID to see if replay packet payload was properly copied as "offline"
+        payloadBytes[0] = 2
 
         // Assert
-        var replayPacketId: Int? = null
+        var replayPacketPayload: ByteArray? = null
         jdwpSession.newPacketReceiver().receiveFirst { replayPacket ->
-            replayPacketId = replayPacket.id
+            replayPacketPayload = replayPacket.withPayload {
+                it.toByteArray(replayPacket.payloadLength)
+            }
             true
         }
-        assertEquals(packetToReplay.id - 1, replayPacketId)
+        assertArrayEquals(byteArrayOf(2, 2, 3, 4, 5), payloadBytes)
+        assertArrayEquals(byteArrayOf(1, 2, 3, 4, 5), replayPacketPayload)
     }
 
     @Test
@@ -777,7 +792,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
 
     private suspend fun JdwpPacketView.isApnmCommand(): Boolean {
         return isDdmsCommand &&
-                clone().ddmsChunks().firstOrNull { it.type == DdmsChunkType.APNM } != null
+                ddmsChunks().firstOrNull { it.type == DdmsChunkType.APNM } != null
     }
 
     class TestJdwpSessionMonitorFactory : SharedJdwpSessionMonitorFactory {
@@ -795,11 +810,11 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
             var closed: Boolean = false
 
             override suspend fun onSendPacket(packet: JdwpPacketView) {
-                sentPackets.add(packet.clone())
+                sentPackets.add(packet.toOffline())
             }
 
             override suspend fun onReceivePacket(packet: JdwpPacketView) {
-                receivedPackets.add(packet.clone())
+                receivedPackets.add(packet.toOffline())
             }
 
             override fun close() {
@@ -820,7 +835,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
             receive { livePacket ->
                 if (predicate(livePacket)) {
                     // clone needed to ensure packet is ours to keep
-                    result = livePacket.clone()
+                    result = livePacket.toOffline()
                     throw EndReceiveException()
                 }
             }

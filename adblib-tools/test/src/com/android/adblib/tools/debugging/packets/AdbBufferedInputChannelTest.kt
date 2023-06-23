@@ -15,16 +15,20 @@
  */
 package com.android.adblib.tools.debugging.packets
 
+import com.android.adblib.AdbInputChannel
 import com.android.adblib.ByteBufferAdbInputChannel
 import com.android.adblib.readRemaining
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
+import com.android.adblib.tools.debugging.toByteArray
 import com.android.adblib.utils.ResizableBuffer
 import org.junit.Assert
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
 import java.nio.ByteBuffer
+import java.util.concurrent.TimeUnit
 
 class AdbBufferedInputChannelTest {
 
@@ -250,6 +254,76 @@ class AdbBufferedInputChannelTest {
         // Assert
         assertEquals(2, byteCount)
         assertEquals(2, byteCount2)
+    }
+
+    @Test
+    fun testForByteBufferSupportsOffline() = runBlockingWithTimeout {
+        // Prepare
+        val workBuffer = ResizableBuffer()
+        val buffer = ByteBuffer.allocate(10)
+        buffer.put(5)
+        buffer.put(6)
+        buffer.flip()
+        val channel = AdbBufferedInputChannel.forByteBuffer(buffer)
+        channel.readRemaining(workBuffer)
+
+        // Act
+        val offlineChannel = channel.toOffline(workBuffer)
+
+        // Assert
+        val offlineChannelBytes = offlineChannel.toByteArray(2)
+        assertArrayEquals(byteArrayOf(5, 6), offlineChannelBytes)
+    }
+
+    @Test
+    fun testForInputChannelSupportsOffline() = runBlockingWithTimeout {
+        // Prepare
+        val workBuffer = ResizableBuffer()
+        val buffer = ByteBuffer.allocate(10)
+        buffer.put(5)
+        buffer.put(6)
+        buffer.flip()
+        val channel = AdbBufferedInputChannel.forInputChannel(ByteBufferAdbInputChannel(buffer))
+        channel.readRemaining(workBuffer)
+
+        // Act
+        val offlineChannel = channel.toOffline(workBuffer)
+
+        // Assert
+        val offlineChannelBytes = offlineChannel.toByteArray(2)
+        assertArrayEquals(byteArrayOf(5, 6), offlineChannelBytes)
+    }
+
+    @Test
+    fun testForCustomBufferInputChannelSupportsOffline() = runBlockingWithTimeout {
+        // Prepare
+        val workBuffer = ResizableBuffer()
+        val buffer = ByteBuffer.allocate(10)
+        buffer.put(5)
+        buffer.put(6)
+        buffer.flip()
+        val channel = object: AdbBufferedInputChannel {
+            private val delegateChannel = AdbBufferedInputChannel.forByteBuffer(buffer)
+            override suspend fun rewind() {
+                delegateChannel.rewind()
+            }
+
+            override suspend fun read(buffer: ByteBuffer, timeout: Long, unit: TimeUnit): Int {
+                return delegateChannel.read(buffer, timeout, unit)
+            }
+
+            override fun close() {
+                delegateChannel.close()
+            }
+        }
+        channel.readRemaining(workBuffer)
+
+        // Act: Use "slow path" for custom AdbBufferedInputChannel
+        val offlineChannel = channel.toOffline(workBuffer)
+
+        // Assert
+        val offlineChannelBytes = offlineChannel.toByteArray(2)
+        assertArrayEquals(byteArrayOf(5, 6), offlineChannelBytes)
     }
 
     private fun ByteBuffer.toByteArray(): ByteArray {

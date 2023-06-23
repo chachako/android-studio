@@ -18,6 +18,7 @@ package com.android.adblib.tools.debugging.packets
 import com.android.adblib.ByteBufferAdbOutputChannel
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
+import com.android.adblib.tools.testutils.toMutable
 import com.android.adblib.utils.ResizableBuffer
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -140,7 +141,7 @@ class JdwpPacketViewTest : AdbLibToolsTestBase() {
 
         // Act
         val outputBuffer = ResizableBuffer()
-        val packetClone = packet.clone(outputBuffer)
+        val packetClone = packet.toMutable(outputBuffer)
 
         // Assert
         assertCloneIsCorrect(packetClone)
@@ -153,9 +154,9 @@ class JdwpPacketViewTest : AdbLibToolsTestBase() {
 
         // Act
         val buffer1 = ResizableBuffer()
-        val clone1 = packet.clone(buffer1)
+        val clone1 = packet.toMutable(buffer1)
         val buffer2 = ResizableBuffer()
-        val clone2 = packet.clone(buffer2)
+        val clone2 = packet.toMutable(buffer2)
 
         // Assert
         assertCloneIsCorrect(clone1)

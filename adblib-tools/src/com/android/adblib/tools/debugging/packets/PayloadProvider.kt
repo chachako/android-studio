@@ -17,6 +17,7 @@ package com.android.adblib.tools.debugging.packets
 
 import com.android.adblib.AdbInputChannel
 import com.android.adblib.skipRemaining
+import com.android.adblib.tools.debugging.impl.SupportsOffline
 import com.android.adblib.tools.debugging.packets.ddms.withPayload
 import com.android.adblib.utils.ResizableBuffer
 import java.nio.ByteBuffer
@@ -24,7 +25,7 @@ import java.nio.ByteBuffer
 /**
  * A provider of [AdbInputChannel] instances that can be read multiple times.
  */
-internal interface PayloadProvider: AutoCloseable {
+internal interface PayloadProvider: SupportsOffline<PayloadProvider>, AutoCloseable {
 
     /**
      * **Note: Do NOT use directly, use [withPayload] instead**
@@ -47,6 +48,12 @@ internal interface PayloadProvider: AutoCloseable {
      * Shuts down this [PayloadProvider], releasing resources if necessary.
      */
     suspend fun shutdown(workBuffer: ResizableBuffer)
+
+    /**
+     * Clone this [PayloadProvider] into a [PayloadProvider] that is guaranteed to always have a
+     * `payload` available.
+     */
+    override suspend fun toOffline(workBuffer: ResizableBuffer): PayloadProvider
 
     companion object {
 
@@ -96,6 +103,10 @@ internal interface PayloadProvider: AutoCloseable {
                 // Nothing to do
             }
 
+            override suspend fun toOffline(workBuffer: ResizableBuffer): PayloadProvider {
+                return this
+            }
+
             override fun close() {
                 // Nothing to do
             }
@@ -129,6 +140,12 @@ internal interface PayloadProvider: AutoCloseable {
                 closed = true
                 bufferedPayload.finalRewind()
                 bufferedPayload.skipRemaining(workBuffer)
+            }
+
+            override suspend fun toOffline(workBuffer: ResizableBuffer): PayloadProvider {
+                throwIfClosed()
+
+                return forInputChannel(bufferedPayload.toOffline(workBuffer))
             }
 
             override fun close() {

@@ -25,7 +25,6 @@ import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.PayloadProvider
-import com.android.adblib.tools.debugging.packets.clone
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
@@ -245,7 +244,7 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
 
     private suspend fun JdwpPacketView.isApnmCommand(): Boolean {
         return isDdmsCommand &&
-                clone().ddmsChunks().firstOrNull { it.type == DdmsChunkType.APNM } != null
+                toOffline().ddmsChunks().firstOrNull { it.type == DdmsChunkType.APNM } != null
     }
 
     private suspend fun DdmsChunkView.toBufferedInputChannel(): AdbBufferedInputChannel {

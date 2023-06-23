@@ -31,7 +31,7 @@ import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.PayloadProvider
-import com.android.adblib.tools.debugging.packets.clone
+import com.android.adblib.tools.debugging.packets.toOffline
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.tools.debugging.sharedJdwpSessionMonitorFactoryList
@@ -140,7 +140,7 @@ internal class SharedJdwpSessionImpl(
 
     override suspend fun addReplayPacket(packet: JdwpPacketView) {
         logger.verbose { "Adding JDWP replay packet '$packet'" }
-        val clone = packet.clone()
+        val clone = packet.toOffline()
         replayPackets.add(clone)
     }
 
@@ -278,9 +278,10 @@ internal class SharedJdwpSessionImpl(
             return channelFlow {
                 val workBuffer = ResizableBuffer()
                 receive { packet ->
-                    // Clone the JDWP packet to ensure it is safe to use
-                    // in any downstream flow (e.g. filtering, buffering, etc)
-                    send(packet.clone(workBuffer))
+                    // Make the packet "offline" (i.e. read payload in memory if needed) to
+                    // ensure it is safe to use in downstream flows (e.g. filtering,
+                    // buffering, etc)
+                    send(packet.toOffline(workBuffer))
                 }
             }
         }
@@ -441,6 +442,10 @@ internal class SharedJdwpSessionImpl(
 
             override suspend fun releasePayload() {
             }
+
+            override suspend fun toOffline(workBuffer: ResizableBuffer): JdwpPacketView {
+                return this
+            }
         }
     }
 
@@ -493,6 +498,12 @@ internal class SharedJdwpSessionImpl(
             }
         }
 
+        override suspend fun toOffline(workBuffer: ResizableBuffer): PayloadProvider {
+            return withPayload {
+                PayloadProvider.forInputChannel(scopedPayload.toOffline(workBuffer))
+            }
+        }
+
         override fun close() {
             closed = true
             scopedPayload.close()
@@ -511,7 +522,7 @@ internal class SharedJdwpSessionImpl(
         private class ScopedAdbBufferedInputChannel(
             private val scope: CoroutineScope,
             input: AdbInputChannel
-        ) : AdbBufferedInputChannel {
+        ) : AdbBufferedInputChannel, SupportsOffline<AdbBufferedInputChannel> {
 
             private var currentReadJob: Job? = null
 
@@ -544,6 +555,12 @@ internal class SharedJdwpSessionImpl(
 
             suspend fun waitForPendingRead() {
                 currentReadJob?.join()
+            }
+
+            override suspend fun toOffline(workBuffer: ResizableBuffer): AdbBufferedInputChannel {
+                return scopedRead {
+                    bufferedInput.toOffline(workBuffer)
+                }
             }
 
             override fun close() {
