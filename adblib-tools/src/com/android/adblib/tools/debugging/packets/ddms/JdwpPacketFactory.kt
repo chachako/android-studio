@@ -15,6 +15,7 @@
  */
 package com.android.adblib.tools.debugging.packets.ddms
 
+import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CHUNK_HEADER_LENGTH
 import java.nio.ByteBuffer
@@ -22,13 +23,13 @@ import java.nio.ByteBuffer
 object JdwpPacketFactory {
 
     /**
-     * Creates a [MutableJdwpPacket] wrapping a given DDM chunk [chunkType] and [chunkPayload].
+     * Creates a [JdwpPacketView] wrapping a given DDM chunk [chunkType] and [chunkPayload].
      */
     fun createDdmsPacket(
         jdwpPacketId: Int,
         chunkType: DdmsChunkType,
         chunkPayload: ByteBuffer
-    ): MutableJdwpPacket {
+    ): JdwpPacketView {
         // Serialize chunk into a ByteBuffer
         val serializedChunk =
             ByteBuffer.allocate(DDMS_CHUNK_HEADER_LENGTH + chunkPayload.remaining())

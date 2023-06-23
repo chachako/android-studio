@@ -16,8 +16,8 @@
 package com.android.adblib.tools.debugging.packets
 
 import com.android.adblib.AdbInputChannel
+import com.android.adblib.tools.debugging.impl.EphemeralJdwpPacket
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_HEADER_LENGTH
-import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.withPayload
 
 /**
@@ -105,6 +105,55 @@ interface JdwpPacketView {
      */
     val isEmpty: Boolean
         get() = length == PACKET_HEADER_LENGTH
+
+    companion object {
+
+        @Suppress("FunctionName") // constructor like syntax
+        fun Command(
+            id: Int,
+            length: Int,
+            cmdSet: Int,
+            cmd: Int,
+            payload: AdbInputChannel
+        ): JdwpPacketView {
+            return EphemeralJdwpPacket.Command(
+                id,
+                length,
+                cmdSet,
+                cmd,
+                PayloadProvider.forInputChannel(payload)
+            )
+        }
+
+        @Suppress("FunctionName") // constructor like syntax
+        fun Reply(id: Int, length: Int, errorCode: Int, payload: AdbInputChannel): JdwpPacketView {
+            return EphemeralJdwpPacket.Reply(
+                id,
+                length,
+                errorCode,
+                PayloadProvider.forInputChannel(payload)
+            )
+        }
+
+        fun fromPacket(source: JdwpPacketView, payload: AdbInputChannel): JdwpPacketView {
+            return if (source.isCommand) {
+                Command(
+                    id = source.id,
+                    length = source.length,
+                    cmdSet = source.cmdSet,
+                    cmd = source.cmd,
+                    payload
+                )
+            } else {
+                Reply(
+                    id = source.id,
+                    length = source.length,
+                    errorCode = source.errorCode,
+                    payload
+                )
+            }
+        }
+    }
 }
 
 val JdwpPacketView.payloadLength

@@ -99,6 +99,10 @@ interface AdbBufferedInputChannel : AdbInputChannel {
                 return input.read(buffer, timeout, unit)
             }
 
+            override suspend fun readExactly(buffer: ByteBuffer, timeout: Long, unit: TimeUnit) {
+                return input.readExactly(buffer, timeout, unit)
+            }
+
             override fun close() {
                 input.close()
             }

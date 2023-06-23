@@ -23,6 +23,7 @@ import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.PayloadProvider
 import com.android.adblib.tools.debugging.packets.toStringImpl
 import com.android.adblib.tools.debugging.packets.withPayload
+import com.android.adblib.utils.ResizableBuffer
 
 /**
  * A [JdwpPacketView] implementation that is immutable and wraps the [JdwpPacketView] payload
@@ -36,7 +37,7 @@ import com.android.adblib.tools.debugging.packets.withPayload
  *
  * Note: This implementation is *not* thread-safe.
  */
-class EphemeralJdwpPacket(
+internal class EphemeralJdwpPacket(
     override val id: Int,
     override val length: Int,
     flags: Int,
@@ -44,7 +45,7 @@ class EphemeralJdwpPacket(
     cmd: Int,
     errorCode: Int,
     private val payloadProvider: PayloadProvider
-) : JdwpPacketView, PayloadProvider by payloadProvider {
+) : JdwpPacketView, AutoCloseable {
 
     init {
         require(length >= PACKET_HEADER_LENGTH) { "length  value '$flags' should be within greater than $PACKET_HEADER_LENGTH" }
@@ -84,6 +85,22 @@ class EphemeralJdwpPacket(
             check(isReply) { "ErrorCode is not available because JDWP packet is a command packet" }
             return flagsAndWord and 0xffff
         }
+
+    override suspend fun acquirePayload(): AdbInputChannel {
+        return payloadProvider.acquirePayload()
+    }
+
+    override suspend fun releasePayload() {
+        payloadProvider.releasePayload()
+    }
+
+    suspend fun shutdown(workBuffer: ResizableBuffer) {
+        payloadProvider.shutdown(workBuffer)
+    }
+
+    override fun close() {
+        payloadProvider.close()
+    }
 
     override fun toString(): String {
         return toStringImpl()
@@ -136,7 +153,7 @@ class EphemeralJdwpPacket(
         fun fromPacket(source: JdwpPacketView, payload: AdbBufferedInputChannel): EphemeralJdwpPacket {
             return fromPacket(
                 source = source,
-                payloadProvider = PayloadProvider.forBufferedInputChannel(payload)
+                payloadProvider = PayloadProvider.forInputChannel(payload)
             )
         }
 

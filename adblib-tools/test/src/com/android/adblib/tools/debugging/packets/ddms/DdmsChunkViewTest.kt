@@ -206,7 +206,7 @@ class DdmsChunkViewTest : AdbLibToolsTestBase() {
         return EphemeralDdmsChunk(
             type = chunkType,
             length = bytes.size,
-            payloadProvider = PayloadProvider.forBufferedInputChannel(bytesToBufferedInputChannel(bytes))
+            payloadProvider = PayloadProvider.forInputChannel(bytesToBufferedInputChannel(bytes))
         )
     }
 

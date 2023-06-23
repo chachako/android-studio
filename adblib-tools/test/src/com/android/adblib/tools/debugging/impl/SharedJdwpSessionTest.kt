@@ -736,7 +736,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         packet.isCommand = true
         packet.cmdSet = DdmsPacketConstants.DDMS_CMD_SET
         packet.cmd = DdmsPacketConstants.DDMS_CMD
-        packet.payloadProvider = PayloadProvider.forBufferedInputChannel(heloChunk.toBufferedInputChannel())
+        packet.payloadProvider = PayloadProvider.forInputChannel(heloChunk.toBufferedInputChannel())
         return packet
     }
 

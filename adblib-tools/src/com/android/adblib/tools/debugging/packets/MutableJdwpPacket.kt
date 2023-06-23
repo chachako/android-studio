@@ -22,7 +22,7 @@ import java.nio.ByteBuffer
  * A mutable version of [JdwpPacketView], to be used for creating JDWP packets
  * or re-using the same instance for multiple views over time for performance reason.
  */
-class MutableJdwpPacket : JdwpPacketView {
+internal class MutableJdwpPacket : JdwpPacketView {
 
     override var length: Int = 0
         set(value) {
