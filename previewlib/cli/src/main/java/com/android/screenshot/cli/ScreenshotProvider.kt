@@ -28,7 +28,6 @@ import com.android.tools.idea.compose.preview.applyTo
 import com.android.tools.configurations.Configuration
 import com.android.tools.idea.rendering.ShowFixFactory
 import com.android.tools.idea.rendering.StudioHtmlLinkManager
-import com.android.tools.idea.rendering.StudioRenderConfiguration
 import com.android.tools.idea.rendering.StudioRenderService
 import com.android.tools.lint.model.LintModelModule
 import com.android.tools.idea.rendering.parsers.PsiXmlFile
@@ -158,7 +157,7 @@ class ScreenshotProvider(
 
         val service = StudioRenderService.getInstance(project.ideaProject!!)
         val task =
-            service.taskBuilder(model, StudioRenderConfiguration(config),
+            service.taskBuilder(model, config,
                                 service.createLogger(composeProject.lintProject.ideaProject,
                                                      true, ShowFixFactory, ::StudioHtmlLinkManager)
             )
