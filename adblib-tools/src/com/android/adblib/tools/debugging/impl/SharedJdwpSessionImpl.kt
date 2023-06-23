@@ -47,14 +47,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
@@ -277,30 +274,12 @@ internal class SharedJdwpSessionImpl(
         }
 
         override fun flow(): Flow<JdwpPacketView> {
-            // We use a custom packet to ensure packets are delivered to the flow
-            // collector before moving on to the next JDWP packet.
-            val syncPacket = EphemeralJdwpPacket.Command(
-                id = -100,
-                length = JdwpPacketConstants.PACKET_HEADER_LENGTH,
-                cmdSet = 0,
-                cmd = 0,
-                payloadProvider = PayloadProvider.emptyPayload()
-            )
             return channelFlow {
+                val workBuffer = ResizableBuffer()
                 receive { packet ->
-                    // Send "real" packet, then send "skipPacket" to ensure the packet remains active
-                    // to the duration of the collector call.
-                    send(packet)
-                    send(syncPacket)
-                }
-            }.buffer(
-                // Use "RENDEZVOUS" to ensure no buffering
-                capacity = Channel.RENDEZVOUS
-            ).filter { packet ->
-                // Filter out all "syncPacket" occurrences
-                when {
-                    packet === syncPacket -> false
-                    else -> true
+                    // Clone the JDWP packet to ensure it is safe to use
+                    // in any downstream flow (e.g. filtering, buffering, etc)
+                    send(packet.clone(workBuffer))
                 }
             }
         }

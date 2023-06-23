@@ -23,9 +23,12 @@ import com.android.adblib.CoroutineScopeCache
 import com.android.adblib.tools.debugging.SharedJdwpSessionFilter.FilterId
 import com.android.adblib.tools.debugging.impl.SharedJdwpSessionImpl
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
+import com.android.adblib.tools.debugging.packets.clone
 import com.android.adblib.tools.debugging.utils.NoDdmsPacketFilterFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.take
 import java.io.EOFException
 
 /**
@@ -233,8 +236,14 @@ abstract class JdwpPacketReceiver {
     abstract suspend fun receive(receiver: suspend (JdwpPacketView) -> Unit)
 
     /**
-     * Wraps [JdwpPacketReceiver.receive] into a [Flow] of [JdwpPacketView] for ease of use,
-     * at the cost of a minor memory and CPU overhead.
+     * Wraps [JdwpPacketReceiver.receive] into a [Flow] of [JdwpPacketView].
+     *
+     * ### Performance
+     *
+     * To ensure all [JdwpPacketView] instances of the flow are guaranteed to be valid in
+     * downstream flows (e.g. [`take(n)`][Flow.take] or [`buffer(n)`][Flow.buffer]), as well as
+     * after the flow completes, [JdwpPacketView.clone] is invoked on each packet of the flow,
+     * so there is a cost in terms of memory usage versus using the [receive] method.
      */
     abstract fun flow(): Flow<JdwpPacketView>
 }
