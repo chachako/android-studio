@@ -48,6 +48,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.channelFlow
@@ -305,6 +306,7 @@ internal class SharedJdwpSessionImpl(
                 // Note that to avoid a race condition (the collector may take a few millis
                 // to start), we need to retry sending `startPacket` until it is acknowledged.
                 while (true) {
+                    ensureActive()
                     sharedFlow.emit(activationJobStartPacket)
                     if (activationJobStartSignal.isCompleted) {
                         receiveLogger.verbose { "calling 'activation' callback" }
