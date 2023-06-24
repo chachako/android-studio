@@ -62,16 +62,7 @@ import org.junit.rules.TemporaryFolder
 
 class ProjectInitializerTest {
   @Test
-  fun testManualProjectK1() {
-    testManualProject(isK2 = false)
-  }
-
-  @Test
-  fun testManualProjectK2() {
-    testManualProject(isK2 = true)
-  }
-
-  private fun testManualProject(isK2: Boolean) {
+  fun testManualProject() {
     val library =
       project(
           manifest(
@@ -223,7 +214,7 @@ class ProjectInitializerTest {
     val appProjectPath = appProjectDir.path
 
     // TO avoid already existing temp folders
-    val suffix = if (isK2) "-k2" else "-k1"
+    val suffix = if (useK2Uast) "-k2" else "-k1"
     val sdk = temp.newFolder("fake-sdk$suffix")
     val cacheDir = temp.newFolder("cache$suffix")
     @Language("XML")
@@ -359,7 +350,7 @@ class ProjectInitializerTest {
 
     // TODO: https://youtrack.jetbrains.com/issue/KT-57715
     val expectedError =
-      if (isK2)
+      if (useK2Uast)
         "WARN: ROOT/test.jar: ROOT/test.jar\n" + "java.nio.file.NoSuchFileException: ROOT/test.jar"
       else "w: Classpath entry points to a non-existent location: ROOT/test.jar"
 
@@ -390,7 +381,7 @@ class ProjectInitializerTest {
 
       // Args
       arrayOf(
-        if (isK2) "--XuseK2Uast" else "",
+        if (useK2Uast) "--XuseK2Uast" else "",
         "--check",
         "UniquePermission,DuplicateDefinition,SdCardPath",
         "--config",
@@ -2770,6 +2761,8 @@ class ProjectInitializerTest {
 
   companion object {
     @ClassRule @JvmField var temp = TemporaryFolder()
+
+    private val useK2Uast = System.getProperty(FIR_UAST_KEY, "false").toBoolean()
 
     fun project(vararg files: TestFile): ProjectDescription = ProjectDescription(*files)
   }
