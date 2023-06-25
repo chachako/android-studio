@@ -18,6 +18,7 @@ package com.android.tools.lint
 
 import com.android.SdkConstants
 import com.android.SdkConstants.EXT_JAR
+import com.android.tools.lint.UastEnvironment.Module.Variant.Companion.toModuleVariant
 import com.android.tools.lint.detector.api.Project
 import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.mock.MockProject
@@ -185,8 +186,46 @@ interface UastEnvironment {
     includeTestFixtureSources: Boolean,
     isUnitTest: Boolean
   ) {
-    val isAndroid
-      get() = project.isAndroidProject
+
+    enum class Variant {
+      UNKNOWN, // e.g. test project
+      COMMON,
+      JVM,
+      ANDROID,
+      NATIVE,
+      JS,
+      WASM;
+
+      companion object {
+        fun String.toModuleVariant(): Variant {
+          // https://kotlinlang.org/docs/multiplatform-dsl-reference.html#targets
+          // https://kotlinlang.org/docs/multiplatform-hierarchy.html#target-shortcuts
+          return when {
+            startsWith("common") -> COMMON
+            startsWith("jvm") -> JVM
+            startsWith("android") -> {
+              // androidNative v.s. everything else
+              if (endsWith("Native")) NATIVE else ANDROID
+            }
+            startsWith("ios") -> NATIVE
+            startsWith("linux") -> NATIVE
+            startsWith("macos") -> NATIVE
+            startsWith("mingw") -> NATIVE
+            startsWith("tvos") -> NATIVE
+            startsWith("js") -> JS
+            startsWith("wasm") -> WASM
+            else -> UNKNOWN
+          }
+        }
+      }
+    }
+    val variant: Variant
+      get() =
+        if (project.isAndroidProject) {
+          Variant.ANDROID
+        } else {
+          project.buildVariant?.name?.toModuleVariant() ?: Variant.UNKNOWN
+        }
 
     val sourceRoots: Set<File> =
       with(project) {

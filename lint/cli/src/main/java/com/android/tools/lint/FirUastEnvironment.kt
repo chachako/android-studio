@@ -15,6 +15,7 @@
  */
 package com.android.tools.lint
 
+import com.android.tools.lint.UastEnvironment.Module.Variant
 import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.mock.MockApplication
@@ -52,7 +53,12 @@ import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
+import org.jetbrains.kotlin.platform.CommonPlatforms
+import org.jetbrains.kotlin.platform.js.JsPlatforms
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
+import org.jetbrains.kotlin.platform.jvm.isJvm
+import org.jetbrains.kotlin.platform.konan.NativePlatforms
+import org.jetbrains.kotlin.platform.wasm.WasmPlatforms
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.uast.UastLanguagePlugin
 import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
@@ -150,7 +156,6 @@ private fun createAnalysisSession(
       )
 
       val theProject = project
-      val thePlatform = JvmPlatforms.defaultJvmPlatform // TODO(b/283271025)
       appLock.withLock {
         // TODO: Avoid creating AA session per test mode, while app env. is not disposed,
         //  which led to duplicate app-level service registration.
@@ -177,20 +182,33 @@ private fun createAnalysisSession(
       }
 
       buildKtModuleProvider {
-        platform = thePlatform
+        // TODO(b/283271025): what is the platform of module provider for KMP?
+        platform = JvmPlatforms.defaultJvmPlatform
         project = theProject
         config.modules.forEach { m ->
+          val mPlatform =
+            when (m.variant) {
+              Variant.COMMON -> CommonPlatforms.defaultCommonPlatform
+              Variant.NATIVE -> NativePlatforms.unspecifiedNativePlatform
+              Variant.JS -> JsPlatforms.defaultJsPlatform
+              Variant.WASM -> WasmPlatforms.Default
+              else -> JvmPlatforms.defaultJvmPlatform
+            }
+
           fun KtModuleBuilder.addModuleDependencies(moduleName: String) {
             addRegularDependency(
               buildKtLibraryModule {
                 contentScope = ProjectScope.getLibrariesScope(theProject)
-                platform = thePlatform
+                platform = mPlatform
                 project = theProject
-                binaryRoots =
-                  when {
-                    m.isAndroid -> m.classpathRoots + config.classPaths
-                    else -> m.classpathRoots
-                  }.map(File::toPath)
+                val classPaths =
+                  if (mPlatform.isJvm()) {
+                    // Include boot classpath in [config.classPaths]
+                    m.classpathRoots + config.classPaths
+                  } else {
+                    m.classpathRoots
+                  }
+                binaryRoots = classPaths.map(File::toPath)
                 libraryName = "Library for $moduleName"
               }
             )
@@ -203,7 +221,7 @@ private fun createAnalysisSession(
               addRegularDependency(
                 buildKtSdkModule {
                   contentScope = GlobalSearchScope.fileScope(theProject, jdkHomeVirtualFile)
-                  platform = thePlatform
+                  platform = mPlatform
                   project = theProject
                   binaryRoots =
                     LibraryUtils.findClassesFromJdkHome(jdkHomePath).map {
@@ -227,7 +245,7 @@ private fun createAnalysisSession(
           for (scriptFile in scriptFiles) {
             addModule(
               buildKtScriptModule {
-                platform = thePlatform
+                platform = mPlatform
                 project = theProject
                 file = scriptFile
                 addModuleDependencies("Script " + scriptFile.name)
@@ -241,7 +259,7 @@ private fun createAnalysisSession(
               addModuleDependencies(m.name)
               contentScope =
                 TopDownAnalyzerFacadeForJVM.newModuleSearchScope(theProject, ordinaryKtFiles)
-              platform = thePlatform
+              platform = mPlatform
               project = theProject
               moduleName = m.name
               // NB: This should include both .kt and .java sources if any,
