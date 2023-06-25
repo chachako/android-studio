@@ -18,6 +18,7 @@ package com.android.adblib.tools
 import com.android.adblib.AdbDeviceServices
 import com.android.adblib.AdbSessionHost
 import com.android.adblib.tools.debugging.JdwpProcess
+import com.android.adblib.tools.debugging.SharedJdwpSession
 import java.time.Duration
 
 /**
@@ -141,6 +142,17 @@ object AdbLibToolsProperties {
     val SUPPORT_STAG_PACKETS = AdbSessionHost.BooleanProperty(
         name = "$NAME_PREFIX.support.stag.packets",
         defaultValue = false
+    )
+
+    /**
+     * When reading packets from [SharedJdwpSession], this is the maximum payload length of JDWP
+     * packets that are eagerly read into memory "by default".
+     * For JDWP packets with larger payload, the payload is connected to the underlying socket,
+     * and read into memory only when explicitly read.
+     */
+    val SHARED_JDWP_PACKET_IN_MEMORY_MAX_PAYLOAD_LENGTH = AdbSessionHost.IntProperty(
+        name = "$NAME_PREFIX.shared.jdwp.packet.in.memory.max.payload.length",
+        defaultValue = 128
     )
 
 }

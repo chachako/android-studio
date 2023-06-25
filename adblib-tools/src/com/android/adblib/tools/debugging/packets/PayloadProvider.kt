@@ -16,6 +16,7 @@
 package com.android.adblib.tools.debugging.packets
 
 import com.android.adblib.AdbInputChannel
+import com.android.adblib.ByteBufferAdbInputChannel
 import com.android.adblib.skipRemaining
 import com.android.adblib.tools.debugging.impl.SupportsOffline
 import com.android.adblib.tools.debugging.packets.ddms.withPayload
@@ -80,7 +81,7 @@ internal interface PayloadProvider: SupportsOffline<PayloadProvider>, AutoClosea
          * the [withPayload] method returns a valid `payload`.
          */
         fun forByteBuffer(buffer: ByteBuffer): PayloadProvider {
-            return forInputChannel(AdbBufferedInputChannel.forByteBuffer(buffer))
+            return ForByteBuffer(buffer)
         }
 
         /**
@@ -168,6 +169,37 @@ internal interface PayloadProvider: SupportsOffline<PayloadProvider>, AutoClosea
                 if (closed) {
                     throw IllegalStateException("Payload is not available anymore because the provider has been closed")
                 }
+            }
+        }
+
+        /**
+         * A thread-safe, cancellation safe, lock-free implementation of [PayloadProvider],
+         * wrapping a [ByteBuffer].
+         */
+        private class ForByteBuffer(private val payload: ByteBuffer): PayloadProvider {
+
+            override suspend fun acquirePayload(): AdbInputChannel {
+                // To ensure lock-free thread-safety, we create a new AdbInputChannel
+                // instance for each call, but without copying the ByteBuffer contents
+                // (just wrap it into another buffer sharing the same contents).
+                return ByteBufferAdbInputChannel(payload.duplicate())
+            }
+
+            override fun releasePayload() {
+                // Nothing to do
+            }
+
+            override suspend fun shutdown(workBuffer: ResizableBuffer) {
+                // Nothing to do
+            }
+
+            override suspend fun toOffline(workBuffer: ResizableBuffer): PayloadProvider {
+                // Return 'this' as we are thread-safe, lock-free and immutable
+                return this
+            }
+
+            override fun close() {
+                // Nothing to do
             }
         }
     }

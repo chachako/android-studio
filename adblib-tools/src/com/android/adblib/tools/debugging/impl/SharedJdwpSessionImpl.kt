@@ -19,18 +19,20 @@ import com.android.adblib.AdbInputChannel
 import com.android.adblib.AdbLogger
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.property
 import com.android.adblib.scope
 import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
+import com.android.adblib.tools.AdbLibToolsProperties.SHARED_JDWP_PACKET_IN_MEMORY_MAX_PAYLOAD_LENGTH
 import com.android.adblib.tools.debugging.JdwpPacketReceiver
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSessionMonitor
-import com.android.adblib.tools.debugging.impl.SharedJdwpSessionImpl.ScopedPayloadProvider.ScopedAdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.PayloadProvider
+import com.android.adblib.tools.debugging.packets.payloadLength
 import com.android.adblib.tools.debugging.packets.toOffline
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.rethrowCancellation
@@ -165,6 +167,7 @@ internal class SharedJdwpSessionImpl(
     private suspend fun sendReceivedPackets() {
         withContext(CoroutineName("Shared JDWP Session: Send received packets job")) {
             val workBuffer = ResizableBuffer()
+            val sharedPayloadProviderFactory = SharedPayloadProviderFactory(session, scope)
             while (true) {
 
                 // Wait until we have at least one active receiver
@@ -197,7 +200,8 @@ internal class SharedJdwpSessionImpl(
                     // 2) cancellation of any receiver does not close the underlying socket
                     // 3) "shutdown" does not close the underlying PayloadProvider (that is taken
                     // care of by the JdwpSession class)
-                    val payloadProvider = ScopedPayloadProvider(scope, sessionPacketPayload)
+                    val payloadProvider =
+                        sharedPayloadProviderFactory.create(sessionPacket, sessionPacketPayload)
                     EphemeralJdwpPacket.fromPacket(sessionPacket, payloadProvider).use { packet ->
 
                         jdwpMonitor?.onReceivePacket(packet)
@@ -448,6 +452,46 @@ internal class SharedJdwpSessionImpl(
                 return this
             }
         }
+    }
+
+    private class SharedPayloadProviderFactory(
+        session: AdbSession,
+        private val scope: CoroutineScope
+    ) {
+
+        private val logger = thisLogger(session)
+
+        private val maxInMemoryPayloadLength =
+            session.property(SHARED_JDWP_PACKET_IN_MEMORY_MAX_PAYLOAD_LENGTH)
+
+        suspend fun create(
+            sessionPacket: JdwpPacketView,
+            sessionPacketPayload: AdbInputChannel
+        ): PayloadProvider {
+            val payloadLength = sessionPacket.payloadLength
+            return when {
+                payloadLength <= 0 -> {
+                    PayloadProvider.emptyPayload()
+                }
+
+                payloadLength <= maxInMemoryPayloadLength -> {
+                    // Load payload in memory
+                    val payload = ByteBuffer.allocate(payloadLength)
+                    sessionPacketPayload.readExactly(payload)
+                    payload.flip()
+                    // Wrap it in a thread-safe PayloadProvider
+                    PayloadProvider.forByteBuffer(payload)
+                }
+
+                else -> {
+                    assert(payloadLength > maxInMemoryPayloadLength)
+                    ScopedPayloadProvider(scope, sessionPacketPayload)
+                }
+            }.also {
+                logger.verbose { "Created payload provider '$it' for a payload of $payloadLength byte(s)" }
+            }
+        }
+
     }
 
     /**

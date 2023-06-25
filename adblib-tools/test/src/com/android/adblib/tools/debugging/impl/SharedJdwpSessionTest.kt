@@ -22,6 +22,7 @@ import com.android.adblib.ByteBufferAdbOutputChannel
 import com.android.adblib.skipRemaining
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
+import com.android.adblib.tools.AdbLibToolsProperties.SHARED_JDWP_PACKET_IN_MEMORY_MAX_PAYLOAD_LENGTH
 import com.android.adblib.tools.debugging.DdmsCommandException
 import com.android.adblib.tools.debugging.DdmsProtocolKind
 import com.android.adblib.tools.debugging.JdwpPacketReceiver
@@ -30,6 +31,7 @@ import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSessionMonitor
 import com.android.adblib.tools.debugging.SharedJdwpSessionMonitorFactory
 import com.android.adblib.tools.debugging.addSharedJdwpSessionMonitorFactory
+import com.android.adblib.tools.debugging.createDdmsPacket
 import com.android.adblib.tools.debugging.ddmsProtocolKind
 import com.android.adblib.tools.debugging.handleDdmsCaptureView
 import com.android.adblib.tools.debugging.handleDdmsHPGC
@@ -73,6 +75,7 @@ import kotlinx.coroutines.flow.toList
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
@@ -150,6 +153,69 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         // Assert
         fail("Should not reach")
     }
+
+    @Test
+    fun packetReceiverReceiveMethodWorksWithEmptyPayload(): Unit = runBlockingWithTimeout {
+        packetReceiverReceiveMethodWorksWithPacketOfLength(0)
+    }
+
+    @Test
+    fun packetReceiverReceiveMethodWorksWithSmallPayload(): Unit = runBlockingWithTimeout {
+        packetReceiverReceiveMethodWorksWithPacketOfLength(
+            SHARED_JDWP_PACKET_IN_MEMORY_MAX_PAYLOAD_LENGTH.defaultValue / 2)
+    }
+
+    @Test
+    fun packetReceiverReceiveMethodWorksWithLargePayload(): Unit = runBlockingWithTimeout {
+        packetReceiverReceiveMethodWorksWithPacketOfLength(
+            SHARED_JDWP_PACKET_IN_MEMORY_MAX_PAYLOAD_LENGTH.defaultValue * 10)
+    }
+
+    private suspend fun packetReceiverReceiveMethodWorksWithPacketOfLength(length: Int) {
+        // Prepare: Set reply of `REAL` DDMS command to be an array of "length" bytes
+        val fakeDevice = addFakeDevice(fakeAdb, 30)
+        val client = fakeDevice.startClient(10, 0, "a.b.c", false)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
+        val commandPacket = jdwpSession.createDdmsPacket(DdmsChunkType.REAL, ByteBuffer.allocate(0))
+        val expectedReplyData = ByteArray(length / Char.SIZE_BYTES).also { bytes ->
+            repeat(bytes.size) { index ->
+                bytes[index] = ('a' + (index % 26)).code.toByte()
+            }
+        }.toString(Charsets.US_ASCII)
+        client.allocationTrackerDetails = expectedReplyData
+
+        // Act: Send `REAL` DDMS command, check data in reply is what we set earlier
+        var onlineReceivePayload: ByteArray? = null
+        val offlineReplyPacket = jdwpSession.newPacketReceiver()
+            .withName("Unit Test Receiver")
+            .onActivation {
+                jdwpSession.sendPacket(commandPacket)
+            }.receiveFirst { onlineReplyPacket ->
+                if (onlineReplyPacket.id == commandPacket.id)  {
+                    onlineReceivePayload = onlineReplyPacket.withPayload {
+                        // First 8 bytes should be DDMS packet header
+                        // Next 4 bytes is the length of the `REAL` packet reply payload
+                        val bytes = it.toByteArray(onlineReplyPacket.payloadLength)
+                        bytes.copyOfRange(12, bytes.size)
+                    }
+                    true
+                } else {
+                    false
+                }
+            }
+        val offlineReceivePayload = offlineReplyPacket.withPayload {
+            // First 8 bytes should be DDMS packet header
+            // Next 4 bytes is the length of the `REAL` packet reply payload
+            val bytes = it.toByteArray(offlineReplyPacket.payloadLength)
+            bytes.copyOfRange(12, bytes.size)
+        }
+
+        // Assert
+        assertNotNull(onlineReceivePayload)
+        assertEquals(expectedReplyData, onlineReceivePayload!!.toString(Charsets.UTF_16))
+        assertEquals(expectedReplyData, offlineReceivePayload.toString(Charsets.UTF_16))
+    }
+
 
     @Test
     fun packetReceiverReceiveMethodIsTransparentToExceptions(): Unit = runBlockingWithTimeout {
