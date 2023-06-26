@@ -390,24 +390,30 @@ private suspend fun SharedJdwpSession.handleAlwaysEmptyReplyDdmsCommand(
   requestPacket: JdwpPacketView,
   chunkType: DdmsChunkType,
   progress: JdwpCommandProgress?,
-  signal: Signal<Unit>?
+  signal: Signal<Unit>
 ) {
     val logger = thisLogger(device.session).withPrefix("pid=$pid: ")
-
     newPacketReceiver()
         .withName("handleEmptyReplyDdmsCommand(${chunkType.text})")
         .onActivation {
             progress?.beforeSend(requestPacket)
             sendPacket(requestPacket)
             progress?.afterSend(requestPacket)
-            signal?.complete(Unit)
+            signal.complete(Unit)
         }
         .flow()
         .first { packet ->
-            logger.verbose { "Receiving packet: $packet" }
+            logger.verbose { "Receiving packet: $packet, waiting for activation to complete" }
+            // Note: we wait on "signal" to ensure the "progress?.afterSend" call in the activation
+            // block above is always executed, otherwise, there is a race condition between
+            // the "sendPacket" call in the activation block and this flow collector block
+            // (which processes the reply to the packet).
+            signal.await()
 
             // Stop when we receive the reply to our DDMS command
             val isReply = (packet.isReply && packet.id == requestPacket.id)
+            logger.verbose { "Receiving packet: $packet, isReply=$isReply" }
+
             if (isReply) {
                 progress?.onReply(packet)
                 processEmptyDdmsReplyPacket(packet, chunkType)

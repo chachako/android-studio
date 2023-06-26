@@ -665,10 +665,10 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
 
         assertEquals(DdmsProtocolKind.EmptyRepliesAllowed, jdwpSession.device.ddmsProtocolKind())
         assertEquals(1, client.getHgpcRequestsCount())
-        assertTrue(jdwpCommandProgress.beforeSendIsCalled)
-        assertTrue(jdwpCommandProgress.afterSendIsCalled)
-        assertFalse(jdwpCommandProgress.onReplyTimeoutIsCalled)
-        assertTrue(jdwpCommandProgress.onReplyIsCalled)
+        assertTrue("jdwpCommandProgress.beforeSendIsCalled", jdwpCommandProgress.beforeSendIsCalled)
+        assertTrue("jdwpCommandProgress.afterSendIsCalled", jdwpCommandProgress.afterSendIsCalled)
+        assertFalse("jdwpCommandProgress.onReplyTimeoutIsCalled", jdwpCommandProgress.onReplyTimeoutIsCalled)
+        assertTrue("jdwpCommandProgress.onReplyIsCalled", jdwpCommandProgress.onReplyIsCalled)
     }
 
     @Test
