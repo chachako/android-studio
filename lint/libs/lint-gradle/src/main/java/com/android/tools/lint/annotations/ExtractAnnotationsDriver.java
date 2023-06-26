@@ -23,8 +23,10 @@ import static java.io.File.pathSeparatorChar;
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.tools.lint.LintCliClient;
 import com.android.tools.lint.UastEnvironment;
 import com.android.tools.lint.client.api.LintClient;
+import com.android.tools.lint.detector.api.Project;
 import com.android.utils.SdkUtils;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
@@ -304,7 +306,6 @@ public class ExtractAnnotationsDriver {
                         sortAnnotations);
         extractor.setListIgnored(listFiltered);
 
-        LintClient.setClientName(LintClient.CLIENT_CLI);
 
         UastEnvironment.Configuration config = UastEnvironment.Configuration.create(false);
         if (sourceRoots == null) {
@@ -313,8 +314,23 @@ public class ExtractAnnotationsDriver {
                 return -1;
             }
         }
-        config.addSourceRoots(sourceRoots);
-        config.addClasspathRoots(classpath);
+        LintClient lintClient = new LintCliClient(LintClient.CLIENT_CLI);
+        File dir = sourceRoots.stream().filter(File::isDirectory).findAny().orElse(null);
+        if (dir == null) {
+            return -1;
+        }
+        Project lintProject = Project.create(lintClient, dir, /* referenceDir */ dir);
+        lintProject.getJavaSourceFolders().addAll(sourceRoots);
+        lintProject.getJavaLibraries().addAll(classpath);
+        List<UastEnvironment.Module> modules = new ArrayList<>();
+        modules.add(
+                new UastEnvironment.Module(
+                        lintProject,
+                        /* jdkHome */ null,
+                        /* includeTests */ false,
+                        /* includeTestFixtureSources */ false,
+                        /* isUnitTest */ false));
+        config.addModules(modules, /* bootClassPaths */ null);
 
         UastEnvironment env = UastEnvironment.create(config);
         MockProject project = env.getIdeaProject();
