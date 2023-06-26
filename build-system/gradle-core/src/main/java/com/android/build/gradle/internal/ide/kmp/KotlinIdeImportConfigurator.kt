@@ -97,6 +97,7 @@ object KotlinIdeImportConfigurator {
 
         service.registerDependencyResolver(
             resolver = ProjectDependencyResolver(
+                project = project,
                 libraryResolver = libraryResolver,
                 sourceSetToCreationConfigMap = sourceSetToCreationConfigMap
             ),

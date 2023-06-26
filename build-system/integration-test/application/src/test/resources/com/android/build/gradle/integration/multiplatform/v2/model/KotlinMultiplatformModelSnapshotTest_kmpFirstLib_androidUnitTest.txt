@@ -135,44 +135,6 @@
     "type": "Regular",
     "coordinates": {
       "buildId": ":",
-      "projectPath": ":kmpFirstLib",
-      "projectName": "kmpFirstLib"
-    },
-    "extras": {
-      "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
-        "library": {
-          "type": "PROJECT",
-          "projectInfo": {
-            "componentInfo": {
-              "productFlavors": {},
-              "attributes": {
-                "com.android.build.api.attributes.AgpVersionAttr": "{AGP_Version}",
-                "org.gradle.category": "library",
-                "org.gradle.jvm.environment": "android",
-                "org.gradle.libraryelements": "jar",
-                "org.gradle.usage": "java-api",
-                "org.jetbrains.kotlin.platform.type": "jvm"
-              },
-              "capabilities": [
-                "Kotlin Multiplatform:kmpFirstLib:unspecified"
-              ],
-              "isTestFixtures": false
-            },
-            "buildId": ":",
-            "projectPath": ":kmpFirstLib"
-          },
-          "lintJar": {
-            "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/build/intermediates/lint_publish_jar/global/lint.jar"
-          }
-        }
-      },
-      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
-    }
-  },
-  {
-    "type": "Regular",
-    "coordinates": {
-      "buildId": ":",
       "projectPath": ":androidLib",
       "projectName": "androidLib"
     },

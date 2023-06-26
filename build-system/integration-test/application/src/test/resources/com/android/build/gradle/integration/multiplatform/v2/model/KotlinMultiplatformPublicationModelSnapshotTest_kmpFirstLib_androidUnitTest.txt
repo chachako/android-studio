@@ -89,7 +89,7 @@
 +   {
 +     "binaryType": "KOTLIN_COMPILE",
 +     "classpath": [
-@@ -171 +261
+@@ -133 +223
 -   },
 -   {
 -     "type": "Regular",

@@ -20,9 +20,11 @@ import com.android.build.api.attributes.AgpVersionAttr
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.ide.kmp.LibraryResolver
 import com.android.build.gradle.internal.ide.proto.convert
+import com.android.build.gradle.internal.ide.v2.ModelBuilder
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.kotlin.multiplatform.ide.models.serialization.androidDependencyKey
 import com.android.kotlin.multiplatform.models.DependencyInfo
+import org.gradle.api.Project
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinDependency
 import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinProjectArtifactDependency
@@ -36,12 +38,15 @@ import org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver
  * An implementation of [IdeDependencyResolver] that resolves project dependencies.
  */
 internal class ProjectDependencyResolver(
+    project: Project,
     libraryResolver: LibraryResolver,
     sourceSetToCreationConfigMap: Lazy<Map<KotlinSourceSet, KmpComponentCreationConfig>>
 ) : BaseIdeDependencyResolver(
     libraryResolver,
     sourceSetToCreationConfigMap
 ) {
+    private val currentProjectPath = project.path
+    private val currentProjectBuildName = ModelBuilder.getBuildName(project)
 
     override fun resolve(sourceSet: KotlinSourceSet): Set<IdeaKotlinDependency> {
         val component = sourceSetToCreationConfigMap.value[sourceSet] ?: return emptySet()
@@ -58,6 +63,14 @@ internal class ProjectDependencyResolver(
             it is ProjectComponentIdentifier
         }.mapNotNull { artifact ->
             val componentId = artifact.id.componentIdentifier as ProjectComponentIdentifier
+
+            // This is a dependency on the same module, usually from unitTest/instrumentationTest on
+            // the main module. This should be handled as a friend dependency which will allow the
+            // test components to view the internals of the main. So we just ignore this case here.
+            if (currentProjectPath == componentId.projectPath &&
+                currentProjectBuildName == componentId.build.name) {
+                return@mapNotNull  null
+            }
 
             IdeaKotlinProjectArtifactDependency(
                 type = IdeaKotlinSourceDependency.Type.Regular,
