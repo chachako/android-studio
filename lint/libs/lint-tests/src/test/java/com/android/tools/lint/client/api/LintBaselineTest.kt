@@ -31,6 +31,7 @@ import com.android.tools.lint.checks.ManifestDetector
 import com.android.tools.lint.checks.PxUsageDetector
 import com.android.tools.lint.checks.RangeDetector
 import com.android.tools.lint.checks.RestrictToDetector
+import com.android.tools.lint.checks.RtlDetector
 import com.android.tools.lint.checks.ScopedStorageDetector
 import com.android.tools.lint.checks.TypoDetector
 import com.android.tools.lint.checks.infrastructure.TestFiles.bytecode
@@ -48,6 +49,7 @@ import com.android.tools.lint.client.api.LintBaseline.Companion.prefixMatchLengt
 import com.android.tools.lint.client.api.LintBaseline.Companion.sameWithAbsolutePath
 import com.android.tools.lint.client.api.LintBaseline.Companion.stringsEquivalent
 import com.android.tools.lint.client.api.LintBaseline.Companion.suffixMatchLength
+import com.android.tools.lint.client.api.LintBaseline.Companion.tokenPrecededBy
 import com.android.tools.lint.detector.api.DefaultPosition
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue
@@ -61,6 +63,7 @@ import junit.framework.TestCase.assertEquals
 import org.intellij.lang.annotations.Language
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -492,6 +495,30 @@ class LintBaselineTest {
         AccessibilityDetector.ISSUE,
         "Empty contentDescription attribute on image",
         "[Accessibility] Empty contentDescription attribute on image"
+      )
+    )
+  }
+
+  @Test
+  fun tolerateRtlCompatChanges() {
+    val baseline = LintBaseline(null, File(""))
+    assertTrue(
+      baseline.sameMessage(
+        RtlDetector.COMPAT,
+        "To support older versions than API 17 (project specifies 11) you should also add android:layout_alignParentLeft=\"true\"",
+        "To support older versions than API 17 (project specifies 14) you should also add android:layout_alignParentLeft=\"true\""
+      )
+    )
+  }
+
+  @Test
+  fun tolerateUnusedAttributeChanges() {
+    val baseline = LintBaseline(null, File(""))
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNUSED,
+        "Attribute `Abc` is only used in API level 19 and higher (current min is 16)",
+        "Attribute `Abc` is only used in API level 18 and higher (current min is 17)"
       )
     )
   }
@@ -2097,6 +2124,79 @@ class LintBaselineTest {
     assertFalse(sameWithAbsolutePath("the path is `bar`!", "the path is `/path/to/foo`!"))
     assertFalse(sameWithAbsolutePath("foo", "/path/to/foo", "the"))
     assertFalse(sameWithAbsolutePath("foo", "/path/to/foo", "", "the"))
+  }
+
+  @Test
+  fun testTokenPrecededBy() {
+    // Throws when target string is empty.
+    run {
+      val target = ""
+      val prev = "foobar"
+      assertThrows(IndexOutOfBoundsException::class.java) { target.tokenPrecededBy(prev, -1) }
+      assertThrows(IndexOutOfBoundsException::class.java) { target.tokenPrecededBy(prev, 0) }
+      assertThrows(IndexOutOfBoundsException::class.java) { target.tokenPrecededBy(prev, 1) }
+    }
+
+    // Returns true with empty prev string, as long as offset is in bounds.
+    run {
+      val target = "abc def"
+      val prev = ""
+      assertThrows(IndexOutOfBoundsException::class.java) { target.tokenPrecededBy(prev, -1) }
+      assertTrue(target.tokenPrecededBy(prev, 0))
+      assertTrue(target.tokenPrecededBy(prev, 1))
+      assertTrue(target.tokenPrecededBy(prev, 2))
+      assertTrue(target.tokenPrecededBy(prev, 3))
+      assertTrue(target.tokenPrecededBy(prev, 4))
+      assertTrue(target.tokenPrecededBy(prev, 5))
+      assertTrue(target.tokenPrecededBy(prev, 6))
+      assertThrows(IndexOutOfBoundsException::class.java) { target.tokenPrecededBy(prev, 7) }
+    }
+
+    // Returns true when offset is within the second token.
+    run {
+      val target = "abc def"
+      val prev = "abc "
+      assertThrows(IndexOutOfBoundsException::class.java) { target.tokenPrecededBy(prev, -1) }
+      assertFalse(target.tokenPrecededBy(prev, 0))
+      assertFalse(target.tokenPrecededBy(prev, 1))
+      assertFalse(target.tokenPrecededBy(prev, 2))
+      assertFalse(target.tokenPrecededBy(prev, 3))
+      assertTrue(target.tokenPrecededBy(prev, 4))
+      assertTrue(target.tokenPrecededBy(prev, 5))
+      assertTrue(target.tokenPrecededBy(prev, 6))
+      assertThrows(IndexOutOfBoundsException::class.java) { target.tokenPrecededBy(prev, 7) }
+    }
+
+    // Returns true when offset is at the space character.
+    run {
+      val target = "abc def"
+      val prev = "abc"
+      assertThrows(IndexOutOfBoundsException::class.java) { target.tokenPrecededBy(prev, -1) }
+      assertFalse(target.tokenPrecededBy(prev, 0))
+      assertFalse(target.tokenPrecededBy(prev, 1))
+      assertFalse(target.tokenPrecededBy(prev, 2))
+      assertTrue(target.tokenPrecededBy(prev, 3))
+      assertFalse(target.tokenPrecededBy(prev, 4))
+      assertFalse(target.tokenPrecededBy(prev, 5))
+      assertFalse(target.tokenPrecededBy(prev, 6))
+      assertThrows(IndexOutOfBoundsException::class.java) { target.tokenPrecededBy(prev, 7) }
+    }
+
+    // Returns true when offset is within either token.
+    run {
+      val target = " abc def"
+      val prev = " "
+      assertThrows(IndexOutOfBoundsException::class.java) { target.tokenPrecededBy(prev, -1) }
+      assertFalse(target.tokenPrecededBy(prev, 0))
+      assertTrue(target.tokenPrecededBy(prev, 1))
+      assertTrue(target.tokenPrecededBy(prev, 2))
+      assertTrue(target.tokenPrecededBy(prev, 3))
+      assertFalse(target.tokenPrecededBy(prev, 4))
+      assertTrue(target.tokenPrecededBy(prev, 5))
+      assertTrue(target.tokenPrecededBy(prev, 6))
+      assertTrue(target.tokenPrecededBy(prev, 7))
+      assertThrows(IndexOutOfBoundsException::class.java) { target.tokenPrecededBy(prev, 8) }
+    }
   }
 
   companion object {

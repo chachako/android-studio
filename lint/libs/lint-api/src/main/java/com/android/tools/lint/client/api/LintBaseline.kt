@@ -359,7 +359,9 @@ class LintBaseline(
         // by something from the ApiDetector error messages which indicate that they represent an
         // API level, such as "current min is " or "API level "
         stringsEquivalent(old, new) { s, i ->
-          s.precededBy("min is ", i) || s.precededBy("API level ", i) || s.precededBy("version ", i)
+          s.tokenPrecededBy("min is ", i) ||
+            s.tokenPrecededBy("API level ", i) ||
+            s.tokenPrecededBy("version ", i)
         }
       }
       "RestrictedApi" -> {
@@ -377,6 +379,8 @@ class LintBaseline(
       "MissingQuantity" -> {
         sameSuffixFrom("should also be defined", new, old)
       }
+      "RtlCompat" ->
+        stringsEquivalent(old, new) { s, i -> s.tokenPrecededBy("project specifies ", i) }
 
       // Sometimes we just append (or remove trailing period in error messages, now
       // flagged by lint)
@@ -937,12 +941,20 @@ class LintBaseline(
       }
     }
 
-    fun String.precededBy(prev: String, offset: Int): Boolean {
-      val start = offset - prev.length
-      return if (start < 0) {
+    fun String.tokenPrecededBy(prev: String, offset: Int): Boolean {
+      if (offset < 0 || offset >= this.length) {
+        throw IndexOutOfBoundsException("index: $offset, size: ${this.length}")
+      }
+      var i = offset
+      // Move back to the start of the current token at offset.
+      while (i > 0 && !this[i].isWhitespace() && !this[i - 1].isWhitespace()) {
+        i--
+      }
+      i -= prev.length
+      return if (i < 0) {
         false
       } else {
-        this.regionMatches(start, prev, 0, prev.length, false)
+        this.regionMatches(i, prev, 0, prev.length, false)
       }
     }
 
