@@ -120,7 +120,7 @@ public class ParcelDetector extends Detector implements SourceCodeScanner {
             }
         }
 
-        PsiField field = declaration.getJavaPsi().findFieldByName("CREATOR", true);
+        PsiField field = declaration.findFieldByName("CREATOR", true);
         if (field == null) {
             Location location = context.getNameLocation(declaration);
             String message =
@@ -133,7 +133,7 @@ public class ParcelDetector extends Detector implements SourceCodeScanner {
                 Location location = context.getNameLocation(field);
                 LintFix fix =
                         fix().name("Annotate with @JvmField", true)
-                                .annotate(JVM_FIELD, true, context, field)
+                                .annotate(JVM_FIELD)
                                 .range(context.getLocation(field))
                                 .autoFix()
                                 .build();
