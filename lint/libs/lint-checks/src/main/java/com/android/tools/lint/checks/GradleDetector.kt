@@ -1362,6 +1362,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         }
         else -> filter
       }
+    val noSnapshotFilter: (Version) -> Boolean = { candidate ->
+      !candidate.isSnapshot && (f == null || f.test(candidate))
+    }
     return if (CancellableFileIo.exists(versionDir)) {
       val isPreview =
         when (val richVersion = dependency.version) {
@@ -1369,7 +1372,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
           else ->
             MavenRepositories.isPreview(Component(group, dependency.name, richVersion.lowerBound))
         }
-      MavenRepositories.getHighestVersion(versionDir, f, isPreview)
+      MavenRepositories.getHighestVersion(versionDir, noSnapshotFilter, isPreview)
     } else null
   }
 

@@ -6900,13 +6900,10 @@ class GradleDetectorTest : AbstractCheckTest() {
         build.gradle:3: Warning: A newer version of com.example.cached:library than 1.0-beta01 is available: 1.0 [GradleDependency]
           implementation 'com.example.cached:library:1.0-beta01'
                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        build.gradle:5: Warning: A newer version of com.example.cached:library than 1.1-alpha01 is available: 1.1-SNAPSHOT [GradleDependency]
+        build.gradle:5: Warning: A newer version of com.example.cached:library than 1.1-alpha01 is available: 1.1-beta01 [GradleDependency]
           implementation 'com.example.cached:library:1.1-alpha01'
                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        build.gradle:6: Warning: A newer version of com.example.cached:library than 1.1-beta01 is available: 1.1-SNAPSHOT [GradleDependency]
-          implementation 'com.example.cached:library:1.1-beta01'
-                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        0 errors, 4 warnings
+        0 errors, 3 warnings
         """
       )
       .expectFixDiffs(
@@ -6919,14 +6916,10 @@ class GradleDetectorTest : AbstractCheckTest() {
         @@ -3 +3
         -   implementation 'com.example.cached:library:1.0-beta01'
         +   implementation 'com.example.cached:library:1.0'
-        Fix for build.gradle line 5: Change to 1.1-SNAPSHOT:
+        Fix for build.gradle line 5: Change to 1.1-beta01:
         @@ -5 +5
         -   implementation 'com.example.cached:library:1.1-alpha01'
-        +   implementation 'com.example.cached:library:1.1-SNAPSHOT'
-        Fix for build.gradle line 6: Change to 1.1-SNAPSHOT:
-        @@ -6 +6
-        -   implementation 'com.example.cached:library:1.1-beta01'
-        +   implementation 'com.example.cached:library:1.1-SNAPSHOT'
+        +   implementation 'com.example.cached:library:1.1-beta01'
       """
       )
   }
