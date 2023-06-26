@@ -17,6 +17,7 @@ package com.android.ddmlib;
 
 import com.android.ddmlib.PropertyFetcher.GetPropReceiver;
 import com.android.ddmlib.internal.DeviceTest;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -153,6 +154,51 @@ public class PropertyFetcherTest extends TestCase {
                 "480",
                 fetcher.getProperty("ro.sf.lcd_density")
                         .get(propertyFetchMaxCacheLatencyMillis, TimeUnit.MILLISECONDS));
+    }
+
+    /** Test that getProperty works as expected when queries made in different states */
+    public void testMultipleGetProperty() throws Exception {
+        String firstResponse =
+                "\n[ro.sf.lcd_density]: [480]\n[ro.secure]: [1]\n[volatile.stuff]: [0]\r\n";
+        CountDownLatch latch = new CountDownLatch(1);
+        IDevice mockDevice = DeviceTest.createMockDevice();
+        DeviceTest.injectShellResponse(mockDevice, firstResponse, latch);
+        EasyMock.replay(mockDevice);
+
+        PropertyFetcher fetcher = new PropertyFetcher(mockDevice);
+        // do query in unpopulated state
+        Future<String> unpopulatedFuture = fetcher.getProperty("ro.sf.lcd_density");
+        // do query in fetching state
+        Future<String> fetchingFuture = fetcher.getProperty("ro.secure");
+        // do mutable query in fetching state
+        Future<String> mutableFuture = fetcher.getProperty("volatile.stuff");
+        latch.countDown();
+
+        assertEquals("480", unpopulatedFuture.get());
+        assertEquals("1", fetchingFuture.get());
+        assertEquals("0", mutableFuture.get());
+        assertEquals("480", fetcher.getProperty("ro.sf.lcd_density").get());
+
+        latch = new CountDownLatch(1);
+        String secondResponse =
+                "\n[ro.sf.lcd_density]: [480]\n[ro.secure]: [1]\n[volatile.stuff]: [1]\r\n";
+
+        // reset mockDevice to change shell response
+        EasyMock.reset(mockDevice);
+        EasyMock.expect(mockDevice.getSerialNumber()).andStubReturn("serial");
+        EasyMock.expect(mockDevice.isOnline()).andStubReturn(Boolean.TRUE);
+        DeviceTest.injectShellResponse(mockDevice, secondResponse, latch);
+        EasyMock.replay(mockDevice);
+
+        // now do second query for a mutable property.
+        mutableFuture = fetcher.getProperty("volatile.stuff");
+        fetchingFuture = fetcher.getProperty("ro.secure");
+        // ensure that an immutable property is returned immediately
+        assertTrue(fetchingFuture.isDone());
+        assertEquals("1", fetchingFuture.get());
+        // ensure that the mutable property is fresh
+        latch.countDown();
+        assertEquals("1", mutableFuture.get());
     }
 
     /**

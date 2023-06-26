@@ -26,6 +26,7 @@ import com.android.sdklib.AndroidVersion;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import junit.framework.TestCase;
 import org.easymock.EasyMock;
@@ -113,6 +114,32 @@ public class DeviceTest extends TestCase {
                 () -> {
                     // insert small delay to simulate latency
                     Thread.sleep(delayMillis);
+                    IShellOutputReceiver receiver =
+                            (IShellOutputReceiver) EasyMock.getCurrentArguments()[1];
+                    byte[] inputData = response.getBytes();
+                    receiver.addOutput(inputData, 0, inputData.length);
+                    receiver.flush();
+                    return null;
+                };
+        mockDevice.executeShellCommand(
+                EasyMock.anyObject(),
+                EasyMock.anyObject(),
+                EasyMock.anyLong(),
+                EasyMock.anyObject());
+        EasyMock.expectLastCall().andAnswer(shellAnswer);
+    }
+
+    /**
+     * Helper method that sets the mock device to return the given response on a shell command. The
+     * {@code latch} parameter allows the caller to control response delay
+     */
+    @SuppressWarnings("unchecked")
+    public static void injectShellResponse(
+            IDevice mockDevice, final String response, CountDownLatch latch) throws Exception {
+        IAnswer<Object> shellAnswer =
+                () -> {
+                    // insert small delay to simulate latency
+                    latch.await();
                     IShellOutputReceiver receiver =
                             (IShellOutputReceiver) EasyMock.getCurrentArguments()[1];
                     byte[] inputData = response.getBytes();
