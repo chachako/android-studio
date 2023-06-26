@@ -1,287 +1,255 @@
-@@ -5 +5
-+       "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug-api.jar"
-+     ],
-+     "coordinates": {
-+       "group": "com.example",
-+       "module": "androidLib",
-+       "version": "1.0"
-+     },
-+     "extras": {
-+       "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
-+         "library": {
-+           "type": "ANDROID_LIBRARY",
-+           "libraryInfo": {
-+             "componentInfo": {
-+               "buildType": "debug",
-+               "productFlavors": {
-+                 "mode": "modetwo",
-+                 "type": "typeone"
-+               },
-+               "attributes": {
-+                 "org.gradle.category": "library",
-+                 "org.gradle.dependency.bundling": "external",
-+                 "org.gradle.libraryelements": "aar",
-+                 "org.gradle.status": "release",
-+                 "org.gradle.usage": "java-api"
-+               },
-+               "capabilities": [
-+                 "com.example:androidLib:1.0"
-+               ],
-+               "isTestFixtures": false
-+             },
-+             "group": "com.example",
-+             "name": "androidLib",
-+             "version": "1.0"
-+           },
-+           "artifact": {
-+             "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/testRepo/com/example/androidLib/1.0/androidLib-1.0-typeoneModetwoDebug.aar"
-+           },
-+           "androidLibraryData": {
-+             "manifest": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/AndroidManifest.xml"
-+             },
-+             "compileJarFiles": [
-+               {
-+                 "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/jars/classes.jar"
-+               }
-+             ],
-+             "runtimeJarFiles": [
-+               {
-+                 "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/jars/classes.jar"
-+               }
-+             ],
-+             "resFolder": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/res"
-+             },
-+             "resStaticLibrary": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/res.apk"
-+             },
-+             "assetsFolder": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/assets"
-+             },
-+             "jniFolder": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/jni"
-+             },
-+             "aidlFolder": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/aidl"
-+             },
-+             "renderscriptFolder": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/rs"
-+             },
-+             "proguardRules": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/proguard.txt"
-+             },
-+             "externalAnnotations": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/annotations.zip"
-+             },
-+             "publicResources": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/public.txt"
-+             },
-+             "symbolFile": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/R.txt"
-+             }
-+           }
-+         }
-+       },
-+       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
-+     }
-+   },
-+   {
-+     "binaryType": "KOTLIN_COMPILE",
-+     "classpath": [
-+       "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib-api.jar"
-+     ],
-+     "coordinates": {
-+       "group": "com.example",
-+       "module": "kmpSecondLib-android",
-+       "version": "1.0"
-+     },
-+     "extras": {
-+       "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
-+         "library": {
-+           "type": "ANDROID_LIBRARY",
-+           "libraryInfo": {
-+             "componentInfo": {
-+               "productFlavors": {},
-+               "attributes": {
-+                 "org.gradle.category": "library",
-+                 "org.gradle.jvm.environment": "android",
-+                 "org.gradle.libraryelements": "aar",
-+                 "org.gradle.status": "release",
-+                 "org.gradle.usage": "java-api",
-+                 "org.jetbrains.kotlin.platform.type": "jvm"
-+               },
-+               "capabilities": [
-+                 "com.example:kmpSecondLib-android:1.0"
-+               ],
-+               "isTestFixtures": false
-+             },
-+             "group": "com.example",
-+             "name": "kmpSecondLib-android",
-+             "version": "1.0"
-+           },
-+           "artifact": {
-+             "absolutePath": "{GRADLE_CACHE}/{MODULES_2}/{LIBRARY_COORDINATES}/{CHECKSUM}/kmpSecondLib.aar"
-+           },
-+           "androidLibraryData": {
-+             "manifest": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/AndroidManifest.xml"
-+             },
-+             "compileJarFiles": [
-+               {
-+                 "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/jars/classes.jar"
-+               }
-+             ],
-+             "runtimeJarFiles": [
-+               {
-+                 "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/jars/classes.jar"
-+               }
-+             ],
-+             "resFolder": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/res"
-+             },
-+             "resStaticLibrary": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/res.apk"
-+             },
-+             "assetsFolder": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/assets"
-+             },
-+             "jniFolder": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/jni"
-+             },
-+             "aidlFolder": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/aidl"
-+             },
-+             "renderscriptFolder": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/rs"
-+             },
-+             "proguardRules": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/proguard.txt"
-+             },
-+             "externalAnnotations": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/annotations.zip"
-+             },
-+             "publicResources": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/public.txt"
-+             },
-+             "symbolFile": {
-+               "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/R.txt"
-+             }
-+           }
-+         }
-+       },
-+       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
-+     }
-+   },
-+   {
-+     "binaryType": "KOTLIN_COMPILE",
-+     "classpath": [
-+       "{INCLUDED_BUILD(kotlinMultiplatform)}/testRepo/com/example/kmpJvmOnly-jvm/1.0/kmpJvmOnly-jvm-1.0.jar"
-+     ],
-+     "coordinates": {
-+       "group": "com.example",
-+       "module": "kmpJvmOnly-jvm",
-+       "version": "1.0"
-+     },
-+     "extras": {
-+       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver",
-+       "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;sourcesClasspath": [
-+         "{INCLUDED_BUILD(kotlinMultiplatform)}/testRepo/com/example/kmpJvmOnly-jvm/1.0/kmpJvmOnly-jvm-1.0-sources.jar"
-+       ]
-+     }
-+   },
-+   {
-+     "binaryType": "KOTLIN_COMPILE",
-+     "classpath": [
-@@ -60 +254
--   },
--   {
--     "type": "Regular",
--     "coordinates": {
--       "buildId": ":",
--       "projectPath": ":androidLib",
--       "projectName": "androidLib"
--     },
--     "extras": {
--       "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
--         "library": {
--           "type": "PROJECT",
--           "projectInfo": {
--             "componentInfo": {
--               "buildType": "debug",
--               "productFlavors": {
--                 "mode": "modetwo",
--                 "type": "typeone"
--               },
--               "attributes": {
--                 "com.android.build.api.attributes.AgpVersionAttr": "{AGP_Version}",
--                 "com.android.build.gradle.internal.attributes.VariantAttr": "typeoneModetwoDebug",
--                 "org.gradle.usage": "java-api"
--               },
--               "capabilities": [
--                 "Kotlin Multiplatform:androidLib:unspecified"
--               ],
--               "isTestFixtures": false
--             },
--             "buildId": ":",
--             "projectPath": ":androidLib"
--           },
--           "lintJar": {
--             "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/androidLib/build/intermediates/lint_publish_jar/global/lint.jar"
--           }
--         }
--       },
--       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
--     }
--   },
--   {
--     "type": "Regular",
--     "coordinates": {
--       "buildId": ":",
--       "projectPath": ":kmpSecondLib",
--       "projectName": "kmpSecondLib"
--     },
--     "extras": {
--       "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
--         "library": {
--           "type": "PROJECT",
--           "projectInfo": {
--             "componentInfo": {
--               "productFlavors": {},
--               "attributes": {
--                 "com.android.build.api.attributes.AgpVersionAttr": "{AGP_Version}",
--                 "org.gradle.category": "library",
--                 "org.gradle.jvm.environment": "android",
--                 "org.gradle.libraryelements": "jar",
--                 "org.gradle.usage": "java-api",
--                 "org.jetbrains.kotlin.platform.type": "jvm"
--               },
--               "capabilities": [
--                 "Kotlin Multiplatform:kmpSecondLib:unspecified"
--               ],
--               "isTestFixtures": false
--             },
--             "buildId": ":",
--             "projectPath": ":kmpSecondLib"
--           },
--           "lintJar": {
--             "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpSecondLib/build/intermediates/lint_publish_jar/global/lint.jar"
--           }
--         }
--       },
--       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
--     }
--   },
--   {
--     "type": "Regular",
--     "coordinates": {
--       "buildId": ":",
--       "projectPath": ":kmpJvmOnly",
--       "projectName": "kmpJvmOnly"
--     },
--     "extras": {
--       "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;artifactsClasspath": [
--         "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpJvmOnly/build/libs/kmpJvmOnly-jvm.jar"
--       ],
--       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
--     }
+[
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug-api.jar"
+    ],
+    "coordinates": {
+      "group": "com.example",
+      "module": "androidLib",
+      "version": "1.0"
+    },
+    "extras": {
+      "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
+        "library": {
+          "type": "ANDROID_LIBRARY",
+          "libraryInfo": {
+            "componentInfo": {
+              "buildType": "debug",
+              "productFlavors": {
+                "mode": "modetwo",
+                "type": "typeone"
+              },
+              "attributes": {
+                "org.gradle.category": "library",
+                "org.gradle.dependency.bundling": "external",
+                "org.gradle.libraryelements": "aar",
+                "org.gradle.status": "release",
+                "org.gradle.usage": "java-api"
+              },
+              "capabilities": [
+                "com.example:androidLib:1.0"
+              ],
+              "isTestFixtures": false
+            },
+            "group": "com.example",
+            "name": "androidLib",
+            "version": "1.0"
+          },
+          "artifact": {
+            "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/testRepo/com/example/androidLib/1.0/androidLib-1.0-typeoneModetwoDebug.aar"
+          },
+          "androidLibraryData": {
+            "manifest": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/AndroidManifest.xml"
+            },
+            "compileJarFiles": [
+              {
+                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/jars/classes.jar"
+              }
+            ],
+            "runtimeJarFiles": [
+              {
+                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/jars/classes.jar"
+              }
+            ],
+            "resFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/res"
+            },
+            "resStaticLibrary": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/res.apk"
+            },
+            "assetsFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/assets"
+            },
+            "jniFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/jni"
+            },
+            "aidlFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/aidl"
+            },
+            "renderscriptFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/rs"
+            },
+            "proguardRules": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/proguard.txt"
+            },
+            "externalAnnotations": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/annotations.zip"
+            },
+            "publicResources": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/public.txt"
+            },
+            "symbolFile": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/androidLib-1.0-typeoneModetwoDebug/R.txt"
+            }
+          }
+        }
+      },
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib-api.jar"
+    ],
+    "coordinates": {
+      "group": "com.example",
+      "module": "kmpSecondLib-android",
+      "version": "1.0"
+    },
+    "extras": {
+      "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
+        "library": {
+          "type": "ANDROID_LIBRARY",
+          "libraryInfo": {
+            "componentInfo": {
+              "productFlavors": {},
+              "attributes": {
+                "org.gradle.category": "library",
+                "org.gradle.jvm.environment": "android",
+                "org.gradle.libraryelements": "aar",
+                "org.gradle.status": "release",
+                "org.gradle.usage": "java-api",
+                "org.jetbrains.kotlin.platform.type": "jvm"
+              },
+              "capabilities": [
+                "com.example:kmpSecondLib-android:1.0"
+              ],
+              "isTestFixtures": false
+            },
+            "group": "com.example",
+            "name": "kmpSecondLib-android",
+            "version": "1.0"
+          },
+          "artifact": {
+            "absolutePath": "{GRADLE_CACHE}/{MODULES_2}/{LIBRARY_COORDINATES}/{CHECKSUM}/kmpSecondLib.aar"
+          },
+          "androidLibraryData": {
+            "manifest": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/AndroidManifest.xml"
+            },
+            "compileJarFiles": [
+              {
+                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/jars/classes.jar"
+              }
+            ],
+            "runtimeJarFiles": [
+              {
+                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/jars/classes.jar"
+              }
+            ],
+            "resFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/res"
+            },
+            "resStaticLibrary": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/res.apk"
+            },
+            "assetsFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/assets"
+            },
+            "jniFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/jni"
+            },
+            "aidlFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/aidl"
+            },
+            "renderscriptFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/rs"
+            },
+            "proguardRules": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/proguard.txt"
+            },
+            "externalAnnotations": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/annotations.zip"
+            },
+            "publicResources": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/public.txt"
+            },
+            "symbolFile": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/R.txt"
+            }
+          }
+        }
+      },
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{INCLUDED_BUILD(kotlinMultiplatform)}/testRepo/com/example/kmpJvmOnly-jvm/1.0/kmpJvmOnly-jvm-1.0.jar"
+    ],
+    "coordinates": {
+      "group": "com.example",
+      "module": "kmpJvmOnly-jvm",
+      "version": "1.0"
+    },
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver",
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;sourcesClasspath": [
+        "{INCLUDED_BUILD(kotlinMultiplatform)}/testRepo/com/example/kmpJvmOnly-jvm/1.0/kmpJvmOnly-jvm-1.0-sources.jar"
+      ]
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.0-Beta/kotlin-stdlib-jdk8-1.9.0-Beta.jar"
+    ],
+    "coordinates": {
+      "group": "org.jetbrains.kotlin",
+      "module": "kotlin-stdlib-jdk8",
+      "version": "1.9.0-Beta"
+    },
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.0-Beta/kotlin-stdlib-jdk7-1.9.0-Beta.jar"
+    ],
+    "coordinates": {
+      "group": "org.jetbrains.kotlin",
+      "module": "kotlin-stdlib-jdk7",
+      "version": "1.9.0-Beta"
+    },
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib/1.9.0-Beta/kotlin-stdlib-1.9.0-Beta.jar"
+    ],
+    "coordinates": {
+      "group": "org.jetbrains.kotlin",
+      "module": "kotlin-stdlib",
+      "version": "1.9.0-Beta"
+    },
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/org/jetbrains/annotations/13.0/annotations-13.0.jar"
+    ],
+    "coordinates": {
+      "group": "org.jetbrains",
+      "module": "annotations",
+      "version": "13.0"
+    },
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver",
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;sourcesClasspath": [
+        "{LOCAL_REPO}/org/jetbrains/annotations/13.0/annotations-13.0-sources.jar"
+      ]
+    }
+  }
+]

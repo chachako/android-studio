@@ -35,6 +35,10 @@ class KotlinMultiplatformPublicationModelSnapshotTest: BaseModelComparator {
 
     @Test
     fun testModelDiffWhenLibsArePublished() {
+        project.publishLibs(
+            publishKmpFirstLib = false,
+        )
+
         val comparator = KmpModelComparator(
             project = project,
             testClass = this,
@@ -49,12 +53,8 @@ class KotlinMultiplatformPublicationModelSnapshotTest: BaseModelComparator {
             }
         )
 
-        comparator.compareModelDeltaAfterChange(
+        comparator.fetchAndCompareModels(
             projects = listOf(":kmpFirstLib")
-        ) {
-            project.publishLibs(
-                publishKmpFirstLib = false,
-            )
-        }
+        )
     }
 }
