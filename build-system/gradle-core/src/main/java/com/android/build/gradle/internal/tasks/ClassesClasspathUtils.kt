@@ -23,7 +23,6 @@ import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.TestComponentCreationConfig
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.publishing.PublishingSpecs
-import com.android.build.gradle.options.BooleanOption
 import org.gradle.api.file.FileCollection
 
 class ClassesClasspathUtils(
@@ -102,8 +101,7 @@ class ClassesClasspathUtils(
             // present in a single scope.
             mixedScopeClasses = creationConfig.services.fileCollection()
 
-            dexExternalLibsInArtifactTransform =
-                creationConfig.services.projectOptions[BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS]
+            dexExternalLibsInArtifactTransform = true
         }
 
         desugaringClasspathForArtifactTransforms = if (dexExternalLibsInArtifactTransform) {

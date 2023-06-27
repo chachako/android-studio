@@ -41,9 +41,9 @@ import com.android.testutils.generateAarWithContent
 import com.android.testutils.truth.DexClassSubject
 import com.android.testutils.truth.DexSubject
 import com.android.tools.profgen.ArtProfile
+import com.android.tools.smali.dexlib2.immutable.debug.ImmutableStartLocal
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth
-import com.android.tools.smali.dexlib2.immutable.debug.ImmutableStartLocal
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -459,7 +459,6 @@ class CoreLibraryDesugarTest {
 
         executor()
             .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM, false)
-            .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS, false)
             .run("clean", "app:assembleRelease")
 
         val out =

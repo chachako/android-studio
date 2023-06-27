@@ -43,7 +43,6 @@ class OptionVersionTest {
          */
         private val KNOWN_VIOLATING_DEPRECATED_OPTIONS: List<Option<*>> = listOf(
            BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM,
-           BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS
         )
 
         private fun getStableAgpVersionIgnoringDotReleases(versionString: String): AgpVersion {

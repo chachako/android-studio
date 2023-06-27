@@ -281,12 +281,6 @@ enum class BooleanOption(
         FeatureStage.SoftlyEnforced(VERSION_8_2)
     ),
 
-    ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS(
-        "android.enableDexingArtifactTransformForExternalLibs",
-        true,
-        FeatureStage.SoftlyEnforced(VERSION_8_2)
-    ),
-
     /* -------------------
      * DEPRECATED FEATURES
      */
@@ -627,6 +621,12 @@ enum class BooleanOption(
             Version.VERSION_8_2,
             "If you want to disable dexing in artifact transforms, use ${ENABLE_DEXING_ARTIFACT_TRANSFORM.propertyName} instead."
         )
+    ),
+
+    ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS(
+        "android.enableDexingArtifactTransformForExternalLibs",
+        true,
+        FeatureStage.Enforced(Version.VERSION_8_2)
     ),
 
     /* ----------------

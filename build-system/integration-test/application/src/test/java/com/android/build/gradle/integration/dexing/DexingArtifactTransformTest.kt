@@ -262,38 +262,6 @@ class DexingArtifactTransformTest {
         }
     }
 
-    @Test
-    fun testAllDexingTransformsDisabled() {
-        project.buildFile.appendText(
-            "\n" +
-                    """
-            android.defaultConfig.minSdkVersion = 21
-            dependencies {
-                implementation 'com.android.support:support-core-utils:$SUPPORT_LIB_VERSION'
-            }
-        """.trimIndent()
-        )
-        project.executor()
-            .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM, false)
-            .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS, false)
-            .run("assembleDebug")
-        project.buildResult.stdout.use { scanner ->
-            ScannerSubject.assertThat(scanner)
-                .doesNotContain(DexingExternalLibArtifactTransform::class.java.simpleName)
-        }
-
-        assertThat(
-            InternalArtifactType.EXTERNAL_LIBS_DEX_ARCHIVE_WITH_ARTIFACT_TRANSFORMS.getOutputDir(
-                project.buildDir
-            ).resolve("debug/out").listFiles()
-        ).isEmpty()
-        assertThat(
-            InternalArtifactType.EXTERNAL_LIBS_DEX_ARCHIVE.getOutputDir(project.buildDir).resolve(
-                "debug/out"
-            ).listFiles()
-        ).isNotEmpty()
-    }
-
     /** Regression test for b/154712997. */
     @Test
     fun testIncrementalBuildsWithArtifactTransformsDisabledAndClasspathSensitivity() {
@@ -333,7 +301,6 @@ dependencies {
         )
         project.executor()
             .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM, false)
-            .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS, false)
             .run("assembleDebug")
 
         // Modify external dependencies so dexing task actually needs to run.
@@ -349,52 +316,10 @@ dependencies {
 
         project.executor()
             .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM, false)
-            .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS, false)
             .run("assembleDebug")
         project.getApk(GradleTestProject.ApkType.DEBUG).use {
             assertThatApk(it).containsClass("Landroid/support/v4/app/NavUtils;")
         }
-    }
-
-    @Test
-    fun testEnablingAndDisablingExtLibDexingTransform() {
-        project.buildFile.appendText(
-            "\n" +
-                    """
-            android.defaultConfig.minSdkVersion = 21
-            dependencies {
-                implementation 'com.android.support:support-core-utils:$SUPPORT_LIB_VERSION'
-            }
-        """.trimIndent()
-        )
-        project.executor()
-            .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM, false)
-            .run("assembleDebug")
-        assertThat(
-            InternalArtifactType.EXTERNAL_LIBS_DEX_ARCHIVE_WITH_ARTIFACT_TRANSFORMS.getOutputDir(
-                project.buildDir
-            ).resolve("debug/out").listFiles()
-        ).isNotEmpty()
-        assertThat(
-            InternalArtifactType.EXTERNAL_LIBS_DEX_ARCHIVE.getOutputDir(project.buildDir).resolve(
-                "debug/out"
-            ).listFiles()
-        ).isEmpty()
-
-        project.executor()
-            .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM, false)
-            .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS, false)
-            .run("assembleDebug")
-        assertThat(
-            InternalArtifactType.EXTERNAL_LIBS_DEX_ARCHIVE_WITH_ARTIFACT_TRANSFORMS.getOutputDir(
-                project.buildDir
-            ).resolve("debug/out").listFiles()
-        ).isEmpty()
-        assertThat(
-            InternalArtifactType.EXTERNAL_LIBS_DEX_ARCHIVE.getOutputDir(project.buildDir).resolve(
-                "debug/out"
-            ).listFiles()
-        ).isNotEmpty()
     }
 
     @Test
@@ -448,11 +373,11 @@ dependencies {
             MavenRepoGenerator(
                     listOf(
                             MavenRepoGenerator.Library(
-                                    "com.example:lib:1.0",
+                                    "com.example:library:1.0",
                                     TestInputsGenerator.jarWithEmptyClasses(listOf("com/example/MyClass"))
                             ),
                             MavenRepoGenerator.Library(
-                                    "com.example:lib:2.0",
+                                    "com.example:library:2.0",
                                     TestInputsGenerator.jarWithEmptyClasses(listOf("com/example/MyClass"))
                             )
                     )
@@ -465,27 +390,27 @@ repositories {
     maven { url 'mavenRepo' }
 }
 dependencies {
-    implementation 'com.example:lib:1.0'
+    implementation 'com.example:library:1.0'
 }
         """.trimIndent()
         )
         project.executor().run("mergeExtDexDebug")
         val transformCacheDir = project.location.testLocation.gradleCacheDir
         assertThat(transformCacheDir.walk()
-                .filter { it.invariantSeparatorsPath.endsWith("lib-1.0/lib-1.0_dex/classes.dex") }
+                .filter { it.invariantSeparatorsPath.endsWith("library-1.0/library-1.0_dex/classes.dex") }
                 .single()).exists()
 
         project.buildFile.appendText(
                 """
 
 dependencies {
-    implementation 'com.example:lib:2.0'
+    implementation 'com.example:library:2.0'
 }
         """.trimIndent()
         )
         project.executor().run("mergeExtDexDebug")
         assertThat(transformCacheDir.walk()
-                .filter { it.invariantSeparatorsPath.endsWith("lib-2.0/lib-2.0_dex/classes.dex") }
+                .filter { it.invariantSeparatorsPath.endsWith("library-2.0/library-2.0_dex/classes.dex") }
                 .single()).exists()
     }
 
