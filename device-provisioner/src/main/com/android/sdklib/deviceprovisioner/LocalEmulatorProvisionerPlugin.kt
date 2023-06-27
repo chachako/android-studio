@@ -448,7 +448,8 @@ class LocalEmulatorProvisionerPlugin(
 class LocalEmulatorProperties(
   base: DeviceProperties,
   val avdName: String,
-  val displayName: String
+  val displayName: String,
+  val avdConfigProperties: Map<String, String>,
 ) : DeviceProperties by base {
 
   override val title = displayName
@@ -458,7 +459,12 @@ class LocalEmulatorProperties(
 
     inline fun build(avdInfo: AvdInfo, block: Builder.() -> Unit) =
       buildPartial(avdInfo).apply(block).run {
-        LocalEmulatorProperties(buildBase(), checkNotNull(avdName), checkNotNull(displayName))
+        LocalEmulatorProperties(
+          buildBase(),
+          checkNotNull(avdName),
+          checkNotNull(displayName),
+          avdInfo.properties
+        )
       }
 
     fun buildPartial(avdInfo: AvdInfo) =

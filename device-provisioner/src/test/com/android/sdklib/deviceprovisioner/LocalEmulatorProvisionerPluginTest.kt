@@ -328,6 +328,8 @@ class LocalEmulatorProvisionerPluginTest {
 
   private fun checkProperties(properties: LocalEmulatorProperties) {
     assertThat(properties.manufacturer).isEqualTo(MANUFACTURER)
+    assertThat(properties.avdConfigProperties[AvdManager.AVD_INI_DEVICE_MANUFACTURER])
+      .isEqualTo(MANUFACTURER)
     assertThat(properties.model).isEqualTo(MODEL)
     assertThat(properties.androidVersion).isEqualTo(API_LEVEL)
     assertThat(properties.abi).isEqualTo(ABI)
