@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-526e6ca2d5a0d2864fe319754c000ac528f5e0135c4372dfb08f8a2a0d2a869d
+b020ba64aedb2b3178b2809f53ec97b8089196c381dfcb526c10868525460b90
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -725,7 +725,9 @@ com.android.builder.model.v2.ide.LintOptions.getXmlOutput: java.io.File ()
 com.android.builder.model.v2.ide.LintOptions.getXmlReport: boolean ()
 com.android.builder.model.v2.ide.PrivacySandboxSdkInfo implements com.android.builder.model.v2.AndroidModel
 com.android.builder.model.v2.ide.PrivacySandboxSdkInfo.getOutputListingFile: java.io.File ()
+com.android.builder.model.v2.ide.PrivacySandboxSdkInfo.getOutputListingLegacyFile: java.io.File ()
 com.android.builder.model.v2.ide.PrivacySandboxSdkInfo.getTask: java.lang.String ()
+com.android.builder.model.v2.ide.PrivacySandboxSdkInfo.getTaskLegacy: java.lang.String ()
 com.android.builder.model.v2.ide.ProjectInfo implements com.android.builder.model.v2.ide.ComponentInfo
 com.android.builder.model.v2.ide.ProjectInfo.getBuildId: java.lang.String ()
 com.android.builder.model.v2.ide.ProjectInfo.getProjectPath: java.lang.String ()

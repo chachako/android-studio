@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.tasks
 import com.android.build.api.variant.impl.BuiltArtifactImpl
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.gradle.internal.component.ApkCreationConfig
+import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
@@ -107,14 +108,14 @@ abstract class ExtractPrivacySandboxCompatApks: NonIncrementalTask() {
                 variantName = "",
                 elements = elementList
 
-        ).saveToFile(outputDir.file(BuiltArtifactsImpl.METADATA_FILE_NAME).get().asFile)
+        ).saveToFile(apksFromBundleIdeModel.get().asFile)
     }
 
     class CreationAction(creationAction: ApkCreationConfig) :
             VariantTaskCreationAction<ExtractPrivacySandboxCompatApks, ApkCreationConfig>(creationAction) {
 
         override val name: String
-            get() = computeTaskName("extractApksFromSdkSplitsFor")
+            get() = getTaskName(creationConfig)
         override val type: Class<ExtractPrivacySandboxCompatApks>
             get() = ExtractPrivacySandboxCompatApks::class.java
 
@@ -141,6 +142,12 @@ abstract class ExtractPrivacySandboxCompatApks: NonIncrementalTask() {
             )
             task.applicationId.setDisallowChanges(creationConfig.applicationId)
             task.privacySandboxEnabled.setDisallowChanges(creationConfig.services.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT])
+        }
+
+        companion object {
+            fun getTaskName(creationAction: ComponentCreationConfig): String {
+                return creationAction.computeTaskName("extractApksFromSdkSplitsFor")
+            }
         }
     }
 }

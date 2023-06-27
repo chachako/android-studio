@@ -26,6 +26,8 @@ import java.io.Serializable
 data class PrivacySandboxSdkInfoImpl(
         override val task: String,
         override val outputListingFile: File,
+        override val taskLegacy: String,
+        override val outputListingLegacyFile: File,
 ) : PrivacySandboxSdkInfo, Serializable {
 
     companion object {

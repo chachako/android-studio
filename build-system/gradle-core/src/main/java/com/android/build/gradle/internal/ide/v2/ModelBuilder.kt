@@ -60,6 +60,7 @@ import com.android.build.gradle.internal.scope.MutableTaskContainer
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.AnchorTaskNames
 import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask
+import com.android.build.gradle.internal.tasks.ExtractPrivacySandboxCompatApks
 import com.android.build.gradle.internal.utils.getDesugarLibConfigFile
 import com.android.build.gradle.internal.utils.getDesugaredMethods
 import com.android.build.gradle.internal.utils.toImmutableSet
@@ -676,12 +677,19 @@ class ModelBuilder<
         if (!component.services.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT]) {
             return null
         }
-        return component.artifacts.get(InternalArtifactType.EXTRACTED_APKS_FROM_PRIVACY_SANDBOX_SDKs_IDE_MODEL).orNull?.let {
-            PrivacySandboxSdkInfoImpl(
+        val extractedApksFromPrivacySandboxIdeModel =
+                component.artifacts.get(InternalArtifactType.EXTRACTED_APKS_FROM_PRIVACY_SANDBOX_SDKs_IDE_MODEL).orNull?.asFile
+                        ?: return null
+        val legacyExtractedApksForPrivacySandboxIdeModel =
+                component.artifacts.get(InternalArtifactType.APK_FROM_SDKS_IDE_MODEL).orNull?.asFile
+                        ?: return null
+
+        return PrivacySandboxSdkInfoImpl(
                 task = BuildPrivacySandboxSdkApks.CreationAction.getTaskName(component),
-                outputListingFile = it.asFile,
-            )
-        }
+                outputListingFile = extractedApksFromPrivacySandboxIdeModel,
+                taskLegacy = ExtractPrivacySandboxCompatApks.CreationAction.getTaskName(component),
+                outputListingLegacyFile = legacyExtractedApksForPrivacySandboxIdeModel
+        )
     }
 
     private fun createAndroidArtifact(component: ComponentCreationConfig): AndroidArtifactImpl {
