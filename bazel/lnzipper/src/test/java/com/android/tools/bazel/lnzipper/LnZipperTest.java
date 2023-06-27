@@ -51,7 +51,9 @@ public class LnZipperTest {
         lnZipper.execute();
 
         try (ZipArchive archive = new ZipArchive(output)) {
-            assertThat(archive.listEntries()).containsExactly(fileA.toString(), fileB.toString());
+            assertThat(archive.listEntries())
+                    .containsExactly(fileA.toString(), fileB.toString())
+                    .inOrder();
         }
     }
 
@@ -90,7 +92,9 @@ public class LnZipperTest {
         lnZipper.execute();
 
         try (ZipArchive archive = new ZipArchive(output)) {
-            assertThat(archive.listEntries()).containsExactly("dir/fileA.txt", fileB.toString());
+            assertThat(archive.listEntries())
+                    .containsExactly("dir/fileA.txt", fileB.toString())
+                    .inOrder();
         }
     }
 

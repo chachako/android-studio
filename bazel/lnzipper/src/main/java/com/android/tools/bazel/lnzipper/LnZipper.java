@@ -38,7 +38,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -211,7 +211,7 @@ public class LnZipper {
         } else {
             fileArgs.addAll(args.subList(1, args.size()));
         }
-        Map<String, Entry> fileMap = new HashMap<>();
+        Map<String, Entry> fileMap = new LinkedHashMap<>();
         for (String fileArg : fileArgs) {
             Entry entry = new Entry();
             // check if file arguments are in the format zip_path=file
