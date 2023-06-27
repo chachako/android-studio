@@ -163,9 +163,8 @@ class LintStandaloneTest(
         val file = project.file("lint-results.txt")
         assertThat(file).exists()
         assertThat(file).contains("build.gradle:4: Warning: no Java language level directives")
-        // TODO(b/285413332)
-        //  assertThat(file).contains("MyClass.java:5: Warning: Use Boolean.valueOf(true) instead")
-        //  assertThat(file).contains("0 errors, 3 warnings")
+        assertThat(file).contains("MyClass.java:5: Warning: Use Boolean.valueOf(true) instead")
+        assertThat(file).contains("0 errors, 3 warnings")
     }
 
 
