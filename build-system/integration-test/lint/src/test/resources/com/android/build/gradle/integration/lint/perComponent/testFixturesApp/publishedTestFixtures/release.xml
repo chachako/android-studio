@@ -1,0 +1,29 @@
+<variant
+    name="release"
+    package="com.example.app"
+    minSdkVersion="14"
+    targetSdkVersion="14"
+    mergedManifest="build/intermediates/merged_manifest/release/AndroidManifest.xml"
+    partialResultsDir="build/intermediates/test_fixtures_lint_partial_results/release/out"
+    desugaredMethodsFiles="${gradleCacheDir}/<digest>/transformed/D8BackportedDesugaredMethods.txt">
+  <buildFeatures
+      namespacing="REQUIRED"/>
+  <sourceProviders>
+  </sourceProviders>
+  <testSourceProviders>
+  </testSourceProviders>
+  <testFixturesSourceProviders>
+    <sourceProvider
+        manifests="src/testFixtures/AndroidManifest.xml"
+        javaDirectories="src/testFixtures/java:src/testFixturesRelease/java:src/testFixtures/kotlin:src/testFixturesRelease/kotlin"
+        assetsDirectories="src/testFixtures/assets:src/testFixturesRelease/assets"
+        testFixture="true"/>
+  </testFixturesSourceProviders>
+  <artifact
+      classOutputs="build/intermediates/javac/releaseTestFixtures/classes"
+      type="TEST_FIXTURES"
+      applicationId="com.example.app.testFixtures"
+      generatedSourceFolders="build/generated/ap_generated_sources/releaseTestFixtures/out"
+      desugaredMethodsFiles="${gradleCacheDir}/<digest>/transformed/D8BackportedDesugaredMethods.txt">
+  </artifact>
+</variant>

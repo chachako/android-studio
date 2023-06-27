@@ -70,9 +70,8 @@ class LintStandaloneModelDependenciesTest {
         val artifactDependenciesFile =
             FileUtils.join(
                 project.getSubproject("java-lib1").intermediatesDir,
-                "lint_report_lint_model",
-                "global",
-                "generateJvmLintModel",
+                "lintAnalyzeJvmMain",
+                "android-lint-model",
                 "main-artifact-dependencies.xml"
             )
         assertThat(artifactDependenciesFile).exists()
@@ -82,10 +81,9 @@ class LintStandaloneModelDependenciesTest {
         val testArtifactDependenciesFile =
             FileUtils.join(
                 project.getSubproject("java-lib1").intermediatesDir,
-                "lint_report_lint_model",
-                "global",
-                "generateJvmLintModel",
-                "main-testArtifact-dependencies.xml"
+                "lintAnalyzeJvmTest",
+                "android-lint-model",
+                "main-artifact-dependencies.xml"
             )
         assertThat(testArtifactDependenciesFile).exists()
         assertThat(testArtifactDependenciesFile).containsAllOf("junit", "java-lib2")

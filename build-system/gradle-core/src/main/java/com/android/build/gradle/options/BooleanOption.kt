@@ -228,16 +228,6 @@ enum class BooleanOption(
     SUPPORT_PAST_STUDIO_VERSIONS("android.experimental.support.past.studio.versions", false, FeatureStage.Experimental),
 
     /**
-     * Whether to do lint analysis per component (instead of analysing the main variant and the test
-     * components in the same lint invocation).
-     */
-    LINT_ANALYSIS_PER_COMPONENT(
-        "android.experimental.lint.analysisPerComponent",
-        false,
-        FeatureStage.Experimental
-    ),
-
-    /**
      * Enables task to add version control info to APKs/Bundle
      */
     ENABLE_VCS_INFO("android.enableVcsInfo", false, FeatureStage.Experimental),
@@ -279,6 +269,16 @@ enum class BooleanOption(
         "android.enableDexingArtifactTransform",
         true,
         FeatureStage.SoftlyEnforced(VERSION_8_3)
+    ),
+
+    /**
+     * Whether to do lint analysis per component (instead of analysing the main variant and the test
+     * components in the same lint invocation).
+     */
+    LINT_ANALYSIS_PER_COMPONENT(
+        "android.experimental.lint.analysisPerComponent",
+        true,
+        FeatureStage.SoftlyEnforced(VERSION_9_0)
     ),
 
     /* -------------------

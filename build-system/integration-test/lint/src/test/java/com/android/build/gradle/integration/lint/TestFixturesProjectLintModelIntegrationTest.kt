@@ -16,17 +16,28 @@
 
 package com.android.build.gradle.integration.lint
 
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.options.BooleanOption
 import com.android.utils.FileUtils
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
-class TestFixturesProjectLintModelIntegrationTest {
+@RunWith(Parameterized::class)
+class TestFixturesProjectLintModelIntegrationTest(private val lintAnalysisPerComponent: Boolean) {
 
     @get:Rule
     val project: GradleTestProject =
         GradleTestProject.builder().fromTestProject("testFixturesApp").create()
+
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "lintAnalysisPerComponent_{0}")
+        fun params() = listOf(true, false)
+    }
 
     private fun setUpProject(publishJavaLib: Boolean, publishAndroidLib: Boolean) {
         project.getSubproject(":app").buildFile.appendText(
@@ -171,23 +182,36 @@ class TestFixturesProjectLintModelIntegrationTest {
             publishJavaLib = false,
             publishAndroidLib = false,
         )
-        project.executor().run(":app:lintRelease")
-        checkLintModels(
-            project = project,
-            lintModelDir = project.getSubproject("app").intermediatesDir.toPath()
-                .resolve("lint_report_lint_model/release/generateReleaseLintReportModel"),
-            modelSnapshotResourceRelativePath = "testFixturesApp/localTestFixtures",
-            "release-androidTestArtifact-dependencies.xml",
-            "release-androidTestArtifact-libraries.xml",
-            "release-artifact-dependencies.xml",
-            "release-artifact-libraries.xml",
-            "release-testArtifact-dependencies.xml",
-            "release-testArtifact-libraries.xml",
-            "release-testFixturesArtifact-dependencies.xml",
-            "release-testFixturesArtifact-libraries.xml",
-            "release.xml",
-            "module.xml",
-        )
+        getExecutor().run(":app:lintRelease")
+        if (lintAnalysisPerComponent) {
+            checkLintModels(
+                project = project,
+                lintModelDir = project.getSubproject("app").intermediatesDir.toPath()
+                    .resolve("incremental/lintAnalyzeReleaseTestFixtures"),
+                modelSnapshotResourceRelativePath = "perComponent/testFixturesApp/localTestFixtures",
+                "release-artifact-dependencies.xml",
+                "release-artifact-libraries.xml",
+                "release.xml",
+                "module.xml",
+            )
+        } else {
+            checkLintModels(
+                project = project,
+                lintModelDir = project.getSubproject("app").intermediatesDir.toPath()
+                    .resolve("lint_report_lint_model/release/generateReleaseLintReportModel"),
+                modelSnapshotResourceRelativePath = "testFixturesApp/localTestFixtures",
+                "release-androidTestArtifact-dependencies.xml",
+                "release-androidTestArtifact-libraries.xml",
+                "release-artifact-dependencies.xml",
+                "release-artifact-libraries.xml",
+                "release-testArtifact-dependencies.xml",
+                "release-testArtifact-libraries.xml",
+                "release-testFixturesArtifact-dependencies.xml",
+                "release-testFixturesArtifact-libraries.xml",
+                "release.xml",
+                "module.xml",
+            )
+        }
     }
 
     @Test
@@ -196,22 +220,40 @@ class TestFixturesProjectLintModelIntegrationTest {
             publishJavaLib = true,
             publishAndroidLib = true,
         )
-        project.executor().run(":app:lintRelease")
-        checkLintModels(
-            project = project,
-            lintModelDir = project.getSubproject("app").intermediatesDir.toPath()
-                .resolve("lint_report_lint_model/release/generateReleaseLintReportModel"),
-            modelSnapshotResourceRelativePath = "testFixturesApp/publishedTestFixtures",
-            "release-androidTestArtifact-dependencies.xml",
-            "release-androidTestArtifact-libraries.xml",
-            "release-artifact-dependencies.xml",
-            "release-artifact-libraries.xml",
-            "release-testArtifact-dependencies.xml",
-            "release-testArtifact-libraries.xml",
-            "release-testFixturesArtifact-dependencies.xml",
-            "release-testFixturesArtifact-libraries.xml",
-            "release.xml",
-            "module.xml",
-        )
+        getExecutor().run(":app:lintRelease")
+        if (lintAnalysisPerComponent) {
+            checkLintModels(
+                project = project,
+                lintModelDir = project.getSubproject("app").intermediatesDir.toPath()
+                    .resolve("incremental/lintAnalyzeReleaseTestFixtures"),
+                modelSnapshotResourceRelativePath = "perComponent/testFixturesApp/publishedTestFixtures",
+                "release-artifact-dependencies.xml",
+                "release-artifact-libraries.xml",
+                "release.xml",
+                "module.xml",
+            )
+        } else {
+            checkLintModels(
+                project = project,
+                lintModelDir = project.getSubproject("app").intermediatesDir.toPath()
+                    .resolve("lint_report_lint_model/release/generateReleaseLintReportModel"),
+                modelSnapshotResourceRelativePath = "testFixturesApp/publishedTestFixtures",
+                "release-androidTestArtifact-dependencies.xml",
+                "release-androidTestArtifact-libraries.xml",
+                "release-artifact-dependencies.xml",
+                "release-artifact-libraries.xml",
+                "release-testArtifact-dependencies.xml",
+                "release-testArtifact-libraries.xml",
+                "release-testFixturesArtifact-dependencies.xml",
+                "release-testFixturesArtifact-libraries.xml",
+                "release.xml",
+                "module.xml",
+            )
+        }
+    }
+
+    private fun getExecutor(): GradleTaskExecutor {
+        return project.executor()
+            .with(BooleanOption.LINT_ANALYSIS_PER_COMPONENT, lintAnalysisPerComponent)
     }
 }

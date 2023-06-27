@@ -23,10 +23,14 @@ import com.android.build.gradle.integration.common.truth.GradleTaskSubject.asser
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.lint.AndroidLintAnalysisTask
 import com.android.build.gradle.internal.scope.InternalArtifactType
-import com.android.build.gradle.internal.scope.InternalMultipleArtifactType
+import com.android.build.gradle.internal.scope.InternalArtifactType.ANDROID_TEST_LINT_PARTIAL_RESULTS
+import com.android.build.gradle.internal.scope.InternalArtifactType.LINT_PARTIAL_RESULTS
+import com.android.build.gradle.internal.scope.InternalArtifactType.TEST_FIXTURES_LINT_PARTIAL_RESULTS
+import com.android.build.gradle.internal.scope.InternalArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
+import org.gradle.api.file.Directory
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -184,103 +188,144 @@ class AndroidLintAnalysisTaskCacheabilityTest {
 
         // Assert that lint analysis outputs are identical and contain the project and build
         // directory encodings
-        listOf(":app", ":feature", ":lib", ":java-lib").forEach { moduleName ->
-            val partialResultsDir1 =
-                if (moduleName == ":java-lib") {
-                    FileUtils.join(
-                        project1.getSubproject(moduleName)
-                            .getIntermediateFile(
-                                InternalMultipleArtifactType.LINT_PARTIAL_RESULTS.getFolderName()
-                            ),
-                        "global",
-                        "lintAnalyzeJvm"
-                    )
-                } else {
-                    FileUtils.join(
-                        project1.getSubproject(moduleName)
-                            .getIntermediateFile(
-                                InternalArtifactType.LINT_PARTIAL_RESULTS.getFolderName()
-                            ),
-                        "debug",
-                        "out"
-                    )
-                }
-            val partialResultsDir2 =
-                if (moduleName == ":java-lib") {
-                    FileUtils.join(
-                        project2.getSubproject(moduleName)
-                            .getIntermediateFile(
-                                InternalMultipleArtifactType.LINT_PARTIAL_RESULTS.getFolderName()
-                            ),
-                        "global",
-                        "lintAnalyzeJvm"
-                    )
-                } else {
-                    FileUtils.join(
-                        project2.getSubproject(moduleName)
-                            .getIntermediateFile(
-                                InternalArtifactType.LINT_PARTIAL_RESULTS.getFolderName()
-                            ),
-                        "debug",
-                        "out"
-                    )
-                }
-            val lintDefiniteFileName = "lint-definite.xml"
-            val lintPartialFileName = "lint-partial.xml"
+        val moduleNameToArtifactTypeMap: Map<String, List<InternalArtifactType<Directory>>> =
+            mapOf(
+                ":app" to listOf(
+                    ANDROID_TEST_LINT_PARTIAL_RESULTS,
+                    LINT_PARTIAL_RESULTS,
+                    TEST_FIXTURES_LINT_PARTIAL_RESULTS,
+                    UNIT_TEST_LINT_PARTIAL_RESULTS
+                ),
+                ":feature" to listOf(
+                    ANDROID_TEST_LINT_PARTIAL_RESULTS,
+                    LINT_PARTIAL_RESULTS,
+                    UNIT_TEST_LINT_PARTIAL_RESULTS
+                ),
+                ":lib" to listOf(
+                    ANDROID_TEST_LINT_PARTIAL_RESULTS,
+                    LINT_PARTIAL_RESULTS,
+                    TEST_FIXTURES_LINT_PARTIAL_RESULTS,
+                    UNIT_TEST_LINT_PARTIAL_RESULTS
+                ),
+                ":java-lib" to listOf(
+                    LINT_PARTIAL_RESULTS,
+                    UNIT_TEST_LINT_PARTIAL_RESULTS
+                )
+            )
+        moduleNameToArtifactTypeMap.forEach { moduleName, artifactTypes ->
+            artifactTypes.forEach { artifactType ->
+                val partialResultsDir1 =
+                    if (moduleName == ":java-lib") {
+                        FileUtils.join(
+                            project1.getSubproject(moduleName)
+                                .getIntermediateFile(artifactType.getFolderName()),
+                            "global",
+                            if (artifactType == LINT_PARTIAL_RESULTS) {
+                                "lintAnalyzeJvmMain"
+                            } else {
+                                "lintAnalyzeJvmTest"
+                            }
+                        )
+                    } else {
+                        FileUtils.join(
+                            project1.getSubproject(moduleName)
+                                .getIntermediateFile(artifactType.getFolderName()),
+                            "debug",
+                            "out"
+                        )
+                    }
+                val partialResultsDir2 =
+                    if (moduleName == ":java-lib") {
+                        FileUtils.join(
+                            project2.getSubproject(moduleName)
+                                .getIntermediateFile(artifactType.getFolderName()),
+                            "global",
+                            if (artifactType == LINT_PARTIAL_RESULTS) {
+                                "lintAnalyzeJvmMain"
+                            } else {
+                                "lintAnalyzeJvmTest"
+                            }
+                        )
+                    } else {
+                        FileUtils.join(
+                            project2.getSubproject(moduleName)
+                                .getIntermediateFile(artifactType.getFolderName()),
+                            "debug",
+                            "out"
+                        )
+                    }
+                val lintDefiniteFileName = "lint-definite.xml"
+                val lintPartialFileName = "lint-partial.xml"
 
-            // First check that the contents of partialResultsDir1 and partialResultsDir2 are
-            // identical
-            listOf(partialResultsDir1, partialResultsDir2).forEach {
-                assertThat(it.listFiles()?.asList())
-                    .containsExactlyElementsIn(
-                        listOf(File(it, lintDefiniteFileName), File(it, lintPartialFileName))
-                    )
-            }
-            assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                .isEqualTo(File(partialResultsDir2, lintDefiniteFileName).readText())
-            assertThat(File(partialResultsDir1, lintPartialFileName).readText())
-                .isEqualTo(File(partialResultsDir2, lintPartialFileName).readText())
-
-            // Then for all subsequent checks, we only need to check partialResultsDir1
-            assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                .contains("{$moduleName*projectDir}")
-            if (moduleName == ":java-lib") {
+                // First check that the contents of partialResultsDir1 and partialResultsDir2 are
+                // identical
+                listOf(partialResultsDir1, partialResultsDir2).forEach {
+                    assertThat(it.listFiles()?.asList())
+                        .containsExactlyElementsIn(
+                            listOf(File(it, lintDefiniteFileName), File(it, lintPartialFileName))
+                        )
+                }
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*main*MAIN*sourceProvider*0*javaDir*0}")
-                assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*main*MAIN*sourceProvider*0*javaDir*1}")
-                assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*main*MAIN*testSourceProvider*0*javaDir*0}")
-                assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*main*MAIN*testSourceProvider*0*javaDir*1}")
-            } else {
-                // There are no lint issues in the java library's build directory, so only check for
-                // the build directory encoding in the android modules.
-                assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*buildDir}")
-                assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*debug*MAIN*sourceProvider*0*manifest*1}")
-                assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*debug*MAIN*sourceProvider*0*javaDir*0}")
+                    .isEqualTo(File(partialResultsDir2, lintDefiniteFileName).readText())
                 assertThat(File(partialResultsDir1, lintPartialFileName).readText())
-                    .contains("{$moduleName*debug*MAIN*sourceProvider*0*resDir*1}")
-                assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*debug*MAIN*testSourceProvider*0*javaDir*0}")
-                assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*debug*MAIN*testSourceProvider*0*javaDir*1}")
-                assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*debug*MAIN*testSourceProvider*1*javaDir*0}")
-            }
+                    .isEqualTo(File(partialResultsDir2, lintPartialFileName).readText())
 
-            // assert that the lint analysis outputs do not contain the extra source paths.
-            assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                .doesNotContain(extraSourceDirMap[moduleName]!!.name)
-            assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                .doesNotContain(extraTestSourceDirMap[moduleName]!!.name)
-            assertThat(File(partialResultsDir1, lintPartialFileName).readText())
-                .doesNotContain(extraSourceDirMap[moduleName]!!.name)
-            assertThat(File(partialResultsDir1, lintPartialFileName).readText())
-                .doesNotContain(extraTestSourceDirMap[moduleName]!!.name)
+                // Then for all subsequent checks, we only need to check partialResultsDir1
+                if (moduleName == ":java-lib") {
+                    if (artifactType == LINT_PARTIAL_RESULTS) {
+                        assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
+                            .contains("{$moduleName*projectDir}")
+                        assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
+                            .contains("{$moduleName*main*MAIN*sourceProvider*0*javaDir*0}")
+                        assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
+                            .contains("{$moduleName*main*MAIN*sourceProvider*0*javaDir*1}")
+                    } else {
+                        assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
+                            .contains("{$moduleName*main*UNIT_TEST*testSourceProvider*0*javaDir*0}")
+                        assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
+                            .contains("{$moduleName*main*UNIT_TEST*testSourceProvider*0*javaDir*1}")
+                    }
+                } else {
+                    when (artifactType) {
+                        ANDROID_TEST_LINT_PARTIAL_RESULTS -> {
+                            assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
+                                .contains("{$moduleName*debug*INSTRUMENTATION_TEST*testSourceProvider*0*javaDir*0}")
+                        }
+                        LINT_PARTIAL_RESULTS -> {
+                            assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
+                                .contains("{$moduleName*projectDir}")
+                            assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
+                                .contains("{$moduleName*buildDir}")
+                            assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
+                                .contains("{$moduleName*debug*MAIN*sourceProvider*0*manifest*1}")
+                            assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
+                                .contains("{$moduleName*debug*MAIN*sourceProvider*0*javaDir*0}")
+                            assertThat(File(partialResultsDir1, lintPartialFileName).readText())
+                                .contains("{$moduleName*debug*MAIN*sourceProvider*0*resDir*1}")
+                        }
+                        TEST_FIXTURES_LINT_PARTIAL_RESULTS -> {
+                            assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
+                                .contains("{$moduleName*debug*TEST_FIXTURES*testFixturesSourceProvider*0*javaDir*0}")
+                        }
+                        UNIT_TEST_LINT_PARTIAL_RESULTS -> {
+                            assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
+                                .contains("{$moduleName*debug*UNIT_TEST*testSourceProvider*0*javaDir*0}")
+                            assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
+                                .contains("{$moduleName*debug*UNIT_TEST*testSourceProvider*0*javaDir*1}")
+                        }
+                    }
+                }
+
+                // assert that the lint analysis outputs do not contain the extra source paths.
+                assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
+                    .doesNotContain(extraSourceDirMap[moduleName]!!.name)
+                assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
+                    .doesNotContain(extraTestSourceDirMap[moduleName]!!.name)
+                assertThat(File(partialResultsDir1, lintPartialFileName).readText())
+                    .doesNotContain(extraSourceDirMap[moduleName]!!.name)
+                assertThat(File(partialResultsDir1, lintPartialFileName).readText())
+                    .doesNotContain(extraTestSourceDirMap[moduleName]!!.name)
+            }
         }
     }
 
@@ -380,9 +425,18 @@ class AndroidLintAnalysisTaskCacheabilityTest {
         project1.executor().run("clean", ":app:lintDebug")
         project1.executor().run("clean", ":app:lintDebug")
         assertThat(project1.buildResult.getTask(":app:lintAnalyzeDebug")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":app:lintAnalyzeDebugAndroidTest")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":app:lintAnalyzeDebugTestFixtures")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":app:lintAnalyzeDebugUnitTest")).wasFromCache()
         assertThat(project1.buildResult.getTask(":feature:lintAnalyzeDebug")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":feature:lintAnalyzeDebugAndroidTest")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":feature:lintAnalyzeDebugUnitTest")).wasFromCache()
         assertThat(project1.buildResult.getTask(":lib:lintAnalyzeDebug")).wasFromCache()
-        assertThat(project1.buildResult.getTask(":java-lib:lintAnalyzeJvm")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":lib:lintAnalyzeDebugAndroidTest")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":lib:lintAnalyzeDebugTestFixtures")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":lib:lintAnalyzeDebugUnitTest")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":java-lib:lintAnalyzeJvmMain")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":java-lib:lintAnalyzeJvmTest")).wasFromCache()
     }
 }
 

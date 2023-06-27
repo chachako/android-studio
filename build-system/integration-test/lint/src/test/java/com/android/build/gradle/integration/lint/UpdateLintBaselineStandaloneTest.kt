@@ -61,7 +61,7 @@ class UpdateLintBaselineStandaloneTest {
         val baselineFile = File(project.projectDir, "lint-baseline.xml")
         PathSubject.assertThat(baselineFile).doesNotExist()
         val result1 = project.executor().run("updateLintBaseline")
-        GradleTaskSubject.assertThat(result1.getTask(":lintAnalyzeJvm")).didWork()
+        GradleTaskSubject.assertThat(result1.getTask(":lintAnalyzeJvmMain")).didWork()
         GradleTaskSubject.assertThat(result1.getTask(":updateLintBaselineJvm")).didWork()
         PathSubject.assertThat(baselineFile).exists()
 
@@ -71,7 +71,7 @@ class UpdateLintBaselineStandaloneTest {
         // changes since the last run. updateLintBaseline should still do work because it is never
         // UP-TO-DATE.
         val result2 = project.executor().run("updateLintBaseline")
-        GradleTaskSubject.assertThat(result2.getTask(":lintAnalyzeJvm")).wasUpToDate()
+        GradleTaskSubject.assertThat(result2.getTask(":lintAnalyzeJvmMain")).wasUpToDate()
         GradleTaskSubject.assertThat(result2.getTask(":updateLintBaselineJvm")).didWork()
         PathSubject.assertThat(baselineFile).exists()
         assertThat(baselineFile.readBytes()).isEqualTo(baselineFileContents)
@@ -82,7 +82,7 @@ class UpdateLintBaselineStandaloneTest {
         PathSubject.assertThat(baselineFile).exists()
         assertThat(baselineFile.readBytes()).isEqualTo(baselineFileContents)
         val result3 = project.executor().run("updateLintBaseline")
-        GradleTaskSubject.assertThat(result3.getTask(":lintAnalyzeJvm")).didWork()
+        GradleTaskSubject.assertThat(result3.getTask(":lintAnalyzeJvmMain")).didWork()
         GradleTaskSubject.assertThat(result3.getTask(":updateLintBaselineJvm")).didWork()
         PathSubject.assertThat(baselineFile).exists()
         assertThat(baselineFile.readBytes()).isEqualTo(baselineFileContents)
@@ -93,7 +93,7 @@ class UpdateLintBaselineStandaloneTest {
         val previousVersionsBaselineFileContents = baselineFile.readBytes()
         assertThat(previousVersionsBaselineFileContents).isNotEqualTo(baselineFileContents)
         val result4 = project.executor().run("updateLintBaseline")
-        GradleTaskSubject.assertThat(result4.getTask(":lintAnalyzeJvm")).wasUpToDate()
+        GradleTaskSubject.assertThat(result4.getTask(":lintAnalyzeJvmMain")).wasUpToDate()
         GradleTaskSubject.assertThat(result4.getTask(":updateLintBaselineJvm")).didWork()
         PathSubject.assertThat(baselineFile).exists()
         assertThat(baselineFile.readBytes()).isEqualTo(previousVersionsBaselineFileContents)
@@ -102,7 +102,7 @@ class UpdateLintBaselineStandaloneTest {
         baselineFile.writeText("invalid")
         assertThat(baselineFile.readBytes()).isNotEqualTo(baselineFileContents)
         val result5 = project.executor().run("updateLintBaseline")
-        GradleTaskSubject.assertThat(result5.getTask(":lintAnalyzeJvm")).wasUpToDate()
+        GradleTaskSubject.assertThat(result5.getTask(":lintAnalyzeJvmMain")).wasUpToDate()
         GradleTaskSubject.assertThat(result5.getTask(":updateLintBaselineJvm")).didWork()
         PathSubject.assertThat(baselineFile).exists()
         assertThat(baselineFile.readBytes()).isEqualTo(baselineFileContents)
@@ -110,7 +110,7 @@ class UpdateLintBaselineStandaloneTest {
         // Then test the case when a user runs updateLintBaseline and lint at the same time.
         val result6 = project.executor().run("updateLintBaseline", "lint")
         ScannerSubject.assertThat(result6.stdout).doesNotContain("Gradle detected a problem")
-        GradleTaskSubject.assertThat(result6.getTask(":lintAnalyzeJvm")).wasUpToDate()
+        GradleTaskSubject.assertThat(result6.getTask(":lintAnalyzeJvmMain")).wasUpToDate()
         GradleTaskSubject.assertThat(result6.getTask(":updateLintBaselineJvm")).didWork()
         PathSubject.assertThat(baselineFile).exists()
         assertThat(baselineFile.readBytes()).isEqualTo(baselineFileContents)
@@ -123,7 +123,7 @@ class UpdateLintBaselineStandaloneTest {
             ""
         )
         val result7 = project.executor().run(":updateLintBaseline")
-        GradleTaskSubject.assertThat(result7.getTask(":lintAnalyzeJvm")).wasUpToDate()
+        GradleTaskSubject.assertThat(result7.getTask(":lintAnalyzeJvmMain")).wasUpToDate()
         GradleTaskSubject.assertThat(result7.getTask(":updateLintBaselineJvm")).didWork()
         PathSubject.assertThat(baselineFile).doesNotExist()
         ScannerSubject.assertThat(result7.stdout)

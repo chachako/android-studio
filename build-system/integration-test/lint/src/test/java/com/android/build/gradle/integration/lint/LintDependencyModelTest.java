@@ -101,11 +101,19 @@ public class LintDependencyModelTest {
                 ImmutableList.of(
                         ":app:lintReportDebug",
                         ":app:lintAnalyzeDebug",
+                        ":app:lintAnalyzeDebugAndroidTest",
+                        ":app:lintAnalyzeDebugUnitTest",
                         ":androidlib:lintAnalyzeDebug",
-                        ":javalib:lintAnalyzeJvm",
-                        ":javalib2:lintAnalyzeJvm",
-                        ":indirectlib:lintAnalyzeJvm",
-                        ":indirectlib2:lintAnalyzeJvm");
+                        ":androidlib:lintAnalyzeDebugAndroidTest",
+                        ":androidlib:lintAnalyzeDebugUnitTest",
+                        ":javalib:lintAnalyzeJvmMain",
+                        ":javalib:lintAnalyzeJvmTest",
+                        ":javalib2:lintAnalyzeJvmMain",
+                        ":javalib2:lintAnalyzeJvmTest",
+                        ":indirectlib:lintAnalyzeJvmMain",
+                        ":indirectlib:lintAnalyzeJvmTest",
+                        ":indirectlib2:lintAnalyzeJvmMain",
+                        ":indirectlib2:lintAnalyzeJvmTest");
 
         GradleBuildResult firstResult = project.executor().run(":app:lintDebug");
         tasks.forEach(taskName -> assertThat(firstResult.findTask(taskName)).didWork());
