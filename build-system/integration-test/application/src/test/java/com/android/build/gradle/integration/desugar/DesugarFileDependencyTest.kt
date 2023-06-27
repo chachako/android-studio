@@ -23,9 +23,7 @@ import com.android.build.gradle.integration.common.runner.FilterableParameterize
 import com.android.build.gradle.integration.common.truth.ApkSubject.assertThat
 import com.android.build.gradle.integration.desugar.resources.ImplOfInterfaceWithDefaultMethod
 import com.android.build.gradle.integration.desugar.resources.InterfaceWithDefaultMethod
-import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.IntegerOption
-import com.android.build.gradle.options.OptionalBooleanOption
 import com.android.testutils.TestInputsGenerator
 import org.junit.Assume
 import org.junit.Before
@@ -40,8 +38,7 @@ import java.nio.file.Files
 class DesugarFileDependencyTest(var tool: Tool) {
 
     enum class Tool {
-        D8_WITH_ARTIFACT_TRANSFORMS,
-        D8_WITHOUT_ARTIFACT_TRANSFORMS,
+        D8,
         R8
     }
 
@@ -90,7 +87,7 @@ class DesugarFileDependencyTest(var tool: Tool) {
 
     @Test
     fun checkMinApi24WithArtifactTransformsDoesNotDesugar() {
-        Assume.assumeTrue(tool == Tool.D8_WITH_ARTIFACT_TRANSFORMS)
+        Assume.assumeTrue(tool == Tool.D8)
         project.buildFile.appendText("\nandroid.defaultConfig.minSdkVersion 24")
         executor().run("assembleDebug")
         project.getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
@@ -103,7 +100,7 @@ class DesugarFileDependencyTest(var tool: Tool) {
 
     @Test
     fun checkMinApi21WithInjectedDevice() {
-        Assume.assumeTrue(tool == Tool.D8_WITH_ARTIFACT_TRANSFORMS)
+        Assume.assumeTrue(tool == Tool.D8)
         project.buildFile.appendText("\nandroid.defaultConfig.minSdkVersion 21")
         executor()
             .with(IntegerOption.IDE_TARGET_DEVICE_API, 24)
@@ -122,7 +119,7 @@ class DesugarFileDependencyTest(var tool: Tool) {
     /** Regression test for http://b/146869072. */
     @Test
     fun checkIncrementalBuild() {
-        Assume.assumeTrue(tool == Tool.D8_WITH_ARTIFACT_TRANSFORMS)
+        Assume.assumeTrue(tool == Tool.D8)
         executor().run("assembleDebug")
 
         val updatedBuildFile = project.buildFile.readText().replace(
@@ -148,9 +145,5 @@ class DesugarFileDependencyTest(var tool: Tool) {
 
     private fun executor(): GradleTaskExecutor {
         return project.executor()
-            .with(
-                BooleanOption.ENABLE_DEXING_DESUGARING_ARTIFACT_TRANSFORM,
-                tool == Tool.D8_WITH_ARTIFACT_TRANSFORMS
-            )
     }
 }

@@ -1263,10 +1263,7 @@ abstract class TaskManager(
         val java8LangSupport = creationConfig.dexingCreationConfig.java8LangSupportType
         val supportsDesugaringViaArtifactTransform =
                 (java8LangSupport == Java8LangSupport.UNUSED
-                        || (java8LangSupport == Java8LangSupport.D8
-                        && creationConfig
-                        .services
-                        .projectOptions[BooleanOption.ENABLE_DEXING_DESUGARING_ARTIFACT_TRANSFORM]))
+                        || java8LangSupport == Java8LangSupport.D8)
 
         val classesAlteredTroughVariantAPI = creationConfig
             .artifacts

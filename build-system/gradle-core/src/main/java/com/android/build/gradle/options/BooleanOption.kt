@@ -263,13 +263,29 @@ enum class BooleanOption(
     /* ------------------------
      * SOFTLY-ENFORCED FEATURES
      */
-    ENABLE_RESOURCE_OPTIMIZATIONS("android.enableResourceOptimizations", true, FeatureStage.SoftlyEnforced(VERSION_9_0)),
+    ENABLE_RESOURCE_OPTIMIZATIONS(
+        "android.enableResourceOptimizations",
+        true,
+        FeatureStage.SoftlyEnforced(VERSION_9_0)
+    ),
 
-    ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM("android.experimental.androidTest.useUnifiedTestPlatform", true, FeatureStage.SoftlyEnforced(VERSION_9_0)),
+    ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM(
+        "android.experimental.androidTest.useUnifiedTestPlatform",
+        true,
+        FeatureStage.SoftlyEnforced(VERSION_9_0)
+    ),
 
-    ENABLE_DEXING_ARTIFACT_TRANSFORM("android.enableDexingArtifactTransform", true, FeatureStage.SoftlyEnforced(VERSION_8_2)),
-    ENABLE_DEXING_DESUGARING_ARTIFACT_TRANSFORM("android.enableDexingArtifactTransform.desugaring", true, FeatureStage.SoftlyEnforced(VERSION_8_2)),
-    ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS("android.enableDexingArtifactTransformForExternalLibs", true, FeatureStage.SoftlyEnforced(VERSION_8_2)),
+    ENABLE_DEXING_ARTIFACT_TRANSFORM(
+        "android.enableDexingArtifactTransform",
+        true,
+        FeatureStage.SoftlyEnforced(VERSION_8_2)
+    ),
+
+    ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS(
+        "android.enableDexingArtifactTransformForExternalLibs",
+        true,
+        FeatureStage.SoftlyEnforced(VERSION_8_2)
+    ),
 
     /* -------------------
      * DEPRECATED FEATURES
@@ -599,9 +615,18 @@ enum class BooleanOption(
     ),
 
     ENABLE_GLOBAL_SYNTHETICS(
-            "android.enableGlobalSyntheticsGeneration",
-            true,
-            FeatureStage.Enforced(Version.VERSION_8_1)
+        "android.enableGlobalSyntheticsGeneration",
+        true,
+        FeatureStage.Enforced(Version.VERSION_8_1)
+    ),
+
+    ENABLE_DEXING_DESUGARING_ARTIFACT_TRANSFORM(
+        "android.enableDexingArtifactTransform.desugaring",
+        true,
+        FeatureStage.Enforced(
+            Version.VERSION_8_2,
+            "If you want to disable dexing in artifact transforms, use ${ENABLE_DEXING_ARTIFACT_TRANSFORM.propertyName} instead."
+        )
     ),
 
     /* ----------------

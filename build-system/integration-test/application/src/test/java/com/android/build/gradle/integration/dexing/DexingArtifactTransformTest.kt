@@ -490,7 +490,5 @@ dependencies {
     }
 
     private fun executor() =
-        project.executor()
-            .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM, true)
-            .with(BooleanOption.ENABLE_DEXING_DESUGARING_ARTIFACT_TRANSFORM, true)
+        project.executor().with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM, true)
 }
