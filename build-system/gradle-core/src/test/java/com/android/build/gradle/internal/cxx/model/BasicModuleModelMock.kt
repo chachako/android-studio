@@ -442,7 +442,7 @@ open class BasicModuleModelMock {
         doReturn(listOf(Abi.X86.tag)).`when`(ndkInstallStatus.getOrThrow()).defaultAbis
 
         doReturn(ndkHandler).`when`(sdkComponents).versionedNdkHandler(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyString()
+            Mockito.anyString(), Mockito.anyString()
         )
         doReturn(ndkHandler).`when`(globalConfig).versionedNdkHandler
         doReturn(ndkInstallStatus).`when`(ndkHandler).ndkPlatform

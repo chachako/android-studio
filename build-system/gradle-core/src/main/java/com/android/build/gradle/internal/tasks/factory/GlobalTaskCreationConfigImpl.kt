@@ -239,7 +239,7 @@ class GlobalTaskCreationConfigImpl(
     override val versionedNdkHandler: SdkComponentsBuildService.VersionedNdkHandler by lazy {
         getBuildService(services.buildServiceRegistry, SdkComponentsBuildService::class.java)
             .get()
-            .versionedNdkHandler(compileSdkHashString, ndkVersion, ndkPath)
+            .versionedNdkHandler(ndkVersion, ndkPath)
     }
 
     override val buildAnalyzerIssueReporter: BuildAnalyzerIssueReporter? =

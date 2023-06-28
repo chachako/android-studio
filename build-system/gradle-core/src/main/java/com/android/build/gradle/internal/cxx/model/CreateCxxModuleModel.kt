@@ -49,7 +49,6 @@ fun createCxxModuleModel(
         return File(path)
     }
     val ndk = sdkComponents.versionedNdkHandler(
-        compileSdkVersion = configurationParameters.compileSdkVersion,
         ndkVersion = configurationParameters.ndkVersion,
         ndkPath = configurationParameters.ndkPath
     ).ndkPlatform.getOrThrow()

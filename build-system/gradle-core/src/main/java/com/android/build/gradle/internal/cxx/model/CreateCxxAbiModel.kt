@@ -78,7 +78,6 @@ fun createCxxAbiModel(
                 abiPlatformVersion =
                     sdkComponents
                             .versionedNdkHandler(
-                                compileSdkVersion = configurationParameters.compileSdkVersion,
                                 ndkVersion = configurationParameters.ndkVersion,
                                 ndkPath = configurationParameters.ndkPath
                             )
