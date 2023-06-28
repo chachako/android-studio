@@ -20,6 +20,7 @@ import com.android.adblib.skipRemaining
 import com.android.adblib.tools.debugging.impl.SupportsOffline
 import com.android.adblib.tools.debugging.packets.ddms.withPayload
 import com.android.adblib.utils.ResizableBuffer
+import kotlinx.coroutines.sync.Mutex
 import java.nio.ByteBuffer
 
 /**
@@ -41,8 +42,13 @@ internal interface PayloadProvider: SupportsOffline<PayloadProvider>, AutoClosea
      * **Note: Do NOT use directly, use [withPayload] instead**
      *
      * Releases the [AdbInputChannel] previously returned by [acquirePayload]
+     *
+     * **Note to implementors**: Similar to [Mutex.unlock] (for example), this function is
+     * **not** a `suspend` function "by design", to ensure that a `finally` block that calls
+     * [releasePayload] is executed even when a coroutine cancellation occurs in the
+     * `try` block corresponding to the `finally` block.
      */
-    suspend fun releasePayload()
+    fun releasePayload()
 
     /**
      * Shuts down this [PayloadProvider], releasing resources if necessary.
@@ -95,7 +101,7 @@ internal interface PayloadProvider: SupportsOffline<PayloadProvider>, AutoClosea
                 return AdbBufferedInputChannel.empty()
             }
 
-            override suspend fun releasePayload() {
+            override fun releasePayload() {
                 // Nothing to do
             }
 
@@ -126,11 +132,12 @@ internal interface PayloadProvider: SupportsOffline<PayloadProvider>, AutoClosea
 
             override suspend fun acquirePayload(): AdbInputChannel {
                 throwIfClosed()
+                bufferedPayload.rewind()
                 return bufferedPayload
             }
 
-            override suspend fun releasePayload() {
-                bufferedPayload.rewind()
+            override fun releasePayload() {
+                // Nothing to do
             }
 
             override suspend fun shutdown(workBuffer: ResizableBuffer) {

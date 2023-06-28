@@ -54,12 +54,12 @@ import com.android.adblib.tools.debugging.sendVmExit
 import com.android.adblib.tools.debugging.toByteArray
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.adblib.tools.testutils.FakeJdwpCommandProgress
+import com.android.adblib.tools.testutils.NanoTimeSpan
 import com.android.adblib.tools.testutils.toMutable
 import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
 import com.android.adblib.utils.ResizableBuffer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
@@ -78,7 +78,6 @@ import org.junit.Assert.fail
 import org.junit.Test
 import java.io.IOException
 import java.nio.ByteBuffer
-import java.time.Duration
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -212,7 +211,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         val def = (0 until receiverCount).map { index ->
             readyDef.add(CompletableDeferred())
             async {
-                class EndReceiveException(val timeSpan: FlowTimeSpan) : Exception()
+                class EndReceiveException(val timeSpan: NanoTimeSpan) : Exception()
                 try {
                     jdwpSession.newPacketReceiver()
                         .onActivation { readyDef[index].complete(Unit) }
@@ -220,7 +219,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
                             val start = System.nanoTime()
                             delay(500)
                             val end = System.nanoTime()
-                            throw EndReceiveException(FlowTimeSpan(start, end))
+                            throw EndReceiveException(NanoTimeSpan(start, end))
                         }
                     throw IllegalStateException("Receiver did not end")
                 } catch(e: EndReceiveException) {
@@ -240,7 +239,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         def.awaitAll()
 
         // Assert
-        assertFlowTimeSpansAreInterleaved(def, receiverCount, 500)
+        NanoTimeSpan.assertNanoTimeSpansAreInterleaved(def.awaitAll(), receiverCount, 500)
     }
 
     @Test
@@ -769,27 +768,6 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         return registerCloseable(SharedJdwpSession.create(jdwpSession, pid))
     }
 
-    private suspend fun assertFlowTimeSpansAreInterleaved(
-        timeSpans: List<Deferred<FlowTimeSpan>>,
-        expectedEntryCount: Int,
-        entryDurationMillis: Int,
-    ) {
-        // Assert expected number of time spans
-        assertEquals(expectedEntryCount, timeSpans.size)
-
-        // Given each "entry" is expected to run at least "entryDurationMillis" and we want to
-        // assert their execution were not serialized, we can assert the range of time span
-        // collected by each entry is not as large as the expected duration if they were
-        // executed sequentially.
-        val minStartNano = timeSpans.minOf { it.await().startNano }
-        val maxEndNano = timeSpans.maxOf { it.await().endNano }
-        val measuredDuration = Duration.ofNanos(maxEndNano - minStartNano)
-        val maximumExpectedDuration = Duration.ofMillis(expectedEntryCount * entryDurationMillis.toLong())
-
-        assertTrue("$measuredDuration <= $maximumExpectedDuration (Time spans should be interleaved)",
-                   measuredDuration <= maximumExpectedDuration)
-    }
-
     private suspend fun JdwpPacketView.isApnmCommand(): Boolean {
         return isDdmsCommand &&
                 ddmsChunks().firstOrNull { it.type == DdmsChunkType.APNM } != null
@@ -846,6 +824,4 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
     }
 
     private class EndReceiveException: Exception()
-
-    private data class FlowTimeSpan(val startNano: Long, val endNano: Long)
 }

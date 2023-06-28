@@ -123,7 +123,7 @@ internal class MutableJdwpPacket : JdwpPacketView {
         return payloadProvider.acquirePayload()
     }
 
-    override suspend fun releasePayload() {
+    override fun releasePayload() {
         payloadProvider.releasePayload()
     }
 

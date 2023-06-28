@@ -15,6 +15,8 @@
  */
 package com.android.adblib.tools.debugging.packets
 
+import com.android.adblib.AdbInputChannel
+import com.android.adblib.readNBytes
 import com.android.adblib.readRemaining
 import com.android.adblib.testingutils.ByteBufferUtils
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
@@ -22,9 +24,16 @@ import com.android.adblib.tools.debugging.impl.EphemeralJdwpPacket
 import com.android.adblib.tools.debugging.packets.JdwpCommands.CmdSet.SET_THREADREF
 import com.android.adblib.tools.debugging.packets.JdwpCommands.ThreadRefCmd.CMD_THREADREF_NAME
 import com.android.adblib.tools.debugging.toByteArray
+import com.android.adblib.tools.testutils.NanoTimeSpan
+import com.android.adblib.tools.testutils.NanoTimeSpan.Companion.assertNanoTimeSpansAreSorted
 import com.android.adblib.utils.ResizableBuffer
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.junit.Assert
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
@@ -205,6 +214,61 @@ class EphemeralJdwpPacketTest {
     }
 
     @Test
+    fun testPacketSupportsAccessToPayload() = runBlockingWithTimeout {
+        // Prepare
+        val payloadBuffer = ByteBuffer.wrap(byteArrayOf(1, 2, 3, 4, 5))
+        val packet = EphemeralJdwpPacket.Command(
+            id = 5,
+            length = JdwpPacketConstants.PACKET_HEADER_LENGTH + payloadBuffer.remaining(),
+            cmdSet = 0,
+            cmd = 0,
+            payloadProvider = PayloadProvider.forByteBuffer(payloadBuffer)
+        )
+
+        // Act
+        val buffer = packet.withPayload {
+            it.readAsByteArray()
+        }
+
+        // Assert
+        assertArrayEquals(byteArrayOf(1, 2, 3, 4, 5), buffer)
+    }
+
+    @Test
+    fun testPacketSupportsCancellationOfPayloadRead() = runBlockingWithTimeout {
+        // Prepare
+        val payloadBuffer = ByteBuffer.wrap(byteArrayOf(1, 2, 3, 4, 5))
+        val packet = EphemeralJdwpPacket.Command(
+            id = 5,
+            length = JdwpPacketConstants.PACKET_HEADER_LENGTH + payloadBuffer.remaining(),
+            cmdSet = 0,
+            cmd = 0,
+            payloadProvider = PayloadProvider.forByteBuffer(payloadBuffer)
+        )
+        val first2BytesRead = CompletableDeferred<Unit>()
+
+        // Act: Read 2 bytes from input channel, then cancel
+        val job = launch {
+            packet.withPayload {
+                val workBuffer = ResizableBuffer()
+                it.readNBytes(workBuffer, 2)
+                first2BytesRead.complete(Unit)
+                delay(50_000)
+            }
+        }
+        first2BytesRead.await()
+        job.cancel("Cancellation from test")
+
+        // Read input channel again, we should get all the data (i.e. 5 bytes)
+        val buffer = packet.withPayload {
+            it.readAsByteArray()
+        }
+
+        // Assert
+        assertArrayEquals(byteArrayOf(1, 2, 3, 4, 5), buffer)
+    }
+
+    @Test
     fun testPacketToStringForCommandPacket() {
         // Prepare
         val sourcePacket = MutableJdwpPacket()
@@ -261,14 +325,12 @@ class EphemeralJdwpPacketTest {
         buffer.flip()
 
         // Act
-        val packet =
-            EphemeralJdwpPacket.fromPacket(sourcePacket, PayloadProvider.forByteBuffer(buffer))
+        val packet = EphemeralJdwpPacket.fromPacket(sourcePacket,
+                                                    PayloadProvider.forByteBuffer(buffer))
         val offlinePacket = packet.toOffline()
         packet.shutdown()
         val readBuffer = offlinePacket.withPayload {
-            val workBuffer = ResizableBuffer()
-            it.readRemaining(workBuffer)
-            ByteBufferUtils.byteBufferToByteArray(workBuffer.afterChannelRead(useMarkedPosition = false))
+            it.readAsByteArray()
         }
 
         // Assert
@@ -348,5 +410,76 @@ class EphemeralJdwpPacketTest {
         payloads.forEach { payload ->
             assertArrayEquals(byteArrayOf(1, 2, 3, 4, 5), payload)
         }
+    }
+
+    @Test
+    fun testOfflinePacketPayloadAccessIsSerialized() = runBlockingWithTimeout {
+        // Prepare
+        val payloadBuffer = ByteBuffer.wrap(byteArrayOf(1, 2, 3, 4, 5))
+        val sourcePacket = EphemeralJdwpPacket.Command(
+            id = 5,
+            length = JdwpPacketConstants.PACKET_HEADER_LENGTH + payloadBuffer.remaining(),
+            cmdSet = 0,
+            cmd = 0,
+            payloadProvider = PayloadProvider.forByteBuffer(payloadBuffer)
+        )
+        val taskCount = 1_000
+
+        // Act
+        val packet = sourcePacket.toOffline()
+        val timeSpans = (1..taskCount).map {
+            async(Dispatchers.Default) {
+                packet.withPayload {
+                    val startNano = System.nanoTime()
+                    it.toByteArray(packet.payloadLength)
+                    delay(1)
+                    NanoTimeSpan(startNano, System.nanoTime())
+                }
+            }
+        }.awaitAll()
+
+        // Assert
+        assertNanoTimeSpansAreSorted(timeSpans, taskCount)
+    }
+
+    @Test
+    fun testOfflinePacketSupportsCancellationOfPayloadRead() = runBlockingWithTimeout {
+        // Prepare
+        val payloadBuffer = ByteBuffer.wrap(byteArrayOf(1, 2, 3, 4, 5))
+        val sourcePacket = EphemeralJdwpPacket.Command(
+            id = 5,
+            length = JdwpPacketConstants.PACKET_HEADER_LENGTH + payloadBuffer.remaining(),
+            cmdSet = 0,
+            cmd = 0,
+            payloadProvider = PayloadProvider.forByteBuffer(payloadBuffer)
+        )
+        val packet = sourcePacket.toOffline()
+        val first2BytesRead = CompletableDeferred<Unit>()
+
+        // Act: Read 2 bytes from input channel, then cancel
+        val job = launch {
+            packet.withPayload {
+                val workBuffer = ResizableBuffer()
+                it.readNBytes(workBuffer, 2)
+                first2BytesRead.complete(Unit)
+                delay(50_000)
+            }
+        }
+        first2BytesRead.await()
+        job.cancel("Cancellation from test")
+
+        // Read input channel again, we should get all the data (i.e. 5 bytes)
+        val buffer = packet.withPayload {
+            it.readAsByteArray()
+        }
+
+        // Assert
+        assertArrayEquals(byteArrayOf(1, 2, 3, 4, 5), buffer)
+    }
+
+    private suspend fun AdbInputChannel.readAsByteArray(): ByteArray {
+        val workBuffer = ResizableBuffer()
+        readRemaining(workBuffer)
+        return ByteBufferUtils.byteBufferToByteArray(workBuffer.afterChannelRead(false))
     }
 }

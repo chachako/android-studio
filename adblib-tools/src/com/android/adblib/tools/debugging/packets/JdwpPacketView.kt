@@ -79,7 +79,7 @@ interface JdwpPacketView {
      *
      * @see [PayloadProvider.releasePayload]
      */
-    suspend fun releasePayload()
+    fun releasePayload()
 
     /**
      * Creates an "offline" version of this [JdwpPacketView] that is thread-safe, immutable and has

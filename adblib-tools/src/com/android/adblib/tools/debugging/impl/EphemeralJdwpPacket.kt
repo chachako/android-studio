@@ -25,7 +25,6 @@ import com.android.adblib.tools.debugging.packets.toStringImpl
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.utils.ResizableBuffer
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 /**
  * Base class for [JdwpPacketView] implementation that are immutable and wrap the
@@ -71,7 +70,7 @@ internal abstract class AbstractJdwpPacketView protected constructor(
         return payloadProvider.acquirePayload()
     }
 
-    override suspend fun releasePayload() {
+    override fun releasePayload() {
         payloadProvider.releasePayload()
     }
 
@@ -224,15 +223,13 @@ internal open class EphemeralJdwpPacket private constructor(
         private val payloadMutex = Mutex()
 
         override suspend fun acquirePayload(): AdbInputChannel {
-            return payloadMutex.withLock {
-                super.acquirePayload()
-            }
+            payloadMutex.lock()
+            return super.acquirePayload()
         }
 
-        override suspend fun releasePayload() {
-            return payloadMutex.withLock {
-                super.releasePayload()
-            }
+        override fun releasePayload() {
+            super.releasePayload()
+            payloadMutex.unlock()
         }
 
         override suspend fun toOffline(workBuffer: ResizableBuffer): OfflineJdwpPacket {

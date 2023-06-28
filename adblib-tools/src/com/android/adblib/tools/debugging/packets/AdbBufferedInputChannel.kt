@@ -118,6 +118,10 @@ interface AdbBufferedInputChannel : AdbInputChannel {
                 // Use the same source buffer, same position, same limit
                 return forByteBuffer(sourceBuffer)
             }
+
+            override fun toString(): String {
+                return "${this::class.simpleName}(buffer=$buffer, rewindPosition=$rewindPosition, input=$input)"
+            }
         }
 
         /**

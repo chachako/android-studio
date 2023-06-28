@@ -52,7 +52,7 @@ interface DdmsChunkView {
      *
      * @see [PayloadProvider.releasePayload]
      */
-    suspend fun releasePayload()
+    fun releasePayload()
 }
 
 /**

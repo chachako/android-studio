@@ -440,7 +440,8 @@ internal class SharedJdwpSessionImpl(
                 return AdbBufferedInputChannel.empty()
             }
 
-            override suspend fun releasePayload() {
+            override fun releasePayload() {
+                // Nothing to do
             }
 
             override suspend fun toOffline(workBuffer: ResizableBuffer): JdwpPacketView {
@@ -481,13 +482,13 @@ internal class SharedJdwpSessionImpl(
 
         override suspend fun acquirePayload(): AdbInputChannel {
             throwIfClosed()
+            scopedPayload.waitForPendingRead()
             mutex.lock()
+            scopedPayload.rewind()
             return scopedPayload
         }
 
-        override suspend fun releasePayload() {
-            scopedPayload.waitForPendingRead()
-            scopedPayload.rewind()
+        override fun releasePayload() {
             mutex.unlock()
         }
 
