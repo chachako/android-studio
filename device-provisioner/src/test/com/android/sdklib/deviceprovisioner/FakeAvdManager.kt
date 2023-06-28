@@ -22,6 +22,7 @@ import com.android.adblib.DeviceSelector
 import com.android.adblib.DeviceState
 import com.android.adblib.testing.FakeAdbSession
 import com.android.sdklib.AndroidVersion
+import com.android.sdklib.ISystemImage
 import com.android.sdklib.internal.avd.AvdInfo
 import com.android.sdklib.internal.avd.AvdManager
 import com.android.sdklib.repository.IdDisplay
@@ -35,9 +36,8 @@ class FakeAvdManager(val session: FakeAdbSession) : LocalEmulatorProvisionerPlug
 
   override suspend fun rescanAvds(): List<AvdInfo> = synchronized(avds) { avds.toList() }
 
-  override suspend fun createAvd(): Boolean {
-    createAvd(makeAvdInfo(avdIndex++))
-    return true
+  override suspend fun createAvd(): AvdInfo? {
+    return makeAvdInfo(avdIndex++).also { createAvd(it) }
   }
 
   fun createAvd(avdInfo: AvdInfo) {
@@ -71,11 +71,17 @@ class FakeAvdManager(val session: FakeAdbSession) : LocalEmulatorProvisionerPlug
     )
   }
 
-  override suspend fun editAvd(avdInfo: AvdInfo): Boolean =
+  override suspend fun editAvd(avdInfo: AvdInfo): AvdInfo? =
     synchronized(avds) {
       avds.remove(avdInfo)
-      avds += makeAvdInfo(avdIndex++)
-      return true
+      val newAvdInfo =
+        avdInfo.copy(
+          properties =
+            avdInfo.properties +
+              (AvdManager.AVD_INI_DISPLAY_NAME to avdInfo.displayName + " Edited")
+        )
+      avds += newAvdInfo
+      return newAvdInfo
     }
 
   override suspend fun startAvd(avdInfo: AvdInfo, coldBoot: Boolean) {
@@ -154,3 +160,12 @@ class FakeAvdManager(val session: FakeAdbSession) : LocalEmulatorProvisionerPlug
       )
   }
 }
+
+fun AvdInfo.copy(
+  name: String = this.name,
+  iniFile: Path = this.iniFile,
+  folderPath: Path = this.dataFolderPath,
+  systemImage: ISystemImage? = this.systemImage,
+  properties: Map<String, String> = this.properties,
+  status: AvdInfo.AvdStatus = this.status,
+): AvdInfo = AvdInfo(name, iniFile, folderPath, systemImage, properties, status)

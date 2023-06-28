@@ -107,6 +107,13 @@ sealed interface DeviceState {
 
 /** A problem with a device. */
 interface DeviceError {
+  enum class Severity {
+    INFO,
+    WARNING,
+    ERROR
+  }
+  val severity: Severity
+
   /** User-visible representation of the device error. */
   val message: String
 }

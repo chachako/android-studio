@@ -54,6 +54,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -85,8 +86,8 @@ class LocalEmulatorProvisionerPlugin(
    */
   interface AvdManager {
     suspend fun rescanAvds(): List<AvdInfo>
-    suspend fun createAvd(): Boolean
-    suspend fun editAvd(avdInfo: AvdInfo): Boolean
+    suspend fun createAvd(): AvdInfo?
+    suspend fun editAvd(avdInfo: AvdInfo): AvdInfo?
     suspend fun startAvd(avdInfo: AvdInfo, coldBoot: Boolean)
     suspend fun stopAvd(avdInfo: AvdInfo)
     suspend fun showOnDisk(avdInfo: AvdInfo)
@@ -143,14 +144,7 @@ class LocalEmulatorProvisionerPlugin(
                 disconnectedState(avdInfo),
                 avdInfo
               )
-          else ->
-            // Update the avdInfo if we're not currently running. If we are running, the old
-            // values are probably still in effect, but we will update on the next scan after
-            // shutdown.
-            if (handle.avdInfo != avdInfo && handle.state is Disconnected) {
-              handle.avdInfo = avdInfo
-              handle.stateFlow.value = disconnectedState(avdInfo)
-            }
+          else -> handle.maybeUpdateAvdInfo(avdInfo)
         }
       }
 
@@ -209,6 +203,8 @@ class LocalEmulatorProvisionerPlugin(
       handle.stateFlow.value = disconnectedState(handle.avdInfo)
       logger.debug { "Device ${device.serialNumber} closed; disconnecting from console" }
       emulatorConsoles.remove(device)?.close()
+      // Pick up any changes that were made while the device was online
+      refreshDevices()
     }
 
     logger.debug { "Linked ${device.serialNumber} to AVD at $path" }
@@ -259,7 +255,7 @@ class LocalEmulatorProvisionerPlugin(
       override val presentation = MutableStateFlow(defaultPresentation.fromContext()).asStateFlow()
 
       override suspend fun create() {
-        if (avdManager.createAvd()) {
+        if (avdManager.createAvd() != null) {
           refreshDevices()
         }
       }
@@ -284,6 +280,30 @@ class LocalEmulatorProvisionerPlugin(
       set(value) {
         avdInfoFlow.value = value
       }
+
+    var pendingAvdInfo: AvdInfo? = null
+
+    /**
+     * Update the avdInfo if we're not currently running. If we are running, the old values are
+     * probably still in effect, but we will update on the next scan after shutdown.
+     */
+    fun maybeUpdateAvdInfo(newAvdInfo: AvdInfo) {
+      if (this.avdInfo != newAvdInfo) {
+        stateFlow.update {
+          when (it) {
+            is Disconnected -> {
+              this.avdInfo = newAvdInfo
+              this.pendingAvdInfo = null
+              disconnectedState(newAvdInfo)
+            }
+            is Connected -> {
+              pendingAvdInfo = newAvdInfo
+              if (it.error == null) it.copy(error = AvdChangedError) else it
+            }
+          }
+        }
+      }
+    }
 
     /** The emulator console is present when the device is connected. */
     val emulatorConsole: EmulatorConsole?
@@ -329,9 +349,7 @@ class LocalEmulatorProvisionerPlugin(
           MutableStateFlow(defaultPresentation.fromContext()).asStateFlow()
 
         override suspend fun edit() {
-          if (avdManager.editAvd(avdInfo)) {
-            refreshDevices()
-          }
+          avdManager.editAvd(pendingAvdInfo ?: avdInfo)?.let { maybeUpdateAvdInfo(it) }
         }
       }
 
@@ -415,7 +433,7 @@ class LocalEmulatorProvisionerPlugin(
         override val presentation = MutableStateFlow(defaultPresentation.fromContext())
 
         override suspend fun duplicate() {
-          avdManager.duplicateAvd(avdInfo)
+          avdManager.duplicateAvd(pendingAvdInfo ?: avdInfo)
           refreshDevices()
         }
       }
@@ -526,7 +544,14 @@ private val AvdInfo.resolution
 private val AvdInfo.deviceError
   get() = errorMessage?.let { AvdDeviceError(status, it) }
 
-private class AvdDeviceError(val status: AvdStatus, override val message: String) : DeviceError
+private class AvdDeviceError(val status: AvdStatus, override val message: String) : DeviceError {
+  override val severity = DeviceError.Severity.WARNING
+}
+
+internal object AvdChangedError : DeviceError {
+  override val severity = DeviceError.Severity.INFO
+  override val message = "Changes will apply on restart"
+}
 
 private fun IdDisplay.toDeviceType(): DeviceType =
   when (this) {

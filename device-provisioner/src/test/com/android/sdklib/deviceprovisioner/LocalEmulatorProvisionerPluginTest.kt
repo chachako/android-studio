@@ -19,6 +19,7 @@ import com.android.adblib.testing.FakeAdbSession
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.android.sdklib.AndroidVersion
+import com.android.sdklib.deviceprovisioner.DeviceState.Connected
 import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import com.android.sdklib.devices.Abi
 import com.android.sdklib.internal.avd.AvdInfo
@@ -28,6 +29,7 @@ import com.android.sdklib.repository.targets.SystemImage
 import com.google.common.truth.Truth.assertThat
 import java.nio.file.Path
 import java.time.Duration
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
@@ -195,6 +197,49 @@ class LocalEmulatorProvisionerPluginTest {
     handle.activationAction?.activate()
 
     assertThat(handle.state.properties.deviceType).isEqualTo(DeviceType.TV)
+  }
+
+  @Test
+  fun editDevice() = runBlockingWithTimeout {
+    avdManager.createAvd(avdManager.makeAvdInfo(1, tag = SystemImage.GOOGLE_TV_TAG))
+
+    val channel = Channel<DeviceState>()
+
+    yieldUntil { provisioner.devices.value.size == 1 }
+
+    val handle = provisioner.devices.value[0]
+    val name = handle.state.properties.title
+
+    val job = launch { handle.stateFlow.collect { channel.send(it) } }
+
+    // Editing the device adds "Edited" to its name
+    handle.editAction?.edit()
+
+    channel.receiveUntilPassing { newState ->
+      assertThat(newState.properties.title).isEqualTo("$name Edited")
+    }
+
+    // Editing the device while it's online puts it in AvdChangedError state
+    handle.activationAction?.activate()
+    channel.receiveUntilPassing { newState ->
+      assertThat(newState).isInstanceOf(Connected::class.java)
+    }
+    handle.editAction?.edit()
+
+    channel.receiveUntilPassing { newState ->
+      assertThat(newState.error).isEqualTo(AvdChangedError)
+      assertThat(newState.properties.title).isEqualTo("$name Edited")
+    }
+
+    // Deactivating the device causes the prior edit to take effect
+    handle.deactivationAction?.deactivate()
+
+    channel.receiveUntilPassing { newState ->
+      assertThat(newState.error).isNull()
+      assertThat(newState.properties.title).isEqualTo("$name Edited Edited")
+    }
+
+    job.cancel()
   }
 
   private fun checkProperties(properties: LocalEmulatorProperties) {
