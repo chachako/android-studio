@@ -83,20 +83,25 @@ class ResourceShrinkerImplTest {
 
     @Test
     fun `test shrinking with proguard obfuscated classes`() {
-        check(CodeInput.PROGUARD, false)
-        check(CodeInput.PROGUARD, true)
+        check(CodeInput.PROGUARD, false, false)
+        check(CodeInput.PROGUARD, true, false)
     }
 
     @Test
     fun `test shrinking with no obfuscation`() {
-        check(CodeInput.NO_SHRINKER, false)
-        check(CodeInput.NO_SHRINKER, true)
+        check(CodeInput.NO_SHRINKER, false, false)
+        check(CodeInput.NO_SHRINKER, true, false)
     }
 
     @Test
     fun `test shrinking with R8 obfuscation`() {
-        check(CodeInput.R8, false)
-        check(CodeInput.R8, true)
+        check(CodeInput.R8, false, false)
+        check(CodeInput.R8, true, false)
+    }
+
+    @Test
+    fun `test shrinking with CLI`() {
+        check(CodeInput.R8, true, true)
     }
 
     @Test
@@ -247,7 +252,7 @@ class ResourceShrinkerImplTest {
         )
     }
 
-    private fun check(codeInput: CodeInput, usesPreciseShrinking: Boolean) {
+    private fun check(codeInput: CodeInput, usesPreciseShrinking: Boolean, useCli: Boolean) {
         val dir = sTemporaryFolder.newFolder()
 
         val (classes, mapping) = when (codeInput) {
@@ -258,24 +263,45 @@ class ResourceShrinkerImplTest {
         val mergedManifest = createMergedManifest(dir)
         val resources = createResourceFolder(dir, ResourcesVariant.PROTO_COMPILED)
         val resourceTable = createResourceTable(dir, addKeepXml = false)
-        val analyzer = ResourceShrinkerImpl(
-            resourcesGatherers = listOf(
-                ProtoResourceTableGatherer(resourceTable.toPath())
-            ),
-            obfuscationMappingsRecorder = mapping?.let { ProguardMappingsRecorder(it.toPath()) },
-            usageRecorders = listOf(
-                DexUsageRecorder(classes.toPath()),
-                ProtoAndroidManifestUsageRecorder(mergedManifest.toPath())
-            ),
-            graphBuilders = listOf(
-                ProtoResourcesGraphBuilder(resources.toPath(), resourceTable.toPath())
-            ),
-            debugReporter = NoDebugReporter,
-            supportMultipackages = false,
-            usePreciseShrinking = usesPreciseShrinking
-        )
 
-        analyzer.analyze()
+        var analyzer : ResourceShrinkerImpl;
+
+        if (useCli) {
+            val resourcesAp = dir.resolve("resources.ap");
+            val resourcesApOutput = dir.resolve("output_resources.ap")
+            zipResourcesTo(resources, listOf(), resourceTable, resourcesAp, mergedManifest)
+
+            val dexZip = dir.resolve("dex.zip")
+            FileOutputStream(dexZip).use { fos ->
+                ZipOutputStream(fos).use { zos ->
+                    zos.putNextEntry(ZipEntry("classes.dex"))
+                    zos.write(Files.readAllBytes(classes.toPath()));
+                    zos.closeEntry()
+                }
+            }
+            analyzer = ResourceShrinkerCli.run(arrayOf("--input", resourcesAp.path,
+                                                       "--dex_input", dexZip.path,
+                                                       "--output", resourcesApOutput.path));
+        } else {
+            analyzer = ResourceShrinkerImpl(
+                resourcesGatherers = listOf(
+                    ProtoResourceTableGatherer(resourceTable.toPath())
+                ),
+                obfuscationMappingsRecorder = mapping?.let { ProguardMappingsRecorder(it.toPath()) },
+                usageRecorders = listOf(
+                    DexUsageRecorder(classes.toPath()),
+                    ProtoAndroidManifestUsageRecorder(mergedManifest.toPath())
+                ),
+                graphBuilders = listOf(
+                    ProtoResourcesGraphBuilder(resources.toPath(), resourceTable.toPath())
+                ),
+                debugReporter = NoDebugReporter,
+                supportMultipackages = false,
+                usePreciseShrinking = usesPreciseShrinking
+            )
+
+            analyzer.analyze()
+        }
         checkState(analyzer)
 
         assertEquals(
@@ -336,7 +362,8 @@ class ResourceShrinkerImplTest {
                 "res/drawable/avd_heart_fill_2.xml"
             ),
             resourcesArsc = resourceTable,
-            outZip = File(dir, "uncompressed.ap_")
+            outZip = File(dir, "uncompressed.ap_"),
+            manifest = null
         )
 
         assertEquals(
@@ -1057,7 +1084,8 @@ class ResourceShrinkerImplTest {
         resourcesDir: File,
         inlinedResources: List<String>,
         resourcesArsc: File,
-        outZip: File
+        outZip: File,
+        manifest: File?
     ): File {
         val root = resourcesDir.toPath()
         val paths = Files.walk(root).filter { it != root }.toList().sorted()
@@ -1087,6 +1115,11 @@ class ResourceShrinkerImplTest {
                 inlinedNotFound.forEach {
                     zos.putNextEntry(ZipEntry(it))
                     zos.write(ByteArray(0))
+                    zos.closeEntry()
+                }
+                manifest?.let {
+                    zos.putNextEntry(ZipEntry("AndroidManifest.xml"))
+                    zos.write(Files.readAllBytes(manifest.toPath()))
                     zos.closeEntry()
                 }
                 zos.putNextEntry(ZipEntry("resources.pb"))
