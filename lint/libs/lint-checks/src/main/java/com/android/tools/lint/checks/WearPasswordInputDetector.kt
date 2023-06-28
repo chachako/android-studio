@@ -48,7 +48,8 @@ class WearPasswordInputDetector : WearDetector(), XmlScanner, SourceCodeScanner 
       Implementation(
         WearPasswordInputDetector::class.java,
         Scope.JAVA_AND_RESOURCE_FILES,
-        Scope.RESOURCE_FILE_SCOPE
+        Scope.RESOURCE_FILE_SCOPE,
+        Scope.JAVA_FILE_SCOPE,
       )
 
     @JvmField

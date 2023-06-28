@@ -32,7 +32,10 @@ class WearBackNavigationDetector : WearDetector(), XmlScanner {
 
   companion object Issues {
     private val IMPLEMENTATION =
-      Implementation(WearBackNavigationDetector::class.java, Scope.ALL_RESOURCES_SCOPE)
+      Implementation(
+        WearBackNavigationDetector::class.java,
+        Scope.RESOURCE_FILE_SCOPE,
+      )
 
     @JvmField
     val ISSUE =
@@ -64,7 +67,10 @@ class WearBackNavigationDetector : WearDetector(), XmlScanner {
 
   override fun visitElement(context: XmlContext, element: Element) {
     val nameAttribute = element.getAttribute(SdkConstants.ATTR_NAME)
-    if (nameAttribute == ATTR_SWIPE_TO_DISMISS && element.textContent == SdkConstants.VALUE_FALSE) {
+    if (
+      nameAttribute == ATTR_SWIPE_TO_DISMISS &&
+        element.textContent?.trim() == SdkConstants.VALUE_FALSE
+    ) {
       val fix =
         fix()
           .name("Delete `android:windowSwipeToDismiss` from theme")
