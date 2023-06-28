@@ -22,6 +22,7 @@ import com.android.ddmlib.ByteBufferUtil;
 import com.google.common.base.Charsets;
 import com.google.common.io.Closeables;
 import com.google.common.primitives.UnsignedInts;
+import com.intellij.openapi.diagnostic.Logger;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -63,6 +64,35 @@ public class VmTraceParser {
             buffer = ByteBufferUtil.mapFile(mTraceFile, headerLength, ByteOrder.LITTLE_ENDIAN);
         }
         parseData(buffer);
+    }
+
+    public static boolean verifyFileHasArtHeader(File mTraceFile, VmTraceHandler traceHandler) {
+        VmTraceParser parser = new VmTraceParser(mTraceFile, traceHandler);
+        try {
+            if (isStreamingTrace(mTraceFile)) {
+                return verifyStreamingTrace(mTraceFile);
+            } else {
+                return verifyNonStreamingTrace(mTraceFile, parser);
+            }
+        } catch (RuntimeException | IOException e) {
+            Logger.getInstance(VmTraceParser.class)
+                    .warn("There was an error trying to read the trace file header.", e);
+            return false;
+        }
+    }
+
+    private static boolean verifyStreamingTrace(File mTraceFile) throws IOException {
+        final DataInputStream mInputStream = new DataInputStream(new FileInputStream(mTraceFile));
+        // Read the magic number and validate it
+        int magic = StreamingTraceParser.doReadNumberLE(4, mInputStream);
+        validateMagic(magic);
+        return true;
+    }
+
+    private static boolean verifyNonStreamingTrace(File mTraceFile, VmTraceParser parser)
+            throws IOException {
+        parser.parseHeader(mTraceFile);
+        return true;
     }
 
     private static boolean isStreamingTrace(File file) throws IOException {
@@ -558,11 +588,16 @@ public class VmTraceParser {
             return new String(buffer, Charsets.UTF_8);
         }
 
+        private int readNumberLE(int numBytes) throws IOException {
+            return doReadNumberLE(numBytes, mInputStream);
+        }
+
         /**
          * Reads a given number of bytes from the input stream and converts the result to an integer
          * represented in little-endian order.
          */
-        private int readNumberLE(int numBytes) throws IOException {
+        private static int doReadNumberLE(int numBytes, DataInputStream mInputStream)
+                throws IOException {
             int leNumber = 0;
             for (int i = 0; i < numBytes; i++) {
                 leNumber += mInputStream.readUnsignedByte() << (i * 8);
