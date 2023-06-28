@@ -865,7 +865,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
             reportError(
               "${type.usLocaleCapitalize()} sources cannot be in the same " +
                 "source root as production files; " +
-                "source root $root is also a test root"
+                "source root $root is also a $type root"
             )
             break
           }
