@@ -83,7 +83,8 @@ class KmpVariantDslInfoImpl(
         get() = extension.packagingOptions
 
     override val testInstrumentationRunnerArguments: Map<String, String>
-        get() = extension.testInstrumentationRunnerArguments
+        get() = (extension as KotlinMultiplatformAndroidExtensionImpl).androidTestOnDeviceConfiguration
+            ?.instrumentationRunnerArguments ?: emptyMap()
 
     override val experimentalProperties: Map<String, Any>
         get() = extension.experimentalProperties

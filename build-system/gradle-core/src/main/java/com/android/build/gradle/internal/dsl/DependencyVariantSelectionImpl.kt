@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.dsl
 
+import com.android.build.api.dsl.DependencyVariantSelection
 import com.android.build.gradle.internal.services.DslServices
 import javax.inject.Inject
 

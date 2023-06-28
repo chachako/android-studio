@@ -967,6 +967,13 @@ package com.android.build.api.dsl {
     property public abstract boolean includeInBundle;
   }
 
+  @org.gradle.api.Incubating public interface DependencyVariantSelection {
+    method @org.gradle.api.Incubating public org.gradle.api.provider.ListProperty<java.lang.String> getBuildTypes();
+    method @org.gradle.api.Incubating public org.gradle.api.provider.MapProperty<java.lang.String,java.util.List<java.lang.String>> getProductFlavors();
+    property @org.gradle.api.Incubating public abstract org.gradle.api.provider.ListProperty<java.lang.String> buildTypes;
+    property @org.gradle.api.Incubating public abstract org.gradle.api.provider.MapProperty<java.lang.String,java.util.List<java.lang.String>> productFlavors;
+  }
+
   @org.gradle.api.Incubating public interface Device extends org.gradle.api.Named java.io.Serializable {
   }
 
@@ -1126,6 +1133,63 @@ package com.android.build.api.dsl {
   @org.gradle.api.Incubating public interface KeepRules {
     method @org.gradle.api.Incubating public void ignoreAllExternalDependencies(boolean ignore);
     method @org.gradle.api.Incubating public void ignoreExternalDependencies(java.lang.String... ids);
+  }
+
+  @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidTestConfiguration {
+    method @org.gradle.api.Incubating public String getDefaultSourceSetName();
+    method @org.gradle.api.Incubating public String? getSourceSetTree();
+    method @org.gradle.api.Incubating public void setDefaultSourceSetName(String);
+    method @org.gradle.api.Incubating public void setSourceSetTree(String?);
+    property @org.gradle.api.Incubating public abstract String defaultSourceSetName;
+    property @org.gradle.api.Incubating public abstract String? sourceSetTree;
+  }
+
+  @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidTestOnDeviceConfiguration extends com.android.build.api.dsl.KotlinMultiplatformAndroidTestConfiguration {
+    method @org.gradle.api.Incubating public void emulatorControl(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.EmulatorControl,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public void emulatorSnapshots(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.EmulatorSnapshots,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public boolean getAnimationsDisabled();
+    method @org.gradle.api.Incubating public String? getApplicationId();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.EmulatorControl getEmulatorControl();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.EmulatorSnapshots getEmulatorSnapshots();
+    method @org.gradle.api.Incubating public String getExecution();
+    method @org.gradle.api.Incubating public Boolean? getFunctionalTest();
+    method @org.gradle.api.Incubating public Boolean? getHandleProfiling();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.Installation getInstallation();
+    method @org.gradle.api.Incubating public String? getInstrumentationRunner();
+    method @org.gradle.api.Incubating public java.util.Map<java.lang.String,java.lang.String> getInstrumentationRunnerArguments();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.ManagedDevices getManagedDevices();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.ApkSigningConfig getSigning();
+    method @org.gradle.api.Incubating public void installation(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Installation,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public void managedDevices(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ManagedDevices,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public void setAnimationsDisabled(boolean);
+    method @org.gradle.api.Incubating public void setApplicationId(String?);
+    method @org.gradle.api.Incubating public void setExecution(String);
+    method @org.gradle.api.Incubating public void setFunctionalTest(Boolean?);
+    method @org.gradle.api.Incubating public void setHandleProfiling(Boolean?);
+    method @org.gradle.api.Incubating public void setInstrumentationRunner(String?);
+    method @org.gradle.api.Incubating public void signing(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ApkSigningConfig,kotlin.Unit> action);
+    property @org.gradle.api.Incubating public abstract boolean animationsDisabled;
+    property @org.gradle.api.Incubating public abstract String? applicationId;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.EmulatorControl emulatorControl;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.EmulatorSnapshots emulatorSnapshots;
+    property @org.gradle.api.Incubating public abstract String execution;
+    property @org.gradle.api.Incubating public abstract Boolean? functionalTest;
+    property @org.gradle.api.Incubating public abstract Boolean? handleProfiling;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.Installation installation;
+    property @org.gradle.api.Incubating public abstract String? instrumentationRunner;
+    property @org.gradle.api.Incubating public abstract java.util.Map<java.lang.String,java.lang.String> instrumentationRunnerArguments;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ManagedDevices managedDevices;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ApkSigningConfig signing;
+  }
+
+  @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidTestOnJvmConfiguration extends com.android.build.api.dsl.KotlinMultiplatformAndroidTestConfiguration {
+    method @org.gradle.api.Incubating public void all(kotlin.jvm.functions.Function1<? super org.gradle.api.tasks.testing.Test,kotlin.Unit> configAction);
+    method @org.gradle.api.Incubating public boolean isIncludeAndroidResources();
+    method @org.gradle.api.Incubating public boolean isReturnDefaultValues();
+    method @org.gradle.api.Incubating public void setIncludeAndroidResources(boolean);
+    method @org.gradle.api.Incubating public void setReturnDefaultValues(boolean);
+    property @org.gradle.api.Incubating public abstract boolean isIncludeAndroidResources;
+    property @org.gradle.api.Incubating public abstract boolean isReturnDefaultValues;
   }
 
   public interface LibraryAndroidResources extends com.android.build.api.dsl.AndroidResources {

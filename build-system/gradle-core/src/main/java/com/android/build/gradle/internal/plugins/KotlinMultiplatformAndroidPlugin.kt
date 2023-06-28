@@ -48,6 +48,7 @@ import com.android.build.gradle.internal.dependency.SingleVariantProductFlavorRu
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
+import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfigurationImpl
 import com.android.build.gradle.internal.dsl.decorator.androidPluginDslDecorator
 import com.android.build.gradle.internal.ide.dependencies.LibraryDependencyCacheBuildService
 import com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService
@@ -224,7 +225,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         androidExtension = dslServices.newInstance(
             extensionImplClass,
             dslServices,
-            { jvmConfiguration: KotlinMultiplatformAndroidExtensionImpl.KotlinMultiplatformAndroidTestConfigurationImpl ->
+            { jvmConfiguration: KotlinMultiplatformAndroidTestConfigurationImpl ->
                 if (project.pluginManager.hasPlugin(KOTLIN_MPP_PLUGIN_ID)) {
                     createCompilation(
                         compilationName = jvmConfiguration.compilationName,
@@ -235,7 +236,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
                     )
                 }
             },
-            { deviceConfiguration: KotlinMultiplatformAndroidExtensionImpl.KotlinMultiplatformAndroidTestConfigurationImpl ->
+            { deviceConfiguration: KotlinMultiplatformAndroidTestConfigurationImpl ->
                 if (project.pluginManager.hasPlugin(KOTLIN_MPP_PLUGIN_ID)) {
                     createCompilation(
                         compilationName = deviceConfiguration.compilationName,
@@ -472,8 +473,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
 
         KotlinModelBuildingConfigurator.setupAndroidCompilations(
             listOfNotNull(mainVariant, unitTest, androidTest),
-            androidExtension.testInstrumentationRunner,
-            androidExtension.testInstrumentationRunnerArguments
+            androidExtension.androidTestOnDeviceConfiguration?.instrumentationRunner,
+            androidExtension.androidTestOnDeviceConfiguration?.instrumentationRunnerArguments ?: emptyMap(),
         )
     }
 

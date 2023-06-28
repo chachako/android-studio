@@ -18,7 +18,10 @@ package com.android.build.gradle.internal.dsl
 
 import com.android.build.api.dsl.AarMetadata
 import com.android.build.api.dsl.ApkSigningConfig
+import com.android.build.api.dsl.DependencyVariantSelection
 import com.android.build.api.dsl.Installation
+import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceConfiguration
+import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvmConfiguration
 import com.android.build.api.dsl.Lint
 import com.android.build.api.dsl.Packaging
 import com.android.build.api.dsl.TestCoverage
@@ -63,22 +66,9 @@ interface KotlinMultiplatformAndroidExtension {
     var testNamespace: String?
     val testOptions: TestOptions
 
-    var testInstrumentationRunner: String?
-
-    val testInstrumentationRunnerArguments: MutableMap<String, String>
-
-    var testHandleProfiling: Boolean?
-
-    var testFunctionalTest: Boolean?
-
     var isTestMultiDexEnabled: Boolean?
     var testMultiDexKeepProguard: File?
     var isCoreLibraryDesugaringEnabled: Boolean
-
-    val installation: Installation
-
-    // should this be here?
-    fun testSigningConfig(action: ApkSigningConfig.() -> Unit)
 
     var testTargetSdk: Int?
     var testTargetSdkPreview: String?
@@ -106,22 +96,3 @@ interface KotlinMultiplatformAndroidExtension {
         callback: KotlinMultiplatformAndroidVariant.() -> Unit
     )
 }
-
-interface KotlinMultiplatformAndroidTestConfiguration {
-
-    /**
-     * By default, this will be equal to the compilation name specified when enabling the test
-     * component prefixed by "android". (i.e. when the compilation name is "testOnJvm" then the
-     * default sourceSet name will be "androidTestOnJvm").
-     */
-    var defaultSourceSetName: String
-
-    /**
-     * Configure the SourceSetTree for test components/sourceset in order to change the default
-     * behaviour of source set hierarchies
-     */
-    var sourceSetTree: String?
-}
-
-interface KotlinMultiplatformAndroidTestOnJvmConfiguration: KotlinMultiplatformAndroidTestConfiguration
-interface KotlinMultiplatformAndroidTestOnDeviceConfiguration: KotlinMultiplatformAndroidTestConfiguration

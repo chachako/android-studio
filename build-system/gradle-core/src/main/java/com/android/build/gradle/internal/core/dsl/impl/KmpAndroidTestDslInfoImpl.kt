@@ -57,10 +57,13 @@ class KmpAndroidTestDslInfoImpl(
     extension, services
 ), AndroidTestComponentDslInfo, KmpComponentDslInfo {
 
+    private val testOnDeviceConfig
+        get() = (extension as KotlinMultiplatformAndroidExtensionImpl).androidTestOnDeviceConfiguration
+
+
     override val componentType = ComponentTypeImpl.ANDROID_TEST
     override val componentIdentity = ComponentIdentityImpl(
-        (extension as KotlinMultiplatformAndroidExtensionImpl)
-            .androidTestOnDeviceConfiguration!!.compilationName.getNamePrefixedWithTarget()
+        testOnDeviceConfig!!.compilationName.getNamePrefixedWithTarget()
     )
 
     override val namespace: Provider<String> by lazy {
@@ -76,6 +79,7 @@ class KmpAndroidTestDslInfoImpl(
 
     override val isDebuggable: Boolean
         get() = true
+
     override val signingConfig: SigningConfig by lazy {
         val dslSigningConfig =
             (extension as KotlinMultiplatformAndroidExtensionImpl).signingConfig
@@ -124,7 +128,7 @@ class KmpAndroidTestDslInfoImpl(
 
     override fun getInstrumentationRunner(dexingType: DexingType): Provider<String> {
         // first check whether the DSL has the info
-        return extension.testInstrumentationRunner?.let {
+        return testOnDeviceConfig!!.instrumentationRunner?.let {
             services.provider { it }
         } // else return the value from the Manifest
             ?: dataProvider.manifestData.map {
@@ -138,11 +142,11 @@ class KmpAndroidTestDslInfoImpl(
     }
 
     override val instrumentationRunnerArguments: Map<String, String>
-        get() = extension.testInstrumentationRunnerArguments
+        get() = testOnDeviceConfig!!.instrumentationRunnerArguments
     override val handleProfiling: Provider<Boolean>
         get() =
             // first check whether the DSL has the info
-            extension.testHandleProfiling?.let {
+            testOnDeviceConfig!!.handleProfiling?.let {
                 services.provider { it }
             } // else return the value from the Manifest
                 ?: dataProvider.manifestData.map { it.handleProfiling ?: DEFAULT_HANDLE_PROFILING }
@@ -150,7 +154,7 @@ class KmpAndroidTestDslInfoImpl(
     override val functionalTest: Provider<Boolean>
         get() =
             // first check whether the DSL has the info
-            extension.testFunctionalTest?.let {
+            testOnDeviceConfig!!.functionalTest?.let {
                 services.provider { it }
             } // else return the value from the Manifest
                 ?: dataProvider.manifestData.map { it.functionalTest ?: DEFAULT_FUNCTIONAL_TEST }

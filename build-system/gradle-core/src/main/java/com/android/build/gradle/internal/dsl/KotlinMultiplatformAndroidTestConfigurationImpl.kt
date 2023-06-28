@@ -16,12 +16,8 @@
 
 package com.android.build.gradle.internal.dsl
 
-import org.gradle.api.Incubating
-import org.gradle.api.provider.ListProperty
-import org.gradle.api.provider.MapProperty
+import com.android.build.api.dsl.KotlinMultiplatformAndroidTestConfiguration
 
-@Incubating
-interface DependencyVariantSelection {
-    val buildTypes: ListProperty<String>
-    val productFlavors: MapProperty<String, List<String>>
-}
+abstract class KotlinMultiplatformAndroidTestConfigurationImpl(
+    val compilationName: String
+) : KotlinMultiplatformAndroidTestConfiguration
