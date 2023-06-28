@@ -77,6 +77,7 @@ internal class ForwardingDaemonImpl(
   private val streams = mutableMapOf<Int, Stream>()
   private val startedLatch = Mutex(locked = true)
   private val started = AtomicBoolean(false)
+  private val stopped = AtomicBoolean(false)
 
   private var reverseService: ReverseService? = null
   private var features: String = ""
@@ -196,7 +197,7 @@ internal class ForwardingDaemonImpl(
   }
 
   override suspend fun start(timeout: Duration) {
-    if (started.getAndSet(true)) return
+    if (!stopped.get() && started.getAndSet(true)) return
 
     adbCommandHandler = scope.launch { run() }
     try {
@@ -220,7 +221,7 @@ internal class ForwardingDaemonImpl(
   }
 
   override fun close() {
-    if (started.get()) {
+    if (started.get() && !stopped.getAndSet(true)) {
       adbCommandHandler.cancel()
       scope.cancel()
       streams.values.forEach { it.sendClose() }

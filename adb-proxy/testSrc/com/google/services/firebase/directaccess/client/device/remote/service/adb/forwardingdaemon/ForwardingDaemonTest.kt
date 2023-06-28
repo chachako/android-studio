@@ -17,6 +17,7 @@ package com.google.services.firebase.directaccess.client.device.remote.service.a
 
 import com.android.adblib.AdbOutputChannel
 import com.android.adblib.AdbServerSocket
+import com.android.adblib.DeviceAddress
 import com.android.adblib.DeviceSelector
 import com.android.adblib.testing.FakeAdbSession
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
@@ -110,11 +111,7 @@ class ForwardingDaemonTest {
     assertThat(forwardingDaemon.devicePort).isEqualTo(-1)
     forwardingDaemon.start()
     assertThat(forwardingDaemon.devicePort).isEqualTo(testSocket.localAddress()?.port)
-    yieldUntil {
-      fakeAdbSession.hostServices.devices.entries.any {
-        it.serialNumber == "localhost:${forwardingDaemon.devicePort}"
-      }
-    }
+    yieldUntil { isAdbDeviceConnected() }
     fakeAdbSession.channelFactory.connectSocket(testSocket.localAddress()!!).use { channel ->
       inputList.forEach { channel.writeExactly(it) }
       // CNXN response
@@ -150,4 +147,26 @@ class ForwardingDaemonTest {
     // Implicit assert - Test will fail with JobCancellationException if this call fails.
     forwardingDaemon.close()
   }
+
+  @Test
+  fun testConcurrentClose() = runBlockingWithTimeout {
+    val childScope = fakeAdbSession.scope.createChildScope(context = exceptionHandler)
+    forwardingDaemon =
+      ForwardingDaemonImpl(fakeStreamOpener, childScope, fakeAdbSession) { testSocket }
+    forwardingDaemon.start()
+    forwardingDaemon.close()
+
+    // Connect to a device.
+    fakeAdbSession.hostServices.connect(DeviceAddress("localhost:${forwardingDaemon.devicePort}"))
+    assertThat(isAdbDeviceConnected()).isTrue()
+    // The second call to close will be ignored.
+    forwardingDaemon.close()
+    // Device should still be connected.
+    assertThat(isAdbDeviceConnected()).isTrue()
+  }
+
+  private fun isAdbDeviceConnected() =
+    fakeAdbSession.hostServices.devices.entries.any {
+      it.serialNumber == "localhost:${forwardingDaemon.devicePort}"
+    }
 }
