@@ -339,6 +339,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           PermissionErrorDetector.PERMISSION_NAMING_CONVENTION,
           PermissionErrorDetector.RESERVED_SYSTEM_PERMISSION,
           PermissionErrorDetector.SYSTEM_PERMISSION_TYPO,
+          SelectedPhotoAccessDetector.ISSUE,
           PluralsDetector.EXTRA,
           PluralsDetector.IMPLIED_QUANTITY,
           PluralsDetector.MISSING,
@@ -594,7 +595,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
       when {
         scope.contains(Scope.JAVA_FILE) -> initialSize += 180
         scope.contains(Scope.CLASS_FILE) -> initialSize += 16
-        scope.contains(Scope.MANIFEST) -> initialSize += 81
+        scope.contains(Scope.MANIFEST) -> initialSize += 84
         scope.contains(Scope.GRADLE_FILE) -> initialSize += 30
       }
       initialSize
