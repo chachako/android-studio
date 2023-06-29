@@ -29,7 +29,6 @@ import com.android.resources.ResourceFolderType
 import com.android.tools.lint.detector.api.BinaryResourceScanner
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Context
-import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue
@@ -41,12 +40,16 @@ import com.android.tools.lint.detector.api.XmlContext
 import com.android.tools.lint.detector.api.XmlScanner
 import com.android.utils.XmlUtils.getFirstSubTagByName
 import com.android.utils.XmlUtils.getNextTagByName
+import java.io.IOException
 import java.util.EnumSet
+import javax.imageio.ImageIO
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 
-class TileProviderDetector : Detector(), XmlScanner, BinaryResourceScanner {
+class TileProviderDetector : WearDetector(), XmlScanner, BinaryResourceScanner {
   companion object Issues {
+
+    const val MIN_PREVIEW_SIZE = 384
 
     val IMPLEMENTATION =
       Implementation(
@@ -74,20 +77,42 @@ class TileProviderDetector : Detector(), XmlScanner, BinaryResourceScanner {
     @JvmField
     val SQUARE_AND_ROUND_TILE_PREVIEWS =
       Issue.create(
-        id = "SquareAndRoundTilePreviews",
-        briefDescription = "TileProvider does not have round and square previews",
-        explanation =
-          """
+          id = "SquareAndRoundTilePreviews",
+          briefDescription = "TileProvider does not have round and square previews",
+          explanation =
+            """
                 Tile projects should specify preview resources for different screen shapes. \
                 The preview resource is specified in the manifest under tile service. \
                 And you have to make sure they have resources for different screen shapes.
             """,
-        category = Category.ICONS,
-        priority = 6,
-        severity = Severity.WARNING,
-        implementation = IMPLEMENTATION,
-        androidSpecific = true
-      )
+          category = Category.ICONS,
+          priority = 6,
+          severity = Severity.WARNING,
+          implementation = IMPLEMENTATION,
+          androidSpecific = true
+        )
+        .addMoreInfo(
+          "https://developer.android.com/design/ui/wear/guides/surfaces/tiles#tile-previews"
+        )
+
+    @JvmField
+    val TILE_PREVIEW_IMAGE_FORMAT =
+      Issue.create(
+          id = "TilePreviewImageFormat",
+          briefDescription = "Tile preview is not compliant with standards",
+          explanation =
+            """
+                Tile projects should specify preview resources with aspect ratio 1:1 and at least ${MIN_PREVIEW_SIZE}px by ${MIN_PREVIEW_SIZE}px in size.
+            """,
+          category = Category.ICONS,
+          priority = 6,
+          severity = Severity.ERROR,
+          implementation = IMPLEMENTATION,
+          androidSpecific = true
+        )
+        .addMoreInfo(
+          "https://developer.android.com/design/ui/wear/guides/surfaces/tiles#tile-previews"
+        )
 
     const val BIND_TILE_PROVIDER_PERMISSION =
       "com.google.android.wearable.permission.BIND_TILE_PROVIDER"
@@ -95,7 +120,7 @@ class TileProviderDetector : Detector(), XmlScanner, BinaryResourceScanner {
     const val BIND_TILE_PROVIDER_ACTION = "androidx.wear.tiles.action.BIND_TILE_PROVIDER"
 
     class TagIterator(element: Element, val tag: String) : Iterator<Element> {
-      var subElement: Element? = getFirstSubTagByName(element, tag)
+      private var subElement: Element? = getFirstSubTagByName(element, tag)
 
       override fun hasNext(): Boolean = subElement != null
 
@@ -115,21 +140,49 @@ class TileProviderDetector : Detector(), XmlScanner, BinaryResourceScanner {
     val issueScope: Node,
     val issueLocation: Location,
     var foundRoundPreview: Boolean = false,
-    var foundSquarePreview: Boolean = false
+    var foundSquarePreview: Boolean = false,
+    var wrongAspectRatio: Boolean = false,
+    var smallImageSize: Boolean = false,
   )
 
-  var foundIcons: MutableMap<String, IconInfo> = mutableMapOf()
-  var foundIconLocations: MutableList<Location> = ArrayList()
+  private val foundIcons: MutableMap<String, IconInfo> = mutableMapOf()
+
+  override fun beforeCheckRootProject(context: Context) {
+    super.beforeCheckRootProject(context)
+    foundIcons.clear()
+  }
 
   override fun afterCheckRootProject(context: Context) {
-    for ((icon, metadata) in this.foundIcons) {
-      if (!metadata.foundRoundPreview || !metadata.foundSquarePreview) {
+    for ((_, metadata) in this.foundIcons) {
+      // Only report if one of them is missing. If both are missing, this will already be flagged as
+      // a missing resource.
+      if (metadata.foundRoundPreview xor metadata.foundSquarePreview) {
         context.report(
           Incident(
             SQUARE_AND_ROUND_TILE_PREVIEWS,
             metadata.issueScope,
             metadata.issueLocation,
             "Tiles need a preview asset in both drawable-round and drawable",
+          )
+        )
+      }
+      if (metadata.wrongAspectRatio) {
+        context.report(
+          Incident(
+            TILE_PREVIEW_IMAGE_FORMAT,
+            metadata.issueScope,
+            metadata.issueLocation,
+            "Tile previews should have 1:1 aspect ratio",
+          )
+        )
+      }
+      if (metadata.smallImageSize) {
+        context.report(
+          Incident(
+            TILE_PREVIEW_IMAGE_FORMAT,
+            metadata.issueScope,
+            metadata.issueLocation,
+            "Tile previews should be at least ${MIN_PREVIEW_SIZE}px by ${MIN_PREVIEW_SIZE}px",
           )
         )
       }
@@ -149,18 +202,48 @@ class TileProviderDetector : Detector(), XmlScanner, BinaryResourceScanner {
     }
   }
 
-  override fun appliesTo(folderType: ResourceFolderType): Boolean {
-    return folderType == ResourceFolderType.DRAWABLE
+  override fun appliesTo(folderType: ResourceFolderType) =
+    isWearProject && folderType == ResourceFolderType.DRAWABLE
+
+  private fun getImageDimensions(context: Context): Pair<Int, Int> {
+    val readers = ImageIO.getImageReadersBySuffix(context.file.extension)
+    while (readers.hasNext()) {
+      val reader = readers.next()
+      try {
+        reader.input = ImageIO.createImageInputStream(context.file)
+        val width = reader.getWidth(reader.minIndex)
+        val height = reader.getHeight(reader.minIndex)
+        return Pair(width, height)
+      } catch (e: IOException) {
+        context.log(e, "Error reading file: " + context.file.name)
+      } finally {
+        reader.dispose()
+      }
+    }
+    return Pair(0, 0)
   }
 
   override fun checkBinaryResource(context: ResourceContext) {
-    val iconFileName = context.file.name
-    val iconName = iconFileName.dropLast(iconFileName.substringAfterLast(".").length + 1)
+    val iconName = context.file.nameWithoutExtension
+    // Only check icons that are identified in the manifest as tile previews
+    val metadata = foundIcons[iconName] ?: return
+
+    // Check aspect ratio and size of tile previews
+    val size = getImageDimensions(context)
+    if (size.first != size.second) {
+      metadata.wrongAspectRatio = true
+    }
+    if (size.first < MIN_PREVIEW_SIZE || size.second < MIN_PREVIEW_SIZE) {
+      metadata.smallImageSize = true
+    }
+
     val dirName = context.file.parentFile.name
-    if (dirName.startsWith("drawable-round")) {
-      this.foundIcons[iconName]?.foundRoundPreview = true
-    } else if (dirName.startsWith("drawable")) {
-      this.foundIcons[iconName]?.foundSquarePreview = true
+    if (dirName.startsWith("drawable")) {
+      if (dirName.contains("round")) {
+        metadata.foundRoundPreview = true
+      } else {
+        metadata.foundSquarePreview = true
+      }
     }
   }
 
