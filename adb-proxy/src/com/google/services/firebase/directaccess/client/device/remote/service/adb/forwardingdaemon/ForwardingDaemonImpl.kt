@@ -225,6 +225,7 @@ internal class ForwardingDaemonImpl(
       adbCommandHandler.cancel()
       scope.cancel()
       streams.values.forEach { it.sendClose() }
+      streamOpener.close()
       runBlocking {
         onStateChanged(DeviceState.OFFLINE)
         if (adbSession.hostServices.devices().any { it.serialNumber == serialNumber }) {

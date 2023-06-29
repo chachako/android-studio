@@ -68,6 +68,8 @@ class ForwardingDaemonTest {
 
       override fun open(service: String, streamId: Int, adbOutputChannel: AdbOutputChannel) =
         myStream
+
+      override fun close() = Unit
     }
   private lateinit var testSocket: AdbServerSocket
   private lateinit var forwardingDaemon: ForwardingDaemonImpl

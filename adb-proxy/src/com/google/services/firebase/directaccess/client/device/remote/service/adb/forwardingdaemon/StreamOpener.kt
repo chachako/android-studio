@@ -29,7 +29,7 @@ import com.android.adblib.AdbOutputChannel
  * * Dispatching new commands received from a remote service back to the *ForwardingDaemon* so that
  *   it can appropriately manage the lifecycle of streams.
  */
-interface StreamOpener {
+interface StreamOpener : AutoCloseable {
   /** Connect to the remote service and register the provided ForwardingDaemon for callbacks. */
   fun connect(forwardingDaemon: ForwardingDaemon)
 
