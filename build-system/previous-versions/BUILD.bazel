@@ -15,6 +15,19 @@ maven_repository(
 )
 
 #keep sorted
+AGP_7_4_1_ARTIFACTS = [
+    "@maven//:com.android.tools.build.aapt2_7.4.1-8841542",
+    "@maven//:com.android.tools.build.gradle_7.4.1",
+    "@maven//:com.android.tools.lint.lint-gradle_30.4.1",
+]
+
+maven_repository(
+    name = "7.4.1",
+    artifacts = AGP_7_4_1_ARTIFACTS,
+    visibility = ["//visibility:public"],
+)
+
+#keep sorted
 AGP_7_4_0_ARTIFACTS = [
     "@maven//:com.android.tools.build.aapt2_7.4.0-alpha09-8841542",
     "@maven//:com.android.tools.build.gradle_7.4.0-alpha09",

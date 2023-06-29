@@ -27794,6 +27794,17 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.android.tools.external.com-intellij.intellij-core_30.4.1",
+    pom = "repository/com/android/tools/external/com-intellij/intellij-core/30.4.1/intellij-core-30.4.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/external/com-intellij/intellij-core/30.4.1",
+    deps = [
+        "org.jetbrains.intellij.deps.trove4j_1.0.20200330",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.android.tools.external.com-intellij.intellij-core_31.0.0-beta04",
     pom = "repository/com/android/tools/external/com-intellij/intellij-core/31.0.0-beta04/intellij-core-31.0.0-beta04.pom",
     repo_root_path = "repository",
@@ -27889,6 +27900,14 @@ maven_artifact(
     pom = "repository/com/android/tools/external/com-intellij/kotlin-compiler/30.4.0-alpha09/kotlin-compiler-30.4.0-alpha09.pom",
     repo_root_path = "repository",
     repo_path = "com/android/tools/external/com-intellij/kotlin-compiler/30.4.0-alpha09",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.tools.external.com-intellij.kotlin-compiler_30.4.1",
+    pom = "repository/com/android/tools/external/com-intellij/kotlin-compiler/30.4.1/kotlin-compiler-30.4.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/external/com-intellij/kotlin-compiler/30.4.1",
     visibility = ["//visibility:public"],
 )
 
@@ -28020,6 +28039,14 @@ maven_artifact(
     pom = "repository/com/android/tools/external/org-jetbrains/uast/30.4.0-alpha09/uast-30.4.0-alpha09.pom",
     repo_root_path = "repository",
     repo_path = "com/android/tools/external/org-jetbrains/uast/30.4.0-alpha09",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.tools.external.org-jetbrains.uast_30.4.1",
+    pom = "repository/com/android/tools/external/org-jetbrains/uast/30.4.1/uast-30.4.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/external/org-jetbrains/uast/30.4.1",
     visibility = ["//visibility:public"],
 )
 
@@ -28730,6 +28757,33 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.android.tools.lint.lint-api_30.4.1",
+    pom = "repository/com/android/tools/lint/lint-api/30.4.1/lint-api-30.4.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/lint/lint-api/30.4.1",
+    deps = [
+        "com.android.tools.lint.lint-model_30.4.1",
+        "com.android.tools.external.com-intellij.intellij-core_30.4.1",
+        "com.android.tools.external.com-intellij.kotlin-compiler_30.4.1",
+        "com.android.tools.external.org-jetbrains.uast_30.4.1",
+        "com.android.tools.build.manifest-merger_30.4.1",
+        "com.android.tools.common_30.4.1",
+        "com.android.tools.layoutlib.layoutlib-api_30.4.1",
+        "com.android.tools.sdk-common_30.4.1",
+        "com.android.tools.sdklib_30.4.1",
+        "commons-io.commons-io_2.4",
+        "net.sf.kxml.kxml2_2.3.0",
+        "org.jetbrains.kotlin.kotlin-reflect_1.7.10",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.7.10",
+        "org.ow2.asm.asm_9.2",
+        "org.ow2.asm.asm-tree_9.2",
+        "com.android.tools.build.builder-model_7.4.1",
+        "com.google.guava.guava_30.1-jre",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.android.tools.lint.lint-api_31.0.0-beta04",
     pom = "repository/com/android/tools/lint/lint-api/31.0.0-beta04/lint-api-31.0.0-beta04.pom",
     repo_root_path = "repository",
@@ -29022,6 +29076,31 @@ maven_artifact(
         "com.android.tools.play-sdk-proto_30.4.0-alpha09",
         "com.android.tools.sdk-common_30.4.0-alpha09",
         "com.android.tools.sdklib_30.4.0-alpha09",
+        "com.google.code.gson.gson_2.8.9",
+        "com.google.guava.guava_30.1-jre",
+        "net.sf.kxml.kxml2_2.3.0",
+        "org.jetbrains.intellij.deps.trove4j_1.0.20200330",
+        "org.ow2.asm.asm-analysis_9.2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.tools.lint.lint-checks_30.4.1",
+    pom = "repository/com/android/tools/lint/lint-checks/30.4.1/lint-checks-30.4.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/lint/lint-checks/30.4.1",
+    deps = [
+        "com.android.tools.lint.lint-api_30.4.1",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.7.10",
+        "com.android.tools.external.com-intellij.intellij-core_30.4.1",
+        "com.android.tools.external.com-intellij.kotlin-compiler_30.4.1",
+        "com.android.tools.external.org-jetbrains.uast_30.4.1",
+        "com.android.tools.common_30.4.1",
+        "com.android.tools.layoutlib.layoutlib-api_30.4.1",
+        "com.android.tools.play-sdk-proto_30.4.1",
+        "com.android.tools.sdk-common_30.4.1",
+        "com.android.tools.sdklib_30.4.1",
         "com.google.code.gson.gson_2.8.9",
         "com.google.guava.guava_30.1-jre",
         "net.sf.kxml.kxml2_2.3.0",
@@ -29410,6 +29489,23 @@ maven_artifact(
         "com.android.tools.common_30.4.0-alpha09",
         "com.android.tools.lint.lint_30.4.0-alpha09",
         "com.android.tools.lint.lint-typedef-remover_30.4.0-alpha09",
+        "org.codehaus.groovy.groovy_3.0.10",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.tools.lint.lint-gradle_30.4.1",
+    pom = "repository/com/android/tools/lint/lint-gradle/30.4.1/lint-gradle-30.4.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/lint/lint-gradle/30.4.1",
+    deps = [
+        "com.android.tools.external.com-intellij.intellij-core_30.4.1",
+        "com.android.tools.external.com-intellij.kotlin-compiler_30.4.1",
+        "com.android.tools.external.org-jetbrains.uast_30.4.1",
+        "com.android.tools.common_30.4.1",
+        "com.android.tools.lint.lint_30.4.1",
+        "com.android.tools.lint.lint-typedef-remover_30.4.1",
         "org.codehaus.groovy.groovy_3.0.10",
     ],
     visibility = ["//visibility:public"],
@@ -30035,6 +30131,33 @@ maven_artifact(
         "com.android.tools.layoutlib.layoutlib-api_30.4.0-alpha09",
         "com.android.tools.sdk-common_30.4.0-alpha09",
         "com.android.tools.sdklib_30.4.0-alpha09",
+        "com.google.guava.guava_30.1-jre",
+        "net.sf.kxml.kxml2_2.3.0",
+        "org.jetbrains.kotlin.kotlin-reflect_1.7.10",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.7.10",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.tools.lint.lint_30.4.1",
+    pom = "repository/com/android/tools/lint/lint/30.4.1/lint-30.4.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/lint/lint/30.4.1",
+    deps = [
+        "com.android.tools.lint.lint-api_30.4.1",
+        "com.android.tools.lint.lint-checks_30.4.1",
+        "com.android.tools.external.com-intellij.intellij-core_30.4.1",
+        "com.android.tools.external.com-intellij.kotlin-compiler_30.4.1",
+        "com.android.tools.external.org-jetbrains.uast_30.4.1",
+        "com.android.tools.analytics-library.protos_30.4.1",
+        "com.android.tools.analytics-library.shared_30.4.1",
+        "com.android.tools.analytics-library.tracker_30.4.1",
+        "com.android.tools.build.manifest-merger_30.4.1",
+        "com.android.tools.common_30.4.1",
+        "com.android.tools.layoutlib.layoutlib-api_30.4.1",
+        "com.android.tools.sdk-common_30.4.1",
+        "com.android.tools.sdklib_30.4.1",
         "com.google.guava.guava_30.1-jre",
         "net.sf.kxml.kxml2_2.3.0",
         "org.jetbrains.kotlin.kotlin-reflect_1.7.10",
@@ -31731,6 +31854,17 @@ maven_artifact(
     pom = "repository/com/android/tools/play-sdk-proto/30.4.0-alpha09/play-sdk-proto-30.4.0-alpha09.pom",
     repo_root_path = "repository",
     repo_path = "com/android/tools/play-sdk-proto/30.4.0-alpha09",
+    deps = [
+        "com.google.protobuf.protobuf-java_3.17.2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.tools.play-sdk-proto_30.4.1",
+    pom = "repository/com/android/tools/play-sdk-proto/30.4.1/play-sdk-proto-30.4.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/play-sdk-proto/30.4.1",
     deps = [
         "com.google.protobuf.protobuf-java_3.17.2",
     ],
