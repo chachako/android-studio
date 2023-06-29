@@ -301,7 +301,7 @@ private fun generateWithSuffix(prefix:String, reserved:Set<String>): String {
  * - use pluginId in hyphen notation + /number/.
  * Those steps are similar to picking library version
  */
-fun pickVersionVariableName(
+fun pickPluginVersionVariableName(
     pluginId: String,
     caseSensitiveReserved: Set<String>
 ): String {

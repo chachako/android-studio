@@ -278,8 +278,8 @@ class VersionCatalogNamingUtilTest {
         checkPlugin(
             expected,
             pluginId,
-            { dependency, set ->
-                pickVersionVariableName(dependency, set)
+            { pluginId, set ->
+                pickPluginVersionVariableName(pluginId, set)
             },
             *variableNames
         )
