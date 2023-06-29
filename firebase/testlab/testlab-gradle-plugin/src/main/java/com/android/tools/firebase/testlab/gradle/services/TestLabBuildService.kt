@@ -19,14 +19,12 @@ package com.android.tools.firebase.testlab.gradle.services
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.instrumentation.StaticTestData
 import com.android.tools.firebase.testlab.gradle.ManagedDeviceImpl
-import com.android.tools.firebase.testlab.gradle.UtpTestSuiteResultMerger
 import com.android.tools.firebase.testlab.gradle.services.testrunner.ProjectSettings
 import com.android.tools.firebase.testlab.gradle.services.testrunner.TestDeviceData
 import com.android.tools.firebase.testlab.gradle.services.testrunner.TestRunner
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.googleapis.util.Utils
-import com.google.api.client.http.HttpRequestFactory
 import com.google.api.client.http.HttpRequestInitializer
 import com.google.api.client.http.HttpTransport
 import com.google.api.client.json.GenericJson
@@ -43,15 +41,14 @@ import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuite
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.logging.Logging
 import org.gradle.api.provider.ListProperty
-import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
 import java.io.File
+import java.io.Serializable
 import java.nio.charset.StandardCharsets
 import java.util.Locale
 import java.util.UUID
@@ -84,6 +81,20 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
     }
 
     /**
+     * This class is created for only testing purposes. We need a way to inject fake
+     * HTTP handlers while avoid exposing too much implementation details.
+     */
+    @VisibleForTesting
+    open class HttpHandler: Serializable {
+        open fun createCredential(credentialFile: File): GoogleCredential =
+            credentialFile.inputStream().use {
+                GoogleCredential.fromStream(it).createScoped(oauthScope)
+        }
+
+        open fun createHttpTransport(): HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
+    }
+
+    /**
      * Parameters of [TestLabBuildService].
      */
     interface Parameters : BuildServiceParameters {
@@ -104,12 +115,11 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val performanceMetrics: Property<Boolean>
         val stubAppApk: RegularFileProperty
         val useOrchestrator: Property<Boolean>
+        val httpHandler: Property<HttpHandler>
     }
 
-    internal open val credential: GoogleCredential by lazy {
-        parameters.credentialFile.get().asFile.inputStream().use {
-            GoogleCredential.fromStream(it).createScoped(oauthScope)
-        }
+    internal open val credential: GoogleCredential by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        parameters.httpHandler.get().createCredential(parameters.credentialFile.asFile.get())
     }
 
     private val httpRequestInitializer: HttpRequestInitializer = HttpRequestInitializer { request ->
@@ -120,8 +130,9 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
     private val jacksonFactory: JacksonFactory
         get() = JacksonFactory.getDefaultInstance()
 
-    internal open val httpTransport: HttpTransport
-        get() = GoogleNetHttpTransport.newTrustedTransport()
+    internal open val httpTransport: HttpTransport by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        parameters.httpHandler.get().createHttpTransport()
+    }
 
     private val bucketName: String by lazy(LazyThreadSafetyMode.PUBLICATION) {
         val specifiedBucket = parameters.cloudStorageBucket.orNull.let {
@@ -391,7 +402,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             }
         }
 
-        private fun createConfigIfAbsent() {
+        @VisibleForTesting
+        fun createConfigIfAbsent() {
             if (configurationContainer.findByName(STUB_APP_CONFIG_NAME) == null) {
                 configurationContainer.create(STUB_APP_CONFIG_NAME).apply {
                     isVisible = false
@@ -407,7 +419,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         }
 
         @VisibleForTesting
-        fun configure(params: Parameters) {
+        fun configure(params: Parameters, httpHandler: HttpHandler = HttpHandler()) {
             params.offlineMode.set(providerFactory.provider {
                 project.gradle.startParameter.isOffline
             })
@@ -465,6 +477,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                     else -> false
                 }
             })
+            params.httpHandler.set(providerFactory.provider { httpHandler })
         }
     }
 }

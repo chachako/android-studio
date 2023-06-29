@@ -23,6 +23,26 @@ maven_import(
 )
 
 maven_artifact(
+    name = "androidx.test.services.test-services_1.4.2",
+    pom = "repository/androidx/test/services/test-services/1.4.2/test-services-1.4.2.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/test/services/test-services/1.4.2",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "androidx.test.services.test-services",
+    classifiers = [],
+    jars = [
+    ],
+    original_deps = [],
+    pom = "repository/androidx/test/services/test-services/1.4.2/test-services-1.4.2.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/test/services/test-services/1.4.2",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "cglib.cglib-nodep_3.1",
     pom = "repository/cglib/cglib-nodep/3.1/cglib-nodep-3.1.pom",
     repo_root_path = "repository",

@@ -79,6 +79,20 @@ gradle_connected_test(
 )
 
 gradle_connected_test(
+    name = "FirebaseTestLabIntegrationTest",
+    srcs = "src/test/java/com/android/build/gradle/integration/manageddevice/application/",
+    avd = None,
+    data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/utp"],
+    maven_repo_zips = MAVEN_REPO_ZIPS + [
+        "//tools/base/firebase/testlab/testlab-gradle-plugin:maven_dependencies",
+        "//tools/base/firebase/testlab/testlab-gradle-plugin:testlab-gradle-plugin",
+    ],
+    maven_repos = TEST_MAVEN_REPOS,
+    resources = [":integration-test-resources"],
+    deps = TEST_DEPS,
+)
+
+gradle_connected_test(
     name = "ManagedDeviceExtensionTest",
     srcs = "src/test/java/com/android/build/gradle/integration/manageddevice/application/",
     avd = None,
@@ -164,6 +178,7 @@ maven_repository(
         "@maven//:androidx.test.rules_1.1.0",
         "@maven//:androidx.test.rules_1.4.0-alpha06",
         "@maven//:androidx.test.runner_1.4.0-alpha06",
+        "@maven//:androidx.test.services.test-services_1.4.2",
         "@maven//:com.android.support.multidex-instrumentation_1.0.2",
         "@maven//:com.android.support.multidex_1.0.2",
         "@maven//:com.android.tools.desugar_jdk_libs_1.1.5",
@@ -177,4 +192,12 @@ maven_repository(
         "@maven//:org.tensorflow.tensorflow-lite-support_0.1.0",
     ],
     visibility = ["__subpackages__"],
+)
+
+filegroup(
+    name = "integration-test-resources",
+    srcs = glob([
+        "src/test/resources/**",
+    ]),
+    visibility = ["//visibility:private"],
 )

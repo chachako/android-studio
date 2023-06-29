@@ -26,11 +26,12 @@ open class SetupTaskAction : DeviceSetupTaskAction<DeviceSetupInput> {
         val deviceId = setupInput.device.get()
         val apiLevel = setupInput.apiLevel.get()
 
-        val ftlDeviceModel = setupInput.buildService.get().catalog().models.firstOrNull {
+       val androidDeviceCatalogModels = setupInput.buildService.get().catalog().models
+        val ftlDeviceModel = androidDeviceCatalogModels.firstOrNull {
             it.id == deviceId
         }
         requireNotNull(ftlDeviceModel) {
-            val availableDeviceNames = setupInput.buildService.get().catalog().models
+            val availableDeviceNames = androidDeviceCatalogModels
                 .filter {
                     it.supportedVersionIds?.contains(apiLevel.toString()) == true
                 }
