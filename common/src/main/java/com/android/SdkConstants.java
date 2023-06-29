@@ -2486,6 +2486,7 @@ public final class SdkConstants {
         public static final String RINGTONE_PREFERENCE = "RingtonePreference";
         public static final String SEEK_BAR_PREFERENCE = "SeekBarPreference";
         public static final String SWITCH_PREFERENCE = "SwitchPreference";
+        public static final String SWITCH_PREFERENCE_COMPAT = "SwitchPreferenceCompat";
         public static final String INTENT = "intent";
     }
 
