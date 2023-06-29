@@ -6,3 +6,5 @@ buildVersion = {BUILD_VERSION}
 cmdlineToolsVersion = {COMMANDLINE_TOOLS_VERSION}
 apiVersion = 3
 nativeApiVersion = 0
+
+lastStableBuildVersion = {LAST_STABLE_BUILD_VERSION}

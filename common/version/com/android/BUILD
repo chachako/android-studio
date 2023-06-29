@@ -8,6 +8,10 @@ load(
     "RELEASE_BUILD_VERSION",
     "RELEASE_COMMANDLINE_TOOLS_VERSION",
 )
+load(
+    "//tools/base/common:release_version.bzl",
+    "LAST_STABLE_BUILD_VERSION",
+)
 
 expand_template(
     name = "versionProperties",
@@ -17,11 +21,13 @@ expand_template(
             "{BUILD_VERSION}": RELEASE_BUILD_VERSION,
             "{BASE_VERSION}": RELEASE_BASE_VERSION,
             "{COMMANDLINE_TOOLS_VERSION}": RELEASE_COMMANDLINE_TOOLS_VERSION,
+            "{LAST_STABLE_BUILD_VERSION}": LAST_STABLE_BUILD_VERSION,
         },
         "//conditions:default": {
             "{BUILD_VERSION}": DEV_BUILD_VERSION,
             "{BASE_VERSION}": DEV_BASE_VERSION,
             "{COMMANDLINE_TOOLS_VERSION}": DEV_COMMANDLINE_TOOLS_VERSION,
+            "{LAST_STABLE_BUILD_VERSION}": LAST_STABLE_BUILD_VERSION,
         },
     }),
     template = "version.properties.template",
