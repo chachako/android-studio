@@ -28,6 +28,7 @@ import com.android.sdklib.deviceprovisioner.DeviceProvisionerPlugin
 import com.android.sdklib.deviceprovisioner.DeviceState
 import com.android.sdklib.deviceprovisioner.DeviceState.Connected
 import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
+import com.android.sdklib.deviceprovisioner.DeviceTemplate
 import com.android.sdklib.deviceprovisioner.EmptyIcon
 import com.android.sdklib.deviceprovisioner.TestDefaultDeviceActionPresentation
 import com.android.sdklib.deviceprovisioner.awaitDisconnection
@@ -120,6 +121,7 @@ class FakeAdbDeviceProvisionerPlugin(
       private set(value) = synchronized(this) { field = value }
 
     override val stateFlow = MutableStateFlow(initialState)
+    override var sourceTemplate: DeviceTemplate? = null
 
     override val activationAction =
       object : ActivationAction {
