@@ -45,7 +45,6 @@ import com.android.build.gradle.internal.utils.getDesugaredMethods
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
 import com.android.buildanalyzer.common.TaskCategory
-import com.android.ide.common.repository.GradleVersion
 import com.android.tools.lint.model.LintModelArtifactType
 import com.android.tools.lint.model.LintModelSerialization
 import com.android.utils.FileUtils
@@ -204,11 +203,7 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
         arguments.add("--client-name", "AGP")
         arguments.add("--client-version", Version.ANDROID_GRADLE_PLUGIN_VERSION)
 
-        // Pass --offline flag only if lint version is 30.3.0-beta01 or higher because earlier
-        // versions of lint don't accept that flag.
-        if (offline.get()
-            && GradleVersion.tryParse(lintTool.version.get())
-                ?.isAtLeast(30, 3, 0, "beta", 1, false) == true) {
+        if (offline.get()) {
             arguments += "--offline"
         }
 

@@ -434,11 +434,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         arguments.add("--client-name", "AGP")
         arguments.add("--client-version", Version.ANDROID_GRADLE_PLUGIN_VERSION)
 
-        // Pass --offline flag only if lint version is 30.3.0-beta01 or higher because earlier
-        // versions of lint don't accept that flag.
-        if (offline.get()
-            && GradleVersion.tryParse(lintTool.version.get())
-                ?.isAtLeast(30, 3, 0, "beta", 1, false) == true) {
+        if (offline.get()) {
             arguments += "--offline"
         }
 

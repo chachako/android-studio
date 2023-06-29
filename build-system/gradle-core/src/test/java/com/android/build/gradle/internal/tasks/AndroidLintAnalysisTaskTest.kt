@@ -64,7 +64,6 @@ class AndroidLintAnalysisTaskTest {
         task.printStackTrace.set(true)
         task.lintTool.lintCacheDirectory.set(temporaryFolder.newFolder())
         task.lintTool.versionKey.set(Version.ANDROID_TOOLS_BASE_VERSION + "_foo")
-        task.lintTool.version.set(Version.ANDROID_TOOLS_BASE_VERSION)
         task.offline.set(true)
         task.useK2Uast.set(true)
         val commandLineArguments = task.generateCommandLineArguments().joinToString(" ")

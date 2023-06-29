@@ -72,7 +72,6 @@ class AndroidLintTaskTest {
         task.printStackTrace.set(true)
         task.lintTool.lintCacheDirectory.set(temporaryFolder.newFolder())
         task.lintTool.versionKey.set(Version.ANDROID_TOOLS_BASE_VERSION + "_foo")
-        task.lintTool.version.set(Version.ANDROID_TOOLS_BASE_VERSION)
         task.lintMode.set(LintMode.REPORTING)
         task.missingBaselineIsEmptyBaseline.set(true)
         task.baselineOmitLineNumbers.set(true)
