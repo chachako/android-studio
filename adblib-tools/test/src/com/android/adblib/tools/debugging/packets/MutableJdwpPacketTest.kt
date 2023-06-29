@@ -52,6 +52,29 @@ class MutableJdwpPacketTest {
     }
 
     @Test
+    fun testMutableJdwpPacketCommandCanBeModified() {
+        // Prepare
+        val packet = MutableJdwpPacket()
+        packet.length = 1_000_000
+        packet.id = -10
+        packet.isCommand = true
+        packet.cmdSet = 160
+        packet.cmd = 240
+
+        // Act
+        packet.cmdSet = 1
+        packet.cmd = 1
+
+        // Assert
+        assertEquals(1_000_000, packet.length)
+        assertEquals(-10, packet.id)
+        assertTrue(packet.isCommand)
+        assertFalse(packet.isReply)
+        assertEquals(1, packet.cmdSet)
+        assertEquals(1, packet.cmd)
+    }
+
+    @Test
     fun testMutableJdwpPacketReplyProperties() {
         // Prepare
         val packet = MutableJdwpPacket()
@@ -68,6 +91,26 @@ class MutableJdwpPacketTest {
         assertFalse(packet.isCommand)
         assertTrue(packet.isReply)
         assertEquals(1_000, packet.errorCode)
+    }
+
+    @Test
+    fun testMutableJdwpPacketReplyCanBeModified() {
+        // Prepare
+        val packet = MutableJdwpPacket()
+        packet.length = 1_000_000
+        packet.id = -10
+        packet.isReply = true
+        packet.errorCode = 0x6fff
+
+        // Act
+        packet.errorCode = 1
+
+        // Assert
+        assertEquals(1_000_000, packet.length)
+        assertEquals(-10, packet.id)
+        assertFalse(packet.isCommand)
+        assertTrue(packet.isReply)
+        assertEquals(1, packet.errorCode)
     }
 
     @Test
@@ -123,6 +166,7 @@ class MutableJdwpPacketTest {
         // Act
         packet.length = 1_000_000
         packet.id = -10
+        packet.isReply = true
 
         exceptionRule.expect(IllegalArgumentException::class.java)
         packet.errorCode = -10

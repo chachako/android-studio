@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.android.adblib.tools.debugging.packets
 
 import com.android.adblib.AdbInputChannel
 import com.android.adblib.tools.debugging.impl.EphemeralJdwpPacket
+import com.android.adblib.tools.debugging.packets.JdwpPacketView.Companion.FlagsAndWord
 import com.android.adblib.utils.ResizableBuffer
 import java.nio.ByteBuffer
 
@@ -25,6 +26,8 @@ import java.nio.ByteBuffer
  * or re-using the same instance for multiple views over time for performance reason.
  */
 internal class MutableJdwpPacket : JdwpPacketView {
+
+    private var flagsAndWord = FlagsAndWord()
 
     override var length: Int = 0
         set(value) {
@@ -39,28 +42,22 @@ internal class MutableJdwpPacket : JdwpPacketView {
 
     override var id: Int = 0
 
-    override var flags: Int = 0
+    override var flags: Int
+        get() = flagsAndWord.flags
         set(value) {
-            if (value < 0 || value > 255) {
-                throw IllegalArgumentException("Flags value should be with the [0..255] range")
-            }
-            field = value and 0xff
+            flagsAndWord = flagsAndWord.withFlags(value)
         }
 
     override var isReply: Boolean
-        get() = (flags and JdwpPacketConstants.REPLY_PACKET_FLAG) != 0
+        get() = flagsAndWord.isReply
         set(value) {
-            flags = if (value) {
-                flags or JdwpPacketConstants.REPLY_PACKET_FLAG
-            } else {
-                flags and JdwpPacketConstants.REPLY_PACKET_FLAG.inv()
-            }
+            flagsAndWord = flagsAndWord.withIsReply(value)
         }
 
     override var isCommand: Boolean
-        get() = !isReply
+        get() = flagsAndWord.isCommand
         set(value) {
-            isReply = !value
+            flagsAndWord = flagsAndWord.withIsCommand(value)
         }
 
     override suspend fun toOffline(workBuffer: ResizableBuffer): JdwpPacketView {
@@ -72,49 +69,22 @@ internal class MutableJdwpPacket : JdwpPacketView {
             .toOffline(workBuffer)
     }
 
-    override var cmdSet: Int = 0
-        get() {
-            return if (isReply) {
-                throw IllegalStateException("CmdSet is not available because JDWP packet is a reply packet")
-            } else {
-                field
-            }
-        }
+    override var cmdSet: Int
+        get() = flagsAndWord.cmdSet
         set(value) {
-            if (value < 0 || value > 255) {
-                throw IllegalArgumentException("CmdSet value $value should be with the [0..255] range")
-            }
-            field = value and 0xff
+            flagsAndWord = flagsAndWord.withCmdSet(value)
         }
 
-    override var cmd: Int = 0
-        get() {
-            return if (isReply) {
-                throw IllegalStateException("Cmd is not available because JDWP packet is a reply packet")
-            } else {
-                field
-            }
-        }
+    override var cmd: Int
+        get() = flagsAndWord.cmd
         set(value) {
-            if (value < 0 || value > 255) {
-                throw IllegalArgumentException("Cmd value should be with the [0..255] range")
-            }
-            field = value and 0xff
+            flagsAndWord = flagsAndWord.withCmd(value)
         }
 
-    override var errorCode: Int = 0
-        get() {
-            return if (isCommand) {
-                throw IllegalStateException("ErrorCode is not available because JDWP packet is a command packet")
-            } else {
-                field
-            }
-        }
+    override var errorCode: Int
+        get() = flagsAndWord.errorCode
         set(value) {
-            if (value < 0 || value > 65535) {
-                throw IllegalArgumentException("Cmd value should be with the [0..65535] range")
-            }
-            field = value and 0xffff
+            flagsAndWord = flagsAndWord.withErrorCode(value)
         }
 
     var payloadProvider: PayloadProvider = PayloadProvider.emptyPayload()
@@ -132,9 +102,11 @@ internal class MutableJdwpPacket : JdwpPacketView {
     }
 
     fun setCommand(cmdSet: Int, cmd: Int) {
-        this.isCommand = true
-        this.cmdSet = cmdSet
-        this.cmd = cmd
+        flagsAndWord = flagsAndWord.withCommand(cmdSet, cmd)
+    }
+
+    fun setReply(errorCode: Int) {
+        flagsAndWord = flagsAndWord.withErrorCode(errorCode)
     }
 
     companion object {

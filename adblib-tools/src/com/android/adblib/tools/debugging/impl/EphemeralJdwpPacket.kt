@@ -20,6 +20,7 @@ import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_HEADER_LENGTH
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
+import com.android.adblib.tools.debugging.packets.JdwpPacketView.Companion.FlagsAndWord
 import com.android.adblib.tools.debugging.packets.PayloadProvider
 import com.android.adblib.tools.debugging.packets.toStringImpl
 import com.android.adblib.tools.debugging.packets.withPayload
@@ -33,38 +34,21 @@ import kotlinx.coroutines.sync.Mutex
 internal abstract class AbstractJdwpPacketView protected constructor(
     final override val id: Int,
     final override val length: Int,
-    /**
-     * Instead of using 4 integer fields for [flags], [cmdSet], [cmd] and [errorCode], we pack
-     * them into the 24 lower bits of this field:
-     * * Bits [[16-23]] for [flags], and
-     * * Bits [[0-15]] for [cmdSet] (8-bit) and [cmd] (8-bit), or [errorCode] (16-bit)
-     *
-     * Note: This matches the packing format used in the JDWP protocol.
-     */
-    protected val flagsAndWord: Int,
+    protected val flagsAndWord: FlagsAndWord,
     protected val payloadProvider: PayloadProvider
 ) : JdwpPacketView, AutoCloseable {
 
     override val flags: Int
-        get() = (flagsAndWord and 0xff0000) shr 16
+        get() = flagsAndWord.flags
 
     override val cmdSet: Int
-        get() {
-            check(isCommand) { "CmdSet is not available because JDWP packet is a reply packet" }
-            return (flagsAndWord and 0xff00) shr 8
-        }
+        get() = flagsAndWord.cmdSet
 
     override val cmd: Int
-        get() {
-            check(isCommand) { "Cmd is not available because JDWP packet is a reply packet" }
-            return flagsAndWord and 0x00ff
-        }
+        get() = flagsAndWord.cmd
 
     override val errorCode: Int
-        get() {
-            check(isReply) { "ErrorCode is not available because JDWP packet is a command packet" }
-            return flagsAndWord and 0xffff
-        }
+        get() = flagsAndWord.errorCode
 
     override suspend fun acquirePayload(): AdbInputChannel {
         return payloadProvider.acquirePayload()
@@ -99,7 +83,7 @@ internal abstract class AbstractJdwpPacketView protected constructor(
 internal open class EphemeralJdwpPacket private constructor(
     id: Int,
     length: Int,
-    flagsAndWord: Int,
+    flagsAndWord: FlagsAndWord,
     payloadProvider: PayloadProvider
 ) : AbstractJdwpPacketView(id, length, flagsAndWord, payloadProvider), AutoCloseable {
 
@@ -111,12 +95,8 @@ internal open class EphemeralJdwpPacket private constructor(
         cmd: Int,
         errorCode: Int,
         payloadProvider: PayloadProvider
-    ): this(id, length, makeFlagsAndWord(flags, cmdSet, cmd, errorCode), payloadProvider) {
+    ): this(id, length, FlagsAndWord(flags, cmdSet, cmd, errorCode), payloadProvider) {
         require(length >= PACKET_HEADER_LENGTH) { "length  value '$flags' should be within greater than $PACKET_HEADER_LENGTH" }
-        require(flags in 0..255) { "flags value '$flags' should be within the [0..255] range" }
-        require(cmdSet in 0..255) { "cmdSet value '$cmdSet' should be within the [0..255] range" }
-        require(cmd in 0..255) { "cmd value '$cmd' should be within the [0..255] range" }
-        require(errorCode in 0..65535) { "errorCode value '$errorCode' should be within the [0..65535] range" }
     }
 
     override suspend fun toOffline(workBuffer: ResizableBuffer): JdwpPacketView {
@@ -138,15 +118,6 @@ internal open class EphemeralJdwpPacket private constructor(
     }
 
     companion object {
-
-        private fun makeFlagsAndWord(flags: Int, cmdSet: Int, cmd: Int, errorCode: Int): Int {
-            return if ((flags and JdwpPacketConstants.REPLY_PACKET_FLAG) == 0) {
-                (flags.toUByte().toInt() shl 16) or (cmdSet.toUByte()
-                    .toInt() shl 8) or cmd.toUByte().toInt()
-            } else {
-                (flags.toUByte().toInt() shl 16) or (errorCode.toUShort().toInt())
-            }
-        }
 
         @Suppress("FunctionName") // constructor like syntax
         fun Command(id: Int, length: Int, cmdSet: Int, cmd: Int, payloadProvider: PayloadProvider): EphemeralJdwpPacket {
@@ -216,7 +187,7 @@ internal open class EphemeralJdwpPacket private constructor(
     private class OfflineJdwpPacket(
         id: Int,
         length: Int,
-        flagsAndWord: Int,
+        flagsAndWord: FlagsAndWord,
         payloadProvider: PayloadProvider
     ) : AbstractJdwpPacketView(id, length, flagsAndWord, payloadProvider) {
 

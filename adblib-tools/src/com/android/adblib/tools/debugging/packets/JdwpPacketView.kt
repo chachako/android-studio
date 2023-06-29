@@ -161,6 +161,136 @@ interface JdwpPacketView {
                 )
             }
         }
+
+        /**
+         * Inline value class that efficiently wraps the [JdwpPacketView.flags],
+         * [JdwpPacketView.cmdSet], [JdwpPacketView.cmd] and [JdwpPacketView.errorCode] properties
+         * into a single 32-bit integer value.
+         */
+        @Suppress("NOTHING_TO_INLINE")
+        @JvmInline
+        internal value class FlagsAndWord private constructor(
+            /**
+             * Pack [flags], [cmdSet], [cmd] and [errorCode] into the 24 lower bits of a 32-bit integer:
+             * * Bits [[16-23]] for [flags], and
+             * * Bits [[0-15]] for [cmdSet] (8-bit) and [cmd] (8-bit), or [errorCode] (16-bit)
+             *
+             * Note: This matches the packing format used in the JDWP protocol.
+             */
+            private val rawValue: Int
+        ) {
+
+            constructor() : this(0)
+
+            constructor(flags: Int, cmdSet: Int, cmd: Int, errorCode: Int)
+             : this (buildRawValue(flags, cmdSet, cmd, errorCode))
+
+            private inline fun rawFlags(): Int = (rawValue and 0xff0000) shr 16
+
+            private inline fun rawWord(): Int = (rawValue and 0xffff)
+
+            inline val isCommand: Boolean
+                get() = (rawFlags() and JdwpPacketConstants.REPLY_PACKET_FLAG) == 0
+
+            inline val isReply: Boolean
+                get() = !isCommand
+
+            inline val flags: Int
+                get() = rawFlags()
+
+            inline val cmdSet: Int
+                get() {
+                    check(isCommand) { "CmdSet is not available because JDWP packet is a reply packet" }
+                    return (rawWord() and 0xff00) shr 8
+                }
+
+            inline val cmd: Int
+                get() {
+                    check(isCommand) { "Cmd is not available because JDWP packet is a reply packet" }
+                    return rawWord() and 0x00ff
+                }
+
+            inline val errorCode: Int
+                get() {
+                    check(isReply) { "ErrorCode is not available because JDWP packet is a command packet" }
+                    return rawWord()
+                }
+
+            fun withFlags(flags: Int): FlagsAndWord {
+                require(flags in 0..255) { "Flags value '$flags' should be within the [0..255] range" }
+                return fromRawValues(flags, rawWord())
+            }
+
+            fun withIsCommand(isCommand: Boolean): FlagsAndWord {
+                val newFlags = if (isCommand) {
+                    rawFlags() and JdwpPacketConstants.REPLY_PACKET_FLAG.inv()
+                } else {
+                    rawFlags() or JdwpPacketConstants.REPLY_PACKET_FLAG
+                }
+                return fromRawValues(newFlags, rawWord())
+            }
+
+            fun withIsReply(isReply: Boolean): FlagsAndWord {
+                return withIsCommand(!isReply)
+            }
+
+            fun withCommand(cmdSet: Int, cmd: Int): FlagsAndWord {
+                return withCmdSet(cmdSet).withCmd(cmd)
+            }
+
+            fun withCmdSet(cmdSet: Int): FlagsAndWord {
+                require(cmdSet in 0..255) { "CmdSet value '$cmdSet' should be within the [0..255] range" }
+                return fromRawValues(
+                    rawFlags = rawFlags() and JdwpPacketConstants.REPLY_PACKET_FLAG.inv(),
+                    rawWord = (rawWord() and 0x00ff) or (cmdSet shl 8)
+                )
+            }
+
+            fun withCmd(cmd: Int): FlagsAndWord {
+                require(cmd in 0..255) { "Cmd value '$cmd' should be within the [0..255] range" }
+                return fromRawValues(
+                    rawFlags = rawFlags() and JdwpPacketConstants.REPLY_PACKET_FLAG.inv(),
+                    rawWord = (rawWord() and 0xff00) or cmd
+                )
+            }
+
+            fun withErrorCode(errorCode: Int): FlagsAndWord {
+                require(errorCode in 0..65535) { "ErrorCode value '$errorCode' should be within the [0..65535] range" }
+                return fromRawValues(
+                    rawFlags = rawFlags() or JdwpPacketConstants.REPLY_PACKET_FLAG,
+                    rawWord = errorCode
+                )
+            }
+
+            companion object {
+
+                private inline fun fromRawValues(rawFlags: Int, rawWord: Int): FlagsAndWord {
+                    assert(rawFlags in 0..255)
+                    assert(rawWord in 0..65535)
+                    return FlagsAndWord((rawFlags shl 16) or rawWord)
+                }
+
+                private fun buildRawValue(flags: Int, cmdSet: Int, cmd: Int, errorCode: Int): Int {
+                    require(flags in 0..255) {
+                        "Flags value '$flags' should be within the [0..255] range"
+                    }
+                    require(cmdSet in 0..255) {
+                        "CmdSet value '$cmdSet' should be within the [0..255] range"
+                    }
+                    require(cmd in 0..255) {
+                        "Cmd value '$cmd' should be within the [0..255] range"
+                    }
+                    require(errorCode in 0..65535) {
+                        "ErrorCode value '$errorCode' should be within the [0..65535] range"
+                    }
+                    return if ((flags and JdwpPacketConstants.REPLY_PACKET_FLAG) == 0) {
+                        (flags shl 16) or (cmdSet shl 8) or cmd
+                    } else {
+                        (flags shl 16) or (errorCode)
+                    }
+                }
+            }
+        }
     }
 }
 
