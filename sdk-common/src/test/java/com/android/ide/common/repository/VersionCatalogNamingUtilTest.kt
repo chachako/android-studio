@@ -78,6 +78,35 @@ class VersionCatalogNamingUtilTest {
     }
 
     @Test
+    fun testPickPluginName() {
+        pluginName("androidApplication", "org.android.application")
+        pluginName("pluginId", "plugin-id", "foo")
+        pluginName("pluginId", "plugin_id", "foo")
+        pluginName("pluginId", "pluginId", "foo")
+        pluginName(
+            "orgAndroidApplication",
+            "org.android.application",
+            "Foo",
+            "androidApplication"
+        )
+        pluginName(
+            "orgAndroidApplicationX2",
+            "org.android.application",
+            "Foo",
+            "androidApplication",
+            "orgAndroidApplication"
+        )
+        pluginName(
+            "orgAndroidApplicationX3",
+            "org.android.application",
+            "Foo",
+            "androidApplication",
+            "orgAndroidApplication",
+            "orgAndroidApplicationX2"
+        )
+    }
+
+    @Test
     fun testPickVersionName() {
         versionName("foo", "com.google:foo:1.0")
         versionName("foo-bar", "com.google:foo-bar:1.0", "appcompat")
@@ -157,8 +186,36 @@ class VersionCatalogNamingUtilTest {
             "com-google-foo-bar",
             "com-google-foo-bar2"
         )
-
     }
+
+    @Test
+    fun testPickPluginVersionName() {
+        pluginVersionName("android-application", "org.android.application", "application")
+        pluginVersionName("fooVersion", "foo", "barVersion")
+        pluginVersionName("foo-bar", "foo_bar")
+        pluginVersionName("foo-bar", "foo-bar")
+        pluginVersionName("google-foo-bar", "com.google.foo-bar", "FOO-BAR", "appcompat")
+        pluginVersionName("googleFooBar", "com.google.foo-bar", "appCompat")
+        pluginVersionName("googleFooBar", "com.google.foo-bar", "Foo-Bar", "fooBar")
+
+        pluginVersionName(
+            "com-google-foo-bar2",
+            "com.google.foo-bar",
+            "foo-bar",
+            "google-foo-bar",
+            "com-google-foo-bar"
+        )
+
+        pluginVersionName(
+            "com-google-foo-bar3",
+            "com.google.foo-bar",
+            "foo-bar",
+            "google-foo-bar",
+            "com-google-foo-bar",
+            "com-google-foo-bar2"
+        )
+    }
+
 
     @Test
     fun testToSafeKey() {
@@ -182,6 +239,20 @@ class VersionCatalogNamingUtilTest {
         )
     }
 
+    private fun pluginName(
+        expected: String,
+        pluginId: String,
+        vararg variableNames: String,
+    ) {
+        checkPlugin(
+            expected,
+            pluginId,
+            { pluginId, plugins ->
+                pickPluginVariableName(pluginId, plugins) },
+            *variableNames
+        )
+    }
+
     private fun versionName(
         expected: String,
         coordinateString: String,
@@ -195,6 +266,21 @@ class VersionCatalogNamingUtilTest {
                 pickVersionVariableName(dependency, set)
             },
             includeVersions,
+            *variableNames
+        )
+    }
+
+    private fun pluginVersionName(
+        expected: String,
+        pluginId: String,
+        vararg variableNames: String,
+    ) {
+        checkPlugin(
+            expected,
+            pluginId,
+            { dependency, set ->
+                pickVersionVariableName(dependency, set)
+            },
             *variableNames
         )
     }
@@ -214,6 +300,17 @@ class VersionCatalogNamingUtilTest {
         val dependency = Dependency.parse(coordinateString)
         val reserved = setOf(*variableNames)
         val name = suggestName(dependency, reserved, includeVersions)
+        assertEquals(expected, name)
+    }
+
+    private fun checkPlugin(
+        expected: String,
+        pluginId: String,
+        suggestName: (String, Set<String>) -> String,
+        vararg variableNames: String
+    ) {
+        val reserved = setOf(*variableNames)
+        val name = suggestName(pluginId, reserved)
         assertEquals(expected, name)
     }
 }

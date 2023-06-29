@@ -16,9 +16,9 @@
 package com.android.ide.common.repository
 
 import com.android.ide.common.gradle.Dependency
+import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.CaseFormat
 import java.util.TreeSet
-import com.google.common.annotations.VisibleForTesting
 
 private fun Dependency.isAndroidX(): Boolean = group?.startsWith("androidx.") ?: false
 
@@ -99,6 +99,45 @@ fun pickLibraryVariableName(
     }
 }
 
+/**
+ * Pick name with next steps. Each step generates name and check whether it
+ * exists in reserved set where comparison is done in case-insensitive way.
+ * If same name already exists, it tries the next step. Steps defined as follows:
+ * - pluginId will cut root domain and transform to low camel case
+ *   "org.android.application" => androidApplication
+ * - in other case it will transform whole pluginId into low camel case
+ *   "org.android.application" => orgAndroidApplication
+ * - if already exists - add "X" + /number/ at the end until no such name in reserved
+ *   "org.android.application" => orgAndroidApplicationX2
+ */
+fun pickPluginVariableName(
+    pluginId: String,
+    caseSensitiveReserved: Set<String>
+): String {
+    val reserved = TreeSet(String.CASE_INSENSITIVE_ORDER)
+    reserved.addAll(caseSensitiveReserved)
+    val plugin = cutDomainPrefix(pluginId)
+
+    // without com/org domain prefix
+    val shortSafeKey = plugin.toSafeHyphenKey()
+    val shortName = maybeLowCamelTransform(shortSafeKey)
+    if (!reserved.contains(shortName)) {
+        return shortName
+    }
+
+    val fullSafeKey = pluginId.toSafeHyphenKey()
+    val fullName = maybeLowCamelTransform(fullSafeKey)
+    if (!reserved.contains(fullName)) {
+        return fullName
+    }
+
+    return generateWithSuffix(fullName + "X", reserved)
+}
+
+private fun maybeLowCamelTransform(name: String):String =
+    if (name.contains("-")) CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, name)
+    else name
+
 @VisibleForTesting
 internal fun String.toSafeKey(): String {
     // Should filter to set of valid characters in an unquoted key; see `unquoted-key-char` in
@@ -114,12 +153,26 @@ internal fun String.toSafeKey(): String {
     return sb.toString()
 }
 
+// All symbols like ".", "_" and non letter or digit will be substituted with "-"
+internal fun String.toSafeHyphenKey(): String =
+    this.toSafeKey().replace("_","-")
+
 private fun getGroupPrefix(dependency: Dependency): String {
     // For com.google etc., use "google" instead of "com"
     val group = dependency.group ?: return "nogroup"
     val groupPrefix = group.substringBefore('.').toSafeKey()
-    if (groupPrefix == "com" || groupPrefix == "org" || groupPrefix == "io") {
+    if (groupPrefix.isCommonDomain()) {
         return group.substringAfter('.').substringBefore('.').toSafeKey()
+    }
+    return groupPrefix.toSafeKey()
+}
+
+private fun String.isCommonDomain() = this == "com" || this == "org" || this == "io"
+
+private fun cutDomainPrefix(group:String):String{
+    val groupPrefix = group.substringBefore('.').toSafeKey()
+    if (groupPrefix.isCommonDomain()) {
+        return group.substringAfter('.').toSafeKey()
     }
     return groupPrefix.toSafeKey()
 }
@@ -153,18 +206,7 @@ private fun getGroupPrefix(dependency: Dependency): String {
     // Use a case-insensitive set when checking for clashes, such that
     // we don't for example pick a new variable named "appcompat" if "appCompat"
     // is already in the map.
-    var haveCamelCase = false
-    var haveHyphen = false
-    for (name in reserved) {
-        for (i in name.indices) {
-            val c = name[i]
-            if (c == '-') {
-                haveHyphen = true
-            } else if (i > 0 && c.isUpperCase() && name[i - 1].isLowerCase() && name[0].isLowerCase()) {
-                haveCamelCase = true
-            }
-        }
-    }
+    val (haveCamelCase, haveHyphen) = getAliasStyle(reserved)
 
     val artifactCamel =
         if (artifact.contains('-')) CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, artifact)
@@ -212,12 +254,95 @@ private fun getGroupPrefix(dependency: Dependency): String {
     }
 
     // Final fallback; this is unlikely but JUST to be sure we get a unique version
+    return generateWithSuffix(withGroupId, reserved)
+}
+
+data class AliasStyle(val haveCamelCase: Boolean, val haveHyphen: Boolean)
+
+private fun getAliasStyle(reservedAliases: Set<String>): AliasStyle {
+    var haveCamelCase = false
+    var haveHyphen = false
+    for (name in reservedAliases) {
+        for (i in name.indices) {
+            val c = name[i]
+            if (c == '-') {
+                haveHyphen = true
+            } else if (i > 0 && c.isUpperCase() && name[i - 1].isLowerCase() && name[0].isLowerCase()) {
+                haveCamelCase = true
+            }
+        }
+    }
+    return AliasStyle(haveCamelCase, haveHyphen)
+}
+
+private fun generateWithSuffix(prefix:String, reserved:Set<String>): String {
     var id = 2
     while (true) {
-        val name = "${withGroupId}${id++}"
+        val name = "${prefix}${id++}"
         // Will eventually succeed
         if (!reserved.contains(name)) {
             return name
         }
     }
+}
+
+/**
+ * Variable name generator takes plugin id as a base. It analyses reserved
+ * aliases and chose same notation. This can be a lower camel, lower hyphen,
+ * lower camel with Version suffix. Alias will have hyphen, or lower camel
+ * notation otherwise. Picking variable happens in steps. Each step generates
+ * some name around updated plugin id and check whether it's reserved with
+ * case-insensitive set. If yes, jumping to the next step.
+ * Steps defined as follows:
+ * - use pluginId prefix (without root domain com/org) + "Version" suffix if this is the style;
+ * - use pluginId prefix as variable name;
+ * - use pluginId prefix + "Version" suffix if it's not a hyphen notation;
+ * - use full pluginId in hyphen notation.
+ * - use pluginId in hyphen notation + /number/.
+ * Those steps are similar to picking library version
+ */
+fun pickVersionVariableName(
+    pluginId: String,
+    caseSensitiveReserved: Set<String>
+): String {
+    val reserved = TreeSet(String.CASE_INSENSITIVE_ORDER)
+    reserved.addAll(caseSensitiveReserved)
+    val plugin = cutDomainPrefix(pluginId)
+
+    val safeKey = plugin.toSafeHyphenKey()
+
+    if (reserved.isEmpty()) {
+        return safeKey
+    }
+
+    val (haveCamelCase, haveHyphen) = getAliasStyle(reserved)
+
+    val pluginCamel = maybeLowCamelTransform(plugin)
+    val pluginName = if (haveCamelCase) pluginCamel else plugin
+
+    if (reserved.isNotEmpty() && reserved.first().endsWith("Version")) {
+        val withVersion = "${pluginCamel}Version"
+        if (!reserved.contains(withVersion)) {
+            return withVersion
+        }
+    }
+
+    if (!reserved.contains(pluginName)) {
+        return pluginName
+    }
+
+    if (!haveHyphen) {
+        val withVersion = "${pluginCamel}Version"
+        if (!reserved.contains(withVersion)) {
+            return withVersion
+        }
+    }
+
+    // with full pluginId
+    val fullName = pluginId.toSafeKey()
+    if (!reserved.contains(fullName)) {
+        return fullName
+    }
+
+    return generateWithSuffix(fullName, reserved)
 }
