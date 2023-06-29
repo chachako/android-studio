@@ -125,7 +125,7 @@ class ScreenshotEnvironmentContext(private val project: ComposeProject, private 
         projectPath: String?,
         platform: AndroidPlatform?
     ): RenderSecurityManager {
-        return RenderSecurityManager(null,null,false)
+        return RenderSecurityManager.create(null,null,false)
     }
 
     // Can be anything, used for RenderErrorContributor
