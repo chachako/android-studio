@@ -453,6 +453,9 @@ class LintDetectorDetectorTest {
                 src/test/pkg/MyJavaLintDetector.java:39: Error: Don't call PsiMethod#getBody(); you must use UAST instead. If you don't have a UMethod call UastFacade.getMethodBody(method) [LintImplUseUast]
                         method.getBody(); // ERROR - must use UAST
                         ~~~~~~~~~~~~~~~~
+                src/test/pkg/MyJavaLintDetector.java:42: Error: Don't call PsiMethod#getBody(); you must use UAST instead. If you don't have a UMethod call UastFacade.getMethodBody(method) [LintImplUseUast]
+                        method.getBody(); // ERROR - must use UAST
+                        ~~~~~~~~~~~~~~~~
                 src/test/pkg/MyJavaLintDetector.java:45: Error: Don't call PsiMember#getContainingClass(); you should use UAST instead and call getContainingUClass() [LintImplUseUast]
                         method.getContainingClass(); // ERROR - must use UAST
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -483,7 +486,7 @@ class LintDetectorDetectorTest {
                 src/test/pkg/MyIssueRegistry.kt:3: Warning: An IssueRegistry should override the vendor property [MissingVendor]
                 class MyIssueRegistry : IssueRegistry() {
                       ~~~~~~~~~~~~~~~
-                27 errors, 16 warnings
+                28 errors, 16 warnings
                 """
       )
       .expectFixDiffs(
@@ -621,5 +624,40 @@ class LintDetectorDetectorTest {
       .allowMissingSdk()
       .run()
       .expectClean()
+  }
+
+  @Test
+  fun testContainingClass_b288737678() {
+    lint()
+      .files(
+        kotlin(
+            """
+            import com.android.tools.lint.client.api.JavaEvaluator
+            import com.android.tools.lint.detector.api.Detector
+            import org.jetbrains.uast.UExpression
+            import org.jetbrains.uast.getContainingUMethod
+
+            class Foo : Detector() {
+              fun isRelevantCaller(node: UExpression, evaluator: JavaEvaluator): Boolean {
+                val callerClass = node.getContainingUMethod()?.containingClass ?: return false
+                return evaluator.inheritsFrom(callerClass, Detector::class.java.name, false)
+              }
+            }
+          """
+          )
+          .indented(),
+        *getLintClassPath()
+      )
+      .issues(*issues)
+      .allowMissingSdk()
+      .run()
+      .expect(
+        """
+          src/Foo.kt:8: Error: Don't call PsiMember#getContainingClass(); you should use UAST instead and call getContainingUClass() [LintImplUseUast]
+              val callerClass = node.getContainingUMethod()?.containingClass ?: return false
+                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          1 errors, 0 warnings
+        """
+      )
   }
 }

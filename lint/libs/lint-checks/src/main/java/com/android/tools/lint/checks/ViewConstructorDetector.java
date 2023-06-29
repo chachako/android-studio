@@ -115,7 +115,8 @@ public class ViewConstructorDetector extends Detector implements SourceCodeScann
             return;
         }
 
-        if (declaration.getContainingClass() != null && !evaluator.isStatic(declaration)) {
+        if (declaration.getJavaPsi().getContainingClass() != null
+                && !evaluator.isStatic(declaration)) {
             // Ignore inner classes that aren't static: we can't create these
             // anyway since we'd need the outer instance
             return;

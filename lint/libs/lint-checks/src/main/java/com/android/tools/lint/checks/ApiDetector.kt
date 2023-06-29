@@ -1354,7 +1354,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
     }
 
     override fun visitMethod(node: UMethod) {
-      val containingClass = node.containingClass
+      val containingClass = node.javaPsi.containingClass
 
       // API check for default methods
       if (

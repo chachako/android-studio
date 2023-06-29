@@ -88,7 +88,7 @@ public class HandlerDetector extends Detector implements SourceCodeScanner {
             return;
         }
         boolean isAnonymous = declaration instanceof UAnonymousClass;
-        if (declaration.getContainingClass() == null && !isAnonymous) {
+        if (declaration.getJavaPsi().getContainingClass() == null && !isAnonymous) {
             return;
         }
 

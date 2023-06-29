@@ -98,7 +98,7 @@ class ExternalAnnotationsDetector : Detector(), SourceCodeScanner {
   }
 
   private fun isRelevantCaller(node: UExpression, evaluator: JavaEvaluator): Boolean {
-    val callerClass = node.getContainingUMethod()?.containingClass ?: return false
+    val callerClass = node.getContainingUMethod()?.javaPsi?.containingClass ?: return false
     return evaluator.inheritsFrom(callerClass, Detector::class.java.name, false) ||
       callerClass.qualifiedName.orEmpty().startsWith("com.android.tools.lint.")
   }

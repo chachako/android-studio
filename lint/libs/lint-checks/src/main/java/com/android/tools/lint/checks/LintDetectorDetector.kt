@@ -297,7 +297,7 @@ class LintDetectorDetector : Detector(), UastScanner {
         "getContainingClass" -> {
           checkCall(
             node,
-            CLASS_PSI_JVM_MEMBER,
+            CLASS_PSI_MEMBER,
             "Don't call `PsiMember#getContainingClass()`; you should use UAST instead and call `getContainingUClass()`",
             requireUastReceiver = true
           )
@@ -1278,7 +1278,7 @@ class LintDetectorDetector : Detector(), UastScanner {
         }
       }
       val method = call.resolve() ?: return
-      if (context.evaluator.isMemberInClass(method, expectedContainer)) {
+      if (context.evaluator.isMemberInSubClassOf(method, expectedContainer)) {
         context.report(USE_UAST, call, context.getLocation(call), message)
       }
     }
@@ -1319,7 +1319,7 @@ class LintDetectorDetector : Detector(), UastScanner {
     private const val CLASS_PSI_ELEMENT = "com.intellij.psi.PsiElement"
     private const val CLASS_PSI_VARIABLE = "com.intellij.psi.PsiVariable"
     private const val CLASS_PSI_TREE_UTIL = "com.intellij.psi.util.PsiTreeUtil"
-    private const val CLASS_PSI_JVM_MEMBER = "com.intellij.psi.PsiJvmMember"
+    private const val CLASS_PSI_MEMBER = "com.intellij.psi.PsiMember"
     private const val CLASS_U_ELEMENT = "org.jetbrains.uast.UElement"
 
     private const val DOLLAR_STRING = "\${\"$\"}"

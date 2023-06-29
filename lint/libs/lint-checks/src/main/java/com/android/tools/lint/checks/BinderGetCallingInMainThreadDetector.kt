@@ -71,7 +71,7 @@ class BinderGetCallingInMainThreadDetector : Detector(), Detector.UastScanner {
   override fun getApplicableMethodNames() = GET_CALLING_METHODS.methodsNames
   override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
     val containingMethod = node.getContainingUMethod() ?: return
-    val containingClass = containingMethod.containingClass ?: return
+    val containingClass = containingMethod.javaPsi.containingClass ?: return
     val invokedClass: PsiClass = method.containingClass ?: return
     if (context.evaluator.inheritsFrom(invokedClass, GET_CALLING_METHODS.className)) {
       for ((className, methodNames) in DISALLOWED_METHODS_LIST) {

@@ -102,7 +102,7 @@ class FragmentDetector : Detector(), SourceCodeScanner {
       return
     }
 
-    if (declaration.containingClass != null && !evaluator.isStatic(declaration)) {
+    if (declaration.javaPsi.containingClass != null && !evaluator.isStatic(declaration)) {
       context.report(
         ISSUE,
         declaration,
