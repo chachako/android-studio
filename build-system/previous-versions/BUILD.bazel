@@ -3,6 +3,8 @@ load("//tools/base/bazel:gradle.bzl", "gradle_build")
 
 #keep sorted
 AGP_8_0_0_ARTIFACTS = [
+    "@maven//:com.android.application.com.android.application.gradle.plugin_8.0.0-beta04",
+    "@maven//:com.android.library.com.android.library.gradle.plugin_8.0.0-beta04",
     "@maven//:com.android.tools.build.aapt2_8.0.0-beta04-9289358",
     "@maven//:com.android.tools.build.gradle_8.0.0-beta04",
     "@maven//:com.android.tools.lint.lint-gradle_31.0.0-beta04",
@@ -16,6 +18,8 @@ maven_repository(
 
 #keep sorted
 AGP_7_4_1_ARTIFACTS = [
+    "@maven//:com.android.application.com.android.application.gradle.plugin_7.4.1",
+    "@maven//:com.android.library.com.android.library.gradle.plugin_7.4.1",
     "@maven//:com.android.tools.build.aapt2_7.4.1-8841542",
     "@maven//:com.android.tools.build.gradle_7.4.1",
     "@maven//:com.android.tools.lint.lint-gradle_30.4.1",
@@ -55,6 +59,8 @@ maven_repository(
 
 #keep sorted
 AGP_7_2_0_ARTIFACTS = [
+    "@maven//:com.android.application.com.android.application.gradle.plugin_7.2.0",
+    "@maven//:com.android.library.com.android.library.gradle.plugin_7.2.0",
     "@maven//:com.android.tools.build.aapt2_7.2.0-7984345",
     "@maven//:com.android.tools.build.gradle_7.2.0",
     "@maven//:com.android.tools.lint.lint-gradle_30.2.0",
