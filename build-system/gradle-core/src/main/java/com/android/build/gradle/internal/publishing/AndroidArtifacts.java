@@ -546,7 +546,7 @@ public class AndroidArtifacts {
         AAR(TYPE_AAR),
 
         /**
-         * A possibly-processed aar.
+         * A processed aar.
          *
          * <p>See {@link #JAR} for context on processed/unprocessed artifacts.
          *
