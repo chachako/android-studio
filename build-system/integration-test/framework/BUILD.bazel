@@ -36,6 +36,7 @@ kotlin_library(
         # You can change order after this line:
         "@maven//:com.android.tools.smali.smali-dexlib2",
         "@maven//:com.google.apis.google-api-services-storage",
+        "@maven//:com.google.code.gson.gson",
         "@maven//:com.google.protobuf.protobuf-java",
         "@maven//:com.google.protobuf.protobuf-java-util",
         "@maven//:com.google.truth.extensions.truth-java8-extension",

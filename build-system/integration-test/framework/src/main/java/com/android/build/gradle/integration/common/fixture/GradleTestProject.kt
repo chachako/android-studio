@@ -58,7 +58,6 @@ import org.gradle.tooling.ProjectConnection
 import org.gradle.tooling.internal.consumer.DefaultGradleConnector
 import org.gradle.util.GradleVersion
 import org.junit.Assert
-import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import java.io.File
@@ -507,6 +506,7 @@ open class GradleTestProject @JvmOverloads constructor(
                         }
                     }
                     openConnections?.forEach(ProjectConnection::close)
+                    checkConfigurationCache(_buildResult)
 
                     if (outputLogOnFailure && testFailed) {
                         _buildResult?.let {
@@ -553,6 +553,13 @@ open class GradleTestProject @JvmOverloads constructor(
                 """.trimIndent()
     }
 
+    private fun checkConfigurationCache(_buildResult: GradleBuildResult?) {
+        val checker = ConfigurationCacheReportChecker()
+        File(buildDir, "reports").walk()
+            .filter { it.isFile }
+            .filter { it.name != "configuration-cache.html" }
+            .forEach(checker::checkReport)
+    }
 
     private fun populateTestDirectory() {
         val projectDir = projectDir
