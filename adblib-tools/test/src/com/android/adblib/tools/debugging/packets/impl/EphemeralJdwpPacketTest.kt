@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.adblib.tools.debugging.packets
+package com.android.adblib.tools.debugging.packets.impl
 
 import com.android.adblib.AdbInputChannel
 import com.android.adblib.readNBytes
 import com.android.adblib.readRemaining
 import com.android.adblib.testingutils.ByteBufferUtils
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
-import com.android.adblib.tools.debugging.impl.EphemeralJdwpPacket
-import com.android.adblib.tools.debugging.packets.JdwpCommands.CmdSet.SET_THREADREF
-import com.android.adblib.tools.debugging.packets.JdwpCommands.ThreadRefCmd.CMD_THREADREF_NAME
+import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
+import com.android.adblib.tools.debugging.packets.impl.JdwpCommands.CmdSet.SET_THREADREF
+import com.android.adblib.tools.debugging.packets.impl.JdwpCommands.ThreadRefCmd.CMD_THREADREF_NAME
+import com.android.adblib.tools.debugging.packets.payloadLength
+import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.toByteArray
+import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
 import com.android.adblib.tools.testutils.NanoTimeSpan
 import com.android.adblib.tools.testutils.NanoTimeSpan.Companion.assertNanoTimeSpansAreSorted
 import com.android.adblib.utils.ResizableBuffer

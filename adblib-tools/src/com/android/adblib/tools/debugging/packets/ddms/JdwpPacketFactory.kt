@@ -16,7 +16,7 @@
 package com.android.adblib.tools.debugging.packets.ddms
 
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
-import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
+import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CHUNK_HEADER_LENGTH
 import java.nio.ByteBuffer
 

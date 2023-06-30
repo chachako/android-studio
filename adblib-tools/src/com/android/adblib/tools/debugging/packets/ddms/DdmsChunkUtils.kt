@@ -21,12 +21,12 @@ import com.android.adblib.ByteBufferAdbOutputChannel
 import com.android.adblib.forwardTo
 import com.android.adblib.readNBytes
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
-import com.android.adblib.tools.debugging.packets.PayloadProvider
 import com.android.adblib.tools.debugging.packets.copy
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CHUNK_BYTE_ORDER
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CHUNK_HEADER_LENGTH
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CMD
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CMD_SET
+import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.toByteBuffer
 import com.android.adblib.utils.ResizableBuffer
@@ -37,7 +37,7 @@ import java.io.EOFException
 /**
  * Serialize the [DdmsChunkView] into an [AdbOutputChannel].
  *
- * @throws IllegalArgumentException if [DdmsChunkView.payload] does not contain exactly
+ * @throws IllegalArgumentException if [DdmsChunkView.withPayload] does not contain exactly
  * [DdmsChunkView.length] bytes
  *
  * @param workBuffer (Optional) The [ResizableBuffer] used to transfer data
@@ -62,7 +62,7 @@ internal suspend fun DdmsChunkView.writeToChannel(
 /**
  * Returns an in-memory copy of this [DdmsChunkView].
  *
- * @throws IllegalArgumentException if [DdmsChunkView.payload] does not contain exactly
+ * @throws IllegalArgumentException if [DdmsChunkView.withPayload] does not contain exactly
  * [DdmsChunkView.length] bytes
  *
  * @param workBuffer (Optional) The [ResizableBuffer] used to transfer data

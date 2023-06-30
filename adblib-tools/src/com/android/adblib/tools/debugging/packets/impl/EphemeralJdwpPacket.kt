@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.adblib.tools.debugging.impl
+package com.android.adblib.tools.debugging.packets.impl
 
 import com.android.adblib.AdbInputChannel
-import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_HEADER_LENGTH
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.JdwpPacketView.Companion.FlagsAndWord
-import com.android.adblib.tools.debugging.packets.PayloadProvider
 import com.android.adblib.tools.debugging.packets.toStringImpl
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.utils.ResizableBuffer

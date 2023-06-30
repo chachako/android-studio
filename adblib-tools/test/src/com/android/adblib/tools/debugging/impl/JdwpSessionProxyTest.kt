@@ -19,11 +19,11 @@ import com.android.adblib.ByteBufferAdbOutputChannel
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.android.adblib.tools.debugging.JdwpSession
-import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
-import com.android.adblib.tools.debugging.packets.JdwpCommands
+import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.packets.impl.JdwpCommands
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
-import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
-import com.android.adblib.tools.debugging.packets.PayloadProvider
+import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
+import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants

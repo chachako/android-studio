@@ -19,9 +19,9 @@ import com.android.adblib.AdbInputChannel
 import com.android.adblib.property
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.AdbLibToolsProperties.DDMS_REPLY_WAIT_TIMEOUT
-import com.android.adblib.tools.debugging.packets.JdwpCommands
+import com.android.adblib.tools.debugging.packets.impl.JdwpCommands
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
-import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
+import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType.Companion.MPRQ
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType.Companion.VURTOpCode

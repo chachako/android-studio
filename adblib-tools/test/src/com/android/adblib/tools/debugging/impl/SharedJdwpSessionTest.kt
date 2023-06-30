@@ -35,11 +35,11 @@ import com.android.adblib.tools.debugging.createDdmsPacket
 import com.android.adblib.tools.debugging.ddmsProtocolKind
 import com.android.adblib.tools.debugging.handleDdmsCaptureView
 import com.android.adblib.tools.debugging.handleDdmsHPGC
-import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
-import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
-import com.android.adblib.tools.debugging.packets.PayloadProvider
+import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
+import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
@@ -49,6 +49,7 @@ import com.android.adblib.tools.debugging.packets.ddms.clone
 import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
 import com.android.adblib.tools.debugging.packets.ddms.isDdmsCommand
 import com.android.adblib.tools.debugging.packets.ddms.writeToChannel
+import com.android.adblib.tools.debugging.packets.impl.EphemeralJdwpPacket
 import com.android.adblib.tools.debugging.packets.payloadLength
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.sendDdmsExit

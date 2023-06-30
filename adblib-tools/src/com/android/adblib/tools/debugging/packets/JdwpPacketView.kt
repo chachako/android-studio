@@ -16,9 +16,12 @@
 package com.android.adblib.tools.debugging.packets
 
 import com.android.adblib.AdbInputChannel
-import com.android.adblib.tools.debugging.impl.EphemeralJdwpPacket
+import com.android.adblib.tools.debugging.packets.impl.EphemeralJdwpPacket
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_HEADER_LENGTH
 import com.android.adblib.tools.debugging.packets.ddms.withPayload
+import com.android.adblib.tools.debugging.packets.impl.JdwpCommands
+import com.android.adblib.tools.debugging.packets.impl.JdwpErrorCode
+import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
 import com.android.adblib.utils.ResizableBuffer
 
 /**

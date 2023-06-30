@@ -18,12 +18,12 @@ package com.android.adblib.tools.testutils
 import com.android.adblib.ByteBufferAdbOutputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
-import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
-import com.android.adblib.tools.debugging.packets.PayloadProvider
 import com.android.adblib.tools.debugging.packets.appendJdwpHeader
 import com.android.adblib.tools.debugging.packets.checkPacketLength
 import com.android.adblib.tools.debugging.packets.copy
-import com.android.adblib.tools.debugging.packets.parseHeader
+import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
+import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
+import com.android.adblib.tools.debugging.packets.impl.parseHeader
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.packets.write
 import com.android.adblib.utils.ResizableBuffer

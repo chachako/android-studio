@@ -16,7 +16,7 @@
 package com.android.adblib.tools.debugging.packets.ddms.chunks
 
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
-import com.android.adblib.tools.debugging.packets.PayloadProvider
+import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.EphemeralDdmsChunk
 import com.android.adblib.utils.ResizableBuffer

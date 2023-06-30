@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.adblib.tools.debugging.impl
+package com.android.adblib.tools.debugging.utils
 
 import com.android.adblib.utils.ResizableBuffer
 

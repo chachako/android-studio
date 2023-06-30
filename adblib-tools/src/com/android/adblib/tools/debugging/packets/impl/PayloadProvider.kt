@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.adblib.tools.debugging.packets
+package com.android.adblib.tools.debugging.packets.impl
 
 import com.android.adblib.AdbInputChannel
 import com.android.adblib.ByteBufferAdbInputChannel
 import com.android.adblib.skipRemaining
-import com.android.adblib.tools.debugging.impl.SupportsOffline
+import com.android.adblib.tools.debugging.utils.SupportsOffline
 import com.android.adblib.tools.debugging.packets.ddms.withPayload
+import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.utils.toOffline
 import com.android.adblib.utils.ResizableBuffer
 import kotlinx.coroutines.sync.Mutex
 import java.nio.ByteBuffer

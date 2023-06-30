@@ -15,7 +15,7 @@
  */
 package com.android.adblib.tools.debugging.packets.ddms
 
-import com.android.adblib.tools.debugging.packets.PayloadProvider
+import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
 
 /**
  * A [DdmsChunkView] implementation that is immutable and allows on-demand access to the

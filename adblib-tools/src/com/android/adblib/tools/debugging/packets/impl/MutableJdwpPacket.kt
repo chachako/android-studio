@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.adblib.tools.debugging.packets
+package com.android.adblib.tools.debugging.packets.impl
 
 import com.android.adblib.AdbInputChannel
-import com.android.adblib.tools.debugging.impl.EphemeralJdwpPacket
+import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
+import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.JdwpPacketView.Companion.FlagsAndWord
+import com.android.adblib.tools.debugging.packets.toStringImpl
 import com.android.adblib.utils.ResizableBuffer
 import java.nio.ByteBuffer
 
@@ -127,5 +129,29 @@ internal class MutableJdwpPacket : JdwpPacketView {
                 this.payloadProvider = PayloadProvider.forByteBuffer(payload)
             }
         }
+    }
+}
+
+/**
+ * Read the first 11 bytes of [buffer] into [MutableJdwpPacket.length],
+ * [MutableJdwpPacket.id] and so on. The [MutableJdwpPacket.payloadProvider] field
+ * is not modified.
+ */
+internal fun MutableJdwpPacket.parseHeader(buffer: ByteBuffer) {
+    buffer.order(JdwpPacketConstants.PACKET_BYTE_ORDER)
+
+    // Byte [0, 3] : Length
+    // Byte [4, 7] : Id
+    // Byte [8, 8] : flags     || (if reply) 0x80
+    // Byte [9, 9] : cmd set   || (if reply) error code high byte
+    // Byte [10, 10] : cmd     || (if reply) error code low byte
+    length = buffer.getInt()
+    id = buffer.getInt()
+    flags = buffer.get().toUByte().toInt()
+    if (isReply) {
+        errorCode = buffer.getShort().toUShort().toInt()
+    } else {
+        cmdSet = buffer.get().toUByte().toInt()
+        cmd = buffer.get().toUByte().toInt()
     }
 }

@@ -18,10 +18,10 @@ package com.android.adblib.tools.debugging.packets.ddms
 import com.android.adblib.ByteBufferAdbOutputChannel
 import com.android.adblib.forwardTo
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
-import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
-import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
-import com.android.adblib.tools.debugging.packets.PayloadProvider
+import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
+import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
 import com.android.adblib.tools.debugging.toByteArray
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.adblib.utils.ResizableBuffer

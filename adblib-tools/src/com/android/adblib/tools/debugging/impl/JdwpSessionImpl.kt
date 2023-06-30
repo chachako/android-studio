@@ -29,9 +29,10 @@ import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_BYTE_ORDER
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_HEADER_LENGTH
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
-import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
-import com.android.adblib.tools.debugging.packets.PayloadProvider
-import com.android.adblib.tools.debugging.packets.parseHeader
+import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
+import com.android.adblib.tools.debugging.packets.impl.EphemeralJdwpPacket
+import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
+import com.android.adblib.tools.debugging.packets.impl.parseHeader
 import com.android.adblib.tools.debugging.packets.payloadLength
 import com.android.adblib.tools.debugging.packets.writeToChannel
 import com.android.adblib.utils.ResizableBuffer

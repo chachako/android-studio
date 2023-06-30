@@ -17,7 +17,6 @@ package com.android.adblib.tools.debugging.packets
 
 import com.android.adblib.AdbInputChannel
 import com.android.adblib.AdbOutputChannel
-import com.android.adblib.ByteBufferAdbOutputChannel
 import com.android.adblib.forwardTo
 import com.android.adblib.impl.channels.DEFAULT_CHANNEL_BUFFER_SIZE
 import com.android.adblib.readRemaining
@@ -27,7 +26,7 @@ import java.nio.ByteBuffer
 /**
  * Serialize the [JdwpPacketView] into an [AdbOutputChannel].
  *
- * @throws IllegalArgumentException if [JdwpPacketView.payload] does not contain exactly
+ * @throws IllegalArgumentException if [JdwpPacketView.withPayload] does not contain exactly
  * [JdwpPacketView.length] minus [JdwpPacketConstants.PACKET_HEADER_LENGTH] bytes.
  *
  * @param workBuffer (Optional) The [ResizableBuffer] used to transfer data
@@ -127,28 +126,4 @@ internal suspend fun AdbOutputChannel.write(
     workBuffer: ResizableBuffer = ResizableBuffer()
 ): Int {
     return inputChannel.forwardTo(this, workBuffer)
-}
-
-/**
- * Read the first 11 bytes of [buffer] into [MutableJdwpPacket.length],
- * [MutableJdwpPacket.id] and so on. The [MutableJdwpPacket.payload] field
- * is not modified.
- */
-internal fun MutableJdwpPacket.parseHeader(buffer: ByteBuffer) {
-    buffer.order(JdwpPacketConstants.PACKET_BYTE_ORDER)
-
-    // Byte [0, 3] : Length
-    // Byte [4, 7] : Id
-    // Byte [8, 8] : flags     || (if reply) 0x80
-    // Byte [9, 9] : cmd set   || (if reply) error code high byte
-    // Byte [10, 10] : cmd     || (if reply) error code low byte
-    length = buffer.getInt()
-    id = buffer.getInt()
-    flags = buffer.get().toUByte().toInt()
-    if (isReply) {
-        errorCode = buffer.getShort().toUShort().toInt()
-    } else {
-        cmdSet = buffer.get().toUByte().toInt()
-        cmd = buffer.get().toUByte().toInt()
-    }
 }

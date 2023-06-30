@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.adblib.tools.debugging.packets
+package com.android.adblib.tools.debugging.packets.impl
 
-import com.android.adblib.tools.debugging.packets.JdwpCommands.CmdSet.SET_VM
-import com.android.adblib.tools.debugging.packets.JdwpCommands.VmCmd.CMD_VM_ALLCLASSES
+import com.android.adblib.tools.debugging.packets.impl.JdwpCommands
+import com.android.adblib.tools.debugging.packets.impl.JdwpCommands.CmdSet.SET_VM
+import com.android.adblib.tools.debugging.packets.impl.JdwpCommands.VmCmd.CMD_VM_ALLCLASSES
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

@@ -32,8 +32,8 @@ import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_HEADER_LENGTH
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
-import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
-import com.android.adblib.tools.debugging.packets.PayloadProvider
+import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
+import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
