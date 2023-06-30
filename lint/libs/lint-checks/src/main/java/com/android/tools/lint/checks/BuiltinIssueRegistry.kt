@@ -482,6 +482,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           WatchFaceEditorDetector.ISSUE,
           WearMaterialThemeDetector.ISSUE,
           WearRecentsDetector.ISSUE,
+          WearSplashScreenDetector.ISSUE,
           WearStandaloneAppDetector.INVALID_WEAR_FEATURE_ATTRIBUTE,
           WearStandaloneAppDetector.WEAR_STANDALONE_APP_ISSUE,
           WebViewApiAvailabilityDetector.ISSUE,
@@ -593,7 +594,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
       when {
         scope.contains(Scope.JAVA_FILE) -> initialSize += 180
         scope.contains(Scope.CLASS_FILE) -> initialSize += 16
-        scope.contains(Scope.MANIFEST) -> initialSize += 80
+        scope.contains(Scope.MANIFEST) -> initialSize += 81
         scope.contains(Scope.GRADLE_FILE) -> initialSize += 30
       }
       initialSize

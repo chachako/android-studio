@@ -2921,6 +2921,7 @@ public final class SdkConstants {
             "androidx.constraintlayout:constraintlayout";
     public static final String ANDROIDX_COORDINATOR_LAYOUT_LIB_ARTIFACT =
             "androidx.coordinatorlayout:coordinatorlayout";
+    public static final String ANDROIDX_CORE_SPLASHSCREEN = "androidx.core:core-splashscreen";
 
     public static final String TYPE_DEF_VALUE_ATTRIBUTE = "value";
     public static final String TYPE_DEF_FLAG_ATTRIBUTE = "flag";
