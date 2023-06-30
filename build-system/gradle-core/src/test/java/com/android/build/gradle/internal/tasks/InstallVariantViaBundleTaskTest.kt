@@ -198,23 +198,6 @@ class InstallVariantViaBundleTaskTest {
             it.startsWith("install -r -t") && it.contains("extract-apk") }.size == 1)
     }
 
-    private class CustomConnectedDevice(
-        iDevice: IDevice,
-        logger: ILogger,
-        timeout: Long,
-        timeUnit: TimeUnit,
-        private val sdkVersion: Int,
-    ): ConnectedDevice(iDevice, logger, timeout, timeUnit) {
-
-        /**
-         * "Mock" the original function which causes tests to be flaky when installing multiple
-         * APKs.
-         */
-        override fun getApiLevel(): Int {
-            return sdkVersion
-        }
-    }
-
     private class TestInstallRunnable(
         val params: InstallVariantViaBundleTask.Params,
         private val deviceConnector: DeviceConnector,
@@ -238,5 +221,22 @@ class InstallVariantViaBundleTaskTest {
         override fun getParameters(): InstallVariantViaBundleTask.Params {
             return params
         }
+    }
+}
+
+class CustomConnectedDevice(
+    iDevice: IDevice,
+    logger: ILogger,
+    timeout: Long,
+    timeUnit: TimeUnit,
+    private val sdkVersion: Int,
+): ConnectedDevice(iDevice, logger, timeout, timeUnit) {
+
+    /**
+     * "Mock" the original function which causes tests to be flaky when installing multiple
+     * APKs.
+     */
+    override fun getApiLevel(): Int {
+        return sdkVersion
     }
 }

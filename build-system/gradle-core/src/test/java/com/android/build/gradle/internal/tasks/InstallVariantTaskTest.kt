@@ -46,16 +46,12 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 @RunWith(Parameterized::class)
-class InstallVariantTaskTest(deviceVersion: String) {
+class InstallVariantTaskTest(private val deviceVersion: String) {
 
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "deviceVersion_{0}")
-        fun parameters() = listOf(
-        // TODO turned off due to Parameterized tests being flaky b/287358082
-        //    "19",
-            "21"
-        )
+        fun parameters() = listOf("19", "21")
     }
 
     @JvmField
@@ -81,8 +77,13 @@ class InstallVariantTaskTest(deviceVersion: String) {
         deviceState = fakeAdb.connectAndWaitForDevice()
         deviceState.setActivityManager(PackageManager())
         val device = AndroidDebugBridge.getBridge()!!.devices.single()
-        deviceConnector = ConnectedDevice(
-            device, StdLogger(StdLogger.Level.VERBOSE),  10000, TimeUnit.MILLISECONDS)
+        deviceConnector = CustomConnectedDevice(
+            device,
+            StdLogger(StdLogger.Level.VERBOSE),
+            10000,
+            TimeUnit.MILLISECONDS,
+            deviceVersion.toInt()
+        )
     }
 
     @Test
