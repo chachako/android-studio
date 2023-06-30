@@ -102,31 +102,6 @@ class LintStandaloneTest(
         assertThat(project.buildResult.failedTasks).doesNotContain(":lintReportJvm")
     }
 
-    @Test
-    fun checkOutputsNotOverlapping() {
-        val lintModelDir =
-            FileUtils.join(project.intermediatesDir, "lintReportJvm", "android-lint-model")
-        val lintFixModelDir =
-            FileUtils.join(project.intermediatesDir, "lintFixJvm", "android-lint-model")
-        val lintVitalModelDir =
-            FileUtils.join(project.intermediatesDir, "lintVitalReportJvm", "android-lint-model")
-
-        getExecutor().run(":lint")
-        assertThat(lintModelDir).exists()
-        assertThat(lintFixModelDir).doesNotExist()
-        assertThat(lintVitalModelDir).doesNotExist()
-
-        getExecutor().expectFailure().run(":cleanLintReportJvm", ":lintFix")
-        assertThat(lintModelDir).doesNotExist()
-        assertThat(lintFixModelDir).exists()
-        assertThat(lintVitalModelDir).doesNotExist()
-
-        getExecutor().run(":cleanLintFixJvm", ":lintVital")
-        assertThat(lintModelDir).doesNotExist()
-        assertThat(lintFixModelDir).doesNotExist()
-        assertThat(lintVitalModelDir).exists()
-    }
-
     /**
      * Regression test for b/253219347
      */

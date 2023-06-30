@@ -175,7 +175,7 @@ class TestFixturesProjectLintModelIntegrationTest {
         checkLintModels(
             project = project,
             lintModelDir = project.getSubproject("app").intermediatesDir.toPath()
-                .resolve("incremental/lintReportRelease"),
+                .resolve("lint_report_lint_model/release/generateReleaseLintReportModel"),
             modelSnapshotResourceRelativePath = "testFixturesApp/localTestFixtures",
             "release-androidTestArtifact-dependencies.xml",
             "release-androidTestArtifact-libraries.xml",
@@ -200,7 +200,7 @@ class TestFixturesProjectLintModelIntegrationTest {
         checkLintModels(
             project = project,
             lintModelDir = project.getSubproject("app").intermediatesDir.toPath()
-                .resolve("incremental/lintReportRelease"),
+                .resolve("lint_report_lint_model/release/generateReleaseLintReportModel"),
             modelSnapshotResourceRelativePath = "testFixturesApp/publishedTestFixtures",
             "release-androidTestArtifact-dependencies.xml",
             "release-androidTestArtifact-libraries.xml",

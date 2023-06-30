@@ -38,6 +38,9 @@ import com.android.build.gradle.internal.scope.InternalArtifactType.TEST_FIXTURE
 import com.android.build.gradle.internal.scope.InternalArtifactType.TEST_FIXTURES_LINT_PARTIAL_RESULTS
 import com.android.build.gradle.internal.scope.InternalArtifactType.UNIT_TEST_LINT_MODEL
 import com.android.build.gradle.internal.scope.InternalArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS
+import com.android.build.gradle.internal.scope.InternalMultipleArtifactType
+import com.android.build.gradle.internal.scope.InternalMultipleArtifactType.LINT_REPORT_LINT_MODEL
+import com.android.build.gradle.internal.scope.InternalMultipleArtifactType.LINT_VITAL_REPORT_LINT_MODEL
 import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
@@ -67,6 +70,8 @@ import java.io.File
  *
  * This serialized [LintModelModule] file is read by Lint in consuming projects to get all the
  * information about this variant in project.
+ *
+ * Caching disabled by default for this task because the output contains absolute paths.
  */
 @DisableCachingByDefault
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.LINT)
@@ -144,62 +149,50 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
         this.partialResultsDirPath.setDisallowChanges(partialResultsDir.absolutePath)
     }
 
-    class LintCreationAction(
-        variant: VariantWithTests,
-        useModuleDependencyLintModels: Boolean = true
-    ) : BaseCreationAction(variant, useModuleDependencyLintModels) {
-
-        override val fatalOnly: Boolean
-            get() = false
-
-        override val name: String
-            get() = computeTaskName("generate", "LintModel")
-    }
-
-    class LintVitalCreationAction(
-        variant: VariantCreationConfig,
-        useModuleDependencyLintModels: Boolean = false
-    ) : BaseCreationAction(
-        VariantWithTests(variant, androidTest = null, unitTest = null, testFixtures = null),
-        useModuleDependencyLintModels
-    ) {
-
-        override val fatalOnly: Boolean
-            get() = true
-
-        override val name: String
-            get() = computeTaskName("generate", "LintVitalLintModel")
-    }
-
-    abstract class BaseCreationAction(
+    /**
+     * [isForLocalReportTask] should be true only if the lint model is being written for the lint
+     * report task in the same module.
+     */
+    class CreationAction(
         val variant: VariantWithTests,
-        private val useModuleDependencyLintModels: Boolean
+        private val useModuleDependencyLintModels: Boolean,
+        private val fatalOnly: Boolean,
+        private val isForLocalReportTask: Boolean
     ) : VariantTaskCreationAction<LintModelWriterTask, ConsumableCreationConfig>(variant.main) {
-        abstract val fatalOnly: Boolean
+        private val vitalOrBlank = if (fatalOnly) "Vital" else ""
+        private val reportOrBlank = if (isForLocalReportTask) "Report" else ""
+        override val name: String
+            get() = computeTaskName("generate", "Lint${vitalOrBlank}${reportOrBlank}Model")
 
-        final override val type: Class<LintModelWriterTask>
+        override val type: Class<LintModelWriterTask>
             get() = LintModelWriterTask::class.java
 
         override fun handleProvider(taskProvider: TaskProvider<LintModelWriterTask>) {
             super.handleProvider(taskProvider)
-            registerOutputArtifacts(
-                taskProvider,
-                if (fatalOnly) {
-                    LINT_VITAL_LINT_MODEL
-                } else {
-                    LINT_MODEL
-                },
-                creationConfig.artifacts
-            )
+            if (isForLocalReportTask) {
+                registerOutputArtifacts(
+                    taskProvider,
+                    if (fatalOnly) LINT_VITAL_REPORT_LINT_MODEL else LINT_REPORT_LINT_MODEL,
+                    creationConfig.artifacts
+                )
+            } else {
+                registerOutputArtifacts(
+                    taskProvider,
+                    if (fatalOnly) LINT_VITAL_LINT_MODEL else LINT_MODEL,
+                    creationConfig.artifacts
+                )
+            }
         }
 
         override fun configure(task: LintModelWriterTask) {
             super.configure(task)
             task.projectInputs.initialize(variant, LintMode.MODEL_WRITING)
+            val warnIfProjectTreatedAsExternalDependency =
+                isForLocalReportTask && creationConfig.global.lintOptions.checkDependencies
             task.variantInputs.initialize(
                 variant,
                 useModuleDependencyLintModels = useModuleDependencyLintModels,
-                warnIfProjectTreatedAsExternalDependency = false,
+                warnIfProjectTreatedAsExternalDependency,
                 LintMode.MODEL_WRITING,
                 addBaseModuleLintModel = creationConfig is DynamicFeatureCreationConfig,
                 fatalOnly = fatalOnly
@@ -219,41 +212,53 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
         }
     }
 
+    /**
+     * [isMainModelForLocalReportTask] should be true only if (1) creationConfig is not a nested
+     * creation config and (2) the lint model is being written for the lint report task in the same
+     * module.
+     */
     class PerComponentCreationAction(
         creationConfig: ComponentCreationConfig,
         private val useModuleDependencyLintModels: Boolean,
-        private val fatalOnly: Boolean
+        private val fatalOnly: Boolean,
+        private val isMainModelForLocalReportTask: Boolean
     ) : VariantTaskCreationAction<LintModelWriterTask, ComponentCreationConfig>(creationConfig) {
 
         override val type: Class<LintModelWriterTask>
             get() = LintModelWriterTask::class.java
 
+        private val vitalOrBlank = if (fatalOnly) "Vital" else ""
+        private val reportOrBlank = if (isMainModelForLocalReportTask) "Report" else ""
         override val name: String
-            get() = if (fatalOnly) {
-                creationConfig.computeTaskName("generate", "LintVitalLintModel")
-            } else {
-                creationConfig.computeTaskName("generate", "LintModel")
-            }
+            get() = computeTaskName("generate", "Lint${vitalOrBlank}${reportOrBlank}Model")
 
         override fun handleProvider(taskProvider: TaskProvider<LintModelWriterTask>) {
-            val artifactType =
-                when (creationConfig) {
-                    is UnitTestCreationConfig -> UNIT_TEST_LINT_MODEL
-                    is AndroidTestCreationConfig -> ANDROID_TEST_LINT_MODEL
-                    is TestFixturesCreationConfig -> TEST_FIXTURES_LINT_MODEL
-                    else -> if (fatalOnly) {
-                        LINT_VITAL_LINT_MODEL
-                    } else {
-                        LINT_MODEL
-                    }
-                }
             val mainVariant =
                 if (creationConfig is NestedComponentCreationConfig) {
                     creationConfig.mainVariant
                 } else {
                     creationConfig
                 }
-            registerOutputArtifacts(taskProvider, artifactType, mainVariant.artifacts)
+            if (isMainModelForLocalReportTask) {
+                registerOutputArtifacts(
+                    taskProvider,
+                    if (fatalOnly) LINT_VITAL_REPORT_LINT_MODEL else LINT_REPORT_LINT_MODEL,
+                    creationConfig.artifacts
+                )
+            } else {
+                val artifactType =
+                    when (creationConfig) {
+                        is UnitTestCreationConfig -> UNIT_TEST_LINT_MODEL
+                        is AndroidTestCreationConfig -> ANDROID_TEST_LINT_MODEL
+                        is TestFixturesCreationConfig -> TEST_FIXTURES_LINT_MODEL
+                        else -> if (fatalOnly) {
+                            LINT_VITAL_LINT_MODEL
+                        } else {
+                            LINT_MODEL
+                        }
+                    }
+                registerOutputArtifacts(taskProvider, artifactType, mainVariant.artifacts)
+            }
         }
 
         override fun configure(task: LintModelWriterTask) {
@@ -265,6 +270,8 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
                     creationConfig as VariantCreationConfig
                 }
             task.projectInputs.initialize(mainVariant, LintMode.MODEL_WRITING)
+            val warnIfProjectTreatedAsExternalDependency =
+                isMainModelForLocalReportTask && creationConfig.global.lintOptions.checkDependencies
             task.variantInputs.initialize(
                 mainVariant,
                 creationConfig as? UnitTestCreationConfig,
@@ -273,7 +280,7 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
                 creationConfig.services,
                 mainVariant.name,
                 useModuleDependencyLintModels = useModuleDependencyLintModels,
-                warnIfProjectTreatedAsExternalDependency = false,
+                warnIfProjectTreatedAsExternalDependency,
                 lintMode = LintMode.MODEL_WRITING,
                 addBaseModuleLintModel = creationConfig is DynamicFeatureCreationConfig,
                 fatalOnly = fatalOnly,
@@ -309,6 +316,16 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
             artifacts
                 .setInitialProvider(taskProvider, LintModelWriterTask::outputDirectory)
                 .on(internalArtifactType)
+        }
+
+        fun registerOutputArtifacts(
+            taskProvider: TaskProvider<LintModelWriterTask>,
+            internalArtifactType: InternalMultipleArtifactType<Directory>,
+            artifacts: ArtifactsImpl
+        ) {
+            artifacts.use(taskProvider)
+                .wiredWith(LintModelWriterTask::outputDirectory)
+                .toAppendTo(internalArtifactType)
         }
     }
 }

@@ -50,6 +50,9 @@ import com.android.build.gradle.internal.profile.NoOpAnalyticsService
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.publishing.getAttributes
 import com.android.build.gradle.internal.scope.InternalArtifactType
+import com.android.build.gradle.internal.scope.InternalArtifactType.LINT_VITAL_LINT_MODEL
+import com.android.build.gradle.internal.scope.InternalMultipleArtifactType.LINT_REPORT_LINT_MODEL
+import com.android.build.gradle.internal.scope.InternalMultipleArtifactType.LINT_VITAL_REPORT_LINT_MODEL
 import com.android.build.gradle.internal.scope.ProjectInfo
 import com.android.build.gradle.internal.scope.publishArtifactToConfiguration
 import com.android.build.gradle.internal.services.AndroidLocationsBuildService
@@ -195,6 +198,7 @@ abstract class LintPlugin : Plugin<Project> {
                         customLintChecks,
                         lintOptions!!,
                         artifacts.get(InternalArtifactType.LINT_PARTIAL_RESULTS),
+                        artifacts.getAll(LINT_REPORT_LINT_MODEL),
                         if (isPerComponentLintAnalysis && lintOptions!!.ignoreTestSources.not()) {
                             artifacts.get(InternalArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS)
                         } else {
@@ -205,7 +209,8 @@ abstract class LintPlugin : Plugin<Project> {
                         } else {
                             null
                         },
-                        LintMode.UPDATE_BASELINE
+                        LintMode.UPDATE_BASELINE,
+                        isPerComponentLintAnalysis
                     )
                 }
             updateLintBaselineTask.dependsOn(updateLintBaselineJvmTask)
@@ -219,6 +224,7 @@ abstract class LintPlugin : Plugin<Project> {
                     customLintChecks,
                     lintOptions!!,
                     artifacts.get(InternalArtifactType.LINT_PARTIAL_RESULTS),
+                    artifacts.getAll(LINT_REPORT_LINT_MODEL),
                     if (isPerComponentLintAnalysis && lintOptions!!.ignoreTestSources.not()) {
                         artifacts.get(InternalArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS)
                     } else {
@@ -229,7 +235,8 @@ abstract class LintPlugin : Plugin<Project> {
                     } else {
                         null
                     },
-                    LintMode.REPORTING
+                    LintMode.REPORTING,
+                    isPerComponentLintAnalysis
                 )
                 task.mustRunAfter(updateLintBaselineJvmTask)
             }.also {
@@ -265,17 +272,11 @@ abstract class LintPlugin : Plugin<Project> {
                     customLintChecks,
                     lintOptions!!,
                     artifacts.get(InternalArtifactType.LINT_VITAL_PARTIAL_RESULTS),
-                    if (isPerComponentLintAnalysis && lintOptions!!.ignoreTestSources.not()) {
-                        artifacts.get(InternalArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS)
-                    } else {
-                        null
-                    },
-                    if (isPerComponentLintAnalysis && lintOptions!!.ignoreTestSources.not()) {
-                        artifacts.get(InternalArtifactType.UNIT_TEST_LINT_MODEL)
-                    } else {
-                        null
-                    },
+                    artifacts.getAll(LINT_VITAL_REPORT_LINT_MODEL),
+                    unitTestPartialResults = null,
+                    unitTestLintModel = null,
                     LintMode.REPORTING,
+                    isPerComponentLintAnalysis,
                     fatalOnly = true
                 )
                 task.mustRunAfter(updateLintBaselineTask)
@@ -298,6 +299,7 @@ abstract class LintPlugin : Plugin<Project> {
                         customLintChecks,
                         lintOptions!!,
                         artifacts.get(InternalArtifactType.LINT_PARTIAL_RESULTS),
+                        artifacts.getAll(LINT_REPORT_LINT_MODEL),
                         if (isPerComponentLintAnalysis && lintOptions!!.ignoreTestSources.not()) {
                             artifacts.get(InternalArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS)
                         } else {
@@ -309,6 +311,7 @@ abstract class LintPlugin : Plugin<Project> {
                             null
                         },
                         LintMode.REPORTING,
+                        isPerComponentLintAnalysis,
                         autoFix = true
                     )
                     task.mustRunAfter(updateLintBaselineJvmTask)
@@ -441,6 +444,11 @@ abstract class LintPlugin : Plugin<Project> {
                     InternalArtifactType.LINT_MODEL,
                     artifacts
                 )
+                LintModelWriterTask.registerOutputArtifacts(
+                    lintModelWriterMainTask,
+                    LINT_REPORT_LINT_MODEL,
+                    artifacts
+                )
                 if (lintOptions!!.ignoreTestSources.not()) {
                     val lintModelWriterTestTask =
                         project.tasks.register(
@@ -486,7 +494,12 @@ abstract class LintPlugin : Plugin<Project> {
                     }
                 LintModelWriterTask.registerOutputArtifacts(
                     lintVitalModelWriterMainTask,
-                    InternalArtifactType.LINT_VITAL_LINT_MODEL,
+                    LINT_VITAL_LINT_MODEL,
+                    artifacts
+                )
+                LintModelWriterTask.registerOutputArtifacts(
+                    lintVitalModelWriterMainTask,
+                    LINT_VITAL_REPORT_LINT_MODEL,
                     artifacts
                 )
             } else {
@@ -513,6 +526,11 @@ abstract class LintPlugin : Plugin<Project> {
                     InternalArtifactType.LINT_MODEL,
                     artifacts
                 )
+                LintModelWriterTask.registerOutputArtifacts(
+                    lintModelWriterTask,
+                    LINT_REPORT_LINT_MODEL,
+                    artifacts
+                )
                 val lintVitalModelWriterTask =
                     project.tasks.register(
                         "generateLintVitalJvmLintModel",
@@ -533,7 +551,12 @@ abstract class LintPlugin : Plugin<Project> {
                     }
                 LintModelWriterTask.registerOutputArtifacts(
                     lintVitalModelWriterTask,
-                    InternalArtifactType.LINT_VITAL_LINT_MODEL,
+                    LINT_VITAL_LINT_MODEL,
+                    artifacts
+                )
+                LintModelWriterTask.registerOutputArtifacts(
+                    lintVitalModelWriterTask,
+                    LINT_VITAL_REPORT_LINT_MODEL,
                     artifacts
                 )
             }
@@ -622,7 +645,7 @@ abstract class LintPlugin : Plugin<Project> {
             )
             publishArtifactToConfiguration(
                 configuration,
-                artifacts.get(InternalArtifactType.LINT_VITAL_LINT_MODEL),
+                artifacts.get(LINT_VITAL_LINT_MODEL),
                 AndroidArtifacts.ArtifactType.LINT_VITAL_LINT_MODEL,
                 AndroidArtifacts.ArtifactType.LINT_VITAL_LINT_MODEL.getAttributes { type, name ->
                     projectServices.objectFactory.named(type, name)

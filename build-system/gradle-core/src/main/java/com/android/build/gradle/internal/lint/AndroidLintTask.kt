@@ -39,6 +39,8 @@ import com.android.build.gradle.internal.scope.InternalArtifactType.TEST_FIXTURE
 import com.android.build.gradle.internal.scope.InternalArtifactType.TEST_FIXTURES_LINT_PARTIAL_RESULTS
 import com.android.build.gradle.internal.scope.InternalArtifactType.UNIT_TEST_LINT_MODEL
 import com.android.build.gradle.internal.scope.InternalArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS
+import com.android.build.gradle.internal.scope.InternalMultipleArtifactType.LINT_REPORT_LINT_MODEL
+import com.android.build.gradle.internal.scope.InternalMultipleArtifactType.LINT_VITAL_REPORT_LINT_MODEL
 import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.services.getLintParallelBuildService
@@ -50,9 +52,7 @@ import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.BooleanOption.LINT_ANALYSIS_PER_COMPONENT
 import com.android.buildanalyzer.common.TaskCategory
-import com.android.ide.common.repository.GradleVersion
-import com.android.tools.lint.model.LintModelArtifactType
-import com.android.tools.lint.model.LintModelSerialization
+import com.android.tools.lint.model.LintModelArtifactType.MAIN
 import com.android.utils.FileUtils
 import com.google.common.annotations.VisibleForTesting
 import org.gradle.api.file.ConfigurableFileCollection
@@ -72,7 +72,6 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -92,9 +91,6 @@ abstract class AndroidLintTask : NonIncrementalTask() {
 
     @get:Nested
     abstract val lintTool: LintTool
-
-    @get:OutputDirectory
-    abstract val lintModelDirectory: DirectoryProperty
 
     @get:Input
     abstract val textReportEnabled: Property<Boolean>
@@ -161,8 +157,13 @@ abstract class AndroidLintTask : NonIncrementalTask() {
     @get:Nested
     abstract val projectInputs: ProjectInputs
 
+    // TODO(b/290070593) remove this after AndroidX updates to AGP 8.2.0 beta or higher
     @get:Nested
     abstract val variantInputs: VariantInputs
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val lintModels: ConfigurableFileCollection
 
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.ABSOLUTE)
@@ -225,7 +226,6 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                         + "Plugin. Please try running the lintFix task instead."
             )
         }
-        writeLintModelFile()
         val baselineFile = projectInputs.lintOptions.baseline.orNull?.asFile
         var originalBaselineFileText: String? = null
         var originalBaselineFileLines: List<String>? = null
@@ -303,24 +303,6 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         }
     }
 
-    private fun writeLintModelFile() {
-        val module = projectInputs.convertToLintModelModule()
-
-        val variant =
-            variantInputs.toLintModel(
-                module,
-                partialResults.orNull?.asFile,
-                desugaredMethodsFiles = listOf()
-            )
-
-        LintModelSerialization.writeModule(
-            module = module,
-            destination = lintModelDirectory.get().asFile,
-            writeVariants = listOf(variant),
-            writeDependencies = true
-        )
-    }
-
     private fun getUpdateBaselineWarning(): String {
         val example = if (android.get()) {
             """
@@ -387,8 +369,9 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         }
 
         val models = LinkedHashSet<String>(1)
-        models += lintModelDirectory.get().asFile.absolutePath
-
+        for (model in lintModels) {
+            models.add(model.absolutePath)
+        }
         for (model in nestedComponentLintModels) {
             models.add(model.absolutePath)
         }
@@ -582,7 +565,6 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                 isAndroid = true,
                 lintMode
             )
-            task.lintModelDirectory.set(variant.main.paths.getIncrementalDir(task.name))
             task.lintRuleJars.from(creationConfig.global.localCustomLintChecks)
             task.lintRuleJars.addRuntimeAndCompileArtifacts(
                 creationConfig,
@@ -643,6 +625,13 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                 creationConfig.artifacts.get(InternalArtifactType.LINT_PARTIAL_RESULTS)
             }
             task.partialResults.setDisallowChanges(partialResults)
+            task.lintModels.fromDisallowChanges(
+                if (fatalOnly) {
+                    creationConfig.artifacts.getAll(LINT_VITAL_REPORT_LINT_MODEL)
+                } else {
+                    creationConfig.artifacts.getAll(LINT_REPORT_LINT_MODEL)
+                }
+            )
             val lintModelArtifactType =
                 if (fatalOnly) {
                     ArtifactType.LINT_VITAL_LINT_MODEL
@@ -810,6 +799,11 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                     false
                 }
             }
+            if (lintMode == LintMode.UPDATE_BASELINE) {
+                // The updateLintBaseline task should never be UP-TO-DATE because the baseline file
+                // is not annotated as an output
+                task.outputs.upToDateWhen { false }
+            }
             task.initializeOutputTypesConvention()
             configureOutputSettings(task)
             task.finalizeOutputTypes()
@@ -931,13 +925,14 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         customLintChecksConfig: FileCollection,
         lintOptions: Lint,
         partialResults: Provider<Directory>,
+        lintModels: Provider<List<Directory>>,
         unitTestPartialResults: Provider<Directory>?,
         unitTestLintModel: Provider<Directory>?,
         lintMode: LintMode,
+        isPerComponentLintAnalysis: Boolean,
         fatalOnly: Boolean = false,
         autoFix: Boolean = false,
     ) {
-        val projectInfo = taskCreationServices.projectInfo
         initializeGlobalInputs(
             taskCreationServices,
             isAndroid = false,
@@ -964,9 +959,6 @@ abstract class AndroidLintTask : NonIncrementalTask() {
             this.projectInputs.lintOptions.baseline.orNull?.asFile?.exists() ?: true
                     || this.missingBaselineIsEmptyBaseline.get()
         }
-        // The updateLintBaseline task should never be UP-TO-DATE because the baseline file is not
-        // annotated as an output
-        this.outputs.upToDateWhen { this.lintMode.get() != LintMode.UPDATE_BASELINE }
         this.variantInputs
             .initializeForStandalone(
                 project,
@@ -976,13 +968,11 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                 fatalOnly,
                 useModuleDependencyLintModels = true,
                 lintMode,
-                lintModelArtifactType = unitTestLintModel?.let { LintModelArtifactType.MAIN }
+                lintModelArtifactType = if (isPerComponentLintAnalysis) MAIN else null
             )
         this.lintRuleJars.fromDisallowChanges(customLintChecksConfig)
-        this.lintModelDirectory.setDisallowChanges(
-            projectInfo.buildDirectory.dir("intermediates/${this.name}/android-lint-model")
-        )
         this.partialResults.setDisallowChanges(partialResults)
+        this.lintModels.fromDisallowChanges(lintModels)
         unitTestPartialResults?.let { this.nestedComponentPartialResults.from(it) }
         this.nestedComponentPartialResults.disallowChanges()
         unitTestLintModel?.let { this.nestedComponentLintModels.from(it) }
@@ -1000,7 +990,9 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                 }
             }
             lintMode == LintMode.UPDATE_BASELINE -> {
-                // do nothing
+                // The updateLintBaseline task should never be UP-TO-DATE because the baseline file
+                // is not annotated as an output
+                this.outputs.upToDateWhen { false }
             }
             else -> {
                 configureOutputSettings(lintOptions)

@@ -101,14 +101,17 @@ class LintTaskManager constructor(
                         LintModelWriterTask.PerComponentCreationAction(
                             mainVariant,
                             useModuleDependencyLintModels = componentType.isAar,
-                            fatalOnly = true
+                            fatalOnly = true,
+                            isMainModelForLocalReportTask = false
                         )
                     )
                 } else {
                     taskFactory.register(
-                        LintModelWriterTask.LintVitalCreationAction(
-                            mainVariant,
-                            useModuleDependencyLintModels = componentType.isAar
+                        LintModelWriterTask.CreationAction(
+                            VariantWithTests(mainVariant, null, null, null),
+                            useModuleDependencyLintModels = componentType.isAar,
+                            fatalOnly = true,
+                            isForLocalReportTask = false
                         )
                     )
                 }
@@ -130,7 +133,8 @@ class LintTaskManager constructor(
                     LintModelWriterTask.PerComponentCreationAction(
                         mainVariant,
                         useModuleDependencyLintModels = componentType.isAar,
-                        fatalOnly = false
+                        fatalOnly = false,
+                        isMainModelForLocalReportTask = false
                     )
                 )
                 taskFactory.register(
@@ -141,9 +145,11 @@ class LintTaskManager constructor(
                 )
             } else {
                 taskFactory.register(
-                    LintModelWriterTask.LintCreationAction(
+                    LintModelWriterTask.CreationAction(
                         variantWithTests,
-                        useModuleDependencyLintModels = componentType.isAar
+                        useModuleDependencyLintModels = componentType.isAar,
+                        fatalOnly = false,
+                        isForLocalReportTask = false
                     )
                 )
                 taskFactory.register(
@@ -157,6 +163,25 @@ class LintTaskManager constructor(
                 continue
             }
 
+            if (isPerComponent) {
+                taskFactory.register(
+                    LintModelWriterTask.PerComponentCreationAction(
+                        mainVariant,
+                        useModuleDependencyLintModels = true,
+                        fatalOnly = false,
+                        isMainModelForLocalReportTask = true
+                    )
+                )
+            } else {
+                taskFactory.register(
+                    LintModelWriterTask.CreationAction(
+                        variantWithTests,
+                        useModuleDependencyLintModels = true,
+                        fatalOnly = false,
+                        isForLocalReportTask = true
+                    )
+                )
+            }
             val updateLintBaselineTask =
                 taskFactory.register(AndroidLintTask.UpdateBaselineCreationAction(variantWithTests))
             val variantLintTask =
@@ -187,9 +212,25 @@ class LintTaskManager constructor(
                             fatalOnly = true
                         )
                     )
+                    taskFactory.register(
+                        LintModelWriterTask.PerComponentCreationAction(
+                            mainVariant,
+                            useModuleDependencyLintModels = true,
+                            fatalOnly = true,
+                            isMainModelForLocalReportTask = true
+                        )
+                    )
                 } else {
                     taskFactory.register(
                         AndroidLintAnalysisTask.LintVitalCreationAction(mainVariant)
+                    )
+                    taskFactory.register(
+                        LintModelWriterTask.CreationAction(
+                            VariantWithTests(mainVariant, null, null, null),
+                            useModuleDependencyLintModels = true,
+                            fatalOnly = true,
+                            isForLocalReportTask = true
+                        )
                     )
                 }
                 val lintVitalTask =

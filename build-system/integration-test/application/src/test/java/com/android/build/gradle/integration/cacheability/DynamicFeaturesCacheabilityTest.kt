@@ -161,6 +161,7 @@ class DynamicFeaturesCacheabilityTest {
                     ":app:copyDebugLintReports", // intentionally not cacheable
                     ":app:extractProguardFiles", // intentionally not cacheable
                     ":app:generateDebugLintModel", // intentionally not cacheable
+                    ":app:generateDebugLintReportModel", /** Intentionally not cacheable. See [com.android.build.gradle.internal.lint.LintModelWriterTask] */
                     ":app:lintDebug", // intentionally not cacheable
                     ":app:lintReportDebug", // intentionally not cacheable
                     ":app:mapDebugSourceSetPaths", // intentionally not cacheable

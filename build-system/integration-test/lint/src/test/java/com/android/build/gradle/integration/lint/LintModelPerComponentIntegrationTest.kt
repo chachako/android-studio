@@ -54,7 +54,7 @@ class LintModelPerComponentIntegrationTest {
         checkLintModels(
             project = project,
             lintModelDir = project.getSubproject("app").intermediatesDir.toPath()
-                .resolve("incremental/lintReportDebug"),
+                .resolve("lint_report_lint_model/debug/generateDebugLintReportModel"),
             modelSnapshotResourceRelativePath = "perComponent/app/lintReportDebug",
             "debug-artifact-dependencies.xml",
             "debug-artifact-libraries.xml",

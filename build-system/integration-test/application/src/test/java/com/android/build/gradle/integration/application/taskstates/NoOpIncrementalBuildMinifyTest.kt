@@ -66,6 +66,7 @@ class NoOpIncrementalBuildMinifyTest {
                 ":generateDebugAndroidTestAssets",
                 ":generateDebugAndroidTestResValues",
                 ":generateDebugAndroidTestResources",
+                ":generateDebugLintReportModel",
                 ":generateDebugResValues",
                 ":generateDebugResources",
                 ":generateReleaseAssets",

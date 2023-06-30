@@ -178,7 +178,8 @@ class UnitTestTaskManager(
                 LintModelWriterTask.PerComponentCreationAction(
                     unitTestCreationConfig,
                     useModuleDependencyLintModels = false,
-                    fatalOnly = false
+                    fatalOnly = false,
+                    isMainModelForLocalReportTask = false
                 )
             )
         }

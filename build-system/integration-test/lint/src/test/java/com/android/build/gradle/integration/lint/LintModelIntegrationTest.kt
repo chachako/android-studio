@@ -48,7 +48,7 @@ class LintModelIntegrationTest {
         checkLintModels(
             project = project,
             lintModelDir = project.getSubproject("app").intermediatesDir.toPath()
-                .resolve("incremental/lintReportDebug"),
+                .resolve("lint_report_lint_model/debug/generateDebugLintReportModel"),
             modelSnapshotResourceRelativePath = "kotlinmodel/app/lintReportDebug",
             "debug-androidTestArtifact-dependencies.xml",
             "debug-androidTestArtifact-libraries.xml",
@@ -109,7 +109,7 @@ class LintModelIntegrationTest {
         checkLintModels(
             project = project,
             lintModelDir = project.getSubproject("library").intermediatesDir.toPath()
-                .resolve("incremental/lintReportDebug"),
+                .resolve("lint_report_lint_model/debug/generateDebugLintReportModel"),
             modelSnapshotResourceRelativePath = "kotlinmodel/library/lintDebug",
             "debug-androidTestArtifact-dependencies.xml",
             "debug-androidTestArtifact-libraries.xml",
@@ -144,7 +144,7 @@ class LintModelIntegrationTest {
         val lintModelDir =
             project.getSubproject("app")
                 .intermediatesDir.toPath()
-                .resolve("incremental/lintReportDebug")
+                .resolve("lint_report_lint_model/debug/generateDebugLintReportModel")
                 .toFile()
 
         val projectModelFile = File(lintModelDir, "module.xml")
@@ -180,7 +180,7 @@ class LintModelIntegrationTest {
             """.trimIndent()
         )
         project.executor().expectFailure().run(":library:clean", ":library:lintDebug")
-        val model = project.file("library/build/intermediates/incremental/lintReportDebug/debug.xml")
+        val model = project.file("library/build/intermediates/incremental/lintAnalyzeDebug/debug.xml")
         assertThat(model).contains("targetSdkVersion=\"1\"")
     }
 

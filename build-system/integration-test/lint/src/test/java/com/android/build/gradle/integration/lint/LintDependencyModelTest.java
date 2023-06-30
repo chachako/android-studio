@@ -131,7 +131,7 @@ public class LintDependencyModelTest {
                 project.getSubproject("app")
                         .getIntermediatesDir()
                         .toPath()
-                        .resolve("incremental/lintReportDebug")
+                        .resolve("lint_report_lint_model/debug/generateDebugLintReportModel")
                         .toFile();
         assertThat(lintModelDir).isDirectory();
 

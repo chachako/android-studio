@@ -237,7 +237,8 @@ class AndroidTestTaskManager(
                 LintModelWriterTask.PerComponentCreationAction(
                     androidTestProperties,
                     useModuleDependencyLintModels = false,
-                    fatalOnly = false
+                    fatalOnly = false,
+                    isMainModelForLocalReportTask = false
                 )
             )
         }

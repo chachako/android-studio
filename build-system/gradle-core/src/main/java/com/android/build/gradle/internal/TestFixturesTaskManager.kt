@@ -236,7 +236,8 @@ class TestFixturesTaskManager(
                 LintModelWriterTask.PerComponentCreationAction(
                     testFixturesComponent,
                     useModuleDependencyLintModels = false,
-                    fatalOnly = false
+                    fatalOnly = false,
+                    isMainModelForLocalReportTask = false
                 )
             )
         }

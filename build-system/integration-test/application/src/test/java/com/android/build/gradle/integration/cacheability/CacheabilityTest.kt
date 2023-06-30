@@ -97,6 +97,8 @@ class CacheabilityTest {
             TaskInfo(DID_WORK, "generate", "JacocoPropertiesFile", listOf("Debug")),
             /** Intentionally not cacheable. See [com.android.build.gradle.tasks.GenerateTestConfig] */
             TaskInfo(DID_WORK, "generate", "Config", listOf("DebugUnitTest", "ReleaseUnitTest")),
+            /** Intentionally not cacheable. See [com.android.build.gradle.internal.lint.LintModelWriterTask] */
+            TaskInfo(DID_WORK, "generate", "LintVitalReportModel", listOf("Release")),
             TaskInfo(DID_WORK, "lintVital", "", listOf("Release")),
             /* Intentionally not cacheable. */
             TaskInfo(DID_WORK, "lintVitalReport", "", listOf("Release")),
