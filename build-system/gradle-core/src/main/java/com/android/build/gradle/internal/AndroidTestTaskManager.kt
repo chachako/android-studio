@@ -356,7 +356,7 @@ class AndroidTestTaskManager(
     }
 
     private fun createTestDevicesTasks() {
-        if (globalConfig.testOptions.devices.isEmpty()) {
+        if (globalConfig.testOptionsDslInfo.managedDevices.devices.isEmpty()) {
             return
         }
 
@@ -497,11 +497,11 @@ class AndroidTestTaskManager(
             // build target is the variant with the flavor name stripped from the front.
             variantName.substring(flavor.length).lowercase(Locale.US)
         }
-        val resultsRootDir = if (globalConfig.testOptions.resultsDir.isNullOrEmpty()) {
+        val resultsRootDir = if (globalConfig.testOptionsDslInfo.resultsDir.isNullOrEmpty()) {
             creationConfig.paths.outputDir(BuilderConstants.FD_ANDROID_RESULTS)
                     .get().asFile
         } else {
-            File(requireNotNull(globalConfig.testOptions.resultsDir))
+            File(requireNotNull(globalConfig.testOptionsDslInfo.resultsDir))
         }
         val flavorDir = if (flavor.isNullOrEmpty()) "" else "${BuilderConstants.FD_FLAVORS}/$flavor"
         val resultsDir =

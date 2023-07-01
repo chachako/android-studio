@@ -35,6 +35,8 @@ import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.attribution.BuildAnalyzerIssueReporter
 import com.android.build.gradle.internal.core.SettingsOptions
+import com.android.build.gradle.internal.core.dsl.features.TestOptionsDslInfo
+import com.android.build.gradle.internal.core.dsl.impl.features.TestOptionsDslInfoImpl
 import com.android.build.gradle.internal.dsl.CommonExtensionImpl
 import com.android.build.gradle.internal.dsl.LanguageSplitOptions
 import com.android.build.gradle.internal.instrumentation.ASM_API_VERSION_FOR_INSTRUMENTATION
@@ -174,8 +176,8 @@ class GlobalTaskCreationConfigImpl(
     override val testCoverage: TestCoverage
         get() = extension.testCoverage
 
-    override val testOptions: TestOptions
-        get() = extension.testOptions
+    override val testOptionsDslInfo: TestOptionsDslInfo
+        get() = TestOptionsDslInfoImpl(extension)
 
     override val testServers: List<TestServer>
         get() = oldExtension.testServers
@@ -184,7 +186,7 @@ class GlobalTaskCreationConfigImpl(
         get() = extension.androidResources.namespaced
 
     override val testOptionExecutionEnum: com.android.builder.model.TestOptions.Execution? by lazy {
-        testOptions.execution.toExecutionEnum()
+        testOptionsDslInfo.execution.toExecutionEnum()
     }
 
     override val prefabOrEmpty: Set<Prefab>

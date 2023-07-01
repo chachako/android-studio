@@ -33,6 +33,9 @@ import com.android.build.gradle.internal.KotlinMultiplatformCompileOptionsImpl
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.attribution.BuildAnalyzerIssueReporter
 import com.android.build.gradle.internal.core.SettingsOptions
+import com.android.build.gradle.internal.core.dsl.features.TestOptionsDslInfo
+import com.android.build.gradle.internal.core.dsl.impl.features.KmpTestOptionsDslInfoImpl
+import com.android.build.gradle.internal.core.dsl.impl.features.TestOptionsDslInfoImpl
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.dsl.LanguageSplitOptions
@@ -115,8 +118,9 @@ internal class KmpGlobalTaskCreationConfigImpl(
             .artifactFiles
     }
 
-    override val testOptions: TestOptions
-        get() = extension.testOptions
+    override val testOptionsDslInfo: TestOptionsDslInfo
+        get() = KmpTestOptionsDslInfoImpl(extension)
+
     override val libraryRequests: Collection<LibraryRequest>
         get() = extension.libraryRequests
 
@@ -139,7 +143,7 @@ internal class KmpGlobalTaskCreationConfigImpl(
         get() = extension.optimization.enableConsumerProguardRulePublishing
 
     override val testOptionExecutionEnum: com.android.builder.model.TestOptions.Execution? by lazy {
-        testOptions.execution.toExecutionEnum()
+        testOptionsDslInfo.execution.toExecutionEnum()
     }
 
     override val installationOptions: Installation
@@ -156,7 +160,7 @@ internal class KmpGlobalTaskCreationConfigImpl(
     override val productFlavorDimensionCount: Int
         get() = 0
 
-    override val managedDeviceRegistry = ManagedDeviceRegistry(testOptions)
+    override val managedDeviceRegistry = ManagedDeviceRegistry(testOptionsDslInfo)
     override val lintChecks = createCustomLintChecksConfig(project)
     override val lintPublish: Configuration = createCustomLintPublishConfig(project)
     override val fakeDependency = createFakeDependencyConfig(project)

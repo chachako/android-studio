@@ -132,8 +132,8 @@ object KotlinModelBuildingConfigurator {
                 )
                 .setTestInfo(
                     TestInfoImpl(
-                        animationsDisabled = mainVariant.global.testOptions.animationsDisabled,
-                        execution = mainVariant.global.testOptions.execution.convertToExecution(),
+                        animationsDisabled = mainVariant.global.testOptionsDslInfo.animationsDisabled,
+                        execution = mainVariant.global.testOptionsDslInfo.execution.convertToExecution(),
                         additionalRuntimeApks = project
                             .configurations
                             .findByName(

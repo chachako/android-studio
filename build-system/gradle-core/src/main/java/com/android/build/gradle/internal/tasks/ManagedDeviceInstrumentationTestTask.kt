@@ -474,14 +474,14 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
                 .setDisallowChanges(
                     createEmulatorControlConfig(
                         projectOptions,
-                        globalConfig.testOptions.emulatorControl as EmulatorControl))
+                        globalConfig.testOptionsDslInfo.emulatorControl as EmulatorControl))
 
             task.testRunnerFactory
                 .retentionConfig
                 .setDisallowChanges(
                         createRetentionConfig(
                                 projectOptions,
-                                globalConfig.testOptions.emulatorSnapshots as EmulatorSnapshots))
+                                globalConfig.testOptionsDslInfo.emulatorSnapshots as EmulatorSnapshots))
 
             task.testRunnerFactory
                 .installApkTimeout

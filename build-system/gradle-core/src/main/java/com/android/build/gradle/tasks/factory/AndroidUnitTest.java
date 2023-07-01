@@ -25,13 +25,12 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.build.api.artifact.ScopedArtifact;
 import com.android.build.api.artifact.impl.ArtifactsImpl;
-import com.android.build.api.dsl.TestOptions;
 import com.android.build.api.variant.ScopedArtifacts;
 import com.android.build.gradle.internal.SdkComponentsBuildService;
 import com.android.build.gradle.internal.component.ComponentCreationConfig;
 import com.android.build.gradle.internal.component.UnitTestCreationConfig;
 import com.android.build.gradle.internal.component.VariantCreationConfig;
-import com.android.build.gradle.internal.dsl.TestOptions.UnitTestOptions;
+import com.android.build.gradle.internal.core.dsl.features.TestOptionsDslInfo;
 import com.android.build.gradle.internal.publishing.AndroidArtifacts;
 import com.android.build.gradle.internal.scope.BootClasspathBuilder;
 import com.android.build.gradle.internal.scope.InternalArtifactType;
@@ -178,10 +177,9 @@ public abstract class AndroidUnitTest extends Test implements VariantAwareTask {
 
             VariantCreationConfig testedVariant = unitTestCreationConfig.getMainVariant();
 
-            TestOptions testOptions = creationConfig.getGlobal().getTestOptions();
+            TestOptionsDslInfo testOptions = creationConfig.getGlobal().getTestOptionsDslInfo();
 
-            boolean includeAndroidResources =
-                    testOptions.getUnitTests().isIncludeAndroidResources();
+            boolean includeAndroidResources = testOptions.isIncludeAndroidResources();
 
             ProjectOptions configOptions = creationConfig.getServices().getProjectOptions();
 
@@ -240,7 +238,7 @@ public abstract class AndroidUnitTest extends Test implements VariantAwareTask {
                                             .getTestReportFolder(),
                                     task.getName()));
 
-            ((UnitTestOptions) testOptions.getUnitTests()).applyConfiguration(task);
+            testOptions.applyConfiguration(task);
 
             task.dependencies =
                     creationConfig
