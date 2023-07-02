@@ -21,34 +21,45 @@ import com.android.build.api.dsl.EmulatorSnapshots
 import com.android.build.api.dsl.ManagedDevices
 import com.android.build.gradle.internal.core.dsl.features.TestOptionsDslInfo
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
+import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnDeviceConfigurationImpl
+import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnJvmConfigurationImpl
+import com.android.builder.model.TestOptions
 import org.gradle.api.tasks.testing.Test
 
-// TODO: remove testOptions from kotlin extension and use the test configurations
 internal class KmpTestOptionsDslInfoImpl(
     private val extension: KotlinMultiplatformAndroidExtensionImpl,
 ): TestOptionsDslInfo {
 
+    private val testOnJvmConfig: KotlinMultiplatformAndroidTestOnJvmConfigurationImpl?
+        get() = extension.androidTestOnJvmConfiguration
+
+    private val testOnDeviceConfig: KotlinMultiplatformAndroidTestOnDeviceConfigurationImpl?
+        get() = extension.androidTestOnDeviceConfiguration
+
     override val isIncludeAndroidResources: Boolean
-        get() = extension.testOptions.unitTests.isIncludeAndroidResources
+        get() = testOnJvmConfig?.isIncludeAndroidResources ?: false
     override val isReturnDefaultValues: Boolean
-        get() = extension.testOptions.unitTests.isReturnDefaultValues
+        get() = testOnJvmConfig?.isReturnDefaultValues ?: false
     override val animationsDisabled: Boolean
-        get() = extension.testOptions.animationsDisabled
+        get() = testOnDeviceConfig?.animationsDisabled ?: false
     override val execution: String
-        get() = extension.testOptions.execution
+        get() = testOnDeviceConfig?.execution ?: TestOptions.Execution.HOST.name
 
     override fun applyConfiguration(task: Test) {
-        extension.testOptions.unitTests.applyConfiguration(task)
+        testOnJvmConfig?.applyConfiguration(task)
     }
 
     override val resultsDir: String?
-        get() = extension.testOptions.resultsDir
+        get() = null
     override val reportDir: String?
-        get() = extension.testOptions.reportDir
+        get() = null
     override val managedDevices: ManagedDevices
-        get() = extension.testOptions.managedDevices
+        get() = testOnDeviceConfig?.managedDevices
+            ?: throw IllegalAccessException("Test on device configuration does not exist")
     override val emulatorControl: EmulatorControl
-        get() = extension.testOptions.emulatorControl
+        get() = testOnDeviceConfig?.emulatorControl
+            ?: throw IllegalAccessException("Test on device configuration does not exist")
     override val emulatorSnapshots: EmulatorSnapshots
-        get() = extension.testOptions.emulatorSnapshots
+        get() = testOnDeviceConfig?.emulatorSnapshots
+            ?: throw IllegalAccessException("Test on device configuration does not exist")
 }

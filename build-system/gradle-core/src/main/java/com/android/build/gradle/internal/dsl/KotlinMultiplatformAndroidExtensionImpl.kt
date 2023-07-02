@@ -51,9 +51,6 @@ internal abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLaz
         ).copyToSigningConfig(signingConfig)
     }
 
-    override val testOptions: TestOptions =
-        dslServices.newInstance(TestOptions::class.java, dslServices)
-
     abstract val libraryRequests: MutableList<LibraryRequest>
 
     override fun useLibrary(name: String) {

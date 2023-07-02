@@ -16,10 +16,12 @@
 
 package com.android.build.gradle.internal.dsl
 
+import com.android.build.api.dsl.ApkSigningConfig
 import com.android.build.api.dsl.Installation
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceConfiguration
 import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.getNamePrefixedWithTarget
 import com.android.build.gradle.internal.services.DslServices
+import com.android.builder.core.BuilderConstants
 import com.android.builder.model.TestOptions
 import com.android.utils.HelpfulEnumConverter
 import com.google.common.base.Preconditions
@@ -66,5 +68,50 @@ abstract class KotlinMultiplatformAndroidTestOnDeviceConfigurationImpl @Inject c
 
     fun installation(action: Action<Installation>) {
         action.execute(installation)
+    }
+
+    override val managedDevices: ManagedDevices =
+        dslServices.newInstance(ManagedDevices::class.java, dslServices)
+
+    override fun managedDevices(action: com.android.build.api.dsl.ManagedDevices.() -> Unit) {
+        action.invoke(managedDevices)
+    }
+
+    fun managedDevices(action: Action<com.android.build.api.dsl.ManagedDevices>) {
+        action.execute(managedDevices)
+    }
+
+    override val emulatorControl: com.android.build.api.dsl.EmulatorControl  =
+        dslServices.newDecoratedInstance(EmulatorControl::class.java, dslServices)
+
+    override fun emulatorControl(action: com.android.build.api.dsl.EmulatorControl.() -> Unit) {
+        action.invoke(emulatorControl)
+    }
+
+    fun emulatorControl(action: Action<com.android.build.api.dsl.EmulatorControl>) {
+        action.execute(emulatorControl)
+    }
+
+    override val emulatorSnapshots: com.android.build.api.dsl.EmulatorSnapshots =
+        dslServices.newInstance(EmulatorSnapshots::class.java, dslServices)
+
+    override fun emulatorSnapshots(action: com.android.build.api.dsl.EmulatorSnapshots.() -> Unit) {
+        action.invoke(emulatorSnapshots)
+    }
+
+    fun emulatorSnapshots(action: Action<com.android.build.api.dsl.EmulatorSnapshots>) {
+        action.execute(emulatorSnapshots)
+    }
+
+    var signingConfig = dslServices.newDecoratedInstance(
+        SigningConfig::class.java, BuilderConstants.DEBUG, dslServices
+    )
+
+    override fun signing(action: ApkSigningConfig?.() -> Unit) {
+        action.invoke(signingConfig)
+    }
+
+    fun signing(action: Action<ApkSigningConfig>) {
+        action.execute(signingConfig)
     }
 }

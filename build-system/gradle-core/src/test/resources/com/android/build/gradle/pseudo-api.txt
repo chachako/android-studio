@@ -1573,7 +1573,6 @@ com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getPac
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getTestCoverage: com.android.build.api.dsl.TestCoverage ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getTestMultiDexKeepProguard: java.io.File ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getTestNamespace: java.lang.String ()
-com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getTestOptions: com.android.build.api.dsl.TestOptions ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getTestTargetSdk: java.lang.Integer ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getTestTargetSdkPreview: java.lang.String ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.isCoreLibraryDesugaringEnabled: boolean ()
