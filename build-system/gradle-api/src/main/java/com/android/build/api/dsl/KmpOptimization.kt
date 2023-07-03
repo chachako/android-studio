@@ -22,36 +22,24 @@ import org.gradle.api.Incubating
  * DSL object for configurations aimed for optimizing build process(e.g. speed, correctness)
  */
 @Incubating
-interface KmpOptimization: Optimization {
+interface KmpOptimization {
     /**
-     * Specifies the ProGuard configuration files that the plugin should use.
-     *
-     * There are two ProGuard rules files that ship with the Android plugin and are used by
-     * default:
-     *
-     *  * proguard-android.txt
-     *  * proguard-android-optimize.txt
-     *
-     * `proguard-android-optimize.txt` is identical to `proguard-android.txt`,
-     * except with optimizations enabled. You can use [getDefaultProguardFile(String)]
-     * to return the full path of the files.
-     *
-     * @return an object that contains a collection of files.
+     * The collection of keep rule files that the plugin should use when optimizing the AAR
      */
     @get:Incubating
-    val proguard: ConfigurableFiles
+    val keepRules: LibraryKeepRules
 
     /**
-     * The collection of proguard rule files to use for the test APK.
+     * The collection of keep rule files to use for the test APK.
      */
     @get:Incubating
-    val testProguard: ConfigurableFiles
+    val testKeepRules: ConfigurableFiles
 
     /**
-     * The collection of proguard rule files for consumers of the library to use.
+     * The collection of keep rule files for consumers of the library to use.
      */
     @get:Incubating
-    val consumerProguard: ConfigurableFiles
+    val consumerKeepRules: ConsumerKeepRules
 
     /**
      * Specifies whether to enable code shrinking for this build type.
@@ -64,8 +52,30 @@ interface KmpOptimization: Optimization {
      */
     @get:Incubating
     @set:Incubating
-    var isMinifyEnabled: Boolean
+    var minify: Boolean
+}
 
+@Incubating
+interface LibraryKeepRules: ConfigurableFiles {
+    /**
+     * Ignore keep rules from listed external dependencies. External dependencies can be specified
+     * via GAV coordinates(e.g. "groupId:artifactId:version") or in the format of
+     * "groupId:artifactId" in which case dependencies are ignored as long as they match
+     * groupId & artifactId.
+     */
+    @get:Incubating
+    val ignoreFrom: MutableSet<String>
+
+    /**
+     * Ignore keep rules from all the external dependencies.
+     */
+    @get:Incubating
+    @set:Incubating
+    var ignoreFromAllExternalDependencies: Boolean
+}
+
+@Incubating
+interface ConsumerKeepRules: ConfigurableFiles {
     /**
      * Publishing consumer proguard rules as part of a kmp library is an opt-in feature.
      * By default, consumer proguard rules will not be published.
@@ -74,5 +84,21 @@ interface KmpOptimization: Optimization {
      */
     @get:Incubating
     @set:Incubating
-    var enableConsumerProguardRulePublishing: Boolean
+    var publish: Boolean
+
+    /**
+     * Ignore keep rules from listed external dependencies. External dependencies can be specified
+     * via GAV coordinates(e.g. "groupId:artifactId:version") or in the format of
+     * "groupId:artifactId" in which case dependencies are ignored as long as they match
+     * groupId & artifactId.
+     */
+    @get:Incubating
+    val ignoreFrom: MutableSet<String>
+
+    /**
+     * Ignore keep rules from all the external dependencies.
+     */
+    @get:Incubating
+    @set:Incubating
+    var ignoreFromAllExternalDependencies: Boolean
 }

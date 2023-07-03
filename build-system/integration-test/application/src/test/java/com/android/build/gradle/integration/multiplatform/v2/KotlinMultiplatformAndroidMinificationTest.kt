@@ -44,12 +44,12 @@ class KotlinMultiplatformAndroidMinificationTest {
             """
                 kotlin.androidLibrary {
                     optimization {
-                        isMinifyEnabled = true
-                        consumerProguard.files.add(
+                        minify = true
+                        consumerKeepRules.files.add(
                             File(project.projectDir, "consumer-proguard-rules.pro")
                         )
-                        proguard.file("proguard-rules.pro")
-                        enableConsumerProguardRulePublishing = true
+                        keepRules.file("proguard-rules.pro")
+                        consumerKeepRules.publish = true
                     }
                 }
             """.trimIndent()
@@ -195,8 +195,8 @@ class KotlinMultiplatformAndroidMinificationTest {
     fun `test disabling consumer proguard rules from kmp lib`() {
         TestFileUtils.searchAndReplace(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
-            "enableConsumerProguardRulePublishing = true",
-            "enableConsumerProguardRulePublishing = false"
+            "consumerKeepRules.publish = true",
+            "consumerKeepRules.publish = false"
         )
         FileUtils.writeToFile(
             project.getSubproject("kmpFirstLib").file("consumer-proguard-rules.pro"),

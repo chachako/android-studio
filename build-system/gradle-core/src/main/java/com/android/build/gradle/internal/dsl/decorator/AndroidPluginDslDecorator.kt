@@ -46,6 +46,8 @@ import com.android.build.api.dsl.FusedLibraryExtension
 import com.android.build.api.dsl.JavaCompileOptions
 import com.android.build.api.dsl.JniLibsPackaging
 import com.android.build.api.dsl.KeepRules
+import com.android.build.api.dsl.ConsumerKeepRules
+import com.android.build.api.dsl.LibraryKeepRules
 import com.android.build.api.dsl.KmpOptimization
 import com.android.build.api.dsl.LibraryPublishing
 import com.android.build.api.dsl.Lint
@@ -84,6 +86,8 @@ import com.android.build.gradle.internal.dsl.DependencyVariantSelectionImpl
 import com.android.build.gradle.internal.dsl.DexPackagingImpl
 import com.android.build.gradle.internal.dsl.FusedLibraryExtensionImpl
 import com.android.build.gradle.internal.dsl.JniLibsPackagingImpl
+import com.android.build.gradle.internal.dsl.ConsumerKeepRulesImpl
+import com.android.build.gradle.internal.dsl.LibraryKeepRulesImpl
 import com.android.build.gradle.internal.dsl.KmpOptimizationImpl
 import com.android.build.gradle.internal.dsl.LibraryPublishingImpl
 import com.android.build.gradle.internal.dsl.LintImpl
@@ -152,6 +156,8 @@ val AGP_SUPPORTED_PROPERTY_TYPES: List<SupportedPropertyType> = listOf(
     SupportedPropertyType.Block(ViewBinding::class.java, ViewBindingOptionsImpl::class.java),
     SupportedPropertyType.Block(ConfigurableFiles::class.java, ConfigurableFilesImpl::class.java),
     SupportedPropertyType.Block(KmpOptimization::class.java, KmpOptimizationImpl::class.java),
+    SupportedPropertyType.Block(ConsumerKeepRules::class.java, ConsumerKeepRulesImpl::class.java),
+    SupportedPropertyType.Block(LibraryKeepRules::class.java, LibraryKeepRulesImpl::class.java),
     SupportedPropertyType.Block(DependencyVariantSelection::class.java, DependencyVariantSelectionImpl::class.java),
     SupportedPropertyType.Block(MultiDexConfig::class.java, MultiDexConfigImpl::class.java),
 

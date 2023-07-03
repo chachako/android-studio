@@ -16,10 +16,20 @@
 
 package com.android.build.gradle.internal.dsl
 
+import com.android.build.api.dsl.ConsumerKeepRules
+import com.android.build.api.dsl.LibraryKeepRules
 import com.android.build.api.dsl.KmpOptimization
 import com.android.build.gradle.internal.services.DslServices
 import javax.inject.Inject
 
 abstract class KmpOptimizationImpl @Inject constructor(
     dslService: DslServices
-) : KmpOptimization, OptimizationImpl(dslService)
+) : KmpOptimization
+
+abstract class ConsumerKeepRulesImpl @Inject constructor(
+    dslService: DslServices
+): ConsumerKeepRules, ConfigurableFilesImpl(dslService)
+
+abstract class LibraryKeepRulesImpl @Inject constructor(
+    dslService: DslServices
+): LibraryKeepRules, ConfigurableFilesImpl(dslService)

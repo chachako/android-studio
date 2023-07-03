@@ -929,6 +929,17 @@ package com.android.build.api.dsl {
     property @org.gradle.api.Incubating public abstract java.util.List<java.io.File> files;
   }
 
+  @org.gradle.api.Incubating public interface ConsumerKeepRules extends com.android.build.api.dsl.ConfigurableFiles {
+    method @org.gradle.api.Incubating public java.util.Set<java.lang.String> getIgnoreFrom();
+    method @org.gradle.api.Incubating public boolean getIgnoreFromAllExternalDependencies();
+    method @org.gradle.api.Incubating public boolean getPublish();
+    method @org.gradle.api.Incubating public void setIgnoreFromAllExternalDependencies(boolean);
+    method @org.gradle.api.Incubating public void setPublish(boolean);
+    property @org.gradle.api.Incubating public abstract java.util.Set<java.lang.String> ignoreFrom;
+    property @org.gradle.api.Incubating public abstract boolean ignoreFromAllExternalDependencies;
+    property @org.gradle.api.Incubating public abstract boolean publish;
+  }
+
   public interface DataBinding {
     method public boolean getAddDefaultAdapters();
     method public Boolean? getAddKtx();
@@ -1142,19 +1153,16 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public void ignoreExternalDependencies(java.lang.String... ids);
   }
 
-  @org.gradle.api.Incubating public interface KmpOptimization extends com.android.build.api.dsl.Optimization {
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.ConfigurableFiles getConsumerProguard();
-    method @org.gradle.api.Incubating public boolean getEnableConsumerProguardRulePublishing();
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.ConfigurableFiles getProguard();
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.ConfigurableFiles getTestProguard();
-    method @org.gradle.api.Incubating public boolean isMinifyEnabled();
-    method @org.gradle.api.Incubating public void setEnableConsumerProguardRulePublishing(boolean);
-    method @org.gradle.api.Incubating public void setMinifyEnabled(boolean);
-    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ConfigurableFiles consumerProguard;
-    property @org.gradle.api.Incubating public abstract boolean enableConsumerProguardRulePublishing;
-    property @org.gradle.api.Incubating public abstract boolean isMinifyEnabled;
-    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ConfigurableFiles proguard;
-    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ConfigurableFiles testProguard;
+  @org.gradle.api.Incubating public interface KmpOptimization {
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.ConsumerKeepRules getConsumerKeepRules();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.LibraryKeepRules getKeepRules();
+    method @org.gradle.api.Incubating public boolean getMinify();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.ConfigurableFiles getTestKeepRules();
+    method @org.gradle.api.Incubating public void setMinify(boolean);
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ConsumerKeepRules consumerKeepRules;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.LibraryKeepRules keepRules;
+    property @org.gradle.api.Incubating public abstract boolean minify;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ConfigurableFiles testKeepRules;
   }
 
   @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidTestConfiguration {
@@ -1264,6 +1272,14 @@ package com.android.build.api.dsl {
     property @org.gradle.api.Incubating public abstract java.util.Collection<java.lang.String>? aidlPackagedList;
     property @org.gradle.api.Incubating public abstract org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.Prefab> prefab;
     property public abstract com.android.build.api.dsl.LibraryPublishing publishing;
+  }
+
+  @org.gradle.api.Incubating public interface LibraryKeepRules extends com.android.build.api.dsl.ConfigurableFiles {
+    method @org.gradle.api.Incubating public java.util.Set<java.lang.String> getIgnoreFrom();
+    method @org.gradle.api.Incubating public boolean getIgnoreFromAllExternalDependencies();
+    method @org.gradle.api.Incubating public void setIgnoreFromAllExternalDependencies(boolean);
+    property @org.gradle.api.Incubating public abstract java.util.Set<java.lang.String> ignoreFrom;
+    property @org.gradle.api.Incubating public abstract boolean ignoreFromAllExternalDependencies;
   }
 
   public interface LibraryProductFlavor extends com.android.build.api.dsl.LibraryBaseFlavor com.android.build.api.dsl.ProductFlavor {
