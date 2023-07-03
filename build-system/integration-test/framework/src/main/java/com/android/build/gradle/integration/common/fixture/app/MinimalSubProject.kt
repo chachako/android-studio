@@ -34,7 +34,8 @@ class MinimalSubProject private constructor(
     val addCompileAndSdkVersionToBuildFile: Boolean = false,
     val addVersionCodeToBuildFile: Boolean = false,
     val addManifestFile: Boolean = false,
-    val namespace: String?
+    val namespace: String?,
+    private val isMultiplatform: Boolean = false
 ) :
     GradleProject(path) {
 
@@ -47,7 +48,13 @@ class MinimalSubProject private constructor(
         if (addVersionCodeToBuildFile) {
             buildScript += "\nandroid.defaultConfig.versionCode 1\n"
         }
-        namespace?.let { buildScript += "\nandroid.namespace \"$it\"\n"}
+        namespace?.let {
+            buildScript += if (isMultiplatform) {
+                "\nkotlin.androidLibrary.namespace = \"$it\"\n"
+            } else {
+                "\nandroid.namespace \"$it\"\n"
+            }
+        }
         addFile(TestSourceFile("build.gradle", buildScript))
 
         if (addManifestFile) {
@@ -193,6 +200,18 @@ class MinimalSubProject private constructor(
                 addVersionCodeToBuildFile = false,
                 addManifestFile = false,
                 namespace = namespace
+            )
+        }
+
+        fun kotlinMultiplatformAndroid(namespace: String): MinimalSubProject {
+            return MinimalSubProject(
+                path = null,
+                plugin = "com.android.kotlin.multiplatform.library",
+                addCompileAndSdkVersionToBuildFile = false,
+                addVersionCodeToBuildFile = false,
+                addManifestFile = false,
+                namespace = namespace,
+                isMultiplatform = true
             )
         }
     }
