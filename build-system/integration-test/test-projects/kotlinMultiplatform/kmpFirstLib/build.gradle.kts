@@ -10,6 +10,10 @@ kotlin {
     withAndroidTestOnJvm(compilationName = "unitTest")
     withAndroidTestOnDevice(compilationName = "instrumentedTest") {
         instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        multidex.enable = true
+        multidex.mainDexKeepRules.files.add (
+            File(project.projectDir, "dex-rules.pro")
+        )
     }
 
     sourceSets.getByName("androidMain") {

@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.dsl
+package com.android.build.api.dsl
 
-import com.android.build.api.dsl.Optimization
 import org.gradle.api.Incubating
 
-// TODO(b/267309622): Move to gradle-api
+/**
+ * DSL object for configurations aimed for optimizing build process(e.g. speed, correctness)
+ */
 @Incubating
 interface KmpOptimization: Optimization {
     /**
@@ -37,20 +38,20 @@ interface KmpOptimization: Optimization {
      *
      * @return an object that contains a collection of files.
      */
-     @get:Incubating
-     val proguard: ConfigurableFiles
+    @get:Incubating
+    val proguard: ConfigurableFiles
 
-     /**
+    /**
      * The collection of proguard rule files to use for the test APK.
      */
-     @get:Incubating
-     val testProguard: ConfigurableFiles
+    @get:Incubating
+    val testProguard: ConfigurableFiles
 
-     /**
+    /**
      * The collection of proguard rule files for consumers of the library to use.
      */
-     @get:Incubating
-     val consumerProguard: ConfigurableFiles
+    @get:Incubating
+    val consumerProguard: ConfigurableFiles
 
     /**
      * Specifies whether to enable code shrinking for this build type.
@@ -61,9 +62,9 @@ interface KmpOptimization: Optimization {
      * To learn more, read
      * [Shrink Your Code and Resources](https://developer.android.com/studio/build/shrink-code.html).
      */
-     @get:Incubating
-     @set:Incubating
-     var isMinifyEnabled: Boolean
+    @get:Incubating
+    @set:Incubating
+    var isMinifyEnabled: Boolean
 
     /**
      * Publishing consumer proguard rules as part of a kmp library is an opt-in feature.
@@ -71,7 +72,7 @@ interface KmpOptimization: Optimization {
      *
      * To enable it, set this property to `true`
      */
-     @get:Incubating
-     @set:Incubating
-     var enableConsumerProguardRulePublishing: Boolean
+    @get:Incubating
+    @set:Incubating
+    var enableConsumerProguardRulePublishing: Boolean
 }

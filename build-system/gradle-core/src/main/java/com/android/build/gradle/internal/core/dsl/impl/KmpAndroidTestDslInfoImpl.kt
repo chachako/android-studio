@@ -117,9 +117,12 @@ class KmpAndroidTestDslInfoImpl(
     }
     override val optimizationDslInfo: OptimizationDslInfo
         get() = mainVariantDslInfo.optimizationDslInfo
+
     override val dexingDslInfo = object: DexingDslInfo {
-        override val isMultiDexEnabled = extension.isTestMultiDexEnabled
-        override val multiDexKeepProguard: File? = extension.testMultiDexKeepProguard
+        override val isMultiDexEnabled =
+            testOnDeviceConfig?.multidex?.enable ?: false
+        override val multiDexKeepProguard: File? =
+            testOnDeviceConfig?.multidex?.mainDexKeepRules?.files?.getOrNull(0)
         override val multiDexKeepFile: File? = null
     }
 

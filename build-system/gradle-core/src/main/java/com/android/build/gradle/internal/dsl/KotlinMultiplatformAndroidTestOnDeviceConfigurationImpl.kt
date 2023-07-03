@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.dsl
 import com.android.build.api.dsl.ApkSigningConfig
 import com.android.build.api.dsl.Installation
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceConfiguration
+import com.android.build.api.dsl.MultiDexConfig
 import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.getNamePrefixedWithTarget
 import com.android.build.gradle.internal.services.DslServices
 import com.android.builder.core.BuilderConstants
@@ -107,11 +108,24 @@ abstract class KotlinMultiplatformAndroidTestOnDeviceConfigurationImpl @Inject c
         SigningConfig::class.java, BuilderConstants.DEBUG, dslServices
     )
 
-    override fun signing(action: ApkSigningConfig?.() -> Unit) {
+    override fun signing(action: ApkSigningConfig.() -> Unit) {
         action.invoke(signingConfig)
     }
 
     fun signing(action: Action<ApkSigningConfig>) {
         action.execute(signingConfig)
+    }
+
+    override val multidex: MultiDexConfig = dslServices.newDecoratedInstance(
+        MultiDexConfigImpl::class.java,
+        dslServices
+    )
+
+    override fun multidex(action: MultiDexConfig.() -> Unit) {
+        action.invoke(multidex)
+    }
+
+    fun multidex(action: Action<MultiDexConfig>) {
+        action.execute(multidex)
     }
 }

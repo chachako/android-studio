@@ -50,7 +50,6 @@ class KotlinMultiplatformAndroidDexingTest {
                             }
                         }
 
-                        isTestMultiDexEnabled = true
                         isCoreLibraryDesugaringEnabled = true
                     }
                 }
@@ -107,7 +106,6 @@ class KotlinMultiplatformAndroidDexingTest {
             "minSdk = 22",
             """
                 minSdk = 20
-                testMultiDexKeepProguard = File(project.projectDir, "dex-rules.pro")
             """.trimIndent()
         )
 

@@ -68,7 +68,6 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
                             }
                         }
 
-                        isTestMultiDexEnabled = true
                         lint {
                             enable += "ByteOrderMark"
                             textReport = true

@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.dsl
+package com.android.build.api.dsl
 
-import com.android.build.api.dsl.ConfigurableFiles
-import com.android.build.gradle.internal.services.DslServices
-import javax.inject.Inject
+import org.gradle.api.Incubating
 
-abstract class ConfigurableFilesImpl@Inject constructor(
-    val dslServices: DslServices
-): ConfigurableFiles {
+@Incubating
+interface MultiDexConfig {
+    @get:Incubating
+    @set:Incubating
+    var enable: Boolean
 
-    override fun file(file: Any) {
-       files.add(dslServices.file(file))
-    }
-
-    override fun files(vararg files: Any) {
-        files.forEach { file(it) }
-    }
+    @get:Incubating
+    val mainDexKeepRules: ConfigurableFiles
 }

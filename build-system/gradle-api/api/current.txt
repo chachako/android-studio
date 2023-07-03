@@ -922,6 +922,13 @@ package com.android.build.api.dsl {
     property public abstract boolean useLiveLiterals;
   }
 
+  @org.gradle.api.Incubating public interface ConfigurableFiles {
+    method @org.gradle.api.Incubating public void file(Object file);
+    method @org.gradle.api.Incubating public void files(java.lang.Object... files);
+    method @org.gradle.api.Incubating public java.util.List<java.io.File> getFiles();
+    property @org.gradle.api.Incubating public abstract java.util.List<java.io.File> files;
+  }
+
   public interface DataBinding {
     method public boolean getAddDefaultAdapters();
     method public Boolean? getAddKtx();
@@ -1135,6 +1142,21 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public void ignoreExternalDependencies(java.lang.String... ids);
   }
 
+  @org.gradle.api.Incubating public interface KmpOptimization extends com.android.build.api.dsl.Optimization {
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.ConfigurableFiles getConsumerProguard();
+    method @org.gradle.api.Incubating public boolean getEnableConsumerProguardRulePublishing();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.ConfigurableFiles getProguard();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.ConfigurableFiles getTestProguard();
+    method @org.gradle.api.Incubating public boolean isMinifyEnabled();
+    method @org.gradle.api.Incubating public void setEnableConsumerProguardRulePublishing(boolean);
+    method @org.gradle.api.Incubating public void setMinifyEnabled(boolean);
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ConfigurableFiles consumerProguard;
+    property @org.gradle.api.Incubating public abstract boolean enableConsumerProguardRulePublishing;
+    property @org.gradle.api.Incubating public abstract boolean isMinifyEnabled;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ConfigurableFiles proguard;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ConfigurableFiles testProguard;
+  }
+
   @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidTestConfiguration {
     method @org.gradle.api.Incubating public String getDefaultSourceSetName();
     method @org.gradle.api.Incubating public String? getSourceSetTree();
@@ -1158,9 +1180,11 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public String? getInstrumentationRunner();
     method @org.gradle.api.Incubating public java.util.Map<java.lang.String,java.lang.String> getInstrumentationRunnerArguments();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.ManagedDevices getManagedDevices();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.MultiDexConfig getMultidex();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.ApkSigningConfig getSigning();
     method @org.gradle.api.Incubating public void installation(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Installation,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void managedDevices(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ManagedDevices,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public void multidex(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.MultiDexConfig,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void setAnimationsDisabled(boolean);
     method @org.gradle.api.Incubating public void setApplicationId(String?);
     method @org.gradle.api.Incubating public void setExecution(String);
@@ -1179,6 +1203,7 @@ package com.android.build.api.dsl {
     property @org.gradle.api.Incubating public abstract String? instrumentationRunner;
     property @org.gradle.api.Incubating public abstract java.util.Map<java.lang.String,java.lang.String> instrumentationRunnerArguments;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ManagedDevices managedDevices;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.MultiDexConfig multidex;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ApkSigningConfig signing;
   }
 
@@ -1495,6 +1520,14 @@ package com.android.build.api.dsl {
     property public abstract String device;
     property public abstract boolean require64Bit;
     property public abstract String systemImageSource;
+  }
+
+  @org.gradle.api.Incubating public interface MultiDexConfig {
+    method @org.gradle.api.Incubating public boolean getEnable();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.ConfigurableFiles getMainDexKeepRules();
+    method @org.gradle.api.Incubating public void setEnable(boolean);
+    property @org.gradle.api.Incubating public abstract boolean enable;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ConfigurableFiles mainDexKeepRules;
   }
 
   public interface MultipleVariants extends com.android.build.api.dsl.PublishingOptions {

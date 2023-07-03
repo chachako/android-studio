@@ -14,18 +14,23 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.dsl
+package com.android.build.api.dsl
 
+import org.gradle.api.Incubating
 import java.io.File
 
 /**
  * A container for a collection of files that has the capability to add a single existing file
  * or a group of existing files to the collection
- *
- * TODO(b/267309622): Move to gradle-api
  */
+@Incubating
 interface ConfigurableFiles {
+    @get:Incubating
     val files: MutableList<File>
+
+    @Incubating
     fun file(file: Any)
+
+    @Incubating
     fun files(vararg files: Any)
 }

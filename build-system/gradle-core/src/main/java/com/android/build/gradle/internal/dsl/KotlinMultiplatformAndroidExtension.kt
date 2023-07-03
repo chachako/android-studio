@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.dsl
 
 import com.android.build.api.dsl.AarMetadata
 import com.android.build.api.dsl.DependencyVariantSelection
+import com.android.build.api.dsl.KmpOptimization
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceConfiguration
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvmConfiguration
 import com.android.build.api.dsl.Lint
@@ -62,8 +63,6 @@ interface KotlinMultiplatformAndroidExtension {
 
     var testNamespace: String?
 
-    var isTestMultiDexEnabled: Boolean?
-    var testMultiDexKeepProguard: File?
     var isCoreLibraryDesugaringEnabled: Boolean
 
     var testTargetSdk: Int?

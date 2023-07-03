@@ -181,5 +181,11 @@ interface KotlinMultiplatformAndroidTestOnDeviceConfiguration:
     val signing: ApkSigningConfig
 
     @Incubating
-    fun signing(action: ApkSigningConfig?.() -> Unit)
+    fun signing(action: ApkSigningConfig.() -> Unit)
+
+    @get:Incubating
+    val multidex: MultiDexConfig
+
+    @Incubating
+    fun multidex(action: MultiDexConfig.() -> Unit)
 }
