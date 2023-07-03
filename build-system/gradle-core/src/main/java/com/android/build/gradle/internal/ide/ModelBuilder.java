@@ -886,7 +886,7 @@ public class ModelBuilder<Extension extends BaseExtension>
                         .getVariantData()
                         .getAllPostJavacGeneratedBytecode()
                         .getFiles());
-        if (component.getGlobal().getTestOptionsDslInfo().isIncludeAndroidResources()) {
+        if (component.getGlobal().getUnitTestOptions().isIncludeAndroidResources()) {
             additionalTestClasses.add(
                     artifacts
                             .get(InternalArtifactType.UNIT_TEST_CONFIG_DIRECTORY.INSTANCE)

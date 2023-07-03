@@ -522,7 +522,7 @@ abstract class TaskManager(
                 null,
                 null,
                 taskProviderCallback)
-        if (globalConfig.testOptionsDslInfo.isIncludeAndroidResources) {
+        if (globalConfig.unitTestOptions.isIncludeAndroidResources) {
             creationConfig.taskContainer.compileTask.dependsOn(mergeResourcesTask)
         }
         return mergeResourcesTask
@@ -919,17 +919,17 @@ abstract class TaskManager(
             allDevices.dependsOn(allDevicesVariantTask)
         }
 
-        val resultsRootDir = if (globalConfig.testOptionsDslInfo.resultsDir.isNullOrEmpty()) {
+        val resultsRootDir = if (globalConfig.androidTestOptions.resultsDir.isNullOrEmpty()) {
             creationConfig.paths.outputDir(BuilderConstants.FD_ANDROID_RESULTS)
                 .get().asFile
         } else {
-            File(requireNotNull(globalConfig.testOptionsDslInfo.resultsDir))
+            File(requireNotNull(globalConfig.androidTestOptions.resultsDir))
         }
-        val reportRootDir = if (globalConfig.testOptionsDslInfo.resultsDir.isNullOrEmpty()) {
+        val reportRootDir = if (globalConfig.androidTestOptions.resultsDir.isNullOrEmpty()) {
             creationConfig.paths.reportsDir(BuilderConstants.FD_ANDROID_TESTS)
                 .get().asFile
         } else {
-            File(requireNotNull(globalConfig.testOptionsDslInfo.reportDir))
+            File(requireNotNull(globalConfig.androidTestOptions.reportDir))
         }
         val additionalOutputRootDir = creationConfig.paths.outputDir(
             InternalArtifactType.MANAGED_DEVICE_ANDROID_TEST_ADDITIONAL_OUTPUT.getFolderName()
@@ -1847,7 +1847,7 @@ abstract class TaskManager(
             creationConfig: InstrumentedTestCreationConfig, testData: AbstractTestDataImpl) {
         testData.animationsDisabled = creationConfig
                 .services
-                .provider(globalConfig.testOptionsDslInfo::animationsDisabled)
+                .provider(globalConfig.androidTestOptions::animationsDisabled)
         testData.setExtraInstrumentationTestRunnerArgs(
                 creationConfig
                         .services
@@ -1874,14 +1874,14 @@ abstract class TaskManager(
 
     protected fun getManagedDevices(): List<Device> {
         return globalConfig
-            .testOptionsDslInfo
+            .androidTestOptions
             .managedDevices
             .allDevices
             .toList()
     }
 
     protected fun getDeviceGroups(): Collection<DeviceGroup> =
-        globalConfig.testOptionsDslInfo.managedDevices.groups
+        globalConfig.androidTestOptions.managedDevices.groups
 
     protected fun maybeCreateTransformClassesWithAsmTask(
         creationConfig: ComponentCreationConfig

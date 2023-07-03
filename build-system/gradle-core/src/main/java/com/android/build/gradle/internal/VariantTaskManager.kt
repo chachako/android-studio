@@ -422,7 +422,7 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
                     SdkConstants.DATA_BINDING_ANNOTATION_PROCESSOR_ARTIFACT + ":" + version
                 project.dependencies
                     .add("androidTestAnnotationProcessor", dataBindingArtifact)
-                if (globalConfig.testOptionsDslInfo.isIncludeAndroidResources) {
+                if (globalConfig.unitTestOptions.isIncludeAndroidResources) {
                     project.dependencies.add("testAnnotationProcessor", dataBindingArtifact)
                 }
             }

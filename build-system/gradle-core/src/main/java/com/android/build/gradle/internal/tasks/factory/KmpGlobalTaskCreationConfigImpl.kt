@@ -28,14 +28,14 @@ import com.android.build.api.dsl.Installation
 import com.android.build.api.dsl.Lint
 import com.android.build.api.dsl.Prefab
 import com.android.build.api.dsl.Splits
-import com.android.build.api.dsl.TestOptions
 import com.android.build.gradle.internal.KotlinMultiplatformCompileOptionsImpl
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.attribution.BuildAnalyzerIssueReporter
 import com.android.build.gradle.internal.core.SettingsOptions
-import com.android.build.gradle.internal.core.dsl.features.TestOptionsDslInfo
-import com.android.build.gradle.internal.core.dsl.impl.features.KmpTestOptionsDslInfoImpl
-import com.android.build.gradle.internal.core.dsl.impl.features.TestOptionsDslInfoImpl
+import com.android.build.gradle.internal.core.dsl.features.AndroidTestOptionsDslInfo
+import com.android.build.gradle.internal.core.dsl.features.UnitTestOptionsDslInfo
+import com.android.build.gradle.internal.core.dsl.impl.features.KmpAndroidTestOptionsDslInfoImpl
+import com.android.build.gradle.internal.core.dsl.impl.features.KmpUnitTestOptionsDslInfoImpl
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.dsl.LanguageSplitOptions
@@ -118,8 +118,11 @@ internal class KmpGlobalTaskCreationConfigImpl(
             .artifactFiles
     }
 
-    override val testOptionsDslInfo: TestOptionsDslInfo
-        get() = KmpTestOptionsDslInfoImpl(extension)
+    override val androidTestOptions: AndroidTestOptionsDslInfo
+        get() = KmpAndroidTestOptionsDslInfoImpl(extension)
+
+    override val unitTestOptions: UnitTestOptionsDslInfo
+        get() = KmpUnitTestOptionsDslInfoImpl(extension)
 
     override val libraryRequests: Collection<LibraryRequest>
         get() = extension.libraryRequests
@@ -143,7 +146,7 @@ internal class KmpGlobalTaskCreationConfigImpl(
         get() = extension.optimization.enableConsumerProguardRulePublishing
 
     override val testOptionExecutionEnum: com.android.builder.model.TestOptions.Execution? by lazy {
-        testOptionsDslInfo.execution.toExecutionEnum()
+        androidTestOptions.execution.toExecutionEnum()
     }
 
     override val installationOptions: Installation
@@ -160,7 +163,7 @@ internal class KmpGlobalTaskCreationConfigImpl(
     override val productFlavorDimensionCount: Int
         get() = 0
 
-    override val managedDeviceRegistry = ManagedDeviceRegistry(testOptionsDslInfo)
+    override val managedDeviceRegistry = ManagedDeviceRegistry(androidTestOptions)
     override val lintChecks = createCustomLintChecksConfig(project)
     override val lintPublish: Configuration = createCustomLintPublishConfig(project)
     override val fakeDependency = createFakeDependencyConfig(project)

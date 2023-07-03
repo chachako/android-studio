@@ -16,27 +16,14 @@
 
 package com.android.build.gradle.internal.core.dsl.features
 
-import com.android.build.api.dsl.EmulatorControl
-import com.android.build.api.dsl.EmulatorSnapshots
-import com.android.build.api.dsl.ManagedDevices
 import org.gradle.api.tasks.testing.Test
 
 /**
  * Contains the final dsl info computed from the DSL object model (extension, default config,
  * build type, flavors) that are needed by components that configure and run unit tests
- * and instrumentation tests
  */
-interface TestOptionsDslInfo {
+interface UnitTestOptionsDslInfo {
     val isIncludeAndroidResources: Boolean
     val isReturnDefaultValues: Boolean
-    val animationsDisabled: Boolean
-    val execution: String
     fun applyConfiguration(task: Test)
-
-    val resultsDir: String?
-    val reportDir: String?
-
-    val managedDevices: ManagedDevices
-    val emulatorControl: EmulatorControl
-    val emulatorSnapshots: EmulatorSnapshots
 }

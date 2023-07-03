@@ -16,31 +16,21 @@
 
 package com.android.build.gradle.internal.core.dsl.impl.features
 
-import com.android.build.gradle.internal.core.dsl.features.TestOptionsDslInfo
+import com.android.build.gradle.internal.core.dsl.features.AndroidTestOptionsDslInfo
 
 
 import com.android.build.api.dsl.EmulatorControl
 import com.android.build.api.dsl.EmulatorSnapshots
 import com.android.build.api.dsl.ManagedDevices
 import com.android.build.gradle.internal.dsl.CommonExtensionImpl
-import org.gradle.api.tasks.testing.Test
 
-internal class TestOptionsDslInfoImpl(
+internal class AndroidTestOptionsDslInfoImpl(
     private val extension: CommonExtensionImpl<*, *, *, *, *>,
-): TestOptionsDslInfo {
-
-    override val isIncludeAndroidResources: Boolean
-        get() = extension.testOptions.unitTests.isIncludeAndroidResources
-    override val isReturnDefaultValues: Boolean
-        get() = extension.testOptions.unitTests.isReturnDefaultValues
+): AndroidTestOptionsDslInfo {
     override val animationsDisabled: Boolean
         get() = extension.testOptions.animationsDisabled
     override val execution: String
         get() = extension.testOptions.execution
-
-    override fun applyConfiguration(task: Test) {
-        extension.testOptions.unitTests.applyConfiguration(task)
-    }
 
     override val resultsDir: String?
         get() = extension.testOptions.resultsDir

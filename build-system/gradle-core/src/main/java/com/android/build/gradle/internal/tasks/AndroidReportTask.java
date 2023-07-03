@@ -200,7 +200,7 @@ public abstract class AndroidReportTask extends DefaultTask implements AndroidTe
                                     () -> {
                                         String dir =
                                                 creationConfig
-                                                        .getTestOptionsDslInfo()
+                                                        .getAndroidTestOptions()
                                                         .getResultsDir();
                                         String rootLocation =
                                                 dir != null && !dir.isEmpty()
@@ -218,7 +218,7 @@ public abstract class AndroidReportTask extends DefaultTask implements AndroidTe
                                     () -> {
                                         String dir =
                                                 creationConfig
-                                                        .getTestOptionsDslInfo()
+                                                        .getAndroidTestOptions()
                                                         .getReportDir();
                                         String rootLocation =
                                                 dir != null && !dir.isEmpty()

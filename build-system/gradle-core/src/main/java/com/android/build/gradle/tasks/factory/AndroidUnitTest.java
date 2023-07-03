@@ -30,7 +30,7 @@ import com.android.build.gradle.internal.SdkComponentsBuildService;
 import com.android.build.gradle.internal.component.ComponentCreationConfig;
 import com.android.build.gradle.internal.component.UnitTestCreationConfig;
 import com.android.build.gradle.internal.component.VariantCreationConfig;
-import com.android.build.gradle.internal.core.dsl.features.TestOptionsDslInfo;
+import com.android.build.gradle.internal.core.dsl.features.UnitTestOptionsDslInfo;
 import com.android.build.gradle.internal.publishing.AndroidArtifacts;
 import com.android.build.gradle.internal.scope.BootClasspathBuilder;
 import com.android.build.gradle.internal.scope.InternalArtifactType;
@@ -177,7 +177,7 @@ public abstract class AndroidUnitTest extends Test implements VariantAwareTask {
 
             VariantCreationConfig testedVariant = unitTestCreationConfig.getMainVariant();
 
-            TestOptionsDslInfo testOptions = creationConfig.getGlobal().getTestOptionsDslInfo();
+            UnitTestOptionsDslInfo testOptions = creationConfig.getGlobal().getUnitTestOptions();
 
             boolean includeAndroidResources = testOptions.isIncludeAndroidResources();
 

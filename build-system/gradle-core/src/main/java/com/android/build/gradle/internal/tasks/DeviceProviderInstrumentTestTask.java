@@ -40,7 +40,7 @@ import com.android.build.gradle.internal.SdkComponentsKt;
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig;
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig;
 import com.android.build.gradle.internal.component.VariantCreationConfig;
-import com.android.build.gradle.internal.core.dsl.features.TestOptionsDslInfo;
+import com.android.build.gradle.internal.core.dsl.features.AndroidTestOptionsDslInfo;
 import com.android.build.gradle.internal.dsl.EmulatorControl;
 import com.android.build.gradle.internal.dsl.EmulatorSnapshots;
 import com.android.build.gradle.internal.process.GradleProcessExecutor;
@@ -686,7 +686,7 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
             super.configure(task);
 
             Installation installationOptions = creationConfig.getGlobal().getInstallationOptions();
-            TestOptionsDslInfo testOptions = creationConfig.getGlobal().getTestOptionsDslInfo();
+            AndroidTestOptionsDslInfo testOptions = creationConfig.getGlobal().getAndroidTestOptions();
 
             Project project = task.getProject();
             ProjectOptions projectOptions = creationConfig.getServices().getProjectOptions();

@@ -18,14 +18,13 @@ package com.android.build.gradle.internal.testing
 
 import com.android.build.api.dsl.Device
 import com.android.build.api.dsl.ManagedDevices
-import com.android.build.api.dsl.TestOptions
 import com.android.build.api.instrumentation.manageddevice.DeviceSetupConfigureAction
 import com.android.build.api.instrumentation.manageddevice.DeviceSetupInput
 import com.android.build.api.instrumentation.manageddevice.DeviceSetupTaskAction
 import com.android.build.api.instrumentation.manageddevice.DeviceTestRunConfigureAction
 import com.android.build.api.instrumentation.manageddevice.DeviceTestRunInput
 import com.android.build.api.instrumentation.manageddevice.DeviceTestRunTaskAction
-import com.android.build.gradle.internal.core.dsl.features.TestOptionsDslInfo
+import com.android.build.gradle.internal.core.dsl.features.AndroidTestOptionsDslInfo
 import com.google.common.truth.Truth.assertThat
 import java.lang.reflect.Proxy
 import org.junit.Assert.assertThrows
@@ -76,7 +75,7 @@ class ManagedDeviceRegistryTest {
     private lateinit var registry: ManagedDeviceRegistry
 
     @Mock
-    private lateinit var testOptions: TestOptionsDslInfo
+    private lateinit var testOptions: AndroidTestOptionsDslInfo
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private lateinit var managedDevicesBlock: ManagedDevices

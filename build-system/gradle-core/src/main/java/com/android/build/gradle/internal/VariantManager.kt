@@ -723,7 +723,7 @@ class VariantManager<
                     dslExtension.buildFeatures,
                     dslExtension.dataBinding,
                     dslServices.projectOptions,
-                    globalTaskCreationConfig.testOptionsDslInfo.isIncludeAndroidResources
+                    globalTaskCreationConfig.unitTestOptions.isIncludeAndroidResources
                 ),
                 variantDslInfo as UnitTestComponentDslInfo,
                 variantDependencies,

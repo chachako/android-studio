@@ -19,35 +19,20 @@ package com.android.build.gradle.internal.core.dsl.impl.features
 import com.android.build.api.dsl.EmulatorControl
 import com.android.build.api.dsl.EmulatorSnapshots
 import com.android.build.api.dsl.ManagedDevices
-import com.android.build.gradle.internal.core.dsl.features.TestOptionsDslInfo
+import com.android.build.gradle.internal.core.dsl.features.AndroidTestOptionsDslInfo
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnDeviceConfigurationImpl
-import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnJvmConfigurationImpl
 import com.android.builder.model.TestOptions
-import org.gradle.api.tasks.testing.Test
 
-internal class KmpTestOptionsDslInfoImpl(
+internal class KmpAndroidTestOptionsDslInfoImpl(
     private val extension: KotlinMultiplatformAndroidExtensionImpl,
-): TestOptionsDslInfo {
-
-    private val testOnJvmConfig: KotlinMultiplatformAndroidTestOnJvmConfigurationImpl?
-        get() = extension.androidTestOnJvmConfiguration
-
+): AndroidTestOptionsDslInfo {
     private val testOnDeviceConfig: KotlinMultiplatformAndroidTestOnDeviceConfigurationImpl?
         get() = extension.androidTestOnDeviceConfiguration
-
-    override val isIncludeAndroidResources: Boolean
-        get() = testOnJvmConfig?.isIncludeAndroidResources ?: false
-    override val isReturnDefaultValues: Boolean
-        get() = testOnJvmConfig?.isReturnDefaultValues ?: false
     override val animationsDisabled: Boolean
         get() = testOnDeviceConfig?.animationsDisabled ?: false
     override val execution: String
         get() = testOnDeviceConfig?.execution ?: TestOptions.Execution.HOST.name
-
-    override fun applyConfiguration(task: Test) {
-        testOnJvmConfig?.applyConfiguration(task)
-    }
 
     override val resultsDir: String?
         get() = null

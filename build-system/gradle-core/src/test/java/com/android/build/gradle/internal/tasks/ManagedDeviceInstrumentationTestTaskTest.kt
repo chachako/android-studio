@@ -283,8 +283,8 @@ class ManagedDeviceInstrumentationTestTaskTest {
         val emulatorControl = mock(EmulatorControl::class.java)
         // Needed for cast from api class to internal class
         val snapshots = mock(EmulatorSnapshots::class.java)
-        `when`(creationConfig.global.testOptionsDslInfo.emulatorSnapshots).thenReturn(snapshots)
-        `when`(creationConfig.global.testOptionsDslInfo.emulatorControl).thenReturn(emulatorControl)
+        `when`(creationConfig.global.androidTestOptions.emulatorSnapshots).thenReturn(snapshots)
+        `when`(creationConfig.global.androidTestOptions.emulatorControl).thenReturn(emulatorControl)
         // Needed to ensure that UTP is active
         `when`(
             creationConfig.services

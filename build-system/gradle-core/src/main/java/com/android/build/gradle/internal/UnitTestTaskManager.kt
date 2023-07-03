@@ -62,7 +62,7 @@ class UnitTestTaskManager(
     fun createTasks(unitTestCreationConfig: UnitTestCreationConfig) {
         val taskContainer = unitTestCreationConfig.taskContainer
         val testedVariant = unitTestCreationConfig.mainVariant
-        val includeAndroidResources = globalConfig.testOptionsDslInfo
+        val includeAndroidResources = globalConfig.unitTestOptions
             .isIncludeAndroidResources
         createAnchorTasks(unitTestCreationConfig)
 
