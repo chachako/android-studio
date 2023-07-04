@@ -21,10 +21,14 @@ import static java.io.File.separatorChar;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.ide.common.gradle.Component;
+import com.android.ide.common.gradle.Module;
 import com.android.ide.common.gradle.Version;
 import com.android.io.CancellableFileIo;
 import com.android.repository.io.FileOpUtils;
+import com.google.common.collect.ImmutableSortedSet;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
@@ -135,7 +139,12 @@ public class MavenRepositories {
 
     public static Path getArtifactIdDirectory(
             @NonNull Path repository, @NonNull String groupId, @NonNull String artifactId) {
-        return repository.resolve(groupId.replace('.', separatorChar) + separator + artifactId);
+        return getModuleDirectory(repository, new Module(groupId, artifactId));
+    }
+
+    public static Path getModuleDirectory(@NonNull Path repository, @NonNull Module module) {
+        return repository.resolve(
+                module.getGroup().replace('.', separatorChar) + separator + module.getName());
     }
 
     public static Path getArtifactDirectory(
@@ -144,5 +153,25 @@ public class MavenRepositories {
                 getArtifactIdDirectory(repository, component.getGroup(), component.getName());
 
         return artifactIdDirectory.resolve(component.getVersion().toString());
+    }
+
+    public static Set<Version> getAllVersions(@NonNull Path repository, @NonNull Module module) {
+        Path moduleDirectory = getModuleDirectory(repository, module);
+        if (!CancellableFileIo.isDirectory(moduleDirectory)) {
+            return Collections.emptySet();
+        }
+        Path[] versionDirs = FileOpUtils.listFiles(moduleDirectory);
+        ImmutableSortedSet.Builder<Version> builder = ImmutableSortedSet.naturalOrder();
+        for (Path dir : versionDirs) {
+            if (!CancellableFileIo.isDirectory(dir)) {
+                continue;
+            }
+            String name = dir.getFileName().toString();
+            if (name.isEmpty()) {
+                continue;
+            }
+            builder.add(Version.Companion.parse(name));
+        }
+        return builder.build();
     }
 }
