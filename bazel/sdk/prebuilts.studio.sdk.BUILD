@@ -64,6 +64,7 @@ filegroup(
         "//tools/adt/idea/layout-inspector:__pkg__",
         "//tools/adt/idea/old-agp-tests:__pkg__",
         "//tools/adt/idea/profilers-integration:__pkg__",
+        "//tools/adt/idea/project-system-gradle:__pkg__",
         "//tools/adt/idea/project-system-gradle-upgrade:__pkg__",
         "//tools/adt/idea/sync-perf-tests:__pkg__",
     ],
