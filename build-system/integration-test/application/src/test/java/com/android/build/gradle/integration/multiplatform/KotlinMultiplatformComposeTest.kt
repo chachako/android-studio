@@ -87,11 +87,9 @@ class KotlinMultiplatformComposeTest {
     /** Regression test for b/203594737. */
     @Test
     fun testLibraryBuilds() {
-        // Allow dependency resolution at configuration and disable configuration cache
-        // https://youtrack.jetbrains.com/issue/KT-49933 and https://youtrack.jetbrains.com/issue/KT-51940
+        // Disable configuration cache https://youtrack.jetbrains.com/issue/KT-49933
         project.executor()
             .with(BooleanOption.USE_ANDROID_X, true)
-            .with(BooleanOption.DISALLOW_DEPENDENCY_RESOLUTION_AT_CONFIGURATION, false)
             .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
             .run("assembleDebug")
     }

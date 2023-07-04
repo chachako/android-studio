@@ -54,14 +54,6 @@ internal fun GradleTestProject.publishLibs(
     )
 
     if (publishKmpSecondLib) {
-        // We can't publish android libraries with JVM target enabled, the issue should be fixed
-        // with kotlin 1.9.0 (https://youtrack.jetbrains.com/issue/KT-51940).
-        TestFileUtils.searchAndReplace(
-            getSubproject("kmpSecondLib").ktsBuildFile,
-            "jvm()",
-            ""
-        )
-
         TestFileUtils.searchAndReplace(
             getSubproject("kmpFirstLib").ktsBuildFile,
             "project(\":kmpSecondLib\")",

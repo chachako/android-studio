@@ -23,7 +23,6 @@ import com.android.build.gradle.integration.common.fixture.testprojects.PluginTy
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.setUpHelloWorld
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
-import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.TestUtils
 import org.junit.Rule
 import org.junit.Test
@@ -65,10 +64,8 @@ class KotlinMultiplatformPublishingTest {
 
     @Test
     fun testKotlinMultiplatform() {
-        // Allow dependency resolution at configuration and disable configuration cache
-        // https://youtrack.jetbrains.com/issue/KT-49933 and https://youtrack.jetbrains.com/issue/KT-51940
+        // Disable configuration cache https://youtrack.jetbrains.com/issue/KT-49933
         project.executor()
-            .with(BooleanOption.DISALLOW_DEPENDENCY_RESOLUTION_AT_CONFIGURATION, false)
             .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
             .run("publishAllPublicationsToBuildDirRepository")
 
