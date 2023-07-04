@@ -39,6 +39,21 @@ class KotlinMultiplatformAndroidDexingTest {
 
     @Before
     fun setUp() {
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            """
+                withAndroidTestOnDevice(compilationName = "instrumentedTest")
+            """.trimIndent(),
+            """
+                withAndroidTestOnDevice(compilationName = "instrumentedTest") {
+                    multidex.enable = true
+                    multidex.mainDexKeepRules.files.add (
+                        File(project.projectDir, "dex-rules.pro")
+                    )
+                }
+            """.trimIndent()
+        )
+
         TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """

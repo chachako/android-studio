@@ -35,6 +35,8 @@ abstract class KotlinMultiplatformAndroidTestOnJvmConfigurationImpl @Inject cons
 
     override var isReturnDefaultValues: Boolean = false
     override var isIncludeAndroidResources: Boolean = false
+    override var enableCoverage: Boolean = false
+
     override fun all(configAction: (Test) -> Unit) {
         testTasks.all(configAction)
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
-package com.android.build.api.variant.impl
+package com.android.build.api.variant
 
 import com.android.build.api.artifact.Artifacts
-import com.android.build.api.variant.GeneratesAar
-import com.android.build.api.variant.HasAndroidTest
-import com.android.build.api.variant.HasUnitTest
-import com.android.build.api.variant.Instrumentation
-import com.android.build.api.variant.Sources
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Provider
 
 /**
- * Temporary interface to develop the kotlin multiplatform android plugin.
- *
- * TODO(b/267309622): Move to gradle-api
+ * Properties for the main Variant of a kotlin multiplatform android library
  */
 interface KotlinMultiplatformAndroidVariant: GeneratesAar,
     HasAndroidTest,

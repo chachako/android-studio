@@ -45,6 +45,7 @@ abstract class KotlinMultiplatformAndroidTestOnDeviceConfigurationImpl @Inject c
     override var sourceSetTree: String? = null
 
     override var animationsDisabled: Boolean = false
+    override var enableCoverage: Boolean = false
 
     override var execution: String
         get() = Verify.verifyNotNull(

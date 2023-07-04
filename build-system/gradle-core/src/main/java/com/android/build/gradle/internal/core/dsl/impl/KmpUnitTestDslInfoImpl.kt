@@ -17,12 +17,10 @@
 package com.android.build.gradle.internal.core.dsl.impl
 
 import com.android.build.api.component.impl.ComponentIdentityImpl
-import com.android.build.api.variant.impl.KmpPredefinedAndroidCompilation
+import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.KmpVariantDslInfo
 import com.android.build.gradle.internal.core.dsl.UnitTestComponentDslInfo
-import com.android.build.gradle.internal.core.dsl.features.ManifestPlaceholdersDslInfo
-import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.getNamePrefixedWithTarget
 import com.android.build.gradle.internal.services.VariantServices
@@ -37,10 +35,12 @@ class KmpUnitTestDslInfoImpl(
     extension, services
 ), UnitTestComponentDslInfo, KmpComponentDslInfo {
 
+    private val testOnJvmConfig
+        get() = (extension as KotlinMultiplatformAndroidExtensionImpl).androidTestOnJvmConfiguration!!
+
     override val componentType = ComponentTypeImpl.UNIT_TEST
     override val componentIdentity = ComponentIdentityImpl(
-        (extension as KotlinMultiplatformAndroidExtensionImpl)
-            .androidTestOnJvmConfiguration!!.compilationName.getNamePrefixedWithTarget()
+        testOnJvmConfig.compilationName.getNamePrefixedWithTarget()
     )
 
     override val namespace: Provider<String> by lazy {
@@ -52,5 +52,5 @@ class KmpUnitTestDslInfoImpl(
     }
 
     override val isUnitTestCoverageEnabled: Boolean
-        get() = extension.enableUnitTestCoverage
+        get() = testOnJvmConfig.enableCoverage
 }

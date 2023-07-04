@@ -8,13 +8,7 @@ plugins {
 kotlin {
   androidLibrary {
     withAndroidTestOnJvm(compilationName = "unitTest")
-    withAndroidTestOnDevice(compilationName = "instrumentedTest") {
-        instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        multidex.enable = true
-        multidex.mainDexKeepRules.files.add (
-            File(project.projectDir, "dex-rules.pro")
-        )
-    }
+    withAndroidTestOnDevice(compilationName = "instrumentedTest")
 
     sourceSets.getByName("androidMain") {
       dependencies {

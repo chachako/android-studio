@@ -82,4 +82,15 @@ interface KotlinMultiplatformAndroidTestOnJvmConfiguration:
      */
     @Incubating
     fun all(configAction: (Test) -> Unit)
+
+    /**
+     * Specifies unit test code coverage data collection by configuring the JacocoPlugin.
+     *
+     * When enabled, the Jacoco plugin is applied and coverage data is collected
+     * by the Jacoco plugin. This can avoid unwanted build time instrumentation required to collect
+     * coverage data from other test types such as connected tests.
+     */
+    @get:Incubating
+    @set:Incubating
+    var enableCoverage: Boolean
 }

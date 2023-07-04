@@ -20,8 +20,8 @@ import com.android.build.api.artifact.Artifacts
 import com.android.build.api.variant.AarMetadata
 import com.android.build.api.variant.AndroidTest
 import com.android.build.api.variant.Instrumentation
+import com.android.build.api.variant.KotlinMultiplatformAndroidVariant
 import com.android.build.api.variant.Sources
-import com.android.build.api.variant.impl.KotlinMultiplatformAndroidVariant
 import com.android.tools.build.gradle.internal.profile.VariantPropertiesMethodType
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.artifacts.Configuration

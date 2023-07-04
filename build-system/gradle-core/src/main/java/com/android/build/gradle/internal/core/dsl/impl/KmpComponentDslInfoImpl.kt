@@ -16,9 +16,9 @@
 
 package com.android.build.gradle.internal.core.dsl.impl
 
+import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.api.variant.impl.MutableAndroidVersion
 import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
-import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.builder.core.AbstractProductFlavor

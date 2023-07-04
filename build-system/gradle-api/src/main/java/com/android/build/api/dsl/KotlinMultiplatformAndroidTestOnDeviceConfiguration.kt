@@ -88,6 +88,17 @@ interface KotlinMultiplatformAndroidTestOnDeviceConfiguration:
     var animationsDisabled: Boolean
 
     /**
+     * Specifies code coverage is enabled for module tests of type AndroidTest.
+     *
+     * If enabled, prepares module class files for code coverage collection such as instrumenting
+     * dependent library classes and module classes. This allows for code coverage reports to be
+     * generated.
+     */
+    @get:Incubating
+    @set:Incubating
+    var enableCoverage: Boolean
+
+    /**
      * Configures Gradle Managed Devices for use in testing with the Unified test platform.
      */
     @get:Incubating

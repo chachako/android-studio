@@ -27,6 +27,7 @@ import com.android.build.api.variant.AarMetadata
 import com.android.build.api.variant.CanMinifyAndroidResourcesBuilder
 import com.android.build.api.variant.CanMinifyCodeBuilder
 import com.android.build.api.variant.Component
+import com.android.build.api.variant.KotlinMultiplatformAndroidVariant
 import com.android.build.api.variant.Packaging
 import com.android.build.gradle.internal.KotlinMultiplatformCompileOptionsImpl
 import com.android.build.gradle.internal.component.ComponentCreationConfig

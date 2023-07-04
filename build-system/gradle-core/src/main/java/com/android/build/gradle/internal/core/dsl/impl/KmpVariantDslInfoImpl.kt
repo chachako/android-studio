@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.core.dsl.impl
 
 import com.android.build.api.component.impl.ComponentIdentityImpl
 import com.android.build.api.dsl.AarMetadata
+import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.api.dsl.Lint
 import com.android.build.api.dsl.Packaging
 import com.android.build.api.dsl.TestFixtures
@@ -35,7 +36,6 @@ import com.android.build.gradle.internal.core.dsl.features.OptimizationDslInfo
 import com.android.build.gradle.internal.core.dsl.features.RenderscriptDslInfo
 import com.android.build.gradle.internal.core.dsl.features.ShadersDslInfo
 import com.android.build.gradle.internal.dsl.LibraryKeepRulesImpl
-import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.gradle.internal.dsl.KmpOptimizationImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.getNamePrefixedWithTarget
@@ -76,10 +76,10 @@ class KmpVariantDslInfoImpl(
     }
 
     override val maxSdkVersion: Int?
-        get() = extension.maxSdkVersion
+        get() = extension.maxSdk
 
     override val packaging: Packaging
-        get() = extension.packagingOptions
+        get() = extension.packaging
 
     override val testInstrumentationRunnerArguments: Map<String, String>
         get() = (extension as KotlinMultiplatformAndroidExtensionImpl).androidTestOnDeviceConfiguration

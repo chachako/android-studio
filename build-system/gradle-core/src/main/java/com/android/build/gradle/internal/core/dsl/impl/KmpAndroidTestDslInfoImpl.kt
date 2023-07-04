@@ -17,8 +17,8 @@
 package com.android.build.gradle.internal.core.dsl.impl
 
 import com.android.build.api.component.impl.ComponentIdentityImpl
+import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.api.variant.ResValue
-import com.android.build.api.variant.impl.KmpPredefinedAndroidCompilation
 import com.android.build.gradle.internal.core.dsl.AndroidTestComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.KmpVariantDslInfo
@@ -30,7 +30,6 @@ import com.android.build.gradle.internal.core.dsl.features.OptimizationDslInfo
 import com.android.build.gradle.internal.core.dsl.features.RenderscriptDslInfo
 import com.android.build.gradle.internal.core.dsl.features.ShadersDslInfo
 import com.android.build.gradle.internal.dsl.AaptOptions
-import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.dsl.SigningConfig
 import com.android.build.gradle.internal.manifest.ManifestDataProvider
@@ -58,12 +57,11 @@ class KmpAndroidTestDslInfoImpl(
 ), AndroidTestComponentDslInfo, KmpComponentDslInfo {
 
     private val testOnDeviceConfig
-        get() = (extension as KotlinMultiplatformAndroidExtensionImpl).androidTestOnDeviceConfiguration
-
+        get() = (extension as KotlinMultiplatformAndroidExtensionImpl).androidTestOnDeviceConfiguration!!
 
     override val componentType = ComponentTypeImpl.ANDROID_TEST
     override val componentIdentity = ComponentIdentityImpl(
-        testOnDeviceConfig!!.compilationName.getNamePrefixedWithTarget()
+        testOnDeviceConfig.compilationName.getNamePrefixedWithTarget()
     )
 
     override val namespace: Provider<String> by lazy {
@@ -120,18 +118,18 @@ class KmpAndroidTestDslInfoImpl(
 
     override val dexingDslInfo = object: DexingDslInfo {
         override val isMultiDexEnabled =
-            testOnDeviceConfig?.multidex?.enable ?: false
+            testOnDeviceConfig.multidex.enable
         override val multiDexKeepProguard: File? =
-            testOnDeviceConfig?.multidex?.mainDexKeepRules?.files?.getOrNull(0)
+            testOnDeviceConfig.multidex.mainDexKeepRules.files.getOrNull(0)
         override val multiDexKeepFile: File? = null
     }
 
     override val isAndroidTestCoverageEnabled: Boolean
-        get() = extension.enableInstrumentedTestCoverage
+        get() = testOnDeviceConfig.enableCoverage
 
     override fun getInstrumentationRunner(dexingType: DexingType): Provider<String> {
         // first check whether the DSL has the info
-        return testOnDeviceConfig!!.instrumentationRunner?.let {
+        return testOnDeviceConfig.instrumentationRunner?.let {
             services.provider { it }
         } // else return the value from the Manifest
             ?: dataProvider.manifestData.map {
@@ -145,11 +143,11 @@ class KmpAndroidTestDslInfoImpl(
     }
 
     override val instrumentationRunnerArguments: Map<String, String>
-        get() = testOnDeviceConfig!!.instrumentationRunnerArguments
+        get() = testOnDeviceConfig.instrumentationRunnerArguments
     override val handleProfiling: Provider<Boolean>
         get() =
             // first check whether the DSL has the info
-            testOnDeviceConfig!!.handleProfiling?.let {
+            testOnDeviceConfig.handleProfiling?.let {
                 services.provider { it }
             } // else return the value from the Manifest
                 ?: dataProvider.manifestData.map { it.handleProfiling ?: DEFAULT_HANDLE_PROFILING }
@@ -157,7 +155,7 @@ class KmpAndroidTestDslInfoImpl(
     override val functionalTest: Provider<Boolean>
         get() =
             // first check whether the DSL has the info
-            testOnDeviceConfig!!.functionalTest?.let {
+            testOnDeviceConfig.functionalTest?.let {
                 services.provider { it }
             } // else return the value from the Manifest
                 ?: dataProvider.manifestData.map { it.functionalTest ?: DEFAULT_FUNCTIONAL_TEST }

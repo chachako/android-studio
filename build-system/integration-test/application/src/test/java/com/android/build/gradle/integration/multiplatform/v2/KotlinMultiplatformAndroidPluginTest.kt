@@ -69,6 +69,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             """
                 withAndroidTestOnJvm(compilationName = "unitTest") {
                     sourceSetTree = "unitTest"
+                    enableCoverage = true
                 }
             """.trimIndent()
         )
@@ -76,10 +77,6 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                kotlin.androidLibrary {
-                    enableUnitTestCoverage = true
-                }
-
                 kotlin.sourceSets.getByName("androidUnitTest") {
                     dependencies {
                         implementation("junit:junit:4.13.2")
@@ -108,11 +105,14 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
 
     @Test
     fun testRunningUnitTests() {
-        TestFileUtils.appendToFile(
+        TestFileUtils.searchAndReplace(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                kotlin.androidLibrary {
-                    enableUnitTestCoverage = true
+                withAndroidTestOnJvm(compilationName = "unitTest")
+            """.trimIndent(),
+            """
+                withAndroidTestOnJvm(compilationName = "unitTest") {
+                    enableCoverage = true
                 }
             """.trimIndent()
         )
@@ -248,7 +248,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
                 kotlin.androidLibrary {
-                    packagingOptions.resources.excludes.addAll(listOf(
+                    packaging.resources.excludes.addAll(listOf(
                         "**/*.java",
                         "junit/**",
                         "LICENSE-junit.txt"

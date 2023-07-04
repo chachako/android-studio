@@ -44,13 +44,21 @@ class KotlinMultiplatformAndroidConnectedTest {
 
     @Before
     fun setUp() {
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            """
+               withAndroidTestOnDevice(compilationName = "instrumentedTest")
+            """.trimIndent(),
+            """
+                withAndroidTestOnDevice(compilationName = "instrumentedTest") {
+                    instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+                    enableCoverage = true
+                }
+            """.trimIndent()
+        )
         TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                kotlin.androidLibrary {
-                    enableInstrumentedTestCoverage = true
-                }
-
                 kotlin.sourceSets.getByName("androidInstrumentedTest").dependencies {
                     implementation("androidx.core:core-ktx:1.1.0")
                     implementation("androidx.test.espresso:espresso-core:3.2.0")

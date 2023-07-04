@@ -23,6 +23,7 @@ import com.android.build.api.attributes.ProductFlavorAttr
 import com.android.build.api.component.analytics.AnalyticsEnabledKotlinMultiplatformAndroidVariant
 import com.android.build.api.component.impl.KmpAndroidTestImpl
 import com.android.build.api.component.impl.KmpUnitTestImpl
+import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.api.dsl.SettingsExtension
 import com.android.build.api.variant.impl.KmpPredefinedAndroidCompilation
 import com.android.build.api.variant.impl.KmpVariantImpl
@@ -46,7 +47,6 @@ import com.android.build.gradle.internal.dependency.ModelArtifactCompatibilityRu
 import com.android.build.gradle.internal.dependency.SingleVariantBuildTypeRule
 import com.android.build.gradle.internal.dependency.SingleVariantProductFlavorRule
 import com.android.build.gradle.internal.dependency.VariantDependencies
-import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfigurationImpl
 import com.android.build.gradle.internal.dsl.decorator.androidPluginDslDecorator
