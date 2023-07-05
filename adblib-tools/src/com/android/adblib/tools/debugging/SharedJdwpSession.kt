@@ -20,6 +20,7 @@ import com.android.adblib.AdbSession
 import com.android.adblib.AutoShutdown
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
+import com.android.adblib.getOrPutSynchronized
 import com.android.adblib.tools.debugging.SharedJdwpSessionFilter.FilterId
 import com.android.adblib.tools.debugging.impl.SharedJdwpSessionImpl
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
@@ -134,29 +135,20 @@ interface SharedJdwpSession : AutoShutdown {
     suspend fun addReplayPacket(packet: JdwpPacketView)
 
     companion object {
-        private val sessionInitKey = CoroutineScopeCache.Key<SessionInit>(
-            "SharedJdwpSession.sessionInit")
 
-        private class SessionInit(private val session: AdbSession) {
-            // Use "by lazy" to ensure the code is run only once
-            private val lazyInit by lazy {
-                session.addSharedJdwpSessionFilterFactory(NoDdmsPacketFilterFactory())
-            }
-
-            fun initOnceOnly() {
-                lazyInit
-            }
-        }
+        private val addSharedJdwpSessionFilterFactoryKey = CoroutineScopeCache.Key<Unit>(
+            "SharedJdwpSession.addSharedJdwpSessionFilterFactory"
+        )
 
         internal fun create(jdwpSession: JdwpSession, pid: Int): SharedJdwpSession {
             // Add the DdmsPacketFilterFactory to the list of active filters of the AdbSession
             // (in a very round-about way to make sure the filter is added only once per
             // AdbSession instance).
             //TODO: Make this configurable
-            jdwpSession.device.session.cache.getOrPut(sessionInitKey) {
-                SessionInit(jdwpSession.device.session)
-            }.initOnceOnly()
-
+            val session = jdwpSession.device.session
+            session.cache.getOrPutSynchronized(addSharedJdwpSessionFilterFactoryKey) {
+                session.addSharedJdwpSessionFilterFactory(NoDdmsPacketFilterFactory())
+            }
             return SharedJdwpSessionImpl(jdwpSession, pid)
         }
     }
