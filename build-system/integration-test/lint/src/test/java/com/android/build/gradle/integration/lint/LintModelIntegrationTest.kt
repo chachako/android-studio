@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.truth.Truth.assertThat
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
@@ -222,4 +223,25 @@ class LintModelIntegrationTest {
         project.executor().run(":app:tasks")
     }
 
+    @Test
+    @Ignore("b/287470576")
+    fun checkLintOutputPrioritizeTargetSdkParameter() {
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").buildFile,
+            """
+                android {
+                    defaultConfig {
+                        targetSdk 2
+                    }
+                    lint {
+                        targetSdk 1
+                    }
+                }
+            """.trimIndent()
+        )
+        project.executor().expectFailure().run(":app:clean", ":app:lintDebug")
+        val lintResults = project.file("app/build/reports/lint-results.txt")
+        assertThat(lintResults).contains("10 errors, 4 warnings")
+        assertThat(lintResults).contains("targetSdk 1")
+    }
 }
