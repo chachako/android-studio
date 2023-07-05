@@ -52,12 +52,14 @@ import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UFile
+import org.jetbrains.uast.UForEachExpression
 import org.jetbrains.uast.ULocalVariable
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UPostfixExpression
 import org.jetbrains.uast.UPrefixExpression
 import org.jetbrains.uast.UReferenceExpression
 import org.jetbrains.uast.UastCallKind
+import org.jetbrains.uast.skipParenthesizedExprDown
 import org.jetbrains.uast.toUElement
 import org.jetbrains.uast.toUElementOfType
 import org.jetbrains.uast.util.isAssignment
@@ -2125,6 +2127,41 @@ class UastTest : TestCase() {
             }
 
             return super.visitCallExpression(node)
+          }
+        }
+      )
+    }
+  }
+
+  fun testKT59564() {
+    // Regression test from KT-59564
+    val source =
+      kotlin(
+          """
+            fun test(a: Int, b: Int) {
+                for (i in a..<b step 1) {
+                    println(i)
+                }
+            }
+            """
+        )
+        .indented()
+
+    check(source) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitForEachExpression(node: UForEachExpression): Boolean {
+            when (val exp = node.iteratedValue.skipParenthesizedExprDown()) {
+              is UBinaryExpression -> {
+                assertEquals("kotlin.ranges.IntProgression", exp.getExpressionType()?.canonicalText)
+                assertEquals(
+                  "kotlin.ranges.IntRange",
+                  exp.leftOperand.getExpressionType()?.canonicalText
+                )
+              }
+            }
+
+            return super.visitForEachExpression(node)
           }
         }
       )
