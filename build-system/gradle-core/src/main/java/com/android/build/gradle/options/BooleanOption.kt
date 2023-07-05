@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.options
 
+import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.BUILD_CONFIG_GLOBAL_PROPERTY
 import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.VERSION_8_2
 import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.VERSION_9_0
 import com.android.build.gradle.options.Version.VERSION_3_5
@@ -68,7 +69,6 @@ enum class BooleanOption(
     ENABLE_STABLE_IDS(PROPERTY_BUILD_WITH_STABLE_IDS, false, ApiStage.Stable),
 
     // Features' default values
-    BUILD_FEATURE_BUILDCONFIG("android.defaults.buildfeatures.buildconfig", false, ApiStage.Stable),
     BUILD_FEATURE_DATABINDING("android.defaults.buildfeatures.databinding", false, ApiStage.Stable),
     BUILD_FEATURE_RESVALUES("android.defaults.buildfeatures.resvalues", true, ApiStage.Stable),
     BUILD_FEATURE_SHADERS("android.defaults.buildfeatures.shaders", true, ApiStage.Stable),
@@ -296,6 +296,12 @@ enum class BooleanOption(
         false,
         ApiStage.Deprecated(VERSION_9_0)
     ),
+
+    BUILD_FEATURE_BUILDCONFIG(
+        "android.defaults.buildfeatures.buildconfig",
+        false,
+        ApiStage.Deprecated(BUILD_CONFIG_GLOBAL_PROPERTY))
+    ,
 
     /* -----------------
      * ENFORCED FEATURES
