@@ -20,6 +20,7 @@ import com.android.adblib.ByteBufferAdbOutputChannel
 import com.android.adblib.skipRemaining
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.waitNonNull
+import com.android.adblib.tools.AdbLibToolsProperties
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
@@ -109,10 +110,48 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
     }
 
     @Test
-    fun receivePacketMakesPreviousPacketPayloadInvalid() = runBlockingWithTimeout {
+    fun receiveSmallPacketDoesNotMakePreviousPacketPayloadInvalid() = runBlockingWithTimeout {
         val fakeDevice = addFakeDevice(fakeAdb, 30)
         fakeDevice.startClient(10, 0, "a.b.c", false)
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
+        // Override the "large" packet threshold to be large, so that all packets
+        // are considered "small"
+        setHostPropertyValue(
+            session.host,
+            AdbLibToolsProperties.SHARED_JDWP_PACKET_IN_MEMORY_MAX_PAYLOAD_LENGTH,
+            8_192
+        )
+
+        // Act
+        val jdwpSession = registerCloseable(JdwpSession.openJdwpSession(connectedDevice, 10, 100))
+
+        val sendPacket = createHeloDdmsPacket(jdwpSession)
+        jdwpSession.sendPacket(sendPacket)
+
+        val reply = waitForReplyPacket(jdwpSession, sendPacket)
+
+        sendPacket.id = jdwpSession.nextPacketId()
+        jdwpSession.sendPacket(sendPacket)
+
+        // Read another packet to invalidate the previous one
+        waitForReplyPacket(jdwpSession, sendPacket)
+
+        // Assert: with payload should succeed
+        reply.withPayload {  }
+    }
+
+    @Test
+    fun receiveLargePacketMakesPreviousPacketPayloadInvalid() = runBlockingWithTimeout {
+        val fakeDevice = addFakeDevice(fakeAdb, 30)
+        fakeDevice.startClient(10, 0, "a.b.c", false)
+        val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
+        // Override the "large" packet threshold to be very small, so that all packets
+        // are considered "large"
+        setHostPropertyValue(
+            session.host,
+            AdbLibToolsProperties.SHARED_JDWP_PACKET_IN_MEMORY_MAX_PAYLOAD_LENGTH,
+            2
+        )
 
         // Act
         val jdwpSession = registerCloseable(JdwpSession.openJdwpSession(connectedDevice, 10, 100))

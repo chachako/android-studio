@@ -17,7 +17,6 @@ package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.AdbChannel
 import com.android.adblib.AdbInputChannel
-import com.android.adblib.AdbInputChannelSlice
 import com.android.adblib.AdbLogger
 import com.android.adblib.AdbOutputChannel
 import com.android.adblib.AdbSession
@@ -29,11 +28,11 @@ import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_BYTE_ORDER
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_HEADER_LENGTH
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
-import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.impl.EphemeralJdwpPacket
+import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
+import com.android.adblib.tools.debugging.packets.impl.PayloadProviderFactory
 import com.android.adblib.tools.debugging.packets.impl.parseHeader
-import com.android.adblib.tools.debugging.packets.payloadLength
 import com.android.adblib.tools.debugging.packets.writeToChannel
 import com.android.adblib.utils.ResizableBuffer
 import com.android.adblib.withPrefix
@@ -63,7 +62,7 @@ internal class JdwpSessionImpl(
 
     private val sender = Sender(outputChannel)
 
-    private val receiver = Receiver(inputChannel)
+    private val receiver = Receiver(session, inputChannel)
 
     private val sendMutex = Mutex()
 
@@ -247,13 +246,18 @@ internal class JdwpSessionImpl(
         }
     }
 
-    class Receiver(private val channel: AdbInputChannel) {
+    class Receiver(
+        session: AdbSession,
+        private val channel: AdbInputChannel
+    ) {
 
         /**
          * The [ResizableBuffer] we re-use during each call to [receivePacket] to temporarily
          * store data read from [channel].
          */
         private val workBuffer = ResizableBuffer().order(PACKET_BYTE_ORDER)
+
+        private val payloadProviderFactory = PayloadProviderFactory(session)
 
         /**
          * The [MutableJdwpPacket] we re-use during each call to [receivePacket] to temporarily
@@ -289,10 +293,10 @@ internal class JdwpSessionImpl(
             workJdwpPacket.parseHeader(workBuffer.afterChannelRead())
 
             // Wrap payload
-            val payload = AdbInputChannelSlice(channel, workJdwpPacket.payloadLength)
+            val payloadProvider = payloadProviderFactory.create(workJdwpPacket, channel)
 
             // Return new JDWP packet
-            return EphemeralJdwpPacket.fromPacket(workJdwpPacket, payload)
+            return EphemeralJdwpPacket.fromPacket(workJdwpPacket, payloadProvider)
         }
 
     }
