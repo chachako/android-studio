@@ -158,7 +158,8 @@ class KotlinMultiplatformAndroidMinificationTest {
                 "Lcom/example/kmpfirstlib/KmpAndroidFirstLibClass;",
                 "Lcom/example/kmpfirstlib/KmpCommonFirstLibClass;",
                 "Lcom/example/kmpsecondlib/KmpAndroidSecondLibClass;",
-                "Lcom/example/kmpsecondlib/KmpCommonSecondLibClass;",
+                "Lcom/example/kmplibraryplugin/KmpLibraryPluginAndroidClass;",
+                "Lcom/example/kmplibraryplugin/KmpLibraryPluginCommonClass;",
                 "Lcom/example/kmpjvmonly/KmpCommonJvmOnlyLibClass;",
                 "Lcom/example/kmpjvmonly/KmpJvmOnlyLibClass;",
                 "Lkotlin/jvm/internal/Intrinsics;"
@@ -186,7 +187,8 @@ class KotlinMultiplatformAndroidMinificationTest {
                 "Lcom/example/kmpfirstlib/KmpAndroidFirstLibClass;",
                 "Lcom/example/kmpfirstlib/KmpCommonFirstLibClass;",
                 "Lcom/example/kmpsecondlib/KmpAndroidSecondLibClass;",
-                "Lcom/example/kmpsecondlib/KmpCommonSecondLibClass;"
+                "Lcom/example/kmplibraryplugin/KmpLibraryPluginAndroidClass;",
+                "Lcom/example/kmplibraryplugin/KmpLibraryPluginCommonClass;",
             )
         }
     }

@@ -38,7 +38,8 @@ internal fun GradleTestProject.publishLibs(
     publishAndroidLib: Boolean = true,
     publishKmpJvmOnly: Boolean = true,
     publishKmpFirstLib: Boolean = true,
-    publishKmpSecondLib: Boolean = true
+    publishKmpSecondLib: Boolean = true,
+    publishKmpLibraryPlugin: Boolean = true
 ) {
     TestFileUtils.appendToFile(
         settingsFile,
@@ -58,6 +59,29 @@ internal fun GradleTestProject.publishLibs(
             getSubproject("kmpFirstLib").ktsBuildFile,
             "project(\":kmpSecondLib\")",
             "\"com.example:kmpSecondLib-android:1.0\""
+        )
+    }
+
+    if (publishKmpLibraryPlugin) {
+        TestFileUtils.searchAndReplace(
+            getSubproject("kmpSecondLib").ktsBuildFile,
+            "project(\":kmpLibraryPlugin\")",
+            "\"com.example:kmpLibraryPlugin:1.0\""
+        )
+
+        // TODO(b/290012931): This is a work around gradle matching confusion when trying to select between sources or
+        //  aar lib
+        TestFileUtils.appendToFile(
+            getSubproject("kmpLibraryPlugin").ktsBuildFile,
+            """
+                afterEvaluate {
+                  configurations {
+                    getByName("debugSourcesElements").attributes {
+                      attribute(Usage.USAGE_ATTRIBUTE, project.objects.named(Usage.JAVA_API))
+                    }
+                  }
+                }
+            """.trimIndent()
         )
     }
 
@@ -88,6 +112,7 @@ internal fun GradleTestProject.publishLibs(
     val projectsToPublish = listOfNotNull(
         "androidLib".takeIf { publishAndroidLib },
         "kmpJvmOnly".takeIf { publishKmpJvmOnly },
+        "kmpLibraryPlugin".takeIf { publishKmpLibraryPlugin },
         "kmpSecondLib".takeIf { publishKmpSecondLib },
         "kmpFirstLib".takeIf { publishKmpFirstLib },
     )
@@ -135,6 +160,17 @@ internal fun GradleTestProject.publishLibs(
                       }
                     }
                   }
+                }
+            """.trimIndent()
+        )
+    }
+
+    if (publishKmpLibraryPlugin) {
+        TestFileUtils.appendToFile(
+            getSubproject("kmpLibraryPlugin").ktsBuildFile,
+            """
+                kotlin {
+                    androidTarget { publishAllLibraryVariants() }
                 }
             """.trimIndent()
         )

@@ -188,6 +188,13 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
 
             // transitive deps are packaged
             assertThatApk(apk).hasClass("Lcom/example/androidlib/AndroidLib;")
+
+            assertThatApk(apk).hasClass("Lcom/example/kmpjvmonly/KmpJvmOnlyLibClass;")
+            assertThatApk(apk).hasClass("Lcom/example/kmpjvmonly/KmpCommonJvmOnlyLibClass;")
+
+            assertThatApk(apk).hasClass("Lcom/example/kmplibraryplugin/KmpLibraryPluginAndroidClass;")
+            assertThatApk(apk).hasClass("Lcom/example/kmplibraryplugin/KmpLibraryPluginCommonClass;")
+
             assertThatApk(apk).hasClass("Lcom/example/app/AndroidApp;")
 
             val manifestContents = ApkSubject.getManifestContent(apk.file).joinToString("\n")
@@ -289,6 +296,14 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             // classes from library dependencies are packaged
             assertThatApk(apk).hasClass("Lcom/example/androidlib/AndroidLib;")
             assertThatApk(apk).hasClass("Landroidx/test/core/app/ActivityScenario;")
+
+            // classes from jvm only project are packaged
+            assertThatApk(apk).hasClass("Lcom/example/kmpjvmonly/KmpJvmOnlyLibClass;")
+            assertThatApk(apk).hasClass("Lcom/example/kmpjvmonly/KmpCommonJvmOnlyLibClass;")
+
+            // classes from kmp + library plugin are packaged
+            assertThatApk(apk).hasClass("Lcom/example/kmplibraryplugin/KmpLibraryPluginAndroidClass;")
+            assertThatApk(apk).hasClass("Lcom/example/kmplibraryplugin/KmpLibraryPluginCommonClass;")
 
             // resources from dependencies are packaged
             assertThatApk(apk).contains("resources.arsc")

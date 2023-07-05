@@ -3,6 +3,6 @@ package com.example.kmpsecondlib
 class KmpAndroidSecondLibClass {
 
     fun callCommonLibClass(): String {
-        return KmpCommonSecondLibClass().get()
+        return com.example.kmplibraryplugin.KmpLibraryPluginAndroidClass().callCommonLibClass()
     }
 }

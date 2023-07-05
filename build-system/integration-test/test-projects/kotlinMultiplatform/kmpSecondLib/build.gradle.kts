@@ -5,11 +5,23 @@ plugins {
 }
 
 kotlin {
+  sourceSets {
+    val commonMain by getting {
+      dependencies {
+        implementation(project(":kmpLibraryPlugin"))
+      }
+    }
+  }
+
   jvm()
 
   targets.withType(com.android.build.api.variant.impl.KotlinMultiplatformAndroidTarget::class.java) {
     namespace = "com.example.kmpsecondlib"
     compileSdk = property("latestCompileSdk") as Int
     minSdk = 22
+
+    dependencyVariantSelection {
+      buildTypes.add("debug")
+    }
   }
 }

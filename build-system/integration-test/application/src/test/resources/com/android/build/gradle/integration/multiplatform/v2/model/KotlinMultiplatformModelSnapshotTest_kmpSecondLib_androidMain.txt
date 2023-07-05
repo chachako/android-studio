@@ -74,5 +74,45 @@
         "{LOCAL_REPO}/org/jetbrains/annotations/13.0/annotations-13.0-javadoc.jar"
       ]
     }
+  },
+  {
+    "type": "Regular",
+    "coordinates": {
+      "buildId": ":",
+      "projectPath": ":kmpLibraryPlugin",
+      "projectName": "kmpLibraryPlugin"
+    },
+    "extras": {
+      "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
+        "library": {
+          "type": "PROJECT",
+          "projectInfo": {
+            "componentInfo": {
+              "buildType": "debug",
+              "productFlavors": {},
+              "attributes": {
+                "com.android.build.api.attributes.AgpVersionAttr": "{AGP_Version}",
+                "com.android.build.gradle.internal.attributes.VariantAttr": "debug",
+                "org.gradle.category": "library",
+                "org.gradle.jvm.environment": "android",
+                "org.gradle.libraryelements": "jar",
+                "org.gradle.usage": "java-api",
+                "org.jetbrains.kotlin.platform.type": "androidJvm"
+              },
+              "capabilities": [
+                "Kotlin Multiplatform:kmpLibraryPlugin:unspecified"
+              ],
+              "isTestFixtures": false
+            },
+            "buildId": ":",
+            "projectPath": ":kmpLibraryPlugin"
+          },
+          "lintJar": {
+            "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpLibraryPlugin/build/intermediates/lint_publish_jar/global/lint.jar"
+          }
+        }
+      },
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
+    }
   }
 ]

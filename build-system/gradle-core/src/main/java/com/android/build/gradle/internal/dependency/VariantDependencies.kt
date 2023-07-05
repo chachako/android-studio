@@ -67,6 +67,7 @@ import org.gradle.api.attributes.Usage
 import org.gradle.api.attributes.java.TargetJvmEnvironment
 import org.gradle.api.file.FileCollection
 import org.gradle.api.specs.Spec
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import java.io.File
 import java.util.concurrent.Callable
 import java.util.function.Predicate
@@ -396,20 +397,33 @@ class VariantDependencies internal constructor(
             apiPublication: Configuration?,
             runtimePublication: Configuration?
         ): VariantDependencies {
+            val incomingConfigurations = listOf(compileClasspath, runtimeClasspath)
+            val outgoingConfigurations = listOfNotNull(
+                apiElements, runtimeElements, sourcesElements, apiPublication, runtimePublication
+            )
+            val publicationConfigurations = listOfNotNull(
+                apiPublication, runtimePublication
+            )
+
+            // This is set to be able to consume artifacts published with the library plugin.
+            // For the artifacts of the new android multiplatform plugin, kotlin plugin has a compatibility rules that
+            // equates `androidJvm` with `jvm`, together with the `TargetJvmEnvironment` we are able to select the
+            // android variant.
+            incomingConfigurations.forEach {
+                it.attributes.attribute(
+                   KotlinPlatformType.attribute,
+                   KotlinPlatformType.androidJvm
+                )
+            }
 
             project.objects.named(
                 TargetJvmEnvironment::class.java,
                 TargetJvmEnvironment.ANDROID
             ).let { androidTarget ->
-                listOfNotNull(
-                    compileClasspath,
-                    runtimeClasspath,
-                    apiElements,
-                    runtimeElements,
-                    sourcesElements,
-                    apiPublication,
-                    runtimePublication
-                ).forEach {
+                // TODO(b/289214845): Figure out with JB which attribute to add to disambiguate
+                //  android from jvm for publication as the kotlin plugin doesn't publish with
+                //  target jvm environment attribute.
+                (incomingConfigurations + outgoingConfigurations).forEach {
                     it.attributes.attribute(
                         TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE,
                         androidTarget
@@ -421,7 +435,8 @@ class VariantDependencies internal constructor(
                 AgpVersionAttr::class.java,
                 Version.ANDROID_GRADLE_PLUGIN_VERSION
             ).let { agpVersion ->
-                listOfNotNull(compileClasspath, runtimeClasspath, apiElements, runtimeElements).forEach {
+                // Add the agp version attribute to all configurations but the publication
+                (incomingConfigurations + outgoingConfigurations - publicationConfigurations.toSet()).forEach {
                     it.attributes.attribute(AgpVersionAttr.ATTRIBUTE, agpVersion)
                 }
             }

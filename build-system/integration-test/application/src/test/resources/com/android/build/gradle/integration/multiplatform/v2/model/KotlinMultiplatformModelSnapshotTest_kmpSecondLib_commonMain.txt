@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "type": "Regular",
+    "coordinates": {
+      "project": {
+        "buildId": ":",
+        "projectPath": ":kmpLibraryPlugin",
+        "projectName": "kmpLibraryPlugin"
+      },
+      "sourceSetName": "commonMain"
+    },
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeVisibleMultiplatformSourceDependencyResolver"
+    }
+  }
+]

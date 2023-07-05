@@ -28,6 +28,20 @@
     }
   },
   {
+    "type": "Regular",
+    "coordinates": {
+      "project": {
+        "buildId": ":",
+        "projectPath": ":kmpLibraryPlugin",
+        "projectName": "kmpLibraryPlugin"
+      },
+      "sourceSetName": "commonMain"
+    },
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeVisibleMultiplatformSourceDependencyResolver"
+    }
+  },
+  {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
       "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.0-Beta/kotlin-stdlib-jdk8-1.9.0-Beta.jar"
@@ -87,6 +101,21 @@
       "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;documentationClasspath": [
         "{LOCAL_REPO}/org/jetbrains/annotations/13.0/annotations-13.0-javadoc.jar"
       ]
+    }
+  },
+  {
+    "type": "Regular",
+    "coordinates": {
+      "buildId": ":",
+      "projectPath": ":kmpLibraryPlugin",
+      "projectName": "kmpLibraryPlugin"
+    },
+    "extras": {
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;artifactsClasspath": [
+        "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpLibraryPlugin/build/libs/kmpLibraryPlugin-jvm.jar"
+      ],
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kmpLibraryPlugin-jvm.jar (project :kmpLibraryPlugin)",
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
     }
   },
   {

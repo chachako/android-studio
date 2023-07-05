@@ -42,6 +42,21 @@
     }
   },
   {
+    "type": "Regular",
+    "coordinates": {
+      "buildId": ":",
+      "projectPath": ":kmpLibraryPlugin",
+      "projectName": "kmpLibraryPlugin"
+    },
+    "extras": {
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;artifactsClasspath": [
+        "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpLibraryPlugin/build/libs/kmpLibraryPlugin-jvm.jar"
+      ],
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kmpLibraryPlugin-jvm.jar (project :kmpLibraryPlugin)",
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
+    }
+  },
+  {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
       "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.0-Beta/kotlin-stdlib-jdk8-1.9.0-Beta.jar"
