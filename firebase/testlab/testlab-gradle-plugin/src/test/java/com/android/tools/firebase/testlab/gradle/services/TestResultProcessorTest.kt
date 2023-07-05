@@ -17,31 +17,25 @@
 package com.android.tools.firebase.testlab.gradle.services
 
 import com.android.testutils.MockitoKt.any
-import com.android.testutils.MockitoKt.eq
-import com.android.testutils.MockitoKt.mock
 import com.android.tools.firebase.testlab.gradle.services.ToolResultsManager.TestCases
 import com.android.tools.firebase.testlab.gradle.services.storage.TestRunStorage
 import com.google.api.client.googleapis.util.Utils
 import com.google.api.client.json.JsonObjectParser
 import com.google.api.services.toolresults.model.Step
 import com.google.common.truth.Truth.assertThat
+import com.google.testing.platform.proto.api.core.TestResultProto
 import com.google.testing.platform.proto.api.core.TestStatusProto.TestStatus
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Mock
-import org.mockito.Mockito.argThat
-import org.mockito.Mockito.startsWith
-import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import org.mockito.Mockito.withSettings
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.nio.charset.StandardCharsets
-
 
 class TestResultProcessorTest {
 
@@ -91,11 +85,27 @@ class TestResultProcessorTest {
 
         // Validate the test cases
         assertThat(result.testResultList).hasSize(1)
-        val case = result.testResultList[0].testCase
-        assertThat(case.testPackage).isEqualTo("com.example.ftltest")
-        assertThat(case.testClass).isEqualTo("ExampleInstrumentedTest")
-
+        verifyTestResultsArtifacts(result.testResultList)
         // TODO(b/278583488): add verification for build artifacts.
+    }
+
+    @Test
+    fun toUtpResult_testMultipleDevices() {
+        val result = processor.toUtpResult(
+                resultsOutDir,
+                parseStep(buildStep()),
+                null,
+                mockStorage,
+                deviceInfoFile,
+                parseTestCases(multipleDeviceTestCases())
+        )
+
+        // General Validation
+        assertThat(result.passed()).isTrue()
+
+        // Validate the test cases
+        assertThat(result.testResultList).hasSize(2)
+        verifyTestResultsArtifacts(result.testResultList)
     }
 
     @Test
@@ -114,11 +124,8 @@ class TestResultProcessorTest {
 
         // Validate the test cases
         assertThat(result.testResultList).hasSize(1)
-        val case = result.testResultList[0].testCase
-        assertThat(case.testPackage).isEqualTo("com.example.ftltest")
-        assertThat(case.testClass).isEqualTo("ExampleInstrumentedTest")
         assertThat(result.testResultList[0].testStatus).isEqualTo(TestStatus.FAILED)
-
+        verifyTestResultsArtifacts(result.testResultList)
         // TODO(b/278583488): add verification for build artifacts.
     }
 
@@ -138,12 +145,9 @@ class TestResultProcessorTest {
 
         // Validate the test cases
         assertThat(result.testResultList).hasSize(1)
-        val case = result.testResultList[0].testCase
-        assertThat(case.testPackage).isEqualTo("com.example.ftltest")
-        assertThat(case.testClass).isEqualTo("ExampleInstrumentedTest")
         assertThat(result.testResultList[0].testStatus)
             .isEqualTo(TestStatus.TEST_STATUS_UNSPECIFIED)
-
+        verifyTestResultsArtifacts(result.testResultList)
         // TODO(b/278583488): add verification for build artifacts.
     }
 
@@ -164,11 +168,8 @@ class TestResultProcessorTest {
 
         // Validate the test cases
         assertThat(result.testResultList).hasSize(1)
-        val case = result.testResultList[0].testCase
-        assertThat(case.testPackage).isEqualTo("com.example.ftltest")
-        assertThat(case.testClass).isEqualTo("ExampleInstrumentedTest")
         assertThat(result.testResultList[0].testStatus).isEqualTo(TestStatus.PASSED)
-
+        verifyTestResultsArtifacts(result.testResultList)
         // TODO(b/278583488): add verification for build artifacts.
     }
 
@@ -287,6 +288,67 @@ class TestResultProcessorTest {
         }
     """.trimIndent()
 
+    private fun multipleDeviceTestCases(
+        testStatus: String? = null
+    ) = """
+        {
+            "testCases": [
+                {
+                    ${if (testStatus != null) "\"status\":\"$testStatus\"," else ""}
+                    "testCaseReference": {
+                        "name": "useAppContext",
+                        "className": "com.example.ftltest.ExampleInstrumentedTest"
+                    },
+                    "testCaseId": "1",
+                    "toolOutputs": [
+                        {
+                            "output": {
+                                "fileUri": "gs://test-lab/some_long_url/test_cases/0000_logcat"
+                            }
+                        }
+                    ],
+                    "startTime": {
+                        "seconds": "1681752153",
+                        "nanos": 985000000
+                    },
+                    "endTime": {
+                        "seconds": "1681752154",
+                        "nanos": 24000000
+                    },
+                    "elapsedTime": {
+                        "nanos": 39000000
+                    }
+                },
+                {
+                    ${if (testStatus != null) "\"status\":\"$testStatus\"," else ""}
+                    "testCaseReference": {
+                        "name": "useAppContext",
+                        "className": "com.example.ftltest.ExampleInstrumentedTest"
+                    },
+                    "testCaseId": "1",
+                    "toolOutputs": [
+                        {
+                            "output": {
+                                "fileUri": "gs://test-lab/some_long_url/test_cases/0001_logcat"
+                            }
+                        }
+                    ],
+                    "startTime": {
+                        "seconds": "1681752423",
+                        "nanos": 985000000
+                    },
+                    "endTime": {
+                        "seconds": "1681752154",
+                        "nanos": 24000000
+                    },
+                    "elapsedTime": {
+                        "nanos": 39000000
+                    }
+                }
+            ]
+        }
+    """.trimIndent()
+
     private fun parseStep(json: String): Step =
         ByteArrayInputStream(json.toByteArray(StandardCharsets.UTF_8)).use { stream ->
             parser.parseAndClose<Step>(
@@ -300,4 +362,17 @@ class TestResultProcessorTest {
                 stream, StandardCharsets.UTF_8, TestCases::class.java
             )
         }
+
+    private fun verifyTestResultsArtifacts(testResultList: List<TestResultProto.TestResult>) {
+        // Validate outputArtifact for logcat message and device info per test case
+        testResultList.forEach { testResult ->
+            val case = testResult.testCase
+            assertThat(case.testPackage).isEqualTo("com.example.ftltest")
+            assertThat(case.testClass).isEqualTo("ExampleInstrumentedTest")
+
+            val artifactList = testResult.outputArtifactList
+            assert(artifactList.any{ it.label.label == "device-info" && it.destinationPath != null })
+            assert(artifactList.any{ it.label.label == "logcat" && it.destinationPath != null })
+        }
+    }
 }

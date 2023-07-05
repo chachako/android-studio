@@ -141,10 +141,9 @@ class TestResultProcessor(
         builder.apply {
             xmlSource.fileUri?.also { path ->
                 if (path.isNotBlank()) {
-                    addOutputArtifact(
+                    addOutputArtifact(createOutputArtifact(
                         label = "firebase.xmlSource",
-                        path = path
-                    )
+                        path = path))
                 }
             }
         }
@@ -156,11 +155,10 @@ class TestResultProcessor(
     ) {
         builder.apply {
             logs.forEach { log ->
-                addOutputArtifact(
+                addOutputArtifact(createOutputArtifact(
                     label = "firebase.toolLog",
                     path = log.fileUri,
-                    mimeType = "text/plain"
-                )
+                    mimeType = "text/plain"))
             }
         }
     }
@@ -177,10 +175,9 @@ class TestResultProcessor(
                 if (fileUri != null) {
                     // If the outputs has test cases, this will be handled separately.
                     if (toolOutput.testCase == null) {
-                        addOutputArtifact(
+                        addOutputArtifact(createOutputArtifact(
                             label = "firebase.toolOutput",
-                            path = toolOutput.output.fileUri
-                        )
+                            path = toolOutput.output.fileUri))
                     }
                     // Need to download the output if it is requested by the dsl.
                     val shouldDownload = directoriesToPull.any { directory ->
@@ -190,10 +187,9 @@ class TestResultProcessor(
                         val downloadedFile = testRunStorage.downloadFromStorage(fileUri) {
                             File(resultsOutDir, it)
                         } ?: return@forEach
-                        addOutputArtifact(
+                        addOutputArtifact(createOutputArtifact(
                             label = "firebase.toolOutput",
-                            path = downloadedFile.path
-                        )
+                            path = downloadedFile.path))
                     }
                 }
             }
@@ -206,11 +202,10 @@ class TestResultProcessor(
     ) {
         builder.apply {
             thumbnails.forEach { thumbnail ->
-                addOutputArtifact(
+                addOutputArtifact(createOutputArtifact(
                     label = "firebase.thumbnail",
                     path = thumbnail.sourceImage.output.fileUri,
-                    mimeType = "image/jpeg"
-                )
+                    mimeType = "image/jpeg"))
             }
         }
     }
@@ -288,18 +283,17 @@ class TestResultProcessor(
                             testRunStorage.downloadFromStorage(uri) {
                                 File(resultsOutDir, it)
                             }?.also { file ->
-                                addOutputArtifact(
+                                addOutputArtifact(createOutputArtifact(
                                     label = "logcat",
-                                    path = file.path
+                                    path = file.path)
                                 )
                             }
                         }
 
                         // add device info for the test result.
-                        addOutputArtifact(
+                        addOutputArtifact(createOutputArtifact(
                             label = "device-info",
-                            path = deviceInfoFile.path
-                        )
+                            path = deviceInfoFile.path))
                     }
                 }.build())
             }
@@ -351,25 +345,22 @@ class TestResultProcessor(
     }
 }
 
-private fun TestSuiteResult.Builder.addOutputArtifact(
-    label: String,
-    path: String,
-    mimeType: String? = null
-) = addOutputArtifact(
-    Artifact.newBuilder().apply {
-        this.label = Label.newBuilder().apply {
-            this.label = label
-            namespace = "android"
-        }.build()
-        sourcePath = Path.newBuilder().apply {
-            this.path = path
-        }.build()
-        type = ArtifactType.TEST_DATA
-        mimeType?.also {
-            this.mimeType = it
-        }
+private fun createOutputArtifact(label: String,
+        path: String,
+        mimeType: String? = null
+) = Artifact.newBuilder().apply {
+    this.label = Label.newBuilder().apply {
+        this.label = label
+        namespace = "android"
     }.build()
-)
+    sourcePath = Path.newBuilder().apply {
+        this.path = path
+    }.build()
+    type = ArtifactType.TEST_DATA
+    mimeType?.also {
+        this.mimeType = it
+    }
+}.build()
 
 internal fun TestSuiteResult.passed(): Boolean {
     val suitePassed = testStatus.isPassedOrSkipped()
