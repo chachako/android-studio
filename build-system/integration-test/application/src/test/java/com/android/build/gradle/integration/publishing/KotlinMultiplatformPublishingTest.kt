@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.publishing
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.model.normalizeAgpVersion
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
@@ -64,9 +63,7 @@ class KotlinMultiplatformPublishingTest {
 
     @Test
     fun testKotlinMultiplatform() {
-        // Disable configuration cache https://youtrack.jetbrains.com/issue/KT-49933
         project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
             .run("publishAllPublicationsToBuildDirRepository")
 
         val mainModule =

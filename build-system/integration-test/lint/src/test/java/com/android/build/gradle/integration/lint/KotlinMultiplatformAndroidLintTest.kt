@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.lint
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
@@ -37,14 +36,9 @@ import java.io.File
 
 @RunWith(Parameterized::class)
 class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: Boolean) {
-    // TODO(b/276472789) kmp doesn't support configuration caching for now. Once configuration cache
-    //  is enabled for these tests, consider adding a test running lint twice in a row as a smoke
-    //  test for configuration cache issues, but avoid causing timeouts (b/281652623).
-    @Suppress("DEPRECATION")
     @get:Rule
     val project = GradleTestProjectBuilder()
         .fromTestProject("kotlinMultiplatform")
-        .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
         .create()
 
     companion object {

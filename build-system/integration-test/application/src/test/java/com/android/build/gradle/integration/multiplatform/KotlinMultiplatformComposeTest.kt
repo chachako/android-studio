@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.multiplatform
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.setUpHelloWorld
@@ -87,10 +86,8 @@ class KotlinMultiplatformComposeTest {
     /** Regression test for b/203594737. */
     @Test
     fun testLibraryBuilds() {
-        // Disable configuration cache https://youtrack.jetbrains.com/issue/KT-49933
         project.executor()
             .with(BooleanOption.USE_ANDROID_X, true)
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
             .run("assembleDebug")
     }
 }

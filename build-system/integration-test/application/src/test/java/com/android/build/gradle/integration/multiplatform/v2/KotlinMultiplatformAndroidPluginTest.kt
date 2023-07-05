@@ -45,11 +45,9 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         fun getOptions() = listOf(false, true)
     }
 
-    @Suppress("DEPRECATION") // kmp doesn't support configuration caching for now (b/276472789)
     @get:Rule
     val project = GradleTestProjectBuilder()
         .fromTestProject("kotlinMultiplatform")
-        .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
         .create()
 
     @Before
