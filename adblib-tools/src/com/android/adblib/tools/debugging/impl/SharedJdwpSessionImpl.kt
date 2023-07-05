@@ -34,6 +34,7 @@ import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
 import com.android.adblib.tools.debugging.packets.impl.PayloadProviderFactory
 import com.android.adblib.tools.debugging.utils.toOffline
 import com.android.adblib.tools.debugging.packets.impl.withPayload
+import com.android.adblib.tools.debugging.packets.isThreadSafeAndImmutable
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.tools.debugging.sharedJdwpSessionMonitorFactoryList
@@ -192,28 +193,42 @@ internal class SharedJdwpSessionImpl(
                     break
                 }
 
-                // "Emit" a thread-safe version of "sessionPacket" to all receivers
-                sessionPacket.withPayload { sessionPacketPayload ->
-                    // Note: "sessionPacketPayload" is an input channel directly connected to the
-                    // underlying connection.
-                    // We create a scoped payload channel so that
-                    // 1) the payload is thread-safe for all receivers, and
-                    // 2) cancellation of any receiver does not close the underlying socket
-                    // 3) "shutdown" does not close the underlying PayloadProvider (that is taken
-                    // care of by the JdwpSession class)
-                    val payloadProvider =
-                        sharedPayloadProviderFactory.create(sessionPacket, sessionPacketPayload)
-                    EphemeralJdwpPacket.fromPacket(sessionPacket, payloadProvider).use { packet ->
+                processSessionPacket(sharedPayloadProviderFactory, sessionPacket, workBuffer) { packet ->
+                    jdwpMonitor?.onReceivePacket(packet)
+                    logger.verbose { "Emitting session packet $packet to shared flow of receivers" }
+                    jdwpPacketSharedFlow.emit(packet)
+                    jdwpFilter.afterReceivePacket(packet)
+                }
+            }
+        }
+    }
 
-                        jdwpMonitor?.onReceivePacket(packet)
-                        logger.verbose { "Emitting session packet $packet to shared flow of receivers" }
-                        jdwpPacketSharedFlow.emit(packet)
-                        jdwpFilter.afterReceivePacket(packet)
-
-                        // Packet should not be used after this, because payload of the jdwp packet
-                        // from the underlying jdwp session is about to become invalid.
-                        packet.shutdown(workBuffer)
-                    }
+    private suspend inline fun processSessionPacket(
+        sharedPayloadProviderFactory: SharedPayloadProviderFactory,
+        sessionPacket: JdwpPacketView,
+        workBuffer: ResizableBuffer,
+        block: (JdwpPacketView) -> Unit
+    ) {
+        if (sessionPacket.isThreadSafeAndImmutable) {
+            // JDWP packet can be exposed directly (and safely) to upper layers
+            block(sessionPacket)
+        } else {
+            // "Emit" a thread-safe version of "sessionPacket" to all receivers
+            sessionPacket.withPayload { sessionPacketPayload ->
+                // Note: "sessionPacketPayload" is an input channel directly connected to the
+                // underlying connection.
+                // We create a scoped payload channel so that
+                // 1) the payload is thread-safe for all receivers, and
+                // 2) cancellation of any receiver does not close the underlying socket
+                // 3) "shutdown" does not close the underlying PayloadProvider (that is taken
+                // care of by the JdwpSession class)
+                val payloadProvider =
+                    sharedPayloadProviderFactory.create(sessionPacket, sessionPacketPayload)
+                EphemeralJdwpPacket.fromPacket(sessionPacket, payloadProvider).use { packet ->
+                    block(packet)
+                    // Packet should not be used after this, because payload of the jdwp packet
+                    // from the underlying jdwp session is about to become invalid.
+                    packet.shutdown(workBuffer)
                 }
             }
         }

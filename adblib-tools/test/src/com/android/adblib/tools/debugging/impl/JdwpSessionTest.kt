@@ -33,6 +33,7 @@ import com.android.adblib.tools.debugging.packets.ddms.EphemeralDdmsChunk
 import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
 import com.android.adblib.tools.debugging.packets.ddms.isDdmsCommand
 import com.android.adblib.tools.debugging.packets.ddms.writeToChannel
+import com.android.adblib.tools.debugging.packets.isThreadSafeAndImmutable
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
@@ -41,6 +42,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.firstOrNull
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 import java.io.EOFException
@@ -170,6 +173,56 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
         // Assert
         exceptionRule.expect(IllegalStateException::class.java)
         reply.withPayload {  }
+    }
+
+    @Test
+    fun receiveSmallPacketIsThreadSafeAndImmutable() = runBlockingWithTimeout {
+        val fakeDevice = addFakeDevice(fakeAdb, 30)
+        fakeDevice.startClient(10, 0, "a.b.c", false)
+        val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
+        // Override the "large" packet threshold to be large, so that all packets
+        // are considered "small"
+        setHostPropertyValue(
+            session.host,
+            AdbLibToolsProperties.SHARED_JDWP_PACKET_IN_MEMORY_MAX_PAYLOAD_LENGTH,
+            8_192
+        )
+
+        // Act
+        val jdwpSession = registerCloseable(JdwpSession.openJdwpSession(connectedDevice, 10, 100))
+
+        val sendPacket = createHeloDdmsPacket(jdwpSession)
+        jdwpSession.sendPacket(sendPacket)
+
+        val reply = waitForReplyPacket(jdwpSession, sendPacket)
+
+        // Assert
+        assertTrue(reply.isThreadSafeAndImmutable)
+    }
+
+    @Test
+    fun receiveLargePacketIsNotThreadSafeAndImmutable() = runBlockingWithTimeout {
+        val fakeDevice = addFakeDevice(fakeAdb, 30)
+        fakeDevice.startClient(10, 0, "a.b.c", false)
+        val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
+        // Override the "large" packet threshold to be very small, so that all packets
+        // are considered "large"
+        setHostPropertyValue(
+            session.host,
+            AdbLibToolsProperties.SHARED_JDWP_PACKET_IN_MEMORY_MAX_PAYLOAD_LENGTH,
+            2
+        )
+
+        // Act
+        val jdwpSession = registerCloseable(JdwpSession.openJdwpSession(connectedDevice, 10, 100))
+
+        val sendPacket = createHeloDdmsPacket(jdwpSession)
+        jdwpSession.sendPacket(sendPacket)
+
+        val reply = waitForReplyPacket(jdwpSession, sendPacket)
+
+        // Assert
+        assertFalse(reply.isThreadSafeAndImmutable)
     }
 
     @Test

@@ -22,6 +22,7 @@ import com.android.adblib.tools.debugging.packets.ddms.withPayload
 import com.android.adblib.tools.debugging.packets.impl.JdwpCommands
 import com.android.adblib.tools.debugging.packets.impl.JdwpErrorCode
 import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
+import com.android.adblib.tools.debugging.utils.ThreadSafetySupport
 import com.android.adblib.utils.ResizableBuffer
 
 /**
@@ -315,6 +316,25 @@ suspend inline fun <R> JdwpPacketView.withPayload(block: (AdbInputChannel) -> R)
         releasePayload()
     }
 }
+
+/**
+ * Returns whether this [JdwpPacketView] is thread-safe and immutable, meaning it can be
+ * safely shared across threads and coroutines.
+ *
+ * @see ThreadSafetySupport.isThreadSafeAndImmutable
+ */
+internal val JdwpPacketView.isThreadSafeAndImmutable: Boolean
+    get() {
+        return when (this) {
+            is ThreadSafetySupport -> {
+                isThreadSafeAndImmutable
+            }
+
+            else -> {
+                false
+            }
+        }
+    }
 
 /**
  * Helper method for implementations for [JdwpPacketView]

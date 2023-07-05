@@ -50,6 +50,7 @@ import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
 import com.android.adblib.tools.debugging.packets.ddms.isDdmsCommand
 import com.android.adblib.tools.debugging.packets.ddms.writeToChannel
 import com.android.adblib.tools.debugging.packets.impl.EphemeralJdwpPacket
+import com.android.adblib.tools.debugging.packets.isThreadSafeAndImmutable
 import com.android.adblib.tools.debugging.packets.payloadLength
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.sendDdmsExit
@@ -157,28 +158,38 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
 
     @Test
     fun packetReceiverReceiveMethodWorksWithEmptyPayload(): Unit = runBlockingWithTimeout {
-        packetReceiverReceiveMethodWorksWithPacketOfLength(0)
+        packetReceiverReceiveMethodWorksWithPacketOfLength(
+            payloadLength = 0,
+            isThreadSafeAndImmutableExpected = true
+        )
     }
 
     @Test
     fun packetReceiverReceiveMethodWorksWithSmallPayload(): Unit = runBlockingWithTimeout {
         packetReceiverReceiveMethodWorksWithPacketOfLength(
-            SHARED_JDWP_PACKET_IN_MEMORY_MAX_PAYLOAD_LENGTH.defaultValue / 2)
+            payloadLength = SHARED_JDWP_PACKET_IN_MEMORY_MAX_PAYLOAD_LENGTH.defaultValue / 2,
+            isThreadSafeAndImmutableExpected = true
+        )
     }
 
     @Test
     fun packetReceiverReceiveMethodWorksWithLargePayload(): Unit = runBlockingWithTimeout {
         packetReceiverReceiveMethodWorksWithPacketOfLength(
-            SHARED_JDWP_PACKET_IN_MEMORY_MAX_PAYLOAD_LENGTH.defaultValue * 10)
+            payloadLength = SHARED_JDWP_PACKET_IN_MEMORY_MAX_PAYLOAD_LENGTH.defaultValue * 10,
+            isThreadSafeAndImmutableExpected = false
+        )
     }
 
-    private suspend fun packetReceiverReceiveMethodWorksWithPacketOfLength(length: Int) {
+    private suspend fun packetReceiverReceiveMethodWorksWithPacketOfLength(
+        payloadLength: Int,
+        isThreadSafeAndImmutableExpected: Boolean
+    ) {
         // Prepare: Set reply of `REAL` DDMS command to be an array of "length" bytes
         val fakeDevice = addFakeDevice(fakeAdb, 30)
         val client = fakeDevice.startClient(10, 0, "a.b.c", false)
         val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
         val commandPacket = jdwpSession.createDdmsPacket(DdmsChunkType.REAL, ByteBuffer.allocate(0))
-        val expectedReplyData = ByteArray(length / Char.SIZE_BYTES).also { bytes ->
+        val expectedReplyData = ByteArray(payloadLength / Char.SIZE_BYTES).also { bytes ->
             repeat(bytes.size) { index ->
                 bytes[index] = ('a' + (index % 26)).code.toByte()
             }
@@ -187,12 +198,14 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
 
         // Act: Send `REAL` DDMS command, check data in reply is what we set earlier
         var onlineReceivePayload: ByteArray? = null
+        var isThreadSafeAndImmutable: Boolean? = null
         val offlineReplyPacket = jdwpSession.newPacketReceiver()
             .withName("Unit Test Receiver")
             .onActivation {
                 jdwpSession.sendPacket(commandPacket)
             }.receiveFirst { onlineReplyPacket ->
                 if (onlineReplyPacket.id == commandPacket.id)  {
+                    isThreadSafeAndImmutable = onlineReplyPacket.isThreadSafeAndImmutable
                     onlineReceivePayload = onlineReplyPacket.withPayload {
                         // First 8 bytes should be DDMS packet header
                         // Next 4 bytes is the length of the `REAL` packet reply payload
@@ -215,6 +228,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         assertNotNull(onlineReceivePayload)
         assertEquals(expectedReplyData, onlineReceivePayload!!.toString(Charsets.UTF_16))
         assertEquals(expectedReplyData, offlineReceivePayload.toString(Charsets.UTF_16))
+        assertEquals(isThreadSafeAndImmutableExpected, isThreadSafeAndImmutable)
     }
 
 

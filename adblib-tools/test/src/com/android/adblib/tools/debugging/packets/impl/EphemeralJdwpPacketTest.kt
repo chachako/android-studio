@@ -16,6 +16,8 @@
 package com.android.adblib.tools.debugging.packets.impl
 
 import com.android.adblib.AdbInputChannel
+import com.android.adblib.ByteBufferAdbInputChannel
+import com.android.adblib.EmptyAdbInputChannel
 import com.android.adblib.readNBytes
 import com.android.adblib.readRemaining
 import com.android.adblib.testingutils.ByteBufferUtils
@@ -23,6 +25,7 @@ import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
 import com.android.adblib.tools.debugging.packets.impl.JdwpCommands.CmdSet.SET_THREADREF
 import com.android.adblib.tools.debugging.packets.impl.JdwpCommands.ThreadRefCmd.CMD_THREADREF_NAME
+import com.android.adblib.tools.debugging.packets.isThreadSafeAndImmutable
 import com.android.adblib.tools.debugging.packets.payloadLength
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.toByteArray
@@ -41,6 +44,7 @@ import org.junit.Assert
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -342,6 +346,80 @@ class EphemeralJdwpPacketTest {
     }
 
     @Test
+    fun testPacketToOfflineReturnsSameInstanceIfFromByteBuffer() = runBlockingWithTimeout {
+        // Prepare
+        val sourcePacket = MutableJdwpPacket()
+        sourcePacket.length = 11
+        sourcePacket.id = 10
+        sourcePacket.isReply = true
+        sourcePacket.errorCode = 67
+        val buffer = ByteBuffer.allocate(5)
+        buffer.put(1)
+        buffer.put(2)
+        buffer.put(3)
+        buffer.put(4)
+        buffer.put(5)
+        buffer.flip()
+        val packet = EphemeralJdwpPacket.fromPacket(sourcePacket,
+                                                    PayloadProvider.forByteBuffer(buffer))
+
+        // Act
+        val offlinePacket = packet.toOffline()
+
+        // Assert
+        assertSame(packet, offlinePacket)
+    }
+
+    @Test
+    fun testPacketFromByteBufferIsThreadSafeAndImmutable() = runBlockingWithTimeout {
+        // Prepare
+        val sourcePacket = MutableJdwpPacket()
+        sourcePacket.length = 11
+        sourcePacket.id = 10
+        sourcePacket.isReply = true
+        sourcePacket.errorCode = 67
+        val buffer = ByteBuffer.allocate(5)
+        buffer.put(1)
+        buffer.put(2)
+        buffer.put(3)
+        buffer.put(4)
+        buffer.put(5)
+        buffer.flip()
+
+        // Act
+        val packet = EphemeralJdwpPacket.fromPacket(sourcePacket,
+                                                    PayloadProvider.forByteBuffer(buffer))
+
+        // Assert
+        assertTrue(packet.isThreadSafeAndImmutable)
+    }
+
+    @Test
+    fun testPacketFromInputChannelIsNotThreadSafeAndImmutable() = runBlockingWithTimeout {
+        // Prepare
+        val sourcePacket = MutableJdwpPacket()
+        sourcePacket.length = 11
+        sourcePacket.id = 10
+        sourcePacket.isReply = true
+        sourcePacket.errorCode = 67
+        val buffer = ByteBuffer.allocate(5)
+        buffer.put(1)
+        buffer.put(2)
+        buffer.put(3)
+        buffer.put(4)
+        buffer.put(5)
+        buffer.flip()
+        val inputChannel = ByteBufferAdbInputChannel(buffer)
+
+        // Act
+        val packet = EphemeralJdwpPacket.fromPacket(sourcePacket,
+                                                    PayloadProvider.forInputChannel(inputChannel))
+
+        // Assert
+        assertFalse(packet.isThreadSafeAndImmutable)
+    }
+
+    @Test
     fun testOfflinePacketToStringForCommandPacket() = runBlockingWithTimeout {
         // Prepare
         val sourcePacket = MutableJdwpPacket()
@@ -353,6 +431,28 @@ class EphemeralJdwpPacketTest {
         // Act
         val packet = EphemeralJdwpPacket
             .fromPacket(sourcePacket, PayloadProvider.emptyPayload())
+            .toOffline()
+        val text = packet.toString()
+
+        // Assert
+        assertEquals(
+            "EphemeralJdwpPacket(id=10, length=11, flags=0x00, isCommand=true, cmdSet=SET_THREADREF[11], cmd=CMD_THREADREF_NAME[1])",
+            text
+        )
+    }
+
+    @Test
+    fun testOfflinePacketToStringForCommandPacket2() = runBlockingWithTimeout {
+        // Prepare
+        val sourcePacket = MutableJdwpPacket()
+        sourcePacket.length = 11
+        sourcePacket.id = 10
+        sourcePacket.cmdSet = SET_THREADREF.value
+        sourcePacket.cmd = CMD_THREADREF_NAME.value
+
+        // Act
+        val packet = EphemeralJdwpPacket
+            .fromPacket(sourcePacket, PayloadProvider.forInputChannel(EmptyAdbInputChannel()))
             .toOffline()
         val text = packet.toString()
 
@@ -375,6 +475,28 @@ class EphemeralJdwpPacketTest {
         // Act
         val packet = EphemeralJdwpPacket
             .fromPacket(sourcePacket, PayloadProvider.emptyPayload())
+            .toOffline()
+        val text = packet.toString()
+
+        // Assert
+        assertEquals(
+            "EphemeralJdwpPacket(id=10, length=11, flags=0x80, isReply=true, errorCode=DELETE_METHOD_NOT_IMPLEMENTED[67])",
+            text
+        )
+    }
+
+    @Test
+    fun testOfflinePacketToStringForReplyPacket2() = runBlockingWithTimeout {
+        // Prepare
+        val sourcePacket = MutableJdwpPacket()
+        sourcePacket.length = 11
+        sourcePacket.id = 10
+        sourcePacket.isReply = true
+        sourcePacket.errorCode = 67
+
+        // Act
+        val packet = EphemeralJdwpPacket
+            .fromPacket(sourcePacket, PayloadProvider.forInputChannel(EmptyAdbInputChannel()))
             .toOffline()
         val text = packet.toString()
 
@@ -416,7 +538,7 @@ class EphemeralJdwpPacketTest {
     }
 
     @Test
-    fun testOfflinePacketPayloadAccessIsSerialized() = runBlockingWithTimeout {
+    fun testOfflinePacketPayloadIsThreadSafeAndImmutable() = runBlockingWithTimeout {
         // Prepare
         val payloadBuffer = ByteBuffer.wrap(byteArrayOf(1, 2, 3, 4, 5))
         val sourcePacket = EphemeralJdwpPacket.Command(
@@ -425,6 +547,25 @@ class EphemeralJdwpPacketTest {
             cmdSet = 0,
             cmd = 0,
             payloadProvider = PayloadProvider.forByteBuffer(payloadBuffer)
+        )
+
+        // Act
+        val packet = sourcePacket.toOffline()
+
+        // Assert
+        assertTrue(packet.isThreadSafeAndImmutable)
+    }
+
+    @Test
+    fun testOfflinePacketPayloadAccessIsSerialized() = runBlockingWithTimeout {
+        // Prepare
+        val payloadBuffer = ByteBuffer.wrap(byteArrayOf(1, 2, 3, 4, 5))
+        val sourcePacket = EphemeralJdwpPacket.Command(
+            id = 5,
+            length = JdwpPacketConstants.PACKET_HEADER_LENGTH + payloadBuffer.remaining(),
+            cmdSet = 0,
+            cmd = 0,
+            payloadProvider = PayloadProvider.forInputChannel(ByteBufferAdbInputChannel(payloadBuffer))
         )
         val taskCount = 1_000
 

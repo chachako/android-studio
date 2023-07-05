@@ -18,9 +18,10 @@ package com.android.adblib.tools.debugging.packets.impl
 import com.android.adblib.AdbInputChannel
 import com.android.adblib.ByteBufferAdbInputChannel
 import com.android.adblib.skipRemaining
-import com.android.adblib.tools.debugging.utils.SupportsOffline
 import com.android.adblib.tools.debugging.packets.ddms.withPayload
 import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.utils.SupportsOffline
+import com.android.adblib.tools.debugging.utils.ThreadSafetySupport
 import com.android.adblib.tools.debugging.utils.toOffline
 import com.android.adblib.utils.ResizableBuffer
 import kotlinx.coroutines.sync.Mutex
@@ -98,7 +99,10 @@ internal interface PayloadProvider: SupportsOffline<PayloadProvider>, AutoClosea
             return ForInputChannel(bufferedChannel)
         }
 
-        private object Empty : PayloadProvider {
+        private object Empty : PayloadProvider, ThreadSafetySupport {
+
+            override val isThreadSafeAndImmutable: Boolean
+                get() = true // Can be safely shared across threads
 
             override suspend fun acquirePayload(): AdbInputChannel {
                 return AdbBufferedInputChannel.empty()
@@ -178,7 +182,12 @@ internal interface PayloadProvider: SupportsOffline<PayloadProvider>, AutoClosea
          * A thread-safe, cancellation safe, lock-free implementation of [PayloadProvider],
          * wrapping a [ByteBuffer].
          */
-        private class ForByteBuffer(private val payload: ByteBuffer): PayloadProvider {
+        private class ForByteBuffer(
+            private val payload: ByteBuffer
+        ): PayloadProvider, ThreadSafetySupport {
+
+            override val isThreadSafeAndImmutable: Boolean
+                get() = true // Can be safely shared across threads
 
             override suspend fun acquirePayload(): AdbInputChannel {
                 // To ensure lock-free thread-safety, we create a new AdbInputChannel
@@ -203,6 +212,7 @@ internal interface PayloadProvider: SupportsOffline<PayloadProvider>, AutoClosea
             override fun close() {
                 // Nothing to do
             }
+
         }
     }
 }
@@ -219,3 +229,22 @@ internal suspend inline fun <R> PayloadProvider.withPayload(block: (AdbInputChan
         releasePayload()
     }
 }
+
+/**
+ * Returns whether this [PayloadProvider] is thread-safe and immutable, meaning it can be
+ * safely shared across threads and coroutines.
+ *
+ * @see ThreadSafetySupport.isThreadSafeAndImmutable
+ */
+internal val PayloadProvider.isThreadSafeAndImmutable: Boolean
+    get() {
+        return when (this) {
+            is ThreadSafetySupport -> {
+                isThreadSafeAndImmutable
+            }
+
+            else -> {
+                false
+            }
+        }
+    }

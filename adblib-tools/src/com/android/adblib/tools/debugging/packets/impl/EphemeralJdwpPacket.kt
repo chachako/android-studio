@@ -16,13 +16,14 @@
 package com.android.adblib.tools.debugging.packets.impl
 
 import com.android.adblib.AdbInputChannel
-import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_HEADER_LENGTH
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.JdwpPacketView.Companion.FlagsAndWord
 import com.android.adblib.tools.debugging.packets.toStringImpl
 import com.android.adblib.tools.debugging.packets.withPayload
+import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.utils.ThreadSafetySupport
 import com.android.adblib.utils.ResizableBuffer
 import kotlinx.coroutines.sync.Mutex
 
@@ -35,7 +36,10 @@ internal abstract class AbstractJdwpPacketView protected constructor(
     final override val length: Int,
     protected val flagsAndWord: FlagsAndWord,
     protected val payloadProvider: PayloadProvider
-) : JdwpPacketView, AutoCloseable {
+) : JdwpPacketView, AutoCloseable, ThreadSafetySupport {
+
+    override val isThreadSafeAndImmutable: Boolean
+        get() = payloadProvider.isThreadSafeAndImmutable
 
     override val flags: Int
         get() = flagsAndWord.flags
@@ -84,7 +88,7 @@ internal open class EphemeralJdwpPacket private constructor(
     length: Int,
     flagsAndWord: FlagsAndWord,
     payloadProvider: PayloadProvider
-) : AbstractJdwpPacketView(id, length, flagsAndWord, payloadProvider), AutoCloseable {
+) : AbstractJdwpPacketView(id, length, flagsAndWord, payloadProvider) {
 
     private constructor(
         id: Int,
@@ -99,13 +103,21 @@ internal open class EphemeralJdwpPacket private constructor(
     }
 
     override suspend fun toOffline(workBuffer: ResizableBuffer): JdwpPacketView {
-        // Returns an offline, thread-safe version of this instance
-        return OfflineJdwpPacket(
-            id = id,
-            length = length,
-            flagsAndWord = flagsAndWord,
-            payloadProvider = payloadProvider.toOffline(workBuffer)
-        )
+        return when {
+          isThreadSafeAndImmutable -> {
+              // thread-safe and immutable implies "offline"
+              this
+          }
+          else -> {
+              // Returns an offline, thread-safe version of this instance
+              OfflineJdwpPacket(
+                  id = id,
+                  length = length,
+                  flagsAndWord = flagsAndWord,
+                  payloadProvider = payloadProvider.toOffline(workBuffer)
+              )
+          }
+        }
     }
 
     open suspend fun shutdown(workBuffer: ResizableBuffer = ResizableBuffer()) {
