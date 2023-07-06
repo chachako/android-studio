@@ -34,5 +34,5 @@ sourceSets {
     test.resources.srcDir 'src/test/java'
 }
 
-project.ext.pomName = 'ScreenshotTestEngine'
+project.ext.pomName = 'PreviewScreenshotTestEngine'
 project.ext.pomDesc = 'provides JUnit5 test engine implementation for running screenshot tests on compose previews'

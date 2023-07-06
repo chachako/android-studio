@@ -23,14 +23,14 @@ import org.junit.platform.engine.TestEngine
 import org.junit.platform.engine.UniqueId
 import org.junit.platform.engine.TestExecutionResult
 
-class ScreenshotTestEngine : TestEngine {
+class PreviewScreenshotTestEngine : TestEngine {
 
     override fun getId(): String {
-        return "screenshot-test-engine"
+        return "preview-screenshot-test-engine"
     }
 
     override fun discover(discoveryRequest: EngineDiscoveryRequest, uniqueId: UniqueId): TestDescriptor {
-        return EngineDescriptor(uniqueId, "Screenshot Test Engine")
+        return EngineDescriptor(uniqueId, "Preview Screenshot Test Engine")
     }
 
     override fun execute(request: ExecutionRequest) {

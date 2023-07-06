@@ -126,7 +126,7 @@ abstract class ScreenshotTestTask : Test(), VariantAwareTask {
 
             task.useJUnitPlatform()
             (task.testFramework as JUnitPlatformTestFramework)
-                    .options.includeEngines("screenshot-test-engine")
+                    .options.includeEngines("preview-screenshot-test-engine")
 
             task.group = JavaBasePlugin.VERIFICATION_GROUP
 
