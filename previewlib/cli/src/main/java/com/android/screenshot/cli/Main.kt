@@ -19,6 +19,7 @@ import com.android.screenshot.cli.util.CODE_ERROR
 import com.android.screenshot.cli.util.CODE_FAILURE
 import com.android.screenshot.cli.util.CODE_NO_PREVIEWS
 import com.android.screenshot.cli.util.CODE_SUCCESS
+import com.android.screenshot.cli.util.CODE_INVALID_ARGUMENT
 import com.android.screenshot.cli.util.Decompressor
 import com.android.screenshot.cli.util.PreviewResult
 import com.android.screenshot.cli.util.Response
@@ -29,8 +30,6 @@ import com.android.tools.idea.util.toVirtualFile
 import com.android.tools.lint.CliConfiguration
 import com.android.tools.lint.LintCliClient
 import com.android.tools.lint.LintCliFlags
-import com.android.tools.lint.LintCliFlags.ERRNO_ERRORS
-import com.android.tools.lint.LintCliFlags.ERRNO_INVALID_ARGS
 import com.android.tools.lint.ProjectMetadata
 import com.android.tools.lint.client.api.Configuration
 import com.android.tools.lint.client.api.ConfigurationHierarchy
@@ -64,9 +63,7 @@ import com.google.common.io.ByteStreams
 import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.extensions.Extensions
-import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.utils.PathUtil
 import org.jetbrains.uast.UAnnotation
@@ -91,7 +88,6 @@ class Main {
     private val ARG_SDK_HOME = "--sdk-home"
     private val ARG_JDK_HOME = "--jdk-home"
     private val ARG_LINT_MODEL = "--lint-model"
-    private val ARG_LINT_RULE_JARS = "--lint-rule-jars"
     private val ARG_CACHE_DIR = "--cache-dir"
     private val ARG_OUTPUT_LOCATION = "--output-location"
     private val ARG_GOLDEN_LOCATION = "--golden-location"
@@ -114,7 +110,7 @@ class Main {
     fun run(args: Array<String>) {
         val argumentState = ArgumentState()
         try {
-            val client: LintCliClient = MainLintClient(flags, argumentState)
+            val client: LintCliClient = MainLintClient(flags)
             parseArguments(args, client, argumentState)
             if (argumentState.extractionDir != null && argumentState.jarLocation != null){
                 extractJar(argumentState)
@@ -133,21 +129,25 @@ class Main {
             driver.computeDetectors(projects[0])
             ProjectDriver(driver, projects[0]).prepareUastFileList()
             initializeEnv(projects, client)
-            val dependencies = Dependencies(projects[0], argumentState.rootModule!!)
+            val dependencies = Dependencies(projects[0], argumentState.rootModule)
             val screenshot = ScreenshotProvider(projects[0], sdkHomePath!!.absolutePath, dependencies)
-            val results = screenshot.verifyScreenshot(findPreviewNodes(projects[0], argumentState.filePath!!),
-                                                      argumentState.goldenLocation!!,
+            val results = screenshot.verifyScreenshot(findPreviewNodes(projects[0], argumentState.filePath),
+                                                      argumentState.goldenLocation,
                                                       argumentState.outputLocation!!,
                                                       argumentState.recordGoldens,
-                                                      argumentState.rootModule!!)
+                                                      argumentState.rootModule)
             argumentState.extractionDir?.let { deleteTempFiles(it) }
             val response = processResults(results)
             saveResults(response, argumentState.outputLocation!!)
             exitProcess(response.status)
         } catch (e: Exception) {
             val response = Response(2, e.message!!, null)
-            saveResults(response, argumentState.outputLocation!!)
-            exitProcess(response.status)
+            argumentState.outputLocation?.let {
+                saveResults(response, it)
+                exitProcess(response.status)
+            }
+            exitProcess(CODE_INVALID_ARGUMENT)
+
         }
     }
 
@@ -176,7 +176,7 @@ class Main {
 
     private fun setupPaths(argumentState: Main.ArgumentState) {
         val output = File(argumentState.outputLocation!!)
-        val golden = File(argumentState.goldenLocation!!)
+        val golden = File(argumentState.goldenLocation)
         if (!output.exists()) {
             output.mkdirs()
         }
@@ -604,7 +604,7 @@ class Main {
         var modules: MutableList<LintModelModule> = mutableListOf()
     }
 
-    inner class MainLintClient(flags: LintCliFlags, private val argumentState: ArgumentState) :
+    inner class MainLintClient(flags: LintCliFlags) :
         LintCliClient(flags, CLIENT_CLI) {
 
         private var unexpectedGradleProject: Project? = null

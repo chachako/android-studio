@@ -132,7 +132,7 @@ class ScreenshotProvider(
                 }
             } else if (errorMessage == null) {
                 val result = compareImages(
-                    renderResult!!,
+                    renderResult,
                     goldenLocation,
                     outputLocation,
                     "$fileName.png"

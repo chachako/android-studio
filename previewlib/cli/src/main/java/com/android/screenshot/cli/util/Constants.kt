@@ -24,3 +24,4 @@ const val CODE_SUCCESS = 0
 const val CODE_FAILURE = 1
 const val CODE_ERROR = 2
 const val CODE_NO_PREVIEWS = 3
+const val CODE_INVALID_ARGUMENT = 4
