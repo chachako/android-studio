@@ -96,6 +96,7 @@ public class FakeAdbTestRule extends ExternalResource {
                 }
             }
             AndroidDebugBridge.terminate();
+            AndroidDebugBridge.disableFakeAdbServerMode();
         }
         catch (InterruptedException ex) {
             // disregard
