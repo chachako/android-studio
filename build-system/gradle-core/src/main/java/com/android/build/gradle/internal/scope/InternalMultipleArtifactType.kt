@@ -56,4 +56,23 @@ sealed class InternalMultipleArtifactType<T: FileSystemLocation>(
     // multiple such artifacts for a single module in the case of a KMP project with multiple jvm
     // targets.
     object LINT_VITAL_REPORT_LINT_MODEL: InternalMultipleArtifactType<Directory>(DIRECTORY)
+
+    // Serialized Lint Model for a variant's unit test component. Similar to
+    // InternalArtifactType.UNIT_TEST_LINT_MODEL, but allows for multiple instances, to support the
+    // case of a KMP project with multiple jvm targets.
+    object UNIT_TEST_LINT_MODEL: InternalMultipleArtifactType<Directory>(DIRECTORY)
+
+    // Partial lint results. Similar to InternalArtifactType.LINT_PARTIAL_RESULTS, but allows for
+    // multiple instances, to support the case of a KMP project with multiple jvm targets.
+    object LINT_PARTIAL_RESULTS: InternalMultipleArtifactType<Directory>(DIRECTORY)
+
+    // Partial lint vital results. Similar to InternalArtifactType.LINT_VITAL_PARTIAL_RESULTS, but
+    // allows for multiple instances, to support the case of a KMP project with multiple jvm
+    // targets.
+    object LINT_VITAL_PARTIAL_RESULTS: InternalMultipleArtifactType<Directory>(DIRECTORY)
+
+    // Partial lint results for a variant's unit test component. Similar to
+    // InternalArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS, but allows for multiple instances, to
+    // support the case of a KMP project with multiple jvm targets.
+    object UNIT_TEST_LINT_PARTIAL_RESULTS: InternalMultipleArtifactType<Directory>(DIRECTORY)
 }

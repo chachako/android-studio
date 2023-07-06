@@ -39,6 +39,7 @@ import com.android.build.gradle.internal.scope.InternalArtifactType.TEST_FIXTURE
 import com.android.build.gradle.internal.scope.InternalArtifactType.TEST_FIXTURES_LINT_PARTIAL_RESULTS
 import com.android.build.gradle.internal.scope.InternalArtifactType.UNIT_TEST_LINT_MODEL
 import com.android.build.gradle.internal.scope.InternalArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS
+import com.android.build.gradle.internal.scope.InternalMultipleArtifactType
 import com.android.build.gradle.internal.scope.InternalMultipleArtifactType.LINT_REPORT_LINT_MODEL
 import com.android.build.gradle.internal.scope.InternalMultipleArtifactType.LINT_VITAL_REPORT_LINT_MODEL
 import com.android.build.gradle.internal.services.TaskCreationServices
@@ -57,7 +58,6 @@ import com.android.utils.FileUtils
 import com.google.common.annotations.VisibleForTesting
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
-import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile
 import org.gradle.api.file.RegularFileProperty
@@ -181,7 +181,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.ABSOLUTE)
     @get:Optional
-    abstract val partialResults: DirectoryProperty
+    abstract val partialResults: ConfigurableFileCollection
 
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.ABSOLUTE)
@@ -619,12 +619,23 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                     fatalOnly = fatalOnly
                 )
             }
-            val partialResults = if (fatalOnly) {
-                creationConfig.artifacts.get(InternalArtifactType.LINT_VITAL_PARTIAL_RESULTS)
-            } else {
-                creationConfig.artifacts.get(InternalArtifactType.LINT_PARTIAL_RESULTS)
-            }
-            task.partialResults.setDisallowChanges(partialResults)
+            task.partialResults.from(
+                if (fatalOnly) {
+                    creationConfig.artifacts.get(InternalArtifactType.LINT_VITAL_PARTIAL_RESULTS)
+                } else {
+                    creationConfig.artifacts.get(InternalArtifactType.LINT_PARTIAL_RESULTS)
+                }
+            )
+            task.partialResults.from(
+                if (fatalOnly) {
+                    creationConfig.artifacts
+                        .getAll(InternalMultipleArtifactType.LINT_VITAL_PARTIAL_RESULTS)
+                } else {
+                    creationConfig.artifacts
+                        .getAll(InternalMultipleArtifactType.LINT_PARTIAL_RESULTS)
+                }
+            )
+            task.partialResults.disallowChanges()
             task.lintModels.fromDisallowChanges(
                 if (fatalOnly) {
                     creationConfig.artifacts.getAll(LINT_VITAL_REPORT_LINT_MODEL)
@@ -924,10 +935,10 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         kotlinExtensionWrapper: KotlinMultiplatformExtensionWrapper?,
         customLintChecksConfig: FileCollection,
         lintOptions: Lint,
-        partialResults: Provider<Directory>,
+        partialResults: Provider<List<Directory>>,
         lintModels: Provider<List<Directory>>,
-        unitTestPartialResults: Provider<Directory>?,
-        unitTestLintModel: Provider<Directory>?,
+        unitTestPartialResults: Provider<List<Directory>>?,
+        unitTestLintModel: Provider<List<Directory>>?,
         lintMode: LintMode,
         isPerComponentLintAnalysis: Boolean,
         fatalOnly: Boolean = false,
@@ -968,10 +979,11 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                 fatalOnly,
                 useModuleDependencyLintModels = true,
                 lintMode,
-                lintModelArtifactType = if (isPerComponentLintAnalysis) MAIN else null
+                lintModelArtifactType = if (isPerComponentLintAnalysis) MAIN else null,
+                jvmTargetName = null
             )
         this.lintRuleJars.fromDisallowChanges(customLintChecksConfig)
-        this.partialResults.setDisallowChanges(partialResults)
+        this.partialResults.fromDisallowChanges(partialResults)
         this.lintModels.fromDisallowChanges(lintModels)
         unitTestPartialResults?.let { this.nestedComponentPartialResults.from(it) }
         this.nestedComponentPartialResults.disallowChanges()

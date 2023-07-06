@@ -239,6 +239,202 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
     }
 
     @Test
+    fun `test running lint on kmpJvmOnly with multiple jvm targets`() {
+        Assume.assumeTrue(lintAnalysisPerComponent)
+        // Modify kmpJvmOnly to have 2 jvm targets, "jvm" and "desktop"
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("kmpJvmOnly").ktsBuildFile,
+            "jvm()",
+            """
+                jvm() {
+                    attributes.attribute(
+                        Attribute.of("com.example.foo", String::class.java),
+                        "jvm"
+                    )
+                }
+                jvm("desktop") {
+                    attributes.attribute(
+                        Attribute.of("com.example.foo", String::class.java),
+                        "desktop"
+                    )
+                }
+            """.trimIndent()
+        )
+        TestFileUtils.appendToFile(
+            project.getSubproject("kmpJvmOnly").ktsBuildFile,
+            """
+                lint {
+                    enable += "ByteOrderMark"
+                    textReport = true
+                    abortOnError = false
+                }
+            """.trimIndent()
+        )
+
+        // Add a desktopMain source file with ByteOrderMark issue
+        val jvmClassFile =
+            FileUtils.join(
+                project.getSubproject("kmpJvmOnly").projectDir,
+                "src",
+                "desktopMain",
+                "kotlin",
+                "com",
+                "example",
+                "Foo.kt"
+            )
+        jvmClassFile.parentFile.mkdirs()
+        TestFileUtils.appendToFile(
+            jvmClassFile,
+            //language=kotlin
+            """
+                package com.example
+
+                fun getByteOrderMark(): String {
+                    return "$byteOrderMark"
+                }
+            """.trimIndent()
+        )
+
+        // Add ByteOrderMark to jvmMain source file
+        TestFileUtils.addMethod(
+            FileUtils.join(
+                project.getSubproject("kmpJvmOnly").projectDir,
+                "src",
+                "jvmMain",
+                "kotlin",
+                "com",
+                "example",
+                "kmpjvmonly",
+                "KmpJvmOnlyLibClass.kt"
+            ),
+            //language=kotlin
+            """
+                fun getByteOrderMark(): String {
+                    return "$byteOrderMark"
+                }
+            """.trimIndent()
+        )
+
+
+        getExecutor().run(":kmpJvmOnly:clean", ":kmpJvmOnly:lint")
+
+        val reportFile =
+            File(project.getSubproject("kmpJvmOnly").buildDir, "reports/lint-results.txt")
+
+        PathSubject.assertThat(reportFile).exists()
+        PathSubject.assertThat(reportFile)
+            .contains("Foo.kt:5: Error: Found byte-order-mark in the middle of a file [ByteOrderMark]")
+        PathSubject.assertThat(reportFile)
+            .contains("KmpJvmOnlyLibClass.kt:9: Error: Found byte-order-mark in the middle of a file [ByteOrderMark]")
+    }
+
+    @Test
+    fun `test running lint on app with dependency with multiple jvm targets`() {
+        // Modify kmpJvmOnly to have 2 jvm targets, "jvm" and "desktop"
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("kmpJvmOnly").ktsBuildFile,
+            "jvm()",
+            """
+                jvm() {
+                    attributes.attribute(
+                        Attribute.of("com.example.foo", String::class.java),
+                        "jvm"
+                    )
+                }
+                jvm("desktop") {
+                    attributes.attribute(
+                        Attribute.of("com.example.foo", String::class.java),
+                        "desktop"
+                    )
+                }
+            """.trimIndent()
+        )
+
+        // Set "com.example.foo" attribute to "jvm" in kmpFirstLib and app because otherwise there
+        // will be ambiguity about which artifacts to consume from kmpJvmOnly
+        val jvmAttributeBlurb =
+            """
+                val jvmAttribute = Attribute.of("com.example.foo", String::class.java)
+
+                dependencies {
+                    attributesSchema {
+                        attribute(jvmAttribute)
+                    }
+                }
+
+                configurations.all {
+                    if (isCanBeResolved) {
+                        attributes {
+                            attribute(jvmAttribute, "jvm")
+                        }
+                    }
+                }
+            """.trimIndent()
+        TestFileUtils.appendToFile(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            jvmAttributeBlurb
+        )
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").ktsBuildFile,
+            jvmAttributeBlurb
+        )
+
+        TestFileUtils.appendToFile(
+            project.getSubproject("kmpJvmOnly").ktsBuildFile,
+            """
+                lint {
+                    enable += "ByteOrderMark"
+                    textReport = true
+                    abortOnError = false
+                }
+            """.trimIndent()
+        )
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").ktsBuildFile,
+            """
+                android {
+                    defaultConfig {
+                        minSdk = 24
+                    }
+                    lint {
+                        checkDependencies = true
+                        textReport = true
+                        abortOnError = false
+                    }
+                }
+            """.trimIndent())
+
+        // Add ByteOrderMark to jvmMain source file
+        TestFileUtils.addMethod(
+            FileUtils.join(
+                project.getSubproject("kmpJvmOnly").projectDir,
+                "src",
+                "jvmMain",
+                "kotlin",
+                "com",
+                "example",
+                "kmpjvmonly",
+                "KmpJvmOnlyLibClass.kt"
+            ),
+            //language=kotlin
+            """
+                fun getByteOrderMark(): String {
+                    return "$byteOrderMark"
+                }
+            """.trimIndent()
+        )
+
+        getExecutor().run(":app:clean", ":app:lintDebug")
+
+        val reportFile =
+            File(project.getSubproject("app").buildDir, "reports/lint-results-debug.txt")
+
+        PathSubject.assertThat(reportFile).exists()
+        PathSubject.assertThat(reportFile)
+            .contains("KmpJvmOnlyLibClass.kt:9: Error: Found byte-order-mark in the middle of a file [ByteOrderMark]")
+    }
+
+    @Test
     fun `test running lint on kmpJvmOnly with java`() {
         Assume.assumeTrue(lintAnalysisPerComponent)
         TestFileUtils.searchAndReplace(

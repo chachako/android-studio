@@ -465,7 +465,7 @@ class LintDriver(
         val main = roots.first()
         val projectContext = Context(this, main, main, main.dir)
         fireEvent(EventType.MERGING, projectContext)
-        client.mergeState(main, this)
+        client.mergeState(roots, this)
       }
     )
   }
@@ -3061,8 +3061,8 @@ class LintDriver(
       delegate.storeState(project)
     }
 
-    override fun mergeState(root: Project, driver: LintDriver) {
-      delegate.mergeState(root, driver)
+    override fun mergeState(roots: Collection<Project>, driver: LintDriver) {
+      delegate.mergeState(roots, driver)
     }
 
     override fun getRootDir(): File? = delegate.getRootDir()

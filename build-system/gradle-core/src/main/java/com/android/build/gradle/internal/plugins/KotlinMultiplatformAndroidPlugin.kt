@@ -721,7 +721,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
     }
 
     companion object {
-        private const val androidTargetName = "android"
+        internal const val androidTargetName = "android"
         const val androidExtensionOnKotlinExtensionName = "androidLibrary"
         fun String.getNamePrefixedWithTarget() = androidTargetName.appendCapitalized(this)
     }

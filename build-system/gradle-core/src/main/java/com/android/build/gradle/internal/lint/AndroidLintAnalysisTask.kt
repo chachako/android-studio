@@ -34,6 +34,7 @@ import com.android.build.gradle.internal.scope.InternalArtifactType.LINT_PARTIAL
 import com.android.build.gradle.internal.scope.InternalArtifactType.LINT_VITAL_PARTIAL_RESULTS
 import com.android.build.gradle.internal.scope.InternalArtifactType.TEST_FIXTURES_LINT_PARTIAL_RESULTS
 import com.android.build.gradle.internal.scope.InternalArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS
+import com.android.build.gradle.internal.scope.InternalMultipleArtifactType
 import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.services.getLintParallelBuildService
@@ -504,7 +505,8 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
         customLintChecksConfig: FileCollection,
         lintOptions: Lint,
         lintModelArtifactType: LintModelArtifactType?,
-        fatalOnly: Boolean = false
+        fatalOnly: Boolean = false,
+        jvmTargetName: String?
     ) {
         initializeGlobalInputs(
             services = taskCreationServices,
@@ -531,7 +533,8 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
                 fatalOnly,
                 useModuleDependencyLintModels = false,
                 LintMode.ANALYSIS,
-                lintModelArtifactType
+                lintModelArtifactType,
+                jvmTargetName
             )
         this.lintRuleJars.fromDisallowChanges(customLintChecksConfig)
         this.lintModelDirectory
@@ -554,6 +557,16 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
                 .setInitialProvider(taskProvider, AndroidLintAnalysisTask::partialResultsDirectory)
                 .withName(PARTIAL_RESULTS_DIR_NAME)
                 .on(internalArtifactType)
+        }
+
+        fun registerOutputArtifacts(
+            taskProvider: TaskProvider<AndroidLintAnalysisTask>,
+            internalArtifactType: InternalMultipleArtifactType<Directory>,
+            artifacts: ArtifactsImpl
+        ) {
+            artifacts.use(taskProvider)
+                .wiredWith(AndroidLintAnalysisTask::partialResultsDirectory)
+                .toAppendTo(internalArtifactType)
         }
     }
 }

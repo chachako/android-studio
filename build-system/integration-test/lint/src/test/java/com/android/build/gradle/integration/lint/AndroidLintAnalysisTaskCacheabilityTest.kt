@@ -23,6 +23,7 @@ import com.android.build.gradle.integration.common.truth.GradleTaskSubject.asser
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.lint.AndroidLintAnalysisTask
 import com.android.build.gradle.internal.scope.InternalArtifactType
+import com.android.build.gradle.internal.scope.InternalMultipleArtifactType
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
@@ -185,35 +186,47 @@ class AndroidLintAnalysisTaskCacheabilityTest {
         // directory encodings
         listOf(":app", ":feature", ":lib", ":java-lib").forEach { moduleName ->
             val partialResultsDir1 =
-                FileUtils.join(
-                    project1.getSubproject(moduleName)
-                        .getIntermediateFile(
-                            InternalArtifactType.LINT_PARTIAL_RESULTS.getFolderName()
-                        ),
-                    if (moduleName == ":java-lib") "global" else "debug",
-                    "out"
-                )
+                if (moduleName == ":java-lib") {
+                    FileUtils.join(
+                        project1.getSubproject(moduleName)
+                            .getIntermediateFile(
+                                InternalMultipleArtifactType.LINT_PARTIAL_RESULTS.getFolderName()
+                            ),
+                        "global",
+                        "lintAnalyzeJvm"
+                    )
+                } else {
+                    FileUtils.join(
+                        project1.getSubproject(moduleName)
+                            .getIntermediateFile(
+                                InternalArtifactType.LINT_PARTIAL_RESULTS.getFolderName()
+                            ),
+                        "debug",
+                        "out"
+                    )
+                }
             val partialResultsDir2 =
-                FileUtils.join(
-                    project2.getSubproject(moduleName)
-                        .getIntermediateFile(
-                            InternalArtifactType.LINT_PARTIAL_RESULTS.getFolderName()
-                        ),
-                    if (moduleName == ":java-lib") "global" else "debug",
-                    "out"
-                )
-            val lintDefiniteFileName =
                 if (moduleName == ":java-lib") {
-                    "lint-definite.xml"
+                    FileUtils.join(
+                        project2.getSubproject(moduleName)
+                            .getIntermediateFile(
+                                InternalMultipleArtifactType.LINT_PARTIAL_RESULTS.getFolderName()
+                            ),
+                        "global",
+                        "lintAnalyzeJvm"
+                    )
                 } else {
-                    "lint-definite.xml"
+                    FileUtils.join(
+                        project2.getSubproject(moduleName)
+                            .getIntermediateFile(
+                                InternalArtifactType.LINT_PARTIAL_RESULTS.getFolderName()
+                            ),
+                        "debug",
+                        "out"
+                    )
                 }
-            val lintPartialFileName =
-                if (moduleName == ":java-lib") {
-                    "lint-partial.xml"
-                } else {
-                    "lint-partial.xml"
-                }
+            val lintDefiniteFileName = "lint-definite.xml"
+            val lintPartialFileName = "lint-partial.xml"
 
             // First check that the contents of partialResultsDir1 and partialResultsDir2 are
             // identical

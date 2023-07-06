@@ -126,6 +126,7 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
         partialResultsDir: File,
         lintModelArtifactType: LintModelArtifactType?,
         fatalOnly: Boolean,
+        jvmTargetName: String?
     ) {
         this.variantName = ""
         this.analyticsService.setDisallowChanges(
@@ -142,7 +143,8 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
                 fatalOnly = fatalOnly,
                 useModuleDependencyLintModels = true,
                 LintMode.MODEL_WRITING,
-                lintModelArtifactType
+                lintModelArtifactType,
+                jvmTargetName
             )
         this.partialResultsDir.set(partialResultsDir)
         this.partialResultsDir.disallowChanges()

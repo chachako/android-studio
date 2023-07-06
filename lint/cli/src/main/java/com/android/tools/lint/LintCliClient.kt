@@ -480,26 +480,36 @@ open class LintCliClient : LintClient {
    * We also check whether issues enabled in this reporting project were disabled in any individual
    * module, since that means the project is configured incorrectly.
    */
-  override fun mergeState(root: Project, driver: LintDriver) {
+  override fun mergeState(roots: Collection<Project>, driver: LintDriver) {
     // Load any partial results from dependencies we've already analyzed
     fun Project.modulePath() = buildModule?.modulePath
     fun Project.artifactType() = buildVariant?.artifact?.type
     val dependentsMap: Map<Project, Project> =
       if (driver.checkDependencies) {
-        root.allLibraries.asSequence().filterNot(Project::isExternalLibrary).associateWith { root }
+        roots
+          .flatMap { root ->
+            root.allLibraries
+              .map { dependency -> dependency to root }
+              .filterNot { it.first.isExternalLibrary }
+          }
+          .associateBy({ it.first }, { it.second })
       } else {
         // Even in non-check-dependencies scenarios we have to add in any dynamic
         // features and test components since we've transferred them in as dependencies
         // instead (see LintModelModuleProject.resolveDependencies)
-        root.allLibraries
-          .asSequence()
-          .filter { dependency ->
-            dependency.type == LintModelModuleType.DYNAMIC_FEATURE ||
-              root.modulePath()?.let { it == dependency.modulePath() } == true
+        roots
+          .flatMap { root ->
+            root.allLibraries
+              .map { dependency -> dependency to root }
+              .filter {
+                it.first
+                it.first.type == LintModelModuleType.DYNAMIC_FEATURE ||
+                  root.modulePath()?.let { path -> path == it.first.modulePath() } == true
+              }
           }
-          .associateWith { root }
+          .associateBy({ it.first }, { it.second })
       }
-    val projects = dependentsMap.keys + root
+    val projects = dependentsMap.keys + roots
 
     // Results that were reported unconditionally, per project
     val definiteMap = HashMap<Project, List<Incident>>()
@@ -554,22 +564,24 @@ open class LintCliClient : LintClient {
       }
     }
 
-    // Also merge in results from the main app (same project as the one for the report)
-    if (!dependentsMap.containsKey(root)) {
-      val rootContext = Context(driver, root, root, root.dir)
-      mergeIncidents(root, root, rootContext, definiteMap, provisionalMap)
+    // Also merge in results from the roots
+    for (root in roots) {
+      if (!dependentsMap.containsKey(root)) {
+        val rootContext = Context(driver, root, root, root.dir)
+        mergeIncidents(root, root, rootContext, definiteMap, provisionalMap)
 
-      if (dataMap.isNotEmpty()) {
-        val detectorMap = HashMap<Issue, Detector>()
-        for ((issue, map) in dataMap.entries) {
-          val results = PartialResult.withRequestedProject(PartialResult(issue, map), root)
-          val detector =
-            detectorMap.getOrPut(issue, issue.implementation.detectorClass::newInstance)
-          detector.checkPartialResults(rootContext, results)
+        if (dataMap.isNotEmpty()) {
+          val detectorMap = HashMap<Issue, Detector>()
+          for ((issue, map) in dataMap.entries) {
+            val results = PartialResult.withRequestedProject(PartialResult(issue, map), root)
+            val detector =
+              detectorMap.getOrPut(issue, issue.implementation.detectorClass::newInstance)
+            detector.checkPartialResults(rootContext, results)
+          }
         }
-      }
 
-      driver.processMergedProjects(rootContext)
+        driver.processMergedProjects(rootContext)
+      }
     }
   }
 

@@ -260,7 +260,7 @@ abstract class LintClient {
    * After partial analysis has completed for all dependencies, lint will call this method during
    * error reporting to merge and validate the partial results. Only intended for lint's own usage.
    */
-  open fun mergeState(root: Project, driver: LintDriver) {
+  open fun mergeState(roots: Collection<Project>, driver: LintDriver) {
     error("This client does not support partial lint analysis.")
   }
 
