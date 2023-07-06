@@ -540,17 +540,11 @@ class OpcodeInterpreter extends Interpreter<Value> {
             case FDIV:
                 {
                     float divider = value2.getFloat();
-                    if (divider == 0f) {
-                        divisionByZero();
-                    }
                     return new FloatValue(value1.getFloat() / divider);
                 }
             case FREM:
                 {
                     float divider = value2.getFloat();
-                    if (divider == 0f) {
-                        divisionByZero();
-                    }
                     return new FloatValue(value1.getFloat() % divider);
                 }
 
@@ -563,17 +557,11 @@ class OpcodeInterpreter extends Interpreter<Value> {
             case DDIV:
                 {
                     double divider = value2.getDouble();
-                    if (divider == 0.0) {
-                        divisionByZero();
-                    }
                     return new DoubleValue(value1.getDouble() / divider);
                 }
             case DREM:
                 {
                     double divider = value2.getDouble();
-                    if (divider == 0.0) {
-                        divisionByZero();
-                    }
                     return new DoubleValue(value1.getDouble() % divider);
                 }
 
