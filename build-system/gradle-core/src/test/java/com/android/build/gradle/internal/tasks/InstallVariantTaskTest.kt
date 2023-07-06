@@ -17,7 +17,7 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.gradle.internal.fixtures.FakeGradleDirectory
-import com.android.build.gradle.internal.testing.ConnectedDevice
+import com.android.build.gradle.internal.fixtures.FakeGradleDirectoryProperty
 import com.android.builder.testing.api.DeviceConnector
 import com.android.builder.testing.api.DeviceProvider
 import com.android.ddmlib.AndroidDebugBridge
@@ -105,6 +105,7 @@ class InstallVariantTaskTest(private val deviceVersion: String) {
             AndroidVersion(1),
             FakeGradleDirectory(temporaryFolder.root),
             ImmutableSet.of(listingFile),
+            FakeGradleDirectoryProperty(null),
             ImmutableSet.of(),
             ImmutableList.of(),
             4000,
@@ -147,6 +148,7 @@ class InstallVariantTaskTest(private val deviceVersion: String) {
             AndroidVersion(1),
             FakeGradleDirectory(temporaryFolder.root),
             ImmutableSet.of(),
+            FakeGradleDirectoryProperty(null),
             ImmutableSet.of(),
             ImmutableList.of(),
             4000,

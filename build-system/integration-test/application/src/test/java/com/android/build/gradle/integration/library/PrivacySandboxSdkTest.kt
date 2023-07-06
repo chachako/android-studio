@@ -22,6 +22,7 @@ import com.android.build.gradle.integration.common.fixture.testprojects.createGr
 import com.android.build.gradle.integration.common.truth.ApkSubject
 import com.android.build.gradle.integration.common.truth.ApkSubject.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
 import com.android.ide.common.signing.KeystoreHelper
@@ -493,6 +494,70 @@ class PrivacySandboxSdkTest {
                 .withFailOnWarning(false) // kgp uses deprecated api WrapUtil
                 .with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, false)
                 .run(":example-app:assembleDebug")
+    }
+
+    @Test
+    fun producesApkSplitsFromSdks() {
+        // For API S-, ensure that APKs are produced for each SDK that the app requires.
+        val apkSelectConfig = project.file("apkSelectConfig.json")
+        apkSelectConfig.writeText(
+                """{"sdk_version":28,"codename":"Pie","screen_density":420,"supported_abis":["x86_64","arm64-v8a"],"supported_locales":["en"]}""")
+
+        project.executor()
+                .withFailOnWarning(false)
+                .with(StringOption.IDE_APK_SELECT_CONFIG, apkSelectConfig.absolutePath)
+                .run(":example-app:extractApksFromSdkSplitsForDebug")
+
+        val extractedSdkApksDir =
+                File(project.getSubproject(":example-app").intermediatesDir,
+                        InternalArtifactType.EXTRACTED_SDK_APKS.getFolderName())
+        val extractedSdkApks = extractedSdkApksDir
+                .walkTopDown()
+                .filter { it.isFile }
+                .filter { it.extension == "apk" }
+                .toList()
+        assertThat(extractedSdkApks.map { it.name })
+                .containsExactly("comexampleprivacysandboxsdk-master.apk")
+
+        Apk(extractedSdkApks.single { it.name == "comexampleprivacysandboxsdk-master.apk" }).use {
+            val manifestContent = ApkSubject.getManifestContent(it.file)
+            assertThat(manifestContent).containsAtLeastElementsIn(
+                    listOf(
+                            "N: android=http://schemas.android.com/apk/res/android (line=2)",
+                            "  E: manifest (line=2)",
+                            "    A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=1",
+                            "    A: http://schemas.android.com/apk/res/android:isFeatureSplit(0x0101055b)=true",
+                            "    A: package=\"com.example.privacysandboxsdk.consumer\" (Raw: \"com.example.privacysandboxsdk.consumer\")",
+                            "    A: split=\"comexampleprivacysandboxsdk\" (Raw: \"comexampleprivacysandboxsdk\")",
+                            "      E: uses-permission (line=9)",
+                            "        A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"android.permission.INTERNET\" (Raw: \"android.permission.INTERNET\")",
+                            "      E: application (line=11)",
+                            "        A: http://schemas.android.com/apk/res/android:hasCode(0x0101000c)=false",
+                            "        A: http://schemas.android.com/apk/res/android:appComponentFactory(0x0101057a)=\"androidx.core.app.CoreComponentFactory\" (Raw: \"androidx.core.app.CoreComponentFactory\")",
+                            "      E: uses-sdk (line=0)",
+                            "        A: http://schemas.android.com/apk/res/android:minSdkVersion(0x0101020c)=14",
+                            "      E: http://schemas.android.com/apk/distribution:module (line=0)",
+                            "          E: http://schemas.android.com/apk/distribution:delivery (line=0)",
+                            "              E: http://schemas.android.com/apk/distribution:install-time (line=0)",
+                            "                  E: http://schemas.android.com/apk/distribution:removable (line=0)",
+                            "                    A: http://schemas.android.com/apk/distribution:value(0x01010024)=true",
+                            "          E: http://schemas.android.com/apk/distribution:fusing (line=0)",
+                            "            A: http://schemas.android.com/apk/distribution:include=true"
+                    )
+            )
+
+            val entries = it.entries.map { it.toString() }
+            // Not an exhaustive list of expected entries.
+            assertThat(entries).containsAtLeast(
+                    "/AndroidManifest.xml",
+                    "/assets/asset_from_androidlib1.txt",
+                    "/assets/RuntimeEnabledSdk-com.example.privacysandboxsdk/CompatSdkConfig.xml",
+                    "/META-INF/MANIFEST.MF",
+                    "/META-INF/BNDLTOOL.RSA",
+                    "/META-INF/BNDLTOOL.SF",
+                    "/resources.arsc"
+            )
+        }
     }
 
     companion object {

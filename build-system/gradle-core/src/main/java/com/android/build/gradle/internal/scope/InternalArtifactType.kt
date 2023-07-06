@@ -429,8 +429,12 @@ InternalArtifactType<T : FileSystemLocation>(
     }
     // APK Set archive with APKs generated from a bundle.
     object APKS_FROM_BUNDLE: InternalArtifactType<RegularFile>(FILE), Replaceable
+    // APKS file containing split APK files.
+    object SDK_SPLITS_APKS: InternalArtifactType<Directory>(DIRECTORY), Replaceable
     // output of ExtractApks applied to APKS_FROM_BUNDLE and a device config.
     object EXTRACTED_APKS: InternalArtifactType<Directory>(DIRECTORY), Replaceable, ContainsMany
+    // APK files extracted from SDK_SPLITS_APKS APKS for local Privacy Sandbox deployment.
+    object EXTRACTED_SDK_APKS: InternalArtifactType<Directory>(DIRECTORY), Replaceable, ContainsMany
     // The manifest meant to be consumed by the bundle.
     object BUNDLE_MANIFEST: InternalArtifactType<RegularFile>(FILE), Replaceable
 
@@ -524,6 +528,7 @@ InternalArtifactType<T : FileSystemLocation>(
     object APK_IDE_MODEL: InternalArtifactType<RegularFile>(FILE), Replaceable
     object BUNDLE_IDE_MODEL : InternalArtifactType<RegularFile>(FILE), Replaceable
     object APK_FROM_BUNDLE_IDE_MODEL : InternalArtifactType<RegularFile>(FILE)
+    object APK_FROM_SDKS_IDE_MODEL : InternalArtifactType<RegularFile>(FILE)
 
     // and the redirect file pointing to the one above, these artifacts are final and can not be
     // replaced as their value is transferred in the IDE model.

@@ -148,6 +148,7 @@ class ApplicationTaskManager(
             )
         }
 
+        taskFactory.register(AsarsToCompatSplitsTask.CreationAction(variant))
         createDynamicBundleTask(variantInfo)
 
         handleMicroApp(variant)
@@ -345,6 +346,7 @@ class ApplicationTaskManager(
             taskFactory.register(BundleToApkTask.CreationAction(variant))
             taskFactory.register(BundleToStandaloneApkTask.CreationAction(variant))
             taskFactory.register(ExtractApksTask.CreationAction(variant))
+            taskFactory.register(ExtractPrivacySandboxCompatApks.CreationAction(variant))
             taskFactory.register(
                 ListingFileRedirectTask.CreationAction(
                     variant,
