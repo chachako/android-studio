@@ -22,7 +22,7 @@ import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.JdwpPacketView.Companion.FlagsAndWord
 import com.android.adblib.tools.debugging.packets.toStringImpl
 import com.android.adblib.tools.debugging.packets.withPayload
-import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.utils.AdbRewindableInputChannel
 import com.android.adblib.tools.debugging.utils.ThreadSafetySupport
 import com.android.adblib.utils.ResizableBuffer
 import kotlinx.coroutines.sync.Mutex
@@ -159,11 +159,11 @@ internal open class EphemeralJdwpPacket private constructor(
         fun fromPacket(source: JdwpPacketView, payload: AdbInputChannel): EphemeralJdwpPacket {
             return fromPacket(
                 source = source,
-                payload = AdbBufferedInputChannel.forInputChannel(payload)
+                payload = AdbRewindableInputChannel.forInputChannel(payload)
             )
         }
 
-        fun fromPacket(source: JdwpPacketView, payload: AdbBufferedInputChannel): EphemeralJdwpPacket {
+        fun fromPacket(source: JdwpPacketView, payload: AdbRewindableInputChannel): EphemeralJdwpPacket {
             return fromPacket(
                 source = source,
                 payloadProvider = PayloadProvider.forInputChannel(payload)

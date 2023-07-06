@@ -19,7 +19,7 @@ import com.android.adblib.testing.FakeAdbSession
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_HEADER_LENGTH
 import com.android.adblib.tools.debugging.packets.withPayload
-import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.utils.AdbRewindableInputChannel
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -68,8 +68,8 @@ class PayloadProviderFactoryTest {
 
         // Assert:
         // Implementation detail: the payload provider for small packet does not need
-        // a "buffered" input channel, so we assert that condition.
-        assertTrue(payloadProvider.acquirePayload() !is AdbBufferedInputChannel)
+        // a "rewindable" input channel, so we assert that condition.
+        assertTrue(payloadProvider.acquirePayload() !is AdbRewindableInputChannel)
     }
 
     @Test
@@ -93,7 +93,7 @@ class PayloadProviderFactoryTest {
 
         // Assert:
         // Implementation detail: the payload provider for large packets needs to use
-        // a "buffered" input channel (to support "rewinding"), so we assert that condition.
-        assertTrue(payloadProvider.acquirePayload() is AdbBufferedInputChannel)
+        // a "rewindable" input channel (to support "rewinding"), so we assert that condition.
+        assertTrue(payloadProvider.acquirePayload() is AdbRewindableInputChannel)
     }
 }

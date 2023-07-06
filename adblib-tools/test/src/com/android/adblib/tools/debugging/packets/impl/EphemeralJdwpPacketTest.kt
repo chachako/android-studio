@@ -29,7 +29,7 @@ import com.android.adblib.tools.debugging.packets.isThreadSafeAndImmutable
 import com.android.adblib.tools.debugging.packets.payloadLength
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.toByteArray
-import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.utils.AdbRewindableInputChannel
 import com.android.adblib.tools.testutils.NanoTimeSpan
 import com.android.adblib.tools.testutils.NanoTimeSpan.Companion.assertNanoTimeSpansAreSorted
 import com.android.adblib.utils.ResizableBuffer
@@ -67,7 +67,7 @@ class EphemeralJdwpPacketTest {
         sourcePacket.cmd = 240
 
         // Act
-        val packet = EphemeralJdwpPacket.fromPacket(sourcePacket, AdbBufferedInputChannel.empty())
+        val packet = EphemeralJdwpPacket.fromPacket(sourcePacket, AdbRewindableInputChannel.empty())
 
         // Assert
         assertEquals(1_000_000, packet.length)
@@ -89,7 +89,7 @@ class EphemeralJdwpPacketTest {
         sourcePacket.errorCode = 1_000
 
         // Act
-        val packet = EphemeralJdwpPacket.fromPacket(sourcePacket, AdbBufferedInputChannel.empty())
+        val packet = EphemeralJdwpPacket.fromPacket(sourcePacket, AdbRewindableInputChannel.empty())
 
         // Assert
         assertEquals(1_000_000, packet.length)

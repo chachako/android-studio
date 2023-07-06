@@ -18,7 +18,7 @@ package com.android.adblib.tools.debugging.packets.ddms
 import com.android.adblib.ByteBufferAdbOutputChannel
 import com.android.adblib.forwardTo
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
-import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.utils.AdbRewindableInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
 import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
@@ -206,17 +206,17 @@ class DdmsChunkViewTest : AdbLibToolsTestBase() {
         return EphemeralDdmsChunk(
             type = chunkType,
             length = bytes.size,
-            payloadProvider = PayloadProvider.forInputChannel(bytesToBufferedInputChannel(bytes))
+            payloadProvider = PayloadProvider.forInputChannel(bytesToRewindableInputChannel(bytes))
         )
     }
 
-    private fun bytesToBufferedInputChannel(bytes: List<Int>): AdbBufferedInputChannel {
+    private fun bytesToRewindableInputChannel(bytes: List<Int>): AdbRewindableInputChannel {
         val buffer = ByteBuffer.allocate(bytes.size)
         for (value in bytes) {
             buffer.put(value.toByte())
         }
         buffer.flip()
-        return AdbBufferedInputChannel.forByteBuffer(buffer)
+        return AdbRewindableInputChannel.forByteBuffer(buffer)
     }
 
     private suspend fun DdmsChunkView.payloadByteArray() : ByteArray {

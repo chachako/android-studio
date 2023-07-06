@@ -22,7 +22,7 @@ import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.waitNonNull
 import com.android.adblib.tools.AdbLibToolsProperties
 import com.android.adblib.tools.debugging.JdwpSession
-import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.utils.AdbRewindableInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
@@ -339,12 +339,12 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
                 toOffline().ddmsChunks().firstOrNull { it.type == DdmsChunkType.APNM } != null
     }
 
-    private suspend fun DdmsChunkView.toBufferedInputChannel(): AdbBufferedInputChannel {
+    private suspend fun DdmsChunkView.toRewindableInputChannel(): AdbRewindableInputChannel {
         val workBuffer = ResizableBuffer()
         val outputChannel = ByteBufferAdbOutputChannel(workBuffer)
         this.writeToChannel(outputChannel)
         val serializedChunk = workBuffer.forChannelWrite()
-        return AdbBufferedInputChannel.forByteBuffer(serializedChunk)
+        return AdbRewindableInputChannel.forByteBuffer(serializedChunk)
     }
 
     private suspend fun createHeloDdmsPacket(jdwpSession: JdwpSession): MutableJdwpPacket {
@@ -360,13 +360,13 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
         packet.isCommand = true
         packet.cmdSet = DdmsPacketConstants.DDMS_CMD_SET
         packet.cmd = DdmsPacketConstants.DDMS_CMD
-        packet.payloadProvider = PayloadProvider.forInputChannel(heloChunk.toBufferedInputChannel())
+        packet.payloadProvider = PayloadProvider.forInputChannel(heloChunk.toRewindableInputChannel())
         return packet
     }
 
     private suspend fun AdbInputChannel.countBytes(): Int {
         return skipRemaining().also {
-            (this as? AdbBufferedInputChannel)?.rewind()
+            (this as? AdbRewindableInputChannel)?.rewind()
         }
     }
 }

@@ -19,7 +19,7 @@ import com.android.adblib.AdbInputChannel
 import com.android.adblib.ByteBufferAdbInputChannel
 import com.android.adblib.skipRemaining
 import com.android.adblib.tools.debugging.packets.ddms.withPayload
-import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.utils.AdbRewindableInputChannel
 import com.android.adblib.tools.debugging.utils.SupportsOffline
 import com.android.adblib.tools.debugging.utils.ThreadSafetySupport
 import com.android.adblib.tools.debugging.utils.toOffline
@@ -91,12 +91,12 @@ internal interface PayloadProvider: SupportsOffline<PayloadProvider>, AutoClosea
          * Creates a [PayloadProvider] wrapping the given [AdbInputChannel].
          */
         fun forInputChannel(channel: AdbInputChannel): PayloadProvider {
-            val bufferedChannel = if (channel is AdbBufferedInputChannel) {
+            val rewindableChannel = if (channel is AdbRewindableInputChannel) {
                 channel
             } else {
-                AdbBufferedInputChannel.forInputChannel(channel)
+                AdbRewindableInputChannel.forInputChannel(channel)
             }
-            return ForInputChannel(bufferedChannel)
+            return ForInputChannel(rewindableChannel)
         }
 
         private object Empty : PayloadProvider, ThreadSafetySupport {
@@ -105,7 +105,7 @@ internal interface PayloadProvider: SupportsOffline<PayloadProvider>, AutoClosea
                 get() = true // Can be safely shared across threads
 
             override suspend fun acquirePayload(): AdbInputChannel {
-                return AdbBufferedInputChannel.empty()
+                return AdbRewindableInputChannel.empty()
             }
 
             override fun releasePayload() {
@@ -130,17 +130,17 @@ internal interface PayloadProvider: SupportsOffline<PayloadProvider>, AutoClosea
         }
 
         private class ForInputChannel(payload: AdbInputChannel) : PayloadProvider {
-            private val bufferedPayload = if (payload is AdbBufferedInputChannel) {
+            private val rewindablePayload = if (payload is AdbRewindableInputChannel) {
                 payload
             } else {
-                AdbBufferedInputChannel.forInputChannel(payload)
+                AdbRewindableInputChannel.forInputChannel(payload)
             }
             private var closed = false
 
             override suspend fun acquirePayload(): AdbInputChannel {
                 throwIfClosed()
-                bufferedPayload.rewind()
-                return bufferedPayload
+                rewindablePayload.rewind()
+                return rewindablePayload
             }
 
             override fun releasePayload() {
@@ -152,23 +152,23 @@ internal interface PayloadProvider: SupportsOffline<PayloadProvider>, AutoClosea
                     return
                 }
                 closed = true
-                bufferedPayload.finalRewind()
-                bufferedPayload.skipRemaining(workBuffer)
+                rewindablePayload.finalRewind()
+                rewindablePayload.skipRemaining(workBuffer)
             }
 
             override suspend fun toOffline(workBuffer: ResizableBuffer): PayloadProvider {
                 throwIfClosed()
 
-                return forInputChannel(bufferedPayload.toOffline(workBuffer))
+                return forInputChannel(rewindablePayload.toOffline(workBuffer))
             }
 
             override fun close() {
                 closed = true
-                bufferedPayload.close()
+                rewindablePayload.close()
             }
 
             override fun toString(): String {
-                return "BufferedInputChannelPayloadProvider(payload=$bufferedPayload, closed=$closed)"
+                return "${this::class.simpleName}(payload=$rewindablePayload, closed=$closed)"
             }
 
             private fun throwIfClosed() {

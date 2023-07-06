@@ -27,7 +27,7 @@ import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSessionFilter
 import com.android.adblib.tools.debugging.SharedJdwpSessionMonitor
-import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.utils.AdbRewindableInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.impl.EphemeralJdwpPacket
@@ -481,7 +481,7 @@ internal class SharedJdwpSessionImpl(
                 get() = 0
 
             override suspend fun acquirePayload(): AdbInputChannel {
-                return AdbBufferedInputChannel.empty()
+                return AdbRewindableInputChannel.empty()
             }
 
             override fun releasePayload() {
@@ -511,7 +511,7 @@ internal class SharedJdwpSessionImpl(
 
     /**
      * A [PayloadProvider] that wraps a [payload][AdbInputChannel] using a
-     * [ScopedAdbBufferedInputChannel] so that cancellation of pending read operations
+     * [ScopedAdbRewindableInputChannel] so that cancellation of pending read operations
      * never close the initial [payload][AdbInputChannel].
      */
     private class ScopedPayloadProvider(
@@ -534,10 +534,10 @@ internal class SharedJdwpSessionImpl(
         private val mutex = Mutex()
 
         /**
-         * The [ScopedAdbBufferedInputChannel] wrapping the original [AdbInputChannel], to ensure
+         * The [ScopedAdbRewindableInputChannel] wrapping the original [AdbInputChannel], to ensure
          * cancellation of [AdbInputChannel.read] operations don't close the [AdbInputChannel].
          */
-        private var scopedPayload = ScopedAdbBufferedInputChannel(scope, payload)
+        private var scopedPayload = ScopedAdbRewindableInputChannel(scope, payload)
 
         override suspend fun acquirePayload(): AdbInputChannel {
             throwIfClosed()
@@ -576,29 +576,29 @@ internal class SharedJdwpSessionImpl(
         }
 
         /**
-         * An [AdbBufferedInputChannel] that reads from another [AdbBufferedInputChannel] in a custom
-         * [CoroutineScope] so that cancellation does not affect the initial [bufferedInput].
+         * An [AdbRewindableInputChannel] that reads from another [AdbRewindableInputChannel] in a custom
+         * [CoroutineScope] so that cancellation does not affect the source [AdbInputChannel].
          */
-        private class ScopedAdbBufferedInputChannel(
+        private class ScopedAdbRewindableInputChannel(
             private val scope: CoroutineScope,
             input: AdbInputChannel
-        ) : AdbBufferedInputChannel, SupportsOffline<AdbBufferedInputChannel> {
+        ) : AdbRewindableInputChannel, SupportsOffline<AdbRewindableInputChannel> {
 
             private var currentReadJob: Job? = null
 
             /**
-             * Ensure we have a [AdbBufferedInputChannel] so we support
-             * [AdbBufferedInputChannel.rewind]
+             * Ensure we have a [AdbRewindableInputChannel] so we support
+             * [AdbRewindableInputChannel.rewind]
              */
-            private val bufferedInput = if (input is AdbBufferedInputChannel) {
+            private val rewindableInput = if (input is AdbRewindableInputChannel) {
                 input
             } else {
-                AdbBufferedInputChannel.forInputChannel(input)
+                AdbRewindableInputChannel.forInputChannel(input)
             }
 
             override suspend fun rewind() {
                 throwIfPendingRead()
-                bufferedInput.rewind()
+                rewindableInput.rewind()
             }
 
             override suspend fun finalRewind() {
@@ -606,20 +606,20 @@ internal class SharedJdwpSessionImpl(
             }
 
             override suspend fun read(buffer: ByteBuffer, timeout: Long, unit: TimeUnit): Int {
-                return scopedRead { bufferedInput.read(buffer) }
+                return scopedRead { rewindableInput.read(buffer) }
             }
 
             override suspend fun readExactly(buffer: ByteBuffer, timeout: Long, unit: TimeUnit) {
-                return scopedRead { bufferedInput.readExactly(buffer) }
+                return scopedRead { rewindableInput.readExactly(buffer) }
             }
 
             suspend fun waitForPendingRead() {
                 currentReadJob?.join()
             }
 
-            override suspend fun toOffline(workBuffer: ResizableBuffer): AdbBufferedInputChannel {
+            override suspend fun toOffline(workBuffer: ResizableBuffer): AdbRewindableInputChannel {
                 return scopedRead {
-                    bufferedInput.toOffline(workBuffer)
+                    rewindableInput.toOffline(workBuffer)
                 }
             }
 
