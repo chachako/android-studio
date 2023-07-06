@@ -26,11 +26,17 @@ import com.android.adblib.tools.debugging.impl.SharedJdwpSessionImpl
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.utils.NoDdmsPacketFilterFactory
+import com.android.adblib.utils.ResizableBuffer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.takeWhile
 import java.io.EOFException
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * A thread-safe version of [JdwpSession] that consumes packets on-demand via [newPacketReceiver]
@@ -210,15 +216,188 @@ interface JdwpPacketReceiver {
      */
     suspend fun receive(receiver: suspend (JdwpPacketView) -> Unit)
 
-    /**
-     * Wraps [JdwpPacketReceiver.receive] into a [Flow] of [JdwpPacketView].
-     *
-     * ### Performance
-     *
-     * To ensure all [JdwpPacketView] instances of the flow are guaranteed to be valid in
-     * downstream flows (e.g. [`take(n)`][Flow.take] or [`buffer(n)`][Flow.buffer]), as well as
-     * after the flow completes, [JdwpPacketView.toOffline] is invoked on each packet of the flow,
-     * so there is a cost in terms of memory usage versus using the [receive] method.
-     */
-    fun flow(): Flow<JdwpPacketView>
+}
+
+/**
+ * Wraps [JdwpPacketReceiver.receive] into a [Flow] of [JdwpPacketView].
+ *
+ * ### Performance
+ *
+ * To ensure all [JdwpPacketView] instances of the flow are guaranteed to be valid in
+ * downstream flows (e.g. [`take(n)`][Flow.take] or [`buffer(n)`][Flow.buffer]), as well as
+ * after the flow completes, [JdwpPacketView.toOffline] is invoked on each packet of the flow,
+ * so there is a cost in terms of memory usage versus using the [JdwpPacketReceiver.receive] method.
+ */
+fun JdwpPacketReceiver.flow(): Flow<JdwpPacketView> {
+    return channelFlow {
+        val workBuffer = ResizableBuffer()
+        receive { packet ->
+            // Make the packet "offline" (i.e. read payload in memory if needed) to
+            // ensure it is safe to use in downstream flows (e.g. filtering,
+            // buffering, etc)
+            send(packet.toOffline(workBuffer))
+        }
+    }
+}
+
+/**
+ * Stores the result of the mapping function passed to [JdwpPacketReceiver.receiveMapFirst]
+ * or [JdwpPacketReceiver.receiveMapFirstOrNull]. `null` values ar supported.
+ */
+class ReceiveResult<R> {
+    private var result: Any? = NOT_SET
+
+    val isCompleted: Boolean
+        get() = result !== NOT_SET
+
+    fun complete(value: R) {
+        result = value
+    }
+
+    fun getOrThrow(): R {
+        return if (result === NOT_SET) {
+            throw NoSuchElementException()
+        } else {
+            @Suppress("UNCHECKED_CAST")
+            result as R
+        }
+    }
+
+    fun getOrNull(): R? {
+        return if (result === NOT_SET) {
+            null
+        } else {
+            @Suppress("UNCHECKED_CAST")
+            result as R?
+        }
+    }
+
+    companion object {
+        private val NOT_SET = Any()
+    }
+}
+
+private class AbortReceive(
+    val receiveResult: ReceiveResult<*>
+) : CancellationException("Receive cancelled")
+
+/**
+ * Returns the first packet that [block] transforms into a value stored in [ReceiveResult]
+ */
+private suspend fun <R> JdwpPacketReceiver.receiveMapFirstResult(
+    block: suspend ReceiveResult<R>.(JdwpPacketView) -> Unit
+): ReceiveResult<R> {
+    val receiveResult = ReceiveResult<R>()
+    return try {
+        receive { livePacket ->
+            receiveResult.block(livePacket)
+            if (receiveResult.isCompleted) {
+                throw AbortReceive(receiveResult)
+            }
+        }
+        receiveResult
+    } catch(e: AbortReceive) {
+        if (e.receiveResult === receiveResult) {
+            receiveResult
+        } else {
+            throw e
+        }
+    }
+}
+
+/**
+ * Returns the first packet that [block] transforms into a value stored in [ReceiveResult]
+ */
+suspend fun <R> JdwpPacketReceiver.receiveMapFirst(
+    block: suspend ReceiveResult<R>.(JdwpPacketView) -> Unit
+): R {
+    return receiveMapFirstResult(block).getOrThrow()
+}
+
+/**
+ * Returns the first packet that [block] transforms into a value stored in [ReceiveResult],
+ * or `null` if no value was generated.
+ */
+suspend fun <R> JdwpPacketReceiver.receiveMapFirstOrNull(
+    block: suspend ReceiveResult<R>.(JdwpPacketView) -> Unit
+): R? {
+    return receiveMapFirstResult(block).getOrNull()
+}
+
+/**
+ * Returns the first [JdwpPacketView] received by the [JdwpPacketReceiver].
+ * Throws [NoSuchElementException] if EOF was reached.
+ *
+ * @see [Flow.first]
+ */
+suspend inline fun JdwpPacketReceiver.receiveFirst(): JdwpPacketView {
+    return receiveFirstOrNull() ?: throw NoSuchElementException()
+}
+
+/**
+ * Returns the first [JdwpPacketView] received by the [JdwpPacketReceiver], or `null`
+ * if EOF was reached.
+ *
+ * @see [Flow.firstOrNull]
+ */
+suspend inline fun JdwpPacketReceiver.receiveFirstOrNull(): JdwpPacketView? {
+    return receiveFirstOrNull { true }
+}
+
+/**
+ * Returns the first [JdwpPacketView] that matches the given [predicate].
+ * Throws [NoSuchElementException] if no packet matched the [predicate].
+ *
+ * @see [Flow.first]
+ */
+suspend inline fun JdwpPacketReceiver.receiveFirst(
+    crossinline predicate: suspend (JdwpPacketView) -> Boolean
+): JdwpPacketView {
+    return receiveFirstOrNull(predicate) ?: throw NoSuchElementException()
+}
+
+/**
+ * Returns the first [JdwpPacketView] that matches the given [predicate], or `null` if no packet
+ * matches the [predicate].
+ *
+ * @see [Flow.firstOrNull]
+ */
+suspend inline fun JdwpPacketReceiver.receiveFirstOrNull(
+    crossinline predicate: suspend (JdwpPacketView) -> Boolean
+): JdwpPacketView? {
+    return receiveMapFirstOrNull { livePacket ->
+        if (predicate(livePacket)) {
+            // Make the packet offline so that it can be safely used outside
+            // the `receive` scope.
+            this@receiveMapFirstOrNull.complete(livePacket.toOffline())
+        }
+    }
+}
+
+/**
+ * Calls [predicate] on each received [JdwpPacketView] as long as [predicate] returns `true`
+ * or EOF is reached.
+ *
+ * @see [Flow.takeWhile]
+ */
+suspend fun JdwpPacketReceiver.receiveWhile(
+    predicate: suspend (JdwpPacketView) -> Boolean
+) {
+    receiveMapFirstResult<Unit> { livePacket ->
+        if (!predicate(livePacket)) {
+            this@receiveMapFirstResult.complete(Unit)
+        }
+    }
+}
+
+/**
+ * Calls [predicate] on each received [JdwpPacketView] until [predicate] returns `true`
+ * or EOF is reached.
+ *
+ * @see [Flow.takeWhile]
+ */
+suspend inline fun JdwpPacketReceiver.receiveUntil(
+    crossinline predicate: suspend (JdwpPacketView) -> Boolean
+) {
+    return receiveWhile { livePacket -> !predicate(livePacket) }
 }

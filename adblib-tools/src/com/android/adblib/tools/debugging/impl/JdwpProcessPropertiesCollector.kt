@@ -50,6 +50,7 @@ import com.android.adblib.tools.debugging.packets.ddms.writeToChannel
 import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
 import com.android.adblib.tools.debugging.rethrowCancellation
+import com.android.adblib.tools.debugging.receiveWhile
 import com.android.adblib.tools.debugging.utils.ReferenceCountedResource
 import com.android.adblib.tools.debugging.utils.withResource
 import com.android.adblib.utils.ResizableBuffer
@@ -213,8 +214,7 @@ internal class JdwpProcessPropertiesCollector(
                     jdwpSession.sendPacket(heloCommand)
                     jdwpSession.sendPacket(featCommand)
                 }
-            }.flow()
-            .takeWhile { packet ->
+            }.receiveWhile { packet ->
                 logger.debug { "Processing JDWP packet: $packet" }
                 // Any DDMS command is a packet sent from the Android VM that we should
                 // replay in case we connect later on again (e.g. for a retry)
@@ -225,7 +225,7 @@ internal class JdwpProcessPropertiesCollector(
 
                 // "Take while we have not collected everything"
                 !collectState.hasCollectedEverything
-            }.collect()
+            }
     }
 
     private suspend fun processReceivedPacket(

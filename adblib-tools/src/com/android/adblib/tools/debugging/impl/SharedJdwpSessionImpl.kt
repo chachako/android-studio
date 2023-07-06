@@ -28,6 +28,7 @@ import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSessionFilter
 import com.android.adblib.tools.debugging.SharedJdwpSessionMonitor
 import com.android.adblib.tools.debugging.impl.SharedJdwpSessionImpl.ScopedPayloadProvider.ScopedAdbRewindableInputChannel
+import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.impl.EphemeralJdwpPacket
 import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
@@ -54,9 +55,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.takeWhile
@@ -313,18 +312,6 @@ internal class SharedJdwpSessionImpl(
                     // We reached EOF: Send a custom "EOFCancellationException" to terminate the
                     // "activation" coroutine (in case it has not completed yet)
                     activationJob.cancel(EOFCancellationException("Reached EOF"))
-                }
-            }
-        }
-
-        override fun flow(): Flow<JdwpPacketView> {
-            return channelFlow {
-                val workBuffer = ResizableBuffer()
-                receive { packet ->
-                    // Make the packet "offline" (i.e. read payload in memory if needed) to
-                    // ensure it is safe to use in downstream flows (e.g. filtering,
-                    // buffering, etc)
-                    send(packet.toOffline(workBuffer))
                 }
             }
         }

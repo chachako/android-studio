@@ -38,7 +38,7 @@ import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
 import com.android.adblib.tools.debugging.packets.ddms.isDdmsCommand
 import com.android.adblib.tools.debugging.packets.ddms.withPayload
 import com.android.adblib.tools.debugging.processEmptyDdmsReplyPacket
-import kotlinx.coroutines.flow.first
+import com.android.adblib.tools.debugging.receiveUntil
 import java.util.concurrent.TimeUnit
 
 internal class JdwpProcessProfilerImpl(
@@ -145,8 +145,7 @@ internal class JdwpProcessProfilerImpl(
                 progress?.beforeSend(requestPacket)
                 sendPacket(requestPacket)
                 progress?.afterSend(requestPacket)
-            }.flow()
-            .first { packet ->
+            }.receiveUntil { packet ->
                 logger.verbose { "Receiving packet: $packet" }
 
                 if (packet.isDdmsCommand) {

@@ -41,7 +41,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withTimeout
@@ -401,8 +400,7 @@ private suspend fun SharedJdwpSession.handleAlwaysEmptyReplyDdmsCommand(
             progress?.afterSend(requestPacket)
             signal.complete(Unit)
         }
-        .flow()
-        .first { packet ->
+        .receiveUntil { packet ->
             logger.verbose { "Receiving packet: $packet, waiting for activation to complete" }
             // Note: we wait on "signal" to ensure the "progress?.afterSend" call in the activation
             // block above is always executed, otherwise, there is a race condition between
@@ -480,22 +478,19 @@ suspend fun <R> SharedJdwpSession.handleJdwpCommand(
             sendPacket(commandPacket)
             progress?.afterSend(commandPacket)
         }
-        .flow()
-        .filter { replyPacket ->
-            logger.verbose { "Filtering packet from session: $replyPacket" }
+        .receiveMapFirst { replyPacket ->
+            logger.verbose { "Received packet from session: $replyPacket" }
             val isReply = replyPacket.isReply && replyPacket.id == commandPacket.id
             if (isReply) {
                 logger.debug { "Received reply '$replyPacket' for command packet '$commandPacket'" }
+                progress?.onReply(replyPacket)
+                // Note: The packet "payload" is still connected to the underlying
+                // socket at this point. We don't clone it in memory so that the
+                // caller can decide how to handle potentially large data sets.
+                val handlerResult = replyHandler(replyPacket)
+                this@receiveMapFirst.complete(handlerResult)
             }
-            isReply
         }
-        .map { replyPacket ->
-            progress?.onReply(replyPacket)
-            // Note: The packet "payload" is still connected to the underlying
-            // socket at this point. We don't clone it in memory so that the
-            // caller can decide how to handle potentially large data sets.
-            replyHandler(replyPacket)
-        }.first() // There is only one reply packet
 }
 
 suspend fun AdbInputChannel.toByteBuffer(size: Int): ByteBuffer {
