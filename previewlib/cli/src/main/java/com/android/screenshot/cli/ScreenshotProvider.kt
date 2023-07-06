@@ -123,27 +123,34 @@ class ScreenshotProvider(
             val renderResult = renderPreviewElement(previewElement, model)
             val errorMessage = verifyRenderResult(renderResult!!)
             val fileName = previewElement.displaySettings.name
+            val goldenPath = "$goldenLocation$fileName.png"
             if (recordGoldens && errorMessage == null) {
                 try {
-                    renderResult.renderedImage.copy?.let { saveImage(it, "$goldenLocation$fileName.png") }
-                    results.add(PreviewResult(CODE_SUCCESS, "Golden image saved"))
+                    renderResult.renderedImage.copy?.let { saveImage(it, goldenPath) }
+                    results.add(PreviewResult(CODE_SUCCESS, "Golden image saved", goldenPath))
                 } catch (e: Exception) {
                     results.add(PreviewResult(CODE_ERROR, "Error saving golden image"))
                 }
             } else if (errorMessage == null) {
+                var actualPath: String? = null
+                var diffPath: String? = null
                 val result = compareImages(
                     renderResult,
                     goldenLocation,
                     outputLocation,
                     "$fileName.png"
                 )
-                if ( result is Verify.AnalysisResult.Failed) {
-                    saveImage(result.imageDiff.highlights, outputLocation + fileName + "_diff.png")
-                    renderResult.renderedImage.copy?.let { saveImage(it, outputLocation + fileName + "_actual.png") }
+                if ( result is Verify.AnalysisResult.Failed || result is Verify.AnalysisResult.SizeMismatch || result is Verify.AnalysisResult.MissingGolden) {
+                    actualPath = outputLocation + fileName + "_actual.png"
+                    renderResult.renderedImage.copy?.let { saveImage(it, actualPath) }
                 }
-                results.add(result.toPreviewResponse())
+                if (result is Verify.AnalysisResult.Failed) {
+                    diffPath = outputLocation + fileName + "_diff.png"
+                    saveImage(result.imageDiff.highlights, diffPath)
+                }
+                results.add(result.toPreviewResponse(goldenPath, actualPath, diffPath))
             } else {
-                results.add(PreviewResult(CODE_ERROR, errorMessage))
+                results.add(PreviewResult(CODE_ERROR, errorMessage, "$goldenLocation$fileName.png"))
             }
         }
         return results

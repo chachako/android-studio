@@ -64,6 +64,7 @@ import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.extensions.Extensions
 import com.intellij.psi.util.PsiTreeUtil
+import com.google.gson.Gson
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.utils.PathUtil
 import org.jetbrains.uast.UAnnotation
@@ -153,12 +154,12 @@ class Main {
 
     private fun saveResults(response: Response, outputLocation: String) {
         //TODO - find a XMLParser to be used here
-        val xmlString = response.toString()
-        val outputFile = File("$outputLocation/response.xml")
+        val jsonString = Gson().toJson(response)
+        val outputFile = File("$outputLocation/response.json")
         if (!outputFile.exists()) {
             outputFile.createNewFile()
         }
-        outputFile.writeText(xmlString)
+        outputFile.writeText(jsonString)
     }
 
     private fun processResults(results: List<PreviewResult>): Response {

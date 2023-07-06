@@ -23,48 +23,38 @@ import com.android.screenshot.cli.diff.Verify
 data class PreviewResult(
     val responseCode: Int,
     val message: String,
+    val goldenPath: String? = null,
+    val actualPath: String? = null,
+    val diffPath: String? = null
 ) {
-
-    override fun toString(): String {
-        return "<previewResult><code>$responseCode</code><message>$message</message></previewResult>"
-    }
-
 }
 
-fun Verify.AnalysisResult.toPreviewResponse(): PreviewResult{
+fun Verify.AnalysisResult.toPreviewResponse(golden: String? = null,
+    diff: String? = null,
+    actual: String? = null): PreviewResult{
     when (this) {
         is Verify.AnalysisResult.Failed -> {
-            return PreviewResult(CODE_FAILURE, message)
+            return PreviewResult(CODE_FAILURE, message, golden, actual, diff)
         }
 
         is Verify.AnalysisResult.Passed -> {
-            return PreviewResult(CODE_SUCCESS, message)
+            return PreviewResult(CODE_SUCCESS, message, golden, actual, diff)
         }
 
         is Verify.AnalysisResult.SizeMismatch -> {
-            return PreviewResult(CODE_FAILURE, message)
+            return PreviewResult(CODE_FAILURE, message, golden, actual, diff)
         }
 
         is Verify.AnalysisResult.MissingGolden -> {
-            return PreviewResult(CODE_FAILURE, message)
+            return PreviewResult(CODE_FAILURE, message, golden, actual, diff)
         }
 
         else -> {
-            return PreviewResult(CODE_ERROR, message)
+            return PreviewResult(CODE_ERROR, message, golden, actual, diff)
         }
     }
 }
 
 data class Response(val status: Int, val message: String, val previewResults: List<PreviewResult>?) {
-
-    override fun toString(): String {
-        val resultsXml = if (previewResults == null) "" else "<previewResults>${previewResults!!.toXmlString()}</previewResults>"
-        return "<response><status>$status</status><message>$message</message>$resultsXml</response>"
-    }
-}
-fun List<PreviewResult>.toXmlString(): String {
-    var xmlString = ""
-    this.forEach { xmlString += it.toString()}
-    return xmlString
 }
 
