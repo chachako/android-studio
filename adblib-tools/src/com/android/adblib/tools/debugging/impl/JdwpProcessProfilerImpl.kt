@@ -141,7 +141,7 @@ internal class JdwpProcessProfilerImpl(
 
         this.newPacketReceiver()
             .withName("handleMPSEReply")
-            .onActivation {
+            .withActivation {
                 progress?.beforeSend(requestPacket)
                 sendPacket(requestPacket)
                 progress?.afterSend(requestPacket)

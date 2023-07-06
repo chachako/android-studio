@@ -25,6 +25,7 @@ import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.JdwpPacketReceiver
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSession
+import com.android.adblib.tools.debugging.SharedJdwpSessionFilter
 import com.android.adblib.tools.debugging.SharedJdwpSessionMonitor
 import com.android.adblib.tools.debugging.utils.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
@@ -259,7 +260,30 @@ internal class SharedJdwpSessionImpl(
 
     private class JdwpPacketReceiverImpl(
         private val jdwpSession: SharedJdwpSessionImpl
-    ) : JdwpPacketReceiver() {
+    ) : JdwpPacketReceiver {
+
+        private var name: String = ""
+            private set
+
+        private var activation: suspend () -> Unit = { }
+            private set
+
+        private var filterId: SharedJdwpSessionFilter.FilterId? = null
+
+        override fun withName(name: String): JdwpPacketReceiver {
+            this.name = name
+            return this
+        }
+
+        override fun withFilter(filterId: SharedJdwpSessionFilter.FilterId): JdwpPacketReceiver {
+            this.filterId = filterId
+            return this
+        }
+
+        override fun withActivation(activationBlock: suspend () -> Unit): JdwpPacketReceiver {
+            this.activation = activationBlock
+            return this
+        }
 
         override suspend fun receive(receiver: suspend (JdwpPacketView) -> Unit) {
             withContext(jdwpSession.session.ioDispatcher) {

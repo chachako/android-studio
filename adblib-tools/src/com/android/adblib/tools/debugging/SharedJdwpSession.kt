@@ -159,43 +159,26 @@ interface SharedJdwpSession : AutoShutdown {
  *
  * @see SharedJdwpSession.newPacketReceiver
  */
-abstract class JdwpPacketReceiver {
-
-    var name: String = ""
-        private set
-
-    protected var activation: suspend () -> Unit = { }
-        private set
-
-    var filterId: FilterId? = null
+interface JdwpPacketReceiver {
 
     /**
      * Sets an arbitrary name for this receiver
      */
-    fun withName(name: String): JdwpPacketReceiver {
-        this.name = name
-        return this
-    }
+    fun withName(name: String): JdwpPacketReceiver
 
     /**
      * Applies a [FilterId] to this [JdwpPacketReceiver] so its [flow] does not emit
      * [JdwpPacketView] instances filtered by the corresponding [SharedJdwpSessionFilter].
      */
-    fun withFilter(filterId: FilterId): JdwpPacketReceiver {
-        this.filterId = filterId
-        return this
-    }
+    fun withFilter(filterId: FilterId): JdwpPacketReceiver
 
     /**
-     * Sets a [block] that is invoked when this receiver is activated, but before
+     * Sets a [activationBlock] that is invoked when this receiver is activated, but before
      * any [JdwpPacketView] is received.
      *
-     * Note: [block] is executed on the [AdbSession.ioDispatcher] dispatcher
+     * Note: [activationBlock] is executed on the [AdbSession.ioDispatcher] dispatcher
      */
-    fun onActivation(block: suspend () -> Unit): JdwpPacketReceiver {
-        activation = block
-        return this
-    }
+    fun withActivation(activationBlock: suspend () -> Unit): JdwpPacketReceiver
 
     /**
      * Starts receiving [packets][JdwpPacketView] from the underlying [JdwpSession] and invokes
@@ -203,8 +186,8 @@ abstract class JdwpPacketReceiver {
      *
      * ### Detailed behavior
      *
-     * * First, [onActivation] is launched concurrently and is guaranteed to be invoked **after**
-     * [receiver] is ready to be invoked. This means [onActivation] can use
+     * * First, [withActivation] is launched concurrently and is guaranteed to be invoked **after**
+     * [receiver] is ready to be invoked. This means [withActivation] can use
      * [SharedJdwpSession.sendPacket] that will be processed in [receiver].
      * * Then, all replay packets from [SharedJdwpSession.addReplayPacket] are sent to [receiver]
      * * Then, the underlying [SharedJdwpSession] is activated if needed, i.e. [JdwpPacketView]
@@ -225,7 +208,7 @@ abstract class JdwpPacketReceiver {
      * * This function returns when the underlying [SharedJdwpSession] reaches EOF.
      * * This function re-throws any other exception from the underlying [SharedJdwpSession].
      */
-    abstract suspend fun receive(receiver: suspend (JdwpPacketView) -> Unit)
+    suspend fun receive(receiver: suspend (JdwpPacketView) -> Unit)
 
     /**
      * Wraps [JdwpPacketReceiver.receive] into a [Flow] of [JdwpPacketView].
@@ -237,5 +220,5 @@ abstract class JdwpPacketReceiver {
      * after the flow completes, [JdwpPacketView.toOffline] is invoked on each packet of the flow,
      * so there is a cost in terms of memory usage versus using the [receive] method.
      */
-    abstract fun flow(): Flow<JdwpPacketView>
+    fun flow(): Flow<JdwpPacketView>
 }

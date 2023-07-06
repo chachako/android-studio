@@ -130,7 +130,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         }
 
         val reply = jdwpSession.newPacketReceiver()
-            .onActivation { ready.complete(Unit) }
+            .withActivation { ready.complete(Unit) }
             .receiveFirst { it.id == packet.await().id }
 
         // Assert
@@ -201,7 +201,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         var isThreadSafeAndImmutable: Boolean? = null
         val offlineReplyPacket = jdwpSession.newPacketReceiver()
             .withName("Unit Test Receiver")
-            .onActivation {
+            .withActivation {
                 jdwpSession.sendPacket(commandPacket)
             }.receiveFirst { onlineReplyPacket ->
                 if (onlineReplyPacket.id == commandPacket.id)  {
@@ -244,7 +244,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         exceptionRule.expectMessage("My Message")
         jdwpSession.newPacketReceiver()
             .withName("Unit Test Receiver")
-            .onActivation {
+            .withActivation {
                 val sendPacket = createHeloDdmsPacket(jdwpSession)
                 jdwpSession.sendPacket(sendPacket)
             }.receive {
@@ -267,7 +267,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         exceptionRule.expectMessage("My Message")
         jdwpSession.newPacketReceiver()
             .withName("Unit Test Receiver")
-            .onActivation {
+            .withActivation {
                 val sendPacket = createHeloDdmsPacket(jdwpSession)
                 jdwpSession.sendPacket(sendPacket)
             }.receive {
@@ -295,7 +295,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
                 class EndReceiveException(val timeSpan: NanoTimeSpan) : Exception()
                 try {
                     jdwpSession.newPacketReceiver()
-                        .onActivation { readyDef[index].complete(Unit) }
+                        .withActivation { readyDef[index].complete(Unit) }
                         .receive {
                             val start = System.nanoTime()
                             delay(500)
@@ -347,7 +347,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
             var heloPacketId: Int? = null
             async {
                 jdwpSession.newPacketReceiver()
-                    .onActivation {
+                    .withActivation {
                         //
                         val packet = createHeloDdmsPacket(jdwpSession)
                         heloPacketId = packet.id
@@ -374,7 +374,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         exceptionRule.expect(IOException::class.java)
         exceptionRule.expectMessage("My Exception")
         jdwpSession.newPacketReceiver()
-            .onActivation {
+            .withActivation {
                 delay(5)
                 throw IOException("My Exception")
             }
@@ -396,7 +396,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         exceptionRule.expect(CancellationException::class.java)
         exceptionRule.expectMessage("My Cancellation")
         jdwpSession.newPacketReceiver()
-            .onActivation {
+            .withActivation {
                 throw CancellationException("My Cancellation")
             }
             .receive {
@@ -419,7 +419,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         val packets = (0 until receiverCount).map {
             async {
                 jdwpSession.newPacketReceiver()
-                    .onActivation {
+                    .withActivation {
                         activationCount.incrementAndGet()
                         // If activations were serialized, this condition would never be satisfied
                         yieldUntil { activationCount.get() == receiverCount }
@@ -455,14 +455,14 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         val def = (0 until receiverCount).map {
             async {
                 jdwpSession.newPacketReceiver()
-                    .onActivation {
+                    .withActivation {
                         activationCount.incrementAndGet()
                     }
             }
         }
 
         jdwpSession.newPacketReceiver()
-            .onActivation {
+            .withActivation {
                 val sendPacket = createHeloDdmsPacket(jdwpSession)
                 jdwpSession.sendPacket(sendPacket)
             }.receiveFirst()
@@ -489,7 +489,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
             readyDef.add(CompletableDeferred())
             async {
                 jdwpSession.newPacketReceiver()
-                    .onActivation { readyDef[index].complete(Unit) }
+                    .withActivation { readyDef[index].complete(Unit) }
                     .flow()
                     .filter {
                         it.id == sendPacket.id
@@ -525,7 +525,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         // Act
         val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
         val packets = jdwpSession.newPacketReceiver()
-            .onActivation {
+            .withActivation {
                 val sendPacket = createHeloDdmsPacket(jdwpSession)
                 jdwpSession.sendPacket(sendPacket)
             }.flow()
@@ -549,7 +549,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
         val packets = jdwpSession.newPacketReceiver()
             .withName("test1")
-            .onActivation {
+            .withActivation {
                 val sendPacket = createHeloDdmsPacket(jdwpSession)
                 jdwpSession.sendPacket(sendPacket)
             }.flow()
@@ -607,7 +607,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
 
         val packets = jdwpSession.newPacketReceiver()
             .withName("Test")
-            .onActivation {
+            .withActivation {
                 jdwpSession.sendPacket(sendPacket3)
             }
             .flow()
@@ -643,7 +643,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         // Act: Send 3 `HELO` commands, waits for 3 `HELO` replies and 3 `APNM` commands
         val packets = jdwpSession.newPacketReceiver()
             .withName("Test")
-            .onActivation {
+            .withActivation {
                 repeat(heloCount) {
                     val sendPacket = createHeloDdmsPacket(jdwpSession)
                     jdwpSession.sendPacket(sendPacket)
@@ -795,7 +795,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         // Act
         jdwpSession.newPacketReceiver()
             .withName("Unit Test Receiver")
-            .onActivation {
+            .withActivation {
                 val sendPacket = createHeloDdmsPacket(jdwpSession)
                 jdwpSession.sendPacket(sendPacket)
             }.receive {

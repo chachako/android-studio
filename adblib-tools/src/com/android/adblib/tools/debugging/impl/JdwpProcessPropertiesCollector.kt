@@ -206,7 +206,7 @@ internal class JdwpProcessPropertiesCollector(
         val workBuffer = ResizableBuffer()
         jdwpSession.newPacketReceiver()
             .withName("properties collector")
-            .onActivation {
+            .withActivation {
                 // Send packets to JDWP session
                 with(commands) {
                     jdwpSession.sendPacket(heloCommand)

@@ -81,7 +81,7 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
                 ByteBuffer.allocate(0)
             )
             newPacketReceiver()
-                .onActivation {
+                .withActivation {
                     sendPacket(versionCommand)
                 }.flow()
                 .first { reply -> reply.id == versionCommand.id }

@@ -180,7 +180,7 @@ internal class JdwpSessionProxy(
         deviceSession.newPacketReceiver()
             .withName("device session forwarder")
             .withNoDdmsPacketFilter()
-            .onActivation {
+            .withActivation {
                 logger.debug { "device->debugger: Device session is ready to receive packets" }
                 startStateFlow.value = true
             }.receive { packet ->

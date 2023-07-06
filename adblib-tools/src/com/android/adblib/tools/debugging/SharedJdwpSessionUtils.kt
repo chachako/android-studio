@@ -139,7 +139,7 @@ suspend fun SharedJdwpSession.sendDdmsExit(status: Int) {
     // Send packet and wait for EOF (i.e. wait for JDWP session to end when process terminates)
     newPacketReceiver()
         .withName("sendDdmsExit")
-        .onActivation { sendPacket(packet) }
+        .withActivation { sendPacket(packet) }
         .receive { }
 }
 
@@ -395,7 +395,7 @@ private suspend fun SharedJdwpSession.handleAlwaysEmptyReplyDdmsCommand(
     val logger = thisLogger(device.session).withPrefix("pid=$pid: ")
     newPacketReceiver()
         .withName("handleEmptyReplyDdmsCommand(${chunkType.text})")
-        .onActivation {
+        .withActivation {
             progress?.beforeSend(requestPacket)
             sendPacket(requestPacket)
             progress?.afterSend(requestPacket)
@@ -474,7 +474,7 @@ suspend fun <R> SharedJdwpSession.handleJdwpCommand(
 
     return newPacketReceiver()
         .withName("JDWP Command: $commandPacket")
-        .onActivation {
+        .withActivation {
             logger.debug { "Sending command packet and waiting for reply: $commandPacket" }
             progress?.beforeSend(commandPacket)
             sendPacket(commandPacket)
