@@ -15,7 +15,9 @@
  */
 package com.android.adblib.tools.debugging.packets.ddms
 
+import com.android.adblib.AdbInputChannel
 import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
+import com.android.adblib.utils.ResizableBuffer
 
 /**
  * A [DdmsChunkView] implementation that is immutable and allows on-demand access to the
@@ -25,7 +27,27 @@ internal class EphemeralDdmsChunk(
   override val type: DdmsChunkType,
   override val length: Int,
   private val payloadProvider: PayloadProvider
-): DdmsChunkView, PayloadProvider by payloadProvider {
+): DdmsChunkView, AutoCloseable {
+
+    override suspend fun acquirePayload(): AdbInputChannel {
+        return payloadProvider.acquirePayload()
+    }
+
+    override fun releasePayload() {
+        return payloadProvider.releasePayload()
+    }
+
+    /**
+     * Shuts down this [EphemeralDdmsChunk], releasing resources if necessary.
+     */
+    suspend fun shutdown(workBuffer: ResizableBuffer) {
+        payloadProvider.shutdown(workBuffer)
+    }
+
+    override fun close() {
+        payloadProvider.close()
+    }
+
     override fun toString(): String {
         return "DDMS Chunk: type=$type (${type.value}), length=$length, payloadProvider=$payloadProvider"
     }
