@@ -538,15 +538,28 @@ class AndroidEval implements Eval {
 
     private String methodNotFoundMsg(String className, String method, String desc) {
         List<Method> foundMethods;
+        List<Constructor> foundConstructors;
         try {
             foundMethods = getAllDeclaredMethods(className);
+            foundConstructors = getAllDeclaredConstructors(className);
         } catch (ClassNotFoundException e) {
             return "Cannot find class '" + className + "'";
         }
         String methodName = method + desc;
         StringBuilder msg =
                 new StringBuilder("Cannot find '" + methodName + "' in " + className + "\n");
-        msg.append("Found:\n");
+
+        msg.append("Found constructors:\n");
+        for (Constructor c : foundConstructors) {
+            msg.append("    '");
+            msg.append(c.getDeclaringClass());
+            msg.append(".");
+            msg.append("<init>");
+            msg.append(Arrays.toString(c.getParameterTypes()));
+            msg.append("\n");
+        }
+
+        msg.append("Found methods:\n");
         for (Method m : foundMethods) {
             msg.append("    '");
             msg.append(m.getDeclaringClass());
@@ -584,5 +597,18 @@ class AndroidEval implements Eval {
             }
         }
         return methods;
+    }
+
+    private List<Constructor> getAllDeclaredConstructors(String className)
+            throws ClassNotFoundException {
+        List<Constructor> constructors = new ArrayList<>();
+        Class<?> clazz = forName(className.replace('/', '.'));
+        constructors.addAll(Arrays.asList(clazz.getDeclaredConstructors()));
+        // Also add constructor available from super. But don't recurse over the whole chain of
+        // inheritance.
+        if (clazz.getSuperclass() != null) {
+            constructors.addAll(Arrays.asList(clazz.getSuperclass().getDeclaredConstructors()));
+        }
+        return constructors;
     }
 }
