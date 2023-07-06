@@ -418,6 +418,11 @@ class VariantDependencies internal constructor(
                    KotlinPlatformType.attribute,
                    KotlinPlatformType.androidJvm
                 )
+
+                it.attributes.attribute(
+                    Category.CATEGORY_ATTRIBUTE,
+                    project.objects.named(Category::class.java, Category.LIBRARY)
+                )
             }
 
             project.objects.named(

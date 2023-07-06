@@ -69,21 +69,6 @@ internal fun GradleTestProject.publishLibs(
             "project(\":kmpLibraryPlugin\")",
             "\"com.example:kmpLibraryPlugin:1.0\""
         )
-
-        // TODO(b/290012931): This is a work around gradle matching confusion when trying to select between sources or
-        //  aar lib
-        TestFileUtils.appendToFile(
-            getSubproject("kmpLibraryPlugin").ktsBuildFile,
-            """
-                afterEvaluate {
-                  configurations {
-                    getByName("debugSourcesElements").attributes {
-                      attribute(Usage.USAGE_ATTRIBUTE, project.objects.named(Usage.JAVA_API))
-                    }
-                  }
-                }
-            """.trimIndent()
-        )
     }
 
     if (publishAndroidLib) {

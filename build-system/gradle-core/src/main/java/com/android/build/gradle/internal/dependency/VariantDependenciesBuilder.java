@@ -279,6 +279,8 @@ public class VariantDependenciesBuilder {
         compileAttributes.attribute(Usage.USAGE_ATTRIBUTE, apiUsage);
         compileAttributes.attribute(TARGET_JVM_ENVIRONMENT_ATTRIBUTE, jvmEnvironment);
         compileAttributes.attribute(AgpVersionAttr.ATTRIBUTE, agpVersion);
+        compileAttributes.attribute(
+                CATEGORY_ATTRIBUTE, factory.named(Category.class, Category.LIBRARY));
 
         Configuration annotationProcessor =
                 configurations.maybeCreate(variantName + "AnnotationProcessorClasspath");
@@ -317,6 +319,8 @@ public class VariantDependenciesBuilder {
         runtimeAttributes.attribute(Usage.USAGE_ATTRIBUTE, runtimeUsage);
         runtimeAttributes.attribute(TARGET_JVM_ENVIRONMENT_ATTRIBUTE, jvmEnvironment);
         runtimeAttributes.attribute(AgpVersionAttr.ATTRIBUTE, agpVersion);
+        runtimeAttributes.attribute(
+                CATEGORY_ATTRIBUTE, factory.named(Category.class, Category.LIBRARY));
 
         boolean isLibraryConstraintApplied =
                 maybeAddDependencyConstraints(
