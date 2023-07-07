@@ -16,6 +16,9 @@
 
 package com.android.tools.lint.model
 
+import com.android.sdklib.AndroidVersion
+import com.android.sdklib.SdkVersionInfo
+import com.android.sdklib.SdkVersionInfo.HIGHEST_KNOWN_API
 import com.android.testutils.truth.PathSubject
 import com.android.tools.lint.checks.infrastructure.GradleModelMocker
 import com.android.tools.lint.checks.infrastructure.GradleModelMockerTest
@@ -1463,11 +1466,16 @@ class LintModelSerializationTest {
                   <variant name="debug"/>
                 </lint-module>"""
       )
+    val currentPreviewFirstLetter = SdkVersionInfo.getBuildCode(HIGHEST_KNOWN_API)!!.first()
+    val futurePreviewPlus1 =
+      AndroidVersion(HIGHEST_KNOWN_API, (currentPreviewFirstLetter + 1) + "CodeName")
+    val futurePreviewPlus2 =
+      AndroidVersion(HIGHEST_KNOWN_API + 1, (currentPreviewFirstLetter + 2) + "CodeName")
     val debugXml =
       """<variant
                     name="debug"
-                    minSdkVersion="TheCodeNameStartsWithT"
-                    targetSdkVersion="UKnowTheTargetStartsWithU"
+                    minSdkVersion="${futurePreviewPlus1.codename}"
+                    targetSdkVersion="${futurePreviewPlus2.codename}"
                     debuggable="true"
                     mergedManifest="${mergedManifest.absolutePath}"
                     manifestMergeReport="${mergeReport.absolutePath}">
@@ -1484,11 +1492,9 @@ class LintModelSerializationTest {
     val debugVariant = module.defaultVariant()!!
 
     val minSdkVersion = debugVariant.minSdkVersion!!
-    assertEquals("API 32, TheCodeNameStartsWithT preview", minSdkVersion.toString())
-    assertEquals(33, minSdkVersion.featureLevel)
+    assertEquals(futurePreviewPlus1, minSdkVersion)
     val targetSdkVersion = debugVariant.targetSdkVersion!!
-    assertEquals("API 33, UKnowTheTargetStartsWithU preview", targetSdkVersion.toString())
-    assertEquals(34, targetSdkVersion.featureLevel)
+    assertEquals(futurePreviewPlus2, targetSdkVersion)
   }
 
   @Test
