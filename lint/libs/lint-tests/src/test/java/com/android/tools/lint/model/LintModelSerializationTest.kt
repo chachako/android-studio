@@ -611,27 +611,27 @@ class LintModelSerializationTest {
                       proguardRules="proguard.pro"/>
                   <library
                       name="com.android.support:support-annotations:25.0.1"
-                      jars="＄ROOT/caches/modules-2/files-2.1/com.android.support/support-annotations/25.0.19c6ef172e8de35fd8d4d8783e4821e57cdef7445/support-annotations-25.0.1.jar"
+                      jars="＄ROOT/caches/modules-2/files-2.1/com.android.support/support-annotations/25.0.1/9c6ef172e8de35fd8d4d8783e4821e57cdef7445/support-annotations-25.0.1.jar"
                       resolved="com.android.support:support-annotations:25.0.1"/>
                   <library
                       name="com.android.support.constraint:constraint-layout-solver:1.0.0-beta3"
-                      jars="＄ROOT/caches/modules-2/files-2.1/com.android.support.constraint/constraint-layout-solver/1.0.0-beta39c6ef172e8de35fd8d4d8783e4821e57cdef7445/constraint-layout-solver-1.0.0-beta3.jar"
+                      jars="＄ROOT/caches/modules-2/files-2.1/com.android.support.constraint/constraint-layout-solver/1.0.0-beta3/9c6ef172e8de35fd8d4d8783e4821e57cdef7445/constraint-layout-solver-1.0.0-beta3.jar"
                       resolved="com.android.support.constraint:constraint-layout-solver:1.0.0-beta3"/>
                   <library
                       name="org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.0"
-                      jars="＄ROOT/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.3.09c6ef172e8de35fd8d4d8783e4821e57cdef7445/kotlin-stdlib-jdk7-1.3.0.jar"
+                      jars="＄ROOT/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.3.0/9c6ef172e8de35fd8d4d8783e4821e57cdef7445/kotlin-stdlib-jdk7-1.3.0.jar"
                       resolved="org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.0"/>
                   <library
                       name="org.jetbrains.kotlin:kotlin-stdlib:1.3.0"
-                      jars="＄ROOT/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.3.09c6ef172e8de35fd8d4d8783e4821e57cdef7445/kotlin-stdlib-1.3.0.jar"
+                      jars="＄ROOT/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.3.0/9c6ef172e8de35fd8d4d8783e4821e57cdef7445/kotlin-stdlib-1.3.0.jar"
                       resolved="org.jetbrains.kotlin:kotlin-stdlib:1.3.0"/>
                   <library
                       name="org.jetbrains.kotlin:kotlin-stdlib-common:1.3.0"
-                      jars="＄ROOT/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.3.09c6ef172e8de35fd8d4d8783e4821e57cdef7445/kotlin-stdlib-common-1.3.0.jar"
+                      jars="＄ROOT/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.3.0/9c6ef172e8de35fd8d4d8783e4821e57cdef7445/kotlin-stdlib-common-1.3.0.jar"
                       resolved="org.jetbrains.kotlin:kotlin-stdlib-common:1.3.0"/>
                   <library
                       name="org.jetbrains:annotations:13.0"
-                      jars="＄ROOT/caches/modules-2/files-2.1/org.jetbrains/annotations/13.09c6ef172e8de35fd8d4d8783e4821e57cdef7445/annotations-13.0.jar"
+                      jars="＄ROOT/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/9c6ef172e8de35fd8d4d8783e4821e57cdef7445/annotations-13.0.jar"
                       resolved="org.jetbrains:annotations:13.0"/>
                 </libraries>
                 """,
@@ -1033,27 +1033,27 @@ class LintModelSerializationTest {
                       proguardRules="proguard.pro"/>
                   <library
                       name="com.android.support:support-annotations:25.0.1"
-                      jars="＄ROOT/caches/modules-2/files-2.1/com.android.support/support-annotations/25.0.19c6ef172e8de35fd8d4d8783e4821e57cdef7445/support-annotations-25.0.1.jar"
+                      jars="＄ROOT/caches/modules-2/files-2.1/com.android.support/support-annotations/25.0.1/9c6ef172e8de35fd8d4d8783e4821e57cdef7445/support-annotations-25.0.1.jar"
                       resolved="com.android.support:support-annotations:25.0.1"/>
                   <library
                       name="com.android.support.constraint:constraint-layout-solver:1.0.0-beta3"
-                      jars="＄ROOT/caches/modules-2/files-2.1/com.android.support.constraint/constraint-layout-solver/1.0.0-beta39c6ef172e8de35fd8d4d8783e4821e57cdef7445/constraint-layout-solver-1.0.0-beta3.jar"
+                      jars="＄ROOT/caches/modules-2/files-2.1/com.android.support.constraint/constraint-layout-solver/1.0.0-beta3/9c6ef172e8de35fd8d4d8783e4821e57cdef7445/constraint-layout-solver-1.0.0-beta3.jar"
                       resolved="com.android.support.constraint:constraint-layout-solver:1.0.0-beta3"/>
                   <library
                       name="org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.0"
-                      jars="＄ROOT/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.3.09c6ef172e8de35fd8d4d8783e4821e57cdef7445/kotlin-stdlib-jdk7-1.3.0.jar"
+                      jars="＄ROOT/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.3.0/9c6ef172e8de35fd8d4d8783e4821e57cdef7445/kotlin-stdlib-jdk7-1.3.0.jar"
                       resolved="org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.0"/>
                   <library
                       name="org.jetbrains.kotlin:kotlin-stdlib:1.3.0"
-                      jars="＄ROOT/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.3.09c6ef172e8de35fd8d4d8783e4821e57cdef7445/kotlin-stdlib-1.3.0.jar"
+                      jars="＄ROOT/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.3.0/9c6ef172e8de35fd8d4d8783e4821e57cdef7445/kotlin-stdlib-1.3.0.jar"
                       resolved="org.jetbrains.kotlin:kotlin-stdlib:1.3.0"/>
                   <library
                       name="org.jetbrains.kotlin:kotlin-stdlib-common:1.3.0"
-                      jars="＄ROOT/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.3.09c6ef172e8de35fd8d4d8783e4821e57cdef7445/kotlin-stdlib-common-1.3.0.jar"
+                      jars="＄ROOT/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.3.0/9c6ef172e8de35fd8d4d8783e4821e57cdef7445/kotlin-stdlib-common-1.3.0.jar"
                       resolved="org.jetbrains.kotlin:kotlin-stdlib-common:1.3.0"/>
                   <library
                       name="org.jetbrains:annotations:13.0"
-                      jars="＄ROOT/caches/modules-2/files-2.1/org.jetbrains/annotations/13.09c6ef172e8de35fd8d4d8783e4821e57cdef7445/annotations-13.0.jar"
+                      jars="＄ROOT/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/9c6ef172e8de35fd8d4d8783e4821e57cdef7445/annotations-13.0.jar"
                       resolved="org.jetbrains:annotations:13.0"/>
                 </libraries>
                 """,

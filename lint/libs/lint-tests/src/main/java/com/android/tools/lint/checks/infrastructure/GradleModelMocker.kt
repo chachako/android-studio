@@ -16,9 +16,10 @@
 package com.android.tools.lint.checks.infrastructure
 
 import com.android.SdkConstants
+import com.android.ide.common.gradle.Component
+import com.android.ide.common.gradle.Dependency
 import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.AgpVersion
-import com.android.ide.common.repository.GradleCoordinate
 import com.android.sdklib.AndroidTargetHash
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.SdkVersionInfo
@@ -75,7 +76,6 @@ import java.util.jar.JarOutputStream
 import java.util.jar.Manifest
 import java.util.regex.Pattern
 import java.util.zip.ZipEntry
-import junit.framework.TestCase
 import org.intellij.lang.annotations.Language
 
 /**
@@ -981,7 +981,9 @@ constructor(
           declaration.removeSuffix(
             "!!"
           ) // Strip Gradle 'strict' version syntax (see b/257726238 and b/259279612).
-        if (GradleCoordinate.parseCoordinateString(declaration) != null) {
+        if (Component.tryParse(declaration) != null) {
+          // Only add dependencies here if we have a recognizable component (gromp:artifact:version)
+          // syntax
           addDependency(declaration, artifactName, false)
           return
         } else {
@@ -1092,10 +1094,7 @@ constructor(
       key.startsWith("buildscript.dependencies.classpath ") -> {
         if (key.contains("'com.android.tools.build:gradle:")) {
           val value = getUnquotedValue(key)
-          val gc = GradleCoordinate.parseCoordinateString(value)
-          if (gc != null) {
-            updateModelVersion(gc.revision)
-          }
+          Component.tryParse(value)?.let { updateModelVersion(it.version.toString()) }
         } // else ignore other class paths
       }
       key.startsWith("android.defaultConfig.testInstrumentationRunner ") ||
@@ -1654,17 +1653,9 @@ constructor(
     jar: File?
   ): TestLintModelAndroidLibrary {
     var jar = jar
-    val coordinate = getCoordinate(coordinateString, promotedTo, GradleCoordinate.ArtifactType.AAR)
+    val component = getComponent(coordinateString, promotedTo)
     val dir =
-      File(
-        projectDir,
-        "build/intermediates/exploded-aar/" +
-          coordinate.groupId +
-          "/" +
-          coordinate.artifactId +
-          "/" +
-          coordinate.revision
-      )
+      File(projectDir, component.run { "build/intermediates/exploded-aar/$group/$name/$version" })
     if (jar == null) {
       jar = dir.resolve(File("jars/" + SdkConstants.FN_CLASSES_JAR))
     }
@@ -1708,24 +1699,18 @@ constructor(
     jar: File?
   ): TestLintModelJavaLibrary {
     var jar = jar
-    val coordinate = getCoordinate(coordinateString, promotedTo, GradleCoordinate.ArtifactType.JAR)
+    val component = getComponent(coordinateString, promotedTo)
     if (jar == null) {
       jar =
         File(
           projectDir,
-          "caches/modules-2/files-2.1/" +
-            coordinate.groupId +
-            "/" +
-            coordinate.artifactId +
-            "/" +
-            coordinate.revision +
-            // Usually some hex string here, but keep same to keep test
-            // behavior stable
-            "9c6ef172e8de35fd8d4d8783e4821e57cdef7445/" +
-            coordinate.artifactId +
-            "-" +
-            coordinate.revision +
-            SdkConstants.DOT_JAR
+          component.run {
+            "caches/modules-2/files-2.1/$group/$name/$version/" +
+              // Usually some hex string here, but keep same to keep test
+              // behavior stable
+              "9c6ef172e8de35fd8d4d8783e4821e57cdef7445/" +
+              "$name-$version${SdkConstants.DOT_JAR}"
+          }
         )
       if (!jar.exists()) {
         createEmptyJar(jar)
@@ -1780,23 +1765,11 @@ constructor(
     libraryTable.getOrPut(it.identifier) { it }
   }
 
-  private fun getCoordinate(
-    coordinateString: String,
-    promotedTo: String?,
-    type: GradleCoordinate.ArtifactType
-  ): GradleCoordinate {
-    var coordinateString = coordinateString
-    var coordinate = GradleCoordinate.parseCoordinateString(coordinateString)
-    coordinate =
-      GradleCoordinate(
-        coordinate!!.groupId,
-        coordinate.artifactId,
-        GradleCoordinate.parseRevisionNumber(promotedTo ?: coordinate.revision),
-        if (coordinate.artifactType != null) coordinate.artifactType else type
-      )
-    coordinateString = coordinate.toString()
-    TestCase.assertNotNull(coordinateString, coordinate)
-    return coordinate
+  private fun getComponent(coordinateString: String, promotedTo: String?): Component {
+    Dependency.parse(coordinateString).let { dependency ->
+      val version = promotedTo?.let { Version.parse(it) } ?: dependency.version?.lowerBound
+      return Component(dependency.group!!, dependency.name, version!!)
+    }
   }
 
   fun setVariantName(variantName: String) {
@@ -1881,7 +1854,7 @@ constructor(
 
   /** Dependency graph node. */
   inner class Dep(coordinateString: String, depth: Int) {
-    val coordinate: GradleCoordinate?
+    val component: Component?
     val coordinateString: String
     val promotedTo: String?
     val children: MutableList<Dep> = mutableListOf()
@@ -1901,7 +1874,7 @@ constructor(
     val isJavaLibrary: Boolean
       get() = isJavaLibrary(coordinateString)
     val isProject: Boolean
-      get() = coordinate == null && coordinateString.startsWith("project ")
+      get() = component == null && coordinateString.startsWith("project ")
 
     fun createLibrary(): Collection<LintModelLibrary> {
       return if (isJavaLibrary) {
@@ -1951,7 +1924,7 @@ constructor(
       get() = if (children.isEmpty()) null else children[children.size - 1]
 
     override fun toString(): String {
-      return coordinate.toString() + ":" + depth
+      return component.toString() + ":" + depth
     }
 
     // For debugging
@@ -1959,7 +1932,7 @@ constructor(
       for (i in 0 until indent) {
         writer.print("    ")
       }
-      writer.println(coordinate)
+      writer.println(component)
       for (child in children) {
         child.printTree(indent + 1, writer)
       }
@@ -1981,9 +1954,7 @@ constructor(
       }
       promotedTo = aPromotedTo
       this.coordinateString = coordinateString
-      coordinate =
-        if (!coordinateString.isEmpty()) GradleCoordinate.parseCoordinateString(coordinateString)
-        else null
+      component = if (!coordinateString.isEmpty()) Component.tryParse(coordinateString) else null
       this.depth = depth
     }
   }
