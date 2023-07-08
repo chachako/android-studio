@@ -68,7 +68,6 @@ maven_library(
         "@maven//:com.google.jimfs.jimfs",
         "@maven//:junit.junit",
         "@maven//:org.apache.commons.commons-compress",
-        "@maven//:org.easymock.easymock",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
         "@maven//:org.jetbrains.kotlin.kotlin-test",
         "@maven//:org.mockito.mockito-core",

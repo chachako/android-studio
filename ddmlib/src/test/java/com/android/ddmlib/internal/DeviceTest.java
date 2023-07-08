@@ -16,7 +16,13 @@
 
 package com.android.ddmlib.internal;
 
-import com.android.annotations.NonNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.android.ddmlib.IDevice;
 import com.android.ddmlib.IShellOutputReceiver;
 import com.android.ddmlib.RemoteSplitApkInstaller;
@@ -26,11 +32,9 @@ import com.android.sdklib.AndroidVersion;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.TestCase;
-import org.easymock.EasyMock;
-import org.easymock.IAnswer;
 
 public class DeviceTest extends TestCase {
 
@@ -53,7 +57,7 @@ public class DeviceTest extends TestCase {
     }
 
     public void testInstallPackages() throws Exception {
-        IDevice mMockDevice = createMockDevice();
+        IDevice mMockDevice = createMockDevice2();
         List<File> apks = new ArrayList<File>();
         for (int i = 0; i < 3; i++) {
             File apkFile = File.createTempFile("test", ".apk");
@@ -63,21 +67,21 @@ public class DeviceTest extends TestCase {
         installOptions.add("-d");
         mMockDevice.installPackages(apks, true, installOptions);
         mMockDevice.installPackages(apks, true, installOptions, 1000L, TimeUnit.MINUTES);
-        EasyMock.expect(mMockDevice.getVersion())
-                .andStubReturn(
+        when(mMockDevice.getVersion())
+                .thenReturn(
                         new AndroidVersion(
                                 AndroidVersion.ALLOW_SPLIT_APK_INSTALLATION.getApiLevel()));
-        EasyMock.expect(mMockDevice.supportsFeature(IDevice.Feature.ABB_EXEC)).andStubReturn(true);
-        EasyMock.expectLastCall();
-        EasyMock.replay(mMockDevice);
+        when(mMockDevice.supportsFeature(IDevice.Feature.ABB_EXEC)).thenReturn(true);
         SplitApkInstaller.create(mMockDevice, apks, true, installOptions);
         for (File apkFile : apks) {
             apkFile.delete();
         }
+        verify(mMockDevice).getVersion();
+        verify(mMockDevice).supportsFeature(IDevice.Feature.ABB_EXEC);
     }
 
     public void testInstallRemotePackages() throws Exception {
-        IDevice mMockDevice = createMockDevice();
+        IDevice mMockDevice = createMockDevice2();
         List<String> remoteApkPaths = new ArrayList<String>();
         remoteApkPaths.add("/data/local/tmp/foo.apk");
         remoteApkPaths.add("/data/local/tmp/foo.dm");
@@ -86,91 +90,49 @@ public class DeviceTest extends TestCase {
         mMockDevice.installRemotePackages(remoteApkPaths, true, installOptions);
         mMockDevice.installRemotePackages(
                 remoteApkPaths, true, installOptions, 1000L, TimeUnit.MINUTES);
-        EasyMock.expect(mMockDevice.getVersion())
-                .andStubReturn(
+        when(mMockDevice.getVersion())
+                .thenReturn(
                         new AndroidVersion(
                                 AndroidVersion.ALLOW_SPLIT_APK_INSTALLATION.getApiLevel()));
-        EasyMock.expect(mMockDevice.supportsFeature(IDevice.Feature.ABB_EXEC)).andStubReturn(true);
-        EasyMock.expectLastCall();
-        EasyMock.replay(mMockDevice);
+        when(mMockDevice.supportsFeature(IDevice.Feature.ABB_EXEC)).thenReturn(true);
         RemoteSplitApkInstaller.create(mMockDevice, remoteApkPaths, true, installOptions);
+        verify(mMockDevice).getVersion();
+        verify(mMockDevice).supportsFeature(IDevice.Feature.ABB_EXEC);
     }
 
-    /** Helper method that sets the mock device to return the given response on a shell command */
-    @SuppressWarnings("unchecked")
-    public static void injectShellResponse(IDevice mockDevice, final String response)
-            throws Exception {
-        injectShellResponse(mockDevice, response, 50);
-    }
-
-    /**
-     * Helper method that sets the mock device to return the given response on a shell command. The
-     * {@code delayMillis} parameter allows simulating device latency, by delaying the response
-     */
-    @SuppressWarnings("unchecked")
-    public static void injectShellResponse(
-            IDevice mockDevice, final String response, int delayMillis) throws Exception {
-        IAnswer<Object> shellAnswer =
-                () -> {
-                    // insert small delay to simulate latency
-                    Thread.sleep(delayMillis);
-                    IShellOutputReceiver receiver =
-                            (IShellOutputReceiver) EasyMock.getCurrentArguments()[1];
-                    byte[] inputData = response.getBytes();
-                    receiver.addOutput(inputData, 0, inputData.length);
-                    receiver.flush();
-                    return null;
-                };
-        mockDevice.executeShellCommand(
-                EasyMock.anyObject(),
-                EasyMock.anyObject(),
-                EasyMock.anyLong(),
-                EasyMock.anyObject());
-        EasyMock.expectLastCall().andAnswer(shellAnswer);
-    }
-
-    /**
-     * Helper method that sets the mock device to return the given response on a shell command. The
-     * {@code latch} parameter allows the caller to control response delay
-     */
-    @SuppressWarnings("unchecked")
-    public static void injectShellResponse(
-            IDevice mockDevice, final String response, CountDownLatch latch) throws Exception {
-        IAnswer<Object> shellAnswer =
-                () -> {
-                    // insert small delay to simulate latency
-                    latch.await();
-                    IShellOutputReceiver receiver =
-                            (IShellOutputReceiver) EasyMock.getCurrentArguments()[1];
-                    byte[] inputData = response.getBytes();
-                    receiver.addOutput(inputData, 0, inputData.length);
-                    receiver.flush();
-                    return null;
-                };
-        mockDevice.executeShellCommand(
-                EasyMock.anyObject(),
-                EasyMock.anyObject(),
-                EasyMock.anyLong(),
-                EasyMock.anyObject());
-        EasyMock.expectLastCall().andAnswer(shellAnswer);
-    }
-
-    /** Helper method that sets the mock device to throw the given exception on a shell command */
-    public static void injectShellExceptionResponse(
-            @NonNull IDevice mockDevice, @NonNull Throwable e) throws Exception {
-        mockDevice.executeShellCommand(
-                EasyMock.anyObject(),
-                EasyMock.anyObject(),
-                EasyMock.anyLong(),
-                EasyMock.anyObject());
-        EasyMock.expectLastCall().andThrow(e);
+    public static void injectShellResponse2(
+            IDevice mockDevice, int delayMillis, final Object... response) throws Exception {
+        AtomicInteger count = new AtomicInteger(0);
+        doAnswer(
+                        (invocation) -> {
+                            // insert small delay to simulate latency
+                            Thread.sleep(delayMillis);
+                            IShellOutputReceiver receiver = invocation.getArgument(1);
+                            Object inputData =
+                                    response[
+                                            count.getAndUpdate(
+                                                    (current) ->
+                                                            Math.min(
+                                                                    current + 1,
+                                                                    response.length - 1))];
+                            if (inputData instanceof String) {
+                                byte[] bytes = ((String) inputData).getBytes();
+                                receiver.addOutput(bytes, 0, bytes.length);
+                                receiver.flush();
+                            } else if (inputData instanceof Exception) {
+                                throw (Exception) inputData;
+                            }
+                            return null;
+                        })
+                .when(mockDevice)
+                .executeShellCommand(any(), any(), anyLong(), any());
     }
 
     /** Helper method that creates a mock device. */
-    public static IDevice createMockDevice() {
-        IDevice mockDevice = EasyMock.createMock(IDevice.class);
-        EasyMock.expect(mockDevice.getSerialNumber()).andStubReturn("serial");
-        EasyMock.expect(mockDevice.isOnline()).andStubReturn(Boolean.TRUE);
+    public static IDevice createMockDevice2() {
+        IDevice mockDevice = mock(IDevice.class);
+        when(mockDevice.getSerialNumber()).thenReturn("serial");
+        when(mockDevice.isOnline()).thenReturn(Boolean.TRUE);
         return mockDevice;
     }
 }

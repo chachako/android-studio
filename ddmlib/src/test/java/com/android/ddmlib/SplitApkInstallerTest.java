@@ -15,6 +15,9 @@
  */
 package com.android.ddmlib;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.android.ddmlib.internal.DeviceTest;
 import com.android.sdklib.AndroidVersion;
 import java.io.File;
@@ -22,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import junit.framework.TestCase;
-import org.easymock.EasyMock;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,13 +38,13 @@ public class SplitApkInstallerTest extends TestCase {
     private IDevice mMockIDevice;
     private List<File> mLocalApks;
     private List<String> mInstallOptions;
-    private Long mTimeout;
+    private long mTimeout;
     private TimeUnit mTimeUnit;
 
     @Override
     @Before
     public void setUp() throws Exception {
-        mMockIDevice = DeviceTest.createMockDevice();
+        mMockIDevice = DeviceTest.createMockDevice2();
         mLocalApks = new ArrayList<File>();
         for (int i = 0; i < 3; i++) {
             File apkFile = File.createTempFile("test", ".apk");
@@ -50,7 +52,7 @@ public class SplitApkInstallerTest extends TestCase {
         }
         mInstallOptions = new ArrayList<String>();
         mInstallOptions.add("-d");
-        mTimeout = new Long(1800);
+        mTimeout = 1800L;
         mTimeUnit = TimeUnit.SECONDS;
     }
 
@@ -69,12 +71,10 @@ public class SplitApkInstallerTest extends TestCase {
 
     @Test
     public void testCreateWithApiLevelException() throws Exception {
-        EasyMock.expect(mMockIDevice.getVersion())
-                .andStubReturn(
+        when(mMockIDevice.getVersion())
+                .thenReturn(
                         new AndroidVersion(
                                 AndroidVersion.ALLOW_SPLIT_APK_INSTALLATION.getApiLevel() - 1));
-        EasyMock.expectLastCall();
-        EasyMock.replay(mMockIDevice);
         try {
             SplitApkInstaller.create(mMockIDevice, mLocalApks, true, mInstallOptions);
             fail("IllegalArgumentException expected");
@@ -85,28 +85,25 @@ public class SplitApkInstallerTest extends TestCase {
 
     @Test
     public void testCreateWithArgumentException() throws Exception {
-        EasyMock.expect(mMockIDevice.getVersion())
-                .andStubReturn(
+        when(mMockIDevice.getVersion())
+                .thenReturn(
                         new AndroidVersion(
                                 AndroidVersion.ALLOW_SPLIT_APK_INSTALLATION.getApiLevel()));
-        EasyMock.expectLastCall();
-        EasyMock.replay(mMockIDevice);
         try {
             SplitApkInstaller.create(mMockIDevice, new ArrayList<File>(), true, mInstallOptions);
             fail("IllegalArgumentException expected");
         } catch (IllegalArgumentException e) {
             //expected
         }
+        verify(mMockIDevice).getVersion();
     }
 
     private SplitApkInstaller createInstaller() {
-        EasyMock.expect(mMockIDevice.supportsFeature(IDevice.Feature.ABB_EXEC)).andStubReturn(true);
-        EasyMock.expect(mMockIDevice.getVersion())
-                .andStubReturn(
+        when(mMockIDevice.supportsFeature(IDevice.Feature.ABB_EXEC)).thenReturn(true);
+        when(mMockIDevice.getVersion())
+                .thenReturn(
                         new AndroidVersion(
                                 AndroidVersion.ALLOW_SPLIT_APK_INSTALLATION.getApiLevel()));
-        EasyMock.expectLastCall();
-        EasyMock.replay(mMockIDevice);
         return SplitApkInstaller.create(mMockIDevice, mLocalApks, true, mInstallOptions);
     }
 }

@@ -17,13 +17,20 @@
 package com.android.ddmlib.testrunner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.startsWith;
+import static org.mockito.Mockito.mock;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import junit.framework.TestCase;
-import org.easymock.Capture;
-import org.easymock.EasyMock;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
 
 /**
  * Unit tests for {@link InstrumentationResultParser}.
@@ -55,8 +62,7 @@ public class InstrumentationResultParserTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        // use a strict mock to verify order of method calls
-        mMockListener = EasyMock.createStrictMock(ITestRunListener.class);
+        mMockListener = mock(ITestRunListener.class);
         mParser = new InstrumentationResultParser(RUN_NAME, mMockListener);
     }
 
@@ -64,11 +70,12 @@ public class InstrumentationResultParserTest extends TestCase {
      * Tests parsing empty output.
      */
     public void testParse_empty() {
-        mMockListener.testRunStarted(RUN_NAME, 0);
-        mMockListener.testRunFailed(InstrumentationResultParser.NO_TEST_RESULTS_MSG);
-        mMockListener.testRunEnded(0, Collections.EMPTY_MAP);
-
-        injectAndVerifyTestString("");
+        injectTestString("");
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 0);
+        inOrder.verify(mMockListener)
+                .testRunFailed(InstrumentationResultParser.NO_TEST_RESULTS_MSG);
+        inOrder.verify(mMockListener).testRunEnded(0, Collections.EMPTY_MAP);
     }
 
     /**
@@ -82,16 +89,17 @@ public class InstrumentationResultParserTest extends TestCase {
         addLine(output, "OK (0 tests)");
         addLine(output, "INSTRUMENTATION_CODE: -1");
 
-        mMockListener.testRunStarted(RUN_NAME, 0);
-        mMockListener.testRunEnded(1, Collections.EMPTY_MAP);
+        injectTestString(output.toString());
 
-        injectAndVerifyTestString(output.toString());
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 0);
+        inOrder.verify(mMockListener).testRunEnded(1, Collections.EMPTY_MAP);
     }
 
     /** Ensure that all reporters receive the same events. */
     public void testParse_multiReceiver() {
-        ITestRunListener mMockListener = EasyMock.createStrictMock(ITestRunListener.class);
-        ITestRunListener mMockListener2 = EasyMock.createStrictMock(ITestRunListener.class);
+        ITestRunListener mMockListener = mock(ITestRunListener.class);
+        ITestRunListener mMockListener2 = mock(ITestRunListener.class);
         mParser =
                 new InstrumentationResultParser(
                         RUN_NAME, Arrays.asList(mMockListener, mMockListener2));
@@ -99,16 +107,14 @@ public class InstrumentationResultParserTest extends TestCase {
         addLine(output, "INSTRUMENTATION_RESULT: com.android.cts.launcherapps:other=true");
         addLine(output, "INSTRUMENTATION_CODE: -1");
 
-        mMockListener.testRunStarted(RUN_NAME, 0);
-        mMockListener2.testRunStarted(RUN_NAME, 0);
-        mMockListener.testRunEnded(EasyMock.anyLong(), EasyMock.anyObject());
-        mMockListener2.testRunEnded(EasyMock.anyLong(), EasyMock.anyObject());
-
-        EasyMock.replay(mMockListener, mMockListener2);
         byte[] data = output.toString().getBytes();
         mParser.addOutput(data, 0, data.length);
         mParser.flush();
-        EasyMock.verify(mMockListener, mMockListener2);
+        InOrder inOrder = Mockito.inOrder(mMockListener, mMockListener2);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 0);
+        inOrder.verify(mMockListener2).testRunStarted(RUN_NAME, 0);
+        inOrder.verify(mMockListener).testRunEnded(anyLong(), any());
+        inOrder.verify(mMockListener2).testRunEnded(anyLong(), any());
     }
 
     /**
@@ -123,10 +129,11 @@ public class InstrumentationResultParserTest extends TestCase {
         addLine(output, "OK (0 tests)");
         addLine(output, "INSTRUMENTATION_CODE: -1");
 
-        mMockListener.testRunStarted(RUN_NAME, 0);
-        mMockListener.testRunEnded(1745755L, Collections.EMPTY_MAP);
+        injectTestString(output.toString());
 
-        injectAndVerifyTestString(output.toString());
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 0);
+        inOrder.verify(mMockListener).testRunEnded(1745755L, Collections.EMPTY_MAP);
     }
 
     /**
@@ -137,10 +144,11 @@ public class InstrumentationResultParserTest extends TestCase {
         addLine(output, "INSTRUMENTATION_RESULT: stream=");
         addLine(output, "INSTRUMENTATION_CODE: -1");
 
+        injectTestString(output.toString());
+
+        InOrder inOrder = Mockito.inOrder(mMockListener);
         mMockListener.testRunStarted(RUN_NAME, 0);
         mMockListener.testRunEnded(0, Collections.EMPTY_MAP);
-
-        injectAndVerifyTestString(output.toString());
     }
 
     /**
@@ -176,12 +184,13 @@ public class InstrumentationResultParserTest extends TestCase {
                 "at android.app.Instrumentation$InstrumentationThread.run(Instrumentation.java:)");
         addLine(output, "INSTRUMENTATION_CODE: -1");
 
-        Capture<String> capture = EasyMock.newCapture();
-        mMockListener.testRunStarted(RUN_NAME, 0);
-        mMockListener.testRunFailed(EasyMock.capture(capture));
-        mMockListener.testRunEnded(0, Collections.EMPTY_MAP);
+        injectTestString(output.toString());
+        ArgumentCaptor<String> capture = ArgumentCaptor.forClass(String.class);
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 0);
+        inOrder.verify(mMockListener).testRunFailed(capture.capture());
+        inOrder.verify(mMockListener).testRunEnded(0, Collections.EMPTY_MAP);
 
-        injectAndVerifyTestString(output.toString());
         String failure = capture.getValue();
         assertTrue(failure.contains(InstrumentationResultParser.FATAL_EXCEPTION_MSG));
     }
@@ -192,11 +201,12 @@ public class InstrumentationResultParserTest extends TestCase {
         addLine(output, "INSTRUMENTATION_RESULT: stream=");
         addLine(output, "INSTRUMENTATION_CODE: -1");
 
-        mMockListener.testRunStarted(RUN_NAME, 0);
-        // no failure should be expected
-        mMockListener.testRunEnded(0, Collections.EMPTY_MAP);
+        injectTestString(output.toString());
 
-        injectAndVerifyTestString(output.toString());
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 0);
+        // no failure should be expected
+        inOrder.verify(mMockListener).testRunEnded(0, Collections.EMPTY_MAP);
     }
 
     /**
@@ -214,12 +224,12 @@ public class InstrumentationResultParserTest extends TestCase {
         addLine(output, "at stackstack");
         addLine(output, "INSTRUMENTATION_CODE: -1");
 
-        Capture<String> capture = EasyMock.newCapture();
-        mMockListener.testRunStarted(RUN_NAME, 0);
-        mMockListener.testRunFailed(EasyMock.capture(capture));
-        mMockListener.testRunEnded(0, Collections.EMPTY_MAP);
-
-        injectAndVerifyTestString(output.toString());
+        injectTestString(output.toString());
+        ArgumentCaptor<String> capture = ArgumentCaptor.forClass(String.class);
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 0);
+        inOrder.verify(mMockListener).testRunFailed(capture.capture());
+        inOrder.verify(mMockListener).testRunEnded(0, Collections.EMPTY_MAP);
         String error = capture.getValue();
         assertTrue(error.contains("java.lang.RuntimeException: it failed super fast."));
     }
@@ -253,16 +263,17 @@ public class InstrumentationResultParserTest extends TestCase {
         addLine(output, "2) Something else");
         addLine(output, "INSTRUMENTATION_CODE: -1");
 
-        Capture<String> capture = EasyMock.newCapture();
-        mMockListener.testRunStarted(RUN_NAME, 5);
+        injectTestString(output.toString());
+
+        ArgumentCaptor<String> capture = ArgumentCaptor.forClass(String.class);
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 5);
         TestIdentifier tid =
                 new TestIdentifier("com.android.server.utils.TraceBufferTest", "test_addItem");
-        mMockListener.testStarted(tid);
-        mMockListener.testEnded(tid, Collections.EMPTY_MAP);
-        mMockListener.testRunFailed(EasyMock.capture(capture));
-        mMockListener.testRunEnded(0, Collections.EMPTY_MAP);
-
-        injectAndVerifyTestString(output.toString());
+        inOrder.verify(mMockListener).testStarted(tid);
+        inOrder.verify(mMockListener).testEnded(tid, Collections.EMPTY_MAP);
+        inOrder.verify(mMockListener).testRunFailed(capture.capture());
+        inOrder.verify(mMockListener).testRunEnded(0, Collections.EMPTY_MAP);
         String error = capture.getValue();
         assertTrue(error.contains("java.lang.RuntimeException: it failed super fast."));
     }
@@ -271,12 +282,13 @@ public class InstrumentationResultParserTest extends TestCase {
     public void testParse_singleTest() {
         StringBuilder output = createSuccessTest();
 
-        mMockListener.testRunStarted(RUN_NAME, 1);
-        mMockListener.testStarted(TEST_ID);
-        mMockListener.testEnded(TEST_ID, Collections.EMPTY_MAP);
-        mMockListener.testRunEnded(0, Collections.EMPTY_MAP);
+        injectTestString(output.toString());
 
-        injectAndVerifyTestString(output.toString());
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 1);
+        inOrder.verify(mMockListener).testStarted(TEST_ID);
+        inOrder.verify(mMockListener).testEnded(TEST_ID, Collections.EMPTY_MAP);
+        inOrder.verify(mMockListener).testRunEnded(0, Collections.EMPTY_MAP);
     }
 
     /**
@@ -290,13 +302,16 @@ public class InstrumentationResultParserTest extends TestCase {
         addTimeStamp(output);
         addSuccessCode(output);
 
-        final Capture<Map<String, String>> captureMetrics = EasyMock.newCapture();
-        mMockListener.testRunStarted(RUN_NAME, 1);
-        mMockListener.testStarted(TEST_ID);
-        mMockListener.testEnded(EasyMock.eq(TEST_ID), EasyMock.capture(captureMetrics));
-        mMockListener.testRunEnded(0, Collections.EMPTY_MAP);
+        injectTestString(output.toString());
 
-        injectAndVerifyTestString(output.toString());
+        @SuppressWarnings("unchecked")
+        final ArgumentCaptor<Map<String, String>> captureMetrics =
+                ArgumentCaptor.forClass(Map.class);
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 1);
+        inOrder.verify(mMockListener).testStarted(TEST_ID);
+        inOrder.verify(mMockListener).testEnded(eq(TEST_ID), captureMetrics.capture());
+        inOrder.verify(mMockListener).testRunEnded(0, Collections.EMPTY_MAP);
 
         assertEquals("randomValue", captureMetrics.getValue().get("randomKey"));
         assertEquals("randomValue2", captureMetrics.getValue().get("randomKey2"));
@@ -329,13 +344,17 @@ public class InstrumentationResultParserTest extends TestCase {
         addTimeStamp(output);
         addSuccessCode(output);
 
-        final Capture<Map<String, String>> captureMetrics = EasyMock.newCapture();
-        mMockListener.testRunStarted(RUN_NAME, 1);
-        mMockListener.testStarted(TEST_ID);
-        mMockListener.testEnded(EasyMock.eq(TEST_ID), EasyMock.capture(captureMetrics));
-        mMockListener.testRunEnded(0, Collections.EMPTY_MAP);
+        injectTestString(output.toString());
 
-        injectAndVerifyTestString(output.toString());
+        @SuppressWarnings("unchecked")
+        final ArgumentCaptor<Map<String, String>> captureMetrics =
+                ArgumentCaptor.forClass(Map.class);
+
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 1);
+        inOrder.verify(mMockListener).testStarted(TEST_ID);
+        inOrder.verify(mMockListener).testEnded(eq(TEST_ID), captureMetrics.capture());
+        inOrder.verify(mMockListener).testRunEnded(0, Collections.EMPTY_MAP);
 
         assertEquals("3", captureMetrics.getValue().get("currentiterations"));
         assertEquals("3", captureMetrics.getValue().get("numiterations"));
@@ -350,13 +369,14 @@ public class InstrumentationResultParserTest extends TestCase {
         addStackTrace(output);
         addFailureCode(output);
 
-        mMockListener.testRunStarted(RUN_NAME, 1);
-        mMockListener.testStarted(TEST_ID);
-        mMockListener.testFailed(TEST_ID, STACK_TRACE);
-        mMockListener.testEnded(TEST_ID, Collections.EMPTY_MAP);
-        mMockListener.testRunEnded(0, Collections.EMPTY_MAP);
+        injectTestString(output.toString());
 
-        injectAndVerifyTestString(output.toString());
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 1);
+        inOrder.verify(mMockListener).testStarted(TEST_ID);
+        inOrder.verify(mMockListener).testFailed(TEST_ID, STACK_TRACE);
+        inOrder.verify(mMockListener).testEnded(TEST_ID, Collections.EMPTY_MAP);
+        inOrder.verify(mMockListener).testRunEnded(0, Collections.EMPTY_MAP);
     }
 
     /**
@@ -375,19 +395,23 @@ public class InstrumentationResultParserTest extends TestCase {
         addLine(output, "INSTRUMENTATION_STATUS: test=" + TEST_NAME);
         addLine(output, "INSTRUMENTATION_STATUS_CODE: 1");
 
-        mMockListener.testRunStarted(RUN_NAME, 1);
-        mMockListener.testStarted(TEST_ID);
-        mMockListener.testFailed(
-                TEST_ID,
-                "Test failed to run to completion. Reason: "
-                        + "'Test run failed to complete. Expected 1 tests, received 0. " + ON_ERROR
-                        + "'. Check device logcat for details");
-        mMockListener.testEnded(TEST_ID, Collections.emptyMap());
-        mMockListener.testRunFailed(
-                "Test run failed to complete. Expected 1 tests, received 0. " + ON_ERROR);
-        mMockListener.testRunEnded(0L, Collections.emptyMap());
+        injectTestString(output.toString());
 
-        injectAndVerifyTestString(output.toString());
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 1);
+        inOrder.verify(mMockListener).testStarted(TEST_ID);
+        inOrder.verify(mMockListener)
+                .testFailed(
+                        TEST_ID,
+                        "Test failed to run to completion. Reason: "
+                                + "'Test run failed to complete. Expected 1 tests, received 0. "
+                                + ON_ERROR
+                                + "'. Check device logcat for details");
+        inOrder.verify(mMockListener).testEnded(TEST_ID, Collections.emptyMap());
+        inOrder.verify(mMockListener)
+                .testRunFailed(
+                        "Test run failed to complete. Expected 1 tests, received 0. " + ON_ERROR);
+        inOrder.verify(mMockListener).testRunEnded(0L, Collections.emptyMap());
     }
 
     /**
@@ -406,19 +430,22 @@ public class InstrumentationResultParserTest extends TestCase {
         addLine(output, "INSTRUMENTATION_STATUS: test=" + TEST_NAME);
         addLine(output, "INSTRUMENTATION_STATUS_CODE: 1");
 
-        mMockListener.testRunStarted(RUN_NAME, 1);
-        mMockListener.testStarted(TEST_ID);
-        mMockListener.testFailed(
-                TEST_ID,
-                "Test failed to run to completion. Reason: "
-                        + "'Test run failed to complete. Expected 1 tests, received 0. " + ON_ERROR
-                        + "'. Check device logcat for details");
-        mMockListener.testEnded(TEST_ID, Collections.emptyMap());
-        mMockListener.testRunFailed(
-                "Test run failed to complete. Expected 1 tests, received 0. " + ON_ERROR);
-        mMockListener.testRunEnded(0L, Collections.emptyMap());
-
-        injectAndVerifyTestString(output.toString());
+        injectTestString(output.toString());
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 1);
+        inOrder.verify(mMockListener).testStarted(TEST_ID);
+        inOrder.verify(mMockListener)
+                .testFailed(
+                        TEST_ID,
+                        "Test failed to run to completion. Reason: "
+                                + "'Test run failed to complete. Expected 1 tests, received 0. "
+                                + ON_ERROR
+                                + "'. Check device logcat for details");
+        inOrder.verify(mMockListener).testEnded(TEST_ID, Collections.emptyMap());
+        inOrder.verify(mMockListener)
+                .testRunFailed(
+                        "Test run failed to complete. Expected 1 tests, received 0. " + ON_ERROR);
+        inOrder.verify(mMockListener).testRunEnded(0L, Collections.emptyMap());
     }
 
     /**
@@ -428,12 +455,12 @@ public class InstrumentationResultParserTest extends TestCase {
         StringBuilder output = createSuccessTest();
         output.append("Time: 0.001)");
 
-        mMockListener.testRunStarted(RUN_NAME, 1);
-        mMockListener.testStarted(TEST_ID);
-        mMockListener.testEnded(TEST_ID, Collections.EMPTY_MAP);
-        mMockListener.testRunEnded(1, Collections.EMPTY_MAP);
-
-        injectAndVerifyTestString(output.toString());
+        injectTestString(output.toString());
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 1);
+        inOrder.verify(mMockListener).testStarted(TEST_ID);
+        inOrder.verify(mMockListener).testEnded(TEST_ID, Collections.EMPTY_MAP);
+        inOrder.verify(mMockListener).testRunEnded(1, Collections.EMPTY_MAP);
     }
 
     /**
@@ -447,11 +474,12 @@ public class InstrumentationResultParserTest extends TestCase {
         output.append("INSTRUMENTATION_FAILED: com.fake/android.test.InstrumentationTestRunner");
         addLineBreak(output);
 
-        mMockListener.testRunStarted(RUN_NAME, 0);
-        mMockListener.testRunFailed(errorMessage);
-        mMockListener.testRunEnded(0, Collections.EMPTY_MAP);
+        injectTestString(output.toString());
 
-        injectAndVerifyTestString(output.toString());
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 0);
+        inOrder.verify(mMockListener).testRunFailed(errorMessage);
+        inOrder.verify(mMockListener).testRunEnded(0, Collections.EMPTY_MAP);
     }
 
     /**
@@ -467,11 +495,12 @@ public class InstrumentationResultParserTest extends TestCase {
         addLine(output, "        at com.android.commands.am.Am.run(Am.java:111)");
         addLineBreak(output);
 
-        mMockListener.testRunStarted(RUN_NAME, 0);
-        mMockListener.testRunFailed((String)EasyMock.anyObject());
-        mMockListener.testRunEnded(0, Collections.EMPTY_MAP);
+        injectTestString(output.toString());
 
-        injectAndVerifyTestString(output.toString());
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 0);
+        inOrder.verify(mMockListener).testRunFailed(any());
+        inOrder.verify(mMockListener).testRunEnded(0, Collections.EMPTY_MAP);
     }
 
     /**
@@ -489,11 +518,12 @@ public class InstrumentationResultParserTest extends TestCase {
         output.append("INSTRUMENTATION_CODE: 0");
         addLineBreak(output);
 
-        mMockListener.testRunStarted(RUN_NAME, 0);
-        mMockListener.testRunFailed(EasyMock.contains(errorMessage));
-        mMockListener.testRunEnded(0, Collections.EMPTY_MAP);
+        injectTestString(output.toString());
 
-        injectAndVerifyTestString(output.toString());
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 0);
+        inOrder.verify(mMockListener).testRunFailed(contains(errorMessage));
+        inOrder.verify(mMockListener).testRunEnded(0, Collections.EMPTY_MAP);
     }
 
     /**
@@ -507,16 +537,20 @@ public class InstrumentationResultParserTest extends TestCase {
         addCommonStatus(output);
         addStartCode(output);
 
-        mMockListener.testRunStarted(RUN_NAME, 1);
-        mMockListener.testStarted(TEST_ID);
-        mMockListener.testFailed(EasyMock.eq(TEST_ID),
-                EasyMock.startsWith(InstrumentationResultParser.INCOMPLETE_TEST_ERR_MSG_PREFIX));
-        mMockListener.testEnded(TEST_ID, Collections.EMPTY_MAP);
-        mMockListener.testRunFailed(EasyMock.startsWith(
-                InstrumentationResultParser.INCOMPLETE_RUN_ERR_MSG_PREFIX));
-        mMockListener.testRunEnded(0, Collections.EMPTY_MAP);
+        injectTestString(output.toString());
 
-        injectAndVerifyTestString(output.toString());
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 1);
+        inOrder.verify(mMockListener).testStarted(TEST_ID);
+        inOrder.verify(mMockListener)
+                .testFailed(
+                        eq(TEST_ID),
+                        startsWith(InstrumentationResultParser.INCOMPLETE_TEST_ERR_MSG_PREFIX));
+        inOrder.verify(mMockListener).testEnded(TEST_ID, Collections.EMPTY_MAP);
+        inOrder.verify(mMockListener)
+                .testRunFailed(
+                        startsWith(InstrumentationResultParser.INCOMPLETE_RUN_ERR_MSG_PREFIX));
+        inOrder.verify(mMockListener).testRunEnded(0, Collections.EMPTY_MAP);
     }
 
     /**
@@ -531,11 +565,13 @@ public class InstrumentationResultParserTest extends TestCase {
         addLine(output, "start a Service: am startservice <INTENT>");
         addLine(output, "Error: Bad component name: wfsdafddfasasdf");
 
-        mMockListener.testRunStarted(RUN_NAME, 0);
-        mMockListener.testRunFailed(InstrumentationResultParser.NO_TEST_RESULTS_MSG);
-        mMockListener.testRunEnded(0, Collections.EMPTY_MAP);
+        injectTestString(output.toString());
 
-        injectAndVerifyTestString(output.toString());
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 0);
+        inOrder.verify(mMockListener)
+                .testRunFailed(InstrumentationResultParser.NO_TEST_RESULTS_MSG);
+        inOrder.verify(mMockListener).testRunEnded(0, Collections.EMPTY_MAP);
     }
 
     /**
@@ -552,11 +588,13 @@ public class InstrumentationResultParserTest extends TestCase {
         addTimeStamp(output);
         addLine(output, "INSTRUMENTATION_CODE: -1");
 
-        Capture<Map<String, String>> captureMetrics = EasyMock.newCapture();
-        mMockListener.testRunStarted(RUN_NAME, 0);
-        mMockListener.testRunEnded(EasyMock.anyLong(), EasyMock.capture(captureMetrics));
+        injectTestString(output.toString());
 
-        injectAndVerifyTestString(output.toString());
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Map<String, String>> captureMetrics = ArgumentCaptor.forClass(Map.class);
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 0);
+        inOrder.verify(mMockListener).testRunEnded(anyLong(), captureMetrics.capture());
 
         assertEquals("2390", captureMetrics.getValue().get("other_pss"));
         assertEquals("2539", captureMetrics.getValue().get("java_allocated"));
@@ -654,28 +692,31 @@ public class InstrumentationResultParserTest extends TestCase {
         addLine(output,  "");
         addLine(output,  "INSTRUMENTATION_CODE: -1");
 
-        mMockListener.testRunStarted(RUN_NAME, 3);
+        injectTestString(output.toString());
+
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 3);
         final TestIdentifier IGNORED_ANNOTATION = new TestIdentifier(
                 "com.example.helloworld.FailureAssumptionTest",
                 "checkIgnoreTestsArePossible");
-        mMockListener.testStarted(IGNORED_ANNOTATION);
-        mMockListener.testIgnored(IGNORED_ANNOTATION);
-        mMockListener.testEnded(IGNORED_ANNOTATION, Collections.EMPTY_MAP);
+        inOrder.verify(mMockListener).testStarted(IGNORED_ANNOTATION);
+        inOrder.verify(mMockListener).testIgnored(IGNORED_ANNOTATION);
+        inOrder.verify(mMockListener).testEnded(IGNORED_ANNOTATION, Collections.EMPTY_MAP);
         final TestIdentifier ASSUME_FALSE = new TestIdentifier(
                 "com.example.helloworld.FailureAssumptionTest",
                 "checkAssumptionIsSkipped");
-        mMockListener.testStarted(ASSUME_FALSE);
-        mMockListener.testAssumptionFailure(EasyMock.eq(ASSUME_FALSE),
-                EasyMock.startsWith(
-                        "org.junit.AssumptionViolatedException: got: <false>, expected: is <true>"));
-        mMockListener.testEnded(ASSUME_FALSE, Collections.EMPTY_MAP);
-        final TestIdentifier HELLO_WORLD = new TestIdentifier("com.example.helloworld.HelloWorldTest",
-                "testPreconditions");
-        mMockListener.testStarted(HELLO_WORLD);
-        mMockListener.testEnded(HELLO_WORLD, Collections.EMPTY_MAP);
-        mMockListener.testRunEnded(EasyMock.eq(676L), EasyMock.anyObject());
-
-        injectAndVerifyTestString(output.toString());
+        inOrder.verify(mMockListener).testStarted(ASSUME_FALSE);
+        inOrder.verify(mMockListener)
+                .testAssumptionFailure(
+                        eq(ASSUME_FALSE),
+                        startsWith(
+                                "org.junit.AssumptionViolatedException: got: <false>, expected: is <true>"));
+        inOrder.verify(mMockListener).testEnded(ASSUME_FALSE, Collections.EMPTY_MAP);
+        final TestIdentifier HELLO_WORLD =
+                new TestIdentifier("com.example.helloworld.HelloWorldTest", "testPreconditions");
+        inOrder.verify(mMockListener).testStarted(HELLO_WORLD);
+        inOrder.verify(mMockListener).testEnded(HELLO_WORLD, Collections.EMPTY_MAP);
+        inOrder.verify(mMockListener).testRunEnded(eq(676L), any());
     }
 
     /**
@@ -734,19 +775,21 @@ public class InstrumentationResultParserTest extends TestCase {
         addLine(output, "INSTRUMENTATION_RESULT: shortMsg=Process crashed.");
         addLine(output, "INSTRUMENTATION_CODE: 0");
 
-        mMockListener.testRunStarted(RUN_NAME, 1);
+        injectTestString(output.toString());
+
+        InOrder inOrder = Mockito.inOrder(mMockListener);
+        inOrder.verify(mMockListener).testRunStarted(RUN_NAME, 1);
         final TestIdentifier failedTest =
                 new TestIdentifier(
                         "android.autofillservice.cts.AuthenticationTest",
                         "testDatasetAuthClientStateSetOnIntentAndFillResponse");
-        mMockListener.testStarted(failedTest);
-        mMockListener.testFailed(
-                failedTest, "java.lang.IllegalStateException: ATEST, Y U NO RECOVER?");
-        mMockListener.testEnded(failedTest, Collections.emptyMap());
-        mMockListener.testRunFailed("Instrumentation run failed due to 'Process crashed.'");
-        mMockListener.testRunEnded(0L, Collections.emptyMap());
-
-        injectAndVerifyTestString(output.toString());
+        inOrder.verify(mMockListener).testStarted(failedTest);
+        inOrder.verify(mMockListener)
+                .testFailed(failedTest, "java.lang.IllegalStateException: ATEST, Y U NO RECOVER?");
+        inOrder.verify(mMockListener).testEnded(failedTest, Collections.emptyMap());
+        inOrder.verify(mMockListener)
+                .testRunFailed("Instrumentation run failed due to 'Process crashed.'");
+        inOrder.verify(mMockListener).testRunEnded(0L, Collections.emptyMap());
     }
 
     /**
@@ -853,16 +896,9 @@ public class InstrumentationResultParserTest extends TestCase {
         addLineBreak(outputBuilder);
     }
 
-    /**
-     * Inject a test string into the result parser, and verify the mock listener.
-     *
-     * @param result the string to inject into parser under test.
-     */
-    private void injectAndVerifyTestString(String result) {
-        EasyMock.replay(mMockListener);
+    private void injectTestString(String result) {
         byte[] data = result.getBytes();
         mParser.addOutput(data, 0, data.length);
         mParser.flush();
-        EasyMock.verify(mMockListener);
     }
 }

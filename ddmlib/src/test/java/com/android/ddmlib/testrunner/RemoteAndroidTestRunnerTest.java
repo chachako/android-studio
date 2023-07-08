@@ -16,13 +16,23 @@
 
 package com.android.ddmlib.testrunner;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.android.ddmlib.IShellEnabledDevice;
 import com.android.ddmlib.IShellOutputReceiver;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import junit.framework.TestCase;
-import org.easymock.EasyMock;
+import org.mockito.ArgumentMatcher;
+import org.mockito.ArgumentMatchers;
 
 /**
  * Unit tests for {@link RemoteAndroidTestRunner}.
@@ -41,9 +51,9 @@ public class RemoteAndroidTestRunnerTest extends TestCase {
      */
     @Override
     protected void setUp() throws Exception {
-        mMockDevice = EasyMock.createMock(IShellEnabledDevice.class);
-        EasyMock.expect(mMockDevice.getName()).andStubReturn("serial");
-        mMockListener = EasyMock.createNiceMock(ITestRunListener.class);
+        mMockDevice = mock(IShellEnabledDevice.class);
+        when(mMockDevice.getName()).thenReturn("serial");
+        mMockListener = mock(ITestRunListener.class);
         mRunner = new RemoteAndroidTestRunner(TEST_PACKAGE, TEST_RUNNER, mMockDevice);
     }
 
@@ -51,9 +61,9 @@ public class RemoteAndroidTestRunnerTest extends TestCase {
      * Test the basic case building of the instrumentation runner command with no arguments.
      */
     public void testRun() throws Exception {
-        String expectedCmd = EasyMock.eq(String.format("am instrument -w -r   %s/%s", TEST_PACKAGE,
-                TEST_RUNNER));
-        runAndVerify(expectedCmd);
+        String expectedCmd =
+                String.format("am instrument -w -r   %s/%s", TEST_PACKAGE, TEST_RUNNER);
+        runAndVerify((cmd) -> cmd.equals(expectedCmd));
     }
 
     /**
@@ -61,8 +71,8 @@ public class RemoteAndroidTestRunnerTest extends TestCase {
      */
     public void testRun_withLog() throws Exception {
         mRunner.setLogOnly(true);
-        String expectedCmd = EasyMock.contains("-e log true");
-        runAndVerify(expectedCmd);
+        String expectedCmd = "-e log true";
+        runAndVerify((cmd) -> cmd.contains(expectedCmd));
     }
 
     /**
@@ -72,9 +82,8 @@ public class RemoteAndroidTestRunnerTest extends TestCase {
         final String className = "FooTest";
         final String testName = "fooTest";
         mRunner.setMethodName(className, testName);
-        String expectedCmd =
-                EasyMock.contains(String.format("-e class '%s#%s'", className, testName));
-        runAndVerify(expectedCmd);
+        String expectedCmd = String.format("-e class '%s#%s'", className, testName);
+        runAndVerify((cmd) -> cmd.contains(expectedCmd));
     }
 
     /**
@@ -83,8 +92,8 @@ public class RemoteAndroidTestRunnerTest extends TestCase {
     public void testRun_withPackage() throws Exception {
         final String packageName = "foo.test";
         mRunner.setTestPackageName(packageName);
-        String expectedCmd = EasyMock.contains(String.format("-e package %s", packageName));
-        runAndVerify(expectedCmd);
+        String expectedCmd = String.format("-e package %s", packageName);
+        runAndVerify((cmd) -> cmd.contains(expectedCmd));
     }
 
     /**
@@ -94,9 +103,8 @@ public class RemoteAndroidTestRunnerTest extends TestCase {
         final String extraArgName = "blah";
         final String extraArgValue = "blahValue";
         mRunner.addInstrumentationArg(extraArgName, extraArgValue);
-        String expectedCmd = EasyMock.contains(String.format("-e %s %s", extraArgName,
-                extraArgValue));
-        runAndVerify(expectedCmd);
+        String expectedCmd = String.format("-e %s %s", extraArgName, extraArgValue);
+        runAndVerify((cmd) -> cmd.contains(expectedCmd));
     }
 
     /**
@@ -105,12 +113,10 @@ public class RemoteAndroidTestRunnerTest extends TestCase {
     public void testRun_runOptions() throws Exception {
         mRunner.setRunOptions("--no-window-animation");
         String expectedCmd =
-                EasyMock.eq(
-                        String.format(
-                                "am instrument -w -r --no-window-animation  %s/%s",
-                                TEST_PACKAGE,
-                                TEST_RUNNER));
-        runAndVerify(expectedCmd);
+                String.format(
+                        "am instrument -w -r --no-window-animation  %s/%s",
+                        TEST_PACKAGE, TEST_RUNNER);
+        runAndVerify((cmd) -> cmd.contains(expectedCmd));
     }
 
     /**
@@ -118,41 +124,40 @@ public class RemoteAndroidTestRunnerTest extends TestCase {
      */
     @SuppressWarnings("unchecked")
     public void testRun_ioException() throws Exception {
-        mMockDevice.executeShellCommand(
-                (String) EasyMock.anyObject(),
-                (IShellOutputReceiver) EasyMock.anyObject(),
-                EasyMock.eq(0L),
-                EasyMock.eq(0L),
-                EasyMock.eq(TimeUnit.MILLISECONDS));
-        EasyMock.expectLastCall().andThrow(new IOException());
-        // verify that the listeners run started, run failure, and run ended methods are called
-        mMockListener.testRunStarted(TEST_PACKAGE, 0);
-        mMockListener.testRunFailed((String)EasyMock.anyObject());
-        mMockListener.testRunEnded(EasyMock.anyLong(), EasyMock.eq(Collections.EMPTY_MAP));
+        doThrow(IOException.class)
+                .when(mMockDevice)
+                .executeShellCommand(
+                        anyString(),
+                        any(IShellOutputReceiver.class),
+                        eq(0L),
+                        eq(0L),
+                        eq(TimeUnit.MILLISECONDS));
 
-        EasyMock.replay(mMockDevice, mMockListener);
         try {
             mRunner.run(mMockListener);
             fail("IOException not thrown");
         } catch (IOException e) {
             // expected
         }
-        EasyMock.verify(mMockDevice, mMockListener);
+        // verify that the listeners run started, run failure, and run ended methods are called
+        verify(mMockListener).testRunStarted(TEST_PACKAGE, 0);
+        verify(mMockListener).testRunFailed(anyString());
+        verify(mMockListener).testRunEnded(anyLong(), eq(Collections.EMPTY_MAP));
     }
 
     /**
      * Calls {@link RemoteAndroidTestRunner#run(ITestRunListener...)} and verifies the given
      * <var>expectedCmd</var> pattern was received by the mock device.
      */
-    private void runAndVerify(String expectedCmd) throws Exception {
-        mMockDevice.executeShellCommand(
-                expectedCmd,
-                (IShellOutputReceiver) EasyMock.anyObject(),
-                EasyMock.eq(0L),
-                EasyMock.eq(0L),
-                EasyMock.eq(TimeUnit.MILLISECONDS));
-        EasyMock.replay(mMockDevice);
+    private void runAndVerify(ArgumentMatcher<String> expectedCmd) throws Exception {
         mRunner.run(mMockListener);
-        EasyMock.verify(mMockDevice);
+
+        verify(mMockDevice)
+                .executeShellCommand(
+                        ArgumentMatchers.argThat(expectedCmd),
+                        any(IShellOutputReceiver.class),
+                        eq(0L),
+                        eq(0L),
+                        eq(TimeUnit.MILLISECONDS));
     }
 }

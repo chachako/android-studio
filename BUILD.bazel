@@ -46,7 +46,6 @@ maven_repository(
         "@maven//:org.bouncycastle.bcpkix-jdk15on",
         "@maven//:org.bouncycastle.bcprov-jdk15on",
         "@maven//:org.codehaus.groovy.groovy-all",
-        "@maven//:org.easymock.easymock",
         "@maven//:org.eclipse.aether.aether-connector-basic",
         "@maven//:org.eclipse.aether.aether-transport-file",
         "@maven//:org.eclipse.aether.aether-transport-http",

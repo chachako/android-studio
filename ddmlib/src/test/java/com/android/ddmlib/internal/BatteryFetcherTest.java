@@ -15,6 +15,12 @@
  */
 package com.android.ddmlib.internal;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.android.ddmlib.IDevice;
 import com.android.ddmlib.ShellCommandUnresponsiveException;
 import java.io.IOException;
@@ -22,7 +28,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import junit.framework.TestCase;
-import org.easymock.EasyMock;
 
 public class BatteryFetcherTest extends TestCase {
 
@@ -30,11 +35,10 @@ public class BatteryFetcherTest extends TestCase {
      * Test that getBattery works as expected when queries made in different states.
      */
     public void testGetBattery() throws Exception {
-        IDevice mockDevice = DeviceTest.createMockDevice();
-        EasyMock.expect(mockDevice.getProperty("ro.product.model")).andReturn("Pixel 3").times(1);
-        DeviceTest.injectShellResponse(mockDevice, "20\r\n");
-        DeviceTest.injectShellResponse(mockDevice, "20\r\n");
-        EasyMock.replay(mockDevice);
+        IDevice mockDevice = DeviceTest.createMockDevice2();
+        when(mockDevice.getProperty("ro.product.model")).thenReturn("Pixel 3");
+        DeviceTest.injectShellResponse2(mockDevice, 50, "20\r\n");
+        DeviceTest.injectShellResponse2(mockDevice, 50, "20\r\n");
 
         BatteryFetcher fetcher = new BatteryFetcher(mockDevice);
         // do query in unpopulated state
@@ -48,19 +52,17 @@ public class BatteryFetcherTest extends TestCase {
         assertEquals(20, fetchingFuture.get(1, TimeUnit.MILLISECONDS).intValue());
         assertEquals(20,
                 fetcher.getBattery(1, TimeUnit.SECONDS).get(1, TimeUnit.MILLISECONDS).intValue());
+        verify(mockDevice).getProperty("ro.product.model");
     }
 
     /**
      * Test that getBattery returns exception when battery checks return invalid data.
      */
     public void testGetBattery_badResponse() throws Exception {
-        IDevice mockDevice = DeviceTest.createMockDevice();
-        EasyMock.expect(mockDevice.getProperty("ro.product.model"))
-                .andReturn("Pixel 3 XL")
-                .times(1);
-        DeviceTest.injectShellResponse(mockDevice, "blargh");
-        DeviceTest.injectShellResponse(mockDevice, "blargh");
-        EasyMock.replay(mockDevice);
+        IDevice mockDevice = DeviceTest.createMockDevice2();
+        when(mockDevice.getProperty("ro.product.model")).thenReturn("Pixel 3 XL");
+        DeviceTest.injectShellResponse2(mockDevice, 50, "blargh");
+        DeviceTest.injectShellResponse2(mockDevice, 50, "blargh");
 
         BatteryFetcher fetcher = new BatteryFetcher(mockDevice);
         try {
@@ -70,19 +72,16 @@ public class BatteryFetcherTest extends TestCase {
             // expected
             assertTrue(e.getCause() instanceof IOException);
         }
+        verify(mockDevice).getProperty("ro.product.model");
     }
 
     /** Test that getBattery propagates executeShell exceptions. */
     public void testGetBattery_shellException() throws Exception {
-        IDevice mockDevice = DeviceTest.createMockDevice();
-        EasyMock.expect(mockDevice.getProperty("ro.product.model")).andReturn("fakeValue").times(1);
-        mockDevice.executeShellCommand(
-                EasyMock.anyObject(),
-                EasyMock.anyObject(),
-                EasyMock.anyLong(),
-                EasyMock.anyObject());
-        EasyMock.expectLastCall().andThrow(new ShellCommandUnresponsiveException());
-        EasyMock.replay(mockDevice);
+        IDevice mockDevice = DeviceTest.createMockDevice2();
+        when(mockDevice.getProperty("ro.product.model")).thenReturn("fakeValue");
+        doThrow(new ShellCommandUnresponsiveException())
+                .when(mockDevice)
+                .executeShellCommand(any(), any(), anyLong(), any());
 
         BatteryFetcher fetcher = new BatteryFetcher(mockDevice);
         try {
@@ -98,20 +97,10 @@ public class BatteryFetcherTest extends TestCase {
      * Checks that getBattery propagates a thrown Error.
      */
     public void testGetBattery_AssertionError() throws Exception {
-        IDevice mockDevice = DeviceTest.createMockDevice();
-        mockDevice.executeShellCommand(
-                EasyMock.anyObject(),
-                EasyMock.anyObject(),
-                EasyMock.anyLong(),
-                EasyMock.anyObject());
-        EasyMock.expectLastCall().andThrow(new AssertionError());
-        mockDevice.executeShellCommand(
-                EasyMock.anyObject(),
-                EasyMock.anyObject(),
-                EasyMock.anyLong(),
-                EasyMock.anyObject());
-        EasyMock.expectLastCall().andThrow(new AssertionError());
-        EasyMock.replay(mockDevice);
+        IDevice mockDevice = DeviceTest.createMockDevice2();
+        doThrow(new AssertionError())
+                .when(mockDevice)
+                .executeShellCommand(any(), any(), anyLong(), any());
 
         BatteryFetcher fetcher = new BatteryFetcher(mockDevice);
         try {
@@ -121,5 +110,6 @@ public class BatteryFetcherTest extends TestCase {
             // expected
             assertTrue(e.getCause() instanceof AssertionError);
         }
+        verify(mockDevice).executeShellCommand(any(), any(), anyLong(), any());
     }
 }

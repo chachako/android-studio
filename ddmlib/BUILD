@@ -26,7 +26,6 @@ iml_module(
         "//prebuilts/studio/intellij-sdk:studio-sdk",
         "//tools/base/common:studio.android.sdktools.common[module]",
         "//tools/adt/idea/.idea/libraries:kxml2",
-        "//tools/adt/idea/.idea/libraries:easymock[test]",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
         "//tools/adt/idea/.idea/libraries:mockito[test]",
         "//tools/adt/idea/.idea/libraries:truth[test]",
@@ -79,7 +78,6 @@ kotlin_library(
         "@maven//:com.google.protobuf.protobuf-java",
         "@maven//:com.google.truth.truth",
         "@maven//:junit.junit",
-        "@maven//:org.easymock.easymock",
         "@maven//:org.mockito.mockito-core",
     ],
 )
@@ -193,7 +191,6 @@ kotlin_test(
         "@maven//:com.google.protobuf.protobuf-java",
         "@maven//:com.google.truth.truth",
         "@maven//:junit.junit",
-        "@maven//:org.easymock.easymock",
         "@maven//:org.mockito.mockito-core",
     ],
 )

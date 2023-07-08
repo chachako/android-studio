@@ -15,15 +15,22 @@
  */
 package com.android.ddmlib;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
+
+import com.android.annotations.NonNull;
 import com.android.ddmlib.PropertyFetcher.GetPropReceiver;
 import com.android.ddmlib.internal.DeviceTest;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import junit.framework.Assert;
 import junit.framework.TestCase;
-import org.easymock.EasyMock;
+import org.mockito.stubbing.Answer;
 
 /** Unit tests for {@link PropertyFetcher}. */
 public class PropertyFetcherTest extends TestCase {
@@ -79,7 +86,7 @@ public class PropertyFetcherTest extends TestCase {
         receiver.done();
 
         String value = receiver.getCollectedProperties().get("foo.bar");
-        Assert.assertNotNull("Cut multiline failed", value);
+        assertNotNull("Cut multiline failed", value);
     }
 
     /** Test that properties with multi-lines value are parsed. */
@@ -135,9 +142,8 @@ public class PropertyFetcherTest extends TestCase {
         // zero (see b/155630484)
         final int propertyFetchMaxCacheLatencyMillis = deviceLatencyMillis / 2;
 
-        IDevice mockDevice = DeviceTest.createMockDevice();
-        DeviceTest.injectShellResponse(mockDevice, GETPROP_RESPONSE, deviceLatencyMillis);
-        EasyMock.replay(mockDevice);
+        IDevice mockDevice = DeviceTest.createMockDevice2();
+        DeviceTest.injectShellResponse2(mockDevice, deviceLatencyMillis, GETPROP_RESPONSE);
 
         PropertyFetcher fetcher = new PropertyFetcher(mockDevice);
         // do query in unpopulated state
@@ -161,9 +167,8 @@ public class PropertyFetcherTest extends TestCase {
         String firstResponse =
                 "\n[ro.sf.lcd_density]: [480]\n[ro.secure]: [1]\n[volatile.stuff]: [0]\r\n";
         CountDownLatch latch = new CountDownLatch(1);
-        IDevice mockDevice = DeviceTest.createMockDevice();
-        DeviceTest.injectShellResponse(mockDevice, firstResponse, latch);
-        EasyMock.replay(mockDevice);
+        IDevice mockDevice = DeviceTest.createMockDevice2();
+        injectShellResponse(mockDevice, firstResponse, latch);
 
         PropertyFetcher fetcher = new PropertyFetcher(mockDevice);
         // do query in unpopulated state
@@ -184,11 +189,10 @@ public class PropertyFetcherTest extends TestCase {
                 "\n[ro.sf.lcd_density]: [480]\n[ro.secure]: [1]\n[volatile.stuff]: [1]\r\n";
 
         // reset mockDevice to change shell response
-        EasyMock.reset(mockDevice);
-        EasyMock.expect(mockDevice.getSerialNumber()).andStubReturn("serial");
-        EasyMock.expect(mockDevice.isOnline()).andStubReturn(Boolean.TRUE);
-        DeviceTest.injectShellResponse(mockDevice, secondResponse, latch);
-        EasyMock.replay(mockDevice);
+        reset(mockDevice);
+        when(mockDevice.getSerialNumber()).thenReturn("serial");
+        when(mockDevice.isOnline()).thenReturn(Boolean.TRUE);
+        injectShellResponse(mockDevice, secondResponse, latch);
 
         // now do second query for a mutable property.
         mutableFuture = fetcher.getProperty("volatile.stuff");
@@ -206,10 +210,9 @@ public class PropertyFetcherTest extends TestCase {
      * read only aka volatile
      */
     public void testGetProperty_volatile() throws Exception {
-        IDevice mockDevice = DeviceTest.createMockDevice();
-        DeviceTest.injectShellResponse(mockDevice, "[dev.bootcomplete]: [0]\r\n");
-        DeviceTest.injectShellResponse(mockDevice, "[dev.bootcomplete]: [1]\r\n");
-        EasyMock.replay(mockDevice);
+        IDevice mockDevice = DeviceTest.createMockDevice2();
+        DeviceTest.injectShellResponse2(
+                mockDevice, 50, "[dev.bootcomplete]: [0]\r\n", "[dev.bootcomplete]: [1]\r\n");
 
         PropertyFetcher fetcher = new PropertyFetcher(mockDevice);
         assertEquals("0", fetcher.getProperty("dev.bootcomplete").get());
@@ -220,9 +223,8 @@ public class PropertyFetcherTest extends TestCase {
      * Test that getProperty returns when the 'shell getprop' command response is invalid
      */
     public void testGetProperty_badResponse() throws Exception {
-        IDevice mockDevice = DeviceTest.createMockDevice();
-        DeviceTest.injectShellResponse(mockDevice, "blargh");
-        EasyMock.replay(mockDevice);
+        IDevice mockDevice = DeviceTest.createMockDevice2();
+        DeviceTest.injectShellResponse2(mockDevice, 50, "blargh");
 
         PropertyFetcher fetcher = new PropertyFetcher(mockDevice);
         assertNull(fetcher.getProperty("dev.bootcomplete").get());
@@ -232,9 +234,8 @@ public class PropertyFetcherTest extends TestCase {
      * Test that null is returned when querying an unknown property
      */
     public void testGetProperty_unknown() throws Exception {
-        IDevice mockDevice = DeviceTest.createMockDevice();
-        DeviceTest.injectShellResponse(mockDevice, GETPROP_RESPONSE);
-        EasyMock.replay(mockDevice);
+        IDevice mockDevice = DeviceTest.createMockDevice2();
+        DeviceTest.injectShellResponse2(mockDevice, 50, GETPROP_RESPONSE);
 
         PropertyFetcher fetcher = new PropertyFetcher(mockDevice);
         assertNull(fetcher.getProperty("unknown").get());
@@ -244,9 +245,8 @@ public class PropertyFetcherTest extends TestCase {
      * Test that getProperty propagates exception thrown by 'shell getprop'
      */
     public void testGetProperty_shellException() throws Exception {
-        IDevice mockDevice = DeviceTest.createMockDevice();
-        DeviceTest.injectShellExceptionResponse(mockDevice, new ShellCommandUnresponsiveException());
-        EasyMock.replay(mockDevice);
+        IDevice mockDevice = DeviceTest.createMockDevice2();
+        injectShellExceptionResponse(mockDevice, new ShellCommandUnresponsiveException());
 
         PropertyFetcher fetcher = new PropertyFetcher(mockDevice);
         try {
@@ -266,10 +266,9 @@ public class PropertyFetcherTest extends TestCase {
      * </ol>
      */
     public void testGetProperty_FetchAfterException() throws Exception {
-        IDevice mockDevice = DeviceTest.createMockDevice();
-        DeviceTest.injectShellExceptionResponse(mockDevice, new ShellCommandUnresponsiveException());
-        DeviceTest.injectShellResponse(mockDevice, GETPROP_RESPONSE);
-        EasyMock.replay(mockDevice);
+        IDevice mockDevice = DeviceTest.createMockDevice2();
+        DeviceTest.injectShellResponse2(
+                mockDevice, 50, new ShellCommandUnresponsiveException(), GETPROP_RESPONSE);
 
         PropertyFetcher fetcher = new PropertyFetcher(mockDevice);
         try {
@@ -291,10 +290,8 @@ public class PropertyFetcherTest extends TestCase {
      * </ol>
      */
     public void testGetProperty_FetchAfterEmptyResponse() throws Exception {
-        IDevice mockDevice = DeviceTest.createMockDevice();
-        DeviceTest.injectShellResponse(mockDevice, "");
-        DeviceTest.injectShellResponse(mockDevice, GETPROP_RESPONSE);
-        EasyMock.replay(mockDevice);
+        IDevice mockDevice = DeviceTest.createMockDevice2();
+        DeviceTest.injectShellResponse2(mockDevice, 50, "", GETPROP_RESPONSE);
 
         PropertyFetcher fetcher = new PropertyFetcher(mockDevice);
         assertNull(fetcher.getProperty("ro.sf.lcd_density").get(2, TimeUnit.SECONDS));
@@ -305,9 +302,8 @@ public class PropertyFetcherTest extends TestCase {
      * Checks that getProperty propagates a thrown Error.
      */
     public void testGetProperty_AssertionError() throws Exception {
-        IDevice mockDevice = DeviceTest.createMockDevice();
-        DeviceTest.injectShellExceptionResponse(mockDevice, new AssertionError());
-        EasyMock.replay(mockDevice);
+        IDevice mockDevice = DeviceTest.createMockDevice2();
+        injectShellExceptionResponse(mockDevice, new AssertionError());
 
         PropertyFetcher fetcher = new PropertyFetcher(mockDevice);
         try {
@@ -317,5 +313,31 @@ public class PropertyFetcherTest extends TestCase {
             // expected
             assertTrue(e.getCause() instanceof AssertionError);
         }
+    }
+
+    /**
+     * Helper method that sets the mock device to return the given response on a shell command. The
+     * {@code latch} parameter allows the caller to control response delay
+     */
+    public static void injectShellResponse(
+            IDevice mockDevice, final String response, CountDownLatch latch) throws Exception {
+        Answer<Object> shellAnswer =
+                (invocation) -> {
+                    // insert small delay to simulate latency
+                    latch.await();
+                    IShellOutputReceiver receiver =
+                            (IShellOutputReceiver) invocation.getArguments()[1];
+                    byte[] inputData = response.getBytes();
+                    receiver.addOutput(inputData, 0, inputData.length);
+                    receiver.flush();
+                    return null;
+                };
+        doAnswer(shellAnswer).when(mockDevice).executeShellCommand(any(), any(), anyLong(), any());
+    }
+
+    /** Helper method that sets the mock device to throw the given exception on a shell command */
+    public static void injectShellExceptionResponse(
+            @NonNull IDevice mockDevice, @NonNull Throwable e) throws Exception {
+        doThrow(e).when(mockDevice).executeShellCommand(any(), any(), anyLong(), any());
     }
 }

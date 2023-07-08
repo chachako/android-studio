@@ -15,6 +15,10 @@
  */
 package com.android.ddmlib.logcat;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.android.annotations.NonNull;
 import com.android.ddmlib.IDevice;
 import com.android.ddmlib.Log.LogLevel;
@@ -24,7 +28,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import junit.framework.TestCase;
-import org.easymock.EasyMock;
 
 /**
  * Unit tests for {@link LogCatMessageParser}.
@@ -84,10 +87,11 @@ public final class LogCatMessageParserTest extends TestCase {
         super.setUp();
         LogCatMessageParser parser = new LogCatMessageParser(2014, ZONE_ID);
 
-        IDevice d = EasyMock.createMock(IDevice.class);
-        EasyMock.expect(d.getClientName(495)).andStubReturn("com.example.name");
-        EasyMock.expect(d.getClientName(EasyMock.anyInt())).andStubReturn("");
-        EasyMock.replay(d);
+        IDevice d = mock(IDevice.class);
+        when(d.getClientName(anyInt()))
+                .thenAnswer(
+                        (invocation) ->
+                                invocation.getArguments()[0].equals(495) ? "com.example.name" : "");
 
         mParsedMessages = parser.processLogLines(MESSAGES, d);
     }

@@ -17,6 +17,7 @@
 package com.android.ddmlib.internal;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
@@ -43,7 +44,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import junit.framework.TestCase;
-import org.easymock.EasyMock;
 
 public class DebuggerTest extends TestCase {
     private static final int TIMEOUT_MS = 10 * 1000;
@@ -72,7 +72,7 @@ public class DebuggerTest extends TestCase {
                             return null;
                         });
 
-        ClientTracker deviceMonitor = EasyMock.createMock(ClientTracker.class);
+        ClientTracker deviceMonitor = mock(ClientTracker.class);
 
         emptyAdbServerClientChannel = SocketChannel.open();
         DeviceImpl device = new DeviceImpl(deviceMonitor, "11", IDevice.DeviceState.ONLINE);

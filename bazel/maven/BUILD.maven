@@ -43,28 +43,6 @@ maven_import(
 )
 
 maven_artifact(
-    name = "cglib.cglib-nodep_3.1",
-    pom = "repository/cglib/cglib-nodep/3.1/cglib-nodep-3.1.pom",
-    repo_root_path = "repository",
-    repo_path = "cglib/cglib-nodep/3.1",
-    visibility = ["//visibility:public"],
-)
-
-maven_import(
-    name = "cglib.cglib-nodep",
-    classifiers = [],
-    jars = [
-        "repository/cglib/cglib-nodep/3.1/cglib-nodep-3.1.jar"
-    ],
-    original_deps = [],
-    pom = "repository/cglib/cglib-nodep/3.1/cglib-nodep-3.1.pom",
-    repo_root_path = "repository",
-    repo_path = "cglib/cglib-nodep/3.1",
-    srcjar = "repository/cglib/cglib-nodep/3.1/cglib-nodep-3.1-sources.jar",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "com.android.tools.build.jetifier.jetifier-core_1.0.0-beta10",
     pom = "repository/com/android/tools/build/jetifier/jetifier-core/1.0.0-beta10/jetifier-core-1.0.0-beta10.pom",
     repo_root_path = "repository",
@@ -7337,41 +7315,6 @@ maven_import(
 )
 
 maven_artifact(
-    name = "org.easymock.easymock_3.3",
-    pom = "repository/org/easymock/easymock/3.3/easymock-3.3.pom",
-    repo_root_path = "repository",
-    repo_path = "org/easymock/easymock/3.3",
-    parent = "org.easymock.easymock-parent_3.3",
-    deps = [
-        "cglib.cglib-nodep_3.1",
-        "org.objenesis.objenesis_2.1",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_import(
-    name = "org.easymock.easymock",
-    classifiers = [],
-    parent = "org.easymock.easymock-parent_3.3",
-    jars = [
-        "repository/org/easymock/easymock/3.3/easymock-3.3.jar"
-    ],
-    exports = [
-        "cglib.cglib-nodep",
-        "org.objenesis.objenesis",
-    ],
-    original_deps = [
-        "cglib.cglib-nodep_3.1",
-        "org.objenesis.objenesis_2.1",
-    ],
-    pom = "repository/org/easymock/easymock/3.3/easymock-3.3.pom",
-    repo_root_path = "repository",
-    repo_path = "org/easymock/easymock/3.3",
-    srcjar = "repository/org/easymock/easymock/3.3/easymock-3.3-sources.jar",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "org.eclipse.aether.aether-api_1.0.2.v20150114",
     pom = "repository/org/eclipse/aether/aether-api/1.0.2.v20150114/aether-api-1.0.2.v20150114.pom",
     repo_root_path = "repository",
@@ -9556,6 +9499,8 @@ maven_import(
     exports = [
         "net.bytebuddy.byte-buddy",
         "net.bytebuddy.byte-buddy-agent",
+    ],
+    deps = [
         "org.objenesis.objenesis",
     ],
     original_deps = [
@@ -45110,15 +45055,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.objenesis.objenesis_2.1",
-    pom = "repository/org/objenesis/objenesis/2.1/objenesis-2.1.pom",
-    repo_root_path = "repository",
-    repo_path = "org/objenesis/objenesis/2.1",
-    parent = "org.objenesis.objenesis-parent_2.1",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "org.ow2.asm.asm-analysis_5.0.3",
     pom = "repository/org/ow2/asm/asm-analysis/5.0.3/asm-analysis-5.0.3.pom",
     repo_root_path = "repository",
@@ -47731,13 +47667,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.easymock.easymock-parent_3.3",
-    pom = "repository/org/easymock/easymock-parent/3.3/easymock-parent-3.3.pom",
-    repo_root_path = "repository",
-    repo_path = "org/easymock/easymock-parent/3.3",
-)
-
-maven_artifact(
     name = "org.eclipse.aether.aether_1.0.2.v20150114",
     pom = "repository/org/eclipse/aether/aether/1.0.2.v20150114/aether-1.0.2.v20150114.pom",
     repo_root_path = "repository",
@@ -47885,13 +47814,6 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "org/mortbay/jetty/project/6.1.26",
     parent = "org.mortbay.jetty.jetty-parent_10",
-)
-
-maven_artifact(
-    name = "org.objenesis.objenesis-parent_2.1",
-    pom = "repository/org/objenesis/objenesis-parent/2.1/objenesis-parent-2.1.pom",
-    repo_root_path = "repository",
-    repo_path = "org/objenesis/objenesis-parent/2.1",
 )
 
 maven_artifact(
