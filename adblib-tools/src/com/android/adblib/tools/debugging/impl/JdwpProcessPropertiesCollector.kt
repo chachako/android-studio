@@ -32,8 +32,6 @@ import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_HEADER_LENGTH
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
-import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
-import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
@@ -49,6 +47,9 @@ import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsWaitChunk
 import com.android.adblib.tools.debugging.packets.ddms.clone
 import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
 import com.android.adblib.tools.debugging.packets.ddms.writeToChannel
+import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
+import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
+import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.tools.debugging.utils.ReferenceCountedResource
 import com.android.adblib.tools.debugging.utils.withResource
 import com.android.adblib.utils.ResizableBuffer
@@ -486,6 +487,7 @@ internal class JdwpProcessPropertiesCollector(
         return try {
             block(packet)
         } catch (t: Throwable) {
+            t.rethrowCancellation()
             throw JdwpProtocolErrorException("Invalid '$packetName' packet: unsupported format", t)
         }
     }
@@ -498,6 +500,7 @@ internal class JdwpProcessPropertiesCollector(
         return try {
             block(packet)
         } catch (t: Throwable) {
+            t.rethrowCancellation()
             throw JdwpProtocolErrorException("Invalid '$packetName' ddms packet: unsupported format", t)
         }
     }

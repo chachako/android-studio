@@ -35,11 +35,8 @@ import com.android.adblib.tools.debugging.createDdmsPacket
 import com.android.adblib.tools.debugging.ddmsProtocolKind
 import com.android.adblib.tools.debugging.handleDdmsCaptureView
 import com.android.adblib.tools.debugging.handleDdmsHPGC
-import com.android.adblib.tools.debugging.utils.AdbRewindableInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
-import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
-import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
@@ -50,12 +47,15 @@ import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
 import com.android.adblib.tools.debugging.packets.ddms.isDdmsCommand
 import com.android.adblib.tools.debugging.packets.ddms.writeToChannel
 import com.android.adblib.tools.debugging.packets.impl.EphemeralJdwpPacket
+import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
+import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
 import com.android.adblib.tools.debugging.packets.isThreadSafeAndImmutable
 import com.android.adblib.tools.debugging.packets.payloadLength
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.sendDdmsExit
 import com.android.adblib.tools.debugging.sendVmExit
 import com.android.adblib.tools.debugging.toByteArray
+import com.android.adblib.tools.debugging.utils.AdbRewindableInputChannel
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.adblib.tools.testutils.FakeJdwpCommandProgress
 import com.android.adblib.tools.testutils.NanoTimeSpan
@@ -64,6 +64,7 @@ import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
 import com.android.adblib.utils.ResizableBuffer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
@@ -472,6 +473,90 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
 
         // Assert
         assertEquals(0, activationCount.get())
+    }
+
+    @Test
+    fun packetReceiverReceiveAndActivationDoNotDeadlock(): Unit = runBlockingWithTimeout {
+        // Prepare
+        val fakeDevice = addFakeDevice(fakeAdb, 30)
+        fakeDevice.startClient(10, 0, "a.b.c", false)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
+        val replayPacketCount = 20
+        repeat(replayPacketCount) {
+            jdwpSession.addReplayPacket(createHeloDdmsPacket(jdwpSession))
+        }
+
+        // Act:
+        // We force the 'receive' method to wait for the 'activation' to complete before
+        // exiting, verifying the JdwpPacketReceiver implementation allows this use case.
+        val deferred = CompletableDeferred<Unit>()
+        val packets = mutableListOf<JdwpPacketView>()
+        jdwpSession.newPacketReceiver()
+            .withActivation {
+                // Signal receiver we are done
+                deferred.complete(Unit)
+            }.receive {
+                // Wait for the activation block to finish, verifying this does not
+                // cause a deadlock.
+                deferred.await()
+
+                // Collect packets just to have something to assert on
+                packets.add(it.toOffline())
+                if (packets.size == replayPacketCount) {
+                    fakeDevice.stopClient(10)
+                }
+            }
+
+        // Assert
+        assertEquals(replayPacketCount, packets.size)
+    }
+
+    @Test
+    fun packetReceiverConcurrentReceiveAndActivationDoNotDeadlock(): Unit = runBlockingWithTimeout {
+        // Prepare
+        val fakeDevice = addFakeDevice(fakeAdb, 30)
+        fakeDevice.startClient(10, 0, "a.b.c", false)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
+        val replayPacketCount = 20
+        val receiverCount = 10
+        repeat(replayPacketCount) {
+            jdwpSession.addReplayPacket(createHeloDdmsPacket(jdwpSession))
+        }
+
+        // Act:
+        // We force the 'receive' method to wait for the 'activation' to complete before
+        // exiting, verifying the JdwpPacketReceiver implementation allows this use case.
+        val receiveDoneCount = AtomicInteger(0)
+        val replayPacketsList = (1..receiverCount).map {
+            async(Dispatchers.Default) {
+                val deferred = CompletableDeferred<Unit>()
+                val packets = mutableListOf<JdwpPacketView>()
+                jdwpSession.newPacketReceiver()
+                    .withActivation {
+                        // Signal receiver we are done
+                        deferred.complete(Unit)
+                    }.receive {
+                        // Wait for the activation block to finish, verifying this does not
+                        // cause a deadlock.
+                        deferred.await()
+
+                        // Collect packets just to have something to assert on
+                        packets.add(it.toOffline())
+                        if (packets.size == replayPacketCount) {
+                            if (receiveDoneCount.incrementAndGet() == receiverCount) {
+                                fakeDevice.stopClient(10)
+                            }
+                        }
+                    }
+                packets
+            }
+        }.awaitAll()
+
+        // Assert
+        assertEquals(receiverCount, replayPacketsList.size)
+        replayPacketsList.forEach {packets ->
+            assertEquals(replayPacketCount, packets.size)
+        }
     }
 
     @Test

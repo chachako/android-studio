@@ -169,6 +169,13 @@ private class MutableSerializedSharedFlowImpl<T>(
         // We emit the value, then the "SKIP" constant to ensure all collectors are
         // done processing the value before returning from this "emit" call
         // See https://github.com/Kotlin/kotlinx.coroutines/issues/2603#issuecomment-808859170
+        //
+        // Note on thread-safety: If 2 threads calls this method concurrently with respectively
+        // [value1] and [value2], the order of packets may not be [value1, skip, value2, skip],
+        // but something like [value2, value1, skip, skip].
+        // Even though this is non-deterministic, it stills guarantee that no thread will exit
+        // this method before their respective value ([value1] or [value2]) has been receive and processed
+        // by all receivers.
         sharedFlow.emit(value)
         sharedFlow.emit(SKIP)
     }

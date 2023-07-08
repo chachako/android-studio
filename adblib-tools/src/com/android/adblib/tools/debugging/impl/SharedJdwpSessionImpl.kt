@@ -27,21 +27,21 @@ import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSessionFilter
 import com.android.adblib.tools.debugging.SharedJdwpSessionMonitor
-import com.android.adblib.tools.debugging.utils.AdbRewindableInputChannel
-import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
+import com.android.adblib.tools.debugging.impl.SharedJdwpSessionImpl.ScopedPayloadProvider.ScopedAdbRewindableInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.impl.EphemeralJdwpPacket
 import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
 import com.android.adblib.tools.debugging.packets.impl.PayloadProviderFactory
-import com.android.adblib.tools.debugging.utils.toOffline
 import com.android.adblib.tools.debugging.packets.impl.withPayload
 import com.android.adblib.tools.debugging.packets.isThreadSafeAndImmutable
 import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.tools.debugging.sharedJdwpSessionMonitorFactoryList
+import com.android.adblib.tools.debugging.utils.AdbRewindableInputChannel
 import com.android.adblib.tools.debugging.utils.MutableSerializedSharedFlow
 import com.android.adblib.tools.debugging.utils.SerializedSharedFlow
 import com.android.adblib.tools.debugging.utils.SupportsOffline
+import com.android.adblib.tools.debugging.utils.toOffline
 import com.android.adblib.utils.ResizableBuffer
 import com.android.adblib.utils.createChildScope
 import com.android.adblib.withPrefix
@@ -263,10 +263,8 @@ internal class SharedJdwpSessionImpl(
     ) : JdwpPacketReceiver {
 
         private var name: String = ""
-            private set
 
         private var activation: suspend () -> Unit = { }
-            private set
 
         private var filterId: SharedJdwpSessionFilter.FilterId? = null
 
@@ -291,15 +289,17 @@ internal class SharedJdwpSessionImpl(
                     val receiveScope = this
                     val receiveLogger = jdwpSession.logger.withPrefix("Receiver '$name': ")
                     val sharedFlow = jdwpSession.jdwpPacketSharedFlow
-                    val activationJobStartPacket = StartPacket()
-                    val activationJobStartSignal = CompletableDeferred<Unit>()
+                    val activationJobStartPacket = StartReceiverPacket(
+                        runOnceBlock = {
+                            sendReplayPackets(receiveLogger, receiver)
+                        }
+                    )
 
                     // Launch a coroutine that invokes the "activation" when the collector is ready
                     val activationJob = receiveScope.launchActivationJob(
                         receiveLogger,
                         sharedFlow,
-                        activationJobStartPacket,
-                        activationJobStartSignal
+                        activationJobStartPacket
                     )
 
                     // Collect the shared flow and emit to the local flow
@@ -307,8 +307,7 @@ internal class SharedJdwpSessionImpl(
                         receiver,
                         receiveLogger,
                         sharedFlow,
-                        activationJobStartPacket,
-                        activationJobStartSignal
+                        activationJobStartPacket
                     )
 
                     // We reached EOF: Send a custom "EOFCancellationException" to terminate the
@@ -330,11 +329,21 @@ internal class SharedJdwpSessionImpl(
             }
         }
 
+        private suspend fun sendReplayPackets(
+            receiveLogger: AdbLogger,
+            receiver: suspend (JdwpPacketView) -> Unit
+        ) {
+            receiveLogger.verbose { "Emitting ${jdwpSession.replayPackets.size} replay packet(s)" }
+            jdwpSession.replayPackets.forEach { replyPacket ->
+                callReceiverWithPacket(receiver, receiveLogger, replyPacket)
+            }
+        }
+
         /**
          * Launch the [activation] callback as a child of this [CoroutineScope] that runs
          * concurrently with the [sharedFlow] collector, **ensuring** the collector is started
-         * (see [activationJobStartSignal]), so that the collector won't miss replies to
-         * JDWP packets the [activation] callback may send.
+         * (see [StartReceiverPacket.receivedBySharedFlowReceiver]), so that the collector won't miss
+         * replies to JDWP packets the [activation] callback may send.
          *
          * Note on exceptions: All exceptions, except for [EOFCancellationException], should
          * be propagated to this [CoroutineScope].
@@ -342,8 +351,7 @@ internal class SharedJdwpSessionImpl(
         private fun CoroutineScope.launchActivationJob(
             receiveLogger: AdbLogger,
             sharedFlow: MutableSerializedSharedFlow<Any>,
-            activationJobStartPacket: StartPacket,
-            activationJobStartSignal: CompletableDeferred<Unit>
+            activationJobStartPacket: StartReceiverPacket
         ): Job {
             return launch {
                 // Send `startPacket` to the shared flow until the new collector acknowledges
@@ -353,9 +361,12 @@ internal class SharedJdwpSessionImpl(
                 while (true) {
                     ensureActive()
                     sharedFlow.emit(activationJobStartPacket)
-                    if (activationJobStartSignal.isCompleted) {
+                    if (activationJobStartPacket.isReceiverActive) {
                         receiveLogger.verbose { "calling 'activation' callback" }
                         this@JdwpPacketReceiverImpl.activation()
+
+                        receiveLogger.verbose { "Running 'runOnceBlock' (if needed)" }
+                        activationJobStartPacket.executeRunOnceBlockIfNeeded()
                         break
                     }
                 }
@@ -386,16 +397,16 @@ internal class SharedJdwpSessionImpl(
         }
 
         /**
-         * Collects [sharedFlow], emitting [JdwpPacketView] using [safeEmit] to ensure serialized
+         * Collects [sharedFlow], emitting [JdwpPacketView] using [callReceiverWithPacket] to ensure serialized
          * invocations of all active collectors.
          */
         private suspend fun collectSharedFlow(
             receiver: suspend (JdwpPacketView) -> Unit,
             receiveLogger: AdbLogger,
             sharedFlow: SerializedSharedFlow<Any>,
-            startPacket: StartPacket,
-            activationJobStartSignal: CompletableDeferred<Unit>
+            startPacket: StartReceiverPacket
         ) {
+            var isStarted = false
             sharedFlow
                 .takeWhile { anyValue ->
                     receiveLogger.verbose { "Processing value from shared flow $anyValue" }
@@ -404,25 +415,28 @@ internal class SharedJdwpSessionImpl(
                             @Suppress("UnnecessaryVariable") // readability
                             val packet = anyValue
                             when {
-                                // This is the "StartPacket" send to this collector by its
-                                // "activation", wake up the "activation" coroutine and emit
-                                // replay packets to downstream flow.
                                 packet === startPacket -> {
+                                    // This is the "StartPacket" sent to this collector by its
+                                    // "activation" coroutine: wake up the "activation" coroutine
+                                    isStarted = true
                                     receiveLogger.verbose { "Deferred starts is completed" }
-                                    activationJobStartSignal.complete(Unit)
-                                    receiveLogger.verbose { "Emitting ${jdwpSession.replayPackets.size} replay packet(s)" }
-                                    jdwpSession.replayPackets.forEach { replyPacket ->
-                                        safeEmit(receiver, receiveLogger, replyPacket)
-                                    }
+                                    startPacket.signalReceiverIsActive()
                                 }
 
-                                packet is StartPacket -> {
-                                    // This is a "StartPacket" sent to another collector, ignore it
+                                packet is StartReceiverPacket -> {
+                                    // This is a "StartPacket" sent to another collector: ignore it
+                                }
+
+
+                                isStarted -> {
+                                    // This is a "real" JDWP packet: Send replay packet first
+                                    // (if needed), then send packet
+                                    startPacket.executeRunOnceBlockIfNeeded()
+                                    callReceiverWithPacket(receiver, receiveLogger, packet)
                                 }
 
                                 else -> {
-                                    // This is a "real" JDWP packet, emit it to the downstream flow
-                                    safeEmit(receiver, receiveLogger, packet)
+                                    // We are not started, ignore this packet
                                 }
                             }
                             true // Keep collecting the shared flow
@@ -446,7 +460,7 @@ internal class SharedJdwpSessionImpl(
                 .collect()
         }
 
-        private suspend fun safeEmit(
+        private suspend fun callReceiverWithPacket(
             receiver: suspend (JdwpPacketView) -> Unit,
             receiveLogger: AdbLogger,
             packet: JdwpPacketView
@@ -462,34 +476,96 @@ internal class SharedJdwpSessionImpl(
         private class EOFCancellationException(message: String) : CancellationException(message)
 
         /**
-         * A "Fake" [JdwpPacketView] used as a signal to synchronize [launchActivationJob] and
-         * [collectSharedFlow].
+         * A [JdwpPacketView] used as some sort of "marker", i.e. is not to be used as an actual
+         * JDWP packet. All overridden methods/properties throw [NotImplementedError]
          */
-        private class StartPacket : JdwpPacketView {
+        private open class MarkerJdwpPacket : JdwpPacketView {
 
             override val length: Int
-                get() = JdwpPacketConstants.PACKET_HEADER_LENGTH
+                get() = throwNotAPacket()
             override val id: Int
-                get() = -10
+                get() = throwNotAPacket()
             override val flags: Int
-                get() = 0
+                get() = throwNotAPacket()
             override val cmdSet: Int
-                get() = 0
+                get() = throwNotAPacket()
             override val cmd: Int
-                get() = 0
+                get() = throwNotAPacket()
             override val errorCode: Int
-                get() = 0
+                get() = throwNotAPacket()
 
             override suspend fun acquirePayload(): AdbInputChannel {
-                return AdbRewindableInputChannel.empty()
+                throwNotAPacket()
             }
 
             override fun releasePayload() {
-                // Nothing to do
+                throwNotAPacket()
             }
 
             override suspend fun toOffline(workBuffer: ResizableBuffer): JdwpPacketView {
-                return this
+                throwNotAPacket()
+            }
+
+            private fun throwNotAPacket(): Nothing {
+                throw NotImplementedError("'${this::class.simpleName}' is not an actual '${JdwpPacketView::class.simpleName}'")
+            }
+        }
+
+        /**
+         * A [MarkerJdwpPacket] used by [launchActivationJob] and [collectSharedFlow] to synchronize
+         * their execution.
+         */
+        private class StartReceiverPacket(
+            /**
+             * Function that should be executed only once for this instance of [StartReceiverPacket]
+             *
+             * @see executeRunOnceBlockIfNeeded
+             */
+            private val runOnceBlock: suspend () -> Unit
+        ) : MarkerJdwpPacket() {
+
+            /**
+             * [Mutex] used for the execution of [runOnceBlock]
+             */
+            private val runOnceBlockMutex = Mutex()
+
+            /**
+             * Whether [runOnceBlock] has been executed
+             */
+            @Volatile
+            private var runOnceBlockExecuted = false
+
+            /**
+             * The [CompletableDeferred] set to [CompletableDeferred.complete] when the
+             * receiver of the [SharedJdwpSessionImpl.jdwpPacketSharedFlow] has processed
+             * this "start" packet
+             */
+            private val receivedBySharedFlowReceiver = CompletableDeferred<Unit>()
+
+            /**
+             * Called by activation job to check if the receiver has received this "start" packet
+             */
+            val isReceiverActive: Boolean
+                get() = receivedBySharedFlowReceiver.isCompleted
+
+            /**
+             * Called by receiverSet of the [SharedJdwpSessionImpl.jdwpPacketSharedFlow]
+             * to signal is has received this "start" packet
+             */
+            fun signalReceiverIsActive() {
+                receivedBySharedFlowReceiver.complete(Unit)
+            }
+
+            /**
+             * Executes [runOnceBlock] if needed
+             */
+            suspend fun executeRunOnceBlockIfNeeded() {
+                runOnceBlockMutex.withLock {
+                    if (!runOnceBlockExecuted) {
+                        runOnceBlockExecuted = true
+                        runOnceBlock()
+                    }
+                }
             }
         }
     }
