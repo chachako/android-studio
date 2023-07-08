@@ -34,7 +34,7 @@ import com.android.tools.idea.wizard.template.template
 import java.io.File
 
 private fun getSourceSetFolderTemplate(
-  _name: String, _description: String, sourceSetType: SourceSetType, dirName: String
+  _name: String, _description: String, sourceSetType: SourceSetType, defaultDirName: String
 ) = template {
   name = _name
   minApi = MIN_API
@@ -54,7 +54,7 @@ private fun getSourceSetFolderTemplate(
     name = "New Folder Location"
     constraints = listOf(Constraint.NONEMPTY, Constraint.SOURCE_SET_FOLDER, Constraint.UNIQUE)
     default = ""
-    suggest = { "src/${sourceProviderName}/$dirName/" }
+    suggest = { "src/${sourceProviderName}/$defaultDirName/" }
     help = "The location for the new folder"
     enabled = { remapFolder.value }
   }
@@ -75,8 +75,8 @@ private fun getSourceSetFolderTemplate(
 
   recipe = { data: TemplateData ->
     generateResourcesFolder(
-      data as ModuleTemplateData,
-      remapFolder.value, newLocation.value, { sourceProviderName.suggest()!! }, sourceSetType, dirName
+        data as ModuleTemplateData,
+        remapFolder.value, newLocation.value, { sourceProviderName.suggest()!! }, sourceSetType, defaultDirName
     )
   }
 }
