@@ -100,8 +100,7 @@ class TextureTargetedAssetPackTest {
             .containsExactly(
                 "level1-master.apk",
                 "level1-astc.apk",
-                "base-master.apk",
-                "base-xxhdpi.apk"
+                "base-master.apk"
             )
 
         // Verify the content of the asset-pack apks.
@@ -138,8 +137,7 @@ class TextureTargetedAssetPackTest {
             .containsExactly(
                 "level1-master.apk",
                 "level1-etc2.apk",
-                "base-master.apk",
-                "base-xxhdpi.apk"
+                "base-master.apk"
             )
 
         // Verify the content of the asset-pack apks.

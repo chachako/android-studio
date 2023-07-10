@@ -519,8 +519,7 @@ class DynamicAppTest {
         var apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
         assertThat(apkFileArray.toList()).named("APK List for API 27")
             .containsExactly(
-                "base-master.apk",
-                "base-xxhdpi.apk")
+                "base-master.apk")
 
         val baseApk = File(apkFolder, "base-master.apk")
         Zip(baseApk).use {
@@ -539,7 +538,7 @@ class DynamicAppTest {
             val apkFromBundleModel = BuiltArtifactsLoaderImpl.loadFromFile(
                 File(postApkFromBundleTaskModelFile)
             )
-            assertThat(apkFromBundleModel!!.elements).hasSize(2)
+            assertThat(apkFromBundleModel!!.elements).hasSize(1)
             val singleOutput = apkFromBundleModel.elements.first()
             assertThat(singleOutput).isNotNull()
             assertThat(singleOutput.outputFile).isNotNull()
@@ -583,7 +582,7 @@ class DynamicAppTest {
 
         apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
         Truth.assertThat(apkFileArray.toList()).named("APK List for API 18")
-            .containsExactly("standalone-xxhdpi.apk")
+            .containsExactly("standalone.apk")
 
 
         // Check universal APK generation too.
@@ -644,9 +643,7 @@ class DynamicAppTest {
         Truth.assertThat(apkFileArray.toList()).named("APK List when extract instant is false")
             .containsExactly(
                 "base-master.apk",
-                "base-xxhdpi.apk",
-                "feature2-master.apk",
-                "feature2-xxhdpi.apk"
+                "feature2-master.apk"
             )
 
         project
@@ -663,9 +660,7 @@ class DynamicAppTest {
         Truth.assertThat(apkFileArray.toList()).named("APK List when extract instant is true")
             .containsExactly(
                 "instant-base-master.apk",
-                "instant-base-xxhdpi.apk",
-                "instant-feature2-master.apk",
-                "instant-feature2-xxhdpi.apk"
+                "instant-feature2-master.apk"
             )
 
     }
@@ -717,11 +712,8 @@ class DynamicAppTest {
         assertThat(apkFileArray.toList()).named("APK List when extract instant is true")
             .containsExactly(
                 "instant-base-master.apk",
-                "instant-base-xxhdpi.apk",
                 "instant-feature1-master.apk",
-                "instant-feature1-xxhdpi.apk",
-                "instant-feature2-master.apk",
-                "instant-feature2-xxhdpi.apk")
+                "instant-feature2-master.apk")
 
         project
             .executor()
@@ -738,9 +730,7 @@ class DynamicAppTest {
         Truth.assertThat(apkFileArray.toList()).named("APK List when extract instant is true")
             .containsExactly(
                 "instant-base-master.apk",
-                "instant-base-xxhdpi.apk",
-                "instant-feature1-master.apk",
-                "instant-feature1-xxhdpi.apk")
+                "instant-feature1-master.apk")
     }
 
     @Test
@@ -1196,11 +1186,8 @@ class DynamicAppTest {
         Truth.assertThat(apkFileArray.toList()).named("APK List when extract instant is true")
             .containsExactly(
                 "base-master.apk",
-                "base-xxhdpi.apk",
                 "feature1-master.apk",
-                "feature1-xxhdpi.apk",
-                "feature2-master.apk",
-                "feature2-xxhdpi.apk")
+                "feature2-master.apk")
     }
 
     // make sure two flags can be passed to bundleTool simultaneously
@@ -1226,11 +1213,8 @@ class DynamicAppTest {
         assertThat(apkFileArray.toList()).named("APK List when extract instant is true")
             .containsExactly(
                 "base-master.apk",
-                "base-xxhdpi.apk",
                 "feature1-master.apk",
-                "feature1-xxhdpi.apk",
-                "feature2-master.apk",
-                "feature2-xxhdpi.apk")
+                "feature2-master.apk")
         val baseApk: File = apkFolder.listFiles().first { it.name == "base-master.apk" }
         assertThat(ApkSubject.getManifestContent(baseApk.toPath()).joinToString()).contains("local_testing_dir")
     }
@@ -1264,13 +1248,6 @@ class DynamicAppTest {
         //make sure that metadata.json file is properly deleted
         var apkFileArray = apkFolder.list() ?: fail("No files at $apkFolder")
         assertThat(apkFileArray.toList()).named("APK List when extract instant is true").doesNotContain("metadata.json")
-        assertThat(outputMetadataFile).contains("\"attributes\": [\n" +
-                "        {\n" +
-                "          \"key\": \"deliveryType\",\n" +
-                "          \"value\": \"INSTALL_TIME\"\n" +
-                "        }\n" +
-                "      ],\n" +
-                "      \"outputFile\": \"../../extracted_apks/debug/base-xxhdpi.apk\"")
         assertThat(outputMetadataFile).contains("\"attributes\": [\n" +
                 "        {\n" +
                 "          \"key\": \"deliveryType\",\n" +

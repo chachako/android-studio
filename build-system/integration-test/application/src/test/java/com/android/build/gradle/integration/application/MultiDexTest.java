@@ -127,7 +127,7 @@ public class MultiDexTest {
     }
 
     private Apk getStandaloneBundleApk() throws IOException {
-        Path extracted = temporaryFolder.newFile("standalone-hdpi.apk").toPath();
+        Path extracted = temporaryFolder.newFile("standalone.apk").toPath();
 
         try (FileSystem apks =
                         FileUtils.createZipFilesystem(
@@ -138,7 +138,7 @@ public class MultiDexTest {
                                         .toPath());
                 BufferedOutputStream out =
                         new BufferedOutputStream(Files.newOutputStream(extracted))) {
-            Files.copy(apks.getPath("standalones/standalone-hdpi.apk"), out);
+            Files.copy(apks.getPath("standalones/standalone.apk"), out);
         }
         return new Apk(extracted);
     }
