@@ -45,9 +45,7 @@ import org.jetbrains.kotlin.analysis.api.lifetime.KtReadActionConfinementDefault
 import org.jetbrains.kotlin.analysis.api.session.KtAnalysisSessionProvider
 import org.jetbrains.kotlin.analysis.project.structure.KtModuleScopeProvider
 import org.jetbrains.kotlin.analysis.project.structure.KtModuleScopeProviderImpl
-import org.jetbrains.kotlin.analysis.project.structure.KtSourceModule
 import org.jetbrains.kotlin.analysis.project.structure.ProjectStructureProvider
-import org.jetbrains.kotlin.analysis.project.structure.getKtModule
 import org.jetbrains.kotlin.analysis.project.structure.impl.buildKtModuleProviderByCompilerConfiguration
 import org.jetbrains.kotlin.analysis.project.structure.impl.getPsiFilesFromPaths
 import org.jetbrains.kotlin.analysis.project.structure.impl.getSourceFilePaths
@@ -363,12 +361,7 @@ private fun configureAnalysisApiServices(
     KtFe10KotlinReferenceProviderContributor::class.java
   )
 
-  val ktSourceModules =
-    ktFiles.mapNotNull { ktFile -> ktFile.getKtModule(project) as? KtSourceModule }.toSet()
-  // Intentional multi-module support
-  ktSourceModules.forEach {
-    AnalysisHandlerExtension.registerExtension(project, KtFe10AnalysisHandlerExtension(it))
-  }
+  AnalysisHandlerExtension.registerExtension(project, KtFe10AnalysisHandlerExtension())
 }
 
 private fun configureFe10ApplicationEnvironment(appEnv: CoreApplicationEnvironment) {
