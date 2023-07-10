@@ -17,12 +17,14 @@
 package com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values
 
 fun stylesXml(
-  themeName: String
+  splashScreenTheme: String
 ): String {
   return """
 <resources>
-    <style name="$themeName" parent="android:Theme.DeviceDefault">
-        <item name="android:windowBackground">@drawable/splash_icon</item>
+    <style name="$splashScreenTheme" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@android:color/black</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+        <item name="postSplashScreenTheme">@android:style/Theme.DeviceDefault</item>
     </style>
 </resources>
 """

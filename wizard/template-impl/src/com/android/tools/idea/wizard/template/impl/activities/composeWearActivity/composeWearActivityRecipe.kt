@@ -65,11 +65,13 @@ private fun RecipeExecutor.commonComposeRecipe(
     addDependency(mavenCoordinate = "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
     addDependency(mavenCoordinate = "androidx.activity:activity-compose:1.5.1")
 
-    val launchActivityThemeName = "${activityClass}Theme.Launch"
+    addDependency(mavenCoordinate = "androidx.core:core-splashscreen:1.0.1")
+
+    val splashScreenTheme = "${activityClass}Theme.Starting"
     generateManifest(
         moduleData = moduleData,
         activityClass = "presentation.${activityClass}",
-        activityThemeName = launchActivityThemeName,
+        activityThemeName = splashScreenTheme,
         packageName = packageName,
         isLauncher = isLauncher,
         hasNoActionBar = true,
@@ -105,7 +107,7 @@ private fun RecipeExecutor.commonComposeRecipe(
     save(themeKt(packageName, themeName), srcOut.resolve("$uiThemeFolder/Theme.kt"))
 
     mergeXml(
-        stylesXml(launchActivityThemeName),
+        stylesXml(splashScreenTheme),
         resOut.resolve("values/styles.xml")
     )
 

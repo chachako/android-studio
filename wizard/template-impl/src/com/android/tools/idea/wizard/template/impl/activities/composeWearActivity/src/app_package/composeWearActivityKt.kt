@@ -41,6 +41,7 @@ package ${escapeKotlinIdentifier(packageName)}.presentation
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -60,7 +61,12 @@ import ${escapeKotlinIdentifier(packageName)}.presentation.theme.${themeName}
 
 class $activityClass : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
+
         super.onCreate(savedInstanceState)
+
+        setTheme(android.R.style.Theme_DeviceDefault)
+
         setContent {
             ${wearAppName}("Android")
         }
