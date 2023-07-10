@@ -3100,6 +3100,22 @@ class GradleDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
+  fun testSuppressWithAnnotation() {
+    lint()
+      .files(
+        kts(
+          "" +
+            "@Suppress(\"GradleDeprecated\")\n" +
+            "plugins { id(\"android\") }\n" +
+            "\n" +
+            "android {\n" +
+            "}\n"
+        )
+      )
+      .run()
+      .expectClean()
+  }
+
   fun testDeprecatedPluginId() {
     val expected =
       "" +

@@ -18,6 +18,7 @@ package com.android.tools.lint.client.api
 
 import com.android.tools.lint.detector.api.GradleContext
 import com.android.tools.lint.detector.api.GradleScanner
+import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.Location
 
 /**
@@ -26,6 +27,15 @@ import com.android.tools.lint.detector.api.Location
  * This is only intended to be implemented by lint.
  */
 open class GradleVisitor {
+
+  /**
+   * The [JavaContext] used by the visitor, if applicable. For example, if the build script is
+   * Kotlin Script then the [JavaContext] will probably be available and can be used to check for
+   * suppression on a UElement from the build script.
+   */
+  internal open val javaContext: JavaContext?
+    get() = null
+
   /**
    * Manually visiting the build script. Returns true if it has fully handled the file, otherwise
    * returns true and some of the individual DSL checks below are run.

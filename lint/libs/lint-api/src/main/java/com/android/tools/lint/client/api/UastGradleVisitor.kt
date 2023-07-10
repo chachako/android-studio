@@ -36,7 +36,7 @@ import org.jetbrains.uast.util.isAssignment
 import org.jetbrains.uast.visitor.AbstractUastVisitor
 
 /** Gradle visitor for Kotlin Script files. */
-class UastGradleVisitor(private val javaContext: JavaContext) : GradleVisitor() {
+class UastGradleVisitor(override val javaContext: JavaContext) : GradleVisitor() {
   override fun visitBuildScript(context: GradleContext, detectors: List<GradleScanner>) {
     val uastFile = javaContext.uastFile ?: return
     uastFile.acceptSourceFile(

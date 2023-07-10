@@ -107,6 +107,9 @@ maven_library(
         "libs/lint-api/src/main/java/**/*.kt",
         "libs/lint-api/src/main/java/**/*.java",
     ]),
+    bundled_deps = [
+        ":groovy_neverlink",
+    ],
     coordinates = "com.android.tools.lint:lint-api",
     description = "API to build lint checks",
     kotlinc_opts = [
@@ -147,6 +150,12 @@ maven_library(
         "//tools/base/build-system/builder-model",
         "@maven//:com.google.guava.guava",
     ],
+)
+
+java_library(
+    name = "groovy_neverlink",
+    neverlink = 1,
+    exports = ["@maven//:org.codehaus.groovy.groovy"],
 )
 
 # managed by go/iml_to_build

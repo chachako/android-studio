@@ -2185,17 +2185,8 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       Runnable {
         val enabled = context.isEnabled(issue)
         if (enabled && context is GradleContext) {
-          // Suppressed?
-          // Temporarily unconditionally checking for suppress comments in Gradle files
-          // since Studio insists on an AndroidLint id prefix
-          val checkComments = /*context.getClient().checkForSuppressComments() &&*/
-            context.containsCommentSuppress()
-          if (checkComments && context.isSuppressedWithComment(cookie, issue)) {
-            return@Runnable
-          }
-
           val location = context.getLocation(cookie)
-          val incident = Incident(issue, location, message, fix)
+          val incident = Incident(issue, cookie, location, message, fix)
           overrideSeverity?.let { incident.overrideSeverity(it) }
           if (partial) {
             context.report(incident, map())

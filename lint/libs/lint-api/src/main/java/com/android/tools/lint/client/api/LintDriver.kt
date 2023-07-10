@@ -127,6 +127,7 @@ import java.util.IdentityHashMap
 import java.util.function.Predicate
 import java.util.regex.Pattern
 import kotlin.system.measureTimeMillis
+import org.codehaus.groovy.ast.ASTNode
 import org.jetbrains.annotations.Contract
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
@@ -2580,9 +2581,18 @@ class LintDriver(
      * lint.xml, etc.
      */
     private fun isSuppressedLocally(context: Context, incident: Incident): Boolean {
+      val scope = incident.scope ?: incident.location.source ?: return false
       val driver = context.driver
-      val scope = incident.scope ?: incident.location.source
       val issue = incident.issue
+
+      // The scope can be UAST (.kts), PSI (Groovy in Studio), or org.codehaus.groovy.ast.ASTNode
+      // (Groovy from command line). We check the type explicitly because we still want to be able
+      // to reach the error below if it is some other unexpected type.
+      if (
+        context is GradleContext && (scope is UElement || scope is PsiElement || scope is ASTNode)
+      ) {
+        return driver.isSuppressedGradle(context, issue, scope)
+      }
 
       // XML DOM
       if (scope is Node) {
@@ -2638,10 +2648,7 @@ class LintDriver(
 
       // ASM
       if (scope is FieldNode) {
-        if (driver.isSuppressed(issue, scope)) {
-          return true
-        }
-        return false
+        return driver.isSuppressed(issue, scope)
       }
 
       // Scope has type Any, to allow passing in things like UAST, PSI, DOM, etc.
@@ -2649,7 +2656,7 @@ class LintDriver(
       // not realize it's not going to work (see for example b/257336973) so
       // warn if we encounter an unknown scope type from tests, or if we know
       // it's definitely wrong (like a Location).
-      if (scope != null && (scope is Location || isUnitTest)) {
+      if (scope is Location || isUnitTest) {
         error(
           "Unexpected type of incident scope class: ${scope.javaClass}. This is usually an UAST element, " +
             "a PSI element, a DOM node, or an ASM node. It should *not* be a location"
@@ -3537,6 +3544,16 @@ class LintDriver(
     }
 
     return false
+  }
+
+  fun isSuppressedGradle(context: GradleContext, issue: Issue, scope: Any): Boolean {
+    return if (scope is UElement && context.gradleVisitor.javaContext != null) {
+      // If the build file is Kotlin Script, we use the [JavaContext] to check
+      // for suppression annotations, as well as suppression comments.
+      isSuppressed(context.gradleVisitor.javaContext, issue, scope)
+    } else {
+      context.isSuppressedWithComment(scope, issue)
+    }
   }
 
   private fun flagInvalidSuppress(
