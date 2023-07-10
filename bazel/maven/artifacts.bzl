@@ -262,6 +262,7 @@ DATA = [
     "androidx.core:core-ktx:1.6.0",
     "androidx.core:core-ktx:1.8.0",
     "androidx.core:core-ktx:1.9.0",
+    "androidx.core:core-splashscreen:1.0.1",
     "androidx.customview:customview-poolingcontainer:1.0.0-beta01",
     "androidx.databinding:viewbinding:7.2.0",
     "androidx.databinding:viewbinding:7.4.1",

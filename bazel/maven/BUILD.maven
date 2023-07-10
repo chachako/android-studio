@@ -261,6 +261,7 @@ maven_import(
     pom = "repository/com/android/tools/smali/smali-baksmali/3.0.3/smali-baksmali-3.0.3.pom",
     repo_root_path = "repository",
     repo_path = "com/android/tools/smali/smali-baksmali/3.0.3",
+    srcjar = "repository/com/android/tools/smali/smali-baksmali/3.0.3/smali-baksmali-3.0.3-sources.jar",
     visibility = ["//visibility:public"],
 )
 
@@ -10060,6 +10061,7 @@ maven_import(
     pom = "repository/org/xerial/sqlite-jdbc/3.21.0.1/sqlite-jdbc-3.21.0.1.pom",
     repo_root_path = "repository",
     repo_path = "org/xerial/sqlite-jdbc/3.21.0.1",
+    srcjar = "repository/org/xerial/sqlite-jdbc/3.21.0.1/sqlite-jdbc-3.21.0.1-sources.jar",
     visibility = ["//visibility:public"],
 )
 
@@ -14843,6 +14845,18 @@ maven_artifact(
         "androidx.annotation.annotation_1.1.0",
         "androidx.core.core_1.9.0",
         "org.jetbrains.kotlin.kotlin-stdlib_1.7.10",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.core.core-splashscreen_1.0.1",
+    pom = "repository/androidx/core/core-splashscreen/1.0.1/core-splashscreen-1.0.1.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/core/core-splashscreen/1.0.1",
+    deps = [
+        "androidx.annotation.annotation_1.2.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.6.21",
     ],
     visibility = ["//visibility:public"],
 )
