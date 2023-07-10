@@ -50,7 +50,7 @@ internal class CompiledSourceFile(
 ) : TestFile(), BytecodeTestFile {
 
   init {
-    to(if (isArtifact(into)) artifactToJar(into) else into)
+    to(if (isComponent(into)) componentToJar(into) else into)
   }
 
   /**

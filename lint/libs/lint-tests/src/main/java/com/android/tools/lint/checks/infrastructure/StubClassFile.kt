@@ -120,7 +120,7 @@ internal open class StubClassFile(
   var task: TestLintTask? = null
 
   init {
-    targetRelativePath = if (isArtifact(into)) artifactToJar(into) else into
+    targetRelativePath = if (isComponent(into)) componentToJar(into) else into
   }
 
   override fun createFile(targetDir: File): File {

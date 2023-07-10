@@ -33,7 +33,7 @@ import static com.android.utils.SdkUtils.escapePropertyValue;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
-import com.android.ide.common.repository.GradleCoordinate;
+import com.android.ide.common.gradle.Component;
 import com.android.utils.SdkUtils;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
@@ -332,14 +332,14 @@ public class TestFile {
         }
     }
 
-    static boolean isArtifact(@NonNull String path) {
+    static boolean isComponent(@NonNull String path) {
         return !path.endsWith(DOT_JAR)
                 && path.indexOf(':') != -1
-                && GradleCoordinate.parseCoordinateString(path) != null;
+                && Component.Companion.tryParse(path) != null;
     }
 
     @NonNull
-    static String artifactToJar(@NonNull String artifact) {
+    static String componentToJar(@NonNull String artifact) {
         // e.g.
         // build/intermediates/exploded-aar/com.android.support.constraint/constraint-layout/1.0.0-beta3/jars/classes.jar
         String path = artifact.replace(':', '/');

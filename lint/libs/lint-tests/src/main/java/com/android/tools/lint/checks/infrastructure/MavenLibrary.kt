@@ -20,4 +20,4 @@ internal class MavenLibrary(
   type: BytecodeTestFile.Type,
   stubSources: List<TestFile>,
   compileOnly: List<TestFile>
-) : StubClassFile(artifactToJar(artifact), type, stubSources, compileOnly)
+) : StubClassFile(componentToJar(artifact), type, stubSources, compileOnly)
