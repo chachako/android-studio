@@ -21,6 +21,7 @@ import static com.android.build.gradle.internal.publishing.AndroidArtifacts.Publ
 import static com.android.build.gradle.internal.publishing.AndroidArtifacts.PublishedConfigType.RUNTIME_ELEMENTS;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig;
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition;
 import org.gradle.api.attributes.Attribute;
@@ -432,37 +433,44 @@ public class AndroidArtifacts {
         AAPT_PROGUARD_RULES(TYPE_AAPT_PROGUARD_RULES),
 
         LINT(TYPE_LINT_JAR),
-        LINT_MODEL(AndroidArtifacts.TYPE_LINT_MODEL),
+        LINT_MODEL(AndroidArtifacts.TYPE_LINT_MODEL, ArtifactCategory.VERIFICATION),
         // The lint model published by the base module for consumption by dynamic features.
-        BASE_MODULE_LINT_MODEL(AndroidArtifacts.TYPE_BASE_MODULE_LINT_MODEL),
+        BASE_MODULE_LINT_MODEL(
+                AndroidArtifacts.TYPE_BASE_MODULE_LINT_MODEL, ArtifactCategory.VERIFICATION),
         // The lint model with partial results set to the location of LINT_VITAL_PARTIAL_RESULTS.
-        LINT_VITAL_LINT_MODEL(AndroidArtifacts.TYPE_LINT_VITAL_LINT_MODEL),
+        LINT_VITAL_LINT_MODEL(
+                AndroidArtifacts.TYPE_LINT_VITAL_LINT_MODEL, ArtifactCategory.VERIFICATION),
         // The unit test lint model
-        UNIT_TEST_LINT_MODEL(TYPE_UNIT_TEST_LINT_MODEL),
+        UNIT_TEST_LINT_MODEL(TYPE_UNIT_TEST_LINT_MODEL, ArtifactCategory.VERIFICATION),
         // The android test lint model
-        ANDROID_TEST_LINT_MODEL(TYPE_ANDROID_TEST_LINT_MODEL),
+        ANDROID_TEST_LINT_MODEL(TYPE_ANDROID_TEST_LINT_MODEL, ArtifactCategory.VERIFICATION),
         // The test fixtures lint model
-        TEST_FIXTURES_LINT_MODEL(TYPE_TEST_FIXTURES_LINT_MODEL),
+        TEST_FIXTURES_LINT_MODEL(TYPE_TEST_FIXTURES_LINT_MODEL, ArtifactCategory.VERIFICATION),
         // The partial results produced by running lint with --analyze-only
-        LINT_PARTIAL_RESULTS(AndroidArtifacts.TYPE_LINT_PARTIAL_RESULTS),
+        LINT_PARTIAL_RESULTS(
+                AndroidArtifacts.TYPE_LINT_PARTIAL_RESULTS, ArtifactCategory.VERIFICATION),
         // The partial results produced by running lint with --analyze-only and --fatalOnly
-        LINT_VITAL_PARTIAL_RESULTS(TYPE_LINT_VITAL_PARTIAL_RESULTS),
+        LINT_VITAL_PARTIAL_RESULTS(TYPE_LINT_VITAL_PARTIAL_RESULTS, ArtifactCategory.VERIFICATION),
         // The partial results produced by running lint with --analyze-only on the unit test
         // component
-        UNIT_TEST_LINT_PARTIAL_RESULTS(TYPE_UNIT_TEST_LINT_PARTIAL_RESULTS),
+        UNIT_TEST_LINT_PARTIAL_RESULTS(
+                TYPE_UNIT_TEST_LINT_PARTIAL_RESULTS, ArtifactCategory.VERIFICATION),
         // The partial results produced by running lint with --analyze-only on the android test
         // component
-        ANDROID_TEST_LINT_PARTIAL_RESULTS(TYPE_ANDROID_TEST_LINT_PARTIAL_RESULTS),
+        ANDROID_TEST_LINT_PARTIAL_RESULTS(
+                TYPE_ANDROID_TEST_LINT_PARTIAL_RESULTS, ArtifactCategory.VERIFICATION),
         // The partial results produced by running lint with --analyze-only on the test fixtures
         // component
-        TEST_FIXTURES_LINT_PARTIAL_RESULTS(TYPE_TEST_FIXTURES_LINT_PARTIAL_RESULTS),
+        TEST_FIXTURES_LINT_PARTIAL_RESULTS(
+                TYPE_TEST_FIXTURES_LINT_PARTIAL_RESULTS, ArtifactCategory.VERIFICATION),
         // An AAR built from a library project for lint to consume.
         LOCAL_AAR_FOR_LINT(TYPE_LOCAL_AAR_FOR_LINT),
         // Exploded AARs from library projects for lint to consume when not run with check
         // dependencies.
         LOCAL_EXPLODED_AAR_FOR_LINT(TYPE_LOCAL_EXPLODED_AAR_FOR_LINT),
         // The lint model metadata file, containing maven groupId e.g.
-        LINT_MODEL_METADATA(AndroidArtifacts.TYPE_LINT_MODEL_METADATA),
+        LINT_MODEL_METADATA(
+                AndroidArtifacts.TYPE_LINT_MODEL_METADATA, ArtifactCategory.VERIFICATION),
 
         APK_MAPPING(TYPE_MAPPING),
         APK_METADATA(TYPE_METADATA),
@@ -600,14 +608,25 @@ public class AndroidArtifacts {
         ;
 
         @NonNull private final String type;
+        @Nullable private final ArtifactCategory category;
 
         ArtifactType(@NonNull String type) {
+            this(type, null);
+        }
+
+        ArtifactType(@NonNull String type, @Nullable ArtifactCategory category) {
             this.type = type;
+            this.category = category;
         }
 
         @NonNull
         public String getType() {
             return type;
+        }
+
+        @Nullable
+        public ArtifactCategory getCategory() {
+            return category;
         }
     }
 

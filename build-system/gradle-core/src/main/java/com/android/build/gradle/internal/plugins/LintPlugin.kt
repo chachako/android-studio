@@ -48,6 +48,7 @@ import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.profile.AnalyticsUtil
 import com.android.build.gradle.internal.profile.NoOpAnalyticsService
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import com.android.build.gradle.internal.publishing.getAttributes
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.ProjectInfo
 import com.android.build.gradle.internal.scope.publishArtifactToConfiguration
@@ -160,8 +161,6 @@ abstract class LintPlugin : Plugin<Project> {
                     "Generates the lint report for just the fatal issues for project `${project.name}`"
             }
 
-        val androidLintCategory =
-            projectServices.objectFactory.named(Category::class.java, "android-lint")
         // Avoid reading the lintOptions DSL and build directory before the build author can customize them
         project.afterEvaluate {
             dslOperationsRegistrar.executeDslFinalizationBlocks()
@@ -170,7 +169,7 @@ abstract class LintPlugin : Plugin<Project> {
             // runtime classpath.
             val kotlinExtensionWrapper = try {
                 // This will throw an (ignored) ClassNotFoundException if
-                // KotlinMultiplaformExtension is not on the runtime classpath.
+                // KotlinMultiplatformExtension is not on the runtime classpath.
                 Class.forName("org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension")
                 val kotlinExtension =
                     project.extensions.findByName("kotlin") as? KotlinMultiplatformExtension
@@ -565,7 +564,6 @@ abstract class LintPlugin : Plugin<Project> {
                             project,
                             artifacts,
                             configurationName,
-                            androidLintCategory,
                             isPerComponentLintAnalysis
                         )
                         // We don't want to publish the lint models or partial results to repositories.
@@ -576,7 +574,7 @@ abstract class LintPlugin : Plugin<Project> {
                                     component.withVariantsFromConfiguration(configuration) { variant: ConfigurationVariantDetails ->
                                         val category =
                                             variant.configurationVariant.attributes.getAttribute(Category.CATEGORY_ATTRIBUTE)
-                                        if (category == androidLintCategory) {
+                                        if (category?.name == Category.VERIFICATION) {
                                             variant.skip()
                                         }
                                     }
@@ -597,7 +595,6 @@ abstract class LintPlugin : Plugin<Project> {
                             project,
                             artifacts,
                             configurationName,
-                            androidLintCategory,
                             isPerComponentLintAnalysis = true
                         )
                     }
@@ -612,7 +609,6 @@ abstract class LintPlugin : Plugin<Project> {
         project: Project,
         artifacts: ArtifactsImpl,
         configurationName: String,
-        category: Category,
         isPerComponentLintAnalysis: Boolean
     ) {
         project.configurations.getByName(configurationName) { configuration ->
@@ -620,44 +616,58 @@ abstract class LintPlugin : Plugin<Project> {
                 configuration,
                 artifacts.get(InternalArtifactType.LINT_MODEL),
                 AndroidArtifacts.ArtifactType.LINT_MODEL,
-                AndroidAttributes(category = category)
+                AndroidArtifacts.ArtifactType.LINT_MODEL.getAttributes { type, name ->
+                    projectServices.objectFactory.named(type, name)
+                }
             )
             publishArtifactToConfiguration(
                 configuration,
                 artifacts.get(InternalArtifactType.LINT_VITAL_LINT_MODEL),
                 AndroidArtifacts.ArtifactType.LINT_VITAL_LINT_MODEL,
-                AndroidAttributes(category = category)
+                AndroidArtifacts.ArtifactType.LINT_VITAL_LINT_MODEL.getAttributes { type, name ->
+                    projectServices.objectFactory.named(type, name)
+                }
             )
             publishArtifactToConfiguration(
                 configuration,
                 artifacts.get(InternalArtifactType.LINT_PARTIAL_RESULTS),
                 AndroidArtifacts.ArtifactType.LINT_PARTIAL_RESULTS,
-                AndroidAttributes(category = category)
+                AndroidArtifacts.ArtifactType.LINT_PARTIAL_RESULTS.getAttributes { type, name ->
+                    projectServices.objectFactory.named(type, name)
+                }
             )
             publishArtifactToConfiguration(
                 configuration,
                 artifacts.get(InternalArtifactType.LINT_VITAL_PARTIAL_RESULTS),
                 AndroidArtifacts.ArtifactType.LINT_VITAL_PARTIAL_RESULTS,
-                AndroidAttributes(category = category)
+                AndroidArtifacts.ArtifactType.LINT_VITAL_PARTIAL_RESULTS.getAttributes { type, name ->
+                    projectServices.objectFactory.named(type, name)
+                }
             )
             publishArtifactToConfiguration(
                 configuration,
                 artifacts.get(InternalArtifactType.LINT_MODEL_METADATA),
                 AndroidArtifacts.ArtifactType.LINT_MODEL_METADATA,
-                AndroidAttributes(category = category)
+                AndroidArtifacts.ArtifactType.LINT_MODEL_METADATA.getAttributes { type, name ->
+                    projectServices.objectFactory.named(type, name)
+                }
             )
             if (isPerComponentLintAnalysis && lintOptions!!.ignoreTestSources.not()) {
                 publishArtifactToConfiguration(
                     configuration,
                     artifacts.get(InternalArtifactType.UNIT_TEST_LINT_MODEL),
                     AndroidArtifacts.ArtifactType.UNIT_TEST_LINT_MODEL,
-                    AndroidAttributes(category = category)
+                    AndroidArtifacts.ArtifactType.UNIT_TEST_LINT_MODEL.getAttributes { type, name ->
+                        projectServices.objectFactory.named(type, name)
+                    }
                 )
                 publishArtifactToConfiguration(
                     configuration,
                     artifacts.get(InternalArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS),
                     AndroidArtifacts.ArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS,
-                    AndroidAttributes(category = category)
+                    AndroidArtifacts.ArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS.getAttributes { type, name ->
+                        projectServices.objectFactory.named(type, name)
+                    }
                 )
             }
         }

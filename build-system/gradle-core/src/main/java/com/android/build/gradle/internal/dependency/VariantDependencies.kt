@@ -37,6 +37,7 @@ import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactTyp
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.PublishedConfigType
 import com.android.build.gradle.internal.publishing.PublishedConfigSpec
+import com.android.build.gradle.internal.publishing.getAttributes
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.ProjectOptions
@@ -320,6 +321,9 @@ class VariantDependencies internal constructor(
         val attributesAction =
             Action { container: AttributeContainer ->
                 container.attribute(AndroidArtifacts.ARTIFACT_TYPE, artifactType.type)
+                artifactType.getAttributes { type, name ->
+                    project.objects.named(type, name)
+                }.addAttributesToContainer(container)
                 attributes?.addAttributesToContainer(container)
             }
         val filter = getComponentFilter(scope)
