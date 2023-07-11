@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.build.api.variant.impl
+package com.android.build.api.variant
 
-import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
-import org.gradle.api.NamedDomainObjectContainer
-import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
+import org.gradle.api.Incubating
+import org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
+import org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions
+import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 
 /**
- * Temporary interface to develop the kotlin multiplatform android plugin.
- *
- * TODO(b/267309622): Move to gradle-api
+ * Interface for kotlin multiplatform android compilation
  */
-interface KotlinMultiplatformAndroidTarget: KotlinTarget, KotlinMultiplatformAndroidExtension {
-    override val compilations: NamedDomainObjectContainer<KotlinMultiplatformAndroidCompilation>
+@Incubating
+interface KotlinMultiplatformAndroidCompilation: KotlinCompilation<KotlinCommonOptions> {
+    override val compilerOptions: HasCompilerOptions<KotlinJvmCompilerOptions>
 }

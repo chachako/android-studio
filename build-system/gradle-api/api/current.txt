@@ -2705,6 +2705,16 @@ package com.android.build.api.variant {
     property public abstract org.gradle.api.provider.SetProperty<java.lang.String> pickFirsts;
   }
 
+  @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidCompilation extends org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions> {
+    method public org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions<org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions> getCompilerOptions();
+    property public abstract org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions<org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions> compilerOptions;
+  }
+
+  @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidTarget extends org.jetbrains.kotlin.gradle.plugin.KotlinTarget com.android.build.api.dsl.KotlinMultiplatformAndroidExtension {
+    method public org.gradle.api.NamedDomainObjectContainer<com.android.build.api.variant.KotlinMultiplatformAndroidCompilation> getCompilations();
+    property public abstract org.gradle.api.NamedDomainObjectContainer<com.android.build.api.variant.KotlinMultiplatformAndroidCompilation> compilations;
+  }
+
   public interface KotlinMultiplatformAndroidVariant extends com.android.build.api.variant.GeneratesAar com.android.build.api.variant.HasAndroidTest com.android.build.api.variant.HasUnitTest {
     method public com.android.build.api.artifact.Artifacts getArtifacts();
     method public org.gradle.api.file.FileCollection getCompileClasspath();

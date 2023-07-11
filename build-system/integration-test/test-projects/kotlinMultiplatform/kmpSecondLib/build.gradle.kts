@@ -15,7 +15,7 @@ kotlin {
 
   jvm()
 
-  targets.withType(com.android.build.api.variant.impl.KotlinMultiplatformAndroidTarget::class.java) {
+  targets.withType(com.android.build.api.variant.KotlinMultiplatformAndroidTarget::class.java) {
     namespace = "com.example.kmpsecondlib"
     compileSdk = property("latestCompileSdk") as Int
     minSdk = 22

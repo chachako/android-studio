@@ -16,6 +16,7 @@
 
 package com.android.build.api.variant.impl
 
+import com.android.build.api.variant.KotlinMultiplatformAndroidCompilation
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions

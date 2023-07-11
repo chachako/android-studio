@@ -16,6 +16,7 @@
 
 package com.android.build.api.variant.impl
 
+import com.android.build.api.variant.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.variant.SourceDirectories
 import com.android.build.gradle.internal.services.VariantServices
 import org.gradle.api.file.ConfigurableFileTree

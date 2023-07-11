@@ -25,11 +25,11 @@ import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.Instrumentation
 import com.android.build.api.variant.InternalSources
 import com.android.build.api.variant.JavaCompilation
+import com.android.build.api.variant.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.api.variant.SourceDirectories
 import com.android.build.api.variant.impl.FileBasedDirectoryEntryImpl
 import com.android.build.api.variant.impl.FlatSourceDirectoriesImpl
-import com.android.build.api.variant.impl.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.variant.impl.KotlinMultiplatformFlatSourceDirectoriesImpl
 import com.android.build.api.variant.impl.LayeredSourceDirectoriesImpl
 import com.android.build.api.variant.impl.SourceType

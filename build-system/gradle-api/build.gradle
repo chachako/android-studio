@@ -16,6 +16,7 @@ dependencies {
     api libs.asm
 
     compileOnly libs.com.android.tools.annotations
+    compileOnly libs.kotlin_gradle_plugin
     compileOnly gradleApi()
     compileOnly project(':base:builder-model') // Only present for legacy reasons.
 
@@ -26,6 +27,7 @@ dependencies {
 
     testImplementation libs.junit
     testImplementation libs.kotlin_test
+    testImplementation libs.kotlin_gradle_plugin
     testImplementation libs.com.android.tools.testutils
     testImplementation gradleApi()
     testImplementation project(':base:builder-model')

@@ -25,11 +25,11 @@ import com.android.build.api.component.impl.KmpAndroidTestImpl
 import com.android.build.api.component.impl.KmpUnitTestImpl
 import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.api.dsl.SettingsExtension
+import com.android.build.api.variant.KotlinMultiplatformAndroidCompilation
+import com.android.build.api.variant.KotlinMultiplatformAndroidTarget
 import com.android.build.api.variant.impl.KmpPredefinedAndroidCompilation
 import com.android.build.api.variant.impl.KmpVariantImpl
-import com.android.build.api.variant.impl.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.variant.impl.KotlinMultiplatformAndroidCompilationImpl
-import com.android.build.api.variant.impl.KotlinMultiplatformAndroidTarget
 import com.android.build.api.variant.impl.KotlinMultiplatformAndroidTargetImpl
 import com.android.build.gradle.internal.CompileOptions
 import com.android.build.gradle.internal.DependencyConfigurator
@@ -89,6 +89,7 @@ import com.android.repository.Revision
 import com.android.utils.FileUtils
 import com.android.utils.appendCapitalized
 import com.google.wireless.android.sdk.stats.GradleBuildProject
+import org.gradle.api.Incubating
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
@@ -104,6 +105,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.external.createExternalKotlinTarge
 import javax.inject.Inject
 
 @OptIn(ExternalKotlinTargetApi::class)
+@Incubating
 abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
     listenerRegistry: BuildEventsListenerRegistry
 ): AndroidPluginBaseServices(listenerRegistry), Plugin<Project> {

@@ -31,12 +31,12 @@ import com.android.build.api.variant.AndroidTest
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ApkPackaging
 import com.android.build.api.variant.BuildConfigField
+import com.android.build.api.variant.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.variant.Renderscript
 import com.android.build.api.variant.ResValue
 import com.android.build.api.variant.SigningConfig
 import com.android.build.api.variant.impl.ApkPackagingImpl
 import com.android.build.api.variant.impl.KmpVariantImpl
-import com.android.build.api.variant.impl.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.variant.impl.ResValueKeyImpl
 import com.android.build.api.variant.impl.SigningConfigImpl
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig

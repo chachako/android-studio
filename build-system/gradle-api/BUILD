@@ -35,6 +35,8 @@ maven_library(
         "//tools/base/build-system/builder-model",  # Only present for legacy reasons. # CompileOnly should not be in pom
         "//tools/base/build-system/builder-test-api:tools.builder-test-api",
         "@maven//:com.google.guava.guava",
+        "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin",
+        "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin-api",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
     ],
 )
@@ -46,8 +48,8 @@ filegroup(
         "src/main/**/*.kt",
         "src/main/resources/**",
     ]) + [
-        "build.gradle",
         "NOTICE",
+        "build.gradle",
     ],
     visibility = [
         "//tools/base/build-system:__pkg__",
