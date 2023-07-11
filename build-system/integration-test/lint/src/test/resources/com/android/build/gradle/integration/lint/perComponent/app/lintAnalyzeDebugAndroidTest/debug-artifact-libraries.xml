@@ -1,6 +1,6 @@
 <libraries>
   <library
-      name="${projectDir}@@:app::debug::testFixtures"
+      name=":@@:app::debug::testFixtures"
       jars="${projectDir}/app/build/.transforms/<digest>/transformed/out-test-fixtures/jars/classes.jar"
       resolved="artifacts:app:unspecified"
       folder="${projectDir}/app/build/.transforms/<digest>/transformed/out-test-fixtures"
@@ -13,10 +13,10 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
-      name="${projectDir}@@:app::debug"
+      name=":@@:app::debug"
       project=":app"/>
   <library
-      name="${projectDir}@@:library::debug"
+      name=":@@:library::debug"
       jars="${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/classes.jar:${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/libs/R.jar"
       resolved="lintKotlin:library:unspecified"
       provided="true"

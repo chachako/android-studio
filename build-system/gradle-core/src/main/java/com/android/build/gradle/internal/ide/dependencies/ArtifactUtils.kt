@@ -24,7 +24,6 @@ import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.ide.DependencyFailureHandler
 import com.android.build.gradle.internal.ide.dependencies.ArtifactCollectionsInputs.RuntimeType
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
-import com.google.common.collect.ImmutableMap
 import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Sets
 import org.gradle.api.artifacts.ArtifactCollection
@@ -34,6 +33,7 @@ import org.gradle.api.artifacts.result.ResolvedArtifactResult
 import org.gradle.api.artifacts.result.ResolvedVariantResult
 import org.gradle.api.capabilities.Capability
 import org.gradle.api.file.FileCollection
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
@@ -49,10 +49,10 @@ interface ArtifactCollectionsInputs {
 
     @get:Input
     val projectPath: String
+    @get:Internal
+    val projectBuildPath: Provider<String>
     @get:Input
     val variantName: String
-    @get:Internal
-    val buildMapping: ImmutableMap<String, String>
     @get:Nested
     val compileClasspath: ArtifactCollections
     @get:Nested
@@ -83,20 +83,23 @@ class ArtifactCollectionsInputsImpl constructor(
     override val projectPath: String,
     override val variantName: String,
     @get:Input val runtimeType: RuntimeType,
-    override val buildMapping: ImmutableMap<String, String>
 ): ArtifactCollectionsInputs {
 
     constructor(
         componentImpl: ComponentCreationConfig,
         runtimeType: RuntimeType,
-        buildMapping: ImmutableMap<String, String>
     ) : this(
         componentImpl.variantDependencies,
         componentImpl.services.projectInfo.path,
         componentImpl.name,
         runtimeType,
-        buildMapping
     )
+
+    override val projectBuildPath: Provider<String> = variantDependencies.getResolutionResult(
+        AndroidArtifacts.ConsumedConfigType.COMPILE_CLASSPATH
+    ).rootComponent.map {
+            (it as? ProjectComponentIdentifier)?.build?.name ?: UNKNOWN_BUILD_NAME
+        }
 
     override val compileClasspath: ArtifactCollections = ArtifactCollections(
         variantDependencies,
@@ -153,7 +156,6 @@ class ArtifactCollectionsInputsImpl constructor(
         return getAllArtifacts(
             collections,
             dependencyFailureHandler,
-            buildMapping,
             projectPath,
             variantName
         )
@@ -293,19 +295,16 @@ class ArtifactCollections(
  * @param componentImpl the variant to get the artifacts from
  * @param consumedConfigType the type of the dependency to resolve (compile vs runtime)
  * @param dependencyFailureHandler handler for dependency resolution errors
- * @param buildMapping a build mapping from build name to root dir.
  */
 fun getAllArtifacts(
     componentImpl: ComponentCreationConfig,
     consumedConfigType: AndroidArtifacts.ConsumedConfigType,
     dependencyFailureHandler: DependencyFailureHandler?,
-    buildMapping: ImmutableMap<String, String>
 ): Set<ResolvedArtifact> {
     val collections = ArtifactCollections(componentImpl, consumedConfigType)
     return getAllArtifacts(
         collections,
         dependencyFailureHandler,
-        buildMapping,
         componentImpl.services.projectInfo.path,
         componentImpl.name,
     )
@@ -314,7 +313,6 @@ fun getAllArtifacts(
 private fun getAllArtifacts(
     collections: ArtifactCollections,
     dependencyFailureHandler: DependencyFailureHandler?,
-    buildMapping: ImmutableMap<String, String>,
     projectPath: String,
     variantName: String,
 ): Set<ResolvedArtifact> {
@@ -379,7 +377,6 @@ private fun getAllArtifacts(
                         dependencyType,
                         // check if this is a wrapped module
                         aarWrappedAsProjects.contains(variantKey),
-                        buildMapping
                 )
             )
         }

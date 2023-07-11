@@ -23,7 +23,6 @@ import com.android.build.gradle.internal.ide.dependencies.ArtifactCollectionsInp
 import com.android.build.gradle.internal.ide.dependencies.LibraryService
 import com.android.build.gradle.internal.ide.dependencies.ResolvedArtifact
 import com.android.build.gradle.internal.ide.dependencies.VariantKey
-import com.android.build.gradle.internal.ide.dependencies.computeBuildMapping
 import com.android.build.gradle.internal.ide.dependencies.toKey
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import org.gradle.api.Project
@@ -61,7 +60,6 @@ class LibraryResolver(
                 projectPath = project.path,
                 variantName = component.name,
                 runtimeType = ArtifactCollectionsInputs.RuntimeType.FULL,
-                buildMapping = project.gradle.computeBuildMapping()
             )
         }
 

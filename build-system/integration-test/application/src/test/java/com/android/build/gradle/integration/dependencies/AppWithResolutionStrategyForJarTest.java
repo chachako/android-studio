@@ -30,8 +30,6 @@ import com.android.build.gradle.integration.common.utils.LibraryGraphHelper.Item
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.builder.model.AndroidProject;
 import com.android.builder.model.Variant;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import com.google.common.truth.Truth;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -118,7 +116,7 @@ public class AppWithResolutionStrategyForJarTest {
         assertThat(items.mapTo(COORDINATES))
                 .named("Direct modules of " + variantName)
                 .containsExactly(
-                        project.getProjectDir().getAbsolutePath() + "@@:library::" + variantName,
+                        ":@@:library::" + variantName,
                         "com.google.guava:guava:" + jarVersion + "@jar");
     }
 }

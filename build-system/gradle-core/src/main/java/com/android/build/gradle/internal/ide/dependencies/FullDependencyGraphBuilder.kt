@@ -298,7 +298,6 @@ fun getLibrary(
                     publishedLintJar = null,
                     dependencyType = ResolvedArtifact.DependencyType.RELOCATED_ARTIFACT,
                     isWrappedModule = false,
-                    buildMapping = inputs.buildMapping
                 ),
                 additionalArtifacts
             )
@@ -322,7 +321,6 @@ fun getLibrary(
                     publishedLintJar = null,
                     dependencyType = ResolvedArtifact.DependencyType.ANDROID,
                     isWrappedModule = false,
-                    buildMapping = inputs.buildMapping
                 ),
                 additionalArtifacts
             )
@@ -339,7 +337,6 @@ fun getLibrary(
                     publishedLintJar = null,
                     dependencyType = ResolvedArtifact.DependencyType.NO_ARTIFACT_FILE,
                     isWrappedModule = false,
-                    buildMapping = inputs.buildMapping
                 ),
                 additionalArtifacts
             )

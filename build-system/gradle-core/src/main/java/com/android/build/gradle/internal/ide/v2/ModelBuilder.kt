@@ -45,12 +45,10 @@ import com.android.build.gradle.internal.ide.DependencyFailureHandler
 import com.android.build.gradle.internal.ide.ModelBuilder
 import com.android.build.gradle.internal.ide.dependencies.ArtifactCollectionsInputs
 import com.android.build.gradle.internal.ide.dependencies.ArtifactCollectionsInputsImpl
-import com.android.build.gradle.internal.ide.dependencies.BuildMapping
 import com.android.build.gradle.internal.ide.dependencies.FullDependencyGraphBuilder
 import com.android.build.gradle.internal.ide.dependencies.GraphEdgeCache
 import com.android.build.gradle.internal.ide.dependencies.LibraryService
 import com.android.build.gradle.internal.ide.dependencies.LibraryServiceImpl
-import com.android.build.gradle.internal.ide.dependencies.computeBuildMapping
 import com.android.build.gradle.internal.ide.dependencies.getVariantName
 import com.android.build.gradle.internal.lint.getLocalCustomLintChecksForModel
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
@@ -534,8 +532,6 @@ class ModelBuilder<
             .singleOrNull { it.name == variantName }
             ?: return null
 
-        val buildMapping = project.gradle.computeBuildMapping()
-
         val globalLibraryBuildService =
             getBuildService(
                 project.gradle.sharedServices,
@@ -550,7 +546,6 @@ class ModelBuilder<
                     name = variantName,
                     mainArtifact = createDependenciesWithAdjacencyList(
                             variant,
-                            buildMapping,
                             libraryService,
                             graphEdgeCache,
                             parameter.dontBuildRuntimeClasspath
@@ -558,7 +553,6 @@ class ModelBuilder<
                     androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
                         createDependenciesWithAdjacencyList(
                                 it,
-                                buildMapping,
                                 libraryService,
                                 graphEdgeCache,
                                 parameter.dontBuildAndroidTestRuntimeClasspath
@@ -567,7 +561,6 @@ class ModelBuilder<
                     unitTestArtifact = (variant as? HasUnitTest)?.unitTest?.let {
                         createDependenciesWithAdjacencyList(
                                 it,
-                                buildMapping,
                                 libraryService,
                                 graphEdgeCache,
                                 parameter.dontBuildUnitTestRuntimeClasspath
@@ -576,7 +569,6 @@ class ModelBuilder<
                     testFixturesArtifact = (variant as? HasTestFixtures)?.testFixtures?.let {
                         createDependenciesWithAdjacencyList(
                                 it,
-                                buildMapping,
                                 libraryService,
                                 graphEdgeCache,
                                 parameter.dontBuildTestFixtureRuntimeClasspath
@@ -589,14 +581,12 @@ class ModelBuilder<
                     name = variantName,
                     mainArtifact = createDependencies(
                             variant,
-                            buildMapping,
                             libraryService,
                             parameter.dontBuildRuntimeClasspath
                     ),
                     androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
                         createDependencies(
                                 it,
-                                buildMapping,
                                 libraryService,
                                 parameter.dontBuildAndroidTestRuntimeClasspath
                         )
@@ -604,7 +594,6 @@ class ModelBuilder<
                     unitTestArtifact = (variant as? HasUnitTest)?.unitTest?.let {
                         createDependencies(
                                 it,
-                                buildMapping,
                                 libraryService,
                                 parameter.dontBuildUnitTestRuntimeClasspath
                         )
@@ -612,7 +601,6 @@ class ModelBuilder<
                     testFixturesArtifact = (variant as? HasTestFixtures)?.testFixtures?.let {
                         createDependencies(
                                 it,
-                                buildMapping,
                                 libraryService,
                                 parameter.dontBuildTestFixtureRuntimeClasspath
                         )
@@ -878,21 +866,18 @@ class ModelBuilder<
 
     private fun createDependencies(
         component: ComponentCreationConfig,
-        buildMapping: BuildMapping,
         libraryService: LibraryService,
         dontBuildRuntimeClasspath: Boolean,
-    ) = getGraphBuilder(dontBuildRuntimeClasspath, component, buildMapping, libraryService).build()
+    ) = getGraphBuilder(dontBuildRuntimeClasspath, component, libraryService).build()
 
     private fun createDependenciesWithAdjacencyList(
         component: ComponentCreationConfig,
-        buildMapping: BuildMapping,
         libraryService: LibraryService,
         graphEdgeCache: GraphEdgeCache,
         dontBuildRuntimeClasspath: Boolean
     ): ArtifactDependenciesAdjacencyList = getGraphBuilder(
         dontBuildRuntimeClasspath,
         component,
-        buildMapping,
         libraryService,
         graphEdgeCache
     ).buildWithAdjacencyList()
@@ -900,7 +885,6 @@ class ModelBuilder<
     private fun getGraphBuilder(
         dontBuildRuntimeClasspath: Boolean,
         component: ComponentCreationConfig,
-        buildMapping: BuildMapping,
         libraryService: LibraryService,
         graphEdgeCache: GraphEdgeCache? = null,
     ): FullDependencyGraphBuilder {
@@ -923,7 +907,6 @@ class ModelBuilder<
             projectPath = project.path,
             variantName = component.name,
             runtimeType = ArtifactCollectionsInputs.RuntimeType.FULL,
-            buildMapping = buildMapping
         )
 
         return FullDependencyGraphBuilder(

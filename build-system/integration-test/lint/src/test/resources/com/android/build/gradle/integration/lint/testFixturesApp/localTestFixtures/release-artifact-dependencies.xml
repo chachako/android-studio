@@ -1,11 +1,11 @@
 <dependencies>
   <compile
-      roots="${projectDir}@@:javaLib,${projectDir}@@:lib::release">
+      roots=":@@:javaLib,:@@:lib::release">
     <dependency
-        name="${projectDir}@@:javaLib"
+        name=":@@:javaLib"
         simpleName=":"/>
     <dependency
-        name="${projectDir}@@:lib::release"
+        name=":@@:lib::release"
         simpleName="artifacts::lib"/>
   </compile>
 </dependencies>

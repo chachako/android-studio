@@ -27,12 +27,9 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainer;
 import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
 import com.android.build.gradle.integration.common.utils.LibraryGraphHelper;
-import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.builder.model.AndroidProject;
 import com.android.builder.model.Variant;
 import com.android.builder.model.level2.DependencyGraphs;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -100,10 +97,8 @@ public class AppWithPackageDirectJarTest {
 
         assertThat(packageItems.withType(MODULE).mapTo(COORDINATES))
                 .named("app sub-module package deps")
-                .containsExactly(project.getProjectDir().getAbsolutePath() + "@@:jar");
-        assertThat(packageItems.withType(JAVA).asList())
-                .named("app java package deps")
-                .isEmpty();
+                .containsExactly(":@@:jar");
+        assertThat(packageItems.withType(JAVA).asList()).named("app java package deps").isEmpty();
     }
 
 }

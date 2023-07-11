@@ -31,8 +31,6 @@ import com.android.builder.model.AndroidArtifact;
 import com.android.builder.model.AndroidProject;
 import com.android.builder.model.Variant;
 import com.android.builder.model.level2.DependencyGraphs;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -121,8 +119,6 @@ public class AppWithResolutionStrategyForAarTest {
 
         assertThat(helper.on(artifactCompileGraph).mapTo(COORDINATES))
                 .named("module dependencies of " + variantName)
-                .containsAllOf(
-                        project.getProjectDir().getAbsolutePath() + "@@:library::" + variantName,
-                        aarCoodinate);
+                .containsAllOf(":@@:library::" + variantName, aarCoodinate);
     }
 }

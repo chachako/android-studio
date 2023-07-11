@@ -9,7 +9,6 @@ import com.android.build.gradle.integration.common.truth.TruthHelper;
 import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
 import com.android.build.gradle.integration.common.utils.LibraryGraphHelper;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.build.gradle.options.BooleanOption;
 import com.android.builder.model.AndroidArtifact;
 import com.android.builder.model.AndroidProject;
 import com.android.builder.model.Variant;
@@ -120,7 +119,7 @@ public class SeparateTestWithAarDependencyTest {
         // dependency list.
         TruthHelper.assertThat(helper.on(compileGraph).mapTo(COORDINATES))
                 .containsAllOf(
-                        project.getProjectDir().getAbsolutePath() + "@@:app::debug",
+                        ":@@:app::debug",
                         "com.android.support:support-core-ui:"
                                 + TestVersions.SUPPORT_LIB_VERSION
                                 + "@aar",
@@ -170,7 +169,7 @@ public class SeparateTestWithAarDependencyTest {
         // make sure the package does not contain the app or its dependencies
         TruthHelper.assertThat(packageItems.mapTo(COORDINATES))
                 .containsNoneOf(
-                        project.getProjectDir().getAbsolutePath() + "@@:app::debug",
+                        ":@@:app::debug",
                         "com.android.support:support-core-ui:"
                                 + TestVersions.SUPPORT_LIB_VERSION
                                 + "@aar",

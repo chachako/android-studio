@@ -121,12 +121,12 @@ class MultiCompositeBuildTest {
         rootApp.getVariantByName("debug").testSubModuleDependencies(
                 moduleName = "<root>:app",
                 expectedAndroidModules = listOf(
-                        testCompositeApp to ":composite0",
-                        testCompositeLib1 to ":composite1",
-                        testCompositeLib3 to ":composite3"),
+                    ":" to ":composite0",
+                    "TestCompositeLib1" to ":composite1",
+                    "TestCompositeLib3" to ":composite3"),
                 expectedJavaModules = listOf(
-                        testCompositeLib2 to ":",
-                        testCompositeLib4 to ":"),
+                    "TestCompositeLib2" to ":",
+                    "TestCompositeLib4" to ":"),
                 globalLibrary = getGlobalLibrary())
     }
 
@@ -139,23 +139,28 @@ class MultiCompositeBuildTest {
 
         // test the composite1 module
         modelMap[":composite1"]!!.getVariantByName("debug").testSubModuleDependencies(
-                moduleName = "TestCompositeLib1:composite1",
-                expectedAndroidModules = listOf(testCompositeLib3 to ":composite3"),
-                expectedJavaModules = listOf(
-                        testCompositeLib2 to ":",
-                        testCompositeLib4 to ":"),
-                globalLibrary = getGlobalLibrary())
+            moduleName = "TestCompositeLib1:composite1",
+            expectedAndroidModules = listOf("TestCompositeLib3" to ":composite3"),
+            expectedJavaModules = listOf(
+                "TestCompositeLib2" to ":",
+                "TestCompositeLib4" to ":"
+            ),
+            globalLibrary = getGlobalLibrary()
+        )
 
         // test the app module
         modelMap[":app"]!!.getVariantByName("debug").testSubModuleDependencies(
-                moduleName = "TestCompositeLib1:app",
-                expectedAndroidModules = listOf(
-                        testCompositeLib1 to ":composite1",
-                        testCompositeLib3 to ":composite3"),
-                expectedJavaModules = listOf(
-                        testCompositeLib2 to ":",
-                        testCompositeLib4 to ":"),
-                globalLibrary = getGlobalLibrary())
+            moduleName = "TestCompositeLib1:app",
+            expectedAndroidModules = listOf(
+                "TestCompositeLib1" to ":composite1",
+                "TestCompositeLib3" to ":composite3"
+            ),
+            expectedJavaModules = listOf(
+                "TestCompositeLib2" to ":",
+                "TestCompositeLib4" to ":"
+            ),
+            globalLibrary = getGlobalLibrary()
+        )
     }
 
     private fun findModelMapByRootDir(rootDir: String): Map<String, AndroidProject> {

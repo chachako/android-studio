@@ -84,7 +84,7 @@ public class AppWithCompileLibTest {
 
         assertThat(subModuleItems.mapTo(COORDINATES))
                 .named("app compile dependencies sub-modules coordinates")
-                .containsExactly(project.getProjectDir().getAbsolutePath() + "@@:library::debug");
+                .containsExactly(":@@:library::debug");
 
         assertThat(subModuleItems.mapTo(GRADLE_PATH))
                 .named("app compile dependencies sub-modules gradle-paths")

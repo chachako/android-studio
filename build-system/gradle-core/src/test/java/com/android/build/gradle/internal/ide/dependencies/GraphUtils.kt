@@ -173,7 +173,6 @@ open class DependencyBuilderImpl: DependencyBuilder {
                     publishedLintJar = null,
                     dependencyType = node.dependencyType,
                     isWrappedModule = false, // does not really matter
-                    buildMapping = ImmutableMap.of() // does not really matter
                 )
             )
         }

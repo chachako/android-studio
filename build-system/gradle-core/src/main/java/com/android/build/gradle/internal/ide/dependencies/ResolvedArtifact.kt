@@ -54,7 +54,6 @@ data class ResolvedArtifact internal constructor(
     val publishedLintJar: File?,
     val dependencyType: DependencyType,
     val isWrappedModule: Boolean,
-    val buildMapping: ImmutableMap<String, String>,
 )  {
 
     constructor(
@@ -64,7 +63,6 @@ data class ResolvedArtifact internal constructor(
         publishedLintJar: File?,
         dependencyType: DependencyType,
         isWrappedModule: Boolean,
-        buildMapping: ImmutableMap<String, String>,
     ) :
             this(
                 mainArtifactResult.id.componentIdentifier,
@@ -77,7 +75,6 @@ data class ResolvedArtifact internal constructor(
                 publishedLintJar,
                 dependencyType,
                 isWrappedModule,
-                buildMapping,
             )
 
     enum class DependencyType constructor(val extension: String) {
@@ -160,7 +157,7 @@ data class ResolvedArtifact internal constructor(
         is ProjectComponentIdentifier -> {
 
             StringBuilder(100)
-                .append(componentIdentifier.getBuildId(buildMapping))
+                .append(componentIdentifier.build.name)
                 .append("@@")
                 .append(componentIdentifier.projectPath)
                 .also { sb ->

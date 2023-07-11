@@ -20,7 +20,6 @@ import com.android.SdkConstants
 import com.android.SdkConstants.MAVEN_ARTIFACT_ID_PROPERTY
 import com.android.SdkConstants.MAVEN_GROUP_ID_PROPERTY
 import com.android.build.gradle.internal.ide.dependencies.ArtifactHandler
-import com.android.build.gradle.internal.ide.dependencies.BuildMapping
 import com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService
 import com.android.builder.model.MavenCoordinates
 import com.android.ide.common.caching.CreatingCache
@@ -239,27 +238,26 @@ class ExternalLintModelArtifactHandler private constructor(
             runtimeLintModelMetadata: ArtifactCollection,
             compileLintPartialResults: ArtifactCollection?,
             runtimeLintPartialResults: ArtifactCollection?,
-            buildMapping: BuildMapping
         ): ExternalLintModelArtifactHandler {
             var projectExplodedAarsMap =
-                projectCompileExplodedAars?.asProjectSourceSetKeyedMap(buildMapping) ?: emptyMap()
+                projectCompileExplodedAars?.asProjectSourceSetKeyedMap() ?: emptyMap()
             projectRuntimeExplodedAars?.let {
-                projectExplodedAarsMap = projectExplodedAarsMap + it.asProjectSourceSetKeyedMap(buildMapping)
+                projectExplodedAarsMap = projectExplodedAarsMap + it.asProjectSourceSetKeyedMap()
             }
             testedProjectExplodedAars?.let {
-                projectExplodedAarsMap = projectExplodedAarsMap + it.asProjectSourceSetKeyedMap(buildMapping)
+                projectExplodedAarsMap = projectExplodedAarsMap + it.asProjectSourceSetKeyedMap()
             }
             val projectJarsMap =
-                compileProjectJars.asProjectSourceSetKeyedMap(buildMapping) + runtimeProjectJars.asProjectSourceSetKeyedMap(buildMapping)
+                compileProjectJars.asProjectSourceSetKeyedMap() + runtimeProjectJars.asProjectSourceSetKeyedMap()
             val baseModuleModelFileMap =
-                baseModuleModelFile?.asProjectKeyedMap(buildMapping) ?: emptyMap()
+                baseModuleModelFile?.asProjectKeyedMap() ?: emptyMap()
             val lintModelMetadataMap =
-                compileLintModelMetadata.asProjectKeyedMap(buildMapping) +
-                        runtimeLintModelMetadata.asProjectKeyedMap(buildMapping)
+                compileLintModelMetadata.asProjectKeyedMap() +
+                        runtimeLintModelMetadata.asProjectKeyedMap()
             var lintPartialResultsMap =
-                compileLintPartialResults?.asProjectKeyedMap(buildMapping) ?: emptyMap()
+                compileLintPartialResults?.asProjectKeyedMap() ?: emptyMap()
             runtimeLintPartialResults?.let {
-                lintPartialResultsMap = lintPartialResultsMap + it.asProjectKeyedMap(buildMapping)
+                lintPartialResultsMap = lintPartialResultsMap + it.asProjectKeyedMap()
             }
             return ExternalLintModelArtifactHandler(
                 dependencyCaches.localJarCache,

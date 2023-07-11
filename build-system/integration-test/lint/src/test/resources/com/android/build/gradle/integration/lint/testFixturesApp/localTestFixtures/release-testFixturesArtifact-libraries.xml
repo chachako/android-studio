@@ -1,6 +1,6 @@
 <libraries>
   <library
-      name="${projectDir}@@:app::release"
+      name=":@@:app::release"
       project=":app"/>
   <library
       name="com.google.truth:truth:0.44@jar"

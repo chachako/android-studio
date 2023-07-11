@@ -37,9 +37,7 @@ import com.android.builder.model.Variant;
 import com.android.builder.model.level2.DependencyGraphs;
 import com.android.builder.model.level2.GraphItem;
 import com.android.testutils.apk.Apk;
-import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
-import com.google.common.io.Files;
 import com.google.common.truth.Truth;
 import java.util.Collection;
 import java.util.List;
@@ -155,8 +153,6 @@ public class AppWithCompileIndirectJavaProjectTest {
 
     @Test
     public void checkLevel4Model() throws Exception {
-        String rootProjectId = project.getProjectDir().getAbsolutePath() + "@@";
-
         ModelContainer<AndroidProject> modelContainer =
                 project.model()
                         .level(AndroidProject.MODEL_LEVEL_LATEST)
@@ -194,7 +190,7 @@ public class AppWithCompileIndirectJavaProjectTest {
             // For now it contains all the transitive in a single list, so also :jar
             assertThat(moduleItems.mapTo(Property.COORDINATES))
                     .named(":app compile modules")
-                    .containsExactly(rootProjectId + ":library::debug", rootProjectId + ":jar");
+                    .containsExactly(":@@:library::debug", ":@@:jar");
 
             // once there is a true graph, change this to false
             if (true) {
@@ -265,7 +261,7 @@ public class AppWithCompileIndirectJavaProjectTest {
             // For now it contains all the transitive in a single list, so also :jar
             assertThat(moduleItems.mapTo(Property.COORDINATES))
                     .named(":app package modules")
-                    .containsExactly(rootProjectId + ":library::debug", rootProjectId + ":jar");
+                    .containsExactly(":@@:library::debug", ":@@:jar");
 
             // once there is a true graph, change this to false
             if (true) {

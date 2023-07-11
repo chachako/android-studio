@@ -366,7 +366,7 @@
       jars="${mavenRepo}/org/jetbrains/annotations/13.0/annotations-13.0.jar"
       resolved="org.jetbrains:annotations:13.0"/>
   <library
-      name="${projectDir}@@:library::debug"
+      name=":@@:library::debug"
       jars="${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/classes.jar:${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/libs/R.jar"
       resolved="lintKotlin:library:unspecified"
       folder="${projectDir}/library/build/.transforms/<digest>/transformed/out"

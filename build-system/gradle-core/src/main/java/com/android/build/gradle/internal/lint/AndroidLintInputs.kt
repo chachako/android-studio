@@ -44,8 +44,6 @@ import com.android.build.gradle.internal.ide.dependencies.ArtifactCollectionsInp
 import com.android.build.gradle.internal.ide.dependencies.ArtifactHandler
 import com.android.build.gradle.internal.ide.dependencies.LibraryDependencyCacheBuildService
 import com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService
-import com.android.build.gradle.internal.ide.dependencies.computeBuildMapping
-import com.android.build.gradle.internal.ide.dependencies.currentBuild
 import com.android.build.gradle.internal.ide.dependencies.getDependencyGraphBuilder
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.InternalArtifactType
@@ -1802,7 +1800,6 @@ abstract class AndroidArtifactInput : ArtifactInput() {
                 projectPath = creationConfig.services.projectInfo.path,
                 variantName = creationConfig.name,
                 runtimeType = ArtifactCollectionsInputs.RuntimeType.FULL,
-                buildMapping = creationConfig.services.projectInfo.computeBuildMapping(),
             )
         )
 
@@ -1858,7 +1855,6 @@ abstract class AndroidArtifactInput : ArtifactInput() {
                 projectPath = project.path,
                 variantName = sourceSet.name,
                 runtimeType = ArtifactCollectionsInputs.RuntimeType.FULL,
-                buildMapping = project.gradle.computeBuildMapping(),
             )
         )
         initializeProjectDependencyLintArtifacts(
@@ -1911,7 +1907,6 @@ abstract class AndroidArtifactInput : ArtifactInput() {
                 projectPath = project.path,
                 variantName = compilation.name,
                 runtimeType = ArtifactCollectionsInputs.RuntimeType.FULL,
-                buildMapping = project.gradle.computeBuildMapping(),
             )
         )
         initializeProjectDependencyLintArtifacts(
@@ -2017,7 +2012,6 @@ abstract class JavaArtifactInput : ArtifactInput() {
                 projectPath = creationConfig.services.projectInfo.path,
                 variantName = creationConfig.name,
                 runtimeType = ArtifactCollectionsInputs.RuntimeType.FULL,
-                buildMapping = creationConfig.services.projectInfo.computeBuildMapping(),
             )
         )
         return this
@@ -2062,7 +2056,6 @@ abstract class JavaArtifactInput : ArtifactInput() {
                 projectPath = project.path,
                 variantName = sourceSet.name,
                 runtimeType = ArtifactCollectionsInputs.RuntimeType.FULL,
-                buildMapping = project.gradle.computeBuildMapping(),
             )
         )
         initializeProjectDependencyLintArtifacts(
@@ -2117,7 +2110,6 @@ abstract class JavaArtifactInput : ArtifactInput() {
                 projectPath = project.path,
                 variantName = compilation.name,
                 runtimeType = ArtifactCollectionsInputs.RuntimeType.FULL,
-                buildMapping = project.gradle.computeBuildMapping(),
             )
         )
         initializeProjectDependencyLintArtifacts(
@@ -2338,7 +2330,7 @@ abstract class ArtifactInput {
             if (projectRuntimeLintModels.isPresent) {
                 val thisProject =
                     ProjectKey(
-                        artifactCollectionsInputs.buildMapping.currentBuild!!,
+                        artifactCollectionsInputs.projectBuildPath.get(),
                         artifactCollectionsInputs.projectPath,
                         artifactCollectionsInputs.variantName
                     )
@@ -2349,7 +2341,6 @@ abstract class ArtifactInput {
                     projectCompileLintModels.get(),
                     artifactCollectionsInputs.compileClasspath.projectJars,
                     artifactCollectionsInputs.runtimeClasspath!!.projectJars,
-                    artifactCollectionsInputs.buildMapping,
                     warnIfProjectTreatedAsExternalDependency.get())
             } else {
                 // When not checking dependencies, treat all dependencies as external, with the
@@ -2368,7 +2359,6 @@ abstract class ArtifactInput {
                     compileLintModelMetadata.get(),
                     runtimeLintPartialResults.orNull,
                     compileLintPartialResults.orNull,
-                    buildMapping = artifactCollectionsInputs.buildMapping
                 )
             }
         val modelBuilder = LintDependencyModelBuilder(

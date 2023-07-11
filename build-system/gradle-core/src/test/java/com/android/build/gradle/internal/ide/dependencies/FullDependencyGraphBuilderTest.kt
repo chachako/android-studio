@@ -34,6 +34,7 @@ import org.gradle.api.artifacts.result.DependencyResult
 import org.gradle.api.artifacts.result.ResolutionResult
 import org.gradle.api.artifacts.result.ResolvedArtifactResult
 import org.gradle.api.artifacts.result.ResolvedComponentResult
+import org.gradle.api.provider.Provider
 import org.junit.Test
 import org.mockito.Mockito
 import java.io.File
@@ -317,8 +318,8 @@ private class FakeArtifactCollectionsInputs(
         return artifacts
     }
 
-    override val buildMapping: ImmutableMap<String, String>
-        get() = ImmutableMap.of()
+    override val projectBuildPath: Provider<String>
+        get() = TODO("Not yet implemented")
 
     override val compileClasspath: ArtifactCollections
         get() = TODO("Not needed by code under test")

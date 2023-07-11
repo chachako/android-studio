@@ -1,8 +1,8 @@
 <dependencies>
   <compile
-      roots="${projectDir}@@:app::debug">
+      roots=":@@:app::debug">
     <dependency
-        name="${projectDir}@@:app::debug"
+        name=":@@:app::debug"
         simpleName="artifacts::app"/>
   </compile>
 </dependencies>

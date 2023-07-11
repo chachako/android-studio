@@ -82,18 +82,13 @@ abstract class ArtifactHandler<DependencyItemT> protected constructor(
                 )
             }
         } else {
-            val buildId: String = id.getBuildId(artifact.buildMapping) ?: run {
-                // Do not fail as these could be Gradle source dependencies, see b/176998942.
-                logger.info("Failed to find matching buildId for artifact '${artifact.componentIdentifier}'. Build mapping is '${artifact.buildMapping}'")
-                UNKNOWN_BUILD_NAME
-            }
 
             if (artifact.dependencyType === ResolvedArtifact.DependencyType.ANDROID) {
                 val lintJar = lintJarMap?.get(id)
 
                 handleAndroidModule(
                     id.projectPath,
-                    buildId,
+                    id.build.name,
                     artifact.variantName,
                     artifact.isTestFixturesArtifact,
                     artifact.artifactFile,
@@ -112,7 +107,7 @@ abstract class ArtifactHandler<DependencyItemT> protected constructor(
             } else {
                 handleJavaModule(
                     id.projectPath,
-                    buildId,
+                    id.build.name,
                     artifact.variantName,
                     artifact.isTestFixturesArtifact,
                     modelAddressSupplier

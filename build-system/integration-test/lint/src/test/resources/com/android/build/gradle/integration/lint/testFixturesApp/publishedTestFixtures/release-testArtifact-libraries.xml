@@ -19,7 +19,7 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
-      name="${projectDir}@@:app::release::testFixtures"
+      name=":@@:app::release::testFixtures"
       jars="${projectDir}/app/build/.transforms/<digest>/transformed/out-test-fixtures/jars/classes.jar"
       resolved="artifacts:app:unspecified"
       folder="${projectDir}/app/build/.transforms/<digest>/transformed/out-test-fixtures"
@@ -32,7 +32,7 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
-      name="${projectDir}@@:app::release"
+      name=":@@:app::release"
       project=":app"/>
   <library
       name="com.example.javaLib:javaLib:1.0:test-fixtures@jar::testFixtures"

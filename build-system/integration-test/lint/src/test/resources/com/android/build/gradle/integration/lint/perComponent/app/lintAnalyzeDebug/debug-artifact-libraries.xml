@@ -1,6 +1,6 @@
 <libraries>
   <library
-      name="${projectDir}@@:library::debug"
+      name=":@@:library::debug"
       jars="${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/classes.jar:${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/libs/R.jar"
       resolved="lintKotlin:library:unspecified"
       partialResultsDir="${projectDir}/library/build/intermediates/lint_partial_results/debug/out"

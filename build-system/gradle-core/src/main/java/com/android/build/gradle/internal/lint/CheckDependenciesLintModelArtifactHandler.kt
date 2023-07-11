@@ -18,7 +18,6 @@ package com.android.build.gradle.internal.lint
 
 import com.android.SdkConstants
 import com.android.build.gradle.internal.ide.dependencies.ArtifactHandler
-import com.android.build.gradle.internal.ide.dependencies.BuildMapping
 import com.android.builder.model.MavenCoordinates
 import com.android.tools.lint.model.DefaultLintModelAndroidLibrary
 import com.android.tools.lint.model.DefaultLintModelJavaLibrary
@@ -50,7 +49,6 @@ internal class CheckDependenciesLintModelArtifactHandler(
     projectCompileLintModels: ArtifactCollection,
     compileProjectJars: ArtifactCollection,
     runtimeProjectJars: ArtifactCollection,
-    buildMapping: BuildMapping,
     private val warnIfProjectTreatedAsExternalDependency: Boolean
 ) : ArtifactHandler<LintModelLibrary>(
     dependencyCaches.localJarCache,
@@ -58,10 +56,10 @@ internal class CheckDependenciesLintModelArtifactHandler(
 ) {
 
     private val projectDependencyLintModels =
-        projectCompileLintModels.asProjectKeyedMap(buildMapping).keys +
-                projectRuntimeLintModels.asProjectKeyedMap(buildMapping).keys
-    private val compileProjectJars = compileProjectJars.asProjectSourceSetKeyedMap(buildMapping)
-    private val runtimeProjectJars = runtimeProjectJars.asProjectSourceSetKeyedMap(buildMapping)
+        projectCompileLintModels.asProjectKeyedMap().keys +
+                projectRuntimeLintModels.asProjectKeyedMap().keys
+    private val compileProjectJars = compileProjectJars.asProjectSourceSetKeyedMap()
+    private val runtimeProjectJars = runtimeProjectJars.asProjectSourceSetKeyedMap()
 
     override fun handleAndroidLibrary(
         aarFile: File,

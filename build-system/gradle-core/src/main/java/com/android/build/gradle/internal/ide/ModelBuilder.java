@@ -58,7 +58,6 @@ import com.android.build.gradle.internal.dsl.TestOptions;
 import com.android.build.gradle.internal.errors.SyncIssueReporterImpl;
 import com.android.build.gradle.internal.ide.dependencies.ArtifactCollectionsInputs;
 import com.android.build.gradle.internal.ide.dependencies.ArtifactCollectionsInputsImpl;
-import com.android.build.gradle.internal.ide.dependencies.BuildMappingUtils;
 import com.android.build.gradle.internal.ide.dependencies.DependencyGraphBuilder;
 import com.android.build.gradle.internal.ide.dependencies.DependencyGraphBuilderKt;
 import com.android.build.gradle.internal.ide.dependencies.Level1DependencyModelBuilder;
@@ -149,7 +148,6 @@ import org.gradle.StartParameter;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.ArtifactCollection;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.component.BuildIdentifier;
 import org.gradle.api.artifacts.result.ResolvedArtifactResult;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.Directory;
@@ -168,12 +166,6 @@ public class ModelBuilder<Extension extends BaseExtension>
     @NonNull private final VariantModel variantModel;
     private int modelLevel = AndroidProject.MODEL_LEVEL_0_ORIGINAL;
     private boolean modelWithFullDependency = false;
-
-    /**
-     * a map that goes from build name ({@link BuildIdentifier#getName()} to the root dir of the
-     * build.
-     */
-    private ImmutableMap<String, String> buildMapping = null;
 
     public ModelBuilder(
             @NonNull Project project,
@@ -198,10 +190,6 @@ public class ModelBuilder<Extension extends BaseExtension>
     @NonNull
     @Override
     public Object buildAll(@NonNull String modelName, @NonNull Project project) {
-        // build a map from included build name to rootDir (as rootDir is the only thing
-        // that we have access to on the tooling API side).
-        initBuildMapping(project);
-
         if (modelName.equals(AndroidProject.class.getName())) {
             return buildAndroidProject(project, true);
         }
@@ -223,9 +211,6 @@ public class ModelBuilder<Extension extends BaseExtension>
         // Prevents parameter interface evolution from breaking the model builder.
         parameter = new FailsafeModelBuilderParameter(parameter);
 
-        // build a map from included build name to rootDir (as rootDir is the only thing
-        // that we have access to on the tooling API side).
-        initBuildMapping(project);
         if (modelName.equals(AndroidProject.class.getName())) {
             return buildAndroidProject(project, parameter.getShouldBuildVariant());
         }
@@ -871,7 +856,7 @@ public class ModelBuilder<Extension extends BaseExtension>
         SourceProviders sourceProviders = determineSourceProviders(component);
 
         Pair<Dependencies, DependencyGraphs> result =
-                getDependencies(component, buildMapping, modelLevel, modelWithFullDependency);
+                getDependencies(component, modelLevel, modelWithFullDependency);
 
         Set<File> additionalTestClasses = new HashSet<>();
         additionalTestClasses.addAll(
@@ -932,7 +917,6 @@ public class ModelBuilder<Extension extends BaseExtension>
     @NonNull
     private Pair<Dependencies, DependencyGraphs> getDependencies(
             @NonNull ComponentCreationConfig component,
-            @NonNull ImmutableMap<String, String> buildMapping,
             int modelLevel,
             boolean modelWithFullDependency) {
         Pair<Dependencies, DependencyGraphs> result;
@@ -952,9 +936,7 @@ public class ModelBuilder<Extension extends BaseExtension>
                                 component.getServices().getBuildServiceRegistry());
                 ArtifactCollectionsInputs artifactCollectionsInputs =
                         new ArtifactCollectionsInputsImpl(
-                                component,
-                                ArtifactCollectionsInputs.RuntimeType.FULL,
-                                buildMapping);
+                                component, ArtifactCollectionsInputs.RuntimeType.FULL);
                 graphBuilder.createDependencies(
                         modelBuilder,
                         artifactCollectionsInputs,
@@ -967,9 +949,7 @@ public class ModelBuilder<Extension extends BaseExtension>
                                 component.getServices().getBuildServiceRegistry());
                 ArtifactCollectionsInputs artifactCollectionsInputs =
                         new ArtifactCollectionsInputsImpl(
-                                component,
-                                ArtifactCollectionsInputs.RuntimeType.PARTIAL,
-                                buildMapping);
+                                component, ArtifactCollectionsInputs.RuntimeType.PARTIAL);
 
                 graphBuilder.createDependencies(
                         modelBuilder,
@@ -1004,7 +984,7 @@ public class ModelBuilder<Extension extends BaseExtension>
                 new InstantRunImpl(project.file("build_info_removed"), InstantRun.STATUS_REMOVED);
 
         Pair<Dependencies, DependencyGraphs> dependencies =
-                getDependencies(component, buildMapping, modelLevel, modelWithFullDependency);
+                getDependencies(component, modelLevel, modelWithFullDependency);
 
         Set<File> additionalClasses = new HashSet<>();
         additionalClasses.addAll(
@@ -1309,12 +1289,6 @@ public class ModelBuilder<Extension extends BaseExtension>
                 SourceProviderImpl multiFlavorSourceProvider) {
             this.variantSourceProvider = variantSourceProvider;
             this.multiFlavorSourceProvider = multiFlavorSourceProvider;
-        }
-    }
-
-    private void initBuildMapping(@NonNull Project project) {
-        if (buildMapping == null) {
-            buildMapping = BuildMappingUtils.computeBuildMapping(project.getGradle());
         }
     }
 }
