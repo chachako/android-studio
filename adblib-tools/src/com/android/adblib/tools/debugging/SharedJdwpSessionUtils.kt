@@ -470,6 +470,7 @@ suspend fun <R> SharedJdwpSession.handleJdwpCommand(
         throw IllegalArgumentException("JDWP packet is not a command packet")
     }
 
+    val activationDone = CompletableDeferred<Unit>()
     return newPacketReceiver()
         .withName("JDWP Command: $commandPacket")
         .withActivation {
@@ -477,11 +478,17 @@ suspend fun <R> SharedJdwpSession.handleJdwpCommand(
             progress?.beforeSend(commandPacket)
             sendPacket(commandPacket)
             progress?.afterSend(commandPacket)
+
+            // Signal "activation" is fully completed
+            activationDone.complete(Unit)
         }
         .receiveMapFirst { replyPacket ->
             logger.verbose { "Received packet from session: $replyPacket" }
             val isReply = replyPacket.isReply && replyPacket.id == commandPacket.id
             if (isReply) {
+                // Ensure "activation" block fully completes
+                activationDone.await()
+
                 logger.debug { "Received reply '$replyPacket' for command packet '$commandPacket'" }
                 progress?.onReply(replyPacket)
                 // Note: The packet "payload" is still connected to the underlying
