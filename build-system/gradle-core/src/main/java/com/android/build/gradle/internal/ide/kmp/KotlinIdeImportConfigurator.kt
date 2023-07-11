@@ -20,16 +20,20 @@ import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.ide.dependencies.LibraryCacheImpl
 import com.android.build.gradle.internal.ide.dependencies.LibraryServiceImpl
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker.Companion.android
-import com.android.build.gradle.internal.ide.kmp.resolvers.BinaryDependencyResolver
+import com.android.build.gradle.internal.ide.kmp.resolvers.AndroidLibraryDependencyResolver
+import com.android.build.gradle.internal.ide.kmp.resolvers.LocalFileDependencyResolver
 import com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver
 import com.android.build.gradle.internal.ide.kmp.serialization.AndroidExtrasSerializationExtension
 import com.android.build.gradle.internal.ide.v2.GlobalSyncService
+import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.services.getBuildService
 import org.gradle.api.Project
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver
 import org.jetbrains.kotlin.gradle.plugin.ide.IdeMultiplatformImport
+import org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver
 
 @OptIn(ExternalKotlinTargetApi::class)
 object KotlinIdeImportConfigurator {
@@ -86,7 +90,27 @@ object KotlinIdeImportConfigurator {
         }
 
         service.registerDependencyResolver(
-            resolver = BinaryDependencyResolver(
+            resolver = IdeBinaryDependencyResolver(
+                artifactResolutionStrategy = IdeBinaryDependencyResolver.ArtifactResolutionStrategy.ResolvableConfiguration(
+                    configurationSelector = { sourceSet ->
+                        sourceSetToCreationConfigMap.value[sourceSet]?.variantDependencies?.compileClasspath
+                    },
+                    setupArtifactViewAttributes = {
+                        attribute(
+                            AndroidArtifacts.ARTIFACT_TYPE,
+                            AndroidArtifacts.ArtifactType.CLASSES_JAR.type
+                        )
+                    },
+                    componentFilter = { it !is ProjectComponentIdentifier }
+                )
+            ),
+            constraint = androidSourceSetFilter,
+            phase = resolutionPhase,
+            priority = resolutionPriority
+        )
+
+        service.registerDependencyResolver(
+            resolver = LocalFileDependencyResolver(
                 libraryResolver = libraryResolver,
                 sourceSetToCreationConfigMap = sourceSetToCreationConfigMap
             ),
@@ -103,6 +127,16 @@ object KotlinIdeImportConfigurator {
             ),
             constraint = androidSourceSetFilter,
             phase = resolutionPhase,
+            priority = resolutionPriority
+        )
+
+        service.registerAdditionalArtifactResolver(
+            resolver = AndroidLibraryDependencyResolver(
+                libraryResolver = libraryResolver,
+                sourceSetToCreationConfigMap = sourceSetToCreationConfigMap
+            ),
+            constraint = androidSourceSetFilter,
+            phase = IdeMultiplatformImport.AdditionalArtifactResolutionPhase.PreAdditionalArtifactResolution,
             priority = resolutionPriority
         )
 

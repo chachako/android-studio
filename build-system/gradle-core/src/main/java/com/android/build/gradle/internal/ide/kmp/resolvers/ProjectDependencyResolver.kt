@@ -26,6 +26,7 @@ import com.android.kotlin.multiplatform.ide.models.serialization.androidDependen
 import com.android.kotlin.multiplatform.models.DependencyInfo
 import org.gradle.api.Project
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
+import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinDependency
 import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinProjectArtifactDependency
 import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinProjectCoordinates
@@ -37,6 +38,7 @@ import org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver
 /**
  * An implementation of [IdeDependencyResolver] that resolves project dependencies.
  */
+@OptIn(ExternalKotlinTargetApi::class)
 internal class ProjectDependencyResolver(
     project: Project,
     libraryResolver: LibraryResolver,
@@ -44,7 +46,7 @@ internal class ProjectDependencyResolver(
 ) : BaseIdeDependencyResolver(
     libraryResolver,
     sourceSetToCreationConfigMap
-) {
+), IdeDependencyResolver {
     private val currentProjectPath = project.path
     private val currentProjectBuildName = ModelBuilder.getBuildName(project)
 
