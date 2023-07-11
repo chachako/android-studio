@@ -28,7 +28,6 @@ import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSessionFilter
 import com.android.adblib.tools.debugging.SharedJdwpSessionMonitor
 import com.android.adblib.tools.debugging.impl.SharedJdwpSessionImpl.ScopedPayloadProvider.ScopedAdbRewindableInputChannel
-import com.android.adblib.tools.debugging.packets.JdwpPacketConstants
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.impl.EphemeralJdwpPacket
 import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
@@ -39,6 +38,7 @@ import com.android.adblib.tools.debugging.packets.withPayload
 import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.tools.debugging.sharedJdwpSessionMonitorFactoryList
 import com.android.adblib.tools.debugging.utils.AdbRewindableInputChannel
+import com.android.adblib.tools.debugging.utils.ByteBufferHolder
 import com.android.adblib.tools.debugging.utils.MutableSerializedSharedFlow
 import com.android.adblib.tools.debugging.utils.SerializedSharedFlow
 import com.android.adblib.tools.debugging.utils.SupportsOffline
@@ -562,12 +562,17 @@ internal class SharedJdwpSessionImpl(
         private val scope: CoroutineScope
     ) : PayloadProviderFactory(session) {
 
+        private val reusableBuffer = ByteBufferHolder()
+
         override fun createLargePacketProvider(
             packet: JdwpPacketView,
             packetPayload: AdbInputChannel,
             packetPayloadLength: Int
         ): PayloadProvider {
-            return ScopedPayloadProvider(scope, packetPayload)
+            // Wrap the payload with a "scoped" payload provider to ensure proper cancellation
+            // behavior, and also make sure to re-use our reusable ByteBuffer to prevent
+            // extra ByteBuffer allocation
+            return ScopedPayloadProvider(scope, packetPayload, reusableBuffer)
         }
 
     }
@@ -586,7 +591,11 @@ internal class SharedJdwpSessionImpl(
         /**
          * The [AdbInputChannel] being wrapped.
          */
-        payload: AdbInputChannel
+        payload: AdbInputChannel,
+        /**
+         * Reusable [ByteBufferHolder] used to store (and buffer) the content of [payload]
+         */
+        reusableBuffer: ByteBufferHolder
     ) : PayloadProvider {
 
         private var closed = false
@@ -600,7 +609,7 @@ internal class SharedJdwpSessionImpl(
          * The [ScopedAdbRewindableInputChannel] wrapping the original [AdbInputChannel], to ensure
          * cancellation of [AdbInputChannel.read] operations don't close the [AdbInputChannel].
          */
-        private var scopedPayload = ScopedAdbRewindableInputChannel(scope, payload)
+        private var scopedPayload = ScopedAdbRewindableInputChannel(scope, reusableBuffer, payload)
 
         override suspend fun acquirePayload(): AdbInputChannel {
             throwIfClosed()
@@ -639,11 +648,17 @@ internal class SharedJdwpSessionImpl(
         }
 
         /**
-         * An [AdbRewindableInputChannel] that reads from another [AdbRewindableInputChannel] in a custom
+         * An [AdbRewindableInputChannel] that reads from an [AdbInputChannel] in a custom
          * [CoroutineScope] so that cancellation does not affect the source [AdbInputChannel].
+         *
+         * Note:
+         * * The [close] method may invalidate the initial [AdbInputChannel] if there is a pending
+         * [read] operation. Caller should call [waitForPendingRead] to prevent this.
+         * * This class is *not* thread-safe
          */
         private class ScopedAdbRewindableInputChannel(
             private val scope: CoroutineScope,
+            reusableBuffer: ByteBufferHolder,
             input: AdbInputChannel
         ) : AdbRewindableInputChannel, SupportsOffline<AdbRewindableInputChannel> {
 
@@ -656,7 +671,7 @@ internal class SharedJdwpSessionImpl(
             private val rewindableInput = if (input is AdbRewindableInputChannel) {
                 input
             } else {
-                AdbRewindableInputChannel.forInputChannel(input)
+                AdbRewindableInputChannel.forInputChannel(input, reusableBuffer)
             }
 
             override suspend fun rewind() {

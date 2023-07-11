@@ -91,12 +91,7 @@ internal interface PayloadProvider: SupportsOffline<PayloadProvider>, AutoClosea
          * Creates a [PayloadProvider] wrapping the given [AdbInputChannel].
          */
         fun forInputChannel(channel: AdbInputChannel): PayloadProvider {
-            val rewindableChannel = if (channel is AdbRewindableInputChannel) {
-                channel
-            } else {
-                AdbRewindableInputChannel.forInputChannel(channel)
-            }
-            return ForInputChannel(rewindableChannel)
+            return ForInputChannel(channel)
         }
 
         private object Empty : PayloadProvider, ThreadSafetySupport {

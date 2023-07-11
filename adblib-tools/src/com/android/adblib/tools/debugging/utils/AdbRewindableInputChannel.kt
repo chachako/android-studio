@@ -69,8 +69,11 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
          * supports [ForInputChannel.finalRewind] to stop the in-memory
          * buffering behavior, as an optimization for the final reader.
          */
-        fun forInputChannel(input: AdbInputChannel): AdbRewindableInputChannel {
-            return ForInputChannel(input)
+        fun forInputChannel(
+            input: AdbInputChannel,
+            bufferHolder: ByteBufferHolder = ByteBufferHolder()
+        ): AdbRewindableInputChannel {
+            return ForInputChannel(input, bufferHolder)
         }
 
         /**
@@ -126,27 +129,17 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
 
         /**
          * A [AdbRewindableInputChannel] that wraps an [AdbInputChannel] and buffers data in memory
-         * to allow [rewinding][rewind].
+         * to support [rewinding][rewind].
          */
         private class ForInputChannel(
-            private val input: AdbInputChannel
-        ) : AdbRewindableInputChannel, SupportsOffline<AdbRewindableInputChannel> {
-
+            private val input: AdbInputChannel,
             /**
-             * Buffer contains previously read data from [0, limit].
-             * Buffer contains data that needs to be "replayed" from [position, limit]
+             * The internal buffer used to store data read from [input].
+             * * `(0..limit)` is the (optional) data buffered from [input]
+             * * `(position..limit)` is (optional) data to return from the next [read]
              */
-            private var _bufferedData: ByteBuffer? = null
-
-            private val bufferedData: ByteBuffer
-                get() {
-                    return _bufferedData ?: run {
-                        ByteBuffer.allocate(16).limit(0).also {
-                            _bufferedData = it
-                        }
-                    }
-                }
-
+            private val bufferHolder: ByteBufferHolder = ByteBufferHolder(),
+        ) : AdbRewindableInputChannel, SupportsOffline<AdbRewindableInputChannel> {
 
             /**
              * Whether buffering in memory is enabled or not. When buffering is disabled,
@@ -154,11 +147,16 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
              */
             private var buffering: Boolean = true
 
+            init {
+                bufferHolder.clear() // [position=0, limit=capacity]
+                bufferHolder.limit(0) // [position-0, limit=0]: No data
+            }
+
             override suspend fun rewind() {
                 if (!buffering) {
                     throw IllegalStateException("Rewinding is not supported after finalRewind has been invoked")
                 }
-                _bufferedData?.position(0)
+                bufferHolder.position(0)
             }
 
             override suspend fun finalRewind() {
@@ -170,13 +168,13 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
             }
 
             override suspend fun read(buffer: ByteBuffer, timeout: Long, unit: TimeUnit): Int {
-                // Read from bufferedData first if available
-                if ((_bufferedData?.remaining() ?: 0) > 0) {
-                    val count = min(bufferedData.remaining(), buffer.remaining())
-                    val slice = bufferedData.slice()
+                // Read from `bufferHolder` first if available
+                if (bufferHolder.remaining() > 0) {
+                    val count = min(bufferHolder.remaining(), buffer.remaining())
+                    val slice = bufferHolder.slice()
                     slice.limit(slice.position() + count)
                     buffer.put(slice)
-                    bufferedData.position(bufferedData.position() + count)
+                    bufferHolder.position(bufferHolder.position() + count)
                     return count
                 }
 
@@ -190,15 +188,15 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
                     bufferSlice.position(buffer.position() - count)
                     assert(bufferSlice.remaining() == count)
 
-                    // bufferedData data is currently from [0, position==limit], append data
+                    // `bufferHolder` data is currently from [0, position==limit], append data
                     // to [limit, capacity] then update range to [0, newPosition==newLimit].
                     ensureRoom(count)
-                    assert(bufferedData.position() == bufferedData.limit())
-                    assert(bufferedData.limit() + count <= bufferedData.capacity())
-                    bufferedData.limit(bufferedData.position() + count)
-                    assert(bufferedData.remaining() == count)
-                    bufferedData.put(bufferSlice)
-                    assert(bufferedData.remaining() == 0)
+                    assert(bufferHolder.position() == bufferHolder.limit())
+                    assert(bufferHolder.limit() + count <= bufferHolder.capacity())
+                    bufferHolder.limit(bufferHolder.position() + count)
+                    assert(bufferHolder.remaining() == count)
+                    bufferHolder.put(bufferSlice)
+                    assert(bufferHolder.remaining() == 0)
                 }
                 return count
             }
@@ -208,14 +206,16 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
                     throw IllegalStateException("toOffline is not supported after finalRewind has been invoked")
                 }
 
-                // Buffer everything into "bufferedData"
+                // Buffer everything into `bufferHolder`
                 rewind()
                 workBuffer.clear()
                 skipRemaining(workBuffer)
                 rewind()
 
-                // Use a "ByteBuffer" based input channel
-                return forByteBuffer(bufferedData.duplicate())
+                // `bufferHolder` contains bytes from [position=0, limit], copy that content into
+                // a new `ByteBuffer` that we can then wrap with a `AdbRewindableInputChannel`
+                assert(bufferHolder.position() == 0)
+                return forByteBuffer(bufferHolder.copyBuffer())
             }
 
             override fun close() {
@@ -223,31 +223,9 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
             }
 
             private fun ensureRoom(count: Int) {
-                // bufferedData has available room at [limit, capacity]
-                val minCapacity = bufferedData.limit() + count
-                val newCapacity = nextCapacity(minCapacity)
-                if (newCapacity != bufferedData.capacity()) {
-                    // bufferedData has data from [0, limit]
-                    val newBuffer = ByteBuffer.allocate(newCapacity)
-                    newBuffer.order(bufferedData.order())
-
-                    // bufferedData has data from [0, limit]
-                    assert(bufferedData.position() == bufferedData.limit())
-                    bufferedData.position(0)
-                    newBuffer.put(bufferedData)
-                    assert(bufferedData.position() == bufferedData.limit())
-                    newBuffer.position(bufferedData.limit())
-                    newBuffer.limit(bufferedData.limit())
-                    _bufferedData = newBuffer
-                }
-            }
-
-            private fun nextCapacity(minCapacity: Int): Int {
-                var newCapacity = bufferedData.capacity()
-                while (newCapacity < minCapacity) {
-                    newCapacity *= 2
-                }
-                return newCapacity
+                val minCapacity = bufferHolder.limit() + count
+                bufferHolder.ensureCapacity(minCapacity)
+                assert(bufferHolder.capacity() >= minCapacity)
             }
         }
     }

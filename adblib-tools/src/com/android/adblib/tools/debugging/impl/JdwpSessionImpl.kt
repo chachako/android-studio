@@ -17,6 +17,7 @@ package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.AdbChannel
 import com.android.adblib.AdbInputChannel
+import com.android.adblib.AdbInputChannelSlice
 import com.android.adblib.AdbLogger
 import com.android.adblib.AdbOutputChannel
 import com.android.adblib.AdbSession
@@ -34,6 +35,8 @@ import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
 import com.android.adblib.tools.debugging.packets.impl.PayloadProviderFactory
 import com.android.adblib.tools.debugging.packets.impl.parseHeader
 import com.android.adblib.tools.debugging.packets.writeToChannel
+import com.android.adblib.tools.debugging.utils.AdbRewindableInputChannel
+import com.android.adblib.tools.debugging.utils.ByteBufferHolder
 import com.android.adblib.utils.ResizableBuffer
 import com.android.adblib.withPrefix
 import kotlinx.coroutines.sync.Mutex
@@ -257,7 +260,7 @@ internal class JdwpSessionImpl(
          */
         private val workBuffer = ResizableBuffer().order(PACKET_BYTE_ORDER)
 
-        private val payloadProviderFactory = PayloadProviderFactory(session)
+        private val payloadProviderFactory = ReusableBufferPayloadProviderFactory(session)
 
         /**
          * The [MutableJdwpPacket] we re-use during each call to [receivePacket] to temporarily
@@ -299,6 +302,23 @@ internal class JdwpSessionImpl(
             return EphemeralJdwpPacket.fromPacket(workJdwpPacket, payloadProvider)
         }
 
+        private class ReusableBufferPayloadProviderFactory(session: AdbSession) : PayloadProviderFactory(session) {
+
+            private val reusableBuffer = ByteBufferHolder()
+
+            override fun createLargePacketProvider(
+                packet: JdwpPacketView,
+                packetPayload: AdbInputChannel,
+                packetPayloadLength: Int
+            ): PayloadProvider {
+                // Create a "slice" input channel for the payload, then wrap it with a
+                // "rewindable" input channel that re-uses our reusable ByteBuffer to prevent
+                // extra ByteBuffer allocation.
+                val channelSlice = AdbInputChannelSlice(packetPayload, packetPayloadLength)
+                val bufferInput = AdbRewindableInputChannel.forInputChannel(channelSlice, reusableBuffer)
+                return PayloadProvider.forInputChannel(bufferInput)
+            }
+        }
     }
 
     companion object {

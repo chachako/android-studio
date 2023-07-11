@@ -75,6 +75,7 @@ internal open class PayloadProviderFactory(
         packetPayload: AdbInputChannel,
         packetPayloadLength: Int
     ): PayloadProvider {
+        // Create a "slice" input channel for the payload, then wrap it into a payload provider
         val channelSlice = AdbInputChannelSlice(packetPayload, packetPayloadLength)
         return PayloadProvider.forInputChannel(channelSlice)
     }
