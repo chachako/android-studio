@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.tools.idea.wizard.template.impl.activities.composeWearActivity
 
-package com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values
-
-fun tileStringsXml(): String {
-    return """
-<resources>
-    <string name="tile_label">Example tile</string>
-</resources>
+fun lintXml() =
+  // language=xml
+  """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <lint>
+        <!-- Ignore the IconLocation for the Tile preview images -->
+        <issue id="IconLocation">
+            <ignore path="res/drawable/tile_preview.png" />
+            <ignore path="res/drawable-round/tile_preview.png" />
+        </issue>
+    </lint>
 """
-}
+    .trimIndent()

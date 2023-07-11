@@ -64,6 +64,7 @@ fun RecipeExecutor.generateManifest(
   generateActivityTitle: Boolean,
   isResizeable: Boolean = false,
   libraryName: String = "",
+  taskAffinity: String? = null
 ) {
   generateManifestStrings(activityClass, baseFeatureResOut, isNewModule, generateActivityTitle)
 
@@ -78,6 +79,7 @@ fun RecipeExecutor.generateManifest(
     generateActivityTitle = generateActivityTitle,
     isResizeable = isResizeable,
     libraryName = libraryName,
+    taskAffinity = taskAffinity,
   )
 
   mergeXml(manifest, manifestOut.resolve("AndroidManifest.xml"))

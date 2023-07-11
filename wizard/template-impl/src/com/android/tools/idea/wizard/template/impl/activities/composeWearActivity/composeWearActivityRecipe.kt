@@ -73,7 +73,8 @@ private fun RecipeExecutor.commonComposeRecipe(
         packageName = packageName,
         isLauncher = isLauncher,
         hasNoActionBar = true,
-        generateActivityTitle = true
+        generateActivityTitle = false,
+        taskAffinity = "",
     )
 
     val (_, srcOut, resOut, manifestOut) = moduleData
@@ -106,6 +107,11 @@ private fun RecipeExecutor.commonComposeRecipe(
     mergeXml(
         stylesXml(launchActivityThemeName),
         resOut.resolve("values/styles.xml")
+    )
+
+    mergeXml(
+        lintXml(),
+        moduleData.rootDir.resolve("lint.xml")
     )
 
     requireJavaVersion("1.8", true)
