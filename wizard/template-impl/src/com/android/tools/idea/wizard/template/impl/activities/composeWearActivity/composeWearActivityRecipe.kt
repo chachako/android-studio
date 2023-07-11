@@ -58,12 +58,11 @@ private fun RecipeExecutor.commonComposeRecipe(
     // Add Compose Wear dependencies; the Compose BOM doesn't include Wear.
     val wearComposeVersionVarName =
         getDependencyVarName("androidx.wear.compose:compose-material", "wear_compose_version")
-    val wearComposeVersion = getExtVar(wearComposeVersionVarName, "1.0.0")
+    val wearComposeVersion = getExtVar(wearComposeVersionVarName, "1.1.2")
     addDependency(mavenCoordinate = "androidx.wear.compose:compose-material:$wearComposeVersion")
     addDependency(mavenCoordinate = "androidx.wear.compose:compose-foundation:$wearComposeVersion")
 
-    addDependency(mavenCoordinate = "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
-    addDependency(mavenCoordinate = "androidx.activity:activity-compose:1.5.1")
+    addDependency(mavenCoordinate = "androidx.activity:activity-compose:1.7.2")
 
     addDependency(mavenCoordinate = "androidx.core:core-splashscreen:1.0.1")
 
@@ -166,8 +165,7 @@ fun RecipeExecutor.composeWearActivityWithTileAndComplicationRecipe(
         isLauncher,
         greeting,
         wearAppName,
-        defaultPreview,
-        composeBomVersion = "2022.10.00" // TODO: 2023.03.00 makes the MainTileService broken
+        defaultPreview
     )
 
     val wearTilesVersionVarName =
@@ -181,7 +179,7 @@ fun RecipeExecutor.composeWearActivityWithTileAndComplicationRecipe(
             "com.google.android.horologist:horologist-compose-tools",
             "horologist_version"
         )
-    val horologistVersion = getExtVar(horologistVersionVarName, "0.1.5")
+    val horologistVersion = getExtVar(horologistVersionVarName, "0.4.8")
     addDependency(mavenCoordinate = "com.google.android.horologist:horologist-compose-tools:$horologistVersion")
     addDependency(mavenCoordinate = "com.google.android.horologist:horologist-tiles:$horologistVersion")
 

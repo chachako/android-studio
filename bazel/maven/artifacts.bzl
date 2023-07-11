@@ -191,8 +191,8 @@ DATA = [
     "android.arch.navigation:navigation-fragment:1.0.0",
     "android.arch.navigation:navigation-ui:1.0.0",
     "android.arch.persistence.room:runtime:1.0.0",
-    "androidx.activity:activity-compose:1.5.1",  # Needed for com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.commonComposeRecipe
-    "androidx.activity:activity-compose:1.7.0",
+    "androidx.activity:activity-compose:1.5.1",  # Still needed from //tools/base/build-system/integration-tests
+    "androidx.activity:activity-compose:1.7.2",
     "androidx.activity:activity-ktx:1.4.0",
     "androidx.activity:activity-ktx:1.6.0",  # Still needed from navigation-fragment-ktx:2.5.3
     "androidx.activity:activity-ktx:1.7.0",
@@ -226,9 +226,9 @@ DATA = [
     "androidx.compose.compiler:compiler:1.4.3",
     "androidx.compose:compose-bom:pom:2022.10.00",
     "androidx.compose:compose-bom:pom:2023.03.00",
-    "androidx.compose.material:material:1.3.0",
-    "androidx.compose.material:material:1.3.1",  # Needed for activities.composeWearActivityRecipe
+    "androidx.compose.material:material:1.3.0",  # Needed by //tools/base/build-system/integration-test/...
     "androidx.compose.material:material:1.4.0",
+    "androidx.compose.material:material:1.5.0-alpha04",
     "androidx.compose.material3:material3:1.0.0-alpha02",
     "androidx.compose.material3:material3:1.0.0",
     "androidx.compose.material3:material3:1.0.1",
@@ -241,14 +241,17 @@ DATA = [
     "androidx.compose.ui:ui-test-junit4:1.2.0",
     "androidx.compose.ui:ui-test-junit4:1.3.0",
     "androidx.compose.ui:ui-test-junit4:1.4.0",
+    "androidx.compose.ui:ui-test-junit4:1.5.0-alpha04",
     "androidx.compose.ui:ui-test-manifest:1.2.0",
     "androidx.compose.ui:ui-test-manifest:1.3.0",
     "androidx.compose.ui:ui-test-manifest:1.4.0",
+    "androidx.compose.ui:ui-test-manifest:1.5.0-alpha04",
     "androidx.compose.ui:ui:1.3.0",
     "androidx.compose.ui:ui:1.4.0",
     "androidx.compose.ui:ui-tooling:1.2.0",
-    "androidx.compose.ui:ui-tooling:1.3.0",  # Needed for ComposeHelloWorldTest#appAndTestsBuildSuccessfully
+    "androidx.compose.ui:ui-tooling:1.3.0",  # Still needed from //tools/base/build-system/integration-tests
     "androidx.compose.ui:ui-tooling:1.4.0",
+    "androidx.compose.ui:ui-tooling:1.5.0-alpha04",
     "androidx.constraintlayout:constraintlayout:1.1.3",
     "androidx.constraintlayout:constraintlayout:2.1.3",
     "androidx.constraintlayout:constraintlayout:2.1.4",
@@ -263,11 +266,13 @@ DATA = [
     "androidx.core:core-ktx:1.8.0",
     "androidx.core:core-ktx:1.9.0",
     "androidx.core:core-splashscreen:1.0.1",
+    "androidx.core:core-ktx:1.11.0-alpha04",
     "androidx.customview:customview-poolingcontainer:1.0.0-beta01",
     "androidx.databinding:viewbinding:7.2.0",
     "androidx.databinding:viewbinding:7.4.1",
     "androidx.databinding:viewbinding:8.0.0-beta04",
     "androidx.emoji2:emoji2-views-helper:1.3.0",
+    "androidx.emoji2:emoji2-views-helper:1.4.0-beta03",  # Needed for TemplateTest#testNewComposeWearActivityWithTileAndComplication
     "androidx.fragment:fragment:1.3.0",
     "androidx.fragment:fragment:1.3.0-rc01",
     "androidx.games:games-activity:1.2.2",
@@ -289,7 +294,6 @@ DATA = [
     "androidx.lifecycle:lifecycle-runtime:2.4.0",  # Needed for tools/data-binding:runtimeLibrariesAndroidX
     "androidx.lifecycle:lifecycle-runtime:2.6.1",
     "androidx.lifecycle:lifecycle-runtime-ktx:2.4.0",  # Needed for tools/data-binding:runtimeLibrariesAndroidX
-    "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1",  # Needed for com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.commonComposeRecipe
     "androidx.lifecycle:lifecycle-runtime-ktx:2.6.1",
     "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1",
     "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1",  # Needed for AndroidTestRunConfigurationTest#testCanRunLibTestsInDebugBuildWithNoAndroidManifest
@@ -343,13 +347,13 @@ DATA = [
     "androidx.test:runner:1.4.0-alpha06",
     "androidx.tracing:tracing-perfetto-common:1.0.0-alpha01",
     "androidx.wear:wear:1.2.0",
-    "androidx.wear.compose:compose-material:1.0.0",
-    "androidx.wear.tiles:tiles:1.1.0",
-    "androidx.wear.tiles:tiles-material:1.1.0",
+    "androidx.wear.compose:compose-material:1.1.2",
+    "androidx.wear.tiles:tiles:1.2.0-alpha05",
+    "androidx.wear.tiles:tiles-material:1.2.0-alpha05",
     "androidx.wear.watchface:watchface-complications-data-source-ktx:1.1.1",
     "androidx.wear.watchface:watchface-guava:1.1.0",
-    "com.google.android.horologist:horologist-compose-tools:0.1.5",
-    "com.google.android.horologist:horologist-tiles:0.1.5",
+    "com.google.android.horologist:horologist-compose-tools:0.4.8",
+    "com.google.android.horologist:horologist-tiles:0.4.8",
     "com.android.application:com.android.application.gradle.plugin:7.2.0",
     "com.android.application:com.android.application.gradle.plugin:7.4.1",
     "com.android.application:com.android.application.gradle.plugin:8.0.0-beta04",
@@ -661,6 +665,8 @@ DATA = [
     "org.jetbrains.kotlinx:kotlinx-coroutines-core-common:1.3.6",
     "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1",
     "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4",
+    "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1",  # Needed for TemplateTest#testNewComposeWearActivityWithTileAndComplication
+    "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1",  # Needed for TemplateTest#testNewComposeWearActivityWithTileAndComplication
     "org.jetbrains.skiko:skiko-awt-runtime-linux-x64:0.7.16",
     "org.jetbrains.skiko:skiko-awt-runtime-macos-arm64:0.7.16",
     "org.jetbrains.skiko:skiko-awt-runtime-macos-x64:0.7.16",

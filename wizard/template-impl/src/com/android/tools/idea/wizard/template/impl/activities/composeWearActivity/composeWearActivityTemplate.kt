@@ -38,7 +38,7 @@ import java.io.File
 val composeWearActivityTemplate
     get() = template {
         name = "Empty Wear App"
-        minApi = 25
+        minApi = 26
         description = "Creates an empty app using Compose for Wear OS"
 
         constraints = listOf(
@@ -119,7 +119,7 @@ val composeWearActivityTemplate
 val composeWearActivityWithTileAndComplicationTemplate
     get() = template {
         name = "Empty Wear App With Tile And Complication"
-        minApi = 25
+        minApi = 26
         description = "Creates an empty app using Compose for Wear OS, including a Tile and Complication"
 
         constraints = listOf(
