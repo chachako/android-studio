@@ -116,8 +116,7 @@ gradlePlugin {
         }
         comAndroidKotlinMultiplatform {
             id = "com.android.kotlin.multiplatform.library"
-            // TODO(b/267309622): Move to gradle-api
-            implementationClass = "com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin"
+            implementationClass = "com.android.build.gradle.api.KotlinMultiplatformAndroidPlugin"
         }
     }
 }
@@ -383,4 +382,3 @@ def updateApi = tasks.register('updateApi') {
     dependsOn(updatePseudoApi)
     dependsOn(updateUndecoratedApi)
 }
-

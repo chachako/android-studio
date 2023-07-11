@@ -373,6 +373,7 @@ com/android/tools/build/gradle
   META-INF/gradle-plugins/com.android.internal.asset-pack.properties
   META-INF/gradle-plugins/com.android.internal.dynamic-feature.properties
   META-INF/gradle-plugins/com.android.internal.fused-library.properties
+  META-INF/gradle-plugins/com.android.internal.kotlin.multiplatform.library.properties
   META-INF/gradle-plugins/com.android.internal.library.properties
   META-INF/gradle-plugins/com.android.internal.lint.properties
   META-INF/gradle-plugins/com.android.internal.privacy-sandbox-sdk.properties

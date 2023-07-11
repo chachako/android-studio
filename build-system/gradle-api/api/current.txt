@@ -3085,6 +3085,13 @@ package com.android.build.gradle.api {
     method public void apply(org.gradle.api.Project project);
   }
 
+  @org.gradle.api.Incubating public final class KotlinMultiplatformAndroidPlugin extends com.android.build.gradle.BasePlugin {
+    ctor public KotlinMultiplatformAndroidPlugin();
+  }
+
+  public final class KotlinMultiplatformAndroidPluginKt {
+  }
+
   @org.gradle.api.Incubating public final class PrivacySandboxSdkPlugin implements org.gradle.api.Plugin<org.gradle.api.Project> {
     ctor public PrivacySandboxSdkPlugin();
     method public void apply(org.gradle.api.Project project);

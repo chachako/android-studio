@@ -694,6 +694,12 @@ com.android.build.gradle.api.InstallableVariant.getUninstall: org.gradle.api.Def
 com.android.build.gradle.api.InstallableVariant.getUninstallProvider: org.gradle.api.tasks.TaskProvider<org.gradle.api.Task> ()
 com.android.build.gradle.api.JavaCompileOptions
 com.android.build.gradle.api.JavaCompileOptions.getAnnotationProcessorOptions: com.android.build.gradle.api.AnnotationProcessorOptions ()
+com.android.build.gradle.api.KotlinMultiplatformAndroidPlugin extends com.android.build.gradle.BasePlugin
+com.android.build.gradle.api.KotlinMultiplatformAndroidPlugin.<init>: com.android.build.gradle.api.KotlinMultiplatformAndroidPlugin ()
+com.android.build.gradle.api.KotlinMultiplatformAndroidPlugin.apply: void (java.lang.Object)
+com.android.build.gradle.api.KotlinMultiplatformAndroidPlugin.apply: void (org.gradle.api.Project)
+com.android.build.gradle.api.KotlinMultiplatformAndroidPluginKt
+com.android.build.gradle.api.KotlinMultiplatformAndroidPluginKt.access$getINTERNAL_PLUGIN_ID$p: java.util.Map ()
 com.android.build.gradle.api.LibraryVariant implements com.android.build.gradle.api.BaseVariant, com.android.build.gradle.internal.api.TestedVariant, com.android.build.gradle.internal.core.InternalBaseVariant
 com.android.build.gradle.api.LibraryVariant.getPackageLibrary: org.gradle.api.tasks.bundling.Zip ()
 com.android.build.gradle.api.LibraryVariant.getPackageLibraryProvider: org.gradle.api.tasks.TaskProvider<org.gradle.api.tasks.bundling.Zip> ()
