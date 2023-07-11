@@ -57,7 +57,8 @@ class StructuredLog(private val temp : TemporaryFolder) {
         loggingEnvironment = IssueReporterLoggingEnvironment(
             issueReporter = nopIssueReporter,
             rootBuildGradleFolder = rootBuildGradleFolder!!,
-            cxxFolder = null
+            cxxFolder = null,
+            allowStructuredLogging = true
         )
     }
 

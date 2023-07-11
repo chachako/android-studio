@@ -29,12 +29,26 @@ class NdkSymlinkerKtTest {
     @JvmField
     val tmpFolder = TemporaryFolder()
 
+    private fun testSymLinkFolder(
+        originalNdkFolder : File,
+        cxxVariantFolder : File,
+        ndkSymlinkFolder : File?) : File {
+        val targetNdkSymLinkFolder = computeNdkSymLinkFolder(
+            originalNdkFolder,
+            cxxVariantFolder,
+            ndkSymlinkFolder) ?: return originalNdkFolder
+        if (!trySymlinkNdk(originalNdkFolder, targetNdkSymLinkFolder)) {
+            return originalNdkFolder
+        }
+        return targetNdkSymLinkFolder
+    }
+
     @Test
     fun keepOriginalNdkIfNdkDoesntExist() {
         val originalNdk = tmpFolder.root.toPath().resolve("ndk").toFile()
         val cxxVariantFolder = tmpFolder.root.toPath().resolve("cxx/debug").toFile()
         val ndkSymlinkDirInLocalProp = tmpFolder.root.toPath().resolve("symlinkto").toFile()
-        val result = trySymlinkNdk(
+        val result = testSymLinkFolder(
             originalNdk,
             cxxVariantFolder,
             ndkSymlinkDirInLocalProp
@@ -48,7 +62,7 @@ class NdkSymlinkerKtTest {
         originalNdk.mkdirs()
         val cxxVariantFolder = tmpFolder.root.toPath().resolve("cxx/debug").toFile()
         val ndkSymlinkDirInLocalProp = tmpFolder.root.toPath().resolve("symlinkto").toFile()
-        val result = trySymlinkNdk(
+        val result = testSymLinkFolder(
             originalNdk,
             cxxVariantFolder,
             ndkSymlinkDirInLocalProp
@@ -66,7 +80,7 @@ class NdkSymlinkerKtTest {
         """.trimIndent())
         val cxxVariantFolder = tmpFolder.root.toPath().resolve("cxx/debug").toFile()
         val ndkSymlinkDirInLocalProp = tmpFolder.root.toPath().resolve("symlinkto").toFile()
-        val result = trySymlinkNdk(
+        val result = testSymLinkFolder(
             originalNdk,
             cxxVariantFolder,
             ndkSymlinkDirInLocalProp
@@ -85,7 +99,7 @@ class NdkSymlinkerKtTest {
         """.trimIndent())
         val cxxVariantFolder = tmpFolder.root.toPath().resolve("cxx/debug").toFile()
         val ndkSymlinkDirInLocalProp = tmpFolder.root.toPath().resolve("symlinkto").toFile()
-        val result = trySymlinkNdk(
+        val result = testSymLinkFolder(
             originalNdk,
             cxxVariantFolder,
             ndkSymlinkDirInLocalProp
@@ -104,7 +118,7 @@ class NdkSymlinkerKtTest {
         """.trimIndent())
         val cxxVariantFolder = tmpFolder.root.toPath().resolve("cxx/debug").toFile()
         val ndkSymlinkDirInLocalProp = File("my-ndk")
-        val result = trySymlinkNdk(
+        val result = testSymLinkFolder(
             originalNdk,
             cxxVariantFolder,
             ndkSymlinkDirInLocalProp
@@ -126,12 +140,12 @@ class NdkSymlinkerKtTest {
             )
             val cxxVariantFolder = tmpFolder.root.toPath().resolve("cxx/debug").toFile()
             val ndkSymlinkDirInLocalProp = tmpFolder.root.toPath().resolve("symlinkto").toFile()
-            val result = trySymlinkNdk(
+            val result = testSymLinkFolder(
                 originalNdk,
                 cxxVariantFolder,
                 ndkSymlinkDirInLocalProp
             )
-            val result2 = trySymlinkNdk(
+            val result2 = testSymLinkFolder(
                 originalNdk,
                 cxxVariantFolder,
                 ndkSymlinkDirInLocalProp
@@ -160,7 +174,7 @@ class NdkSymlinkerKtTest {
         """.trimIndent())
         val cxxVariantFolder = tmpFolder.root.toPath().resolve("cxx/debug").toFile()
         val ndkSymlinkDirInLocalProp = tmpFolder.root.toPath().resolve("symlinkto$").toFile()
-        val result = trySymlinkNdk(
+        val result = testSymLinkFolder(
             originalNdk,
             cxxVariantFolder,
             ndkSymlinkDirInLocalProp
@@ -179,7 +193,7 @@ class NdkSymlinkerKtTest {
         """.trimIndent())
         val cxxVariantFolder = tmpFolder.root.toPath().resolve("cxx/debug").toFile()
         val ndkSymlinkDirInLocalProp : File? = null
-        val result = trySymlinkNdk(
+        val result = testSymLinkFolder(
             originalNdk,
             cxxVariantFolder,
             ndkSymlinkDirInLocalProp

@@ -17,8 +17,8 @@
 package com.android.build.gradle.internal.cxx.logging
 
 import com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
-import com.android.build.gradle.internal.cxx.logging.LoggingMessage.LoggingLevel.ERROR
 import com.android.build.gradle.internal.cxx.logging.LoggingMessage.LoggingLevel.BUG
+import com.android.build.gradle.internal.cxx.logging.LoggingMessage.LoggingLevel.ERROR
 import com.android.build.gradle.internal.cxx.logging.LoggingMessage.LoggingLevel.INFO
 import com.android.build.gradle.internal.cxx.logging.LoggingMessage.LoggingLevel.LIFECYCLE
 import com.android.build.gradle.internal.cxx.logging.LoggingMessage.LoggingLevel.WARN
@@ -40,6 +40,7 @@ class IssueReporterLoggingEnvironment private constructor(
     private val issueReporter: IssueReporter,
     rootBuildGradleFolder: File,
     private val cxxFolder: File?,
+    allowStructuredLogging: Boolean,
     private val metrics: GradleBuildVariant.Builder?
 ) : PassThroughRecordingLoggingEnvironment() {
     private val structuredLogEncoder : CxxStructuredLogEncoder?
@@ -47,7 +48,7 @@ class IssueReporterLoggingEnvironment private constructor(
         // Structured log is only written if user has manually created a folder
         // for it to go into.
         val structuredLogFolder = getCxxStructuredLogFolder(rootBuildGradleFolder)
-        structuredLogEncoder = if (structuredLogFolder.isDirectory) {
+        structuredLogEncoder = if (allowStructuredLogging && structuredLogFolder.isDirectory) {
             val log = structuredLogFolder.resolve(
                 "log_${System.currentTimeMillis()}_${Thread.currentThread().id}.bin")
             CxxStructuredLogEncoder(log)
@@ -56,26 +57,23 @@ class IssueReporterLoggingEnvironment private constructor(
         }
     }
 
-    private class CxxDiagnosticCodesTrackingInternals(
-        val analyticsService: AnalyticsService,
-        val variant: CxxVariantModel,
-        val cxxDiagnosticCodes: MutableList<Int>
-    )
-
     constructor(
         issueReporter: IssueReporter,
         rootBuildGradleFolder: File,
-        cxxFolder: File?
-        ) : this(issueReporter, rootBuildGradleFolder, cxxFolder, null)
+        cxxFolder: File?,
+        allowStructuredLogging: Boolean
+        ) : this(issueReporter, rootBuildGradleFolder, cxxFolder, allowStructuredLogging, null)
 
     constructor(
         issueReporter: IssueReporter,
         analyticsService: AnalyticsService,
-        variant: CxxVariantModel
+        variant: CxxVariantModel,
+        allowStructuredLogging: Boolean = true
     ) : this(
         issueReporter,
         variant.module.project.rootBuildGradleFolder,
         variant.module.cxxFolder,
+        allowStructuredLogging,
         analyticsService.getVariantBuilder(
             variant.module.gradleModulePathName,
             variant.variantName

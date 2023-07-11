@@ -116,7 +116,8 @@ class NativeModelBuilder(
         IssueReporterLoggingEnvironment(
             issueReporter,
             project.rootProject.rootDir,
-            null).use {
+            null,
+            allowStructuredLogging = true).use {
             val outcome = NativeModelBuilderOutcome.newBuilder().setGradlePath(project.path)
             try {
                 val analyticsService = getBuildService(

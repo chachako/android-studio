@@ -10,17 +10,6 @@
     </issue>
 
     <issue
-        id="SuspiciousIndentation"
-        message="Suspicious indentation: This is indented but is not nested under the previous expression (`if (configurationPar`...)">
-        <location
-            file="src/main/java/com/android/build/gradle/internal/cxx/configure/CxxCreateGradleTasks.kt"
-            line="96"/>
-        <location
-            file="src/main/java/com/android/build/gradle/internal/cxx/configure/CxxCreateGradleTasks.kt"
-            line="95"/>
-    </issue>
-
-    <issue
         id="AvoidByLazy"
         message="Avoid `by lazy` for simple lazy initialization">
         <location
@@ -361,7 +350,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="278"/>
+            line="279"/>
     </issue>
 
     <issue
@@ -369,7 +358,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="282"/>
+            line="283"/>
     </issue>
 
     <issue
@@ -377,7 +366,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="303"/>
+            line="304"/>
     </issue>
 
     <issue
@@ -409,7 +398,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/dsl/CommonExtensionImpl.kt"
-            line="70"/>
+            line="72"/>
     </issue>
 
     <issue
@@ -473,7 +462,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/cxx/gradle/generator/CxxConfigurationModel.kt"
-            line="81"/>
+            line="80"/>
     </issue>
 
     <issue
@@ -705,7 +694,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/KmpVariantDslInfoImpl.kt"
-            line="152"/>
+            line="149"/>
     </issue>
 
     <issue
@@ -713,7 +702,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/KotlinMultiplatformAndroidPlugin.kt"
-            line="121"/>
+            line="122"/>
     </issue>
 
     <issue

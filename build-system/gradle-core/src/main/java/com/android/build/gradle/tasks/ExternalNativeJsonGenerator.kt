@@ -22,6 +22,7 @@ import com.android.build.gradle.internal.cxx.configure.shouldConfigure
 import com.android.build.gradle.internal.cxx.configure.shouldConfigureReasonMessages
 import com.android.build.gradle.internal.cxx.configure.recordConfigurationFingerPrint
 import com.android.build.gradle.internal.cxx.configure.softConfigureOkay
+import com.android.build.gradle.internal.cxx.configure.trySymlinkNdk
 import com.android.build.gradle.internal.cxx.gradle.generator.CxxMetadataGenerator
 import com.android.build.gradle.internal.cxx.io.writeTextIfDifferent
 import com.android.build.gradle.internal.cxx.io.synchronizeFile
@@ -31,7 +32,6 @@ import com.android.build.gradle.internal.cxx.logging.PassThroughPrefixingLogging
 import com.android.build.gradle.internal.cxx.logging.ThreadLoggingEnvironment.Companion.requireExplicitLogger
 import com.android.build.gradle.internal.cxx.logging.errorln
 import com.android.build.gradle.internal.cxx.logging.infoln
-import com.android.build.gradle.internal.cxx.logging.lifecycleln
 import com.android.build.gradle.internal.cxx.logging.logStructured
 import com.android.build.gradle.internal.cxx.logging.toJsonString
 import com.android.build.gradle.internal.cxx.model.CxxAbiModel
@@ -94,6 +94,15 @@ abstract class ExternalNativeJsonGenerator internal constructor(
 ) : CxxMetadataGenerator {
     override fun configure(ops: ExecOperations, forceConfigure: Boolean) {
         requireExplicitLogger()
+        // Check whether NDK folder symlinking is required.
+        if (abi.variant.module.ndkFolderAfterSymLinking != null
+            && !abi.variant.module.ndkFolder.isDirectory) {
+            if (!trySymlinkNdk(
+                abi.variant.module.ndkFolderBeforeSymLinking,
+                abi.variant.module.ndkFolderAfterSymLinking
+            )) return
+        }
+        if (!abi.variant.module.ndkFolder.isDirectory) error("Expected NDK folder to exist")
         // These are lazily initialized values that can only be computed from a Gradle managed
         // thread. Compute now so that we don't in the worker threads that we'll be running as.
         abi.variant.prefabPackageConfigurationList

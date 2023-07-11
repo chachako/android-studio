@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.cxx.configure
 
-import com.android.build.gradle.internal.cxx.caching.cache
 import com.android.build.gradle.internal.cxx.logging.errorln
 import com.android.build.gradle.internal.cxx.logging.infoln
 import com.android.build.gradle.internal.cxx.logging.warnln
@@ -64,122 +63,120 @@ class AbiConfigurator(
 
     init {
         with(key) {
-            configuration = cache(key) {
-                val supports64Bits = ndkMetaAbiList.filter { it.bitness == 64 }.map { it.name }.toSet()
-                val legalAbiNames = ndkMetaAbiList.map { it.name }.toSet()
-                val userChosenAbis =
-                    externalNativeBuildAbiFilters union splitsFilterAbis union ndkConfigAbiFilters
-                val userMistakes =
-                    userChosenAbis subtract ndkHandlerSupportedAbis
-                if (userMistakes.isNotEmpty()) {
+            val supports64Bits = ndkMetaAbiList.filter { it.bitness == 64 }.map { it.name }.toSet()
+            val legalAbiNames = ndkMetaAbiList.map { it.name }.toSet()
+            val userChosenAbis =
+                externalNativeBuildAbiFilters union splitsFilterAbis union ndkConfigAbiFilters
+            val userMistakes =
+                userChosenAbis subtract ndkHandlerSupportedAbis
+            if (userMistakes.isNotEmpty()) {
+                errorln(
+                    ABI_IS_UNSUPPORTED,
+                    "ABIs [${sortAndJoinAbiStrings(userMistakes)}] are not supported for platform. " +
+                            "Supported ABIs are [${
+                                sortAndJoinAbiStrings(
+                                    ndkHandlerSupportedAbis
+                                )
+                            }]."
+                )
+            }
+
+            val allAbis: Set<String>
+            val validAbis: Set<String>
+            val configurationAbis: Set<String>
+            if (userChosenAbis.isEmpty()) {
+                // The user didn't explicitly name any ABIs so return the default set
+                allAbis = ndkHandlerDefaultAbis
+                configurationAbis = ndkHandlerDefaultAbis
+            } else {
+                // The user explicitly named some ABIs
+                val recognizeAbleAbiStrings = ndkMetaAbiList.map { it.name }.toSet()
+                val selectedAbis : Set<String> =
+                    sequenceOf(
+                        externalNativeBuildAbiFilters,
+                        ndkConfigAbiFilters,
+                        splitsFilterAbis
+                    )
+                        .filter { it.isNotEmpty() }
+                        .fold(recognizeAbleAbiStrings) { total, next -> total intersect next }
+
+                // Produce the list of expected JSON files. This list includes possibly invalid ABIs
+                // so that generator can create fallback JSON for them.
+                allAbis = selectedAbis union userMistakes
+                // These are ABIs that are available on the current platform
+                configurationAbis = selectedAbis
+            }
+
+            // Lastly, if there is an injected ABI set and none of the ABIs is actually buildable by
+            // this project then issue an error.
+            if (ideBuildOnlyTargetAbi && !ideBuildTargetAbi.isNullOrEmpty()) {
+                val injectedAbis = ideBuildTargetAbi.split(",").map { it.trim() }
+                val injectedLegalAbis = injectedAbis.filter { legalAbiNames.contains(it) }
+                validAbis = if (injectedLegalAbis.isEmpty()) {
+                    // The user (or android studio) didn't select any legal ABIs, that's an error
+                    // since there's nothing to build. Fall back to the ABIs from build.gradle so
+                    // that there's something to show the user.
                     errorln(
                         ABI_IS_UNSUPPORTED,
-                        "ABIs [${sortAndJoinAbiStrings(userMistakes)}] are not supported for platform. " +
-                                "Supported ABIs are [${
-                                    sortAndJoinAbiStrings(
-                                        ndkHandlerSupportedAbis
-                                    )
-                                }]."
+                        "ABIs [$ideBuildTargetAbi] set by " +
+                                "'${StringOption.IDE_BUILD_TARGET_ABI.propertyName}' gradle " +
+                                "flag is not supported. Supported ABIs " +
+                                "are [${sortAndJoinAbiStrings(allAbis)}]."
                     )
-                }
-
-                val allAbis: Set<String>
-                val validAbis: Set<String>
-                val configurationAbis: Set<String>
-                if (userChosenAbis.isEmpty()) {
-                    // The user didn't explicitly name any ABIs so return the default set
-                    allAbis = ndkHandlerDefaultAbis
-                    configurationAbis = ndkHandlerDefaultAbis
+                    configurationAbis
                 } else {
-                    // The user explicitly named some ABIs
-                    val recognizeAbleAbiStrings = ndkMetaAbiList.map { it.name }.toSet()
-                    val selectedAbis : Set<String> =
-                        sequenceOf(
-                            externalNativeBuildAbiFilters,
-                            ndkConfigAbiFilters,
-                            splitsFilterAbis
-                        )
-                            .filter { it.isNotEmpty() }
-                            .fold(recognizeAbleAbiStrings) { total, next -> total intersect next }
-
-                    // Produce the list of expected JSON files. This list includes possibly invalid ABIs
-                    // so that generator can create fallback JSON for them.
-                    allAbis = selectedAbis union userMistakes
-                    // These are ABIs that are available on the current platform
-                    configurationAbis = selectedAbis
-                }
-
-                // Lastly, if there is an injected ABI set and none of the ABIs is actually buildable by
-                // this project then issue an error.
-                if (ideBuildOnlyTargetAbi && !ideBuildTargetAbi.isNullOrEmpty()) {
-                    val injectedAbis = ideBuildTargetAbi.split(",").map { it.trim() }
-                    val injectedLegalAbis = injectedAbis.filter { legalAbiNames.contains(it) }
-                    validAbis = if (injectedLegalAbis.isEmpty()) {
-                        // The user (or android studio) didn't select any legal ABIs, that's an error
-                        // since there's nothing to build. Fall back to the ABIs from build.gradle so
-                        // that there's something to show the user.
-                        errorln(
-                            ABI_IS_UNSUPPORTED,
+                    val invalidAbis = injectedAbis.filter { !legalAbiNames.contains(it) }
+                    if (invalidAbis.isNotEmpty()) {
+                        // The user (or android studio) selected some illegal ABIs. Give a warning and
+                        // continue on.
+                        warnln(
+                            ABI_IS_INVALID,
                             "ABIs [$ideBuildTargetAbi] set by " +
                                     "'${StringOption.IDE_BUILD_TARGET_ABI.propertyName}' gradle " +
-                                    "flag is not supported. Supported ABIs " +
-                                    "are [${sortAndJoinAbiStrings(allAbis)}]."
+                                    "flag contained '${sortAndJoinAbiStrings(invalidAbis)}' which is invalid."
                         )
-                        configurationAbis
-                    } else {
-                        val invalidAbis = injectedAbis.filter { !legalAbiNames.contains(it) }
-                        if (invalidAbis.isNotEmpty()) {
-                            // The user (or android studio) selected some illegal ABIs. Give a warning and
-                            // continue on.
-                            warnln(
-                                ABI_IS_INVALID,
+                    }
+
+                    val legalButNotTargetedByConfiguration =
+                        injectedLegalAbis subtract configurationAbis
+                    val validAbisInPreferenceOrder =
+                        if (legalButNotTargetedByConfiguration.isNotEmpty()) {
+                            // The user (or android studio) selected some ABIs that are valid but that
+                            // aren't targeted by this build configuration.
+                            infoln(
                                 "ABIs [$ideBuildTargetAbi] set by " +
                                         "'${StringOption.IDE_BUILD_TARGET_ABI.propertyName}' gradle " +
-                                        "flag contained '${sortAndJoinAbiStrings(invalidAbis)}' which is invalid."
+                                        "flag contained '${sortAndJoinAbi(
+                                            legalButNotTargetedByConfiguration
+                                        )}' " +
+                                        "not targeted by this project."
                             )
+                            // Keep ABIs actually targeted
+                            (injectedLegalAbis intersect configurationAbis).toList()
+                        } else {
+                            injectedLegalAbis
                         }
 
-                        val legalButNotTargetedByConfiguration =
-                            injectedLegalAbis subtract configurationAbis
-                        val validAbisInPreferenceOrder =
-                            if (legalButNotTargetedByConfiguration.isNotEmpty()) {
-                                // The user (or android studio) selected some ABIs that are valid but that
-                                // aren't targeted by this build configuration.
-                                infoln(
-                                    "ABIs [$ideBuildTargetAbi] set by " +
-                                            "'${StringOption.IDE_BUILD_TARGET_ABI.propertyName}' gradle " +
-                                            "flag contained '${sortAndJoinAbi(
-                                                legalButNotTargetedByConfiguration
-                                            )}' " +
-                                            "not targeted by this project."
-                                )
-                                // Keep ABIs actually targeted
-                                (injectedLegalAbis intersect configurationAbis).toList()
-                            } else {
-                                injectedLegalAbis
-                            }
-
-                        // When Android Studio sends multiple ABIs it is meant as a precedence list
-                        // we build the first one that is available in this project.
-                        validAbisInPreferenceOrder.take(1).toSet()
-                    }
-                } else {
-                    validAbis = configurationAbis
-
-                    // Warn if validAbis does not include at least one 64-bit ABI.
-                    // See: https://android-developers.googleblog.com/2019/01/get-your-apps-ready-for-64-bit.html
-                    if (validAbis.isNotEmpty() && !validAbis.any { supports64Bits.contains(it) }) {
-                        warnln(
-                            ABI_HAS_ONLY_32_BIT_SUPPORT,
-                            "This app only has 32-bit [${validAbis.joinToString(",") { it }}] " +
-                                    "native libraries. Beginning August 1, 2019 Google Play store requires " +
-                                    "that all apps that include native libraries must provide 64-bit versions. " +
-                                    "For more information, visit https://g.co/64-bit-requirement"
-                        )
-                    }
+                    // When Android Studio sends multiple ABIs it is meant as a precedence list
+                    // we build the first one that is available in this project.
+                    validAbisInPreferenceOrder.take(1).toSet()
                 }
-                AbiConfiguration(allAbis, validAbis)
+            } else {
+                validAbis = configurationAbis
+
+                // Warn if validAbis does not include at least one 64-bit ABI.
+                // See: https://android-developers.googleblog.com/2019/01/get-your-apps-ready-for-64-bit.html
+                if (validAbis.isNotEmpty() && !validAbis.any { supports64Bits.contains(it) }) {
+                    warnln(
+                        ABI_HAS_ONLY_32_BIT_SUPPORT,
+                        "This app only has 32-bit [${validAbis.joinToString(",") { it }}] " +
+                                "native libraries. Beginning August 1, 2019 Google Play store requires " +
+                                "that all apps that include native libraries must provide 64-bit versions. " +
+                                "For more information, visit https://g.co/64-bit-requirement"
+                    )
+                }
             }
+            configuration = AbiConfiguration(allAbis, validAbis)
         }
     }
 }

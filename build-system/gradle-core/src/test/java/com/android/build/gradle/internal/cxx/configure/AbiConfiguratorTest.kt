@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.cxx.configure
 
-import com.android.build.gradle.internal.cxx.caching.CachingEnvironment
 import com.android.build.gradle.internal.cxx.codeText
 import com.android.build.gradle.internal.cxx.logging.PassThroughRecordingLoggingEnvironment
 import com.android.utils.cxx.CxxDiagnosticCode.ABI_IS_UNSUPPORTED
@@ -115,8 +114,7 @@ class AbiConfiguratorTest {
         splitsFilterAbis: Set<String> = ALL_ABI.toSet(),
         ideBuildOnlyTargetAbi: Boolean = false,
         ideBuildTargetAbi: String? = null): AbiConfigurator {
-        return CachingEnvironment(tmpFolder.newFolder()).use {
-            AbiConfigurator(
+        return AbiConfigurator(
                 AbiConfigurationKey(
                     ABIS_FROM_META,
                     ndkHandlerSupportedAbis,
@@ -128,7 +126,6 @@ class AbiConfiguratorTest {
                     ideBuildTargetAbi
                 )
             )
-        }
     }
 
     @After

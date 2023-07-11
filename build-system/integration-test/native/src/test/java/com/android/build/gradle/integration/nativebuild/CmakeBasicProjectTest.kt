@@ -362,6 +362,13 @@ class CmakeBasicProjectTest(
         return project.executor().withArgument("--build-cache").run(*tasks)
     }
 
+    @Test
+    fun `check configuration caching`() {
+        project.execute("assembleRelease")
+        project.execute("assembleRelease")
+        project.buildResult.assertConfigurationCacheHit()
+    }
+
     // Regression test for b/179062268
     @Test
     fun `check clean task and extract proguard files task run together`() {
@@ -660,17 +667,6 @@ class CmakeBasicProjectTest(
 
         val lib = ZipHelper.extractFile(apk, "lib/x86_64/libhello-jni.so")
         TruthHelper.assertThatNativeLib(lib).isStripped()
-    }
-
-    @Test
-    fun `ensure C++ build model is constructed expected number of times`() {
-        enableCxxStructuredLogging(project)
-        project.executor().run("assemble")
-        val creations = project.readStructuredLogs(::decodeCreateCxxModel)
-        assertThat(creations).containsExactly(
-            CreateCxxModel.newBuilder().setGradlePath(":").setVariantName("debug").build(),
-            CreateCxxModel.newBuilder().setGradlePath(":").setVariantName("release").build()
-        )
     }
 
     private fun expectedBuildProducts() : String {

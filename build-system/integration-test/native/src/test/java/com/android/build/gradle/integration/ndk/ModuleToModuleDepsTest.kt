@@ -538,6 +538,19 @@ class ModuleToModuleDepsTest(
         executor.run(":app:build${appBuildSystem.build}Debug[arm64-v8a]")
     }
 
+    // TODO(b/287676077) writing of publication file needs to move into a ConfigPhaseFileCreator.
+    // Calculating task graph as configuration cache cannot be reused because the file system entry
+    // 'out/lib/build/intermediates/prefab_package_header_only/prefab_publication.json' has been
+    // created.
+    //    @Test
+    //    fun `check configuration caching`() {
+    //        Assume.assumeFalse(expectGradleConfigureError())
+    //        Assume.assumeFalse(expectGradleBuildError())
+    //        project.execute("assembleRelease")
+    //        project.execute("assembleRelease")
+    //        project.buildResult.assertConfigurationCacheHit()
+    //    }
+
     @Test
     fun `check single STL violation CXX1211`() {
         Assume.assumeTrue(prefabConfiguredCorrectly)

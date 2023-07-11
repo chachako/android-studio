@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.cxx.model
 
-import com.android.build.gradle.internal.core.Abi
 import com.android.build.gradle.internal.cxx.configure.CmakeProperty.ANDROID_STL
 import com.android.build.gradle.internal.cxx.configure.CommandLineArgument
 import com.android.build.gradle.internal.cxx.configure.NdkBuildProperty.APP_STL
@@ -91,6 +90,19 @@ data class CxxModuleModel(
      *   ex, /Android/sdk/ndk/20.0.5344622
      */
     val ndkFolder: File,
+
+    /**
+     * Folder path to the NDK before symlinking
+     *   ex, /Android/sdk/ndk/20.0.5344622
+     */
+    val ndkFolderBeforeSymLinking: File,
+
+    /**
+     * If not null, the folder path to the NDK after it has been symlinked to the user's
+     * requested location. If null, then no symlinking is needed or performed.
+     *   ex, /path/to//ndk/25.1.8937393
+     */
+    val ndkFolderAfterSymLinking: File?,
 
     /**
      * The version of the NDK
