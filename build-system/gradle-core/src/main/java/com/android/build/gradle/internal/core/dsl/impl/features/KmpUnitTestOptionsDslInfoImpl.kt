@@ -20,6 +20,7 @@ import com.android.build.api.variant.AndroidVersion
 import com.android.build.gradle.internal.core.dsl.features.UnitTestOptionsDslInfo
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnJvmConfigurationImpl
+import com.android.build.gradle.internal.utils.createTargetSdkVersion
 import org.gradle.api.tasks.testing.Test
 
 internal class KmpUnitTestOptionsDslInfoImpl(
@@ -38,5 +39,5 @@ internal class KmpUnitTestOptionsDslInfoImpl(
         testOnJvmConfig?.applyConfiguration(task)
     }
     override val targetSdkVersion: AndroidVersion?
-        get() = null
+        get() = extension.run { createTargetSdkVersion(compileSdk, compileSdkPreview) }
 }

@@ -23,6 +23,7 @@ import com.android.build.api.variant.AndroidVersion
 import com.android.build.gradle.internal.core.dsl.features.AndroidTestOptionsDslInfo
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnDeviceConfigurationImpl
+import com.android.build.gradle.internal.utils.createTargetSdkVersion
 import com.android.builder.model.TestOptions
 
 internal class KmpAndroidTestOptionsDslInfoImpl(
@@ -49,5 +50,5 @@ internal class KmpAndroidTestOptionsDslInfoImpl(
         get() = testOnDeviceConfig?.emulatorSnapshots
             ?: throw IllegalAccessException("Test on device configuration does not exist")
     override val targetSdkVersion: AndroidVersion?
-        get() = null
+        get() = extension.run { createTargetSdkVersion(compileSdk, compileSdkPreview) }
 }

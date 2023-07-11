@@ -1184,8 +1184,6 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public com.android.build.api.dsl.Packaging getPackaging();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.TestCoverage getTestCoverage();
     method @org.gradle.api.Incubating public String? getTestNamespace();
-    method @org.gradle.api.Incubating public Integer? getTestTargetSdk();
-    method @org.gradle.api.Incubating public String? getTestTargetSdkPreview();
     method @org.gradle.api.Incubating public boolean isCoreLibraryDesugaringEnabled();
     method @org.gradle.api.Incubating public void lint(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Lint,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void onVariant(kotlin.jvm.functions.Function1<? super com.android.build.api.variant.KotlinMultiplatformAndroidVariant,kotlin.Unit> callback);
@@ -1201,8 +1199,6 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public void setMinSdkPreview(String?);
     method @org.gradle.api.Incubating public void setNamespace(String?);
     method @org.gradle.api.Incubating public void setTestNamespace(String?);
-    method @org.gradle.api.Incubating public void setTestTargetSdk(Integer?);
-    method @org.gradle.api.Incubating public void setTestTargetSdkPreview(String?);
     method @org.gradle.api.Incubating public void useLibrary(String name);
     method @org.gradle.api.Incubating public void useLibrary(String name, boolean required);
     method @org.gradle.api.Incubating public void withAndroidTestOnDevice();
@@ -1230,8 +1226,6 @@ package com.android.build.api.dsl {
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.Packaging packaging;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.TestCoverage testCoverage;
     property @org.gradle.api.Incubating public abstract String? testNamespace;
-    property @org.gradle.api.Incubating public abstract Integer? testTargetSdk;
-    property @org.gradle.api.Incubating public abstract String? testTargetSdkPreview;
   }
 
   @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidTestConfiguration {

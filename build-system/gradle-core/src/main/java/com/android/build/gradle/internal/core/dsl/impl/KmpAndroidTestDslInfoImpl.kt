@@ -72,9 +72,6 @@ class KmpAndroidTestDslInfoImpl(
             }
     }
 
-    val targetSdkVersion
-        get() = (extension as KotlinMultiplatformAndroidExtensionImpl).testTargetSdkVersion
-
     override val isDebuggable: Boolean
         get() = true
 

@@ -95,33 +95,6 @@ internal abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLaz
             min.api = null
         }
 
-    internal val testTargetSdkVersion: AndroidVersion?
-        get() = mutableTargetSdk?.sanitize()
-
-    private var mutableTargetSdk: MutableAndroidVersion? = null
-
-    override var testTargetSdk: Int?
-        get() = mutableTargetSdk?.api
-        set(value) {
-            val target =
-                mutableTargetSdk ?: MutableAndroidVersion(null, null).also {
-                    mutableTargetSdk = it
-                }
-            target.codename = null
-            target.api = value
-        }
-
-    override var testTargetSdkPreview: String?
-        get() = mutableTargetSdk?.codename
-        set(value) {
-            val target =
-                mutableTargetSdk ?: MutableAndroidVersion(null, null).also {
-                    mutableTargetSdk = it
-                }
-            target.codename = value
-            target.api = null
-        }
-
     override val testCoverage = dslServices.newInstance(JacocoOptions::class.java)
 
     private val variantOperations = mutableListOf<Action<KotlinMultiplatformAndroidVariant>>()

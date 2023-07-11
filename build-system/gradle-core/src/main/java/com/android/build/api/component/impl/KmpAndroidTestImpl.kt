@@ -107,9 +107,9 @@ open class KmpAndroidTestImpl @Inject constructor(
     override val targetSdkVersion: AndroidVersion
         get() = targetSdk
     override val targetSdk: AndroidVersion
-        get() = global.androidTestOptions.targetSdkVersion?: dslInfo.targetSdkVersion ?: minSdk
+        get() = global.androidTestOptions.targetSdkVersion ?: minSdk
     override val targetSdkOverride: AndroidVersion?
-        get() = dslInfo.targetSdkVersion
+        get() = null
     override val testedApplicationId: Provider<String>
         get() = applicationId
     override val instrumentationRunner: Property<String> by lazy {

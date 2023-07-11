@@ -359,16 +359,6 @@ interface KotlinMultiplatformAndroidExtension {
     @set:Incubating
     var isCoreLibraryDesugaringEnabled: Boolean
 
-    // TODO: remove this and use compileSdk instead
-    @get:Incubating
-    @set:Incubating
-    var testTargetSdk: Int?
-
-    // TODO: remove this and use compileSdk instead
-    @get:Incubating
-    @set:Incubating
-    var testTargetSdkPreview: String?
-
     /**
      * Configure the gathering of code-coverage from tests.
      *
