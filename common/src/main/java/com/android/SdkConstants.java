@@ -2681,6 +2681,12 @@ public final class SdkConstants {
     /** The androidx.leanback. package prefix */
     public static final String ANDROIDX_LEANBACK_PKG = "androidx.leanback.";
 
+    /** The androidx.compose.material. package prefix */
+    public static final String ANDROIDX_MATERIAL_PKG = "androidx.compose.material.";
+
+    /** The androidx.wear.compose.material. package prefix */
+    public static final String ANDROIDX_WEAR_MATERIAL_PKG = "androidx.wear.compose.material.";
+
     /** The androidx.coordinatorlayout. package prefix */
     public static final String ANDROIDX_COORDINATOR_LAYOUT_PKG = "androidx.coordinatorlayout.";
 

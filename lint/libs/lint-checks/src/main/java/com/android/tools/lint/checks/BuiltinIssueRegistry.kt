@@ -480,6 +480,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           WearPasswordInputDetector.ISSUE,
           WatchFaceForAndroidXDetector.ISSUE,
           WatchFaceEditorDetector.ISSUE,
+          WearMaterialThemeDetector.ISSUE,
           WearRecentsDetector.ISSUE,
           WearStandaloneAppDetector.INVALID_WEAR_FEATURE_ATTRIBUTE,
           WearStandaloneAppDetector.WEAR_STANDALONE_APP_ISSUE,
