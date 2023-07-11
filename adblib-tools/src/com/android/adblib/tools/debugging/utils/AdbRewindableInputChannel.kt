@@ -36,17 +36,6 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
      */
     suspend fun rewind()
 
-    /**
-     * Similar to [rewind] but gives implementors a hint this is the last time a [rewind]
-     * operation is invoked on this instance, allowing implementors to stop buffering
-     * as an optimization. After this call, it is legal to [read] the contents of this
-     * [AdbRewindableInputChannel] until EOF, but it is illegal to call [rewind] or
-     * [finalRewind] again.
-     */
-    suspend fun finalRewind() {
-        rewind()
-    }
-
     companion object {
 
         /**
@@ -65,9 +54,7 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
 
         /**
          * A [AdbRewindableInputChannel] that wraps an [AdbInputChannel], keeping data read
-         * from the channel in-memory to support [rewind]. The returned object also
-         * supports [ForInputChannel.finalRewind] to stop the in-memory
-         * buffering behavior, as an optimization for the final reader.
+         * from the channel in-memory to support [rewind].
          */
         fun forInputChannel(
             input: AdbInputChannel,
@@ -142,10 +129,9 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
         ) : AdbRewindableInputChannel, SupportsOffline<AdbRewindableInputChannel> {
 
             /**
-             * Whether buffering in memory is enabled or not. When buffering is disabled,
-             * [rewinding][rewind] throws [IllegalStateException]
+             * Whether [closed] has been called
              */
-            private var buffering: Boolean = true
+            private var closed: Boolean = false
 
             init {
                 bufferHolder.clear() // [position=0, limit=capacity]
@@ -153,21 +139,20 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
             }
 
             override suspend fun rewind() {
-                if (!buffering) {
-                    throw IllegalStateException("Rewinding is not supported after finalRewind has been invoked")
-                }
+                throwIfClosed()
+
                 bufferHolder.position(0)
             }
 
-            override suspend fun finalRewind() {
-                if (!buffering) {
-                    throw IllegalStateException("finalRewind can only be invoked once")
+            private fun throwIfClosed() {
+                check(!closed) {
+                    throw IllegalStateException("${this::class.simpleName} has been closed")
                 }
-                rewind()
-                buffering = false
             }
 
             override suspend fun read(buffer: ByteBuffer, timeout: Long, unit: TimeUnit): Int {
+                throwIfClosed()
+
                 // Read from `bufferHolder` first if available
                 if (bufferHolder.remaining() > 0) {
                     val count = min(bufferHolder.remaining(), buffer.remaining())
@@ -180,7 +165,7 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
 
                 // Read from underlying channel and append data to internal buffer
                 val count = input.read(buffer, timeout, unit)
-                if (count > 0 && buffering) {
+                if (count > 0) {
                     // Buffer has received data from [position - count, position],
                     // create a slice for that range, so we can buffer it.
                     val bufferSlice = buffer.duplicate()
@@ -202,9 +187,7 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
             }
 
             override suspend fun toOffline(workBuffer: ResizableBuffer): AdbRewindableInputChannel {
-                if (!buffering) {
-                    throw IllegalStateException("toOffline is not supported after finalRewind has been invoked")
-                }
+                throwIfClosed()
 
                 // Buffer everything into `bufferHolder`
                 rewind()
@@ -219,6 +202,7 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
             }
 
             override fun close() {
+                closed = true
                 input.close()
             }
 

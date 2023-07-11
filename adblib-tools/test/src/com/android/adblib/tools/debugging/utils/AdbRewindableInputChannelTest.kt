@@ -105,70 +105,7 @@ class AdbRewindableInputChannelTest {
     }
 
     @Test
-    fun testForInputChannelSupportsFinalRewind() = runBlockingWithTimeout {
-        // Prepare
-        val buffer = ByteBuffer.allocate(2_048)
-        for(i in 0 until 1_024) {
-            buffer.put((i and 0xff).toByte())
-        }
-        buffer.flip()
-        val adbInputChannel = ByteBufferAdbInputChannel(buffer)
-
-        // Act
-        val rewindablePacketChannel = AdbRewindableInputChannel.forInputChannel(adbInputChannel)
-        val workBuffer1 = ResizableBuffer()
-        val byteCount1 = rewindablePacketChannel.readRemaining(workBuffer1, 20)
-
-        rewindablePacketChannel.finalRewind()
-        val workBuffer2 = ResizableBuffer()
-        val byteCount2 = rewindablePacketChannel.readRemaining(workBuffer2, 20)
-
-        // Assert
-        assertEquals(1_024, byteCount1)
-        assertEquals(
-            (0 until 1_024).map { (it and 0xff).toByte() },
-            workBuffer1.afterChannelRead(useMarkedPosition = false).toByteArray().toList()
-        )
-
-        assertEquals(1_024, byteCount2)
-        assertEquals(
-            (0 until 1_024).map { (it and 0xff).toByte() },
-            workBuffer2.afterChannelRead(useMarkedPosition = false).toByteArray().toList()
-        )
-    }
-
-    /**
-     * The purpose of this test is to hit a code path in the implementation of
-     * [AdbRewindableInputChannel.forInputChannel] where all buffering is skipped
-     * when [AdbRewindableInputChannel.finalRewind] is called before any
-     * [AdbRewindableInputChannel.read] operation.
-     */
-    @Test
-    fun testForInputChannelSupportsFinalRewindBeforeReadingAnything() = runBlockingWithTimeout {
-        // Prepare
-        val buffer = ByteBuffer.allocate(2_048)
-        for(i in 0 until 1_024) {
-            buffer.put((i and 0xff).toByte())
-        }
-        buffer.flip()
-        val adbInputChannel = ByteBufferAdbInputChannel(buffer)
-
-        // Act
-        val rewindablePacketChannel = AdbRewindableInputChannel.forInputChannel(adbInputChannel)
-        rewindablePacketChannel.finalRewind()
-        val workBuffer = ResizableBuffer()
-        val byteCount = rewindablePacketChannel.readRemaining(workBuffer, 20)
-
-        // Assert
-        assertEquals(1_024, byteCount)
-        assertEquals(
-            (0 until 1_024).map { (it and 0xff).toByte() },
-            workBuffer.afterChannelRead(useMarkedPosition = false).toByteArray().toList()
-        )
-    }
-
-    @Test
-    fun testForInputChannelAllowsOnlyOneFinalRewind() = runBlockingWithTimeout {
+    fun testForInputChannelDoesNotAllowRewindAfterClose() = runBlockingWithTimeout {
         // Prepare
         val buffer = ByteBuffer.allocate(2_048)
         for(i in 0 until 1_024) {
@@ -180,31 +117,7 @@ class AdbRewindableInputChannelTest {
 
         // Act
         rewindablePacketChannel.readRemaining(ResizableBuffer(), 20)
-        rewindablePacketChannel.finalRewind()
-        rewindablePacketChannel.readRemaining(ResizableBuffer(), 20)
-
-        exceptionRule.expect(IllegalStateException::class.java)
-        rewindablePacketChannel.finalRewind()
-
-        // Assert
-        Assert.fail("Should not reach")
-    }
-
-    @Test
-    fun testForInputChannelDoesNotAllowRewindAfterLastRewind() = runBlockingWithTimeout {
-        // Prepare
-        val buffer = ByteBuffer.allocate(2_048)
-        for(i in 0 until 1_024) {
-            buffer.put((i and 0xff).toByte())
-        }
-        buffer.flip()
-        val adbInputChannel = ByteBufferAdbInputChannel(buffer)
-        val rewindablePacketChannel = AdbRewindableInputChannel.forInputChannel(adbInputChannel)
-
-        // Act
-        rewindablePacketChannel.readRemaining(ResizableBuffer(), 20)
-        rewindablePacketChannel.finalRewind()
-        rewindablePacketChannel.readRemaining(ResizableBuffer(), 20)
+        rewindablePacketChannel.close()
 
         exceptionRule.expect(IllegalStateException::class.java)
         rewindablePacketChannel.rewind()

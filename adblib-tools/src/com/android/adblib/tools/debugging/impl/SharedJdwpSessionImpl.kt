@@ -679,10 +679,6 @@ internal class SharedJdwpSessionImpl(
                 rewindableInput.rewind()
             }
 
-            override suspend fun finalRewind() {
-                throw IllegalStateException("finalRewind should never be called on ${this::class}")
-            }
-
             override suspend fun read(buffer: ByteBuffer, timeout: Long, unit: TimeUnit): Int {
                 return scopedRead { rewindableInput.read(buffer) }
             }

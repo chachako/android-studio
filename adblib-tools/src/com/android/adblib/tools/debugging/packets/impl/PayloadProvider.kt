@@ -147,7 +147,6 @@ internal interface PayloadProvider: SupportsOffline<PayloadProvider>, AutoClosea
                     return
                 }
                 closed = true
-                rewindablePayload.finalRewind()
                 rewindablePayload.skipRemaining(workBuffer)
             }
 
