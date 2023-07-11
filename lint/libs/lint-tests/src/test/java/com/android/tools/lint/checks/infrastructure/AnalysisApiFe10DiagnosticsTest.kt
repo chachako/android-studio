@@ -27,6 +27,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
+// To run and see FE1.0 results locally, comment out the following @Ignore and
+// change CliBindingTraceForLint to collect compiler diagnostics
 @Ignore("b/184100083: FE1.0 UastEnvironment does not record compiler diagnostics for now")
 @RunWith(JUnit4::class)
 class AnalysisApiFe10DiagnosticsTest : AbstractCheckTest(), AnalysisApiDiagnosticsTestBase {
@@ -49,8 +51,20 @@ class AnalysisApiFe10DiagnosticsTest : AbstractCheckTest(), AnalysisApiDiagnosti
   }
 
   @Test
-  fun testDiagnostics_NullableFromJava() {
-    checkDiagnostics_NullableFromJava(
+  fun testDiagnostics_NullableFromJava_jspecify() {
+    checkDiagnostics_NullableFromJava_jspecify(
+      """
+      src/main.kt:3: Warning: $NULLNESS_MESSAGE String? [KotlinCompilerDiagnostic]
+      fun go(j: J) = j.s().length
+                          ~
+      0 errors, 1 warnings
+      """
+    )
+  }
+
+  @Test
+  fun testDiagnostics_NullableFromJava_androidx() {
+    checkDiagnostics_NullableFromJava_androidx(
       """
       src/main.kt:7: Warning: $NULLNESS_MESSAGE String? [KotlinCompilerDiagnostic]
         val unused = v.compareTo("foo")

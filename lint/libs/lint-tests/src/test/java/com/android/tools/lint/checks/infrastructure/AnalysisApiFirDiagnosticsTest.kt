@@ -54,7 +54,20 @@ class AnalysisApiFirDiagnosticsTest : AbstractCheckTest(), AnalysisApiDiagnostic
   }
 
   @Test
-  fun testDiagnostics_NullableFromJava() {
+  fun testDiagnostics_NullableFromJava_jspecify() {
+    checkDiagnostics_NullableFromJava_jspecify(
+      """
+      src/main.kt:3: Warning: $NULLNESS_MESSAGE @R|org/jspecify/annotations/Nullable|()  kotlin/String? [KotlinCompilerDiagnostic]
+      fun go(j: J) = j.s().length
+                     ~~~~~~~~~~~~
+      0 errors, 1 warnings
+      """,
+      "2.0"
+    )
+  }
+
+  @Test
+  fun testDiagnostics_NullableFromJava_androidx() {
     if (isWindows()) {
       // TODO(jsjeon): investigate why it fails only in Windows
       //  * Type argument is not within its bounds: should be subtype of
@@ -62,7 +75,7 @@ class AnalysisApiFirDiagnosticsTest : AbstractCheckTest(), AnalysisApiDiagnostic
       //  * Unresolved reference: compareTo.
       return
     }
-    checkDiagnostics_NullableFromJava(
+    checkDiagnostics_NullableFromJava_androidx(
       """
       src/main.kt:7: Warning: $NULLNESS_MESSAGE kotlin/String? [KotlinCompilerDiagnostic]
         val unused = v.compareTo("foo")

@@ -16,12 +16,116 @@
 package com.android.tools.lint.checks.infrastructure
 
 import com.android.tools.lint.checks.AbstractCheckTest
+import com.android.tools.lint.checks.infrastructure.TestFiles.bytecode
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
+import org.jetbrains.kotlin.cli.common.arguments.JavaTypeEnhancementStateParser
+import org.jetbrains.kotlin.cli.common.messages.MessageCollector
+import org.jetbrains.kotlin.config.ApiVersion
+import org.jetbrains.kotlin.config.JvmAnalysisFlags
+import org.jetbrains.kotlin.config.LanguageFeature
+import org.jetbrains.kotlin.config.LanguageVersion
+import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
+import org.jetbrains.kotlin.config.toKotlinVersion
 
 internal interface AnalysisApiDiagnosticsTestBase {
-  fun checkDiagnostics_NullableFromJava(expectedMessage: String) {
+
+  fun checkDiagnostics_NullableFromJava_jspecify(
+    expectedMessage: String,
+    kotlinLanguageVersion: String? = null
+  ) {
+    lint()
+      .apply {
+        val languageLevel =
+          LanguageVersion.fromVersionString(kotlinLanguageVersion) ?: LanguageVersion.LATEST_STABLE
+        val apiVersion = ApiVersion.createByLanguageVersion(languageLevel)
+        kotlinLanguageLevel =
+          LanguageVersionSettingsImpl(
+            languageLevel,
+            apiVersion,
+            // TODO: need to pass/parse (compiler) CLI argument
+            // -Xjspecify-annotations=strict
+            mapOf(
+              JvmAnalysisFlags.javaTypeEnhancementState to
+                JavaTypeEnhancementStateParser(
+                    MessageCollector.NONE,
+                    languageLevel.toKotlinVersion()
+                  )
+                  .parse(
+                    jsr305Args = null,
+                    supportCompatqualCheckerFrameworkAnnotations = null,
+                    jspecifyState = "strict",
+                    nullabilityAnnotations = null
+                  )
+            ),
+            // TODO: need to pass/parse (compiler) CLI argument
+            // -Xtype-enhancement-improvements-strict-mode
+            mapOf(
+              LanguageFeature.TypeEnhancementImprovementsInStrictMode to
+                LanguageFeature.State.ENABLED
+            )
+          )
+      }
+      .files(
+        kotlin(
+            "src/main.kt",
+            """
+          import p.J
+
+          fun go(j: J) = j.s().length
+      """
+          )
+          .indented(),
+        java(
+            "src/p/J.java",
+            """
+          package p;
+          import org.jspecify.annotations.Nullable;
+
+          public interface J {
+            @Nullable String s();
+          }
+        """
+          )
+          .indented(),
+        bytecode(
+          "libs/jspecify.jar",
+          java(
+            "src/org/jspecify/annotations/Nullable.java",
+            """
+              package org.jspecify.annotations;
+              import static java.lang.annotation.ElementType.TYPE_USE;
+              import static java.lang.annotation.RetentionPolicy.RUNTIME;
+              import java.lang.annotation.Retention;
+              import java.lang.annotation.Target;
+
+              @Target(TYPE_USE)
+              @Retention(RUNTIME)
+              public @interface Nullable {}
+            """
+          ),
+          0x8eacd2bc,
+          """
+                org/jspecify/annotations/Nullable.class:
+                H4sIAAAAAAAA/4WMzUrDQBSFz63W1Gq1LkXEn0WXzgOICxcpCFpLmgriQqbh
+                GiZMJyWZFPJqLnwAH0q8ETSbggMz98y53zmfX+8fAG5wFKBDuMiLVGXlihPz
+                VivtXO61N7kr1aSyVi8sB9gmDDO91spql6rHRcaJD7BDOGvdNqlu/yShP8ur
+                IuGxsUwY/FZeNTnCcVQ5b5b8ZEojbpsrCaf3G7tjXaTsrwndtbaVdF5u5kLL
+                S3Y+rlcscC9+noav81lION/MR+wFFyX06B9kmluT1AIG0XwS3z2EIwJhS24X
+                zekg+Hl72JV5Iqovu70XEGMfAxw0P8Yhht//N/zNjAEAAA==
+                """
+        )
+      )
+      .issues(TestDiagnosticsDetector.ID)
+      .testModes(TestMode.DEFAULT)
+      .allowMissingSdk()
+      .allowCompilationErrors()
+      .run()
+      .expect(expectedMessage)
+  }
+
+  fun checkDiagnostics_NullableFromJava_androidx(expectedMessage: String) {
     lint()
       .files(
         kotlin(

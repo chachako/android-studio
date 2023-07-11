@@ -278,6 +278,9 @@ interface UastEnvironment {
 
     val name
       get() = project.name
+
+    val kotlinLanguageLevel: LanguageVersionSettings
+      get() = project.kotlinLanguageLevel
   }
 }
 

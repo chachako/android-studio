@@ -68,6 +68,7 @@ import org.jetbrains.kotlin.cli.jvm.config.JavaSourceRoot
 import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfiguration
+import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.idea.references.KotlinReferenceProviderContributor
 import org.jetbrains.kotlin.idea.references.ReadWriteAccessChecker
@@ -120,12 +121,21 @@ private constructor(
     override fun addModules(
       modules: List<UastEnvironment.Module>,
       bootClassPaths: Iterable<File>?
-    ) =
+    ) {
+      kotlinLanguageLevel =
+        modules.map(UastEnvironment.Module::kotlinLanguageLevel).reduce { r, t ->
+          // TODO: How to accumulate `analysisFlags` and `specificFeatures` ?
+          LanguageVersionSettingsImpl(
+            r.languageVersion.coerceAtLeast(t.languageVersion),
+            r.apiVersion.coerceAtLeast(t.apiVersion),
+          )
+        }
       UastEnvironment.Configuration.mergeRoots(modules, bootClassPaths).let { (sources, classPaths)
         ->
         addSourceRoots(sources.toList())
         addClasspathRoots(classPaths.toList())
       }
+    }
 
     companion object {
       @JvmStatic
