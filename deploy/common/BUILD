@@ -25,7 +25,7 @@ cc_library(
     copts = ANDROID_COPTS,
     linkopts = ANDROID_LINKOPTS,
     tags = ["no_windows"],
-    visibility = ["//visibility:public"],
+    visibility = ["//tools/base/deploy:__subpackages__"],
     deps = [
         ":log",
         "//tools/base/deploy/proto:cc_proto",
@@ -81,7 +81,7 @@ cc_test(
         "no_test_mac",
         "no_windows",
     ],
-    visibility = ["//visibility:public"],
+    visibility = ["//tools/base/deploy:__subpackages__"],
     deps = [
         ":common_lib",
         "@googletest//:gtest_main",

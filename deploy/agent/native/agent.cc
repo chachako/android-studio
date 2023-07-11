@@ -27,6 +27,7 @@
 #include "tools/base/deploy/agent/native/instrumenter.h"
 #include "tools/base/deploy/agent/native/jni/jni_class.h"
 #include "tools/base/deploy/agent/native/jni/jni_util.h"
+#include "tools/base/deploy/agent/native/jni_dispatch/jni_dispatch.h"
 #include "tools/base/deploy/agent/native/live_edit.h"
 #include "tools/base/deploy/agent/native/live_literal.h"
 #include "tools/base/deploy/agent/native/recompose.h"
@@ -85,6 +86,8 @@ void SendFailure(const deploy::Socket& socket,
 jint HandleStartupAgent(jvmtiEnv* jvmti, JNIEnv* jni,
                         const std::string& app_data_dir) {
   Log::V("Startup agent attached to VM");
+
+  RegisterDispatchJNI(jni);
 
   if (jvmti->AddCapabilities(&REQUIRED_CAPABILITIES) != JVMTI_ERROR_NONE) {
     ErrEvent("Error setting capabilities.");

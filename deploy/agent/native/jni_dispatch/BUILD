@@ -5,8 +5,13 @@ cc_library(
     srcs = [
         "jni_dispatch.cc",
     ],
+    hdrs = [
+        "jni_dispatch.h",
+    ],
+    tags = ["no_windows"],
     deps = [
         "//prebuilts/studio/jdk:jni_headers",
+        "//tools/base/deploy/common:log",
     ],
     alwayslink = True,
 )
@@ -14,6 +19,7 @@ cc_library(
 cc_binary(
     name = "jni_dispatch_dso",
     linkshared = True,
+    tags = ["no_windows"],
     deps = [
         ":jni_dispatch",
         "//prebuilts/studio/jdk:jni_headers",

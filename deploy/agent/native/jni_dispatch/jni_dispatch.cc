@@ -19,6 +19,8 @@
 
 #include <string>
 
+#include "tools/base/deploy/common/log.h"
+
 // This *must* match
 // tools/base/deploy/agent/runtime/src/main/java/com/android/tools/deploy/liveedit/AndroidEval.java
 constexpr int32_t kNoUnbox = 0;
@@ -362,3 +364,76 @@ Java_com_android_tools_deploy_interpreter_JNI_exitMonitor(JNIEnv* env, jclass,
 }
 
 }  // extern "C"
+
+namespace deploy {
+
+bool RegisterDispatchJNI(JNIEnv* jni) {
+  static bool dispatchJNIRegistered = false;
+  if (dispatchJNIRegistered) {
+    return true;
+  }
+
+  Log::I("Registering DispatchJNI");
+
+  const char* kJNIClassName = "com/android/tools/deploy/interpreter/JNI_";
+  jclass klass = jni->FindClass(kJNIClassName);
+  if (jni->ExceptionCheck()) {
+    Log::E("%s %s", "Unable to find class", kJNIClassName);
+    jni->ExceptionClear();
+    return false;
+  }
+
+  Log::I("%s %s", "Found", kJNIClassName);
+
+#define OBJ "Ljava/lang/Object;"
+#define CLASS "Ljava/lang/Class;"
+#define STR "Ljava/lang/String;"
+#define DESC "(" OBJ CLASS STR STR "[" OBJ "[I)"
+#define JNI_ "Java_com_android_tools_deploy_interpreter_JNI_invokespecial"
+#define JNIB "Java_com_android_tools_deploy_interpreter_JNI_"
+
+  static JNINativeMethod methods[] = {
+      {const_cast<char*>(JNI_ "L"), const_cast<char*>(DESC OBJ),
+       (void*)&Java_com_android_tools_deploy_interpreter_JNI_invokespecialL},
+
+      {const_cast<char*>(JNI_), const_cast<char*>(DESC "V"),
+       (void*)&Java_com_android_tools_deploy_interpreter_JNI_invokespecial},
+
+      {const_cast<char*>(JNI_ "I"), const_cast<char*>(DESC "I"),
+       (void*)&Java_com_android_tools_deploy_interpreter_JNI_invokespecialI},
+
+      {const_cast<char*>(JNI_ "S"), const_cast<char*>(DESC "S"),
+       (void*)&Java_com_android_tools_deploy_interpreter_JNI_invokespecialS},
+
+      {const_cast<char*>(JNI_ "B"), const_cast<char*>(DESC "B"),
+       (void*)&Java_com_android_tools_deploy_interpreter_JNI_invokespecialB},
+
+      {const_cast<char*>(JNI_ "Z"), const_cast<char*>(DESC "Z"),
+       (void*)&Java_com_android_tools_deploy_interpreter_JNI_invokespecialZ},
+
+      {const_cast<char*>(JNI_ "J"), const_cast<char*>(DESC "J"),
+       (void*)&Java_com_android_tools_deploy_interpreter_JNI_invokespecialJ},
+
+      {const_cast<char*>(JNI_ "F"), const_cast<char*>(DESC "F"),
+       (void*)&Java_com_android_tools_deploy_interpreter_JNI_invokespecialF},
+
+      {const_cast<char*>(JNI_ "D"), const_cast<char*>(DESC "D"),
+       (void*)&Java_com_android_tools_deploy_interpreter_JNI_invokespecialD},
+
+      {const_cast<char*>(JNI_ "C"), const_cast<char*>(DESC "C"),
+       (void*)&Java_com_android_tools_deploy_interpreter_JNI_invokespecialC},
+
+      {const_cast<char*>(JNIB "enterMonitor"), const_cast<char*>("(" OBJ ")V"),
+       (void*)&Java_com_android_tools_deploy_interpreter_JNI_enterMonitor},
+
+      {const_cast<char*>(JNIB "exitMonitor"), const_cast<char*>("(" OBJ ")V"),
+       (void*)&Java_com_android_tools_deploy_interpreter_JNI_exitMonitor}};
+
+  jint success = jni->RegisterNatives(klass, methods,
+                                      sizeof(methods) / sizeof(methods[0]));
+  jni->DeleteLocalRef(klass);
+
+  dispatchJNIRegistered = true;
+  return success == 0;
+}
+}  // namespace deploy

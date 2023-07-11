@@ -96,6 +96,7 @@ coverage_java_test(
         "-Ddashboards.enabled=true",
         "-Djava.library.path=tools/base/deploy/agent/native/jni_dispatch",
     ],
+    tags = ["no_windows"],
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
         ":asm4",

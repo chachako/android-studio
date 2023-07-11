@@ -23,6 +23,7 @@
 
 #include "tools/base/deploy/agent/native/instrumenter.h"
 #include "tools/base/deploy/agent/native/jni/jni_class.h"
+#include "tools/base/deploy/agent/native/jni_dispatch/jni_dispatch.h"
 #include "tools/base/deploy/agent/native/live_edit_dex.h"
 #include "tools/base/deploy/agent/native/recompose.h"
 #include "tools/base/deploy/agent/native/transform/stub_transform.h"
@@ -138,6 +139,8 @@ bool HasPrimedClasses() { return !primed_classes.empty(); }
 proto::AgentLiveEditResponse LiveEdit(jvmtiEnv* jvmti, JNIEnv* jni,
                                       const proto::LiveEditRequest& req) {
   proto::AgentLiveEditResponse resp;
+
+  RegisterDispatchJNI(jni);
 
   if (SetUpInstrumentationJar(jvmti, jni, req.package_name()).empty()) {
     resp.set_status(proto::AgentLiveEditResponse::INSTRUMENTATION_FAILED);
