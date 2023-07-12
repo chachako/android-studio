@@ -40,7 +40,7 @@ import com.android.build.gradle.internal.tasks.JacocoTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceCleanTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceInstrumentationTestSetupTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceSetupTask
-import com.android.build.gradle.internal.tasks.ScreenshotTestTask
+import com.android.build.gradle.internal.tasks.PreviewScreenshotTestTask
 import com.android.build.gradle.internal.tasks.SigningConfigVersionsWriterTask
 import com.android.build.gradle.internal.tasks.SigningConfigWriterTask
 import com.android.build.gradle.internal.tasks.StripDebugSymbolsTask
@@ -519,8 +519,8 @@ class AndroidTestTaskManager(
                 creationConfig.paths.intermediatesDir(
                         "${BuilderConstants.LINT}-cache").get().asFile
 
-        val screenshotTestTask = taskFactory.register(
-                ScreenshotTestTask.CreationAction(
+        val previewScreenshotTestTask = taskFactory.register(
+                PreviewScreenshotTestTask.CreationAction(
                         creationConfig,
                         resultsDir,
                         ideExtractionDir,
@@ -528,6 +528,6 @@ class AndroidTestTaskManager(
                         lintCacheDir,
                 ))
 
-        screenshotTestTask.dependsOn("lint")
+        previewScreenshotTestTask.dependsOn("lint")
     }
 }

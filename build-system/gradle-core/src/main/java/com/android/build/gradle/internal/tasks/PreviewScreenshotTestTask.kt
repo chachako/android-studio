@@ -51,7 +51,7 @@ import org.gradle.api.tasks.Input
  */
 @CacheableTask
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.TEST)
-abstract class ScreenshotTestTask : Test(), VariantAwareTask {
+abstract class PreviewScreenshotTestTask : Test(), VariantAwareTask {
 
     companion object {
 
@@ -108,14 +108,14 @@ abstract class ScreenshotTestTask : Test(), VariantAwareTask {
             private val lintCacheDir: File,
             ) :
             VariantTaskCreationAction<
-                    ScreenshotTestTask,
+                    PreviewScreenshotTestTask,
                     InstrumentedTestCreationConfig
                     >(androidTestCreationConfig) {
 
         override val name = computeTaskName(ComponentType.SCREENSHOT_TEST_PREFIX)
-        override val type = ScreenshotTestTask::class.java
+        override val type = PreviewScreenshotTestTask::class.java
 
-        override fun configure(task: ScreenshotTestTask) {
+        override fun configure(task: PreviewScreenshotTestTask) {
             task.recordGolden.convention(false)
 
             val testedConfig = (creationConfig as? AndroidTestCreationConfig)?.mainVariant
@@ -254,6 +254,6 @@ abstract class ScreenshotTestTask : Test(), VariantAwareTask {
     }
 }
 
-private fun ScreenshotTestTask.setTestEngineParam(key: String, value: String) {
+private fun PreviewScreenshotTestTask.setTestEngineParam(key: String, value: String) {
     jvmArgs("-Dcom.android.tools.screenshot.junit.engine.${key}=${value}")
 }
