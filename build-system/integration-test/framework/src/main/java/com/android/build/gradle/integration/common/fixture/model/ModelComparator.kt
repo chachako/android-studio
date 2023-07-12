@@ -63,8 +63,8 @@ abstract class BasicComparator(
     ) {
         if (System.getenv("GENERATE_MODEL_GOLDEN_FILES").isNullOrEmpty()) {
             Truth.assertWithMessage("Dumped $name (full version in stdout)")
-                .that(actualContent)
-                .isEqualTo(loadGoldenFile(goldenFile))
+                .that(actualContent.trimEnd())
+                .isEqualTo(loadGoldenFile(goldenFile).trimEnd())
         } else {
             val file = findGoldenFileLocation(goldenFile)
             file.writeText(actualContent)
@@ -98,7 +98,7 @@ abstract class BasicComparator(
         }
     }
 
-    private fun loadGoldenFile(name: String): String? {
+    private fun loadGoldenFile(name: String): String {
         val resourceName = if (name.isNotBlank()) {
             "${testClass.javaClass.simpleName}_${name}.txt"
         } else {
