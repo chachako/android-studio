@@ -596,7 +596,7 @@ class StringFormatDetector
                 'g',
                 'G',
                 'a',
-                'A' -> valid = isNumericType(type, true)
+                'A' -> valid = isNumericOrBigNumberType(type)
                 'c',
                 'C' -> // Unicode character
                 valid = isCharacterType(type)
@@ -614,7 +614,7 @@ class StringFormatDetector
                   // numbers since you may have meant more
                   // specific formatting. Use special issue
                   // explanation for this?
-                  valid = !isBooleanType(type) && !isNumericType(type, false)
+                  valid = !isBooleanType(type) && !isNumericType(type)
               }
               if (!valid) {
                 val location = context.getLocation(args[argumentIndex])
@@ -629,29 +629,12 @@ class StringFormatDetector
                   suggestion = "`b`"
                 } else if (isCharacterType(type)) {
                   suggestion = "'c'"
-                } else if (
-                  PsiTypes.intType() == type ||
-                    PsiTypes.longType() == type ||
-                    PsiTypes.byteType() == type ||
-                    PsiTypes.shortType() == type
-                ) {
+                } else if (isIntType(type)) {
                   suggestion = "`d`, 'o' or `x`"
-                } else if (PsiTypes.floatType() == type || PsiTypes.doubleType() == type) {
+                } else if (isFloatType(type)) {
                   suggestion = "`e`, 'f', 'g' or `a`"
-                } else if (type is PsiClassType) {
-                  val fqn = type.getCanonicalText()
-                  if (
-                    TYPE_INTEGER_WRAPPER == fqn ||
-                      TYPE_LONG_WRAPPER == fqn ||
-                      TYPE_BYTE_WRAPPER == fqn ||
-                      TYPE_SHORT_WRAPPER == fqn
-                  ) {
-                    suggestion = "`d`, 'o' or `x`"
-                  } else if (TYPE_FLOAT_WRAPPER == fqn || TYPE_DOUBLE_WRAPPER == fqn) {
-                    suggestion = "`d`, 'o' or `x`"
-                  } else if (TYPE_OBJECT == fqn) {
-                    suggestion = "'s' or 'h'"
-                  }
+                } else if (type is PsiClassType && type.getCanonicalText() == TYPE_OBJECT) {
+                  suggestion = "'s' or 'h'"
                 }
                 suggestion =
                   if (suggestion != null) {
@@ -674,7 +657,7 @@ class StringFormatDetector
                     argumentIndex + 1,
                     suggestion
                   )
-                if ((last == 's' || last == 'S') && isNumericType(type, false)) {
+                if ((last == 's' || last == 'S') && isNumericType(type)) {
                   message =
                     String.format(
                       Locale.US,
@@ -1440,61 +1423,29 @@ This will ensure that in other languages the right set of translations are provi
       context.report(INVALID, call, location, message)
     }
 
-    private fun isCharacterType(type: PsiType): Boolean {
-      // return PsiType.CHAR.isAssignableFrom(type);
-      if (PsiTypes.charType() == type) {
-        return true
-      }
-      if (type is PsiClassType) {
-        val fqn = type.getCanonicalText()
-        return TYPE_CHARACTER_WRAPPER == fqn
-      }
-      return false
+    private class TypeTest(private val prims: List<PsiType>, private val tags: List<String>) :
+      (PsiType) -> Boolean {
+      override fun invoke(t: PsiType) =
+        t in prims || t is PsiClassType && t.getCanonicalText() in tags
+      infix fun or(that: TypeTest): TypeTest = TypeTest(prims + that.prims, tags + that.tags)
     }
 
-    private fun isBooleanType(type: PsiType): Boolean {
-      // return PsiType.BOOLEAN.isAssignableFrom(type);
-      if (PsiTypes.booleanType() == type) {
-        return true
-      }
-      if (type is PsiClassType) {
-        val fqn = type.getCanonicalText()
-        return TYPE_BOOLEAN_WRAPPER == fqn
-      }
-      return false
-    }
-
-    // PsiType:java.lang.Boolean
-    private fun isNumericType(type: PsiType, allowBigNumbers: Boolean): Boolean {
-      if (
-        PsiTypes.intType() == type ||
-          PsiTypes.floatType() == type ||
-          PsiTypes.doubleType() == type ||
-          PsiTypes.longType() == type ||
-          PsiTypes.byteType() == type ||
-          PsiTypes.shortType() == type
-      ) {
-        return true
-      }
-      if (type is PsiClassType) {
-        val fqn = type.getCanonicalText()
-        if (
-          TYPE_INTEGER_WRAPPER == fqn ||
-            TYPE_FLOAT_WRAPPER == fqn ||
-            TYPE_DOUBLE_WRAPPER == fqn ||
-            TYPE_LONG_WRAPPER == fqn ||
-            TYPE_BYTE_WRAPPER == fqn ||
-            TYPE_SHORT_WRAPPER == fqn
-        ) {
-          return true
-        }
-        if (allowBigNumbers) {
-          if ("java.math.BigInteger" == fqn || "java.math.BigDecimal" == fqn) {
-            return true
-          }
-        }
-      }
-      return false
-    }
+    private val isCharacterType =
+      TypeTest(listOf(PsiTypes.charType()), listOf(TYPE_CHARACTER_WRAPPER))
+    private val isBooleanType =
+      TypeTest(listOf(PsiTypes.booleanType()), listOf(TYPE_BOOLEAN_WRAPPER))
+    private val isIntType =
+      TypeTest(
+        listOf(PsiTypes.intType(), PsiTypes.longType(), PsiTypes.byteType(), PsiTypes.shortType()),
+        listOf(TYPE_INTEGER_WRAPPER, TYPE_LONG_WRAPPER, TYPE_BYTE_WRAPPER, TYPE_SHORT_WRAPPER)
+      )
+    private val isFloatType =
+      TypeTest(
+        listOf(PsiTypes.floatType(), PsiTypes.doubleType()),
+        listOf(TYPE_FLOAT_WRAPPER, TYPE_DOUBLE_WRAPPER)
+      )
+    private val isNumericType = isIntType or isFloatType
+    private val isNumericOrBigNumberType =
+      isNumericType or TypeTest(listOf(), listOf("java.math.BigInteger", "java.math.BigDecimal"))
   }
 }
