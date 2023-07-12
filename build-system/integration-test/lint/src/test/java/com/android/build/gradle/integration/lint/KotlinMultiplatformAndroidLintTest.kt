@@ -27,6 +27,7 @@ import com.android.build.gradle.options.StringOption.LINT_RESERVED_MEMORY_PER_TA
 import com.android.testutils.truth.PathSubject
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth
+import org.junit.Assume
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -74,6 +75,7 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
 
     @Test
     fun `test lint reports error when calling desugared apis in androidMain sourceset`() {
+        Assume.assumeTrue(lintAnalysisPerComponent)
         addNewApiIssuesToKmpFirstLib(addAndroidMainIssues = true)
 
         getExecutor().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
@@ -90,6 +92,7 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
 
     @Test
     fun `test lint reports error when calling desugared apis in commonMain sourceset`() {
+        Assume.assumeTrue(lintAnalysisPerComponent)
         addNewApiIssuesToKmpFirstLib(addCommonMainIssues = true)
 
         getExecutor().run(":kmpFirstLib:clean", ":kmpFirstLib:lintAndroidMain")
@@ -106,6 +109,7 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
 
     @Test
     fun `test lint reports error when calling desugared apis in android unitTest sourceset`() {
+        Assume.assumeTrue(lintAnalysisPerComponent)
         TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
@@ -193,6 +197,7 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
 
     @Test
     fun `test running lint on kmpJvmOnly`() {
+        Assume.assumeTrue(lintAnalysisPerComponent)
         TestFileUtils.appendToFile(
             project.getSubproject("kmpJvmOnly").ktsBuildFile,
             """
@@ -235,6 +240,7 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
 
     @Test
     fun `test running lint on kmpJvmOnly with java`() {
+        Assume.assumeTrue(lintAnalysisPerComponent)
         TestFileUtils.searchAndReplace(
             project.getSubproject("kmpJvmOnly").ktsBuildFile,
             "jvm()",
@@ -290,6 +296,7 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
 
     @Test
     fun `test running lint on project with jvm and android targets`() {
+        Assume.assumeTrue(lintAnalysisPerComponent)
         TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
@@ -346,6 +353,68 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
             "Error: Call requires API level 26 (current min is 22): java.time.LocalDate#getMonth [NewApi]",
             "Error: Call requires API level 26 (current min is 22): java.time.LocalDate#now [NewApi]"
         )
+    }
+
+    @Test
+    fun `test updating lint baselines on project with jvm and android targets`() {
+        Assume.assumeTrue(lintAnalysisPerComponent)
+        TestFileUtils.appendToFile(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            """
+                kotlin {
+                    jvm()
+                    androidLibrary {
+                        lint {
+                            baseline = file("android-lint-baseline.xml")
+                        }
+                    }
+                }
+                lint {
+                    enable += "ByteOrderMark"
+                    textReport = true
+                    abortOnError = false
+                    baseline = file("jvm-lint-baseline.xml")
+                }
+            """.trimIndent())
+
+        addNewApiIssuesToKmpFirstLib(addAndroidMainIssues = true)
+
+        val jvmClassFile =
+            FileUtils.join(
+                project.getSubproject("kmpFirstLib").projectDir,
+                "src",
+                "jvmMain",
+                "kotlin",
+                "com",
+                "example",
+                "Foo.kt"
+            )
+        jvmClassFile.parentFile.mkdirs()
+        TestFileUtils.appendToFile(
+            jvmClassFile,
+            //language=kotlin
+            """
+                package com.example
+
+                fun getByteOrderMark(): String {
+                    return "$byteOrderMark"
+                }
+            """.trimIndent()
+        )
+
+        val jvmBaselineFile =
+            File(project.getSubproject("kmpFirstLib").projectDir, "jvm-lint-baseline.xml")
+        val androidBaselineFile =
+            File(project.getSubproject("kmpFirstLib").projectDir, "android-lint-baseline.xml")
+        PathSubject.assertThat(jvmBaselineFile).doesNotExist()
+        PathSubject.assertThat(androidBaselineFile).doesNotExist()
+
+        getExecutor().run(":kmpFirstLib:clean", ":kmpFirstLib:updateLintBaseline")
+
+        PathSubject.assertThat(jvmBaselineFile).contains("ByteOrderMark")
+        PathSubject.assertThat(jvmBaselineFile).doesNotContain("NewApi")
+        PathSubject.assertThat(androidBaselineFile).contains("NewApi")
+        PathSubject.assertThat(androidBaselineFile).doesNotContain("ByteOrderMark")
     }
 
     @Test
@@ -421,6 +490,7 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
 
     @Test
     fun `test no lint tasks if lint plugin not applied`() {
+        Assume.assumeTrue(lintAnalysisPerComponent)
         getExecutor().run("kmpFirstLib:tasks").stdout.use {
             assertThat(it).contains("lint -")
             assertThat(it).contains("lintAndroidMain")
