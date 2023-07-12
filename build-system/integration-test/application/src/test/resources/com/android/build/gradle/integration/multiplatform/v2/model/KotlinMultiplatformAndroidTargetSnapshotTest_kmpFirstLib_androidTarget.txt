@@ -213,7 +213,6 @@
           "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/D8BackportedDesugaredMethods.txt"
         }
       ],
-      "buildName": ":",
       "rootBuildId": {
         "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}"
       },

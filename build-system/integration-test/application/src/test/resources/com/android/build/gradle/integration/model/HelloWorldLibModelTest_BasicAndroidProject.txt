@@ -1,7 +1,6 @@
 > BasicAndroidProject:
    - projectType    = LIBRARY
    - path           = ":"
-   - buildName      = ":"
    - buildFolder    = {PROJECT}/build{!}
    - bootClasspath:
       * {ANDROID_SDK}/platforms/android-{COMPILE_SDK_VERSION}/android.jar{F}

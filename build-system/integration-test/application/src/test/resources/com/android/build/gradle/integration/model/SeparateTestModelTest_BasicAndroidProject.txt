@@ -1,7 +1,6 @@
 > BasicAndroidProject:
    - projectType    = TEST
    - path           = ":test"
-   - buildName      = ":"
    - buildFolder    = {PROJECT}/test/build{!}
    - bootClasspath:
       * {ANDROID_SDK}/platforms/android-{COMPILE_SDK_VERSION}/android.jar{F}

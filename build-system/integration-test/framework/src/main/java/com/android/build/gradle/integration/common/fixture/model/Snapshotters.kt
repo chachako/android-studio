@@ -95,7 +95,6 @@ private fun normalizeAgpVersion(version: String): Any {
 internal fun ModelSnapshotter<BasicAndroidProject>.snapshotBasicAndroidProject() {
     item("projectType", BasicAndroidProject::projectType)
     item("path", BasicAndroidProject::path)
-    item("buildName", BasicAndroidProject::buildName)
     item("buildFolder", BasicAndroidProject::buildFolder)
     valueList("bootClasspath", BasicAndroidProject::bootClasspath)
     dataObject("defaultConfig", BasicAndroidProject::mainSourceSet) {

@@ -64,9 +64,6 @@ message AndroidTarget {
     // artifact.
     repeated File desugared_methods_files = 12;
 
-    // The name of the build this project belongs to.
-    optional string build_name = 13;
-
     // The build ID (directory containing the settings file) of the root build of this project.
     optional File root_build_id = 14;
 

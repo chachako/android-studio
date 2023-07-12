@@ -28,7 +28,6 @@ import com.android.build.gradle.internal.component.UnitTestCreationConfig
 import com.android.build.gradle.internal.ide.proto.convert
 import com.android.build.gradle.internal.ide.proto.setIfNotNull
 import com.android.build.gradle.internal.ide.v2.ModelBuilder.Companion.getAgpFlags
-import com.android.build.gradle.internal.ide.v2.ModelBuilder.Companion.getBuildName
 import com.android.build.gradle.internal.ide.v2.TestInfoImpl
 import com.android.build.gradle.internal.ide.v2.convertToExecution
 import com.android.build.gradle.internal.lint.getLocalCustomLintChecksForModel
@@ -117,7 +116,6 @@ object KotlinModelBuildingConfigurator {
             AndroidTarget.newBuilder()
                 .setAgpVersion(Version.ANDROID_GRADLE_PLUGIN_VERSION)
                 .setProjectPath(project.path)
-                .setBuildName(getBuildName(project))
                 .setRootBuildId(
                     (project.gradle.parent ?: project.gradle).rootProject.projectDir.convert()
                 )

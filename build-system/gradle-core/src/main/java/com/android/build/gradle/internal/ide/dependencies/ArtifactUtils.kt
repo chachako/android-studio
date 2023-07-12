@@ -95,11 +95,7 @@ class ArtifactCollectionsInputsImpl constructor(
         runtimeType,
     )
 
-    override val projectBuildPath: Provider<String> = variantDependencies.getResolutionResult(
-        AndroidArtifacts.ConsumedConfigType.COMPILE_CLASSPATH
-    ).rootComponent.map {
-            (it as? ProjectComponentIdentifier)?.build?.name ?: UNKNOWN_BUILD_NAME
-        }
+    override val projectBuildPath: Provider<String> = getBuildName(variantDependencies)
 
     override val compileClasspath: ArtifactCollections = ArtifactCollections(
         variantDependencies,
