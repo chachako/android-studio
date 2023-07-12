@@ -354,6 +354,22 @@ class ArtProfileTests {
         }
     }
 
+    @Test
+    fun testDumpProfiles_withInlineCaches_V015S_strictMode() {
+        val obf = ObfuscationMap.Empty
+        val apkFile = testData("inlineCaches/app.apk")
+        val profileFile = testData("inlineCaches/primary.prof")
+        val apk = Apk(apkFile)
+        val input = profileFile.inputStream()
+        input.use {
+            val prof = ArtProfile(input)!!
+            val builder = StringBuilder()
+            assertFailsWith(IllegalStateException::class) {
+                dumpProfile(builder, prof, apk, obf, strict = true)
+            }
+        }
+    }
+
     private fun inputStreamOf(apkFile: File, name: String): InputStream {
         val zip = ZipFile(apkFile)
         val entry = zip.entries().asSequence().first { it.name == name }

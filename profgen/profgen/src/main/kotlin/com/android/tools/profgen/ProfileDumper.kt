@@ -33,6 +33,16 @@ fun dumpProfile(
                     continue
                 }
 
+        if (strict && dexFile.dexChecksum != file.dexChecksum) {
+            val message = """
+                    Profile Checksum for ${dexFile.name}(${dexFile.dexChecksum}) does not match
+                    the checksum in the APK ${apk.name}(${file.dexChecksum}.
+                """.trimIndent()
+            throw IllegalStateException(message)
+        }
+
+        // Even if the checksums don't match we can try and dump as much information as possible.
+
         for ((key, method) in dexFileData.methods) {
             // Method data is not guaranteed to exist given they might be stored as
             // extra descriptors.
