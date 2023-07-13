@@ -7,9 +7,7 @@ import java.io.File
 import java.io.InputStream
 import java.util.zip.CRC32
 import java.util.zip.ZipFile
-import java.util.zip.ZipInputStream
-import kotlin.io.path.Path
-import kotlin.io.path.copyTo
+import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
 import kotlin.io.path.outputStream
 import kotlin.test.assertContentEquals
@@ -18,7 +16,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import kotlin.test.expect
 import kotlin.test.fail
 
 class ArtProfileTests {
@@ -218,6 +215,39 @@ class ArtProfileTests {
                 expected = ZipFile(golden),
                 observed = ZipFile(output.toFile())
         )
+    }
+
+    @Test
+    fun testDexMetadataGeneration() {
+        val golden = testData("now-in-android/b-227394536/app-release.dm")
+        val apkFile = testData("now-in-android/b-227394536/app-release.apk")
+        val outputDir = createTempDirectory().toFile()
+        ZipFile(apkFile).use { zipFile ->
+            val profEntry = zipFile.entries()
+                    .asSequence()
+                    .firstOrNull { it.name == "assets/dexopt/baseline.prof" }
+            val profmEntry = zipFile.entries()
+                    .asSequence()
+                    .firstOrNull { it.name == "assets/dexopt/baseline.profm" }
+            require(profEntry != null && profmEntry != null)
+            val profInputStream = zipFile.getInputStream(profEntry)
+            val profmInputStream = zipFile.getInputStream(profmEntry)
+            val prof = ArtProfile(profInputStream)
+            require(prof != null)
+            val profmSerializer = profmInputStream.readProfileVersion()
+            require(profmSerializer != null)
+            val metadata = ArtProfile(profmSerializer.read(profmInputStream))
+            val merged = prof.addMetadata(metadata, profmSerializer.metadataVersion!!)
+            val map = buildDexMetadata(apkFile.nameWithoutExtension, merged, outputDir, listOf(
+                    SerializerInfo(ArtProfileSerializer.V0_1_5_S, 31..34)
+            ))
+            assertTrue(map.isNotEmpty())
+            val dmFile = requireNotNull(map[31]) // 31 is Android S
+            validateZipContentEquals(
+                    expected = ZipFile(golden),
+                    observed = ZipFile(dmFile)
+            )
+        }
     }
 
     @Test
@@ -449,9 +479,9 @@ class ArtProfileTests {
         assertEquals(startProf.methodCount, endProf.methodCount)
     }
 
-    private val ArtProfile.typeIdCount: Int get() = profileData.values.sumBy { it.typeIndexes.size }
-    private val ArtProfile.classIdCount: Int get() = profileData.values.sumBy { it.classIndexes.size }
-    private val ArtProfile.methodCount: Int get() = profileData.values.sumBy { it.methods.values.size }
+    private val ArtProfile.typeIdCount: Int get() = profileData.values.sumOf { it.typeIndexes.size }
+    private val ArtProfile.classIdCount: Int get() = profileData.values.sumOf { it.classIndexes.size }
+    private val ArtProfile.methodCount: Int get() = profileData.values.sumOf { it.methods.values.size }
 }
 
 private fun strictHumanReadableProfile(path: String) =

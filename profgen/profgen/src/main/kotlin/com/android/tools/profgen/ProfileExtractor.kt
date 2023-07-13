@@ -68,7 +68,7 @@ private fun ZipOutputStream.put(name: String, block: (OutputStream) -> Unit) {
     closeEntry()
 }
 
-private fun OutputStream.writeDm(
+internal fun OutputStream.writeDm(
         prof: ArtProfile,
         profm: ArtProfile?,
         profileVersion: ArtProfileSerializer,
