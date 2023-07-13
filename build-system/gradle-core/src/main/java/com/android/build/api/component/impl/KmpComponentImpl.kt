@@ -196,6 +196,8 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
         )
     }
 
+    override val lifecycleTasks = LifecycleTasksImpl()
+
     // Unsupported features
 
     override val assetsCreationConfig: AssetsCreationConfig? = null

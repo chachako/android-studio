@@ -18,7 +18,6 @@ package com.android.build.api.component.impl
 
 import com.android.SdkConstants
 import com.android.build.api.artifact.impl.ArtifactsImpl
-import com.android.build.api.attributes.ProductFlavorAttr
 import com.android.build.api.component.impl.features.AndroidResourcesCreationConfigImpl
 import com.android.build.api.component.impl.features.AssetsCreationConfigImpl
 import com.android.build.api.component.impl.features.InstrumentationCreationConfigImpl
@@ -35,8 +34,6 @@ import com.android.build.api.variant.JavaCompilation
 import com.android.build.api.variant.impl.FileBasedDirectoryEntryImpl
 import com.android.build.api.variant.impl.FlatSourceDirectoriesImpl
 import com.android.build.api.variant.impl.SourcesImpl
-import com.android.build.gradle.internal.DependencyConfigurator
-import com.android.build.gradle.internal.VariantManager
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
 import com.android.build.gradle.internal.component.features.AssetsCreationConfig
@@ -63,7 +60,6 @@ import com.android.build.gradle.internal.variant.VariantPathHelper
 import com.android.build.gradle.options.OptionalBooleanOption.ENABLE_API_MODELING_AND_GLOBAL_SYNTHETICS
 import com.android.builder.core.ComponentType
 import com.android.utils.appendCapitalized
-import com.google.common.collect.ImmutableMap
 import org.gradle.api.JavaVersion
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Provider
@@ -157,6 +153,8 @@ abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
 
     override val annotationProcessorConfiguration =
         variantDependencies.annotationProcessorConfiguration!!
+
+    override val lifecycleTasks = LifecycleTasksImpl()
 
     // ---------------------------------------------------------------------------------------------
     // INTERNAL API

@@ -78,4 +78,10 @@ interface KotlinMultiplatformAndroidVariant: HasAndroidTest, HasUnitTest {
      */
     @get:Incubating
     val nestedComponents: List<Component>
+
+    /**
+     * Provides access to the [LifecycleTasks] created for this component.
+     */
+    @get:Incubating
+    val lifecycleTasks: LifecycleTasks
 }

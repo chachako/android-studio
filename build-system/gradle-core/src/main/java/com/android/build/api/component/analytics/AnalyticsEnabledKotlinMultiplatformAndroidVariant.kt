@@ -21,6 +21,7 @@ import com.android.build.api.variant.AndroidTest
 import com.android.build.api.variant.Component
 import com.android.build.api.variant.Instrumentation
 import com.android.build.api.variant.KotlinMultiplatformAndroidVariant
+import com.android.build.api.variant.LifecycleTasks
 import com.android.tools.build.gradle.internal.profile.VariantPropertiesMethodType
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.file.FileCollection
@@ -64,6 +65,13 @@ open class AnalyticsEnabledKotlinMultiplatformAndroidVariant @Inject constructor
             stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
                 VariantPropertiesMethodType.COMPILE_CLASSPATH_VALUE
             return delegate.compileClasspath
+        }
+
+    override val lifecycleTasks: LifecycleTasks
+        get() {
+            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
+                VariantPropertiesMethodType.LIFECYCLE_TASKS_VALUE
+            return delegate.lifecycleTasks
         }
 
     private val userVisibleUnitTest: AnalyticsEnabledUnitTest? by lazy {

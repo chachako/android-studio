@@ -2499,6 +2499,7 @@ package com.android.build.api.variant {
     method public boolean getDebuggable();
     method public com.android.build.api.variant.Instrumentation getInstrumentation();
     method @org.gradle.api.Incubating public com.android.build.api.variant.JavaCompilation getJavaCompilation();
+    method @org.gradle.api.Incubating public com.android.build.api.variant.LifecycleTasks getLifecycleTasks();
     method public org.gradle.api.provider.Provider<java.lang.String> getNamespace();
     method public org.gradle.api.artifacts.Configuration getRuntimeConfiguration();
     method public com.android.build.api.variant.Sources getSources();
@@ -2511,6 +2512,7 @@ package com.android.build.api.variant {
     property public abstract boolean debuggable;
     property public abstract com.android.build.api.variant.Instrumentation instrumentation;
     property @org.gradle.api.Incubating public abstract com.android.build.api.variant.JavaCompilation javaCompilation;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.variant.LifecycleTasks lifecycleTasks;
     property public abstract org.gradle.api.provider.Provider<java.lang.String> namespace;
     property public abstract org.gradle.api.artifacts.Configuration runtimeConfiguration;
     property public abstract com.android.build.api.variant.Sources sources;
@@ -2750,11 +2752,13 @@ package com.android.build.api.variant {
     method @org.gradle.api.Incubating public com.android.build.api.artifact.Artifacts getArtifacts();
     method @org.gradle.api.Incubating public org.gradle.api.file.FileCollection getCompileClasspath();
     method @org.gradle.api.Incubating public com.android.build.api.variant.Instrumentation getInstrumentation();
+    method @org.gradle.api.Incubating public com.android.build.api.variant.LifecycleTasks getLifecycleTasks();
     method @org.gradle.api.Incubating public String getName();
     method @org.gradle.api.Incubating public java.util.List<com.android.build.api.variant.Component> getNestedComponents();
     property @org.gradle.api.Incubating public abstract com.android.build.api.artifact.Artifacts artifacts;
     property @org.gradle.api.Incubating public abstract org.gradle.api.file.FileCollection compileClasspath;
     property @org.gradle.api.Incubating public abstract com.android.build.api.variant.Instrumentation instrumentation;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.variant.LifecycleTasks lifecycleTasks;
     property @org.gradle.api.Incubating public abstract String name;
     property @org.gradle.api.Incubating public abstract java.util.List<com.android.build.api.variant.Component> nestedComponents;
   }
@@ -2768,6 +2772,10 @@ package com.android.build.api.variant {
   }
 
   public interface LibraryVariantBuilder extends com.android.build.api.variant.VariantBuilder com.android.build.api.variant.CanMinifyCodeBuilder com.android.build.api.variant.HasAndroidTestBuilder com.android.build.api.variant.HasTestFixturesBuilder com.android.build.api.variant.HasUnitTestBuilder {
+  }
+
+  @org.gradle.api.Incubating public interface LifecycleTasks {
+    method public void registerPreBuild(java.lang.Object... objects);
   }
 
   @org.gradle.api.Incubating public interface LintLifecycleExtension extends com.android.build.api.variant.DslLifecycle<com.android.build.api.dsl.Lint> {

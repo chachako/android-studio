@@ -1831,6 +1831,7 @@ abstract class TaskManager(
         override fun configure(task: TaskT) {
             super.configure(task)
             task.dependsOn(creationConfig.global.taskNames.mainPreBuild)
+            creationConfig.lifecycleTasks.invokePreBuildActions(task)
         }
     }
 

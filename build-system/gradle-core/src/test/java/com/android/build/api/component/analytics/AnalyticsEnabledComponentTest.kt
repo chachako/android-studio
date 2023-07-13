@@ -20,6 +20,7 @@ import com.android.build.api.instrumentation.AsmClassVisitorFactory
 import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.instrumentation.InstrumentationParameters
 import com.android.build.api.instrumentation.InstrumentationScope
+import com.android.build.api.variant.LifecycleTasks
 import com.android.build.api.variant.Component
 import com.android.build.api.variant.Instrumentation
 import com.android.build.api.variant.JavaCompilation
@@ -319,5 +320,23 @@ class AnalyticsEnabledComponentTest {
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.ANNOTATION_PROCESSOR_CONFIGURATION_VALUE)
         Mockito.verify(delegate, times(1)).annotationProcessorConfiguration
+    }
+
+    @Test
+    fun getLifecycleTasks() {
+        val lifecycleTasks = Mockito.mock(LifecycleTasks::class.java)
+        Mockito.`when`(delegate.lifecycleTasks).thenReturn(lifecycleTasks)
+        val anchorTasksProxy = proxy.lifecycleTasks
+        Truth.assertThat(anchorTasksProxy).isInstanceOf(AnalyticsEnabledLifecycleTasks::class.java)
+        Truth.assertThat(lifecycleTasks).isEqualTo(
+            (anchorTasksProxy as AnalyticsEnabledLifecycleTasks).delegate
+        )
+
+        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.first().type
+        ).isEqualTo(VariantPropertiesMethodType.LIFECYCLE_TASKS_VALUE)
+        Mockito.verify(delegate, times(1))
+            .lifecycleTasks
     }
 }
