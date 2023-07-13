@@ -162,6 +162,8 @@ public final class SdkConstants {
     public static final String FN_SETTINGS_GRADLE = "settings.gradle";
     /** An SDK Project's settings.gradle Kotlin script file */
     public static final String FN_SETTINGS_GRADLE_KTS = "settings.gradle.kts";
+    /** An SDK Project's settings.gradle toml file */
+    public static final String FN_SETTINGS_GRADLE_TOML = "settings.gradle.toml";
     /** An SDK Project's gradle.properties file */
     public static final String FN_GRADLE_PROPERTIES = "gradle.properties";
     /** An SDK Project's libs.versions.toml file */
