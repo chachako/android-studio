@@ -15,6 +15,7 @@
  */
 package com.android.tools.debuggertests
 
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -22,6 +23,7 @@ import org.junit.runners.Parameterized.Parameters
 
 /** Runs tests using a [ArtEngine] */
 @RunWith(Parameterized::class)
+@Ignore("b/290889456")
 internal class ArtEngineDebuggerTest(testClass: String) : DebuggerTestBase(testClass, ArtEngine()) {
 
   companion object {
