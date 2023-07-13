@@ -171,6 +171,7 @@ object KotlinModelBuildingConfigurator {
                         mainVariant.global
                     ).files.map { it.convert() }
                 )
+                .setWithJava(mainVariant.withJava)
                 .build()
         }
     }

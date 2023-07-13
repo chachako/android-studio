@@ -218,7 +218,8 @@
       },
       "buildId": {
         "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}"
-      }
+      },
+      "withJava": true
     }
   }
 }

@@ -65,11 +65,14 @@ message AndroidTarget {
     repeated File desugared_methods_files = 12;
 
     // The build ID (directory containing the settings file) of the root build of this project.
-    optional File root_build_id = 14;
+    optional File root_build_id = 13;
 
     // The build ID (directory containing the settings file) of the (included) build containing this
     // project.
-    optional File build_id = 15;
+    optional File build_id = 14;
+
+    // Whether java compilation is enabled.
+    optional bool with_java = 15;
 }
 
 // Sources included in a kotlin multiplatform sourceSet.
