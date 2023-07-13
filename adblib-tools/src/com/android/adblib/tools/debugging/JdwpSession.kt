@@ -23,6 +23,7 @@ import com.android.adblib.selector
 import com.android.adblib.tools.debugging.impl.JdwpSessionImpl
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.utils.closeOnException
+import kotlinx.coroutines.CoroutineScope
 import java.io.EOFException
 import java.io.IOException
 
@@ -40,6 +41,12 @@ internal interface JdwpSession : AutoShutdown {
      * The [ConnectedDevice] this [JdwpSession] is connected to.
      */
     val device: ConnectedDevice
+
+    /**
+     * The [CoroutineScope] corresponding to this [JdwpSession] instance, i.e. the scope
+     * is cancelled when the [JdwpSession] is closed.
+     */
+    val scope: CoroutineScope
 
     /**
      * Sends a [JdwpPacketView] to the process VM.

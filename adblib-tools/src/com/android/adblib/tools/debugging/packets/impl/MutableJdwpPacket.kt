@@ -155,3 +155,11 @@ internal fun MutableJdwpPacket.parseHeader(buffer: ByteBuffer) {
         cmd = buffer.get().toUByte().toInt()
     }
 }
+
+/**
+ *
+ */
+internal fun MutableJdwpPacket.wrapByteBuffer(buffer: ByteBuffer) {
+    parseHeader(buffer)
+    payloadProvider = PayloadProvider.forByteBuffer(buffer)
+}

@@ -204,6 +204,9 @@ internal open class EphemeralJdwpPacket private constructor(
 
         private val payloadMutex = Mutex()
 
+        override val isThreadSafeAndImmutable: Boolean
+            get() = true
+
         override suspend fun acquirePayload(): AdbInputChannel {
             payloadMutex.lock()
             return super.acquirePayload()

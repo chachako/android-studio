@@ -56,6 +56,23 @@ suspend fun JdwpPacketView.writeToChannel(
 }
 
 /**
+ * Serializes the contents [JdwpPacketView] to [workBuffer], returning the
+ * [ByteBuffer] wrapped by [workBuffer] containing data from [ByteBuffer.position] `0`
+ * to [ByteBuffer.limit] of the packet length.
+ */
+suspend fun JdwpPacketView.writeToBuffer(workBuffer: ResizableBuffer): ByteBuffer {
+    workBuffer.clear()
+    workBuffer.order(JdwpPacketConstants.PACKET_BYTE_ORDER)
+    workBuffer.appendJdwpHeader(this)
+
+    val byteCount = withPayload { payload ->
+        payload.readRemaining(workBuffer)
+    }
+    checkPacketLength(byteCount)
+    return workBuffer.afterChannelRead(useMarkedPosition = false)
+}
+
+/**
  * Append this JDWP packet header (11 bytes) to this [ResizableBuffer].
  */
 fun ResizableBuffer.appendJdwpHeader(jdwpPacketView: JdwpPacketView) {

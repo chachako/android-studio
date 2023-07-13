@@ -23,6 +23,7 @@ import com.android.adblib.AdbOutputChannel
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.readNBytes
+import com.android.adblib.scope
 import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.JdwpSession
@@ -38,7 +39,10 @@ import com.android.adblib.tools.debugging.packets.writeToChannel
 import com.android.adblib.tools.debugging.utils.AdbRewindableInputChannel
 import com.android.adblib.tools.debugging.utils.ByteBufferHolder
 import com.android.adblib.utils.ResizableBuffer
+import com.android.adblib.utils.createChildScope
 import com.android.adblib.withPrefix
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.nio.ByteBuffer
@@ -77,6 +81,8 @@ internal class JdwpSessionImpl(
         logger.debug { "Opening JDWP session" }
     }
 
+    override val scope: CoroutineScope = device.scope.createChildScope(isSupervisor = true)
+
     override suspend fun shutdown() {
         logger.debug { "Shutting down JDWP session" }
         outputChannel.shutdown()
@@ -89,6 +95,7 @@ internal class JdwpSessionImpl(
         inputChannel.close()
         outputChannel.close()
         channel.close()
+        scope.cancel("${this::class.simpleName} has been closed")
     }
 
     override suspend fun sendPacket(packet: JdwpPacketView) {

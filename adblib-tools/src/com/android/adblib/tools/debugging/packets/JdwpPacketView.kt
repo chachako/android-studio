@@ -16,14 +16,17 @@
 package com.android.adblib.tools.debugging.packets
 
 import com.android.adblib.AdbInputChannel
-import com.android.adblib.tools.debugging.packets.impl.EphemeralJdwpPacket
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_HEADER_LENGTH
 import com.android.adblib.tools.debugging.packets.ddms.withPayload
+import com.android.adblib.tools.debugging.packets.impl.EphemeralJdwpPacket
 import com.android.adblib.tools.debugging.packets.impl.JdwpCommands
 import com.android.adblib.tools.debugging.packets.impl.JdwpErrorCode
+import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
+import com.android.adblib.tools.debugging.packets.impl.wrapByteBuffer
 import com.android.adblib.tools.debugging.utils.ThreadSafetySupport
 import com.android.adblib.utils.ResizableBuffer
+import java.nio.ByteBuffer
 
 /**
  * Provides access to various elements of a JDWP packet. A JDWP packet always starts with
@@ -163,6 +166,12 @@ interface JdwpPacketView {
                     errorCode = source.errorCode,
                     payload
                 )
+            }
+        }
+
+        fun wrapByteBuffer(buffer: ByteBuffer): JdwpPacketView {
+            return MutableJdwpPacket().also {
+                it.wrapByteBuffer(buffer)
             }
         }
 

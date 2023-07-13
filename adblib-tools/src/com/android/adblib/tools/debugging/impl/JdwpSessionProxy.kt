@@ -26,21 +26,22 @@ import com.android.adblib.tools.debugging.AtomicStateFlow
 import com.android.adblib.tools.debugging.JdwpPacketReceiver
 import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.JdwpSession
+import com.android.adblib.tools.debugging.JdwpSessionPipeline
 import com.android.adblib.tools.debugging.JdwpSessionProxyStatus
 import com.android.adblib.tools.debugging.SharedJdwpSession
+import com.android.adblib.tools.debugging.jdwpSessionPipelineFactoryList
+import com.android.adblib.tools.debugging.receiveAllPackets
 import com.android.adblib.tools.debugging.rethrowCancellation
+import com.android.adblib.tools.debugging.sendPacket
 import com.android.adblib.tools.debugging.utils.NoDdmsPacketFilterFactory
 import com.android.adblib.tools.debugging.utils.ReferenceCountedResource
 import com.android.adblib.tools.debugging.utils.withResource
 import com.android.adblib.utils.launchCancellable
 import com.android.adblib.withPrefix
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.channels.onClosed
+import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
-import java.io.EOFException
 
 /**
  * Implementation of a JDWP proxy for the process [pid] on a given device. The proxy creates a
@@ -125,15 +126,17 @@ internal class JdwpSessionProxy(
                     //   propagate cancellation to the scope so that all jobs are cancelled
                     //   together.
 
+                    val debuggerPipeline = createDebuggerPipeline(debuggerSession)
+
                     // We need to ensure forwarding from the device starts
-                    val startStateFlow = MutableStateFlow(false)
+                    val deferredStart = CompletableDeferred<Unit>()
 
                     // Forward packets from external debugger to jdwp process on device
                     launchCancellable(session.host.ioDispatcher) {
                         forwardDebuggerJdwpSession(
-                            debuggerSession,
+                            debuggerPipeline,
                             deviceSession,
-                            startStateFlow.asStateFlow()
+                            deferredStart
                         )
                     }
 
@@ -141,8 +144,8 @@ internal class JdwpSessionProxy(
                     launchCancellable(session.host.ioDispatcher) {
                         forwardDeviceJdwpSession(
                             deviceSession,
-                            debuggerSession,
-                            startStateFlow
+                            debuggerPipeline,
+                            deferredStart
                         )
                     }
                 }
@@ -150,21 +153,39 @@ internal class JdwpSessionProxy(
         }
     }
 
+    private fun createDebuggerPipeline(debuggerSession: JdwpSession): JdwpSessionPipeline {
+        // The pipeline source is always the connection to the debugger
+        val debuggerPipeline = DebuggerSessionPipeline(session, debuggerSession)
+
+        // Call each factory in priority order
+        return session.jdwpSessionPipelineFactoryList
+            .sortedBy {
+                it.priority
+            }
+            .fold(debuggerPipeline) { pipeline, factory ->
+                return factory.create(session, pipeline) ?: pipeline
+            }
+    }
+
     /**
-     * Forwards JDWP packets from the external debugger [JdwpSession] to the device
+     * Forwards JDWP packets from the external debugger [JdwpSessionPipeline] to the device
      * [SharedJdwpSession].
      */
     private suspend fun forwardDebuggerJdwpSession(
-        debuggerSession: JdwpSession,
+        debuggerPipeline: JdwpSessionPipeline,
         deviceSession: SharedJdwpSession,
-        startStateFlow: StateFlow<Boolean>
+        deferredStart: CompletableDeferred<Unit>
     ) {
-        debuggerSession.toFlow().collect { packet ->
+        debuggerPipeline.receiveAllPackets { packet ->
             // Wait until receiver has started to avoid skipping packets
-            startStateFlow.first { receiverHasStarted -> receiverHasStarted }
+            deferredStart.await()
 
             logger.verbose { "debugger->device: Forwarding packet to shared jdwp session: $packet" }
             deviceSession.sendPacket(packet)
+        }.onClosed {
+            logger.debug(it) { "Channel has been closed" }
+        }.onFailure {
+            logger.warn(it, "Channel has failed")
         }
     }
 
@@ -174,18 +195,18 @@ internal class JdwpSessionProxy(
      */
     private suspend fun forwardDeviceJdwpSession(
         deviceSession: SharedJdwpSession,
-        debuggerSession: JdwpSession,
-        startStateFlow: MutableStateFlow<Boolean>
+        debuggerPipeline: JdwpSessionPipeline,
+        deferredStart: CompletableDeferred<Unit>
     ) {
         deviceSession.newPacketReceiver()
             .withName("device session forwarder")
             .withNoDdmsPacketFilter()
             .withActivation {
                 logger.debug { "device->debugger: Device session is ready to receive packets" }
-                startStateFlow.value = true
+                deferredStart.complete(Unit)
             }.receive { packet ->
                 logger.verbose { "device->debugger: Forwarding packet to session: $packet" }
-                debuggerSession.sendPacket(packet)
+                debuggerPipeline.sendPacket(packet)
             }
     }
 
@@ -216,21 +237,6 @@ internal class JdwpSessionProxy(
     ) {
         this.update {
             it.copy(jdwpSessionProxyStatus = updater(it.jdwpSessionProxyStatus))
-        }
-    }
-
-    private fun JdwpSession.toFlow() = flow {
-        while (true) {
-            logger.verbose { "pid=$pid: Waiting for next JDWP packet from session" }
-            val packet = try {
-                this@toFlow.receivePacket()
-            } catch (e: EOFException) {
-                // Reached EOF, flow terminates
-                logger.debug { "pid=$pid: JDWP session has ended with EOF" }
-                break
-            }
-            logger.verbose { "pid=$pid: Emitting session packet to upstream flow: $packet" }
-            emit(packet)
         }
     }
 }
