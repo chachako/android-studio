@@ -4071,6 +4071,7 @@
             </d:abi>
             <d:dock>desk</d:dock>
             <d:power-type>battery</d:power-type>
+            <d:skin>pixel_tablet</d:skin>
         </d:hardware>
         <d:software>
             <d:api-level>33</d:api-level>
