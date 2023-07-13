@@ -58,6 +58,8 @@ object MockitoKt {
 
   /**
    * Convenience wrapper around [Mockito.mockStatic] that allows the type to be inferred.
+   *
+   * Mocks static method invocations within **the current thread only**.
    */
   inline fun <reified T> mockStatic(mockSettings: MockSettings = withSettings()): MockedStatic<T> =
       Mockito.mockStatic(T::class.java, mockSettings)
