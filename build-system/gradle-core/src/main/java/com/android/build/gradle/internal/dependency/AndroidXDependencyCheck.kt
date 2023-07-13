@@ -43,9 +43,6 @@ object AndroidXDependencyCheck {
             private val issueReporter: IssueReporter
     ) : Action<ResolvableDependencies> {
 
-        private val issueReported =
-                "${AndroidXDisabledJetifierDisabled::class.java.name}_issue_reported"
-
         override fun execute(resolvableDependencies: ResolvableDependencies) {
             // Report only once
             if (project.extensions.extraProperties.has(issueReported)) {
@@ -89,3 +86,6 @@ object AndroidXDependencyCheck {
         }
     }
 }
+
+private val issueReported =
+    "${AndroidXDependencyCheck.AndroidXDisabledJetifierDisabled::class.java.name}_issue_reported"
