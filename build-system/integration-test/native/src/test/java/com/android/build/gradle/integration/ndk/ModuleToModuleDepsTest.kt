@@ -28,15 +28,19 @@ import com.android.build.gradle.integration.common.fixture.model.enableCxxStruct
 import com.android.build.gradle.integration.common.fixture.model.minimizeUsingTupleCoverage
 import com.android.build.gradle.integration.common.fixture.model.readStructuredLogs
 import com.android.build.gradle.integration.common.fixture.model.recoverExistingCxxAbiModels
+import com.android.build.gradle.integration.common.truth.GradleTaskSubject.assertThat
 import com.android.build.gradle.integration.ndk.ModuleToModuleDepsTest.BuildSystemConfig.CMake
 import com.android.build.gradle.integration.ndk.ModuleToModuleDepsTest.BuildSystemConfig.NdkBuild
 import com.android.build.gradle.internal.core.Abi
 import com.android.build.gradle.internal.cxx.configure.CMakeVersion
+import com.android.build.gradle.internal.cxx.configure.decodeConfigureInvalidationState
+import com.android.build.gradle.internal.cxx.configure.shouldConfigure
 import com.android.build.gradle.internal.cxx.json.AndroidBuildGradleJsons
 import com.android.build.gradle.internal.cxx.json.readJsonFile
 import com.android.build.gradle.internal.cxx.logging.LoggingMessage
 import com.android.build.gradle.internal.cxx.logging.decodeLoggingMessage
 import com.android.build.gradle.internal.cxx.logging.text
+import com.android.build.gradle.internal.cxx.model.name
 import com.android.build.gradle.internal.cxx.prefab.ModuleMetadataV1
 import com.android.builder.model.v2.ide.SyncIssue
 import com.google.common.truth.Truth.assertThat
@@ -47,10 +51,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import java.io.File
-import com.android.build.gradle.integration.common.truth.GradleTaskSubject.assertThat
-import com.android.build.gradle.internal.cxx.configure.decodeConfigureInvalidationState
-import com.android.build.gradle.internal.cxx.configure.shouldConfigure
-import com.android.build.gradle.internal.cxx.model.name
 
 /**
  * CMake lib<-app project where lib is published as Prefab
@@ -538,18 +538,17 @@ class ModuleToModuleDepsTest(
         executor.run(":app:build${appBuildSystem.build}Debug[arm64-v8a]")
     }
 
-    // TODO(b/287676077) writing of publication file needs to move into a ConfigPhaseFileCreator.
     // Calculating task graph as configuration cache cannot be reused because the file system entry
     // 'out/lib/build/intermediates/prefab_package_header_only/prefab_publication.json' has been
     // created.
-    //    @Test
-    //    fun `check configuration caching`() {
-    //        Assume.assumeFalse(expectGradleConfigureError())
-    //        Assume.assumeFalse(expectGradleBuildError())
-    //        project.execute("assembleRelease")
-    //        project.execute("assembleRelease")
-    //        project.buildResult.assertConfigurationCacheHit()
-    //    }
+    @Test
+    fun `check configuration caching`() {
+        Assume.assumeFalse(expectGradleConfigureError())
+        Assume.assumeFalse(expectGradleBuildError())
+        project.execute("assembleRelease")
+        project.execute("assembleRelease")
+        project.buildResult.assertConfigurationCacheHit()
+    }
 
     @Test
     fun `check single STL violation CXX1211`() {

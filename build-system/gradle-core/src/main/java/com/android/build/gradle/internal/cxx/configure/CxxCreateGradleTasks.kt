@@ -37,9 +37,7 @@ import com.android.build.gradle.internal.cxx.model.createCxxAbiModel
 import com.android.build.gradle.internal.cxx.model.createCxxModuleModel
 import com.android.build.gradle.internal.cxx.model.createCxxVariantModel
 import com.android.build.gradle.internal.cxx.prefab.PrefabPublication
-import com.android.build.gradle.internal.cxx.prefab.PrefabPublicationType.HeaderOnly
 import com.android.build.gradle.internal.cxx.prefab.createPrefabPublication
-import com.android.build.gradle.internal.cxx.prefab.writePublicationFile
 import com.android.build.gradle.internal.cxx.settings.calculateConfigurationArguments
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope.ALL
@@ -141,10 +139,10 @@ fun <VariantBuilderT : ComponentBuilder, VariantT : VariantCreationConfig> creat
                             variant,
                             variant.nativeBuildCreationConfig!!
                         )
-                        if (configuration.variant.module.project.isBuildOnlyTargetAbiEnabled) {
-                            // Write the header-only publication only if this is an IDE build.
-                            HeaderOnly.writePublicationFile(publication)
-                        }
+
+                        // Write the header-only publication.
+                        writeHeaderOnlyPublicationFile(providers, publication)
+
                         createPrefabConfigurePackageTask(
                             taskFactory,
                             publication,
