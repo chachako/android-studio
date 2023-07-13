@@ -51,8 +51,9 @@ class KmpVariantDslInfoImpl(
     extension: KotlinMultiplatformAndroidExtension,
     services: VariantServices,
     buildDirectory: DirectoryProperty,
+    withJava: Boolean,
 ): KmpComponentDslInfoImpl(
-    extension, services
+    extension, services, withJava
 ), KmpVariantDslInfo {
 
     override val componentType = ComponentTypeImpl.KMP_ANDROID

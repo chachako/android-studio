@@ -34,6 +34,9 @@ internal class KotlinMultiplatformAndroidTargetImpl(
     KotlinMultiplatformAndroidTarget,
     KotlinMultiplatformAndroidExtension by androidExtension {
 
+    internal var enableJavaSources = false
+        private set
+
     override val compilations: NamedDomainObjectContainer<KotlinMultiplatformAndroidCompilation> =
         project.objects.domainObjectContainer(
             KotlinMultiplatformAndroidCompilation::class.java,
@@ -43,4 +46,8 @@ internal class KotlinMultiplatformAndroidTargetImpl(
                 androidExtension
             )
         )
+
+    override fun withJava() {
+        enableJavaSources = true
+    }
 }

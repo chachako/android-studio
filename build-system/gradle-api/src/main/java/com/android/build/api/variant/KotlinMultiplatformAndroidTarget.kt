@@ -27,4 +27,12 @@ import org.gradle.api.NamedDomainObjectContainer
 @Incubating
 interface KotlinMultiplatformAndroidTarget: KotlinTarget, KotlinMultiplatformAndroidExtension {
     override val compilations: NamedDomainObjectContainer<KotlinMultiplatformAndroidCompilation>
+
+    /**
+     * Enables compilation of java sources.
+     *
+     * @note This API is experimental and is likely to change.
+     */
+    @Incubating
+    fun withJava()
 }

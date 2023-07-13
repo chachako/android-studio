@@ -557,7 +557,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         val dslInfo = KmpVariantDslInfoImpl(
             androidExtension,
             variantServices,
-            project.layout.buildDirectory
+            project.layout.buildDirectory,
+            androidTarget.enableJavaSources
         )
 
         val paths = VariantPathHelper(
@@ -602,6 +603,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             androidExtension,
             variantServices,
             mainVariant.dslInfo,
+            androidTarget.enableJavaSources
         )
 
         val paths = VariantPathHelper(
@@ -666,7 +668,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             manifestParser,
             mainVariant.dslInfo,
             createSigningOverride(dslServices),
-            dslServices
+            dslServices,
+            androidTarget.enableJavaSources
         )
 
         val paths = VariantPathHelper(

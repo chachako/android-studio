@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.multiplatform.v2
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.truth.ApkSubject
@@ -150,6 +149,9 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
 
             "KmpAndroidFirstLibClass.html",
             "KmpAndroidFirstLibClass.kt.html",
+
+            "KmpAndroidFirstLibJavaClass.html",
+            "KmpAndroidFirstLibJavaClass.java.html",
         )
 
         val packageCoverageReport = FileUtils.join(
@@ -182,6 +184,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
 
             // classes from androidMain are packaged
             assertThatApk(apk).hasClass("Lcom/example/kmpfirstlib/KmpAndroidFirstLibClass;")
+            assertThatApk(apk).hasClass("Lcom/example/kmpfirstlib/KmpAndroidFirstLibJavaClass;")
             assertThatApk(apk).hasClass("Lcom/example/kmpsecondlib/KmpAndroidSecondLibClass;")
 
             // transitive deps are packaged
@@ -229,6 +232,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
                         "/kmp_resource.txt",
                         "/com/example/kmpfirstlib/KmpCommonFirstLibClass.class",
                         "/com/example/kmpfirstlib/KmpAndroidFirstLibClass.class",
+                        "/com/example/kmpfirstlib/KmpAndroidFirstLibJavaClass.class",
                         "/com/example/kmpfirstlib/KmpAndroidActivity.class",
                     )
                 )
@@ -289,6 +293,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
 
             // classes from androidMain are packaged
             assertThatApk(apk).hasClass("Lcom/example/kmpfirstlib/KmpAndroidFirstLibClass;")
+            assertThatApk(apk).hasClass("Lcom/example/kmpfirstlib/KmpAndroidFirstLibJavaClass;")
             assertThatApk(apk).hasClass("Lcom/example/kmpsecondlib/KmpAndroidSecondLibClass;")
 
             // classes from library dependencies are packaged

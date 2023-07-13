@@ -27,7 +27,8 @@ import org.gradle.api.provider.Property
 
 abstract class KmpComponentDslInfoImpl(
     protected val extension: KotlinMultiplatformAndroidExtension,
-    protected val services: VariantServices
+    protected val services: VariantServices,
+    override val withJava: Boolean
 ): KmpComponentDslInfo {
 
     override val minSdkVersion: MutableAndroidVersion

@@ -112,6 +112,11 @@ class KotlinMultiplatformAndroidMinificationTest {
                     java.lang.String callCommonLibClass();
                     java.lang.String callAndroidLibClass();
                  }
+
+                 -keep public class com.example.kmpfirstlib.KmpAndroidFirstLibJavaClass {
+                    java.lang.String callCommonLibClass();
+                    java.lang.String callAndroidLibClass();
+                 }
             """.trimIndent()
         )
 
@@ -131,6 +136,7 @@ class KotlinMultiplatformAndroidMinificationTest {
                         "/kmp_resource.txt",
                         "/com/example/kmpfirstlib/KmpAndroidActivity.class",
                         "/com/example/kmpfirstlib/KmpAndroidFirstLibClass.class",
+                        "/com/example/kmpfirstlib/KmpAndroidFirstLibJavaClass.class",
                     )
             }
         }

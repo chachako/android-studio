@@ -105,6 +105,9 @@ class KotlinMultiplatformAndroidConnectedTest {
 
             "KmpAndroidFirstLibClass.html",
             "KmpAndroidFirstLibClass.kt.html",
+
+            "KmpAndroidFirstLibJavaClass.html",
+            "KmpAndroidFirstLibJavaClass.java.html",
         )
 
         val packageCoverageReport = FileUtils.join(

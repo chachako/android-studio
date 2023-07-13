@@ -26,6 +26,7 @@ import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.AndroidTestTaskManager
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.component.ComponentCreationConfig
+import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.component.KmpCreationConfig
 import com.android.build.gradle.internal.coverage.JacocoConfigurations
 import com.android.build.gradle.internal.coverage.JacocoReportTask
@@ -53,6 +54,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
+import org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile
 
 class KmpTaskManager(
     project: Project,
@@ -105,6 +107,8 @@ class KmpTaskManager(
         variant: KmpCreationConfig
     ) {
         createAnchorTasks(project, variant)
+
+        maybeCreateJavacTask(variant)
 
         project.tasks.registerTask(
             BundleLibraryClassesJar.KotlinMultiplatformCreationAction(
@@ -249,6 +253,8 @@ class KmpTaskManager(
     ) {
         createAnchorTasks(project, component)
 
+        maybeCreateJavacTask(component)
+
         project.tasks.registerTask(ProcessTestManifest.CreationAction(component))
         project.tasks.registerTask(
             GenerateLibraryRFileTask.TestRuntimeStubRClassCreationAction(
@@ -297,6 +303,8 @@ class KmpTaskManager(
     ) {
         createAnchorTasks(project, component, false)
 
+        maybeCreateJavacTask(component)
+
         AndroidTestTaskManager(
             project = project,
             globalConfig = component.global,
@@ -332,6 +340,24 @@ class KmpTaskManager(
         if (createPreBuildTask) {
             project.tasks.registerTask(PreBuildCreationAction(component))
             createDependencyStreams(component)
+        }
+    }
+
+    private fun maybeCreateJavacTask(
+        component: KmpComponentCreationConfig
+    ) {
+        if (!component.withJava) {
+            return
+        }
+        val javacTask = createJavacTask(component)
+        component.androidKotlinCompilation.compileTaskProvider.configure { kotlincTask ->
+            component.sources.java {
+                (kotlincTask as AbstractKotlinCompile<*>).source(it.getAsFileTrees())
+            }
+        }
+
+        javacTask.configure { javaCompile ->
+            javaCompile.classpath += component.androidKotlinCompilation.output.classesDirs
         }
     }
 }

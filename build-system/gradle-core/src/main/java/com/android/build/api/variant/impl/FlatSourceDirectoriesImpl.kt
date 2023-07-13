@@ -56,6 +56,25 @@ open class FlatSourceDirectoriesImpl(
     //
     // Internal APIs.
     //
+    /**
+     * Note: This doesn't preserve task dependencies of internal `directoryEntry` objects as the
+     * provider watched is the one from the outer scope only. Do not use unless necessary.
+     *
+     * https://youtrack.jetbrains.com/issue/KT-59503
+     */
+    @Deprecated("This is only to support kotlin multiplatform")
+    internal fun addSources(sources: Provider<out Collection<DirectoryEntry>>) {
+        variantSources.addAll(sources)
+        directories.addAll(sources.map { directoryEntries ->
+            directoryEntries.flatMap { directoryEntry ->
+                directoryEntry.asFiles(
+                    variantServices.provider {
+                        variantServices.projectInfo.projectDirectory
+                    }
+                ).get()
+            }
+        })
+    }
 
     override fun addSource(directoryEntry: DirectoryEntry) {
         variantSources.add(directoryEntry)
@@ -68,7 +87,7 @@ open class FlatSourceDirectoriesImpl(
         )
     }
 
-    internal open fun getAsFileTrees(): Provider<List<Provider<List<ConfigurableFileTree>>>> {
+    internal fun getAsFileTrees(): Provider<List<Provider<List<ConfigurableFileTree>>>> {
         val fileTreeFactory = variantServices.fileTreeFactory()
         return variantSources.map { entries: MutableList<DirectoryEntry> ->
             entries.map { sourceDirectory ->
@@ -93,7 +112,7 @@ open class FlatSourceDirectoriesImpl(
         }
     }
 
-    internal open fun getVariantSources(): List<DirectoryEntry> = variantSources.get()
+    internal fun getVariantSources(): List<DirectoryEntry> = variantSources.get()
 
     internal fun addSources(sourceDirectories: Iterable<DirectoryEntry>) {
         sourceDirectories.forEach(::addSource)

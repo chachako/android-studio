@@ -39,4 +39,6 @@ interface KmpComponentDslInfo: ComponentDslInfo {
         get() {
             throw IllegalAccessException("Not supported")
         }
+
+    val withJava: Boolean
 }

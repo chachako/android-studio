@@ -21,6 +21,7 @@ package com.android.build.gradle.tasks
 import com.android.build.api.component.impl.AnnotationProcessorImpl
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.component.ComponentCreationConfig
+import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.dependency.CONFIG_NAME_ANDROID_JDK_IMAGE
 import com.android.build.gradle.internal.dependency.JDK_IMAGE_OUTPUT_DIR
 import com.android.build.gradle.internal.dependency.JRT_FS_JAR
@@ -136,6 +137,10 @@ fun JavaCompile.configurePropertiesForAnnotationProcessing(
  * @see [JavaCompile.configurePropertiesForAnnotationProcessing]
  */
 fun JavaCompile.configureAnnotationProcessorPath(creationConfig: ComponentCreationConfig) {
+    if (creationConfig is KmpComponentCreationConfig) {
+        return
+    }
+
     // Optimization: For project jars, query for JAR instead of PROCESSED_JAR as project jars are
     // currently considered already processed (unlike external jars).
     val projectJars = creationConfig.variantDependencies

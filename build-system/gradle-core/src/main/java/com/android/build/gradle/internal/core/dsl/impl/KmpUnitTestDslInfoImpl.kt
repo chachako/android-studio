@@ -30,9 +30,10 @@ import org.gradle.api.provider.Provider
 class KmpUnitTestDslInfoImpl(
     extension: KotlinMultiplatformAndroidExtension,
     services: VariantServices,
-    override val mainVariantDslInfo: KmpVariantDslInfo
+    override val mainVariantDslInfo: KmpVariantDslInfo,
+    withJava: Boolean,
 ): KmpComponentDslInfoImpl(
-    extension, services
+    extension, services, withJava
 ), UnitTestComponentDslInfo, KmpComponentDslInfo {
 
     private val testOnJvmConfig

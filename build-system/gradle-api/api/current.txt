@@ -2706,6 +2706,7 @@ package com.android.build.api.variant {
 
   @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidTarget extends org.jetbrains.kotlin.gradle.plugin.KotlinTarget com.android.build.api.dsl.KotlinMultiplatformAndroidExtension {
     method public org.gradle.api.NamedDomainObjectContainer<com.android.build.api.variant.KotlinMultiplatformAndroidCompilation> getCompilations();
+    method @org.gradle.api.Incubating public void withJava();
     property public abstract org.gradle.api.NamedDomainObjectContainer<com.android.build.api.variant.KotlinMultiplatformAndroidCompilation> compilations;
   }
 

@@ -43,6 +43,7 @@ import com.android.build.gradle.internal.component.features.ManifestPlaceholders
 import com.android.build.gradle.internal.component.features.ResValuesCreationConfig
 import com.android.build.gradle.internal.component.legacy.ModelV1LegacySupport
 import com.android.build.gradle.internal.component.legacy.OldVariantApiLegacySupport
+import com.android.build.gradle.internal.core.MergedJavaCompileOptions
 import com.android.build.gradle.internal.core.ProductFlavor
 import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
 import com.android.build.gradle.internal.dependency.VariantDependencies
@@ -80,6 +81,9 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
     final override val androidKotlinCompilation: KotlinMultiplatformAndroidCompilation,
     manifestFile: File
 ): KmpComponentCreationConfig, ComponentIdentity by dslInfo.componentIdentity {
+
+    final override val withJava: Boolean
+        get() = dslInfo.withJava
 
     final override val dirName: String
         get() = paths.dirName
@@ -124,7 +128,12 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
     override val minSdk: AndroidVersion
         get() = dslInfo.minSdkVersion
 
-    override val sources = KmpSourcesImpl(internalServices, manifestFile, androidKotlinCompilation)
+    override val sources = KmpSourcesImpl(
+        dslInfo,
+        internalServices,
+        manifestFile,
+        androidKotlinCompilation
+    )
 
     final override fun getJavaClasspath(
         configType: AndroidArtifacts.ConsumedConfigType,
@@ -195,9 +204,17 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
     override val oldVariantApiLegacySupport: OldVariantApiLegacySupport? = null
 
     override val javaCompilation: JavaCompilation
-        get() = throw IllegalAccessException("The kotlin multiplatform android plugin doesn't" +
-                " configure the jvm options for compilation. To setup compilation options, use" +
-                " the kotlin specific options.")
+        get() = if (dslInfo.withJava) {
+            JavaCompilationImpl(
+                MergedJavaCompileOptions(),
+                buildFeatures.dataBinding,
+                internalServices
+            )
+        } else {
+            throw IllegalAccessException("The kotlin multiplatform android plugin doesn't" +
+                    " configure the jvm options for compilation. To setup compilation options, use" +
+                    " the kotlin specific options.")
+        }
 
     val annotationProcessorConfiguration: Configuration
         get() = throw IllegalAccessException("The kotlin multiplatform android plugin doesn't" +
@@ -205,13 +222,24 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
                 " the kapt options.")
 
     class KmpSourcesImpl(
+        dslInfo: KmpComponentDslInfo,
         variantServices: VariantServices,
         manifestFile: File,
         compilation: KotlinMultiplatformAndroidCompilation
     ): InternalSources {
 
-        // TODO(b/287454815): Support `withJava` to add java sources
-        override val java = null
+        override val java = if (dslInfo.withJava) {
+            KotlinMultiplatformFlatSourceDirectoriesImpl(
+                name = SourceType.JAVA.folder,
+                variantServices = variantServices,
+                variantDslFilters = PatternSet().also { filter ->
+                    filter.include("**/*.java")
+                },
+                compilation = compilation
+            )
+        } else {
+            null
+        }
 
         override val kotlin = KotlinMultiplatformFlatSourceDirectoriesImpl(
             name = SourceType.KOTLIN.folder,
@@ -239,7 +267,9 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
             action(kotlin)
         }
 
-        override fun java(action: (FlatSourceDirectoriesImpl) -> Unit) { }
+        override fun java(action: (FlatSourceDirectoriesImpl) -> Unit) {
+            java?.let(action)
+        }
 
         override val manifestFile: Provider<File> = variantServices.provider {
             manifestFile
@@ -301,35 +331,48 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
         // Include all kotlin sourceSets (the ones added directly to the compilation and the ones
         // that added transitively through a dependsOn dependency).
 
-        sources.kotlin { kotlin ->
-            (kotlin as KotlinMultiplatformFlatSourceDirectoriesImpl).initSourcesFromKotlinPlugin(
-                services.provider {
-                    androidKotlinCompilation.allKotlinSourceSets.flatMap { sourceSet ->
-                        sourceSet.kotlin.srcDirs.map { srcDir ->
-                            FileBasedDirectoryEntryImpl(
-                                name = "Kotlin",
-                                directory = srcDir
-                            )
-                        }
+        sources.kotlin.addSources(
+            services.provider {
+                androidKotlinCompilation.allKotlinSourceSets.flatMap { sourceSet ->
+                    sourceSet.kotlin.srcDirs.map { srcDir ->
+                        FileBasedDirectoryEntryImpl(
+                            name = "Kotlin",
+                            directory = srcDir
+                        )
                     }
                 }
-            )
-        }
+            }
+        )
 
-        sources.resources { resources ->
-            (resources as KotlinMultiplatformFlatSourceDirectoriesImpl).initSourcesFromKotlinPlugin(
-                services.provider {
-                    androidKotlinCompilation.allKotlinSourceSets.flatMap { sourceSet ->
-                        sourceSet.resources.srcDirs.map { srcDir ->
-                            FileBasedDirectoryEntryImpl(
-                                name = "Java resources",
-                                directory = srcDir,
-                                filter = PatternSet().exclude("**/*.java", "**/*.kt"),
-                            )
-                        }
+        // Include all kotlin sourceSets (the ones added directly to the compilation and the ones
+        // that added transitively through a dependsOn dependency).
+        sources.java?.addSources(
+            services.provider {
+                androidKotlinCompilation.allKotlinSourceSets.flatMap { sourceSet ->
+                    sourceSet.kotlin.srcDirs.map { srcDir ->
+                        FileBasedDirectoryEntryImpl(
+                            name = "Java",
+                            // Java sources are currently located at the sourceSetDir/java
+                            // (e.g. src/androidMain/java)
+                            directory = File(srcDir.parentFile, "java")
+                        )
                     }
                 }
-            )
-        }
+            }
+        )
+
+        sources.resources.addSources(
+            services.provider {
+                androidKotlinCompilation.allKotlinSourceSets.flatMap { sourceSet ->
+                    sourceSet.resources.srcDirs.map { srcDir ->
+                        FileBasedDirectoryEntryImpl(
+                            name = "Java resources",
+                            directory = srcDir,
+                            filter = PatternSet().exclude("**/*.java", "**/*.kt"),
+                        )
+                    }
+                }
+            }
+        )
     }
 }

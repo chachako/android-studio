@@ -24,4 +24,5 @@ import com.android.build.api.variant.KotlinMultiplatformAndroidCompilation
  */
 interface KmpComponentCreationConfig: ComponentCreationConfig {
     val androidKotlinCompilation: KotlinMultiplatformAndroidCompilation
+    val withJava: Boolean
 }

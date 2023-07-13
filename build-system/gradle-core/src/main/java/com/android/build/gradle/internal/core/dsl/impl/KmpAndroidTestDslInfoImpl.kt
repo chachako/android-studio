@@ -51,9 +51,10 @@ class KmpAndroidTestDslInfoImpl(
     private val dataProvider: ManifestDataProvider,
     override val mainVariantDslInfo: KmpVariantDslInfo,
     signingConfigOverride: SigningConfig?,
-    dslServices: DslServices
+    dslServices: DslServices,
+    withJava: Boolean,
 ): KmpComponentDslInfoImpl(
-    extension, services
+    extension, services, withJava
 ), AndroidTestComponentDslInfo, KmpComponentDslInfo {
 
     private val testOnDeviceConfig
