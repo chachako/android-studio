@@ -42,8 +42,11 @@ class KotlinMultiplatformAndroidPluginBasicTest {
             """.trimIndent()
         )
 
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         val result =
-            project.executor().expectFailure().run(":kmpFirstLib:assembleAndroidMain")
+            project.executor()
+                .withFailOnWarning(false)
+                .expectFailure().run(":kmpFirstLib:assembleAndroidMain")
 
         Truth.assertThat(result.failureMessage).contains(
             "Kotlin multiplatform android plugin doesn't support creating arbitrary compilations."
@@ -63,8 +66,11 @@ class KotlinMultiplatformAndroidPluginBasicTest {
             """.trimIndent()
         )
 
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         val result =
-            project.executor().expectFailure().run(":kmpFirstLib:assembleAndroidMain")
+            project.executor()
+                .withFailOnWarning(false)
+                .expectFailure().run(":kmpFirstLib:assembleAndroidMain")
 
         Truth.assertThat(result.failureMessage).contains(
             "Android tests on jvm has already been enabled, and a corresponding compilation (`unitTest`) has already been created."
@@ -93,6 +99,9 @@ class KotlinMultiplatformAndroidPluginBasicTest {
             """.trimIndent()
         )
 
-        project.executor().run(":kmpFirstLib:androidPrebuild")
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        project.executor()
+            .withFailOnWarning(false)
+            .run(":kmpFirstLib:androidPrebuild")
     }
 }

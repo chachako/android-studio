@@ -83,7 +83,10 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             """.trimIndent()
         )
 
-        project.executor().run(":kmpFirstLib:createAndroidUnitTestCoverageReport")
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        project.executor()
+            .withFailOnWarning(false)
+            .run(":kmpFirstLib:createAndroidUnitTestCoverageReport")
 
         assertWithMessage(
             "Running android unit tests should not run common tests because they are not part of the" +
@@ -115,7 +118,10 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             """.trimIndent()
         )
 
-        project.executor().run(":kmpFirstLib:createAndroidUnitTestCoverageReport")
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        project.executor()
+            .withFailOnWarning(false)
+            .run(":kmpFirstLib:createAndroidUnitTestCoverageReport")
 
         assertWithMessage(
             "Running kmp unit tests should run common tests as well"
@@ -171,12 +177,16 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
 
         assertThat(packageCoveragePercentage.trimEnd('%').toInt() > 0).isTrue()
 
-        project.executor().run(":app:testDebugUnitTest")
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        project.executor().withFailOnWarning(false).run(":app:testDebugUnitTest")
     }
 
     @Test
     fun testAppApkContents() {
-        project.executor().run(":app:assembleDebug")
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        project.executor()
+            .withFailOnWarning(false)
+            .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
             // classes from commonMain are packaged
@@ -216,7 +226,10 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
 
     @Test
     fun testKmpLibraryAarContents() {
-        project.executor().run(":kmpFirstLib:assemble")
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        project.executor()
+            .withFailOnWarning(false)
+            .run(":kmpFirstLib:assemble")
 
         Aar(
             project.getSubproject("kmpFirstLib").getOutputFile(
@@ -267,7 +280,10 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             """.trimIndent()
         )
 
-        project.executor().run(":kmpFirstLib:assembleInstrumentedTest")
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        project.executor()
+            .withFailOnWarning(false)
+            .run(":kmpFirstLib:assembleInstrumentedTest")
 
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
             "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"

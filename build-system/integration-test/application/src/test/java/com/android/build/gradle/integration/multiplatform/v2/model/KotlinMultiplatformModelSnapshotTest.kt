@@ -85,7 +85,8 @@ class KotlinMultiplatformModelSnapshotTest: BaseModelComparator {
                 )
             }
         ).fetchAndCompareModels(
-            listOf(":kmpFirstLib", ":kmpSecondLib")
+            listOf(":kmpFirstLib", ":kmpSecondLib"),
+            false
         )
     }
 }

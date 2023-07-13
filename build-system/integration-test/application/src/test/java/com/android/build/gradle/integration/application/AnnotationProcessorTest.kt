@@ -232,9 +232,16 @@ class AnnotationProcessorTest {
                     """
                     package com.example.helloworld;
                     import com.example.annotation.ProvideString;
+                    import org.junit.Assert;
+                    import org.junit.Test;
 
                     @ProvideString
                     public class HelloWorldTest {
+
+                        @Test
+                        public void testStringValue() {
+                            Assert.assertTrue("Hello".equals(HelloWorld.getString()));
+                        }
                     }
                     """.trimIndent()
                 )

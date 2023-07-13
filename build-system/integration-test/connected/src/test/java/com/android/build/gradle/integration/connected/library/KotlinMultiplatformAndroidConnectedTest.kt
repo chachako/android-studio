@@ -67,12 +67,15 @@ class KotlinMultiplatformAndroidConnectedTest {
         project.addAdbTimeout()
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
         // of each test and (2) check the adb connection before taking the time to build anything.
-        project.execute("androidUninstallAll")
+        project.executor().withFailOnWarning(false).run("androidUninstallAll")
     }
 
     @Test
     fun connectedKmpLibraryTests() {
-        project.executor().run(":kmpFirstLib:androidConnectedCheck")
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        project.executor()
+            .withFailOnWarning(false)
+            .run(":kmpFirstLib:androidConnectedCheck")
 
         val testResultFolder = FileUtils.join(
             project.getSubproject("kmpFirstLib").buildDir,

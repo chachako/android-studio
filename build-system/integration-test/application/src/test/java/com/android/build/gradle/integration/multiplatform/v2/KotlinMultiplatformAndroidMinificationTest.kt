@@ -73,7 +73,10 @@ class KotlinMultiplatformAndroidMinificationTest {
 
     @Test
     fun testKmpLibClassesAreMinified() {
-        project.executor().run(":kmpFirstLib:assemble")
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        project.executor()
+            .withFailOnWarning(false)
+            .run(":kmpFirstLib:assemble")
 
         Aar(
             project.getSubproject("kmpFirstLib").getOutputFile(
@@ -93,7 +96,10 @@ class KotlinMultiplatformAndroidMinificationTest {
 
     @Test
     fun testAppClassesAreMinified() {
-        project.executor().run(":app:assembleDebug")
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        project.executor()
+            .withFailOnWarning(false)
+            .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
             // only the main activity is left
@@ -120,7 +126,10 @@ class KotlinMultiplatformAndroidMinificationTest {
             """.trimIndent()
         )
 
-        project.executor().run(":kmpFirstLib:assemble")
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        project.executor()
+            .withFailOnWarning(false)
+            .run(":kmpFirstLib:assemble")
 
         Aar(
             project.getSubproject("kmpFirstLib").getOutputFile(
@@ -151,7 +160,10 @@ class KotlinMultiplatformAndroidMinificationTest {
             """.trimIndent()
         )
 
-        project.executor().run(":app:assembleDebug")
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        project.executor()
+            .withFailOnWarning(false)
+            .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
             Truth.assertThat(apk.mainDexFile.get().classes.keys).containsExactly(
@@ -182,7 +194,10 @@ class KotlinMultiplatformAndroidMinificationTest {
             """.trimIndent()
         )
 
-        project.executor().run(":app:assembleDebug")
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        project.executor()
+            .withFailOnWarning(false)
+            .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
             Truth.assertThat(apk.mainDexFile.get().classes.keys).containsExactly(
@@ -213,7 +228,10 @@ class KotlinMultiplatformAndroidMinificationTest {
             """.trimIndent()
         )
 
-        project.executor().run(":app:assembleDebug")
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        project.executor()
+            .withFailOnWarning(false)
+            .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
             Truth.assertThat(apk.mainDexFile.get().classes.keys).containsExactly(

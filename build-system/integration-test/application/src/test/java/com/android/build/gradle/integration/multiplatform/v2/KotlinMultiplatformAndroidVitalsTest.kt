@@ -46,6 +46,9 @@ class KotlinMultiplatformAndroidVitalsTest {
             project.getSubproject(":shared").buildFile,
             "apply plugin: 'org.jetbrains.kotlin.multiplatform'\n$content"
         )
-        project.executor().run(":shared:androidPrebuild")
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        project.executor()
+            .withFailOnWarning(false)
+            .run(":shared:androidPrebuild")
     }
 }

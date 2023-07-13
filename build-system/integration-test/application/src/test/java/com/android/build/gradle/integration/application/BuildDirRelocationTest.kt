@@ -41,7 +41,6 @@ class BuildDirRelocationTest {
         TestFileUtils.appendToFile(
             project.buildFile,
             """
-            android.testOptions.unitTests.includeAndroidResources = true
             dependencies {
                 testImplementation 'junit:junit:4.12'
                 testImplementation 'androidx.test:core:1.3.0'
@@ -59,6 +58,13 @@ class BuildDirRelocationTest {
         )
 
         PathUtils.deleteRecursivelyIfExists(project.buildDir.toPath())
+
+        TestFileUtils.appendToFile(
+            project.buildFile,
+            """
+            android.testOptions.unitTests.includeAndroidResources = true
+            """.trimIndent()
+        )
 
         /*
          * Re-generate the test config artifact

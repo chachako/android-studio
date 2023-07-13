@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.fixtures
 
+import org.gradle.api.Incubating
 import org.gradle.api.artifacts.component.BuildIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 
@@ -27,6 +28,11 @@ data class FakeProjectComponentIdentifier(
 
     override fun getDisplayName() = displayName
     override fun getProjectPath(): String = projectPath
+    @Incubating
+    override fun getBuildTreePath(): String {
+        TODO("Not yet implemented")
+    }
+
     override fun getBuild(): BuildIdentifier = buildIdentifier
 
     override fun getProjectName(): String {

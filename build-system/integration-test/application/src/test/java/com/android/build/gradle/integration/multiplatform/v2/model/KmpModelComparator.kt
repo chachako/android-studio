@@ -41,11 +41,15 @@ class KmpModelComparator(
 
     private val buildMap = project.getBuildMap()
 
+    // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
     private fun fetchModels(
         projectPath: String,
-        printModelToStdout: Boolean = true
+        printModelToStdout: Boolean = true,
+        failOnWarning: Boolean = true
     ): Map<String, String> {
-        val executor = project.executor().withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
+        val executor = project.executor()
+            .withFailOnWarning(failOnWarning)
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
         executor.run("$projectPath:$modelSnapshotTask")
 
         val outputFolder = taskOutputLocator(projectPath)
@@ -100,11 +104,13 @@ class KmpModelComparator(
         }
     }
 
+    // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
     fun fetchAndCompareModels(
         projects: List<String>,
+        failOnWarning: Boolean = true
     ) {
         projects.forEach { projectPath ->
-            fetchModels(projectPath).forEach { (reportName, content) ->
+            fetchModels(projectPath, failOnWarning=failOnWarning).forEach { (reportName, content) ->
                 runComparison(
                     name = projectPath.substringAfterLast(":") + "/" + reportName,
                     actualContent = content,

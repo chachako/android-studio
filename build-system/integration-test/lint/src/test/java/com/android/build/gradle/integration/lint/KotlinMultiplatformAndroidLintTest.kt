@@ -805,8 +805,10 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
 
     private fun getExecutor(): GradleTaskExecutor {
         // Set LINT_RESERVED_MEMORY_PER_TASK to "256M" to reduce time required to run the tests
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         return project.executor()
             .with(LINT_ANALYSIS_PER_COMPONENT, lintAnalysisPerComponent)
             .with(LINT_RESERVED_MEMORY_PER_TASK, "256M")
+            .withFailOnWarning(false)
     }
 }

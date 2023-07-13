@@ -215,7 +215,7 @@ private class FakeResolvedComponentResultInternal(thingy: ResolvedComponentResul
     override fun getRepositoryId(): String? {
         TODO("Not yet implemented")
     }
-    override fun getAllVariants(): MutableList<ResolvedVariantResult> {
+    override fun getAvailableVariants(): MutableList<ResolvedVariantResult> {
         TODO("Not yet implemented")
     }
 }

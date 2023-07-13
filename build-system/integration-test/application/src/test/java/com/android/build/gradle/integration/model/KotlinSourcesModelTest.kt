@@ -110,8 +110,12 @@ class KotlinSourcesModelTest {
             """.trimIndent()
         )
 
+        // TODO (b/293964676): Kotlin Multiplatform tests will not fail on warning until
+        //  Kotlin deprecation bug is fixed
         val basicProject =
-            project.modelV2().fetchModels().container.singleProjectInfo.basicAndroidProject!!
+            project.modelV2()
+                .withFailOnWarning(false)
+                .fetchModels().container.singleProjectInfo.basicAndroidProject!!
         val deviceTestsKotlinDirs =
                 basicProject.mainSourceSet!!.androidTestSourceProvider!!.kotlinDirectories
         assertThat(deviceTestsKotlinDirs)
