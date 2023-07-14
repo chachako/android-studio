@@ -22,7 +22,7 @@ apply plugin: 'java-gradle-plugin'
 group = 'com.google.firebase.testlab'
 archivesBaseName = 'testlab-gradle-plugin'
 if (findProperty("release")?.toBoolean()) {
-    version = '0.0.1-alpha03'
+    version = '0.0.1-alpha04'
 } else {
     version = '0.0.1-dev'
 }
