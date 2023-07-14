@@ -90,6 +90,7 @@ import com.android.tools.lint.detector.api.isAnonymousClass
 import com.android.tools.lint.detector.api.isApplicableTo
 import com.android.tools.lint.detector.api.isJava
 import com.android.tools.lint.detector.api.isXmlFile
+import com.android.tools.lint.model.LintModelArtifactType
 import com.android.tools.lint.model.PathVariables
 import com.android.utils.Pair
 import com.android.utils.SdkUtils.isBitmapFile
@@ -1727,11 +1728,17 @@ class LintDriver(
 
     // Actually run the detectors. Libraries should be called before the main classes.
 
-    val libraryDetectors = scopeDetectors[Scope.JAVA_LIBRARIES]
-    if (!libraryDetectors.isNullOrEmpty()) {
-      val libraries = project.getJavaLibraries(false)
-      val libraryEntries = ClassEntry.fromLazyClassPath(client, libraries)
-      runClassDetectors(libraryDetectors, libraryEntries, project, main, fromLibrary = true)
+    val artifactType = project.buildVariant?.artifact?.type
+    // Do not analyze dependencies' class files for test artifacts because it takes a lot of
+    // time and is not very useful (test dependencies that are also main dependencies will be
+    // analyzed when analyzing the main artifact)
+    if (artifactType == null || artifactType == LintModelArtifactType.MAIN) {
+      val libraryDetectors = scopeDetectors[Scope.JAVA_LIBRARIES]
+      if (!libraryDetectors.isNullOrEmpty()) {
+        val libraries = project.getJavaLibraries(false)
+        val libraryEntries = ClassEntry.fromLazyClassPath(client, libraries)
+        runClassDetectors(libraryDetectors, libraryEntries, project, main, fromLibrary = true)
+      }
     }
 
     val classDetectors =
