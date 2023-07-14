@@ -24,14 +24,13 @@ import com.android.adblib.tools.debugging.sendPacket
 import com.android.adblib.tools.debugging.utils.SynchronizedChannel
 import com.android.adblib.tools.debugging.utils.SynchronizedReceiveChannel
 import com.android.adblib.tools.debugging.utils.SynchronizedSendChannel
-import com.android.adblib.tools.debugging.utils.receiveAll
+import com.android.adblib.tools.debugging.utils.receiveAllCatching
 import com.android.adblib.utils.createChildScope
-import kotlinx.coroutines.channels.onClosed
-import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import java.io.EOFException
 import java.io.IOException
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * The [JdwpSessionPipeline] implementation that wraps the [JdwpSession] directly
@@ -68,8 +67,8 @@ internal class DebuggerSessionPipeline(
 
         scope.coroutineContext.job.invokeOnCompletion { throwable ->
             logger.debug { "Closing channels on scope completion (throwable=$throwable)" }
-            sendChannelImpl.close(throwable)
-            receiveChannelImpl.close(throwable)
+            sendChannelImpl.cancel(throwable as? CancellationException)
+            receiveChannelImpl.cancel(throwable as? CancellationException)
         }
     }
 
@@ -78,7 +77,7 @@ internal class DebuggerSessionPipeline(
     }
 
     private suspend fun forwardSendChannelToDebuggerSession() {
-        sendChannelImpl.receiveAll { packet ->
+        sendChannelImpl.receiveAllCatching { packet ->
             logger.verbose { "Sending packet to debugger: $packet" }
             debuggerSession.sendPacket(packet)
         }.onClosed { throwable ->

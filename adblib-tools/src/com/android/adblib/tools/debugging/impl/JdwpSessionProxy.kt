@@ -30,7 +30,7 @@ import com.android.adblib.tools.debugging.JdwpSessionPipeline
 import com.android.adblib.tools.debugging.JdwpSessionProxyStatus
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.jdwpSessionPipelineFactoryList
-import com.android.adblib.tools.debugging.receiveAllPackets
+import com.android.adblib.tools.debugging.receiveAllPacketsCatching
 import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.tools.debugging.sendPacket
 import com.android.adblib.tools.debugging.utils.NoDdmsPacketFilterFactory
@@ -39,8 +39,6 @@ import com.android.adblib.tools.debugging.utils.withResource
 import com.android.adblib.utils.launchCancellable
 import com.android.adblib.withPrefix
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.channels.onClosed
-import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.coroutineScope
 
 /**
@@ -176,7 +174,7 @@ internal class JdwpSessionProxy(
         deviceSession: SharedJdwpSession,
         deferredStart: CompletableDeferred<Unit>
     ) {
-        debuggerPipeline.receiveAllPackets { packet ->
+        debuggerPipeline.receiveAllPacketsCatching { packet ->
             // Wait until receiver has started to avoid skipping packets
             deferredStart.await()
 

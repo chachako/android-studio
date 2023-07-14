@@ -17,11 +17,11 @@ package com.android.adblib.tools.debugging
 
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.isThreadSafeAndImmutable
+import com.android.adblib.tools.debugging.utils.SynchronizedChannelResult
 import com.android.adblib.tools.debugging.utils.SynchronizedReceiveChannel
 import com.android.adblib.tools.debugging.utils.SynchronizedSendChannel
-import com.android.adblib.tools.debugging.utils.receiveAll
+import com.android.adblib.tools.debugging.utils.receiveAllCatching
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.ChannelResult
 
 /**
  * A component that acts as a pipeline for the JDWP session between an Android device and
@@ -64,8 +64,8 @@ suspend fun SynchronizedSendChannel<JdwpPacketView>.sendPacket(packet: JdwpPacke
     }
 }
 
-suspend inline fun JdwpSessionPipeline.receiveAllPackets(
-    block: (JdwpPacketView) -> Unit
-): ChannelResult<JdwpPacketView> {
-    return receiveChannel.receiveAll(block)
+suspend inline fun JdwpSessionPipeline.receiveAllPacketsCatching(
+    crossinline block: suspend (JdwpPacketView) -> Unit
+): SynchronizedChannelResult {
+    return receiveChannel.receiveAllCatching { block(it) }
 }
