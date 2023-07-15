@@ -152,4 +152,42 @@ class SCacheTest {
       miss.edict.toDownstream.size
     )
   }
+
+  @Test
+  fun testResumeCache() {
+    val scache = SCache(true, SCacheTestLogger())
+    val id = IDGenerator()
+    val idSizes = IDSizes()
+
+    // Fake a Frame cmd and then a reply
+    scache.onUpstreamPacket(FramesCmd(0, 0, 0).toPacket(id.get(), idSizes))
+    val frames = listOf(FramesReply.Frame(0, Location(0, 0, 0, 0)))
+    val frameSpeculators =
+      scache.onDownstreamPacket(FramesReply(frames).toPacket(id.getLast(), idSizes))
+
+    // Find the SourceFile speculation
+    var syntheticID = -1
+    frameSpeculators.edict.toUpstream.forEach {
+      val reader = MessageReader(idSizes, it)
+      val header = PacketHeader(reader)
+      if (header.cmdSet == CmdSet.ReferenceType.id && header.cmd == ReferenceType.SourceFile.id) {
+        syntheticID = header.id
+      }
+    }
+    Assert.assertNotEquals("Not speculating on SourceFile", -1, syntheticID)
+
+    // Resume THREAD now. This should reset the speculator cache
+    scache.onUpstreamPacket(
+      com.android.jdwppacket.threadreference.ResumeCmd(0).toPacket(id.get(), idSizes)
+    )
+
+    // Fake a speculation reply
+    val response = scache.onDownstreamPacket(SourceFileReply("foo").toPacket(syntheticID, idSizes))
+
+    // Even though we resumed while a synthetic cmd was in flight, the synthetic reply should still
+    // be
+    // recognized as synthetic and NOT be forward to the debugger (which know nothing about our
+    // shenanigan.
+    Assert.assertEquals("Synthetic packet was leaked!", 0, response.edict.toDownstream.size)
+  }
 }

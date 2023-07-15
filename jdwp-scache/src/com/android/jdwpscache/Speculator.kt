@@ -160,4 +160,8 @@ internal class Speculator(triggerManager: TriggerManager, val logger: SCacheLogg
     }
     return null
   }
+
+  fun invalidateCache() {
+    cache.clear()
+  }
 }

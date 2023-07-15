@@ -182,14 +182,14 @@ internal class SCache(private val enabled: Boolean = true, private val logger: S
   }
 
   private fun onResumeCommand(reader: MessageReader, response: SCacheResponse) {
-    reset()
+    invalidateCache()
   }
 
-  private fun reset() {
-    speculator = Speculator(triggerManager, logger)
+  private fun invalidateCache() {
+    speculator.invalidateCache()
   }
 
   override fun close() {
-    reset()
+    invalidateCache()
   }
 }
