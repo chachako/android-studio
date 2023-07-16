@@ -73,7 +73,9 @@ import com.android.tools.lint.model.LintModelExternalLibrary
 import com.android.tools.lint.model.LintModelLibrary
 import com.android.tools.lint.model.LintModelMavenName
 import com.android.tools.lint.model.LintModelModuleType
+import com.android.utils.XmlUtils
 import com.android.utils.appendCapitalized
+import com.android.utils.iterator
 import com.android.utils.usLocaleCapitalize
 import com.google.common.base.Joiner
 import com.google.common.base.Splitter
@@ -89,6 +91,7 @@ import java.util.Calendar
 import java.util.Collections
 import java.util.function.Predicate
 import kotlin.text.Charsets.UTF_8
+import org.w3c.dom.Element
 
 private val Dependency.majorVersion: Int
   get() =
@@ -1211,11 +1214,11 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
     // Network check for really up to date libraries? Only done in batch mode.
     var issue = DEPENDENCY
     if (
-      context.scope.size > 1 &&
+      !Scope.checkSingleFile(context.scope) &&
         context.isEnabled(REMOTE_VERSION) &&
         // Common but served from maven.google.com so no point to
         // ping other maven repositories about these
-        !groupId.startsWith("androidx.")
+        !getGoogleMavenRepository(context.client).hasGroupId(groupId)
     ) {
       val latest =
         getLatestVersionFromRemoteRepo(
@@ -1227,6 +1230,21 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       if (latest != null && version < latest) {
         newerVersion = latest
         issue = REMOTE_VERSION
+      }
+
+      val group = dependency.group
+      if (group != null && dependency.isGradlePlugin()) {
+        val pluginVersion =
+          getLatestVersionFromGradlePluginPortal(
+            context.client,
+            group,
+            filter,
+            dependency.version?.lowerBound?.isPreview ?: true
+          )
+        if (pluginVersion != null && version < pluginVersion) {
+          newerVersion = pluginVersion
+          issue = REMOTE_VERSION
+        }
       }
     }
 
@@ -1920,6 +1938,22 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         }
       }
     }
+
+    val plugins = document.getValue(VC_PLUGINS) as? LintTomlMapValue
+    if (plugins != null) {
+      val versions = document.getValue(VC_VERSIONS) as? LintTomlMapValue
+      for ((_, plugin) in plugins.getMappedValues()) {
+        val (coordinate, versionNode) = getPluginFromTomlEntry(versions, plugin) ?: continue
+        val group = coordinate.substringBefore(':')
+        val gradleCoordinate = "$group:$group.gradle.plugin:${coordinate.substringAfterLast(':')}"
+        val dependency = Dependency.parse(gradleCoordinate)
+        // Check dependencies without the PSI read lock, because we
+        // may need to make network requests to retrieve version info.
+        context.driver.runLaterOutsideReadAction {
+          checkDependency(context, dependency, false, versionNode, versionNode)
+        }
+      }
+    }
   }
 
   override fun afterCheckFile(context: Context) {
@@ -2384,6 +2418,21 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
     }
   }
 
+  /**
+   * Returns the "group:artifact" address of a dependency, unless it's a Gradle plugin in which case
+   * it returns the plugin id.
+   */
+  private fun Dependency.id(): String {
+    return if (isGradlePlugin()) {
+      group!!
+    } else {
+      "$group:$name"
+    }
+  }
+
+  private fun Dependency.isGradlePlugin(): Boolean =
+    group != null && name.endsWith(".gradle.plugin") && name == "$group.gradle.plugin"
+
   private fun getNewerVersionAvailableMessage(
     dependency: Dependency,
     version: String,
@@ -2392,7 +2441,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
     val message = StringBuilder()
     with(message) {
       append("A newer version of ")
-      append("${dependency.group}:${dependency.name}")
+      append(dependency.id())
       append(" than ")
       append("${dependency.version}")
       append(" is available: ")
@@ -2533,13 +2582,13 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
     private var lastTargetSdkVersion: Int = -1
     private var lastTargetSdkVersionFile: File? = null
 
-    /** If you invoke the target SDK versin migration assistant, stop flagging edits. */
+    /** If you invoke the target SDK version migration assistant, stop flagging edits. */
     fun stopFlaggingTargetSdkEdits() {
       lastTargetSdkVersion = Integer.MAX_VALUE
       lastTargetSdkVersionFile = null
     }
 
-    /** Calendar to use to look up the current time (used by tests to set specific time. */
+    /** Calendar to use to look up the current time (used by tests to set specific time). */
     var calendar: Calendar? = null
 
     const val KEY_COORDINATE = "coordinate"
@@ -3437,6 +3486,47 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         message?.let { location2.message = it }
       }
       return location1
+    }
+
+    fun getLatestVersionFromGradlePluginPortal(
+      client: LintClient,
+      pluginId: String,
+      filter: Predicate<Version>?,
+      allowPreview: Boolean
+    ): Version? {
+      val pluginPath = pluginId.replace(".", "/")
+      val url =
+        "https://plugins.gradle.org/m2/$pluginPath/$pluginId.gradle.plugin/maven-metadata.xml"
+      val updates = readUrlDataAsString(client, url, 20000)
+      if (
+        // for missing dependencies it answers with a json document
+        updates != null && !updates.startsWith("{")
+      ) {
+        val document = XmlUtils.parseDocumentSilently(updates, false)
+        if (document != null) {
+          val versionsList = document.getElementsByTagName("versions")
+          val versions = mutableListOf<Version>()
+
+          for (i in 0 until versionsList.length) {
+            val element = versionsList.item(i) as Element
+            for (child in element) {
+              if (child.tagName == "version") {
+                val s = child.textContent
+                if (s.isNotBlank()) {
+                  val revision = Version.parse(s)
+                  versions.add(revision)
+                }
+              }
+            }
+          }
+
+          return versions
+            .filter { filter == null || filter.test(it) }
+            .filter { allowPreview || !it.isPreview }
+            .maxOrNull()
+        }
+      }
+      return null
     }
 
     /** TODO: Cache these results somewhere! */

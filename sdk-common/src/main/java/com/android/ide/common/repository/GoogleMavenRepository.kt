@@ -67,6 +67,10 @@ abstract class GoogleMavenRepository @JvmOverloads constructor(
 
     private var packageMap: MutableMap<String, PackageInfo>? = null
 
+    fun hasGroupId(groupId: String): Boolean {
+        return getPackageMap()[groupId] != null
+    }
+
     fun findVersion(dependency: Dependency, filter: Predicate<Version>? = null): Version? =
         findVersion(dependency, filter, dependency.explicitlyIncludesPreview)
 

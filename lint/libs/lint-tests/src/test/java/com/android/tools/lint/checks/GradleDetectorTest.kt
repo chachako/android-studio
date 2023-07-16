@@ -232,6 +232,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 multi-dex="1.0.0"
                 gradlePlugins-agp = "8.0.0"
                 gradlePlugins-crashlytics = "2.9.2"
+                gradlePlugins-dependency-analysis = "1.0.0"
 
                 [libraries]
                 com-google-guava = { module = "com.google.guava:guava", version.ref = "guavaVersion"}
@@ -248,6 +249,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 [plugins]
                 android-application = { id = "com.android.application", version.ref = "gradlePlugins-agp" }
                 crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "gradlePlugins-crashlytics" }
+                dependency-analysis = { id = "com.autonomousapps.dependency-analysis", version.ref = "gradlePlugins-dependency-analysis" }
                 """
           )
           .indented(),
@@ -256,38 +258,98 @@ class GradleDetectorTest : AbstractCheckTest() {
         // the shared ../gradle project multiple times, once for each "including" project.
         gradle("../lib/build.gradle", ""),
       )
-      .issues(DEPENDENCY)
+      .issues(DEPENDENCY, REMOTE_VERSION)
       .sdkHome(mockSupportLibraryInstallation)
+      .networkData(
+        "https://search.maven.org/solrsearch/select?q=g:%22com.google.guava%22+AND+a:%22guava%22&core=gav&wt=json",
+        ""
+      )
+      .networkData(
+        "https://search.maven.org/solrsearch/select?q=g:%22com.autonomousapps.dependency-analysis%22+AND+a:%22com.autonomousapps.dependency-analysis.gradle.plugin%22&core=gav&wt=json",
+        ""
+      )
+      .networkData(
+        "https://plugins.gradle.org/m2/com/autonomousapps/dependency-analysis/com.autonomousapps.dependency-analysis.gradle.plugin/maven-metadata.xml",
+        // language=XML
+        """
+              <metadata>
+                <groupId>com.autonomousapps.dependency-analysis</groupId>
+                <artifactId>com.autonomousapps.dependency-analysis.gradle.plugin</artifactId>
+                <version>1.20.0</version>
+                <versioning>
+                  <latest>1.20.0</latest>
+                  <release>1.20.0</release>
+                  <versions>
+                    <version>0.1</version>
+                    <version>0.10.0</version>
+                    <version>0.11.0</version>
+                    <version>0.11.1</version>
+                    ... truncated ...
+                    <version>1.18.0</version>
+                    <version>1.19.0</version>
+                    <version>1.2.0</version>
+                    <version>1.2.1</version>
+                    <version>1.20.0</version>
+                    <version>1.3.0</version>
+                    <version>1.9.0</version>
+                  </versions>
+                  <lastUpdated>20230421150929</lastUpdated>
+                </versioning>
+              </metadata>
+              """
+          .trimIndent()
+      )
       .run()
       .expect(
         """
-                ../gradle/libs.versions.toml:2: Warning: A newer version of com.google.guava:guava than 11.0.2 is available: 21.0 [GradleDependency]
-                guavaVersion = "11.0.2"
-                               ~~~~~~~~
-                ../gradle/libs.versions.toml:3: Warning: A newer version of com.android.support:appcompat-v7 than 13.0.0 is available: 25.3.1 [GradleDependency]
-                appCompatVersion="13.0.0"
-                                 ~~~~~~~~
-                ../gradle/libs.versions.toml:4: Warning: A newer version of com.google.android.support:wearable than 1.2.0 is available: 1.3.0 [GradleDependency]
-                wearableVersion=" 1.2.0 "
-                                ~~~~~~~~~
-                0 errors, 3 warnings
-                """
+        ../gradle/libs.versions.toml:2: Warning: A newer version of com.google.guava:guava than 11.0.2 is available: 21.0 [GradleDependency]
+        guavaVersion = "11.0.2"
+                       ~~~~~~~~
+        ../gradle/libs.versions.toml:3: Warning: A newer version of com.android.support:appcompat-v7 than 13.0.0 is available: 25.3.1 [GradleDependency]
+        appCompatVersion="13.0.0"
+                         ~~~~~~~~
+        ../gradle/libs.versions.toml:4: Warning: A newer version of com.google.android.support:wearable than 1.2.0 is available: 1.3.0 [GradleDependency]
+        wearableVersion=" 1.2.0 "
+                        ~~~~~~~~~
+        ../gradle/libs.versions.toml:8: Warning: A newer version of com.android.application than 8.0.0 is available: 8.0.2 [GradleDependency]
+        gradlePlugins-agp = "8.0.0"
+                            ~~~~~~~
+        ../gradle/libs.versions.toml:9: Warning: A newer version of com.google.firebase.crashlytics than 2.9.2 is available: 2.9.7 [GradleDependency]
+        gradlePlugins-crashlytics = "2.9.2"
+                                    ~~~~~~~
+        ../gradle/libs.versions.toml:10: Warning: A newer version of com.autonomousapps.dependency-analysis than 1.0.0 is available: 1.20.0 [NewerVersionAvailable]
+        gradlePlugins-dependency-analysis = "1.0.0"
+                                            ~~~~~~~
+        0 errors, 6 warnings
+        """
       )
       .expectFixDiffs(
         """
-                Fix for gradle/libs.versions.toml line 2: Change to 21.0:
-                @@ -2 +2
-                - guavaVersion = "11.0.2"
-                + guavaVersion = "21.0"
-                Fix for gradle/libs.versions.toml line 3: Change to 25.3.1:
-                @@ -3 +3
-                - appCompatVersion="13.0.0"
-                + appCompatVersion="25.3.1"
-                Fix for gradle/libs.versions.toml line 4: Change to 1.3.0:
-                @@ -4 +4
-                - wearableVersion=" 1.2.0 "
-                + wearableVersion=" 1.3.0 "
-                """
+        Fix for gradle/libs.versions.toml line 2: Change to 21.0:
+        @@ -2 +2
+        - guavaVersion = "11.0.2"
+        + guavaVersion = "21.0"
+        Fix for gradle/libs.versions.toml line 3: Change to 25.3.1:
+        @@ -3 +3
+        - appCompatVersion="13.0.0"
+        + appCompatVersion="25.3.1"
+        Fix for gradle/libs.versions.toml line 4: Change to 1.3.0:
+        @@ -4 +4
+        - wearableVersion=" 1.2.0 "
+        + wearableVersion=" 1.3.0 "
+        Fix for gradle/libs.versions.toml line 8: Change to 8.0.2:
+        @@ -8 +8
+        - gradlePlugins-agp = "8.0.0"
+        + gradlePlugins-agp = "8.0.2"
+        Fix for gradle/libs.versions.toml line 9: Change to 2.9.7:
+        @@ -9 +9
+        - gradlePlugins-crashlytics = "2.9.2"
+        + gradlePlugins-crashlytics = "2.9.7"
+        Fix for gradle/libs.versions.toml line 10: Change to 1.20.0:
+        @@ -10 +10
+        - gradlePlugins-dependency-analysis = "1.0.0"
+        + gradlePlugins-dependency-analysis = "1.20.0"
+        """
       )
   }
 
@@ -7207,6 +7269,8 @@ class GradleDetectorTest : AbstractCheckTest() {
         """
                 <?xml version='1.0' encoding='UTF-8'?>
                 <metadata>
+                  <com.google.firebase.crashlytics/>
+                  <com.android.application/>
                   <com.android.support/>
                   <com.android.support.test/>
                   <com.android.tools/>
@@ -7219,6 +7283,31 @@ class GradleDetectorTest : AbstractCheckTest() {
                 </metadata>
                 """
           .trimIndent()
+      )
+      task.networkData(
+        "https://maven.google.com/com/android/application/group-index.xml",
+        "" +
+          "<?xml version='1.0' encoding='UTF-8'?>\n" +
+          "<com.android.application>\n" +
+          "  <com.android.application.gradle.plugin versions=\"7.4.0-alpha05,7.4.0-alpha06,7.4.0-alpha07,7.4.0-alpha08," +
+          "7.4.0-alpha09,7.4.0-alpha10,7.4.0-beta01,7.4.0-beta02,7.4.0-beta03,7.4.0-beta04,7.4.0-beta05,7.4.0-rc01,7.4.0-rc02," +
+          "7.4.0-rc03,7.4.0,7.4.1,7.4.2,8.0.0-alpha01,8.0.0-alpha02,8.0.0-alpha03,8.0.0-alpha04,8.0.0-alpha05,8.0.0-alpha06," +
+          "8.0.0-alpha07,8.0.0-alpha08,8.0.0-alpha09,8.0.0-alpha10,8.0.0-alpha11,8.0.0-beta01,8.0.0-beta02,8.0.0-beta03,8.0.0-beta04," +
+          "8.0.0-beta05,8.0.0-rc01,8.0.0,8.0.1,8.0.2,8.1.0-alpha01,8.1.0-alpha02,8.1.0-alpha03,8.1.0-alpha04,8.1.0-alpha05," +
+          "8.1.0-alpha06,8.1.0-alpha07,8.1.0-alpha08,8.1.0-alpha09,8.1.0-alpha10,8.1.0-alpha11,8.1.0-beta01,8.1.0-beta02," +
+          "8.1.0-beta03,8.1.0-beta04,8.1.0-beta05,8.1.0-rc01,8.2.0-alpha01,8.2.0-alpha02,8.2.0-alpha03,8.2.0-alpha04,8.2.0-alpha05," +
+          "8.2.0-alpha06,8.2.0-alpha07,8.2.0-alpha08,8.2.0-alpha09,8.2.0-alpha10,8.2.0-alpha11,8.2.0-alpha12" +
+          "\"/>\n" +
+          "</com.android.application>"
+      )
+      task.networkData(
+        "https://maven.google.com/com/google/firebase/crashlytics/group-index.xml",
+        "" +
+          "<?xml version='1.0' encoding='UTF-8'?>\n" +
+          "<com.google.firebase.crashlytics>\n" +
+          "  <com.google.firebase.crashlytics.gradle.plugin versions=\"2.8.1,2.9.0,2.9.1,2.9.2,2.9.3,2.9.4,2.9.5,2.9.6,2.9.7\"/>\n" +
+          "</com.google.firebase.crashlytics>" +
+          "</com.android.application>"
       )
       task.networkData(
         "https://maven.google.com/com/android/tools/build/group-index.xml",
