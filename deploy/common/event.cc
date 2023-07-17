@@ -72,7 +72,7 @@ void WarnEvent(const std::string& text) {
 
 void ErrEvent(const std::string& text) {
   AddEvent(Event::Type::Error, text);
-  Log::E("%s", text.c_str());
+  Log::E("ERROR: %s", text.c_str());
 }
 
 void BeginPhase(const std::string& text) {
