@@ -31,10 +31,6 @@
 
 namespace deploy {
 
-namespace {
-bool is_dex_set_up = false;
-}
-
 // Extracts the dex containing the LiveEdit implementations of Lambda,
 // SuspendLambda, and RestrictedSuspendLambda, and loads it into the application
 // class loader.
@@ -43,6 +39,7 @@ bool is_dex_set_up = false;
 // base classes that are present in the app loader.
 bool SetUpLiveEditDex(jvmtiEnv* jvmti, JNIEnv* jni,
                       const std::string& package_name) {
+  static bool is_dex_set_up = false;
   if (is_dex_set_up) {
     return true;
   }
@@ -64,8 +61,8 @@ bool SetUpLiveEditDex(jvmtiEnv* jvmti, JNIEnv* jni,
     jni->ExceptionClear();
     return false;
   }
-  is_dex_set_up = true;
 
+  is_dex_set_up = true;
   return true;
 }
 
