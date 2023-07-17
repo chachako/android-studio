@@ -26,6 +26,7 @@
 #include "tools/base/deploy/agent/native/live_edit.dex.cc"
 #include "tools/base/deploy/common/io.h"
 #include "tools/base/deploy/common/log.h"
+#include "tools/base/deploy/common/utils.h"
 #include "tools/base/deploy/sites/sites.h"
 
 namespace deploy {
@@ -47,25 +48,10 @@ bool SetUpLiveEditDex(jvmtiEnv* jvmti, JNIEnv* jni,
   }
 
   std::string dex_path = Sites::AppStudio(package_name) + "live_edit.dex";
+  std::vector<unsigned char> dex_bytes(live_edit_dex,
+                                       live_edit_dex + live_edit_dex_len);
 
-  if (IO::access(dex_path, F_OK) == 0 && IO::unlink(dex_path) != 0) {
-    return false;
-  }
-  int fd = IO::open(dex_path, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
-  if (fd == -1) {
-    return false;
-  }
-  size_t count = 0;
-  while (count < live_edit_dex_len) {
-    ssize_t len = write(fd, live_edit_dex + count, live_edit_dex_len - count);
-    if (len < 0) {
-      close(fd);
-      return false;
-    }
-    count += len;
-  }
-
-  if (close(fd) == -1) {
+  if (!WriteFile(dex_path, dex_bytes)) {
     return false;
   }
 
