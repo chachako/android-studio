@@ -49,6 +49,7 @@ bool SetUpLiveEditDex(jvmtiEnv* jvmti, JNIEnv* jni,
                                        live_edit_dex + live_edit_dex_len);
 
   if (!WriteFile(dex_path, dex_bytes)) {
+    ErrEvent("Unable to SetUpLiveEditDex");
     return false;
   }
 
@@ -59,6 +60,7 @@ bool SetUpLiveEditDex(jvmtiEnv* jvmti, JNIEnv* jni,
       .CallVoidMethod("addDexPath", "(Ljava/lang/String;)V", dex_path_str);
   if (jni->ExceptionCheck()) {
     jni->ExceptionClear();
+    ErrEvent("SetUpLiveEditDex was unable to addDexPath");
     return false;
   }
 
