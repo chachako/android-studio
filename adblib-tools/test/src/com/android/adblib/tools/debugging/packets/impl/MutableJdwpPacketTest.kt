@@ -281,7 +281,7 @@ class MutableJdwpPacketTest {
         val text = packet.toString()
 
         // Assert
-        assertEquals("MutableJdwpPacket(id=10, length=11, flags=0x00, isCommand=true, cmdSet=SET_THREADREF[11], cmd=CMD_THREADREF_NAME[1])", text)
+        assertEquals("MutableJdwpPacket(id=0xA, length=11, flags=0x00, isCommand=true, cmdSet=SET_THREADREF[11], cmd=CMD_THREADREF_NAME[1])", text)
     }
 
     @Test
@@ -297,7 +297,7 @@ class MutableJdwpPacketTest {
         val text = packet.toString()
 
         // Assert
-        assertEquals("MutableJdwpPacket(id=10, length=11, flags=0x80, isReply=true, errorCode=DELETE_METHOD_NOT_IMPLEMENTED[67])", text)
+        assertEquals("MutableJdwpPacket(id=0xA, length=11, flags=0x80, isReply=true, errorCode=DELETE_METHOD_NOT_IMPLEMENTED[67])", text)
     }
 
 }

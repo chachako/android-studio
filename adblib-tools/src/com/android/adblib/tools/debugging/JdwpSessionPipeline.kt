@@ -56,7 +56,7 @@ suspend inline fun JdwpSessionPipeline.sendPacket(packet: JdwpPacketView) {
     sendChannel.sendPacket(packet)
 }
 
-suspend fun SynchronizedSendChannel<JdwpPacketView>.sendPacket(packet: JdwpPacketView) {
+suspend inline fun SynchronizedSendChannel<JdwpPacketView>.sendPacket(packet: JdwpPacketView) {
     if (packet.isThreadSafeAndImmutable) {
         sendNoWait(packet)
     } else {

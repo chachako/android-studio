@@ -332,6 +332,7 @@ suspend inline fun <R> JdwpPacketView.withPayload(block: (AdbInputChannel) -> R)
  *
  * @see ThreadSafetySupport.isThreadSafeAndImmutable
  */
+@PublishedApi
 internal val JdwpPacketView.isThreadSafeAndImmutable: Boolean
     get() {
         return when (this) {
@@ -349,7 +350,7 @@ internal val JdwpPacketView.isThreadSafeAndImmutable: Boolean
  * Helper method for implementations for [JdwpPacketView]
  */
 internal fun JdwpPacketView.toStringImpl(): String {
-    return "%s(id=%d, length=%d, flags=0x%02X, %s)".format(
+    return "%s(id=0x%X, length=%d, flags=0x%02X, %s)".format(
         this::class.simpleName,
         id,
         length,

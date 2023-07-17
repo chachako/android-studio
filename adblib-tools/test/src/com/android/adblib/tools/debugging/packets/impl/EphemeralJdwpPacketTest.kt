@@ -290,7 +290,7 @@ class EphemeralJdwpPacketTest {
 
         // Assert
         assertEquals(
-            "EphemeralJdwpPacket(id=10, length=11, flags=0x00, isCommand=true, cmdSet=SET_THREADREF[11], cmd=CMD_THREADREF_NAME[1])",
+            "EphemeralJdwpPacket(id=0xA, length=11, flags=0x00, isCommand=true, cmdSet=SET_THREADREF[11], cmd=CMD_THREADREF_NAME[1])",
             text
         )
     }
@@ -310,7 +310,7 @@ class EphemeralJdwpPacketTest {
 
         // Assert
         assertEquals(
-            "EphemeralJdwpPacket(id=10, length=11, flags=0x80, isReply=true, errorCode=DELETE_METHOD_NOT_IMPLEMENTED[67])",
+            "EphemeralJdwpPacket(id=0xA, length=11, flags=0x80, isReply=true, errorCode=DELETE_METHOD_NOT_IMPLEMENTED[67])",
             text
         )
     }
@@ -436,7 +436,7 @@ class EphemeralJdwpPacketTest {
 
         // Assert
         assertEquals(
-            "EphemeralJdwpPacket(id=10, length=11, flags=0x00, isCommand=true, cmdSet=SET_THREADREF[11], cmd=CMD_THREADREF_NAME[1])",
+            "EphemeralJdwpPacket(id=0xA, length=11, flags=0x00, isCommand=true, cmdSet=SET_THREADREF[11], cmd=CMD_THREADREF_NAME[1])",
             text
         )
     }
@@ -458,7 +458,7 @@ class EphemeralJdwpPacketTest {
 
         // Assert
         assertEquals(
-            "OfflineJdwpPacket(id=10, length=11, flags=0x00, isCommand=true, cmdSet=SET_THREADREF[11], cmd=CMD_THREADREF_NAME[1])",
+            "OfflineJdwpPacket(id=0xA, length=11, flags=0x00, isCommand=true, cmdSet=SET_THREADREF[11], cmd=CMD_THREADREF_NAME[1])",
             text
         )
     }
@@ -480,7 +480,7 @@ class EphemeralJdwpPacketTest {
 
         // Assert
         assertEquals(
-            "EphemeralJdwpPacket(id=10, length=11, flags=0x80, isReply=true, errorCode=DELETE_METHOD_NOT_IMPLEMENTED[67])",
+            "EphemeralJdwpPacket(id=0xA, length=11, flags=0x80, isReply=true, errorCode=DELETE_METHOD_NOT_IMPLEMENTED[67])",
             text
         )
     }
@@ -502,7 +502,7 @@ class EphemeralJdwpPacketTest {
 
         // Assert
         assertEquals(
-            "OfflineJdwpPacket(id=10, length=11, flags=0x80, isReply=true, errorCode=DELETE_METHOD_NOT_IMPLEMENTED[67])",
+            "OfflineJdwpPacket(id=0xA, length=11, flags=0x80, isReply=true, errorCode=DELETE_METHOD_NOT_IMPLEMENTED[67])",
             text
         )
     }
