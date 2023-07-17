@@ -27,7 +27,6 @@ import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.builder.model.v2.ide.ArtifactDependencies
 import com.android.builder.model.v2.ide.Library
 import com.android.builder.model.v2.ide.LibraryType
-import com.google.common.collect.ImmutableMap
 import com.google.common.truth.Truth
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.result.DependencyResult
@@ -318,7 +317,7 @@ private class FakeArtifactCollectionsInputs(
         return artifacts
     }
 
-    override val projectBuildPath: Provider<String>
+    override val projectBuildTreePath: Provider<String>
         get() = TODO("Not yet implemented")
 
     override val compileClasspath: ArtifactCollections

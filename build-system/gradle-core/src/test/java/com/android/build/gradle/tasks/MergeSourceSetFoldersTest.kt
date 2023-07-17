@@ -245,7 +245,7 @@ class MergeSourceSetFoldersTest {
             val artifactId = mock(ComponentArtifactIdentifier::class.java)
             val id = mock(ProjectComponentIdentifier::class.java)
 
-            `when`(id.projectPath).thenReturn(path)
+            `when`(id.buildTreePath).thenReturn(path)
             `when`<ComponentIdentifier>(artifactId.componentIdentifier).thenReturn(id)
             `when`(artifact.file).thenReturn(file)
             `when`(artifact.id).thenReturn(artifactId)

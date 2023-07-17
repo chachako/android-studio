@@ -312,7 +312,7 @@ public class DependencyResourcesComputerTest {
             ComponentArtifactIdentifier artifactId = mock(ComponentArtifactIdentifier.class);
             ProjectComponentIdentifier id = mock(ProjectComponentIdentifier.class);
 
-            when(id.getProjectPath()).thenReturn(path);
+            when(id.getBuildTreePath()).thenReturn(path);
             when(artifactId.getComponentIdentifier()).thenReturn(id);
             when(artifact.getFile()).thenReturn(file);
             when(artifact.getId()).thenReturn(artifactId);

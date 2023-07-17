@@ -50,7 +50,7 @@ interface ArtifactCollectionsInputs {
     @get:Input
     val projectPath: String
     @get:Internal
-    val projectBuildPath: Provider<String>
+    val projectBuildTreePath: Provider<String>
     @get:Input
     val variantName: String
     @get:Nested
@@ -95,7 +95,7 @@ class ArtifactCollectionsInputsImpl constructor(
         runtimeType,
     )
 
-    override val projectBuildPath: Provider<String> = getBuildPath(variantDependencies)
+    override val projectBuildTreePath: Provider<String> = getBuildTreePath(variantDependencies)
 
     override val compileClasspath: ArtifactCollections = ArtifactCollections(
         variantDependencies,

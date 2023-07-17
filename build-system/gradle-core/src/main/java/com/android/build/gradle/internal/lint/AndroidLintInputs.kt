@@ -2348,8 +2348,7 @@ abstract class ArtifactInput {
             if (projectRuntimeLintModels.isPresent) {
                 val thisProject =
                     ProjectKey(
-                        artifactCollectionsInputs.projectBuildPath.get(),
-                        artifactCollectionsInputs.projectPath,
+                        artifactCollectionsInputs.projectBuildTreePath.get(),
                         artifactCollectionsInputs.variantName
                     )
                 CheckDependenciesLintModelArtifactHandler(
