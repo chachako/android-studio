@@ -154,21 +154,24 @@ internal class ConnectionHandler(private val mServer: FakeAdbServer, socket: Soc
     private fun handleDeviceService(request: ServiceRequest, socketScope: CoroutineScope) {
         // Regardless of the outcome, this will be the last request this connection handles.
         mKeepRunning = false
-        if (mTargetDevice == null) {
+        val targetDevice = mTargetDevice ?: run {
             mSmartSocket.sendFailWithReason("No device available to honor LOCAL service request")
             return
         }
-        val serviceName = request.nextToken()
-        val command = request.remaining()
-        for (handler in mServer.handlers) {
-            val accepted = handler.accept(
-                mServer, socketScope, mSmartSocket.socket, mTargetDevice!!, serviceName, command
-            )
-            if (accepted) {
-                return
+
+        targetDevice.trackCommand(request.original(), socketScope, mSmartSocket.socket) {
+            val serviceName = request.nextToken()
+            val command = request.remaining()
+            for (handler in mServer.handlers) {
+                val accepted = handler.accept(
+                    mServer, socketScope, mSmartSocket.socket, targetDevice, serviceName, command
+                )
+                if (accepted) {
+                    return@handleDeviceService
+                }
             }
+            mSmartSocket.sendFailWithReason("Unknown request $serviceName-$command")
         }
-        mSmartSocket.sendFailWithReason("Unknown request $serviceName-$command")
     }
 
     private fun dispatchToHostHandlers(request: ServiceRequest) {
@@ -293,4 +296,5 @@ internal class ConnectionHandler(private val mServer: FakeAdbServer, socket: Soc
             throw IllegalStateException(e)
         }
     }
+
 }

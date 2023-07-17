@@ -21,6 +21,8 @@ import com.android.fakeadbserver.statechangehubs.ClientStateChangeHandlerFactory
 import com.android.fakeadbserver.statechangehubs.ClientStateChangeHub
 import com.android.fakeadbserver.statechangehubs.StateChangeQueue
 import com.google.common.collect.ImmutableMap
+import kotlinx.coroutines.CoroutineScope
+import java.net.Socket
 import java.util.Collections
 import java.util.TreeMap
 import java.util.Vector
@@ -105,7 +107,10 @@ class DeviceState internal constructor(
 
     fun stop() {
         clientChangeHub.stop()
+        deviceCommandTracker.close()
     }
+
+    private val deviceCommandTracker = DeviceCommandTracker(deviceId)
 
     val apiLevel: Int
         get() = try {
@@ -338,6 +343,15 @@ class DeviceState internal constructor(
 
     val abbLogs: List<String>
         get() = mAbbLogs.clone() as List<String>
+
+    internal inline fun <R> trackCommand(
+        command: String,
+        scope: CoroutineScope,
+        socket: Socket,
+        block: () -> R
+    ): R {
+        return deviceCommandTracker.trackCommand(command, scope, socket, block)
+    }
 
     /**
      * The state of a device.
