@@ -44,10 +44,10 @@ class IO {
   // needs to be used, such as when passing paths to JVMTI.
   static std::string ResolvePath(const std::string& path);
 
-  // Given a path to a file, check if the file exists and is readonly.
+  // Given a path to a file, check if the file exists and is not writable.
   // If that is true, we cannot overwrite it and might need to delete it
   // and recreate it.
-  static bool ReadOnlyFileExists(const std::string& file_path);
+  static bool FileExistsAndNotWritable(const std::string& file_path);
 
   static int access(const std::string& pathname, int mode);
   static int creat(const std::string& pathname, mode_t mode);

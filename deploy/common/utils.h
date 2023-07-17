@@ -76,6 +76,8 @@ std::string to_string(const T& n) {
 }
 
 // Reads a file from the specified path with to the specified container.
+// Should file_path exist but not be writable, this method will attempt to
+// unlink before creating a new file.
 //
 // This method currently only supports reading to strings or vectors.
 template <typename T>
@@ -123,9 +125,9 @@ bool WriteFile(const std::string& file_path, const T& content) {
       is_string<T>::value || is_vector<T>::value,
       "Template parameter 'T' must have type std::vector or std::string");
 
-  if (IO::ReadOnlyFileExists(file_path)) {
+  if (IO::FileExistsAndNotWritable(file_path)) {
     if (IO::unlink(file_path) != 0) {
-      ErrEvent("Could not unlink read-only file at '" + file_path +
+      ErrEvent("Could not fix (unlink) unwritable file at '" + file_path +
                "': " + strerror(errno));
       return false;
     }
