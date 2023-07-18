@@ -589,7 +589,7 @@ class ProjectInitializerTest {
             C.java:5: Warning: Do not hardcode "/sdcard/"; use Environment.getExternalStorageDirectory().getPath() instead [SdCardPath]
               String path = "/sdcard/file";
                             ~~~~~~~~~~~~~~
-            AndroidManifest.xml:7: Error: Google Play requires that apps target API level 31 or higher. [ExpiredTargetSdkVersionManifest]
+            AndroidManifest.xml:7: Error: Google Play requires that apps target API level 31 or higher. [ExpiredTargetSdkVersion]
                     android:targetSdkVersion="22" />
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             2 errors, 1 warnings

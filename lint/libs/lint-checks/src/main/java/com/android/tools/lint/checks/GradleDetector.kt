@@ -17,6 +17,8 @@ package com.android.tools.lint.checks
 
 import com.android.SdkConstants
 import com.android.SdkConstants.ANDROIDX_PKG_PREFIX
+import com.android.SdkConstants.ANDROID_URI
+import com.android.SdkConstants.ATTR_TARGET_SDK_VERSION
 import com.android.SdkConstants.FD_BUILD_TOOLS
 import com.android.SdkConstants.GRADLE_PLUGIN_MINIMUM_VERSION
 import com.android.SdkConstants.GRADLE_PLUGIN_RECOMMENDED_VERSION
@@ -37,7 +39,6 @@ import com.android.sdklib.SdkVersionInfo
 import com.android.sdklib.SdkVersionInfo.LOWEST_ACTIVE_API
 import com.android.tools.lint.checks.GooglePlaySdkIndex.Companion.GOOGLE_PLAY_SDK_INDEX_KEY
 import com.android.tools.lint.checks.GooglePlaySdkIndex.Companion.GOOGLE_PLAY_SDK_INDEX_URL
-import com.android.tools.lint.checks.ManifestDetector.Companion.TARGET_NEWER
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.LintTomlDocument
 import com.android.tools.lint.client.api.LintTomlMapValue
@@ -62,6 +63,8 @@ import com.android.tools.lint.detector.api.Location
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
+import com.android.tools.lint.detector.api.XmlContext
+import com.android.tools.lint.detector.api.XmlScanner
 import com.android.tools.lint.detector.api.getLanguageLevel
 import com.android.tools.lint.detector.api.guessGradleLocation
 import com.android.tools.lint.detector.api.isNumberString
@@ -89,8 +92,10 @@ import java.net.URLEncoder
 import java.nio.file.Path
 import java.util.Calendar
 import java.util.Collections
+import java.util.EnumSet
 import java.util.function.Predicate
 import kotlin.text.Charsets.UTF_8
+import org.w3c.dom.Attr
 import org.w3c.dom.Element
 
 private val Dependency.majorVersion: Int
@@ -99,7 +104,7 @@ private val Dependency.majorVersion: Int
       ?: if (version == RichVersion.parse("+")) GradleCoordinate.PLUS_REV_VALUE else Int.MIN_VALUE
 
 /** Checks Gradle files for potential errors. */
-open class GradleDetector : Detector(), GradleScanner, TomlScanner {
+open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
 
   private var minSdkVersion: Int = 0
   private var compileSdkVersion: Int = 0
@@ -193,6 +198,73 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
   private var agpVersionCheckInfo: AgpVersionCheckInfo? = null
 
   private val blockedDependencies = HashMap<Project, BlockedDependencies>()
+
+  // ---- Implements XmlScanner ----
+
+  override fun getApplicableAttributes(): Collection<String>? {
+    return listOf(ATTR_TARGET_SDK_VERSION)
+  }
+
+  override fun visitAttribute(context: XmlContext, attribute: Attr) {
+    if (attribute.namespaceURI != ANDROID_URI) {
+      return
+    }
+
+    val element = attribute.ownerElement
+    val target = attribute.value
+    try {
+      val targetSdkVersion = target.toInt()
+      val highest = context.client.highestKnownApiLevel
+      val targetSdkCheckResult =
+        checkTargetSdk(
+          context,
+          ManifestDetector.calendar ?: Calendar.getInstance(),
+          targetSdkVersion
+        )
+      val location = context.getLocation(attribute)
+      if (targetSdkCheckResult is TargetSdkCheckResult.Expired) {
+        context.report(
+          EXPIRED_TARGET_SDK_VERSION,
+          element,
+          location,
+          targetSdkCheckResult.message,
+          targetSdkLintFix(targetSdkCheckResult.requiredVersion)
+        )
+      }
+      if (targetSdkCheckResult is TargetSdkCheckResult.Expiring) {
+        context.report(
+          EXPIRING_TARGET_SDK_VERSION,
+          element,
+          location,
+          targetSdkCheckResult.message,
+          targetSdkLintFix(targetSdkCheckResult.requiredVersion)
+        )
+      }
+      if (
+        context.isEnabled(TARGET_NEWER) &&
+          targetSdkCheckResult is TargetSdkCheckResult.NoIssue &&
+          targetSdkVersion < highest
+      ) {
+        context.report(
+          TARGET_NEWER,
+          element,
+          location,
+          "Not targeting the latest versions of Android; compatibility " +
+            "modes apply. Consider testing and updating this version. " +
+            "Consult the `android.os.Build.VERSION_CODES` javadoc for details.",
+          targetSdkLintFix(highest)
+        )
+      }
+    } catch (ignore: NumberFormatException) {
+      // Ignore: AAPT will enforce this.
+    }
+  }
+
+  private fun targetSdkLintFix(target: Int) =
+    fix()
+      .name("Update targetSdkVersion to $target")
+      .set(ANDROID_URI, ATTR_TARGET_SDK_VERSION, target.toString())
+      .build()
 
   // ---- Implements GradleScanner ----
 
@@ -2605,6 +2677,13 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         Scope.GRADLE_SCOPE,
         Scope.TOML_SCOPE
       )
+    private val IMPLEMENTATION_WITH_MANIFEST =
+      Implementation(
+        GradleDetector::class.java,
+        EnumSet.of(Scope.GRADLE_FILE, Scope.MANIFEST),
+        Scope.GRADLE_SCOPE,
+        Scope.MANIFEST_SCOPE
+      )
 
     /** Obsolete dependencies. */
     @JvmField
@@ -3046,7 +3125,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
           priority = 8,
           severity = Severity.WARNING,
           androidSpecific = true,
-          implementation = IMPLEMENTATION
+          implementation = IMPLEMENTATION_WITH_MANIFEST
         )
         .addMoreInfo(
           "https://support.google.com/googleplay/android-developer/answer/113469#targetsdk"
@@ -3077,11 +3156,42 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
           priority = 8,
           severity = Severity.FATAL,
           androidSpecific = true,
-          implementation = IMPLEMENTATION
+          implementation = IMPLEMENTATION_WITH_MANIFEST
         )
         .addMoreInfo(
           "https://developer.android.com/distribute/best-practices/develop/target-sdk.html"
         )
+
+    /** Using a targetSdkVersion that isn't recent */
+    @JvmField
+    val TARGET_NEWER =
+      Issue.create(
+          id = "OldTargetApi",
+          briefDescription = "Target SDK attribute is not targeting latest version",
+          explanation =
+            """
+                When your application runs on a version of Android that is more recent than your \
+                `targetSdkVersion` specifies that it has been tested with, various compatibility modes \
+                kick in. This ensures that your application continues to work, but it may look out of \
+                place. For example, if the `targetSdkVersion` is less than 14, your app may get an \
+                option button in the UI.
+
+                To fix this issue, set the `targetSdkVersion` to the highest available value. Then test \
+                your app to make sure everything works correctly. You may want to consult the \
+                compatibility notes to see what changes apply to each version you are adding support \
+                for: https://developer.android.com/reference/android/os/Build.VERSION_CODES.html as well \
+                as follow this guide:
+                https://developer.android.com/distribute/best-practices/develop/target-sdk.html
+                """,
+          category = Category.CORRECTNESS,
+          priority = 6,
+          severity = Severity.WARNING,
+          implementation = IMPLEMENTATION_WITH_MANIFEST
+        )
+        .addMoreInfo(
+          "https://developer.android.com/distribute/best-practices/develop/target-sdk.html"
+        )
+        .addMoreInfo("https://developer.android.com/reference/android/os/Build.VERSION_CODES.html")
 
     /** targetSdkVersion was manually edited */
     @JvmField
