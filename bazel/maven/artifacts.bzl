@@ -213,7 +213,7 @@ DATA = [
     "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha03",
     "androidx.privacysandbox.tools:tools-apipackager:1.0.0-alpha03",
     "androidx.privacysandbox.tools:tools-core:1.0.0-alpha03",
-    "androidx.benchmark:benchmark-baseline-profile-gradle-plugin:1.2.0-alpha16",
+    "androidx.benchmark:benchmark-baseline-profile-gradle-plugin:1.2.0-beta01",
     "androidx.benchmark:benchmark-gradle-plugin:1.1.1",
     "androidx.compose.animation:animation:1.2.0-alpha05",
     "androidx.compose.animation:animation:1.3.0",

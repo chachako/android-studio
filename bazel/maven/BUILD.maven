@@ -11538,10 +11538,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.benchmark.benchmark-baseline-profile-gradle-plugin_1.2.0-alpha16",
-    pom = "repository/androidx/benchmark/benchmark-baseline-profile-gradle-plugin/1.2.0-alpha16/benchmark-baseline-profile-gradle-plugin-1.2.0-alpha16.pom",
+    name = "androidx.benchmark.benchmark-baseline-profile-gradle-plugin_1.2.0-beta01",
+    pom = "repository/androidx/benchmark/benchmark-baseline-profile-gradle-plugin/1.2.0-beta01/benchmark-baseline-profile-gradle-plugin-1.2.0-beta01.pom",
     repo_root_path = "repository",
-    repo_path = "androidx/benchmark/benchmark-baseline-profile-gradle-plugin/1.2.0-alpha16",
+    repo_path = "androidx/benchmark/benchmark-baseline-profile-gradle-plugin/1.2.0-beta01",
     deps = [
         "com.google.protobuf.protobuf-java_3.21.8",
         "com.google.testing.platform.core-proto_0.0.8-alpha08",
