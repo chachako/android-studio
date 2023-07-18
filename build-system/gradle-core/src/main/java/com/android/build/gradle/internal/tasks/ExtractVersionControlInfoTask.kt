@@ -57,8 +57,7 @@ abstract class ExtractVersionControlInfoTask: NonIncrementalTask() {
     override fun doTaskAction() {
         if (!gitHeadFile.get().asFile.exists()) {
             val headFileMissing = missingGitFileMessage("HEAD")
-            logger.warn(headFileMissing)
-            return
+            throw RuntimeException(headFileMissing)
         }
 
         val headFileContents = gitHeadFile.get().asFile.readText().trim()
@@ -70,8 +69,7 @@ abstract class ExtractVersionControlInfoTask: NonIncrementalTask() {
             val branchFile = FileUtils.join(gitRefsDir.get().asFile, branchName)
             if (branchFile == null || !branchFile.exists()) {
                 val branchFileMissing = missingGitFileMessage("refs/heads/$branchName")
-                logger.warn(branchFileMissing)
-                return
+                throw RuntimeException(branchFileMissing)
             }
             branchFile.readText().trim()
         } else {
@@ -94,7 +92,7 @@ abstract class ExtractVersionControlInfoTask: NonIncrementalTask() {
     private fun missingGitFileMessage(filePath: String) =
         "When setting ${BooleanOption.ENABLE_VCS_INFO.propertyName} to true, the project " +
         "must be initialized with Git. The file '.git/$filePath' in the project root is " +
-        "missing, so the version control metadata will not be included in the APK."
+        "missing, so the version control metadata cannot be included in the APK."
 
     class CreationAction(creationConfig: ApkCreationConfig):
         VariantTaskCreationAction<ExtractVersionControlInfoTask, ApkCreationConfig>(creationConfig) {

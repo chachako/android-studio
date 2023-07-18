@@ -96,12 +96,13 @@ class ExtractVersionControlInfoTest {
     fun headFileMissing() {
         val result = project.executor()
             .with(BooleanOption.ENABLE_VCS_INFO, true)
+            .expectFailure()
             .run(":app:assembleDebug")
 
-        ScannerSubject.assertThat(result.stdout).contains(
+        ScannerSubject.assertThat(result.stderr).contains(
             "When setting ${BooleanOption.ENABLE_VCS_INFO.propertyName} to true, the project " +
             "must be initialized with Git. The file '.git/HEAD' in the project root is " +
-            "missing, so the version control metadata will not be included in the APK.")
+            "missing, so the version control metadata cannot be included in the APK.")
     }
 
     @Test
@@ -113,12 +114,13 @@ class ExtractVersionControlInfoTest {
 
         val result = project.executor()
             .with(BooleanOption.ENABLE_VCS_INFO, true)
+            .expectFailure()
             .run(":app:assembleDebug")
 
-        ScannerSubject.assertThat(result.stdout).contains(
+        ScannerSubject.assertThat(result.stderr).contains(
             "When setting ${BooleanOption.ENABLE_VCS_INFO.propertyName} to true, the project " +
             "must be initialized with Git. The file '.git/refs/heads/branchName' in the project " +
-            "root is missing, so the version control metadata will not be included in the APK.")
+            "root is missing, so the version control metadata cannot be included in the APK.")
     }
 
     private fun validateBundleApkFileContents(sha: String) {
