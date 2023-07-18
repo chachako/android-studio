@@ -15,7 +15,6 @@
  */
 package com.android.screenshot.cli
 
-import com.android.SdkConstants
 import com.android.ide.common.repository.GradleCoordinate
 import com.android.ide.common.resources.AndroidManifestPackageNameUtils
 import com.android.ide.common.util.PathString
@@ -35,18 +34,15 @@ import com.android.tools.idea.projectsystem.ScopeType
 import com.android.tools.idea.util.toVirtualFile
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.vfs.StandardFileSystems
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.containers.map2Array
-import com.jetbrains.rd.util.collections.toImmutableStack
 import org.apache.commons.io.FileUtils
 import org.jetbrains.kotlin.fir.resolve.dfa.isNotEmpty
 import org.jetbrains.kotlin.fir.resolve.dfa.stackOf
 import java.io.File
 import java.nio.file.Path
-import java.nio.file.Paths
 
 // TODO: Replace this with the dependencies object.
 typealias DepsMap = () -> List<String>
@@ -69,10 +65,10 @@ class ScreenshotAndroidModuleSystem(
             override fun findClassFile(fqcn: String): VirtualFile? {
                 if (filesMap.isEmpty()) {
                     try {
-                        val stack = stackOf<VirtualFile>()
-                        deps().map {
-                            try {
-                                val outputRoot = StandardFileSystems.local().findFileByPath(it)
+                        val stack = stackOf<Pair<VirtualFile, String>>()
+                        deps().map { dep ->
+                            val file = try {
+                                val outputRoot = StandardFileSystems.local().findFileByPath(dep)
                                 VirtualFileManager.getInstance().getFileSystem(
                                     StandardFileSystems.JAR_PROTOCOL
                                 )
@@ -80,15 +76,23 @@ class ScreenshotAndroidModuleSystem(
                             } catch (ex: Throwable) {
                                 null
                             }
-                        }.filterNotNull().forEach{
-                            it.children.forEach { stack.push(it) }
+                            if (file != null)
+                                file.children.forEach { stack.push(Pair(it, "!/")) }
+                            else{
+                                val dir = VirtualFileManager.getInstance().getFileSystem(
+                                    StandardFileSystems.FILE_PROTOCOL
+                                )
+                                    .findFileByPath(dep)!!
+                                dir.children.forEach { stack.push(Pair(it, dep)) }
+                            }
                         }
                         while(stack.isNotEmpty) {
-                            val child = stack.pop()
+                            val pair = stack.pop()
+                            val child = pair.first
                             if (child.isDirectory) {
-                                child.children.forEach { stack.push(it) }
+                                child.children.forEach { stack.push(Pair(it, pair.second)) }
                             } else {
-                                val name = child.path.substring(child.path.indexOf("!/")+2).replace("/",".").replace(".class","")
+                                val name = child.path.substring(child.path.indexOf(pair.second)+pair.second.length).replace("/",".").replace(".class","")
                                 filesMap.computeIfAbsent(name) {mutableListOf()}.add(child)
                             }
                         }
