@@ -33,11 +33,18 @@ fun dumpProfile(
                     continue
                 }
 
-        if (strict && dexFile.dexChecksum != file.dexChecksum) {
+        if (strict && !dexFile.compatibleWith(file)) {
             val message = """
-                    Profile Checksum for ${dexFile.name}(${dexFile.dexChecksum}) does not match
-                    the checksum in the APK ${apk.name}(${file.dexChecksum}.
-                """.trimIndent()
+                Profile header not compatible with the Dex header.
+                -----------------------------------------------------------------------------------
+                APK: ${apk.name}
+                Dex: ${dexFile.name}
+                -----------------------------------------------------------------------------------
+                Dex Checksum: ${dexFile.dexChecksum}              | ${file.dexChecksum}
+                Method ids  : ${dexFile.header.methodIds.size}    | ${file.header.methodIds.size}
+                Type ids    : ${dexFile.header.typeIds.size}      | ${file.header.typeIds.size}
+                -----------------------------------------------------------------------------------
+            """.trimIndent()
             throw IllegalStateException(message)
         }
 
@@ -69,6 +76,16 @@ fun dumpProfile(
             }
         }
     }
+}
+
+private fun DexFile.compatibleWith(other: DexFile): Boolean {
+    val checkSumsMatch = dexChecksum == other.dexChecksum
+    // We don't really care about offsets in profile headers.
+    // They are only meaningful in dex file headers.
+    val methodIdsMatch = header.methodIds.size == other.header.methodIds.size
+    // Type Ids might not always be present
+    val typeIdsMatch = header.typeIds.size == other.header.typeIds.size || header.typeIds.size <= 0
+    return checkSumsMatch && methodIdsMatch && typeIdsMatch
 }
 
 fun dumpProfile(
