@@ -1211,7 +1211,12 @@ abstract class VariantInputs {
                         projectOptions,
                         testSourceSet,
                         lintMode,
-                        useModuleDependencyLintModels,
+                        if (lintModelArtifactType == null) {
+                            // false in this case to avoid circular task dependencies (b/291934867)
+                            false
+                        } else {
+                            useModuleDependencyLintModels
+                        },
                         // analyzing test bytecode is expensive, without much benefit
                         includeClassesOutputDirectories = false,
                         fatalOnly
