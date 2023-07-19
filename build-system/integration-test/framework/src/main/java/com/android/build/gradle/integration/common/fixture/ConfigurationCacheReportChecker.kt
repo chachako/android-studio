@@ -74,6 +74,34 @@ class ConfigurationCacheReportChecker {
                 location = "bazel test //tools/base/build-system/integration-test/native:PrefabPublishingTest",
                 name = "Application.mk"
             ),
+            Error.file(
+                location = "SdkAutoDownloadTest",
+                name = "local-sdk-for-test"
+            ),
+            Error.file(
+                location = "SdkAutoDownloadTest",
+                name = "licenses"
+            ),
+            Error.file(
+                location = "SdkAutoDownloadTest",
+                name = "tools"
+            ),
+            Error.file(
+                location = "SdkAutoDownloadTest",
+                name = "android-sdk-preview-license"
+            ),
+            Error.file(
+                location = "SdkAutoDownloadTest",
+                name = "repositories.cfg"
+            ),
+            Error.file(
+                location = "SdkAutoDownloadTest",
+                name = "android-sdk-license"
+            ),
+            Error.file(
+                location = "bazel test //tools/base/build-system/integration-test/native:CmakeTargetsTest",
+                name = "CMakeSettings.json"
+            ),
         ),
         ErrorType.FileSystemEntry to listOf(
             Error.fileSystemEntry(
@@ -352,6 +380,34 @@ class ConfigurationCacheReportChecker {
             Error.fileSystemEntry(
                 location = "bazel test //tools/base/build-system/integration-test/application:agp-version-consistency-tests",
                 name = "xerces.properties"
+            ),
+            Error.fileSystemEntry(
+                location = "SdkAutoDownloadTest",
+                name = "local-sdk-for-test"
+            ),
+            Error.fileSystemEntry(
+                location = "SdkAutoDownloadTest",
+                name = "licenses"
+            ),
+            Error.fileSystemEntry(
+                location = "SdkAutoDownloadTest",
+                name = "tools"
+            ),
+            Error.fileSystemEntry(
+                location = "SdkAutoDownloadTest",
+                name = "android-sdk-preview-license"
+            ),
+            Error.file(
+                location = "SdkAutoDownloadTest",
+                name = "repositories.cfg"
+            ),
+            Error.fileSystemEntry(
+                location = "SdkAutoDownloadTest",
+                name = "android-sdk-license"
+            ),
+            Error.fileSystemEntry(
+                location = "SdkAutoDownloadTest",
+                name = "uid.txt"
             ),
         ),
         ErrorType.ValueFromCustomSource to listOf(

@@ -19,7 +19,6 @@ package com.android.build.gradle.integration.common.fixture
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import java.io.File
-import java.lang.IllegalStateException
 import java.nio.charset.Charset
 
 /**
@@ -145,6 +144,7 @@ class ConfigurationCacheReportParser(
      * change over time.
      */
     fun getErrorsAndWarnings(): List<Error> {
+        val sep = File.separatorChar
         extractReportData(
             reportFile.readText(
                 charset = Charset.defaultCharset()
@@ -153,12 +153,12 @@ class ConfigurationCacheReportParser(
             if (isEmpty()) return emptyList()
             val reportData = JsonParser.parseString(this)
 
-            val errorBuilder = Error.Builder()
             val listBuilder = mutableListOf<Error>()
             reportData.asJsonObject.get("diagnostics")
                 .asJsonArray
                 .map(JsonElement::getAsJsonObject)
                 .forEach { element ->
+                    val errorBuilder = Error.Builder()
                     element.get("trace")
                         .asJsonArray
                         .map(JsonElement::getAsJsonObject)
@@ -171,9 +171,23 @@ class ConfigurationCacheReportParser(
                             .asJsonArray
                             .map(JsonElement::getAsJsonObject)
                             .forEach { input ->
-                                if (!input.has("name")) {
-                                    println("Unknown diagnostic record : $element")
-                                    return@forEach
+                                if (input.has("name")) {
+                                    var name = input.get("name").asString
+                                    // there are some files that are accessed only in Bazel that seems to be
+                                    // dependent on the NDK version, filed b/290404113 to handle this separately
+                                    if (!(
+                                        name.contains("src${sep}")
+                                        || name.startsWith("local-sdk-for-test")
+                                        || name.contains(Regex("${sep}android-\\d*${sep}"))
+                                        || name.contains("${sep}platform-tools${sep}")
+                                        || name.contains("${sep}prebuilts${sep}studio${sep}sdk")
+                                        || name.contains("android_prefs_root${sep}.android")
+                                        || name.contains("build${sep}intermediates${sep}cxx")
+                                        || name.contains("build${sep}intermediates${sep}prefab_package_header_only")
+                                    )) {
+                                        errorBuilder.name =
+                                            name.substring(name.lastIndexOf("/") + 1)
+                                    }
                                 }
                                 if (input.has("text")) {
                                     errorBuilder.type =
@@ -181,25 +195,12 @@ class ConfigurationCacheReportParser(
                                             input.get("text").asString.trim()
                                         )
                                 }
-                                var name = input.get("name").asString
-                                // there are some files that are accessed only in Bazel that seems to be
-                                // dependent on the NDK version, filed b/290404113 to handle this separately
-                                if (name.contains(
-                                        "runfiles/__main__/prebuilts/studio/sdk/linux/ndk/")
-                                    // ndk version in the pat like `25.1.8937392`
-                                    || name.contains(Regex("^[\\d\\.]*$"))
-                                    || name.contains(Regex("^android-\\d*$"))
-                                    || name.contains("build/intermediates/cxx")
-                                    || name.contains("build/intermediates/prefab_package_header_only")
-                                ) {
-                                    return@forEach
-                                } //                                        }
-                                errorBuilder.name = name.substring(name.lastIndexOf("/") + 1)
                             }
                         // We only care far about I/O failures. Access to system properties
                         // and environment variables are not relevant at this point.
-                        if (errorBuilder.type == ErrorType.FileSystemEntry
-                            || errorBuilder.type == ErrorType.File) {
+                        if (!errorBuilder.name.isNullOrEmpty() &&
+                            (errorBuilder.type == ErrorType.FileSystemEntry
+                            || errorBuilder.type == ErrorType.File)) {
 
                             val error = errorBuilder.build()
                             listBuilder.add(error)

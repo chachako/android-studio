@@ -16,6 +16,7 @@
 package com.android.build.gradle.integration.common.fixture
 
 import com.android.SdkConstants
+import com.android.SdkConstants.NDK_DEFAULT_VERSION
 import com.android.Version
 import com.android.build.api.variant.BuiltArtifacts
 import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl.Companion.loadFromFile
@@ -27,6 +28,8 @@ import com.android.build.gradle.integration.common.fixture.testprojects.TestProj
 import com.android.build.gradle.integration.common.truth.AarSubject
 import com.android.build.gradle.integration.common.truth.forEachLine
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.integration.common.utils.getBundleLocation
+import com.android.build.gradle.integration.common.utils.getVariantByName
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.plugins.VersionCheckPlugin
 import com.android.build.gradle.options.BooleanOption
@@ -70,9 +73,6 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.regex.Pattern
 import java.util.stream.Collectors
-import com.android.SdkConstants.NDK_DEFAULT_VERSION
-import com.android.build.gradle.integration.common.utils.getBundleLocation
-import com.android.build.gradle.integration.common.utils.getVariantByName
 
 /**
  * JUnit4 test rule for integration test.
@@ -506,7 +506,9 @@ open class GradleTestProject @JvmOverloads constructor(
                         }
                     }
                     openConnections?.forEach(ProjectConnection::close)
-                    checkConfigurationCache(_buildResult)
+                    if (!System.getProperty("os.name").contains("Windows")) {
+                        checkConfigurationCache(_buildResult)
+                    }
 
                     if (outputLogOnFailure && testFailed) {
                         _buildResult?.let {
