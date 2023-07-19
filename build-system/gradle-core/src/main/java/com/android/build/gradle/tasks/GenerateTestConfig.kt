@@ -19,6 +19,7 @@ package com.android.build.gradle.tasks
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.variant.VariantOutputConfiguration
 import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl
+import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.component.UnitTestCreationConfig
 import com.android.build.gradle.internal.dsl.TestOptions
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
@@ -156,7 +157,11 @@ abstract class GenerateTestConfig @Inject constructor(objectFactory: ObjectFacto
 
         init {
             resourceApk = creationConfig.artifacts.get(APK_FOR_LOCAL_TEST)
-            mergedAssets = creationConfig.mainVariant.artifacts.get(SingleArtifact.ASSETS)
+            mergedAssets = if (creationConfig !is KmpComponentCreationConfig){
+                creationConfig.mainVariant.artifacts.get(SingleArtifact.ASSETS)
+            } else {
+                creationConfig.artifacts.get(SingleArtifact.ASSETS)
+            }
             mergedManifest = if (creationConfig.mainVariant.componentType.isApk) {
                 // for application
                 creationConfig.mainVariant.artifacts.get(PACKAGED_MANIFESTS)

@@ -8,7 +8,9 @@ plugins {
 kotlin {
   androidLibrary {
     withJava()
-    withAndroidTestOnJvm(compilationName = "unitTest")
+    withAndroidTestOnJvm(compilationName = "unitTest") {
+      isIncludeAndroidResources = true
+    }
     withAndroidTestOnDevice(compilationName = "instrumentedTest")
 
     sourceSets.getByName("androidMain") {

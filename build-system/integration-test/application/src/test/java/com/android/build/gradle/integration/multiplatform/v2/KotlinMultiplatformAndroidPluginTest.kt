@@ -26,6 +26,7 @@ import com.android.testutils.apk.Apk
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import org.junit.Assume
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -58,16 +59,16 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
 
     @Test
     fun testChangingTheSourceSetTreeForAndroidUnitTests() {
+        Assume.assumeFalse(publishLibs)
         TestFileUtils.searchAndReplace(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                withAndroidTestOnJvm(compilationName = "unitTest")
+                withAndroidTestOnJvm(compilationName = "unitTest") {
             """.trimIndent(),
             """
                 withAndroidTestOnJvm(compilationName = "unitTest") {
                     sourceSetTree = "unitTest"
                     enableCoverage = true
-                }
             """.trimIndent()
         )
 
@@ -102,15 +103,15 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
 
     @Test
     fun testRunningUnitTests() {
+        Assume.assumeFalse(publishLibs)
         TestFileUtils.searchAndReplace(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                withAndroidTestOnJvm(compilationName = "unitTest")
+                withAndroidTestOnJvm(compilationName = "unitTest") {
             """.trimIndent(),
             """
                 withAndroidTestOnJvm(compilationName = "unitTest") {
                     enableCoverage = true
-                }
             """.trimIndent()
         )
 

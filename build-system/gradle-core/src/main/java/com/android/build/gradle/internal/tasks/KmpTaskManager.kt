@@ -25,18 +25,14 @@ import com.android.build.api.component.impl.KmpUnitTestImpl
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.AndroidTestTaskManager
 import com.android.build.gradle.internal.TaskManager
+import com.android.build.gradle.internal.UnitTestTaskManager
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.component.KmpCreationConfig
-import com.android.build.gradle.internal.coverage.JacocoConfigurations
-import com.android.build.gradle.internal.coverage.JacocoReportTask
-import com.android.build.gradle.internal.lint.AndroidLintAnalysisTask
-import com.android.build.gradle.internal.lint.LintModelWriterTask
 import com.android.build.gradle.internal.lint.LintTaskManager
 import com.android.build.gradle.internal.plugins.LINT_PLUGIN_ID
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.res.GenerateEmptyResourceFilesTask
-import com.android.build.gradle.internal.res.GenerateLibraryRFileTask
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.R8ParallelBuildService
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
@@ -46,14 +42,11 @@ import com.android.build.gradle.internal.tasks.factory.registerTask
 import com.android.build.gradle.options.IntegerOption
 import com.android.build.gradle.tasks.BundleAar
 import com.android.build.gradle.tasks.ProcessLibraryManifest
-import com.android.build.gradle.tasks.ProcessTestManifest
 import com.android.build.gradle.tasks.ZipMergingTask
-import com.android.build.gradle.tasks.factory.AndroidUnitTest
 import com.android.builder.core.ComponentTypeImpl
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskProvider
-import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile
 
 class KmpTaskManager(
@@ -251,49 +244,13 @@ class KmpTaskManager(
         project: Project,
         component: KmpUnitTestImpl
     ) {
-        createAnchorTasks(project, component)
+        createAnchorTasks(project, component, false)
 
         maybeCreateJavacTask(component)
 
-        project.tasks.registerTask(ProcessTestManifest.CreationAction(component))
-        project.tasks.registerTask(
-            GenerateLibraryRFileTask.TestRuntimeStubRClassCreationAction(
-                component
-            )
-        )
-        project.tasks.registerTask(ProcessJavaResTask.CreationAction(component))
-
-        if (component.isUnitTestCoverageEnabled) {
-            project.pluginManager.apply(JacocoPlugin::class.java)
-        }
-        project.tasks.registerTask(AndroidUnitTest.CreationAction(component))
-        if (component.isUnitTestCoverageEnabled) {
-            val ant = JacocoConfigurations.getJacocoAntTaskConfiguration(
-                project, JacocoTask.getJacocoVersion(component)
-            )
-            project.plugins.withType(JacocoPlugin::class.java) {
-                // Jacoco plugin is applied and test coverage enabled, generate coverage report.
-                project.tasks.registerTask(
-                    JacocoReportTask.CreateActionUnitTest(component, ant)
-                )
-            }
-        }
-
-        // Create lint tasks here only if the lint standalone plugin is applied (to avoid
-        // Android-specific behavior)
-        if (project.plugins.hasPlugin(LINT_PLUGIN_ID)
-            && globalConfig.lintOptions.ignoreTestSources.not()) {
-            project.tasks.registerTask(
-                AndroidLintAnalysisTask.PerComponentCreationAction(component, fatalOnly = false)
-            )
-            project.tasks.registerTask(
-                LintModelWriterTask.PerComponentCreationAction(
-                    component,
-                    useModuleDependencyLintModels = false,
-                    fatalOnly = false,
-                    isMainModelForLocalReportTask = false
-                )
-            )
+        with(UnitTestTaskManager(project, globalConfig)) {
+            createTopLevelTasks()
+            createTasks(component)
         }
     }
 
@@ -305,12 +262,9 @@ class KmpTaskManager(
 
         maybeCreateJavacTask(component)
 
-        AndroidTestTaskManager(
-            project = project,
-            globalConfig = component.global,
-        ).also {
-            it.createTopLevelTasks()
-            it.createTasks(component)
+        with(AndroidTestTaskManager(project, globalConfig)) {
+            createTopLevelTasks()
+            createTasks(component)
         }
     }
 

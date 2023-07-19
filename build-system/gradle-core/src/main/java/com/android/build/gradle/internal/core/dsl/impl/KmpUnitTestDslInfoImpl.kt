@@ -21,10 +21,17 @@ import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.KmpVariantDslInfo
 import com.android.build.gradle.internal.core.dsl.UnitTestComponentDslInfo
+import com.android.build.api.variant.ResValue
+import com.android.build.gradle.internal.core.dsl.features.AndroidResourcesDslInfo
+import com.android.build.gradle.internal.dsl.AaptOptions
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.getNamePrefixedWithTarget
+import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.builder.core.ComponentTypeImpl
+import com.android.builder.core.DefaultVectorDrawablesOptions
+import com.android.builder.model.VectorDrawablesOptions
+import com.google.common.collect.ImmutableSet
 import org.gradle.api.provider.Provider
 
 class KmpUnitTestDslInfoImpl(
@@ -32,6 +39,7 @@ class KmpUnitTestDslInfoImpl(
     services: VariantServices,
     override val mainVariantDslInfo: KmpVariantDslInfo,
     withJava: Boolean,
+    dslServices: DslServices
 ): KmpComponentDslInfoImpl(
     extension, services, withJava
 ), UnitTestComponentDslInfo, KmpComponentDslInfo {
@@ -54,4 +62,27 @@ class KmpUnitTestDslInfoImpl(
 
     override val isUnitTestCoverageEnabled: Boolean
         get() = testOnJvmConfig.enableCoverage
+
+    override val androidResourcesDsl: AndroidResourcesDslInfo? by lazy {
+        if (testOnJvmConfig.isIncludeAndroidResources) {
+            object : AndroidResourcesDslInfo {
+                override val androidResources = dslServices.newDecoratedInstance(
+                    AaptOptions::class.java,
+                    dslServices
+                )
+                override val resourceConfigurations: ImmutableSet<String> = ImmutableSet.of()
+                override val vectorDrawables: VectorDrawablesOptions =
+                    DefaultVectorDrawablesOptions()
+                override val isPseudoLocalesEnabled: Boolean = false
+                override val isCrunchPngs: Boolean = false
+                override val isCrunchPngsDefault: Boolean = false
+
+                override fun getResValues(): Map<ResValue.Key, ResValue> {
+                    return emptyMap()
+                }
+            }
+        } else {
+            null
+        }
+    }
 }

@@ -603,7 +603,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             androidExtension,
             variantServices,
             mainVariant.dslInfo,
-            androidTarget.enableJavaSources
+            androidTarget.enableJavaSources,
+            dslServices
         )
 
         val paths = VariantPathHelper(
@@ -621,7 +622,9 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         return KmpUnitTestImpl(
             dslInfo = dslInfo,
             internalServices = variantServices,
-            buildFeatures = KotlinMultiplatformBuildFeaturesValuesImpl(),
+            buildFeatures = KotlinMultiplatformBuildFeaturesValuesImpl(
+                androidResources = global.unitTestOptions.isIncludeAndroidResources
+            ),
             variantDependencies = createVariantDependencies(project, dslInfo, kotlinCompilation, androidTarget),
             paths = paths,
             artifacts = artifacts,

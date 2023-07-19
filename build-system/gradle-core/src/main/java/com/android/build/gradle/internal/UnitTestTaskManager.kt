@@ -18,6 +18,7 @@ package com.android.build.gradle.internal
 
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
+import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.component.UnitTestCreationConfig
 import com.android.build.gradle.internal.coverage.JacocoConfigurations
 import com.android.build.gradle.internal.coverage.JacocoReportTask
@@ -36,7 +37,6 @@ import com.google.common.collect.ImmutableSet
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.plugins.JavaBasePlugin
-import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
 
@@ -48,14 +48,14 @@ class UnitTestTaskManager(
     fun createTopLevelTasks() {
         // Create top level unit test tasks.
         taskFactory.register(
-            JavaPlugin.TEST_TASK_NAME
+            globalConfig.taskNames.test
         ) { unitTestTask: Task ->
             unitTestTask.group = JavaBasePlugin.VERIFICATION_GROUP
             unitTestTask.description = "Run unit tests for all variants."
         }
         taskFactory.configure(
             JavaBasePlugin.CHECK_TASK_NAME
-        ) { check: Task -> check.dependsOn(JavaPlugin.TEST_TASK_NAME) }
+        ) { check: Task -> check.dependsOn(globalConfig.taskNames.test) }
     }
 
     /** Creates the tasks to build unit tests.  */
@@ -111,7 +111,11 @@ class UnitTestTaskManager(
             val generateTestConfig = taskFactory.register(
                 GenerateTestConfig.
                 CreationAction(unitTestCreationConfig))
-            val compileTask = taskContainer.compileTask
+            val compileTask = if (unitTestCreationConfig is KmpComponentCreationConfig) {
+                unitTestCreationConfig.androidKotlinCompilation.compileTaskProvider
+            } else {
+                taskContainer.compileTask
+            }
             compileTask.dependsOn(generateTestConfig)
             // The GenerateTestConfig task has 2 types of inputs: direct inputs and indirect inputs.
             // Only the direct inputs are registered with Gradle, whereas the indirect inputs are
@@ -154,16 +158,17 @@ class UnitTestTaskManager(
             }
         }
 
-        // :app:compileDebugUnitTestSources should be enough for running tests from AS, so add
-        // dependencies on tasks that prepare necessary data files.
-        val compileTask = taskContainer.compileTask
-        compileTask.dependsOn(taskContainer.processJavaResourcesTask,
-            testedVariant.taskContainer.processJavaResourcesTask)
-        val javacTask = createJavacTask(unitTestCreationConfig)
-        setJavaCompilerTask(javacTask, unitTestCreationConfig)
-        // This should be done automatically by the classpath
-        //        TaskFactoryUtils.dependsOn(javacTask,
-        // testedVariantScope.getTaskContainer().getJavacTask());
+        // TODO(b/276758294): Remove such checks
+        if (unitTestCreationConfig !is KmpComponentCreationConfig) {
+            // :app:compileDebugUnitTestSources should be enough for running tests from AS, so add
+            // dependencies on tasks that prepare necessary data files.
+            val compileTask = taskContainer.compileTask
+            compileTask.dependsOn(taskContainer.processJavaResourcesTask,
+                    testedVariant.taskContainer.processJavaResourcesTask)
+
+            val javacTask = createJavacTask(unitTestCreationConfig)
+            setJavaCompilerTask(javacTask, unitTestCreationConfig)
+        }
         maybeCreateTransformClassesWithAsmTask(unitTestCreationConfig)
 
         if (unitTestCreationConfig.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)
@@ -197,7 +202,7 @@ class UnitTestTaskManager(
         }
         val runTestsTask =
             taskFactory.register(AndroidUnitTest.CreationAction(unitTestCreationConfig))
-        taskFactory.configure(JavaPlugin.TEST_TASK_NAME) { test: Task ->
+        taskFactory.configure(globalConfig.taskNames.test) { test: Task ->
             test.dependsOn(runTestsTask)
         }
 
