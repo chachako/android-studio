@@ -528,6 +528,12 @@ class AndroidTestTaskManager(
         val lintCacheDir =
                 creationConfig.paths.intermediatesDir(
                         "${BuilderConstants.LINT}-cache").get().asFile
+        val compileAppClassesJar =
+                creationConfig.paths.intermediatesDir(
+                        "compile_app_classes_jar/${variantName}/").get().asFile.absolutePath
+        val additionalDependencyPaths = mutableListOf<String>()
+        //compileAppClassesJar jar needed for rendering; and lint does not include in its dependency lists. This will not be required in new cli tool
+        additionalDependencyPaths.add("$compileAppClassesJar/classes.jar")
 
         val previewScreenshotValidationTask = taskFactory.register(
                 PreviewScreenshotValidationTask.CreationAction(
@@ -537,6 +543,7 @@ class AndroidTestTaskManager(
                         ideExtractionDir,
                         lintModelDir,
                         lintCacheDir,
+                        additionalDependencyPaths
                 ))
 
         val previewScreenshotUpdateTask = taskFactory.register(
@@ -547,6 +554,7 @@ class AndroidTestTaskManager(
                         ideExtractionDir,
                         lintModelDir,
                         lintCacheDir,
+                        additionalDependencyPaths
                 ))
 
         previewScreenshotValidationTask.dependsOn("lint")

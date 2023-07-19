@@ -17,6 +17,8 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.Version
+import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
@@ -40,6 +42,7 @@ import org.gradle.api.tasks.TaskAction
 import java.io.File
 import org.gradle.api.tasks.VerificationTask
 import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.api.tasks.Classpath
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.jvm.toolchain.JavaToolchainService
 
@@ -84,12 +87,16 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
     @get:OutputDirectory
     abstract val imageOutputDir: DirectoryProperty
 
+    @get:Classpath
+    abstract val testClassesDir: ConfigurableFileCollection
 
     private val cliParams: MutableMap<String, String> = mutableMapOf()
 
     @TaskAction
     override fun doTaskAction() {
         cliParams["previewJar"] = screenshotCliJar.singleFile.absolutePath
+        val testClassesDependencies = testClassesDir.files
+            .filter { it.exists() && it.isDirectory}.map { it.absolutePath + '/' }.joinToString(";")
 
         // invoke CLI tool
         val process = ProcessBuilder(
@@ -106,7 +113,8 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
                     "--root-lint-model", cliParams["lint.model"],
                     "--output-location", cliParams["output.location"] + "/",
                     "--golden-location", cliParams["golden.location"] + "/",
-                    "--file-path", cliParams["sources"]!!.split(",").first())
+                    "--file-path", cliParams["sources"]!!.split(",").first(),
+                    "--additional-deps", ";${cliParams["additional.deps"]};$testClassesDependencies")
         ).apply {
             environment().remove("TEST_WORKSPACE")
             redirectErrorStream(true)
@@ -142,6 +150,7 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
             private val ideExtractionDir: File,
             private val lintModelDir: File,
             private val lintCacheDir: File,
+            private val additionalDependencyPaths: List<String>
     ) :
             VariantTaskCreationAction<
                     PreviewScreenshotValidationTask,
@@ -218,6 +227,13 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
 
             task.cliParams["client.name"] = "Android Gradle Plugin"
             task.cliParams["client.version"] = Version.ANDROID_GRADLE_PLUGIN_VERSION
+
+            task.testClassesDir.from(creationConfig.services.fileCollection().apply {from(creationConfig
+                .artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
+                .getFinalArtifacts(ScopedArtifact.CLASSES)) })
+            task.testClassesDir.disallowChanges()
+
+            task.cliParams["additional.deps"] = additionalDependencyPaths.joinToString (";")
         }
 
         private fun maybeCreatePreviewlibCliToolConfiguration(project: Project) {

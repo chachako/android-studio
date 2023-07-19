@@ -24,12 +24,13 @@ import java.nio.file.Path
 /**
  * This class manages a list of project dependencies.
  */
-class Dependencies(project: Project, rootLintModule: LintModelModule) {
+class Dependencies(project: Project, rootLintModule: LintModelModule, additionalDependencies: List<String>?) {
     var classLoaderDependencies = initClassLoaderDependencies(project,rootLintModule)
-    var systemDependencies = initSystemDependencies(project,rootLintModule)
+    var systemDependencies = initSystemDependencies(project,rootLintModule, additionalDependencies)
     private fun initSystemDependencies(
         project: Project,
         rootLintModule: LintModelModule,
+        additionalDependencies: List<String>?
     ): List<String> {
         val dependencies = mutableListOf<String>()
         dependencies.addAll(rootLintModule.defaultVariant()!!.mainArtifact.classOutputs.filter { it.extension == "jar" }.map { it.absolutePath })
@@ -45,7 +46,7 @@ class Dependencies(project: Project, rootLintModule: LintModelModule) {
                                 .filterIsInstance<LintModelExternalLibrary>()
                                 .flatMap{it.jarFiles}
                                 .map { it.absolutePath })
-
+        additionalDependencies?.let { dependencies.addAll(it) }
         // This gets reversed in the ScreenshotAndroidModuleSystem as it does its caching.
         return dependencies.reversed()
     }

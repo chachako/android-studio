@@ -59,6 +59,7 @@ import com.android.tools.lint.model.LintModelVariant
 import com.android.tools.lint.model.PathVariables
 import com.android.tools.preview.ComposePreviewElement
 import com.android.utils.XmlUtils
+import com.google.common.base.Splitter
 import com.google.common.io.ByteStreams
 import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.openapi.application.runReadAction
@@ -97,6 +98,7 @@ class Main {
     private val ARG_RECORD_GOLDENS = "--record-golden"
     private val ARG_EXTRACTION_DIR = "--extraction-dir"
     private val ARG_JAR_LOCATION = "--jar-location"
+    private val ARG_ADDITIONAL_DEPS = "--additional-deps"
     private val ARG_IMAGE_DIFF_THRESHOLD = "--image-diff-threshold"
 
     private var sdkHomePath: File? = null
@@ -131,7 +133,7 @@ class Main {
             driver.computeDetectors(projects[0])
             ProjectDriver(driver, projects[0]).prepareUastFileList()
             initializeEnv(projects, client)
-            val dependencies = Dependencies(projects[0], argumentState.rootModule)
+            val dependencies = Dependencies(projects[0], argumentState.rootModule, argumentState.additionalDeps)
             val screenshot = ScreenshotProvider(projects[0], sdkHomePath!!.absolutePath, dependencies)
             val results = screenshot.verifyScreenshot(findPreviewNodes(projects[0], argumentState.filePath),
                                                       argumentState.goldenLocation,
@@ -463,6 +465,11 @@ class Main {
                     throw InvalidArgumentException("Missing jar location")
                 }
                 argumentState.jarLocation = args[++index]
+            } else if (arg == ARG_ADDITIONAL_DEPS) {
+                if (index == args.size - 1) {
+                    throw InvalidArgumentException("Missing additional dependencies")
+                }
+                argumentState.additionalDeps = split(args[++index], (";"))
             } else if (arg == ARG_IMAGE_DIFF_THRESHOLD) {
                 if (index == args.size - 1) {
                     throw InvalidArgumentException("Missing threshold value")
@@ -563,6 +570,13 @@ class Main {
         argumentState.validate()
     }
 
+    private fun split(path: String, regex: String): List<String>? {
+        if (path.indexOf(regex) != -1) {
+            return Splitter.on(regex).omitEmptyStrings().trimResults().split(path).toList()
+        }
+        return listOf(path.trim())
+    }
+
     /**
      * Converts a relative or absolute command-line argument into an input file.
      *
@@ -600,6 +614,7 @@ class Main {
             }
         }
 
+        var additionalDeps: List<String>? = null
         var recordGoldens: Boolean = false
         var imageDiffThreshold: Float = 0f
         lateinit var goldenLocation: String
