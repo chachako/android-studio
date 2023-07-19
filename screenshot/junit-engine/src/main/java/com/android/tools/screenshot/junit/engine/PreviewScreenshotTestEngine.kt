@@ -37,39 +37,13 @@ class PreviewScreenshotTestEngine : TestEngine {
         val descriptor = request.rootTestDescriptor
         val listener = request.engineExecutionListener
 
-        val commands = mutableListOf(getParam("java"),
-                "-cp", getParam("previewJar"), "com.android.screenshot.cli.Main",
-                "--client-name", getParam("client.name"),
-                "--client-version", getParam("client.version"),
-                "--jdk-home", getParam("java.home"),
-                "--sdk-home", getParam("androidsdk"),
-                "--extraction-dir", getParam("extraction.dir"),
-                "--jar-location", getParam("previewJar"),
-                "--lint-model", getParam("lint.model"),
-                "--cache-dir", getParam("lint.cache"),
-                "--root-lint-model", getParam("lint.model"),
-                "--output-location", getParam("output.location") + "/",
-                "--golden-location", getParam("output.location") + "/",
-                "--file-path", getParam("sources").split(",").first())
-        if (getParam("record.golden").isNotEmpty()) {
-          commands.add(getParam("record.golden"))
-        }
-        val process = ProcessBuilder(
-            commands
-        ).apply {
-            environment().remove("TEST_WORKSPACE")
-            redirectErrorStream(true)
-            redirectOutput(ProcessBuilder.Redirect.INHERIT)
-        }.start()
-        process.waitFor()
-
         listener.executionStarted(descriptor)
-        var testSuiteExecutionResult: TestExecutionResult = when {
-            process.exitValue() in listOf(0,3) -> TestExecutionResult.successful()
-            process.exitValue() in listOf(1,2) -> {
+        var testSuiteExecutionResult: TestExecutionResult = when (val processExitValue = getParam("process.exit.value").toInt()) {
+            in listOf(0,3) -> TestExecutionResult.successful()
+            in listOf(1,2) -> {
                 TestExecutionResult.failed(Exception("Tests failed. See report for details"))
             }
-            else -> TestExecutionResult.aborted(Exception("Unknown error code ${process.exitValue()} returned"))
+            else -> TestExecutionResult.aborted(Exception("Unknown error code $processExitValue returned"))
         }
         listener.executionFinished(descriptor, testSuiteExecutionResult)
     }

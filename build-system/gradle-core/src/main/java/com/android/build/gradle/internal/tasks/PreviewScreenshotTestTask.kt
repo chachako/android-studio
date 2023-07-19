@@ -92,12 +92,39 @@ abstract class PreviewScreenshotTestTask : Test(), VariantAwareTask {
             description = "If this option is present, record snapshots and update golden images instead of running an image differ against existing golden images.")
     fun setRecordGoldenOption(value: Boolean) = recordGolden.set(value)
 
+    private val cliParams: MutableMap<String, String> = mutableMapOf()
+
     @TaskAction
     override fun executeTests() {
-        setTestEngineParam("previewJar", screenshotCliJar.singleFile.absolutePath)
-        val recordGoldenValue = if (recordGolden.get()) "--record-golden" else ""
-        setTestEngineParam("record.golden", recordGoldenValue)
-        super.executeTests()
+        cliParams["previewJar"] = screenshotCliJar.singleFile.absolutePath
+
+        // invoke CLI tool
+        val commands = mutableListOf(cliParams["java"],
+                "-cp", cliParams["previewJar"], "com.android.screenshot.cli.Main",
+                "--client-name", cliParams["client.name"],
+                "--client-version", cliParams["client.version"],
+                "--jdk-home", cliParams["java.home"],
+                "--sdk-home", cliParams["androidsdk"],
+                "--extraction-dir", cliParams["extraction.dir"],
+                "--jar-location", cliParams["previewJar"],
+                "--lint-model", cliParams["lint.model"],
+                "--cache-dir", cliParams["lint.cache"],
+                "--root-lint-model", cliParams["lint.model"],
+                "--output-location", cliParams["output.location"] + "/",
+                "--golden-location", cliParams["output.location"] + "/",
+                "--file-path", cliParams["sources"]!!.split(",").first())
+        if (recordGolden.get()) {
+            commands.add("--record-golden")
+        }
+        val process = ProcessBuilder(
+                commands
+        ).apply {
+            environment().remove("TEST_WORKSPACE")
+            redirectErrorStream(true)
+            redirectOutput(ProcessBuilder.Redirect.INHERIT)
+        }.start()
+        process.waitFor()
+        setTestEngineParam("process.exit.value", process.exitValue().toString())
     }
 
     class CreationAction(
@@ -149,10 +176,8 @@ abstract class PreviewScreenshotTestTask : Test(), VariantAwareTask {
                 )
             }
             task.sourceFiles.disallowChanges()
-            task.setTestEngineParam(
-                    "sources",
+            task.cliParams["sources"] =
                     task.sourceFiles.files.map { it.absolutePath }.joinToString(",")
-            )
 
             maybeCreateScreenshotTestConfiguration(task.project)
             task.classpath = creationConfig.services.fileCollection().apply {
@@ -165,39 +190,35 @@ abstract class PreviewScreenshotTestTask : Test(), VariantAwareTask {
                     task.project.configurations.getByName(previewlibCliToolConfigurationName)
             )
 
-            task.setTestEngineParam(
-                    "java",
-                    task.javaLauncher.get().executablePath.asFile.absolutePath)
-            task.setTestEngineParam(
-                    "java.home",
-                    task.javaLauncher.get().metadata.installationPath.asFile.absolutePath)
+            task.cliParams["java"] =
+                    task.javaLauncher.get().executablePath.asFile.absolutePath
+            task.cliParams["java.home"] =
+                    task.javaLauncher.get().metadata.installationPath.asFile.absolutePath
 
-            task.setTestEngineParam(
-                    "androidsdk",
+            task.cliParams["androidsdk"] =
                     getBuildService(
                             creationConfig.services.buildServiceRegistry,
                             SdkComponentsBuildService::class.java)
                             .get().sdkDirectoryProvider.get().asFile.absolutePath
-            )
 
             task.imageOutputDir.set(imageOutputDir)
             task.imageOutputDir.disallowChanges()
-            task.setTestEngineParam("output.location", imageOutputDir.absolutePath)
+            task.cliParams["output.location"] = imageOutputDir.absolutePath
 
             task.ideExtractionDir.set(ideExtractionDir)
             task.ideExtractionDir.disallowChanges()
-            task.setTestEngineParam("extraction.dir", ideExtractionDir.absolutePath)
+            task.cliParams["extraction.dir"] = ideExtractionDir.absolutePath
 
             task.lintModelDir.set(lintModelDir)
             task.lintModelDir.disallowChanges()
-            task.setTestEngineParam("lint.model", lintModelDir.absolutePath)
+            task.cliParams["lint.model"] = lintModelDir.absolutePath
 
             task.lintCacheDir.set(lintCacheDir)
             task.lintCacheDir.disallowChanges()
-            task.setTestEngineParam("lint.cache", lintCacheDir.absolutePath)
+            task.cliParams["lint.cache"] = lintCacheDir.absolutePath
 
-            task.setTestEngineParam("client.name", "Android Gradle Plugin")
-            task.setTestEngineParam("client.version", Version.ANDROID_GRADLE_PLUGIN_VERSION)
+            task.cliParams["client.name"] = "Android Gradle Plugin"
+            task.cliParams["client.version"] = Version.ANDROID_GRADLE_PLUGIN_VERSION
 
             task.reports.junitXml.outputLocation.set(
                     File(
