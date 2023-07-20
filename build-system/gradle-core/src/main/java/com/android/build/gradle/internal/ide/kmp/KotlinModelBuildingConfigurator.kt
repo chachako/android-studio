@@ -65,7 +65,7 @@ object KotlinModelBuildingConfigurator {
         components.forEach { component ->
             val compilation = component.androidKotlinCompilation
 
-            compilation.extras[androidCompilationKey] = {
+            compilation.extras[androidCompilationKey] =
                 AndroidCompilation.newBuilder()
                     .setType(component.toType())
                     .setDefaultSourceSetName(
@@ -92,16 +92,14 @@ object KotlinModelBuildingConfigurator {
                         AndroidCompilation.Builder::setInstrumentedTestInfo
                     )
                     .build()
-            }
 
-            compilation.defaultSourceSet.extras[androidSourceSetKey] = {
+            compilation.defaultSourceSet.extras[androidSourceSetKey] =
                 AndroidSourceSet.newBuilder()
                     .setSourceProvider(
                         SourceProvider.newBuilder()
                             .setManifestFile(component.sources.manifestFile.get().convert())
                     )
                     .build()
-            }
         }
     }
 
@@ -112,7 +110,7 @@ object KotlinModelBuildingConfigurator {
         projectOptions: ProjectOptions,
         issueReporter: IssueReporter
     ) {
-        androidTarget.extras[androidTargetKey] = {
+        androidTarget.extras[androidTargetKey] =
             AndroidTarget.newBuilder()
                 .setAgpVersion(Version.ANDROID_GRADLE_PLUGIN_VERSION)
                 .setProjectPath(project.path)
@@ -173,7 +171,6 @@ object KotlinModelBuildingConfigurator {
                 )
                 .setWithJava(mainVariant.withJava)
                 .build()
-        }
     }
 
     private fun KmpCreationConfig.toInfo() =

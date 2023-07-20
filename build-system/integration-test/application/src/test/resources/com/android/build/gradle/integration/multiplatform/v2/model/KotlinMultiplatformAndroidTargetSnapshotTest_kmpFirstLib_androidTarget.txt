@@ -8,7 +8,7 @@
         "extras": {
           "com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker": {},
           "org.gradle.api.artifacts.Configuration;resolvableMetadataConfiguration": "configuration \u0027:kmpFirstLib:androidInstrumentedTestResolvableDependenciesMetadata\u0027",
-          "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidSourceSet?\u003e;android-source-set-model": {
+          "com.android.kotlin.multiplatform.models.AndroidSourceSet;android-source-set-model": {
             "sourceProvider": {
               "manifestFile": {
                 "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/src/androidInstrumentedTest/AndroidManifest.xml"
@@ -24,7 +24,7 @@
       ],
       "extras": {
         "org.jetbrains.kotlin.gradle.plugin.mpp.targetHierarchy.SourceSetTreeClassifier": {},
-        "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidCompilation?\u003e;android-compilation-model": {
+        "com.android.kotlin.multiplatform.models.AndroidCompilation;android-compilation-model": {
           "type": "INSTRUMENTED_TEST",
           "instrumentedTestInfo": {
             "namespace": "com.example.kmpfirstlib.test",
@@ -61,7 +61,7 @@
         "extras": {
           "com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker": {},
           "org.gradle.api.artifacts.Configuration;resolvableMetadataConfiguration": "configuration \u0027:kmpFirstLib:androidMainResolvableDependenciesMetadata\u0027",
-          "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidSourceSet?\u003e;android-source-set-model": {
+          "com.android.kotlin.multiplatform.models.AndroidSourceSet;android-source-set-model": {
             "sourceProvider": {
               "manifestFile": {
                 "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/src/androidMain/AndroidManifest.xml"
@@ -80,7 +80,7 @@
       ],
       "extras": {
         "org.jetbrains.kotlin.gradle.plugin.mpp.targetHierarchy.SourceSetTreeClassifier": {},
-        "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidCompilation?\u003e;android-compilation-model": {
+        "com.android.kotlin.multiplatform.models.AndroidCompilation;android-compilation-model": {
           "type": "MAIN",
           "mainInfo": {
             "namespace": "com.example.kmpfirstlib",
@@ -110,7 +110,7 @@
         "extras": {
           "com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker": {},
           "org.gradle.api.artifacts.Configuration;resolvableMetadataConfiguration": "configuration \u0027:kmpFirstLib:androidUnitTestResolvableDependenciesMetadata\u0027",
-          "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidSourceSet?\u003e;android-source-set-model": {
+          "com.android.kotlin.multiplatform.models.AndroidSourceSet;android-source-set-model": {
             "sourceProvider": {
               "manifestFile": {
                 "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/src/androidUnitTest/AndroidManifest.xml"
@@ -133,7 +133,7 @@
             "name": "test"
           }
         },
-        "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidCompilation?\u003e;android-compilation-model": {
+        "com.android.kotlin.multiplatform.models.AndroidCompilation;android-compilation-model": {
           "type": "UNIT_TEST",
           "unitTestInfo": {
             "namespace": "com.example.kmpfirstlib.test",
@@ -150,7 +150,7 @@
     }
   ],
   "extras": {
-    "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidTarget?\u003e;android-target-model": {
+    "com.android.kotlin.multiplatform.models.AndroidTarget;android-target-model": {
       "agpVersion": "{AGP_Version}",
       "projectPath": ":kmpFirstLib",
       "buildDir": {

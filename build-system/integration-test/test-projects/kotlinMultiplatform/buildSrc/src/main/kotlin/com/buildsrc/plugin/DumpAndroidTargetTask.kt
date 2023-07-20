@@ -16,6 +16,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.ide.IdeMultiplatformImport
 import org.jetbrains.kotlin.tooling.core.Extras
 import java.lang.reflect.Type
 
@@ -32,6 +33,10 @@ abstract class DumpAndroidTargetTask: DefaultTask() {
         val gson = GsonBuilder().setLenient().setPrettyPrinting()
             .registerTypeHierarchyAdapter(Extras::class.java, ExtrasAdapter)
             .create()
+
+        kotlinExtension.sourceSets.forEach { sourceSet ->
+            IdeMultiplatformImport.instance(project).resolveDependencies(sourceSet)
+        }
 
         kotlinExtension.targets.withType(KotlinMultiplatformAndroidTarget::class.java) { target ->
             val json = gson.toJson(
@@ -105,6 +110,9 @@ abstract class DumpAndroidTargetTask: DefaultTask() {
                         // An object reference is dumped which changes on different runs
                         !entry.key.stableString.startsWith(
                             "org.jetbrains.kotlin.gradle.utils.Future"
+                        ) &&
+                        !entry.key.stableString.contains(
+                            "org.jetbrains.kotlin.gradle.plugin.mpp.GranularMetadataTransformation"
                         )) {
                         add(entry.key.stableString, valueElement)
                     }

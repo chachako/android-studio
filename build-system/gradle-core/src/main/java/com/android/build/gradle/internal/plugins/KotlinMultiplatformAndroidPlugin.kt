@@ -55,7 +55,6 @@ import com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheB
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker.Companion.android
 import com.android.build.gradle.internal.ide.kmp.KotlinIdeImportConfigurator
-import com.android.build.gradle.internal.ide.kmp.KotlinModelBuildingConfigurator
 import com.android.build.gradle.internal.ide.v2.GlobalSyncService
 import com.android.build.gradle.internal.lint.LintFixBuildService
 import com.android.build.gradle.internal.manifest.LazyManifestParser
@@ -221,6 +220,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
                 configureIdeImport {
                     KotlinIdeImportConfigurator.configure(
                         project,
+                        lazy { androidTarget },
+                        androidExtension,
                         this,
                         sourceSetToCreationConfigMap = lazy {
                             addSourceSetsThatShouldBeResolvedAsAndroid()
@@ -462,20 +463,6 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         )
 
         finalizeAllComponents(listOfNotNull(mainVariant, unitTest, androidTest))
-
-        KotlinModelBuildingConfigurator.setupAndroidTargetModels(
-            project,
-            mainVariant,
-            androidTarget,
-            projectServices.projectOptions,
-            syncIssueReporter
-        )
-
-        KotlinModelBuildingConfigurator.setupAndroidCompilations(
-            listOfNotNull(mainVariant, unitTest, androidTest),
-            androidExtension.androidTestOnDeviceConfiguration?.instrumentationRunner,
-            androidExtension.androidTestOnDeviceConfiguration?.instrumentationRunnerArguments ?: emptyMap(),
-        )
     }
 
     private fun addSourceSetsThatShouldBeResolvedAsAndroid() {

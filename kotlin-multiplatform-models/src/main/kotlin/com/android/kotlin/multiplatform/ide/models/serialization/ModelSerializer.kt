@@ -35,70 +35,64 @@ private fun IdeaKotlinSerializationLogger.handleException(
 /**
  * An object that serializes and deserializes android target models.
  */
-object AndroidTargetModelSerializer: IdeaKotlinExtrasSerializer<() -> AndroidTarget?> {
+object AndroidTargetModelSerializer: IdeaKotlinExtrasSerializer<AndroidTarget> {
 
     override fun deserialize(
         context: IdeaKotlinSerializationContext,
         data: ByteArray
-    ): () -> AndroidTarget? = with(context.logger) {
-        {
-            try {
-                AndroidTarget.parseFrom(data)
-            } catch (e: InvalidProtocolBufferException) {
-                handleException("Android Target Model", e)
-                null
-            }
+    ): AndroidTarget? = with(context.logger) {
+        try {
+            AndroidTarget.parseFrom(data)
+        } catch (e: InvalidProtocolBufferException) {
+            handleException("Android Target Model", e)
+            null
         }
     }
 
     override fun serialize(
         context: IdeaKotlinSerializationContext,
-        value: () -> AndroidTarget?
-    ): ByteArray? = value()?.toByteArray()
+        value: AndroidTarget
+    ): ByteArray = value.toByteArray()
 }
 
-object AndroidCompilationModelSerializer: IdeaKotlinExtrasSerializer<() -> AndroidCompilation?> {
+object AndroidCompilationModelSerializer: IdeaKotlinExtrasSerializer<AndroidCompilation> {
 
     override fun deserialize(
         context: IdeaKotlinSerializationContext,
         data: ByteArray
-    ): () -> AndroidCompilation? = with(context.logger) {
-        {
-            try {
-                AndroidCompilation.parseFrom(data)
-            } catch (e: InvalidProtocolBufferException) {
-                handleException("Android Compilation Model", e)
-                null
-            }
+    ): AndroidCompilation? = with(context.logger) {
+        try {
+            AndroidCompilation.parseFrom(data)
+        } catch (e: InvalidProtocolBufferException) {
+            handleException("Android Compilation Model", e)
+            null
         }
     }
 
     override fun serialize(
         context: IdeaKotlinSerializationContext,
-        value: () -> AndroidCompilation?
-    ): ByteArray? = value()?.toByteArray()
+        value: AndroidCompilation
+    ): ByteArray = value.toByteArray()
 }
 
-object AndroidSourceSetModelSerializer: IdeaKotlinExtrasSerializer<() -> AndroidSourceSet?> {
+object AndroidSourceSetModelSerializer: IdeaKotlinExtrasSerializer<AndroidSourceSet> {
 
     override fun deserialize(
         context: IdeaKotlinSerializationContext,
         data: ByteArray
-    ): () -> AndroidSourceSet? = with(context.logger) {
-        {
-            try {
-                AndroidSourceSet.parseFrom(data)
-            } catch (e: InvalidProtocolBufferException) {
-                handleException("Android SourceSet Model", e)
-                null
-            }
+    ): AndroidSourceSet? = with(context.logger) {
+        try {
+            AndroidSourceSet.parseFrom(data)
+        } catch (e: InvalidProtocolBufferException) {
+            handleException("Android SourceSet Model", e)
+            null
         }
     }
 
     override fun serialize(
         context: IdeaKotlinSerializationContext,
-        value: () -> AndroidSourceSet?
-    ): ByteArray? = value()?.toByteArray()
+        value:AndroidSourceSet
+    ): ByteArray = value.toByteArray()
 }
 
 object AndroidDependencyModelSerializer: IdeaKotlinExtrasSerializer<DependencyInfo> {

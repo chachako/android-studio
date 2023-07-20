@@ -8,7 +8,7 @@
         "extras": {
           "com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker": {},
           "org.gradle.api.artifacts.Configuration;resolvableMetadataConfiguration": "configuration \u0027:kmpSecondLib:androidMainResolvableDependenciesMetadata\u0027",
-          "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidSourceSet?\u003e;android-source-set-model": {
+          "com.android.kotlin.multiplatform.models.AndroidSourceSet;android-source-set-model": {
             "sourceProvider": {
               "manifestFile": {
                 "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpSecondLib/src/androidMain/AndroidManifest.xml"
@@ -27,7 +27,7 @@
       ],
       "extras": {
         "org.jetbrains.kotlin.gradle.plugin.mpp.targetHierarchy.SourceSetTreeClassifier": {},
-        "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidCompilation?\u003e;android-compilation-model": {
+        "com.android.kotlin.multiplatform.models.AndroidCompilation;android-compilation-model": {
           "type": "MAIN",
           "mainInfo": {
             "namespace": "com.example.kmpsecondlib",
@@ -52,7 +52,7 @@
     }
   ],
   "extras": {
-    "kotlin.Function0\u003ccom.android.kotlin.multiplatform.models.AndroidTarget?\u003e;android-target-model": {
+    "com.android.kotlin.multiplatform.models.AndroidTarget;android-target-model": {
       "agpVersion": "{AGP_Version}",
       "projectPath": ":kmpSecondLib",
       "buildDir": {

@@ -16,11 +16,15 @@
 
 package com.android.build.gradle.internal.ide.kmp
 
+import com.android.build.api.variant.KotlinMultiplatformAndroidTarget
+import com.android.build.api.variant.impl.KmpVariantImpl
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
+import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.ide.dependencies.LibraryCacheImpl
 import com.android.build.gradle.internal.ide.dependencies.LibraryServiceImpl
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker.Companion.android
 import com.android.build.gradle.internal.ide.kmp.resolvers.AndroidLibraryDependencyResolver
+import com.android.build.gradle.internal.ide.kmp.resolvers.KotlinModelBuildingHook
 import com.android.build.gradle.internal.ide.kmp.resolvers.LocalFileDependencyResolver
 import com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver
 import com.android.build.gradle.internal.ide.kmp.serialization.AndroidExtrasSerializationExtension
@@ -37,16 +41,20 @@ import org.jetbrains.kotlin.gradle.plugin.ide.IdeMultiplatformImport
 import org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver
 
 @OptIn(ExternalKotlinTargetApi::class)
-object KotlinIdeImportConfigurator {
+internal object KotlinIdeImportConfigurator {
 
     fun configure(
         project: Project,
+        androidTarget: Lazy<KotlinMultiplatformAndroidTarget>,
+        androidExtension: KotlinMultiplatformAndroidExtensionImpl,
         service: IdeMultiplatformImport,
         sourceSetToCreationConfigMap: Lazy<Map<KotlinSourceSet, KmpComponentCreationConfig>>,
         extraSourceSetsToIncludeInResolution: Lazy<Set<KotlinSourceSet>>
     ) {
         registerDependencyResolvers(
             project,
+            androidTarget,
+            androidExtension,
             service,
             sourceSetToCreationConfigMap,
             extraSourceSetsToIncludeInResolution
@@ -59,6 +67,8 @@ object KotlinIdeImportConfigurator {
 
     private fun registerDependencyResolvers(
         project: Project,
+        androidTarget: Lazy<KotlinMultiplatformAndroidTarget>,
+        androidExtension: KotlinMultiplatformAndroidExtensionImpl,
         service: IdeMultiplatformImport,
         sourceSetToCreationConfigMap: Lazy<Map<KotlinSourceSet, KmpComponentCreationConfig>>,
         extraSourceSetsToIncludeInResolution: Lazy<Set<KotlinSourceSet>>
@@ -147,6 +157,20 @@ object KotlinIdeImportConfigurator {
                 sourceSetToCreationConfigMap = sourceSetToCreationConfigMap
             ),
             constraint = androidSourceSetFilter,
+            phase = IdeMultiplatformImport.AdditionalArtifactResolutionPhase.PreAdditionalArtifactResolution,
+            priority = resolutionPriority
+        )
+
+        service.registerAdditionalArtifactResolver(
+            resolver = KotlinModelBuildingHook(
+                project = project,
+                mainVariant = lazy(LazyThreadSafetyMode.NONE) {
+                    sourceSetToCreationConfigMap.value.values.filterIsInstance<KmpVariantImpl>().first()
+               },
+                androidTarget = androidTarget,
+                androidExtension = androidExtension
+            ),
+            constraint = IdeMultiplatformImport.SourceSetConstraint.unconstrained,
             phase = IdeMultiplatformImport.AdditionalArtifactResolutionPhase.PreAdditionalArtifactResolution,
             priority = resolutionPriority
         )
