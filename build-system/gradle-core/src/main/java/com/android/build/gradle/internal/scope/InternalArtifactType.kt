@@ -585,6 +585,9 @@ InternalArtifactType<T : FileSystemLocation>(
         FILE,
         fileName = SdkConstants.FN_BINARY_ART_PROFILE_METADATA
     )
+    // Directory containing the dex metadata files to be installed as baseline profiles on devices
+    // It should also contain a file which writes out mappings from API level to ".dm" file
+    object DEX_METADATA_DIRECTORY: InternalArtifactType<Directory>(DIRECTORY), Replaceable
 
     // Sync dynamic properties file artifacts
     object VARIANT_MODEL: InternalArtifactType<RegularFile>(

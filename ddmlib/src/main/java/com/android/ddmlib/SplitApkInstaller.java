@@ -115,14 +115,9 @@ public class SplitApkInstaller extends SplitApkInstallerBase {
                             "Directory upload not supported: %s", fileToUpload.getAbsolutePath()));
             return false;
         }
-        String baseName =
-                fileToUpload.getName().lastIndexOf('.') != -1
-                        ? fileToUpload
-                                .getName()
-                                .substring(0, fileToUpload.getName().lastIndexOf('.'))
-                        : fileToUpload.getName();
 
-        baseName = UNSAFE_PM_INSTALL_SESSION_SPLIT_NAME_CHARS.replaceFrom(baseName, '_');
+        String baseName =
+                UNSAFE_PM_INSTALL_SESSION_SPLIT_NAME_CHARS.replaceFrom(fileToUpload.getName(), '_');
 
         String command =
                 String.format(

@@ -36,18 +36,23 @@ import com.android.tools.profgen.DexFile
 import com.android.tools.profgen.Diagnostics
 import com.android.tools.profgen.HumanReadableProfile
 import com.android.tools.profgen.ObfuscationMap
+import com.android.tools.profgen.buildArtProfileWithDexMetadata
+import com.android.utils.FileUtils
 import com.google.common.annotations.VisibleForTesting
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskProvider
+import java.io.File
 
 /**
  * Task that transforms a human readable art profile into a binary form version that can be shipped
@@ -78,6 +83,10 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
     @get: OutputFile
     abstract val binaryArtProfileMetadata: RegularFileProperty
 
+    @get: OutputDirectory
+    @get: Optional
+    abstract val dexMetadataDirectory: DirectoryProperty
+
     abstract class CompileArtProfileWorkAction:
             ProfileAwareWorkAction<CompileArtProfileWorkAction.Parameters>() {
 
@@ -87,6 +96,7 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
             abstract val obfuscationMappingFile: RegularFileProperty
             abstract val binaryArtProfileOutputFile: RegularFileProperty
             abstract val binaryArtProfileMetadataOutputFile: RegularFileProperty
+            abstract val dexMetadataDirectory: DirectoryProperty
         }
 
         override fun run() {
@@ -99,20 +109,39 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
             ) ?: throw RuntimeException(
                 "Merged ${SdkConstants.FN_ART_PROFILE} cannot be parsed successfully."
             )
-
+            val obfuscationMap = if (parameters.obfuscationMappingFile.isPresent) {
+                ObfuscationMap(parameters.obfuscationMappingFile.get().asFile)
+            } else {
+                ObfuscationMap.Empty
+            }
             val supplier = DexFileNameSupplier()
-            val artProfile = ArtProfile(
+            // need to rename dex files with sequential numbers the same way [DexIncrementalRenameManager] does
+            val dexFiles =
+                parameters.dexFolders.asFileTree.files.sortedWith(DexFileComparator()).map {
+                    DexFile(it.inputStream(), supplier.get())
+                }
+
+            val artProfile = if (parameters.dexMetadataDirectory.isPresent) {
+                val artProfileWithDexMetadata = buildArtProfileWithDexMetadata(
                     humanReadableProfile,
-                    if (parameters.obfuscationMappingFile.isPresent) {
-                        ObfuscationMap(parameters.obfuscationMappingFile.get().asFile)
-                    } else {
-                        ObfuscationMap.Empty
-                    },
-                    //need to rename dex files with sequential numbers the same way [DexIncrementalRenameManager] does
-                    parameters.dexFolders.asFileTree.files.sortedWith(DexFileComparator()).map {
-                        DexFile(it.inputStream(), supplier.get())
+                    obfuscationMap,
+                    dexFiles,
+                    outputDir = parameters.dexMetadataDirectory.get().asFile
+                )
+
+                val dexMetadataMap =
+                    artProfileWithDexMetadata.dexMetadata.entries.joinToString("\n") {
+                        it.key.toString() + "=" + parameters.dexMetadataDirectory.get().asFile.toPath().relativize(it.value.toPath())
                     }
-            )
+                FileUtils.writeToFile(
+                    File(parameters.dexMetadataDirectory.get().asFile, SdkConstants.FN_DEX_METADATA_PROP),
+                    dexMetadataMap
+                )
+                artProfileWithDexMetadata.profile
+            } else {
+                ArtProfile(humanReadableProfile, obfuscationMap, dexFiles)
+            }
+
             // the P compiler is always used, the server side will transcode if necessary.
             parameters.binaryArtProfileOutputFile.get().asFile.outputStream().use {
                 artProfile.save(it, ArtProfileSerializer.V0_1_0_P)
@@ -138,6 +167,7 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
             }
             it.binaryArtProfileOutputFile.set(binaryArtProfile)
             it.binaryArtProfileMetadataOutputFile.set(binaryArtProfileMetadata)
+            it.dexMetadataDirectory.set(dexMetadataDirectory)
         }
     }
 
@@ -153,14 +183,23 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
         override fun handleProvider(taskProvider: TaskProvider<CompileArtProfileTask>) {
             super.handleProvider(taskProvider)
             creationConfig.artifacts.setInitialProvider(
-                    taskProvider,
-                    CompileArtProfileTask::binaryArtProfile
+                taskProvider,
+                CompileArtProfileTask::binaryArtProfile
             ).on(InternalArtifactType.BINARY_ART_PROFILE)
 
             creationConfig.artifacts.setInitialProvider(
                 taskProvider,
                 CompileArtProfileTask::binaryArtProfileMetadata
             ).on(InternalArtifactType.BINARY_ART_PROFILE_METADATA)
+
+            // Only include the dex metadata files for release builds since these are used along
+            // with the APKs for installation on devices
+            if (!creationConfig.debuggable) {
+                creationConfig.artifacts.setInitialProvider(
+                    taskProvider,
+                    CompileArtProfileTask::dexMetadataDirectory
+                ).on(InternalArtifactType.DEX_METADATA_DIRECTORY)
+            }
         }
 
         override fun configure(task: CompileArtProfileTask) {

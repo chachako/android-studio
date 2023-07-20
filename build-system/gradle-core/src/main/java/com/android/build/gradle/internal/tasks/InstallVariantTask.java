@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.tasks;
 import static com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_APKS;
 import static com.android.build.gradle.internal.tasks.BundleInstallUtils.extractApkFilesBypassingBundleTool;
 
+import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.build.api.artifact.SingleArtifact;
 import com.android.build.api.dsl.Installation;
@@ -49,11 +50,16 @@ import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.io.Files;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -62,9 +68,11 @@ import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.logging.LogLevel;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.PathSensitive;
@@ -105,6 +113,7 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                         getTimeOutInMs(),
                         iLogger,
                         System.getenv("ANDROID_SERIAL"));
+
         deviceProvider.use(
                 () -> {
                     install(
@@ -118,7 +127,9 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                             supportedAbis,
                             getInstallOptions(),
                             getTimeOutInMs(),
-                            getLogger());
+                            getLogger(),
+                            getDexMetadataDirectory(),
+                            getTmpDir().get().getAsFile());
                     return null;
                 });
     }
@@ -134,8 +145,10 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
             @NonNull Set<String> supportedAbis,
             @NonNull Collection<String> installOptions,
             int timeOutInMs,
-            @NonNull Logger logger)
-            throws DeviceException {
+            @NonNull Logger logger,
+            @NonNull DirectoryProperty dexMetadataDirectory,
+            @NonNull File tmpDir)
+            throws DeviceException, IOException {
         ILogger iLogger = new LoggerWrapper(logger);
         int successfulInstallCount = 0;
         List<? extends DeviceConnector> devices = deviceProvider.getDevices();
@@ -143,7 +156,6 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
         BuiltArtifactsImpl builtArtifacts = new BuiltArtifactsLoaderImpl().load(apkDirectory);
 
         for (final DeviceConnector device : devices) {
-
             // When InstallUtils.checkDeviceApiLevel returns false, it logs the reason.
             if (InstallUtils.checkDeviceApiLevel(
                     device, minSdkVersion, iLogger, projectPath, variantName)) {
@@ -206,6 +218,8 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                                     deviceConfigProvider, builtArtifacts, supportedAbis));
                 }
 
+                addDexMetadataFiles(dexMetadataDirectory, device, apkFiles, tmpDir, logger);
+
                 if (apkFiles.isEmpty()) {
                     logger.lifecycle(
                             "Skipping device '{}' for '{}:{}': Could not find build of variant "
@@ -243,6 +257,54 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
         }
     }
 
+    /**
+     * This method takes the dexMetadataDirectory which is an output of the CompileArtProfileTask
+     * and uses its contents to add one or more .dm files to [apkFiles] to be installed on the
+     * device. This will only execute if the dexMetadataDirectory exists.
+     */
+    private static void addDexMetadataFiles(
+            DirectoryProperty dexMetadataDirectory,
+            DeviceConnector device,
+            List<File> apkFiles,
+            File tmpDir,
+            Logger logger)
+            throws IOException {
+        Directory dmDir = dexMetadataDirectory.getOrNull();
+        if (dmDir != null && dmDir.file(SdkConstants.FN_DEX_METADATA_PROP).getAsFile().exists()) {
+            File dexMetadataProperties =
+                    dexMetadataDirectory.get().file(SdkConstants.FN_DEX_METADATA_PROP).getAsFile();
+            InputStream inputStream = new FileInputStream(dexMetadataProperties);
+            Properties properties = new Properties();
+            properties.load(inputStream);
+            String dmPath = properties.getProperty(String.valueOf(device.getApiLevel()));
+            if (dmPath == null) {
+                logger.log(
+                        LogLevel.INFO,
+                        "Baseline Profile not found for API level " + device.getApiLevel());
+                return;
+            }
+
+            if (!apkFiles.isEmpty()) {
+                Path fullDmPath = dexMetadataDirectory.get().getAsFile().toPath().resolve(dmPath);
+                // Copy the .dm files to the temp directory with the same names as the APKs
+                // being installed. This is necessary for the .dm files to associated with the
+                // corresponding APK. Note: this is fine because the size of the file is small, but
+                // if it becomes larger, a soft link can/should be used
+                int numApks = apkFiles.size();
+                FileUtils.mkdirs(tmpDir);
+                for (int i = 0; i < numApks; i++) {
+                    String apkFileName = apkFiles.get(i).getName();
+                    if (apkFileName.endsWith(".apk")) {
+                        String apkName = Files.getNameWithoutExtension(apkFileName);
+                        File copiedDm = FileUtils.join(tmpDir, apkName + ".dm");
+                        FileUtils.copyFile(fullDmPath.toFile(), copiedDm);
+                        apkFiles.add(copiedDm);
+                    }
+                }
+            }
+        }
+    }
+
     @Input
     public int getTimeOutInMs() {
         return timeOutInMs;
@@ -276,8 +338,16 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
     @Optional
     public abstract DirectoryProperty getPrivacySandboxSdkApksFromSplits();
 
+    @InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
+    @Optional
+    public abstract DirectoryProperty getDexMetadataDirectory();
+
     @Nested
     public abstract BuildToolsExecutableInput getBuildTools();
+
+    @Internal
+    public abstract DirectoryProperty getTmpDir();
 
     public static class CreationAction
             extends VariantTaskCreationAction<InstallVariantTask, ApkCreationConfig> {
@@ -347,6 +417,21 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
             task.setInstallOptions(installationOptions.getInstallOptions());
 
             SdkComponentsKt.initialize(task.getBuildTools(), creationConfig);
+
+            task.getDexMetadataDirectory()
+                    .set(
+                            creationConfig
+                                    .getArtifacts()
+                                    .get(InternalArtifactType.DEX_METADATA_DIRECTORY.INSTANCE));
+            task.getDexMetadataDirectory().disallowChanges();
+
+            task.getTmpDir()
+                    .set(
+                            creationConfig
+                                    .getPaths()
+                                    .intermediatesDir(
+                                            "tmp", "installVariant", creationConfig.getDirName()));
+            task.getTmpDir().disallowChanges();
         }
 
         @Override

@@ -27,6 +27,7 @@ import com.android.fakeadbserver.services.PackageManager
 import com.android.sdklib.AndroidVersion
 import com.android.utils.StdLogger
 import com.google.common.collect.ImmutableList
+import com.google.common.collect.ImmutableMap
 import com.google.common.collect.ImmutableSet
 import org.gradle.api.logging.Logger
 import org.junit.Before
@@ -118,7 +119,9 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
             ImmutableSet.of(),
             ImmutableList.of(),
             4000,
-            logger
+            logger,
+            FakeGradleDirectoryProperty(null),
+            temporaryFolder.root
         )
         Mockito.verify(logger, times(3)).quiet("Installed on {} {}.", 1, "device")
         Mockito.verify(deviceConnector, Mockito.atLeastOnce()).name
@@ -161,7 +164,9 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
                 ImmutableSet.of(),
                 ImmutableList.of(),
                 4000,
-                logger
+                logger,
+                FakeGradleDirectoryProperty(null),
+                temporaryFolder.root
         )
         assert(deviceState.pmLogs.any {
             it.startsWith("install -r -t") && it.contains("main.apk")
