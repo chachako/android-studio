@@ -16,6 +16,8 @@
 package com.android.tools.lint
 
 import com.android.tools.lint.UastEnvironment.Module.Variant
+import com.android.tools.lint.detector.api.GraphUtils
+import com.android.tools.lint.detector.api.Project
 import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.mock.MockApplication
@@ -42,6 +44,7 @@ import org.jetbrains.kotlin.analysis.api.impl.base.util.LibraryUtils
 import org.jetbrains.kotlin.analysis.api.resolve.extensions.KtResolveExtensionProvider
 import org.jetbrains.kotlin.analysis.api.standalone.StandaloneAnalysisAPISession
 import org.jetbrains.kotlin.analysis.api.standalone.buildStandaloneAnalysisAPISession
+import org.jetbrains.kotlin.analysis.project.structure.KtModule
 import org.jetbrains.kotlin.analysis.project.structure.builder.KtModuleBuilder
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtLibraryModule
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtScriptModule
@@ -185,7 +188,17 @@ private fun createAnalysisSession(
         // TODO(b/283271025): what is the platform of module provider for KMP?
         platform = JvmPlatforms.defaultJvmPlatform
         project = theProject
-        config.modules.forEach { m ->
+
+        val uastEnvModuleByName = config.modules.associateBy(UastEnvironment.Module::name)
+        val uastEnvModuleOrder = // We need to start from the leaves of the dependency
+          GraphUtils.reverseTopologicalSort(config.modules.map { it.name }) {
+            uastEnvModuleByName[it]!!.directDependencies.map { (depName, _) -> depName }
+          }
+        val builtKtModuleByName = hashMapOf<String, KtModule>() // incrementally added below
+
+        uastEnvModuleOrder.forEach { name ->
+          val m = uastEnvModuleByName[name]!!
+
           val mPlatform =
             when (m.variant) {
               Variant.COMMON -> CommonPlatforms.defaultCommonPlatform
@@ -252,28 +265,43 @@ private fun createAnalysisSession(
               }
             )
           }
-          addModule(
-            buildKtSourceModule {
-              languageVersionSettings = m.kotlinLanguageLevel
-              addModuleDependencies(m.name)
-              contentScope =
-                TopDownAnalyzerFacadeForJVM.newModuleSearchScope(theProject, ordinaryKtFiles)
-              platform = mPlatform
-              project = theProject
-              moduleName = m.name
-              // NB: This should include both .kt and .java sources if any,
-              //  and thus we don't need to specify the reified type for the return file type.
-              addSourceRoots(
-                getPsiFilesFromPaths(
-                  project,
-                  Helper.getSourceFilePaths(
-                    m.sourceRoots.map(File::getPath),
-                    includeDirectoryRoot = true
-                  )
+
+          val ktModule = buildKtSourceModule {
+            languageVersionSettings = m.kotlinLanguageLevel
+            addModuleDependencies(m.name)
+            contentScope =
+              TopDownAnalyzerFacadeForJVM.newModuleSearchScope(theProject, ordinaryKtFiles)
+            platform = mPlatform
+            project = theProject
+            moduleName = m.name
+
+            m.directDependencies.forEach { (depName, depKind) ->
+              builtKtModuleByName[depName]?.let { depKtModule ->
+                when (depKind) {
+                  Project.DependencyKind.Regular -> addRegularDependency(depKtModule)
+                  Project.DependencyKind.DependsOn -> addDependsOnDependency(depKtModule)
+                }
+              }
+                ?: System.err.println(
+                  "Dependency named `$depName` ignored because module not found"
+                )
+            }
+
+            // NB: This should include both .kt and .java sources if any,
+            //  and thus we don't need to specify the reified type for the return file type.
+            addSourceRoots(
+              getPsiFilesFromPaths(
+                project,
+                Helper.getSourceFilePaths(
+                  m.sourceRoots.map(File::getPath),
+                  includeDirectoryRoot = true
                 )
               )
-            }
-          )
+            )
+          }
+
+          addModule(ktModule)
+          builtKtModuleByName[name] = ktModule
         }
       }
     }

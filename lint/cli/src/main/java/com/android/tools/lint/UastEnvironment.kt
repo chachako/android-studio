@@ -273,6 +273,12 @@ interface UastEnvironment {
     val gradleBuildScripts: Collection<File>
       get() = project.gradleBuildScripts
 
+    val directDependencies: Sequence<Pair<String, Project.DependencyKind>>
+      get() =
+        project.directLibraries.asSequence().map {
+          it.name /* key must match `this.name` */ to project.getDependencyKind(it)
+        }
+
     val allRoots: Sequence<File>
       get() = sourceRoots.asSequence() + classpathRoots.asSequence()
 

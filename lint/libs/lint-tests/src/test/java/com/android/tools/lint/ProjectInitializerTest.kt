@@ -2631,7 +2631,23 @@ class ProjectInitializerTest {
             }
           """
             )
-            .indented()
+            .indented(),
+          kt(
+            "src/main/java/pkg/android/expect.kt",
+            """
+            package pkg
+            expect fun getPlatform() : Platform
+          """
+              .trimIndent()
+          ),
+          kt(
+            "src/main/java/pkg/android/actual.kt",
+            """
+            package pkg
+            actual fun getPlatform() = TODO()
+          """
+              .trimIndent()
+          ),
         )
         .name("androidApp")
         .dependsOn(shared)
@@ -2702,13 +2718,15 @@ class ProjectInitializerTest {
             <resource file="androidApp/src/main/res/values/styles.xml" />
             <src file="androidApp/src/main/java/pkg/android/MainActivity.kt" />
             <src file="androidApp/src/main/java/pkg/android/MyApplicationTheme.kt" />
-            <dep module="shared" />
+            <src file="androidApp/src/main/java/pkg/android/expect.kt" />
+            <src file="androidApp/src/main/java/pkg/android/actual.kt" />
+            <dep module="shared" kind="dependsOn" />
           </module>
 
           <module name="iosApp" android="false" library="false">
             <src file="iosApp/iosApp/ContentView.swift" />
             <src file="iosApp/iosApp/iOSApp.swift" />
-            <dep module="shared" />
+            <dep module="shared" kind="dependsOn"/>
           </module>
 
           <module name="shared" android="false">
