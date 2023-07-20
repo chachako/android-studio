@@ -1594,4 +1594,21 @@ public class Project {
     public CoreApplicationEnvironment getEnv() {
         return env;
     }
+
+    /**
+     * For KMP projects
+     * See <a href="https://github.com/JetBrains/kotlin/blob/master/analysis/project-structure/src/org/jetbrains/kotlin/analysis/project/structure/KtModule.kt#L33-L41">...</a>
+     */
+    public enum DependencyKind { Regular, DependsOn }
+
+    private final Map<Project, DependencyKind> dependencyKind = new HashMap<>();
+
+    public void setDependencyKind(@NonNull Project lib, @NonNull DependencyKind kind) {
+        dependencyKind.put(lib, kind);
+    }
+
+    @NonNull
+    public DependencyKind getDependencyKind(@NonNull Project lib) {
+        return dependencyKind.getOrDefault(lib, DependencyKind.Regular);
+    }
 }

@@ -43,6 +43,7 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.Location
 import com.android.tools.lint.detector.api.Platform
 import com.android.tools.lint.detector.api.Project
+import com.android.tools.lint.detector.api.Project.DependencyKind
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceSetType
 import com.android.tools.lint.model.LintModelSerialization
@@ -115,6 +116,7 @@ private const val ATTR_JAVA_LEVEL = "javaLanguage"
 private const val ATTR_KOTLIN_LEVEL = "kotlinLanguage"
 private const val ATTR_MODEL = "model"
 private const val ATTR_PARTIAL_RESULTS_DIR = "partial-results-dir"
+private const val ATTR_KIND = "kind"
 private const val DOT_SRCJAR = ".srcjar"
 
 /**
@@ -188,8 +190,9 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
   /** list of global classpath jars to add to all modules */
   private val globalClasspath = mutableListOf<File>()
 
-  /** map from module instance to names of modules it depends on */
-  private val dependencies: Multimap<ManualProject, String> = ArrayListMultimap.create()
+  /** map from module instance to names of modules it depends on, along with dependency kinds */
+  private val dependencies: Multimap<ManualProject, Pair<String, DependencyKind>> =
+    ArrayListMultimap.create()
 
   /** map from module to the merged manifest to use, if any */
   private val mergedManifests = mutableMapOf<Project, File?>()
@@ -333,10 +336,12 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
 
     // Now that we have all modules recorded, process our dependency map
     // and add dependencies between the modules
-    for ((module, dependencyName) in dependencies.entries()) {
+    for ((module, dependency) in dependencies.entries()) {
+      val (dependencyName, dependencyKind) = dependency
       val to = modules[dependencyName]
       if (to != null) {
         module.addDirectDependency(to)
+        module.setDependencyKind(to, dependencyKind)
       } else {
         reportError("No module $dependencyName found (depended on by ${module.name}")
       }
@@ -438,7 +443,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
     // need to assume that all of them are in a flat hierarchy
     for (module in modules.values) {
       val aarDeps = mutableListOf<ResourceVisibilityLookup>()
-      for (dependencyName in dependencies.get(module)) {
+      for ((dependencyName, _) in dependencies.get(module)) {
         val visibility = visibility[dependencyName] ?: continue
         aarDeps.add(visibility)
       }
@@ -608,12 +613,12 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
         TAG_AAR -> {
           // Specifying an <aar> dependency in the file is an implicit dependency
           val aar = parseAar(child, dir)
-          aar?.let { dependencies.put(module, aar) }
+          aar?.let { dependencies.put(module, aar to DependencyKind.Regular) }
         }
         TAG_JAR -> {
           // Specifying a <jar> dependency in the file is an implicit dependency
           val jar = parseJar(child, dir)
-          jar?.let { dependencies.put(module, jar) }
+          jar?.let { dependencies.put(module, jar to DependencyKind.Regular) }
         }
         TAG_BASELINE -> {
           baseline = getFile(child, dir)
@@ -629,7 +634,21 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
           if (target.isEmpty()) {
             reportError("Invalid module dependency in ${module.name}", child)
           }
-          dependencies.put(module, target)
+          val kind =
+            when (val kindText = child.getAttribute(ATTR_KIND)) {
+              "dependsOn" -> DependencyKind.DependsOn
+              "regular",
+              "" -> DependencyKind.Regular
+              else ->
+                DependencyKind.Regular.also {
+                  client.log(
+                    Severity.WARNING,
+                    null,
+                    "Unexpected dependency kind '$kindText' parsed as 'regular'"
+                  )
+                }
+            }
+          dependencies.put(module, target to kind)
         }
         TAG_AIDL,
         TAG_PROGUARD -> {
