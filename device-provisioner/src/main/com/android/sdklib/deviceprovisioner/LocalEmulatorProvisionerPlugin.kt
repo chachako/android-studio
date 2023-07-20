@@ -252,7 +252,9 @@ class LocalEmulatorProvisionerPlugin(
 
   override val createDeviceAction =
     object : CreateDeviceAction {
-      override val presentation = MutableStateFlow(defaultPresentation.fromContext()).asStateFlow()
+      override val presentation =
+        MutableStateFlow(defaultPresentation.fromContext().copy(label = "Create Virtual Device"))
+          .asStateFlow()
 
       override suspend fun create() {
         if (avdManager.createAvd() != null) {
