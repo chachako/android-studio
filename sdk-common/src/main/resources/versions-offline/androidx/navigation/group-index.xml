@@ -1,18 +1,18 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <androidx.navigation>
-  <navigation-common versions="2.5.3,2.6.0-alpha08"/>
-  <navigation-common-ktx versions="2.5.3,2.6.0-alpha08"/>
+  <navigation-common versions="2.6.0,2.7.0-beta02"/>
+  <navigation-common-ktx versions="2.6.0,2.7.0-beta02"/>
   <navigation-compose versions="2.5.3,2.6.0-alpha08"/>
   <navigation-dynamic-features-fragment versions="2.5.3,2.6.0-alpha08"/>
   <navigation-dynamic-features-runtime versions="2.5.3,2.6.0-alpha08"/>
-  <navigation-fragment versions="2.5.3,2.6.0-alpha08"/>
-  <navigation-fragment-ktx versions="2.5.3,2.6.0-alpha08"/>
-  <navigation-runtime versions="2.5.3,2.6.0-alpha08"/>
-  <navigation-runtime-ktx versions="2.5.3,2.6.0-alpha08"/>
-  <navigation-safe-args-generator versions="2.5.3,2.6.0-alpha08"/>
-  <navigation-safe-args-gradle-plugin versions="2.5.3,2.6.0-alpha08"/>
-  <navigation-testing versions="2.5.3,2.6.0-alpha08"/>
-  <navigation-ui versions="2.5.3,2.6.0-alpha08"/>
-  <navigation-ui-ktx versions="2.5.3,2.6.0-alpha08"/>
+  <navigation-fragment versions="2.6.0,2.7.0-beta02"/>
+  <navigation-fragment-ktx versions="2.6.0,2.7.0-beta02"/>
+  <navigation-runtime versions="2.6.0,2.7.0-beta02"/>
+  <navigation-runtime-ktx versions="2.6.0,2.7.0-beta02"/>
+  <navigation-safe-args-generator versions="2.6.0,2.7.0-beta02"/>
+  <navigation-safe-args-gradle-plugin versions="2.6.0,2.7.0-beta02"/>
+  <navigation-testing versions="2.6.0,2.7.0-beta02"/>
+  <navigation-ui versions="2.6.0,2.7.0-beta02"/>
+  <navigation-ui-ktx versions="2.6.0,2.7.0-beta02"/>
 </androidx.navigation>
 
