@@ -57,13 +57,16 @@ class ServiceManager {
 
     fun setActivityManager(newActivityManager: Service) {
         activityManager = newActivityManager
-        services[ACTIVITY_MANAGER_SERVICE_NAME] = newActivityManager
+        setService(ACTIVITY_MANAGER_SERVICE_NAME, newActivityManager)
+    }
+
+    fun setService(name: String, service: Service) {
+        services[name] = service
     }
 
     fun services(): Map<String, Service?> {
         return services.toMap()
     }
-
     private fun findService(name: String): Service? = services[name]
 }
 

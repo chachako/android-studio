@@ -21,7 +21,6 @@ import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
 import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.testing.ConnectedDevice
 import com.android.builder.testing.api.DeviceConfigProvider
-import com.android.builder.testing.api.DeviceConfigProviderImpl
 import com.android.builder.testing.api.DeviceConnector
 import com.android.builder.testing.api.DeviceProvider
 import com.android.ddmlib.AndroidDebugBridge
@@ -29,6 +28,7 @@ import com.android.ddmlib.IDevice
 import com.android.ddmlib.internal.FakeAdbTestRule
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.services.PackageManager
+import com.android.sdklib.AndroidVersion
 import com.android.utils.ILogger
 import com.android.utils.StdLogger
 import com.google.common.collect.ImmutableList
@@ -38,25 +38,35 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 
-class InstallVariantViaBundleTaskTest {
+@RunWith(Parameterized::class)
+class InstallVariantViaBundleTaskTest(private val sdkVersion: AndroidVersion) {
 
     @JvmField
     @Rule
     var tmp = TemporaryFolder()
 
-    private val sdkVersion = 21
+    companion object {
+
+        @JvmStatic
+        @Parameterized.Parameters
+        fun sdkVersion() = arrayOf(
+                AndroidVersion(21),
+                AndroidVersion(33, "TiramisuPrivacySandbox", 4, true)
+        )
+    }
 
     @get:Rule
-    val fakeAdb = FakeAdbTestRule(sdkVersion.toString())
+    val fakeAdb = FakeAdbTestRule(sdkVersion)
 
     private lateinit var project: Project
     private lateinit var deviceConnector: DeviceConnector
@@ -67,6 +77,9 @@ class InstallVariantViaBundleTaskTest {
         project = ProjectBuilder.builder().withProjectDir(tmp.newFolder()).build()
         deviceState = fakeAdb.connectAndWaitForDevice()
         deviceState.setActivityManager(PackageManager())
+        if (sdkVersion.apiLevel >= 33 && sdkVersion.codename.contains("PrivacySandbox")) {
+            deviceState.serviceManager.setService("sdk_sandbox") { _, _ -> }
+        }
         val device = AndroidDebugBridge.getBridge()!!.devices.single()
         deviceConnector = CustomConnectedDevice(
             device,
@@ -117,7 +130,7 @@ class InstallVariantViaBundleTaskTest {
             ""
         )
 
-        val runnable = TestInstallRunnable(getParams(), deviceConnector, outputPath)
+        val runnable = TestInstallRunnable(getParams(), deviceConnector, listOf(outputPath))
         runnable.run()
 
         assert(deviceState.pmLogs.filter {
@@ -126,7 +139,6 @@ class InstallVariantViaBundleTaskTest {
 
     @Test
     fun installMultiple() {
-
         val outputPath = Files.createTempFile(
             "extract-apk",
             ""
@@ -136,17 +148,22 @@ class InstallVariantViaBundleTaskTest {
             ""
         )
 
-        val runnable = TestInstallRunnable(getParams(), deviceConnector, outputPath, outputPath2)
+        val runnable = TestInstallRunnable(getParams(), deviceConnector, listOf(outputPath, outputPath2))
         runnable.run()
 
-        assert(deviceState.pmLogs.filter {
-            it.startsWith("install-write") && it.contains("extract-apk") }.size == 2)
+        if (deviceConnector.supportsPrivacySandbox) {
+            assert(deviceState.abbLogs.filter {
+                it.startsWith("package\u0000install-write") && it.contains("extract-apk")
+            }.size == 2)
+        } else {
+            assert(deviceState.pmLogs.filter {
+                it.startsWith("install-write") && it.contains("extract-apk")
+            }.size == 2)
+        }
     }
 
     @Test
-    @Ignore("Will be enabled in next change in branch.")
     fun installPrivacySandboxSdkApks_oneToOne() {
-
         val outputPath = Files.createTempFile(
             "extract-apk",
             ""
@@ -156,23 +173,24 @@ class InstallVariantViaBundleTaskTest {
         val runnable = TestInstallRunnable(
             getParams(listOf(sdk1Apks)),
             deviceConnector,
-            outputPath,
+            listOf(outputPath),
             privacySandboxSdkApkMapping = mapOf(
                 sdk1Apks to listOf(sdk1ExtractedApk)
             )
         )
         runnable.run()
 
-        assert(deviceState.pmLogs.filter {
-            it.startsWith("install-write") && it.contains("sdk_-extracted") }.size == 1)
-        assert(deviceState.pmLogs.filter {
-            it.startsWith("install -r -t") && it.contains("extract-apk") }.size == 1)
+        if (deviceConnector.supportsPrivacySandbox) {
+            assert(deviceState.abbLogs.filter {
+                it.startsWith("package\u0000install-write") && it.contains("sdk_-extracted") }.size == 1)
+        } else {
+            assert(deviceState.pmLogs.filter {
+                it.startsWith("install -r -t") && it.contains("extract-apk") }.size == 1)
+        }
     }
 
     @Test
-    @Ignore("Will be enabled in next change in branch.")
     fun installPrivacySandboxSdkApks_manyToMany() {
-
         val outputPath = Files.createTempFile(
             "extract-apk",
             ""
@@ -187,7 +205,7 @@ class InstallVariantViaBundleTaskTest {
         val runnable = TestInstallRunnable(
             getParams(listOf(sdk1Apks, sdk2Apks)),
             deviceConnector,
-            outputPath,
+            listOf(outputPath),
             privacySandboxSdkApkMapping = mapOf(
                 sdk1Apks to listOf(sdk1ExtractedApk1, sdk1ExtractedApk2),
                 sdk2Apks to listOf(sdk2ExtractedApk1, sdk2ExtractedApk2)
@@ -196,18 +214,21 @@ class InstallVariantViaBundleTaskTest {
 
         runnable.run()
 
-        assert(deviceState.pmLogs.filter {
-            it.startsWith("install-write") && it.contains("0_sdk_-extracted") }.size == 2)
-        assert(deviceState.pmLogs.filter {
-            it.startsWith("install-write") && it.contains("1_sdk_-extracted") }.size == 2)
-        assert(deviceState.pmLogs.filter {
-            it.startsWith("install -r -t") && it.contains("extract-apk") }.size == 1)
+        if (deviceConnector.supportsPrivacySandbox) {
+            assert(deviceState.abbLogs.filter {
+                it.startsWith("package\u0000install-write") && it.contains("0_sdk_-extracted") }.size == 2)
+            assert(deviceState.abbLogs.filter {
+                it.startsWith("package\u0000install-write") && it.contains("1_sdk_-extracted") }.size == 2)
+        } else {
+            assert(deviceState.pmLogs.filter {
+                it.startsWith("install -r -t") && it.contains("extract-apk") }.size == 1)
+        }
     }
 
     private class TestInstallRunnable(
         val params: InstallVariantViaBundleTask.Params,
         private val deviceConnector: DeviceConnector,
-        private vararg val outputPaths: Path,
+        private val outputPaths: List<Path>,
         private val privacySandboxSdkApkMapping: Map<File, List<File>> = mapOf(),
     ) : InstallVariantViaBundleTask.InstallRunnable() {
 
@@ -233,7 +254,7 @@ class CustomConnectedDevice(
     logger: ILogger,
     timeout: Long,
     timeUnit: TimeUnit,
-    private val sdkVersion: Int,
+    private val sdkVersion: AndroidVersion,
 ): ConnectedDevice(iDevice, logger, timeout, timeUnit) {
 
     /**
@@ -241,6 +262,6 @@ class CustomConnectedDevice(
      * APKs.
      */
     override fun getApiLevel(): Int {
-        return sdkVersion
+        return sdkVersion.apiLevel
     }
 }

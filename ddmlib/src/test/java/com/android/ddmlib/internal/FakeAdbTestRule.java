@@ -27,6 +27,7 @@ import com.android.ddmlib.IDevice;
 import com.android.ddmlib.JdwpHandshake;
 import com.android.fakeadbserver.DeviceState;
 import com.android.fakeadbserver.FakeAdbServer;
+import com.android.sdklib.AndroidVersion;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.ByteBuffer;
@@ -62,6 +63,10 @@ public class FakeAdbTestRule extends ExternalResource {
 
     public FakeAdbTestRule(String sdk) {
         this.sdk = sdk;
+    }
+
+    public FakeAdbTestRule(AndroidVersion androidVersion) {
+        this(Integer.toString(androidVersion.getApiLevel()));
     }
 
     @Override

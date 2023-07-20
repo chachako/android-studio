@@ -42,7 +42,7 @@ class ServiceCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellH
 
         when (shellCommandArgs?.substringBefore(" ")) {
             "list" -> {
-                val serviceManager = ServiceManager()
+                val serviceManager = device.serviceManager
                 val services = serviceManager.services()
                 var i = 0
                 val output = "Found ${services.size} services:\n" + services.entries.joinToString {
