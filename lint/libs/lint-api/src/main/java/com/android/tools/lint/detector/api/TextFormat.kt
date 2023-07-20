@@ -386,7 +386,7 @@ enum class TextFormat {
           }
 
           val url = text.substring(i, end)
-          sb.append("<a href=\"")
+          sb.append(A_HREF_PREFIX)
           sb.append(url)
           sb.append('"').append('>')
           sb.append(url)
@@ -413,6 +413,7 @@ enum class TextFormat {
   companion object {
     const val HTTP_PREFIX = "http://"
     const val HTTPS_PREFIX = "https://"
+    const val A_HREF_PREFIX = "<a href=\""
 
     /**
      * Given an http URL starting at [start] in [text], find the position right after the URL end.
