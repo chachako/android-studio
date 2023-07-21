@@ -18,6 +18,8 @@ package com.android.adblib.tools.debugging.impl
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
+import com.android.adblib.CoroutineScopeCache.Key
+import com.android.adblib.getOrPutSynchronized
 import com.android.adblib.scope
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.AtomicStateFlow
@@ -63,7 +65,7 @@ internal class JdwpProcessImpl(
      * is used for collecting process properties and for a debugging session. The connection
      * lasts until the debugging session ends.
      */
-    private val sharedJdwpSessionProvider = SharedJdwpSessionProvider.create(device, pid)
+    private val sharedJdwpSessionProvider = createSharedJdwpSessionProvider(device, pid)
 
     private val propertyCollector = JdwpProcessPropertiesCollector(device, scope, pid, sharedJdwpSessionProvider)
 
@@ -99,5 +101,24 @@ internal class JdwpProcessImpl(
         logger.debug { msg }
         sharedJdwpSessionProvider.close()
         cache.close()
+    }
+
+    companion object {
+        private val SharedJdwpSessionProviderMapKey =
+            Key<SharedJdwpSessionProviderMap>(SharedJdwpSessionProviderMap::class.simpleName!!)
+
+        private val ConnectedDevice.sharedJdwpSessionProviderMap: SharedJdwpSessionProviderMap
+            get() {
+                return cache.getOrPutSynchronized(SharedJdwpSessionProviderMapKey) {
+                    SharedJdwpSessionProviderMap(this)
+                }
+            }
+
+        private fun createSharedJdwpSessionProvider(
+            device: ConnectedDevice,
+            pid: Int
+        ): SharedJdwpSessionProvider {
+            return device.sharedJdwpSessionProviderMap.computeIfAbsent(pid)
+        }
     }
 }

@@ -24,10 +24,11 @@ import com.android.adblib.withPrefix
 import java.util.concurrent.atomic.AtomicInteger
 
 internal class SharedJdwpSessionProviderImpl(
-  private val device: ConnectedDevice,
-  override val pid: Int,
-  private val sharedJdwpSessionRef: ReferenceCountedFactory<SharedJdwpSessionImpl>
-): SharedJdwpSessionProvider {
+    private val device: ConnectedDevice,
+    override val pid: Int,
+    private val sharedJdwpSessionRef: ReferenceCountedFactory<SharedJdwpSessionImpl>,
+    private val onClose: (SharedJdwpSessionProvider) -> Unit
+) : SharedJdwpSessionProvider {
 
     private val logger = thisLogger(device.session)
         .withPrefix("${device.session}-${device}-pid=$pid: ")
@@ -66,6 +67,7 @@ internal class SharedJdwpSessionProviderImpl(
     override fun close() {
         logger.debug { "close()" }
         sharedJdwpSessionRef.close()
+        onClose(this)
     }
 
     override fun toString(): String {

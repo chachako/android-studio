@@ -46,7 +46,7 @@ internal interface SharedJdwpSessionProvider : AutoCloseable {
     suspend fun <R> withSharedJdwpSession(block: suspend (SharedJdwpSession) -> R): R
 
     companion object {
-        fun create(device: ConnectedDevice, pid: Int): SharedJdwpSessionProvider {
+        fun create(device: ConnectedDevice, pid: Int, onClose: (SharedJdwpSessionProvider) -> Unit): SharedJdwpSessionProvider {
             val refCounted = ReferenceCountedFactory {
                 val jdwpSessionFactory: suspend (ConnectedDevice) -> JdwpSession = { device ->
                     JdwpSession.openJdwpSession(
@@ -57,7 +57,7 @@ internal interface SharedJdwpSessionProvider : AutoCloseable {
                 }
                 SharedJdwpSession.create(device, pid, jdwpSessionFactory)
             }
-            return SharedJdwpSessionProviderImpl(device, pid, refCounted)
+            return SharedJdwpSessionProviderImpl(device, pid, refCounted, onClose)
         }
     }
 }
