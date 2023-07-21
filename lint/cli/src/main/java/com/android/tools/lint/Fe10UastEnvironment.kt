@@ -393,12 +393,12 @@ private fun configureFe10ApplicationEnvironment(appEnv: CoreApplicationEnvironme
     // For FE1.0 UAST, the first attempt will be made during project env setup, so any place inside
     // this app env setup is safe.
     it.application.registerService(VirtualFileSetFactory::class.java, LintVirtualFileSetFactory)
-    appEnv.application.registerService(
+    it.application.registerService(
       InternalPersistentJavaLanguageLevelReaderService::class.java,
       InternalPersistentJavaLanguageLevelReaderService.DefaultImpl()
     )
+    reRegisterProgressManager(it.application)
   }
-  reRegisterProgressManager(appEnv.application)
 }
 
 // A Kotlin compiler BindingTrace optimized for Lint.
