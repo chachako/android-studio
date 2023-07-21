@@ -24,12 +24,17 @@ import com.android.ddmlib.IShellOutputReceiver;
 import com.android.ddmlib.NullOutputReceiver;
 import com.android.ddmlib.ShellCommandUnresponsiveException;
 import com.android.ddmlib.TimeoutException;
+import com.android.testutils.TestUtils;
 import com.android.tools.deployer.DeployerException;
 import com.android.tools.deployer.TestLogger;
+import com.android.tools.manifest.parser.ManifestInfo;
 import com.android.tools.manifest.parser.XmlNode;
 import com.android.tools.manifest.parser.components.ManifestActivityInfo;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -59,5 +64,37 @@ public class ActivityTest {
                         any(IShellOutputReceiver.class),
                         eq(15L),
                         eq(TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void useCategoryFromManifest() throws Exception {
+        IDevice device = Mockito.mock(IDevice.class);
+
+        URL url =
+                TestUtils.resolveWorkspacePath(
+                                "tools/base/deploy/deployer/src/test/resource/manifestWithCategory/AndroidManifest.bxml")
+                        .toUri()
+                        .toURL();
+        Assert.assertNotNull(url);
+        try (InputStream input = url.openStream()) {
+            ManifestInfo manifestInfo = ManifestInfo.parseBinaryFromStream(input);
+            Activity activity =
+                    new Activity(
+                            manifestInfo.activities().get(0),
+                            "com.example.myApp",
+                            device,
+                            new TestLogger());
+            activity.activate("", AppComponent.Mode.RUN, new NullOutputReceiver());
+
+            String expectedCommand =
+                    "am start -n com.example.myApp/com.example.tv_app.MainActivity -a android.intent.action.MAIN -c android.intent.category.LEANBACK_LAUNCHER";
+
+            Mockito.verify(device, Mockito.times(1))
+                    .executeShellCommand(
+                            eq(expectedCommand),
+                            any(IShellOutputReceiver.class),
+                            eq(15L),
+                            eq(TimeUnit.SECONDS));
+        }
     }
 }

@@ -20,10 +20,14 @@ import com.android.annotations.NonNull;
 import com.android.ddmlib.IDevice;
 import com.android.ddmlib.IShellOutputReceiver;
 import com.android.tools.deployer.DeployerException;
+import com.android.tools.manifest.parser.components.IntentFilter;
 import com.android.tools.manifest.parser.components.ManifestActivityInfo;
 import com.android.utils.ILogger;
+import java.util.Optional;
 
 public class Activity extends AppComponent {
+
+    private static final String DEFAULT_CATEGORY = "android.intent.category.LAUNCHER";
 
     public Activity(@NonNull ManifestActivityInfo info,
             @NonNull String appId,
@@ -57,8 +61,28 @@ public class Activity extends AppComponent {
                 + " -n "
                 + getFQEscapedName()
                 + " -a android.intent.action.MAIN"
-                + " -c android.intent.category.LAUNCHER"
+                + " -c "
+                + getIntentCategory()
                 + (extraFlags.isEmpty() ? "" : " " + extraFlags);
+    }
+
+    @NonNull
+    private String getIntentCategory() {
+        final Optional<IntentFilter> filterWithCategory =
+                info.getIntentFilters().stream()
+                        .filter(filter -> !filter.getCategories().isEmpty())
+                        .findFirst();
+        if (filterWithCategory.isPresent()) {
+            final Optional<String> category =
+                    filterWithCategory.get().getCategories().stream()
+                            .filter(c -> !c.trim().isEmpty())
+                            .findFirst();
+            if (category.isPresent()) {
+                return category.get();
+            }
+        }
+
+        return DEFAULT_CATEGORY;
     }
 
     private enum Flag {
