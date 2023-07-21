@@ -18,18 +18,12 @@ package com.android.adblib.tools.debugging.impl
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
-import com.android.adblib.property
 import com.android.adblib.scope
 import com.android.adblib.thisLogger
-import com.android.adblib.tools.AdbLibToolsProperties.JDWP_SESSION_FIRST_PACKET_ID
 import com.android.adblib.tools.debugging.AtomicStateFlow
 import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.JdwpProcessProperties
-import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSession
-import com.android.adblib.tools.debugging.utils.ReferenceCountedResource
-import com.android.adblib.tools.debugging.utils.withResource
-import com.android.adblib.utils.closeOnException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
@@ -53,7 +47,7 @@ internal class JdwpProcessImpl(
     /**
      * Provides concurrent and on-demand access to the `jdwp` session of the device.
      *
-     * We use a [ReferenceCountedResource] to ensure only one session is created at a time,
+     * We use a [SharedJdwpSessionProvider] to ensure only one session is created at a time,
      * while at the same time allowing multiple consumers to access the jdwp session concurrently.
      *
      * We currently have 2 consumers:
@@ -69,16 +63,11 @@ internal class JdwpProcessImpl(
      * is used for collecting process properties and for a debugging session. The connection
      * lasts until the debugging session ends.
      */
-    private val jdwpSessionRef = ReferenceCountedResource(session, session.host.ioDispatcher) {
-        JdwpSession.openJdwpSession(device, pid, session.property(JDWP_SESSION_FIRST_PACKET_ID))
-            .closeOnException { jdwpSession ->
-                SharedJdwpSession.create(jdwpSession, pid)
-            }
-    }
+    private val sharedJdwpSessionProvider = SharedJdwpSessionProvider.create(device, pid)
 
-    private val propertyCollector = JdwpProcessPropertiesCollector(device, scope, pid, jdwpSessionRef)
+    private val propertyCollector = JdwpProcessPropertiesCollector(device, scope, pid, sharedJdwpSessionProvider)
 
-    private val jdwpSessionProxy = JdwpSessionProxy(device, pid, jdwpSessionRef)
+    private val jdwpSessionProxy = JdwpSessionProxy(device, pid, sharedJdwpSessionProvider)
 
     private val lazyStartMonitoring by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         scope.launch {
@@ -93,14 +82,14 @@ internal class JdwpProcessImpl(
      * Whether the [SharedJdwpSession] is currently in use (testing only)
      */
     val isJdwpSessionRetained: Boolean
-        get() = jdwpSessionRef.isRetained
+        get() = sharedJdwpSessionProvider.isActive
 
     fun startMonitoring() {
         lazyStartMonitoring
     }
 
     override suspend fun <T> withJdwpSession(block: suspend SharedJdwpSession.() -> T): T {
-        return jdwpSessionRef.withResource {
+        return sharedJdwpSessionProvider.withSharedJdwpSession {
             it.block()
         }
     }
@@ -108,7 +97,7 @@ internal class JdwpProcessImpl(
     override fun close() {
         val msg = "Closing coroutine scope of JDWP process $pid"
         logger.debug { msg }
-        jdwpSessionRef.close()
+        sharedJdwpSessionProvider.close()
         cache.close()
     }
 }

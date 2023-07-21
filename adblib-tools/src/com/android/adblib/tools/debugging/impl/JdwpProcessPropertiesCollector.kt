@@ -49,10 +49,8 @@ import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
 import com.android.adblib.tools.debugging.packets.ddms.writeToChannel
 import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
-import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.tools.debugging.receiveWhile
-import com.android.adblib.tools.debugging.utils.ReferenceCountedResource
-import com.android.adblib.tools.debugging.utils.withResource
+import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.utils.ResizableBuffer
 import com.android.adblib.withPrefix
 import kotlinx.coroutines.CancellationException
@@ -77,7 +75,7 @@ internal class JdwpProcessPropertiesCollector(
     private val device: ConnectedDevice,
     private val processScope: CoroutineScope,
     private val pid: Int,
-    private val jdwpSessionRef: ReferenceCountedResource<SharedJdwpSession>
+    private val jdwpSessionProvider: SharedJdwpSessionProvider
 ) {
 
     private val session: AdbSession
@@ -180,7 +178,7 @@ internal class JdwpProcessPropertiesCollector(
      * and emits them to [CollectState.propertiesFlow].
      */
     private suspend fun collect(collectState: CollectState) {
-        jdwpSessionRef.withResource { jdwpSession ->
+        jdwpSessionProvider.withSharedJdwpSession { jdwpSession ->
             collectWithSession(jdwpSession, collectState)
 
             if (collectState.hasCollectedEverything) {
@@ -450,7 +448,7 @@ internal class JdwpProcessPropertiesCollector(
         logger.debug { "JDWP session holder: launching coroutine" }
         val deferred = CompletableDeferred<Unit>()
         processScope.launch {
-            jdwpSessionRef.withResource {
+            jdwpSessionProvider.withSharedJdwpSession {
                 logger.debug { "JDWP session holder: JDWP session has been acquired" }
 
                 // Ok to exit function now, as session has been acquired

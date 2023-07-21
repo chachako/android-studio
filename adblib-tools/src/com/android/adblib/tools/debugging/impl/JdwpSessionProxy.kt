@@ -34,8 +34,6 @@ import com.android.adblib.tools.debugging.receiveAllPacketsCatching
 import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.tools.debugging.sendPacket
 import com.android.adblib.tools.debugging.utils.NoDdmsPacketFilterFactory
-import com.android.adblib.tools.debugging.utils.ReferenceCountedResource
-import com.android.adblib.tools.debugging.utils.withResource
 import com.android.adblib.utils.launchCancellable
 import com.android.adblib.withPrefix
 import kotlinx.coroutines.CompletableDeferred
@@ -53,7 +51,7 @@ import kotlinx.coroutines.coroutineScope
 internal class JdwpSessionProxy(
     private val device: ConnectedDevice,
     private val pid: Int,
-    private val jdwpSessionRef: ReferenceCountedResource<SharedJdwpSession>,
+    private val jdwpSessionProvider: SharedJdwpSessionProvider,
 ) {
 
     private val session: AdbSession
@@ -110,7 +108,7 @@ internal class JdwpSessionProxy(
 
     private suspend fun proxyJdwpSession(debuggerSocket: AdbChannel) {
         logger.debug { "Start proxying socket between external debugger and process on device" }
-        jdwpSessionRef.withResource { deviceSession ->
+        jdwpSessionProvider.withSharedJdwpSession { deviceSession ->
             // The JDWP Session proxy does not need to send custom JDWP packets,
             // so we pass a `null` value for `nextPacketIdBase`.
             JdwpSession.wrapSocketChannel(device, debuggerSocket, pid, null).use { debuggerSession ->

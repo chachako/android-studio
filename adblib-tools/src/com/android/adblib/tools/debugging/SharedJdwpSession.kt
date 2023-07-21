@@ -17,7 +17,6 @@ package com.android.adblib.tools.debugging
 
 import com.android.adblib.AdbChannel
 import com.android.adblib.AdbSession
-import com.android.adblib.AutoShutdown
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
 import com.android.adblib.getOrPutSynchronized
@@ -56,7 +55,7 @@ import kotlin.coroutines.cancellation.CancellationException
  *   underlying [AdbChannel] is executed in a custom [CoroutineScope] so that cancellation
  *   of receivers coroutine does not close the underlying [socket][AdbChannel].
  */
-interface SharedJdwpSession : AutoShutdown {
+interface SharedJdwpSession {
 
     /**
      * The [ConnectedDevice] this [SharedJdwpSession] is connected to.
@@ -115,7 +114,7 @@ interface SharedJdwpSession : AutoShutdown {
      *      }
      *    }
      *
-     * * Active [JdwpPacketReceiver]s are cancelled if this session is [closed][close].
+     * * Active [JdwpPacketReceiver]s are cancelled if this session is closed.
      *
      * * Active [JdwpPacketReceiver]s are notified of the termination of the underlying [JdwpSession]
      *   with a [Throwable]. A "normal" termination is an [EOFException].
@@ -146,16 +145,20 @@ interface SharedJdwpSession : AutoShutdown {
             "SharedJdwpSession.addSharedJdwpSessionFilterFactory"
         )
 
-        internal fun create(jdwpSession: JdwpSession, pid: Int): SharedJdwpSession {
+        internal fun create(
+            device: ConnectedDevice,
+            pid: Int,
+            jdwpSessionFactory: suspend (ConnectedDevice) -> JdwpSession
+        ): SharedJdwpSessionImpl {
             // Add the DdmsPacketFilterFactory to the list of active filters of the AdbSession
             // (in a very round-about way to make sure the filter is added only once per
             // AdbSession instance).
             //TODO: Make this configurable
-            val session = jdwpSession.device.session
+            val session = device.session
             session.cache.getOrPutSynchronized(addSharedJdwpSessionFilterFactoryKey) {
                 session.addSharedJdwpSessionFilterFactory(NoDdmsPacketFilterFactory())
             }
-            return SharedJdwpSessionImpl(jdwpSession, pid)
+            return SharedJdwpSessionImpl(device, jdwpSessionFactory, pid)
         }
     }
 }

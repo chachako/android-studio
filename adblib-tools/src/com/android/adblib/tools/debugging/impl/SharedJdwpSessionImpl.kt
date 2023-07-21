@@ -18,6 +18,7 @@ package com.android.adblib.tools.debugging.impl
 import com.android.adblib.AdbInputChannel
 import com.android.adblib.AdbLogger
 import com.android.adblib.AdbSession
+import com.android.adblib.AutoShutdown
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.scope
 import com.android.adblib.serialNumber
@@ -69,21 +70,25 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 
 /**
- * Implementation of [SharedJdwpSession]
+ * Implementation of [SharedJdwpSession] over an underlying [JdwpSession]
  */
 internal class SharedJdwpSessionImpl(
-    private val jdwpSession: JdwpSession,
+    override val device: ConnectedDevice,
+    private val jdwpSessionFactory: suspend (ConnectedDevice) -> JdwpSession,
     override val pid: Int
-) : SharedJdwpSession {
+) : SharedJdwpSession, AutoShutdown {
 
     private val session: AdbSession
         get() = device.session
 
-    override val device: ConnectedDevice
-        get() = jdwpSession.device
-
     private val logger =
         thisLogger(session).withPrefix("device='${device.serialNumber}' pid=$pid: ")
+
+    private val jdwpSessionMutex = Mutex()
+
+    private var jdwpSession: JdwpSession? = null
+
+    private var closed = false
 
     /**
      * The scope used to run coroutines for sending and receiving packets
@@ -124,46 +129,76 @@ internal class SharedJdwpSessionImpl(
 
     private val jdwpFilter = SharedJdwpSessionFilterEngine(this)
 
-    init {
-        scope.launch {
-            sendReceivedPackets()
+    /**
+     * Opens the underlying JDWP session if needed.
+     *
+     * Note: This method is thread-safe
+     */
+    suspend fun openIfNeeded() {
+        throwIfClosed()
+        jdwpSessionMutex.withLock {
+            jdwpSession ?: run {
+                jdwpSessionFactory(device).also {
+                    jdwpSession = it
+                    scope.launch {
+                        sendReceivedPackets()
+                    }
+                }
+            }
         }
     }
 
     override suspend fun sendPacket(packet: JdwpPacketView) {
+        throwIfClosed()
         packetSender.sendPacket(packet)
     }
 
     override suspend fun newPacketReceiver(): JdwpPacketReceiver {
+        throwIfClosed()
         return JdwpPacketReceiverImpl(this)
     }
 
     override fun nextPacketId(): Int {
-        return jdwpSession.nextPacketId()
+        throwIfClosed()
+        return activeJdwpSession().nextPacketId()
     }
 
     override suspend fun addReplayPacket(packet: JdwpPacketView) {
+        throwIfClosed()
         logger.verbose { "Adding JDWP replay packet '$packet'" }
         val clone = packet.toOffline()
         replayPackets.add(clone)
     }
 
     override suspend fun shutdown() {
-        jdwpSession.shutdown()
+        jdwpSessionMutex.withLock {
+            jdwpSession?.shutdown()
+        }
     }
 
     override fun close() {
+        closed = true
         logger.debug { "Closing session" }
         val exception = CancellationException("Shared JDWP session closed")
         scope.cancel(exception)
-        jdwpSession.close()
+        jdwpSession?.close()
         jdwpMonitor?.close()
         jdwpFilter.close()
         jdwpPacketSharedFlow.close()
     }
 
+    private fun throwIfClosed() {
+        check(!closed) { "${this::class.simpleName} is closed" }
+    }
+
+    private fun activeJdwpSession(): JdwpSession {
+        return jdwpSession ?: run {
+            throw IllegalStateException("${this::class.simpleName} is not open")
+        }
+    }
+
     /**
-     * Asynchronous long-running coroutine that forwards packets read from [jdwpSession]
+     * Asynchronous long-running coroutine that forwards packets read from [activeJdwpSession]
      * to active [jdwpPacketSharedFlow]
      */
     private suspend fun sendReceivedPackets() {
@@ -177,7 +212,7 @@ internal class SharedJdwpSessionImpl(
 
                 logger.verbose { "Waiting for next JDWP packet from session" }
                 val sessionPacket = try {
-                    jdwpSession.receivePacket()
+                    activeJdwpSession().receivePacket()
                 } catch (throwable: Throwable) {
                     // Cancellation cancels the jdwp session scope, which cancel the scope
                     // of all receivers, so they will terminate with cancellation too.
@@ -727,7 +762,7 @@ internal class SharedJdwpSessionImpl(
     }
 
     /**
-     * Send [JdwpPacketView] to the underlying [jdwpSession] in such a way that cancellation
+     * Send [JdwpPacketView] to the underlying [activeJdwpSession] in such a way that cancellation
      * of the [sendPacket] coroutine does not cancel the underlying socket connection.
      */
     private class PacketSender(
@@ -739,7 +774,7 @@ internal class SharedJdwpSessionImpl(
             scope.async {
                 sharedJdwpSession.jdwpMonitor?.onSendPacket(packet)
                 sharedJdwpSession.jdwpFilter.beforeSendPacket(packet)
-                sharedJdwpSession.jdwpSession.sendPacket(packet)
+                sharedJdwpSession.activeJdwpSession().sendPacket(packet)
             }.await()
         }
     }
