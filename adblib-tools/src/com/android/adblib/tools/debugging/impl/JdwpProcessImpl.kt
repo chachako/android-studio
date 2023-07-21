@@ -19,15 +19,20 @@ import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
 import com.android.adblib.CoroutineScopeCache.Key
+import com.android.adblib.connectedDevicesTracker
 import com.android.adblib.getOrPutSynchronized
 import com.android.adblib.scope
+import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.AtomicStateFlow
 import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.SharedJdwpSession
+import com.android.adblib.utils.SuspendingLazy
+import com.android.adblib.waitForDevice
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * Implementation of [JdwpProcess]
@@ -118,7 +123,62 @@ internal class JdwpProcessImpl(
             device: ConnectedDevice,
             pid: Int
         ): SharedJdwpSessionProvider {
-            return device.sharedJdwpSessionProviderMap.computeIfAbsent(pid)
+            val deviceSession = device.session
+            val delegateSession = device.session.sharedJdwpSessionProviderDelegateSessionFinderList
+                .fold(deviceSession) { session, finder ->
+                    finder.findDelegateSession(session)
+                }
+            return if (delegateSession === deviceSession) {
+                // There is no delegate session, use the device session
+                device.sharedJdwpSessionProviderMap.computeIfAbsent(pid)
+            } else {
+                // If there is a delegate session, delegate to it
+                val providerForDelegateSession = SuspendingLazy {
+                    // Note: There may be a better (100% reliable) way to find the device in the
+                    // delegate session
+                    val delegateDevice = delegateSession.connectedDevicesTracker.waitForDevice(device.serialNumber)
+                    delegateDevice.sharedJdwpSessionProviderMap.computeIfAbsent(pid)
+                }
+                // Delegate to delegate session, and wrap the result to a session/device scoped to
+                // this session
+                SharedJdwpSessionProvider.createDelegate(
+                    device,
+                    pid,
+                    suspendingDelegate = { providerForDelegateSession.value() })
+            }
         }
     }
+}
+
+private val SharedJdwpSessionProviderDelegateSessionFinderListKey =
+    Key<CopyOnWriteArrayList<SharedJdwpSessionProviderDelegateSessionFinder>>(
+        SharedJdwpSessionProviderDelegateSessionFinder::class.simpleName!!
+    )
+
+private val AdbSession.sharedJdwpSessionProviderDelegateSessionFinderList:
+        CopyOnWriteArrayList<SharedJdwpSessionProviderDelegateSessionFinder>
+    get() {
+        return this.cache.getOrPut(SharedJdwpSessionProviderDelegateSessionFinderListKey) {
+            CopyOnWriteArrayList()
+        }
+    }
+
+/**
+ * Extension point to allow finding the [AdbSession] an [AdbSession] should delegate to handle
+ * [SharedJdwpSession] JDWP connections.
+ */
+interface SharedJdwpSessionProviderDelegateSessionFinder {
+    fun findDelegateSession(forSession: AdbSession): AdbSession
+}
+
+fun AdbSession.addSharedJdwpSessionProviderDelegateSessionFinder(
+    delegateSessionFinder: SharedJdwpSessionProviderDelegateSessionFinder
+) {
+    sharedJdwpSessionProviderDelegateSessionFinderList.add(delegateSessionFinder)
+}
+
+fun AdbSession.removeSharedJdwpSessionProviderDelegateSessionFinder(
+    delegateSessionFinder: SharedJdwpSessionProviderDelegateSessionFinder
+) {
+    sharedJdwpSessionProviderDelegateSessionFinderList.remove(delegateSessionFinder)
 }

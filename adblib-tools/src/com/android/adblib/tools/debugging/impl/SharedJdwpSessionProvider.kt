@@ -59,5 +59,13 @@ internal interface SharedJdwpSessionProvider : AutoCloseable {
             }
             return SharedJdwpSessionProviderImpl(device, pid, refCounted, onClose)
         }
+
+        fun createDelegate(
+            device: ConnectedDevice,
+            pid: Int,
+            suspendingDelegate: suspend () -> SharedJdwpSessionProvider
+        ): SharedJdwpSessionProvider {
+            return SharedJdwpSessionProviderDelegate(device, pid, suspendingDelegate)
+        }
     }
 }
