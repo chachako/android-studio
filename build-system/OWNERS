@@ -1,5 +1,32 @@
-# Allow anyone to make changes
-*
+set noparent
+# AGP eng team members
+akerim@google.com
+alexgolubev@google.com
+amishar@google.com
+amrmahmoud@google.com
+bingran@google.com
+cmw@google.com
+gavra@google.com
+hmehmed@google.com
+hungnv@google.com
+jedo@google.com
+karimai@google.com
+lukeedgar@google.com
+micahjo@google.com
+mlazeba@google.com
+smithbradley@google.com
+spollom@google.com
+srmurguia@google.com
+vmadalin@google.com
+xav@google.com
+xof@google.com
+
+# Infrastructure team
+file:/bazel/OWNERS
+
+# For android studio merges
+file:platform/tools/idea:/OWNERS
+
 # Except to the owners file itself.
 per-file OWNERS = set noparent
 per-file OWNERS = file: gradle-api/OWNERS
