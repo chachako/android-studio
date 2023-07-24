@@ -329,7 +329,9 @@ private fun getAllArtifacts(
     val projectList = collections.projectJars
 
     /** See [ArtifactCollections.projectJars]. */
-    val projectJarsMap = projectList.asMultiMap()
+    val projectJarsMap: ImmutableMultimap<VariantKey, ResolvedArtifactResult> by lazy(LazyThreadSafetyMode.NONE) {
+        projectList.asMultiMap()
+    }
 
     // collect dependency resolution failures
     if (dependencyFailureHandler != null) {
