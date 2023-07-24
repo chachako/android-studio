@@ -30,7 +30,7 @@ internal class SharedJdwpSessionProviderImpl(
 ) : SharedJdwpSessionProvider {
 
     private val logger = thisLogger(device.session)
-        .withPrefix("${device.session}-${device}-pid=$pid: ")
+        .withPrefix("${device.session} - $device - pid=$pid - ")
 
     private val withSharedJdwpSessionTracker = BlockActivationTracker()
 

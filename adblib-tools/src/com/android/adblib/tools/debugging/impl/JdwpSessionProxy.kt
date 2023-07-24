@@ -20,7 +20,6 @@ import com.android.adblib.AdbChannelFactory
 import com.android.adblib.AdbServerSocket
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
-import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.AtomicStateFlow
 import com.android.adblib.tools.debugging.JdwpPacketReceiver
@@ -57,7 +56,8 @@ internal class JdwpSessionProxy(
     private val session: AdbSession
         get() = device.session
 
-    private val logger = thisLogger(session).withPrefix("device='${device.serialNumber}' pid=$pid: ")
+    private val logger = thisLogger(device.session)
+        .withPrefix("${device.session} - $device - pid=$pid - ")
 
     suspend fun execute(processStateFlow: AtomicStateFlow<JdwpProcessProperties>) {
         try {
@@ -151,7 +151,7 @@ internal class JdwpSessionProxy(
 
     private fun createDebuggerPipeline(debuggerSession: JdwpSession): JdwpSessionPipeline {
         // The pipeline source is always the connection to the debugger
-        val debuggerPipeline = DebuggerSessionPipeline(session, debuggerSession)
+        val debuggerPipeline = DebuggerSessionPipeline(session, debuggerSession, pid)
 
         // Call each factory in priority order
         return session.jdwpSessionPipelineFactoryList

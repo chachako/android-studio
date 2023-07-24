@@ -21,6 +21,7 @@ import com.android.adblib.CoroutineScopeCache
 import com.android.adblib.scope
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.AppProcess
+import com.android.adblib.withPrefix
 
 /**
  * Implementation of [AppProcess]
@@ -31,6 +32,7 @@ internal class AppProcessImpl(
 ) : AppProcess, AutoCloseable {
 
     private val logger = thisLogger(device.session)
+        .withPrefix("${device.session} - $device - pid=$pid -")
 
     override val cache = CoroutineScopeCache.create(device.scope)
 

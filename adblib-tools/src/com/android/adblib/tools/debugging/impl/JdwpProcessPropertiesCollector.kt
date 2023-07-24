@@ -81,8 +81,8 @@ internal class JdwpProcessPropertiesCollector(
     private val session: AdbSession
         get() = device.session
 
-    private val logger =
-        thisLogger(session).withPrefix("device='${device.serialNumber}' pid=$pid: ")
+    private val logger = thisLogger(device.session)
+        .withPrefix("${device.session} - $device - pid=$pid - ")
 
     /**
      * Collects [JdwpProcessProperties] for the process [pid] emits them to [stateFlow],

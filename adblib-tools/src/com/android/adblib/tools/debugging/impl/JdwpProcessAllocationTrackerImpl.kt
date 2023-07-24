@@ -16,7 +16,7 @@
 package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.AdbInputChannel
-import com.android.adblib.AdbSession
+import com.android.adblib.ConnectedDevice
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.JdwpCommandProgress
 import com.android.adblib.tools.debugging.JdwpProcess
@@ -24,15 +24,17 @@ import com.android.adblib.tools.debugging.JdwpProcessAllocationTracker
 import com.android.adblib.tools.debugging.handleDdmsREAE
 import com.android.adblib.tools.debugging.handleDdmsREAL
 import com.android.adblib.tools.debugging.handleDdmsREAQ
+import com.android.adblib.withPrefix
 
 internal class JdwpProcessAllocationTrackerImpl(
     private val jdwpProcess: JdwpProcess
 ) : JdwpProcessAllocationTracker {
 
-    val session: AdbSession
-        get() = jdwpProcess.device.session
+    private val device: ConnectedDevice
+        get() = jdwpProcess.device
 
-    private val logger = thisLogger(session)
+    private val logger = thisLogger(device.session)
+        .withPrefix("${device.session} - $device - pid=${jdwpProcess.pid} - ")
 
     override suspend fun isEnabled(progress: JdwpCommandProgress?): Boolean {
         return jdwpProcess.withJdwpSession {

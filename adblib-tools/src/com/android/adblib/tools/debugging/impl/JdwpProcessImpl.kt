@@ -24,6 +24,7 @@ import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.appProcessTracker
 import com.android.adblib.tools.debugging.jdwpProcessTracker
+import com.android.adblib.withPrefix
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -41,6 +42,7 @@ internal class JdwpProcessImpl(
 ) : AbstractJdwpProcess() {
 
     private val logger = thisLogger(device.session)
+        .withPrefix("${device.session} - $device - pid=$pid - ")
 
     private val stateFlow = AtomicStateFlow(MutableStateFlow(JdwpProcessProperties(pid)))
 
@@ -74,6 +76,7 @@ internal class JdwpProcessImpl(
     private val jdwpSessionProxy = JdwpSessionProxy(device, pid, sharedJdwpSessionProvider)
 
     private val lazyStartMonitoring by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        logger.debug { "Start monitoring" }
         scope.launch {
             jdwpSessionProxy.execute(stateFlow)
         }
@@ -105,8 +108,7 @@ internal class JdwpProcessImpl(
     }
 
     override fun close() {
-        val msg = "Closing coroutine scope of JDWP process $pid"
-        logger.debug { msg }
+        logger.debug { "close()" }
         sharedJdwpSessionProvider.close()
         cache.close()
         onClosed(this)

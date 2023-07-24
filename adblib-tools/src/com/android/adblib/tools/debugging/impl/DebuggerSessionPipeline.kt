@@ -16,6 +16,7 @@
 package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.AdbSession
+import com.android.adblib.ConnectedDevice
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.JdwpSessionPipeline
@@ -26,6 +27,7 @@ import com.android.adblib.tools.debugging.utils.SynchronizedReceiveChannel
 import com.android.adblib.tools.debugging.utils.SynchronizedSendChannel
 import com.android.adblib.tools.debugging.utils.receiveAllCatching
 import com.android.adblib.utils.createChildScope
+import com.android.adblib.withPrefix
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import java.io.EOFException
@@ -40,10 +42,15 @@ import kotlin.coroutines.cancellation.CancellationException
  */
 internal class DebuggerSessionPipeline(
     session: AdbSession,
-    private val debuggerSession: JdwpSession
+    private val debuggerSession: JdwpSession,
+    pid: Int
 ) : JdwpSessionPipeline {
 
-    private val logger = thisLogger(session)
+    private val device: ConnectedDevice
+        get() = debuggerSession.device
+
+    private val logger = thisLogger(device.session)
+        .withPrefix("${device.session} - $device - pid=$pid -")
 
     private val sendChannelImpl = SynchronizedChannel<JdwpPacketView>()
 

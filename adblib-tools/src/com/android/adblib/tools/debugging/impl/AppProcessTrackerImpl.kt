@@ -27,6 +27,7 @@ import com.android.adblib.tools.debugging.AppProcess
 import com.android.adblib.tools.debugging.AppProcessTracker
 import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.utils.createChildScope
+import com.android.adblib.withPrefix
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,7 +45,8 @@ internal class AppProcessTrackerImpl(
     private val session
         get() = device.session
 
-    private val logger = thisLogger(session)
+    private val logger = thisLogger(device.session)
+        .withPrefix("${device.session} - $device -")
 
     private val processesMutableFlow = MutableStateFlow<List<AppProcess>>(emptyList())
 

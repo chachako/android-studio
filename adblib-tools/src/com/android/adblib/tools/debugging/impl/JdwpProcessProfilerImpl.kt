@@ -16,7 +16,7 @@
 package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.AdbInputChannel
-import com.android.adblib.AdbSession
+import com.android.adblib.ConnectedDevice
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.DdmsCommandException
 import com.android.adblib.tools.debugging.JdwpCommandProgress
@@ -39,16 +39,18 @@ import com.android.adblib.tools.debugging.packets.ddms.isDdmsCommand
 import com.android.adblib.tools.debugging.packets.ddms.withPayload
 import com.android.adblib.tools.debugging.processEmptyDdmsReplyPacket
 import com.android.adblib.tools.debugging.receiveUntil
+import com.android.adblib.withPrefix
 import java.util.concurrent.TimeUnit
 
 internal class JdwpProcessProfilerImpl(
     override val process: JdwpProcess
 ) : JdwpProcessProfiler {
 
-    private val session: AdbSession
-        get() = process.device.session
+    private val device: ConnectedDevice
+        get() = process.device
 
-    private val logger = thisLogger(session)
+    private val logger = thisLogger(device.session)
+        .withPrefix("${device.session} - $device - pid=${process.pid} - ")
 
     override suspend fun queryStatus(progress: JdwpCommandProgress?): ProfilerStatus {
         return process.withJdwpSession {
