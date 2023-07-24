@@ -15,6 +15,7 @@
  */
 package com.android.tools.idea.wizard.template
 
+import com.android.ide.common.repository.AgpVersion
 import java.io.File
 
 /**
@@ -29,6 +30,7 @@ data class  ApiVersion(val api: Int, val apiString: String)
 
 // TODO: use wrappers/similar to check validity?
 typealias PackageName = String
+@Deprecated("Replaced by use of AgpVersion")
 typealias GradlePluginVersion = String
 typealias JavaVersion = String
 typealias Revision = String
@@ -92,7 +94,7 @@ data class ApiTemplateData(
 // TODO: pack version data in separate class, possibly similar to AndroidVersionsInfo.VersionItem
 data class ProjectTemplateData(
   val androidXSupport: Boolean,
-  val gradlePluginVersion: GradlePluginVersion,
+  val agpVersion: AgpVersion,
   val sdkDir: File?,
   val language: Language,
   val kotlinVersion: String,
@@ -102,7 +104,10 @@ data class ProjectTemplateData(
   val debugKeystoreSha1: String?,
   val overridePathCheck: Boolean? = false, // To disable android plugin checking for ascii in paths (windows tests)
   val isNewProject: Boolean
-): TemplateData()
+): TemplateData() {
+    @Deprecated("Replaced with agpVersion", replaceWith = ReplaceWith("agpVersion"))
+    val gradlePluginVersion: GradlePluginVersion get() = agpVersion.toString()
+}
 
 fun FormFactorNames.has(ff: FormFactor) = !this[ff].isNullOrEmpty()
 

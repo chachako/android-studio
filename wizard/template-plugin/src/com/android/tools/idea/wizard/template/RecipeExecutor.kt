@@ -15,6 +15,7 @@
  */
 package com.android.tools.idea.wizard.template
 
+import com.android.ide.common.repository.AgpVersion
 import java.io.File
 import com.intellij.openapi.module.Module
 
@@ -52,6 +53,8 @@ interface RecipeExecutor {
    * build.gradle[.kts] file.
    **/
   fun applyPlugin(plugin: String, revision: String?, minRev: String? = null)
+  fun applyPlugin(plugin: String, revision: AgpVersion)
+
 
   /**
    * Adds "plugins { id '`plugin`' }" statement to the [module] build.gradle[.kts] file and
@@ -64,6 +67,12 @@ interface RecipeExecutor {
     module: Module,
     revision: String?,
     minRev: String? = null,
+  )
+
+  fun applyPluginInModule(
+    plugin: String,
+    module: Module,
+    revision: AgpVersion,
   )
 
   /**
