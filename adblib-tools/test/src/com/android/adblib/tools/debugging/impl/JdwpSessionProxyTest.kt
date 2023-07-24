@@ -63,7 +63,7 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
         fakeDevice.startClient(10, 0, "a.b.c", false)
 
         // Act
-        val process = registerCloseable(JdwpProcessImpl(session, connectedDevice,  10))
+        val process = registerCloseable(JdwpProcessFactory.create(connectedDevice, 10))
         process.startMonitoring()
         yieldUntil {
             process.properties.jdwpSessionProxyStatus.socketAddress != null
@@ -142,7 +142,7 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
         fakeDevice.startClient(10, 0, "a.b.c", false)
 
-        val process = registerCloseable(JdwpProcessImpl(session, connectedDevice, 10))
+        val process = registerCloseable(JdwpProcessFactory.create(connectedDevice, 10))
         process.startMonitoring()
         yieldUntil {
             process.properties.jdwpSessionProxyStatus.socketAddress != null &&

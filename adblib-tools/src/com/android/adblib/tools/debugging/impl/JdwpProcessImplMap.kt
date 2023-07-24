@@ -37,7 +37,7 @@ internal class JdwpProcessImplMap(private val device: ConnectedDevice) : AutoClo
     fun retain(pid: Int): JdwpProcessImpl {
         return synchronized(processMapLock) {
             processMap.getOrPut(pid) {
-                ReferenceCounted(JdwpProcessImpl(device.session, device, pid))
+                ReferenceCounted(JdwpProcessImpl(device, pid, onClosed = {}))
             }.retain()
         }
     }

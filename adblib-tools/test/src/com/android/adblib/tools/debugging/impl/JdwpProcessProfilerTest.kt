@@ -191,7 +191,7 @@ class JdwpProcessProfilerTest : AdbLibToolsTestBase() {
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
         fakeDevice.startClient(10, 0, "a.b.c", false)
-        val process = registerCloseable(JdwpProcessImpl(session, connectedDevice, 10))
+        val process = registerCloseable(JdwpProcessFactory.create(connectedDevice, 10))
         // Note: We don't currently need to collect process properties for the profiler API to
         // work, so we don't call "process.startMonitoring()" here
         return JdwpProcessProfilerImpl(process)

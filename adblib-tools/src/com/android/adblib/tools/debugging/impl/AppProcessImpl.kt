@@ -15,12 +15,10 @@
  */
 package com.android.adblib.tools.debugging.impl
 
-import com.android.adblib.AdbSession
 import com.android.adblib.AppProcessEntry
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
 import com.android.adblib.scope
-import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.AppProcess
 
@@ -28,13 +26,11 @@ import com.android.adblib.tools.debugging.AppProcess
  * Implementation of [AppProcess]
  */
 internal class AppProcessImpl(
-    session: AdbSession,
     override val device: ConnectedDevice,
-    val process: AppProcessEntry,
-    override val jdwpProcess: JdwpProcessImpl?
+    private val process: AppProcessEntry,
 ) : AppProcess, AutoCloseable {
 
-    private val logger = thisLogger(session)
+    private val logger = thisLogger(device.session)
 
     override val cache = CoroutineScopeCache.create(device.scope)
 
@@ -50,18 +46,23 @@ internal class AppProcessImpl(
     override val architecture: String
         get() = process.architecture
 
+    override val jdwpProcess: AbstractJdwpProcess? = when (process.debuggable) {
+        true -> JdwpProcessFactory.create(device, pid)
+        false -> null
+    }
+
     fun startMonitoring() {
         jdwpProcess?.startMonitoring()
     }
 
     override fun close() {
-        val msg = "Closing coroutine scope of JDWP process $pid"
-        logger.debug { msg }
+        logger.debug { "close()" }
         cache.close()
+        jdwpProcess?.close()
     }
 
     override fun toString(): String {
-        return "AppProcess(device=${device.serialNumber}, pid=$pid, " +
+        return "AppProcess(device=$device, pid=$pid, " +
                 "debuggable=$debuggable, profileable=$profileable, architecture=$architecture, " +
                 "jdwpProcess=$jdwpProcess)"
     }

@@ -47,8 +47,6 @@ internal class JdwpProcessTrackerImpl(
 
     private val processesMutableFlow = MutableStateFlow<List<JdwpProcess>>(emptyList())
 
-    private val deviceProcessMap = device.jdwpProcessImplMap()
-
     private val trackProcessesJob: Job by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         scope.launch {
             trackProcesses()
@@ -65,10 +63,10 @@ internal class JdwpProcessTrackerImpl(
         }
 
     private suspend fun trackProcesses() {
-        val processMap = ProcessMap<JdwpProcessImpl>(
+        val processMap = ProcessMap<AbstractJdwpProcess>(
             onRemove = { process ->
                 logger.debug { "Removing process ${process.pid} from process map" }
-                deviceProcessMap.release(process.pid)
+                process.close()
             }
         )
         var deviceDisconnected = false
@@ -113,10 +111,10 @@ internal class JdwpProcessTrackerImpl(
         }
     }
 
-    private fun updateProcessMap(map: ProcessMap<JdwpProcessImpl>, list: ProcessIdList) {
+    private fun updateProcessMap(map: ProcessMap<AbstractJdwpProcess>, list: ProcessIdList) {
         map.update(list, valueFactory = { pid ->
             logger.debug { "Adding process $pid to process map" }
-            deviceProcessMap.retain(pid).also {
+            JdwpProcessFactory.create(device, pid).also {
                 it.startMonitoring()
             }
         })

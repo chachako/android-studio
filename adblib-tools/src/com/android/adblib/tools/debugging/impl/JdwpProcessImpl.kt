@@ -25,25 +25,30 @@ import com.android.adblib.scope
 import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.AtomicStateFlow
-import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.SharedJdwpSession
+import com.android.adblib.tools.debugging.appProcessTracker
+import com.android.adblib.tools.debugging.jdwpProcessTracker
 import com.android.adblib.utils.SuspendingLazy
 import com.android.adblib.waitForDevice
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
- * Implementation of [JdwpProcess]
+ * Implementation of [AbstractJdwpProcess] performing the actual JDWP connection.
+ *
+ * Note: The [close] method is called by [appProcessTracker] or [jdwpProcessTracker] when
+ * the process is terminated, or when the [ConnectedDevice.scope] completes.
  */
 internal class JdwpProcessImpl(
-    session: AdbSession,
     override val device: ConnectedDevice,
-    override val pid: Int
-) : JdwpProcess, AutoCloseable {
+    override val pid: Int,
+    private val onClosed: (JdwpProcessImpl) -> Unit
+) : AbstractJdwpProcess() {
 
-    private val logger = thisLogger(session)
+    private val logger = thisLogger(device.session)
 
     private val stateFlow = AtomicStateFlow(MutableStateFlow(JdwpProcessProperties(pid)))
 
@@ -88,10 +93,10 @@ internal class JdwpProcessImpl(
     /**
      * Whether the [SharedJdwpSession] is currently in use (testing only)
      */
-    val isJdwpSessionRetained: Boolean
+    override val isJdwpSessionRetained: Boolean
         get() = sharedJdwpSessionProvider.isActive
 
-    fun startMonitoring() {
+    override fun startMonitoring() {
         lazyStartMonitoring
     }
 
@@ -106,6 +111,11 @@ internal class JdwpProcessImpl(
         logger.debug { msg }
         sharedJdwpSessionProvider.close()
         cache.close()
+        onClosed(this)
+    }
+
+    override fun toString(): String {
+        return "${this::class.simpleName}(session=${device.session}, device=$device, pid=$pid)"
     }
 
     companion object {
@@ -155,7 +165,7 @@ private val SharedJdwpSessionProviderDelegateSessionFinderListKey =
         SharedJdwpSessionProviderDelegateSessionFinder::class.simpleName!!
     )
 
-private val AdbSession.sharedJdwpSessionProviderDelegateSessionFinderList:
+internal val AdbSession.sharedJdwpSessionProviderDelegateSessionFinderList:
         CopyOnWriteArrayList<SharedJdwpSessionProviderDelegateSessionFinder>
     get() {
         return this.cache.getOrPut(SharedJdwpSessionProviderDelegateSessionFinderListKey) {

@@ -286,9 +286,9 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         val process =
             registerCloseable(
                 JdwpProcessImpl(
-                    firstProcess.device.session,
                     firstProcess.device,
-                    firstProcess.pid
+                    firstProcess.pid,
+                    onClosed = { }
                 )
             )
 
@@ -610,11 +610,11 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
     private suspend fun createJdwpProcess(
         deviceApi: Int = 30,
         waitForDebugger: Boolean = true
-    ): Triple<FakeAdbServerProvider, ConnectedDevice, JdwpProcessImpl> {
+    ): Triple<FakeAdbServerProvider, ConnectedDevice, AbstractJdwpProcess> {
         val fakeDevice = addFakeDevice(fakeAdb, deviceApi)
         val device = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
         fakeAdb.device(fakeDevice.deviceId).startClient(10, 2, "p1", "pkg", waitForDebugger)
-        val process = registerCloseable(JdwpProcessImpl(session, device, 10))
+        val process = registerCloseable(JdwpProcessFactory.create(device, 10))
         return Triple(fakeAdb, device, process)
     }
 
