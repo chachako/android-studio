@@ -62,7 +62,7 @@ interface ForwardingDaemon : AutoCloseable {
    * The "features" string should be exactly as it's returned from the
    * "host-serial:transport:features" service in the ADB server.
    */
-  suspend fun onStateChanged(newState: DeviceState, features: String? = null)
+  fun onStateChanged(newState: DeviceState, features: String? = null)
 
   /**
    * Receive a command from the remote ADB server.

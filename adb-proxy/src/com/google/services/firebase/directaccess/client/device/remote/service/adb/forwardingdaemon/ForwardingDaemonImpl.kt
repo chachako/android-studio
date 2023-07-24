@@ -26,6 +26,7 @@ import com.android.adblib.isOnline
 import com.android.adblib.serialNumber
 import com.android.adblib.shellCommand
 import com.android.adblib.withInputChannelCollector
+import java.io.IOException
 import java.nio.ByteBuffer
 import java.time.Duration
 import java.util.concurrent.TimeUnit
@@ -222,20 +223,33 @@ internal class ForwardingDaemonImpl(
 
   override fun close() {
     if (started.get() && !stopped.getAndSet(true)) {
-      adbCommandHandler.cancel()
-      scope.cancel()
-      streams.values.forEach { it.sendClose() }
-      streamOpener.close()
-      runBlocking {
+      try {
+        scope.cancel()
+        streams.values.forEach { runAndLogExceptionsOnClosing { it.sendClose() } }
+        runAndLogExceptionsOnClosing { streamOpener.close() }
         onStateChanged(DeviceState.OFFLINE)
-        if (adbSession.hostServices.devices().any { it.serialNumber == serialNumber }) {
-          adbSession.hostServices.disconnect(DeviceAddress(serialNumber))
+      } finally {
+        runBlocking {
+          if (adbSession.hostServices.devices().any { it.serialNumber == serialNumber }) {
+            adbSession.hostServices.disconnect(DeviceAddress(serialNumber))
+          }
         }
       }
     }
   }
 
-  override suspend fun onStateChanged(newState: DeviceState, features: String?) {
+  /**
+   * Cleanup methods may throw exceptions while closing device and these exceptions should not
+   * terminate the whole closing process.
+   */
+  private fun runAndLogExceptionsOnClosing(block: () -> Unit) =
+    try {
+      block()
+    } catch (e: IOException) {
+      logger.log(Level.WARNING, "Error while closing", e)
+    }
+
+  override fun onStateChanged(newState: DeviceState, features: String?) {
     if (features != null) this.features = features
     deviceState.update { newState }
     if (this::localAdbChannel.isInitialized) localAdbChannel.close()

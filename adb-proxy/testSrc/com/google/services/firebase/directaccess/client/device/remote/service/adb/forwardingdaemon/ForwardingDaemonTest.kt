@@ -28,6 +28,7 @@ import java.net.InetSocketAddress
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.junit.After
@@ -35,7 +36,6 @@ import org.junit.Before
 import org.junit.Test
 
 class ForwardingDaemonTest {
-
   // A series of commands that come from the remote server that are handled by ForwardingDaemon
   // The list is iterated and each command is written to the channel which is read by the
   // ForwardingDaemon.
@@ -48,6 +48,7 @@ class ForwardingDaemonTest {
     )
 
   private val fakeAdbSession = FakeAdbSession()
+  private val throwErrorWhenClosing = MutableStateFlow(false)
   private val fakeStreamOpener =
     object : StreamOpener {
       private val myStream =
@@ -69,7 +70,9 @@ class ForwardingDaemonTest {
       override fun open(service: String, streamId: Int, adbOutputChannel: AdbOutputChannel) =
         myStream
 
-      override fun close() = Unit
+      override fun close() {
+        if (throwErrorWhenClosing.value) throw RuntimeException("expected closing exception")
+      }
     }
   private lateinit var testSocket: AdbServerSocket
   private lateinit var forwardingDaemon: ForwardingDaemonImpl
@@ -79,6 +82,7 @@ class ForwardingDaemonTest {
 
   @Before
   fun setUp(): Unit = runBlockingWithTimeout {
+    throwErrorWhenClosing.value = false
     port = -1
     val socket = fakeAdbSession.channelFactory.createServerSocket()
     testSocket =
@@ -165,6 +169,20 @@ class ForwardingDaemonTest {
     forwardingDaemon.close()
     // Device should still be connected.
     assertThat(isAdbDeviceConnected()).isTrue()
+  }
+
+  @Test
+  fun testExceptionsOnClosing() = runBlockingWithTimeout {
+    throwErrorWhenClosing.value = true
+    val childScope = fakeAdbSession.scope.createChildScope(context = exceptionHandler)
+    forwardingDaemon =
+      ForwardingDaemonImpl(fakeStreamOpener, childScope, fakeAdbSession) { testSocket }
+    forwardingDaemon.start()
+    yieldUntil { isAdbDeviceConnected() }
+    throwErrorWhenClosing.value = false
+    forwardingDaemon.close()
+    // Device should still be disconnected.
+    assertThat(isAdbDeviceConnected()).isFalse()
   }
 
   private fun isAdbDeviceConnected() =
