@@ -21,6 +21,7 @@ import com.android.adblib.property
 import com.android.adblib.scope
 import com.android.adblib.selector
 import com.android.adblib.thisLogger
+import com.android.adblib.tools.AdbLibToolsProperties.JDWP_PROCESS_TRACKER_CLOSE_NOTIFICATION_DELAY
 import com.android.adblib.tools.AdbLibToolsProperties.TRACK_APP_RETRY_DELAY
 import com.android.adblib.tools.debugging.AppProcess
 import com.android.adblib.tools.debugging.AppProcessTracker
@@ -65,7 +66,7 @@ internal class AppProcessTrackerImpl(
         val processMap = ProcessMap<AppProcessImpl>(
             onRemove = { appProcess ->
                 logger.debug { "Removing process ${appProcess.pid} from process map" }
-                appProcess.close()
+                closeAppProcess(appProcess)
             }
         )
         var deviceDisconnected = false
@@ -107,6 +108,19 @@ internal class AppProcessTrackerImpl(
             logger.debug { "Clearing process map" }
             processMap.clear()
             processesMutableFlow.value = emptyList()
+        }
+    }
+
+    private fun closeAppProcess(appProcess: AppProcessImpl) {
+        val delayMillis = session.property(JDWP_PROCESS_TRACKER_CLOSE_NOTIFICATION_DELAY).toMillis()
+        if (delayMillis > 0) {
+            scope.launch {
+                delay(delayMillis)
+            }.invokeOnCompletion {
+                appProcess.close()
+            }
+        } else {
+            appProcess.close()
         }
     }
 

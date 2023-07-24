@@ -18,6 +18,7 @@ package com.android.adblib.tools.debugging
 import com.android.adblib.connectedDevicesTracker
 import com.android.adblib.serialNumber
 import com.android.adblib.testingutils.CoroutineTestUtils
+import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.android.adblib.testingutils.FakeAdbServerProviderRule
 import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
 import com.android.fakeadbserver.DeviceState
@@ -72,7 +73,7 @@ class AppProcessTrackerTest {
         launch {
             fakeDevice.startClient(pid10, 0, "a.b.c", false)
             Assert.assertNotNull(fakeDevice.getClient(pid10))
-            CoroutineTestUtils.yieldUntil {
+            yieldUntil {
                 val size = listOfProcessList.size
                 size == 1
             }
@@ -80,7 +81,7 @@ class AppProcessTrackerTest {
             fakeDevice.startProfileableProcess(pid11, "x86", "")
             Assert.assertNotNull(fakeDevice.getClient(pid10))
             Assert.assertNotNull(fakeDevice.getProfileableProcess(pid11))
-            CoroutineTestUtils.yieldUntil { listOfProcessList.size == 2 }
+            yieldUntil { listOfProcessList.size == 2 }
 
             // Note: Depending on how fast FakeAdbServer is, adblib may get one or two
             //       app tracking event
@@ -166,6 +167,7 @@ class AppProcessTrackerTest {
         val process10 = listOfProcessList[0].first { it.pid == pid10 }
         Assert.assertEquals(connectedDevice, process10.device)
         Assert.assertEquals(pid10, process10.pid)
+        yieldUntil { !process10.scope.isActive }
         Assert.assertFalse(process10.scope.isActive)
     }
 
@@ -195,7 +197,7 @@ class AppProcessTrackerTest {
             launch {
                 fakeDevice.startClient(pid10, 0, "a.b.c", false)
                 fakeDevice.startClient(pid11, 0, "a.b.c.e", false)
-                CoroutineTestUtils.yieldUntil { listOfProcessList.size >= 1 }
+                yieldUntil { listOfProcessList.size >= 1 }
 
                 fakeAdb.disconnectDevice(fakeDevice.deviceId)
             }
@@ -315,7 +317,7 @@ class AppProcessTrackerTest {
             // Act: Bring device ONLINE and confirm that the `ConnectedDevice.appProcessFlow`
             // is now emitting values
             fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-            CoroutineTestUtils.yieldUntil(Duration.ofSeconds(5)) {
+            yieldUntil(Duration.ofSeconds(5)) {
                 appProcesses == listOf<AppProcess>()
             }
 

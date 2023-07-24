@@ -161,6 +161,7 @@ class JdwpProcessTrackerTest {
         val process10 = listOfProcessList[0].first { it.pid == pid10 }
         Assert.assertEquals(connectedDevice, process10.device)
         Assert.assertEquals(pid10, process10.pid)
+        yieldUntil { !process10.scope.isActive }
         Assert.assertFalse(process10.scope.isActive)
     }
 
