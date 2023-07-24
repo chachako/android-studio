@@ -234,5 +234,6 @@ internal class JdwpSessionProxy(
         this.update {
             it.copy(jdwpSessionProxyStatus = updater(it.jdwpSessionProxyStatus))
         }
+        logger.verbose { "Updated stateflow: ${this.value}" }
     }
 }

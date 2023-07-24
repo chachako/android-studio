@@ -320,6 +320,7 @@ internal class JdwpProcessPropertiesCollector(
                 stage = if (session.property(SUPPORT_STAG_PACKETS)) heloChunk.stage else null,
             )
         }
+        logger.verbose { "Updated stateflow: ${collectState.propertiesFlow.value}" }
     }
 
     private suspend fun processFeatReply(
@@ -333,6 +334,7 @@ internal class JdwpProcessPropertiesCollector(
         }
         logger.debug { "`FEAT` reply: $featChunk" }
         collectState.propertiesFlow.update { it.copy(features = featChunk.features) }
+        logger.verbose { "Updated stateflow: ${collectState.propertiesFlow.value}" }
     }
 
     private suspend fun processWaitCommand(
@@ -345,6 +347,7 @@ internal class JdwpProcessPropertiesCollector(
         }
         logger.debug { "`WAIT` command: $waitChunk" }
         collectState.propertiesFlow.update { it.copy(waitCommandReceived = true) }
+        logger.verbose { "Updated stateflow: ${collectState.propertiesFlow.value}" }
     }
 
     private suspend fun processApnmCommand(
@@ -363,6 +366,7 @@ internal class JdwpProcessPropertiesCollector(
                 packageName = filterFakeName(apnmChunk.packageName)
             )
         }
+        logger.verbose { "Updated stateflow: ${collectState.propertiesFlow.value}" }
     }
 
     private suspend fun processStagCommand(
@@ -383,6 +387,7 @@ internal class JdwpProcessPropertiesCollector(
                 stage = stagChunk.stage,
             )
         }
+        logger.verbose { "Updated stateflow: ${collectState.propertiesFlow.value}" }
     }
 
     private suspend fun createHeloPacket(jdwpSession: SharedJdwpSession): JdwpPacketView {
