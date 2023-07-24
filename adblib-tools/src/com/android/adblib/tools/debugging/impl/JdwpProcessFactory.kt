@@ -47,7 +47,7 @@ internal object JdwpProcessFactory {
      */
     internal fun create(device: ConnectedDevice, pid: Int): AbstractJdwpProcess {
         val deviceSession = device.session
-        val delegateSession = device.session.sharedJdwpSessionProviderDelegateSessionFinderList
+        val delegateSession = device.session.jdwpProcessSessionFinderList
             .fold(deviceSession) { session, finder ->
                 finder.findDelegateSession(session)
             }
