@@ -36,7 +36,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Function
 
 internal object JdwpProcessFactory {
@@ -163,12 +162,12 @@ private class JdwpProcessDelegate(
     private val logger = thisLogger(device.session)
         .withPrefix("${device.session} - $device - pid=$pid - ")
 
-    private val withJdwpSessionRefCount = AtomicInteger(0)
-
     private val propertiesMutableFlow = MutableStateFlow(JdwpProcessProperties(pid))
 
+    private val withJdwpSessionTracker = BlockActivationTracker()
+
     override val isJdwpSessionRetained: Boolean
-        get() = withJdwpSessionRefCount.get() > 0
+        get() = withJdwpSessionTracker.activationCount.value > 1
 
     override val cache = CoroutineScopeCache.create(device.scope)
 
@@ -189,15 +188,19 @@ private class JdwpProcessDelegate(
 
     override suspend fun <T> withJdwpSession(block: suspend SharedJdwpSession.() -> T): T {
         // Get the SharedJdwpSession of the delegate process, then wrap it to call "block"
-        withJdwpSessionRefCount.getAndIncrement()
-        return try {
+        return withJdwpSessionTracker.track {
+            // Get the SharedJdwpSession of the delegate process, then wrap it to call "block"
             deferredDelegate.await().withJdwpSession {
                 logger.debug { "Acquired delegate process JDWP session, calling 'block'" }
                 SharedJdwpSessionDelegate(device, this).block()
             }
-        } finally {
-            withJdwpSessionRefCount.decrementAndGet()
         }
+    }
+
+    override suspend fun awaitReadyToClose() {
+        // Wait until no active JDWP session
+        withJdwpSessionTracker.waitWhileActive()
+        logger.debug { "Ready to close" }
     }
 
     override fun close() {

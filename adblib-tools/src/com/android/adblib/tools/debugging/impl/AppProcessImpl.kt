@@ -55,6 +55,10 @@ internal class AppProcessImpl(
         jdwpProcess?.startMonitoring()
     }
 
+    suspend fun awaitReadyToClose() {
+        jdwpProcess?.awaitReadyToClose()
+    }
+
     override fun close() {
         logger.debug { "close()" }
         cache.close()

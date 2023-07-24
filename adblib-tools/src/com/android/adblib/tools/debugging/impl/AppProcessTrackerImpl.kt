@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.EOFException
 
 internal class AppProcessTrackerImpl(
@@ -115,7 +116,11 @@ internal class AppProcessTrackerImpl(
         val delayMillis = session.property(JDWP_PROCESS_TRACKER_CLOSE_NOTIFICATION_DELAY).toMillis()
         if (delayMillis > 0) {
             scope.launch {
-                delay(delayMillis)
+                withTimeoutOrNull(delayMillis) {
+                    appProcess.awaitReadyToClose()
+                } ?: run {
+                    logger.info { "App process was not ready to close within $delayMillis milliseconds" }
+                }
             }.invokeOnCompletion {
                 appProcess.close()
             }

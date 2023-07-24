@@ -21,15 +21,23 @@ import com.android.adblib.tools.AdbLibToolsProperties
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.utils.ReferenceCountedFactory
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Provides thread-safe and concurrent access to [SharedJdwpSession]
  */
 internal interface SharedJdwpSessionProvider : AutoCloseable {
     /**
-     * (**testing only**) Whether the [SharedJdwpSession] is currently in use
+     * Tracks the # of activations of the [SharedJdwpSession], i.e. the number of active
+     * calls to [withSharedJdwpSession].
+     */
+    val activationCount: StateFlow<Int>
+
+    /**
+     * (** testing only**) Whether the [SharedJdwpSession] is currently in use
      */
     val isActive: Boolean
+        get() = activationCount.value > 0
 
     /**
      * The process ID

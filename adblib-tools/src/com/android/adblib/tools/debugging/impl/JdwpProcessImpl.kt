@@ -25,6 +25,7 @@ import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.appProcessTracker
 import com.android.adblib.tools.debugging.jdwpProcessTracker
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -95,6 +96,12 @@ internal class JdwpProcessImpl(
         return sharedJdwpSessionProvider.withSharedJdwpSession {
             it.block()
         }
+    }
+
+    override suspend fun awaitReadyToClose() {
+        // Wait until no active JDWP session
+        sharedJdwpSessionProvider.activationCount.first { it == 0 }
+        logger.debug { "Ready to close" }
     }
 
     override fun close() {

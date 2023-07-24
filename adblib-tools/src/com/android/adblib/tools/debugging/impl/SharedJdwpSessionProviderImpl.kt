@@ -21,7 +21,7 @@ import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.utils.ReferenceCountedFactory
 import com.android.adblib.useShutdown
 import com.android.adblib.withPrefix
-import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.flow.StateFlow
 
 internal class SharedJdwpSessionProviderImpl(
     private val device: ConnectedDevice,
@@ -32,33 +32,25 @@ internal class SharedJdwpSessionProviderImpl(
     private val logger = thisLogger(device.session)
         .withPrefix("${device.session}-${device}-pid=$pid: ")
 
-    /**
-     * Note: [refCount] is only used for debugging/diagnostic purposes, it has no other uses.
-     */
-    private val refCount = AtomicInteger(0)
+    private val withSharedJdwpSessionTracker = BlockActivationTracker()
 
-    /**
-     * (**testing only**) Whether the [SharedJdwpSession] is currently in use
-     */
-    override val isActive: Boolean
-        get() = sharedJdwpSessionRef.isRetained
+    override val activationCount: StateFlow<Int>
+        get() = withSharedJdwpSessionTracker.activationCount
 
     override suspend fun <R> withSharedJdwpSession(block: suspend (SharedJdwpSession) -> R): R {
-        refCount.incrementAndGet().also { refCount ->
-            logger.debug { "withSharedJdwpSession(): enter (refCount:${refCount-1}->${refCount})" }
-        }
-        val session = sharedJdwpSessionRef.retain()
-        return try {
-            session.openIfNeeded()
-            block(session)
-        } finally {
-            refCount.getAndDecrement().also { refCount ->
-                logger.debug { "withSharedJdwpSession(): exit (refCount:${refCount}->${refCount-1})" }
-            }
-            if (sharedJdwpSessionRef.releaseNoClose() == 0) {
-                logger.debug { "withSharedJdwpSession(): shutting down shared JDWP session" }
-                // Call "shutdown" then "close"
-                session.useShutdown { }
+        return withSharedJdwpSessionTracker.track {
+            logger.verbose { "withSharedJdwpSession(): enter" }
+            val session = sharedJdwpSessionRef.retain()
+            try {
+                session.openIfNeeded()
+                block(session)
+            } finally {
+                logger.verbose { "withSharedJdwpSession(): exit" }
+                if (sharedJdwpSessionRef.releaseNoClose() == 0) {
+                    logger.debug { "withSharedJdwpSession(): shutting down shared JDWP session" }
+                    // Call "shutdown" then "close"
+                    session.useShutdown { }
+                }
             }
         }
     }

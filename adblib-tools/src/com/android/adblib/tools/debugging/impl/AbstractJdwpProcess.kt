@@ -37,5 +37,10 @@ internal abstract class AbstractJdwpProcess : JdwpProcess, AutoCloseable {
      */
     abstract fun startMonitoring()
 
+    /**
+     * Waits until this [process][AbstractJdwpProcess] is ready to be [closed][close].
+     * This allows shutting down the process "cleanly" in the absence of forcible
+     * cancellation.
+     */
+    abstract suspend fun awaitReadyToClose()
 }
-
