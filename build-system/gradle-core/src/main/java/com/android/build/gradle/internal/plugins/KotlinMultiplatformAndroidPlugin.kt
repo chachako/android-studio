@@ -47,6 +47,8 @@ import com.android.build.gradle.internal.dependency.ModelArtifactCompatibilityRu
 import com.android.build.gradle.internal.dependency.SingleVariantBuildTypeRule
 import com.android.build.gradle.internal.dependency.SingleVariantProductFlavorRule
 import com.android.build.gradle.internal.dependency.VariantDependencies
+import com.android.build.gradle.internal.dependency.configureKotlinTestDependencyForInstrumentedTestCompilation
+import com.android.build.gradle.internal.dependency.configureKotlinTestDependencyForUnitTestCompilation
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfigurationImpl
 import com.android.build.gradle.internal.dsl.decorator.androidPluginDslDecorator
@@ -463,6 +465,22 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         )
 
         finalizeAllComponents(listOfNotNull(mainVariant, unitTest, androidTest))
+
+        unitTest?.let {
+            configureKotlinTestDependencyForUnitTestCompilation(
+                project,
+                it,
+                kotlinExtension
+            )
+        }
+
+        androidTest?.let {
+            configureKotlinTestDependencyForInstrumentedTestCompilation(
+                project,
+                it,
+                kotlinExtension
+            )
+        }
     }
 
     private fun addSourceSetsThatShouldBeResolvedAsAndroid() {

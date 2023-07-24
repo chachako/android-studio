@@ -47,7 +47,7 @@ kotlin {
 
    sourceSets.getByName("commonTest") {
      dependencies {
-       implementation("junit:junit:4.13.2")
+       implementation(kotlin("test"))
      }
    }
 }

@@ -59,15 +59,30 @@
   {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
-      "{LOCAL_REPO}/junit/junit/4.13.2/junit-4.13.2.jar"
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-test-junit/1.9.0-Beta/kotlin-test-junit-1.9.0-Beta.jar"
     ],
     "coordinates": {
-      "group": "junit",
-      "module": "junit",
-      "version": "4.13.2"
+      "group": "org.jetbrains.kotlin",
+      "module": "kotlin-test-junit",
+      "version": "1.9.0-Beta"
     },
     "extras": {
-      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "junit-4.13.2.jar (junit:junit:4.13.2)",
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-test-junit-1.9.0-Beta.jar (org.jetbrains.kotlin:kotlin-test-junit:1.9.0-Beta)",
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-test/1.9.0-Beta/kotlin-test-1.9.0-Beta.jar"
+    ],
+    "coordinates": {
+      "group": "org.jetbrains.kotlin",
+      "module": "kotlin-test",
+      "version": "1.9.0-Beta"
+    },
+    "extras": {
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-test-1.9.0-Beta.jar (org.jetbrains.kotlin:kotlin-test:1.9.0-Beta)",
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
     }
   },
@@ -104,24 +119,6 @@
   {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
-      "{LOCAL_REPO}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"
-    ],
-    "coordinates": {
-      "group": "org.hamcrest",
-      "module": "hamcrest-core",
-      "version": "1.3"
-    },
-    "extras": {
-      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "hamcrest-core-1.3.jar (org.hamcrest:hamcrest-core:1.3)",
-      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver",
-      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;sourcesClasspath": [
-        "{LOCAL_REPO}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3-sources.jar"
-      ]
-    }
-  },
-  {
-    "binaryType": "KOTLIN_COMPILE",
-    "classpath": [
       "{LOCAL_REPO}/org/jetbrains/annotations/13.0/annotations-13.0.jar"
     ],
     "coordinates": {
@@ -137,6 +134,39 @@
       ],
       "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;documentationClasspath": [
         "{LOCAL_REPO}/org/jetbrains/annotations/13.0/annotations-13.0-javadoc.jar"
+      ]
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/junit/junit/4.13.2/junit-4.13.2.jar"
+    ],
+    "coordinates": {
+      "group": "junit",
+      "module": "junit",
+      "version": "4.13.2"
+    },
+    "extras": {
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "junit-4.13.2.jar (junit:junit:4.13.2)",
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"
+    ],
+    "coordinates": {
+      "group": "org.hamcrest",
+      "module": "hamcrest-core",
+      "version": "1.3"
+    },
+    "extras": {
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "hamcrest-core-1.3.jar (org.hamcrest:hamcrest-core:1.3)",
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver",
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;sourcesClasspath": [
+        "{LOCAL_REPO}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3-sources.jar"
       ]
     }
   },
