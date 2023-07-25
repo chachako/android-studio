@@ -22,15 +22,14 @@ import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
-import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.core.ComponentType
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestFramework
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
@@ -41,21 +40,23 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.testing.Test
 import java.io.File
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.VerificationTask
+import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.jvm.toolchain.JavaToolchainService
 
 /**
  * Runs screenshot tests of a variant.
  */
 @CacheableTask
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.TEST)
-abstract class PreviewScreenshotTestTask : Test(), VariantAwareTask {
+abstract class PreviewScreenshotTestTask : NonIncrementalTask(), VerificationTask {
 
     companion object {
 
-        const val configurationName = "_internal-screenshot-test-task-test-engine"
         const val previewlibCliToolConfigurationName = "_internal-screenshot-test-task-previewlib-cli"
     }
 
@@ -98,7 +99,7 @@ abstract class PreviewScreenshotTestTask : Test(), VariantAwareTask {
     private val cliParams: MutableMap<String, String> = mutableMapOf()
 
     @TaskAction
-    override fun executeTests() {
+    override fun doTaskAction() {
         cliParams["previewJar"] = screenshotCliJar.singleFile.absolutePath
 
         // invoke CLI tool
@@ -127,7 +128,26 @@ abstract class PreviewScreenshotTestTask : Test(), VariantAwareTask {
             redirectOutput(ProcessBuilder.Redirect.INHERIT)
         }.start()
         process.waitFor()
-        setTestEngineParam("process.exit.value", process.exitValue().toString())
+
+        var success: Boolean
+        var message = ""
+        when (process.exitValue()) {
+            in listOf(0, 3) -> {
+                success = true
+            }
+            in listOf(1, 2) -> {
+                success = false
+                message = "Tests failed. See report for details. "
+            }
+            else ->  {
+                success = false
+                message = "Unknown error code ${process.exitValue()} returned"
+            }
+        }
+
+        if (!success) {
+            throw GradleException(message)
+        }
     }
 
     class CreationAction(
@@ -137,7 +157,7 @@ abstract class PreviewScreenshotTestTask : Test(), VariantAwareTask {
             private val ideExtractionDir: File,
             private val lintModelDir: File,
             private val lintCacheDir: File,
-            ) :
+    ) :
             VariantTaskCreationAction<
                     PreviewScreenshotTestTask,
                     InstrumentedTestCreationConfig
@@ -156,49 +176,37 @@ abstract class PreviewScreenshotTestTask : Test(), VariantAwareTask {
             val testedVariant = androidTestCreationConfig.mainVariant
             task.description = "Run screenshot tests for the " + testedVariant.name + " build."
 
-            task.useJUnitPlatform()
-            (task.testFramework as JUnitPlatformTestFramework)
-                    .options.includeEngines("preview-screenshot-test-engine")
-
             task.group = JavaBasePlugin.VERIFICATION_GROUP
-
-            task.testClassesDirs = creationConfig.services.fileCollection().apply {
-                from(creationConfig
-                        .artifacts
-                        .forScope(ScopedArtifacts.Scope.PROJECT)
-                        .getFinalArtifacts(ScopedArtifact.CLASSES))
-                creationConfig.buildConfigCreationConfig?.let {
-                    from(it.compiledBuildConfig)
-                }
-                creationConfig.androidResourcesCreationConfig?.let {
-                    from(it.getCompiledRClasses(ConsumedConfigType.RUNTIME_CLASSPATH))
-                }
-            }
 
             creationConfig.sources.kotlin?.getVariantSources()?.forEach {
                 task.sourceFiles.from(
-                    it.asFileTree { task.project.objects.fileTree() }
+                        it.asFileTree { task.project.objects.fileTree() }
                 )
             }
             task.sourceFiles.disallowChanges()
             task.cliParams["sources"] =
                     task.sourceFiles.files.map { it.absolutePath }.joinToString(",")
 
-            maybeCreateScreenshotTestConfiguration(task.project)
-            task.classpath = creationConfig.services.fileCollection().apply {
-                from(task.project.configurations.getByName(configurationName))
-                from(task.testClassesDirs)
-            }
-
             maybeCreatePreviewlibCliToolConfiguration(task.project)
             task.screenshotCliJar.from(
                     task.project.configurations.getByName(previewlibCliToolConfigurationName)
             )
 
+            val toolchain = task.project.extensions.getByType(JavaPluginExtension::class.java).toolchain
+            val service = task.project.extensions.getByType(JavaToolchainService::class.java)
+            // TODO(b/295886078) Investigate error handling needed for getting JavaLauncher.
+            val javaLauncher = try {
+                service.launcherFor(toolchain).get()
+            } catch (ex: GradleException) {
+                // If the JDK that was set is not available get the JDK 11 as a default
+                service.launcherFor { toolchainSpec ->
+                    toolchainSpec.languageVersion.set(JavaLanguageVersion.of(11))
+                }.get()
+            }
             task.cliParams["java"] =
-                    task.javaLauncher.get().executablePath.asFile.absolutePath
+                    javaLauncher.executablePath.asFile.absolutePath
             task.cliParams["java.home"] =
-                    task.javaLauncher.get().metadata.installationPath.asFile.absolutePath
+                    javaLauncher.metadata.installationPath.asFile.absolutePath
 
             task.cliParams["androidsdk"] =
                     getBuildService(
@@ -228,42 +236,6 @@ abstract class PreviewScreenshotTestTask : Test(), VariantAwareTask {
 
             task.cliParams["client.name"] = "Android Gradle Plugin"
             task.cliParams["client.version"] = Version.ANDROID_GRADLE_PLUGIN_VERSION
-
-            task.reports.junitXml.outputLocation.set(
-                    File(
-                            creationConfig
-                                    .services
-                                    .projectInfo
-                                    .getTestResultsFolder(),
-                            task.name))
-            task.reports.html.outputLocation.set(
-                    File(
-                            creationConfig
-                                    .services
-                                    .projectInfo
-                                    .getTestReportFolder(),
-                            task.name))
-        }
-
-        private fun maybeCreateScreenshotTestConfiguration(project: Project) {
-            val container = project.configurations
-            val dependencies = project.dependencies
-            if (container.findByName(configurationName) == null) {
-                container.create(configurationName).apply {
-                    isVisible = false
-                    isTransitive = true
-                    isCanBeConsumed = false
-                    description = "A configuration to resolve Screenshot Test dependencies."
-                }
-                val engineVersion = "0.0.1" +
-                        if (Version.ANDROID_GRADLE_PLUGIN_VERSION.endsWith("-dev"))
-                            "-dev"
-                        else
-                            "-alpha01"
-                dependencies.add(
-                        configurationName,
-                        "com.android.tools.screenshot:junit-engine:${engineVersion}")
-            }
         }
 
         private fun maybeCreatePreviewlibCliToolConfiguration(project: Project) {
@@ -282,8 +254,4 @@ abstract class PreviewScreenshotTestTask : Test(), VariantAwareTask {
             }
         }
     }
-}
-
-private fun PreviewScreenshotTestTask.setTestEngineParam(key: String, value: String) {
-    jvmArgs("-Dcom.android.tools.screenshot.junit.engine.${key}=${value}")
 }

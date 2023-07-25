@@ -25,6 +25,7 @@ import com.android.testutils.TestUtils
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
 import org.junit.After
+import org.junit.Assert.assertThrows
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
@@ -116,6 +117,21 @@ class ScreenshotTest {
                 .run("screenshotTestDebugAndroidTest", "--record-golden")
 
         assertThat(project.file(project.projectDir.absolutePath + "/src/androidTest/screenshot/debug/MainViewTest.png")).exists()
+    }
+
+    @Test
+    fun runScreenshotTestWithNoGoldenFails() {
+        assertThrows(Exception::class.java) {
+            project.executor()
+                    .with(BooleanOption.USE_ANDROID_X, true)
+                    .with(BooleanOption.ENABLE_SCREENSHOT_TEST, true)
+                    .run("screenshotTestDebugAndroidTest")
+        }
+
+        assertThat(
+                project.getOutputFile(
+                        "androidTest-results","screenshot","debug",
+                        "MainViewTest.png")).doesNotExist()
     }
 
     @Test
