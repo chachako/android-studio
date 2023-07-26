@@ -48,7 +48,6 @@ export GOOGLE_APPLICATION_CREDENTIALS=$BAZEL_GOOGLE_APPLICATION_CREDENTIALS
         --build_tag_filters=${target_filters} \
         --test_tag_filters=${target_filters} \
         --tool_tag=${script_name} \
-        --flaky_test_attempts=//tools/adt/idea/android-uitests:.*@2 \
         -- \
         //tools/adt/idea/android-uitests/...
 
