@@ -53,15 +53,16 @@ class TestMatrixRunProcessTracker(
                 actualTestMatrixState = latestTestMatrix.state
                 lifecycleExecution("state $actualTestMatrixState", deviceName)
             }
-            latestTestMatrix.testExecutions.firstOrNull()?.testDetails?.apply {
-                while (currentProgressStatus < progressMessages.size) {
-                    val message = progressMessages[currentProgressStatus++]
-                    if (message == "Starting Android test.") {
-                        actualTestMatrixState = "RUNNING"
-                    }
-                    lifecycleExecution("$message", deviceName)
-                }
-            }
+            // TODO(b/293338525) add proper test progress report once this bug is resolved
+//            latestTestMatrix.testExecutions.firstOrNull()?.testDetails?.apply {
+//                while (currentProgressStatus < progressMessages.size) {
+//                    val message = progressMessages[currentProgressStatus++]
+//                    if (message == "Starting Android test.") {
+//                        actualTestMatrixState = "RUNNING"
+//                    }
+//                    lifecycleExecution("$message", deviceName)
+//                }
+//            }
             if (printResultsUrl) {
                 val resultsUrl = latestTestMatrix.resultStorage?.get("resultsUrl") as String?
                 if (!resultsUrl.isNullOrBlank()) {

@@ -180,7 +180,7 @@ class TestRunner(
 
         val ftlTestRunResults: MutableList<FtlTestRunResult> = mutableListOf()
 
-        resultTestMatrix.testExecutions.forEach { testExecution ->
+        resultTestMatrix.testExecutions?.forEach { testExecution ->
 
             val testSuiteResult = handleTestSuiteResult(
                 resultTestMatrix,

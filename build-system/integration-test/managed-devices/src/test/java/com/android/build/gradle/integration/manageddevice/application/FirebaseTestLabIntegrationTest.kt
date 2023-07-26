@@ -102,9 +102,10 @@ class FirebaseTestLabIntegrationTest {
             assertThat(it).contains("Fake credential initialized")
             assertThat(it).contains("^POST https://www\\.googleapis\\.com/toolresults/v1beta3/projects/test_quota_project_id:initializeSettings\$ is hit")
             // Verifies that test request is sent to FTL server
-            assertThat(it).contains("Firebase Testlab Test for myFtlDevice1: Starting Android test.")
+//            assertThat(it).contains("Firebase Testlab Test for myFtlDevice1: Starting Android test.")
             assertThat(it).contains("Test request for device myFtlDevice1 has been submitted to Firebase TestLab: fake results URL for result storage/details")
-            assertThat(it).contains("Test execution: RUNNING")
+            // TODO(b/293338525) enable additional check once this bug is resolved
+//            assertThat(it).contains("Test execution: RUNNING")
             assertThat(it).contains("Firebase Testlab Test for myFtlDevice1: state FINISHED")
             // Verifies that we are obtaining test results
             assertThat(it).contains("^GET https://www\\.googleapis\\.com/toolresults/v1beta3/projects/test_quota_project_id/histories/testHistoryId/executions/testExecutionId/steps/testStepId\$ is hit")
