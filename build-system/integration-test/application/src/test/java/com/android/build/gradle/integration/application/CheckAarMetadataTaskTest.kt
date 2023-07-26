@@ -24,6 +24,7 @@ import com.android.SdkConstants.MIN_ANDROID_GRADLE_PLUGIN_VERSION_PROPERTY
 import com.android.SdkConstants.MIN_COMPILE_SDK_EXTENSION_PROPERTY
 import com.android.SdkConstants.MIN_COMPILE_SDK_PROPERTY
 import com.android.build.gradle.integration.common.fixture.DESUGAR_DEPENDENCY_VERSION
+import com.android.build.gradle.integration.common.fixture.DESUGAR_NIO_DEPENDENCY_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.compileSdkHash
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldLibraryApp
@@ -579,12 +580,42 @@ class CheckAarMetadataTaskTest {
                 android.compileOptions.coreLibraryDesugaringEnabled = false
             """.trimIndent()
         )
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").buildFile,
+            "dependencies { coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:$DESUGAR_DEPENDENCY_VERSION'}"
+        )
         TestFileUtils.searchAndReplace(
             project.getSubproject("app").buildFile,
             "implementation files('libs/library.aar')",
             "androidTestImplementation files('libs/library.aar')"
         )
         project.executor().run(":app:checkAndroidTestAarMetadata")
+    }
+
+    @Test
+    fun testCheckingDesugarJdkLib() {
+        addAarWithPossiblyInvalidAarMetadataToAppProject(
+            aarFormatVersion = AarMetadataTask.AAR_FORMAT_VERSION,
+            aarMetadataVersion = AarMetadataTask.AAR_METADATA_VERSION,
+            coreLibraryDesugaringEnabled = "true",
+            minDesugarJdkLib = "com.android.tools:desugar_jdk_libs_nio:$DESUGAR_NIO_DEPENDENCY_VERSION"
+        )
+
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").buildFile,
+            """
+                android.compileOptions.coreLibraryDesugaringEnabled = true
+                android.defaultConfig.multiDexEnabled = true
+            """.trimIndent()
+        )
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").buildFile,
+            "dependencies { coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:$DESUGAR_DEPENDENCY_VERSION'}"
+        )
+        val result = project.executor().expectFailure().run(":app:checkDebugAarMetadata")
+        ScannerSubject.assertThat(result.stderr).contains(
+            "2 issues were found when checking AAR metadata"
+        )
     }
 
     private fun addAarWithPossiblyInvalidAarMetadataToAppProject(

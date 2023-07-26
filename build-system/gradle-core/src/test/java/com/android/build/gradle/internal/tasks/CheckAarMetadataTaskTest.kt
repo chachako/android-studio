@@ -20,12 +20,18 @@ import com.android.Version
 import com.android.build.gradle.internal.fixtures.FakeArtifactCollection
 import com.android.build.gradle.internal.fixtures.FakeComponentIdentifier
 import com.android.build.gradle.internal.fixtures.FakeGradleWorkExecutor
+import com.android.build.gradle.internal.fixtures.FakeModuleComponentSelector
 import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
 import com.android.build.gradle.internal.fixtures.FakeResolvedArtifactResult
+import com.android.build.gradle.internal.fixtures.FakeResolvedComponentResult
+import com.android.build.gradle.internal.fixtures.FakeResolvedDependencyResult
+import com.android.build.gradle.internal.utils.DESUGAR_JDK_LIBS
+import com.android.build.gradle.internal.utils.DESUGAR_JDK_LIBS_MINIMAL
+import com.android.build.gradle.internal.utils.checkDesugarJdkVariant
+import com.android.build.gradle.internal.utils.checkDesugarJdkVersion
 import com.google.common.truth.Truth.assertThat
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.workers.WorkerExecutor
-import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -723,5 +729,115 @@ class CheckAarMetadataTaskTest {
                       details.
             """.trimIndent())
         }
+    }
+
+    @Test
+    fun testFailsOnDesugarJdkLibId() {
+        task.aarMetadataArtifacts =
+            FakeArtifactCollection(
+                mutableSetOf(
+                    FakeResolvedArtifactResult(
+                        file = temporaryFolder.newFile().also {
+                            writeAarMetadataFile(
+                                file = it,
+                                aarFormatVersion = AarMetadataTask.AAR_FORMAT_VERSION,
+                                aarMetadataVersion = AarMetadataTask.AAR_METADATA_VERSION,
+                                minCompileSdk = 28,
+                                minCompileSdkExtension = 0,
+                                minAgpVersion = "3.0.0",
+                                coreLibraryDesugaringEnabled = true,
+                                desugarJdkLib = "com.android.tools:desugar_jdk_libs_nio:2.0.2"
+                            )
+                        },
+                        identifier = FakeComponentIdentifier("displayName")
+                    )
+                )
+            )
+        task.aarFormatVersion.set(AarMetadataTask.AAR_FORMAT_VERSION)
+        task.aarMetadataVersion.set(AarMetadataTask.AAR_METADATA_VERSION)
+        task.compileSdkVersion.set("android-28")
+        task.disableCompileSdkChecks.set(false)
+        task.agpVersion.set(Version.ANDROID_GRADLE_PLUGIN_VERSION)
+        task.projectPath.set(":app")
+        task.coreLibraryDesugaringEnabled.set(true)
+        task.desugarJdkLibDependencyGraph.set(
+            FakeResolvedComponentResult(
+                dependencies = mutableSetOf(FakeResolvedDependencyResult(
+                    requested = FakeModuleComponentSelector(
+                        "com.android.tools", "desugar_jdk_libs", "1.1.5")
+                    )
+                )
+            )
+        )
+        try {
+            task.taskAction()
+        } catch (e: RuntimeException) {
+            assertThat(e.message).isEqualTo("""
+                2 issues were found when checking AAR metadata:
+
+                  1.  Dependency 'displayName' requires desugar_jdk_libs flavor to be at least
+                      desugar_jdk_libs_nio for :app, which is currently desugar_jdk_libs
+
+                      See https://d.android.com/r/tools/api-desugaring-flavors
+                      for more details.
+
+                  2.  Dependency 'displayName' requires desugar_jdk_libs version to be
+                      2.0.2 or above for :app, which is currently 1.1.5
+
+                      See https://d.android.com/studio/build/library-desugaring for more
+                      details.
+            """.trimIndent())
+        }
+    }
+
+    @Test
+    fun testCompareDesugarJdkVariant() {
+        val errorMessages = mutableListOf<String>()
+        checkDesugarJdkVariant(
+            variantFromAar = DESUGAR_JDK_LIBS_MINIMAL,
+            variantFromConsumer = DESUGAR_JDK_LIBS,
+            errorMessages = errorMessages,
+            dependency = "",
+            projectPath = ""
+        )
+        assertThat(errorMessages).isEmpty()
+        checkDesugarJdkVariant(
+            variantFromAar = DESUGAR_JDK_LIBS,
+            variantFromConsumer = DESUGAR_JDK_LIBS_MINIMAL,
+            errorMessages = errorMessages,
+            dependency = "",
+            projectPath = ""
+        )
+        assertThat(errorMessages).isNotEmpty()
+    }
+
+    @Test
+    fun testCompareDesugarJdkVersion() {
+        val errorMessages = mutableListOf<String>()
+        checkDesugarJdkVersion(
+            versionFromAar = "1.1.3",
+            versionFromConsumer = "1.2.5",
+            errorMessages = errorMessages,
+            dependency = "",
+            projectPath = ""
+        )
+        assertThat(errorMessages).isEmpty()
+        checkDesugarJdkVersion(
+            versionFromAar = "2.1.3",
+            versionFromConsumer = "1.2.5",
+            errorMessages = errorMessages,
+            dependency = "",
+            projectPath = ""
+        )
+        assertThat(errorMessages).isNotEmpty()
+        errorMessages.clear()
+        checkDesugarJdkVersion(
+            versionFromAar = "2.1.3",
+            versionFromConsumer = "2.2.5",
+            errorMessages = errorMessages,
+            dependency = "",
+            projectPath = ""
+        )
+        assertThat(errorMessages).isEmpty()
     }
 }

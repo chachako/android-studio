@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.tasks
 import com.android.SdkConstants.AAR_FORMAT_VERSION_PROPERTY
 import com.android.SdkConstants.AAR_METADATA_VERSION_PROPERTY
 import com.android.SdkConstants.CORE_LIBRARY_DESUGARING_ENABLED_PROPERTY
+import com.android.SdkConstants.DESUGAR_JDK_LIB_PROPERTY
 import com.android.SdkConstants.FORCE_COMPILE_SDK_PREVIEW_PROPERTY
 import com.android.SdkConstants.MIN_ANDROID_GRADLE_PLUGIN_VERSION_PROPERTY
 import com.android.SdkConstants.MIN_COMPILE_SDK_EXTENSION_PROPERTY
@@ -30,6 +31,9 @@ import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.ide.dependencies.getIdString
 import com.android.build.gradle.internal.tasks.AarMetadataTask.Companion.DEFAULT_MIN_COMPILE_SDK_EXTENSION
+import com.android.build.gradle.internal.utils.checkDesugarJdkVariant
+import com.android.build.gradle.internal.utils.checkDesugarJdkVersion
+import com.android.build.gradle.internal.utils.getDesugarLibDependencyGraph
 import com.android.build.gradle.internal.utils.parseTargetHash
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
@@ -42,7 +46,9 @@ import com.google.common.annotations.VisibleForTesting
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.component.LibraryBinaryIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.component.ModuleComponentSelector
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
+import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.ListProperty
@@ -102,6 +108,10 @@ abstract class CheckAarMetadataTask : NonIncrementalTask() {
     @get:Input
     abstract val coreLibraryDesugaringEnabled: Property<Boolean>
 
+    @get:Input
+    @get:Optional
+    abstract val desugarJdkLibDependencyGraph: Property<ResolvedComponentResult>
+
     // platformSdkExtension is the actual extension level of the platform, if specified within the
     // SDK directory. This value is used if the extension level is not specified in the
     // compileSdkVersion hash string.
@@ -152,6 +162,12 @@ abstract class CheckAarMetadataTask : NonIncrementalTask() {
             )
             it.projectPath.set(projectPath)
             it.disableCompileSdkChecks.set(disableCompileSdkChecks)
+            desugarJdkLibDependencyGraph.orNull?.dependencies?.firstOrNull()?.requested?.let { id ->
+                if (id is ModuleComponentSelector) {
+                    it.desugarJdkVariant.set(id.module)
+                    it.desugarJdkVersion.set(id.version)
+                }
+            }
         }
     }
 
@@ -193,6 +209,11 @@ abstract class CheckAarMetadataTask : NonIncrementalTask() {
                     creationConfig.global.compileOptions.isCoreLibraryDesugaringEnabled
                 }
             task.coreLibraryDesugaringEnabled.setDisallowChanges(coreLibraryDesugaringEnabled)
+            if (coreLibraryDesugaringEnabled) {
+                task.desugarJdkLibDependencyGraph.set(
+                    getDesugarLibDependencyGraph(creationConfig.services)
+                )
+            }
             task.maxRecommendedStableCompileSdkVersionForThisAgp.setDisallowChanges(
                 ToolsRevisionUtils.MAX_RECOMMENDED_COMPILE_SDK_VERSION.apiLevel
             )
@@ -515,6 +536,30 @@ abstract class CheckAarMetadataWorkAction: WorkAction<CheckAarMetadataWorkParame
                     """.trimIndent()
                 )
             }
+
+            aarMetadataReader.desugarJdkLibId?.split(":")?.also {
+                check(it.size == 3) { "Unexpected desugarJdkLib ID format from AAR metadata"}
+                val variantFromAar = it[1]
+                val versionFromAar = it[2]
+
+                if (parameters.desugarJdkVariant.isPresent
+                    && parameters.desugarJdkVersion.isPresent) {
+                    checkDesugarJdkVariant(
+                        variantFromAar,
+                        parameters.desugarJdkVariant.get(),
+                        errorMessages,
+                        displayName,
+                        parameters.projectPath.get()
+                    )
+                    checkDesugarJdkVersion(
+                        versionFromAar,
+                        parameters.desugarJdkVersion.get(),
+                        errorMessages,
+                        displayName,
+                        parameters.projectPath.get()
+                    )
+                }
+            }
         }
     }
 
@@ -537,6 +582,12 @@ abstract class CheckAarMetadataWorkAction: WorkAction<CheckAarMetadataWorkParame
         // task).
         throw RuntimeException("Unsupported target hash: $sdkVersion")
     }
+
+    enum class DesugarJdkVariant(val size: Int) {
+        MINIMAL(0),
+        BASIC(1),
+        NIO(2);
+    }
 }
 
 /** [WorkParameters] for [CheckAarMetadataWorkAction] */
@@ -546,6 +597,8 @@ abstract class CheckAarMetadataWorkParameters: WorkParameters {
     abstract val aarMetadataVersion: Property<String>
     abstract val compileSdkVersion: Property<String>
     abstract val coreLibraryDesugaringEnabled: Property<Boolean>
+    abstract val desugarJdkVariant: Property<String>
+    abstract val desugarJdkVersion: Property<String>
     abstract val platformSdkExtension: Property<Int>
     abstract val platformSdkApiLevel: Property<Int>
     abstract val agpVersion: Property<String>
@@ -563,6 +616,7 @@ data class AarMetadataReader(val inputStream: InputStream) {
     val forceCompileSdkPreview: String?
     val minCompileSdkExtension: String?
     val coreLibraryDesugaringEnabled: String?
+    val desugarJdkLibId: String?
 
     constructor(file: File) : this(file.inputStream())
 
@@ -576,6 +630,7 @@ data class AarMetadataReader(val inputStream: InputStream) {
         forceCompileSdkPreview = properties.getProperty(FORCE_COMPILE_SDK_PREVIEW_PROPERTY)
         minCompileSdkExtension = properties.getProperty(MIN_COMPILE_SDK_EXTENSION_PROPERTY)
         coreLibraryDesugaringEnabled = properties.getProperty(CORE_LIBRARY_DESUGARING_ENABLED_PROPERTY)
+        desugarJdkLibId = properties.getProperty(DESUGAR_JDK_LIB_PROPERTY)
     }
 }
 
