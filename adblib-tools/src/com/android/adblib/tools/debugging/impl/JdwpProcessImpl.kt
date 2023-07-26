@@ -26,6 +26,7 @@ import com.android.adblib.tools.debugging.appProcessTracker
 import com.android.adblib.tools.debugging.jdwpProcessTracker
 import com.android.adblib.withPrefix
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -85,11 +86,8 @@ internal class JdwpProcessImpl(
         }
     }
 
-    /**
-     * Whether the [SharedJdwpSession] is currently in use (testing only)
-     */
-    override val isJdwpSessionRetained: Boolean
-        get() = sharedJdwpSessionProvider.isActive
+    override val jdwpSessionActivationCount: StateFlow<Int>
+        get() = sharedJdwpSessionProvider.activationCount
 
     override fun startMonitoring() {
         lazyStartMonitoring

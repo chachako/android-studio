@@ -17,6 +17,7 @@ package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.SharedJdwpSession
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Base class of internal implementations of [JdwpProcess], defining additional functions
@@ -27,9 +28,9 @@ import com.android.adblib.tools.debugging.SharedJdwpSession
 internal abstract class AbstractJdwpProcess : JdwpProcess, AutoCloseable {
 
     /**
-     * (**testing only**) Whether the [SharedJdwpSession] is currently in use
+     * The # of currently active calls to [withJdwpSession]
      */
-    abstract val isJdwpSessionRetained: Boolean
+    abstract val jdwpSessionActivationCount: StateFlow<Int>
 
     /**
      * Starts monitoring the JDWP process (in a separate coroutine) and emitting

@@ -33,6 +33,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
@@ -166,8 +167,8 @@ private class JdwpProcessDelegate(
 
     private val withJdwpSessionTracker = BlockActivationTracker()
 
-    override val isJdwpSessionRetained: Boolean
-        get() = withJdwpSessionTracker.activationCount.value > 1
+    override val jdwpSessionActivationCount: StateFlow<Int>
+        get() = withJdwpSessionTracker.activationCount
 
     override val cache = CoroutineScopeCache.create(device.scope)
 

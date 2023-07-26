@@ -15,15 +15,19 @@
  */
 package com.android.adblib.tools.debugging.impl
 
+import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
+import com.android.adblib.connectedDevicesTracker
 import com.android.adblib.serialNumber
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.android.adblib.testingutils.FakeAdbServerProvider
 import com.android.adblib.tools.AdbLibToolsProperties
+import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.flow
+import com.android.adblib.tools.debugging.jdwpProcessTracker
 import com.android.adblib.tools.debugging.packets.impl.JdwpCommands
 import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.payloadLength
@@ -32,10 +36,15 @@ import com.android.adblib.tools.debugging.properties
 import com.android.adblib.tools.debugging.toByteArray
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
+import com.android.adblib.waitForDevice
 import com.android.fakeadbserver.AppStage
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -155,34 +164,34 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
 
     @Test
     fun startMonitoringUsesShortDelayAccordingToUseShortDelayPropertyValue() = runBlockingWithTimeout {
-        // Prepare
-        val (_, _, process) = createJdwpProcess()
-        val delay = Duration.ofSeconds(2)
-        setHostPropertyValue(
-            process.device.session.host,
-            AdbLibToolsProperties.PROCESS_PROPERTIES_COLLECTOR_DELAY_DEFAULT,
-            Duration.ofSeconds(0)
-        )
-        setHostPropertyValue(
-            process.device.session.host,
-            AdbLibToolsProperties.PROCESS_PROPERTIES_COLLECTOR_DELAY_SHORT,
-            delay
-        )
-        setHostPropertyValue(
-            process.device.session.host,
-            AdbLibToolsProperties.PROCESS_PROPERTIES_COLLECTOR_DELAY_USE_SHORT,
-            true
-        )
+            // Prepare
+            val (_, _, process) = createJdwpProcess()
+            val delay = Duration.ofSeconds(2)
+            setHostPropertyValue(
+                process.device.session.host,
+                AdbLibToolsProperties.PROCESS_PROPERTIES_COLLECTOR_DELAY_DEFAULT,
+                Duration.ofSeconds(0)
+            )
+            setHostPropertyValue(
+                process.device.session.host,
+                AdbLibToolsProperties.PROCESS_PROPERTIES_COLLECTOR_DELAY_SHORT,
+                delay
+            )
+            setHostPropertyValue(
+                process.device.session.host,
+                AdbLibToolsProperties.PROCESS_PROPERTIES_COLLECTOR_DELAY_USE_SHORT,
+                true
+            )
 
-        // Act
-        val start = Instant.now()
-        process.startMonitoring()
-        yieldUntil { process.properties.processName != null }
-        val waitTime = Duration.between(start, Instant.now())
+            // Act
+            val start = Instant.now()
+            process.startMonitoring()
+            yieldUntil { process.properties.processName != null }
+            val waitTime = Duration.between(start, Instant.now())
 
-        // Assert: We waited (close to) "delay" for "completed" to get set
-        assertTrue(timeoutExceeded(waitTime, delay))
-    }
+            // Assert: We waited (close to) "delay" for "completed" to get set
+            assertTrue(timeoutExceeded(waitTime, delay))
+        }
 
     @Suppress("unused")
     //@Test // Disabled because of b/271466829
@@ -229,7 +238,7 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         delay(500) // give JDWP session holder time to launch
 
         // Assert: The JDWP session should still be in-use, since we received a `WAIT` packet
-        assertTrue(process.isJdwpSessionRetained)
+        assertTrue(process.jdwpSessionActivationCount.value >= 1)
     }
 
     @Test
@@ -353,32 +362,32 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
 
     @Test
     fun startMonitoringDoesNotReleaseJdwpSessionIfAppBootStageIsWaitForDebugger() = runBlockingWithTimeout {
-        // Prepare
-        val (fakeAdb, _, process) = createJdwpProcess(deviceApi = 34, waitForDebugger = false)
-        setHostPropertyValue(
-            process.device.session.host,
-            AdbLibToolsProperties.SUPPORT_STAG_PACKETS,
-            true
-        )
-        val clientState = fakeAdb.device(process.device.serialNumber).getClient(process.pid)!!
-        clientState.setStage(AppStage.DEBG)
+            // Prepare
+            val (fakeAdb, _, process) = createJdwpProcess(deviceApi = 34, waitForDebugger = false)
+            setHostPropertyValue(
+                process.device.session.host,
+                AdbLibToolsProperties.SUPPORT_STAG_PACKETS,
+                true
+            )
+            val clientState = fakeAdb.device(process.device.serialNumber).getClient(process.pid)!!
+            clientState.setStage(AppStage.DEBG)
 
-        // Act: When the AndroidVM app boot stage is "DEBG", "completed" is set early,
-        // but the SharedJDWPSession should be retained
-        setHostPropertyValue(
-            process.device.session.host,
-            AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT,
-            Duration.ofSeconds(60) // long timeout
-        )
-        process.startMonitoring()
-        yieldUntil { process.properties.completed }
-        delay(500) // give JDWP session holder time to launch
+            // Act: When the AndroidVM app boot stage is "DEBG", "completed" is set early,
+            // but the SharedJDWPSession should be retained
+            setHostPropertyValue(
+                process.device.session.host,
+                AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT,
+                Duration.ofSeconds(60) // long timeout
+            )
+            process.startMonitoring()
+            yieldUntil { process.properties.completed }
+            delay(500) // give JDWP session holder time to launch
 
-        // Assert: The JDWP session should still be in-use, since app boot stage is `DEBG`
-        assertTrue(process.isJdwpSessionRetained)
-        assertTrue(process.properties.isWaitingForDebugger)
-        assertEquals(AppStage.DEBG.value, process.properties.stage?.value)
-    }
+            // Assert: The JDWP session should still be in-use, since app boot stage is `DEBG`
+            assertTrue(process.jdwpSessionActivationCount.value >= 1)
+            assertTrue(process.properties.isWaitingForDebugger)
+            assertEquals(AppStage.DEBG.value, process.properties.stage?.value)
+        }
 
     @Test
     fun startMonitoringReleasesJdwpSessionIfAppBootStageIsA_go() = runBlockingWithTimeout {
@@ -404,7 +413,7 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         delay(500) // give JDWP session holder time to launch
 
         // Assert: We don't keep JDWP session since app boot stage was set to `A_GO`
-        assertFalse(process.isJdwpSessionRetained)
+        assertTrue(process.jdwpSessionActivationCount.value == 0)
         assertFalse(process.properties.isWaitingForDebugger)
         assertEquals(AppStage.A_GO.value, process.properties.stage?.value)
     }
@@ -522,7 +531,7 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
 
         // Assert
         // The JDWP session should still be in-use, since app boot stage is `DEBG`
-        assertTrue(process.isJdwpSessionRetained)
+        assertTrue(process.jdwpSessionActivationCount.value >= 1)
         assertEquals(AppStage.DEBG.value, process.properties.stage?.value)
         val properties = process.properties
         assertProcessPropertiesComplete(properties)
@@ -607,6 +616,107 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
             assertProcessPropertiesComplete(process.properties)
         }
 
+    @Test
+    fun processDelegatesToAlternateAdbSessionIfPresent() = runBlockingWithTimeout {
+        // Prepare
+        val (_, _, connectedJdwpProcess) = createJdwpProcess(waitForDebugger = false)
+        val delegateSession = connectedJdwpProcess.device.session.createDelegateSession()
+        //yieldUntil { firstProcess.properties.processName != null }
+        val delegateProcess = delegateSession.awaitDelegateProcess(connectedJdwpProcess)
+
+        // Act: Collecting properties of the "connected" process should impact the properties
+        // of the "delegate" process
+        setHostPropertyValue(
+            connectedJdwpProcess.device.session.host,
+            AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT,
+            Duration.ofSeconds(1)
+        )
+        connectedJdwpProcess.startMonitoring()
+        yieldUntil { delegateProcess.properties.completed }
+
+        // Assert
+        val properties = delegateProcess.properties
+        assertProcessPropertiesComplete(properties)
+    }
+
+    @Test
+    fun processDelegatesSharedJdwpSessionToAlternateAdbSessionIfPresent() = runBlockingWithTimeout {
+        // Prepare
+        val (_, _, connectedJdwpProcess) = createJdwpProcess(waitForDebugger = false)
+        val wasJdwpSessionRetained = CompletableDeferred<Unit>()
+        val job = launch {
+            // Wait until at least one jdwp session activation (from the delegate process)
+            connectedJdwpProcess.jdwpSessionActivationCount.first { it >= 1 }
+            wasJdwpSessionRetained.complete(Unit)
+        }
+        val delegateSession = connectedJdwpProcess.device.session.createDelegateSession()
+        val delegateProcess = delegateSession.awaitDelegateProcess(connectedJdwpProcess)
+
+        // Act: Acquiring the jdwp session from the delegate process should end up
+        // acquiring the jdwp session from the "connected" process
+        delegateProcess.withJdwpSession {
+            wasJdwpSessionRetained.await()
+        }
+        job.join()
+
+        // Assert
+        assertTrue(wasJdwpSessionRetained.isCompleted)
+    }
+
+    @Test
+    fun processDelegatesWithManyJdwpSessionActivationIsThreadSafe() = runBlockingWithTimeout {
+        // Prepare
+        val (_, _, connectedJdwpProcess) = createJdwpProcess(waitForDebugger = false)
+        val delegateSessionCount = 5
+        val jdwpSessionActivationCount = 100
+        val delegateProcesses = (1..delegateSessionCount).map {
+            val delegateSession = connectedJdwpProcess.device.session.createDelegateSession()
+            delegateSession.awaitDelegateProcess(connectedJdwpProcess)
+        }
+
+        // Act
+        val allSessionsSeen = CompletableDeferred<Unit>()
+        launch {
+            // Wait until all sessions are active, then tell them all to terminate
+            connectedJdwpProcess.jdwpSessionActivationCount.first {
+                it == delegateSessionCount * jdwpSessionActivationCount
+            }
+            allSessionsSeen.complete(Unit)
+        }
+        delegateProcesses.map { process ->
+            launch(Dispatchers.Default) {
+                (1..jdwpSessionActivationCount).map {
+                    launch(Dispatchers.Default) {
+                        process.withJdwpSession {
+                            allSessionsSeen.await()
+                        }
+                    }
+                }.joinAll()
+            }
+        }.joinAll()
+
+        // Assert
+        assertEquals(0, connectedJdwpProcess.jdwpSessionActivationCount.value)
+    }
+
+    @Test
+    fun processDelegateIsClosedWhenProcessTerminates() = runBlockingWithTimeout {
+        // Prepare
+        val (_, _, connectedJdwpProcess) = createJdwpProcess(waitForDebugger = false)
+        val delegateSession = connectedJdwpProcess.device.session.createDelegateSession()
+        val delegateProcess = delegateSession.awaitDelegateProcess(connectedJdwpProcess)
+
+        // Act
+        val activeBefore = delegateProcess.scope.isActive
+        fakeAdb.device(connectedJdwpProcess.device.serialNumber).stopClient(connectedJdwpProcess.pid)
+        yieldUntil { !delegateProcess.scope.isActive }
+        val activeAfter = delegateProcess.scope.isActive
+
+        // Assert
+        assertTrue(activeBefore)
+        assertFalse(activeAfter)
+    }
+
     private suspend fun createJdwpProcess(
         deviceApi: Int = 30,
         waitForDebugger: Boolean = true
@@ -660,6 +770,34 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         assertTrue(properties.features.isEmpty())
         assertNull(properties.exception)
         assertFalse(properties.completed)
+    }
+
+    private fun AdbSession.createDelegateSession(): AdbSession {
+        val childSession = AdbSession.createChildSession(
+            this,
+            fakeAdbRule.host,
+            fakeAdb.createChannelProvider(fakeAdbRule.host)
+        )
+        childSession.addJdwpProcessSessionFinder(object : JdwpProcessSessionFinder {
+            override fun findDelegateSession(forSession: AdbSession): AdbSession {
+                return if (forSession == childSession) {
+                    this@createDelegateSession
+                } else {
+                    forSession
+                }
+            }
+        })
+        return childSession
+    }
+
+    private suspend fun AdbSession.awaitDelegateProcess(firstProcess: JdwpProcess): JdwpProcess {
+        // Find device in "session2", then look for process with same pid
+        val sessionDevice = connectedDevicesTracker.waitForDevice(firstProcess.device.serialNumber)
+        return sessionDevice.jdwpProcessTracker.processesFlow.transform { processList ->
+            processList.firstOrNull { it.pid == firstProcess.pid }?.also {
+                emit(it)
+            }
+        }.first()
     }
 
     private fun timeoutExceeded(waitTime: Duration, timeout: Duration): Boolean {

@@ -34,12 +34,6 @@ internal interface SharedJdwpSessionProvider : AutoCloseable {
     val activationCount: StateFlow<Int>
 
     /**
-     * (** testing only**) Whether the [SharedJdwpSession] is currently in use
-     */
-    val isActive: Boolean
-        get() = activationCount.value > 0
-
-    /**
      * The process ID
      */
     val pid: Int
