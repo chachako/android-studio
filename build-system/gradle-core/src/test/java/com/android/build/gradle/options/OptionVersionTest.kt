@@ -18,7 +18,6 @@ package com.android.build.gradle.options
 
 import com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
 import com.android.ide.common.repository.AgpVersion
-import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Test
 
 /** Tests the validity of the Android Gradle plugin versions associated with the [Option]s. */
@@ -42,7 +41,6 @@ class OptionVersionTest {
          *  - Tracking bug for AGP 8.2: b/277803353
          */
         private val KNOWN_VIOLATING_DEPRECATED_OPTIONS: List<Option<*>> = listOf(
-           BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM,
         )
 
         private fun getStableAgpVersionIgnoringDotReleases(versionString: String): AgpVersion {
@@ -106,8 +104,8 @@ fun checkViolatingProjectOptions(
         ignoreList: List<Option<*>> = emptyList(),
         requirement: String,
         suggestion: String? = null) {
-    val newViolations = violatingOptions - ignoreList
-    assertWithMessage(
+    val newViolations = violatingOptions - ignoreList.toSet()
+    check(newViolations.isEmpty()) {
         "$requirement\n" +
                 "The following options do not meet that requirement:\n" +
                 "```\n" +
@@ -115,15 +113,15 @@ fun checkViolatingProjectOptions(
                 "```\n" +
                 (suggestion
                     ?: "If this is intended, copy the above code snippet to the ignore list of this test.")
-    ).that(newViolations).isEmpty()
+    }
 
-    val fixedViolations = ignoreList - violatingOptions
-    assertWithMessage(
+    val fixedViolations = ignoreList - violatingOptions.toSet()
+    check(fixedViolations.isEmpty()) {
         "$requirement\n" +
                 "The following options have met that requirement:\n" +
                 "```\n" +
                 fixedViolations.joinToString(",\n") { "${it.javaClass.simpleName}.$it" } + "\n" +
                 "```\n" +
                 "Remove them from the ignore list of this test."
-    ).that(fixedViolations).isEmpty()
+    }
 }

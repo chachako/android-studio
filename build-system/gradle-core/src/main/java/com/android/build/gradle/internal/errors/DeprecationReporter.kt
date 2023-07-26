@@ -55,7 +55,7 @@ interface DeprecationReporter {
     ) {
         VERSION_9_0(Version.VERSION_9_0),
 
-        VERSION_8_2(Version.VERSION_8_2),
+        VERSION_8_3(Version.VERSION_8_3),
 
         VERSION_8_0(Version.VERSION_8_0),
 

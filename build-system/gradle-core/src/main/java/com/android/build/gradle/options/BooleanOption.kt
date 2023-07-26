@@ -17,7 +17,7 @@
 package com.android.build.gradle.options
 
 import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.BUILD_CONFIG_GLOBAL_PROPERTY
-import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.VERSION_8_2
+import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.VERSION_8_3
 import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.VERSION_9_0
 import com.android.build.gradle.options.Version.VERSION_3_5
 import com.android.build.gradle.options.Version.VERSION_3_6
@@ -278,7 +278,7 @@ enum class BooleanOption(
     ENABLE_DEXING_ARTIFACT_TRANSFORM(
         "android.enableDexingArtifactTransform",
         true,
-        FeatureStage.SoftlyEnforced(VERSION_8_2)
+        FeatureStage.SoftlyEnforced(VERSION_8_3)
     ),
 
     /* -------------------
