@@ -61,19 +61,20 @@ class ConfigurationCacheReportChecker {
                 name = ".knownPackages"
             ),
 
-            // NDK
+            // Native
             Error.file(
-                location = "bazel test //tools/base/build-system/integration-test/native:NdkBuildVariantApiTest",
-                name = "source.properties"
+                location = "//tools/base/build-system/integration-test/native:CmakeTargetsTest",
+                name = "BuildSettings.json"
             ),
             Error.file(
-                location = "bazel test //tools/base/build-system/integration-test/native:NdkBuildBuildSettingsTest",
-                name = "BuildSettings.json"
+                location = "bazel test //tools/base/build-system/integration-test/native:CmakeTargetsTest",
+                name = "CMakeSettings.json"
             ),
             Error.file(
                 location = "bazel test //tools/base/build-system/integration-test/native:PrefabPublishingTest",
                 name = "Application.mk"
             ),
+            // SDK
             Error.file(
                 location = "SdkAutoDownloadTest",
                 name = "local-sdk-for-test"
@@ -97,10 +98,6 @@ class ConfigurationCacheReportChecker {
             Error.file(
                 location = "SdkAutoDownloadTest",
                 name = "android-sdk-license"
-            ),
-            Error.file(
-                location = "bazel test //tools/base/build-system/integration-test/native:CmakeTargetsTest",
-                name = "CMakeSettings.json"
             ),
         ),
         ErrorType.FileSystemEntry to listOf(
@@ -307,7 +304,7 @@ class ConfigurationCacheReportChecker {
                 name = "addon-google_apis-google-24"
             ),
 
-            // NDK
+            // Native
             Error.fileSystemEntry(
                 location = "bazel test //tools/base/build-system/integration-test/native:NdkBuildVariantApiTest",
                 name = "build.ninja"
@@ -317,36 +314,16 @@ class ConfigurationCacheReportChecker {
                 name = "build.ninja.txt"
             ),
             Error.fileSystemEntry(
-                location = "bazel test //tools/base/build-system/integration-test/native:NdkBuildVariantApiTest",
-                name = "source.properties"
-            ),
-            Error.fileSystemEntry(
-                location = "bazel test //tools/base/build-system/integration-test/native:NdkBuildVariantApiTest",
-                name = "platforms.json"
-            ),
-            Error.fileSystemEntry(
-                location = "bazel test //tools/base/build-system/integration-test/native:NdkBuildVariantApiTest",
-                name = "BuildSettings.json"
-            ),
-            Error.fileSystemEntry(
-                location = "bazel test //tools/base/build-system/integration-test/native:NdkBuildVariantApiTest",
+                location = "bazel test //tools/base/build-system/integration-test/connected:NdkJniLibConnectedTest",
                 name = "Application.mk"
             ),
             Error.fileSystemEntry(
-                location = "bazel test //tools/base/build-system/integration-test/native:NdkBuildVariantApiTest",
-                name = "abis.json"
-            ),
-            Error.fileSystemEntry(
-                location = "bazel test //tools/base/build-system/integration-test/native:NdkBuildVariantApiTest",
+                location = "bazel test //tools/base/build-system/integration-test/connected:NdkJniLibConnectedTest",
                 name = "Android.mk"
             ),
             Error.fileSystemEntry(
-                location = "bazel test //tools/base/build-system/integration-test/native:NdkBuildVariantApiTest",
-                name = "ndk"
-            ),
-            Error.fileSystemEntry(
-                location = "bazel test //tools/base/build-system/integration-test/native:NdkBuildVariantApiTest",
-                name = "build/intermediates/cxx"
+                location = "bazel test //tools/base/build-system/integration-test/native:CmakeTargetsTest",
+                name = "BuildSettings.json"
             ),
             Error.fileSystemEntry(
                 location = "bazel test //tools/base/build-system/integration-test/native:CmakeTargetsTest",
