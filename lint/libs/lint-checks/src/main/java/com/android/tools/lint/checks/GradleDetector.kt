@@ -233,6 +233,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
             )
           }
         }
+        is TargetSdkCheckResult.NoIssue -> {}
       }
     } catch (ignore: NumberFormatException) {
       // Ignore: AAPT will enforce this.
@@ -326,6 +327,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
                 }
               report(context, statementCookie, TARGET_NEWER, tsdk.message, fix)
             }
+            is TargetSdkCheckResult.NoIssue -> {}
           }
         }
         if (version > 0) {

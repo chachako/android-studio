@@ -42,6 +42,8 @@ kotlin_library(
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
     ]),
+    # See http://b/293274645 on why we need this kotlinc option.
+    kotlinc_opts = ["-XXLanguage:-TypeEnhancementImprovementsInStrictMode"],
     lint_baseline = "lint_baseline.xml",
     lint_timeout = "long",
     module_name = "gradle_core",

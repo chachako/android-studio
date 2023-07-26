@@ -363,6 +363,7 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) :
           writer.putTaggedObjectID(it.taggedObjectID)
           writer.putTaggedValue(it.value)
         }
+        else -> {}
       }
     }
   }

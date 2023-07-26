@@ -392,3 +392,10 @@ def updateApi = tasks.register('updateApi') {
     dependsOn(updatePseudoApi)
     dependsOn(updateUndecoratedApi)
 }
+
+// See http://b/293274645 on why we need this kotlinc option.
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-XXLanguage:-TypeEnhancementImprovementsInStrictMode")
+    }
+}

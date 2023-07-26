@@ -42,8 +42,8 @@ def kotlin_compile(ctx, name, srcs, deps, friend_jars, out, out_ijar, java_runti
 
     args.add("-module-name", name)
     args.add("-nowarn")  # Mirrors the default javac opts.
-    args.add("-api-version", "1.6")
-    args.add("-language-version", "1.6")
+    args.add("-api-version", "1.8")
+    args.add("-language-version", "1.8")
     args.add("-Xjvm-default=all-compatibility")
     args.add("-no-stdlib")
     args.add("-Xsam-conversions=class")  # Needed for Gradle configuration caching (see b/202512551).
