@@ -22,6 +22,7 @@ import com.android.adblib.deviceProperties
 import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.EmulatorConsole
+import com.android.adblib.tools.defaultAuthTokenPath
 import com.android.adblib.tools.localConsoleAddress
 import com.android.adblib.tools.openEmulatorConsole
 import com.android.adblib.utils.createChildScope
@@ -45,6 +46,7 @@ import java.io.IOException
 import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.io.path.exists
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -164,11 +166,14 @@ class LocalEmulatorProvisionerPlugin(
     val result = LOCAL_EMULATOR_REGEX.matchEntire(device.serialNumber) ?: return null
     val port = result.groupValues[1].toIntOrNull() ?: return null
 
-    val emulatorConsole =
-      adbSession.openEmulatorConsole(
-        localConsoleAddress(port),
-        AndroidLocationsSingleton.userHomeLocation.resolve(".emulator_console_auth_token")
-      )
+    // Note that the emulator has different logic for finding the home directory than
+    // userHomeLocation; see android::base::System::getHomeDirectory().
+    val authTokenPath =
+      AndroidLocationsSingleton.userHomeLocation.resolve(".emulator_console_auth_token").takeIf {
+        it.exists()
+      }
+        ?: defaultAuthTokenPath()
+    val emulatorConsole = adbSession.openEmulatorConsole(localConsoleAddress(port), authTokenPath)
     emulatorConsoles[device] = emulatorConsole
 
     // This will fail on emulator versions prior to 30.0.18.
