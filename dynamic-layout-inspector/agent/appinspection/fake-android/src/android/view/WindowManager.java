@@ -28,5 +28,8 @@ public interface WindowManager {
     WindowMetrics getCurrentWindowMetrics();
 
     @NonNull
+    WindowMetrics getMaximumWindowMetrics();
+
+    @NonNull
     Display getDefaultDisplay();
 }

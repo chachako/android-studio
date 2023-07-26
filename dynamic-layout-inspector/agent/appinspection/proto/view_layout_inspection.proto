@@ -168,8 +168,10 @@ message FoldEvent {
 // device's Configuration.
 message AppContext {
     Resource theme = 1;
-    int32 screen_width = 2; // includes window decor
-    int32 screen_height = 3; // includes window decor
+    // The width of the main display, including window decor
+    int32 main_display_width = 2;
+    // The height of the main display, including window decor
+    int32 main_display_height = 3;
     // The orientation of the main display, in degrees.
     int32 main_display_orientation = 4;
 }

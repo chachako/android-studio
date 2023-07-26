@@ -147,13 +147,13 @@ fun View.getNamespace(attributeId: Int): String =
     if (attributeId != 0) resources.getResourcePackageName(attributeId) else ""
 
 fun View.createAppContext(stringTable: StringTable): AppContext {
-    val size = windowSize
     return AppContext.newBuilder().apply {
         createResource(stringTable, context.themeResId)?.let { themeResource ->
             theme = themeResource
         }
-        screenWidth = size.x
-        screenHeight = size.y
+        val point = getDefaultDisplaySize()
+        mainDisplayWidth = point.x
+        mainDisplayHeight = point.y
         mainDisplayOrientation = getDefaultDisplayRotation()
     }.build()
 }
@@ -190,6 +190,27 @@ fun View.getDefaultDisplayRotation(): Int {
         Surface.ROTATION_180 -> 180
         Surface.ROTATION_270 -> 270
         else -> -1
+    }
+}
+
+fun View.getDefaultDisplaySize(): Point {
+    val windowManager = context.getSystemService(WindowManager::class.java)
+    val display = if (Build.VERSION.SDK_INT >= 30) {
+        context.display
+    }
+    else {
+        null
+    } ?: windowManager.defaultDisplay
+
+    if (Build.VERSION.SDK_INT >= 31) {
+        val windowMetrics = windowManager.getMaximumWindowMetrics()
+        val rect = windowMetrics.getBounds()
+        return Point(rect.width(), rect.height())
+    }
+    else {
+        val point = Point()
+        display.getRealSize(point)
+        return point
     }
 }
 

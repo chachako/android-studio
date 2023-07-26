@@ -502,8 +502,8 @@ abstract class ViewLayoutInspectorTestBase {
                 assertThat(layoutEvent.rootView.id).isEqualTo(tree1.uniqueDrawingId)
                 assertThat(layoutEvent.screenshot.type).isEqualTo(Screenshot.Type.SKP)
                 assertThat(layoutEvent.screenshot.bytes.toByteArray()).isEqualTo(tree1FakePicture1.bytes)
-                assertThat(layoutEvent.appContext.screenHeight).isEqualTo(3120)
-                assertThat(layoutEvent.appContext.screenWidth).isEqualTo(1440)
+                assertThat(layoutEvent.appContext.mainDisplayHeight).isEqualTo(3120)
+                assertThat(layoutEvent.appContext.mainDisplayWidth).isEqualTo(1440)
                 assertThat(layoutEvent.appContext.mainDisplayOrientation).isEqualTo(90)
             }
         }

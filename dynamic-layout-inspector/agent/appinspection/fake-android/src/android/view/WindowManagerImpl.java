@@ -39,4 +39,13 @@ public class WindowManagerImpl implements WindowManager {
     public Display getDefaultDisplay() {
         return mDisplay;
     }
+
+    @Override
+    @NonNull
+    public WindowMetrics getMaximumWindowMetrics() {
+        if (Build.VERSION.SDK_INT < 30) {
+            throw new RuntimeException();
+        }
+        return mMetrics;
+    }
 }
