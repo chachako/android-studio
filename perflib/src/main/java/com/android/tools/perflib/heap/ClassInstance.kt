@@ -76,6 +76,13 @@ open class ClassInstance(id: Long, stack: StackTrace?, private val valuesOffset:
                         when (entry.value.arrayType) {
                             Type.CHAR -> charBufferArray = entry.value
                             Type.BYTE -> byteBufferArray = entry.value
+                            Type.OBJECT,
+                            Type.BOOLEAN,
+                            Type.FLOAT,
+                            Type.DOUBLE,
+                            Type.SHORT,
+                            Type.INT,
+                            Type.LONG -> {}
                         }
                     }
                 "count" == entry.field.name && entry.value is Int -> count = entry.value

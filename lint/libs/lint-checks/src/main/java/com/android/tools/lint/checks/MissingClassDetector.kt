@@ -41,9 +41,17 @@ import com.android.SdkConstants.TAG_STRING
 import com.android.SdkConstants.VIEW_FRAGMENT
 import com.android.SdkConstants.VIEW_TAG
 import com.android.resources.ResourceFolderType
+import com.android.resources.ResourceFolderType.ANIM
+import com.android.resources.ResourceFolderType.ANIMATOR
+import com.android.resources.ResourceFolderType.COLOR
 import com.android.resources.ResourceFolderType.DRAWABLE
+import com.android.resources.ResourceFolderType.FONT
+import com.android.resources.ResourceFolderType.INTERPOLATOR
 import com.android.resources.ResourceFolderType.LAYOUT
 import com.android.resources.ResourceFolderType.MENU
+import com.android.resources.ResourceFolderType.MIPMAP
+import com.android.resources.ResourceFolderType.NAVIGATION
+import com.android.resources.ResourceFolderType.RAW
 import com.android.resources.ResourceFolderType.TRANSITION
 import com.android.resources.ResourceFolderType.VALUES
 import com.android.resources.ResourceFolderType.XML
@@ -250,6 +258,14 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
           checkClassReference(context, null, provider.value, provider, element)
         }
       }
+      ANIM,
+      ANIMATOR,
+      COLOR,
+      FONT,
+      INTERPOLATOR,
+      MIPMAP,
+      NAVIGATION,
+      RAW -> {}
     }
   }
 
