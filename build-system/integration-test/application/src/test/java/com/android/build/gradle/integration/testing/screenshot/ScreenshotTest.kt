@@ -23,8 +23,11 @@ import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.TestUtils
 import com.android.testutils.truth.PathSubject.assertThat
+import com.android.utils.FileUtils
+import org.junit.After
 import org.junit.Rule
 import org.junit.Test
+import java.io.File
 
 class ScreenshotTest {
 
@@ -97,6 +100,13 @@ class ScreenshotTest {
             .withKotlinVersion(TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS)
             .create()
 
+    @After
+    fun tearDown() {
+        // Delete any golden images saved during test
+        val goldenImageDir = File(project.projectDir.absolutePath + "/src/androidTest/screenshot")
+        FileUtils.deleteRecursivelyIfExists(goldenImageDir)
+    }
+
     @Test
     fun runScreenshotTestAndRecordGolden() {
         // TODO (b/286549613): remove withFailOnWarning after
@@ -107,10 +117,7 @@ class ScreenshotTest {
                 .with(BooleanOption.ENABLE_SCREENSHOT_TEST, true)
                 .run("screenshotTestDebugAndroidTest", "--record-golden")
 
-        assertThat(
-                project.getOutputFile(
-                        "androidTest-results","screenshot","debug",
-                        "MainViewTest.png")).exists()
+        assertThat(project.file(project.projectDir.absolutePath + "/src/androidTest/screenshot/debug/MainViewTest.png")).exists()
     }
 
     @Test
@@ -122,6 +129,8 @@ class ScreenshotTest {
             .with(BooleanOption.USE_ANDROID_X, true)
             .with(BooleanOption.ENABLE_SCREENSHOT_TEST, true)
             .run("screenshotTestDebugAndroidTest", "--record-golden")
+
+        assertThat(project.file(project.projectDir.absolutePath + "/src/androidTest/screenshot/debug/MainViewTest.png")).exists()
 
         project.executor()
             .withFailOnWarning(false)

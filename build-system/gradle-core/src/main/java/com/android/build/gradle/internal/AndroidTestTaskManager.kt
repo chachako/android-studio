@@ -507,6 +507,7 @@ class AndroidTestTaskManager(
         val flavorDir = if (flavor.isNullOrEmpty()) "" else "${BuilderConstants.FD_FLAVORS}/$flavor"
         val resultsDir =
                 File(resultsRootDir, "${BuilderConstants.SCREENSHOT}/$buildTarget/$flavorDir")
+        val goldenImagesDir = File("${project.projectDir.absolutePath}/src/androidTest/${BuilderConstants.SCREENSHOT}/$buildTarget/$flavorDir")
 
         val ideExtractionDir =
                 creationConfig.paths.intermediatesDir(
@@ -523,6 +524,7 @@ class AndroidTestTaskManager(
                 PreviewScreenshotTestTask.CreationAction(
                         creationConfig,
                         resultsDir,
+                        goldenImagesDir,
                         ideExtractionDir,
                         lintModelDir,
                         lintCacheDir,

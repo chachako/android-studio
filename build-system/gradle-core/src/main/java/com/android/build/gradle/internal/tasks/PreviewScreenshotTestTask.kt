@@ -81,6 +81,9 @@ abstract class PreviewScreenshotTestTask : Test(), VariantAwareTask {
     @get:OutputDirectory
     abstract val ideExtractionDir: DirectoryProperty
 
+    @get:Internal
+    abstract val goldenImageDir: DirectoryProperty
+
     @get:OutputDirectory
     abstract val imageOutputDir: DirectoryProperty
 
@@ -111,7 +114,7 @@ abstract class PreviewScreenshotTestTask : Test(), VariantAwareTask {
                 "--cache-dir", cliParams["lint.cache"],
                 "--root-lint-model", cliParams["lint.model"],
                 "--output-location", cliParams["output.location"] + "/",
-                "--golden-location", cliParams["output.location"] + "/",
+                "--golden-location", cliParams["golden.location"] + "/",
                 "--file-path", cliParams["sources"]!!.split(",").first())
         if (recordGolden.get()) {
             commands.add("--record-golden")
@@ -130,6 +133,7 @@ abstract class PreviewScreenshotTestTask : Test(), VariantAwareTask {
     class CreationAction(
             private val androidTestCreationConfig: AndroidTestCreationConfig,
             private val imageOutputDir: File,
+            private val goldenImageDir: File,
             private val ideExtractionDir: File,
             private val lintModelDir: File,
             private val lintCacheDir: File,
@@ -144,6 +148,7 @@ abstract class PreviewScreenshotTestTask : Test(), VariantAwareTask {
 
         override fun configure(task: PreviewScreenshotTestTask) {
             task.recordGolden.convention(false)
+            task.outputs.upToDateWhen { !task.recordGolden.get() }
 
             val testedConfig = (creationConfig as? AndroidTestCreationConfig)?.mainVariant
             task.variantName = testedConfig?.name ?: creationConfig.name
@@ -200,6 +205,10 @@ abstract class PreviewScreenshotTestTask : Test(), VariantAwareTask {
                             creationConfig.services.buildServiceRegistry,
                             SdkComponentsBuildService::class.java)
                             .get().sdkDirectoryProvider.get().asFile.absolutePath
+
+            task.goldenImageDir.set(goldenImageDir)
+            task.goldenImageDir.disallowChanges()
+            task.cliParams["golden.location"] = goldenImageDir.absolutePath
 
             task.imageOutputDir.set(imageOutputDir)
             task.imageOutputDir.disallowChanges()
