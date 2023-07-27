@@ -53,7 +53,7 @@
             "version": "1.0"
           },
           "artifact": {
-            "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/testRepo/com/example/androidLib/1.0/androidLib-1.0-typeoneModetwoDebug.aar"
+            "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/testRepo/com/example/androidLib/1.0/androidLib-1.0-typeoneModetwoDebug.aar"
           },
           "androidLibraryData": {
             "manifest": {
@@ -195,7 +195,7 @@
   {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
-      "{INCLUDED_BUILD(kotlinMultiplatform)}/testRepo/com/example/kmpJvmOnly-jvm/1.0/kmpJvmOnly-jvm-1.0.jar"
+      "{INCLUDED_BUILD(:kotlinMultiplatform)}/testRepo/com/example/kmpJvmOnly-jvm/1.0/kmpJvmOnly-jvm-1.0.jar"
     ],
     "coordinates": {
       "group": "com.example",
@@ -206,7 +206,7 @@
       "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kmpJvmOnly-jvm-1.0.jar (com.example:kmpJvmOnly-jvm:1.0)",
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver",
       "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;sourcesClasspath": [
-        "{INCLUDED_BUILD(kotlinMultiplatform)}/testRepo/com/example/kmpJvmOnly-jvm/1.0/kmpJvmOnly-jvm-1.0-sources.jar"
+        "{INCLUDED_BUILD(:kotlinMultiplatform)}/testRepo/com/example/kmpJvmOnly-jvm/1.0/kmpJvmOnly-jvm-1.0-sources.jar"
       ]
     }
   },

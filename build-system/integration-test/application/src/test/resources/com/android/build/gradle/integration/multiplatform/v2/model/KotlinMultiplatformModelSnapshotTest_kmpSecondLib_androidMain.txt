@@ -112,7 +112,7 @@
             "projectPath": ":kmpLibraryPlugin"
           },
           "lintJar": {
-            "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpLibraryPlugin/build/intermediates/lint_publish_jar/global/lint.jar"
+            "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpLibraryPlugin/build/intermediates/lint_publish_jar/global/lint.jar"
           }
         }
       },

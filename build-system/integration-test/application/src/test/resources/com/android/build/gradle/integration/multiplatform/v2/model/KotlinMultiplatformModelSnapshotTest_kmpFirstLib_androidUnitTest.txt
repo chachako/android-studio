@@ -203,7 +203,7 @@
             "projectPath": ":androidLib"
           },
           "lintJar": {
-            "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/androidLib/build/intermediates/lint_publish_jar/global/lint.jar"
+            "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/androidLib/build/intermediates/lint_publish_jar/global/lint.jar"
           }
         }
       },

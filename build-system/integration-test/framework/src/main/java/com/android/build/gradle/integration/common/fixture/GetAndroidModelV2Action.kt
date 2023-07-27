@@ -20,7 +20,6 @@ import com.android.build.gradle.integration.common.fixture.ModelContainerV2.Mode
 import com.android.builder.model.v2.models.AndroidDsl
 import com.android.builder.model.v2.models.AndroidProject
 import com.android.builder.model.v2.models.BasicAndroidProject
-import com.android.builder.model.v2.models.BuildMap
 import com.android.builder.model.v2.models.ClasspathParameterConfig
 import com.android.builder.model.v2.models.ModelBuilderParameter
 import com.android.builder.model.v2.models.ProjectSyncIssues
@@ -32,6 +31,7 @@ import org.gradle.tooling.BuildAction
 import org.gradle.tooling.BuildController
 import org.gradle.tooling.model.BuildIdentifier
 import org.gradle.tooling.model.gradle.BasicGradleProject
+import org.gradle.tooling.model.gradle.GradleBuild
 import java.io.File
 
 /**
@@ -54,31 +54,32 @@ class GetAndroidModelV2Action(
         val projectMap = mutableMapOf<BuildIdentifier, List<Pair<String, File>>>()
 
         val rootBuild = buildController.buildModel
-        val rootBuildId = rootBuild.buildIdentifier
 
-        // add the projects of the root build.
-        val projectList = rootBuild.projects
-        for (project in projectList) {
-            projects.add(rootBuildId to project)
+        val toProcess = ArrayDeque<GradleBuild>().also { it.add(rootBuild)}
+        val allBuilds = mutableSetOf<GradleBuild>()
+        while(toProcess.isNotEmpty()) {
+            val curr = toProcess.removeFirst()
+            allBuilds.add(curr)
+            curr.includedBuilds.forEach { included -> toProcess.add(included ) }
         }
-        projectMap[rootBuildId] = rootBuild.projects.map { it.path to it.projectDirectory }
 
-        // and the included builds
-        for (build in rootBuild.includedBuilds) {
+        val buildIdMap = mutableMapOf<String, File>()
+        for (build in allBuilds) {
             val buildId = build.buildIdentifier
             for (project in build.projects) {
                 projects.add(buildId to project)
+                if (project.path == ":") {
+                    buildIdMap[project.buildTreePath] = project.projectDirectory
+                }
             }
             projectMap[buildId] = build.projects.map { it.path to it.projectDirectory }
         }
 
-        val (modelMap, buildMap) = getAndroidProjectMap(projects, buildController)
+        val modelMap = getAndroidProjectMap(projects, buildController)
 
         val t2 = System.currentTimeMillis()
 
         println("GetAndroidModelV2Action: " + (t2 - t1) + "ms")
-
-        val buildIdMap = buildMap?.buildIdMap ?: mapOf(":" to rootBuildId.rootDir)
 
         val reverseBuildIdMap = buildIdMap.map { it.value to it.key}.toMap()
 
@@ -102,26 +103,16 @@ class GetAndroidModelV2Action(
         return ModelContainerV2(projectInfoMaps, buildInfoMap)
     }
 
-    private data class Result(
-        val modelMap: Map<BuildIdentifier, Map<String, ModelInfo>>,
-        val buildMap: BuildMap?,
-    )
-
     private fun getAndroidProjectMap(
         projects: List<Pair<BuildIdentifier, BasicGradleProject>>,
         buildController: BuildController
-    ): Result {
+    ): Map<BuildIdentifier, Map<String, ModelInfo>> {
         val models = mutableMapOf<BuildIdentifier, MutableMap<String, ModelInfo>>()
-
-        var buildMap: BuildMap? = null
 
         for ((buildId, project) in projects) {
             // if we don't find ModelVersions, then it's not an AndroidProject, move on.
             val modelVersions = buildController.findModel(project, Versions::class.java)
             if (modelVersions != null) {
-                if (buildMap == null) {
-                    buildMap = buildController.findModel(project, BuildMap::class.java)
-                }
                 val basicAndroidProject = buildController.findModel(project, BasicAndroidProject::class.java)
                 val androidProject = buildController.findModel(project, AndroidProject::class.java)
                 val androidDsl = buildController.findModel(project, AndroidDsl::class.java)
@@ -180,6 +171,6 @@ class GetAndroidModelV2Action(
             }
         }
 
-        return Result(models, buildMap)
+        return models
     }
 }

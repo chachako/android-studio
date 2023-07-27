@@ -40,6 +40,16 @@ class HelloWorldCompositeModelTest: ModelComparator() {
             }
         }
         includedBuild("other-build") {
+            includedBuild("nested-build") {
+                subProject(":anotherLib") {
+                    group = "com.nested-build"
+                    version = "1.3"
+                    plugins.add(PluginType.ANDROID_LIB)
+                    android {
+                        setUpHelloWorld()
+                    }
+                }
+            }
             subProject(":lib") {
                 group = "com.composite-build"
                 version = "1.2"
@@ -60,15 +70,23 @@ class HelloWorldCompositeModelTest: ModelComparator() {
     @Test
     fun `test includedBuild BasicAndroidProject`() {
         with(result).compareBasicAndroidProject(
-            projectAction = { getProject(":lib", "other-build") },
+            projectAction = { getProject(":lib", ":other-build") },
             goldenFile = "BasicAndroidProject"
+        )
+    }
+
+    @Test
+    fun `test nested includedBuild BasicAndroidProject`() {
+        with(result).compareBasicAndroidProject(
+            projectAction = { getProject(":anotherLib", ":other-build:nested-build") },
+            goldenFile = "BasicAndroidProject2"
         )
     }
 
     @Test
     fun `test includedBuild AndroidProject`() {
         with(result).compareAndroidProject(
-            projectAction = { getProject(":lib", "other-build") },
+            projectAction = { getProject(":lib", ":other-build") },
             goldenFile = "AndroidProject"
         )
     }

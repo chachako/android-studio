@@ -1,0 +1,236 @@
+> BasicAndroidProject:
+   - projectType    = LIBRARY
+   - path           = ":anotherLib"
+   - buildFolder    = {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/build{!}
+   - bootClasspath:
+      * {ANDROID_SDK}/platforms/android-{COMPILE_SDK_VERSION}/android.jar{F}
+   > defaultConfig:
+      > sourceProvider:
+         - name                    = "main"
+         - manifestFile            = {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/main/AndroidManifest.xml{F}
+         - javaDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/main/java{D}
+         - kotlinDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/main/java{D}
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/main/kotlin{!}
+         - resourcesDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/main/resources{!}
+         - aidlDirectories         = (null)
+         - renderscriptDirectories = (null)
+         - resDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/main/res{D}
+         - assetsDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/main/assets{!}
+         - jniLibsDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/main/jniLibs{!}
+         - shadersDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/main/shaders{!}
+         - mlModelsDirectories     = (null)
+         - custom                  = []
+      < sourceProvider
+      > androidTestSourceProvider:
+         - name                    = "androidTest"
+         - manifestFile            = {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTest/AndroidManifest.xml{!}
+         - javaDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTest/java{!}
+         - kotlinDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTest/java{!}
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTest/kotlin{!}
+         - resourcesDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTest/resources{!}
+         - aidlDirectories         = (null)
+         - renderscriptDirectories = (null)
+         - resDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTest/res{!}
+         - assetsDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTest/assets{!}
+         - jniLibsDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTest/jniLibs{!}
+         - shadersDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTest/shaders{!}
+         - mlModelsDirectories     = (null)
+         - custom                  = []
+      < androidTestSourceProvider
+      > unitTestSourceProvider:
+         - name                    = "test"
+         - manifestFile            = {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/test/AndroidManifest.xml{!}
+         - javaDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/test/java{!}
+         - kotlinDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/test/java{!}
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/test/kotlin{!}
+         - resourcesDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/test/resources{!}
+         - aidlDirectories         = (null)
+         - renderscriptDirectories = (null)
+         - resDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/test/res{!}
+         - assetsDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/test/assets{!}
+         - jniLibsDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/test/jniLibs{!}
+         - shadersDirectories:
+            * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/test/shaders{!}
+         - mlModelsDirectories     = (null)
+         - custom                  = []
+      < unitTestSourceProvider
+      - testFixturesSourceProvider = (null)
+   < defaultConfig
+   > buildTypes:
+      > debug:
+         > sourceProvider:
+            - name                    = "debug"
+            - manifestFile            = {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/debug/AndroidManifest.xml{!}
+            - javaDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/debug/java{!}
+            - kotlinDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/debug/java{!}
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/debug/kotlin{!}
+            - resourcesDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/debug/resources{!}
+            - aidlDirectories         = (null)
+            - renderscriptDirectories = (null)
+            - resDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/debug/res{!}
+            - assetsDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/debug/assets{!}
+            - jniLibsDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/debug/jniLibs{!}
+            - shadersDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/debug/shaders{!}
+            - mlModelsDirectories     = (null)
+            - custom                  = []
+         < sourceProvider
+         > androidTestSourceProvider:
+            - name                    = "androidTestDebug"
+            - manifestFile            = {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTestDebug/AndroidManifest.xml{!}
+            - javaDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTestDebug/java{!}
+            - kotlinDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTestDebug/java{!}
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTestDebug/kotlin{!}
+            - resourcesDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTestDebug/resources{!}
+            - aidlDirectories         = (null)
+            - renderscriptDirectories = (null)
+            - resDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTestDebug/res{!}
+            - assetsDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTestDebug/assets{!}
+            - jniLibsDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTestDebug/jniLibs{!}
+            - shadersDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/androidTestDebug/shaders{!}
+            - mlModelsDirectories     = (null)
+            - custom                  = []
+         < androidTestSourceProvider
+         > unitTestSourceProvider:
+            - name                    = "testDebug"
+            - manifestFile            = {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testDebug/AndroidManifest.xml{!}
+            - javaDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testDebug/java{!}
+            - kotlinDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testDebug/java{!}
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testDebug/kotlin{!}
+            - resourcesDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testDebug/resources{!}
+            - aidlDirectories         = (null)
+            - renderscriptDirectories = (null)
+            - resDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testDebug/res{!}
+            - assetsDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testDebug/assets{!}
+            - jniLibsDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testDebug/jniLibs{!}
+            - shadersDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testDebug/shaders{!}
+            - mlModelsDirectories     = (null)
+            - custom                  = []
+         < unitTestSourceProvider
+         - testFixturesSourceProvider = (null)
+      < debug
+      > release:
+         > sourceProvider:
+            - name                    = "release"
+            - manifestFile            = {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/release/AndroidManifest.xml{!}
+            - javaDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/release/java{!}
+            - kotlinDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/release/java{!}
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/release/kotlin{!}
+            - resourcesDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/release/resources{!}
+            - aidlDirectories         = (null)
+            - renderscriptDirectories = (null)
+            - resDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/release/res{!}
+            - assetsDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/release/assets{!}
+            - jniLibsDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/release/jniLibs{!}
+            - shadersDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/release/shaders{!}
+            - mlModelsDirectories     = (null)
+            - custom                  = []
+         < sourceProvider
+         - androidTestSourceProvider  = (null)
+         > unitTestSourceProvider:
+            - name                    = "testRelease"
+            - manifestFile            = {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testRelease/AndroidManifest.xml{!}
+            - javaDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testRelease/java{!}
+            - kotlinDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testRelease/java{!}
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testRelease/kotlin{!}
+            - resourcesDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testRelease/resources{!}
+            - aidlDirectories         = (null)
+            - renderscriptDirectories = (null)
+            - resDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testRelease/res{!}
+            - assetsDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testRelease/assets{!}
+            - jniLibsDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testRelease/jniLibs{!}
+            - shadersDirectories:
+               * {INCLUDED_BUILD(:other-build:nested-build)}/anotherLib/src/testRelease/shaders{!}
+            - mlModelsDirectories     = (null)
+            - custom                  = []
+         < unitTestSourceProvider
+         - testFixturesSourceProvider = (null)
+      < release
+   < buildTypes
+   - productFlavors = []
+   > variants:
+      > debug:
+         - name                 = "debug"
+         - displayName          = "debug"
+         - buildType            = "debug"
+         - productFlavors       = []
+         - mainArtifact:
+            - variantSourceProvider     = (null)
+            - multiFlavorSourceProvider = (null)
+         - androidTestArtifact:
+            - variantSourceProvider     = (null)
+            - multiFlavorSourceProvider = (null)
+         - unitTestArtifact:
+            - variantSourceProvider     = (null)
+            - multiFlavorSourceProvider = (null)
+         - testFixturesArtifact = (null)
+      < debug
+      > release:
+         - name                 = "release"
+         - displayName          = "release"
+         - buildType            = "release"
+         - productFlavors       = []
+         - mainArtifact:
+            - variantSourceProvider     = (null)
+            - multiFlavorSourceProvider = (null)
+         - androidTestArtifact  = (null)
+         - unitTestArtifact:
+            - variantSourceProvider     = (null)
+            - multiFlavorSourceProvider = (null)
+         - testFixturesArtifact = (null)
+      < release
+   < variants
+< BasicAndroidProject

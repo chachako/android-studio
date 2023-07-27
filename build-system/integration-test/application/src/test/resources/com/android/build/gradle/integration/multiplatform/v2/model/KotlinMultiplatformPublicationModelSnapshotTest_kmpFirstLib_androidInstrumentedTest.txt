@@ -370,7 +370,7 @@
             "version": "1.0"
           },
           "artifact": {
-            "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/testRepo/com/example/androidLib/1.0/androidLib-1.0-typeoneModetwoDebug.aar"
+            "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/testRepo/com/example/androidLib/1.0/androidLib-1.0-typeoneModetwoDebug.aar"
           },
           "androidLibraryData": {
             "manifest": {

@@ -87,11 +87,11 @@
               "isTestFixtures": false
             },
             "group": "__local_aars__",
-            "name": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/libs/local.aar",
+            "name": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/libs/local.aar",
             "version": "unspecified"
           },
           "artifact": {
-            "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/libs/local.aar"
+            "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/libs/local.aar"
           },
           "androidLibraryData": {
             "manifest": {
@@ -146,11 +146,11 @@
   {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
-      "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/libs/local.jar"
+      "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/libs/local.jar"
     ],
     "coordinates": {
       "group": "__local_aars__",
-      "module": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpFirstLib/libs/local.jar",
+      "module": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/libs/local.jar",
       "version": "unspecified"
     },
     "extras": {
@@ -190,7 +190,7 @@
             "projectPath": ":androidLib"
           },
           "lintJar": {
-            "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/androidLib/build/intermediates/lint_publish_jar/global/lint.jar"
+            "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/androidLib/build/intermediates/lint_publish_jar/global/lint.jar"
           }
         }
       },
@@ -228,7 +228,7 @@
             "projectPath": ":kmpSecondLib"
           },
           "lintJar": {
-            "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpSecondLib/build/intermediates/lint_publish_jar/global/lint.jar"
+            "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpSecondLib/build/intermediates/lint_publish_jar/global/lint.jar"
           }
         }
       },
@@ -244,7 +244,7 @@
     },
     "extras": {
       "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;artifactsClasspath": [
-        "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpJvmOnly/build/libs/kmpJvmOnly-jvm.jar"
+        "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpJvmOnly/build/libs/kmpJvmOnly-jvm.jar"
       ],
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.ProjectDependencyResolver"
     }

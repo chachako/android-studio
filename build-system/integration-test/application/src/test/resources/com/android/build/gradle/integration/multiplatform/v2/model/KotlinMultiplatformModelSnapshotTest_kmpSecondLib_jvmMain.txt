@@ -22,7 +22,7 @@
     },
     "extras": {
       "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;artifactsClasspath": [
-        "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpLibraryPlugin/build/libs/kmpLibraryPlugin-jvm.jar"
+        "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpLibraryPlugin/build/libs/kmpLibraryPlugin-jvm.jar"
       ],
       "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kmpLibraryPlugin-jvm.jar (project :kmpLibraryPlugin)",
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"

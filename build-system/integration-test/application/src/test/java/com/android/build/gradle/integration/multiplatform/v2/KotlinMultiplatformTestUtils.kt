@@ -25,7 +25,7 @@ import com.android.build.gradle.integration.common.utils.TestFileUtils
 internal fun GradleTestProject.getBuildMap() =
     mapOf(
         ModelContainerV2.ROOT_BUILD_ID to ModelContainerV2.BuildInfo(
-            name = "kotlinMultiplatform",
+            name = ":kotlinMultiplatform",
             rootDir = projectDir,
             projects = settingsFile.readText().split("\n").mapNotNull {
                 it.takeIf { it.startsWith("include ") }?.substringAfter("include ")

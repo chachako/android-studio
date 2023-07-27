@@ -334,8 +334,7 @@ class FileNormalizerImpl(
         }
 
         // then the included builds
-        // TODO: order so that nested projects include leaf first.
-        for (buildInfo in buildMap.values) {
+        for (buildInfo in buildMap.values.sortedByDescending { it.name }) {
             // skip the root project so that they appear as PROJECT instead of INCLUDED_BUILD(:)
             if (buildInfo.name != ModelContainerV2.ROOT_BUILD_ID) {
                 mutableList.add(RootData(buildInfo.rootDir, "INCLUDED_BUILD(${buildInfo.name})"))

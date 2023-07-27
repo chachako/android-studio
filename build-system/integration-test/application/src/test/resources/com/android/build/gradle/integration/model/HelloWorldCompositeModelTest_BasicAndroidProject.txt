@@ -1,76 +1,76 @@
 > BasicAndroidProject:
    - projectType    = LIBRARY
    - path           = ":lib"
-   - buildFolder    = {INCLUDED_BUILD(other-build)}/lib/build{!}
+   - buildFolder    = {INCLUDED_BUILD(:other-build)}/lib/build{!}
    - bootClasspath:
       * {ANDROID_SDK}/platforms/android-{COMPILE_SDK_VERSION}/android.jar{F}
    > defaultConfig:
       > sourceProvider:
          - name                    = "main"
-         - manifestFile            = {INCLUDED_BUILD(other-build)}/lib/src/main/AndroidManifest.xml{F}
+         - manifestFile            = {INCLUDED_BUILD(:other-build)}/lib/src/main/AndroidManifest.xml{F}
          - javaDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/main/java{D}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/main/java{D}
          - kotlinDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/main/java{D}
-            * {INCLUDED_BUILD(other-build)}/lib/src/main/kotlin{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/main/java{D}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/main/kotlin{!}
          - resourcesDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/main/resources{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/main/resources{!}
          - aidlDirectories         = (null)
          - renderscriptDirectories = (null)
          - resDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/main/res{D}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/main/res{D}
          - assetsDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/main/assets{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/main/assets{!}
          - jniLibsDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/main/jniLibs{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/main/jniLibs{!}
          - shadersDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/main/shaders{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/main/shaders{!}
          - mlModelsDirectories     = (null)
          - custom                  = []
       < sourceProvider
       > androidTestSourceProvider:
          - name                    = "androidTest"
-         - manifestFile            = {INCLUDED_BUILD(other-build)}/lib/src/androidTest/AndroidManifest.xml{!}
+         - manifestFile            = {INCLUDED_BUILD(:other-build)}/lib/src/androidTest/AndroidManifest.xml{!}
          - javaDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/androidTest/java{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/androidTest/java{!}
          - kotlinDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/androidTest/java{!}
-            * {INCLUDED_BUILD(other-build)}/lib/src/androidTest/kotlin{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/androidTest/java{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/androidTest/kotlin{!}
          - resourcesDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/androidTest/resources{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/androidTest/resources{!}
          - aidlDirectories         = (null)
          - renderscriptDirectories = (null)
          - resDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/androidTest/res{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/androidTest/res{!}
          - assetsDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/androidTest/assets{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/androidTest/assets{!}
          - jniLibsDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/androidTest/jniLibs{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/androidTest/jniLibs{!}
          - shadersDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/androidTest/shaders{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/androidTest/shaders{!}
          - mlModelsDirectories     = (null)
          - custom                  = []
       < androidTestSourceProvider
       > unitTestSourceProvider:
          - name                    = "test"
-         - manifestFile            = {INCLUDED_BUILD(other-build)}/lib/src/test/AndroidManifest.xml{!}
+         - manifestFile            = {INCLUDED_BUILD(:other-build)}/lib/src/test/AndroidManifest.xml{!}
          - javaDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/test/java{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/test/java{!}
          - kotlinDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/test/java{!}
-            * {INCLUDED_BUILD(other-build)}/lib/src/test/kotlin{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/test/java{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/test/kotlin{!}
          - resourcesDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/test/resources{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/test/resources{!}
          - aidlDirectories         = (null)
          - renderscriptDirectories = (null)
          - resDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/test/res{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/test/res{!}
          - assetsDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/test/assets{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/test/assets{!}
          - jniLibsDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/test/jniLibs{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/test/jniLibs{!}
          - shadersDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/test/shaders{!}
+            * {INCLUDED_BUILD(:other-build)}/lib/src/test/shaders{!}
          - mlModelsDirectories     = (null)
          - custom                  = []
       < unitTestSourceProvider
@@ -80,70 +80,70 @@
       > debug:
          > sourceProvider:
             - name                    = "debug"
-            - manifestFile            = {INCLUDED_BUILD(other-build)}/lib/src/debug/AndroidManifest.xml{!}
+            - manifestFile            = {INCLUDED_BUILD(:other-build)}/lib/src/debug/AndroidManifest.xml{!}
             - javaDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/debug/java{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/debug/java{!}
             - kotlinDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/debug/java{!}
-               * {INCLUDED_BUILD(other-build)}/lib/src/debug/kotlin{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/debug/java{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/debug/kotlin{!}
             - resourcesDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/debug/resources{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/debug/resources{!}
             - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/debug/res{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/debug/res{!}
             - assetsDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/debug/assets{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/debug/assets{!}
             - jniLibsDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/debug/jniLibs{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/debug/jniLibs{!}
             - shadersDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/debug/shaders{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/debug/shaders{!}
             - mlModelsDirectories     = (null)
             - custom                  = []
          < sourceProvider
          > androidTestSourceProvider:
             - name                    = "androidTestDebug"
-            - manifestFile            = {INCLUDED_BUILD(other-build)}/lib/src/androidTestDebug/AndroidManifest.xml{!}
+            - manifestFile            = {INCLUDED_BUILD(:other-build)}/lib/src/androidTestDebug/AndroidManifest.xml{!}
             - javaDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/androidTestDebug/java{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/androidTestDebug/java{!}
             - kotlinDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/androidTestDebug/java{!}
-               * {INCLUDED_BUILD(other-build)}/lib/src/androidTestDebug/kotlin{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/androidTestDebug/java{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/androidTestDebug/kotlin{!}
             - resourcesDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/androidTestDebug/resources{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/androidTestDebug/resources{!}
             - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/androidTestDebug/res{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/androidTestDebug/res{!}
             - assetsDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/androidTestDebug/assets{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/androidTestDebug/assets{!}
             - jniLibsDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/androidTestDebug/jniLibs{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/androidTestDebug/jniLibs{!}
             - shadersDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/androidTestDebug/shaders{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/androidTestDebug/shaders{!}
             - mlModelsDirectories     = (null)
             - custom                  = []
          < androidTestSourceProvider
          > unitTestSourceProvider:
             - name                    = "testDebug"
-            - manifestFile            = {INCLUDED_BUILD(other-build)}/lib/src/testDebug/AndroidManifest.xml{!}
+            - manifestFile            = {INCLUDED_BUILD(:other-build)}/lib/src/testDebug/AndroidManifest.xml{!}
             - javaDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/testDebug/java{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/testDebug/java{!}
             - kotlinDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/testDebug/java{!}
-               * {INCLUDED_BUILD(other-build)}/lib/src/testDebug/kotlin{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/testDebug/java{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/testDebug/kotlin{!}
             - resourcesDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/testDebug/resources{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/testDebug/resources{!}
             - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/testDebug/res{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/testDebug/res{!}
             - assetsDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/testDebug/assets{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/testDebug/assets{!}
             - jniLibsDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/testDebug/jniLibs{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/testDebug/jniLibs{!}
             - shadersDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/testDebug/shaders{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/testDebug/shaders{!}
             - mlModelsDirectories     = (null)
             - custom                  = []
          < unitTestSourceProvider
@@ -152,48 +152,48 @@
       > release:
          > sourceProvider:
             - name                    = "release"
-            - manifestFile            = {INCLUDED_BUILD(other-build)}/lib/src/release/AndroidManifest.xml{!}
+            - manifestFile            = {INCLUDED_BUILD(:other-build)}/lib/src/release/AndroidManifest.xml{!}
             - javaDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/release/java{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/release/java{!}
             - kotlinDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/release/java{!}
-               * {INCLUDED_BUILD(other-build)}/lib/src/release/kotlin{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/release/java{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/release/kotlin{!}
             - resourcesDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/release/resources{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/release/resources{!}
             - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/release/res{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/release/res{!}
             - assetsDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/release/assets{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/release/assets{!}
             - jniLibsDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/release/jniLibs{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/release/jniLibs{!}
             - shadersDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/release/shaders{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/release/shaders{!}
             - mlModelsDirectories     = (null)
             - custom                  = []
          < sourceProvider
          - androidTestSourceProvider  = (null)
          > unitTestSourceProvider:
             - name                    = "testRelease"
-            - manifestFile            = {INCLUDED_BUILD(other-build)}/lib/src/testRelease/AndroidManifest.xml{!}
+            - manifestFile            = {INCLUDED_BUILD(:other-build)}/lib/src/testRelease/AndroidManifest.xml{!}
             - javaDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/testRelease/java{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/testRelease/java{!}
             - kotlinDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/testRelease/java{!}
-               * {INCLUDED_BUILD(other-build)}/lib/src/testRelease/kotlin{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/testRelease/java{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/testRelease/kotlin{!}
             - resourcesDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/testRelease/resources{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/testRelease/resources{!}
             - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/testRelease/res{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/testRelease/res{!}
             - assetsDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/testRelease/assets{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/testRelease/assets{!}
             - jniLibsDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/testRelease/jniLibs{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/testRelease/jniLibs{!}
             - shadersDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/testRelease/shaders{!}
+               * {INCLUDED_BUILD(:other-build)}/lib/src/testRelease/shaders{!}
             - mlModelsDirectories     = (null)
             - custom                  = []
          < unitTestSourceProvider

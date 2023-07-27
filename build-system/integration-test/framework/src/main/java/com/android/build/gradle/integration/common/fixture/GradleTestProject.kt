@@ -590,14 +590,20 @@ open class GradleTestProject @JvmOverloads constructor(
         createGradleProp()
 
         if (testProject is TestProjectBuilder) {
-            for (includedBuild in  testProject.includedBuilds) {
-                val includedProjectDir = File(projectDir, includedBuild.name)
-                createSettingsFile(
-                    File(includedProjectDir, "settings.gradle"),
-                    rootProjectName = null
-                )
-                createLocalProp(includedProjectDir)
-            }
+            createSettingsAndLocalPropForIncluded(testProject, projectDir)
+        }
+    }
+
+    private fun createSettingsAndLocalPropForIncluded(parentTestProject: TestProjectBuilder, parentDir: File) {
+        for (includedBuild in  parentTestProject.includedBuilds) {
+            val includedProjectDir = parentDir.resolve(includedBuild.name)
+            createSettingsFile(
+                File(includedProjectDir, "settings.gradle"),
+                rootProjectName = null
+            )
+            createLocalProp(includedProjectDir)
+
+            createSettingsAndLocalPropForIncluded(includedBuild, includedProjectDir)
         }
     }
 

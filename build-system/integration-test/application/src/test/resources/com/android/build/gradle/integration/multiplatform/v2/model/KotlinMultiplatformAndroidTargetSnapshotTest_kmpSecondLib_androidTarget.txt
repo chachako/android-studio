@@ -11,7 +11,7 @@
           "com.android.kotlin.multiplatform.models.AndroidSourceSet;android-source-set-model": {
             "sourceProvider": {
               "manifestFile": {
-                "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpSecondLib/src/androidMain/AndroidManifest.xml"
+                "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpSecondLib/src/androidMain/AndroidManifest.xml"
               }
             }
           }
@@ -38,7 +38,7 @@
             },
             "proguardFiles": [
               {
-                "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpSecondLib/build/intermediates/default_proguard_files/global/proguard-android.txt-{AGP_Version}"
+                "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpSecondLib/build/intermediates/default_proguard_files/global/proguard-android.txt-{AGP_Version}"
               }
             ],
             "consumerProguardFiles": [],
@@ -56,7 +56,7 @@
       "agpVersion": "{AGP_Version}",
       "projectPath": ":kmpSecondLib",
       "buildDir": {
-        "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}/kmpSecondLib/build"
+        "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpSecondLib/build"
       },
       "bootClasspath": [
         {
@@ -116,10 +116,10 @@
         }
       ],
       "rootBuildId": {
-        "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}"
+        "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}"
       },
       "buildId": {
-        "absolutePath": "{INCLUDED_BUILD(kotlinMultiplatform)}"
+        "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}"
       },
       "withJava": false
     }
