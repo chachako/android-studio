@@ -19,6 +19,9 @@ package android.view;
 import android.graphics.Point;
 
 public class Display {
+
+    public static final int DEFAULT_DISPLAY = 0;
+
     private final Point mRealSize;
 
     public Display(Point realSize) {
@@ -32,5 +35,9 @@ public class Display {
 
     public int getRotation() {
         return Surface.ROTATION_90;
+    }
+
+    public int getDisplayId() {
+        return DEFAULT_DISPLAY;
     }
 }

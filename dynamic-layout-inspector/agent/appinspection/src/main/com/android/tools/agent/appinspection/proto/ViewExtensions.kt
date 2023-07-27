@@ -25,6 +25,7 @@ import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.Display
 import android.webkit.WebView
 import com.android.tools.agent.appinspection.framework.getChildren
 import com.android.tools.agent.appinspection.framework.getTextValue
@@ -155,6 +156,7 @@ fun View.createAppContext(stringTable: StringTable): AppContext {
         mainDisplayWidth = point.x
         mainDisplayHeight = point.y
         mainDisplayOrientation = getDefaultDisplayRotation()
+        isRunningInMainDisplay = isRunningInMainDisplay()
     }.build()
 }
 
@@ -165,7 +167,7 @@ private val View.windowSize: Point
           val bounds = windowManager.currentWindowMetrics.bounds
           Point(bounds.width(), bounds.height())
       } else {
-          val display = windowManager.defaultDisplay
+          val display = getDefaultDisplay()
           val size = Point()
           display.getRealSize(size)
           size
@@ -176,14 +178,7 @@ fun View.createConfiguration(stringTable: StringTable) =
     context.resources.configuration.convert(stringTable)
 
 fun View.getDefaultDisplayRotation(): Int {
-    val windowManager = context.getSystemService(WindowManager::class.java)
-    val display = if (Build.VERSION.SDK_INT >= 30) {
-        context.display
-    }
-    else {
-        null
-    } ?: windowManager.defaultDisplay
-
+    val display = getDefaultDisplay()
     return when (display.rotation) {
         Surface.ROTATION_0 -> 0
         Surface.ROTATION_90 -> 90
@@ -193,16 +188,15 @@ fun View.getDefaultDisplayRotation(): Int {
     }
 }
 
-fun View.getDefaultDisplaySize(): Point {
-    val windowManager = context.getSystemService(WindowManager::class.java)
-    val display = if (Build.VERSION.SDK_INT >= 30) {
-        context.display
-    }
-    else {
-        null
-    } ?: windowManager.defaultDisplay
+fun View.isRunningInMainDisplay(): Boolean {
+    val display = getDefaultDisplay()
+    return display.getDisplayId() == Display.DEFAULT_DISPLAY
+}
 
+fun View.getDefaultDisplaySize(): Point {
+    val display = getDefaultDisplay()
     if (Build.VERSION.SDK_INT >= 31) {
+        val windowManager = context.getSystemService(WindowManager::class.java)
         val windowMetrics = windowManager.getMaximumWindowMetrics()
         val rect = windowMetrics.getBounds()
         return Point(rect.width(), rect.height())
@@ -242,6 +236,16 @@ fun View.createPropertyGroup(stringTable: StringTable): PropertyGroup {
         // so we have no choice in this case.
         ThreadUtils.runOnMainThread { createPropertyGroupImpl(stringTable) }.get()
     }
+}
+
+private fun View.getDefaultDisplay(): Display {
+    val windowManager = context.getSystemService(WindowManager::class.java)
+    return if (Build.VERSION.SDK_INT >= 30) {
+        context.display
+    }
+    else {
+        null
+    } ?: windowManager.defaultDisplay
 }
 
 private fun View.createPropertyGroupImpl(stringTable: StringTable): PropertyGroup {
