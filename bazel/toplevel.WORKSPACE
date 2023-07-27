@@ -136,9 +136,9 @@ http_archive(
 http_archive(
     name = "system_image_android-31_default_x86_64",
     build_file = "//tools/base/bazel/avd:system_images.BUILD",
-    sha256 = "5a79444f93aeecf780ec5cccf93d5ac835015360a4eda5266cb25d0f9124b34a",
+    sha256 = "7e7081f5784e98dd391ddae52573a75bc1db17a2fd286cb20be46d3eec251f94",
     strip_prefix = "x86_64",
-    url = "https://dl.google.com/android/repository/sys-img/google_apis/x86_64-31_r13.zip",
+    url = "https://dl.google.com/android/repository/sys-img/google_apis/x86_64-31_r14.zip",
 )
 
 http_archive(
