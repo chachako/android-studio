@@ -648,8 +648,8 @@ internal class SharedJdwpSessionImpl(
 
         override suspend fun acquirePayload(): AdbInputChannel {
             throwIfClosed()
-            scopedPayload.waitForPendingRead()
             mutex.lock()
+            scopedPayload.waitForPendingRead()
             scopedPayload.rewind()
             return scopedPayload
         }
