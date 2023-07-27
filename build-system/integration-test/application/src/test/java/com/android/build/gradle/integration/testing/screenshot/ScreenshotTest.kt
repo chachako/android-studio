@@ -29,6 +29,7 @@ import org.junit.Rule
 import org.junit.Test
 import java.io.File
 
+@org.junit.Ignore("b/293505436: ScreenshotTest fails with IntelliJ 2023.2")
 class ScreenshotTest {
 
     @get:Rule

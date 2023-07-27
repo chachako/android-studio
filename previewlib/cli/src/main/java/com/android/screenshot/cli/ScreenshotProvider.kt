@@ -41,7 +41,6 @@ import com.intellij.mock.MockComponentManager
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.psi.xml.XmlFile
-import com.intellij.workspaceModel.ide.impl.legacyBridge.module.ModuleManagerComponentBridge
 import org.mockito.Mockito
 import java.awt.image.BufferedImage
 import java.io.File
@@ -91,11 +90,13 @@ class ScreenshotProvider(
 
     fun setupProjectLink() {
         val componentManager = (composeProject.lintProject.ideaProject as MockComponentManager)!!
+        TODO("Incompatible with IntelliJ 2023.2") /*
         val mmcb = Mockito.mock(ModuleManagerComponentBridge::class.java)
         Mockito.`when`(mmcb.areModulesLoaded()).thenReturn(true)
         Mockito.`when`(mmcb.modules).thenReturn(arrayOf(composeModule.module))
         componentManager.addComponent(ModuleManager::class.java, mmcb)
         componentManager.registerService(ModuleManager::class.java, mmcb)
+        */
     }
 
     fun getDeps(): MutableList<String> {

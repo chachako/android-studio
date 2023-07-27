@@ -57,11 +57,13 @@ class ComposeModule(
             .thenReturn(composeProject.lintProject.ideaProject) // Needed by StudioModuleClassLoaderManager
 
         // Needed by StudioModuleClassLoader
+        TODO("Incompatible with IntelliJ 2023.2") /*
         val id = ModuleId("android")
         Mockito.`when`(module.moduleEntityId).thenReturn(id) // Needed by FacetManager
         val storage = createEntityStorage(id)
         Mockito.`when`(module.entityStorage)
             .thenReturn(VersionedEntityStorageOnStorage(storage.toSnapshot()))
+        */
         Mockito.`when`(module.getService(ModuleClassLoaderOverlays::class.java))
             .thenReturn(ModuleClassLoaderOverlays(module))
 

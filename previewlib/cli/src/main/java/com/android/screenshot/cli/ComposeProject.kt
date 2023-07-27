@@ -95,7 +95,9 @@ class ComposeProject(val lintProject: com.android.tools.lint.detector.api.Projec
         )
 
         // Required by ModuleRootComponentBridge
+        TODO("Incompatible with IntelliJ 2023.2") /*
         componentManager.registerService(VirtualFileUrlManager::class.java, virtualFileUrlManager)
+        */
 
         // Required by StudioModuleClassLoader
         componentManager.registerService(
