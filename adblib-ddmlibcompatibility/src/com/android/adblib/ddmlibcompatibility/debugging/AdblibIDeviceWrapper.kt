@@ -15,6 +15,8 @@
  */
 package com.android.adblib.ddmlibcompatibility.debugging
 
+import com.android.adblib.ConnectedDevice
+import com.android.adblib.serialNumber
 import com.android.ddmlib.Client
 import com.android.ddmlib.FileListingService
 import com.android.ddmlib.IDevice
@@ -35,7 +37,9 @@ import java.util.concurrent.TimeUnit
  * Implementation of [IDevice] that entirely relies on adblib services, i.e. does not depend on
  * implementation details of ddmlib.
  */
-internal class AdblibIDeviceWrapper : IDevice {
+internal class AdblibIDeviceWrapper(
+    private val connectedDevice: ConnectedDevice
+) : IDevice {
 
     /**
      * Returns a (humanized) name for this device. Typically this is the AVD name for AVD's, and
@@ -168,7 +172,7 @@ internal class AdblibIDeviceWrapper : IDevice {
 
     /** Returns the serial number of the device.  */
     override fun getSerialNumber(): String {
-        TODO("Not yet implemented")
+        return connectedDevice.serialNumber
     }
 
     /**
