@@ -56,7 +56,7 @@ ${renderIf(isViewBindingSupported) {"""
 
     @Override
     public View onCreateView(
-            LayoutInflater inflater, ViewGroup container,
+            @NonNull LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState
     ) {
         $onCreateViewBlock
@@ -69,13 +69,10 @@ ${renderIf(isViewBindingSupported) {"""
             Language.Java,
             isViewBindingSupported,
             id = "button_second",
-            parentView = "view")}.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+            parentView = "view")}.setOnClickListener(v ->
                 NavHostFragment.findNavController(${secondFragmentClass}.this)
-                        .navigate(R.id.action_${secondFragmentClass}_to_${firstFragmentClass});
-            }
-        });
+                        .navigate(R.id.action_${secondFragmentClass}_to_${firstFragmentClass})
+        );
     }
 
 ${renderIf(isViewBindingSupported) {"""
