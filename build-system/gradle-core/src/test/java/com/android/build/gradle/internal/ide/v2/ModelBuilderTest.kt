@@ -51,7 +51,6 @@ import com.android.builder.model.v2.ide.ProjectType
 import com.android.builder.model.v2.ide.SyncIssue
 import com.android.builder.model.v2.models.AndroidDsl
 import com.android.builder.model.v2.models.AndroidProject
-import com.android.builder.model.v2.models.BuildMap
 import com.android.builder.model.v2.models.ModelBuilderParameter
 import com.android.builder.model.v2.models.ProjectSyncIssues
 import com.android.builder.model.v2.models.VariantDependencies
@@ -104,14 +103,6 @@ class ModelBuilderTest {
         thrown.expect(RuntimeException::class.java)
         thrown.expectMessage("Does not support model 'com.FooModel'")
         modelBuilder.buildAll("com.FooModel", project)
-    }
-
-    @Test
-    fun `test wrong query with BuildMap`() {
-        thrown.expect(RuntimeException::class.java)
-        val name = BuildMap::class.java.name
-        thrown.expectMessage("Please use non-parameterized Tooling API to obtain $name model.")
-        createApplicationModelBuilder().buildAll(name, FakeModelBuilderParameter(), project)
     }
 
     @Test

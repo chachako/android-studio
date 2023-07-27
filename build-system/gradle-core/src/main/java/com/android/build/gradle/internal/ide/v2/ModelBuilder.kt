@@ -89,7 +89,6 @@ import com.android.builder.model.v2.ide.TestedTargetVariant
 import com.android.builder.model.v2.models.AndroidDsl
 import com.android.builder.model.v2.models.AndroidProject
 import com.android.builder.model.v2.models.BasicAndroidProject
-import com.android.builder.model.v2.models.BuildMap
 import com.android.builder.model.v2.models.ModelBuilderParameter
 import com.android.builder.model.v2.models.ProjectSyncIssues
 import com.android.builder.model.v2.models.VariantDependencies
@@ -99,7 +98,6 @@ import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.ImmutableSet
 import org.gradle.api.Project
-import org.gradle.api.invocation.Gradle
 import org.gradle.tooling.provider.model.ParameterizedToolingModelBuilder
 import java.io.File
 import java.io.FileInputStream
@@ -133,7 +131,6 @@ class ModelBuilder<
 
     override fun canBuild(className: String): Boolean {
         return className == Versions::class.java.name
-                || className == BuildMap::class.java.name
                 || className == BasicAndroidProject::class.java.name
                 || className == AndroidProject::class.java.name
                 || className == AndroidDsl::class.java.name
@@ -147,7 +144,6 @@ class ModelBuilder<
      */
     override fun buildAll(className: String, project: Project): Any = when (className) {
         Versions::class.java.name -> buildModelVersions()
-        BuildMap::class.java.name -> buildBuildMap(project)
         BasicAndroidProject::class.java.name -> buildBasicAndroidProjectModel(project)
         AndroidProject::class.java.name -> buildAndroidProjectModel(project)
         AndroidDsl::class.java.name -> buildAndroidDslModel(project)
@@ -170,7 +166,6 @@ class ModelBuilder<
         VariantDependencies::class.java.name -> buildVariantDependenciesModel(project, parameter)
         VariantDependenciesAdjacencyList::class.java.name -> buildVariantDependenciesModel(project, parameter, adjacencyList=true)
         Versions::class.java.name,
-        BuildMap::class.java.name,
         AndroidProject::class.java.name,
         AndroidDsl::class.java.name,
         ProjectSyncIssues::class.java.name -> throw RuntimeException(
@@ -207,8 +202,6 @@ class ModelBuilder<
             }
         )
     }
-
-    private fun buildBuildMap(project: Project): BuildMap = BuildMapImpl(getBuildMap(project))
 
     /**
      * Indicates the dimensions used for a variant
@@ -418,27 +411,6 @@ class ModelBuilder<
             modelSyncFiles = modelSyncFiles,
             desugarLibConfig = desugarLibConfig,
         )
-    }
-
-    /**
-     * Returns the build map and the current name
-     */
-    private fun getBuildMap(project: Project): Map<String, File> {
-        var rootGradle = project.gradle
-        while (rootGradle.parent != null) {
-            rootGradle = rootGradle.parent!!
-        }
-
-        return mutableMapOf<String, File>().also { map ->
-            map[":"] = rootGradle.rootProject.projectDir
-            getBuildMap(rootGradle, map)
-        }
-    }
-
-    private fun getBuildMap(gradle: Gradle, map: MutableMap<String, File>) {
-        for (build in gradle.includedBuilds) {
-            map[build.name] = build.projectDir
-        }
     }
 
     private fun buildAndroidDslModel(project: Project): AndroidDsl {
