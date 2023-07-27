@@ -55,8 +55,6 @@ import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiTypes
 import org.jetbrains.kotlin.analysis.api.analyze
-import org.jetbrains.kotlin.analysis.project.structure.KtNotUnderContentRootModule
-import org.jetbrains.kotlin.analysis.project.structure.getKtModule
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import org.jetbrains.kotlin.asJava.elements.KtLightMember
 import org.jetbrains.kotlin.asJava.elements.KtLightMethod
@@ -380,12 +378,6 @@ class NoOpDetector : Detector(), SourceCodeScanner {
           // Unresolved by UAST, but perhaps due to the lack of way to represent the resolution
           // result in [PsiMethod] form.
           val sourcePsi = call.sourcePsi as? KtElement ?: return
-          val module = sourcePsi.getKtModule()
-          // E.g., destructuring declaration is added via KtPsiFactory that adds KtElement
-          // on-the-fly. Such elements are not bound to any module, resulting in the failure
-          // of loading [AnalysisHandlerExtension] in FE1.0 UAST.
-          // In that case, bail out early to not enter the `analyze` block.
-          if (module is KtNotUnderContentRootModule) return
           analyze(sourcePsi) {
             val symbol = getFunctionLikeSymbol(sourcePsi) ?: return
             val callName = symbol.callableIdIfNonLocal?.callableName?.asString() ?: return
