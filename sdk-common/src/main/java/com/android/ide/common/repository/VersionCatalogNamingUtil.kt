@@ -346,3 +346,24 @@ fun pickPluginVersionVariableName(
 
     return generateWithSuffix(fullName, reserved)
 }
+
+fun keysMatch(s1: String?, s2: String): Boolean {
+    s1 ?: return false
+    if (s1.length != s2.length) {
+        return false
+    }
+    for (i in s1.indices) {
+        if (s1[i].normalize() != s2[i].normalize()) {
+            return false
+        }
+    }
+    return true
+}
+
+// Gradle converts dashed-keys or dashed_keys into dashed.keys
+private fun Char.normalize(): Char {
+    if (this == '-' || this == '_') {
+        return '.'
+    }
+    return this
+}
