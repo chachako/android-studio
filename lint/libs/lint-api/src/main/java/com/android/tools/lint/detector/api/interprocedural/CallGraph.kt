@@ -23,11 +23,7 @@ import com.android.tools.lint.detector.api.interprocedural.CallTarget.Method
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.Lists
 import com.google.common.collect.Multimap
-import com.intellij.psi.impl.cache.TypeInfo
-import com.intellij.psi.impl.java.stubs.impl.PsiParameterStubImpl
-import com.intellij.psi.impl.source.PsiParameterImpl
-import java.io.File
-import java.util.ArrayDeque
+import com.intellij.psi.PsiElementFactory
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UElement
@@ -37,8 +33,11 @@ import org.jetbrains.uast.UParameter
 import org.jetbrains.uast.UThisExpression
 import org.jetbrains.uast.UVariable
 import org.jetbrains.uast.getContainingUClass
+import org.jetbrains.uast.getContainingUFile
 import org.jetbrains.uast.getContainingUMethod
 import org.jetbrains.uast.toUElement
+import java.io.File
+import java.util.ArrayDeque
 
 sealed class CallTarget {
   abstract val element: UElement
@@ -257,17 +256,19 @@ fun buildParamContextsFromCall(
   // When creating the Cartesian product we include the implicit receiver argument as a "normal"
   // call argument, then pull it out again when creating parameter contexts.
 
-  val implicitThisParamPsiStub =
-    PsiParameterStubImpl(null, "phony", TypeInfo.createConstructorType(), false, false)
-  val implicitThisParamPsi = PsiParameterImpl(implicitThisParamPsiStub)
-  val implicitThisParam = implicitThisParamPsi.toUElement(UParameter::class.java)
+  fun computeImplicitReceiverParam(): UParameter? {
+    val project = call.getContainingUFile()?.sourcePsi?.project ?: return null
+    val psiElementFactory = PsiElementFactory.getInstance(project)
+    val receiverParamPsi = psiElementFactory.createParameterFromText("ImplicitReceiverType __implicit_receiver", null)
+    return receiverParamPsi.toUElement(UParameter::class.java)
+  }
   val explicitParams =
     when (callee) {
       is Method -> callee.element.uastParameters
       is Lambda -> callee.element.valueParameters
       is DefaultCtor -> emptyList()
     }
-  val params = listOfNotNull(implicitThisParam) + explicitParams
+  val params = listOfNotNull(computeImplicitReceiverParam()) + explicitParams
 
   val explicitArgReceivers = call.valueArguments.map { receiverEval[it].toList() }
   val argReceivers = listOf(implicitThisDispatchReceivers.toList()) + explicitArgReceivers
