@@ -65,6 +65,12 @@ interface DeviceProperties {
    */
   val isVirtual: Boolean?
 
+  /**
+   * If true, the device is connected over the network via a proxy that mediates access; 
+   * if false, the device is connected directly to the local machine.
+   */
+  val isRemote: Boolean?
+
   /** Icon used to represent this device in UIs */
   val icon: Icon
 
@@ -128,6 +134,7 @@ interface DeviceProperties {
     var disambiguator: String? = null
     var deviceType: DeviceType? = null
     var isVirtual: Boolean? = null
+    var isRemote: Boolean? = null
     var wearPairingId: String? = null
     var resolution: Resolution? = null
     var density: Int? = null
@@ -161,6 +168,7 @@ interface DeviceProperties {
         disambiguator = disambiguator,
         deviceType = deviceType,
         isVirtual = isVirtual,
+        isRemote = isRemote,
         wearPairingId = wearPairingId,
         resolution = resolution,
         density = density,
@@ -177,6 +185,7 @@ interface DeviceProperties {
     override val disambiguator: String?,
     override val deviceType: DeviceType?,
     override val isVirtual: Boolean?,
+    override val isRemote: Boolean?,
     override val wearPairingId: String?,
     override val resolution: Resolution?,
     override val density: Int?,
