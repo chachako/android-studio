@@ -16,10 +16,15 @@
 package com.android.adblib.ddmlibcompatibility.debugging
 
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.deviceInfo
+import com.android.adblib.isOffline
+import com.android.adblib.isOnline
 import com.android.adblib.serialNumber
 import com.android.ddmlib.Client
 import com.android.ddmlib.FileListingService
 import com.android.ddmlib.IDevice
+import com.android.ddmlib.IDevice.DeviceState
+import com.android.ddmlib.IDevice.RE_EMULATOR_SN
 import com.android.ddmlib.IShellOutputReceiver
 import com.android.ddmlib.InstallReceiver
 import com.android.ddmlib.RawImage
@@ -211,8 +216,8 @@ internal class AdblibIDeviceWrapper(
     }
 
     /** Returns the state of the device.  */
-    override fun getState(): IDevice.DeviceState {
-        TODO("Not yet implemented")
+    override fun getState(): DeviceState? {
+        return DeviceState.getState(connectedDevice.deviceInfo.deviceState.state)
     }
 
     /**
@@ -319,18 +324,22 @@ internal class AdblibIDeviceWrapper(
         TODO("Not yet implemented")
     }
 
+    override fun toString(): String {
+        return serialNumber
+    }
+
     /**
      * Returns if the device is ready.
      *
      * @return `true` if [.getState] returns [DeviceState.ONLINE].
      */
     override fun isOnline(): Boolean {
-        TODO("Not yet implemented")
+        return connectedDevice.isOnline
     }
 
     /** Returns `true` if the device is an emulator.  */
     override fun isEmulator(): Boolean {
-        TODO("Not yet implemented")
+        return serialNumber.matches(RE_EMULATOR_SN.toRegex())
     }
 
     /**
@@ -339,7 +348,7 @@ internal class AdblibIDeviceWrapper(
      * @return `true` if [.getState] returns [DeviceState.OFFLINE].
      */
     override fun isOffline(): Boolean {
-        TODO("Not yet implemented")
+        return connectedDevice.isOffline
     }
 
     /**
@@ -348,7 +357,7 @@ internal class AdblibIDeviceWrapper(
      * @return `true` if [.getState] returns [DeviceState.BOOTLOADER].
      */
     override fun isBootLoader(): Boolean {
-        TODO("Not yet implemented")
+        return connectedDevice.deviceInfo.deviceState == com.android.adblib.DeviceState.BOOTLOADER
     }
 
     /** Returns whether the [IDevice] has [Client]s.  */
