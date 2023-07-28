@@ -57,6 +57,7 @@ class $activityClass : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun ${greeting}(name: String, modifier: Modifier = Modifier) {
     Text(
