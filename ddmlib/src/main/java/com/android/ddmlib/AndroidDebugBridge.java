@@ -21,6 +21,8 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.ddmlib.Log.LogLevel;
 import com.android.ddmlib.clientmanager.ClientManager;
+import com.android.ddmlib.idevicemanager.IDeviceManager;
+import com.android.ddmlib.idevicemanager.IDeviceManagerFactory;
 import com.android.ddmlib.internal.ClientImpl;
 import com.android.ddmlib.internal.DefaultJdwpProcessorFactory;
 import com.android.ddmlib.internal.DeviceMonitor;
@@ -114,6 +116,7 @@ public class AndroidDebugBridge {
     private static boolean sInitialized = false;
     private static boolean sClientSupport;
     private static ClientManager sClientManager;
+    private static IDeviceManagerFactory sIDeviceManagerFactory;
     private static Map<String, String> sAdbEnvVars; // env vars to set while launching adb
 
     /** Full path to adb. */
@@ -125,6 +128,8 @@ public class AndroidDebugBridge {
     private boolean mStarted = false;
 
     private DeviceMonitor mDeviceMonitor;
+
+    private IDeviceManager mIDeviceManager;
 
     // lock object for synchronization
     private static final Object sLock = new Object();
@@ -284,10 +289,16 @@ public class AndroidDebugBridge {
     public static synchronized void init(AdbInitOptions options) {
         Preconditions.checkState(!sInitialized, "AndroidDebugBridge.init() has already been called.");
         sInitialized = true;
+        sIDeviceManagerFactory = options.iDeviceManagerFactory;
         sClientSupport = options.clientSupport;
         sClientManager = options.clientManager;
         if (sClientManager != null) {
             // A custom client manager is not compatible with "client support"
+            sClientSupport = false;
+        }
+        if (sIDeviceManagerFactory != null) {
+            // A custom "IDevice" manager is not compatible with a "Client" manager
+            sClientManager = null;
             sClientSupport = false;
         }
         sAdbEnvVars = options.adbEnvVars;
@@ -382,6 +393,14 @@ public class AndroidDebugBridge {
         if (sThis != null && sThis.mDeviceMonitor != null) {
             sThis.mDeviceMonitor.stop();
             sThis.mDeviceMonitor = null;
+        }
+        if (sThis != null && sThis.mIDeviceManager != null) {
+            try {
+                sThis.mIDeviceManager.close();
+            } catch (Exception e) {
+                Log.e(DDMS, "Could not close IDeviceManager:");
+                Log.e(DDMS, e);
+            }
         }
 
         MonitorThread monitorThread = MonitorThread.getInstance();
@@ -801,6 +820,9 @@ public class AndroidDebugBridge {
      */
     @NonNull
     public IDevice[] getDevices() {
+        if (mIDeviceManager != null) {
+            return mIDeviceManager.getDevices().toArray(new IDevice[0]);
+        }
         synchronized (sLock) {
             if (mDeviceMonitor != null) {
                 return mDeviceMonitor.getDevices();
@@ -885,6 +907,10 @@ public class AndroidDebugBridge {
      * Creates a new bridge not linked to any particular adb executable.
      */
     private AndroidDebugBridge() {
+        mIDeviceManager =
+                (sIDeviceManagerFactory == null)
+                        ? null
+                        : sIDeviceManagerFactory.createIDeviceManager(this);
     }
 
     /**

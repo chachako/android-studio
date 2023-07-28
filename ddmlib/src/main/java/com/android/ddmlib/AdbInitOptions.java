@@ -17,6 +17,7 @@ package com.android.ddmlib;
 
 import com.android.annotations.NonNull;
 import com.android.ddmlib.clientmanager.ClientManager;
+import com.android.ddmlib.idevicemanager.IDeviceManagerFactory;
 import com.android.ddmlib.internal.ClientImpl;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
@@ -58,6 +59,8 @@ public class AdbInitOptions {
 
     public final ClientManager clientManager;
 
+    public final IDeviceManagerFactory iDeviceManagerFactory;
+
     /**
      * Enable user managed ADB mode where ddmlib will not start, restart, or terminate the ADB
      * server.
@@ -97,6 +100,7 @@ public class AdbInitOptions {
 
     /** {@link AdbInitOptions.Builder} for default values. */
     private AdbInitOptions(
+            IDeviceManagerFactory iDeviceManagerFactory,
             boolean clientSupport,
             ClientManager clientManager,
             boolean userManagedAdbMode,
@@ -105,6 +109,7 @@ public class AdbInitOptions {
             boolean useJdwpService,
             boolean useDdmlibCommandService,
             int maxJdwpPacketSize) {
+        this.iDeviceManagerFactory = iDeviceManagerFactory;
         this.clientSupport = clientSupport;
         this.clientManager = clientManager;
         this.userManagedAdbMode = userManagedAdbMode;
@@ -126,6 +131,7 @@ public class AdbInitOptions {
      * </ul>
      */
     public static class Builder {
+        private IDeviceManagerFactory myIDeviceManagerFactory;
         boolean clientSupport = false;
         private ClientManager clientManager;
         boolean userManagedAdbMode = false;
@@ -135,6 +141,12 @@ public class AdbInitOptions {
         int jdwpMaxPacketSize = DdmPreferences.getJdwpMaxPacketSize();
         int userManagedAdbPort = 0;
         ImmutableMap.Builder<String, String> envVarBuilder = ImmutableMap.builder();
+
+        /** See {@link AdbInitOptions#iDeviceManagerFactory}. */
+        public Builder setIDeviceManagerFactory(IDeviceManagerFactory iDeviceManagerFactory) {
+            this.myIDeviceManagerFactory = iDeviceManagerFactory;
+            return this;
+        }
 
         /** See {@link AdbInitOptions#clientSupport}. */
         public Builder setClientSupportEnabled(boolean enabled) {
@@ -197,6 +209,7 @@ public class AdbInitOptions {
 
         public AdbInitOptions build() {
             return new AdbInitOptions(
+                    myIDeviceManagerFactory,
                     clientSupport,
                     clientManager,
                     userManagedAdbMode,
