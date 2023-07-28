@@ -138,6 +138,14 @@ public class BytecodeValidatorTest {
                                                         "com.android.tools.deploy.liveedit.BytecodeValidatorTest$F")));
     }
 
+    @Test
+    public void testInterface() throws Exception {
+        List<BytecodeValidator.UnsupportedChange> errors =
+                BytecodeValidator.validateBytecode(
+                        new Interpretable(buildClass(I1.class)), I1.class);
+        Assert.assertEquals(0, errors.size());
+    }
+
     private static BytecodeValidator.UnsupportedChange getChangeByName(
             Collection<BytecodeValidator.UnsupportedChange> errors, String targetName) {
         Optional<BytecodeValidator.UnsupportedChange> error =

@@ -174,7 +174,22 @@ public class BytecodeValidator {
             Interpretable bytecode, Class<?> clazz, ArrayList<UnsupportedChange> errors) {
         String className = bytecode.getInternalName().replace('/', '.');
 
-        if (!Type.getInternalName(clazz.getSuperclass()).equals(bytecode.getSuperName())) {
+        // Using refection, if clazz is an interface, clazz.getSuperClass() returns null.
+        // However, when using ASM to parse the Interpretable, the visitor would tell us
+        // an interface has super class name of java.lang.Object.
+
+        // For now we are going to incorrectly assume interface has super class of Object.
+        // This will let a class that extends Object to be updated with an interface.
+
+        // None of these will be an issue when ClassDiffer is used because the checks
+        // would have been done on the host side and it will be much more complete.
+
+        Class parent = clazz.getSuperclass();
+        if (parent == null) {
+            parent = Object.class;
+        }
+
+        if (!Type.getInternalName(parent).equals(bytecode.getSuperName())) {
             UnsupportedChange change = new UnsupportedChange();
             change.type = UnsupportedChange.Type.MODIFIED_SUPER.name();
             change.className = className;
