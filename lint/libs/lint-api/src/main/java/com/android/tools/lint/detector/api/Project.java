@@ -873,6 +873,11 @@ public class Project {
         return javaLanguageLevel;
     }
 
+    /** Sets the expected language level for Kotlin source files in this project */
+    public void setKotlinLanguageLevel(@NonNull LanguageVersionSettings kotlinLanguageLevel) {
+        this.kotlinLanguageLevel = kotlinLanguageLevel;
+    }
+
     /** Returns the expected language level for Kotlin source files in this project */
     @NonNull
     public LanguageVersionSettings getKotlinLanguageLevel() {

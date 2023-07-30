@@ -73,7 +73,6 @@ import java.util.zip.ZipFile
 import kotlin.math.max
 import org.jetbrains.kotlin.config.ApiVersion
 import org.jetbrains.kotlin.config.LanguageVersion
-import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.w3c.dom.Document
 import org.w3c.dom.Element
@@ -1190,10 +1189,6 @@ private class ManualProject(
 
   fun setJavaLanguageLevel(level: LanguageLevel) {
     this.javaLanguageLevel = level
-  }
-
-  fun setKotlinLanguageLevel(level: LanguageVersionSettings) {
-    this.kotlinLanguageLevel = level
   }
 
   /** Sets the given files as the manifests applicable for this module. */
