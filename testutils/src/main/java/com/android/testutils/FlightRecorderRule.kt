@@ -17,6 +17,7 @@ package com.android.testutils
 
 import com.android.utils.FlightRecorder
 import com.android.utils.TraceUtils
+import org.junit.AssumptionViolatedException
 import org.junit.rules.ExternalResource
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -46,6 +47,8 @@ class FlightRecorderRule(
                             "${TraceUtils.currentTime()} ${description.testClass.simpleName}.${description.methodName} passed")
                         FlightRecorder.print()
                     }
+                } catch (e: AssumptionViolatedException) {
+                    throw e
                 } catch (e: Throwable) {
                     FlightRecorder.log(
                         "${TraceUtils.currentTime()} ${description.testClass.simpleName}.${description.methodName} failed: " +
