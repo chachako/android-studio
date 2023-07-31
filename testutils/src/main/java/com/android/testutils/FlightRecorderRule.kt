@@ -48,12 +48,17 @@ class FlightRecorderRule(
                         FlightRecorder.print()
                     }
                 } catch (e: AssumptionViolatedException) {
+                    if (printOnSuccess) {
+                        FlightRecorder.log(
+                            "${TraceUtils.currentTime()} ${description.testClass.simpleName}.${description.methodName} skipped"
+                        )
+                        FlightRecorder.print()
+                    }
                     throw e
                 } catch (e: Throwable) {
                     FlightRecorder.log(
                         "${TraceUtils.currentTime()} ${description.testClass.simpleName}.${description.methodName} failed: " +
-                                TraceUtils.getStackTrace(e)
-                    )
+                                TraceUtils.getStackTrace(e))
                     FlightRecorder.print()
                     throw e
                 } finally {
