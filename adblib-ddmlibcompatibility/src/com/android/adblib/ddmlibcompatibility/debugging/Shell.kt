@@ -21,11 +21,13 @@ package com.android.adblib.ddmlibcompatibility.debugging
 
 import com.android.adblib.AdbFailResponseException
 import com.android.adblib.AdbSession
+import com.android.adblib.ConnectedDevice
 import com.android.adblib.DeviceSelector
 import com.android.adblib.ShellCollector
+import com.android.adblib.serialNumber
+import com.android.adblib.shellCommand
 import com.android.annotations.concurrency.WorkerThread
 import com.android.ddmlib.AdbCommandRejectedException
-import com.android.ddmlib.DdmPreferences
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.IShellOutputReceiver
 import com.android.ddmlib.ShellCommandUnresponsiveException
@@ -35,40 +37,56 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import java.io.IOException
 import java.nio.ByteBuffer
-
-internal const val deprecationMessage =
-    """This method was created during the migration from ddmlib to adblib.
-     It blocks the caller thread so it should always be invoked on a
-     @WorkerThread. It should also eventually be replaced by a call
-     to the corresponding suspending method of adblib, or to
-     a suspending method wrapped as a ListenableFuture."""
+import java.time.Duration
+import java.util.concurrent.TimeUnit
 
 /**
  * Migration function for calls to [IDevice.executeShellCommand]
  */
-@Deprecated(deprecationMessage, ReplaceWith("AdbDeviceServices.shell"))
 @WorkerThread
-@Throws(IOException::class, AdbCommandRejectedException::class, TimeoutException::class, ShellCommandUnresponsiveException::class)
-fun executeShellCommand(adbSession: AdbSession, device: IDevice, command: String, receiver: IShellOutputReceiver) {
-  val stdoutCollector = ShellCollectorToIShellOutputReceiver(receiver)
-  val flow = adbSession.deviceServices.shell(DeviceSelector.fromSerialNumber(device.serialNumber), command, stdoutCollector)
-  return runBlocking {
-    withTimeout(DdmPreferences.getTimeOut().toLong()) {
-      mapToDdmlibException {
-        // Note: We know there is only one item in the flow (Unit), because our
-        //       ShellCollector implementation forwards buffers directly to
-        //       the IShellOutputReceiver
-        flow.first()
-      }
+@Throws(IOException::class,
+        AdbCommandRejectedException::class,
+        TimeoutException::class,
+        ShellCommandUnresponsiveException::class
+)
+internal fun executeShellCommand(
+    connectedDevice: ConnectedDevice,
+    command: String,
+    receiver: IShellOutputReceiver,
+    maxTimeout: Long,
+    maxTimeToOutputResponse: Long,
+    maxTimeUnits: TimeUnit
+) {
+    val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+    val shellCommand = connectedDevice.session.deviceServices.shellCommand(deviceSelector, command)
+    if (maxTimeToOutputResponse > 0) {
+        shellCommand.withCommandOutputTimeout(
+            Duration.ofMillis(
+                maxTimeUnits.toMillis(
+                    maxTimeToOutputResponse
+                )
+            )
+        )
     }
-  }
+    if (maxTimeout > 0) {
+        shellCommand.withCommandTimeout(Duration.ofMillis(maxTimeUnits.toMillis(maxTimeout)))
+    }
+    val stdoutCollector = ShellCollectorToIShellOutputReceiver(receiver)
+    shellCommand.withLegacyCollector(stdoutCollector)
+    runBlocking {
+        mapToDdmlibException {
+            // Note: We know there is only one item in the flow (Unit), because our
+            //       ShellCollector implementation forwards buffers directly to
+            //       the IShellOutputReceiver
+            shellCommand.execute().single()
+        }
+    }
 }
 
 /**

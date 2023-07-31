@@ -22,6 +22,7 @@ import com.android.adblib.isOnline
 import com.android.adblib.serialNumber
 import com.android.ddmlib.AdbHelper
 import com.android.ddmlib.Client
+import com.android.ddmlib.DdmPreferences
 import com.android.ddmlib.FileListingService
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.IDevice.DeviceState
@@ -59,11 +60,17 @@ internal class AdblibIDeviceWrapper(
 
     @Deprecated("")
     override fun executeShellCommand(
-        command: String?,
-        receiver: IShellOutputReceiver?,
+        command: String,
+        receiver: IShellOutputReceiver,
         maxTimeToOutputResponse: Int
     ) {
-        TODO("Not yet implemented")
+        executeShellCommand(
+            command,
+            receiver,
+            0,
+            maxTimeToOutputResponse.toLong(),
+            TimeUnit.MILLISECONDS
+        )
     }
 
     /**
@@ -84,8 +91,14 @@ internal class AdblibIDeviceWrapper(
      * @see .executeShellCommand
      * @see DdmPreferences.getTimeOut
      */
-    override fun executeShellCommand(command: String?, receiver: IShellOutputReceiver?) {
-        TODO("Not yet implemented")
+    override fun executeShellCommand(command: String, receiver: IShellOutputReceiver) {
+        executeShellCommand(
+            command,
+            receiver,
+            0,
+            DdmPreferences.getTimeOut().toLong(),
+            TimeUnit.MILLISECONDS
+        )
     }
 
     /**
@@ -119,12 +132,12 @@ internal class AdblibIDeviceWrapper(
      * @see DdmPreferences.getTimeOut
      */
     override fun executeShellCommand(
-        command: String?,
-        receiver: IShellOutputReceiver?,
+        command: String,
+        receiver: IShellOutputReceiver,
         maxTimeToOutputResponse: Long,
-        maxTimeUnits: TimeUnit?
+        maxTimeUnits: TimeUnit
     ) {
-        TODO("Not yet implemented")
+        executeShellCommand(command, receiver, 0, maxTimeToOutputResponse, maxTimeUnits)
     }
 
     /**
@@ -158,13 +171,13 @@ internal class AdblibIDeviceWrapper(
      * @see DdmPreferences.getTimeOut
      */
     override fun executeShellCommand(
-        command: String?,
-        receiver: IShellOutputReceiver?,
+        command: String,
+        receiver: IShellOutputReceiver,
         maxTimeout: Long,
         maxTimeToOutputResponse: Long,
-        maxTimeUnits: TimeUnit?
+        maxTimeUnits: TimeUnit
     ) {
-        TODO("Not yet implemented")
+        executeShellCommand(connectedDevice, command, receiver, maxTimeout, maxTimeToOutputResponse, maxTimeUnits)
     }
 
     /**

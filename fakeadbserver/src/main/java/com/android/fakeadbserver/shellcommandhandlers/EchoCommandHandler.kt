@@ -38,5 +38,6 @@ class EchoCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHand
         statusWriter.writeOk()
         shellCommandArgs?.also { shellCommandOutput.writeStdout(shellCommandArgs) }
         shellCommandOutput.writeStdout("\n")
+        shellCommandOutput.writeExitCode(0)
     }
 }

@@ -15,78 +15,129 @@
  */
 package com.android.adblib.ddmlibcompatibility.debugging
 
-import com.android.adblib.ddmlibcompatibility.testutils.createAdbSession
-import com.android.adblib.testingutils.CloseablesRule
+import com.android.adblib.AdbSession
+import com.android.adblib.ConnectedDevice
+import com.android.adblib.connectedDevicesTracker
+import com.android.adblib.isOnline
+import com.android.adblib.serialNumber
+import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
+import com.android.adblib.testingutils.FakeAdbServerProviderRule
 import com.android.ddmlib.AdbCommandRejectedException
-import com.android.ddmlib.IDevice
 import com.android.ddmlib.MultiLineReceiver
-import com.android.ddmlib.testing.FakeAdbRule
+import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.devicecommandhandlers.SyncCommandHandler
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.mapNotNull
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
-import org.junit.rules.RuleChain
+import java.util.concurrent.TimeUnit
 
 class ShellTest {
-  private val fakeAdbRule = FakeAdbRule()
-  private val closeables = CloseablesRule()
 
-  @JvmField
-  @Rule
-  var exceptionRule: ExpectedException = ExpectedException.none()
+    @JvmField
+    @Rule
+    var exceptionRule: ExpectedException = ExpectedException.none()
 
-  @get:Rule
-  val ruleChain = RuleChain.outerRule(fakeAdbRule).around(closeables)!!
+    @JvmField
+    @Rule
+    val fakeAdbRule = FakeAdbServerProviderRule {
+        installDefaultCommandHandlers()
+        installDeviceHandler(SyncCommandHandler())
+    }
 
-  @Test
-  fun executeShellCommandShouldWork() {
-    // Prepare
-    fakeAdbRule.attachDevice("42", "Google", "Pix3l", "versionX", "29", "arm64-v8a")
-    val device: IDevice = fakeAdbRule.bridge.devices.single()
-    val receiver = ListReceiver()
+    private val fakeAdb get() = fakeAdbRule.fakeAdb
 
-    // Act
-    executeShellCommand(fakeAdbRule.createAdbSession(closeables), device, "getprop", receiver)
+    @Test
+    fun executeShellCommandShouldWork() = runBlockingWithTimeout {
+        // Prepare
+        val device = createConnectedDevice("42")
+        val receiver = ListReceiver()
 
-    // Assert
-    val expected = """# This is some build info
+        // Act
+        executeShellCommand(
+            device,
+            "getprop",
+            receiver,
+            0,
+            0,
+            TimeUnit.MILLISECONDS
+        )
+
+        // Assert
+        val expected = """# This is some build info
 # This is more build info
 
 [ro.build.version.release]: [versionX]
 [ro.build.version.sdk]: [29]
-[ro.product.cpu.abi]: [arm64-v8a]
+[ro.product.cpu.abi]: [x86_64]
 [ro.product.manufacturer]: [Google]
 [ro.product.model]: [Pix3l]
 [ro.serialno]: [42]
 """
-    assertEquals(expected, receiver.lines.joinToString("\n"))
-  }
+        assertEquals(expected, receiver.lines.joinToString("\n"))
+    }
 
-  @Test
-  @Throws(Exception::class)
-  fun executeShellCommandShouldThrowIfInvalidCommand() {
-    // Prepare
-    fakeAdbRule.attachDevice("42", "Google", "Pix3l", "versionX", "29")
-    val device: IDevice = fakeAdbRule.bridge.devices.single()
-    val receiver = ListReceiver()
+    @Test
+    @Throws(Exception::class)
+    fun executeShellCommandShouldThrowIfInvalidCommand() = runBlockingWithTimeout {
+        // Prepare
+        val device = createConnectedDevice("42")
+        val receiver = ListReceiver()
 
-    // Act
-    exceptionRule.expect(AdbCommandRejectedException::class.java)
-    executeShellCommand(fakeAdbRule.createAdbSession(closeables), device, "foobarz", receiver)
+        // Act
+        exceptionRule.expect(AdbCommandRejectedException::class.java)
+        executeShellCommand(
+            device,
+            "foobarz",
+            receiver,
+            0,
+            0,
+            TimeUnit.MILLISECONDS
+        )
 
-    // Assert
-    Assert.fail() // should not be reached
-  }
+        // Assert
+        Assert.fail() // should not be reached
+    }
 
-  private class ListReceiver : MultiLineReceiver() {
+    private suspend fun createConnectedDevice(
+        serialNumber: String
+    ): ConnectedDevice {
+        val fakeDevice =
+            fakeAdb.connectDevice(
+                serialNumber,
+                "Google",
+                "Pix3l",
+                "versionX",
+                "29",
+                DeviceState.HostConnectionType.USB
+            )
+        fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
+        return waitForOnlineConnectedDevice(fakeAdbRule.adbSession, serialNumber)
+    }
+
+    private suspend fun waitForOnlineConnectedDevice(
+        session: AdbSession,
+        serialNumber: String
+    ): ConnectedDevice {
+        return session.connectedDevicesTracker.connectedDevices
+            .mapNotNull { connectedDevices ->
+                connectedDevices.firstOrNull { device ->
+                    device.isOnline && device.serialNumber == serialNumber
+                }
+            }.first()
+    }
+}
+
+internal class ListReceiver : MultiLineReceiver() {
 
     val lines = mutableListOf<String>()
 
     override fun processNewLines(lines: Array<out String>) {
-      this.lines.addAll(lines)
+        this.lines.addAll(lines)
     }
 
     override fun isCancelled() = false
-  }
 }

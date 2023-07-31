@@ -94,6 +94,22 @@ class AdblibIDeviceWrapperTest {
         assertTrue(adblibIDeviceWrapper.isBootLoader)
     }
 
+    @Test
+    fun executeShellCommand() = runBlockingWithTimeout {
+        // Prepare
+        val connectedDevice = createConnectedDevice("device1", DeviceState.DeviceStatus.BOOTLOADER)
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice)
+        val listReceiver = ListReceiver()
+
+        // Act
+        adblibIDeviceWrapper.executeShellCommand("echo a\\nb", listReceiver)
+
+        // Assert
+        // Echo command outputs an additional newline
+        assertEquals(2, listReceiver.lines.size)
+        assertEquals("a\\nb", listReceiver.lines[0])
+    }
+
     private suspend fun createConnectedDevice(
         serialNumber: String,
         deviceStatus: DeviceState.DeviceStatus
