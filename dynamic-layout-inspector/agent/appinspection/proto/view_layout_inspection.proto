@@ -174,8 +174,15 @@ message AppContext {
     int32 main_display_height = 3;
     // The orientation of the main display, in degrees.
     int32 main_display_orientation = 4;
-    // True if the app is running in the main display, false otherwise.
-    bool is_running_in_main_display = 5;
+    // The type of the display in which the app is running
+    DisplayType display_type = 5;
+}
+
+// Describes the type of a display, whether it's the main display or a secondary display.
+enum DisplayType {
+    UNDEFINED = 0;
+    MAIN_DISPLAY = 1;
+    SECONDARY_DISPLAY = 2;
 }
 
 // Handles properties whose values are bit flags, e.g. "top|left"

@@ -33,6 +33,7 @@ import com.android.tools.agent.appinspection.proto.property.PropertyCache
 import com.android.tools.agent.appinspection.proto.property.SimplePropertyReader
 import com.android.tools.agent.appinspection.proto.resource.convert
 import com.android.tools.agent.appinspection.util.ThreadUtils
+import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.AppContext
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Bounds
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.GetPropertiesResponse
@@ -148,6 +149,14 @@ fun View.getNamespace(attributeId: Int): String =
     if (attributeId != 0) resources.getResourcePackageName(attributeId) else ""
 
 fun View.createAppContext(stringTable: StringTable): AppContext {
+    val isRunningInMainDisplay = isRunningInMainDisplay()
+    val appDisplayType = if (isRunningInMainDisplay) {
+        LayoutInspectorViewProtocol.DisplayType.MAIN_DISPLAY
+    }
+    else {
+        LayoutInspectorViewProtocol.DisplayType.SECONDARY_DISPLAY
+    }
+
     return AppContext.newBuilder().apply {
         createResource(stringTable, context.themeResId)?.let { themeResource ->
             theme = themeResource
@@ -156,7 +165,7 @@ fun View.createAppContext(stringTable: StringTable): AppContext {
         mainDisplayWidth = point.x
         mainDisplayHeight = point.y
         mainDisplayOrientation = getDefaultDisplayRotation()
-        isRunningInMainDisplay = isRunningInMainDisplay()
+        displayType = appDisplayType
     }.build()
 }
 
