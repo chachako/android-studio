@@ -565,7 +565,7 @@ gradle_test(
 filegroup(
     name = "android_platform_for_tests",
     srcs = ["//prebuilts/studio/sdk:platforms/android-34"],
-    visibility = [":__subpackages__"],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
