@@ -294,6 +294,7 @@ DATA = [
     "androidx.databinding:viewbinding:8.0.0-beta04",
     "androidx.emoji2:emoji2-views-helper:1.3.0",
     "androidx.emoji2:emoji2-views-helper:1.4.0-beta03",  # Needed for TemplateTest#testNewComposeWearActivityWithTileAndComplication
+    "androidx.emoji2:emoji2-views-helper:1.4.0-beta04",  # Necessary for Compose for TV.
     "androidx.fragment:fragment:1.3.0",
     "androidx.fragment:fragment:1.3.0-rc01",
     "androidx.games:games-activity:1.2.2",

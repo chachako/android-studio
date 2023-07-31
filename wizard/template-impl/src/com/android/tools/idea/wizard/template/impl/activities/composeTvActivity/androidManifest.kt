@@ -40,7 +40,7 @@ fun androidManifestXml(
         android:required="false" />
     <uses-feature android:name="android.software.leanback"
         android:required="false" />
-    <application android:banner="@mipmap/ic_launcher">
+    <application android:banner="@mipmap/ic_launcher" android:theme="@style/$activityThemeName">
         $activityDescription
     </application>
 </manifest>

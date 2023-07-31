@@ -24,7 +24,8 @@ fun androidManifestXml(
   detailsActivity: String,
   isLibrary: Boolean,
   isNewModule: Boolean,
-  packageName: String
+  packageName: String,
+  themeName: String,
 ): String {
   val labelBlock = if (isNewModule) "android:label=\"@string/app_name\""
   else "android:label=\"@string/title_${activityToLayout(activityClass)}\""
@@ -50,7 +51,7 @@ fun androidManifestXml(
     <uses-feature android:name="android.software.leanback"
         android:required="true" />
 
-    <application>
+    <application android:theme="$themeName">
 
         <activity android:name="${packageName}.${activityClass}"
             android:exported="$launcher"

@@ -52,106 +52,154 @@ import com.android.tools.idea.wizard.template.impl.activities.common.addAllKotli
 import java.io.File
 
 fun RecipeExecutor.androidTVActivityRecipe(
-  moduleData: ModuleTemplateData,
-  activityClass: String,
-  layoutName: String,
-  mainFragmentClass: String,
-  detailsActivityClass: String,
-  detailsLayoutName: String,
-  detailsFragmentClass: String,
-  packageName: String
+    moduleData: ModuleTemplateData,
+    activityClass: String,
+    layoutName: String,
+    mainFragmentClass: String,
+    detailsActivityClass: String,
+    detailsLayoutName: String,
+    detailsFragmentClass: String,
+    packageName: String
 ) {
-  val (projectData, srcOut, resOut, manifestOut) = moduleData
-  val ktOrJavaExt = projectData.language.extension
-  addAllKotlinDependencies(moduleData)
+    val (projectData, srcOut, resOut, manifestOut) = moduleData
+    val ktOrJavaExt = projectData.language.extension
+    addAllKotlinDependencies(moduleData)
 
-  addDependency("com.android.support:leanback-v17:+")
-  addDependency("com.github.bumptech.glide:glide:4.11.0")
+    addDependency("com.android.support:leanback-v17:+")
+    addDependency("com.github.bumptech.glide:glide:4.11.0")
 
-  mergeXml(androidManifestXml(activityClass, detailsActivityClass, moduleData.isLibrary, moduleData.isNewModule, packageName),
-           manifestOut.resolve("AndroidManifest.xml"))
-  mergeXml(stringsXml(activityClass, moduleData.isNewModule), resOut.resolve("values/strings.xml"))
-  mergeXml(colorsXml(), resOut.resolve("values/colors.xml"))
-  mergeXml(themesXml(moduleData.themesData.main.name), resOut.resolve("values/themes.xml"))
+    mergeXml(
+        androidManifestXml(
+            activityClass,
+            detailsActivityClass,
+            moduleData.isLibrary,
+            moduleData.isNewModule,
+            packageName,
+            "@style/${moduleData.themesData.main.name}"
+        ),
+        manifestOut.resolve("AndroidManifest.xml")
+    )
+    mergeXml(
+        stringsXml(activityClass, moduleData.isNewModule),
+        resOut.resolve("values/strings.xml")
+    )
+    mergeXml(colorsXml(), resOut.resolve("values/colors.xml"))
+    mergeXml(themesXml(moduleData.themesData.main.name), resOut.resolve("values/themes.xml"))
 
-  copy(File("androidtv-activity").resolve("drawable"), resOut.resolve("drawable"))
-  save(activityMainXml(activityClass, packageName), resOut.resolve("layout/${layoutName}.xml"))
-  save(activityDetailsXml(detailsActivityClass, packageName), resOut.resolve("layout/${detailsLayoutName}.xml"))
+    copy(File("androidtv-activity").resolve("drawable"), resOut.resolve("drawable"))
+    save(activityMainXml(activityClass, packageName), resOut.resolve("layout/${layoutName}.xml"))
+    save(
+        activityDetailsXml(detailsActivityClass, packageName),
+        resOut.resolve("layout/${detailsLayoutName}.xml")
+    )
 
-  val mainActivity = when (projectData.language) {
-    Language.Java -> mainActivityJava(activityClass, layoutName, mainFragmentClass, packageName)
-    Language.Kotlin -> mainActivityKt(activityClass, layoutName, mainFragmentClass, packageName)
-  }
-  save(mainActivity, srcOut.resolve("${activityClass}.${ktOrJavaExt}"))
+    val mainActivity = when (projectData.language) {
+        Language.Java -> mainActivityJava(activityClass, layoutName, mainFragmentClass, packageName)
+        Language.Kotlin -> mainActivityKt(activityClass, layoutName, mainFragmentClass, packageName)
+    }
+    save(mainActivity, srcOut.resolve("${activityClass}.${ktOrJavaExt}"))
 
-  val mainFragment = when (projectData.language) {
-    Language.Java -> mainFragmentJava(detailsActivityClass, mainFragmentClass, moduleData.apis.minApi.api, packageName)
-    Language.Kotlin -> mainFragmentKt(detailsActivityClass, mainFragmentClass, moduleData.apis.minApi.api, packageName)
-  }
-  save(mainFragment, srcOut.resolve("${mainFragmentClass}.${ktOrJavaExt}"))
+    val mainFragment = when (projectData.language) {
+        Language.Java -> mainFragmentJava(
+            detailsActivityClass,
+            mainFragmentClass,
+            moduleData.apis.minApi.api,
+            packageName
+        )
 
-  val detailsActivity = when (projectData.language) {
-    Language.Java -> detailsActivityJava(detailsActivityClass, detailsFragmentClass, detailsLayoutName, packageName)
-    Language.Kotlin -> detailsActivityKt(detailsActivityClass, detailsFragmentClass, detailsLayoutName, packageName)
-  }
-  save(detailsActivity, srcOut.resolve("${detailsActivityClass}.${ktOrJavaExt}"))
+        Language.Kotlin -> mainFragmentKt(
+            detailsActivityClass,
+            mainFragmentClass,
+            moduleData.apis.minApi.api,
+            packageName
+        )
+    }
+    save(mainFragment, srcOut.resolve("${mainFragmentClass}.${ktOrJavaExt}"))
 
-  val videoDetailsFragment = when (projectData.language) {
-    Language.Java -> videoDetailsFragmentJava(
-      activityClass, detailsActivityClass, detailsFragmentClass, moduleData.apis.minApi.api, packageName)
-    Language.Kotlin -> videoDetailsFragmentKt(
-      activityClass, detailsActivityClass, detailsFragmentClass, moduleData.apis.minApi.api, packageName)
-  }
-  save(videoDetailsFragment, srcOut.resolve("${detailsFragmentClass}.${ktOrJavaExt}"))
+    val detailsActivity = when (projectData.language) {
+        Language.Java -> detailsActivityJava(
+            detailsActivityClass,
+            detailsFragmentClass,
+            detailsLayoutName,
+            packageName
+        )
 
-  val movie = when (projectData.language) {
-    Language.Java -> movieJava(packageName)
-    Language.Kotlin -> movieKt(packageName)
-  }
-  save(movie, srcOut.resolve("Movie.${ktOrJavaExt}"))
+        Language.Kotlin -> detailsActivityKt(
+            detailsActivityClass,
+            detailsFragmentClass,
+            detailsLayoutName,
+            packageName
+        )
+    }
+    save(detailsActivity, srcOut.resolve("${detailsActivityClass}.${ktOrJavaExt}"))
 
-  val movieList = when (projectData.language) {
-    Language.Java -> movieListJava(packageName)
-    Language.Kotlin -> movieListKt(packageName)
-  }
-  save(movieList, srcOut.resolve("MovieList.${ktOrJavaExt}"))
+    val videoDetailsFragment = when (projectData.language) {
+        Language.Java -> videoDetailsFragmentJava(
+            activityClass,
+            detailsActivityClass,
+            detailsFragmentClass,
+            moduleData.apis.minApi.api,
+            packageName
+        )
 
-  val cardPresenter = when (projectData.language) {
-    Language.Java -> cardPresenterJava(packageName)
-    Language.Kotlin -> cardPresenterKt(packageName)
-  }
-  save(cardPresenter, srcOut.resolve("CardPresenter.${ktOrJavaExt}"))
+        Language.Kotlin -> videoDetailsFragmentKt(
+            activityClass,
+            detailsActivityClass,
+            detailsFragmentClass,
+            moduleData.apis.minApi.api,
+            packageName
+        )
+    }
+    save(videoDetailsFragment, srcOut.resolve("${detailsFragmentClass}.${ktOrJavaExt}"))
 
-  val detailsDescriptionPresenter = when (projectData.language) {
-    Language.Java -> detailsDescriptionPresenterJava(packageName)
-    Language.Kotlin -> detailsDescriptionPresenterKt(packageName)
-  }
-  save(detailsDescriptionPresenter, srcOut.resolve("DetailsDescriptionPresenter.${ktOrJavaExt}"))
+    val movie = when (projectData.language) {
+        Language.Java -> movieJava(packageName)
+        Language.Kotlin -> movieKt(packageName)
+    }
+    save(movie, srcOut.resolve("Movie.${ktOrJavaExt}"))
 
-  val playbackActivity = when (projectData.language) {
-    Language.Java -> playbackActivityJava(packageName)
-    Language.Kotlin -> playbackActivityKt(packageName)
-  }
-  save(playbackActivity, srcOut.resolve("PlaybackActivity.${ktOrJavaExt}"))
+    val movieList = when (projectData.language) {
+        Language.Java -> movieListJava(packageName)
+        Language.Kotlin -> movieListKt(packageName)
+    }
+    save(movieList, srcOut.resolve("MovieList.${ktOrJavaExt}"))
 
-  val playbackVideoFragment = when (projectData.language) {
-    Language.Java -> playbackVideoFragmentJava(moduleData.apis.minApi.api, packageName)
-    Language.Kotlin -> playbackVideoFragmentKt(moduleData.apis.minApi.api, packageName)
-  }
-  save(playbackVideoFragment, srcOut.resolve("PlaybackVideoFragment.${ktOrJavaExt}"))
+    val cardPresenter = when (projectData.language) {
+        Language.Java -> cardPresenterJava(packageName)
+        Language.Kotlin -> cardPresenterKt(packageName)
+    }
+    save(cardPresenter, srcOut.resolve("CardPresenter.${ktOrJavaExt}"))
 
-  val browseErrorActivity = when (projectData.language) {
-    Language.Java -> browseErrorActivityJava(layoutName, packageName, mainFragmentClass)
-    Language.Kotlin -> browseErrorActivityKt(layoutName, packageName, mainFragmentClass)
-  }
-  save(browseErrorActivity, srcOut.resolve("BrowseErrorActivity.${ktOrJavaExt}"))
+    val detailsDescriptionPresenter = when (projectData.language) {
+        Language.Java -> detailsDescriptionPresenterJava(packageName)
+        Language.Kotlin -> detailsDescriptionPresenterKt(packageName)
+    }
+    save(detailsDescriptionPresenter, srcOut.resolve("DetailsDescriptionPresenter.${ktOrJavaExt}"))
 
-  val errorFragment = when (projectData.language) {
-    Language.Java -> errorFragmentJava(moduleData.apis.minApi.api, packageName )
-    Language.Kotlin -> errorFragmentKt(moduleData.apis.minApi.api, packageName)
-  }
-  save(errorFragment, srcOut.resolve("ErrorFragment.${ktOrJavaExt}"))
+    val playbackActivity = when (projectData.language) {
+        Language.Java -> playbackActivityJava(packageName)
+        Language.Kotlin -> playbackActivityKt(packageName)
+    }
+    save(playbackActivity, srcOut.resolve("PlaybackActivity.${ktOrJavaExt}"))
 
-  open(srcOut.resolve("${activityClass}.${ktOrJavaExt}"))
-  open(resOut.resolve("layout/${layoutName}.xml"))
+    val playbackVideoFragment = when (projectData.language) {
+        Language.Java -> playbackVideoFragmentJava(moduleData.apis.minApi.api, packageName)
+        Language.Kotlin -> playbackVideoFragmentKt(moduleData.apis.minApi.api, packageName)
+    }
+    save(playbackVideoFragment, srcOut.resolve("PlaybackVideoFragment.${ktOrJavaExt}"))
+
+    val browseErrorActivity = when (projectData.language) {
+        Language.Java -> browseErrorActivityJava(layoutName, packageName, mainFragmentClass)
+        Language.Kotlin -> browseErrorActivityKt(layoutName, packageName, mainFragmentClass)
+    }
+    save(browseErrorActivity, srcOut.resolve("BrowseErrorActivity.${ktOrJavaExt}"))
+
+    val errorFragment = when (projectData.language) {
+        Language.Java -> errorFragmentJava(moduleData.apis.minApi.api, packageName)
+        Language.Kotlin -> errorFragmentKt(moduleData.apis.minApi.api, packageName)
+    }
+    save(errorFragment, srcOut.resolve("ErrorFragment.${ktOrJavaExt}"))
+
+    open(srcOut.resolve("${activityClass}.${ktOrJavaExt}"))
+    open(resOut.resolve("layout/${layoutName}.xml"))
 }

@@ -16969,6 +16969,19 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.emoji2.emoji2-views-helper_1.4.0-beta04",
+    pom = "repository/androidx/emoji2/emoji2-views-helper/1.4.0-beta04/emoji2-views-helper-1.4.0-beta04.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/emoji2/emoji2-views-helper/1.4.0-beta04",
+    deps = [
+        "androidx.collection.collection_1.1.0",
+        "androidx.core.core_1.3.0",
+        "androidx.emoji2.emoji2_1.4.0-beta04",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.emoji2.emoji2_1.0.0",
     pom = "repository/androidx/emoji2/emoji2/1.0.0/emoji2-1.0.0.pom",
     repo_root_path = "repository",

@@ -17,6 +17,6 @@ package com.android.tools.idea.wizard.template.impl.activities.composeTvActivity
 
 fun themesXml(themeName: String): String = """
 <resources>
-    <style name="$themeName" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="$themeName" parent="Theme.AppCompat.DayNight.NoActionBar" />
 </resources>
 """

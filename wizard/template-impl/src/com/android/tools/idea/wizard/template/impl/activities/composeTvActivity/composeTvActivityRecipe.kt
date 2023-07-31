@@ -41,6 +41,8 @@ fun RecipeExecutor.composeTvActivityRecipe(
 
   addAllKotlinDependencies(moduleData)
 
+  addDependency("androidx.appcompat:appcompat:+")
+
   // Add Compose dependencies, using the BOM to set versions
   addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$composeBomVersion")
   addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$composeBomVersion", "androidTestImplementation")
@@ -98,7 +100,7 @@ private fun RecipeExecutor.generateLeanbackEnabledManifest(
   activityClass: String,
   packageName: String,
   isLauncher: Boolean,
-  activityThemeName: String = moduleData.themesData.noActionBar.name,
+  activityThemeName: String = moduleData.themesData.main.name,
   isNewModule: Boolean = moduleData.isNewModule,
   manifestOut: File = moduleData.manifestDir,
   baseFeatureResOut: File = moduleData.baseFeature?.resDir ?: moduleData.resDir,
