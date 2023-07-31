@@ -16,10 +16,7 @@
 
 package com.android.build.api.variant
 
-import com.android.build.api.AndroidPluginVersion
 import com.android.build.api.dsl.CommonExtension
-import com.android.build.api.dsl.SdkComponents
-import com.android.build.api.instrumentation.manageddevice.ManagedDeviceRegistry
 import org.gradle.api.Action
 import org.gradle.api.Incubating
 
@@ -37,36 +34,13 @@ interface AndroidComponentsExtension<
         DslExtensionT: CommonExtension<*, *, *, *, *>,
         VariantBuilderT: VariantBuilder,
         VariantT: Variant>
-    : DslLifecycle<DslExtensionT> {
+    : DslLifecycle<DslExtensionT>, AndroidComponents {
 
     /**
      * [Action] based version of [finalizeDsl] above.
      */
     @Deprecated("Replaced by finalizeDsl", replaceWith = ReplaceWith("finalizeDsl(callback)"))
     fun finalizeDSl(callback: Action<DslExtensionT>)
-
-    /**
-     * The version of the Android Gradle Plugin currently in use.
-     */
-    val pluginVersion: AndroidPluginVersion
-
-    /**
-     * Provides access to underlying Android SDK and build-tools components like adb.
-     *
-     * @return [SdkComponents] to access Android SDK used by Gradle.
-     */
-    val sdkComponents: SdkComponents
-
-    /**
-     * Provides access to Managed Device Registry to be able to register Custom Managed
-     * Device Types.
-     *
-     * @return [ManagedDeviceRegistry] to register Custom Managed Devices.
-     *
-     * @suppress Do not use from production code. This API is exposed for prototype.
-     */
-    @get:Incubating
-    val managedDeviceRegistry: ManagedDeviceRegistry
 
     /**
      * Creates a [VariantSelector] instance that can be configured

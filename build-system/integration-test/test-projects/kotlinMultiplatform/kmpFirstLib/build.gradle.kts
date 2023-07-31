@@ -32,9 +32,7 @@ kotlin {
     compilations.getByName("instrumentedTest") {
         kotlinOptions.languageVersion = "1.8"
     }
-    namespace = "com.example.kmpfirstlib"
-    compileSdk = property("latestCompileSdk") as Int
-    minSdk = 22
+
 
     dependencyVariantSelection {
       buildTypes.add("debug")
@@ -50,4 +48,17 @@ kotlin {
        implementation(kotlin("test"))
      }
    }
+}
+
+androidComponents {
+    finalizeDsl { extension ->
+        extension.namespace = "com.example.kmpfirstlib"
+        extension.compileSdk = property("latestCompileSdk") as Int
+        extension.minSdk = 22
+    }
+    onVariant { variant ->
+        if (variant.name == null || variant.name.isEmpty()) {
+            throw IllegalArgumentException("must have variant name")
+        }
+    }
 }

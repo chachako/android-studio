@@ -16,12 +16,21 @@ kotlin {
   jvm()
 
   targets.withType(com.android.build.api.variant.KotlinMultiplatformAndroidTarget::class.java) {
-    namespace = "com.example.kmpsecondlib"
-    compileSdk = property("latestCompileSdk") as Int
-    minSdk = 22
-
     dependencyVariantSelection {
       buildTypes.add("debug")
     }
   }
+}
+
+androidComponents {
+    finalizeDsl { extension ->
+        extension.namespace = "com.example.kmpsecondlib"
+        extension.minSdk = 22
+        extension.compileSdk = property("latestCompileSdk") as Int
+    }
+    onVariant { variant ->
+        if (variant.name == null || variant.name.isEmpty()) {
+            throw IllegalArgumentException("must have variant name")
+        }
+    }
 }

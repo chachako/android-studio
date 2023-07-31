@@ -1186,7 +1186,6 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public String? getTestNamespace();
     method @org.gradle.api.Incubating public boolean isCoreLibraryDesugaringEnabled();
     method @org.gradle.api.Incubating public void lint(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Lint,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public void onVariant(kotlin.jvm.functions.Function1<? super com.android.build.api.variant.KotlinMultiplatformAndroidVariant,kotlin.Unit> callback);
     method @org.gradle.api.Incubating public void optimization(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KmpOptimization,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void packaging(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Packaging,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void setBuildToolsVersion(String);
@@ -2291,19 +2290,22 @@ package com.android.build.api.variant {
     property @org.gradle.api.tasks.Input public abstract org.gradle.api.provider.Provider<java.lang.String> version;
   }
 
-  public interface AndroidComponentsExtension<DslExtensionT extends com.android.build.api.dsl.CommonExtension<?, ?, ?, ?, ?>, VariantBuilderT extends com.android.build.api.variant.VariantBuilder, VariantT extends com.android.build.api.variant.Variant> extends com.android.build.api.variant.DslLifecycle<DslExtensionT> {
+  public interface AndroidComponents {
+    method public com.android.build.api.AndroidPluginVersion getPluginVersion();
+    method public com.android.build.api.dsl.SdkComponents getSdkComponents();
+    property public abstract com.android.build.api.AndroidPluginVersion pluginVersion;
+    property public abstract com.android.build.api.dsl.SdkComponents sdkComponents;
+  }
+
+  public interface AndroidComponentsExtension<DslExtensionT extends com.android.build.api.dsl.CommonExtension<?, ?, ?, ?, ?>, VariantBuilderT extends com.android.build.api.variant.VariantBuilder, VariantT extends com.android.build.api.variant.Variant> extends com.android.build.api.variant.DslLifecycle<DslExtensionT> com.android.build.api.variant.AndroidComponents {
     method public void beforeVariants(optional com.android.build.api.variant.VariantSelector selector, kotlin.jvm.functions.Function1<? super VariantBuilderT,kotlin.Unit> callback);
     method public void beforeVariants(optional com.android.build.api.variant.VariantSelector selector, org.gradle.api.Action<VariantBuilderT> callback);
     method @Deprecated public void finalizeDSl(org.gradle.api.Action<DslExtensionT> callback);
-    method public com.android.build.api.AndroidPluginVersion getPluginVersion();
-    method public com.android.build.api.dsl.SdkComponents getSdkComponents();
     method public void onVariants(optional com.android.build.api.variant.VariantSelector selector, kotlin.jvm.functions.Function1<? super VariantT,kotlin.Unit> callback);
     method public void onVariants(optional com.android.build.api.variant.VariantSelector selector, org.gradle.api.Action<VariantT> callback);
     method @org.gradle.api.Incubating public void registerExtension(com.android.build.api.variant.DslExtension dslExtension, kotlin.jvm.functions.Function1<? super com.android.build.api.variant.VariantExtensionConfig<VariantT>,? extends com.android.build.api.variant.VariantExtension> configurator);
     method @org.gradle.api.Incubating public void registerSourceType(String name);
     method public com.android.build.api.variant.VariantSelector selector();
-    property public abstract com.android.build.api.AndroidPluginVersion pluginVersion;
-    property public abstract com.android.build.api.dsl.SdkComponents sdkComponents;
   }
 
   public interface AndroidResources {
@@ -2704,29 +2706,26 @@ package com.android.build.api.variant {
     property public abstract org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions<org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions> compilerOptions;
   }
 
+  @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidComponentsExtension extends com.android.build.api.variant.DslLifecycle<com.android.build.api.dsl.KotlinMultiplatformAndroidExtension> com.android.build.api.variant.AndroidComponents {
+    method public void onVariant(kotlin.jvm.functions.Function1<? super com.android.build.api.variant.KotlinMultiplatformAndroidVariant,kotlin.Unit> callback);
+    method public void onVariant(org.gradle.api.Action<com.android.build.api.variant.KotlinMultiplatformAndroidVariant> callback);
+  }
+
   @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidTarget extends org.jetbrains.kotlin.gradle.plugin.KotlinTarget com.android.build.api.dsl.KotlinMultiplatformAndroidExtension {
     method public org.gradle.api.NamedDomainObjectContainer<com.android.build.api.variant.KotlinMultiplatformAndroidCompilation> getCompilations();
     method @org.gradle.api.Incubating public void withJava();
     property public abstract org.gradle.api.NamedDomainObjectContainer<com.android.build.api.variant.KotlinMultiplatformAndroidCompilation> compilations;
   }
 
-  public interface KotlinMultiplatformAndroidVariant extends com.android.build.api.variant.GeneratesAar com.android.build.api.variant.HasAndroidTest com.android.build.api.variant.HasUnitTest {
-    method public com.android.build.api.artifact.Artifacts getArtifacts();
-    method public org.gradle.api.file.FileCollection getCompileClasspath();
-    method public org.gradle.api.artifacts.Configuration getCompileConfiguration();
-    method public com.android.build.api.variant.Instrumentation getInstrumentation();
-    method public String getName();
-    method public org.gradle.api.provider.Provider<java.lang.String> getNamespace();
-    method public org.gradle.api.artifacts.Configuration getRuntimeConfiguration();
-    method public com.android.build.api.variant.Sources getSources();
-    property public abstract com.android.build.api.artifact.Artifacts artifacts;
-    property public abstract org.gradle.api.file.FileCollection compileClasspath;
-    property public abstract org.gradle.api.artifacts.Configuration compileConfiguration;
-    property public abstract com.android.build.api.variant.Instrumentation instrumentation;
-    property public abstract String name;
-    property public abstract org.gradle.api.provider.Provider<java.lang.String> namespace;
-    property public abstract org.gradle.api.artifacts.Configuration runtimeConfiguration;
-    property public abstract com.android.build.api.variant.Sources sources;
+  @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidVariant extends com.android.build.api.variant.HasAndroidTest com.android.build.api.variant.HasUnitTest {
+    method @org.gradle.api.Incubating public com.android.build.api.artifact.Artifacts getArtifacts();
+    method @org.gradle.api.Incubating public org.gradle.api.file.FileCollection getCompileClasspath();
+    method @org.gradle.api.Incubating public com.android.build.api.variant.Instrumentation getInstrumentation();
+    method @org.gradle.api.Incubating public String getName();
+    property @org.gradle.api.Incubating public abstract com.android.build.api.artifact.Artifacts artifacts;
+    property @org.gradle.api.Incubating public abstract org.gradle.api.file.FileCollection compileClasspath;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.variant.Instrumentation instrumentation;
+    property @org.gradle.api.Incubating public abstract String name;
   }
 
   public interface LibraryAndroidComponentsExtension extends com.android.build.api.variant.AndroidComponentsExtension<com.android.build.api.dsl.LibraryExtension,com.android.build.api.variant.LibraryVariantBuilder,com.android.build.api.variant.LibraryVariant> {

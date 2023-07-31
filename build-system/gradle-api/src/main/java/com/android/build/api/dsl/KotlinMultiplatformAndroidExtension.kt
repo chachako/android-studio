@@ -365,14 +365,4 @@ interface KotlinMultiplatformAndroidExtension {
      */
     @get:Incubating
     val testCoverage: TestCoverage
-
-    /**
-     * Allow for registration of a [callback] to be called with variant instances of
-     * type [KotlinMultiplatformAndroidVariant] once the list of [com.android.build.api.artifact.Artifact]
-     * has been determined.
-     */
-    @Incubating
-    fun onVariant(
-        callback: KotlinMultiplatformAndroidVariant.() -> Unit
-    )
 }

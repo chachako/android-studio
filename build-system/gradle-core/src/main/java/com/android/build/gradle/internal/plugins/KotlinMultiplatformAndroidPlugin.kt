@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.plugins
 
+import com.android.SdkConstants
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.attributes.AgpVersionAttr
 import com.android.build.api.attributes.BuildTypeAttr
@@ -24,8 +25,13 @@ import com.android.build.api.component.analytics.AnalyticsEnabledKotlinMultiplat
 import com.android.build.api.component.impl.KmpAndroidTestImpl
 import com.android.build.api.component.impl.KmpUnitTestImpl
 import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
+import com.android.build.api.dsl.SdkComponents
 import com.android.build.api.dsl.SettingsExtension
+import com.android.build.api.extension.impl.KotlinMultiplatformAndroidComponentsExtensionImpl
+import com.android.build.api.extension.impl.MultiplatformVariantApiOperationsRegistrar
+import com.android.build.api.variant.DynamicFeatureAndroidComponentsExtension
 import com.android.build.api.variant.KotlinMultiplatformAndroidCompilation
+import com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension
 import com.android.build.api.variant.KotlinMultiplatformAndroidTarget
 import com.android.build.api.variant.impl.KmpPredefinedAndroidCompilation
 import com.android.build.api.variant.impl.KmpVariantImpl
@@ -41,6 +47,8 @@ import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.impl.KmpAndroidTestDslInfoImpl
 import com.android.build.gradle.internal.core.dsl.impl.KmpUnitTestDslInfoImpl
 import com.android.build.gradle.internal.core.dsl.impl.KmpVariantDslInfoImpl
+import com.android.build.gradle.internal.core.dsl.impl.features.AndroidTestOptionsDslInfoImpl
+import com.android.build.gradle.internal.core.dsl.impl.features.KmpAndroidTestOptionsDslInfoImpl
 import com.android.build.gradle.internal.dependency.AgpVersionCompatibilityRule
 import com.android.build.gradle.internal.dependency.JacocoInstrumentationService
 import com.android.build.gradle.internal.dependency.ModelArtifactCompatibilityRule.Companion.setUp
@@ -49,8 +57,10 @@ import com.android.build.gradle.internal.dependency.SingleVariantProductFlavorRu
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dependency.configureKotlinTestDependencyForInstrumentedTestCompilation
 import com.android.build.gradle.internal.dependency.configureKotlinTestDependencyForUnitTestCompilation
+import com.android.build.gradle.internal.dsl.CommonExtensionImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfigurationImpl
+import com.android.build.gradle.internal.dsl.SdkComponentsImpl
 import com.android.build.gradle.internal.dsl.decorator.androidPluginDslDecorator
 import com.android.build.gradle.internal.ide.dependencies.LibraryDependencyCacheBuildService
 import com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService
@@ -60,11 +70,13 @@ import com.android.build.gradle.internal.ide.kmp.KotlinIdeImportConfigurator
 import com.android.build.gradle.internal.ide.v2.GlobalSyncService
 import com.android.build.gradle.internal.lint.LintFixBuildService
 import com.android.build.gradle.internal.manifest.LazyManifestParser
+import com.android.build.gradle.internal.plugins.DynamicFeaturePlugin.DynamicFeatureAndroidComponentsExtensionImplCompat
 import com.android.build.gradle.internal.scope.KotlinMultiplatformBuildFeaturesValuesImpl
 import com.android.build.gradle.internal.scope.MutableTaskContainer
 import com.android.build.gradle.internal.services.Aapt2DaemonBuildService
 import com.android.build.gradle.internal.services.Aapt2ThreadPoolBuildService
 import com.android.build.gradle.internal.services.ClassesHierarchyBuildService
+import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.services.DslServicesImpl
 import com.android.build.gradle.internal.services.FakeDependencyJarBuildService
 import com.android.build.gradle.internal.services.LintClassLoaderBuildService
@@ -77,9 +89,11 @@ import com.android.build.gradle.internal.services.VariantServicesImpl
 import com.android.build.gradle.internal.services.VersionedSdkLoaderService
 import com.android.build.gradle.internal.tasks.KmpTaskManager
 import com.android.build.gradle.internal.tasks.SigningConfigUtils.Companion.createSigningOverride
+import com.android.build.gradle.internal.tasks.factory.BootClasspathConfig
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfigImpl
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.KmpGlobalTaskCreationConfigImpl
+import com.android.build.gradle.internal.testing.ManagedDeviceRegistry
 import com.android.build.gradle.internal.utils.KOTLIN_MPP_PLUGIN_ID
 import com.android.build.gradle.internal.utils.validatePreviewTargetValue
 import com.android.build.gradle.internal.variant.VariantPathHelper
@@ -116,6 +130,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
     private lateinit var kotlinExtension: KotlinMultiplatformExtension
     private lateinit var androidExtension: KotlinMultiplatformAndroidExtensionImpl
     private lateinit var androidTarget: KotlinMultiplatformAndroidTargetImpl
+    private lateinit var kotlinMultiplatformAndroidComponentsExtension: KotlinMultiplatformAndroidComponentsExtension
+    private lateinit var kmpVariantApiOperationsRegistrar: MultiplatformVariantApiOperationsRegistrar
 
     private lateinit var mainVariant: KmpVariantImpl
 
@@ -200,6 +216,10 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
                     )
                 }
             }
+        )
+
+        kmpVariantApiOperationsRegistrar = MultiplatformVariantApiOperationsRegistrar(
+            androidExtension
         )
 
         settingsExtension?.let {
@@ -296,6 +316,13 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             dslServices,
             createSettingsOptions(dslServices)
         )
+
+        kotlinMultiplatformAndroidComponentsExtension = createComponentExtension(
+            project,
+            dslServices,
+            kmpVariantApiOperationsRegistrar,
+            bootClasspathConfig
+        )
     }
 
     override fun createTasks(project: Project) {
@@ -375,6 +402,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
     private fun afterEvaluate(
         project: Project
     ) {
+        kmpVariantApiOperationsRegistrar.executeDslFinalizationBlocks()
         androidExtension.lock()
 
         configureDisambiguationRules(project)
@@ -428,7 +456,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             mainVariant.name
         )
 
-        androidExtension.executeVariantOperations(
+        kmpVariantApiOperationsRegistrar.variantOperations.executeOperations(
             stats?.let {
                 variantServices.newInstance(
                     AnalyticsEnabledKotlinMultiplatformAndroidVariant::class.java,
@@ -437,6 +465,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
                 )
             } ?: mainVariant
         )
+
+
         listOfNotNull(mainVariant, unitTest, androidTest).forEach {
             it.syncAndroidAndKmpClasspathAndSources()
 
@@ -729,6 +759,39 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
 
             setUp(schema)
         }
+    }
+
+    val managedDeviceRegistry: ManagedDeviceRegistry by lazy(LazyThreadSafetyMode.NONE) {
+        ManagedDeviceRegistry(KmpAndroidTestOptionsDslInfoImpl(androidExtension))
+    }
+
+    private fun createComponentExtension(
+        project: Project,
+        dslServices: DslServices,
+        variantApiOperationsRegistrar: MultiplatformVariantApiOperationsRegistrar,
+        bootClasspathConfig: BootClasspathConfig
+    ): KotlinMultiplatformAndroidComponentsExtension {
+        val sdkComponents: SdkComponents = dslServices.newInstance(
+            SdkComponentsImpl::class.java,
+            dslServices,
+            project.provider<String>(::getCompileSdkVersion),
+            project.provider<Revision>(::getBuildToolsVersion),
+            project.provider<String>(global::ndkVersion),
+            project.provider<String>(global::ndkPath),
+            project.provider(
+                bootClasspathConfig::bootClasspath
+            )
+        )
+
+        return project.extensions.create(
+            KotlinMultiplatformAndroidComponentsExtension::class.java,
+            "androidComponents",
+            KotlinMultiplatformAndroidComponentsExtensionImpl::class.java,
+            dslServices,
+            sdkComponents,
+            managedDeviceRegistry,
+            variantApiOperationsRegistrar
+        )
     }
 
     companion object {

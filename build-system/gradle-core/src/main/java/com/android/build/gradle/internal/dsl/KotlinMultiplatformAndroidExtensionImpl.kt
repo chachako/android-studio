@@ -20,9 +20,6 @@ import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTestConfiguration
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceConfiguration
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvmConfiguration
-import com.android.build.api.dsl.Lint
-import com.android.build.api.variant.AndroidVersion
-import com.android.build.api.variant.KotlinMultiplatformAndroidVariant
 import com.android.build.api.variant.impl.MutableAndroidVersion
 import com.android.build.gradle.internal.coverage.JacocoOptions
 import com.android.build.gradle.internal.dsl.decorator.annotation.WithLazyInitialization
@@ -34,7 +31,6 @@ import com.android.builder.core.BuilderConstants
 import com.android.builder.core.LibraryRequest
 import com.android.builder.core.ToolsRevisionUtils
 import com.android.builder.signing.DefaultSigningConfig
-import org.gradle.api.Action
 import javax.inject.Inject
 
 internal abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLazyInitialization("lazyInit") constructor(
@@ -96,31 +92,6 @@ internal abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLaz
         }
 
     override val testCoverage = dslServices.newInstance(JacocoOptions::class.java)
-
-    private val variantOperations = mutableListOf<Action<KotlinMultiplatformAndroidVariant>>()
-    private var actionsExecuted = false
-
-    override fun onVariant(callback: KotlinMultiplatformAndroidVariant.() -> Unit) {
-        if (actionsExecuted) {
-            throw RuntimeException(
-                """
-                It is too late to add actions as the callbacks already executed.
-                Did you try to call beforeVariants or onVariants from the old variant API
-                'applicationVariants' for instance ? you should always call beforeVariants or
-                onVariants directly from the androidComponents DSL block.
-                """
-            )
-        }
-
-        variantOperations.add(callback)
-    }
-
-    fun executeVariantOperations(variant: KotlinMultiplatformAndroidVariant) {
-        actionsExecuted = true
-        variantOperations.forEach {
-            it.execute(variant)
-        }
-    }
 
     internal var androidTestOnJvmConfiguration: KotlinMultiplatformAndroidTestOnJvmConfigurationImpl? = null
     internal var androidTestOnDeviceConfiguration: KotlinMultiplatformAndroidTestOnDeviceConfigurationImpl? = null

@@ -77,14 +77,6 @@
         id="AvoidByLazy"
         message="Avoid `by lazy` for simple lazy initialization">
         <location
-            file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledKotlinMultiplatformAndroidVariant.kt"
-            line="112"/>
-    </issue>
-
-    <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
-        <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledLibraryVariant.kt"
             line="71"/>
     </issue>
@@ -662,7 +654,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/KmpComponentDslInfoImpl.kt"
-            line="36"/>
+            line="37"/>
     </issue>
 
     <issue
@@ -694,7 +686,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/KmpVariantDslInfoImpl.kt"
-            line="149"/>
+            line="150"/>
     </issue>
 
     <issue
@@ -702,7 +694,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/KotlinMultiplatformAndroidPlugin.kt"
-            line="122"/>
+            line="141"/>
     </issue>
 
     <issue
@@ -1310,7 +1302,7 @@
         message="Avoid using new ForkJoinPool instances when possible. Prefer using the IntelliJ application pool via `com.intellij.openapi.application.Application#executeOnPooledThread`, or for the Android Gradle Plugin use `com.android.build.gradle.internal.tasks.Workers`. See `go/do-not-freeze`.">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/DexMergingTask.kt"
-            line="825"/>
+            line="830"/>
     </issue>
 
 </issues>

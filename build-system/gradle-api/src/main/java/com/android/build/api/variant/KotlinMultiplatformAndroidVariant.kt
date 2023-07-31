@@ -17,34 +17,32 @@
 package com.android.build.api.variant
 
 import com.android.build.api.artifact.Artifacts
-import org.gradle.api.artifacts.Configuration
+import org.gradle.api.Incubating
 import org.gradle.api.file.FileCollection
-import org.gradle.api.provider.Provider
 
 /**
  * Properties for the main Variant of a kotlin multiplatform android library
  */
-interface KotlinMultiplatformAndroidVariant: GeneratesAar,
-    HasAndroidTest,
+@Incubating
+interface KotlinMultiplatformAndroidVariant: HasAndroidTest,
     HasUnitTest {
 
-    val namespace: Provider<String>
-
+    /**
+     * The name of the variant
+     */
+    @get:Incubating
     val name: String
 
     /**
      * Access to the variant's buildable artifacts for build customization.
      */
+    @get:Incubating
     val artifacts: Artifacts
-
-    /**
-     * Access to variant's source files.
-     */
-    val sources: Sources
 
     /**
      * Access to the variant's instrumentation options.
      */
+    @get:Incubating
     val instrumentation: Instrumentation
 
     /**
@@ -52,21 +50,6 @@ interface KotlinMultiplatformAndroidVariant: GeneratesAar,
      *
      * The returned [FileCollection] should not be resolved until execution time.
      */
+    @get:Incubating
     val compileClasspath: FileCollection
-
-    /**
-     * Access to the variant's compile [Configuration]; for example, the debugCompileClasspath
-     * [Configuration] for the debug variant.
-     *
-     * The returned [Configuration] should not be resolved until execution time.
-     */
-    val compileConfiguration: Configuration
-
-    /**
-     * Access to the variant's runtime [Configuration]; for example, the debugRuntimeClasspath
-     * [Configuration] for the debug variant.
-     *
-     * The returned [Configuration] should not be resolved until execution time.
-     */
-    val runtimeConfiguration: Configuration
 }
