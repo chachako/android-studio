@@ -16,27 +16,87 @@
 package com.android.adblib.ddmlibcompatibility
 
 import com.android.adblib.AdbSession
+import com.android.adblib.ConnectedDevice
 import com.android.adblib.connectedDevicesTracker
+import com.android.adblib.ddmlibcompatibility.debugging.AdbLibDeviceClientManager
+import com.android.adblib.ddmlibcompatibility.debugging.AdblibIDeviceWrapper
+import com.android.adblib.thisLogger
 import com.android.adblib.utils.createChildScope
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.idevicemanager.IDeviceManager
+import com.android.ddmlib.idevicemanager.IDeviceManagerListener
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import java.util.IdentityHashMap
+import java.util.concurrent.atomic.AtomicReference
 
 internal class AdbLibIDeviceManager(
     private val session: AdbSession,
-    private val bridge: AndroidDebugBridge
+    private val bridge: AndroidDebugBridge,
+    private val iDeviceManagerListener: IDeviceManagerListener
 ) : IDeviceManager {
 
+    private val logger = thisLogger(session)
+
     private val scope = session.scope.createChildScope(isSupervisor = true)
+
+    // Using `IdentityHashMap` as `connectedDevicesTracker.connectedDevices` guarantees
+    // to return the same instance for the same device
+    private val deviceMap = IdentityHashMap<ConnectedDevice, AdblibIDeviceWrapper>()
+
+    private val deviceList = AtomicReference<List<IDevice>>(emptyList())
+    private val ddmlibEventQueue =
+        AdbLibDeviceClientManager.DdmlibEventQueue(logger, "DeviceUpdates")
+
+    init {
+
+        session.scope.launch {
+            ddmlibEventQueue.runDispatcher()
+        }
+
+        scope.launch {
+            session.connectedDevicesTracker.connectedDevices.collect { value ->
+                run {
+                    // Process added devices
+                    val added = value.filter { !deviceMap.containsKey(it) }
+                    val addedIDevices = mutableListOf<IDevice>()
+                    for (key in added) {
+                        val iDevice = AdblibIDeviceWrapper(key)
+                        deviceMap[key] = iDevice
+                        addedIDevices.add(iDevice)
+                    }
+
+                    // Process removed devices
+                    val removed = deviceMap.keys.filter { !value.contains(it)}
+                    val removedIDevices = mutableListOf<IDevice>()
+                    for (key in removed) {
+                        deviceMap.remove(key)?.also { removedIDevices.add(it) }
+                    }
+
+                    deviceList.set(deviceMap.values.toList())
+
+                    if (addedIDevices.isNotEmpty()) {
+                        ddmlibEventQueue.post(scope, "devices added") {
+                            iDeviceManagerListener.addedDevices(addedIDevices)
+                        }
+                    }
+
+                    if (removedIDevices.isNotEmpty()) {
+                        ddmlibEventQueue.post(scope, "devices removed") {
+                            iDeviceManagerListener.removedDevices(removedIDevices)
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     override fun close() {
         scope.cancel("${this::class.simpleName} has been closed")
     }
 
     override fun getDevices(): MutableList<IDevice> {
-        return session.connectedDevicesTracker.connectedDevices.value.map {
-            TODO("Not yet implemented")
-        }.toMutableList()
+        return deviceList.get().toMutableList()
     }
 }

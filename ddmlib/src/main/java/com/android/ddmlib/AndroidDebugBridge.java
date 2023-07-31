@@ -23,6 +23,7 @@ import com.android.ddmlib.Log.LogLevel;
 import com.android.ddmlib.clientmanager.ClientManager;
 import com.android.ddmlib.idevicemanager.IDeviceManager;
 import com.android.ddmlib.idevicemanager.IDeviceManagerFactory;
+import com.android.ddmlib.idevicemanager.IDeviceManagerUtils;
 import com.android.ddmlib.internal.ClientImpl;
 import com.android.ddmlib.internal.DefaultJdwpProcessorFactory;
 import com.android.ddmlib.internal.DeviceMonitor;
@@ -848,6 +849,7 @@ public class AndroidDebugBridge {
             return mDeviceMonitor.hasInitialDeviceList();
         }
 
+        // TODO(b/296277142): implement the correct behavior for non-null `mIDeviceManager`
         return false;
     }
 
@@ -858,6 +860,10 @@ public class AndroidDebugBridge {
         MonitorThread monitorThread = MonitorThread.getInstance();
         if (mDeviceMonitor != null && monitorThread != null) {
             return mDeviceMonitor.isMonitoring() && monitorThread.getState() != State.TERMINATED;
+        }
+        // TODO(b/296277142): implement the correct behavior for non-null `mIDeviceManager`
+        if (mIDeviceManager != null) {
+            return true;
         }
         return false;
     }
@@ -890,6 +896,7 @@ public class AndroidDebugBridge {
      * @throws InvalidParameterException
      */
     private AndroidDebugBridge(String osLocation) throws InvalidParameterException {
+        this();
         if (osLocation == null || osLocation.isEmpty()) {
             throw new InvalidParameterException();
         }
@@ -910,7 +917,8 @@ public class AndroidDebugBridge {
         mIDeviceManager =
                 (sIDeviceManagerFactory == null)
                         ? null
-                        : sIDeviceManagerFactory.createIDeviceManager(this);
+                        : sIDeviceManagerFactory.createIDeviceManager(
+                                this, IDeviceManagerUtils.createIDeviceManagerListener());
     }
 
     /**
@@ -1168,10 +1176,17 @@ public class AndroidDebugBridge {
         mStarted = true;
 
         // Start the underlying services.
-        mDeviceMonitor = new DeviceMonitor(this, new MonitorErrorHandler());
-        mDeviceMonitor.start();
+        maybeStartDeviceMonitor();
 
         return true;
+    }
+
+    /** Start DeviceMonitor if external device tracking implementation isn't available */
+    private void maybeStartDeviceMonitor() {
+        if (mIDeviceManager == null) {
+            mDeviceMonitor = new DeviceMonitor(this, new MonitorErrorHandler());
+            mDeviceMonitor.start();
+        }
     }
 
     /**
@@ -1267,8 +1282,7 @@ public class AndroidDebugBridge {
             }
 
             if (isSuccessful && mDeviceMonitor == null) {
-                mDeviceMonitor = new DeviceMonitor(this, new MonitorErrorHandler());
-                mDeviceMonitor.start();
+                maybeStartDeviceMonitor();
             }
         }
 

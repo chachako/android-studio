@@ -20,13 +20,17 @@ import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.clientmanager.ClientManager
 import com.android.ddmlib.idevicemanager.IDeviceManager
 import com.android.ddmlib.idevicemanager.IDeviceManagerFactory
+import com.android.ddmlib.idevicemanager.IDeviceManagerListener
 
 /**
  * Factory for [IDeviceManager] instances based on [AdbSession].
  */
-class AdbLibIDeviceManagerFactory(private val session: AdbSession): IDeviceManagerFactory {
+class AdbLibIDeviceManagerFactory(private val session: AdbSession) : IDeviceManagerFactory {
 
-    override fun createIDeviceManager(bridge: AndroidDebugBridge): IDeviceManager {
-        return AdbLibIDeviceManager(session, bridge)
+    override fun createIDeviceManager(
+        bridge: AndroidDebugBridge,
+        iDeviceManagerListener: IDeviceManagerListener
+    ): IDeviceManager {
+        return AdbLibIDeviceManager(session, bridge, iDeviceManagerListener)
     }
 }

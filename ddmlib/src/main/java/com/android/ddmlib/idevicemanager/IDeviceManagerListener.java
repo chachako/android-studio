@@ -16,17 +16,14 @@
 package com.android.ddmlib.idevicemanager;
 
 import com.android.annotations.NonNull;
-import com.android.ddmlib.AndroidDebugBridge;
+import com.android.annotations.concurrency.WorkerThread;
 import com.android.ddmlib.IDevice;
+import java.util.List;
 
-/**
- * An extension point to {@code ddmlib} that allows {@link AndroidDebugBridge} to delegate {@link
- * IDevice} device tracking to an external component. See {@link AndroidDebugBridge#getDevices()}.
- */
-public interface IDeviceManagerFactory {
+public interface IDeviceManagerListener {
+    @WorkerThread
+    void addedDevices(@NonNull List<IDevice> deviceList);
 
-    @NonNull
-    IDeviceManager createIDeviceManager(
-            @NonNull AndroidDebugBridge bridge,
-            @NonNull IDeviceManagerListener iDeviceManagerListener);
+    @WorkerThread
+    void removedDevices(@NonNull List<IDevice> deviceList);
 }
