@@ -238,9 +238,6 @@ internal fun buildDexMetadata(
         infoList: List<SerializerInfo> = listOf(
                 SerializerInfo(ArtProfileSerializer.V0_1_5_S, 31..34),
                 SerializerInfo(ArtProfileSerializer.V0_1_0_P, 28..30),
-                SerializerInfo(ArtProfileSerializer.V0_0_9_OMR1, 27..27),
-                SerializerInfo(ArtProfileSerializer.V0_0_5_O, 26..26),
-                SerializerInfo(ArtProfileSerializer.V0_0_1_N, 24..25),
         )
 ): Map<AndroidSdkLevel, File> {
     val fileMap = mutableMapOf<Int, File>()
