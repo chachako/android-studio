@@ -1511,6 +1511,9 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                           peekService(context, intent);   // OK
                       } else if (testUnProtectedBroadcast.equals(action)) {
                           context.startService(intent);   // ERROR 3
+                      } else if (action.equals(Intent.UNPROTECTED_ACTION)) {
+                        // This "constant" is not declared. ConstantEvaluator should evaluate it as null, treated as unprotected.
+                          context.startService(intent.getParcelableExtra(Intent.EXTRA_INTENT));   // ERROR 3.5
                       }
                   }
               }
@@ -1596,6 +1599,12 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
             src/test/pkg/TestReceiver2.java:18: The unsafe intent is launched here.
                         context.startService(intent);   // ERROR 3
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/TestReceiver2.java:21: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component test.pkg.TestReceiver2. You could either make the component test.pkg.TestReceiver2 protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
+                        context.startService(intent.getParcelableExtra(Intent.EXTRA_INTENT));   // ERROR 3.5
+                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            src/test/pkg/TestReceiver2.java:21: The unsafe intent is launched here.
+                        context.startService(intent.getParcelableExtra(Intent.EXTRA_INTENT));   // ERROR 3.5
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         src/test/pkg/TestReceiver3.java:12: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component test.pkg.TestReceiver3. You could either make the component test.pkg.TestReceiver3 protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
             public void onReceive(Context context, Intent intent) {
                                                    ~~~~~~~~~~~~~
@@ -1614,7 +1623,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
             src/test/pkg/TestReceiver4.java:17: The unsafe intent is launched here.
                         default -> peekService(context, intent);    // ERROR 6
                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        0 errors, 6 warnings
+        0 errors, 7 warnings
         """
       )
   }

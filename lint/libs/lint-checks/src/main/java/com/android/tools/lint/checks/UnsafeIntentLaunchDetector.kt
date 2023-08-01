@@ -460,14 +460,15 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
 
     /** Returns if the expression is evaluated to a protected broadcast action. */
     private fun isProtectedBroadcastAction(expression: UExpression?): Boolean {
-      return BroadcastReceiverUtils.isProtectedBroadcast(
-        ConstantEvaluator().allowFieldInitializers().evaluate(expression) as String
-      )
+      val action =
+        (ConstantEvaluator().allowFieldInitializers().evaluate(expression)) as? String
+          ?: return false
+      return BroadcastReceiverUtils.isProtectedBroadcast(action)
     }
 
     /**
      * Check if the call is within a branch of code that is protected by a protected broadcast
-     * action. If could either be an if statement that checks if the action of the intent is equal
+     * action. It could either be an if statement that checks if the action of the intent is equal
      * to a protected action; or an equivalent of a switch case statement.
      */
     private fun inProtectedBroadcastBranch(
