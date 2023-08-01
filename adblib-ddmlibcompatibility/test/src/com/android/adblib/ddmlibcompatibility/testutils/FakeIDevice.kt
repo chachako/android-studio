@@ -15,6 +15,7 @@
  */
 package com.android.adblib.ddmlibcompatibility.testutils
 
+import com.android.ddmlib.AdbHelper
 import com.android.ddmlib.Client
 import com.android.ddmlib.FileListingService
 import com.android.ddmlib.IDevice
@@ -28,6 +29,8 @@ import com.android.ddmlib.log.LogReceiver
 import com.android.sdklib.AndroidVersion
 import com.google.common.util.concurrent.ListenableFuture
 import java.io.File
+import java.io.InputStream
+import java.net.InetSocketAddress
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
@@ -342,6 +345,56 @@ internal class FakeIDevice(private val serialNumber: String): IDevice {
     }
 
     override fun getVersion(): AndroidVersion {
+        TODO("Not yet implemented")
+    }
+
+    override fun executeRemoteCommand(
+        adbSockAddr: InetSocketAddress,
+        command: String,
+        device: IDevice,
+        rcvr: IShellOutputReceiver,
+        maxTimeout: Long,
+        maxTimeToOutputResponse: Long,
+        maxTimeUnits: TimeUnit
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override fun executeRemoteCommand(
+        adbSockAddr: InetSocketAddress,
+        command: String,
+        device: IDevice,
+        rcvr: IShellOutputReceiver,
+        maxTimeToOutputResponse: Long,
+        maxTimeUnits: TimeUnit
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override fun executeRemoteCommand(
+        adbSockAddr: InetSocketAddress,
+        adbService: AdbHelper.AdbService,
+        command: String,
+        device: IDevice,
+        rcvr: IShellOutputReceiver,
+        maxTimeToOutputResponse: Long,
+        maxTimeUnits: TimeUnit,
+        `is`: InputStream?
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override fun executeRemoteCommand(
+        adbSockAddr: InetSocketAddress,
+        adbService: AdbHelper.AdbService,
+        command: String,
+        device: IDevice,
+        rcvr: IShellOutputReceiver,
+        maxTimeout: Long,
+        maxTimeToOutputResponse: Long,
+        maxTimeUnits: TimeUnit,
+        `is`: InputStream?
+    ) {
         TODO("Not yet implemented")
     }
 }

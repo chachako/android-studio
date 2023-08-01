@@ -137,7 +137,7 @@ public class SplitApkInstaller extends SplitApkInstallerBase {
         try {
             inputStream = new BufferedInputStream(new FileInputStream(fileToUpload));
             InstallReceiver receiver = new InstallReceiver();
-            AdbHelper.executeRemoteCommand(
+            mDevice.executeRemoteCommand(
                     AndroidDebugBridge.getSocketAddress(),
                     getServiceWrite(),
                     command,

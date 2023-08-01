@@ -98,7 +98,7 @@ public abstract class SplitApkInstallerBase {
         if (!options.trim().isEmpty()) {
             cmd = cmd + " " + options;
         }
-        AdbHelper.executeRemoteCommand(
+        mDevice.executeRemoteCommand(
                 AndroidDebugBridge.getSocketAddress(),
                 mService,
                 cmd,
@@ -142,7 +142,7 @@ public abstract class SplitApkInstallerBase {
                     IOException, InstallException {
         String command = mPrefix + " install-commit " + sessionId;
         InstallReceiver receiver = new InstallReceiver();
-        AdbHelper.executeRemoteCommand(
+        mDevice.executeRemoteCommand(
                 AndroidDebugBridge.getSocketAddress(),
                 mService,
                 command,
@@ -170,7 +170,7 @@ public abstract class SplitApkInstallerBase {
                     IOException, InstallException {
         String command = mPrefix + " install-abandon " + sessionId;
         InstallReceiver receiver = new InstallReceiver();
-        AdbHelper.executeRemoteCommand(
+        mDevice.executeRemoteCommand(
                 AndroidDebugBridge.getSocketAddress(),
                 mService,
                 command,

@@ -18,6 +18,7 @@ package com.android.ddmlib.internal;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.annotations.concurrency.GuardedBy;
+import com.android.annotations.concurrency.Slow;
 import com.android.ddmlib.AdbCommandRejectedException;
 import com.android.ddmlib.AdbHelper;
 import com.android.ddmlib.AndroidDebugBridge;
@@ -58,10 +59,11 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Atomics;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,7 +71,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -81,8 +82,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /** A Device. It can be a physical device or an emulator. */
 public final class DeviceImpl implements IDevice {
@@ -129,6 +128,8 @@ public final class DeviceImpl implements IDevice {
     private static final int QUERY_IS_ROOT_TIMEOUT_MS = 1000;
 
     private static final long INSTALL_TIMEOUT_MINUTES;
+
+    static final int WAIT_TIME = 5; // spin-wait sleep, in ms
 
     static {
         String installTimeout = System.getenv("ADB_INSTALL_TIMEOUT");
@@ -665,7 +666,7 @@ public final class DeviceImpl implements IDevice {
     public void executeShellCommand(String command, IShellOutputReceiver receiver)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
-        AdbHelper.executeRemoteCommand(
+        executeRemoteCommand(
                 AndroidDebugBridge.getSocketAddress(),
                 command,
                 this,
@@ -683,7 +684,7 @@ public final class DeviceImpl implements IDevice {
             @Nullable InputStream is)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
-        AdbHelper.executeRemoteCommand(
+        executeRemoteCommand(
                 AndroidDebugBridge.getSocketAddress(),
                 AdbHelper.AdbService.EXEC,
                 command,
@@ -705,7 +706,7 @@ public final class DeviceImpl implements IDevice {
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
         if (supportsFeature(Feature.ABB_EXEC)) {
-            AdbHelper.executeRemoteCommand(
+            executeRemoteCommand(
                     AndroidDebugBridge.getSocketAddress(),
                     AdbHelper.AdbService.ABB_EXEC,
                     String.join("\u0000", parameters),
@@ -730,7 +731,7 @@ public final class DeviceImpl implements IDevice {
             String command, IShellOutputReceiver receiver, int maxTimeToOutputResponse)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
-        AdbHelper.executeRemoteCommand(
+        executeRemoteCommand(
                 AndroidDebugBridge.getSocketAddress(),
                 command,
                 this,
@@ -747,7 +748,7 @@ public final class DeviceImpl implements IDevice {
             TimeUnit maxTimeUnits)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
-        AdbHelper.executeRemoteCommand(
+        executeRemoteCommand(
                 AndroidDebugBridge.getSocketAddress(),
                 command,
                 this,
@@ -766,7 +767,7 @@ public final class DeviceImpl implements IDevice {
             TimeUnit maxTimeUnits)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
-        AdbHelper.executeRemoteCommand(
+        executeRemoteCommand(
                 AndroidDebugBridge.getSocketAddress(),
                 command,
                 this,
@@ -774,6 +775,335 @@ public final class DeviceImpl implements IDevice {
                 maxTimeout,
                 maxTimeToOutputResponse,
                 maxTimeUnits);
+    }
+
+    /**
+     * Executes a shell command on the device and retrieve the output. The output is handed to
+     * <var>rcvr</var> as it arrives.
+     *
+     * @param adbSockAddr the {@link InetSocketAddress} to adb.
+     * @param command the shell command to execute
+     * @param device the {@link IDevice} on which to execute the command.
+     * @param rcvr the {@link IShellOutputReceiver} that will receives the output of the shell
+     *     command
+     * @param maxTimeout max time for the command to return. A value of 0 means no max timeout will
+     *     be applied.
+     * @param maxTimeToOutputResponse max time between command output. If more time passes between
+     *     command output, the method will throw {@link ShellCommandUnresponsiveException}. A value
+     *     of 0 means the method will wait forever for command output and never throw.
+     * @param maxTimeUnits Units for non-zero {@code maxTimeout} and {@code maxTimeToOutputResponse}
+     *     values.
+     * @throws TimeoutException in case of timeout on the connection when sending the command.
+     * @throws AdbCommandRejectedException if adb rejects the command
+     * @throws ShellCommandUnresponsiveException in case the shell command doesn't send any output
+     *     for a period longer than <var>maxTimeToOutputResponse</var>.
+     * @throws IOException in case of I/O error on the connection.
+     * @see DdmPreferences#getTimeOut()
+     */
+    @Override
+    public void executeRemoteCommand(
+            InetSocketAddress adbSockAddr,
+            String command,
+            IDevice device,
+            IShellOutputReceiver rcvr,
+            long maxTimeout,
+            long maxTimeToOutputResponse,
+            TimeUnit maxTimeUnits)
+            throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
+                    IOException {
+        executeRemoteCommand(
+                adbSockAddr,
+                AdbHelper.AdbService.SHELL,
+                command,
+                device,
+                rcvr,
+                maxTimeout,
+                maxTimeToOutputResponse,
+                maxTimeUnits,
+                null /* inputStream */);
+    }
+
+    /**
+     * Executes a shell command on the device and retrieve the output. The output is handed to
+     * <var>rcvr</var> as it arrives.
+     *
+     * @param adbSockAddr the {@link InetSocketAddress} to adb.
+     * @param command the shell command to execute
+     * @param device the {@link IDevice} on which to execute the command.
+     * @param rcvr the {@link IShellOutputReceiver} that will receives the output of the shell
+     *     command
+     * @param maxTimeToOutputResponse max time between command output. If more time passes between
+     *     command output, the method will throw {@link ShellCommandUnresponsiveException}. A value
+     *     of 0 means the method will wait forever for command output and never throw.
+     * @param maxTimeUnits Units for non-zero {@code maxTimeToOutputResponse} values.
+     * @throws TimeoutException in case of timeout on the connection when sending the command.
+     * @throws AdbCommandRejectedException if adb rejects the command
+     * @throws ShellCommandUnresponsiveException in case the shell command doesn't send any output
+     *     for a period longer than <var>maxTimeToOutputResponse</var>.
+     * @throws IOException in case of I/O error on the connection.
+     * @see DdmPreferences#getTimeOut()
+     */
+    @Override
+    public void executeRemoteCommand(
+            InetSocketAddress adbSockAddr,
+            String command,
+            IDevice device,
+            IShellOutputReceiver rcvr,
+            long maxTimeToOutputResponse,
+            TimeUnit maxTimeUnits)
+            throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
+                    IOException {
+        executeRemoteCommand(
+                adbSockAddr,
+                AdbHelper.AdbService.SHELL,
+                command,
+                device,
+                rcvr,
+                maxTimeToOutputResponse,
+                maxTimeUnits,
+                null /* inputStream */);
+    }
+
+    /**
+     * Executes a remote command on the device and retrieve the output. The output is handed to
+     * <var>rcvr</var> as it arrives. The command is execute by the remote service identified by the
+     * adbService parameter.
+     *
+     * @param adbSockAddr the {@link InetSocketAddress} to adb.
+     * @param adbService the {@link AdbHelper.AdbService} to use to run the command.
+     * @param command the shell command to execute
+     * @param device the {@link IDevice} on which to execute the command.
+     * @param rcvr the {@link IShellOutputReceiver} that will receives the output of the shell
+     *     command
+     * @param maxTimeToOutputResponse max time between command output. If more time passes between
+     *     command output, the method will throw {@link ShellCommandUnresponsiveException}. A value
+     *     of 0 means the method will wait forever for command output and never throw.
+     * @param maxTimeUnits Units for non-zero {@code maxTimeToOutputResponse} values.
+     * @param is a optional {@link InputStream} to be streamed up after invoking the command and
+     *     before retrieving the response.
+     * @throws TimeoutException in case of timeout on the connection when sending the command.
+     * @throws AdbCommandRejectedException if adb rejects the command
+     * @throws ShellCommandUnresponsiveException in case the shell command doesn't send any output
+     *     for a period longer than <var>maxTimeToOutputResponse</var>.
+     * @throws IOException in case of I/O error on the connection.
+     * @see DdmPreferences#getTimeOut()
+     */
+    @Override
+    public void executeRemoteCommand(
+            InetSocketAddress adbSockAddr,
+            AdbHelper.AdbService adbService,
+            String command,
+            IDevice device,
+            IShellOutputReceiver rcvr,
+            long maxTimeToOutputResponse,
+            TimeUnit maxTimeUnits,
+            @Nullable InputStream is)
+            throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
+                    IOException {
+        executeRemoteCommand(
+                adbSockAddr,
+                adbService,
+                command,
+                device,
+                rcvr,
+                0L,
+                maxTimeToOutputResponse,
+                maxTimeUnits,
+                is);
+    }
+
+    /**
+     * Executes a remote command on the device and retrieve the output. The output is handed to
+     * <var>rcvr</var> as it arrives. The command is execute by the remote service identified by the
+     * adbService parameter.
+     *
+     * @param adbSockAddr the {@link InetSocketAddress} to adb.
+     * @param adbService the {@link AdbHelper.AdbService} to use to run the command.
+     * @param command the shell command to execute
+     * @param device the {@link IDevice} on which to execute the command.
+     * @param rcvr the {@link IShellOutputReceiver} that will receives the output of the shell
+     *     command
+     * @param maxTimeout max timeout for the full command to execute. A value of 0 means no timeout.
+     * @param maxTimeToOutputResponse max time between command output. If more time passes between
+     *     command output, the method will throw {@link ShellCommandUnresponsiveException}. A value
+     *     of 0 means the method will wait forever for command output and never throw.
+     * @param maxTimeUnits Units for non-zero {@code maxTimeout} and {@code maxTimeToOutputResponse}
+     *     values.
+     * @param is a optional {@link InputStream} to be streamed up after invoking the command and
+     *     before retrieving the response.
+     * @throws TimeoutException in case of timeout on the connection when sending the command.
+     * @throws AdbCommandRejectedException if adb rejects the command
+     * @throws ShellCommandUnresponsiveException in case the shell command doesn't send any output
+     *     for a period longer than <var>maxTimeToOutputResponse</var>.
+     * @throws IOException in case of I/O error on the connection.
+     * @see DdmPreferences#getTimeOut()
+     */
+    @Slow
+    @Override
+    public void executeRemoteCommand(
+            InetSocketAddress adbSockAddr,
+            AdbHelper.AdbService adbService,
+            String command,
+            IDevice device,
+            IShellOutputReceiver rcvr,
+            long maxTimeout,
+            long maxTimeToOutputResponse,
+            TimeUnit maxTimeUnits,
+            @Nullable InputStream is)
+            throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
+                    IOException {
+        long maxTimeToOutputMs = 0;
+        if (maxTimeToOutputResponse > 0) {
+            if (maxTimeUnits == null) {
+                throw new NullPointerException("Time unit must not be null for non-zero max.");
+            }
+            maxTimeToOutputMs = maxTimeUnits.toMillis(maxTimeToOutputResponse);
+        }
+        long maxTimeoutMs = 0L;
+        if (maxTimeout > 0L) {
+            if (maxTimeUnits == null) {
+                throw new NullPointerException("Time unit must not be null for non-zero max.");
+            }
+            maxTimeoutMs = maxTimeUnits.toMillis(maxTimeout);
+        }
+
+        Log.v("ddms", "execute: running " + command);
+
+        SocketChannel adbChan = null;
+        try {
+            long startTime = System.currentTimeMillis();
+            adbChan = SocketChannel.open(adbSockAddr);
+            adbChan.configureBlocking(false);
+
+            // if the device is not -1, then we first tell adb we're looking to
+            // talk to a specific device
+            AdbHelper.setDevice(adbChan, device);
+
+            byte[] request = AdbHelper.formAdbRequest(adbService, command);
+            AdbHelper.write(adbChan, request);
+
+            long timeOutForResp =
+                    maxTimeToOutputMs > 0 ? maxTimeToOutputMs : DdmPreferences.getTimeOut();
+            AdbHelper.AdbResponse resp = AdbHelper.readAdbResponse(adbChan, false, timeOutForResp);
+
+            if (!resp.okay) {
+                Log.e("ddms", "ADB rejected shell command (" + command + "): " + resp.message);
+                throw new AdbCommandRejectedException(resp.message);
+            }
+
+            byte[] data = new byte[16384];
+
+            // stream the input file if present.
+            if (is != null) {
+                int read;
+                while ((read = is.read(data)) != -1) {
+                    ByteBuffer buf = ByteBuffer.wrap(data, 0, read);
+                    int writtenTotal = 0;
+                    long lastResponsive = System.currentTimeMillis();
+                    while (buf.hasRemaining()) {
+                        int written = adbChan.write(buf);
+
+                        if (written == 0) {
+                            // If device takes too long to respond to a write command, throw timeout
+                            // exception.
+                            if (maxTimeToOutputMs > 0
+                                    && System.currentTimeMillis() - lastResponsive
+                                            > maxTimeToOutputMs) {
+                                throw new TimeoutException(
+                                        String.format(
+                                                "executeRemoteCommand write timed out after %sms",
+                                                maxTimeToOutputMs));
+                            }
+                        } else {
+                            lastResponsive = System.currentTimeMillis();
+                        }
+
+                        // If the overall timeout exists and is exceeded, we throw timeout
+                        // exception.
+                        if (maxTimeoutMs > 0
+                                && System.currentTimeMillis() - startTime > maxTimeoutMs) {
+                            throw new TimeoutException(
+                                    String.format(
+                                            "executeRemoteCommand timed out after %sms",
+                                            maxTimeoutMs));
+                        }
+
+                        writtenTotal += written;
+                    }
+                    if (writtenTotal != read) {
+                        Log.e(
+                                "ddms",
+                                "ADB write inconsistency, wrote "
+                                        + writtenTotal
+                                        + "expected "
+                                        + read);
+                        throw new AdbCommandRejectedException("write failed");
+                    }
+                }
+            }
+
+            ByteBuffer buf = ByteBuffer.wrap(data);
+            buf.clear();
+            long timeToResponseCount = 0;
+            while (true) {
+                int count;
+
+                if (rcvr != null && rcvr.isCancelled()) {
+                    Log.v("ddms", "execute: cancelled");
+                    break;
+                }
+
+                count = adbChan.read(buf);
+                if (count < 0) {
+                    // we're at the end, we flush the output
+                    rcvr.flush();
+                    Log.v(
+                            "ddms",
+                            "execute '"
+                                    + command
+                                    + "' on '"
+                                    + device
+                                    + "' : EOF hit. Read: "
+                                    + count);
+                    break;
+                } else if (count == 0) {
+                    try {
+                        int wait = WAIT_TIME * 5;
+                        timeToResponseCount += wait;
+                        if (maxTimeToOutputMs > 0 && timeToResponseCount > maxTimeToOutputMs) {
+                            throw new ShellCommandUnresponsiveException();
+                        }
+                        Thread.sleep(wait);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        // Throw a timeout exception in place of interrupted exception to avoid API
+                        // changes.
+                        throw new TimeoutException(
+                                "executeRemoteCommand interrupted with immediate timeout via interruption.");
+                    }
+                } else {
+                    // reset timeout
+                    timeToResponseCount = 0;
+
+                    // send data to receiver if present
+                    if (rcvr != null) {
+                        rcvr.addOutput(buf.array(), buf.arrayOffset(), buf.position());
+                    }
+                    buf.rewind();
+                }
+                // if the overall timeout exists and is exceeded, we throw timeout exception.
+                if (maxTimeoutMs > 0 && System.currentTimeMillis() - startTime > maxTimeoutMs) {
+                    throw new TimeoutException(
+                            String.format(
+                                    "executeRemoteCommand timed out after %sms", maxTimeoutMs));
+                }
+            }
+        } finally {
+            if (adbChan != null) {
+                adbChan.close();
+            }
+            Log.v("ddms", "execute: returning");
+        }
     }
 
     @Override

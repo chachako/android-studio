@@ -93,7 +93,7 @@ public class RemoteSplitApkInstaller extends SplitApkInstallerBase {
         Log.d(LOG_TAG, String.format("Executing : %s", command));
         try {
             InstallReceiver receiver = new InstallReceiver();
-            AdbHelper.executeRemoteCommand(
+            mDevice.executeRemoteCommand(
                     AndroidDebugBridge.getSocketAddress(),
                     getServiceWrite(),
                     command,

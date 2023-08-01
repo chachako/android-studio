@@ -17,6 +17,7 @@ package com.android.ddmlib;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.annotations.concurrency.Slow;
 import com.android.ddmlib.clientmanager.DeviceClientManager;
 import com.android.ddmlib.log.LogReceiver;
 import com.android.sdklib.AndroidVersion;
@@ -26,6 +27,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.Collections;
 import java.util.List;
@@ -1029,6 +1031,146 @@ public interface IDevice extends IShellEnabledDevice {
      */
     @NonNull
     AndroidVersion getVersion();
+
+    /**
+     * Executes a shell command on the device and retrieve the output. The output is handed to
+     * <var>rcvr</var> as it arrives.
+     *
+     * @param adbSockAddr the {@link InetSocketAddress} to adb.
+     * @param command the shell command to execute
+     * @param device the {@link IDevice} on which to execute the command.
+     * @param rcvr the {@link IShellOutputReceiver} that will receives the output of the shell
+     *     command
+     * @param maxTimeout max time for the command to return. A value of 0 means no max timeout will
+     *     be applied.
+     * @param maxTimeToOutputResponse max time between command output. If more time passes between
+     *     command output, the method will throw {@link ShellCommandUnresponsiveException}. A value
+     *     of 0 means the method will wait forever for command output and never throw.
+     * @param maxTimeUnits Units for non-zero {@code maxTimeout} and {@code maxTimeToOutputResponse}
+     *     values.
+     * @throws TimeoutException in case of timeout on the connection when sending the command.
+     * @throws AdbCommandRejectedException if adb rejects the command
+     * @throws ShellCommandUnresponsiveException in case the shell command doesn't send any output
+     *     for a period longer than <var>maxTimeToOutputResponse</var>.
+     * @throws IOException in case of I/O error on the connection.
+     * @see DdmPreferences#getTimeOut()
+     */
+    void executeRemoteCommand(
+            @NonNull InetSocketAddress adbSockAddr,
+            @NonNull String command,
+            @NonNull IDevice device,
+            @NonNull IShellOutputReceiver rcvr,
+            long maxTimeout,
+            long maxTimeToOutputResponse,
+            @NonNull TimeUnit maxTimeUnits)
+            throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
+                    IOException;
+
+    /**
+     * Executes a shell command on the device and retrieve the output. The output is handed to
+     * <var>rcvr</var> as it arrives.
+     *
+     * @param adbSockAddr the {@link InetSocketAddress} to adb.
+     * @param command the shell command to execute
+     * @param device the {@link IDevice} on which to execute the command.
+     * @param rcvr the {@link IShellOutputReceiver} that will receives the output of the shell
+     *     command
+     * @param maxTimeToOutputResponse max time between command output. If more time passes between
+     *     command output, the method will throw {@link ShellCommandUnresponsiveException}. A value
+     *     of 0 means the method will wait forever for command output and never throw.
+     * @param maxTimeUnits Units for non-zero {@code maxTimeToOutputResponse} values.
+     * @throws TimeoutException in case of timeout on the connection when sending the command.
+     * @throws AdbCommandRejectedException if adb rejects the command
+     * @throws ShellCommandUnresponsiveException in case the shell command doesn't send any output
+     *     for a period longer than <var>maxTimeToOutputResponse</var>.
+     * @throws IOException in case of I/O error on the connection.
+     * @see DdmPreferences#getTimeOut()
+     */
+    void executeRemoteCommand(
+            @NonNull InetSocketAddress adbSockAddr,
+            @NonNull String command,
+            @NonNull IDevice device,
+            @NonNull IShellOutputReceiver rcvr,
+            long maxTimeToOutputResponse,
+            @NonNull TimeUnit maxTimeUnits)
+            throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
+                    IOException;
+
+    /**
+     * Executes a remote command on the device and retrieve the output. The output is handed to
+     * <var>rcvr</var> as it arrives. The command is execute by the remote service identified by the
+     * adbService parameter.
+     *
+     * @param adbSockAddr the {@link InetSocketAddress} to adb.
+     * @param adbService the {@link AdbHelper.AdbService} to use to run the command.
+     * @param command the shell command to execute
+     * @param device the {@link IDevice} on which to execute the command.
+     * @param rcvr the {@link IShellOutputReceiver} that will receives the output of the shell
+     *     command
+     * @param maxTimeToOutputResponse max time between command output. If more time passes between
+     *     command output, the method will throw {@link ShellCommandUnresponsiveException}. A value
+     *     of 0 means the method will wait forever for command output and never throw.
+     * @param maxTimeUnits Units for non-zero {@code maxTimeToOutputResponse} values.
+     * @param is a optional {@link InputStream} to be streamed up after invoking the command and
+     *     before retrieving the response.
+     * @throws TimeoutException in case of timeout on the connection when sending the command.
+     * @throws AdbCommandRejectedException if adb rejects the command
+     * @throws ShellCommandUnresponsiveException in case the shell command doesn't send any output
+     *     for a period longer than <var>maxTimeToOutputResponse</var>.
+     * @throws IOException in case of I/O error on the connection.
+     * @see DdmPreferences#getTimeOut()
+     */
+    void executeRemoteCommand(
+            @NonNull InetSocketAddress adbSockAddr,
+            @NonNull AdbHelper.AdbService adbService,
+            @NonNull String command,
+            @NonNull IDevice device,
+            @NonNull IShellOutputReceiver rcvr,
+            long maxTimeToOutputResponse,
+            @NonNull TimeUnit maxTimeUnits,
+            @Nullable InputStream is)
+            throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
+                    IOException;
+
+    /**
+     * Executes a remote command on the device and retrieve the output. The output is handed to
+     * <var>rcvr</var> as it arrives. The command is execute by the remote service identified by the
+     * adbService parameter.
+     *
+     * @param adbSockAddr the {@link InetSocketAddress} to adb.
+     * @param adbService the {@link AdbHelper.AdbService} to use to run the command.
+     * @param command the shell command to execute
+     * @param device the {@link IDevice} on which to execute the command.
+     * @param rcvr the {@link IShellOutputReceiver} that will receives the output of the shell
+     *     command
+     * @param maxTimeout max timeout for the full command to execute. A value of 0 means no timeout.
+     * @param maxTimeToOutputResponse max time between command output. If more time passes between
+     *     command output, the method will throw {@link ShellCommandUnresponsiveException}. A value
+     *     of 0 means the method will wait forever for command output and never throw.
+     * @param maxTimeUnits Units for non-zero {@code maxTimeout} and {@code maxTimeToOutputResponse}
+     *     values.
+     * @param is a optional {@link InputStream} to be streamed up after invoking the command and
+     *     before retrieving the response.
+     * @throws TimeoutException in case of timeout on the connection when sending the command.
+     * @throws AdbCommandRejectedException if adb rejects the command
+     * @throws ShellCommandUnresponsiveException in case the shell command doesn't send any output
+     *     for a period longer than <var>maxTimeToOutputResponse</var>.
+     * @throws IOException in case of I/O error on the connection.
+     * @see DdmPreferences#getTimeOut()
+     */
+    @Slow
+    void executeRemoteCommand(
+            @NonNull InetSocketAddress adbSockAddr,
+            @NonNull AdbHelper.AdbService adbService,
+            @NonNull String command,
+            @NonNull IDevice device,
+            @NonNull IShellOutputReceiver rcvr,
+            long maxTimeout,
+            long maxTimeToOutputResponse,
+            @NonNull TimeUnit maxTimeUnits,
+            @Nullable InputStream is)
+            throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
+                    IOException;
 
     /**
      * Invoke the host:exec service on a remote device. Return a socket channel that is connected to
