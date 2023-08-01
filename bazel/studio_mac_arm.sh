@@ -49,7 +49,7 @@ if [[ -d "${dist_dir}" ]]; then
   # info breaks if we pass --config=local or --config=rcache because they don't
   # affect info, so we need to pass only --config=release here in order to fetch the proper
   # binaries
-  readonly bin_dir="$("${script_dir}"/bazel info --config=release bazel-bin)"
+  readonly bin_dir="$("${script_dir}"/bazel --output_base="${TMPDIR}" info --config=release bazel-bin)"
   cp -a ${bin_dir}/tools/base/dynamic-layout-inspector/skia/skiaparser.zip ${dist_dir}
   cp -a ${bin_dir}/tools/base/profiler/native/trace_processor_daemon/trace_processor_daemon ${dist_dir}
   cp -a ${bin_dir}/tools/adt/idea/android/src/com/android/tools/idea/diagnostics/heap/native/libjni_object_tagger.dylib ${dist_dir}
