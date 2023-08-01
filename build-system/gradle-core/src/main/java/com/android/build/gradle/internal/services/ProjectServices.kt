@@ -21,6 +21,7 @@ import com.android.build.gradle.internal.errors.SyncIssueReporter
 import com.android.build.gradle.internal.lint.LintFromMaven
 import com.android.build.gradle.internal.res.Aapt2FromMaven
 import com.android.build.gradle.internal.scope.ProjectInfo
+import com.android.build.gradle.internal.transforms.LayoutlibFromMaven
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.ProjectOptions
@@ -56,6 +57,7 @@ class ProjectServices constructor(
     val projectOptions: ProjectOptions,
     val buildServiceRegistry: BuildServiceRegistry,
     val lintFromMaven: LintFromMaven,
+    val layoutlibFromMaven: LayoutlibFromMaven? = null,
     private val aapt2FromMaven: Aapt2FromMaven? = null,
     private val maxWorkerCount: Int,
     val projectInfo: ProjectInfo,

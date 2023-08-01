@@ -39,6 +39,7 @@ import com.android.build.gradle.internal.scope.ProjectInfo
 import com.android.build.gradle.internal.services.AndroidLocationsBuildService
 import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.services.ProjectServices
+import com.android.build.gradle.internal.transforms.LayoutlibFromMaven
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.ProjectOptionService
 import com.android.build.gradle.options.ProjectOptions
@@ -90,6 +91,7 @@ abstract class AndroidPluginBaseServices(
                 projectOptions,
                 project.gradle.sharedServices,
                 from(project, projectOptions, syncIssueReporter),
+                LayoutlibFromMaven.create(project),
                 create(project, projectOptions::get),
                 project.gradle.startParameter.maxWorkerCount,
                 ProjectInfo(project),

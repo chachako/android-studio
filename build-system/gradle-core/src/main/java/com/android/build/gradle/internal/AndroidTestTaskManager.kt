@@ -518,10 +518,6 @@ class AndroidTestTaskManager(
                 File(resultsRootDir, "${BuilderConstants.SCREENSHOT}/$buildTarget/$flavorDir")
         val goldenImagesDir = File("${project.projectDir.absolutePath}/src/androidTest/${BuilderConstants.SCREENSHOT}/$buildTarget/$flavorDir")
 
-        val ideExtractionDir =
-                creationConfig.paths.intermediatesDir(
-                        "${BuilderConstants.SCREENSHOT}/$buildTarget/$flavorDir").get().asFile
-
         val lintModelDir =
                 creationConfig.paths.getIncrementalDir(
                         "${BuilderConstants.LINT}Analyze${variantName.replaceFirstChar { it.uppercase() }}")
@@ -540,7 +536,7 @@ class AndroidTestTaskManager(
                         creationConfig,
                         resultsDir,
                         goldenImagesDir,
-                        ideExtractionDir,
+                         creationConfig.services.layoutlibFromMaven.layoutlibDirectory,
                         lintModelDir,
                         lintCacheDir,
                         additionalDependencyPaths
@@ -551,7 +547,7 @@ class AndroidTestTaskManager(
                         creationConfig,
                         resultsDir,
                         goldenImagesDir,
-                        ideExtractionDir,
+                        creationConfig.services.layoutlibFromMaven.layoutlibDirectory,
                         lintModelDir,
                         lintCacheDir,
                         additionalDependencyPaths

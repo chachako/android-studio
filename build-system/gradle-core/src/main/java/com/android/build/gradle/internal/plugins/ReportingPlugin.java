@@ -85,6 +85,7 @@ class ReportingPlugin implements org.gradle.api.Plugin<Project> {
                         project.getGradle().getSharedServices(),
                         lintFromMaven,
                         null,
+                        null,
                         project.getGradle().getStartParameter().getMaxWorkerCount(),
                         new ProjectInfo(project),
                         project::file,

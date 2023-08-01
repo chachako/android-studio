@@ -826,6 +826,7 @@ abstract class LintPlugin : Plugin<Project> {
             projectOptions,
             project.gradle.sharedServices,
             lintFromMaven,
+            null,
             maxWorkerCount = project.gradle.startParameter.maxWorkerCount,
             projectInfo = projectInfo,
             fileResolver = { o: Any -> project.file(o) },

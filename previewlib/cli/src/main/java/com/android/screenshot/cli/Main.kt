@@ -20,7 +20,6 @@ import com.android.screenshot.cli.util.CODE_FAILURE
 import com.android.screenshot.cli.util.CODE_NO_PREVIEWS
 import com.android.screenshot.cli.util.CODE_SUCCESS
 import com.android.screenshot.cli.util.CODE_INVALID_ARGUMENT
-import com.android.screenshot.cli.util.Decompressor
 import com.android.screenshot.cli.util.PreviewResult
 import com.android.screenshot.cli.util.Response
 import com.android.tools.idea.AndroidPsiUtils
@@ -75,7 +74,6 @@ import org.w3c.dom.Document
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
-import java.nio.file.Path
 import java.util.EnumSet
 import java.util.zip.ZipEntry
 import java.util.zip.ZipException
@@ -96,9 +94,8 @@ class Main {
     private val ARG_FILE_PATH = "--file-path"
     private val ARG_ROOT_LINT_MODEL = "--root-lint-model"
     private val ARG_RECORD_GOLDENS = "--record-golden"
-    private val ARG_EXTRACTION_DIR = "--extraction-dir"
-    private val ARG_JAR_LOCATION = "--jar-location"
     private val ARG_ADDITIONAL_DEPS = "--additional-deps"
+    private val ARG_LAYOUTLIB_DIR = "--layoutlib-dir"
     private val ARG_IMAGE_DIFF_THRESHOLD = "--image-diff-threshold"
 
     private var sdkHomePath: File? = null
@@ -116,9 +113,6 @@ class Main {
         try {
             val client: LintCliClient = MainLintClient(flags)
             parseArguments(args, client, argumentState)
-            if (argumentState.extractionDir != null && argumentState.jarLocation != null){
-                extractJar(argumentState)
-            }
             initializePathVariables(argumentState, client)
             initializeConfigurations(client, argumentState)
             setupPaths(argumentState)
@@ -126,7 +120,7 @@ class Main {
             val driver: LintDriver = createDriver(projects, client as MainLintClient)
             client.initializeProjects(driver, projects)
 
-            ComposeApplication.setupEnvVars(argumentState.extractionDir)
+            ComposeApplication.setupEnvVars(argumentState.layoutlibDir)
             CoreApplicationEnvironment.registerExtensionPointAndExtensions(PathUtil.getResourcePathForClass(this::class.java).toPath(), "plugin.xml",
                                                                            Extensions.getRootArea())
 
@@ -141,7 +135,6 @@ class Main {
                                                       argumentState.recordGoldens,
                                                       argumentState.rootModule,
                                                       argumentState.imageDiffThreshold)
-            argumentState.extractionDir?.let { deleteTempFiles(it) }
             val response = processResults(results)
             saveResults(response, argumentState.outputLocation!!)
             exitProcess(response.status)
@@ -189,31 +182,6 @@ class Main {
             golden.mkdirs()
         }
 
-    }
-
-    private fun deleteTempFiles(extractionDir: String) {
-        val outputDir = Path.of(extractionDir).resolve("system").normalize()
-        try {
-            outputDir.toFile().deleteRecursively()
-        } catch (e: Exception) {
-            // do nothing
-        }
-
-
-    }
-
-    private fun extractJar(argumentState: Main.ArgumentState) {
-        val jarPath = Path.of(argumentState.jarLocation!!)
-        val outputDir = Path.of(argumentState.extractionDir!!)
-        val outputDirLayoutLib = Path.of(argumentState.extractionDir!!).resolve("plugins/design-tools/resources/").normalize()
-        val outputDirAppInfo = Path.of(argumentState.extractionDir!!).resolve("META-INF").normalize()
-        val filterLayouutLib = { file: File?, name: String ->
-            name =="layoutlib" || file?.absolutePath?.contains("layoutlib") ?: false  }
-        val filterAppInfo = { file: File?, name: String ->
-                    name == "ApplicationInfo.xml" && file?.absolutePath?.startsWith(outputDirAppInfo.toString()) ?: false }
-
-        Decompressor.Zip(jarPath).filter(Decompressor.FileFilterAdapter.wrap(outputDirLayoutLib, filterLayouutLib)).removePrefixPath("prebuilts/studio/").overwrite(false).extract(outputDirLayoutLib)
-        Decompressor.Zip(jarPath).filter(Decompressor.FileFilterAdapter.wrap(outputDir, filterAppInfo)).overwrite(true).extract(outputDir)
     }
 
     private fun findPreviewNodes(project: Project, file: String) : List<ComposePreviewElement> {
@@ -455,16 +423,11 @@ class Main {
                     throw InvalidArgumentException("Missing client version")
                 }
                 argumentState.clientVersion = args[++index]
-            } else if (arg == ARG_EXTRACTION_DIR) {
+            } else if (arg == ARG_LAYOUTLIB_DIR) {
                 if (index == args.size - 1) {
-                    throw InvalidArgumentException("Missing extraction directory")
+                    throw InvalidArgumentException("Missing layoutlib dir")
                 }
-                argumentState.extractionDir = args[++index]
-            } else if (arg == ARG_JAR_LOCATION) {
-                if (index == args.size - 1) {
-                    throw InvalidArgumentException("Missing jar location")
-                }
-                argumentState.jarLocation = args[++index]
+                argumentState.layoutlibDir = args[++index]
             } else if (arg == ARG_ADDITIONAL_DEPS) {
                 if (index == args.size - 1) {
                     throw InvalidArgumentException("Missing additional dependencies")
@@ -605,8 +568,8 @@ class Main {
                 errorMessage += "Missing Client Version;"
             if (!this::filePath.isInitialized)
                 errorMessage += "Missing File Path;"
-            if (jarLocation != null && extractionDir == null)
-                errorMessage += "Missing Extraction Directory;"
+            if (!this::layoutlibDir.isInitialized)
+                errorMessage += "Missing Layoutlib directory;"
             if (!recordGoldens && outputLocation == null)
                 errorMessage += "Missing output directory to save diff images;"
             if (errorMessage != "") {
@@ -618,12 +581,11 @@ class Main {
         var recordGoldens: Boolean = false
         var imageDiffThreshold: Float = 0f
         lateinit var goldenLocation: String
-        var jarLocation: String? = null
-        var extractionDir: String? = null
         lateinit var rootModule: LintModelModule
         lateinit var clientVersion: String
         lateinit var clientName: String
         lateinit var filePath: String
+        lateinit var layoutlibDir: String
         var outputLocation: String? = null
         var modules: MutableList<LintModelModule> = mutableListOf()
     }
