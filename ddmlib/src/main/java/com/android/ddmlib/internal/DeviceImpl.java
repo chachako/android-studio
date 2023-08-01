@@ -669,7 +669,6 @@ public final class DeviceImpl implements IDevice {
         executeRemoteCommand(
                 AndroidDebugBridge.getSocketAddress(),
                 command,
-                this,
                 receiver,
                 DdmPreferences.getTimeOut(),
                 TimeUnit.MILLISECONDS);
@@ -688,7 +687,6 @@ public final class DeviceImpl implements IDevice {
                 AndroidDebugBridge.getSocketAddress(),
                 AdbHelper.AdbService.EXEC,
                 command,
-                this,
                 receiver,
                 0L,
                 maxTimeToOutputResponse,
@@ -710,7 +708,6 @@ public final class DeviceImpl implements IDevice {
                     AndroidDebugBridge.getSocketAddress(),
                     AdbHelper.AdbService.ABB_EXEC,
                     String.join("\u0000", parameters),
-                    this,
                     receiver,
                     0L,
                     maxTimeToOutputResponse,
@@ -734,7 +731,6 @@ public final class DeviceImpl implements IDevice {
         executeRemoteCommand(
                 AndroidDebugBridge.getSocketAddress(),
                 command,
-                this,
                 receiver,
                 maxTimeToOutputResponse,
                 TimeUnit.MILLISECONDS);
@@ -751,7 +747,6 @@ public final class DeviceImpl implements IDevice {
         executeRemoteCommand(
                 AndroidDebugBridge.getSocketAddress(),
                 command,
-                this,
                 receiver,
                 0L,
                 maxTimeToOutputResponse,
@@ -770,7 +765,6 @@ public final class DeviceImpl implements IDevice {
         executeRemoteCommand(
                 AndroidDebugBridge.getSocketAddress(),
                 command,
-                this,
                 receiver,
                 maxTimeout,
                 maxTimeToOutputResponse,
@@ -781,30 +775,32 @@ public final class DeviceImpl implements IDevice {
      * Executes a shell command on the device and retrieve the output. The output is handed to
      * <var>rcvr</var> as it arrives.
      *
-     * @param adbSockAddr the {@link InetSocketAddress} to adb.
-     * @param command the shell command to execute
-     * @param device the {@link IDevice} on which to execute the command.
-     * @param rcvr the {@link IShellOutputReceiver} that will receives the output of the shell
-     *     command
-     * @param maxTimeout max time for the command to return. A value of 0 means no max timeout will
-     *     be applied.
+     * @param adbSockAddr             the {@link InetSocketAddress} to adb.
+     * @param command                 the shell command to execute
+     * @param rcvr                    the {@link IShellOutputReceiver} that will receives the output
+     *                                of the shell command
+     * @param maxTimeout              max time for the command to return. A value of 0 means no max
+     *                                timeout will be applied.
      * @param maxTimeToOutputResponse max time between command output. If more time passes between
-     *     command output, the method will throw {@link ShellCommandUnresponsiveException}. A value
-     *     of 0 means the method will wait forever for command output and never throw.
-     * @param maxTimeUnits Units for non-zero {@code maxTimeout} and {@code maxTimeToOutputResponse}
-     *     values.
-     * @throws TimeoutException in case of timeout on the connection when sending the command.
-     * @throws AdbCommandRejectedException if adb rejects the command
+     *                                command output, the method will throw
+     *                                {@link ShellCommandUnresponsiveException}. A value of 0 means
+     *                                the method will wait forever for command output and never
+     *                                throw.
+     * @param maxTimeUnits            Units for non-zero {@code maxTimeout} and
+     *                                {@code maxTimeToOutputResponse} values.
+     * @throws TimeoutException                  in case of timeout on the connection when sending
+     *                                           the command.
+     * @throws AdbCommandRejectedException       if adb rejects the command
      * @throws ShellCommandUnresponsiveException in case the shell command doesn't send any output
-     *     for a period longer than <var>maxTimeToOutputResponse</var>.
-     * @throws IOException in case of I/O error on the connection.
+     *                                           for a period longer than
+     *                                           <var>maxTimeToOutputResponse</var>.
+     * @throws IOException                       in case of I/O error on the connection.
      * @see DdmPreferences#getTimeOut()
      */
     @Override
     public void executeRemoteCommand(
             InetSocketAddress adbSockAddr,
             String command,
-            IDevice device,
             IShellOutputReceiver rcvr,
             long maxTimeout,
             long maxTimeToOutputResponse,
@@ -815,7 +811,6 @@ public final class DeviceImpl implements IDevice {
                 adbSockAddr,
                 AdbHelper.AdbService.SHELL,
                 command,
-                device,
                 rcvr,
                 maxTimeout,
                 maxTimeToOutputResponse,
@@ -827,27 +822,29 @@ public final class DeviceImpl implements IDevice {
      * Executes a shell command on the device and retrieve the output. The output is handed to
      * <var>rcvr</var> as it arrives.
      *
-     * @param adbSockAddr the {@link InetSocketAddress} to adb.
-     * @param command the shell command to execute
-     * @param device the {@link IDevice} on which to execute the command.
-     * @param rcvr the {@link IShellOutputReceiver} that will receives the output of the shell
-     *     command
+     * @param adbSockAddr             the {@link InetSocketAddress} to adb.
+     * @param command                 the shell command to execute
+     * @param rcvr                    the {@link IShellOutputReceiver} that will receives the output
+     *                                of the shell command
      * @param maxTimeToOutputResponse max time between command output. If more time passes between
-     *     command output, the method will throw {@link ShellCommandUnresponsiveException}. A value
-     *     of 0 means the method will wait forever for command output and never throw.
-     * @param maxTimeUnits Units for non-zero {@code maxTimeToOutputResponse} values.
-     * @throws TimeoutException in case of timeout on the connection when sending the command.
-     * @throws AdbCommandRejectedException if adb rejects the command
+     *                                command output, the method will throw
+     *                                {@link ShellCommandUnresponsiveException}. A value of 0 means
+     *                                the method will wait forever for command output and never
+     *                                throw.
+     * @param maxTimeUnits            Units for non-zero {@code maxTimeToOutputResponse} values.
+     * @throws TimeoutException                  in case of timeout on the connection when sending
+     *                                           the command.
+     * @throws AdbCommandRejectedException       if adb rejects the command
      * @throws ShellCommandUnresponsiveException in case the shell command doesn't send any output
-     *     for a period longer than <var>maxTimeToOutputResponse</var>.
-     * @throws IOException in case of I/O error on the connection.
+     *                                           for a period longer than
+     *                                           <var>maxTimeToOutputResponse</var>.
+     * @throws IOException                       in case of I/O error on the connection.
      * @see DdmPreferences#getTimeOut()
      */
     @Override
     public void executeRemoteCommand(
             InetSocketAddress adbSockAddr,
             String command,
-            IDevice device,
             IShellOutputReceiver rcvr,
             long maxTimeToOutputResponse,
             TimeUnit maxTimeUnits)
@@ -857,7 +854,6 @@ public final class DeviceImpl implements IDevice {
                 adbSockAddr,
                 AdbHelper.AdbService.SHELL,
                 command,
-                device,
                 rcvr,
                 maxTimeToOutputResponse,
                 maxTimeUnits,
@@ -866,26 +862,29 @@ public final class DeviceImpl implements IDevice {
 
     /**
      * Executes a remote command on the device and retrieve the output. The output is handed to
-     * <var>rcvr</var> as it arrives. The command is execute by the remote service identified by the
-     * adbService parameter.
+     * <var>rcvr</var> as it arrives. The command is execute by the remote service identified by
+     * the adbService parameter.
      *
-     * @param adbSockAddr the {@link InetSocketAddress} to adb.
-     * @param adbService the {@link AdbHelper.AdbService} to use to run the command.
-     * @param command the shell command to execute
-     * @param device the {@link IDevice} on which to execute the command.
-     * @param rcvr the {@link IShellOutputReceiver} that will receives the output of the shell
-     *     command
+     * @param adbSockAddr             the {@link InetSocketAddress} to adb.
+     * @param adbService              the {@link AdbHelper.AdbService} to use to run the command.
+     * @param command                 the shell command to execute
+     * @param rcvr                    the {@link IShellOutputReceiver} that will receives the output
+     *                                of the shell command
      * @param maxTimeToOutputResponse max time between command output. If more time passes between
-     *     command output, the method will throw {@link ShellCommandUnresponsiveException}. A value
-     *     of 0 means the method will wait forever for command output and never throw.
-     * @param maxTimeUnits Units for non-zero {@code maxTimeToOutputResponse} values.
-     * @param is a optional {@link InputStream} to be streamed up after invoking the command and
-     *     before retrieving the response.
-     * @throws TimeoutException in case of timeout on the connection when sending the command.
-     * @throws AdbCommandRejectedException if adb rejects the command
+     *                                command output, the method will throw
+     *                                {@link ShellCommandUnresponsiveException}. A value of 0 means
+     *                                the method will wait forever for command output and never
+     *                                throw.
+     * @param maxTimeUnits            Units for non-zero {@code maxTimeToOutputResponse} values.
+     * @param is                      a optional {@link InputStream} to be streamed up after
+     *                                invoking the command and before retrieving the response.
+     * @throws TimeoutException                  in case of timeout on the connection when sending
+     *                                           the command.
+     * @throws AdbCommandRejectedException       if adb rejects the command
      * @throws ShellCommandUnresponsiveException in case the shell command doesn't send any output
-     *     for a period longer than <var>maxTimeToOutputResponse</var>.
-     * @throws IOException in case of I/O error on the connection.
+     *                                           for a period longer than
+     *                                           <var>maxTimeToOutputResponse</var>.
+     * @throws IOException                       in case of I/O error on the connection.
      * @see DdmPreferences#getTimeOut()
      */
     @Override
@@ -893,7 +892,6 @@ public final class DeviceImpl implements IDevice {
             InetSocketAddress adbSockAddr,
             AdbHelper.AdbService adbService,
             String command,
-            IDevice device,
             IShellOutputReceiver rcvr,
             long maxTimeToOutputResponse,
             TimeUnit maxTimeUnits,
@@ -904,7 +902,6 @@ public final class DeviceImpl implements IDevice {
                 adbSockAddr,
                 adbService,
                 command,
-                device,
                 rcvr,
                 0L,
                 maxTimeToOutputResponse,
@@ -914,28 +911,32 @@ public final class DeviceImpl implements IDevice {
 
     /**
      * Executes a remote command on the device and retrieve the output. The output is handed to
-     * <var>rcvr</var> as it arrives. The command is execute by the remote service identified by the
-     * adbService parameter.
+     * <var>rcvr</var> as it arrives. The command is execute by the remote service identified by
+     * the adbService parameter.
      *
-     * @param adbSockAddr the {@link InetSocketAddress} to adb.
-     * @param adbService the {@link AdbHelper.AdbService} to use to run the command.
-     * @param command the shell command to execute
-     * @param device the {@link IDevice} on which to execute the command.
-     * @param rcvr the {@link IShellOutputReceiver} that will receives the output of the shell
-     *     command
-     * @param maxTimeout max timeout for the full command to execute. A value of 0 means no timeout.
+     * @param adbSockAddr             the {@link InetSocketAddress} to adb.
+     * @param adbService              the {@link AdbHelper.AdbService} to use to run the command.
+     * @param command                 the shell command to execute
+     * @param rcvr                    the {@link IShellOutputReceiver} that will receives the output
+     *                                of the shell command
+     * @param maxTimeout              max timeout for the full command to execute. A value of 0
+     *                                means no timeout.
      * @param maxTimeToOutputResponse max time between command output. If more time passes between
-     *     command output, the method will throw {@link ShellCommandUnresponsiveException}. A value
-     *     of 0 means the method will wait forever for command output and never throw.
-     * @param maxTimeUnits Units for non-zero {@code maxTimeout} and {@code maxTimeToOutputResponse}
-     *     values.
-     * @param is a optional {@link InputStream} to be streamed up after invoking the command and
-     *     before retrieving the response.
-     * @throws TimeoutException in case of timeout on the connection when sending the command.
-     * @throws AdbCommandRejectedException if adb rejects the command
+     *                                command output, the method will throw
+     *                                {@link ShellCommandUnresponsiveException}. A value of 0 means
+     *                                the method will wait forever for command output and never
+     *                                throw.
+     * @param maxTimeUnits            Units for non-zero {@code maxTimeout} and
+     *                                {@code maxTimeToOutputResponse} values.
+     * @param is                      a optional {@link InputStream} to be streamed up after
+     *                                invoking the command and before retrieving the response.
+     * @throws TimeoutException                  in case of timeout on the connection when sending
+     *                                           the command.
+     * @throws AdbCommandRejectedException       if adb rejects the command
      * @throws ShellCommandUnresponsiveException in case the shell command doesn't send any output
-     *     for a period longer than <var>maxTimeToOutputResponse</var>.
-     * @throws IOException in case of I/O error on the connection.
+     *                                           for a period longer than
+     *                                           <var>maxTimeToOutputResponse</var>.
+     * @throws IOException                       in case of I/O error on the connection.
      * @see DdmPreferences#getTimeOut()
      */
     @Slow
@@ -944,7 +945,6 @@ public final class DeviceImpl implements IDevice {
             InetSocketAddress adbSockAddr,
             AdbHelper.AdbService adbService,
             String command,
-            IDevice device,
             IShellOutputReceiver rcvr,
             long maxTimeout,
             long maxTimeToOutputResponse,
@@ -977,7 +977,7 @@ public final class DeviceImpl implements IDevice {
 
             // if the device is not -1, then we first tell adb we're looking to
             // talk to a specific device
-            AdbHelper.setDevice(adbChan, device);
+            AdbHelper.setDevice(adbChan, this);
 
             byte[] request = AdbHelper.formAdbRequest(adbService, command);
             AdbHelper.write(adbChan, request);
@@ -1062,7 +1062,7 @@ public final class DeviceImpl implements IDevice {
                             "execute '"
                                     + command
                                     + "' on '"
-                                    + device
+                                    + this
                                     + "' : EOF hit. Read: "
                                     + count);
                     break;

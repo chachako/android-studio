@@ -97,7 +97,6 @@ public class RemoteSplitApkInstaller extends SplitApkInstallerBase {
                     AndroidDebugBridge.getSocketAddress(),
                     getServiceWrite(),
                     command,
-                    mDevice,
                     receiver,
                     0L,
                     timeout,

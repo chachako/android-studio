@@ -351,7 +351,6 @@ internal class FakeIDevice(private val serialNumber: String): IDevice {
     override fun executeRemoteCommand(
         adbSockAddr: InetSocketAddress,
         command: String,
-        device: IDevice,
         rcvr: IShellOutputReceiver,
         maxTimeout: Long,
         maxTimeToOutputResponse: Long,
@@ -363,7 +362,6 @@ internal class FakeIDevice(private val serialNumber: String): IDevice {
     override fun executeRemoteCommand(
         adbSockAddr: InetSocketAddress,
         command: String,
-        device: IDevice,
         rcvr: IShellOutputReceiver,
         maxTimeToOutputResponse: Long,
         maxTimeUnits: TimeUnit
@@ -375,7 +373,6 @@ internal class FakeIDevice(private val serialNumber: String): IDevice {
         adbSockAddr: InetSocketAddress,
         adbService: AdbHelper.AdbService,
         command: String,
-        device: IDevice,
         rcvr: IShellOutputReceiver,
         maxTimeToOutputResponse: Long,
         maxTimeUnits: TimeUnit,
@@ -388,7 +385,6 @@ internal class FakeIDevice(private val serialNumber: String): IDevice {
         adbSockAddr: InetSocketAddress,
         adbService: AdbHelper.AdbService,
         command: String,
-        device: IDevice,
         rcvr: IShellOutputReceiver,
         maxTimeout: Long,
         maxTimeToOutputResponse: Long,

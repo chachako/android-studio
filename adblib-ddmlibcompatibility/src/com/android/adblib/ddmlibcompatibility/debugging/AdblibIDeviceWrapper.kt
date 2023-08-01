@@ -891,7 +891,6 @@ internal class AdblibIDeviceWrapper(
      *
      * @param adbSockAddr the [InetSocketAddress] to adb.
      * @param command the shell command to execute
-     * @param device the [IDevice] on which to execute the command.
      * @param rcvr the [IShellOutputReceiver] that will receives the output of the shell
      * command
      * @param maxTimeout max time for the command to return. A value of 0 means no max timeout will
@@ -911,7 +910,6 @@ internal class AdblibIDeviceWrapper(
     override fun executeRemoteCommand(
         adbSockAddr: InetSocketAddress,
         command: String,
-        device: IDevice,
         rcvr: IShellOutputReceiver,
         maxTimeout: Long,
         maxTimeToOutputResponse: Long,
@@ -926,7 +924,6 @@ internal class AdblibIDeviceWrapper(
      *
      * @param adbSockAddr the [InetSocketAddress] to adb.
      * @param command the shell command to execute
-     * @param device the [IDevice] on which to execute the command.
      * @param rcvr the [IShellOutputReceiver] that will receives the output of the shell
      * command
      * @param maxTimeToOutputResponse max time between command output. If more time passes between
@@ -943,7 +940,6 @@ internal class AdblibIDeviceWrapper(
     override fun executeRemoteCommand(
         adbSockAddr: InetSocketAddress,
         command: String,
-        device: IDevice,
         rcvr: IShellOutputReceiver,
         maxTimeToOutputResponse: Long,
         maxTimeUnits: TimeUnit
@@ -959,7 +955,6 @@ internal class AdblibIDeviceWrapper(
      * @param adbSockAddr the [InetSocketAddress] to adb.
      * @param adbService the [AdbHelper.AdbService] to use to run the command.
      * @param command the shell command to execute
-     * @param device the [IDevice] on which to execute the command.
      * @param rcvr the [IShellOutputReceiver] that will receives the output of the shell
      * command
      * @param maxTimeToOutputResponse max time between command output. If more time passes between
@@ -979,7 +974,6 @@ internal class AdblibIDeviceWrapper(
         adbSockAddr: InetSocketAddress,
         adbService: AdbHelper.AdbService,
         command: String,
-        device: IDevice,
         rcvr: IShellOutputReceiver,
         maxTimeToOutputResponse: Long,
         maxTimeUnits: TimeUnit,
@@ -996,7 +990,6 @@ internal class AdblibIDeviceWrapper(
      * @param adbSockAddr the [InetSocketAddress] to adb.
      * @param adbService the [AdbHelper.AdbService] to use to run the command.
      * @param command the shell command to execute
-     * @param device the [IDevice] on which to execute the command.
      * @param rcvr the [IShellOutputReceiver] that will receives the output of the shell
      * command
      * @param maxTimeout max timeout for the full command to execute. A value of 0 means no timeout.
@@ -1018,7 +1011,6 @@ internal class AdblibIDeviceWrapper(
         adbSockAddr: InetSocketAddress,
         adbService: AdbHelper.AdbService,
         command: String,
-        device: IDevice,
         rcvr: IShellOutputReceiver,
         maxTimeout: Long,
         maxTimeToOutputResponse: Long,

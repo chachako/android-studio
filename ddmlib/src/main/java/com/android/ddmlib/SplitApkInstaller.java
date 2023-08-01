@@ -141,7 +141,6 @@ public class SplitApkInstaller extends SplitApkInstallerBase {
                     AndroidDebugBridge.getSocketAddress(),
                     getServiceWrite(),
                     command,
-                    getDevice(),
                     receiver,
                     timeout,
                     unit,
