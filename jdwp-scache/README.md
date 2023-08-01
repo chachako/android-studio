@@ -119,3 +119,10 @@ scache:all
 ```
 
 Alternatively, you can select `all` in the idea.log window.
+
+# Caching
+
+According to JDI implementation (VirtualMachineImpl.typesByID/typesBySignature), classID related
+replies can be tracked until a class is unloaded. Unfortunately, CLASS_UNLOAD event only contains the
+signature of the class. So we need to maintain a mapping [signature -> classID]. We do so by parsing
+CLASS_PREPARE events, and AllClasses/AllClassesWithGeneric replies.

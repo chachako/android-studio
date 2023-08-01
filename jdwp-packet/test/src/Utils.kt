@@ -28,17 +28,21 @@ internal fun assertJDWPObjectAndWireEquals(
   val id = 1234567890
 
   // Generate expected serialized bytebuffer
-  val expected = packetable.toPacket(id, idSizes)
-  Assert.assertEquals("Packet bytebuffer was overallocated", expected.limit(), expected.remaining())
+  val expectedBytes = packetable.toPacket(id, idSizes)
+  Assert.assertEquals(
+    "Packet bytebuffer was overallocated",
+    expectedBytes.limit(),
+    expectedBytes.remaining()
+  )
 
   // Parse and serialize again to generate actual bytebuffer
-  val reader = MessageReader(idSizes, expected.duplicate())
+  val reader = MessageReader(idSizes, expectedBytes.duplicate())
   val header = PacketHeader(reader)
   val parsed = parser(reader)
   Assert.assertEquals("Packet bytebuffer was underread", 0, reader.remaining())
 
-  val actual = parsed.toPacket(header.id, idSizes)
+  val actualBytes = parsed.toPacket(header.id, idSizes)
 
-  Assert.assertEquals(expected, actual)
+  Assert.assertEquals(expectedBytes, actualBytes)
   Assert.assertEquals(packetable, parsed)
 }

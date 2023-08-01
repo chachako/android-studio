@@ -52,28 +52,6 @@ class MessageReader(val idSizes: IDSizes, val buffer: ByteBuffer) {
     return Location.parse(this)
   }
 
-  // tag
-  fun getTagValue() {
-    when (getByte().toInt().toChar()) { // tag
-      '[' -> getObjectID()
-      'B' -> getByte()
-      'C' -> getShort()
-      'L' -> getObjectID()
-      'F' -> getInt()
-      'D' -> getLong()
-      'I' -> getInt()
-      'J' -> getLong()
-      'S' -> getShort()
-      'V' -> {}
-      'Z' -> getByte()
-      's' -> getObjectID()
-      't' -> getObjectID()
-      'g' -> getObjectID()
-      'l' -> getObjectID()
-      'c' -> getObjectID()
-    }
-  }
-
   fun getFieldID() = getID(idSizes.fieldIDSize)
 
   fun getMethodID() = getID(idSizes.methodIDSize)
@@ -84,9 +62,8 @@ class MessageReader(val idSizes: IDSizes, val buffer: ByteBuffer) {
 
   fun getThreadID() = getObjectID()
 
-  fun getTaggedObjectID() {
-    getObjectID()
-    getByte()
+  fun getTaggedObjectID(): TaggedObjectID {
+    return TaggedObjectID(getByte(), getObjectID())
   }
 
   fun getReferenceTypeID() = getID(idSizes.referenceTypeIDSize)

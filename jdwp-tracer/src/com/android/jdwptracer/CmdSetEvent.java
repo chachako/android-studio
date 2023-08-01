@@ -58,7 +58,7 @@ class CmdSetEvent extends CmdSet {
             switch (kind) {
                 case CLASS_PREPARE:
                     {
-                        CompositeCmd.ClassPrepareEvent cp = (CompositeCmd.ClassPrepareEvent) event;
+                        CompositeCmd.EventClassPrepare cp = (CompositeCmd.EventClassPrepare) event;
                         eventJson.addProperty("thread", cp.getThreadID());
                         eventJson.addProperty("refTypeTag", cp.getTypeTag());
                         eventJson.addProperty("typeID", cp.getReferenceTypeID());
@@ -68,7 +68,8 @@ class CmdSetEvent extends CmdSet {
                     break;
                 case BREAKPOINT:
                     {
-                        CompositeCmd.ThreadLocation se = (CompositeCmd.ThreadLocation) event;
+                        CompositeCmd.EventThreadLocation se =
+                                (CompositeCmd.EventThreadLocation) event;
                         eventJson.addProperty("threadID", se.getThreadID());
                         eventJson.add("location", JsonLocation.get(se.getLocation()));
                     }

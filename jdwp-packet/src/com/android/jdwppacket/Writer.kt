@@ -48,6 +48,11 @@ abstract class Writer(val s: IDSizes) {
 
   fun putThreadID(id: Long) = putObjectID(id)
 
+  fun putTaggedObjectID(id: TaggedObjectID) {
+    putByte(id.tag)
+    putObjectID(id.objectID)
+  }
+
   fun putLocation(location: Location): Int {
     location.write(this)
     return locationSize

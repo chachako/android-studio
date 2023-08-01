@@ -17,11 +17,12 @@
 package com.android.jdwpscache
 
 import com.android.jdwppacket.CmdSet
+import com.android.jdwppacket.Event
 import com.android.jdwppacket.IDSizes
 import com.android.jdwppacket.MessageReader
 import com.android.jdwppacket.PacketHeader
-import com.android.jdwppacket.ThreadReference
 import com.android.jdwppacket.VirtualMachine
+import com.android.jdwppacket.event.CompositeCmd
 import com.android.jdwppacket.vm.IDSizesReply
 import java.nio.ByteBuffer
 
@@ -63,28 +64,6 @@ internal class SCache(private val enabled: Boolean = true, private val logger: S
       object : Handler {
         override fun handle(reader: MessageReader, response: SCacheResponse) {
           onIDSizesReply(reader, response)
-        }
-      }
-    )
-
-    // VirtualMachime.Resume to reset everything upon resume
-    triggerManager.registerCmdTrigger(
-      CmdSet.Vm.id,
-      VirtualMachine.Resume.id,
-      object : Handler {
-        override fun handle(reader: MessageReader, response: SCacheResponse) {
-          onResumeCommand(reader, response)
-        }
-      }
-    )
-
-    // ThreadReference.Resume to reset everything upon resume
-    triggerManager.registerCmdTrigger(
-      CmdSet.ThreadReference.id,
-      ThreadReference.Resume.id,
-      object : Handler {
-        override fun handle(reader: MessageReader, response: SCacheResponse) {
-          onResumeCommand(reader, response)
         }
       }
     )
@@ -149,6 +128,9 @@ internal class SCache(private val enabled: Boolean = true, private val logger: S
     if (header.isCmd()) {
       // Events cmds and DDM cmds are simply forwarded
       response.addToDownstream(originalPacket)
+      if (header.isA(CmdSet.Event.id, Event.Composite.id)) {
+        onEvent(CompositeCmd.parse(reader))
+      }
       return response
     }
 
@@ -175,21 +157,17 @@ internal class SCache(private val enabled: Boolean = true, private val logger: S
     return response
   }
 
+  private fun onEvent(event: CompositeCmd) {
+    speculator.onEvent(event)
+  }
+
   private fun onIDSizesReply(reader: MessageReader, response: SCacheResponse) {
     val s = IDSizesReply.parse(reader)
     idSizes =
       IDSizes(s.fieldIDSize, s.methodIDSize, s.objectIDSize, s.referenceTypeIDSize, s.frameIDSize)
   }
 
-  private fun onResumeCommand(reader: MessageReader, response: SCacheResponse) {
-    invalidateCache()
-  }
-
-  private fun invalidateCache() {
-    speculator.invalidateCache()
-  }
-
   override fun close() {
-    invalidateCache()
+    speculator.invalidateCache()
   }
 }

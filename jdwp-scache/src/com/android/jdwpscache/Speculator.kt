@@ -30,10 +30,14 @@ import com.android.jdwppacket.SourceFileCmd
 import com.android.jdwppacket.SuperClassCmd
 import com.android.jdwppacket.ThreadReference
 import com.android.jdwppacket.VariableTableWithGenericCmd
+import com.android.jdwppacket.VirtualMachine
+import com.android.jdwppacket.event.CompositeCmd
 import com.android.jdwppacket.referencetype.InterfacesCmd
 import com.android.jdwppacket.referencetype.MethodsWithGenericsCmd
 import com.android.jdwppacket.referencetype.SourceDebugExtensionCmd
 import com.android.jdwppacket.threadreference.FramesReply
+import com.android.jdwppacket.vm.AllClassesReply
+import com.android.jdwppacket.vm.AllClassesWithGenericsReply
 import java.nio.ByteBuffer
 
 typealias Parser = (messageReader: MessageReader) -> Keyable
@@ -65,6 +69,15 @@ internal class Speculator(triggerManager: TriggerManager, val logger: SCacheLogg
   private var speculationCounter = 0
   private var cacheHit = 0
 
+  /**
+   * The keeper of all class info we have. The primary purpose is to be able to invalidate the cache
+   * when a class is unloaded. We must let this object know when:
+   * - We speculate on a class attribute (so we add the speculated key to its list)
+   * - A class is prepared (so we associate signature with referenceID)
+   * - A class is unloaded (so we evict all speculated reply using the signature)
+   */
+  private val classesRepo = ClassesRepo()
+
   init {
     // Install a ThreadReference.Frames trigger.
     triggerManager.registerReplyTrigger(
@@ -73,6 +86,26 @@ internal class Speculator(triggerManager: TriggerManager, val logger: SCacheLogg
       object : Handler {
         override fun handle(reader: MessageReader, response: SCacheResponse) {
           onFramesReply(reader, response)
+        }
+      }
+    )
+
+    triggerManager.registerReplyTrigger(
+      CmdSet.Vm.id,
+      VirtualMachine.AllClasses.id,
+      object : Handler {
+        override fun handle(reader: MessageReader, response: SCacheResponse) {
+          onAllClassesReply(reader, response)
+        }
+      }
+    )
+
+    triggerManager.registerReplyTrigger(
+      CmdSet.Vm.id,
+      VirtualMachine.AllClassesWithGeneric.id,
+      object : Handler {
+        override fun handle(reader: MessageReader, response: SCacheResponse) {
+          onAllClassesWithGenericReply(reader, response)
         }
       }
     )
@@ -90,6 +123,11 @@ internal class Speculator(triggerManager: TriggerManager, val logger: SCacheLogg
     keyableParsers[packCmd(CmdSet.Method.id, Method.IsObsolete.id)] = IsObsoleteCmd::parse
     keyableParsers[packCmd(CmdSet.Method.id, Method.VariableTableWithGeneric.id)] =
       VariableTableWithGenericCmd::parse
+  }
+
+  private fun speculateClassInfo(classID: Long, command: Cmd, response: SCacheResponse) {
+    classesRepo.declareSpeculation(classID, command.key)
+    speculate(command, response)
   }
 
   private fun speculate(command: Cmd, response: SCacheResponse) {
@@ -119,14 +157,18 @@ internal class Speculator(triggerManager: TriggerManager, val logger: SCacheLogg
       if (count > 40) return@forEach
 
       val loc = it.location
-      speculate(SuperClassCmd(loc.classID), response)
-      speculate(LineTableCmd(loc.classID, loc.methodID), response)
-      speculate(SourceFileCmd(loc.classID), response)
-      speculate(IsObsoleteCmd(loc.classID, loc.methodID), response)
-      speculate(SourceDebugExtensionCmd(loc.classID), response)
-      speculate(InterfacesCmd(loc.classID), response)
-      speculate(VariableTableWithGenericCmd(loc.classID, loc.methodID), response)
-      speculate(MethodsWithGenericsCmd(loc.classID), response)
+      speculateClassInfo(loc.classID, SuperClassCmd(loc.classID), response)
+      speculateClassInfo(loc.classID, LineTableCmd(loc.classID, loc.methodID), response)
+      speculateClassInfo(loc.classID, SourceFileCmd(loc.classID), response)
+      speculateClassInfo(loc.classID, IsObsoleteCmd(loc.classID, loc.methodID), response)
+      speculateClassInfo(loc.classID, SourceDebugExtensionCmd(loc.classID), response)
+      speculateClassInfo(loc.classID, InterfacesCmd(loc.classID), response)
+      speculateClassInfo(
+        loc.classID,
+        VariableTableWithGenericCmd(loc.classID, loc.methodID),
+        response
+      )
+      speculateClassInfo(loc.classID, MethodsWithGenericsCmd(loc.classID), response)
 
       count++
     }
@@ -163,5 +205,33 @@ internal class Speculator(triggerManager: TriggerManager, val logger: SCacheLogg
 
   fun invalidateCache() {
     cache.clear()
+  }
+
+  fun onEvent(event: CompositeCmd) {
+    event.events.forEach {
+      when (it) {
+        is CompositeCmd.EventClassUnload -> {
+          invalidateCacheForClass(it.signature)
+          classesRepo.onClassUnload(it)
+        }
+        is CompositeCmd.EventClassPrepare -> {
+          classesRepo.onClassPrepare(it)
+        }
+        else -> {}
+      }
+    }
+  }
+
+  private fun invalidateCacheForClass(signature: String) {
+    val keys = classesRepo.getSpeculatedFor(signature)
+    keys.forEach { cache.remove(it) }
+  }
+
+  private fun onAllClassesWithGenericReply(reader: MessageReader, unused: SCacheResponse) {
+    classesRepo.onAllClassesWithGenericReply(AllClassesWithGenericsReply.parse(reader))
+  }
+
+  private fun onAllClassesReply(reader: MessageReader, unused: SCacheResponse) {
+    classesRepo.onAllClassesReply(AllClassesReply.parse(reader))
   }
 }

@@ -1,3 +1,6 @@
+import com.android.jdwppacket.vm.AllClassesCmd
+import com.android.jdwppacket.vm.AllClassesReply
+import com.android.jdwppacket.vm.AllClassesWithGenericsCmd
 import com.android.jdwppacket.vm.AllClassesWithGenericsReply
 import com.android.jdwppacket.vm.ClassesBySignatureReply
 import com.android.jdwppacket.vm.ClassesBySignatureReply.Class
@@ -37,7 +40,13 @@ class VmTest {
   }
 
   @Test
-  fun testAllClassWithGeneric() {
+  fun testAllClassesWithGenericCmd() {
+    val packet = AllClassesWithGenericsCmd()
+    assertJDWPObjectAndWireEquals(packet, AllClassesWithGenericsCmd::parse)
+  }
+
+  @Test
+  fun testAllClassWithGenericReply() {
     val classes =
       listOf(
         AllClassesWithGenericsReply.Class(
@@ -50,6 +59,20 @@ class VmTest {
       )
     val packet = AllClassesWithGenericsReply(classes)
     assertJDWPObjectAndWireEquals(packet, AllClassesWithGenericsReply::parse)
+  }
+
+  @Test
+  fun testAllClassesCmd() {
+    val packet = AllClassesCmd()
+    assertJDWPObjectAndWireEquals(packet, AllClassesCmd::parse)
+  }
+
+  @Test
+  fun testAllClassesReply() {
+    val classes =
+      listOf(AllClassesReply.Class(Byte.MAX_VALUE, Long.MAX_VALUE, "foo", Int.MAX_VALUE))
+    val packet = AllClassesReply(classes)
+    assertJDWPObjectAndWireEquals(packet, AllClassesReply::parse)
   }
 
   @Test
