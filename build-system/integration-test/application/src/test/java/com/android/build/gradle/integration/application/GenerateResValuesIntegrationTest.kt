@@ -20,11 +20,11 @@ import com.android.SdkConstants
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
+import com.android.build.gradle.integration.common.truth.GradleTaskSubject.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.generators.ResValueGenerator
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
-import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -73,7 +73,7 @@ class GenerateResValuesIntegrationTest {
     fun testResValueIsUpdatedOnCleanAndIncrementalReleaseBuilds() {
         val app = project.getSubproject(":app")
         val executor = project.executor()
-        executor.run("clean", "assembleRelease")
+        executor.run(":app:mergeReleaseResources")
 
         val generatedResValueReleaseXml =
             FileUtils.join(
@@ -117,12 +117,9 @@ class GenerateResValuesIntegrationTest {
         )
 
         // Run incremental build.
-        val incrementalReleaseBuild = executor.run("assembleRelease")
+        val incrementalReleaseBuild = executor.run(":app:mergeReleaseResources")
 
-        assertThat(incrementalReleaseBuild.upToDateTasks)
-            .doesNotContain(":app:mergeReleaseResources")
-        assertThat(incrementalReleaseBuild.didWorkTasks)
-            .contains(":app:mergeReleaseResources")
+        assertThat(incrementalReleaseBuild.getTask(":app:mergeReleaseResources")).didWork()
 
         // Check generated resValues and merged.dir values.xml have been updated.
         assertThat(generatedResValueReleaseXml).contentWithUnixLineSeparatorsIsExactly(
@@ -150,8 +147,8 @@ class GenerateResValuesIntegrationTest {
     @Test
     fun testMergeResourcesUpToDateWhenNoResValueChange() {
         val executor = project.executor()
-        executor.run("clean", "assembleRelease")
-        val secondBuild = executor.run("assembleRelease")
-        assertThat(secondBuild.upToDateTasks).contains(":app:mergeReleaseResources")
+        executor.run(":app:mergeReleaseResources")
+        val secondBuild = executor.run(":app:mergeReleaseResources")
+        assertThat(secondBuild.getTask(":app:mergeReleaseResources")).wasUpToDate()
     }
 }
