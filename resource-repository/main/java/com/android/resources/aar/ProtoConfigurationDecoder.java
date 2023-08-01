@@ -147,10 +147,7 @@ class ProtoConfigurationDecoder {
 
     int densityDpi = configMsg.getDensity();
     if (densityDpi != 0) {
-      Density density = Density.getEnum(densityDpi);
-      if (density != null) {
-        configuration.setDensityQualifier(new DensityQualifier(density));
-      }
+      configuration.setDensityQualifier(new DensityQualifier(Density.create(densityDpi)));
     }
 
     TouchScreen touchScreen = getTouchScreen(configMsg.getTouchscreen());

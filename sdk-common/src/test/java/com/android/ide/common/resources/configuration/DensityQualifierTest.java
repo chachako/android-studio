@@ -17,7 +17,6 @@
 package com.android.ide.common.resources.configuration;
 
 import com.android.resources.Density;
-
 import junit.framework.TestCase;
 
 public class DensityQualifierTest extends TestCase {
@@ -44,12 +43,16 @@ public class DensityQualifierTest extends TestCase {
         assertTrue(config.getDensityQualifier() != null);
         assertEquals(Density.LOW, config.getDensityQualifier().getValue());
         assertEquals("ldpi", config.getDensityQualifier().toString()); //$NON-NLS-1$
+
+        assertEquals(true, pdq.checkAndSet("123dpi", config)); // $NON-NLS-1$
+        assertTrue(config.getDensityQualifier() != null);
+        assertEquals(Density.create(123), config.getDensityQualifier().getValue());
+        assertEquals("123dpi", config.getDensityQualifier().toString()); // $NON-NLS-1$
     }
 
     public void testFailures() {
         assertEquals(false, pdq.checkAndSet("", config));//$NON-NLS-1$
         assertEquals(false, pdq.checkAndSet("dpi", config));//$NON-NLS-1$
-        assertEquals(false, pdq.checkAndSet("123dpi", config));//$NON-NLS-1$
         assertEquals(false, pdq.checkAndSet("123", config));//$NON-NLS-1$
         assertEquals(false, pdq.checkAndSet("sdfdpi", config));//$NON-NLS-1$
     }

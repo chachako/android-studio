@@ -150,10 +150,11 @@ public class BasicFileResourceItem extends BasicResourceItemBase {
     int encodedDensity = stream.readInt();
     if (encodedDensity == 0) {
       return new BasicFileResourceItem(resourceType, name, configuration, visibility, relativePath);
+        } else {
+            Density density = Density.create(encodedDensity);
+            return new BasicDensityBasedFileResourceItem(
+                    resourceType, name, configuration, visibility, relativePath, density);
     }
-
-    Density density = Density.values()[encodedDensity - 1];
-    return new BasicDensityBasedFileResourceItem(resourceType, name, configuration, visibility, relativePath, density);
   }
 
   protected int getEncodedDensityForSerialization() {

@@ -9,6 +9,7 @@ public class DensityTest extends TestCase {
         assertFalse(Density.MEDIUM.isFakeValue());
         assertEquals("Medium Density", Density.MEDIUM.getLongDisplayValue());
         assertEquals("Medium Density", Density.MEDIUM.getShortDisplayValue());
+        assertEquals("Medium Density", Density.MEDIUM.toString());
         assertEquals(160, Density.MEDIUM.getDpiValue());
         assertEquals(4, Density.MEDIUM.since());
         assertEquals("mdpi", Density.MEDIUM.getResourceValue());
@@ -18,7 +19,8 @@ public class DensityTest extends TestCase {
     }
 
     public void testDpiDensities() {
-        assertFalse(Density.DPI_300.isRecommended());
-        assertTrue(Density.DPI_300.isValidValueForDevice());
+        Density dpi300 = new Density(300);
+        assertFalse(dpi300.isRecommended());
+        assertTrue(dpi300.isValidValueForDevice());
     }
 }

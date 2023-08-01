@@ -193,7 +193,7 @@ class LintResourceRepositoryTest {
           "  @dimen/negative (value) config=default source=/app/res/values/duplicates.xml;  -16dp\n" +
           "  @dimen/positive (value) config=default source=/app/res/values/duplicates.xml;  16dp\n" +
           "  @drawable/ic_launcher (file) config=default source=/app/res/drawable/ic_launcher.png;  /app/res/drawable/ic_launcher.png\n" +
-          "  @drawable/ic_launcher2 (file) config=X-High Density,API 4 source=/app/res/drawable-xhdpi-v4/ic_launcher2.png;  XHIGH\n" +
+          "  @drawable/ic_launcher2 (file) config=X-High Density,API 4 source=/app/res/drawable-xhdpi-v4/ic_launcher2.png;  X-High Density\n" +
           "  @id/name (value) config=default source=/app/res/values/duplicates.xml;  \n" +
           "  @layout/activity_main (file) config=default source=/app/res/layout/activity_main.xml;  /app/res/layout/activity_main.xml\n" +
           "  @plurals/my_plural (value) config=default source=/app/res/values/duplicates.xml;  [one=@string/hello1,few=@string/hello2,other=@string/hello3]\n" +
@@ -428,7 +428,7 @@ class LintResourceRepositoryTest {
       "${drawable.type.displayName}/${drawable.name}: ${densityValue.resourceDensity}: ${densityValue.value}"
     )
     assertEquals(
-      "Drawable/ic_launcher2: XHIGH: /app/res/drawable-xhdpi-v4/ic_launcher2.png",
+      "Drawable/ic_launcher2: X-High Density: /app/res/drawable-xhdpi-v4/ic_launcher2.png",
       description.toString().replace(root.path, "").dos2unix()
     )
 

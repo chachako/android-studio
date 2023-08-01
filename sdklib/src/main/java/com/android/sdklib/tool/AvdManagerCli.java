@@ -1323,9 +1323,9 @@ class AvdManagerCli extends CommandLineParser {
                 if (!densityString.endsWith("dpi")) {
                     densityString += "dpi";
                 }
-                density = Density.getEnum(densityString);
+                density = Density.create(densityString);
             }
-            if (density == null) density = Density.DPI_420; // A reasonable default
+            if (density == null) density = new Density(420); // A reasonable default
 
             int screenWidth = 1080;
             try {
