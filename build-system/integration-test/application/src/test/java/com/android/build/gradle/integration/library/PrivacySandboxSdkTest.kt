@@ -26,6 +26,7 @@ import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
 import com.android.ide.common.signing.KeystoreHelper
+import com.android.ide.common.util.toPathString
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
 import com.android.testutils.apk.Apk
@@ -64,7 +65,7 @@ class PrivacySandboxSdkTest {
                                              <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
                                          </manifest>
                                     """.trimIndent()
-                                    ))
+                            ))
             )
     )
 
@@ -206,13 +207,16 @@ class PrivacySandboxSdkTest {
 
         Dex(dexLocation).also { dex ->
             assertThat(dex.classes.keys).containsAtLeast(
-                "Lcom/example/androidlib1/Example;",
-                "Lcom/example/androidlib2/Example;",
+                    "Lcom/example/androidlib1/Example;",
+                    "Lcom/example/androidlib2/Example;",
                     "Lcom/externaldep/externaljar/ExternalClass;"
             )
-            assertThat(dex.classes["Lcom/example/androidlib1/Example;"]!!.methods.map { it.name }).contains("f1")
-            assertThat(dex.classes["Lcom/example/androidlib2/Example;"]!!.methods.map { it.name }).contains("f2")
-            assertThat(dex.classes["Lcom/example/androidlib1/R\$string;"]!!.fields.map { it.name }).containsExactly("string_from_android_lib_1")
+            assertThat(dex.classes["Lcom/example/androidlib1/Example;"]!!.methods.map { it.name }).contains(
+                    "f1")
+            assertThat(dex.classes["Lcom/example/androidlib2/Example;"]!!.methods.map { it.name }).contains(
+                    "f2")
+            assertThat(dex.classes["Lcom/example/androidlib1/R\$string;"]!!.fields.map { it.name }).containsExactly(
+                    "string_from_android_lib_1")
         }
 
         // Check incremental changes are handled
@@ -226,8 +230,10 @@ class PrivacySandboxSdkTest {
         executor().run(":privacy-sandbox-sdk:mergeDex")
 
         Dex(dexLocation).also { dex ->
-            assertThat(dex.classes["Lcom/example/androidlib1/Example;"]!!.methods.map { it.name }).contains("g")
-            assertThat(dex.classes["Lcom/example/androidlib2/Example;"]!!.methods.map { it.name }).contains("f2")
+            assertThat(dex.classes["Lcom/example/androidlib1/Example;"]!!.methods.map { it.name }).contains(
+                    "g")
+            assertThat(dex.classes["Lcom/example/androidlib2/Example;"]!!.methods.map { it.name }).contains(
+                    "f2")
         }
 
     }
@@ -239,7 +245,7 @@ class PrivacySandboxSdkTest {
                 project.getSubproject(":privacy-sandbox-sdk")
                         .getIntermediateFile("merged_manifest", "single", "AndroidManifest.xml")
         assertThat(asbManifest).hasContents(
-        """
+                """
             <?xml version="1.0" encoding="utf-8"?>
             <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                 package="com.example.privacysandboxsdk" >
@@ -255,15 +261,15 @@ class PrivacySandboxSdkTest {
             </manifest>
         """.trimIndent())
         val asbFile =
-            project.getSubproject(":privacy-sandbox-sdk")
-                    .getOutputFile("asb", "single", "privacy-sandbox-sdk.asb")
+                project.getSubproject(":privacy-sandbox-sdk")
+                        .getOutputFile("asb", "single", "privacy-sandbox-sdk.asb")
         assertThat(asbFile.exists()).isTrue()
 
         Zip(asbFile).use {
             assertThat(
-                Objects.requireNonNull(it.getEntryAsFile(
-                    "BUNDLE-METADATA/com.android.tools.build.gradle/app-metadata.properties"
-                )).readText()
+                    Objects.requireNonNull(it.getEntryAsFile(
+                            "BUNDLE-METADATA/com.android.tools.build.gradle/app-metadata.properties"
+                    )).readText()
             ).let { metadataContent ->
                 metadataContent.contains("appMetadataVersion=")
                 metadataContent.contains("androidGradlePluginVersion=")
@@ -272,7 +278,7 @@ class PrivacySandboxSdkTest {
             assertThat(it.getEntry("SdkBundleConfig.pb")).isNotNull()
 
             ZipFileSubject.assertThat(
-                Objects.requireNonNull(it.getEntryAsFile("modules.resm"))
+                    Objects.requireNonNull(it.getEntryAsFile("modules.resm"))
             ) { modules ->
 
                 modules.contains("base/dex/classes.dex")
@@ -329,9 +335,9 @@ class PrivacySandboxSdkTest {
 
         //Add service to android-lib1
         val pkg = FileUtils.join(project.getSubproject("android-lib1").mainSrcDir,
-                        "com",
-                        "example",
-                        "androidlib1")
+                "com",
+                "example",
+                "androidlib1")
         val mySdkFile = File(pkg, "MySdk.kt")
         mySdkFile.writeText(
                 "package com.example.androidlib1\n" +
@@ -346,7 +352,10 @@ class PrivacySandboxSdkTest {
         executor().run(":example-app:buildPrivacySandboxSdkApksForDebug")
 
         val privacySandboxSdkApk = project.getSubproject(":example-app")
-                .getIntermediateFile("extracted_apks_from_privacy_sandbox_sdks", "debug", "privacy-sandbox-sdk", "standalone.apk")
+                .getIntermediateFile("extracted_apks_from_privacy_sandbox_sdks",
+                        "debug",
+                        "privacy-sandbox-sdk",
+                        "standalone.apk")
 
         Apk(privacySandboxSdkApk).use {
             assertThat(it).containsClass(ANDROID_LIB1_CLASS)
@@ -424,19 +433,25 @@ class PrivacySandboxSdkTest {
         }
 
         executor()
-            .with(StringOption.IDE_APK_SELECT_CONFIG, apkSelectConfig.absolutePath)
-            .run(":example-app:assembleDebug")
-        Apk(project.getSubproject(":example-app").getApk(GradleTestProject.ApkType.DEBUG).file).use {
+                .with(StringOption.IDE_APK_SELECT_CONFIG, apkSelectConfig.absolutePath)
+                .run(":example-app:assembleDebug")
+        Apk(project.getSubproject(":example-app")
+                .getApk(GradleTestProject.ApkType.DEBUG).file).use {
             assertThat(it).exists()
             val manifestContent = ApkSubject.getManifestContent(it.file)
             assertThat(manifestContent).containsAtLeastElementsIn(
-                listOf(
-                "          E: uses-sdk-library (line=22)",
-                "            A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"com.example.privacysandboxsdk\" (Raw: \"com.example.privacysandboxsdk\")",
-                "            A: http://schemas.android.com/apk/res/android:certDigest(0x01010548)=\"$certDigest\" (Raw: \"$certDigest\")",
-                "            A: http://schemas.android.com/apk/res/android:versionMajor(0x01010577)=10002"
-                )
+                    listOf(
+                            "          E: uses-sdk-library (line=22)",
+                            "            A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"com.example.privacysandboxsdk\" (Raw: \"com.example.privacysandboxsdk\")",
+                            "            A: http://schemas.android.com/apk/res/android:certDigest(0x01010548)=\"$certDigest\" (Raw: \"$certDigest\")",
+                            "            A: http://schemas.android.com/apk/res/android:versionMajor(0x01010577)=10002"
+                    )
             )
+
+            // TODO(b/295172892) permit this asset for non-sandbox deployments only, for now always package.
+            assertThat(it.entries.map { it.toString() })
+                    .contains("/assets/RuntimeEnabledSdkTable.xml")
+
             val manifestContentString = manifestContent.joinToString("\n")
             assertThat(manifestContentString).contains(INTERNET_PERMISSION)
             assertThat(manifestContentString).doesNotContain(FOREGROUND_SERVICE)
@@ -474,7 +489,7 @@ class PrivacySandboxSdkTest {
         )
         project.execute("android-lib1:build")
 
-        val kspDir = FileUtils.join(androidLib1.generatedDir,"ksp")
+        val kspDir = FileUtils.join(androidLib1.generatedDir, "ksp")
         assertThat(kspDir.exists()).isTrue()
     }
 
@@ -561,12 +576,14 @@ class PrivacySandboxSdkTest {
     }
 
     companion object {
+
         private val certDigestPattern = Regex("([0-9A-F]{2}:){31}[0-9A-F]{2}")
         private const val ANDROID_LIB1_CLASS = "Lcom/example/androidlib1/Example;"
         private const val USES_SDK_LIBRARY_MANIFEST_ELEMENT = "uses-sdk-library"
-        private const val MY_PRIVACY_SANDBOX_SDK_MANIFEST_PACKAGE = "=\"com.example.privacysandboxsdk\""
-        private const val INTERNET_PERMISSION = "A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"android.permission.INTERNET\" (Raw: \"android.permission.INTERNET\")"
+        private const val MY_PRIVACY_SANDBOX_SDK_MANIFEST_PACKAGE =
+                "=\"com.example.privacysandboxsdk\""
+        private const val INTERNET_PERMISSION =
+                "A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"android.permission.INTERNET\" (Raw: \"android.permission.INTERNET\")"
         private const val FOREGROUND_SERVICE = "FOREGROUND_SERVICE"
     }
 }
-

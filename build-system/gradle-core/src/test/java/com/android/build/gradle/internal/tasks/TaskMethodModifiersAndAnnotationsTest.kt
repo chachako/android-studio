@@ -247,7 +247,8 @@ class TaskMethodModifiersAndAnnotationsTest {
             "getMergedArtProfile  @org.gradle.api.tasks.PathSensitive(NAME_ONLY)",
             "getMergedArtProfileMetadata  @org.gradle.api.tasks.PathSensitive(NAME_ONLY)",
             "getResourceFiles  @org.gradle.api.tasks.PathSensitive(RELATIVE)",
-            "getVersionControlInfoFile  @org.gradle.api.tasks.PathSensitive(NAME_ONLY)"
+            "getVersionControlInfoFile  @org.gradle.api.tasks.PathSensitive(NAME_ONLY)",
+            "getPrivacySandboxRuntimeEnabledSdkTable  @org.gradle.api.tasks.PathSensitive(NAME_ONLY)"
         )
     }
 

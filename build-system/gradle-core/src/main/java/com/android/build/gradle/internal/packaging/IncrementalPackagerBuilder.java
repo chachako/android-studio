@@ -132,6 +132,10 @@ public class IncrementalPackagerBuilder {
     @NonNull private List<SerializableChange> changedArtProfileMetadata = new ArrayList<>();
     @NonNull private List<SerializableChange> changedVersionControlInfo = new ArrayList<>();
 
+    @NonNull
+    private List<SerializableChange> changedPrivacySandboxRuntimeEnabledSdkTable =
+            new ArrayList<>(1);
+
     /** Creates a new builder. */
     public IncrementalPackagerBuilder(@NonNull BuildType buildType) {
         abiFilters = new HashSet<>();
@@ -443,6 +447,13 @@ public class IncrementalPackagerBuilder {
         return this;
     }
 
+    public IncrementalPackagerBuilder withChangedPrivacySandboxRuntimeEnabledSdkTable(
+            @NonNull Collection<SerializableChange> changedPrivacySandboxRuntimeEnabledSdkTable) {
+        this.changedPrivacySandboxRuntimeEnabledSdkTable =
+                ImmutableList.copyOf(changedPrivacySandboxRuntimeEnabledSdkTable);
+        return this;
+    }
+
     /**
      * Creates the packager, verifying that all the minimum data has been provided. The required
      * information are:
@@ -484,7 +495,8 @@ public class IncrementalPackagerBuilder {
                     changedAppMetadata,
                     changedArtProfile,
                     changedArtProfileMetadata,
-                    changedVersionControlInfo);
+                    changedVersionControlInfo,
+                    changedPrivacySandboxRuntimeEnabledSdkTable);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

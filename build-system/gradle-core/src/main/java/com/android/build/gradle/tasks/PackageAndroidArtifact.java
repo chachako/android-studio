@@ -393,6 +393,12 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
     @Optional
     public abstract RegularFileProperty getVersionControlInfoFile();
 
+    @Incremental
+    @InputFiles
+    @PathSensitive(PathSensitivity.NAME_ONLY)
+    @Optional
+    public abstract RegularFileProperty getPrivacySandboxRuntimeEnabledSdkTable();
+
     @Override
     public void doTaskAction(@NonNull InputChanges changes) {
         if (!changes.isIncremental()) {
@@ -529,6 +535,19 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
             } else {
                 parameter
                         .getVersionControlInfoFile()
+                        .set(new SerializableInputChanges(ImmutableList.of(), ImmutableList.of()));
+            }
+
+            if (getPrivacySandboxRuntimeEnabledSdkTable().isPresent()
+                    && getPrivacySandboxRuntimeEnabledSdkTable().get().getAsFile().exists()) {
+                parameter
+                        .getPrivacySandboxRuntimeEnabledSdkTable()
+                        .set(
+                                IncrementalChangesUtils.getChangesInSerializableForm(
+                                        changes, getPrivacySandboxRuntimeEnabledSdkTable()));
+            } else {
+                parameter
+                        .getPrivacySandboxRuntimeEnabledSdkTable()
                         .set(new SerializableInputChanges(ImmutableList.of(), ImmutableList.of()));
             }
 
@@ -728,6 +747,10 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
 
         @Optional
         public abstract Property<SerializableInputChanges> getVersionControlInfoFile();
+
+        @Optional
+        public abstract Property<SerializableInputChanges>
+                getPrivacySandboxRuntimeEnabledSdkTable();
     }
 
     /**
@@ -796,6 +819,7 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
             @NonNull Collection<SerializableChange> artProfile,
             @NonNull Collection<SerializableChange> artProfileMetadata,
             @NonNull Collection<SerializableChange> changedVersionControlInfo,
+            @NonNull Collection<SerializableChange> changedPrivacySandboxRuntimeEnabledSdkTable,
             @NonNull SplitterParams params)
             throws IOException {
 
@@ -902,6 +926,8 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
                         .withChangedArtProfile(artProfile)
                         .withChangedArtProfileMetadata(artProfileMetadata)
                         .withChangedVersionControlInfo(changedVersionControlInfo)
+                        .withChangedPrivacySandboxRuntimeEnabledSdkTable(
+                                changedPrivacySandboxRuntimeEnabledSdkTable)
                         .build()) {
             packager.updateFiles();
         }
@@ -1077,6 +1103,7 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
                         params.getMergedArtProfile().get().getChanges(),
                         params.getMergedArtProfileMetadata().get().getChanges(),
                         params.getVersionControlInfoFile().get().getChanges(),
+                        params.getPrivacySandboxRuntimeEnabledSdkTable().get().getChanges(),
                         params);
 
                 /*
@@ -1257,6 +1284,18 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
                                 .getAllInputFilesWithNameOnlyPathSensitivity()
                                 .from(packageAndroidArtifact.getVersionControlInfoFile());
                     }
+                }
+
+                if (projectOptions.get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)) {
+                    creationConfig
+                            .getArtifacts()
+                            .setTaskInputToFinalProduct(
+                                    InternalArtifactType.RUNTIME_ENABLED_SDK_TABLE.INSTANCE,
+                                    packageAndroidArtifact
+                                            .getPrivacySandboxRuntimeEnabledSdkTable());
+                    packageAndroidArtifact
+                            .getAllInputFilesWithNameOnlyPathSensitivity()
+                            .from(packageAndroidArtifact.getPrivacySandboxRuntimeEnabledSdkTable());
                 }
 
                 if (!creationConfig.getDebuggable()) {

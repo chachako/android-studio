@@ -88,6 +88,7 @@ import com.android.build.gradle.internal.tasks.ExtractProguardFiles
 import com.android.build.gradle.internal.tasks.FeatureDexMergeTask
 import com.android.build.gradle.internal.tasks.FeatureGlobalSyntheticsMergeTask
 import com.android.build.gradle.internal.tasks.GenerateLibraryProguardRulesTask
+import com.android.build.gradle.internal.tasks.GenerateRuntimeEnabledSdkTableTask
 import com.android.build.gradle.internal.tasks.GlobalSyntheticsMergeTask
 import com.android.build.gradle.internal.tasks.InstallVariantTask
 import com.android.build.gradle.internal.tasks.JacocoTask
@@ -138,6 +139,7 @@ import com.android.build.gradle.internal.variant.ApkVariantData
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.IntegerOption
 import com.android.build.gradle.tasks.AidlCompile
+import com.android.build.gradle.tasks.BuildPrivacySandboxSdkApks
 import com.android.build.gradle.tasks.CompatibleScreensManifest
 import com.android.build.gradle.tasks.GenerateBuildConfig
 import com.android.build.gradle.tasks.GenerateManifestJarTask

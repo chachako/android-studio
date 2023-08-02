@@ -47,6 +47,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import kotlin.text.StringsKt;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Makes the final app package. The packager allows build an APK from:
@@ -97,6 +98,8 @@ public class IncrementalPackager implements Closeable {
     public static final String VERSION_CONTROL_INFO_FILE_NAME = "version-control-info.textproto";
     public static final String VERSION_CONTROL_INFO_ENTRY_PATH =
             "META-INF/" + VERSION_CONTROL_INFO_FILE_NAME;
+    public static final String RUNTIME_ENABLED_SDK_TABLE_ENTRY_PATH =
+            "assets/RuntimeEnabledSdkTable.xml";
 
     /**
      * {@link ApkCreator}, which is {@code null} until it's initialized via getApkCreator(). Use
@@ -173,6 +176,8 @@ public class IncrementalPackager implements Closeable {
 
     @NonNull private final List<SerializableChange> mChangedVersionControlInfo;
 
+    @NonNull private final List<SerializableChange> mChangedPrivacySandboxEnabledSdkTable;
+
     /**
      * Creates a new instance.
      *
@@ -215,7 +220,8 @@ public class IncrementalPackager implements Closeable {
             @NonNull List<SerializableChange> changedAppMetadata,
             @NonNull List<SerializableChange> changedArtProfile,
             @NonNull List<SerializableChange> changedArtProfileMetadata,
-            @NonNull List<SerializableChange> changedVersionControlInfo)
+            @NonNull List<SerializableChange> changedVersionControlInfo,
+            List<SerializableChange> changedPrivacySandboxRuntimeEnabledSdkTable)
             throws IOException {
         if (!intermediateDir.isDirectory()) {
             throw new IllegalArgumentException(
@@ -241,6 +247,7 @@ public class IncrementalPackager implements Closeable {
         mChangedArtProfile = changedArtProfile;
         mChangedArtProfileMetadata = changedArtProfileMetadata;
         mChangedVersionControlInfo = changedVersionControlInfo;
+        mChangedPrivacySandboxEnabledSdkTable = changedPrivacySandboxRuntimeEnabledSdkTable;
     }
 
     /**
@@ -270,6 +277,8 @@ public class IncrementalPackager implements Closeable {
         packagedFileUpdates.addAll(getArtProfileUpdates(mChangedArtProfile));
         packagedFileUpdates.addAll(getArtProfileMetadataUpdates(mChangedArtProfileMetadata));
         packagedFileUpdates.addAll(getVersionControlInfoUpdates(mChangedVersionControlInfo));
+        packagedFileUpdates.addAll(
+                getPrivacySandboxRuntimeEnabledSdkTable(mChangedPrivacySandboxEnabledSdkTable));
 
         // First delete all REMOVED (and maybe CHANGED) files, then add all NEW or CHANGED files.
         deleteFiles(packagedFileUpdates);
@@ -329,57 +338,47 @@ public class IncrementalPackager implements Closeable {
      */
     private static List<PackagedFileUpdate> getAppMetadataUpdates(
             @NonNull Collection<SerializableChange> changes) {
-        return changes.stream()
-                .map(
-                        change ->
-                                new PackagedFileUpdate(
-                                        new RelativeFile(
-                                                change.getFile().getParentFile(),
-                                                change.getFile()),
-                                        APP_METADATA_ENTRY_PATH,
-                                        change.getFileStatus()))
-                .collect(Collectors.toList());
+        return getPackagedFileUpdates(changes, APP_METADATA_ENTRY_PATH);
     }
 
     private static List<PackagedFileUpdate> getArtProfileUpdates(
             @NonNull Collection<SerializableChange> changes) {
-        return changes.stream()
-                .map(
-                        change ->
-                                new PackagedFileUpdate(
-                                        new RelativeFile(
-                                                change.getFile().getParentFile(), change.getFile()),
-                                        SdkConstants.FN_BINART_ART_PROFILE_FOLDER_IN_APK
-                                                + "/"
-                                                + SdkConstants.FN_BINARY_ART_PROFILE,
-                                        change.getFileStatus()))
-                .collect(Collectors.toList());
+        return getPackagedFileUpdates(
+                changes,
+                SdkConstants.FN_BINART_ART_PROFILE_FOLDER_IN_APK
+                        + "/"
+                        + SdkConstants.FN_BINARY_ART_PROFILE);
     }
 
     private static List<PackagedFileUpdate> getArtProfileMetadataUpdates(
             @NonNull Collection<SerializableChange> changes) {
-        return changes.stream()
-                .map(
-                        change ->
-                                new PackagedFileUpdate(
-                                        new RelativeFile(
-                                                change.getFile().getParentFile(), change.getFile()),
-                                        SdkConstants.FN_BINART_ART_PROFILE_FOLDER_IN_APK
-                                                + "/"
-                                                + SdkConstants.FN_BINARY_ART_PROFILE_METADATA,
-                                        change.getFileStatus()))
-                .collect(Collectors.toList());
+        return getPackagedFileUpdates(
+                changes,
+                SdkConstants.FN_BINART_ART_PROFILE_FOLDER_IN_APK
+                        + "/"
+                        + SdkConstants.FN_BINARY_ART_PROFILE_METADATA);
     }
 
     private static List<PackagedFileUpdate> getVersionControlInfoUpdates(
             @NonNull Collection<SerializableChange> changes) {
+        return getPackagedFileUpdates(changes, VERSION_CONTROL_INFO_ENTRY_PATH);
+    }
+
+    private static List<PackagedFileUpdate> getPrivacySandboxRuntimeEnabledSdkTable(
+            @NonNull Collection<SerializableChange> changes) {
+        return getPackagedFileUpdates(changes, RUNTIME_ENABLED_SDK_TABLE_ENTRY_PATH);
+    }
+
+    @NotNull
+    private static List<PackagedFileUpdate> getPackagedFileUpdates(
+            @NotNull Collection<SerializableChange> changes, String entryPath) {
         return changes.stream()
                 .map(
                         change ->
                                 new PackagedFileUpdate(
                                         new RelativeFile(
                                                 change.getFile().getParentFile(), change.getFile()),
-                                        VERSION_CONTROL_INFO_ENTRY_PATH,
+                                        entryPath,
                                         change.getFileStatus()))
                 .collect(Collectors.toList());
     }

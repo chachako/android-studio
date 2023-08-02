@@ -324,6 +324,8 @@ class ApplicationTaskManager(
             if (variant.services.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT]) {
                 taskFactory.register(
                         GeneratePrivacySandboxSdkRuntimeConfigFile.CreationAction(variant))
+                taskFactory.register(
+                        GenerateRuntimeEnabledSdkTableTask.CreationAction(variant))
                 variant
                     .artifacts
                     .forScope(ScopedArtifacts.Scope.PROJECT)
