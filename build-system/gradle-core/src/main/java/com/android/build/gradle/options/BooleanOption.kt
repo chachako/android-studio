@@ -253,11 +253,6 @@ enum class BooleanOption(
     SUPPORT_PAST_STUDIO_VERSIONS("android.experimental.support.past.studio.versions", false, FeatureStage.Experimental),
 
     /**
-     * Enables task to add version control info to APKs/Bundle
-     */
-    ENABLE_VCS_INFO("android.enableVcsInfo", false, FeatureStage.Experimental),
-
-    /**
      * Whether to omit line numbers when writing lint baselines
      */
     LINT_BASELINE_OMIT_LINE_NUMBERS(
@@ -770,6 +765,9 @@ enum class BooleanOption(
 
     @Suppress("unused")
     ENABLE_TEST_SHARDING("android.androidTest.shardBetweenDevices", false, FeatureStage.Removed(Version.VERSION_8_2, "Cross device sharding is no longer supported.")),
+
+    @Suppress("unused")
+    ENABLE_VCS_INFO("android.enableVcsInfo", false, FeatureStage.Removed(Version.VERSION_8_3, "This feature is now enabled in the DSL per build type with \"vcsInfo.include = true\"."))
     ; // end of enums
 
     override val status = stage.status

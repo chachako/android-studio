@@ -61,5 +61,7 @@ interface ApplicationVariantDslInfo:
 
     val generateLocaleConfig: Boolean
 
+    val includeVcsInfo: Boolean?
+
     override val androidResourcesDsl: AndroidResourcesDslInfo
 }

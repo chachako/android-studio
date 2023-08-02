@@ -107,7 +107,9 @@ class DynamicAppTest {
             // Only the release variant is shrunk, so only it will contain a proguard mapping file.
             "/BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map",
             // Only the release variant would have the dependencies file.
-            "/BUNDLE-METADATA/com.android.tools.build.libraries/dependencies.pb"
+            "/BUNDLE-METADATA/com.android.tools.build.libraries/dependencies.pb",
+            // Only the release variant includes the VCS info by default
+            "/base/root/META-INF/version-control-info.textproto"
         )
     ).minus(
         listOf(

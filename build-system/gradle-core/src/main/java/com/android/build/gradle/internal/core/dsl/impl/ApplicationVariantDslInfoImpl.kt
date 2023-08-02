@@ -182,6 +182,9 @@ internal class ApplicationVariantDslInfoImpl(
         extension.androidResources.generateLocaleConfig
     }
 
+    override val includeVcsInfo: Boolean?
+        get() = applicationBuildType.vcsInfo.include
+
     private fun computeVersionNameSuffix(): String {
         // for the suffix we combine the suffix from all the flavors. However, we're going to
         // want the higher priority one to be last.

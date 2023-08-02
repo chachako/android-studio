@@ -83,6 +83,7 @@ class CacheabilityTest {
             ":app:create${DEBUG_RELEASE}ApkListingFileRedirect",
             ":app:create${DEBUG_RELEASE}CompatibleScreenManifests",
             ":app:extractProguardFiles",
+            ":app:extractReleaseVersionControlInfo",
             ":app:generateDebugJacocoPropertiesFile",
             ":app:generate${DEBUG_RELEASE}UnitTestConfig",
             ":app:generateReleaseLintVitalReportModel",

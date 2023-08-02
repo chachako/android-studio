@@ -142,7 +142,9 @@ class ApplicationTaskManager(
 
         handleMicroApp(variant)
 
-        if (variant.services.projectOptions[BooleanOption.ENABLE_VCS_INFO]) {
+        // This should match the implementation in [PackageAndroidArtifact] configure: vcsTaskRan
+        if ((variant.includeVcsInfo == null && !variantInfo.variantBuilder.debuggable) ||
+            variant.includeVcsInfo == true) {
             taskFactory.register(ExtractVersionControlInfoTask.CreationAction(variant))
         }
 

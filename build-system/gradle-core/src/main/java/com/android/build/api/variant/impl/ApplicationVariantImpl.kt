@@ -261,4 +261,7 @@ open class ApplicationVariantImpl @Inject constructor(
 
     override val enableGlobalSynthetics: Boolean
         get() = isGlobalSyntheticsEnabled()
+
+    override val includeVcsInfo: Boolean?
+        get() = dslInfo.includeVcsInfo
 }

@@ -1247,7 +1247,19 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
                 creationConfig.getArtifacts().setTaskInputToFinalProduct(
                         InternalArtifactType.APP_METADATA.INSTANCE,
                         packageAndroidArtifact.getAppMetadata());
-                if (projectOptions.get(BooleanOption.ENABLE_VCS_INFO)) {
+
+                boolean vcsTaskRan = false;
+                if (((ApplicationCreationConfig) creationConfig).getIncludeVcsInfo() == null) {
+                    if (!creationConfig.getDebuggable()) {
+                        vcsTaskRan = true;
+                    }
+                } else {
+                    if (((ApplicationCreationConfig) creationConfig).getIncludeVcsInfo()) {
+                        vcsTaskRan = true;
+                    }
+                }
+
+                if (vcsTaskRan) {
                     creationConfig
                             .getArtifacts()
                             .setTaskInputToFinalProduct(
@@ -1258,7 +1270,7 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
                     packageAndroidArtifact
                             .getAllInputFilesWithNameOnlyPathSensitivity()
                             .from(packageAndroidArtifact.getAppMetadata());
-                    if (projectOptions.get(BooleanOption.ENABLE_VCS_INFO)) {
+                    if (vcsTaskRan) {
                         packageAndroidArtifact
                                 .getAllInputFilesWithNameOnlyPathSensitivity()
                                 .from(packageAndroidArtifact.getVersionControlInfoFile());

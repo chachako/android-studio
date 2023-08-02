@@ -129,8 +129,9 @@ class ResourceShrinkerTest {
         assertThat(debugResourcePaths.size)
                 .isEqualTo(numberOfDebugApkEntries)
         assertThat(debugResourcePaths).containsAtLeastElementsIn(debugMetaFiles)
+        val numberOfReleaseApkEntries = 120 // include the version-control-metadata.properties. file
         assertThat(releaseResourcePaths.size)
-                .isEqualTo(numberOfDebugApkEntries -
+                .isEqualTo(numberOfReleaseApkEntries -
                                    (debugMetaFiles.size + removedFiles.size))
 
         assertThat(getZipPaths(project.getOriginalResources()))
@@ -243,7 +244,8 @@ class ResourceShrinkerTest {
                 "res/jL.html",
                 "res/mZ.html",
                 "res/vy.png",
-                "META-INF/com/android/build/gradle/app-metadata.properties"
+                "META-INF/com/android/build/gradle/app-metadata.properties",
+                "META-INF/version-control-info.textproto"
         )
 
         // As AAPT optimize shortens file paths including shrunk resource file names,

@@ -644,6 +644,7 @@ package com.android.build.api.dsl {
     method public java.util.List<java.lang.String> getMatchingFallbacks();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.PostProcessing getPostprocessing();
     method public int getRenderscriptOptimLevel();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.VcsInfo getVcsInfo();
     method public void initWith(com.android.build.api.dsl.BuildType that);
     method public boolean isJniDebuggable();
     method public boolean isMinifyEnabled();
@@ -665,6 +666,7 @@ package com.android.build.api.dsl {
     method public void setShrinkResources(boolean);
     method @Deprecated public void setTestCoverageEnabled(boolean);
     method @Deprecated public void setZipAlignEnabled(boolean);
+    method @org.gradle.api.Incubating public void vcsInfo(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.VcsInfo,kotlin.Unit> action);
     property public abstract boolean enableAndroidTestCoverage;
     property public abstract boolean enableUnitTestCoverage;
     property public abstract boolean isJniDebuggable;
@@ -677,6 +679,7 @@ package com.android.build.api.dsl {
     property public abstract java.util.List<java.lang.String> matchingFallbacks;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.PostProcessing postprocessing;
     property public abstract int renderscriptOptimLevel;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.VcsInfo vcsInfo;
   }
 
   public interface Bundle {
@@ -2108,6 +2111,12 @@ package com.android.build.api.dsl {
     property public abstract java.util.List<java.io.File> proguardFiles;
     property public abstract com.android.build.api.dsl.Shaders shaders;
     property public abstract java.util.List<java.io.File> testProguardFiles;
+  }
+
+  public interface VcsInfo {
+    method @org.gradle.api.Incubating public Boolean? getInclude();
+    method @org.gradle.api.Incubating public void setInclude(Boolean?);
+    property @org.gradle.api.Incubating public abstract Boolean? include;
   }
 
   public interface VectorDrawables {
