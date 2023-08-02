@@ -82,6 +82,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import org.jetbrains.annotations.NotNull;
 
 /** A Device. It can be a physical device or an emulator. */
 public final class DeviceImpl implements IDevice {
@@ -119,6 +120,8 @@ public final class DeviceImpl implements IDevice {
     private final ClientTracker mClientTracer;
 
     @Nullable private final Function<IDevice, DeviceClientManager> mDeviceClientManagerProvider;
+
+    @NonNull private final UserDataMapImpl mUserDataMap = new UserDataMapImpl();
 
     private static final String LOG_TAG = "Device";
     private static final char SEPARATOR = '-';
@@ -1912,5 +1915,14 @@ public final class DeviceImpl implements IDevice {
     @Override
     public String getRegion() {
         return getProperty(IDevice.PROP_DEVICE_REGION);
+    }
+
+    public <T> @NonNull T computeUserDataIfAbsent(
+            @NotNull Key<T> key, @NotNull Function<Key<T>, T> mappingFunction) {
+        return mUserDataMap.computeUserDataIfAbsent(key, mappingFunction);
+    }
+
+    public <T> @Nullable T removeUserData(@NotNull Key<T> key) {
+        return mUserDataMap.removeUserData(key);
     }
 }

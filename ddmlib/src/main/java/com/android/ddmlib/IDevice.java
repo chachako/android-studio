@@ -36,9 +36,10 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /** A Device. It can be a physical device or an emulator. */
-public interface IDevice extends IShellEnabledDevice {
+public interface IDevice extends IShellEnabledDevice, IUserDataMap {
     String UNKNOWN_PACKAGE = "";
     /** Emulator Serial Number regexp. */
     String RE_EMULATOR_SN = "emulator-(\\d+)"; //$NON-NLS-1$
@@ -1220,5 +1221,16 @@ public interface IDevice extends IShellEnabledDevice {
         }
 
         return Sets.newHashSet(Splitter.on(',').split(characteristics));
+    }
+
+    @Override
+    default <T> @NonNull T computeUserDataIfAbsent(
+            @NonNull Key<T> key, @NonNull Function<Key<T>, T> mappingFunction) {
+        throw new UnsupportedOperationException("Operation is not supported on this instance");
+    }
+
+    @Override
+    default <T> @Nullable T removeUserData(@NonNull Key<T> key) {
+        throw new UnsupportedOperationException("Operation is not supported on this instance");
     }
 }
