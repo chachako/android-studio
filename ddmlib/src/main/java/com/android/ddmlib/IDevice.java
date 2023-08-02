@@ -27,7 +27,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.Collections;
 import java.util.List;
@@ -1037,7 +1036,6 @@ public interface IDevice extends IShellEnabledDevice, IUserDataMap {
      * Executes a shell command on the device and retrieve the output. The output is handed to
      * <var>rcvr</var> as it arrives.
      *
-     * @param adbSockAddr             the {@link InetSocketAddress} to adb.
      * @param command                 the shell command to execute
      * @param rcvr                    the {@link IShellOutputReceiver} that will receives the output
      *                                of the shell command
@@ -1060,7 +1058,6 @@ public interface IDevice extends IShellEnabledDevice, IUserDataMap {
      * @see DdmPreferences#getTimeOut()
      */
     void executeRemoteCommand(
-            @NonNull InetSocketAddress adbSockAddr,
             @NonNull String command,
             @NonNull IShellOutputReceiver rcvr,
             long maxTimeout,
@@ -1073,7 +1070,6 @@ public interface IDevice extends IShellEnabledDevice, IUserDataMap {
      * Executes a shell command on the device and retrieve the output. The output is handed to
      * <var>rcvr</var> as it arrives.
      *
-     * @param adbSockAddr             the {@link InetSocketAddress} to adb.
      * @param command                 the shell command to execute
      * @param rcvr                    the {@link IShellOutputReceiver} that will receives the output
      *                                of the shell command
@@ -1093,7 +1089,6 @@ public interface IDevice extends IShellEnabledDevice, IUserDataMap {
      * @see DdmPreferences#getTimeOut()
      */
     void executeRemoteCommand(
-            @NonNull InetSocketAddress adbSockAddr,
             @NonNull String command,
             @NonNull IShellOutputReceiver rcvr,
             long maxTimeToOutputResponse,
@@ -1106,7 +1101,6 @@ public interface IDevice extends IShellEnabledDevice, IUserDataMap {
      * <var>rcvr</var> as it arrives. The command is execute by the remote service identified by
      * the adbService parameter.
      *
-     * @param adbSockAddr             the {@link InetSocketAddress} to adb.
      * @param adbService              the {@link AdbHelper.AdbService} to use to run the command.
      * @param command                 the shell command to execute
      * @param rcvr                    the {@link IShellOutputReceiver} that will receives the output
@@ -1129,7 +1123,6 @@ public interface IDevice extends IShellEnabledDevice, IUserDataMap {
      * @see DdmPreferences#getTimeOut()
      */
     void executeRemoteCommand(
-            @NonNull InetSocketAddress adbSockAddr,
             @NonNull AdbHelper.AdbService adbService,
             @NonNull String command,
             @NonNull IShellOutputReceiver rcvr,
@@ -1144,7 +1137,6 @@ public interface IDevice extends IShellEnabledDevice, IUserDataMap {
      * <var>rcvr</var> as it arrives. The command is execute by the remote service identified by
      * the adbService parameter.
      *
-     * @param adbSockAddr             the {@link InetSocketAddress} to adb.
      * @param adbService              the {@link AdbHelper.AdbService} to use to run the command.
      * @param command                 the shell command to execute
      * @param rcvr                    the {@link IShellOutputReceiver} that will receives the output
@@ -1171,7 +1163,6 @@ public interface IDevice extends IShellEnabledDevice, IUserDataMap {
      */
     @Slow
     void executeRemoteCommand(
-            @NonNull InetSocketAddress adbSockAddr,
             @NonNull AdbHelper.AdbService adbService,
             @NonNull String command,
             @NonNull IShellOutputReceiver rcvr,

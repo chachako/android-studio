@@ -62,7 +62,6 @@ import com.google.common.util.concurrent.SettableFuture;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
@@ -586,7 +585,6 @@ public final class DeviceImpl implements IDevice {
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
         executeRemoteCommand(
-                AndroidDebugBridge.getSocketAddress(),
                 command,
                 receiver,
                 DdmPreferences.getTimeOut(),
@@ -603,7 +601,6 @@ public final class DeviceImpl implements IDevice {
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
         executeRemoteCommand(
-                AndroidDebugBridge.getSocketAddress(),
                 AdbHelper.AdbService.EXEC,
                 command,
                 receiver,
@@ -624,7 +621,6 @@ public final class DeviceImpl implements IDevice {
                     IOException {
         if (supportsFeature(Feature.ABB_EXEC)) {
             executeRemoteCommand(
-                    AndroidDebugBridge.getSocketAddress(),
                     AdbHelper.AdbService.ABB_EXEC,
                     String.join("\u0000", parameters),
                     receiver,
@@ -648,7 +644,6 @@ public final class DeviceImpl implements IDevice {
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
         executeRemoteCommand(
-                AndroidDebugBridge.getSocketAddress(),
                 command,
                 receiver,
                 maxTimeToOutputResponse,
@@ -664,7 +659,6 @@ public final class DeviceImpl implements IDevice {
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
         executeRemoteCommand(
-                AndroidDebugBridge.getSocketAddress(),
                 command,
                 receiver,
                 0L,
@@ -682,7 +676,6 @@ public final class DeviceImpl implements IDevice {
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
         executeRemoteCommand(
-                AndroidDebugBridge.getSocketAddress(),
                 command,
                 receiver,
                 maxTimeout,
@@ -694,7 +687,6 @@ public final class DeviceImpl implements IDevice {
      * Executes a shell command on the device and retrieve the output. The output is handed to
      * <var>rcvr</var> as it arrives.
      *
-     * @param adbSockAddr             the {@link InetSocketAddress} to adb.
      * @param command                 the shell command to execute
      * @param rcvr                    the {@link IShellOutputReceiver} that will receives the output
      *                                of the shell command
@@ -718,7 +710,6 @@ public final class DeviceImpl implements IDevice {
      */
     @Override
     public void executeRemoteCommand(
-            InetSocketAddress adbSockAddr,
             String command,
             IShellOutputReceiver rcvr,
             long maxTimeout,
@@ -727,7 +718,6 @@ public final class DeviceImpl implements IDevice {
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
         executeRemoteCommand(
-                adbSockAddr,
                 AdbHelper.AdbService.SHELL,
                 command,
                 rcvr,
@@ -741,7 +731,6 @@ public final class DeviceImpl implements IDevice {
      * Executes a shell command on the device and retrieve the output. The output is handed to
      * <var>rcvr</var> as it arrives.
      *
-     * @param adbSockAddr             the {@link InetSocketAddress} to adb.
      * @param command                 the shell command to execute
      * @param rcvr                    the {@link IShellOutputReceiver} that will receives the output
      *                                of the shell command
@@ -762,7 +751,6 @@ public final class DeviceImpl implements IDevice {
      */
     @Override
     public void executeRemoteCommand(
-            InetSocketAddress adbSockAddr,
             String command,
             IShellOutputReceiver rcvr,
             long maxTimeToOutputResponse,
@@ -770,7 +758,6 @@ public final class DeviceImpl implements IDevice {
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
         executeRemoteCommand(
-                adbSockAddr,
                 AdbHelper.AdbService.SHELL,
                 command,
                 rcvr,
@@ -784,7 +771,6 @@ public final class DeviceImpl implements IDevice {
      * <var>rcvr</var> as it arrives. The command is execute by the remote service identified by
      * the adbService parameter.
      *
-     * @param adbSockAddr             the {@link InetSocketAddress} to adb.
      * @param adbService              the {@link AdbHelper.AdbService} to use to run the command.
      * @param command                 the shell command to execute
      * @param rcvr                    the {@link IShellOutputReceiver} that will receives the output
@@ -808,7 +794,6 @@ public final class DeviceImpl implements IDevice {
      */
     @Override
     public void executeRemoteCommand(
-            InetSocketAddress adbSockAddr,
             AdbHelper.AdbService adbService,
             String command,
             IShellOutputReceiver rcvr,
@@ -818,7 +803,6 @@ public final class DeviceImpl implements IDevice {
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
         executeRemoteCommand(
-                adbSockAddr,
                 adbService,
                 command,
                 rcvr,
@@ -833,7 +817,6 @@ public final class DeviceImpl implements IDevice {
      * <var>rcvr</var> as it arrives. The command is execute by the remote service identified by
      * the adbService parameter.
      *
-     * @param adbSockAddr             the {@link InetSocketAddress} to adb.
      * @param adbService              the {@link AdbHelper.AdbService} to use to run the command.
      * @param command                 the shell command to execute
      * @param rcvr                    the {@link IShellOutputReceiver} that will receives the output
@@ -861,7 +844,6 @@ public final class DeviceImpl implements IDevice {
     @Slow
     @Override
     public void executeRemoteCommand(
-            InetSocketAddress adbSockAddr,
             AdbHelper.AdbService adbService,
             String command,
             IShellOutputReceiver rcvr,
@@ -891,7 +873,7 @@ public final class DeviceImpl implements IDevice {
         SocketChannel adbChan = null;
         try {
             long startTime = System.currentTimeMillis();
-            adbChan = SocketChannel.open(adbSockAddr);
+            adbChan = SocketChannel.open(AndroidDebugBridge.getSocketAddress());
             adbChan.configureBlocking(false);
 
             // if the device is not -1, then we first tell adb we're looking to

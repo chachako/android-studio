@@ -961,7 +961,6 @@ internal class AdblibIDeviceWrapper(
      * @see DdmPreferences.getTimeOut
      */
     override fun executeRemoteCommand(
-        adbSockAddr: InetSocketAddress,
         command: String,
         rcvr: IShellOutputReceiver,
         maxTimeout: Long,
@@ -991,7 +990,6 @@ internal class AdblibIDeviceWrapper(
      * @see DdmPreferences.getTimeOut
      */
     override fun executeRemoteCommand(
-        adbSockAddr: InetSocketAddress,
         command: String,
         rcvr: IShellOutputReceiver,
         maxTimeToOutputResponse: Long,
@@ -1024,7 +1022,6 @@ internal class AdblibIDeviceWrapper(
      * @see DdmPreferences.getTimeOut
      */
     override fun executeRemoteCommand(
-        adbSockAddr: InetSocketAddress,
         adbService: AdbHelper.AdbService,
         command: String,
         rcvr: IShellOutputReceiver,
@@ -1061,7 +1058,6 @@ internal class AdblibIDeviceWrapper(
      * @see DdmPreferences.getTimeOut
      */
     override fun executeRemoteCommand(
-        adbSockAddr: InetSocketAddress,
         adbService: AdbHelper.AdbService,
         command: String,
         rcvr: IShellOutputReceiver,

@@ -30,7 +30,6 @@ import com.android.sdklib.AndroidVersion
 import com.google.common.util.concurrent.ListenableFuture
 import java.io.File
 import java.io.InputStream
-import java.net.InetSocketAddress
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
@@ -349,7 +348,6 @@ internal class FakeIDevice(private val serialNumber: String): IDevice {
     }
 
     override fun executeRemoteCommand(
-        adbSockAddr: InetSocketAddress,
         command: String,
         rcvr: IShellOutputReceiver,
         maxTimeout: Long,
@@ -360,7 +358,6 @@ internal class FakeIDevice(private val serialNumber: String): IDevice {
     }
 
     override fun executeRemoteCommand(
-        adbSockAddr: InetSocketAddress,
         command: String,
         rcvr: IShellOutputReceiver,
         maxTimeToOutputResponse: Long,
@@ -370,7 +367,6 @@ internal class FakeIDevice(private val serialNumber: String): IDevice {
     }
 
     override fun executeRemoteCommand(
-        adbSockAddr: InetSocketAddress,
         adbService: AdbHelper.AdbService,
         command: String,
         rcvr: IShellOutputReceiver,
@@ -382,7 +378,6 @@ internal class FakeIDevice(private val serialNumber: String): IDevice {
     }
 
     override fun executeRemoteCommand(
-        adbSockAddr: InetSocketAddress,
         adbService: AdbHelper.AdbService,
         command: String,
         rcvr: IShellOutputReceiver,

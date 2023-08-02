@@ -94,8 +94,7 @@ public class RemoteSplitApkInstaller extends SplitApkInstallerBase {
         try {
             InstallReceiver receiver = new InstallReceiver();
             mDevice.executeRemoteCommand(
-                    AndroidDebugBridge.getSocketAddress(),
-                    getServiceWrite(),
+              getServiceWrite(),
                     command,
                     receiver,
                     0L,

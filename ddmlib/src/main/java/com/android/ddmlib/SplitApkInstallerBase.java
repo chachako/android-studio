@@ -36,7 +36,7 @@ public abstract class SplitApkInstallerBase {
 
     // We need two services. The most recent devices uses the same ABB_EXEC but to remain backward
     // compatible we must mimic how install used to take place with SHELL for create, commit and
-    // EXEC for write. Once we fix unify Fakeadbserver pm handling, we can move to having only
+    // EXEC for write. Once we fix unify FakeAdbServer pm handling, we can move to having only
     // once service for all four types of queries.
     @NonNull private final AdbHelper.AdbService mService;
     @NonNull private final AdbHelper.AdbService mServiceWrite;
@@ -99,8 +99,7 @@ public abstract class SplitApkInstallerBase {
             cmd = cmd + " " + options;
         }
         mDevice.executeRemoteCommand(
-                AndroidDebugBridge.getSocketAddress(),
-                mService,
+          mService,
                 cmd,
                 receiver,
                 0L,
@@ -142,8 +141,7 @@ public abstract class SplitApkInstallerBase {
         String command = mPrefix + " install-commit " + sessionId;
         InstallReceiver receiver = new InstallReceiver();
         mDevice.executeRemoteCommand(
-                AndroidDebugBridge.getSocketAddress(),
-                mService,
+          mService,
                 command,
                 receiver,
                 0L,
@@ -169,8 +167,7 @@ public abstract class SplitApkInstallerBase {
         String command = mPrefix + " install-abandon " + sessionId;
         InstallReceiver receiver = new InstallReceiver();
         mDevice.executeRemoteCommand(
-                AndroidDebugBridge.getSocketAddress(),
-                mService,
+          mService,
                 command,
                 receiver,
                 0L,
