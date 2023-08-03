@@ -34,14 +34,19 @@ class OptionVersionTest {
         /**
          * Deprecated [Option]s that have invalid target removal versions.
          *
+         * IMPORTANT: Add a tracking bug to ensure all pending issues are fixed before beta
+         * releases of each version.
+         *  - Tracking bug for AGP 8.0: b/243560711
+         *  - Tracking bug for AGP 8.2: b/277803353
+         *  - Tracking bug for AGP 8.3: b/295183580
          * We should fix these issues as soon as possible, ideally before the beta release.
          *
          * @ RELEASE TEAM: If you update this list when upgrading AGP, be sure to file a new bug
          * assigned to the AGP team and blocking beta release (example bug: b/277803353).
          */
         private val INVALID_DEPRECATED_OPTIONS: List<Option<*>> = listOf(
+            BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM
         )
-
         private fun getStableAgpVersionIgnoringDotReleases(versionString: String): AgpVersion {
             // Normalize the version string first (e.g., "7.0" => "7.0.0")
             val normalizedVersionString = if (versionString.count { it=='.' }==1) {
