@@ -377,7 +377,7 @@ internal class AdblibIDeviceWrapper(
      * @see .MNT_DATA
      */
     override fun getMountPoint(name: String): String? {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     override fun toString(): String {
@@ -418,7 +418,7 @@ internal class AdblibIDeviceWrapper(
 
     /** Returns whether the [IDevice] has [Client]s.  */
     override fun hasClients(): Boolean {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     /** Returns the array of clients.  */
@@ -469,7 +469,7 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun getScreenshot(timeout: Long, unit: TimeUnit?): RawImage {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     /**
@@ -480,7 +480,7 @@ internal class AdblibIDeviceWrapper(
         options: ScreenRecorderOptions,
         receiver: IShellOutputReceiver
     ) {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     /**
@@ -497,7 +497,7 @@ internal class AdblibIDeviceWrapper(
      * @throws IOException in case of I/O error on the connection.
      */
     override fun runEventLogService(receiver: LogReceiver?) {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     /**
@@ -515,7 +515,7 @@ internal class AdblibIDeviceWrapper(
      * @throws IOException in case of I/O error on the connection.
      */
     override fun runLogService(logname: String?, receiver: LogReceiver?) {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     /**
@@ -706,7 +706,7 @@ internal class AdblibIDeviceWrapper(
         reinstall: Boolean,
         vararg extraArgs: String?
     ) {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     /**
@@ -727,7 +727,7 @@ internal class AdblibIDeviceWrapper(
         receiver: InstallReceiver?,
         vararg extraArgs: String?
     ) {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     /**
@@ -917,7 +917,7 @@ internal class AdblibIDeviceWrapper(
      * @return the user's language, or null if it's unknown
      */
     override fun getLanguage(): String? {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     /**
@@ -926,7 +926,7 @@ internal class AdblibIDeviceWrapper(
      * @return the user's region, or null if it's unknown
      */
     override fun getRegion(): String? {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     /**
