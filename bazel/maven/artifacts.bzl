@@ -467,7 +467,7 @@ DATA = [
     "com.android.tools.lint:lint-gradle:30.4.1",
     "com.android.tools.lint:lint-gradle:31.0.2",
     "com.android.tools.lint:lint-gradle:31.1.0",
-    "com.android.tools.metalava:metalava:1.0.0-alpha06",
+    "com.android.tools.metalava:metalava:1.0.0-alpha08",
     "com.android.tools.utp:android-test-plugin-host-additional-test-output:30.2.0",
     "com.android.tools.utp:android-device-provider-ddmlib:30.2.0",
     "com.android.tools.utp:android-device-provider-gradle:30.2.0",

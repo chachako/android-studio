@@ -43,7 +43,7 @@ package com.android.build.api.artifact {
   }
 
   public enum Artifact.Category {
-    method public static com.android.build.api.artifact.Artifact.Category valueOf(String name) throws java.lang.IllegalArgumentException;
+    method public static com.android.build.api.artifact.Artifact.Category valueOf(String value) throws java.lang.IllegalArgumentException, java.lang.NullPointerException;
     method public static com.android.build.api.artifact.Artifact.Category[] values();
     enum_constant public static final com.android.build.api.artifact.Artifact.Category GENERATED;
     enum_constant public static final com.android.build.api.artifact.Artifact.Category INTERMEDIATES;
@@ -87,8 +87,8 @@ package com.android.build.api.artifact {
   }
 
   public interface ArtifactTransformationRequest<TaskT extends org.gradle.api.Task> {
-    method public <ParamT extends org.gradle.workers.WorkParameters> java.util.function.Supplier<com.android.build.api.variant.BuiltArtifacts> submit(TaskT task, org.gradle.workers.WorkQueue workQueue, Class<? extends org.gradle.workers.WorkAction<ParamT>> actionType, kotlin.jvm.functions.Function3<? super com.android.build.api.variant.BuiltArtifact,? super org.gradle.api.file.Directory,? super ParamT,? extends java.io.File> parameterConfigurator);
     method public void submit(TaskT task, kotlin.jvm.functions.Function1<? super com.android.build.api.variant.BuiltArtifact,? extends java.io.File> transformer);
+    method public <ParamT extends org.gradle.workers.WorkParameters> java.util.function.Supplier<com.android.build.api.variant.BuiltArtifacts> submit(TaskT task, org.gradle.workers.WorkQueue workQueue, Class<? extends org.gradle.workers.WorkAction<ParamT>> actionType, kotlin.jvm.functions.Function3<? super com.android.build.api.variant.BuiltArtifact,? super org.gradle.api.file.Directory,? super ParamT,? extends java.io.File> parameterConfigurator);
   }
 
   public interface Artifacts {
@@ -550,8 +550,8 @@ package com.android.build.api.dsl {
     method public void missingDimensionStrategy(String dimension, java.lang.String... requestedValues);
     method public void missingDimensionStrategy(String dimension, java.util.List<java.lang.String> requestedValues);
     method @Deprecated public void resConfig(String config);
-    method @Deprecated public void resConfigs(java.util.Collection<java.lang.String> config);
     method @Deprecated public void resConfigs(java.lang.String... config);
+    method @Deprecated public void resConfigs(java.util.Collection<java.lang.String> config);
     method public void setMinSdk(Integer?);
     method public void setMinSdkPreview(String?);
     method @Deprecated public void setMinSdkVersion(int minSdkVersion);
@@ -561,10 +561,10 @@ package com.android.build.api.dsl {
     method public void setRenderscriptSupportModeEnabled(Boolean?);
     method public void setRenderscriptTargetApi(Integer?);
     method public void setTestApplicationId(String?);
-    method public void setTestFunctionalTest(Boolean?);
     method @Deprecated public Object? setTestFunctionalTest(boolean testFunctionalTest);
-    method public void setTestHandleProfiling(Boolean?);
+    method public void setTestFunctionalTest(Boolean?);
     method @Deprecated public Object? setTestHandleProfiling(boolean testHandleProfiling);
+    method public void setTestHandleProfiling(Boolean?);
     method public void setTestInstrumentationRunner(String?);
     method @Deprecated public Object? setTestInstrumentationRunnerArguments(java.util.Map<java.lang.String,java.lang.String> testInstrumentationRunnerArguments);
     method public void setWearAppUnbundled(Boolean?);
@@ -972,8 +972,8 @@ package com.android.build.api.dsl {
     method @Deprecated public java.util.Set<java.lang.String> getCompatibleScreens();
     method @Deprecated public boolean isStrict();
     method @Deprecated public void setStrict(boolean);
-    property public abstract java.util.Set<java.lang.String> compatibleScreens;
-    property public abstract boolean isStrict;
+    property @Deprecated public abstract java.util.Set<java.lang.String> compatibleScreens;
+    property @Deprecated public abstract boolean isStrict;
   }
 
   public interface DependenciesInfo {
@@ -1202,12 +1202,12 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public void useLibrary(String name, boolean required);
     method @org.gradle.api.Incubating public void withAndroidTestOnDevice();
     method @org.gradle.api.Incubating public void withAndroidTestOnDevice(String compilationName);
-    method @org.gradle.api.Incubating public void withAndroidTestOnDevice(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceConfiguration,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void withAndroidTestOnDevice(String compilationName, kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceConfiguration,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public void withAndroidTestOnDevice(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceConfiguration,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void withAndroidTestOnJvm();
     method @org.gradle.api.Incubating public void withAndroidTestOnJvm(String compilationName);
-    method @org.gradle.api.Incubating public void withAndroidTestOnJvm(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvmConfiguration,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void withAndroidTestOnJvm(String compilationName, kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvmConfiguration,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public void withAndroidTestOnJvm(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvmConfiguration,kotlin.Unit> action);
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.AarMetadata aarMetadata;
     property @org.gradle.api.Incubating public abstract String buildToolsVersion;
     property @org.gradle.api.Incubating public abstract Integer? compileSdk;
@@ -1481,8 +1481,8 @@ package com.android.build.api.dsl {
   }
 
   @Deprecated @org.gradle.api.Incubating public interface LintOptions {
-    method @Deprecated @org.gradle.api.Incubating public void baseline(String baseline);
     method @Deprecated @org.gradle.api.Incubating public void baseline(java.io.File baselineFile);
+    method @Deprecated @org.gradle.api.Incubating public void baseline(String baseline);
     method @Deprecated @org.gradle.api.Incubating public void check(String id);
     method @Deprecated @org.gradle.api.Incubating public void check(java.lang.String... ids);
     method @Deprecated @org.gradle.api.Incubating public void checkOnly(String id);
@@ -1550,8 +1550,8 @@ package com.android.build.api.dsl {
     method @Deprecated @org.gradle.api.Incubating public void setWarningsAsErrors(boolean);
     method @Deprecated @org.gradle.api.Incubating public void setXmlOutput(java.io.File?);
     method @Deprecated @org.gradle.api.Incubating public void setXmlReport(boolean);
-    method @Deprecated @org.gradle.api.Incubating public void textOutput(String textOutput);
     method @Deprecated @org.gradle.api.Incubating public void textOutput(java.io.File textOutput);
+    method @Deprecated @org.gradle.api.Incubating public void textOutput(String textOutput);
     method @Deprecated @org.gradle.api.Incubating public void warning(String id);
     method @Deprecated @org.gradle.api.Incubating public void warning(java.lang.String... ids);
     property @Deprecated @org.gradle.api.Incubating public abstract java.io.File? baselineFile;
@@ -2109,7 +2109,7 @@ package com.android.build.api.instrumentation {
   }
 
   public enum FramesComputationMode {
-    method public static com.android.build.api.instrumentation.FramesComputationMode valueOf(String name) throws java.lang.IllegalArgumentException;
+    method public static com.android.build.api.instrumentation.FramesComputationMode valueOf(String value) throws java.lang.IllegalArgumentException, java.lang.NullPointerException;
     method public static com.android.build.api.instrumentation.FramesComputationMode[] values();
     enum_constant public static final com.android.build.api.instrumentation.FramesComputationMode COMPUTE_FRAMES_FOR_ALL_CLASSES;
     enum_constant public static final com.android.build.api.instrumentation.FramesComputationMode COMPUTE_FRAMES_FOR_INSTRUMENTED_CLASSES;
@@ -2130,7 +2130,7 @@ package com.android.build.api.instrumentation {
   }
 
   public enum InstrumentationScope {
-    method public static com.android.build.api.instrumentation.InstrumentationScope valueOf(String name) throws java.lang.IllegalArgumentException;
+    method public static com.android.build.api.instrumentation.InstrumentationScope valueOf(String value) throws java.lang.IllegalArgumentException, java.lang.NullPointerException;
     method public static com.android.build.api.instrumentation.InstrumentationScope[] values();
     enum_constant public static final com.android.build.api.instrumentation.InstrumentationScope ALL;
     enum_constant public static final com.android.build.api.instrumentation.InstrumentationScope PROJECT;
@@ -2199,14 +2199,14 @@ package com.android.build.api.transform {
   @Deprecated public class SecondaryFile {
     ctor @Deprecated public SecondaryFile(java.io.File, boolean);
     method @Deprecated public java.io.File! getFile();
-    method @Deprecated public org.gradle.api.file.FileCollection! getFileCollection(org.gradle.api.Project);
     method @Deprecated public org.gradle.api.file.FileCollection? getFileCollection();
+    method @Deprecated public org.gradle.api.file.FileCollection! getFileCollection(org.gradle.api.Project);
     method @Deprecated public static com.android.build.api.transform.SecondaryFile! incremental(java.io.File);
-    method @Deprecated public static com.android.build.api.transform.SecondaryFile! incremental(org.gradle.api.file.FileCollection);
     method @Deprecated public static com.android.build.api.transform.SecondaryFile! incremental(java.util.function.Supplier<org.gradle.api.file.FileCollection!>);
+    method @Deprecated public static com.android.build.api.transform.SecondaryFile! incremental(org.gradle.api.file.FileCollection);
     method @Deprecated public static com.android.build.api.transform.SecondaryFile! nonIncremental(java.io.File);
-    method @Deprecated public static com.android.build.api.transform.SecondaryFile! nonIncremental(org.gradle.api.file.FileCollection);
     method @Deprecated public static com.android.build.api.transform.SecondaryFile! nonIncremental(java.util.function.Supplier<org.gradle.api.file.FileCollection!>);
+    method @Deprecated public static com.android.build.api.transform.SecondaryFile! nonIncremental(org.gradle.api.file.FileCollection);
     method @Deprecated public boolean supportsIncrementalBuild();
   }
 
@@ -2244,9 +2244,9 @@ package com.android.build.api.transform {
   }
 
   @Deprecated public class TransformException extends java.lang.Exception {
-    ctor @Deprecated public TransformException(Throwable!);
     ctor @Deprecated public TransformException(String!);
     ctor @Deprecated public TransformException(String!, Throwable!);
+    ctor @Deprecated public TransformException(Throwable!);
   }
 
   @Deprecated public interface TransformInput {
@@ -2580,7 +2580,7 @@ package com.android.build.api.variant {
   }
 
   public enum FilterConfiguration.FilterType {
-    method public static com.android.build.api.variant.FilterConfiguration.FilterType valueOf(String name) throws java.lang.IllegalArgumentException;
+    method public static com.android.build.api.variant.FilterConfiguration.FilterType valueOf(String value) throws java.lang.IllegalArgumentException, java.lang.NullPointerException;
     method public static com.android.build.api.variant.FilterConfiguration.FilterType[] values();
     enum_constant public static final com.android.build.api.variant.FilterConfiguration.FilterType ABI;
     enum_constant public static final com.android.build.api.variant.FilterConfiguration.FilterType DENSITY;
@@ -2789,7 +2789,7 @@ package com.android.build.api.variant {
   }
 
   public enum ScopedArtifacts.Scope {
-    method public static com.android.build.api.variant.ScopedArtifacts.Scope valueOf(String name) throws java.lang.IllegalArgumentException;
+    method public static com.android.build.api.variant.ScopedArtifacts.Scope valueOf(String value) throws java.lang.IllegalArgumentException, java.lang.NullPointerException;
     method public static com.android.build.api.variant.ScopedArtifacts.Scope[] values();
     enum_constant public static final com.android.build.api.variant.ScopedArtifacts.Scope ALL;
     enum_constant public static final com.android.build.api.variant.ScopedArtifacts.Scope PROJECT;
@@ -2944,10 +2944,10 @@ package com.android.build.api.variant {
   }
 
   @org.gradle.api.Incubating public interface VariantExtensionConfig<VariantT extends com.android.build.api.variant.Variant> {
-    method public <T> T! buildTypeExtension(Class<T> extensionType);
+    method public <T> T buildTypeExtension(Class<T> extensionType);
     method public VariantT getVariant();
     method public <T> java.util.List<T> productFlavorsExtensions(Class<T> extensionType);
-    method public <T> T! projectExtension(Class<T> extensionType);
+    method public <T> T projectExtension(Class<T> extensionType);
     property public abstract VariantT variant;
   }
 
@@ -2958,11 +2958,11 @@ package com.android.build.api.variant {
     method @Deprecated public boolean getIgnore();
     method @Deprecated public String getName();
     method @Deprecated public void setIgnore(boolean);
-    property public abstract com.android.builder.model.BuildType buildType;
-    property public abstract com.android.builder.model.ProductFlavor defaultConfig;
-    property public abstract java.util.List<com.android.builder.model.ProductFlavor> flavors;
-    property public abstract boolean ignore;
-    property public abstract String name;
+    property @Deprecated public abstract com.android.builder.model.BuildType buildType;
+    property @Deprecated public abstract com.android.builder.model.ProductFlavor defaultConfig;
+    property @Deprecated public abstract java.util.List<com.android.builder.model.ProductFlavor> flavors;
+    property @Deprecated public abstract boolean ignore;
+    property @Deprecated public abstract String name;
   }
 
   @Deprecated public interface VariantInfo {
@@ -2992,7 +2992,7 @@ package com.android.build.api.variant {
   }
 
   public enum VariantOutputConfiguration.OutputType {
-    method public static com.android.build.api.variant.VariantOutputConfiguration.OutputType valueOf(String name) throws java.lang.IllegalArgumentException;
+    method public static com.android.build.api.variant.VariantOutputConfiguration.OutputType valueOf(String value) throws java.lang.IllegalArgumentException, java.lang.NullPointerException;
     method public static com.android.build.api.variant.VariantOutputConfiguration.OutputType[] values();
     enum_constant public static final com.android.build.api.variant.VariantOutputConfiguration.OutputType ONE_OF_MANY;
     enum_constant public static final com.android.build.api.variant.VariantOutputConfiguration.OutputType SINGLE;
@@ -3002,10 +3002,10 @@ package com.android.build.api.variant {
   public interface VariantSelector {
     method public com.android.build.api.variant.VariantSelector all();
     method public com.android.build.api.variant.VariantSelector withBuildType(String buildType);
-    method public com.android.build.api.variant.VariantSelector withFlavor(kotlin.Pair<java.lang.String,java.lang.String> flavorToDimension);
     method public com.android.build.api.variant.VariantSelector withFlavor(String dimension, String flavorName);
-    method public com.android.build.api.variant.VariantSelector withName(java.util.regex.Pattern pattern);
+    method public com.android.build.api.variant.VariantSelector withFlavor(kotlin.Pair<java.lang.String,java.lang.String> flavorToDimension);
     method public com.android.build.api.variant.VariantSelector withName(String name);
+    method public com.android.build.api.variant.VariantSelector withName(java.util.regex.Pattern pattern);
   }
 
 }
@@ -3016,23 +3016,14 @@ package com.android.build.gradle {
     ctor public AppPlugin();
   }
 
-  public final class AppPluginKt {
-  }
-
   public final class AssetPackBundlePlugin implements org.gradle.api.Plugin<org.gradle.api.Project> {
     ctor public AssetPackBundlePlugin();
     method public void apply(org.gradle.api.Project project);
   }
 
-  public final class AssetPackBundlePluginKt {
-  }
-
   public final class AssetPackPlugin implements org.gradle.api.Plugin<org.gradle.api.Project> {
     ctor public AssetPackPlugin();
     method public void apply(org.gradle.api.Project project);
-  }
-
-  public final class AssetPackPluginKt {
   }
 
   public class BasePlugin implements org.gradle.api.Plugin<org.gradle.api.Project> {
@@ -3044,14 +3035,8 @@ package com.android.build.gradle {
     ctor public DynamicFeaturePlugin();
   }
 
-  public final class DynamicFeaturePluginKt {
-  }
-
   public final class LibraryPlugin extends com.android.build.gradle.BasePlugin {
     ctor public LibraryPlugin();
-  }
-
-  public final class LibraryPluginKt {
   }
 
   public abstract class LintPlugin extends com.android.build.gradle.BasePlugin {
@@ -3060,9 +3045,6 @@ package com.android.build.gradle {
 
   public final class TestPlugin extends com.android.build.gradle.BasePlugin {
     ctor public TestPlugin();
-  }
-
-  public final class TestPluginKt {
   }
 
 }
@@ -3081,9 +3063,6 @@ package com.android.build.gradle.api {
 
   @org.gradle.api.Incubating public final class KotlinMultiplatformAndroidPlugin extends com.android.build.gradle.BasePlugin {
     ctor public KotlinMultiplatformAndroidPlugin();
-  }
-
-  public final class KotlinMultiplatformAndroidPluginKt {
   }
 
   @org.gradle.api.Incubating public final class PrivacySandboxSdkPlugin implements org.gradle.api.Plugin<org.gradle.api.Project> {
