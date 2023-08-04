@@ -64,6 +64,10 @@ open class IssueLogger(
     }
 }
 
+fun ILogger.LOG(block: () -> String) {
+    quiet(block())
+}
+
 fun ILogger.error(block: () -> String) {
     error(block())
 }
