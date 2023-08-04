@@ -27,6 +27,7 @@ import com.android.build.api.dsl.ExternalNativeBuild
 import com.android.build.api.dsl.Installation
 import com.android.build.api.dsl.Lint
 import com.android.build.api.dsl.Prefab
+import com.android.build.api.dsl.SettingsExtension
 import com.android.build.api.dsl.Splits
 import com.android.build.gradle.internal.KotlinMultiplatformCompileOptionsImpl
 import com.android.build.gradle.internal.SdkComponentsBuildService
@@ -69,6 +70,7 @@ import org.gradle.api.provider.Provider
 internal class KmpGlobalTaskCreationConfigImpl(
     project: Project,
     private val extension: KotlinMultiplatformAndroidExtensionImpl,
+    private val settingsExtension: SettingsExtension?,
     private val versionedSdkLoaderService: VersionedSdkLoaderService,
     bootClasspathConfig: BootClasspathConfigImpl,
     compileSdkVersionProvider: () -> String,
@@ -213,9 +215,9 @@ internal class KmpGlobalTaskCreationConfigImpl(
     // TODO: Refactor the parent interface so that we don't have to override these values to avoid
     //  accidental calls.
     override val ndkVersion: String
-        get() = SdkConstants.NDK_DEFAULT_VERSION
+        get() = settingsExtension?.ndkVersion ?: SdkConstants.NDK_DEFAULT_VERSION
     override val ndkPath: String?
-        get() = null
+        get() = settingsExtension?.ndkPath
     override val aidlPackagedList: Collection<String>?
         get() = null
     override val compileOptionsIncremental: Boolean?
