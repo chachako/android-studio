@@ -48,7 +48,7 @@ function copy_bazel_artifacts() {(
 
 function run_bazel() {
   local target_name="studio-nightly"
-  local version="Nightly $(date +%Y-%m-%d)"
+  local version="Nightly $(TZ=America/Los_Angeles date +%Y-%m-%d)"
 
   # Generate a UUID for use as the bazel test invocation id
   local -r invocation_id="$(uuidgen)"
