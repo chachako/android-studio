@@ -186,7 +186,7 @@ class ModelBuilder<
          * after the next version of Studio becomes stable, dropping support for previous
          * Android Studio versions.
          */
-        val minimumModelConsumerVersion = VersionImpl(major = 64, minor = 0, humanReadable = "Android Studio Giraffe")
+        val minimumModelConsumerVersion = VersionImpl(major = 66, minor = 0, humanReadable = "Android Studio I")
         return VersionsImpl(
             agp = Version.ANDROID_GRADLE_PLUGIN_VERSION,
             versions = mutableMapOf<String, Versions.Version>(
