@@ -82,7 +82,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-import org.jetbrains.annotations.NotNull;
 
 /** A Device. It can be a physical device or an emulator. */
 public final class DeviceImpl implements IDevice {
@@ -1918,11 +1917,16 @@ public final class DeviceImpl implements IDevice {
     }
 
     public <T> @NonNull T computeUserDataIfAbsent(
-            @NotNull Key<T> key, @NotNull Function<Key<T>, T> mappingFunction) {
+            @NonNull Key<T> key, @NonNull Function<Key<T>, T> mappingFunction) {
         return mUserDataMap.computeUserDataIfAbsent(key, mappingFunction);
     }
 
-    public <T> @Nullable T removeUserData(@NotNull Key<T> key) {
+    @Override
+    public <T> @Nullable T getUserDataOrNull(@NonNull Key<T> key) {
+        return mUserDataMap.getUserDataOrNull(key);
+    }
+
+    public <T> @Nullable T removeUserData(@NonNull Key<T> key) {
         return mUserDataMap.removeUserData(key);
     }
 }

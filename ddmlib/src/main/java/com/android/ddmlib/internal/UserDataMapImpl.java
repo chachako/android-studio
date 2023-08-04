@@ -20,7 +20,6 @@ import com.android.annotations.Nullable;
 import com.android.ddmlib.IUserDataMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
-import org.jetbrains.annotations.NotNull;
 
 class UserDataMapImpl implements IUserDataMap {
     @NonNull
@@ -28,7 +27,7 @@ class UserDataMapImpl implements IUserDataMap {
 
     @Override
     public <T> @NonNull T computeUserDataIfAbsent(
-            @NotNull Key<T> key, @NotNull Function<Key<T>, T> mappingFunction) {
+            @NonNull Key<T> key, @NonNull Function<Key<T>, T> mappingFunction) {
         // Unchecked cast: `mappingFunction` is a `Function` when types are erased
         //noinspection unchecked,rawtypes
         Object value = mUserDataBag.computeIfAbsent(key, (Function) mappingFunction);
@@ -41,7 +40,15 @@ class UserDataMapImpl implements IUserDataMap {
     }
 
     @Override
-    public <T> @Nullable T removeUserData(@NotNull Key<T> key) {
+    public <T> @Nullable T getUserDataOrNull(@NonNull Key<T> key) {
+        Object value = mUserDataBag.get(key);
+        // Unchecked cast: `mappingFunction` returns a `T`
+        //noinspection unchecked
+        return (T) value;
+    }
+
+    @Override
+    public <T> @Nullable T removeUserData(@NonNull Key<T> key) {
         //noinspection unchecked
         return (T) mUserDataBag.remove(key);
     }

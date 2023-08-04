@@ -52,6 +52,9 @@ public interface IUserDataMap {
     <T> T computeUserDataIfAbsent(
             @NonNull Key<T> key, @NonNull Function<Key<T>, T> mappingFunction);
 
+    @Nullable
+    <T> T getUserDataOrNull(@NonNull Key<T> key);
+
     /**
      * Removes the key (and its corresponding value) from this map. This method does nothing if the
      * key is not in the map.

@@ -1230,6 +1230,11 @@ public interface IDevice extends IShellEnabledDevice, IUserDataMap {
     }
 
     @Override
+    default <T> @Nullable T getUserDataOrNull(@NonNull Key<T> key) {
+        throw new UnsupportedOperationException("Operation is not supported on this instance");
+    }
+
+    @Override
     default <T> @Nullable T removeUserData(@NonNull Key<T> key) {
         throw new UnsupportedOperationException("Operation is not supported on this instance");
     }

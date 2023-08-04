@@ -55,6 +55,36 @@ class DeviceImplTest {
     }
 
     @Test
+    fun testGetUserDataOrNullReturnsValueIfPresent() {
+        // Prepare
+        adbRule.attachDevice("42", "Google", "Pix3l", "versionX", "29")
+        val device: IDevice = adbRule.bridge.devices.single()
+        val key = IUserDataMap.Key<MyClass>()
+        device.computeUserDataIfAbsent(key) { myKey -> MyClass(myKey) }
+
+        // Act
+        val value = device.getUserDataOrNull(key)
+
+        // Assert
+        assertThat(value).isNotNull()
+        assertThat(value?.key).isSameAs(key)
+    }
+
+    @Test
+    fun testGetUserDataOrNullReturnsNullIfNotPresent() {
+        // Prepare
+        adbRule.attachDevice("42", "Google", "Pix3l", "versionX", "29")
+        val device: IDevice = adbRule.bridge.devices.single()
+        val key = IUserDataMap.Key<MyClass>()
+
+        // Act
+        val value = device.getUserDataOrNull(key)
+
+        // Assert
+        assertThat(value).isNull()
+    }
+
+    @Test
     fun testRemoveUserData() {
         // Prepare
         adbRule.attachDevice("42", "Google", "Pix3l", "versionX", "29")
