@@ -138,7 +138,7 @@ class IntentWillNullActionDetector : Detector(), SourceCodeScanner, XmlScanner {
       for (intentId in intents) {
         val location = intents.getLocation(intentId)
         val message =
-          "This intent has no action set and is not explicit by component." +
+          "This intent has no action set and is not explicit by component. " +
             "You should either make this intent explicit by component or set an action matching the targeted intent filter."
         context.report(Incident(ISSUE, location!!, message, buildQuickFix(location)))
       }

@@ -46,7 +46,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-            src/test/pkg/TestActivity.java:10: Warning: This intent has no action set and is not explicit by component.You should either make this intent explicit by component or set an action matching the targeted intent filter. [IntentWithNullActionLaunch]
+            src/test/pkg/TestActivity.java:10: Warning: This intent has no action set and is not explicit by component. You should either make this intent explicit by component or set an action matching the targeted intent filter. [IntentWithNullActionLaunch]
                     Intent intent = new Intent();
                                     ~~~~~~~~~~~~
             0 errors, 1 warnings
@@ -64,6 +64,61 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
             +         Intent intent = new Intent().setClassName("[app.package.name]|", "your.classname");
         """
       )
+  }
+
+  fun testClassInConstructorKotlin() {
+    lint()
+      .files(
+        kotlin(
+            """
+                package test.pkg
+
+                import android.content.Intent
+                import android.app.Activity
+                import android.content.Context
+
+                class TestActivity : Activity {
+
+                    fun foo(context: Context) {
+                        val intent = Intent(context, TestActivity::class.java)
+                        startActivity(intent)
+                    }
+                }
+            """
+          )
+          .indented(),
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun testClassInConstructorJava() {
+    lint()
+      .files(
+        java(
+            """
+                package test.pkg;
+
+                import android.os.Bundle;
+                import android.content.Intent;
+                import android.content.Context;
+                import android.app.Activity;
+
+                public class TestActivity extends Activity {
+
+                    public void foo(Context context) {
+                        Intent intent = new Intent(context, TestActivity.class);
+                        startActivity(intent);
+                    }
+
+                }
+            """
+          )
+          .indented(),
+      )
+      .requireCompileSdk()
+      .run()
+      .expectClean()
   }
 
   fun testIntentWithNullAction_actionSetByConstructor() {
@@ -120,6 +175,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
   }
 
   fun testIntentWithNullAction_actionSetToNullWithConstructorResetWithSetAction() {
+    @Suppress("ConstantValue")
     lint()
       .files(
         java(
@@ -133,7 +189,8 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
 
                     @Override
                     protected void onCreate(Bundle savedInstanceState) {
-                        Intent intent = new Intent(null);
+                        String action = null;
+                        Intent intent = new Intent(action);
                         intent.setAction("some.action");
                         startActivity(intent);
                     }
@@ -328,7 +385,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-            src/test/pkg/TestActivity.java:10: Warning: This intent has no action set and is not explicit by component.You should either make this intent explicit by component or set an action matching the targeted intent filter. [IntentWithNullActionLaunch]
+            src/test/pkg/TestActivity.java:10: Warning: This intent has no action set and is not explicit by component. You should either make this intent explicit by component or set an action matching the targeted intent filter. [IntentWithNullActionLaunch]
                     Intent intent = new Intent();
                                     ~~~~~~~~~~~~
             0 errors, 1 warnings
@@ -373,7 +430,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-            src/test/pkg/TestActivity.kt:9: Warning: This intent has no action set and is not explicit by component.You should either make this intent explicit by component or set an action matching the targeted intent filter. [IntentWithNullActionLaunch]
+            src/test/pkg/TestActivity.kt:9: Warning: This intent has no action set and is not explicit by component. You should either make this intent explicit by component or set an action matching the targeted intent filter. [IntentWithNullActionLaunch]
                     val intent = Intent()
                                  ~~~~~~~~
             0 errors, 1 warnings
@@ -419,7 +476,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-            src/test/pkg/TestActivity.java:10: Warning: This intent has no action set and is not explicit by component.You should either make this intent explicit by component or set an action matching the targeted intent filter. [IntentWithNullActionLaunch]
+            src/test/pkg/TestActivity.java:10: Warning: This intent has no action set and is not explicit by component. You should either make this intent explicit by component or set an action matching the targeted intent filter. [IntentWithNullActionLaunch]
                     Intent intent = new Intent();
                                     ~~~~~~~~~~~~
             0 errors, 1 warnings
@@ -495,6 +552,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
   }
 
   fun testIntentWithNullAction_actionSetToNullWithConstructorResetWithSetAction_onTheFlyAnalysis() {
+    @Suppress("ConstantValue")
     lint()
       .files(
         java(
@@ -508,7 +566,8 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
 
                     @Override
                     protected void onCreate(Bundle savedInstanceState) {
-                        Intent intent = new Intent(null);
+                        String action = null;
+                        Intent intent = new Intent(action);
                         intent.setAction("some.action");
                         startActivity(intent);
                     }
@@ -708,7 +767,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-            src/test/pkg/TestActivity.java:10: Warning: This intent has no action set and is not explicit by component.You should either make this intent explicit by component or set an action matching the targeted intent filter. [IntentWithNullActionLaunch]
+            src/test/pkg/TestActivity.java:10: Warning: This intent has no action set and is not explicit by component. You should either make this intent explicit by component or set an action matching the targeted intent filter. [IntentWithNullActionLaunch]
                     Intent intent = new Intent();
                                     ~~~~~~~~~~~~
             0 errors, 1 warnings

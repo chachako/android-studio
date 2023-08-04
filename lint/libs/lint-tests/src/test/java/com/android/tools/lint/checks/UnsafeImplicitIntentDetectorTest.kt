@@ -194,13 +194,13 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
 
                 import android.content.Intent;
                 import android.app.Activity;
+                import android.content.Context;
 
                 public class TestActivity extends Activity {
 
-                    @Override
-                    protected void onCreate(Bundle savedInstanceState) {
+                    public void foo(Context context) {
                         Intent intent = new Intent("some.fake.action.LAUNCH");
-                        intent.setClass(this, SomeActivity.class);
+                        intent.setClass(context, SomeActivity.class);
                         startActivity(intent);
                     }
 
@@ -242,13 +242,13 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
 
                 import android.content.Intent;
                 import android.app.Activity;
+                import android.content.Context;
 
                 public class TestActivity extends Activity {
 
-                    @Override
-                    protected void onCreate(Bundle savedInstanceState) {
+                   public void foo(Context context) {
                         Intent intent = new Intent("some.fake.action.LAUNCH");
-                        intent.setClassName(this, SomeActivity.class.getCanonicalName());
+                        intent.setClassName(context, SomeActivity.class.getName());
                         startActivity(intent);
                     }
 
@@ -387,14 +387,14 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
 
                 import android.content.Intent;
                 import android.app.Activity;
+                import android.content.Context;
 
                 public class TestActivity extends Activity {
 
-                    @Override
-                    protected void onCreate(Bundle savedInstanceState) {
+                    public void foo(Context context) {
                         Intent intent = new Intent();
                         intent.setAction("some.fake.action.LAUNCH");
-                        intent.setClass(this, SomeActivity.class);
+                        intent.setClass(context, SomeActivity.class);
                         startActivity(intent);
                     }
 
@@ -436,14 +436,14 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
 
                 import android.content.Intent;
                 import android.app.Activity;
+                import android.content.Context;
 
                 public class TestActivity extends Activity {
 
-                    @Override
-                    protected void onCreate(Bundle savedInstanceState) {
+                    public void foo(Context context) {
                         Intent intent = new Intent();
                         intent.setAction("some.fake.action.LAUNCH");
-                        intent.setClassName(this, SomeActivity.class.getCanonicalName());
+                        intent.setClassName(context, SomeActivity.class.getName());
                         startActivity(intent);
                     }
 
@@ -737,20 +737,17 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
 
                 import android.content.Intent;
                 import android.app.Activity;
+                import android.content.Context;
 
                 public class TestActivity extends Activity {
 
-                    @Override
-                    protected void onCreate(Bundle savedInstanceState) {
-                        Intent intent = new Intent(getContext(), SomeOtherActivity.class);
+                    public void foo(Context context) {
+                        Intent intent = new Intent(context, SomeOtherActivity.class);
                         startActivity(intent);
                     }
                 }
 
-                public class SomeOtherActivity extends Activity {
-                    @Override
-                    protected void onCreate(Bundle savedInstanceState) {
-                    }
+                class SomeOtherActivity extends Activity {
                 }
             """
           )
@@ -917,19 +914,18 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
 
                 import android.content.Intent;
                 import android.app.Activity;
+                import android.content.Context;
 
                 public class TestActivity extends Activity {
 
-                    @Override
-                    protected void onCreate(Bundle savedInstanceState) {
+                    public void foo(Context context) {
                         Intent intent = new Intent("some.fake.action.LAUNCH");
-                        intent.setClass(this, SomeActivity.class);
+                        intent.setClass(context, SomeActivity.class);
                         startActivity(intent);
                     }
+                }
 
-                    private static class SomeActivity extends Activity {
-
-                    }
+                class SomeActivity extends Activity {
                 }
             """
           )
@@ -966,19 +962,18 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
 
                 import android.content.Intent;
                 import android.app.Activity;
+                import android.content.Context;
 
                 public class TestActivity extends Activity {
 
-                    @Override
-                    protected void onCreate(Bundle savedInstanceState) {
+                    public void foo(Context context) {
                         Intent intent = new Intent("some.fake.action.LAUNCH");
-                        intent.setClassName(this, SomeActivity.class.getCanonicalName());
+                        intent.setClassName(context, SomeActivity.class.getName());
                         startActivity(intent);
                     }
+                }
 
-                    private static class SomeActivity extends Activity {
-
-                    }
+                class SomeActivity extends Activity {
                 }
             """
           )
@@ -1114,14 +1109,14 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
 
                 import android.content.Intent;
                 import android.app.Activity;
+                import android.content.Context;
 
                 public class TestActivity extends Activity {
 
-                    @Override
-                    protected void onCreate(Bundle savedInstanceState) {
+                    public void foo(Context context) {
                         Intent intent = new Intent();
                         intent.setAction("some.fake.action.LAUNCH");
-                        intent.setClass(this, SomeActivity.class);
+                        intent.setClass(context, SomeActivity.class);
                         startActivity(intent);
                     }
 
@@ -1164,14 +1159,14 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
 
                 import android.content.Intent;
                 import android.app.Activity;
+                import android.content.Context;
 
                 public class TestActivity extends Activity {
 
-                    @Override
-                    protected void onCreate(Bundle savedInstanceState) {
+                    public void foo(Context context) {
                         Intent intent = new Intent();
                         intent.setAction("some.fake.action.LAUNCH");
-                        intent.setClassName(this, SomeActivity.class.getCanonicalName());
+                        intent.setClassName(context, SomeActivity.class.getName());
                         startActivity(intent);
                     }
 
@@ -1470,19 +1465,13 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
 
                 import android.content.Intent;
                 import android.app.Activity;
+                import android.content.Context;
 
                 public class TestActivity extends Activity {
 
-                    @Override
-                    protected void onCreate(Bundle savedInstanceState) {
-                        Intent intent = new Intent(getContext(), SomeOtherActivity.class);
+                    public void foo(Context context) {
+                        Intent intent = new Intent(context, TestActivity.class);
                         startActivity(intent);
-                    }
-                }
-
-                public class SomeOtherActivity extends Activity {
-                    @Override
-                    protected void onCreate(Bundle savedInstanceState) {
                     }
                 }
             """
@@ -1885,7 +1874,7 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
 
                     class LibActivity : Activity {
 
-                        override fun onCreate(savedInstanceState: Bundle) {
+                        fun foo(context: Context) {
                             startActivity(Intent("com.lib.manifest.receiver.action")) // 1
                             sendBroadcast(Intent("com.lib.manifest.receiver.action")) // 2
                             startActivity(Intent("com.lib.manifest.receiver.action2")) // 3
@@ -1908,7 +1897,7 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
 
                             val intentFilter = IntentFilter.create("com.lib.dynamic.receiver.action", "")
                             intentFilter.addAction("com.lib.dynamic.receiver.action2")
-                            registerReceiver(null, intentFilter, Context.RECEIVER_NOT_EXPORTED)
+                            registerReceiver(context, intentFilter, Context.RECEIVER_NOT_EXPORTED)
                         }
 
                         @SuppressLint("UnsafeImplicitIntentLaunch")
