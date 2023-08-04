@@ -136,7 +136,7 @@ class LibraryVariantFactory(
         }
     }
 
-    override fun createUnitTestBuildFeatureValues(
+    override fun createHostTestBuildFeatureValues(
         buildFeatures: BuildFeatures,
         dataBinding: DataBinding,
         projectOptions: ProjectOptions,

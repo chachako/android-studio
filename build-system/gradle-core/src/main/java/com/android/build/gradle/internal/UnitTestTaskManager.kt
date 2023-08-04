@@ -44,7 +44,7 @@ import org.gradle.testing.jacoco.plugins.JacocoPlugin
 class UnitTestTaskManager(
     project: Project,
     globalConfig: GlobalTaskCreationConfig
-): TaskManager(project, globalConfig) {
+): HostTestTaskManager(project, globalConfig) {
 
     fun createTopLevelTasks() {
         // Create top level unit test tasks.

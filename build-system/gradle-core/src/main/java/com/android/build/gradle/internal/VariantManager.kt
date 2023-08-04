@@ -687,38 +687,38 @@ class VariantManager<
             taskContainer
         )
 
-        // this is ANDROID_TEST
-        val testComponent = if (androidTestBuilder != null) {
-            val androidTest = variantFactory.createAndroidTest(
-                variantDslInfo.componentIdentity,
-                variantFactory.createAndroidTestBuildFeatureValues(
-                    dslExtension.buildFeatures,
-                    dslExtension.dataBinding,
-                    dslServices.projectOptions
-                ),
-                variantDslInfo as AndroidTestComponentDslInfo,
-                variantDependencies,
-                variantSources,
-                pathHelper,
-                artifacts,
-                testVariantData,
-                taskContainer,
-                testedComponentInfo.variant,
-                variantPropertiesApiServices,
-                taskCreationServices,
-                globalTaskCreationConfig,
-                androidTestBuilder,
-            )
-            androidTest
-        } else {
+        val testComponent = when(componentType) {
+            // this is ANDROID_TEST
+            ComponentTypeImpl.ANDROID_TEST -> androidTestBuilder?.let {
+                variantFactory.createAndroidTest(
+                    variantDslInfo.componentIdentity,
+                    variantFactory.createAndroidTestBuildFeatureValues(
+                            dslExtension.buildFeatures,
+                            dslExtension.dataBinding,
+                            dslServices.projectOptions
+                    ),
+                    variantDslInfo as AndroidTestComponentDslInfo,
+                    variantDependencies,
+                    variantSources,
+                    pathHelper,
+                    artifacts,
+                    testVariantData,
+                    taskContainer,
+                    testedComponentInfo.variant,
+                    variantPropertiesApiServices,
+                    taskCreationServices,
+                    globalTaskCreationConfig,
+                    it
+                )
+            } ?: throw IllegalStateException("Expected a test component type, but ${componentIdentity.name} has type $componentType")
             // this is UNIT_TEST
-            val unitTest = variantFactory.createUnitTest(
+            ComponentTypeImpl.UNIT_TEST -> variantFactory.createUnitTest(
                 variantDslInfo.componentIdentity,
-                variantFactory.createUnitTestBuildFeatureValues(
-                    dslExtension.buildFeatures,
-                    dslExtension.dataBinding,
-                    dslServices.projectOptions,
-                    globalTaskCreationConfig.unitTestOptions.isIncludeAndroidResources
+                variantFactory.createHostTestBuildFeatureValues(
+                        dslExtension.buildFeatures,
+                        dslExtension.dataBinding,
+                        dslServices.projectOptions,
+                        globalTaskCreationConfig.unitTestOptions.isIncludeAndroidResources
                 ),
                 variantDslInfo as HostTestComponentDslInfo,
                 variantDependencies,
@@ -732,7 +732,7 @@ class VariantManager<
                 taskCreationServices,
                 globalTaskCreationConfig
             )
-            unitTest
+            else -> throw IllegalStateException("Expected a test component type, but ${componentIdentity.name} has type $componentType")
         }
 
         return testComponent

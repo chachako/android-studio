@@ -160,7 +160,7 @@ public class TestVariantFactory
 
     @NonNull
     @Override
-    public BuildFeatureValues createUnitTestBuildFeatureValues(
+    public BuildFeatureValues createHostTestBuildFeatureValues(
             @NonNull BuildFeatures buildFeatures,
             @NonNull DataBinding dataBinding,
             @NonNull ProjectOptions projectOptions,

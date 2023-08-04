@@ -147,7 +147,7 @@ interface VariantFactory<VariantBuilderT : VariantBuilder, VariantDslInfoT: Vari
         androidResourcesEnabled: Boolean
     ): BuildFeatureValues
 
-    fun createUnitTestBuildFeatureValues(
+    fun createHostTestBuildFeatureValues(
         buildFeatures: BuildFeatures,
         dataBinding: DataBinding,
         projectOptions: ProjectOptions,

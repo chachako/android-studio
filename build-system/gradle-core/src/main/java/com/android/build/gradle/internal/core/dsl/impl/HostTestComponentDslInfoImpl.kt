@@ -20,8 +20,8 @@ import com.android.build.api.dsl.BuildType
 import com.android.build.api.dsl.ProductFlavor
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.impl.MutableAndroidVersion
-import com.android.build.gradle.internal.core.dsl.TestedVariantDslInfo
 import com.android.build.gradle.internal.core.dsl.HostTestComponentDslInfo
+import com.android.build.gradle.internal.core.dsl.TestedVariantDslInfo
 import com.android.build.gradle.internal.dsl.DefaultConfig
 import com.android.build.gradle.internal.dsl.InternalTestedExtension
 import com.android.build.gradle.internal.services.VariantServices
@@ -30,7 +30,7 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 
-internal class UnitTestComponentDslInfoImpl(
+internal abstract class HostTestComponentDslInfoImpl(
     componentIdentity: ComponentIdentity,
     componentType: ComponentType,
     defaultConfig: DefaultConfig,
@@ -38,9 +38,9 @@ internal class UnitTestComponentDslInfoImpl(
     productFlavorList: List<ProductFlavor>,
     services: VariantServices,
     buildDirectory: DirectoryProperty,
-    mainVariantDslInfo: TestedVariantDslInfo,
+    override val mainVariantDslInfo: TestedVariantDslInfo,
     extension: InternalTestedExtension<*, *, *, *, *>
-) : HostTestComponentDslInfoImpl(
+) : ComponentDslInfoImpl(
     componentIdentity,
     componentType,
     defaultConfig,
@@ -48,11 +48,10 @@ internal class UnitTestComponentDslInfoImpl(
     productFlavorList,
     services,
     buildDirectory,
-    mainVariantDslInfo,
     extension
 ), HostTestComponentDslInfo {
 
-    override val namespace: Provider<String> by lazy {
+    override val namespace: Provider<String> by lazy(LazyThreadSafetyMode.NONE) {
         getTestComponentNamespace(extension, services)
     }
 
@@ -65,6 +64,4 @@ internal class UnitTestComponentDslInfoImpl(
     override val minSdkVersion: MutableAndroidVersion
         get() = mainVariantDslInfo.minSdkVersion
 
-    override val isUnitTestCoverageEnabled: Boolean
-        get() = buildTypeObj.enableUnitTestCoverage || buildTypeObj.isTestCoverageEnabled
 }
