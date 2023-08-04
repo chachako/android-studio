@@ -110,6 +110,80 @@ class AdblibIDeviceWrapperTest {
         assertEquals("a\\nb", listReceiver.lines[0])
     }
 
+    @Test
+    fun getProperty() = runBlockingWithTimeout {
+        // Prepare
+        val connectedDevice = createConnectedDevice("device1", DeviceState.DeviceStatus.ONLINE)
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice)
+
+        // Act
+        val propertyValue = adblibIDeviceWrapper.getProperty("ro.serialno")
+
+        // Assert
+        assertEquals("device1", propertyValue)
+    }
+
+    @Test
+    fun getSystemProperty() = runBlockingWithTimeout {
+        // Prepare
+        val connectedDevice = createConnectedDevice("device1", DeviceState.DeviceStatus.ONLINE)
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice)
+
+        // Act
+        val propertyValue = adblibIDeviceWrapper.getSystemProperty("ro.serialno").get()
+
+        // Assert
+        assertEquals("device1", propertyValue)
+    }
+
+    @Test
+    fun getPropertyCount() = runBlockingWithTimeout {
+        // Prepare
+        val connectedDevice = createConnectedDevice("device1", DeviceState.DeviceStatus.ONLINE)
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice)
+        // Query property to populate the property cache
+        adblibIDeviceWrapper.getProperty("some-random-property")
+
+        // Act
+        val propertyCount = adblibIDeviceWrapper.propertyCount
+
+        // Assert
+        assertEquals(6, propertyCount)
+    }
+
+    @Test
+    fun getProperties() = runBlockingWithTimeout {
+        // Prepare
+        val connectedDevice = createConnectedDevice("device1", DeviceState.DeviceStatus.ONLINE)
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice)
+        // Query property to populate the property cache
+        adblibIDeviceWrapper.getProperty("some-random-property")
+
+        // Act
+        val properties = adblibIDeviceWrapper.properties
+
+        // Assert
+        assertEquals(6, properties.size)
+        assertEquals("device1", properties["ro.serialno"])
+    }
+
+    @Test
+    fun arePropertiesSet() = runBlockingWithTimeout {
+        // Prepare
+        val connectedDevice = createConnectedDevice("device1", DeviceState.DeviceStatus.ONLINE)
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice)
+
+        // Assert
+        assertFalse(adblibIDeviceWrapper.arePropertiesSet())
+
+        // Act
+        // Query property to populate the property cache
+        adblibIDeviceWrapper.getProperty("some-random-property")
+
+        // Assert
+        assertTrue(adblibIDeviceWrapper.arePropertiesSet())
+    }
+
     private suspend fun createConnectedDevice(
         serialNumber: String,
         deviceStatus: DeviceState.DeviceStatus

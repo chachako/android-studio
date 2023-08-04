@@ -29,6 +29,7 @@ import com.android.ddmlib.IDevice.DeviceState
 import com.android.ddmlib.IDevice.RE_EMULATOR_SN
 import com.android.ddmlib.IShellOutputReceiver
 import com.android.ddmlib.InstallReceiver
+import com.android.ddmlib.PropertyFetcher
 import com.android.ddmlib.RawImage
 import com.android.ddmlib.ScreenRecorderOptions
 import com.android.ddmlib.ServiceInfo
@@ -39,8 +40,11 @@ import com.google.common.util.concurrent.ListenableFuture
 import java.io.File
 import java.io.InputStream
 import java.net.InetSocketAddress
+import java.util.Collections
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 /**
  * Implementation of [IDevice] that entirely relies on adblib services, i.e. does not depend on
@@ -49,6 +53,9 @@ import java.util.concurrent.TimeUnit
 internal class AdblibIDeviceWrapper(
     private val connectedDevice: ConnectedDevice
 ) : IDevice {
+
+    // TODO(b/294559068): Create our own implementation of PropertyFetcher before we can get rid of ddmlib
+    private val propertyFetcher = PropertyFetcher(this)
 
     /**
      * Returns a (humanized) name for this device. Typically this is the AVD name for AVD's, and
@@ -188,7 +195,7 @@ internal class AdblibIDeviceWrapper(
      * null.
      */
     override fun getSystemProperty(name: String): ListenableFuture<String> {
-        TODO("Not yet implemented")
+        return propertyFetcher.getProperty(name)
     }
 
     /** Returns the serial number of the device.  */
@@ -242,7 +249,7 @@ internal class AdblibIDeviceWrapper(
      */
     @Deprecated("")
     override fun getProperties(): MutableMap<String, String> {
-        TODO("Not yet implemented")
+        return Collections.unmodifiableMap(propertyFetcher.properties)
     }
 
     /**
@@ -251,7 +258,7 @@ internal class AdblibIDeviceWrapper(
      */
     @Deprecated("")
     override fun getPropertyCount(): Int {
-        TODO("Not yet implemented")
+        return propertyFetcher.properties.size
     }
 
     /**
@@ -265,12 +272,25 @@ internal class AdblibIDeviceWrapper(
      * @return the value or `null` if the property value was not immediately available
      */
     override fun getProperty(name: String): String? {
-        TODO("Not yet implemented")
+        val timeout =
+            if (propertyFetcher.properties.isEmpty()) INITIAL_GET_PROP_TIMEOUT_MS else GET_PROP_TIMEOUT_MS
+
+        val future = propertyFetcher.getProperty(name)
+        try {
+            return future.get(timeout, TimeUnit.MILLISECONDS)
+        } catch (e: InterruptedException) {
+            // ignore
+        } catch (e: ExecutionException) {
+            // ignore
+        } catch (e: TimeoutException) {
+            // ignore
+        }
+        return null
     }
 
     /** Returns `true` if properties have been cached  */
     override fun arePropertiesSet(): Boolean {
-        TODO("Not yet implemented")
+        return propertyFetcher.arePropertiesSet();
     }
 
     /**
@@ -288,7 +308,7 @@ internal class AdblibIDeviceWrapper(
      */
     @Deprecated("")
     override fun getPropertySync(name: String?): String {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     /**
@@ -306,7 +326,7 @@ internal class AdblibIDeviceWrapper(
      */
     @Deprecated("")
     override fun getPropertyCacheOrSync(name: String?): String {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     /** Returns whether this device supports the given software feature.  */
@@ -1031,5 +1051,11 @@ internal class AdblibIDeviceWrapper(
         `is`: InputStream?
     ) {
         TODO("Not yet implemented")
+    }
+
+    companion object {
+
+        private const val GET_PROP_TIMEOUT_MS = 1000L
+        private const val INITIAL_GET_PROP_TIMEOUT_MS = 5000L
     }
 }
