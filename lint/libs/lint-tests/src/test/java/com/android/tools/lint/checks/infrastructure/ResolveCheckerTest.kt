@@ -19,6 +19,7 @@ package com.android.tools.lint.checks.infrastructure
 import com.android.testutils.TestUtils
 import com.android.tools.lint.checks.AlwaysShowActionDetector
 import com.android.tools.lint.checks.ToastDetector
+import com.android.tools.lint.checks.UnsafeImplicitIntentDetector
 import com.android.tools.lint.checks.infrastructure.LintDetectorTest.compiled
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
@@ -160,6 +161,59 @@ class ResolveCheckerTest {
                 placeholder with the expected signature such that type resolving works.
 
                 If this call is immaterial to the test, either delete it, or mark
+                this unit test as allowing resolution errors by setting
+                `allowCompilationErrors()`.
+
+                For more information, see the "Library Dependencies and Stubs" section in
+                https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-main:lint/docs/api-guide/unit-testing.md.html
+                """
+          .trimIndent(),
+        e.message?.replace(" \n", "\n")?.dos2unix()?.trim()
+      )
+    }
+  }
+
+  @Test
+  fun testInvalidConstructor() {
+    try {
+      lint()
+        .files(
+          java(
+            """
+                    package test.pkg;
+
+                    import android.content.Intent;
+                    import android.content.Context;
+
+                    public class TestActivity {
+                        public void foo() {
+                            Context context = new Context(null); // OK - unrelated
+                            Intent intent1 = new Intent(); // OK
+                            Intent intent2 = new Intent(null); // ERROR
+                        }
+                    }
+                    """
+          )
+        )
+        .testModes(TestMode.DEFAULT)
+        .issues(UnsafeImplicitIntentDetector.ISSUE)
+        .run()
+        .expectErrorCount(1)
+    } catch (e: Throwable) {
+      assertEquals(
+        """
+                src/test/pkg/TestActivity.java:11: Error:
+                Couldn't resolve this constructor call [LintError]
+                                            Intent intent2 = new Intent(null); // ERROR
+                                                             ~~~~~~~~~~~~~~~~
+
+                The tested detector returns `android.content.Intent` from `getApplicableConstructorTypes()`,
+                which means this reference is probably relevant to the test, but when the
+                constructor call cannot be resolved, lint won't invoke `visitConstructor` on it.
+                This usually means that the unit test needs to declare a stub file or
+                placeholder with the expected signature such that type resolving works.
+
+                If this constructor call is immaterial to the test, either delete it, or mark
                 this unit test as allowing resolution errors by setting
                 `allowCompilationErrors()`.
 

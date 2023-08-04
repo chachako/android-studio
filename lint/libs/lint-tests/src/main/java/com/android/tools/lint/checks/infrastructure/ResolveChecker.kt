@@ -47,8 +47,22 @@ import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UFile
 import org.jetbrains.uast.UImportStatement
 import org.jetbrains.uast.USimpleNameReferenceExpression
+import org.jetbrains.uast.getQualifiedName
+import org.jetbrains.uast.util.isConstructorCall
+import org.jetbrains.uast.util.isMethodCall
 import org.jetbrains.uast.visitor.AbstractUastVisitor
 
+/**
+ * Checks file [root] to see if relevant Kotlin/Java references fail to "resolve" such that the
+ * visitX methods of Detectors might unexpectedly not get called.
+ *
+ * When writing Lint unit tests, if the Kotlin/Java code ends up containing method calls or other
+ * references that do not "resolve" then the detector's visitX method might not get called. Tests
+ * that expect no lint warnings might then vacuously pass.
+ *
+ * This function checks that certain elements resolve. It only checks elements that appear to be
+ * relevant to the detectors based on certain Detector.getApplicableX methods.
+ */
 fun JavaContext.checkFile(root: UFile?, task: TestLintTask, isStub: Boolean = false) {
   root ?: error("Failure processing source ${project.getRelativePath(file)}: No UAST AST created")
   val error = PsiTreeUtil.findChildOfType(root.sourcePsi, PsiErrorElement::class.java)
@@ -81,6 +95,8 @@ fun JavaContext.checkFile(root: UFile?, task: TestLintTask, isStub: Boolean = fa
     detectors.mapNotNull { it.getApplicableMethodNames() }.flatten().toSet()
   val applicableReferences: Set<String> =
     detectors.mapNotNull { it.getApplicableReferenceNames() }.flatten().toSet()
+  val applicableConstructorTypes: Set<String> =
+    detectors.mapNotNull { it.getApplicableConstructorTypes() }.flatten().toSet()
 
   // Check resolve issues
   root.acceptSourceFile(
@@ -217,6 +233,15 @@ fun JavaContext.checkFile(root: UFile?, task: TestLintTask, isStub: Boolean = fa
       }
 
       override fun visitCallExpression(node: UCallExpression): Boolean {
+        if (node.isMethodCall()) {
+          visitMethodCallExpression(node)
+        } else if (node.isConstructorCall()) {
+          visitNewExpression(node)
+        }
+        return super.visitCallExpression(node)
+      }
+
+      private fun visitMethodCallExpression(node: UCallExpression) {
         val name = node.methodName ?: node.methodIdentifier?.name
         if (
           name != null &&
@@ -234,7 +259,21 @@ fun JavaContext.checkFile(root: UFile?, task: TestLintTask, isStub: Boolean = fa
             "visitMethodCall"
           )
         }
-        return super.visitCallExpression(node)
+      }
+
+      private fun visitNewExpression(node: UCallExpression) {
+        val fqc = node.classReference.getQualifiedName() ?: return
+        if (applicableConstructorTypes.contains(fqc) && node.resolve() == null) {
+          val context: JavaContext = this@checkFile
+          reportResolveProblem(
+            context,
+            node,
+            fqc,
+            "constructor call",
+            "getApplicableConstructorTypes",
+            "visitConstructor"
+          )
+        }
       }
 
       override fun visitSimpleNameReferenceExpression(
