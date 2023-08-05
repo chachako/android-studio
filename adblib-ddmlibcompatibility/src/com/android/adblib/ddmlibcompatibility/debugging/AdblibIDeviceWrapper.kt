@@ -16,10 +16,15 @@
 package com.android.adblib.ddmlibcompatibility.debugging
 
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.DeviceSelector
+import com.android.adblib.availableFeatures
+import com.android.adblib.ddmlibcompatibility.AdbLibDdmlibCompatibilityProperties
 import com.android.adblib.deviceInfo
 import com.android.adblib.isOffline
 import com.android.adblib.isOnline
+import com.android.adblib.property
 import com.android.adblib.serialNumber
+import com.android.adblib.withErrorTimeout
 import com.android.ddmlib.AdbHelper
 import com.android.ddmlib.Client
 import com.android.ddmlib.DdmPreferences
@@ -27,6 +32,7 @@ import com.android.ddmlib.FileListingService
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.IDevice.DeviceState
 import com.android.ddmlib.IDevice.RE_EMULATOR_SN
+import com.android.ddmlib.IDeviceSharedImpl
 import com.android.ddmlib.IShellOutputReceiver
 import com.android.ddmlib.InstallReceiver
 import com.android.ddmlib.PropertyFetcher
@@ -37,9 +43,12 @@ import com.android.ddmlib.SyncService
 import com.android.ddmlib.log.LogReceiver
 import com.android.sdklib.AndroidVersion
 import com.google.common.util.concurrent.ListenableFuture
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.InputStream
 import java.net.InetSocketAddress
+import java.time.Duration
 import java.util.Collections
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Future
@@ -56,6 +65,8 @@ internal class AdblibIDeviceWrapper(
 
     // TODO(b/294559068): Create our own implementation of PropertyFetcher before we can get rid of ddmlib
     private val propertyFetcher = PropertyFetcher(this)
+
+    private val iDeviceSharedImpl = IDeviceSharedImpl(this)
 
     /**
      * Returns a (humanized) name for this device. Typically this is the AVD name for AVD's, and
@@ -331,12 +342,21 @@ internal class AdblibIDeviceWrapper(
 
     /** Returns whether this device supports the given software feature.  */
     override fun supportsFeature(feature: IDevice.Feature): Boolean {
-        TODO("Not yet implemented")
+        val availableFeatures: List<String> =
+            runBlockingLegacy {
+                connectedDevice.session.hostServices.availableFeatures(
+                    DeviceSelector.fromSerialNumber(
+                        serialNumber
+                    )
+                )
+            }
+
+        return iDeviceSharedImpl.supportsFeature(feature, availableFeatures.toSet())
     }
 
     /** Returns whether this device supports the given hardware feature.  */
     override fun supportsFeature(feature: IDevice.HardwareFeature): Boolean {
-        TODO("Not yet implemented")
+        return iDeviceSharedImpl.supportsFeature(feature)
     }
 
     /**
@@ -915,7 +935,7 @@ internal class AdblibIDeviceWrapper(
      * @return the API level if it can be determined, [AndroidVersion.DEFAULT] otherwise.
      */
     override fun getVersion(): AndroidVersion {
-        TODO("Not yet implemented")
+        return iDeviceSharedImpl.version
     }
 
     /**
@@ -1051,6 +1071,23 @@ internal class AdblibIDeviceWrapper(
         `is`: InputStream?
     ) {
         TODO("Not yet implemented")
+    }
+
+
+    /**
+     * Similar to [runBlocking] but with a custom [timeout]
+     *
+     * @throws TimeoutException if [block] take more than [timeout] to execute
+     */
+    private fun <R> runBlockingLegacy(
+        timeout: Duration = connectedDevice.session.property(AdbLibDdmlibCompatibilityProperties.RUN_BLOCKING_LEGACY_DEFAULT_TIMEOUT),
+        block: suspend CoroutineScope.() -> R
+    ): R {
+        return runBlocking {
+            connectedDevice.session.withErrorTimeout(timeout) {
+                block()
+            }
+        }
     }
 
     companion object {

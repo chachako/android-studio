@@ -184,6 +184,45 @@ class AdblibIDeviceWrapperTest {
         assertTrue(adblibIDeviceWrapper.arePropertiesSet())
     }
 
+    @Test
+    fun getVersion() = runBlockingWithTimeout {
+        // Prepare
+        val connectedDevice = createConnectedDevice("device1", DeviceState.DeviceStatus.ONLINE)
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice)
+
+        // Act
+        val version = adblibIDeviceWrapper.version
+
+        // Assert
+        assertEquals(30, version.apiLevel)
+    }
+
+    @Test
+    fun supportsFeature() = runBlockingWithTimeout {
+        // Prepare
+        val connectedDevice = createConnectedDevice("device1", DeviceState.DeviceStatus.ONLINE)
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice)
+
+        // Act
+        val supportsShellV2 = adblibIDeviceWrapper.supportsFeature(IDevice.Feature.SHELL_V2)
+
+        // Assert
+        assertTrue(supportsShellV2)
+    }
+
+    @Test
+    fun supportsHardwareFeature() = runBlockingWithTimeout {
+        // Prepare
+        val connectedDevice = createConnectedDevice("device1", DeviceState.DeviceStatus.ONLINE)
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice)
+
+        // Act
+        val supportsWatch = adblibIDeviceWrapper.supportsFeature(IDevice.HardwareFeature.WATCH)
+
+        // Assert
+        assertFalse(supportsWatch)
+    }
+
     private suspend fun createConnectedDevice(
         serialNumber: String,
         deviceStatus: DeviceState.DeviceStatus

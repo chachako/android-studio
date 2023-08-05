@@ -30,6 +30,7 @@ import com.android.ddmlib.CollectingOutputReceiver;
 import com.android.ddmlib.DdmPreferences;
 import com.android.ddmlib.FileListingService;
 import com.android.ddmlib.IDevice;
+import com.android.ddmlib.IDeviceSharedImpl;
 import com.android.ddmlib.IShellOutputReceiver;
 import com.android.ddmlib.InstallException;
 import com.android.ddmlib.InstallMetrics;
@@ -52,7 +53,6 @@ import com.android.ddmlib.TimeoutException;
 import com.android.ddmlib.clientmanager.DeviceClientManager;
 import com.android.ddmlib.log.LogReceiver;
 import com.android.sdklib.AndroidVersion;
-import com.android.sdklib.AndroidVersionUtil;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -122,6 +122,8 @@ public final class DeviceImpl implements IDevice {
 
     @NonNull private final UserDataMapImpl mUserDataMap = new UserDataMapImpl();
 
+    private final IDeviceSharedImpl iDeviceSharedImpl = new IDeviceSharedImpl(this);
+
     private static final String LOG_TAG = "Device";
     private static final char SEPARATOR = '-';
 
@@ -151,21 +153,11 @@ public final class DeviceImpl implements IDevice {
      */
     private SocketChannel mSocketChannel;
 
-    /** Path to the screen recorder binary on the device. */
-    private static final String SCREEN_RECORDER_DEVICE_PATH = "/system/bin/screenrecord";
-
     private static final long LS_TIMEOUT_SEC = 2;
-
-    /** Flag indicating whether the device has the screen recorder binary. */
-    private Boolean mHasScreenRecorder;
-
-    /** Cached list of hardware characteristics */
-    private Set<String> mHardwareCharacteristics;
 
     @Nullable private Set<String> mAdbFeatures;
     private Object mAdbFeaturesLock = new Object();
 
-    @Nullable private AndroidVersion mVersion;
     private String mName;
 
     @GuardedBy("this")
@@ -361,46 +353,7 @@ public final class DeviceImpl implements IDevice {
 
     @Override
     public boolean supportsFeature(@NonNull Feature feature) {
-        switch (feature) {
-            case SCREEN_RECORD:
-                if (supportsFeature(HardwareFeature.WATCH)
-                    && !getVersion().isGreaterOrEqualThan(30)) {
-                    // physical watches before API 30, do not support screen recording.
-                    return false;
-                }
-                if (!getVersion().isGreaterOrEqualThan(19)) {
-                    return false;
-                }
-                if (mHasScreenRecorder == null) {
-                    mHasScreenRecorder = hasBinary(SCREEN_RECORDER_DEVICE_PATH);
-                }
-                return mHasScreenRecorder;
-            case PROCSTATS:
-                return getVersion().isGreaterOrEqualThan(19);
-            case ABB_EXEC:
-                return getAdbFeatures().contains("abb_exec");
-            case REAL_PKG_NAME:
-                return getVersion().compareTo(AndroidVersion.VersionCodes.Q, "R") >= 0;
-            case SKIP_VERIFICATION:
-                if (getVersion().compareTo(AndroidVersion.VersionCodes.R, null) >= 0) {
-                    return true;
-                } else if (getVersion().compareTo(AndroidVersion.VersionCodes.Q, "R") >= 0) {
-                    String sdkVersionString = getProperty("ro.build.version.preview_sdk");
-                    if (sdkVersionString != null) {
-                        try {
-                            // Only supported on R DP2+.
-                            return Integer.parseInt(sdkVersionString) > 1;
-                        } catch (NumberFormatException e) {
-                            // do nothing and fall through
-                        }
-                    }
-                }
-                return false;
-            case SHELL_V2:
-                return getAdbFeatures().contains("shell_v2");
-            default:
-                return false;
-        }
+        return iDeviceSharedImpl.supportsFeature(feature, getAdbFeatures());
     }
 
     @NonNull
@@ -454,49 +407,13 @@ public final class DeviceImpl implements IDevice {
     // reading the build characteristics property.
     @Override
     public boolean supportsFeature(@NonNull HardwareFeature feature) {
-        try {
-            return getHardwareCharacteristics().contains(feature.getCharacteristic());
-        } catch (Exception e) {
-            return false;
-        }
+        return iDeviceSharedImpl.supportsFeature(feature);
     }
 
     @NonNull
     @Override
     public AndroidVersion getVersion() {
-        if (mVersion == null) {
-            // Try to fetch all properties with a reasonable timeout
-            String buildApi = getProperty(PROP_BUILD_API_LEVEL);
-            if (buildApi == null) {
-                // Properties are not available yet, return default value
-                return AndroidVersion.DEFAULT;
-            }
-            Map<String, String> properties = getProperties();
-            mVersion = AndroidVersionUtil.androidVersionFromDeviceProperties(properties);
-            if (mVersion == null) {
-                mVersion = AndroidVersion.DEFAULT;
-            }
-        }
-        return mVersion;
-    }
-
-    private boolean hasBinary(String path) {
-        CountDownLatch latch = new CountDownLatch(1);
-        CollectingOutputReceiver receiver = new CollectingOutputReceiver(latch);
-        try {
-            executeShellCommand("ls " + path, receiver, LS_TIMEOUT_SEC, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            return false;
-        }
-
-        try {
-            latch.await(LS_TIMEOUT_SEC, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            return false;
-        }
-
-        String value = receiver.getOutput().trim();
-        return !value.endsWith("No such file or directory");
+        return iDeviceSharedImpl.getVersion();
     }
 
     @Nullable
