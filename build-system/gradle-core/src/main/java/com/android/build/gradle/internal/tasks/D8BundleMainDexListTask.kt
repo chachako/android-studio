@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.build.api.artifact.MultipleArtifact
 import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.artifact.impl.InternalScopedArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.errors.MessageReceiverImpl
@@ -187,11 +188,11 @@ abstract class D8BundleMainDexListTask : NonIncrementalTask() {
 
             task.libraryClasses.from(creationConfig.services.fileCollection().also {
                 it.from(creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.TESTED_CODE)
-                    .getFinalArtifacts(ScopedArtifact.CLASSES)
+                    .getFinalArtifacts(InternalScopedArtifact.FINAL_TRANSFORMED_CLASSES)
                 )
 
                 it.from(creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.COMPILE_ONLY)
-                    .getFinalArtifacts(ScopedArtifact.CLASSES)
+                    .getFinalArtifacts(InternalScopedArtifact.FINAL_TRANSFORMED_CLASSES)
                 )
             }).disallowChanges()
 

@@ -165,21 +165,10 @@ class KmpTaskManager(
             project.tasks.registerTask(ExportConsumerProguardFilesTask.CreationAction(variant))
         }
 
-        // No jacoco transformation for kmp variants, however, we need to publish the classes
-        // pre transformation as the artifact is used in the jacoco report task.
-        variant.artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
-            .publishCurrent(
-                ScopedArtifact.CLASSES,
-                InternalScopedArtifact.PRE_JACOCO_TRANSFORMED_CLASSES,
-            )
-
         if (variant.isAndroidTestCoverageEnabled) {
             val jacocoTask = project.tasks.registerTask(
                 JacocoTask.CreationAction(variant)
             )
-            // in case of library, we never want to publish the jacoco instrumented classes, so
-            // we basically fork the CLASSES into a specific internal type that is consumed
-            // by the jacoco report task.
             variant.artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
                 .use(jacocoTask)
                 .toFork(
@@ -188,7 +177,7 @@ class KmpTaskManager(
                     inputDirectories = JacocoTask::classesDir,
                     intoJarDirectory = JacocoTask::outputForJars,
                     intoDirDirectory = JacocoTask::outputForDirs,
-                    intoType = InternalScopedArtifact.JACOCO_TRANSFORMED_CLASSES
+                    intoType = InternalScopedArtifact.FINAL_TRANSFORMED_CLASSES
                 )
         }
 

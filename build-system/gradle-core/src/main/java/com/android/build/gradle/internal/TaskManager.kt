@@ -1102,24 +1102,10 @@ abstract class TaskManager(
 
         // -----------------------------------------------------------------------------------------
         // The following task registrations MUST follow the order:
-        //   ASM API -> jacoco transforms -> scoped artifacts transform
+        //   ASM API -> scoped artifacts transform -> jacoco transforms
         // -----------------------------------------------------------------------------------------
 
         maybeCreateTransformClassesWithAsmTask(creationConfig)
-
-        // save the state of classes before eventual jacoco instrumentation as some tasks like
-        // jacoco report want to have access to the classes before jacoco instrumentation.
-        creationConfig.artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
-            .publishCurrent(
-                ScopedArtifact.CLASSES,
-                InternalScopedArtifact.PRE_JACOCO_TRANSFORMED_CLASSES,
-            )
-
-        // New gradle-transform jacoco instrumentation support.
-        if (creationConfig.isAndroidTestCoverageEnabled &&
-            !creationConfig.componentType.isForTesting) {
-                createJacocoTask(creationConfig)
-        }
 
         // initialize the all classes scope
         creationConfig.artifacts.forScope(ScopedArtifacts.Scope.ALL)
@@ -1157,6 +1143,27 @@ abstract class TaskManager(
                         .getFinalArtifacts(ScopedArtifact.JAVA_RES)
                 )
             }
+
+        // New gradle-transform jacoco instrumentation support.
+        if (creationConfig.isAndroidTestCoverageEnabled &&
+            !creationConfig.componentType.isForTesting) {
+            createJacocoTask(creationConfig)
+        } else {
+            // When the Jacoco task does not run, republish CLASSES into FINAL_TRANSFORMED_CLASSES
+            // because this is the artifact that will be used in the following tasks
+            enumValues<ScopedArtifacts.Scope>().forEach {
+                creationConfig.artifacts.forScope(it).republish(
+                    ScopedArtifact.CLASSES, InternalScopedArtifact.FINAL_TRANSFORMED_CLASSES)
+            }
+        }
+
+        enumValues<InternalScopedArtifacts.InternalScope>().forEach {
+            creationConfig.artifacts.forScope(it)
+                .republish(
+                    ScopedArtifact.CLASSES,
+                    InternalScopedArtifact.FINAL_TRANSFORMED_CLASSES
+                )
+        }
 
         // Add a task to create merged runtime classes if this is a dynamic-feature,
         // or a base module consuming feature jars. Merged runtime classes are needed if code
@@ -1224,7 +1231,7 @@ abstract class TaskManager(
             creationConfig,
             dexingType,
             classpathUtils.enableDexingArtifactTransform,
-            classpathUtils.classesAlteredTroughVariantAPI,
+            classpathUtils.classesAlteredThroughVariantAPI,
             separateFileDependenciesDexingTask
         )
 
@@ -1257,7 +1264,7 @@ abstract class TaskManager(
                 (java8LangSupport == Java8LangSupport.UNUSED
                         || java8LangSupport == Java8LangSupport.D8)
 
-        val classesAlteredTroughVariantAPI = creationConfig
+        val classesAlteredThroughVariantAPI = creationConfig
             .artifacts
             .forScope(ScopedArtifacts.Scope.ALL)
             .getScopedArtifactsContainer(ScopedArtifact.CLASSES)
@@ -1268,12 +1275,12 @@ abstract class TaskManager(
                 .services
                 .projectOptions[BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM]
                 && supportsDesugaringViaArtifactTransform)
-                && !classesAlteredTroughVariantAPI
+                && !classesAlteredThroughVariantAPI
 
         return ClassesClasspathUtils(
                 creationConfig,
                 enableDexingArtifactTransform,
-                classesAlteredTroughVariantAPI)
+                classesAlteredThroughVariantAPI)
     }
 
     /**
@@ -1423,22 +1430,30 @@ abstract class TaskManager(
 
     protected open fun createJacocoTask(creationConfig: ComponentCreationConfig) {
         val jacocoTask = taskFactory.register(JacocoTask.CreationAction(creationConfig))
+
+        val classesAlteredThroughVariantAPI = creationConfig
+            .artifacts
+            .forScope(ScopedArtifacts.Scope.ALL)
+            .getScopedArtifactsContainer(ScopedArtifact.CLASSES)
+            .artifactsAltered
+            .get()
+        val scope = if (classesAlteredThroughVariantAPI) ScopedArtifacts.Scope.ALL
+            else ScopedArtifacts.Scope.PROJECT
+
         // in case of application, we want to package the jacoco instrumented classes
         // so we basically transform the classes scoped artifact and republish it
         // untouched as the jacoco transformed artifact so the jacoco report task can
         // find them.
-        creationConfig.artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
+        creationConfig.artifacts.forScope(scope)
             .use(jacocoTask)
-            .toTransform(
+            .toFork(
                 ScopedArtifact.CLASSES,
                 { a ->  a.jarsWithIdentity.inputJars },
                 JacocoTask::classesDir,
                 JacocoTask::outputForJars,
                 JacocoTask::outputForDirs,
+                InternalScopedArtifact.FINAL_TRANSFORMED_CLASSES
             )
-
-        creationConfig.artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
-            .republish(ScopedArtifact.CLASSES, InternalScopedArtifact.JACOCO_TRANSFORMED_CLASSES)
     }
 
     protected fun createDataBindingTasksIfNecessary(creationConfig: ComponentCreationConfig) {

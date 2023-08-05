@@ -206,8 +206,7 @@ public class JacocoTest {
     }
 
     @Test
-    public void androidTestApksDoNotIncludeOfflineInstrumentation()
-            throws Exception {
+    public void androidTestApksDoNotIncludeOfflineInstrumentation() throws Exception {
         project.executor().run("assembleDebug", "assembleDebugAndroidTest");
 
         try (Apk androidTestApk = project.getApk(GradleTestProject.ApkType.ANDROIDTEST_DEBUG)) {

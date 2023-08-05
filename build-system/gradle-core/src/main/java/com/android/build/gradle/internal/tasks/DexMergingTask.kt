@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.tasks
 import com.android.SdkConstants
 import com.android.build.api.artifact.MultipleArtifact
 import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.artifact.impl.InternalScopedArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.api.transform.TransformException
 import com.android.build.api.variant.impl.getFeatureLevel
@@ -314,9 +315,9 @@ abstract class DexMergingTask : NewIncrementalTask() {
                 task.sharedParams.mainDexListConfig.libraryClasses
                     .from(bootClasspath,
                         creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.TESTED_CODE)
-                            .getFinalArtifacts(ScopedArtifact.CLASSES),
+                            .getFinalArtifacts(InternalScopedArtifact.FINAL_TRANSFORMED_CLASSES),
                         creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.COMPILE_ONLY)
-                            .getFinalArtifacts(ScopedArtifact.CLASSES)
+                            .getFinalArtifacts(InternalScopedArtifact.FINAL_TRANSFORMED_CLASSES)
                     ).disallowChanges()
             }
 

@@ -54,16 +54,20 @@ class JacocoWithUnitTestReportTest(
                 "apply plugin: 'jacoco'\n"
             )
         }
+
+        // Only UnitTest coverage is needed for these tests, but validate that classes are not
+        // instrumented twice when AndroidTest coverage is enabled: b/281266702
         TestFileUtils.appendToFile(
             testProject.buildFile,
-            "android.buildTypes.debug.enableUnitTestCoverage true\n"
+            "android.buildTypes.debug.enableUnitTestCoverage true\n" +
+                    "android.buildTypes.debug.enableAndroidTestCoverage true"
         )
     }
 
     @Test
     fun `test expected report contents`() {
         val run = testProject.executor().run("createDebugUnitTestCoverageReport")
-        checkHighlitedSourceCodeReportFiles(testProject.buildDir)
+        checkHighlightedSourceCodeReportFiles(testProject.buildDir)
         val generatedCoverageReport = FileUtils.join(
             testProject.buildDir,
             "reports",
@@ -102,7 +106,7 @@ class JacocoWithUnitTestReportTest(
     }
 
     // Regression test for b/188953818.
-    private fun checkHighlitedSourceCodeReportFiles(buildDir: File) {
+    private fun checkHighlightedSourceCodeReportFiles(buildDir: File) {
         val reportPackageInfoDir = FileUtils.join(
             buildDir, "reports", "coverage", "test", "debug", "com.android.tests")
         assertThat(FileUtils.join(reportPackageInfoDir, "MainActivity.java.html").exists())
