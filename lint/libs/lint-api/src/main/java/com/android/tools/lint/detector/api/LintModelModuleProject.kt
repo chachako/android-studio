@@ -537,10 +537,16 @@ open class LintModelModuleProject(
           projectMap[modulePath]?.addDirectLibrary(project)
           continue
         }
-        val roots = variant.artifact.dependencies.compileDependencies.roots
+        val roots =
+          variant.artifact.dependencies.compileDependencies.roots +
+            variant.artifact.dependencies.packageDependencies.roots
+        val visitedProjectPaths: MutableSet<String> = mutableSetOf()
         for (dependency: LintModelDependency in roots) {
           val library = dependency.findLibrary()
           if (library is LintModelModuleLibrary) {
+            if (!visitedProjectPaths.add(library.projectPath)) {
+              continue
+            }
             val dependsOn = projectMap[library.projectPath]
             if (dependsOn != null) {
               if (
