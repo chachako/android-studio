@@ -47,6 +47,7 @@ filegroup(
         "src/main/**/*.java",
         "src/main/**/*.kt",
         "src/main/resources/**",
+        "previous-gradle-apis/**",
     ]) + [
         "NOTICE",
         "build.gradle",

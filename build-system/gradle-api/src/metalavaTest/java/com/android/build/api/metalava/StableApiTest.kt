@@ -32,8 +32,8 @@ class StableApiTest {
     @Test
     fun checkCurrentApi() {
         @Suppress("UnstableApiUsage")
-        val expected: List<String> = Resources.asCharSource(EXPECTED_FILE, StandardCharsets.UTF_8).readLines()
-        val actual = Files.readAllLines(CURRENT, StandardCharsets.UTF_8)
+        val expected: List<String> = Resources.asCharSource(EXPECTED_CURRENT_API_FILE, StandardCharsets.UTF_8).readLines()
+        val actual = Files.readAllLines(ACTUAL_CURRENT_API_FILE, StandardCharsets.UTF_8)
         if (expected != actual) {
             throw AssertionError(
                 """
@@ -54,7 +54,7 @@ class StableApiTest {
 
     companion object {
         @Suppress("UnstableApiUsage")
-        private val EXPECTED_FILE = Resources.getResource("current.txt")
-        val CURRENT: Path = Paths.get(System.getProperty("metalavaCurrentApiFile")!!).resolve("current.txt")
+        private val EXPECTED_CURRENT_API_FILE = Resources.getResource("current.txt")
+        private val ACTUAL_CURRENT_API_FILE: Path = Paths.get(System.getProperty("metalavaCurrentApiFile")!!).resolve("current.txt")
     }
 }
