@@ -140,10 +140,17 @@ proto::AgentLiveEditResponse LiveEdit(jvmtiEnv* jvmti, JNIEnv* jni,
                                       const proto::LiveEditRequest& req) {
   proto::AgentLiveEditResponse resp;
 
-  RegisterDispatchJNI(jni);
-
   if (SetUpInstrumentationJar(jvmti, jni, req.package_name()).empty()) {
     resp.set_status(proto::AgentLiveEditResponse::INSTRUMENTATION_FAILED);
+    return resp;
+  }
+
+  // We can only register the JNIDispatch for LE runtime after we instrumented
+  // the application since that step adds all the runtime classes into our
+  // boot classpath.
+  if (!RegisterDispatchJNI(jni)) {
+    resp.set_status(proto::AgentLiveEditResponse::ERROR);
+    ErrEvent("Unable to register JNI dispatch in LiveEdit");
     return resp;
   }
 

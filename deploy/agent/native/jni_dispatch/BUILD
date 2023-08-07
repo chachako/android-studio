@@ -11,6 +11,7 @@ cc_library(
     tags = ["no_windows"],
     deps = [
         "//prebuilts/studio/jdk:jni_headers",
+        "//tools/base/deploy/common:common_lib",
         "//tools/base/deploy/common:log",
     ],
     alwayslink = True,

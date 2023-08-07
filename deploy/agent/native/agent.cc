@@ -87,8 +87,6 @@ jint HandleStartupAgent(jvmtiEnv* jvmti, JNIEnv* jni,
                         const std::string& app_data_dir) {
   Log::V("Startup agent attached to VM");
 
-  RegisterDispatchJNI(jni);
-
   if (jvmti->AddCapabilities(&REQUIRED_CAPABILITIES) != JVMTI_ERROR_NONE) {
     ErrEvent("Error setting capabilities.");
     jvmti->DisposeEnvironment();
@@ -105,6 +103,14 @@ jint HandleStartupAgent(jvmtiEnv* jvmti, JNIEnv* jni,
     ErrEvent("Could not instrument application");
     jvmti->DisposeEnvironment();
     return JNI_OK;
+  }
+
+  // We can only register the JNIDispatch for LE runtime after we instrumented
+  // the application since that step adds all the runtime classes into our
+  // boot classpath.
+  if (!RegisterDispatchJNI(jni)) {
+    ErrEvent("Unable to register JNI dispatch during startup");
+    return JNI_ERR;
   }
 
   // Points the app to the Live Literal mapping file
