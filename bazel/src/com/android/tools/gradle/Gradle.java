@@ -57,21 +57,35 @@ public class Gradle implements Closeable {
     @NonNull private final List<String> arguments;
     @NonNull private final File repoDir;
     @NonNull private final Set<File> usedGradleUserHomes = new HashSet<>();
+    private final boolean useInitScript;
 
     public Gradle(@NonNull File project, @NonNull File outDir, @NonNull File distribution, File javaHome)
+            throws IOException {
+        this(project, outDir, distribution, javaHome, true);
+    }
+
+    public Gradle(
+            @NonNull File project,
+            @NonNull File outDir,
+            @NonNull File distribution,
+            File javaHome,
+            boolean useInitScript)
             throws IOException {
         this.project = project;
         this.outDir = outDir;
         this.distribution = distribution;
         this.javaHome = javaHome;
         this.arguments = new LinkedList<>();
+        this.useInitScript = useInitScript;
 
-        File initScript = getInitScript().getAbsoluteFile();
         repoDir = getRepoDir().getAbsoluteFile();
 
         FileUtils.cleanOutputDir(outDir);
         Files.createDirectories(getBuildDir().toPath());
-        createInitScript(initScript, repoDir);
+        if (useInitScript) {
+            File initScript = getInitScript().getAbsoluteFile();
+            createInitScript(initScript, repoDir);
+        }
     }
 
     public void addRepo(@NonNull File repo) throws Exception {
@@ -186,8 +200,10 @@ public class Gradle implements Closeable {
 
         List<String> arguments = new ArrayList<>();
         arguments.add("--offline");
-        arguments.add("--init-script");
-        arguments.add(getInitScript().getAbsolutePath());
+        if (useInitScript) {
+            arguments.add("--init-script");
+            arguments.add(getInitScript().getAbsolutePath());
+        }
         arguments.add("-PinjectedMavenRepo=" + repoDir.getAbsolutePath());
         arguments.add("-Dmaven.repo.local=" + tmpLocalMaven.toAbsolutePath().toString());
 
@@ -316,7 +332,7 @@ public class Gradle implements Closeable {
         return outDir.toPath().resolve("_tmp_local_maven");
     }
 
-    private File getRepoDir() {
+    public File getRepoDir() {
         return new File(outDir, "_repo");
     }
 
