@@ -29,8 +29,8 @@ if [[ $lsb_release == "crostini" ]]; then
   #so the chromebox doesn't become too bogged down
   if [[ -f "${crostini_timestamp_file}" ]]; then
     last_run_time=$(cat $crostini_timestamp_file)
-    #if the last build occurred less than five hours ago it exits
-    if [[ $(($current_time-$last_run_time)) -lt 15480 ]]; then
+    #if the last build occurred less than six hours ago it exits
+    if [[ $(($current_time-$last_run_time)) -lt 21600 ]]; then
       exit 0
     fi
   fi
@@ -71,7 +71,6 @@ if [[ $lsb_release == "crostini" ]]; then
     --tool_tag=${script_name} \
     --strategy=Javac=local \
     --strategy=kotlinc=local \
-    --flaky_test_attempts=//tools/adt/idea/android-uitests:.*@2 \
     -- \
     //tools/adt/idea/android-uitests/...
 
@@ -80,16 +79,6 @@ if [[ $lsb_release == "crostini" ]]; then
   if [[ -d "${dist_dir}" ]]; then
     echo "<head><meta http-equiv=\"refresh\" content=\"0; URL='https://fusion2.corp.google.com/invocations/${test_invocation_id}'\" /></head>" > "${dist_dir}"/upsalite_test_results.html
   fi
-
-  # Generate the perfgate zip from the test bes
-  # Copy it as part of build artifacts under dist_dir
-  "${script_dir}/../bazel" \
-    --max_idle_secs=60 \
-    run //tools/vendor/adt_infra_internal/rbe/logscollector:logs-collector \
-    ${config_options} \
-    -- \
-    -bes "${dist_dir}/bazel-${build_number}.bes" \
-    -perfzip "${dist_dir}/perfgate_data.zip"
 
   if [[ -d "${dist_dir}" ]]; then
     readonly testlogs_dir="$("${script_dir}/../bazel" info --config=release bazel-testlogs)"
