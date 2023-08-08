@@ -148,7 +148,7 @@ public class LiveEditTestBase extends AgentTestBase {
                 sendMessage(message);
                 attachAgent();
             } catch (IOException e) {
-                System.err.println(e);
+                e.printStackTrace();
             }
         }
 

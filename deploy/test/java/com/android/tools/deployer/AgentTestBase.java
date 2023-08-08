@@ -30,6 +30,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import org.junit.rules.TemporaryFolder;
 
@@ -128,7 +129,28 @@ public class AgentTestBase {
         }
 
         protected Deploy.AgentResponse getAgentResponse() throws IOException {
-            return getServerResponse().getSendResponse().getAgentResponses(0);
+            Deploy.AgentResponse response =
+                    getServerResponse().getSendResponse().getAgentResponses(0);
+            logEvents(response.getEventsList());
+            return response;
+        }
+
+        private void logEvents(List<Deploy.Event> events) {
+            for (Deploy.Event event : events) {
+                if (event.getType() == Deploy.Event.Type.TRC_END) {
+                    continue;
+                }
+                System.out.println(
+                        event.getTimestampNs() / 1000000
+                                + "ms "
+                                + event.getType()
+                                + " ["
+                                + event.getPid()
+                                + "]["
+                                + event.getTid()
+                                + "] : "
+                                + event.getText());
+            }
         }
 
         protected void sendMessage(byte[] message) throws IOException {
