@@ -219,9 +219,6 @@ abstract class ProguardConfigurableTask(
         protected val componentType: ComponentType = creationConfig.componentType
         private val testedConfig = (creationConfig as? TestComponentCreationConfig)?.mainVariant
 
-        // Override to make this true in proguard
-        protected open val defaultObfuscate: Boolean = false
-
         // These filters assume a file can't be class and resourcesJar at the same time.
         private val referencedClasses: FileCollection
 
@@ -452,9 +449,11 @@ abstract class ProguardConfigurableTask(
         private fun applyProguardDefaultsForTest() {
             // Don't remove any code in tested app.
             // Obfuscate is disabled by default.
-            // It is enabled in Proguard since it would ignore the mapping file otherwise.
-            // R8 does not have that issue, so we disable obfuscation when running R8.
-            setActions(PostprocessingFeatures(false, defaultObfuscate, false))
+            setActions(PostprocessingFeatures(
+                isRemoveUnusedCode = false,
+                isObfuscate = false,
+                isOptimize = false
+            ))
             keep("class * {*;}")
             keep("interface * {*;}")
             keep("enum * {*;}")
