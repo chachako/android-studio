@@ -121,7 +121,6 @@ public final class DeviceImpl implements IDevice {
     private final IDeviceSharedImpl iDeviceSharedImpl = new IDeviceSharedImpl(this);
 
     private static final String LOG_TAG = "Device";
-    private static final char SEPARATOR = '-';
 
     private static final long GET_PROP_TIMEOUT_MS = 1000;
     private static final long INITIAL_GET_PROP_TIMEOUT_MS = 5000;
@@ -153,8 +152,6 @@ public final class DeviceImpl implements IDevice {
 
     @Nullable private Set<String> mAdbFeatures;
     private Object mAdbFeaturesLock = new Object();
-
-    private String mName;
 
     @GuardedBy("this")
     @Nullable
@@ -202,78 +199,7 @@ public final class DeviceImpl implements IDevice {
     @NonNull
     @Override
     public String getName() {
-        if (mName != null) {
-            return mName;
-        }
-
-        if (isOnline()) {
-            // cache name only if device is online
-            mName = constructName();
-            return mName;
-        } else {
-            return constructName();
-        }
-    }
-
-    @NonNull
-    private String constructName() {
-        if (isEmulator()) {
-            String avdName = getAvdName();
-            if (avdName != null) {
-                return String.format("%s [%s]", avdName, getSerialNumber());
-            } else {
-                return getSerialNumber();
-            }
-        } else {
-            String manufacturer = null;
-            String model = null;
-
-            try {
-                manufacturer = cleanupStringForDisplay(getProperty(PROP_DEVICE_MANUFACTURER));
-                model = cleanupStringForDisplay(getProperty(PROP_DEVICE_MODEL));
-            } catch (Exception e) {
-                // If there are exceptions thrown while attempting to get these properties,
-                // we can just use the serial number, so ignore these exceptions.
-            }
-
-            StringBuilder sb = new StringBuilder(20);
-
-            if (manufacturer != null) {
-                if (model == null || !model.toUpperCase(Locale.US)
-                        .startsWith(manufacturer.toUpperCase(Locale.US))) {
-                    sb.append(manufacturer);
-                    sb.append(SEPARATOR);
-                }
-            }
-
-            if (model != null) {
-                sb.append(model);
-                sb.append(SEPARATOR);
-            }
-
-            sb.append(getSerialNumber());
-            return sb.toString();
-        }
-    }
-
-    @Nullable
-    private static String cleanupStringForDisplay(String s) {
-        if (s == null) {
-            return null;
-        }
-
-        StringBuilder sb = new StringBuilder(s.length());
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-
-            if (Character.isLetterOrDigit(c)) {
-                sb.append(Character.toLowerCase(c));
-            } else {
-                sb.append('_');
-            }
-        }
-
-        return sb.toString();
+        return iDeviceSharedImpl.getName();
     }
 
     @Override

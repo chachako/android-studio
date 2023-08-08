@@ -34,6 +34,7 @@ kotlin_library(
     resource_strip_prefix = "tools/base/adblib.ddmlibcompatibility",
     visibility = ["//visibility:public"],
     deps = [
+        "//tools/adt/idea/.idea/libraries:kotlinx-coroutines-guava",
         "//tools/base/adblib",
         "//tools/base/adblib-tools:adblib.tools",
         "//tools/base/ddmlib:ddmlib-base",

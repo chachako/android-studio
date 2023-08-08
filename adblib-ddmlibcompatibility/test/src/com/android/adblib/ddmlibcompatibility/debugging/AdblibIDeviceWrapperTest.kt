@@ -267,6 +267,16 @@ class AdblibIDeviceWrapperTest {
         assertFalse(supportsWatch)
     }
 
+    @Test
+    fun getName() = runBlockingWithTimeout {
+        // Prepare
+        val connectedDevice = createConnectedDevice("device1", DeviceState.DeviceStatus.ONLINE)
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice)
+
+        // Act/Assert
+        assertEquals("test1-test2-device1", adblibIDeviceWrapper.name)
+    }
+
     private suspend fun createConnectedDevice(
         serialNumber: String,
         deviceStatus: DeviceState.DeviceStatus

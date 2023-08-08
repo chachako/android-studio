@@ -16,14 +16,18 @@
 package com.android.ddmlib;
 
 import static com.android.ddmlib.IDevice.PROP_BUILD_API_LEVEL;
+import static com.android.ddmlib.IDevice.PROP_DEVICE_MANUFACTURER;
+import static com.android.ddmlib.IDevice.PROP_DEVICE_MODEL;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.AndroidVersionUtil;
 import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -37,11 +41,13 @@ public class IDeviceSharedImpl {
 
     private final IDevice iDevice;
     private AndroidVersion mVersion;
+    private String mName;
 
     /** Flag indicating whether the device has the screen recorder binary. */
     private Boolean mHasScreenRecorder;
 
     private static final long LS_TIMEOUT_SEC = 2;
+    private static final char DEVICE_NAME_SEPARATOR = '-';
 
     /** Path to the screen recorder binary on the device. */
     private static final String SCREEN_RECORDER_DEVICE_PATH = "/system/bin/screenrecord";
@@ -50,6 +56,64 @@ public class IDeviceSharedImpl {
 
     public IDeviceSharedImpl(IDevice iDevice) {
         this.iDevice = iDevice;
+    }
+
+    @NonNull
+    public String getName() {
+        if (mName != null) {
+            return mName;
+        }
+
+        if (iDevice.isOnline()) {
+            // cache name only if device is online
+            mName = constructName();
+            return mName;
+        } else {
+            return constructName();
+        }
+    }
+
+    @NonNull
+    private String constructName() {
+        if (iDevice.isEmulator()) {
+            String avdName = iDevice.getAvdName();
+            if (avdName != null) {
+                return String.format("%s [%s]", avdName, iDevice.getSerialNumber());
+            } else {
+                return iDevice.getSerialNumber();
+            }
+        } else {
+            String manufacturer = null;
+            String model = null;
+
+            try {
+                manufacturer =
+                        cleanupStringForDisplay(iDevice.getProperty(PROP_DEVICE_MANUFACTURER));
+                model = cleanupStringForDisplay(iDevice.getProperty(PROP_DEVICE_MODEL));
+            } catch (Exception e) {
+                // If there are exceptions thrown while attempting to get these properties,
+                // we can just use the serial number, so ignore these exceptions.
+            }
+
+            StringBuilder sb = new StringBuilder(20);
+
+            if (manufacturer != null) {
+                if (model == null
+                        || !model.toUpperCase(Locale.US)
+                                .startsWith(manufacturer.toUpperCase(Locale.US))) {
+                    sb.append(manufacturer);
+                    sb.append(DEVICE_NAME_SEPARATOR);
+                }
+            }
+
+            if (model != null) {
+                sb.append(model);
+                sb.append(DEVICE_NAME_SEPARATOR);
+            }
+
+            sb.append(iDevice.getSerialNumber());
+            return sb.toString();
+        }
     }
 
     @NonNull
@@ -223,5 +287,25 @@ public class IDeviceSharedImpl {
 
         String value = receiver.getOutput().trim();
         return !value.endsWith("No such file or directory");
+    }
+
+    @Nullable
+    private static String cleanupStringForDisplay(String s) {
+        if (s == null) {
+            return null;
+        }
+
+        StringBuilder sb = new StringBuilder(s.length());
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+
+            if (Character.isLetterOrDigit(c)) {
+                sb.append(Character.toLowerCase(c));
+            } else {
+                sb.append('_');
+            }
+        }
+
+        return sb.toString();
     }
 }

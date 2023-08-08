@@ -24,8 +24,12 @@ import com.android.adblib.isOffline
 import com.android.adblib.isOnline
 import com.android.adblib.property
 import com.android.adblib.serialNumber
+import com.android.adblib.tools.defaultAuthTokenPath
+import com.android.adblib.tools.localConsoleAddress
+import com.android.adblib.tools.openEmulatorConsole
 import com.android.adblib.withErrorTimeout
 import com.android.ddmlib.AdbHelper
+import com.android.ddmlib.AvdData
 import com.android.ddmlib.Client
 import com.android.ddmlib.DdmPreferences
 import com.android.ddmlib.FileListingService
@@ -44,6 +48,8 @@ import com.android.ddmlib.log.LogReceiver
 import com.android.sdklib.AndroidVersion
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.guava.asListenableFuture
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.InputStream
@@ -68,12 +74,15 @@ internal class AdblibIDeviceWrapper(
 
     private val iDeviceSharedImpl = IDeviceSharedImpl(this)
 
+    /** Name and path of the AVD  */
+    private val mAvdData = connectedDevice.session.scope.async { createAvdData() }
+
     /**
-     * Returns a (humanized) name for this device. Typically this is the AVD name for AVD's, and
+     * Returns a (humanized) name for this device. Typically, this is the AVD name for AVD's, and
      * a combination of the manufacturer name, model name &amp; serial number for devices.
      */
     override fun getName(): String {
-        TODO("Not yet implemented")
+        return iDeviceSharedImpl.name
     }
 
     @Deprecated("")
@@ -231,7 +240,7 @@ internal class AdblibIDeviceWrapper(
      */
     @Deprecated("")
     override fun getAvdName(): String? {
-        TODO("Not yet implemented")
+        return if (mAvdData.isCompleted) mAvdData.getCompleted()?.name else null
     }
 
     /**
@@ -246,7 +255,41 @@ internal class AdblibIDeviceWrapper(
      */
     @Deprecated("")
     override fun getAvdPath(): String? {
-        TODO("Not yet implemented")
+        return if (mAvdData.isCompleted) mAvdData.getCompleted()?.path else null
+    }
+
+    /**
+     * Returns information about the AVD the emulator is running.
+     *
+     * <p>{@link AvdData#getName} is the name of the AVD or <code>null</code> if there isn't any.
+     *
+     * <p>{@link AvdData#getPath} is the AVD path or null if this is a physical device, the emulator
+     * console subcommand failed, or the emulator's version is older than 30.0.18
+     *
+     * @return the {@link AvdData} for the device.
+     */
+    override fun getAvdData(): ListenableFuture<AvdData?> {
+        return mAvdData.asListenableFuture()
+    }
+
+    private suspend fun createAvdData(): AvdData? {
+        if (!isEmulator) {
+            return null
+        }
+        val emulatorMatchResult = RE_EMULATOR_SN.toRegex().matchEntire(serialNumber) ?: return null
+        val port = emulatorMatchResult.groupValues[1]?.toIntOrNull() ?: return null
+
+        val emulatorConsole = connectedDevice.session.openEmulatorConsole(
+            localConsoleAddress(port),
+            defaultAuthTokenPath()
+        )
+
+        val nameResult = kotlin.runCatching { emulatorConsole.avdName() }
+        val avdName = nameResult.getOrNull()
+        val pathResult = kotlin.runCatching { emulatorConsole.avdPath() }
+        val path = pathResult.getOrNull()
+
+        return AvdData(avdName, path)
     }
 
     /** Returns the state of the device.  */
@@ -301,7 +344,7 @@ internal class AdblibIDeviceWrapper(
 
     /** Returns `true` if properties have been cached  */
     override fun arePropertiesSet(): Boolean {
-        return propertyFetcher.arePropertiesSet();
+        return propertyFetcher.arePropertiesSet()
     }
 
     /**
