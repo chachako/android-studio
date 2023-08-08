@@ -33,6 +33,8 @@
       <module fileurl="file://$PROJECT_DIR$/lint/studio-checks/android.sdktools.base.lint.studio-checks.iml" filepath="$PROJECT_DIR$/lint/studio-checks/android.sdktools.base.lint.studio-checks.iml" />
       <module fileurl="file://$PROJECT_DIR$/lint/libs/lint-tests/android.sdktools.base.lint.tests.iml" filepath="$PROJECT_DIR$/lint/libs/lint-tests/android.sdktools.base.lint.tests.iml" />
       <module fileurl="file://$PROJECT_DIR$/bazel/lnzipper/android.sdktools.base.lnzipper.iml" filepath="$PROJECT_DIR$/bazel/lnzipper/android.sdktools.base.lnzipper.iml" />
+      <module fileurl="file://$PROJECT_DIR$/multipreview-asm/android.sdktools.base.multipreview-asm.iml" filepath="$PROJECT_DIR$/multipreview-asm/android.sdktools.base.multipreview-asm.iml" />
+      <module fileurl="file://$PROJECT_DIR$/multipreview-asm/android.sdktools.base.multipreview-asm.tests.iml" filepath="$PROJECT_DIR$/multipreview-asm/android.sdktools.base.multipreview-asm.tests.iml" />
       <module fileurl="file://$PROJECT_DIR$/../adt/idea/render-resources/android.sdktools.base.render-resources.iml" filepath="$PROJECT_DIR$/../adt/idea/render-resources/android.sdktools.base.render-resources.iml" />
       <module fileurl="file://$PROJECT_DIR$/../adt/idea/rendering/android.sdktools.base.rendering.iml" filepath="$PROJECT_DIR$/../adt/idea/rendering/android.sdktools.base.rendering.iml" />
       <module fileurl="file://$PROJECT_DIR$/sdk-common/android.sdktools.base.sdk-common-base.iml" filepath="$PROJECT_DIR$/sdk-common/android.sdktools.base.sdk-common-base.iml" />
