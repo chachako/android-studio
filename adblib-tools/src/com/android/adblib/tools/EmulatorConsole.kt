@@ -24,9 +24,11 @@ import com.android.adblib.utils.ResizableBuffer
 import kotlinx.coroutines.runBlocking
 import java.net.InetAddress
 import java.net.InetSocketAddress
+import java.nio.channels.AsynchronousCloseException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.CancellationException
 
 /**
  * A connection to an emulator's console, allowing control of the emulator.
@@ -71,8 +73,9 @@ class EmulatorConsole constructor(
         return status.endsWith(" stopped")
     }
 
-    suspend fun kill() {
-        sendCommand("kill").throwOnError()
+    suspend fun  kill() {
+        sendCommand("kill")
+        // Ignore errors from kill; it may have caused the socket to close
     }
 
     /**
@@ -108,10 +111,21 @@ class EmulatorConsole constructor(
         val outputLines = mutableListOf<String>()
         while (true) {
             val line =
-                channelReader.readLine() ?: return EmulatorCommandResult(
-                    outputLines,
-                    "Connection closed unexpectedly"
-                )
+                try {
+                    channelReader.readLine() ?: return EmulatorCommandResult(
+                        outputLines,
+                        "Connection closed unexpectedly"
+                    )
+                } catch (e: CancellationException) {
+                    // adblib wraps AsynchronousCloseException in CancellationException.
+                    // Handle these, but allow ordinary CancellationExceptions to propagate.
+                    if (e.nonCancellationCause() is AsynchronousCloseException) {
+                        return EmulatorCommandResult(
+                            outputLines,
+                            "Connection closed")
+                    }
+                    throw e
+                }
             if (line.startsWith("KO: ")) {
                 return EmulatorCommandResult(outputLines, line.substring(4).trim())
             } else if (line.startsWith("OK")) {
@@ -121,6 +135,12 @@ class EmulatorConsole constructor(
             }
         }
     }
+
+    private fun Throwable.nonCancellationCause(): Throwable? =
+        when (val cause = cause) {
+            is CancellationException -> cause.nonCancellationCause()
+            else -> cause
+        }
 
     override fun close() {
         adbChannel.close()
