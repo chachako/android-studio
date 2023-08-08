@@ -101,11 +101,6 @@ class FakeAvdManager(val session: FakeAdbSession) : LocalEmulatorProvisionerPlug
         DevicePropertyNames.RO_PRODUCT_CPU_ABI to LocalEmulatorProvisionerPluginTest.ABI.toString()
       )
     )
-    session.deviceServices.configureShellCommand(
-      selector,
-      command = "wm size",
-      stdout = "Physical size: 1024x768\n"
-    )
     device.start()
     runningDevices += device
     updateDevices()

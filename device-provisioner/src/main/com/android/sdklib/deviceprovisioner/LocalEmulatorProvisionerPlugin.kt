@@ -233,7 +233,8 @@ class LocalEmulatorProvisionerPlugin(
           // Device type is not always reliably read from properties
           deviceType = handle.avdInfo.tag.toDeviceType()
           density = deviceProperties[DevicePropertyNames.QEMU_SF_LCD_DENSITY]?.toIntOrNull()
-          resolution = Resolution.readFromDevice(device)
+          // Keep the resolution value we got from AvdInfo, since while the emulator is booting,
+          // Resolution.readFromDevice() will not work.
           disambiguator = port.toString()
           wearPairingId = path.toString().takeIf { isPairable() }
           icon = iconForType()

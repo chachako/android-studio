@@ -25,8 +25,9 @@ import com.android.adblib.DevicePropertyNames.RO_PRODUCT_CPU_ABI
 import com.android.adblib.DevicePropertyNames.RO_PRODUCT_MANUFACTURER
 import com.android.adblib.DevicePropertyNames.RO_PRODUCT_MODEL
 import com.android.adblib.DevicePropertyNames.RO_SF_LCD_DENSITY
+import com.android.adblib.ShellCommandOutputElement
 import com.android.adblib.selector
-import com.android.adblib.shellAsText
+import com.android.adblib.shellAsLines
 import com.android.adblib.thisLogger
 import com.android.resources.Density
 import com.android.sdklib.AndroidVersion
@@ -36,6 +37,7 @@ import java.time.Duration
 import java.util.concurrent.TimeoutException
 import javax.swing.Icon
 import kotlin.math.ceil
+import kotlinx.coroutines.flow.first
 
 /**
  * Stores various properties about a device that are generally stable.
@@ -66,8 +68,8 @@ interface DeviceProperties {
   val isVirtual: Boolean?
 
   /**
-   * If true, the device is connected over the network via a proxy that mediates access; 
-   * if false, the device is connected directly to the local machine.
+   * If true, the device is connected over the network via a proxy that mediates access; if false,
+   * the device is connected directly to the local machine.
    */
   val isRemote: Boolean?
 
@@ -230,12 +232,18 @@ data class Resolution(val width: Int, val height: Int) {
 
     suspend fun readFromDevice(device: ConnectedDevice): Resolution? =
       try {
-        parseWmSizeOutput(
+        val shellOutput =
           device.session.deviceServices
-            .shellAsText(device.selector, "wm size", commandTimeout = Duration.ofSeconds(5))
-            .stdout
-            .trim()
-        )
+            .shellAsLines(device.selector, "wm size", commandTimeout = Duration.ofSeconds(5))
+            .first()
+        when (shellOutput) {
+          is ShellCommandOutputElement.StdoutLine -> parseWmSizeOutput(shellOutput.contents)
+          else -> {
+            thisLogger(device.session)
+              .warn("Failed to read device resolution successfully: $shellOutput")
+            null
+          }
+        }
       } catch (e: AdbFailResponseException) {
         thisLogger(device.session).warn(e, "Failed to read device resolution")
         null
