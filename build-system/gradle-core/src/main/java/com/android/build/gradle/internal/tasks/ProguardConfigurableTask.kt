@@ -415,7 +415,12 @@ abstract class ProguardConfigurableTask(
             when {
                 testedConfig != null -> {
                     // This is an androidTest variant inside an app/library.
-                    applyProguardDefaultsForTest()
+                    if (testedConfig.componentType.isAar) {
+                        // only provide option to enable minify in androidTest component in library
+                        applyProguardDefaultsForTest(optimizationCreationConfig.minifiedEnabled)
+                    } else {
+                        applyProguardDefaultsForTest(false)
+                    }
 
                     // All -dontwarn rules for test dependencies should go in here:
                     val configurationFiles = task.project.files(
@@ -426,7 +431,7 @@ abstract class ProguardConfigurableTask(
                 }
                 creationConfig.componentType.isForTesting && !creationConfig.componentType.isTestComponent -> {
                     // This is a test-only module and the app being tested was obfuscated with ProGuard.
-                    applyProguardDefaultsForTest()
+                    applyProguardDefaultsForTest(false)
 
                     // All -dontwarn rules for test dependen]cies should go in here:
                     val configurationFiles = task.project.files(
@@ -444,18 +449,20 @@ abstract class ProguardConfigurableTask(
             }
         }
 
-        private fun applyProguardDefaultsForTest() {
+        private fun applyProguardDefaultsForTest(minifyEnabled: Boolean) {
             // Don't remove any code in tested app.
             // Obfuscate is disabled by default.
             setActions(PostprocessingFeatures(
-                isRemoveUnusedCode = false,
-                isObfuscate = false,
-                isOptimize = false
+                isRemoveUnusedCode = minifyEnabled,
+                isObfuscate = minifyEnabled,
+                isOptimize = minifyEnabled
             ))
-            keep("class * {*;}")
-            keep("interface * {*;}")
-            keep("enum * {*;}")
-            keepAttributes()
+            if (!minifyEnabled) {
+                keep("class * {*;}")
+                keep("interface * {*;}")
+                keep("enum * {*;}")
+                keepAttributes()
+            }
         }
 
         private fun applyProguardConfigForNonTest(

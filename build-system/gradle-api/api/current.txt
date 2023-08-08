@@ -355,6 +355,12 @@ package com.android.build.api.dsl {
     property public abstract String wearAppConfigurationName;
   }
 
+  @org.gradle.api.Incubating public interface AndroidTest {
+    method public boolean getEnableMinification();
+    method public void setEnableMinification(boolean);
+    property public abstract boolean enableMinification;
+  }
+
   public interface AnnotationProcessorOptions {
     method public void argument(String key, String value);
     method public void arguments(java.util.Map<java.lang.String,java.lang.String> arguments);
@@ -1362,8 +1368,11 @@ package com.android.build.api.dsl {
   }
 
   public interface LibraryBuildType extends com.android.build.api.dsl.BuildType com.android.build.api.dsl.LibraryVariantDimension {
+    method @org.gradle.api.Incubating public void androidTest(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidTest,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.AndroidTest getAndroidTest();
     method public boolean isDefault();
     method public void setDefault(boolean);
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.AndroidTest androidTest;
     property public abstract boolean isDefault;
   }
 

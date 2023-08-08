@@ -250,6 +250,7 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
         isProfileable = thatBuildType.isProfileable
         aarMetadata.minCompileSdk = thatBuildType.aarMetadata.minCompileSdk
         (optimization as OptimizationImpl).initWith(that.optimization as OptimizationImpl)
+        androidTest.enableMinification = thatBuildType.androidTest.enableMinification
     }
 
     /** Override as DSL objects have no reason to be compared for equality.  */
