@@ -20,6 +20,7 @@ import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
 import com.android.fakeadbserver.devicecommandhandlers.DeviceCommandHandler
 import com.android.fakeadbserver.services.ShellCommandOutput
+import com.android.fakeadbserver.services.ShellCommandOutputWithDefaultExitCode
 import com.google.common.base.Charsets
 import kotlinx.coroutines.CoroutineScope
 import java.net.Socket
@@ -50,15 +51,18 @@ abstract class ShellHandler protected constructor(
         val shellCommandArgs = if (split.size > 1) split[1] else null
         if (shouldExecute(shellCommand, shellCommandArgs)) {
             val statusWriter = StatusWriter(socket)
+            val shellCommandOutput =
+                ShellCommandOutputWithDefaultExitCode(shellProtocolType.createServiceOutput(socket, device))
             execute(
                 server,
                 statusWriter,
-                shellProtocolType.createServiceOutput(socket, device),
+                shellCommandOutput,
                 device,
                 shellCommand,
                 shellCommandArgs,
             )
             statusWriter.verifyStatusWritten()
+            shellCommandOutput.writeDefaultExitCode()
             return true
         }
         return false

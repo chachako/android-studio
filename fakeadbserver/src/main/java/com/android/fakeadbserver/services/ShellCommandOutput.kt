@@ -46,6 +46,28 @@ interface ShellCommandOutput {
 }
 
 /**
+ * Wrapper around [ShellCommandOutput] that tracks if an exit code has been written, and offers a
+ * method for writing an exit code if none has been written yet.
+ */
+class ShellCommandOutputWithDefaultExitCode(val delegate: ShellCommandOutput):
+        ShellCommandOutput by delegate {
+    private var exitCodeWritten = false
+    override fun writeExitCode(exitCode: Int) {
+        delegate.writeExitCode(exitCode)
+        exitCodeWritten = true
+    }
+
+    /**
+     * If [writeExitCode] has already been called, does nothing; otherwise, writes a zero exit code.
+     */
+    fun writeDefaultExitCode() {
+        if (!exitCodeWritten) {
+            writeExitCode(0)
+        }
+    }
+}
+
+/**
  * Implementation of [ShellCommandOutput] that writes stdout/stderr directly to
  * [Socket.getOutputStream], and ignores exit code. This corresponds to how
  * the legacy "shell:" ADB service works.
