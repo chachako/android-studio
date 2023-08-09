@@ -30,6 +30,7 @@ import com.android.adblib.tools.openEmulatorConsole
 import com.android.adblib.withErrorTimeout
 import com.android.ddmlib.AdbHelper
 import com.android.ddmlib.AvdData
+import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.Client
 import com.android.ddmlib.DdmPreferences
 import com.android.ddmlib.FileListingService
@@ -44,6 +45,7 @@ import com.android.ddmlib.RawImage
 import com.android.ddmlib.ScreenRecorderOptions
 import com.android.ddmlib.ServiceInfo
 import com.android.ddmlib.SyncService
+import com.android.ddmlib.clientmanager.DeviceClientManager
 import com.android.ddmlib.log.LogReceiver
 import com.android.sdklib.AndroidVersion
 import com.google.common.util.concurrent.ListenableFuture
@@ -66,13 +68,18 @@ import java.util.concurrent.TimeoutException
  * implementation details of ddmlib.
  */
 internal class AdblibIDeviceWrapper(
-    private val connectedDevice: ConnectedDevice
+    private val connectedDevice: ConnectedDevice,
+    bridge: AndroidDebugBridge,
 ) : IDevice {
 
     // TODO(b/294559068): Create our own implementation of PropertyFetcher before we can get rid of ddmlib
     private val propertyFetcher = PropertyFetcher(this)
 
     private val iDeviceSharedImpl = IDeviceSharedImpl(this)
+    private val deviceClientManager by lazy {
+        AdbLibClientManagerFactory.createClientManager(connectedDevice.session)
+            .createDeviceClientManager(bridge, this)
+    }
 
     /** Name and path of the AVD  */
     private val mAvdData = connectedDevice.session.scope.async { createAvdData() }
@@ -466,7 +473,7 @@ internal class AdblibIDeviceWrapper(
 
     /** Returns the array of clients.  */
     override fun getClients(): Array<Client> {
-        TODO("Not yet implemented")
+        return deviceClientManager.clients.toTypedArray()
     }
 
     /**
@@ -475,8 +482,8 @@ internal class AdblibIDeviceWrapper(
      * @param applicationName the name of the application
      * @return the `Client` object or `null` if no match was found.
      */
-    override fun getClient(applicationName: String?): Client {
-        TODO("Not yet implemented")
+    override fun getClient(applicationName: String?): Client? {
+        return clients.firstOrNull { applicationName == it.clientData.clientDescription }
     }
 
     /**

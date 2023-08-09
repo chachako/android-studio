@@ -62,7 +62,7 @@ internal class AdbLibIDeviceManager(
                     val added = value.filter { !deviceMap.containsKey(it) }
                     val addedIDevices = mutableListOf<IDevice>()
                     for (key in added) {
-                        val iDevice = AdblibIDeviceWrapper(key)
+                        val iDevice = AdblibIDeviceWrapper(key, bridge)
                         deviceMap[key] = iDevice
                         addedIDevices.add(iDevice)
                     }

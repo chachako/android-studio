@@ -17,9 +17,12 @@ package com.android.adblib.ddmlibcompatibility.debugging
 
 import com.android.adblib.AdbSession
 import com.android.adblib.thisLogger
+import com.android.annotations.concurrency.WorkerThread
 import com.android.ddmlib.AndroidDebugBridge
+import com.android.ddmlib.Client
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.clientmanager.ClientManager
+import com.android.ddmlib.clientmanager.DeviceClientManager
 import com.android.ddmlib.clientmanager.DeviceClientManagerListener
 
 /**
@@ -28,6 +31,89 @@ import com.android.ddmlib.clientmanager.DeviceClientManagerListener
 internal class AdbLibClientManager(val session: AdbSession) : ClientManager {
 
     private val logger = thisLogger(session)
+
+    override fun createDeviceClientManager(
+        bridge: AndroidDebugBridge,
+        device: IDevice
+    ): AdbLibDeviceClientManager {
+
+        // Listener that notifies AndroidDebugBridge of changes to processes (clients)
+        val listener: DeviceClientManagerListener = object : DeviceClientManagerListener {
+            @WorkerThread
+            override fun processListUpdated(
+                bridge: AndroidDebugBridge,
+                deviceClientManager: DeviceClientManager
+            ) {
+                if (bridge === AndroidDebugBridge.getBridge()) {
+                    AndroidDebugBridge.deviceChanged(
+                        deviceClientManager.device, IDevice.CHANGE_CLIENT_LIST
+                    )
+                }
+            }
+
+            @WorkerThread
+            override fun profileableProcessListUpdated(
+                bridge: AndroidDebugBridge,
+                deviceClientManager: DeviceClientManager
+            ) {
+                if (bridge === AndroidDebugBridge.getBridge()) {
+                    AndroidDebugBridge.deviceChanged(
+                        deviceClientManager.device,
+                        IDevice.CHANGE_PROFILEABLE_CLIENT_LIST
+                    )
+                }
+            }
+
+            @WorkerThread
+            override fun processNameUpdated(
+                bridge: AndroidDebugBridge,
+                deviceClientManager: DeviceClientManager,
+                client: Client
+            ) {
+                if (bridge === AndroidDebugBridge.getBridge()) {
+                    AndroidDebugBridge.clientChanged(client, Client.CHANGE_NAME)
+                }
+            }
+
+            @WorkerThread
+            override fun processDebuggerStatusUpdated(
+                bridge: AndroidDebugBridge,
+                deviceClientManager: DeviceClientManager,
+                client: Client
+            ) {
+                if (bridge === AndroidDebugBridge.getBridge()) {
+                    AndroidDebugBridge.clientChanged(client, Client.CHANGE_DEBUGGER_STATUS)
+                }
+            }
+
+            @WorkerThread
+            override fun processHeapAllocationsUpdated(
+                bridge: AndroidDebugBridge,
+                deviceClientManager: DeviceClientManager,
+                client: Client
+            ) {
+                if (bridge === AndroidDebugBridge.getBridge()) {
+                    AndroidDebugBridge.clientChanged(
+                        client, Client.CHANGE_HEAP_ALLOCATIONS
+                    )
+                }
+            }
+
+            @WorkerThread
+            override fun processMethodProfilingStatusUpdated(
+                bridge: AndroidDebugBridge,
+                deviceClientManager: DeviceClientManager,
+                client: Client
+            ) {
+                if (bridge === AndroidDebugBridge.getBridge()) {
+                    AndroidDebugBridge.clientChanged(
+                        client, Client.CHANGE_METHOD_PROFILING_STATUS
+                    )
+                }
+            }
+        }
+        return createDeviceClientManager(bridge, device, listener)
+    }
 
     override fun createDeviceClientManager(
         bridge: AndroidDebugBridge,
