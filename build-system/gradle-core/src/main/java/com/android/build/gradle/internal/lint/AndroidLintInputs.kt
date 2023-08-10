@@ -1534,7 +1534,7 @@ abstract class SourceProviderInput {
         testFixtureOnly: Boolean = false
     ): SourceProviderInput {
         this.manifestFiles.add(sources.manifestFile)
-        this.manifestFiles.addAll(sources.manifestOverlayFiles.map { it.filter(File::isFile) })
+        this.manifestFiles.addAll(sources.manifestOverlayFiles)
         this.manifestFiles.disallowChanges()
 
         fun FlatSourceDirectoriesImpl.getFilteredSourceProviders(into: ConfigurableFileCollection) {
@@ -1571,7 +1571,7 @@ abstract class SourceProviderInput {
             this.resDirectoriesClasspath.from(resDirectories)
             this.assetsDirectoriesClasspath.from(assetsDirectories)
         } else {
-            this.manifestFilePaths.set(manifestFiles.map { files ->
+            this.manifestFilePaths.addAll(existingManifests().map { files ->
                 files.map {
                     it.absolutePath
                 }
@@ -1606,6 +1606,17 @@ abstract class SourceProviderInput {
         this.testFixtureOnly.setDisallowChanges(testFixtureOnly)
         return this
     }
+
+    /**
+     * Method returns list of main manifest and overlay manifest that exist
+     * List can be empty for standalone.
+     */
+    private fun existingManifests(): Provider<List<File>> =
+            manifestFiles.map {
+                if (it.isNotEmpty())
+                    it.take(1) + it.drop(1).filter(File::isFile)
+                else listOf()
+            }
 
     internal fun initializeForStandalone(
         sourceSet: SourceSet,
@@ -1654,7 +1665,7 @@ abstract class SourceProviderInput {
     internal fun toLintModels(): List<LintModelSourceProvider> {
         return listOf(
             DefaultLintModelSourceProvider(
-                manifestFiles = manifestFiles.get(),
+                manifestFiles = existingManifests().get(),
                 javaDirectories = javaDirectories.files.toList(),
                 resDirectories = resDirectories.files.toList(),
                 assetsDirectories = assetsDirectories.files.toList(),

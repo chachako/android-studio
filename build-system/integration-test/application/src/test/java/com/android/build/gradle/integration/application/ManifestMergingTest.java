@@ -500,4 +500,74 @@ public class ManifestMergingTest {
                         "Suggestion: remove the package=\"wrong.package\" declaration at "
                                 + overlayManifest);
     }
+
+    @Test
+    public void checkAddedManifestWithVariantApi() throws Exception {
+        Path overlayManifest =
+                new File(flavors.getLocation().getProjectDir(), "AndroidManifest.xml").toPath();
+        Files.write(
+                overlayManifest,
+                List.of(
+                        "<?xml version=\"1.0\" encoding=\"utf-8\"?>",
+                        "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"",
+                        " android:versionCode=\"123\"/>"));
+        TestFileUtils.appendToFile(
+                flavors.getBuildFile(),
+                "androidComponents {\n"
+                        + "  onVariants(selector().all(),  { variant ->\n"
+                        + "    variant.sources.manifests.addStaticManifestFile(\"AndroidManifest.xml\")\n"
+                        + "  })\n"
+                        + "}\n");
+
+        flavors.executor().run("clean", "assembleF1FaDebug");
+
+        assertThat(
+                        flavors.getIntermediateFile(
+                                "merged_manifest", "f1FaDebug", "AndroidManifest.xml"))
+                .contains("android:versionCode=\"123\"");
+    }
+
+    @Test
+    public void checkAddedGeneratedManifestWithVariantApi() throws Exception {
+        String manifest =
+                "<?xml version=\\\"1.0\\\" encoding=\\\"utf-8\\\"?>\\n"
+                        + "<manifest xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\"\\n"
+                        + " android:versionCode=\\\"123\\\"/>";
+        String manifestCreatorTask =
+                "abstract class ManifestCreatorTask extends DefaultTask {\n"
+                        + "   @OutputFile\n"
+                        + "   abstract RegularFileProperty getOutputManifest()\n"
+                        + "   @TaskAction\n"
+                        + "   void taskAction() { \n"
+                        + "      println(\"Writes to \" + getOutputManifest().get().getAsFile().getAbsolutePath())\n"
+                        + "      def myFile = getOutputManifest().get().getAsFile()\n"
+                        + "      myFile.write('"
+                        + manifest
+                        + "')\n"
+                        + "   }\n"
+                        + "}\n";
+
+        TestFileUtils.appendToFile(
+                flavors.getBuildFile(),
+                manifestCreatorTask
+                        + " androidComponents {\n"
+                        + "                    onVariants(selector().all()) { variant ->\n"
+                        + "                    // use addGeneratedSourceDirectory for adding generated resources\n"
+                        + "                    TaskProvider<ManifestCreatorTask> manifestCreatorTask =\n"
+                        + "                        project.tasks.register('create' + variant.getName() + 'Manifest', ManifestCreatorTask.class){\n"
+                        + "                            getOutputManifest().set(new File(project.layout.buildDirectory.asFile.get(), \"AndroidManifest.xml\"))\n"
+                        + "                        }\n"
+                        + "\n"
+                        + "                    variant.sources.manifests.addGeneratedManifestFile(\n"
+                        + "                            manifestCreatorTask,\n"
+                        + "                            { it.getOutputManifest() })\n"
+                        + "                   }}\n");
+
+        flavors.executor().run("clean", "assembleF1FaDebug");
+
+        assertThat(
+                        flavors.getIntermediateFile(
+                                "merged_manifest", "f1FaDebug", "AndroidManifest.xml"))
+                .contains("android:versionCode=\"123\"");
+    }
 }

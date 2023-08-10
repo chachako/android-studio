@@ -177,7 +177,7 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
 
         val mergingReport = mergeManifests(
             mainManifest.get(),
-            manifestOverlays.get(),
+            manifestOverlays.get().filter(File::isFile),
             computeFullProviderList(),
             navJsons,
             featureName.orNull,
@@ -510,8 +510,7 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
             )
             task.manifestPlaceholders.disallowChanges()
             task.mainManifest.setDisallowChanges(creationConfig.sources.manifestFile)
-            task.manifestOverlays.setDisallowChanges(
-                creationConfig.sources.manifestOverlayFiles.map { it.filter(File::isFile) })
+            task.manifestOverlays.setDisallowChanges(creationConfig.sources.manifestOverlayFiles)
             task.isFeatureSplitVariantType = creationConfig.componentType.isDynamicFeature
             task.buildTypeName = creationConfig.buildType
             task.projectBuildFile.set(task.project.buildFile)

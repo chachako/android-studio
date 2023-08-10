@@ -248,7 +248,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
                     ManifestMerger2.MergeType.APPLICATION
                 )
                     .setPlaceHolderValues(manifestPlaceholders)
-                    .addFlavorAndBuildTypeManifests(*manifestOverlays.get().toTypedArray())
+                    .addFlavorAndBuildTypeManifests(*manifestOverlays.get().filter(File::isFile).toTypedArray())
                     .addLibraryManifest(generatedTestManifest)
                     .addAllowedNonUniqueNamespace(namespace)
                     .setOverride(ManifestSystemProperty.Document.PACKAGE, testApplicationId)
@@ -480,8 +480,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
             task.testManifestFile
                 .fileProvider(creationConfig.sources.manifestFile)
             task.testManifestFile.disallowChanges()
-            task.manifestOverlays.setDisallowChanges(
-                creationConfig.sources.manifestOverlayFiles.map { it.filter(File::isFile) })
+            task.manifestOverlays.setDisallowChanges(creationConfig.sources.manifestOverlayFiles)
             task.componentType.setDisallowChanges(creationConfig.componentType.toString())
             task.tmpDir.setDisallowChanges(
                 creationConfig.paths.intermediatesDir(
