@@ -168,15 +168,15 @@ void HookToStub::BuildStub(lir::CodeIr* code_ir, lir::Bytecode* first_instr,
   auto method_desc_str = GetString(&builder, code_ir, method_desc);
 
   auto const_class_name =
-      GetInstr(code_ir, dex::OP_CONST_STRING, {regs[0], class_name_str});
+      GetInstr(code_ir, dex::OP_CONST_STRING_JUMBO, {regs[0], class_name_str});
   code_ir->instructions.InsertBefore(first_instr, const_class_name);
 
   auto const_method_name =
-      GetInstr(code_ir, dex::OP_CONST_STRING, {regs[1], method_name_str});
+      GetInstr(code_ir, dex::OP_CONST_STRING_JUMBO, {regs[1], method_name_str});
   code_ir->instructions.InsertBefore(first_instr, const_method_name);
 
   auto const_method_desc =
-      GetInstr(code_ir, dex::OP_CONST_STRING, {regs[2], method_desc_str});
+      GetInstr(code_ir, dex::OP_CONST_STRING_JUMBO, {regs[2], method_desc_str});
   code_ir->instructions.InsertBefore(first_instr, const_method_desc);
 
   auto method =
@@ -225,15 +225,15 @@ void HookToStub::BuildStub(lir::CodeIr* code_ir, lir::Bytecode* first_instr,
   code_ir->instructions.InsertBefore(invoke_static, move_array);
 
   const_class_name =
-      GetInstr(code_ir, dex::OP_CONST_STRING, {regs[0], class_name_str});
+      GetInstr(code_ir, dex::OP_CONST_STRING_JUMBO, {regs[0], class_name_str});
   code_ir->instructions.InsertBefore(invoke_static, const_class_name);
 
   const_method_name =
-      GetInstr(code_ir, dex::OP_CONST_STRING, {regs[1], method_name_str});
+      GetInstr(code_ir, dex::OP_CONST_STRING_JUMBO, {regs[1], method_name_str});
   code_ir->instructions.InsertBefore(invoke_static, const_method_name);
 
   const_method_desc =
-      GetInstr(code_ir, dex::OP_CONST_STRING, {regs[2], method_desc_str});
+      GetInstr(code_ir, dex::OP_CONST_STRING_JUMBO, {regs[2], method_desc_str});
   code_ir->instructions.InsertBefore(invoke_static, const_method_desc);
 
   // Modify the fake entry hook invoke to call the correct interpreter stub.
