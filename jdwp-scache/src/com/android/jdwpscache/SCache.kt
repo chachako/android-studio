@@ -45,7 +45,7 @@ typealias CmdKey = String
  *   be "belayed" and not sent for forwarding. Instead we "wait" for the reply to arrive and send a
  *   retagged reply.
  */
-internal class SCache(private val enabled: Boolean = true, private val logger: SCacheLogger) :
+internal class SCache(internal var enabled: Boolean = true, private val logger: SCacheLogger) :
   AutoCloseable {
 
   private val triggerManager = TriggerManager()
@@ -69,7 +69,19 @@ internal class SCache(private val enabled: Boolean = true, private val logger: S
     )
   }
 
-  fun onUpstreamPacket(originalPacket: ByteBuffer): SCacheResponse {
+  fun onUpstreamPacket(packet: ByteBuffer): SCacheResponse {
+    try {
+      return onUpstreamPacketSafe(packet)
+    } catch (e: Exception) {
+      enabled = false
+      logger.error("SCache onUpstream error", e)
+      val response = SCacheResponse()
+      response.addToUpstream(packet)
+      return response
+    }
+  }
+
+  private fun onUpstreamPacketSafe(originalPacket: ByteBuffer): SCacheResponse {
     val response = SCacheResponse()
 
     if (!enabled) {
@@ -113,7 +125,19 @@ internal class SCache(private val enabled: Boolean = true, private val logger: S
     return response
   }
 
-  fun onDownstreamPacket(originalPacket: ByteBuffer): SCacheResponse {
+  fun onDownstreamPacket(packet: ByteBuffer): SCacheResponse {
+    try {
+      return onDownstreamPacketSafe(packet)
+    } catch (e: Exception) {
+      enabled = false
+      logger.error("SCache onDownstream error", e)
+      val response = SCacheResponse()
+      response.addToDownstream(packet)
+      return response
+    }
+  }
+
+  private fun onDownstreamPacketSafe(originalPacket: ByteBuffer): SCacheResponse {
     val response = SCacheResponse()
 
     if (!enabled) {

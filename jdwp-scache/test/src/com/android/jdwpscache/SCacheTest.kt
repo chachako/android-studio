@@ -34,7 +34,7 @@ import com.android.jdwppacket.vm.AllClassesWithGenericsCmd
 import com.android.jdwppacket.vm.AllClassesWithGenericsReply
 import com.android.jdwppacket.vm.IDSizesCmd
 import com.android.jdwppacket.vm.IDSizesReply
-import java.nio.BufferUnderflowException
+import java.nio.ByteBuffer
 import org.junit.Assert
 import org.junit.Test
 
@@ -54,12 +54,12 @@ class SCacheTest {
     // Send a packet featuring threadID (objectID) and frameID. Write it with 8 byte long field.
     // This should work
     scache.onUpstreamPacket(SuperClassCmd(0).toPacket(id.get(), IDSizes(8)))
-    try {
-      // Try again with id size resulting in buffer underflow (1 byte fields)
-      // This should fail
-      scache.onUpstreamPacket(SuperClassCmd(0).toPacket(id.get(), IDSizes(1)))
-      Assert.fail("Failed to detect buffer underflow because of threadId/frameID")
-    } catch (_: BufferUnderflowException) {}
+    Assert.assertTrue("SCache disabled", scache.enabled)
+
+    // Try again with id size resulting in buffer underflow (1 byte fields)
+    // This should fail
+    scache.onUpstreamPacket(SuperClassCmd(0).toPacket(id.get(), IDSizes(1)))
+    Assert.assertFalse("SCache is enabled", scache.enabled)
   }
 
   // Make sure we trigger on Frames
@@ -347,5 +347,45 @@ class SCacheTest {
     val miss = scache.onUpstreamPacket(SourceFileCmd(stringClass.id).toPacket(id.get(), idSizes))
     Assert.assertEquals("No cache miss after ClassUnload", 1, miss.edict.toDownstream.size)
     Assert.assertEquals("Not packet forward after ClassUnload", 0, miss.edict.toUpstream.size)
+  }
+
+  // Check that internal errors resulting in Exception are not surfaced and that scache disable
+  // itself upon error.
+  @Test
+  fun testError() {
+    val scache = SCache(true, SCacheTestLogger())
+    val id = IDGenerator()
+    val idSizes = IDSizes()
+
+    val stringClass = DebuggedClass(15, "java/lang/String")
+
+    // Send an allClasses request
+    scache.onUpstreamPacket(AllClassesCmd().toPacket(id.get(), idSizes))
+
+    // Send a buggy cmd with bad size, this should throw a buffer underflow
+    val goodPacket = AllClassesCmd().toPacket(id.get(), idSizes)
+    val badPacket = ByteBuffer.wrap(goodPacket.array(), 0, goodPacket.capacity() - 2)
+    scache.onUpstreamPacket(badPacket)
+
+    // At this point, scache should have disabled itself.
+    Assert.assertFalse("SCache not disabled", scache.enabled)
+
+    // Receive an allClasse reply
+    val class1 = AllClassesReply.Class(0, stringClass.id, stringClass.signature, 0)
+    scache.onDownstreamPacket(AllClassesReply(listOf(class1)).toPacket(id.get(), idSizes))
+
+    // Fake a Frame cmd/reply
+    scache.onUpstreamPacket(FramesCmd(0, 0, 0).toPacket(id.get(), idSizes))
+    val frame0 = FramesReply.Frame(0, Location(0, stringClass.id, 0, 0))
+    val frames = listOf(frame0)
+    val frameSpeculators =
+      scache.onDownstreamPacket(FramesReply(frames).toPacket(id.getLast(), idSizes))
+
+    // Scache should not have speculated
+    Assert.assertEquals(
+      "Not speculating on all frames",
+      1,
+      frameSpeculators.edict.downstreamList.size,
+    )
   }
 }
