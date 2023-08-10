@@ -740,6 +740,37 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
         PathSubject.assertThat(reportFile).doesNotContain("[LintError]")
     }
 
+    @Test
+    fun `test lint on KMP project with android target but no jvm target`() {
+        Assume.assumeTrue(lintAnalysisPerComponent)
+
+        getExecutor().run(":kmpFirstLib:clean", ":kmpFirstLib:lint")
+
+        val reportFile =
+            File(project.getSubproject("kmpFirstLib").buildDir, "reports/lint-results.txt")
+
+        PathSubject.assertThat(reportFile).exists()
+        PathSubject.assertThat(reportFile).contains("No issues found.")
+    }
+
+    @Test
+    fun `test lint on KMP project with no android or jvm targets`() {
+        Assume.assumeTrue(lintAnalysisPerComponent)
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("kmpJvmOnly").ktsBuildFile,
+            "jvm()",
+            "js()"
+        )
+
+        getExecutor().run(":kmpJvmOnly:clean", ":kmpJvmOnly:lint")
+
+        val reportFile =
+            File(project.getSubproject("kmpJvmOnly").buildDir, "reports/lint-results.txt")
+
+        PathSubject.assertThat(reportFile).exists()
+        PathSubject.assertThat(reportFile).contains("No issues found.")
+    }
+
     private fun addNewApiIssuesToKmpFirstLib(
         addCommonMainIssues: Boolean = false,
         addAndroidMainIssues: Boolean = false,

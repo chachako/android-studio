@@ -560,7 +560,9 @@ class LintDriver(
   private fun initializeProjectRoots(): Collection<Project> {
     val projects = projectRoots
     if (projects.isEmpty()) {
-      client.log(null, "No projects found for %1\$s", request.files.toString())
+      if (request.files.isNotEmpty()) {
+        client.log(null, "No projects found for %1\$s", request.files.toString())
+      }
       return emptyList()
     }
 

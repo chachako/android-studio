@@ -1565,7 +1565,11 @@ public class Main {
             }
         }
 
-        if (files.isEmpty() && modules.isEmpty() && flags.getProjectDescriptorOverride() == null) {
+        if (files.isEmpty()
+                && modules.isEmpty()
+                // Let AGP run lint with no modules (e.g., for a KMP library with no jvm targets)
+                && argumentState.clientName != "AGP"
+                && flags.getProjectDescriptorOverride() == null) {
             System.err.println("No files to analyze.");
             return ERRNO_INVALID_ARGS;
         } else if (files.size() > 1

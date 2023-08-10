@@ -196,7 +196,6 @@ abstract class LintPlugin : Plugin<Project> {
                     task.configureForStandalone(
                         taskCreationServices,
                         javaExtension,
-                        kotlinExtensionWrapper,
                         customLintChecks,
                         lintOptions!!,
                         artifacts.getAll(InternalMultipleArtifactType.LINT_PARTIAL_RESULTS),
@@ -213,8 +212,7 @@ abstract class LintPlugin : Plugin<Project> {
                         } else {
                             null
                         },
-                        LintMode.UPDATE_BASELINE,
-                        isPerComponentLintAnalysis
+                        LintMode.UPDATE_BASELINE
                     )
                 }
             updateLintBaselineTask.dependsOn(updateLintBaselineJvmTask)
@@ -224,7 +222,6 @@ abstract class LintPlugin : Plugin<Project> {
                 task.configureForStandalone(
                     taskCreationServices,
                     javaExtension,
-                    kotlinExtensionWrapper,
                     customLintChecks,
                     lintOptions!!,
                     artifacts.getAll(InternalMultipleArtifactType.LINT_PARTIAL_RESULTS),
@@ -241,8 +238,7 @@ abstract class LintPlugin : Plugin<Project> {
                     } else {
                         null
                     },
-                    LintMode.REPORTING,
-                    isPerComponentLintAnalysis
+                    LintMode.REPORTING
                 )
                 task.mustRunAfter(updateLintBaselineJvmTask)
             }.also {
@@ -274,7 +270,6 @@ abstract class LintPlugin : Plugin<Project> {
                 task.configureForStandalone(
                     taskCreationServices,
                     javaExtension,
-                    kotlinExtensionWrapper,
                     customLintChecks,
                     lintOptions!!,
                     artifacts.getAll(InternalMultipleArtifactType.LINT_VITAL_PARTIAL_RESULTS),
@@ -282,7 +277,6 @@ abstract class LintPlugin : Plugin<Project> {
                     unitTestPartialResults = null,
                     unitTestLintModel = null,
                     LintMode.REPORTING,
-                    isPerComponentLintAnalysis,
                     fatalOnly = true
                 )
                 task.mustRunAfter(updateLintBaselineTask)
@@ -301,7 +295,6 @@ abstract class LintPlugin : Plugin<Project> {
                     task.configureForStandalone(
                         taskCreationServices,
                         javaExtension,
-                        kotlinExtensionWrapper,
                         customLintChecks,
                         lintOptions!!,
                         artifacts.getAll(InternalMultipleArtifactType.LINT_PARTIAL_RESULTS),
@@ -319,7 +312,6 @@ abstract class LintPlugin : Plugin<Project> {
                             null
                         },
                         LintMode.REPORTING,
-                        isPerComponentLintAnalysis,
                         autoFix = true
                     )
                     task.mustRunAfter(updateLintBaselineJvmTask)

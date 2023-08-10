@@ -53,7 +53,6 @@ import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.BooleanOption.LINT_ANALYSIS_PER_COMPONENT
 import com.android.buildanalyzer.common.TaskCategory
-import com.android.tools.lint.model.LintModelArtifactType.MAIN
 import com.android.utils.FileUtils
 import com.google.common.annotations.VisibleForTesting
 import org.gradle.api.file.ConfigurableFileCollection
@@ -156,10 +155,6 @@ abstract class AndroidLintTask : NonIncrementalTask() {
 
     @get:Nested
     abstract val projectInputs: ProjectInputs
-
-    // TODO(b/290070593) remove this after AndroidX updates to AGP 8.2.0 beta or higher
-    @get:Nested
-    abstract val variantInputs: VariantInputs
 
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -591,34 +586,9 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                         || task.missingBaselineIsEmptyBaseline.get()
             }
             val hasDynamicFeatures = creationConfig.global.hasDynamicFeatures
-            val checkDependencies = creationConfig.global.lintOptions.checkDependencies
             val isLintAnalysisPerComponent =
                 variant.main.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)
                         || variant.main is KmpCreationConfig
-            if (isLintAnalysisPerComponent) {
-                task.variantInputs.initialize(
-                    variant.main,
-                    unitTestCreationConfig = null,
-                    androidTestCreationConfig = null,
-                    testFixturesCreationConfig = null,
-                    services = variant.main.services,
-                    variantName = variant.main.name,
-                    useModuleDependencyLintModels = true,
-                    warnIfProjectTreatedAsExternalDependency = checkDependencies,
-                    lintMode = lintMode,
-                    fatalOnly = fatalOnly,
-                    includeMainArtifact = true,
-                    isPerComponentLintAnalysis = true
-                )
-            } else {
-                task.variantInputs.initialize(
-                    variant,
-                    useModuleDependencyLintModels = true,
-                    warnIfProjectTreatedAsExternalDependency = checkDependencies,
-                    lintMode = lintMode,
-                    fatalOnly = fatalOnly
-                )
-            }
             task.partialResults.from(
                 if (fatalOnly) {
                     creationConfig.artifacts.get(InternalArtifactType.LINT_VITAL_PARTIAL_RESULTS)
@@ -932,7 +902,6 @@ abstract class AndroidLintTask : NonIncrementalTask() {
     fun configureForStandalone(
         taskCreationServices: TaskCreationServices,
         javaPluginExtension: JavaPluginExtension,
-        kotlinExtensionWrapper: KotlinMultiplatformExtensionWrapper?,
         customLintChecksConfig: FileCollection,
         lintOptions: Lint,
         partialResults: Provider<List<Directory>>,
@@ -940,7 +909,6 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         unitTestPartialResults: Provider<List<Directory>>?,
         unitTestLintModel: Provider<List<Directory>>?,
         lintMode: LintMode,
-        isPerComponentLintAnalysis: Boolean,
         fatalOnly: Boolean = false,
         autoFix: Boolean = false,
     ) {
@@ -970,18 +938,6 @@ abstract class AndroidLintTask : NonIncrementalTask() {
             this.projectInputs.lintOptions.baseline.orNull?.asFile?.exists() ?: true
                     || this.missingBaselineIsEmptyBaseline.get()
         }
-        this.variantInputs
-            .initializeForStandalone(
-                project,
-                javaPluginExtension,
-                kotlinExtensionWrapper,
-                taskCreationServices.projectOptions,
-                fatalOnly,
-                useModuleDependencyLintModels = true,
-                lintMode,
-                lintModelArtifactType = if (isPerComponentLintAnalysis) MAIN else null,
-                jvmTargetName = null
-            )
         this.lintRuleJars.fromDisallowChanges(customLintChecksConfig)
         this.partialResults.fromDisallowChanges(partialResults)
         this.lintModels.fromDisallowChanges(lintModels)
