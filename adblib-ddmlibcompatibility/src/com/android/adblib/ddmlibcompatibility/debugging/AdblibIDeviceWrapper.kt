@@ -363,7 +363,7 @@ internal class AdblibIDeviceWrapper(
      * Returns a map of running services (key is service name) to [ServiceInfo] (value).
      */
     override fun services(): MutableMap<String, ServiceInfo> {
-        TODO("Not yet implemented")
+        return iDeviceSharedImpl.services()
     }
 
     /**
@@ -821,6 +821,26 @@ internal class AdblibIDeviceWrapper(
     }
 
     /**
+     * Force stop an application by its application name. This removes all pending alarms and queued
+     * computation.
+     *
+     * @param applicationName the name of the application
+     */
+    override fun forceStop(applicationName: String?) {
+        iDeviceSharedImpl.forceStop(applicationName)
+    }
+
+    /**
+     * Kills an application by its application name. This only destroy the activities, leaving its
+     * state in the Android system alone.
+     *
+     * @param applicationName the name of the application
+     */
+    override fun kill(applicationName: String?) {
+        iDeviceSharedImpl.kill(applicationName)
+    }
+
+    /**
      * Queries the current root-status of the device. See "adb root" for more information.
      *
      * @return true if the adb daemon is running as root, otherwise false.
@@ -898,7 +918,7 @@ internal class AdblibIDeviceWrapper(
      * @return the list of ABIs.
      */
     override fun getAbis(): MutableList<String> {
-        TODO("Not yet implemented")
+        return iDeviceSharedImpl.abis
     }
 
     /**
@@ -908,7 +928,7 @@ internal class AdblibIDeviceWrapper(
      * @return the density, or -1 if it cannot be determined.
      */
     override fun getDensity(): Int {
-        TODO("Not yet implemented")
+        return iDeviceSharedImpl.density
     }
 
     /**

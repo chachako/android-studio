@@ -8,6 +8,7 @@ import com.android.adblib.serialNumber
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.FakeAdbServerProviderRule
 import com.android.ddmlib.IDevice
+import com.android.ddmlib.IDevice.PROP_DEVICE_DENSITY
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.devicecommandhandlers.SyncCommandHandler
 import kotlinx.coroutines.flow.first
@@ -195,6 +196,49 @@ class AdblibIDeviceWrapperTest {
 
         // Assert
         assertEquals(30, version.apiLevel)
+    }
+
+    @Test
+    fun getAbis() = runBlockingWithTimeout {
+        // Prepare
+        val connectedDevice = createConnectedDevice("device1", DeviceState.DeviceStatus.ONLINE)
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice)
+
+        // Act
+        val abis = adblibIDeviceWrapper.abis
+
+        // Assert
+        assertEquals(listOf("x86_64"), abis)
+    }
+
+    @Test
+    fun getDensity() = runBlockingWithTimeout {
+        // Prepare
+        val fakeDevice =
+            fakeAdb.fakeAdbServer.connectDevice(
+                "device1",
+                "test1",
+                "test2",
+                "model",
+                "30",
+                "x86_64",
+                mapOf(Pair(PROP_DEVICE_DENSITY, "120")),
+                DeviceState.HostConnectionType.USB
+            ).get()
+        fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
+        val connectedDevice = waitForConnectedDevice(
+            hostServices.session,
+            "device1",
+            DeviceState.DeviceStatus.ONLINE
+        )
+
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice)
+
+        // Act
+        val density = adblibIDeviceWrapper.density
+
+        // Assert
+        assertEquals(120, density)
     }
 
     @Test

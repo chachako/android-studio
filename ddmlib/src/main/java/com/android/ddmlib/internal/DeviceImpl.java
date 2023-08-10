@@ -44,7 +44,6 @@ import com.android.ddmlib.RawImage;
 import com.android.ddmlib.RemoteSplitApkInstaller;
 import com.android.ddmlib.ScreenRecorderOptions;
 import com.android.ddmlib.ServiceInfo;
-import com.android.ddmlib.ServiceReceiver;
 import com.android.ddmlib.ShellCommandUnresponsiveException;
 import com.android.ddmlib.SplitApkInstaller;
 import com.android.ddmlib.SyncException;
@@ -55,7 +54,6 @@ import com.android.ddmlib.log.LogReceiver;
 import com.android.sdklib.AndroidVersion;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Atomics;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
@@ -75,7 +73,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -380,25 +377,7 @@ public final class DeviceImpl implements IDevice {
     @NonNull
     @Override
     public Map<String, ServiceInfo> services() {
-
-        CountDownLatch latch = new CountDownLatch(1);
-        ServiceReceiver receiver = new ServiceReceiver();
-        try {
-            executeShellCommand("service list", receiver);
-        } catch (Exception e) {
-            Log.e(LOG_TAG, new RuntimeException("Error obtaining services: ", e));
-            return new HashMap<>();
-        }
-
-        try {
-            latch.await(LS_TIMEOUT_SEC, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Log.e(LOG_TAG,
-                  new RuntimeException("Error obtaining services caused by interruption ", e));
-            return new HashMap<>();
-        }
-
-        return receiver.getRunningServices();
+        return iDeviceSharedImpl.services();
     }
 
     // The full list of features can be obtained from /etc/permissions/features*
@@ -1188,26 +1167,12 @@ public final class DeviceImpl implements IDevice {
 
     @Override
     public void forceStop(String applicationName) {
-        try {
-            // Force stop the app, even in case it's in the crashed state.
-            executeShellCommand("am force-stop " + applicationName, new NullOutputReceiver());
-        } catch (IOException
-                | TimeoutException
-                | AdbCommandRejectedException
-                | ShellCommandUnresponsiveException ignored) {
-        }
+        iDeviceSharedImpl.forceStop(applicationName);
     }
 
     @Override
     public void kill(String applicationName) {
-        try {
-            // Kills the app, even in case it's in the crashed state.
-            executeShellCommand("am kill " + applicationName, new NullOutputReceiver());
-        } catch (IOException
-                | TimeoutException
-                | AdbCommandRejectedException
-                | ShellCommandUnresponsiveException ignored) {
-        }
+        iDeviceSharedImpl.kill(applicationName);
     }
 
     void addClient(ClientImpl client) {
@@ -1768,41 +1733,12 @@ public final class DeviceImpl implements IDevice {
     @NonNull
     @Override
     public List<String> getAbis() {
-        /* Try abiList (implemented in L onwards) otherwise fall back to abi and abi2. */
-        String abiList = getProperty(IDevice.PROP_DEVICE_CPU_ABI_LIST);
-        if (abiList != null) {
-            return Lists.newArrayList(abiList.split(","));
-        } else {
-            List<String> abis = Lists.newArrayListWithExpectedSize(2);
-            String abi = getProperty(IDevice.PROP_DEVICE_CPU_ABI);
-            if (abi != null) {
-                abis.add(abi);
-            }
-
-            abi = getProperty(IDevice.PROP_DEVICE_CPU_ABI2);
-            if (abi != null) {
-                abis.add(abi);
-            }
-
-            return abis;
-        }
+        return iDeviceSharedImpl.getAbis();
     }
 
     @Override
     public int getDensity() {
-        String densityValue = getProperty(IDevice.PROP_DEVICE_DENSITY);
-        if (densityValue == null) {
-            densityValue = getProperty(IDevice.PROP_DEVICE_EMULATOR_DENSITY);
-        }
-        if (densityValue != null) {
-            try {
-                return Integer.parseInt(densityValue);
-            } catch (NumberFormatException e) {
-                return -1;
-            }
-        }
-
-        return -1;
+        return iDeviceSharedImpl.getDensity();
     }
 
     @Override

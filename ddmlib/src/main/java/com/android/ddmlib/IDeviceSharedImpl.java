@@ -20,6 +20,10 @@ import static com.android.ddmlib.IDevice.PROP_BUILD_API_LEVEL;
 import com.android.annotations.NonNull;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.AndroidVersionUtil;
+import com.google.common.collect.Lists;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -41,6 +45,8 @@ public class IDeviceSharedImpl {
 
     /** Path to the screen recorder binary on the device. */
     private static final String SCREEN_RECORDER_DEVICE_PATH = "/system/bin/screenrecord";
+
+    private static final String LOG_TAG = "Device";
 
     public IDeviceSharedImpl(IDevice iDevice) {
         this.iDevice = iDevice;
@@ -112,6 +118,91 @@ public class IDeviceSharedImpl {
                 return adbFeatures.contains("shell_v2");
             default:
                 return false;
+        }
+    }
+
+    public int getDensity() {
+        String densityValue = iDevice.getProperty(IDevice.PROP_DEVICE_DENSITY);
+        if (densityValue == null) {
+            densityValue = iDevice.getProperty(IDevice.PROP_DEVICE_EMULATOR_DENSITY);
+        }
+        if (densityValue != null) {
+            try {
+                return Integer.parseInt(densityValue);
+            } catch (NumberFormatException e) {
+                return -1;
+            }
+        }
+
+        return -1;
+    }
+
+    @NonNull
+    public List<String> getAbis() {
+        /* Try abiList (implemented in L onwards) otherwise fall back to abi and abi2. */
+        String abiList = iDevice.getProperty(IDevice.PROP_DEVICE_CPU_ABI_LIST);
+        if (abiList != null) {
+            return Lists.newArrayList(abiList.split(","));
+        } else {
+            List<String> abis = Lists.newArrayListWithExpectedSize(2);
+            String abi = iDevice.getProperty(IDevice.PROP_DEVICE_CPU_ABI);
+            if (abi != null) {
+                abis.add(abi);
+            }
+
+            abi = iDevice.getProperty(IDevice.PROP_DEVICE_CPU_ABI2);
+            if (abi != null) {
+                abis.add(abi);
+            }
+
+            return abis;
+        }
+    }
+
+    @NonNull
+    public Map<String, ServiceInfo> services() {
+
+        CountDownLatch latch = new CountDownLatch(1);
+        ServiceReceiver receiver = new ServiceReceiver();
+        try {
+            iDevice.executeShellCommand("service list", receiver);
+        } catch (Exception e) {
+            Log.e(LOG_TAG, new RuntimeException("Error obtaining services: ", e));
+            return new HashMap<>();
+        }
+
+        try {
+            latch.await(LS_TIMEOUT_SEC, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Log.e(
+                    LOG_TAG,
+                    new RuntimeException("Error obtaining services caused by interruption ", e));
+            return new HashMap<>();
+        }
+
+        return receiver.getRunningServices();
+    }
+
+    public void forceStop(String applicationName) {
+        try {
+            // Force stop the app, even in case it's in the crashed state.
+            iDevice.executeShellCommand(
+                    "am force-stop " + applicationName, new NullOutputReceiver());
+        } catch (IOException
+                | TimeoutException
+                | AdbCommandRejectedException
+                | ShellCommandUnresponsiveException ignored) {
+        }
+    }
+
+    public void kill(String applicationName) {
+        try {
+            // Kills the app, even in case it's in the crashed state.
+            iDevice.executeShellCommand("am kill " + applicationName, new NullOutputReceiver());
+        } catch (IOException
+                | TimeoutException
+                | AdbCommandRejectedException
+                | ShellCommandUnresponsiveException ignored) {
         }
     }
 
