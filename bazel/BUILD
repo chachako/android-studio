@@ -459,12 +459,6 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
-config_setting(
-    name = "kotlin_no_use_ir",
-    values = {"define": "kotlin_no_use_ir=true"},
-    visibility = ["//visibility:public"],
-)
-
 selects.config_setting_group(
     name = "target_android",
     match_any = [

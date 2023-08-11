@@ -1,6 +1,6 @@
 load(":coverage.bzl", "coverage_baseline", "coverage_java_test")
 load(":functions.bzl", "create_option_file", "label_workspace_path")
-load(":kotlin.bzl", "kotlin_compile", "test_kotlin_use_ir")
+load(":kotlin.bzl", "kotlin_compile")
 load(":lint.bzl", "lint_test")
 load(":merge_archives.bzl", "run_singlejar")
 
@@ -604,7 +604,6 @@ def iml_module(
         java_srcs = srcs.javas,
         kotlin_srcs = srcs.kotlins,
         kotlin_use_compose = kotlin_use_compose,
-        kotlin_use_ir = test_kotlin_use_ir(),
         form_srcs = srcs.forms,
         resources = srcs.resources,
         res_zips = res_zips,

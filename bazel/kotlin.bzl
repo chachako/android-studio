@@ -6,12 +6,6 @@ load(":merge_archives.bzl", "run_singlejar")
 load("@bazel_tools//tools/jdk:toolchain_utils.bzl", "find_java_runtime_toolchain", "find_java_toolchain")
 load(":functions.bzl", "create_option_file")
 
-def test_kotlin_use_ir():
-    return select({
-        "//tools/base/bazel:kotlin_no_use_ir": False,
-        "//conditions:default": True,
-    })
-
 def kotlin_compile(ctx, name, srcs, deps, friend_jars, out, out_ijar, java_runtime, kotlinc_opts, transitive_classpath):
     """Runs kotlinc on the given source files.
 
@@ -226,7 +220,6 @@ def kotlin_library(
         deps = deps,
         compress_resources = compress_resources,
         kotlin_use_compose = kotlin_use_compose,
-        kotlin_use_ir = test_kotlin_use_ir(),
         javacopts = javacopts,
         kotlinc_opts = kotlinc_opts,
         testonly = testonly,
@@ -386,7 +379,6 @@ _kotlin_library = rule(
         "javacopts": attr.string_list(),
         "kotlinc_opts": attr.string_list(),
         "kotlin_use_compose": attr.bool(),
-        "kotlin_use_ir": attr.bool(),
         "compress_resources": attr.bool(),
         "plugins": attr.label_list(
             providers = [JavaPluginInfo],
