@@ -32,15 +32,14 @@ class OptionVersionTest {
         private val AGP_STABLE_VERSION: AgpVersion = getStableAgpVersionIgnoringDotReleases(ANDROID_GRADLE_PLUGIN_VERSION)
 
         /**
-         * Deprecated [Option]s that have invalid deprecation versions and need to be fixed as soon
-         * as possible.
+         * Deprecated [Option]s that have invalid target removal versions.
          *
-         * IMPORTANT: Add a tracking bug to ensure all pending issues are fixed before beta
-         * releases of each version.
-         *  - Tracking bug for AGP 8.0: b/243560711
-         *  - Tracking bug for AGP 8.2: b/277803353
+         * We should fix these issues as soon as possible, ideally before the beta release.
+         *
+         * @ RELEASE TEAM: If you update this list when upgrading AGP, be sure to file a new bug
+         * assigned to the AGP team and blocking beta release (example bug: b/277803353).
          */
-        private val KNOWN_VIOLATING_DEPRECATED_OPTIONS: List<Option<*>> = listOf(
+        private val INVALID_DEPRECATED_OPTIONS: List<Option<*>> = listOf(
         )
 
         private fun getStableAgpVersionIgnoringDotReleases(versionString: String): AgpVersion {
@@ -67,11 +66,13 @@ class OptionVersionTest {
 
         checkViolatingProjectOptions(
                 violatingOptions = violatingOptions,
-                ignoreList = KNOWN_VIOLATING_DEPRECATED_OPTIONS,
-                requirement = "Deprecated options must have deprecation versions in the future.",
-                suggestion = "If you want to fix them later, copy the above code snippet to" +
-                        " `OptionVersionTest.KNOWN_VIOLATING_DEPRECATED_OPTIONS`" +
-                        " and be sure to file a bug to keep track."
+                ignoreList = INVALID_DEPRECATED_OPTIONS,
+                requirement = "Deprecated options must have target removal versions in the future. (@ RELEASE TEAM: To handle this error, please read the full error message.) ",
+                suggestion = "@ RELEASE TEAM: This error usually happens when we upgrade AGP version.\n" +
+                        "We don't have to fix this issue immediately, but we should fix it before the beta release.\n" +
+                        "To do that:\n" +
+                        "  - Please copy the invalid options shown above to `OptionVersionTest.INVALID_DEPRECATED_OPTIONS`.\n" +
+                        "  - Please file a bug for the AGP team and mark it as blocking the beta release (example bug: b/277803353)."
         )
     }
 
