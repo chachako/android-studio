@@ -26,12 +26,12 @@ import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.ModelBuilder;
+import com.android.build.gradle.integration.common.fixture.ModelBuilderV2;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldJniApp;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.options.IntegerOption;
 import com.android.builder.core.ToolsRevisionUtils;
-import com.android.builder.model.SyncIssue;
+import com.android.builder.model.v2.ide.SyncIssue;
 import com.android.repository.Revision;
 import com.android.sdklib.repository.AndroidSdkHandler;
 import com.android.testutils.AssumeUtil;
@@ -432,8 +432,8 @@ public class SdkAutoDownloadTest {
     }
 
     @NonNull
-    private ModelBuilder getModel() {
-        return project.model()
+    private ModelBuilderV2 getModel() {
+        return project.modelV2()
                 .withSdkAutoDownload()
                 .withArgument(
                         String.format(
@@ -545,7 +545,7 @@ public class SdkAutoDownloadTest {
 
         // Check that
         Collection<SyncIssue> syncIssues =
-                getModel().ignoreSyncIssues().fetchAndroidProjects().getOnlyModelSyncIssues();
+                getModel().ignoreSyncIssues().fetchModels().getContainer().getProject().getIssues().getSyncIssues();
         List<SyncIssue> syncErrors =
                 syncIssues
                         .stream()
@@ -553,7 +553,7 @@ public class SdkAutoDownloadTest {
                         .collect(Collectors.toList());
         assertThat(syncErrors).hasSize(1);
 
-        assertThat(syncErrors.get(0)).hasType(SyncIssue.TYPE_MISSING_SDK_PACKAGE);
+        assertThat(syncErrors.get(0).getType()).isEqualTo(SyncIssue.TYPE_MISSING_SDK_PACKAGE);
         String data = syncErrors.get(0).getData();
         assertNotNull(data);
         assertThat(Splitter.on(' ').split(data))

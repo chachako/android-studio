@@ -31,7 +31,6 @@ import org.junit.Rule
 import org.junit.Test
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
-import java.io.File
 
 class NoManifestTest {
 
@@ -41,8 +40,13 @@ class NoManifestTest {
         app.removeFileByName("AndroidManifest.xml")
         lib.removeFileByName("AndroidManifest.xml")
     }
-    private val testAppAndLib = MultiModuleTestProject.builder().subproject(":app", app).subproject(":lib", lib).build()
-    @get:Rule val project = GradleTestProject.builder().fromTestApp(testAppAndLib).create()
+
+    private val testAppAndLib =
+            MultiModuleTestProject.builder().subproject(":app", app)
+                    .subproject(":lib", lib).build()
+
+    @get:Rule
+    val project = GradleTestProject.builder().fromTestApp(testAppAndLib).create()
 
     @Test
     fun noManifestConfigurationPassesTest() {
@@ -53,16 +57,17 @@ class NoManifestTest {
     // FIXME: Revise this once appId is removed from the model
     //@Test
     fun noManifestSyncNoApplicationIdTest() {
-        val issues = project.model().with(BooleanOption.DISABLE_EARLY_MANIFEST_PARSING, true).ignoreSyncIssues().fetchAndroidProjects().onlyModelSyncIssues
+        val issues = getProjectSyncIssuesWithNoManifestParsing(":")
+
         Truth.assertThat(issues).named("full issues list").hasSize(2)
 
         val errors = issues.filter { it.severity == SyncIssue.SEVERITY_ERROR}
         Truth.assertThat(errors).named("error-only issues").hasSize(1)
-        assertThat(errors.first()).hasType(SyncIssue.TYPE_GENERIC)
+        assertThat(errors.first().type).isEqualTo(SyncIssue.TYPE_GENERIC)
 
         val warnings = issues.filter { it.severity == SyncIssue.SEVERITY_WARNING }
         Truth.assertThat(errors).named("warning-only issues").hasSize(1)
-        assertThat(warnings.first()).hasType(SyncIssue.TYPE_UNSUPPORTED_PROJECT_OPTION_USE)
+        assertThat(warnings.first().type).isEqualTo(SyncIssue.TYPE_UNSUPPORTED_PROJECT_OPTION_USE)
     }
 
     @Test
@@ -84,12 +89,12 @@ class NoManifestTest {
                     android.namespace "com.example.lib"
                     """.trimIndent()
         )
-        val issues = project.model().with(BooleanOption.DISABLE_EARLY_MANIFEST_PARSING, true).ignoreSyncIssues().fetchAndroidProjects().onlyModelSyncIssues
+        val issues = getProjectSyncIssuesWithNoManifestParsing(":app")
 
         Truth.assertThat(issues).named("full issues list").hasSize(1)
         val issue = issues.first()
-        assertThat(issue).hasType(SyncIssue.TYPE_UNSUPPORTED_PROJECT_OPTION_USE)
-        assertThat(issue).hasSeverity(SyncIssue.SEVERITY_WARNING)
+        assertThat(issue.type).isEqualTo(SyncIssue.TYPE_UNSUPPORTED_PROJECT_OPTION_USE)
+        assertThat(issue.severity).isEqualTo(SyncIssue.SEVERITY_WARNING)
     }
 
     @Test
@@ -106,16 +111,12 @@ class NoManifestTest {
                     android.namespace "com.example.lib"
                     """.trimIndent()
         )
-        val issues =
-                project.model()
-                        .with(BooleanOption.DISABLE_EARLY_MANIFEST_PARSING, true)
-                        .ignoreSyncIssues()
-                        .fetchAndroidProjects().onlyModelSyncIssues
+        val issues = getProjectSyncIssuesWithNoManifestParsing(":app")
 
         Truth.assertThat(issues).named("full issues list").hasSize(1)
         val issue = issues.first()
-        assertThat(issue).hasType(SyncIssue.TYPE_UNSUPPORTED_PROJECT_OPTION_USE)
-        assertThat(issue).hasSeverity(SyncIssue.SEVERITY_WARNING)
+        assertThat(issue.type).isEqualTo(SyncIssue.TYPE_UNSUPPORTED_PROJECT_OPTION_USE)
+        assertThat(issue.severity).isEqualTo(SyncIssue.SEVERITY_WARNING)
     }
 
     @Test
@@ -158,4 +159,9 @@ class NoManifestTest {
         val result2 = project.executor().run(":lib:build")
         ScannerSubject.assertThat(result2.stdout).contains(warning)
     }
+
+    private fun getProjectSyncIssuesWithNoManifestParsing(projectPath: String) =
+            project.modelV2()
+            .with(BooleanOption.DISABLE_EARLY_MANIFEST_PARSING, true)
+            .ignoreSyncIssues().fetchModels().container.getProject(projectPath).issues?.syncIssues!!
 }

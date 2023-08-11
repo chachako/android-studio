@@ -26,8 +26,8 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.ProjectBuildOutputUtils;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.builder.model.AndroidProject;
-import com.android.builder.model.SyncIssue;
 import com.android.builder.model.VariantBuildInformation;
+import com.android.builder.model.v2.ide.SyncIssue;
 import com.android.ide.common.process.ProcessException;
 import com.google.common.collect.Iterables;
 import com.google.common.truth.Truth8;
@@ -118,7 +118,7 @@ public class JarJarLibTest {
                         + "}\n");
 
         Collection<SyncIssue> issues =
-                project.model().ignoreSyncIssues().fetchAndroidProjects().getOnlyModelSyncIssues();
+                project.modelV2().ignoreSyncIssues().fetchModels().getContainer().getProject().getIssues().getSyncIssues();
         assertThat(issues).hasSize(2);
 
         Collection<SyncIssue> errors =

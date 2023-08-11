@@ -16,17 +16,15 @@
 
 package com.android.build.gradle.integration.application;
 
-import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
-
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkLocation;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType;
-import com.android.build.gradle.integration.common.fixture.ModelContainer;
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
-import com.android.build.gradle.integration.common.truth.ModelContainerSubject;
+import com.android.build.gradle.integration.common.utils.ProjectSyncIssuesUtilsV2Kt;
 import com.android.build.gradle.options.StringOption;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.SyncIssue;
+import com.android.builder.model.v2.ide.SyncIssue;
+import com.android.builder.model.v2.models.ProjectSyncIssues;
 import com.android.testutils.apk.Apk;
 import com.android.utils.FileUtils;
 import com.google.common.base.Charsets;
@@ -34,6 +32,10 @@ import com.google.common.io.Files;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+
+import java.util.Collection;
+
+import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
 
 /** Test injected ABI reduces the number of splits being built. */
 public class InjectedAbiSplitTest {
@@ -84,17 +86,19 @@ public class InjectedAbiSplitTest {
     }
 
     @Test
-    public void checkError() throws Exception {
-        ModelContainer<AndroidProject> container =
-                sProject.model()
+    public void checkError() {
+        ModelContainerV2 container =
+                sProject.modelV2()
                         .with(StringOption.IDE_BUILD_TARGET_ABI, "mips")
                         .ignoreSyncIssues()
-                        .fetchAndroidProjects();
+                        .fetchModels().getContainer();
 
-        ModelContainerSubject.assertThat(container)
-                .rootBuild()
-                .onlyProject()
-                .hasIssue(SyncIssue.SEVERITY_WARNING, SyncIssue.TYPE_GENERIC);
+        ProjectSyncIssues issues = container.getProject().getIssues();
+        Collection<SyncIssue> genericSyncWarnings =
+                ProjectSyncIssuesUtilsV2Kt.filter(
+                        issues, SyncIssue.SEVERITY_WARNING, SyncIssue.TYPE_GENERIC
+                );
+        assertThat(genericSyncWarnings).isNotEmpty();
     }
 
     private static Apk getApk(String filterName) {
