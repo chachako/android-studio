@@ -48,9 +48,9 @@ import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.TaskManagerConfig
 import com.android.build.gradle.internal.utils.KOTLIN_KAPT_PLUGIN_ID
 import com.android.build.gradle.internal.utils.addComposeArgsToKotlinCompile
-import com.android.build.gradle.internal.utils.configureKotlinCompileForProject
-import com.android.build.gradle.internal.utils.isKotlinPluginApplied
-import com.android.build.gradle.internal.utils.recordIrBackendForAnalytics
+import com.android.build.gradle.internal.utils.configureKotlinCompileTasks
+import com.android.build.gradle.internal.utils.isKotlinPluginAppliedInTheSameClassloader
+import com.android.build.gradle.internal.utils.recordKgpPropertiesForAnalytics
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.internal.variant.ComponentInfo
 import com.android.build.gradle.internal.variant.VariantModel
@@ -66,7 +66,6 @@ import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ListMultimap
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.provider.Provider
@@ -332,14 +331,13 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
     }
 
     private fun configureKotlinPluginTasksIfNecessary() {
-        if (!isKotlinPluginApplied(project)) {
+        if (!isKotlinPluginAppliedInTheSameClassloader(project)) {
             return
         }
         val composeIsEnabled = allPropertiesList
             .any { componentProperties: ComponentCreationConfig ->
                 componentProperties.buildFeatures.compose }
-        recordIrBackendForAnalytics(
-            allPropertiesList, extension, project, composeIsEnabled)
+        recordKgpPropertiesForAnalytics(project, allPropertiesList)
         if (!composeIsEnabled) {
             return
         }
@@ -368,16 +366,10 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
         kotlinExtension.description = "Configuration for Compose related kotlin compiler extension"
 
         // add compose args to all kotlin compile tasks
-        for (creationConfig in allPropertiesList) {
-            try {
-                configureKotlinCompileForProject(project, creationConfig) {
-                    addComposeArgsToKotlinCompile(
-                        it, creationConfig, project.files(kotlinExtension), useLiveLiterals
-                    )
-                }
-            } catch (e: UnknownTaskException) {
-                // ignore
-            }
+        configureKotlinCompileTasks(project, allPropertiesList) { kotlinCompile, creationConfig ->
+            addComposeArgsToKotlinCompile(
+                kotlinCompile, creationConfig, project.files(kotlinExtension), useLiveLiterals
+            )
         }
     }
 
@@ -471,7 +463,7 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
         val enableKtx = ktxDataBindingDslValue ?: ktxGradlePropertyValue
         if (enableKtx) {
             // Add Ktx dependency if AndroidX and Kotlin is used
-            if (useAndroidX && isKotlinPluginApplied(project)) {
+            if (useAndroidX && isKotlinPluginAppliedInTheSameClassloader(project)) {
                 project.dependencies
                     .add(
                         "api",
