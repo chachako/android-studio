@@ -18,7 +18,6 @@ package com.android.build.gradle.integration.api;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ProfileCapturer;
 import com.google.wireless.android.sdk.stats.AndroidStudioEvent;
