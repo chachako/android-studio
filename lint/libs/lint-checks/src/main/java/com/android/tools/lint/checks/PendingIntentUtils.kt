@@ -25,4 +25,8 @@ object PendingIntentUtils {
   const val FLAG_IMMUTABLE = 1 shl 26
   const val FLAG_MUTABLE = 1 shl 25
   const val FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT = 1 shl 24
+
+  const val FLAG_IMMUTABLE_STR = "android.app.PendingIntent.FLAG_IMMUTABLE"
+  const val FLAG_MUTABLE_STR = "android.app.PendingIntent.FLAG_MUTABLE"
+  const val FLAG_NO_CREATE_STR = "android.app.PendingIntent.FLAG_NO_CREATE"
 }

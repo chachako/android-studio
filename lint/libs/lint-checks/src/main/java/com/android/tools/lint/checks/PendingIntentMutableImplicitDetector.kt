@@ -28,6 +28,7 @@ import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.JavaContext
+import com.android.tools.lint.detector.api.LintFix
 import com.android.tools.lint.detector.api.LintMap
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
@@ -54,6 +55,7 @@ import org.jetbrains.uast.getQualifiedChain
 import org.jetbrains.uast.skipParenthesizedExprDown
 import org.jetbrains.uast.util.isNewArrayWithDimensions
 import org.jetbrains.uast.util.isNewArrayWithInitializer
+import org.jetbrains.uast.visitor.UastVisitor
 
 /**
  * Looks for creations of mutable PendingIntents with implicit Intents. This type of object will
@@ -76,13 +78,19 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
         IntentExpressionInfo(context.evaluator, node, intentArgument)
       )
     ) {
+      val fixes =
+        fix()
+          .alternatives(
+            buildImmutableFixOrNull(context, flagsArgument),
+            buildNoCreateFix(context, flagsArgument)
+          )
       val incident =
         Incident(
           issue = ISSUE,
           scope = node,
           location = context.getLocation(node),
           message = "Mutable implicit `PendingIntent` will throw an exception",
-          // TODO(b/272018609): Create 2 LintFixes: change to immutable or flag no create
+          fixes
         )
       context.report(incident, map())
     }
@@ -441,6 +449,57 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
       private fun isMemberOfIntentArray(node: UArrayAccessExpression): Boolean =
         (node.receiver as? USimpleNameReferenceExpression)?.identifier ==
           intentFinalReference.identifier
+    }
+
+    private fun buildImmutableFixOrNull(
+      context: JavaContext,
+      flagsArgument: UExpression
+    ): LintFix? {
+      val mutableFlagExpression = findMutableFlagExpression(context, flagsArgument) ?: return null
+      return LintFix.create()
+        .name("Replace FLAG_MUTABLE with FLAG_IMMUTABLE")
+        .replace()
+        .reformat(true)
+        .shortenNames()
+        .range(context.getLocation(mutableFlagExpression))
+        .with(PendingIntentUtils.FLAG_IMMUTABLE_STR)
+        .build()
+    }
+
+    private fun buildNoCreateFix(context: JavaContext, flagsArgument: UExpression): LintFix {
+      val orSymbol = if (isKotlin(flagsArgument.lang)) "or" else "|"
+      val fixText = " $orSymbol " + PendingIntentUtils.FLAG_NO_CREATE_STR
+      return LintFix.create()
+        .name("Add FLAG_NO_CREATE")
+        .replace()
+        .end()
+        .reformat(true)
+        .shortenNames()
+        .range(context.getLocation(flagsArgument))
+        .with(fixText)
+        .build()
+    }
+
+    private fun findMutableFlagExpression(
+      context: JavaContext,
+      flagsArgument: UExpression
+    ): UExpression? {
+      var mutableFlagExpression: UExpression? = null
+      flagsArgument.accept(
+        object : UastVisitor {
+          // Returns false to ensure the visitor goes to the element's children
+          override fun visitElement(node: UElement): Boolean = false
+
+          override fun visitExpression(node: UExpression): Boolean {
+            if (ConstantEvaluator.evaluate(context, node) == PendingIntentUtils.FLAG_MUTABLE) {
+              mutableFlagExpression = node
+              return true
+            }
+            return false
+          }
+        }
+      )
+      return mutableFlagExpression
     }
   }
 }

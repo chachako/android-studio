@@ -107,14 +107,13 @@ class PendingIntentMutableFlagDetector : Detector(), SourceCodeScanner {
         )
         .addMoreInfo("https://goo.gle/UnspecifiedImmutableFlag")
 
-    const val FLAG_IMMUTABLE_STR = "android.app.PendingIntent.FLAG_IMMUTABLE"
-    const val FLAG_MUTABLE_STR = "android.app.PendingIntent.FLAG_MUTABLE"
     private fun buildMutabilityFlagFix(
       context: JavaContext,
       originalArg: UExpression,
       mutable: Boolean = false
     ): LintFix {
-      val addFlagText = if (mutable) FLAG_MUTABLE_STR else FLAG_IMMUTABLE_STR
+      val addFlagText =
+        if (mutable) PendingIntentUtils.FLAG_MUTABLE_STR else PendingIntentUtils.FLAG_IMMUTABLE_STR
       val name = if (mutable) "Add FLAG_MUTABLE" else "Add FLAG_IMMUTABLE (preferred)"
       val isKotlin = context.uastFile?.lang == KotlinLanguage.INSTANCE
       val originalArgString = originalArg.asSourceString()
