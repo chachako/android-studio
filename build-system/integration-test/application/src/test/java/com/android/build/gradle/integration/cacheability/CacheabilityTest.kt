@@ -18,131 +18,108 @@ package com.android.build.gradle.integration.cacheability
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.EmptyActivityProjectBuilder
-import com.android.build.gradle.integration.common.truth.TaskStateList
+import com.android.build.gradle.integration.common.truth.TaskStateList.ExecutionState
 import com.android.build.gradle.integration.common.truth.TaskStateList.ExecutionState.DID_WORK
 import com.android.build.gradle.integration.common.truth.TaskStateList.ExecutionState.FROM_CACHE
 import com.android.build.gradle.integration.common.truth.TaskStateList.ExecutionState.SKIPPED
 import com.android.build.gradle.integration.common.truth.TaskStateList.ExecutionState.UP_TO_DATE
 import com.android.build.gradle.integration.common.utils.CacheabilityTestHelper
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import com.android.build.gradle.options.BooleanOption
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
 /**
- * Verifies tasks' states in a cached clean build: Tasks should get their outputs from the build
- * cache, except those that should not be executed or are not intended to be cacheable (e.g., if
- * they run faster without using the build cache).
+ * Verifies tasks' states in a cached clean build (i.e., whether they should be cacheable or not
+ * cacheable).
  */
 class CacheabilityTest {
-
 
     /**
      * The expected states of tasks when running a second build with the Gradle build cache
      * enabled from an identical project at a different location.
      */
-    private val expectedTaskStates: List<TaskInfo> = listOf(
-            // Sort alphabetically for readability
-            TaskInfo(FROM_CACHE, "compile", "JavaWithJavac",
-                    listOf("Debug", "DebugUnitTest", "Release", "ReleaseUnitTest")),
-            TaskInfo(FROM_CACHE, "compress", "Assets", listOf("Debug", "Release")),
-            TaskInfo(FROM_CACHE, "desugar", "FileDependencies", listOf("Debug", "Release")),
-            TaskInfo(FROM_CACHE, "dexBuilder", "", listOf("Debug", "Release")),
-            TaskInfo(FROM_CACHE, "extractDeepLinks", "", listOf("Debug", "Release")),
-            TaskInfo(FROM_CACHE, "generate", "ResValues", listOf("Debug", "Release")),
-            TaskInfo(FROM_CACHE, "jacoco", "", listOf("Debug")),
-            TaskInfo(FROM_CACHE, "javaPreCompile", "",
-                    listOf("Debug", "DebugUnitTest", "Release", "ReleaseUnitTest")),
-            TaskInfo(FROM_CACHE, "lintVitalAnalyze", "", listOf("Release")),
-            TaskInfo(FROM_CACHE, "merge", "Assets", listOf("Debug", "Release")),
-            TaskInfo(FROM_CACHE, "merge", "JniLibFolders", listOf("Debug", "Release")),
-            TaskInfo(FROM_CACHE, "merge", "Shaders", listOf("Debug", "Release")),
-            TaskInfo(FROM_CACHE, "mergeDex", "", listOf("Debug", "Release")),
-            TaskInfo(FROM_CACHE, "mergeExtDex", "", listOf("Debug", "Release")),
-            TaskInfo(FROM_CACHE, "optimize", "Resources", listOf("Release")),
-            TaskInfo(FROM_CACHE, "package", "ForUnitTest",
-                    listOf("DebugUnitTest", "ReleaseUnitTest")),
-            TaskInfo(FROM_CACHE, "parse", "IntegrityConfig", listOf("Debug", "Release")),
-            TaskInfo(FROM_CACHE, "process", "MainManifest", listOf("Debug", "Release")),
-            TaskInfo(FROM_CACHE, "process", "Manifest", listOf("Debug", "Release")),
-            TaskInfo(FROM_CACHE, "process", "ManifestForPackage", listOf("Debug", "Release")),
-            TaskInfo(FROM_CACHE, "process", "Resources", listOf("Debug", "Release")),
-            TaskInfo(FROM_CACHE, "test", "", listOf("DebugUnitTest", "ReleaseUnitTest")),
-            TaskInfo(FROM_CACHE, "compile", "ArtProfile", listOf("Release")),
-            TaskInfo(FROM_CACHE, "package", "Resources", listOf("Debug", "Release")),
-            TaskInfo(FROM_CACHE, "parse", "LocalResources", listOf("Debug", "Release")),
-
-            /*
-             * The following tasks are either not yet cacheable, or not intended to be cacheable
-             * (e.g., if they run faster without using the build cache).
-             *
-             * If you add a task to this list, remember to add an explanation/file a bug for it.
-             */
-            /** Intentionally not cacheable. See [com.android.build.gradle.internal.feature.BundleAllClasses] */
-            TaskInfo(DID_WORK, "bundle", "ClassesToCompileJar", listOf("Debug", "Release")),
-            TaskInfo(DID_WORK, "bundle", "ClassesToRuntimeJar", listOf("Debug", "Release")),
-            /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.CheckAarMetadataTask] */
-            TaskInfo(DID_WORK, "check", "AarMetadata", listOf("Debug", "Release")),
-            /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.CheckDuplicateClassesTask] */
-            TaskInfo(DID_WORK, "check", "DuplicateClasses", listOf("Debug", "Release")),
-            TaskInfo(DID_WORK, "collect", "Dependencies", listOf("Release")),
-            TaskInfo(DID_WORK, "create", "ApkListingFileRedirect", listOf("Debug", "Release")),
-            /** Intentionally not cacheable. See [com.android.build.gradle.tasks.CompatibleScreensManifest] */
-            TaskInfo(DID_WORK, "create", "CompatibleScreenManifests",
-                    listOf("Debug", "Release")),
-            TaskInfo(DID_WORK, "extractProguardFiles", "", listOf("Release"), isGlobalTask = true),
-            /** Intentionally not cacheable. See [com.android.build.gradle.internal.coverage.JacocoPropertiesTask] */
-            TaskInfo(DID_WORK, "generate", "JacocoPropertiesFile", listOf("Debug")),
-            /** Intentionally not cacheable. See [com.android.build.gradle.tasks.GenerateTestConfig] */
-            TaskInfo(DID_WORK, "generate", "Config", listOf("DebugUnitTest", "ReleaseUnitTest")),
-            /** Intentionally not cacheable. See [com.android.build.gradle.internal.lint.LintModelWriterTask] */
-            TaskInfo(DID_WORK, "generate", "LintVitalReportModel", listOf("Release")),
-            TaskInfo(DID_WORK, "lintVital", "", listOf("Release")),
-            /* Intentionally not cacheable. */
-            TaskInfo(DID_WORK, "lintVitalReport", "", listOf("Release")),
-            /* Intentionally not cacheable to allow processResources to be cacheable */
-            TaskInfo(DID_WORK, "map", "SourceSetPaths", listOf("Debug", "Release")),
-            /* b/181142260 */
-            TaskInfo(DID_WORK, "merge", "JavaResource", listOf("Debug", "Release")),
-            TaskInfo(DID_WORK, "process", "JavaRes",
-                listOf("Debug")),
-            TaskInfo(FROM_CACHE, "merge", "Resources", listOf("Debug", "Release")),
-            /* Bug 74595859 */
-            TaskInfo(DID_WORK, "package", "", listOf("Debug", "Release")),
-            TaskInfo(DID_WORK, "merge", "ArtProfile", listOf("Release")),
-            TaskInfo(DID_WORK, "sdk", "DependencyData", listOf("Release")),
-            /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.ValidateSigningTask] */
-            TaskInfo(DID_WORK, "validateSigning", "", listOf("Debug")),
-            /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.AppMetadataTask] */
-            TaskInfo(DID_WORK, "write", "AppMetadata", listOf("Debug", "Release")),
-            /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.SigningConfigVersionsWriterTask] */
-            TaskInfo(DID_WORK, "write", "SigningConfigVersions", listOf("Debug", "Release")),
-
-            TaskInfo(UP_TO_DATE, "clean", ""),
-            TaskInfo(UP_TO_DATE,"generate", "Assets", listOf("Debug", "Release")),
-            TaskInfo(UP_TO_DATE,"generate", "Resources", listOf("Debug", "Release")),
-            TaskInfo(UP_TO_DATE,"pre", "Build",
-                    listOf("", "Debug", "DebugUnitTest", "Release", "ReleaseUnitTest")),
-
-            TaskInfo(SKIPPED, "assemble", "", listOf("Debug", "Release")),
-            TaskInfo(SKIPPED, "compile", "Shaders", listOf("Debug", "Release")),
-            TaskInfo(SKIPPED, "extract", "NativeSymbolTables", listOf("Release")),
-            TaskInfo(SKIPPED, "merge", "NativeDebugMetadata", listOf("Debug", "Release")),
-            TaskInfo(SKIPPED, "merge", "NativeLibs", listOf("Debug", "Release")),
-            TaskInfo(SKIPPED, "process", "JavaRes",
-                    listOf("DebugUnitTest","Release", "ReleaseUnitTest")),
-            TaskInfo(SKIPPED, "strip", "DebugSymbols", listOf("Debug", "Release"))
-    ).plus(
-        if (BooleanOption.GENERATE_MANIFEST_CLASS.defaultValue) {
-            listOf(
-                TaskInfo(FROM_CACHE, "generate", "ManifestClass", listOf("Debug", "Release"))
-            )
-        } else {
-            emptyList()
-        }
-    )
+    private val expectedTaskStates: Map<ExecutionState, Set<String>> = mapOf(
+        // Sort alphabetically so it's easier to search
+        FROM_CACHE to setOf(
+            ":app:bundle${DEBUG_RELEASE}Resources",
+            ":app:compile${DEBUG_RELEASE}JavaWithJavac",
+            ":app:compile${DEBUG_RELEASE}UnitTestJavaWithJavac",
+            ":app:compileReleaseArtProfile",
+            ":app:compress${DEBUG_RELEASE}Assets",
+            ":app:desugar${DEBUG_RELEASE}FileDependencies",
+            ":app:dexBuilder${DEBUG_RELEASE}",
+            ":app:extractDeepLinks${DEBUG_RELEASE}",
+            ":app:generate${DEBUG_RELEASE}ResValues",
+            ":app:jacocoDebug",
+            ":app:javaPreCompile${DEBUG_RELEASE}",
+            ":app:javaPreCompile${DEBUG_RELEASE}UnitTest",
+            ":app:lintVitalAnalyzeRelease",
+            ":app:merge${DEBUG_RELEASE}Assets",
+            ":app:merge${DEBUG_RELEASE}JniLibFolders",
+            ":app:merge${DEBUG_RELEASE}Resources",
+            ":app:merge${DEBUG_RELEASE}Shaders",
+            ":app:mergeDex${DEBUG_RELEASE}",
+            ":app:mergeExtDex${DEBUG_RELEASE}",
+            ":app:optimizeReleaseResources",
+            ":app:package${DEBUG_RELEASE}Resources",
+            ":app:parse${DEBUG_RELEASE}IntegrityConfig",
+            ":app:parse${DEBUG_RELEASE}LocalResources",
+            ":app:process${DEBUG_RELEASE}MainManifest",
+            ":app:process${DEBUG_RELEASE}Manifest",
+            ":app:process${DEBUG_RELEASE}ManifestForPackage",
+            ":app:process${DEBUG_RELEASE}Resources",
+            ":app:test${DEBUG_RELEASE}UnitTest",
+        ),
+        DID_WORK to setOf(
+            ":app:build${DEBUG_RELEASE}PreBundle",
+            ":app:bundle${DEBUG_RELEASE}ClassesToCompileJar",
+            ":app:bundle${DEBUG_RELEASE}ClassesToRuntimeJar",
+            ":app:check${DEBUG_RELEASE}AarMetadata",
+            ":app:check${DEBUG_RELEASE}DuplicateClasses",
+            ":app:collectReleaseDependencies",
+            ":app:configureReleaseDependencies",
+            ":app:create${DEBUG_RELEASE}ApkListingFileRedirect",
+            ":app:create${DEBUG_RELEASE}CompatibleScreenManifests",
+            ":app:extractProguardFiles",
+            ":app:generateDebugJacocoPropertiesFile",
+            ":app:generate${DEBUG_RELEASE}UnitTestConfig",
+            ":app:generateReleaseLintVitalReportModel",
+            ":app:lintVitalRelease",
+            ":app:lintVitalReportRelease",
+            ":app:map${DEBUG_RELEASE}SourceSetPaths",
+            ":app:merge${DEBUG_RELEASE}JavaResource",
+            ":app:mergeReleaseArtProfile",
+            ":app:processApplicationManifest${DEBUG_RELEASE}ForBundle",
+            ":app:package${DEBUG_RELEASE}",
+            ":app:package${DEBUG_RELEASE}Bundle",
+            ":app:package${DEBUG_RELEASE}UnitTestForUnitTest",
+            ":app:process${DEBUG_RELEASE}JavaRes",
+            ":app:sdkReleaseDependencyData",
+            ":app:validateSigningDebug",
+            ":app:write${DEBUG_RELEASE}AppMetadata",
+            ":app:write${DEBUG_RELEASE}SigningConfigVersions",
+        ),
+        UP_TO_DATE to setOf(
+            ":app:clean",
+            ":app:generate${DEBUG_RELEASE}Assets",
+            ":app:generate${DEBUG_RELEASE}Resources",
+            ":app:preBuild",
+            ":app:pre${DEBUG_RELEASE}Build",
+            ":app:pre${DEBUG_RELEASE}UnitTestBuild",
+        ),
+        SKIPPED to setOf(
+            ":app:assemble${DEBUG_RELEASE}",
+            ":app:compile${DEBUG_RELEASE}Shaders",
+            ":app:extractReleaseNativeSymbolTables",
+            ":app:merge${DEBUG_RELEASE}NativeDebugMetadata",
+            ":app:merge${DEBUG_RELEASE}NativeLibs",
+            ":app:process${DEBUG_RELEASE}UnitTestJavaRes",
+            ":app:processReleaseJavaRes",
+            ":app:strip${DEBUG_RELEASE}DebugSymbols",
+        )
+    ).fillVariantNames()
 
     @get:Rule
     val buildCacheDir = TemporaryFolder()
@@ -164,71 +141,43 @@ class CacheabilityTest {
     @Before
     fun setUp() {
         for (project in listOf(projectCopy1, projectCopy2)) {
-            // Set up the project such that we can check the cacheability of AndroidUnitTest task
+            // Set up the project such that we can test more tasks
             TestFileUtils.appendToFile(
                 project.getSubproject("app").buildFile,
-                "android { testOptions { unitTests { includeAndroidResources = true } } }"
-            )
-            TestFileUtils.appendToFile(
-                project.getSubproject("app").buildFile,
-                "android { buildTypes { debug { testCoverageEnabled = true } } }"
-            )
-        }
-    }
-
-    @Test
-    fun `check debug task states`() {
-        checkTaskStates("Debug")
-    }
-
-    @Test
-    fun `check release task states`() {
-        checkTaskStates("Release")
-    }
-
-    private fun checkTaskStates(variant: String) {
-        val expectedVariantTaskStatesMap = expectedTaskStatesMap {
-            it.contains(variant) || it.isBlank()
-        }
-        CacheabilityTestHelper(projectCopy1, projectCopy2, buildCacheDir.root)
-                .runTasks(
-                        "clean",
-                        "assemble$variant",
-                        "test${variant}UnitTest",
-                        ":app:parse${variant}IntegrityConfig"
-                )
-                .assertTaskStates(expectedVariantTaskStatesMap, exhaustive = true)
-    }
-
-    private class TaskInfo(
-            private val executionState: TaskStateList.ExecutionState,
-            private val taskPrefix: String,
-            private val taskSuffix: String,
-            private val variants: List<String> = emptyList(),
-            private val isGlobalTask: Boolean = false
-    ) {
-        fun getVariantTaskMap(variantFilter: (variantName: String) -> Boolean) =
-                getVariantTaskStrings(variantFilter).associateWith { executionState }
-
-        private fun getVariantTaskStrings(
-                variantFilter: (variantName: String) -> Boolean) : List<String> =
-                if (variants.any()) {
-                    variants
-                            .filter(variantFilter)
-                            .map { variant ->
-                                ":app:$taskPrefix${ if(isGlobalTask) "" else variant }$taskSuffix"
-                            }
-                } else {
-                    listOf(":app:$taskPrefix$taskSuffix")
+                """
+                android {
+                    defaultConfig { versionCode = 1 }
+                    testOptions { unitTests { includeAndroidResources = true } }
+                    buildTypes { debug { testCoverageEnabled = true } }
                 }
+                """.trimMargin()
+            )
+        }
     }
 
-    private fun expectedTaskStatesMap(variantFilter: (variantName: String) -> Boolean)
-            : Map<String, TaskStateList.ExecutionState> {
-        return mutableMapOf<String, TaskStateList.ExecutionState>().apply {
-            for (taskInfo in expectedTaskStates) {
-                putAll(taskInfo.getVariantTaskMap(variantFilter))
+    @Test
+    fun `check task states`() {
+        CacheabilityTestHelper(projectCopy1, projectCopy2, buildCacheDir.root)
+            .runTasks(
+                "clean", ":app:assembleDebug", ":app:testDebugUnitTest", ":app:packageDebugBundle",
+                ":app:assembleRelease", ":app:testReleaseUnitTest", ":app:packageReleaseBundle",
+            )
+            .assertTaskStatesByGroups(expectedTaskStates, exhaustive = true)
+    }
+
+    private fun Map<ExecutionState, Set<String>>.fillVariantNames(): Map<ExecutionState, Set<String>> {
+        return mapValues { (_, taskNames) ->
+            taskNames.flatMapTo(mutableSetOf()) { taskName ->
+                when {
+                    taskName.contains(DEBUG_RELEASE) -> setOf(
+                        taskName.substringBefore(DEBUG_RELEASE) + "Debug" + taskName.substringAfter(DEBUG_RELEASE),
+                        taskName.substringBefore(DEBUG_RELEASE) + "Release" + taskName.substringAfter(DEBUG_RELEASE)
+                    )
+                    else -> setOf(taskName)
+                }
             }
         }
     }
 }
+
+private const val DEBUG_RELEASE = "{DEBUG_RELEASE}"
