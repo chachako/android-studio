@@ -18,6 +18,7 @@ package com.android.tools.lint.checks
 import com.android.SdkConstants.CLASS_CONTEXT
 import com.android.SdkConstants.CLASS_INTENT
 import com.android.tools.lint.client.api.JavaEvaluator
+import com.android.tools.lint.client.api.TYPE_CLASS
 import com.android.tools.lint.client.api.TYPE_STRING
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.ConstantEvaluator
@@ -131,7 +132,6 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
       )
 
     private const val CLASS_URI = "android.net.Uri"
-    private const val TYPE_CLASS = "java.lang.Class<?>"
     private val INTENT_EXPLICIT_SET_METHOD_NAMES =
       listOf("setComponent", "setClass", "setPackage", "setClassName")
     // Used for the vararg argumentTypes in JavaEvaluator#methodMatches
