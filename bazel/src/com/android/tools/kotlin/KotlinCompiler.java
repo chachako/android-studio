@@ -49,9 +49,11 @@ public class KotlinCompiler {
     }
 
     private static int compile(List<String> args, PrintStream out) {
-        ExitCode exit = new K2JVMCompiler().exec(out, args.toArray(new String[0]));
-        clearJarCache();
-        return exit.getCode();
+        try {
+            return new K2JVMCompiler().exec(out, args.toArray(new String[0])).getCode();
+        } finally {
+            clearJarCache();
+        }
     }
 
     private static void clearJarCache() {
