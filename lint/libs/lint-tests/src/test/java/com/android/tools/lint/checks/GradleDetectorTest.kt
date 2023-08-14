@@ -232,6 +232,8 @@ class GradleDetectorTest : AbstractCheckTest() {
                 #noinspection GradleDependency
                 multi-dex="1.0.0"
                 gradlePlugins-agp = "8.0.0"
+                gradlePlugins-agp-alpha = "8.1.0-alpha01"
+                gradlePlugins-agp-dev = "8.2.0-dev"
                 gradlePlugins-crashlytics = "2.9.2"
                 gradlePlugins-dependency-analysis = "1.0.0"
 
@@ -249,6 +251,8 @@ class GradleDetectorTest : AbstractCheckTest() {
 
                 [plugins]
                 android-application = { id = "com.android.application", version.ref = "gradlePlugins-agp" }
+                android-application2 = { id = "com.android.application", version.ref = "gradlePlugins-agp-alpha" }
+                android-application3 = { id = "com.android.application", version.ref = "gradlePlugins-agp-dev" }
                 crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "gradlePlugins-crashlytics" }
                 dependency-analysis = { id = "com.autonomousapps.dependency-analysis", version.ref = "gradlePlugins-dependency-analysis" }
                 """
@@ -259,7 +263,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         // the shared ../gradle project multiple times, once for each "including" project.
         gradle("../lib/build.gradle", ""),
       )
-      .issues(DEPENDENCY, REMOTE_VERSION)
+      .issues(AGP_DEPENDENCY, DEPENDENCY, REMOTE_VERSION)
       .sdkHome(mockSupportLibraryInstallation)
       .networkData(
         "https://search.maven.org/solrsearch/select?q=g:%22com.google.guava%22+AND+a:%22guava%22&core=gav&wt=json",
@@ -303,6 +307,12 @@ class GradleDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
+        ../gradle/libs.versions.toml:8: Warning: A newer version of com.android.application than 8.0.0 is available: 8.0.2 [AndroidGradlePluginVersion]
+        gradlePlugins-agp = "8.0.0"
+                            ~~~~~~~
+        ../gradle/libs.versions.toml:9: Warning: A newer version of com.android.application than 8.1.0-alpha01 is available: 8.1.0-rc01 [AndroidGradlePluginVersion]
+        gradlePlugins-agp-alpha = "8.1.0-alpha01"
+                                  ~~~~~~~~~~~~~~~
         ../gradle/libs.versions.toml:2: Warning: A newer version of com.google.guava:guava than 11.0.2 is available: 21.0 [GradleDependency]
         guavaVersion = "11.0.2"
                        ~~~~~~~~
@@ -312,20 +322,25 @@ class GradleDetectorTest : AbstractCheckTest() {
         ../gradle/libs.versions.toml:4: Warning: A newer version of com.google.android.support:wearable than 1.2.0 is available: 1.3.0 [GradleDependency]
         wearableVersion=" 1.2.0 "
                         ~~~~~~~~~
-        ../gradle/libs.versions.toml:8: Warning: A newer version of com.android.application than 8.0.0 is available: 8.0.2 [GradleDependency]
-        gradlePlugins-agp = "8.0.0"
-                            ~~~~~~~
-        ../gradle/libs.versions.toml:9: Warning: A newer version of com.google.firebase.crashlytics than 2.9.2 is available: 2.9.7 [GradleDependency]
+        ../gradle/libs.versions.toml:11: Warning: A newer version of com.google.firebase.crashlytics than 2.9.2 is available: 2.9.7 [GradleDependency]
         gradlePlugins-crashlytics = "2.9.2"
                                     ~~~~~~~
-        ../gradle/libs.versions.toml:10: Warning: A newer version of com.autonomousapps.dependency-analysis than 1.0.0 is available: 1.20.0 [NewerVersionAvailable]
+        ../gradle/libs.versions.toml:12: Warning: A newer version of com.autonomousapps.dependency-analysis than 1.0.0 is available: 1.20.0 [NewerVersionAvailable]
         gradlePlugins-dependency-analysis = "1.0.0"
                                             ~~~~~~~
-        0 errors, 6 warnings
+        0 errors, 7 warnings
         """
       )
       .expectFixDiffs(
         """
+        Fix for gradle/libs.versions.toml line 8: Change to 8.0.2:
+        @@ -8 +8
+        - gradlePlugins-agp = "8.0.0"
+        + gradlePlugins-agp = "8.0.2"
+        Fix for gradle/libs.versions.toml line 9: Change to 8.1.0-rc01:
+        @@ -9 +9
+        - gradlePlugins-agp-alpha = "8.1.0-alpha01"
+        + gradlePlugins-agp-alpha = "8.1.0-rc01"
         Fix for gradle/libs.versions.toml line 2: Change to 21.0:
         @@ -2 +2
         - guavaVersion = "11.0.2"
@@ -338,16 +353,12 @@ class GradleDetectorTest : AbstractCheckTest() {
         @@ -4 +4
         - wearableVersion=" 1.2.0 "
         + wearableVersion=" 1.3.0 "
-        Fix for gradle/libs.versions.toml line 8: Change to 8.0.2:
-        @@ -8 +8
-        - gradlePlugins-agp = "8.0.0"
-        + gradlePlugins-agp = "8.0.2"
-        Fix for gradle/libs.versions.toml line 9: Change to 2.9.7:
-        @@ -9 +9
+        Fix for gradle/libs.versions.toml line 11: Change to 2.9.7:
+        @@ -11 +11
         - gradlePlugins-crashlytics = "2.9.2"
         + gradlePlugins-crashlytics = "2.9.7"
-        Fix for gradle/libs.versions.toml line 10: Change to 1.20.0:
-        @@ -10 +10
+        Fix for gradle/libs.versions.toml line 12: Change to 1.20.0:
+        @@ -12 +12
         - gradlePlugins-dependency-analysis = "1.0.0"
         + gradlePlugins-dependency-analysis = "1.20.0"
         """

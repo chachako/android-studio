@@ -29,6 +29,7 @@ import com.android.ide.common.gradle.Component
 import com.android.ide.common.gradle.Dependency
 import com.android.ide.common.gradle.RichVersion
 import com.android.ide.common.gradle.Version
+import com.android.ide.common.repository.AgpVersion
 import com.android.ide.common.repository.GoogleMavenRepository
 import com.android.ide.common.repository.GoogleMavenRepository.Companion.MAVEN_GOOGLE_CACHE_DIR_KEY
 import com.android.ide.common.repository.GradleCoordinate
@@ -1037,26 +1038,34 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
 
         checkPlayServices(context, dependency, version, cookie, statementCookie)
       }
+      "com.android.base",
+      "com.android.application",
+      "com.android.library",
+      "com.android.test",
+      "com.android.instant-app",
+      "com.android.feature",
+      "com.android.dynamic-feature",
+      "com.android.settings",
       "com.android.tools.build" -> {
-        if ("gradle" == artifactId) {
+        if ("gradle" == artifactId || "$groupId.gradle.plugin" == artifactId) {
           if (checkGradlePluginDependency(context, dependency, statementCookie)) {
             return
           }
 
           // If it's available in maven.google.com, fetch latest available version
           newerVersion =
-            newerVersion maxOrNull getGoogleMavenRepoVersion(context, dependency, filter)
+            newerVersion maxAgpOrNull getGoogleMavenRepoVersion(context, dependency, filter)
 
           // Compare with what's in the Gradle cache, except when lint is invoked from
           // Gradle (because checking the Gradle cache is incompatible with Gradle task
           // cacheability).
           if (!LintClient.isGradle) {
-            newerVersion = newerVersion maxOrNull findCachedNewerVersion(dependency, filter)
+            newerVersion = newerVersion maxAgpOrNull findCachedNewerVersion(dependency, filter)
           }
 
           // Compare with IDE's repository cache, if available.
           newerVersion =
-            newerVersion maxOrNull context.client.getHighestKnownVersion(dependency, filter)
+            newerVersion maxAgpOrNull context.client.getHighestKnownVersion(dependency, filter)
 
           // Don't just offer the latest available version, but if that is more than
           // a micro-level different, and there is a newer micro version of the
@@ -1080,7 +1089,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
                   !filterVersion.isSnapshot
               }
           }
-          if (newerVersion != null && newerVersion.isNewerThan(dependency)) {
+          if (newerVersion != null && newerVersion.isAgpNewerThan(dependency)) {
             agpVersionCheckInfo =
               AgpVersionCheckInfo(
                 newerVersion,
@@ -4172,6 +4181,22 @@ private infix fun Version?.maxOrNull(other: Version?): Version? =
     else -> if (this > other) this else other
   }
 
+private infix fun Version?.maxAgpOrNull(other: Version?): Version? =
+  when {
+    this == null -> other
+    other == null -> this
+    else -> {
+      val thisAgpVersion = AgpVersion.tryParse(this.toString())
+      val otherAgpVersion = AgpVersion.tryParse(other.toString())
+      when {
+        thisAgpVersion == null && otherAgpVersion == null -> null
+        thisAgpVersion == null -> other
+        otherAgpVersion == null -> this
+        else -> if (thisAgpVersion > otherAgpVersion) this else other
+      }
+    }
+  }
+
 /**
  * This exists to smooth over the fact that we represent the Version of a prefix matcher as the
  * least possible version that would match, but we want here to find newer versions that would not
@@ -4186,10 +4211,28 @@ private fun Version?.isNewerThan(dependency: Dependency): Boolean {
   val richVersion = dependency.version
   val maybeSingleton = dependency.explicitSingletonVersion
   return when {
-    richVersion == null -> true
     this == null -> false
+    richVersion == null -> true
     maybeSingleton != null -> this > maybeSingleton
     richVersion.lowerBound > this -> false
+    else -> !richVersion.contains(this)
+  }
+}
+
+private fun Version?.isAgpNewerThan(dependency: Dependency): Boolean {
+  val richVersion = dependency.version
+  val maybeSingleton =
+    dependency.explicitSingletonVersion?.let { AgpVersion.tryParse(it.toString()) }
+  val thisAgpVersion = this?.let { AgpVersion.tryParse(it.toString()) }
+  val lowerBoundAgpVersion = richVersion?.lowerBound?.let { AgpVersion.tryParse(it.toString()) }
+  return when {
+    this == null || thisAgpVersion == null -> false
+    richVersion == null -> true
+    maybeSingleton != null -> thisAgpVersion > maybeSingleton
+    // these are an approximation.  If we can parse the version's lower bound as
+    // an AgpVersion, good, use it to compare; it's probably a pseudo-singleton.
+    // If we can't, then fall back to the Gradle-based version containment logic.
+    lowerBoundAgpVersion != null && lowerBoundAgpVersion > thisAgpVersion -> false
     else -> !richVersion.contains(this)
   }
 }
