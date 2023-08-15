@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.plugins
 
+import com.android.SdkConstants.MAX_SUPPORTED_ANDROID_PLATFORM_VERSION
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.attributes.AgpVersionAttr
 import com.android.build.api.attributes.BuildTypeAttr
@@ -389,7 +390,13 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         androidExtension.compileSdkPreview?.let { validatePreviewTargetValue(it) }?.let { "android-$it" } ?:
         androidExtension.compileSdkExtension?.let { "android-${androidExtension.compileSdk}-ext$it" } ?:
         androidExtension.compileSdk?.let {"android-$it"} ?: throw RuntimeException(
-            "compileSdk version is not set"
+            "compileSdk version is not set.\n" +
+                    "Specify the compileSdk version in the module's build file like so:\n" +
+                    "kotlin {\n" +
+                    "    $androidExtensionOnKotlinExtensionName {\n" +
+                    "        compileSdk = ${MAX_SUPPORTED_ANDROID_PLATFORM_VERSION.apiLevel}\n" +
+                    "    }\n" +
+                    "}\n"
         )
 
     private fun getBuildToolsVersion(): Revision =

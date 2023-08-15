@@ -19,7 +19,6 @@ package com.android.build.gradle.internal.core.dsl.impl
 import com.android.build.api.component.impl.ComponentIdentityImpl
 import com.android.build.api.dsl.AarMetadata
 import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
-import com.android.build.api.dsl.Lint
 import com.android.build.api.dsl.Packaging
 import com.android.build.api.dsl.TestFixtures
 import com.android.build.api.variant.impl.KmpPredefinedAndroidCompilation
@@ -38,6 +37,7 @@ import com.android.build.gradle.internal.core.dsl.features.ShadersDslInfo
 import com.android.build.gradle.internal.dsl.LibraryKeepRulesImpl
 import com.android.build.gradle.internal.dsl.KmpOptimizationImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
+import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.androidExtensionOnKotlinExtensionName
 import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.getNamePrefixedWithTarget
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.builder.core.ComponentTypeImpl
@@ -67,12 +67,12 @@ class KmpVariantDslInfoImpl(
     override val namespace: Provider<String> by lazy {
         extension.namespace?.let { services.provider { it } }
             ?: throw RuntimeException(
-                "Namespace not specified. Please " +
-                        "specify a namespace for the generated R and BuildConfig classes via " +
-                        "android.namespace in the module's build.gradle file like so:\n\n" +
-                        "android {\n" +
-                        "    namespace 'com.example.namespace'\n" +
-                        "}\n\n"
+                "Namespace not specified. Specify a namespace in the module's build file like so:\n" +
+                        "kotlin {\n" +
+                        "    $androidExtensionOnKotlinExtensionName {\n" +
+                        "        namespace = \"com.example.namespace\"\n" +
+                        "    }\n" +
+                        "}\n"
             )
     }
 
@@ -110,12 +110,6 @@ class KmpVariantDslInfoImpl(
     override val renderscriptDslInfo: RenderscriptDslInfo? = null
     override val buildConfigDslInfo: BuildConfigDslInfo? = null
     override val manifestPlaceholdersDslInfo: ManifestPlaceholdersDslInfo? = null
-
-    // TODO(b/243387425): support lint
-    override val lintOptions: Lint
-        get() {
-            throw IllegalAccessException("Not supported")
-        }
 
     class KmpOptimizationDslInfoImpl(
         private val extension: KotlinMultiplatformAndroidExtension,
