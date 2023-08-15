@@ -4190,7 +4190,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
   }
 }
 
-private infix fun Version?.maxOrNull(other: Version?): Version? =
+private infix fun <T : Comparable<T>> T?.maxOrNull(other: T?): T? =
   when {
     this == null -> other
     other == null -> this
@@ -4198,20 +4198,9 @@ private infix fun Version?.maxOrNull(other: Version?): Version? =
   }
 
 private infix fun Version?.maxAgpOrNull(other: Version?): Version? =
-  when {
-    this == null -> other
-    other == null -> this
-    else -> {
-      val thisAgpVersion = AgpVersion.tryParse(this.toString())
-      val otherAgpVersion = AgpVersion.tryParse(other.toString())
-      when {
-        thisAgpVersion == null && otherAgpVersion == null -> null
-        thisAgpVersion == null -> other
-        otherAgpVersion == null -> this
-        else -> if (thisAgpVersion > otherAgpVersion) this else other
-      }
-    }
-  }
+  (this?.let { AgpVersion.tryParse(it.toString()) } maxOrNull
+      other?.let { AgpVersion.tryParse(it.toString()) })
+    ?.let { Version.parse(it.toString()) }
 
 /**
  * This exists to smooth over the fact that we represent the Version of a prefix matcher as the
