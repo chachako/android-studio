@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.plugins
 
-import com.android.SdkConstants
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.attributes.AgpVersionAttr
 import com.android.build.api.attributes.BuildTypeAttr
@@ -29,10 +28,9 @@ import com.android.build.api.dsl.SdkComponents
 import com.android.build.api.dsl.SettingsExtension
 import com.android.build.api.extension.impl.KotlinMultiplatformAndroidComponentsExtensionImpl
 import com.android.build.api.extension.impl.MultiplatformVariantApiOperationsRegistrar
-import com.android.build.api.variant.DynamicFeatureAndroidComponentsExtension
 import com.android.build.api.variant.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension
-import com.android.build.api.variant.KotlinMultiplatformAndroidTarget
+import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
 import com.android.build.api.variant.impl.KmpPredefinedAndroidCompilation
 import com.android.build.api.variant.impl.KmpVariantImpl
 import com.android.build.api.variant.impl.KotlinMultiplatformAndroidCompilationImpl
@@ -47,7 +45,6 @@ import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.impl.KmpAndroidTestDslInfoImpl
 import com.android.build.gradle.internal.core.dsl.impl.KmpUnitTestDslInfoImpl
 import com.android.build.gradle.internal.core.dsl.impl.KmpVariantDslInfoImpl
-import com.android.build.gradle.internal.core.dsl.impl.features.AndroidTestOptionsDslInfoImpl
 import com.android.build.gradle.internal.core.dsl.impl.features.KmpAndroidTestOptionsDslInfoImpl
 import com.android.build.gradle.internal.dependency.AgpVersionCompatibilityRule
 import com.android.build.gradle.internal.dependency.JacocoInstrumentationService
@@ -57,7 +54,6 @@ import com.android.build.gradle.internal.dependency.SingleVariantProductFlavorRu
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dependency.configureKotlinTestDependencyForInstrumentedTestCompilation
 import com.android.build.gradle.internal.dependency.configureKotlinTestDependencyForUnitTestCompilation
-import com.android.build.gradle.internal.dsl.CommonExtensionImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfigurationImpl
 import com.android.build.gradle.internal.dsl.SdkComponentsImpl
@@ -70,7 +66,6 @@ import com.android.build.gradle.internal.ide.kmp.KotlinIdeImportConfigurator
 import com.android.build.gradle.internal.ide.v2.GlobalSyncService
 import com.android.build.gradle.internal.lint.LintFixBuildService
 import com.android.build.gradle.internal.manifest.LazyManifestParser
-import com.android.build.gradle.internal.plugins.DynamicFeaturePlugin.DynamicFeatureAndroidComponentsExtensionImplCompat
 import com.android.build.gradle.internal.scope.KotlinMultiplatformBuildFeaturesValuesImpl
 import com.android.build.gradle.internal.scope.MutableTaskContainer
 import com.android.build.gradle.internal.services.Aapt2DaemonBuildService

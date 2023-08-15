@@ -16,9 +16,8 @@
 
 package com.android.build.gradle.internal.ide.kmp.resolvers
 
-import com.android.build.api.variant.KotlinMultiplatformAndroidTarget
+import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
 import com.android.build.api.variant.impl.KmpVariantImpl
-import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.ide.kmp.KotlinModelBuildingConfigurator
 import org.gradle.api.Project

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.build.api.variant
+package com.android.build.api.dsl
 
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
-import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
+import com.android.build.api.variant.KotlinMultiplatformAndroidCompilation
 import org.gradle.api.Incubating
 import org.gradle.api.NamedDomainObjectContainer
 

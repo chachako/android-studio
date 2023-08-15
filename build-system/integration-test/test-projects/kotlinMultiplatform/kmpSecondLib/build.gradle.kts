@@ -15,7 +15,7 @@ kotlin {
 
   jvm()
 
-  targets.withType(com.android.build.api.variant.KotlinMultiplatformAndroidTarget::class.java) {
+  targets.withType(com.android.build.api.dsl.KotlinMultiplatformAndroidTarget::class.java) {
     dependencyVariantSelection {
       buildTypes.add("debug")
     }

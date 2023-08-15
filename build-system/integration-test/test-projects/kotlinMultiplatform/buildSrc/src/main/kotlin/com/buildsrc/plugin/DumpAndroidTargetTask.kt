@@ -1,6 +1,6 @@
 package com.buildsrc.plugin
 
-import com.android.build.api.variant.KotlinMultiplatformAndroidTarget
+import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
 import com.android.kotlin.multiplatform.models.AndroidCompilation
 import com.android.kotlin.multiplatform.models.AndroidSourceSet
 import com.android.kotlin.multiplatform.models.AndroidTarget

@@ -51,7 +51,9 @@ class IncubatingApiTest {
         }
         expect.that(nonIncubatingMembersOfIncubatingClasses)
                 .named("non-Incubating members of Incubating classes")
-                .containsExactlyElementsIn(NON_INCUBATING_METHODS_TO_CLEAN_UP)
+                .containsExactlyElementsIn(
+                    NON_INCUBATING_METHODS_TO_CLEAN_UP + METHODS_INTENTIONALLY_NOT_INCUBATING
+                )
 
         val nonIncubatingMembersThatReferenceIncubatingClasses = stableClasses.flatMap { clazz ->
             clazz.declaredMethods
@@ -118,6 +120,10 @@ class IncubatingApiTest {
                 is Class<*> -> setOf(this)
                 else -> emptySet()
             }
+
+        private val METHODS_INTENTIONALLY_NOT_INCUBATING = listOf(
+            "com.android.build.api.dsl.KotlinMultiplatformAndroidTarget#getCompilations"
+        )
 
         // TODO: clean these up
         private val NON_INCUBATING_METHODS_TO_CLEAN_UP = listOf(
