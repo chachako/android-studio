@@ -914,6 +914,37 @@ maven_import(
 )
 
 maven_artifact(
+    name = "com.google.apis.google-api-services-sourcerepo_v1-rev20230123-2.0.0",
+    pom = "repository/com/google/apis/google-api-services-sourcerepo/v1-rev20230123-2.0.0/google-api-services-sourcerepo-v1-rev20230123-2.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/apis/google-api-services-sourcerepo/v1-rev20230123-2.0.0",
+    parent = "org.sonatype.oss.oss-parent_7",
+    deps = [
+        "com.google.api-client.google-api-client_2.1.2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "com.google.apis.google-api-services-sourcerepo",
+    classifiers = [],
+    parent = "org.sonatype.oss.oss-parent_7",
+    jars = [
+        "repository/com/google/apis/google-api-services-sourcerepo/v1-rev20230123-2.0.0/google-api-services-sourcerepo-v1-rev20230123-2.0.0.jar"
+    ],
+    exports = [
+        "com.google.api-client.google-api-client",
+    ],
+    original_deps = [
+        "com.google.api-client.google-api-client_2.1.2",
+    ],
+    pom = "repository/com/google/apis/google-api-services-sourcerepo/v1-rev20230123-2.0.0/google-api-services-sourcerepo-v1-rev20230123-2.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/apis/google-api-services-sourcerepo/v1-rev20230123-2.0.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.apis.google-api-services-storage_v1-rev20230301-2.0.0",
     pom = "repository/com/google/apis/google-api-services-storage/v1-rev20230301-2.0.0/google-api-services-storage-v1-rev20230301-2.0.0.pom",
     repo_root_path = "repository",
@@ -36856,6 +36887,25 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.api-client.google-api-client_2.1.2",
+    pom = "repository/com/google/api-client/google-api-client/2.1.2/google-api-client-2.1.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/api-client/google-api-client/2.1.2",
+    parent = "com.google.api-client.google-api-client-parent_2.1.2",
+    deps = [
+        "commons-codec.commons-codec_1.15",
+        "com.google.oauth-client.google-oauth-client_1.34.1",
+        "com.google.http-client.google-http-client-gson_1.42.3",
+        "com.google.guava.guava_31.1-jre",
+        "com.google.http-client.google-http-client-apache-v2_1.42.3",
+        "org.apache.httpcomponents.httpcore_4.4.15",
+        "org.apache.httpcomponents.httpclient_4.5.13",
+        "com.google.http-client.google-http-client_1.42.3",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.api.grpc.proto-google-common-protos_1.0.0",
     pom = "repository/com/google/api/grpc/proto-google-common-protos/1.0.0/proto-google-common-protos-1.0.0.pom",
     repo_root_path = "repository",
@@ -49565,6 +49615,13 @@ maven_artifact(
     pom = "repository/com/google/api-client/google-api-client-parent/2.0.0/google-api-client-parent-2.0.0.pom",
     repo_root_path = "repository",
     repo_path = "com/google/api-client/google-api-client-parent/2.0.0",
+)
+
+maven_artifact(
+    name = "com.google.api-client.google-api-client-parent_2.1.2",
+    pom = "repository/com/google/api-client/google-api-client-parent/2.1.2/google-api-client-parent-2.1.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/api-client/google-api-client-parent/2.1.2",
 )
 
 maven_artifact(
