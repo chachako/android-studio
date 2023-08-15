@@ -34,12 +34,14 @@ class TestApplicationTestData constructor(
     testApkDir: Provider<Directory>,
     testedApksDir: FileCollection,
     privacySandboxSdkApks: FileCollection?,
+    privacySandboxCompatSdkApksDir: Provider<Directory>?,
 ) : AbstractTestDataImpl(
     namespace,
     creationConfig,
     testApkDir,
     testedApksDir,
-    privacySandboxSdkApks
+    privacySandboxSdkApks,
+    privacySandboxCompatSdkApksDir
 ) {
 
     override val libraryType = creationConfig.services.provider { false }

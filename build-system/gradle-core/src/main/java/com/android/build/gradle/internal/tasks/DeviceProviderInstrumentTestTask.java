@@ -56,6 +56,7 @@ import com.android.build.gradle.internal.test.report.ReportType;
 import com.android.build.gradle.internal.test.report.TestReport;
 import com.android.build.gradle.internal.testing.ConnectedDeviceProvider;
 import com.android.build.gradle.internal.testing.SimpleTestRunnable;
+import com.android.build.gradle.internal.testing.StaticTestData;
 import com.android.build.gradle.internal.testing.TestData;
 import com.android.build.gradle.internal.testing.TestRunner;
 import com.android.build.gradle.internal.testing.utp.EmulatorControlConfig;
@@ -85,6 +86,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -93,6 +95,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.inject.Inject;
 import org.gradle.api.GradleException;
 import org.gradle.api.InvalidUserDataException;
@@ -110,6 +113,7 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.Nested;
@@ -123,7 +127,6 @@ import org.gradle.internal.logging.ConsoleRenderer;
 import org.gradle.process.ExecOperations;
 import org.gradle.work.DisableCachingByDefault;
 import org.gradle.workers.WorkerExecutor;
-import org.jetbrains.annotations.NotNull;
 
 /** Run instrumentation tests for a given variant */
 @DisableCachingByDefault
@@ -323,8 +326,7 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
             Set<File> privacySandboxSdkApkFiles,
             ExecutorServiceAdapter executorServiceAdapter,
             UtpTestResultListener utpTestResultListener,
-            ArtifactCollection dependencies
-    )
+            ArtifactCollection dependencies)
             throws IOException, ExecutionException, DeviceException {
         String environmentSerials =
                 targetSerials.isEmpty() ? System.getenv("ANDROID_SERIAL") : null;
@@ -364,11 +366,14 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
             emptyCoverageFile.createNewFile();
             success = true;
         } else {
+            TestRunner testRunner =
+                    testRunnerFactory.createTestRunner(
+                            workerExecutor, executorServiceAdapter, utpTestResultListener);
             success =
                     runTestsWithTestRunner(
+                            testRunner,
                             projectPath,
-                            testRunnerFactory,
-                            testData,
+                            testData.getAsStaticData(),
                             buddyApkFiles,
                             installOptions,
                             resultsOutputDir,
@@ -379,13 +384,10 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                             logger,
                             useAdditionalTargetOutputDir,
                             enableCoverage,
-                            workerExecutor,
                             privacySandboxSdkApkFiles,
-                            executorServiceAdapter,
-                            utpTestResultListener,
                             dependencies,
-                            targetSerials
-                    );
+                            targetSerials,
+                            testRunnerFactory.getExecutionEnum().get());
         }
 
         // run the report from the results.
@@ -414,42 +416,40 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
         }
     }
 
-    static Boolean runTestsWithTestRunner(
-            @NotNull String projectPath,
-            @NotNull TestRunnerFactory testRunnerFactory,
-            @NotNull TestData testData,
-            @NotNull Set<File> buddyApkFiles,
-            @NotNull List<String> installOptions,
-            @NotNull File resultsOutDir,
-            @NotNull File additionalTestOutputDir,
-            @NotNull  File coverageOutDir,
-            @NotNull DeviceProvider deviceProvider,
-            @NotNull AnalyticsService analyticsService,
-            @NotNull Logger logger,
-            @NotNull Boolean useAdditionalTargetOutputDir,
-            @NotNull Boolean enableCoverage,
-            @NotNull WorkerExecutor workerExecutor,
-            @NotNull Set<File> privacySandboxSdkApkFiles,
-            @NotNull ExecutorServiceAdapter executorServiceAdapter,
-            @NotNull UtpTestResultListener utpTestResultListener1,
-            @NotNull ArtifactCollection dependencies, List<String> targetSerials
-    )
+    public static Boolean runTestsWithTestRunner(
+            TestRunner testRunner,
+            @NonNull String projectPath,
+            @NonNull StaticTestData staticTestData,
+            @NonNull Set<File> buddyApkFiles,
+            @NonNull List<String> installOptions,
+            @NonNull File resultsOutDir,
+            @NonNull File additionalTestOutputDir,
+            @NonNull File coverageOutDir,
+            @NonNull DeviceProvider deviceProvider,
+            @NonNull AnalyticsService analyticsService,
+            @NonNull Logger logger,
+            @NonNull Boolean useAdditionalTargetOutputDir,
+            @NonNull Boolean enableCoverage,
+            @NonNull Set<File> privacySandboxSdkApkFiles,
+            @NonNull ArtifactCollection dependencies,
+            List<String> targetSerials,
+            Execution execution)
             throws DeviceException, ExecutionException {
+
+        boolean devicesSupportPrivacySandbox =
+                deviceProvider.getDevices().stream()
+                        .allMatch(DeviceConnector::getSupportsPrivacySandbox);
+
         return deviceProvider.use(
                 () -> {
-                    TestRunner testRunner =
-                            testRunnerFactory
-                                    .createTestRunner(
-                                            workerExecutor,
-                                            executorServiceAdapter,
-                                            utpTestResultListener1);
-
                     try {
                         return testRunner.runTests(
                                 projectPath,
-                                testData.getFlavorName().get(),
-                                testData.getAsStaticData(),
-                                privacySandboxSdkApkFiles,
+                                staticTestData.getFlavorName(),
+                                staticTestData,
+                                devicesSupportPrivacySandbox
+                                        ? privacySandboxSdkApkFiles
+                                        : Collections.emptySet(),
                                 buddyApkFiles,
                                 getFilteredDevices(deviceProvider, targetSerials),
                                 deviceProvider.getTimeoutInMs(),
@@ -461,10 +461,7 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                                 new LoggerWrapper(logger));
                     } catch (Exception e) {
                         TestsAnalytics.recordCrashedInstrumentedTestRun(
-                                dependencies,
-                                testRunnerFactory.getExecutionEnum().get(),
-                                enableCoverage,
-                                analyticsService);
+                                dependencies, execution, enableCoverage, analyticsService);
                         throw e;
                     }
                 });

@@ -269,5 +269,7 @@ class TestRunner(
             override fun getAbis() = device.ftlModel.supportedAbis
 
             override fun getApiLevel() = device.apiLevel
+
+            override fun getSupportsPrivacySandbox(): Boolean = false
         }
 }

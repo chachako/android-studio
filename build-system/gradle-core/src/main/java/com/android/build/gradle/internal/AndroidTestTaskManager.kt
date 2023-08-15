@@ -30,6 +30,7 @@ import com.android.build.gradle.internal.lint.LintModelWriterTask
 import com.android.build.gradle.internal.plugins.LINT_PLUGIN_ID
 import com.android.build.gradle.internal.profile.AnalyticsConfiguratorService
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.AndroidReportTask
 import com.android.build.gradle.internal.tasks.AppClasspathCheckTask
@@ -261,6 +262,11 @@ class AndroidTestTaskManager(
                     AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_APKS)
         else null
 
+        val privacySandboxCompatSdkApks = if (androidTestProperties.services.projectOptions
+                        .get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)) {
+            androidTestProperties.artifacts.get(InternalArtifactType.SDK_SPLITS_APKS)
+        } else null
+
         val testData: AbstractTestDataImpl = if (testedVariant.componentType.isDynamicFeature) {
             BundleTestDataImpl(
                 androidTestProperties.namespace,
@@ -273,7 +279,8 @@ class AndroidTestTaskManager(
                         AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                         AndroidArtifacts.ArtifactScope.PROJECT,
                         AndroidArtifacts.ArtifactType.APKS_FROM_BUNDLE),
-                privacySandboxSdkApks)
+                privacySandboxSdkApks,
+                privacySandboxCompatSdkApks)
         } else {
             val testedApkFileCollection =
                 project.files(testedVariant.artifacts.get(SingleArtifact.APK))
@@ -282,7 +289,8 @@ class AndroidTestTaskManager(
                 androidTestProperties,
                 androidTestProperties.artifacts.get(SingleArtifact.APK),
                 if (isLibrary) null else testedApkFileCollection,
-                privacySandboxSdkApks)
+                    privacySandboxSdkApks,
+                    privacySandboxCompatSdkApks)
         }
         configureTestData(androidTestProperties, testData)
         val connectedCheckSerials: Provider<List<String>> =

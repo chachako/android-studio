@@ -35,13 +35,15 @@ class TestDataImpl (
     testConfig: AndroidTestCreationConfig,
     testApkDir: Provider<Directory>,
     testedApksDir: FileCollection?,
-    privacySandboxSdkApks: FileCollection?
+    privacySandboxSdkApks: FileCollection?,
+    privacySandboxCompatSdkApksDir: Provider<Directory>?
 ) : AbstractTestDataImpl(
     namespace,
     testConfig,
     testApkDir,
     testedApksDir,
-    privacySandboxSdkApks
+    privacySandboxSdkApks,
+    privacySandboxCompatSdkApksDir
 ) {
     @get: Input
     val supportedAbis: Set<String> =
@@ -52,25 +54,35 @@ class TestDataImpl (
         testConfig.services.provider { testConfig.mainVariant.componentType.isAar }
 
     override val testedApksFinder: ApksFinder
-        get() = _testedApksFinder ?:
-            TestedApksFinder(
-                testedApksDir?.let { BuiltArtifactsLoaderImpl().load(testedApksDir) },
-                supportedAbis).also {
+        get() = _testedApksFinder ?: TestedApksFinder(
+                testedApksDir
+                        ?.let { BuiltArtifactsLoaderImpl().load(testedApksDir) },
+                privacySandboxCompatSdkApks
+                        ?.let { BuiltArtifactsLoaderImpl().load(privacySandboxCompatSdkApks) },
+                supportedAbis)
+                .also {
                     _testedApksFinder = it
-            }
+                }
 
     private var _testedApksFinder: TestedApksFinder? = null
 
     internal class TestedApksFinder(
-        private val builtArtifacts: BuiltArtifactsImpl?,
+        private val testedApkBuiltArtifacts: BuiltArtifactsImpl?,
+        private val privacySandboxCompatSdkApksBuiltArtifacts: BuiltArtifactsImpl?,
         private val supportedAbis: Set<String>
     ): ApksFinder {
 
         override fun findApks(deviceConfigProvider: DeviceConfigProvider): List<File> {
-            builtArtifacts ?: return emptyList()
-            val apks = ImmutableList.builder<File>()
-            apks.addAll(computeBestOutput(deviceConfigProvider, builtArtifacts, supportedAbis))
-            return apks.build()
+            testedApkBuiltArtifacts ?: return emptyList()
+            val apks = mutableListOf<File>()
+            apks += computeBestOutput(deviceConfigProvider, testedApkBuiltArtifacts, supportedAbis)
+            if (!deviceConfigProvider.supportsPrivacySandbox &&
+                    privacySandboxCompatSdkApksBuiltArtifacts != null) {
+                apks += computeBestOutput(deviceConfigProvider,
+                        privacySandboxCompatSdkApksBuiltArtifacts,
+                        supportedAbis)
+            }
+            return apks
         }
     }
 

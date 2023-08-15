@@ -17,6 +17,7 @@
 package com.android.build.gradle.tasks.sync
 
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
+import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.utils.setDisallowChanges
@@ -45,7 +46,7 @@ abstract class ApplicationVariantModelTask: ModuleVariantModelTask() {
     }
 
     class CreationAction(creationConfig: ApplicationCreationConfig) :
-        AbstractVariantModelTask.CreationAction<ApplicationVariantModelTask, VariantCreationConfig>(
+        AbstractVariantModelTask.CreationAction<ApplicationVariantModelTask, ApplicationCreationConfig>(
             creationConfig,
         ) {
 

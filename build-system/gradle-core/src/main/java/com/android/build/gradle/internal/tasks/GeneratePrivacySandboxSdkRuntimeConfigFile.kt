@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
+import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.InternalArtifactType
@@ -109,8 +110,8 @@ abstract class GeneratePrivacySandboxSdkRuntimeConfigFile : NonIncrementalTask()
         }
     }
 
-    class CreationAction(applicationCreationConfig: ApplicationCreationConfig) :
-            VariantTaskCreationAction<GeneratePrivacySandboxSdkRuntimeConfigFile, ApplicationCreationConfig>(
+    class CreationAction(applicationCreationConfig: ConsumableCreationConfig) :
+            VariantTaskCreationAction<GeneratePrivacySandboxSdkRuntimeConfigFile, ConsumableCreationConfig>(
                     applicationCreationConfig,
                     dependsOnPreBuildTask = false) {
 

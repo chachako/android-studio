@@ -30,6 +30,8 @@ import com.android.build.gradle.internal.component.TestCreationConfig;
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig;
 import com.android.build.gradle.internal.component.TestVariantCreationConfig;
 import com.android.build.gradle.internal.publishing.AndroidArtifacts;
+import com.android.build.gradle.internal.scope.InternalArtifactType;
+import com.android.build.gradle.internal.tasks.AsarsToCompatSplitsTask;
 import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask;
 import com.android.build.gradle.internal.tasks.SigningConfigVersionsWriterTask;
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig;
@@ -48,6 +50,7 @@ import java.util.Collection;
 import org.gradle.api.Project;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.FileTree;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskProvider;
 import org.jetbrains.annotations.NotNull;
@@ -117,13 +120,24 @@ public class TestApplicationTaskManager
                                                 .ANDROID_PRIVACY_SANDBOX_SDK_APKS)
                         : null;
 
+        Provider<Directory> privacySandboxCompatSdkApks =
+                testVariantProperties
+                                .getServices()
+                                .getProjectOptions()
+                                .get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)
+                        ? testVariantProperties
+                                .getArtifacts()
+                                .get(InternalArtifactType.SDK_SPLITS_APKS.INSTANCE)
+                        : null;
+
         TestApplicationTestData testData =
                 new TestApplicationTestData(
                         testVariantProperties.getNamespace(),
                         testVariantProperties,
                         testingApk,
                         testedApks,
-                        privacySandboxSdkApks);
+                        privacySandboxSdkApks,
+                        privacySandboxCompatSdkApks);
 
         configureTestData(testVariantProperties, testData);
 
@@ -131,6 +145,7 @@ public class TestApplicationTaskManager
         createValidateSigningTask(testVariantProperties);
         taskFactory.register(
                 new SigningConfigVersionsWriterTask.CreationAction(testVariantProperties));
+        taskFactory.register(new AsarsToCompatSplitsTask.CreationAction(testVariantProperties));
 
         // create the test connected check task.
         TaskProvider<DeviceProviderInstrumentTestTask> instrumentTestTask =
