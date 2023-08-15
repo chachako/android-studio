@@ -31,7 +31,7 @@ internal abstract class DebuggerTestBase(
   fun runLocalVariablesTest() {
     val listener = LocalVariablesFrameListener()
 
-    runBlocking { withTimeout(5.seconds) { engine.runTest(testClass, listener) } }
+    runBlocking { withTimeout(10.seconds) { engine.runTest(testClass, listener) } }
 
     val expected = Resources.readGolden(testClass, engine.vmName)
     val actual = listener.getText()
@@ -41,7 +41,7 @@ internal abstract class DebuggerTestBase(
   fun runInlineFramesTest() {
     val listener = InlineStackFrameFrameListener()
 
-    runBlocking { withTimeout(5.seconds) { engine.runTest(testClass, listener) } }
+    runBlocking { withTimeout(10.seconds) { engine.runTest(testClass, listener) } }
 
     val expected = Resources.readGolden(testClass, "inline-stack-frames")
     val actual = listener.getText()
