@@ -17,8 +17,6 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.Version
-import com.android.build.api.artifact.ScopedArtifact
-import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
@@ -31,7 +29,6 @@ import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.plugins.JavaBasePlugin
-import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFiles
@@ -41,19 +38,17 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import java.io.File
-import org.gradle.api.tasks.options.Option
-import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.VerificationTask
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.jvm.toolchain.JavaToolchainService
 
 /**
- * Runs screenshot tests of a variant.
+ * Update golden images of a variant.
  */
 @CacheableTask
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.TEST)
-abstract class PreviewScreenshotTestTask : NonIncrementalTask(), VerificationTask {
+abstract class PreviewScreenshotUpdateTask : NonIncrementalTask(), VerificationTask {
 
     companion object {
 
@@ -82,19 +77,11 @@ abstract class PreviewScreenshotTestTask : NonIncrementalTask(), VerificationTas
     @get:OutputDirectory
     abstract val ideExtractionDir: DirectoryProperty
 
-    @get:Internal
+    @get:OutputDirectory
     abstract val goldenImageDir: DirectoryProperty
 
     @get:OutputDirectory
     abstract val imageOutputDir: DirectoryProperty
-
-    @get:Input
-    abstract val recordGolden: Property<Boolean>
-
-    @Option(
-            option = "record-golden",
-            description = "If this option is present, record snapshots and update golden images instead of running an image differ against existing golden images.")
-    fun setRecordGoldenOption(value: Boolean) = recordGolden.set(value)
 
     private val cliParams: MutableMap<String, String> = mutableMapOf()
 
@@ -103,25 +90,22 @@ abstract class PreviewScreenshotTestTask : NonIncrementalTask(), VerificationTas
         cliParams["previewJar"] = screenshotCliJar.singleFile.absolutePath
 
         // invoke CLI tool
-        val commands = mutableListOf(cliParams["java"],
-                "-cp", cliParams["previewJar"], "com.android.screenshot.cli.Main",
-                "--client-name", cliParams["client.name"],
-                "--client-version", cliParams["client.version"],
-                "--jdk-home", cliParams["java.home"],
-                "--sdk-home", cliParams["androidsdk"],
-                "--extraction-dir", cliParams["extraction.dir"],
-                "--jar-location", cliParams["previewJar"],
-                "--lint-model", cliParams["lint.model"],
-                "--cache-dir", cliParams["lint.cache"],
-                "--root-lint-model", cliParams["lint.model"],
-                "--output-location", cliParams["output.location"] + "/",
-                "--golden-location", cliParams["golden.location"] + "/",
-                "--file-path", cliParams["sources"]!!.split(",").first())
-        if (recordGolden.get()) {
-            commands.add("--record-golden")
-        }
         val process = ProcessBuilder(
-                commands
+            mutableListOf(cliParams["java"],
+                    "-cp", cliParams["previewJar"], "com.android.screenshot.cli.Main",
+                    "--client-name", cliParams["client.name"],
+                    "--client-version", cliParams["client.version"],
+                    "--jdk-home", cliParams["java.home"],
+                    "--sdk-home", cliParams["androidsdk"],
+                    "--extraction-dir", cliParams["extraction.dir"],
+                    "--jar-location", cliParams["previewJar"],
+                    "--lint-model", cliParams["lint.model"],
+                    "--cache-dir", cliParams["lint.cache"],
+                    "--root-lint-model", cliParams["lint.model"],
+                    "--output-location", cliParams["output.location"] + "/",
+                    "--golden-location", cliParams["golden.location"] + "/",
+                    "--file-path", cliParams["sources"]!!.split(",").first(),
+                    "--record-golden")
         ).apply {
             environment().remove("TEST_WORKSPACE")
             redirectErrorStream(true)
@@ -159,22 +143,19 @@ abstract class PreviewScreenshotTestTask : NonIncrementalTask(), VerificationTas
             private val lintCacheDir: File,
     ) :
             VariantTaskCreationAction<
-                    PreviewScreenshotTestTask,
+                    PreviewScreenshotUpdateTask,
                     InstrumentedTestCreationConfig
                     >(androidTestCreationConfig) {
 
-        override val name = computeTaskName(ComponentType.SCREENSHOT_TEST_PREFIX)
-        override val type = PreviewScreenshotTestTask::class.java
+        override val name = computeTaskName(ComponentType.PREVIEW_SCREENSHOT_UPDATE_PREFIX)
+        override val type = PreviewScreenshotUpdateTask::class.java
 
-        override fun configure(task: PreviewScreenshotTestTask) {
-            task.recordGolden.convention(false)
-            task.outputs.upToDateWhen { !task.recordGolden.get() }
-
+        override fun configure(task: PreviewScreenshotUpdateTask) {
             val testedConfig = (creationConfig as? AndroidTestCreationConfig)?.mainVariant
             task.variantName = testedConfig?.name ?: creationConfig.name
 
             val testedVariant = androidTestCreationConfig.mainVariant
-            task.description = "Run screenshot tests for the " + testedVariant.name + " build."
+            task.description = "Update screenshots for the " + testedVariant.name + " build."
 
             task.group = JavaBasePlugin.VERIFICATION_GROUP
 
@@ -255,3 +236,4 @@ abstract class PreviewScreenshotTestTask : NonIncrementalTask(), VerificationTas
         }
     }
 }
+

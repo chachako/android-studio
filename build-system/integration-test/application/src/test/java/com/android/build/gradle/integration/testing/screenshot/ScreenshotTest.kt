@@ -114,7 +114,7 @@ class ScreenshotTest {
         project.executor()
                 .with(BooleanOption.USE_ANDROID_X, true)
                 .with(BooleanOption.ENABLE_SCREENSHOT_TEST, true)
-                .run("screenshotTestDebugAndroidTest", "--record-golden")
+                .run("previewScreenshotUpdateDebugAndroidTest")
 
         assertThat(project.file(project.projectDir.absolutePath + "/src/androidTest/screenshot/debug/MainViewTest.png")).exists()
     }
@@ -125,7 +125,7 @@ class ScreenshotTest {
             project.executor()
                     .with(BooleanOption.USE_ANDROID_X, true)
                     .with(BooleanOption.ENABLE_SCREENSHOT_TEST, true)
-                    .run("screenshotTestDebugAndroidTest")
+                    .run("previewScreenshotDebugAndroidTest")
         }
 
         assertThat(
@@ -139,14 +139,14 @@ class ScreenshotTest {
         project.executor()
             .with(BooleanOption.USE_ANDROID_X, true)
             .with(BooleanOption.ENABLE_SCREENSHOT_TEST, true)
-            .run("screenshotTestDebugAndroidTest", "--record-golden")
+            .run("previewScreenshotUpdateDebugAndroidTest")
 
         assertThat(project.file(project.projectDir.absolutePath + "/src/androidTest/screenshot/debug/MainViewTest.png")).exists()
 
         project.executor()
             .with(BooleanOption.USE_ANDROID_X, true)
             .with(BooleanOption.ENABLE_SCREENSHOT_TEST, true)
-            .run("screenshotTestDebugAndroidTest")
+            .run("previewScreenshotDebugAndroidTest")
 
         assertThat(
                 project.getOutputFile(

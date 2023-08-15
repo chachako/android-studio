@@ -40,7 +40,8 @@ import com.android.build.gradle.internal.tasks.JacocoTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceCleanTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceInstrumentationTestSetupTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceSetupTask
-import com.android.build.gradle.internal.tasks.PreviewScreenshotTestTask
+import com.android.build.gradle.internal.tasks.PreviewScreenshotUpdateTask
+import com.android.build.gradle.internal.tasks.PreviewScreenshotValidationTask
 import com.android.build.gradle.internal.tasks.SigningConfigVersionsWriterTask
 import com.android.build.gradle.internal.tasks.SigningConfigWriterTask
 import com.android.build.gradle.internal.tasks.StripDebugSymbolsTask
@@ -349,7 +350,7 @@ class AndroidTestTaskManager(
             testData,
             androidTestProperties.mainVariant.name
         )
-        createScreenshotTestTask(
+        createScreenshotTestTasks(
             androidTestProperties,
             testData,
             androidTestProperties.mainVariant.name
@@ -482,7 +483,7 @@ class AndroidTestTaskManager(
         super.createVariantPreBuildTask(creationConfig)
     }
 
-    private fun createScreenshotTestTask(
+    private fun createScreenshotTestTasks(
             creationConfig: AndroidTestCreationConfig,
             testData: AbstractTestDataImpl,
             variantName: String,
@@ -520,8 +521,8 @@ class AndroidTestTaskManager(
                 creationConfig.paths.intermediatesDir(
                         "${BuilderConstants.LINT}-cache").get().asFile
 
-        val previewScreenshotTestTask = taskFactory.register(
-                PreviewScreenshotTestTask.CreationAction(
+        val previewScreenshotValidationTask = taskFactory.register(
+                PreviewScreenshotValidationTask.CreationAction(
                         creationConfig,
                         resultsDir,
                         goldenImagesDir,
@@ -530,6 +531,17 @@ class AndroidTestTaskManager(
                         lintCacheDir,
                 ))
 
-        previewScreenshotTestTask.dependsOn("lint")
+        val previewScreenshotUpdateTask = taskFactory.register(
+                PreviewScreenshotUpdateTask.CreationAction(
+                        creationConfig,
+                        resultsDir,
+                        goldenImagesDir,
+                        ideExtractionDir,
+                        lintModelDir,
+                        lintCacheDir,
+                ))
+
+        previewScreenshotValidationTask.dependsOn("lint")
+        previewScreenshotUpdateTask.dependsOn("lint")
     }
 }
