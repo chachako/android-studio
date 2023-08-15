@@ -98,16 +98,18 @@ private fun View.toNodeImpl(
                     0f, h,
                 )
                 transform.mapPoints(corners)
-                render = Quad.newBuilder().apply {
-                    x0 = corners[0].roundToInt()
-                    y0 = corners[1].roundToInt()
-                    x1 = corners[2].roundToInt()
-                    y1 = corners[3].roundToInt()
-                    x2 = corners[4].roundToInt()
-                    y2 = corners[5].roundToInt()
-                    x3 = corners[6].roundToInt()
-                    y3 = corners[7].roundToInt()
-                }.build()
+                if (corners.none { it.isNaN() }) {
+                    render = Quad.newBuilder().apply {
+                        x0 = corners[0].roundToInt()
+                        y0 = corners[1].roundToInt()
+                        x1 = corners[2].roundToInt()
+                        y1 = corners[3].roundToInt()
+                        x2 = corners[4].roundToInt()
+                        y2 = corners[5].roundToInt()
+                        x3 = corners[6].roundToInt()
+                        y3 = corners[7].roundToInt()
+                    }.build()
+                }
             }
         }.build()
 

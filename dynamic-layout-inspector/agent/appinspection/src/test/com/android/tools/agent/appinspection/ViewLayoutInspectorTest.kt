@@ -905,6 +905,14 @@ abstract class ViewLayoutInspectorTestBase {
                 height = 30
                 setTransformedPoints(floatArrayOf(10f, 20f, 30f, 40f, 50f, 60f, 70f, 80f))
             })
+
+            addView(View(context).apply {
+                left = 40
+                top = 10
+                width = 20
+                height = 30
+                setTransformedPoints(floatArrayOf(0f, 0f, 0f, Float.NaN, 10f, 10f, 10f, 10f))
+            })
         })
 
         floatingDialog.addView(ViewGroup(context).apply {
@@ -971,8 +979,10 @@ abstract class ViewLayoutInspectorTestBase {
 
                 val root = layoutEvent.rootView
                 val parent = root.getChildren(0)
+                assertThat(parent.getChildrenCount()).isEqualTo(3)
                 val child0 = parent.getChildren(0)
                 val child1 = parent.getChildren(1)
+                val child2 = parent.getChildren(2)
 
                 assertThat(root.id).isEqualTo(mainScreen.uniqueDrawingId)
                 root.bounds.layout.let { rect ->
@@ -993,6 +1003,7 @@ abstract class ViewLayoutInspectorTestBase {
                     assertThat(rect.w).isEqualTo(20)
                     assertThat(rect.h).isEqualTo(30)
                 }
+                assertThat(child0.bounds.hasRender()).isFalse()
                 child1.bounds.render.let { quad ->
                     assertThat(quad.x0).isEqualTo(10)
                     assertThat(quad.y0).isEqualTo(20)
@@ -1003,6 +1014,13 @@ abstract class ViewLayoutInspectorTestBase {
                     assertThat(quad.x3).isEqualTo(70)
                     assertThat(quad.y3).isEqualTo(80)
                 }
+                child2.bounds.layout.let { rect ->
+                    assertThat(rect.x).isEqualTo(55)
+                    assertThat(rect.y).isEqualTo(-60)
+                    assertThat(rect.w).isEqualTo(20)
+                    assertThat(rect.h).isEqualTo(30)
+                }
+                assertThat(child2.bounds.hasRender()).isFalse()
             }
         }
 
