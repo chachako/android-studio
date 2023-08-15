@@ -1389,11 +1389,14 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       }
     }
 
-    if (groupId == "com.android.tools.build" && LintClient.isStudio) {
+    if (
+      (groupId == "com.android.tools.build" || ALL_PLUGIN_IDS.contains(groupId)) &&
+        LintClient.isStudio
+    ) {
       val clientRevision = context.client.getClientRevision() ?: return null
       val ideVersion = Version.parse(clientRevision)
       // TODO(b/145606749): this assumes that the IDE version and the AGP version are directly
-      // comparable
+      //  comparable
       return Predicate { v ->
         // Any higher IDE version that matches major and minor
         // (e.g. from 3.3.0 offer 3.3.2 but not 3.4.0)
@@ -3520,6 +3523,19 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
 
     /** Previous plugin id for libraries. */
     const val OLD_LIB_PLUGIN_ID = "android-library"
+
+    /** All the plugin ids from the Android Gradle Plugin */
+    val ALL_PLUGIN_IDS =
+      setOf(
+        "com.android.base",
+        "com.android.application",
+        "com.android.library",
+        "com.android.test",
+        "com.android.instant-app",
+        "com.android.feature",
+        "com.android.dynamic-feature",
+        "com.android.settings"
+      )
 
     /** Group ID for GMS. */
     const val GMS_GROUP_ID = "com.google.android.gms"
