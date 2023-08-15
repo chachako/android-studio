@@ -3,7 +3,7 @@
   <tracing versions="1.1.0,1.2.0-beta02"/>
   <tracing-ktx versions="1.1.0,1.2.0-beta02"/>
   <tracing-perfetto versions="1.0.0-alpha13"/>
-  <tracing-perfetto-binary versions="1.0.0-alpha13"/>
-  <tracing-perfetto-common versions="1.0.0-alpha13"/>
+  <tracing-perfetto-binary versions="1.0.0-beta02"/>
+  <tracing-perfetto-handshake versions="1.0.0-beta02"/>
 </androidx.tracing>
 

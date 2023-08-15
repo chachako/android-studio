@@ -21366,10 +21366,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.tracing.tracing-perfetto-common_1.0.0-alpha01",
-    pom = "repository/androidx/tracing/tracing-perfetto-common/1.0.0-alpha01/tracing-perfetto-common-1.0.0-alpha01.pom",
+    name = "androidx.tracing.tracing-perfetto-handshake_1.0.0-beta02",
+    pom = "repository/androidx/tracing/tracing-perfetto-handshake/1.0.0-beta02/tracing-perfetto-handshake-1.0.0-beta02.pom",
     repo_root_path = "repository",
-    repo_path = "androidx/tracing/tracing-perfetto-common/1.0.0-alpha01",
+    repo_path = "androidx/tracing/tracing-perfetto-handshake/1.0.0-beta02",
     deps = [
         "androidx.annotation.annotation_1.3.0",
     ],

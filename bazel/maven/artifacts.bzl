@@ -372,7 +372,7 @@ DATA = [
     "androidx.test:rules:1.3.0",
     "androidx.test:rules:1.4.0-alpha06",
     "androidx.test:runner:1.4.0-alpha06",
-    "androidx.tracing:tracing-perfetto-common:1.0.0-alpha01",
+    "androidx.tracing:tracing-perfetto-handshake:1.0.0-beta02",
     "androidx.tv:tv-foundation:1.0.0-alpha07",
     "androidx.tv:tv-material:1.0.0-alpha07",
     "androidx.wear:wear:1.2.0",
