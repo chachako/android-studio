@@ -2657,9 +2657,9 @@ class GradleDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
-  fun testChromeOSAbiFiltersMissingX86() {
+  fun testChromeOSAbiFiltersMissingX8664() {
     val expected =
-      "build.gradle:10: Warning: Missing x86 and x86_64 ABI support for ChromeOS [ChromeOsAbiSupport]\n" +
+      "build.gradle:10: Warning: Missing x86_64 ABI support for ChromeOS [ChromeOsAbiSupport]\n" +
         "           abiFilters 'arm64-v8a'\n" +
         "                      ~~~~~~~~~~~\n" +
         "0 errors, 1 warnings"
@@ -2710,9 +2710,9 @@ class GradleDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
-  fun testChromeOSAbiSplitsMissingX86() {
+  fun testChromeOSAbiSplitsMissingX8664() {
     val expected =
-      "build.gradle:8: Warning: Missing x86 and x86_64 ABI support for ChromeOS [ChromeOsAbiSupport]\n" +
+      "build.gradle:8: Warning: Missing x86_64 ABI support for ChromeOS [ChromeOsAbiSupport]\n" +
         "           include 'arm64-v8a'\n" +
         "                   ~~~~~~~~~~~\n" +
         "0 errors, 1 warnings"
@@ -2737,6 +2737,7 @@ class GradleDetectorTest : AbstractCheckTest() {
       .run()
       .expect(expected)
   }
+
   fun testLargeScreenIncorrectDependencies() {
     val expected =
       "build.gradle:9: Warning: Upgrade androidx.slidingpanelayout for keyboard and mouse support [GradleDependency]\n" +

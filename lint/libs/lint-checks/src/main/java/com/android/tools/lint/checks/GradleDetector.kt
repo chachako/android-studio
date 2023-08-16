@@ -727,29 +727,22 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
 
   /**
    * For ChromeOS performance, we want to check if a developer has turned on abiSplits or abiFilters
-   * as they target specific ABIs. If the developer has included both `x86` and `x86_64` no warning
-   * will show. However, if either of those are missing the warning will pop up.
+   * as they target specific ABIs. If the developer has included `x86_64` no warning will show.
+   * However, if it is missing, the warning will pop up.
    *
    * If the user has not included `abiSplits` or `abiFilters` this logic will not be called.
    */
   private fun checkForChromeOSAbiSplits(context: GradleContext, valueCookie: Any, value: String) {
     val abis = value.split(',')
-    var hasX86 = false
     var hasX8664 = false
     for (i in abis.indices) {
       if (abis[i].contains("\"x86_64\"") || abis[i].contains("\'x86_64\'")) {
         hasX8664 = true
-      } else if (abis[i].contains("\"x86\"") || abis[i].contains("\'x86\'")) {
-        hasX86 = true
       }
     }
 
     val message: String? =
-      if (!hasX86 && !hasX8664) {
-        "Missing x86 and x86_64 ABI support for ChromeOS"
-      } else if (!hasX86) {
-        "Missing x86 ABI support for ChromeOS"
-      } else if (!hasX8664) {
+      if (!hasX8664) {
         "Missing x86_64 ABI support for ChromeOS"
       } else {
         null
