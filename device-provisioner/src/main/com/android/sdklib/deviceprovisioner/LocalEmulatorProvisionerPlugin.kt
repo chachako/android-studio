@@ -485,6 +485,7 @@ class LocalEmulatorProvisionerPlugin(
 class LocalEmulatorProperties(
   base: DeviceProperties,
   val avdName: String,
+  val avdPath: Path,
   val displayName: String,
   val avdConfigProperties: Map<String, String>,
 ) : DeviceProperties by base {
@@ -497,6 +498,7 @@ class LocalEmulatorProperties(
         LocalEmulatorProperties(
           buildBase(),
           checkNotNull(avdName),
+          avdInfo.dataFolderPath,
           checkNotNull(displayName),
           avdInfo.properties
         )
