@@ -315,7 +315,7 @@ class LintBaselineTest {
 
   @Test
   fun tolerateMinSpChanges() {
-    val baseline = LintBaseline(null, File(""))
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
     assertTrue(
       baseline.sameMessage(
         PxUsageDetector.SMALL_SP_ISSUE,
@@ -327,7 +327,7 @@ class LintBaselineTest {
 
   @Test
   fun tolerateRangeMessageChanges() {
-    val baseline = LintBaseline(null, File(""))
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
     assertTrue(
       baseline.sameMessage(
         RangeDetector.RANGE,
@@ -339,7 +339,7 @@ class LintBaselineTest {
 
   @Test
   fun tolerateIconMissingDensityFolderMessageChanges() {
-    val baseline = LintBaseline(null, File(""))
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
     assertTrue(
       baseline.sameMessage(
         IconDetector.ICON_MISSING_FOLDER,
@@ -351,7 +351,7 @@ class LintBaselineTest {
 
   @Test
   fun tolerateIconXmlAndPngMessageChanges() {
-    val baseline = LintBaseline(null, File(""))
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
     assertTrue(
       baseline.sameMessage(
         IconDetector.ICON_XML_AND_PNG,
@@ -363,7 +363,7 @@ class LintBaselineTest {
 
   @Test
   fun tolerateRestrictToChanges() {
-    val baseline = LintBaseline(null, File(""))
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
     assertTrue(
       baseline.sameMessage(
         RestrictToDetector.RESTRICTED,
@@ -399,7 +399,7 @@ class LintBaselineTest {
 
   @Test
   fun tolerateScopedStorageChanges() {
-    val baseline = LintBaseline(null, File(""))
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
     assertTrue(
       baseline.sameMessage(
         ScopedStorageDetector.ISSUE,
@@ -411,7 +411,7 @@ class LintBaselineTest {
 
   @Test
   fun tolerateApiDetectorMessageChanges() {
-    val baseline = LintBaseline(null, File(""))
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
 
     // minSdk changes can happen anytime; be flexible with these:
     assertTrue(
@@ -469,7 +469,7 @@ class LintBaselineTest {
   fun tolerateTypoMessageChange() {
     // Generic test for grammar change to remove spaces before question marks
     // as now enforced by LintImplTextFormat
-    val baseline = LintBaseline(null, File(""))
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
     assertTrue(
       baseline.sameMessage(
         TypoDetector.ISSUE,
@@ -481,7 +481,7 @@ class LintBaselineTest {
 
   @Test
   fun tolerateA11yI18nChanges() {
-    val baseline = LintBaseline(null, File(""))
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
     assertTrue(
       baseline.sameMessage(
         HardcodedValuesDetector.ISSUE,
@@ -501,7 +501,7 @@ class LintBaselineTest {
 
   @Test
   fun tolerateRtlCompatChanges() {
-    val baseline = LintBaseline(null, File(""))
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
     assertTrue(
       baseline.sameMessage(
         RtlDetector.COMPAT,
@@ -513,7 +513,7 @@ class LintBaselineTest {
 
   @Test
   fun tolerateUnusedAttributeChanges() {
-    val baseline = LintBaseline(null, File(""))
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
     assertTrue(
       baseline.sameMessage(
         ApiDetector.UNUSED,

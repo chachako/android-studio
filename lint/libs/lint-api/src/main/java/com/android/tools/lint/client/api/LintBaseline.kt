@@ -32,6 +32,7 @@ import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.TextFormat
 import com.android.tools.lint.detector.api.describeCounts
+import com.android.utils.CharSequenceReader
 import com.android.utils.XmlUtils.toXmlAttributeValue
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.Lists
@@ -50,8 +51,8 @@ import org.xmlpull.v1.XmlPullParserException
  * issues crop up.
  */
 class LintBaseline(
-  /** Client to log to. */
-  private val client: LintClient?,
+  /** Client to use for file reading, path variables, logging, etc */
+  private val client: LintClient,
 
   /**
    * The file to read the baselines from, and if [writeOnClose] is set, to write to when the
@@ -410,90 +411,79 @@ class LintBaseline(
 
   /** Read in the XML report. */
   private fun readBaselineFile() {
-    if (!file.exists()) {
+    val xml = client.readFile(file)
+    if (xml.isEmpty()) {
       return
     }
 
     try {
-      file.bufferedReader().use { reader ->
-        val parser = KXmlParser()
-        parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
-        parser.setInput(reader)
+      val parser = KXmlParser()
+      parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
+      parser.setInput(CharSequenceReader(xml))
 
-        var issue: String? = null
-        var message: String? = null
-        var path: String? = null
-        var currentEntry: Entry? = null
+      var issue: String? = null
+      var message: String? = null
+      var path: String? = null
+      var currentEntry: Entry? = null
 
-        val pathVariables = client?.pathVariables
+      val pathVariables = client.pathVariables
 
-        while (parser.next() != XmlPullParser.END_DOCUMENT) {
-          val eventType = parser.eventType
-          if (eventType == XmlPullParser.END_TAG) {
-            val tag = parser.name
-            if (tag == TAG_LOCATION) {
-              if (issue != null && message != null && path != null) {
-                path = pathVariables?.fromPathString(path)?.path ?: path
-                val entry = Entry(issue, message, path)
-                if (currentEntry != null) {
-                  currentEntry.next = entry
-                }
-                entry.previous = currentEntry
-                currentEntry = entry
-                messageToEntry.put(entry.message, entry)
-                val messages: MutableSet<String> =
-                  idToMessages[issue] ?: HashSet<String>().also { idToMessages[issue!!] = it }
-                messages.add(message)
+      while (parser.next() != XmlPullParser.END_DOCUMENT) {
+        val eventType = parser.eventType
+        if (eventType == XmlPullParser.END_TAG) {
+          val tag = parser.name
+          if (tag == TAG_LOCATION) {
+            if (issue != null && message != null && path != null) {
+              path = pathVariables.fromPathString(path).path ?: path
+              val entry = Entry(issue, message, path)
+              if (currentEntry != null) {
+                currentEntry.next = entry
               }
-            } else if (tag == TAG_ISSUE) {
-              if (issue != null && !IssueRegistry.isDeletedIssueId(issue)) {
-                totalCount++
-              }
-              issue = null
-              message = null
-              path = null
-              currentEntry = null
+              entry.previous = currentEntry
+              currentEntry = entry
+              messageToEntry.put(entry.message, entry)
+              val messages: MutableSet<String> =
+                idToMessages[issue] ?: HashSet<String>().also { idToMessages[issue!!] = it }
+              messages.add(message)
             }
-          } else if (eventType != XmlPullParser.START_TAG) {
-            continue
+          } else if (tag == TAG_ISSUE) {
+            if (issue != null && !IssueRegistry.isDeletedIssueId(issue)) {
+              totalCount++
+            }
+            issue = null
+            message = null
+            path = null
+            currentEntry = null
           }
+        } else if (eventType != XmlPullParser.START_TAG) {
+          continue
+        }
 
-          var i = 0
-          val n = parser.attributeCount
-          while (i < n) {
-            val name = parser.getAttributeName(i)
-            val value = parser.getAttributeValue(i)
-            when (name) {
-              ATTR_ID -> issue = value
-              ATTR_MESSAGE ->
-                if (parser.depth == 2) message = value // else: depth=3: location-specific message
-              ATTR_FILE -> path = value
-              // For now not reading ATTR_LINE; not used for baseline entry matching
-              // ATTR_LINE -> line = value
-              ATTR_FORMAT,
-              "by" -> {} // not currently interesting, don't store
-              else -> {
-                if (parser.depth == 1) {
-                  setAttribute(name, value)
-                }
+        var i = 0
+        val n = parser.attributeCount
+        while (i < n) {
+          val name = parser.getAttributeName(i)
+          val value = parser.getAttributeValue(i)
+          when (name) {
+            ATTR_ID -> issue = value
+            ATTR_MESSAGE ->
+              if (parser.depth == 2) message = value // else: depth=3: location-specific message
+            ATTR_FILE -> path = value
+            // For now not reading ATTR_LINE; not used for baseline entry matching
+            // ATTR_LINE -> line = value
+            ATTR_FORMAT,
+            "by" -> {} // not currently interesting, don't store
+            else -> {
+              if (parser.depth == 1) {
+                setAttribute(name, value)
               }
             }
-            i++
           }
+          i++
         }
       }
-    } catch (e: IOException) {
-      if (client != null) {
-        client.log(e, null)
-      } else {
-        e.printStackTrace()
-      }
     } catch (e: XmlPullParserException) {
-      if (client != null) {
-        client.log(e, null)
-      } else {
-        e.printStackTrace()
-      }
+      client.log(e, null)
     }
   }
 
@@ -510,7 +500,7 @@ class LintBaseline(
     if (parentFile != null && !parentFile.exists()) {
       val mkdirs = parentFile.mkdirs()
       if (!mkdirs) {
-        client!!.log(null, "Couldn't create %1\$s", parentFile)
+        client.log(null, "Couldn't create %1\$s", parentFile)
         return
       }
     }
@@ -522,7 +512,7 @@ class LintBaseline(
         writer.write("<")
         writer.write(TAG_ISSUES)
         writer.write(" format=\"5\"")
-        val revision = client!!.getClientDisplayRevision()
+        val revision = client.getClientDisplayRevision()
         if (revision != null) {
           writer.write(String.format(" by=\"lint %1\$s\"", revision))
         }
@@ -549,7 +539,7 @@ class LintBaseline(
         writer.close()
       }
     } catch (ioe: IOException) {
-      client!!.log(ioe, null)
+      client.log(ioe, null)
     }
   }
 
