@@ -10,7 +10,6 @@ readonly script_dir="$(dirname "$0")"
 readonly script_name="$(basename "$0")"
 
 readonly lsb_release="$(grep -oP '(?<=DISTRIB_CODENAME=).*' /etc/lsb-release)"
-readonly crostini_timestamp_file="/buildbot/lastrun.out"
 
 # Invalidate local cache to avoid picking up obsolete test result xmls
 "${script_dir}/../bazel" clean --async  --expunge
@@ -22,19 +21,6 @@ if [[ $lsb_release == "crostini" ]]; then
   # don't use any remote cached items, some items built on Linux may not be compatible. b/172365127
   config_options="--config=local --config=rcache --config=ants --bes_timeout=1h"
   target_filters=qa_smoke,ui_test,-qa_unreliable,-no_linux,-no_test_linux,-requires_emulator,-no_crostini
-
-  current_time=$(date +"%s")
-
-  #This prevents builds from occurring if the last one was started less than five hours ago
-  #so the chromebox doesn't become too bogged down
-  if [[ -f "${crostini_timestamp_file}" ]]; then
-    last_run_time=$(cat $crostini_timestamp_file)
-    #if the last build occurred less than six hours ago it exits
-    if [[ $(($current_time-$last_run_time)) -lt 21600 ]]; then
-      exit 0
-    fi
-  fi
-  echo $current_time > $crostini_timestamp_file
 
   # Temp workaround for b/159371003
   # Check running processes

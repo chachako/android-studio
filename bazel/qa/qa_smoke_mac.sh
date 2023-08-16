@@ -6,21 +6,6 @@ readonly out_dir="$1"
 readonly dist_dir="$2"
 readonly build_number="$3"
 
-# TODO: Remove this block once we have enough Mac bots to run all
-# post-submit builds
-# Use flag file, skip all builds within 12 hours of last ran build
-# Skipped builds are marked green (exit 0), in ab/
-readonly mac_timestamp_file="/buildbot/lastrun.out"
-current_time=$(date +"%s")
-if [[ -f "${mac_timestamp_file}" ]]; then
-  last_run_time=$(cat $mac_timestamp_file)
-  if [[ $(($current_time-$last_run_time)) -lt 10800 ]]; then
-    exit 0
-  fi
-fi
-# Update timestamp in the flag file
-echo $current_time > $mac_timestamp_file
-
 readonly script_dir="$(dirname "$0")"
 readonly script_name="$(basename "$0")"
 
