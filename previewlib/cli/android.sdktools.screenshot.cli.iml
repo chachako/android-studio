@@ -54,5 +54,6 @@
     <orderEntry type="module" module-name="android.sdktools.resource-repository" />
     <orderEntry type="module" module-name="analytics-crash" />
     <orderEntry type="module" module-name="intellij.android.execution.common" />
+    <orderEntry type="module" module-name="intellij.android.preview-elements" />
   </component>
 </module>

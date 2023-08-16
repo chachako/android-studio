@@ -58,6 +58,7 @@ iml_module(
         "//tools/base/resource-repository:studio.android.sdktools.resource-repository[module]",
         "//tools/analytics-library/crash:analytics-crash[module]",
         "//tools/adt/idea/execution/common:intellij.android.execution.common[module]",
+        "//tools/adt/idea/preview-elements:intellij.android.preview-elements[module]",
     ],
 )
 

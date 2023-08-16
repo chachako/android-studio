@@ -24,7 +24,6 @@ import com.android.screenshot.cli.util.Decompressor
 import com.android.screenshot.cli.util.PreviewResult
 import com.android.screenshot.cli.util.Response
 import com.android.tools.idea.AndroidPsiUtils
-import com.android.tools.idea.compose.preview.ComposePreviewElement
 import com.android.tools.idea.compose.preview.getPreviewNodes
 import com.android.tools.idea.util.toVirtualFile
 import com.android.tools.lint.CliConfiguration
@@ -58,6 +57,7 @@ import com.android.tools.lint.model.LintModelSerialization
 import com.android.tools.lint.model.LintModelSourceProvider
 import com.android.tools.lint.model.LintModelVariant
 import com.android.tools.lint.model.PathVariables
+import com.android.tools.preview.ComposePreviewElement
 import com.android.utils.XmlUtils
 import com.google.common.io.ByteStreams
 import com.intellij.core.CoreApplicationEnvironment
