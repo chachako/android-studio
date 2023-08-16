@@ -95,6 +95,58 @@ class ContextTest : AbstractCheckTest() {
       .expectClean()
   }
 
+  fun testSuppressCompanionObjectAnnotation() {
+    // Regression test for b/293334438
+    lint()
+      .files(
+        kotlin(
+            """
+                package test.pkg
+                import android.annotation.SuppressLint
+
+                class MyClass {
+                  @SuppressLint("_TestIssueId")
+                  companion object {
+                      const val s: String = "/sdcard/mydir"
+                  }
+                }
+                """
+          )
+          .indented(),
+        gradle("")
+      )
+      .issues(TEST_ISSUE)
+      .run()
+      .expectClean()
+  }
+
+  fun testSuppressPropertyAnnotation() {
+    // Regression test for b/296288411
+    lint()
+      .files(
+        kotlin(
+            """
+                package test.pkg
+                import android.annotation.SuppressLint
+
+                class MyClass {
+                  @SuppressLint("_TestIssueId") val s: String get() = {
+                    class TestClass1 {
+                      const val s: String = "/sdcard/mydir"
+                    }
+                    TestClass1().s
+                  }
+                }
+                """
+          )
+          .indented(),
+        gradle("")
+      )
+      .issues(TEST_ISSUE)
+      .run()
+      .expectClean()
+  }
+
   override fun getDetector(): Detector = NoLocationNodeDetector()
 
   override fun getIssues(): List<Issue> = listOf(TEST_ISSUE)

@@ -100,6 +100,7 @@ import com.google.common.base.Splitter
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.Iterables
 import com.google.common.collect.Sets
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.util.Computable
@@ -132,7 +133,9 @@ import org.codehaus.groovy.ast.ASTNode
 import org.jetbrains.annotations.Contract
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
+import org.jetbrains.kotlin.psi.KtClassBody
 import org.jetbrains.kotlin.psi.KtExpression
+import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtParenthesizedExpression
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtPropertyAccessor
@@ -152,6 +155,7 @@ import org.jetbrains.uast.UParenthesizedExpression
 import org.jetbrains.uast.UTypeReferenceExpression
 import org.jetbrains.uast.expressions.UInjectionHost
 import org.jetbrains.uast.getParentOfType
+import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
 import org.jetbrains.uast.toUElement
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Opcodes
@@ -433,7 +437,7 @@ class LintDriver(
    * later be loaded and merged with other projects in [mergeOnly].
    */
   fun analyzeOnly() {
-    mode = DriverMode.ANALYSIS_ONLY
+    mode = ANALYSIS_ONLY
     // Partial analysis only looks at a single project, not multiple projects
     // with source dependencies
     assert(projectRoots.size == 1)
@@ -460,7 +464,7 @@ class LintDriver(
    * taking the definite results as well as conditionally processing the provisional results.
    */
   fun mergeOnly() {
-    mode = DriverMode.MERGE
+    mode = MERGE
     doAnalyze(
       analysis = { roots ->
         val main = roots.first()
@@ -573,7 +577,7 @@ class LintDriver(
     }
 
     for (project in projects) {
-      if (mode == DriverMode.ANALYSIS_ONLY) {
+      if (mode == ANALYSIS_ONLY) {
         // Make sure we don't look at lint.xml files outside this project
         assert(projects.size == 1)
         client.configurations.rootDir = project.dir
@@ -839,7 +843,7 @@ class LintDriver(
     val configuration = project.getConfiguration(this)
     val map = EnumMap<Scope, MutableList<Detector>>(Scope::class.java)
     scopeDetectors = map
-    val platforms = if (mode == DriverMode.ANALYSIS_ONLY) Platform.UNSPECIFIED else platforms
+    val platforms = if (mode == ANALYSIS_ONLY) Platform.UNSPECIFIED else platforms
     applicableDetectors =
       registry.createDetectors(this, project, configuration, scope, platforms, map)
 
@@ -2620,15 +2624,7 @@ class LintDriver(
         val javaContext = context as? JavaContext
         val psi = scope.sourcePsi
         if (psi == null || javaContext != null && inSameFile(psi, javaContext.psiFile)) {
-          if (scope is UAnnotated) {
-            if (driver.isSuppressed(javaContext, issue, scope)) {
-              return true
-            }
-          } else if (driver.isSuppressed(javaContext, issue, scope)) {
-            return true
-          }
-        } else if (scope is UAnnotated) {
-          if (driver.isSuppressed(null, issue, scope)) {
+          if (driver.isSuppressed(javaContext, issue, scope)) {
             return true
           }
         } else if (driver.isSuppressed(null, issue, scope)) {
@@ -2642,14 +2638,7 @@ class LintDriver(
         // Check for suppressed issue via location node
         if (context is JavaContext) {
           if (inSameFile(scope, context.psiFile)) {
-            if (scope is UAnnotated) {
-              if (driver.isSuppressed(context, issue, scope as UAnnotated)) {
-                return true
-              }
-            } else if (driver.isSuppressed(context, issue, scope)) {
-              return true
-            }
-            return false
+            return driver.isSuppressed(context, issue, scope)
           }
         }
         return driver.isSuppressed(null, issue, scope)
@@ -2713,7 +2702,7 @@ class LintDriver(
       // for (as an example) both Android and JDK platforms, but in the merge phase,
       // we filter on specifically allowed platforms for the reporting project.
       if (
-        mode == DriverMode.MERGE &&
+        mode == MERGE &&
           !platforms.isApplicableTo(incident.issue) &&
           // Allow explicitly enabling an issue such as an Android specific issue like
           // SyntheticAccessor
@@ -2725,7 +2714,7 @@ class LintDriver(
       val baseline = baseline
       if (
         baseline != null &&
-          mode != DriverMode.ANALYSIS_ONLY &&
+          mode != ANALYSIS_ONLY &&
           // Some lint checks will lazily compute error messages in Detector.filterIncident.
           // These will go through a separate isHidden call. Don't attempt to proactively check
           // baselines here since these are based on the final message.
@@ -3387,23 +3376,58 @@ class LintDriver(
         return true
       }
 
+      var parent = currentScope.uastParent
+
       if (currentScope is UFile) {
         return false
       } else if (currentScope is UImportStatement && isJava(currentScope.sourcePsi)) {
         // Special case: if the error is on an import statement in Java
         // you don't have the option of suppressing on the file, so
         // allow suppressing on the top level class instead, if any
-        val topLevelClass = (currentScope.uastParent as? UFile)?.classes?.firstOrNull()
+        val topLevelClass = (parent as? UFile)?.classes?.firstOrNull()
         if (topLevelClass != null) {
           currentScope = topLevelClass
           continue
         }
       }
-      var parent = currentScope.uastParent
+
+      // When you have something like
+      //    @Suppress("id") var foo: Foo
+      // in Kotlin, the annotation will only get placed on the private backing field
+      // of the properties, NOT the getters and setters -- and that's where it shows
+      // up in UAST. If there is no backing field, there is no visible annotation in
+      // UAST. Therefore, in this case, we dip into the Kotlin PSI and look for annotations
+      // there.
+      val sourcePsi = currentScope.sourcePsi
+      if ((sourcePsi is KtProperty || sourcePsi is KtPropertyAccessor) && currentScope is UMethod) {
+        val property =
+          if (sourcePsi is KtPropertyAccessor) sourcePsi.property else sourcePsi as KtProperty
+        if (isSuppressedKt(issue, property.annotationEntries)) {
+          return true
+        }
+      }
+
+      // In UAST, members of a companion object are modeled as children of the containing class.
+      // So when going up the UAST tree, companion objects (and any annotations on them) are
+      // made invisible. Here we explicitly check if the current UElement is a member of
+      // of a companion object by dipping into the Kotlin PSI.
+      if (sourcePsi != null) {
+        val objectParent =
+          ((sourcePsi.parent as? KtObjectDeclaration)
+            ?: (sourcePsi.parent as? KtClassBody)?.parent as? KtObjectDeclaration)
+        if (objectParent?.isCompanion() == true) {
+          if (isSuppressedKt(issue, objectParent.annotationEntries)) {
+            return true
+          }
+        }
+      }
+
       if (parent is UCatchClause && currentScope is UTypeReferenceExpression) {
         // we need to check annotations on the catch parameters, which aren't modeled as parents.
         val parameters = parent.parameters
         parent = parameters.firstOrNull() ?: parent
+      } else if (scope is UAnnotated) {
+        parent = currentScope.getParentOfType(UAnnotated::class.java)
       }
       currentScope = parent
     }
@@ -3484,77 +3508,6 @@ class LintDriver(
     return false
   }
 
-  fun isSuppressed(context: JavaContext?, issue: Issue, scope: UAnnotated?): Boolean {
-    scope ?: return false
-
-    val customSuppressNames =
-      if (!allowSuppress) {
-        issue.suppressNames?.toSet()
-      } else {
-        null
-      }
-
-    if (scope.sourcePsi is PsiCompiledElement) {
-      return false
-    }
-
-    var currentScope: UAnnotated = scope
-    val checkComments =
-      client.checkForSuppressComments() && context != null && context.containsCommentSuppress()
-    while (true) {
-      if (isSuppressed(issue, currentScope)) {
-        if (customSuppressNames != null && context != null) {
-          flagInvalidSuppress(
-            context,
-            issue,
-            context.getLocation(currentScope),
-            currentScope,
-            issue.suppressNames
-          )
-          return false
-        }
-        return true
-      }
-
-      if (customSuppressNames != null && isAnnotatedWith(currentScope, customSuppressNames)) {
-        return true
-      }
-
-      if (checkComments && context!!.isSuppressedWithComment(currentScope, issue)) {
-        if (customSuppressNames != null) {
-          flagInvalidSuppress(
-            context,
-            issue,
-            context.getLocation(currentScope),
-            currentScope,
-            issue.suppressNames
-          )
-          return false
-        }
-        return true
-      }
-      currentScope = currentScope.getParentOfType(UAnnotated::class.java) ?: break
-    }
-
-    // When you have something like
-    //    @Suppress("id") var foo: Foo
-    // in Kotlin, the annotation will only get placed on the private backing field
-    // of the properties, NOT the getters and setters -- and that's where it shows
-    // up in UAST. If there is no backing field, there is no visible annotation in
-    // UAST. Therefore, in this case, we dip into the Kotlin PSI and look for annotations
-    // there.
-    val sourcePsi = scope.sourcePsi
-    if ((sourcePsi is KtProperty || sourcePsi is KtPropertyAccessor) && scope is UMethod) {
-      val property =
-        if (sourcePsi is KtPropertyAccessor) sourcePsi.property else sourcePsi as KtProperty
-      if (isSuppressedKt(issue, property.annotationEntries)) {
-        return true
-      }
-    }
-
-    return false
-  }
-
   fun isSuppressedGradle(context: GradleContext, issue: Issue, scope: Any): Boolean {
     return if (scope is UElement && context.gradleVisitor.javaContext != null) {
       // If the build file is Kotlin Script, we use the [JavaContext] to check
@@ -3576,18 +3529,18 @@ class LintDriver(
     if (names?.isNotEmpty() == true && context !is XmlContext) {
       message +=
         " (but can be with ${
-            formatList(
-                names.map { "`@$it`" }.toList(),
-                sort = false,
-                useConjunction = true
-            )
-            })"
+          formatList(
+            names.map { "`@$it`" }.toList(),
+            sort = false,
+            useConjunction = true
+          )
+        })"
     }
 
     // Try to flag the warning on the suppression annotation instead
     if (scope is UAnnotated) {
       //noinspection ExternalAnnotations
-      scope.uAnnotations.forEach() {
+      scope.uAnnotations.forEach {
         if (it.qualifiedName?.contains(SUPPRESS) == true) {
           context.report(IssueRegistry.LINT_ERROR, context.getLocation(it), message)
           return
@@ -3595,7 +3548,7 @@ class LintDriver(
       }
     } else if (scope is PsiModifierListOwner) {
       //noinspection ExternalAnnotations
-      scope.annotations.forEach() {
+      scope.annotations.forEach {
         if (it.qualifiedName?.contains(SUPPRESS) == true) {
           context.report(IssueRegistry.LINT_ERROR, context.getLocation(it), message)
           return
@@ -4085,21 +4038,9 @@ class LintDriver(
       if (issueId.equals(IssueRegistry.getNewId(id), ignoreCase = true)) {
         return true
       }
-      if (
-        id.startsWith(STUDIO_ID_PREFIX) &&
-          id.regionMatches(
-            STUDIO_ID_PREFIX.length,
-            issueId,
-            0,
-            issueId.length,
-            ignoreCase = true
-          ) &&
-          id.substring(STUDIO_ID_PREFIX.length).equals(issueId, ignoreCase = true)
-      ) {
-        return true
-      }
-
-      return false
+      return id.startsWith(STUDIO_ID_PREFIX) &&
+        id.regionMatches(STUDIO_ID_PREFIX.length, issueId, 0, issueId.length, ignoreCase = true) &&
+        id.substring(STUDIO_ID_PREFIX.length).equals(issueId, ignoreCase = true)
     }
 
     private fun matchesCategory(category: Category, id: String): Boolean {
@@ -4287,7 +4228,7 @@ class LintDriver(
           // Work around type resolution problems
           // Work around bugs in UAST type resolution for file annotations:
           // parse the source string instead.
-          val psi = annotation.psi ?: continue
+          val psi = annotation.javaPsi ?: continue
           if (psi is PsiCompiledElement) {
             continue
           }
@@ -4333,12 +4274,20 @@ class LintDriver(
       }
 
       for (annotation in annotations) {
-        val name = annotation.shortName?.identifier ?: continue
-        if (name == SUPPRESS_WARNINGS || name == SUPPRESS || name == SUPPRESS_LINT) {
-          val attributeList = annotation.valueArgumentList ?: continue
-          for (attribute in attributeList.arguments) {
-            if (isSuppressedExpression(issue, attribute.getArgumentExpression())) {
-              return true
+        when (
+          ApplicationManager.getApplication()
+            .getService(BaseKotlinUastResolveProviderService::class.java)
+            .qualifiedAnnotationName(annotation)
+        ) {
+          FQCN_SUPPRESS_LINT,
+          SUPPRESS_WARNINGS_FQCN,
+          KOTLIN_SUPPRESS,
+          SUPPRESS_LINT -> {
+            val attributeList = annotation.valueArgumentList ?: continue
+            for (attribute in attributeList.arguments) {
+              if (isSuppressedExpression(issue, attribute.getArgumentExpression())) {
+                return true
+              }
             }
           }
         }
