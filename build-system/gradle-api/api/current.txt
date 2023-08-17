@@ -1233,6 +1233,10 @@ package com.android.build.api.dsl {
     property public abstract org.gradle.api.NamedDomainObjectContainer<com.android.build.api.variant.KotlinMultiplatformAndroidCompilation> compilations;
   }
 
+  public final class KotlinMultiplatformAndroidTargetKt {
+    method @org.gradle.api.Incubating public static void androidLibrary(org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension, kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTarget,kotlin.Unit> action);
+  }
+
   @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidTestConfiguration {
     method @org.gradle.api.Incubating public String getDefaultSourceSetName();
     method @org.gradle.api.Incubating public String? getSourceSetTree();

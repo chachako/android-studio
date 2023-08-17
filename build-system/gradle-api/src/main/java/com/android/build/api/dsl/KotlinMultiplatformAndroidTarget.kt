@@ -20,6 +20,8 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import com.android.build.api.variant.KotlinMultiplatformAndroidCompilation
 import org.gradle.api.Incubating
 import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.plugins.ExtensionAware
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 /**
  * Interface for kotlin multiplatform android target
@@ -35,4 +37,16 @@ interface KotlinMultiplatformAndroidTarget: KotlinTarget, KotlinMultiplatformAnd
      */
     @Incubating
     fun withJava()
+}
+
+@Incubating
+fun KotlinMultiplatformExtension.androidLibrary(
+    action: KotlinMultiplatformAndroidTarget.() -> Unit
+) {
+    (this as ExtensionAware).extensions.findByType(
+        KotlinMultiplatformAndroidTarget::class.java
+    )?.action() ?: throw IllegalStateException(
+        "You need to apply the " +
+            "`com.android.kotlin.multiplatform.library` plugin before accessing the android target."
+    )
 }
