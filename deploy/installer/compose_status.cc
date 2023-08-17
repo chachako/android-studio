@@ -43,6 +43,9 @@ void ComposeStatusCommand::Run(proto::InstallerResponse* response) {
     return;
   }
 
+  // Remove process ids that we do not need to communicate with.
+  FilterProcessIds(&process_ids_);
+
   auto listen_response = ListenForAgents();
   if (listen_response == nullptr) {
     cs_response->set_status(

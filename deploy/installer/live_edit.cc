@@ -41,6 +41,9 @@ void LiveEditCommand::Run(proto::InstallerResponse* response) {
     return;
   }
 
+  // Remove process ids that we do not need to communicate with.
+  FilterProcessIds(&process_ids_);
+
   auto listen_response = ListenForAgents();
   if (listen_response == nullptr) {
     le_response->set_status(proto::LiveEditResponse::INSTALL_SERVER_COM_ERR);
