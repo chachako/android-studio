@@ -73,7 +73,6 @@ class DynamicFeaturesCacheabilityTest {
                     ":app:dexBuilderDebug",
                     ":app:extractDeepLinksDebug",
                     ":app:generateDebugFeatureMetadata",
-                    ":app:generateDebugFeatureTransitiveDeps",
                     ":app:generateDebugResValues",
                     ":app:javaPreCompileDebug",
                     ":app:lintAnalyzeDebug",
@@ -94,7 +93,6 @@ class DynamicFeaturesCacheabilityTest {
                     ":feature1:desugarDebugFileDependencies",
                     ":feature1:dexBuilderDebug",
                     ":feature1:extractDeepLinksDebug",
-                    ":feature1:generateDebugFeatureTransitiveDeps",
                     ":feature1:generateDebugResValues",
                     ":feature1:javaPreCompileDebug",
                     ":feature1:lintAnalyzeDebug",
@@ -118,7 +116,6 @@ class DynamicFeaturesCacheabilityTest {
                     ":feature2:desugarDebugFileDependencies",
                     ":feature2:dexBuilderDebug",
                     ":feature2:extractDeepLinksDebug",
-                    ":feature2:generateDebugFeatureTransitiveDeps",
                     ":feature2:generateDebugResValues",
                     ":feature2:javaPreCompileDebug",
                     ":feature2:lintAnalyzeDebug",
@@ -160,6 +157,15 @@ class DynamicFeaturesCacheabilityTest {
                     ":app:createDebugCompatibleScreenManifests", /** Intentionally not cacheable. See [com.android.build.gradle.tasks.CompatibleScreensManifest] */
                     ":app:copyDebugLintReports", // intentionally not cacheable
                     ":app:extractProguardFiles", // intentionally not cacheable
+
+                    /**
+                     * Not cacheable as the project contains local file deps,
+                     * see [com.android.build.gradle.internal.tasks.featuresplit.PackagedDependenciesWriterTask.CreationAction.configure]
+                     **/
+                    ":app:generateDebugFeatureTransitiveDeps",
+                    ":feature1:generateDebugFeatureTransitiveDeps",
+                    ":feature2:generateDebugFeatureTransitiveDeps",
+
                     ":app:generateDebugLintModel", // intentionally not cacheable
                     ":app:generateDebugLintReportModel", /** Intentionally not cacheable. See [com.android.build.gradle.internal.lint.LintModelWriterTask] */
                     ":app:lintDebug", // intentionally not cacheable

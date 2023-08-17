@@ -20,7 +20,10 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.GradleTaskSubject.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.scope.InternalArtifactType
+import com.android.testutils.TestInputsGenerator
 import com.android.testutils.truth.PathSubject.assertThat
+import com.android.utils.FileUtils
+import com.google.common.collect.ImmutableList
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
@@ -53,9 +56,9 @@ class DynamicAppPackageDependenciesTest {
         assertThat(feature2Dependencies).contains("feature2::debug")
 
         val buildResult =
-                project.executor()
-                        .withArgument("--build-cache")
-                        .run(":app:generateReleaseFeatureTransitiveDeps")
+            project.executor()
+                .withArgument("--build-cache")
+                .run(":app:generateReleaseFeatureTransitiveDeps")
         assertThat(buildResult.getTask(":app:generateReleaseFeatureTransitiveDeps")).didWork()
     }
 
@@ -88,5 +91,47 @@ class DynamicAppPackageDependenciesTest {
             "debug/deps.txt"
         )
         assertThat(feature1Dependencies).doesNotContain("guava")
+    }
+
+    @Test
+    fun testExclusionOfLocalFileDependency() {
+        // Add a local jar
+        FileUtils.join(
+            project.projectDir,
+            "libs",
+            "local.jar"
+        ).apply {
+            parentFile.mkdirs()
+            writeBytes(
+                TestInputsGenerator.jarWithEmptyClasses(ImmutableList.of("com/example/jar/JarClass"))
+            )
+        }
+
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").buildFile,
+            """
+                dependencies {
+                  implementation rootProject.files("libs/local.jar")
+                }
+
+                android {
+                    buildTypes {
+                       debug {
+                            minifyEnabled = true
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+        TestFileUtils.appendToFile(
+            project.getSubproject("feature1").buildFile,
+            """
+                dependencies {
+                  implementation rootProject.files("libs/local.jar")
+                }
+            """.trimIndent()
+        )
+
+        project.executor().run("assembleDebug")
     }
 }

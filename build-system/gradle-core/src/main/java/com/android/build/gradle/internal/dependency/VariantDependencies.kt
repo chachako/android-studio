@@ -67,6 +67,7 @@ import org.gradle.api.attributes.LibraryElements
 import org.gradle.api.attributes.Usage
 import org.gradle.api.attributes.java.TargetJvmEnvironment
 import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.artifacts.dependencies.DefaultSelfResolvingDependency
 import org.gradle.api.specs.Spec
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import java.io.File
@@ -350,19 +351,45 @@ class VariantDependencies internal constructor(
         // for example, filePredicate filters out all files but jars in the return statement, but an
         // AarProducerTask produces an aar, then the returned FileCollection contains only jars but
         // still has AarProducerTask as a dependency.
-        val dependencies = Callable {
-                runtimeClasspath
-                    .allDependencies
-                    .filterIsInstance<SelfResolvingDependency>()
-                    .filter { it !is ProjectDependency }
-            }
+        val dependencies = runtimeClasspath
+            .allDependencies
+            .filterIsInstance<SelfResolvingDependency>()
+            .filter { it !is ProjectDependency }
+            .map { (it as DefaultSelfResolvingDependency).files }
 
         // Create a file collection builtBy the dependencies.  The files are resolved later.
-        return services.fileCollection(Callable {
-            dependencies.call()
-                .flatMap { it.resolve() }
-                .filter { filePredicate.test(it) }
-        }).builtBy(dependencies)
+        return if (componentType.isDynamicFeature) {
+            val excludedDirectories = computeArtifactCollection(
+                ConsumedConfigType.PROVIDED_CLASSPATH,
+                ArtifactScope.PROJECT,
+                AndroidArtifacts.ArtifactType.PACKAGED_DEPENDENCIES,
+                null
+            ).artifactFiles
+
+            services.fileCollection()
+                .from(excludedDirectories.elements.map { excludedDirectoriesSet ->
+                    val excludedDirectoriesContent = excludedDirectoriesSet.asSequence()
+                        .filter { it.asFile.isFile }
+                        .flatMapTo(HashSet()) { it.asFile.readLines(Charsets.UTF_8).asSequence() }
+
+                    dependencies
+                        .flatMap { it.files }
+                        .filter {
+                            filePredicate.test(it) &&
+                                    !excludedDirectoriesContent.contains(it.absolutePath)
+                        }
+                }).builtBy(dependencies).builtBy(excludedDirectories.buildDependencies)
+        } else {
+            services.fileCollection()
+                .from(
+                    dependencies
+                        .map { fileCollection ->
+                            fileCollection.elements.map { files ->
+                                files.map { it.asFile }.filter { filePredicate.test(it) }
+                            }
+                        }
+                ).builtBy(dependencies)
+        }
     }
 
     companion object {
