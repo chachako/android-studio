@@ -500,6 +500,33 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun test290794202() {
+    // Regression test for b/290794202
+    lint()
+      .files(
+        gradleToml(
+            """
+                [versions]
+                appCompat = "1.5.1"
+                [libraries]
+                androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
+                """
+          )
+          .indented(),
+        gradle(
+            """
+                dependencies {
+                    api project(':myproject')
+                }
+                """
+          )
+          .indented()
+      )
+      .issues(SWITCH_TO_TOML)
+      .run()
+      .expectClean()
+  }
+
   fun testSwitchToExistingTomlLibraryKts() {
     // Tests that if a build.gradle file a contains a group:artifact:version dependency
     // already available in the version catalog, we flag this and offer to replace it with

@@ -589,7 +589,8 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
               tomlLibraries != null &&
                 !context.file.name.startsWith("settings.gradle") &&
                 !dependencyString.contains("+") &&
-                (!dependencyString.contains("$") || isResolved)
+                (!dependencyString.contains("$") || isResolved) &&
+                dependency.group?.isNotBlank() == true
             ) {
               val versionVar = getVersionVariable(value)
               val result =
