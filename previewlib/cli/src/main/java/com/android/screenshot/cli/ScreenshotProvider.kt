@@ -110,7 +110,8 @@ class ScreenshotProvider(
         goldenLocation: String,
         outputLocation: String,
         recordGoldens: Boolean,
-        rootLintModule: LintModelModule
+        rootLintModule: LintModelModule,
+        imageDiffThreshold: Float
     ): List<PreviewResult> {
         val results = mutableListOf<PreviewResult>()
         val instances =
@@ -139,7 +140,8 @@ class ScreenshotProvider(
                     renderResult,
                     goldenLocation,
                     outputLocation,
-                    "$fileName.png"
+                    "$fileName.png",
+                    imageDiffThreshold
                 )
                 if ( result is Verify.AnalysisResult.Failed || result is Verify.AnalysisResult.SizeMismatch || result is Verify.AnalysisResult.MissingGolden) {
                     actualPath = outputLocation + fileName + "_actual.png"
@@ -224,8 +226,10 @@ class ScreenshotProvider(
 
     }
 
-    private fun compareImages(renderResult: RenderResult, goldenLocation: String, outputLocation: String, fileName: String): Verify.AnalysisResult {
-        val verifier = Verify(ImageDiffer.MSSIMMatcher, outputLocation + fileName)
+    private fun compareImages(renderResult: RenderResult, goldenLocation: String, outputLocation: String, fileName: String, imageDiffThreshold: Float): Verify.AnalysisResult {
+        val imageDiffer = ImageDiffer.MSSIMMatcher
+        imageDiffer.imageDiffThreshold = imageDiffThreshold
+        val verifier = Verify(imageDiffer, outputLocation + fileName)
         return verifier.assertMatchGolden(goldenLocation + fileName, renderResult.renderedImage.copy!!)
     }
 }

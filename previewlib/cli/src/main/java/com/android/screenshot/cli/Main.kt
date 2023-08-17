@@ -97,6 +97,7 @@ class Main {
     private val ARG_RECORD_GOLDENS = "--record-golden"
     private val ARG_EXTRACTION_DIR = "--extraction-dir"
     private val ARG_JAR_LOCATION = "--jar-location"
+    private val ARG_IMAGE_DIFF_THRESHOLD = "--image-diff-threshold"
 
     private var sdkHomePath: File? = null
     private var jdkHomePath: File? = null
@@ -136,7 +137,8 @@ class Main {
                                                       argumentState.goldenLocation,
                                                       argumentState.outputLocation!!,
                                                       argumentState.recordGoldens,
-                                                      argumentState.rootModule)
+                                                      argumentState.rootModule,
+                                                      argumentState.imageDiffThreshold)
             argumentState.extractionDir?.let { deleteTempFiles(it) }
             val response = processResults(results)
             saveResults(response, argumentState.outputLocation!!)
@@ -461,6 +463,11 @@ class Main {
                     throw InvalidArgumentException("Missing jar location")
                 }
                 argumentState.jarLocation = args[++index]
+            } else if (arg == ARG_IMAGE_DIFF_THRESHOLD) {
+                if (index == args.size - 1) {
+                    throw InvalidArgumentException("Missing threshold value")
+                }
+                argumentState.imageDiffThreshold = args[++index].toFloat()
             } else if (arg == ARG_ROOT_LINT_MODEL) {
                 if (index == args.size - 1) {
                     throw InvalidArgumentException("Missing lint model argument after $ARG_LINT_MODEL")
@@ -594,6 +601,7 @@ class Main {
         }
 
         var recordGoldens: Boolean = false
+        var imageDiffThreshold: Float = 0f
         lateinit var goldenLocation: String
         var jarLocation: String? = null
         var extractionDir: String? = null

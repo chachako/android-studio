@@ -108,14 +108,16 @@ fun interface ImageDiffer {
      * https://ece.uwaterloo.ca/~z70wang/publications/ssim.pdf
      */
     object MSSIMMatcher : ImageDiffer {
+        var imageDiffThreshold: Float = 0f
         override fun diff(a: BufferedImage, b: BufferedImage): DiffResult {
             val aIntArray = a.toIntArray()
             val bIntArray = b.toIntArray()
             val SSIMTotal = calculateSSIM(aIntArray, bIntArray, a.width, a.height)
+            val SSIMThreshold = 1 - imageDiffThreshold
 
-            val stats = "[MSSIM] Required SSIM: $SSIM_THRESHOLD, Actual " +
+            val stats = "[MSSIM] Required SSIM: $SSIMThreshold, Actual " +
                     "SSIM: " + "%.3f".format(SSIMTotal)
-            if (SSIMTotal >= SSIM_THRESHOLD) {
+            if (SSIMTotal >= SSIMThreshold) {
                 return DiffResult.Similar(stats)
             }
             return PixelPerfect.diff(a, b)
@@ -359,7 +361,5 @@ fun interface ImageDiffer {
         private val CONSTANT_C1 = (CONSTANT_L * CONSTANT_K1).pow(2.0)
         private val CONSTANT_C2 = (CONSTANT_L * CONSTANT_K2).pow(2.0)
         private const val WINDOW_SIZE = 10
-
-        private val SSIM_THRESHOLD: Double = 0.98
     }
 }
