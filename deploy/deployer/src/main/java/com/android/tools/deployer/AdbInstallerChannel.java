@@ -15,6 +15,7 @@
  */
 package com.android.tools.deployer;
 
+import com.android.ddmlib.SimpleConnectedSocket;
 import com.android.tools.deploy.proto.Deploy;
 import com.android.tools.idea.protobuf.CodedInputStream;
 import com.android.tools.idea.protobuf.CodedOutputStream;
@@ -23,11 +24,7 @@ import com.google.common.base.Charsets;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.Channel;
 import java.nio.channels.ClosedSelectorException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -49,13 +46,7 @@ class AdbInstallerChannel implements AutoCloseable {
         (byte) 0xA5
     };
 
-    private final SocketChannel channel;
-
-    private final Selector readSelector;
-    private final SelectionKey readKey;
-
-    private final Selector writeSelector;
-    private final SelectionKey writeKey;
+    private final SimpleConnectedSocket channel;
 
     private final ReentrantLock lock = new ReentrantLock(true);
 
@@ -68,15 +59,8 @@ class AdbInstallerChannel implements AutoCloseable {
     // Is is set so that it can only fails if the other party stops processing data.
     private static final long PER_WRITE_TIME_OUT = TimeUnit.SECONDS.toMillis(5);
 
-    AdbInstallerChannel(SocketChannel c, ILogger logger) throws IOException {
+    AdbInstallerChannel(SimpleConnectedSocket c, ILogger logger) {
         channel = c;
-        channel.configureBlocking(false);
-
-        readSelector = Selector.open();
-        readKey = channel.register(readSelector, SelectionKey.OP_READ);
-
-        writeSelector = Selector.open();
-        writeKey = channel.register(writeSelector, SelectionKey.OP_WRITE);
 
         this.logger = logger;
     }
@@ -99,9 +83,8 @@ class AdbInstallerChannel implements AutoCloseable {
             }
 
             long timeout = Math.max(0, deadline - System.currentTimeMillis());
-            readSelector.select(timeout);
 
-            int read = channel.read(buffer);
+            int read = channel.read(buffer, timeout);
             if (read == 0 || System.currentTimeMillis() >= deadline) {
                 // If we timeout, the Installer could still write in the socket. These bytes would
                 // be stored in the OS buffer and returned on the next request, effectively
@@ -146,12 +129,11 @@ class AdbInstallerChannel implements AutoCloseable {
 
             long timeout = Math.min(PER_WRITE_TIME_OUT, deadline - System.currentTimeMillis());
             timeout = Math.max(0, timeout);
-            writeSelector.select(timeout);
 
             // We cannot detect remote close from write() returned value.
             // If the socket is remotely closed, a IOException: Broken pipe will
             // be thrown.
-            int written = channel.write(buffer);
+            int written = channel.write(buffer, timeout);
 
             // Check for select timeout
             if (written == 0) {
@@ -162,9 +144,7 @@ class AdbInstallerChannel implements AutoCloseable {
 
     @Override
     public void close() throws IOException {
-        try (Channel c = channel;
-                Selector r = readSelector;
-                Selector w = writeSelector) {}
+        channel.close();
     }
 
     public void lock() {

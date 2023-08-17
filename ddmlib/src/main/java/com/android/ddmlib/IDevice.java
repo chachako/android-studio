@@ -1188,6 +1188,11 @@ public interface IDevice extends IShellEnabledDevice, IUserDataMap {
         throw new UnsupportedOperationException();
     }
 
+    default SimpleConnectedSocket rawExec2(String executable, String[] parameters)
+            throws AdbCommandRejectedException, TimeoutException, IOException {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Invoke the Android Binder Bridge service on a remote device. Return a socket channel that is
      * connected to the device binder command.

@@ -16,6 +16,7 @@
 package com.android.tools.deployer;
 
 import com.android.annotations.NonNull;
+import com.android.ddmlib.SocketChannelWithTimeouts;
 import com.android.tools.deploy.proto.Deploy;
 import com.android.utils.ILogger;
 import com.android.utils.StdLogger;
@@ -31,7 +32,9 @@ public class SocketInstaller extends Installer implements AutoCloseable {
 
     public SocketInstaller(Path path) throws IOException {
         this.path = path;
-        channel = new AdbInstallerChannel(HostInstaller.spawn(path), logger);
+        channel =
+                new AdbInstallerChannel(
+                        SocketChannelWithTimeouts.wrap(HostInstaller.spawn(path)), logger);
     }
 
 
@@ -41,7 +44,9 @@ public class SocketInstaller extends Installer implements AutoCloseable {
             Deploy.InstallerRequest request, long timeOutMs) throws IOException {
         if (channel.isClosed()) {
             close();
-            channel = new AdbInstallerChannel(HostInstaller.spawn(path), logger);
+            channel =
+                    new AdbInstallerChannel(
+                            SocketChannelWithTimeouts.wrap(HostInstaller.spawn(path)), logger);
         }
         try {
             channel.lock();
@@ -65,7 +70,9 @@ public class SocketInstaller extends Installer implements AutoCloseable {
     protected void onAsymetry(Deploy.InstallerRequest req, Deploy.InstallerResponse resp) {
         try {
             close();
-            channel = new AdbInstallerChannel(HostInstaller.spawn(path), logger);
+            channel =
+                    new AdbInstallerChannel(
+                            SocketChannelWithTimeouts.wrap(HostInstaller.spawn(path)), logger);
         } catch (Exception e) {
             e.printStackTrace();
         }

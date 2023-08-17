@@ -45,6 +45,8 @@ import com.android.ddmlib.RemoteSplitApkInstaller;
 import com.android.ddmlib.ScreenRecorderOptions;
 import com.android.ddmlib.ServiceInfo;
 import com.android.ddmlib.ShellCommandUnresponsiveException;
+import com.android.ddmlib.SimpleConnectedSocket;
+import com.android.ddmlib.SocketChannelWithTimeouts;
 import com.android.ddmlib.SplitApkInstaller;
 import com.android.ddmlib.SyncException;
 import com.android.ddmlib.SyncService;
@@ -917,6 +919,12 @@ public final class DeviceImpl implements IDevice {
             throws AdbCommandRejectedException, TimeoutException, IOException {
         return AdbHelper.rawExec(
                 AndroidDebugBridge.getSocketAddress(), this, executable, parameters);
+    }
+
+    @Override
+    public SimpleConnectedSocket rawExec2(String executable, String[] parameters)
+            throws AdbCommandRejectedException, TimeoutException, IOException {
+        return SocketChannelWithTimeouts.wrap(rawExec(executable, parameters));
     }
 
     @Override

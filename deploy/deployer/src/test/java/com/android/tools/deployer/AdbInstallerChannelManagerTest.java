@@ -18,13 +18,16 @@ package com.android.tools.deployer;
 import com.android.ddmlib.AdbInitOptions;
 import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.IDevice;
+import com.android.ddmlib.SimpleConnectedSocket;
+import com.android.ddmlib.SocketChannelWithTimeouts;
 import com.android.testutils.AssumeUtil;
 import com.android.tools.deployer.devices.FakeDevice;
 import com.android.tools.deployer.rules.ApiLevel;
 import com.android.tools.deployer.rules.FakeDeviceConnection;
 import com.android.utils.ILogger;
 import java.io.File;
-import java.nio.channels.SocketChannel;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -123,9 +126,14 @@ public class AdbInstallerChannelManagerTest {
         }
 
         @Override
-        public SocketChannel rawExec(String executable, String[] parameters) {
+        public SimpleConnectedSocket rawExec(String executable, String[] parameters) {
             if (executable.equals(AdbInstaller.INSTALLER_PATH)) {
-                return HostInstaller.spawn(Path.of(installerPath), parameters);
+                try {
+                    return SocketChannelWithTimeouts.wrap(
+                            HostInstaller.spawn(Path.of(installerPath), parameters));
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
             } else {
                 throw new IllegalArgumentException("Cannot rawExec: " + executable);
             }

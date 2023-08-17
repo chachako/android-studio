@@ -42,10 +42,10 @@ import com.android.ddmlib.IShellOutputReceiver
 import com.android.ddmlib.InstallReceiver
 import com.android.ddmlib.PropertyFetcher
 import com.android.ddmlib.RawImage
+import com.android.ddmlib.SimpleConnectedSocket
 import com.android.ddmlib.ScreenRecorderOptions
 import com.android.ddmlib.ServiceInfo
 import com.android.ddmlib.SyncService
-import com.android.ddmlib.clientmanager.DeviceClientManager
 import com.android.ddmlib.log.LogReceiver
 import com.android.sdklib.AndroidVersion
 import com.google.common.util.concurrent.ListenableFuture
@@ -56,6 +56,7 @@ import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.InputStream
 import java.net.InetSocketAddress
+import java.nio.channels.SocketChannel
 import java.time.Duration
 import java.util.Collections
 import java.util.concurrent.ExecutionException
@@ -1138,13 +1139,33 @@ internal class AdblibIDeviceWrapper(
         TODO("Not yet implemented")
     }
 
+    override fun rawExec(executable: String, parameters: Array<out String>): SocketChannel {
+        throw UnsupportedOperationException("This method is not used in Android Studio outside ddmlib")
+    }
+
+    override fun rawExec2(
+        executable: String,
+        parameters: Array<out String>
+    ): SimpleConnectedSocket = runBlockingLegacy {
+        val command = StringBuilder(executable)
+        for (parameter in parameters) {
+            command.append(" ")
+            command.append(parameter)
+        }
+        val channel = connectedDevice.session.deviceServices.rawExec(
+            DeviceSelector.fromSerialNumber(
+                serialNumber
+            ), command.toString()
+        )
+        AdblibChannelWrapper(this@AdblibIDeviceWrapper, channel)
+    }
 
     /**
      * Similar to [runBlocking] but with a custom [timeout]
      *
      * @throws TimeoutException if [block] take more than [timeout] to execute
      */
-    private fun <R> runBlockingLegacy(
+    internal fun <R> runBlockingLegacy(
         timeout: Duration = connectedDevice.session.property(AdbLibDdmlibCompatibilityProperties.RUN_BLOCKING_LEGACY_DEFAULT_TIMEOUT),
         block: suspend CoroutineScope.() -> R
     ): R {

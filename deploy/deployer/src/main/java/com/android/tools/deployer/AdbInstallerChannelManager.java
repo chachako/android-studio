@@ -16,10 +16,10 @@
 package com.android.tools.deployer;
 
 import com.android.ddmlib.AdbCommandRejectedException;
+import com.android.ddmlib.SimpleConnectedSocket;
 import com.android.ddmlib.TimeoutException;
 import com.android.utils.ILogger;
 import java.io.IOException;
-import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,7 +59,7 @@ public class AdbInstallerChannelManager {
 
     private synchronized AdbInstallerChannel createChannel(AdbClient client, String version)
             throws IOException {
-        SocketChannel channel = null;
+        SimpleConnectedSocket channel = null;
         List<String> parameters = new ArrayList<>();
         parameters.add("-version=" + version);
         if (mode == AdbInstaller.Mode.DAEMON) {
@@ -70,7 +70,7 @@ public class AdbInstallerChannelManager {
             channel =
                     client.rawExec(AdbInstaller.INSTALLER_PATH, parameters.toArray(new String[0]));
         } catch (AdbCommandRejectedException | TimeoutException e) {
-            try (SocketChannel c = channel) {}
+            try (SimpleConnectedSocket c = channel) {}
             throw new IOException(e);
         }
         return new AdbInstallerChannel(channel, logger);

@@ -28,6 +28,7 @@ import com.android.ddmlib.IShellOutputReceiver;
 import com.android.ddmlib.InstallException;
 import com.android.ddmlib.InstallMetrics;
 import com.android.ddmlib.ShellCommandUnresponsiveException;
+import com.android.ddmlib.SimpleConnectedSocket;
 import com.android.ddmlib.SyncException;
 import com.android.ddmlib.TimeoutException;
 import com.android.sdklib.AndroidVersion;
@@ -40,7 +41,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -98,9 +98,9 @@ public class AdbClient {
         }
     }
 
-    public SocketChannel rawExec(String executable, String[] parameters)
+    public SimpleConnectedSocket rawExec(String executable, String[] parameters)
             throws AdbCommandRejectedException, IOException, TimeoutException {
-        return device.rawExec(executable, parameters);
+        return device.rawExec2(executable, parameters);
     }
 
     /** Executes the given command with no stdin and returns stdout as a byte[] */
