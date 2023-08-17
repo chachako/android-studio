@@ -44,7 +44,7 @@ fun RecipeExecutor.viewModelFragmentRecipe(
   addLifecycleDependencies(useAndroidX)
 
   if (projectData.language == Language.Kotlin && useAndroidX) {
-    addDependency("androidx.lifecycle:lifecycle-viewmodel-ktx:+")
+    addDependency("androidx.fragment:fragment-ktx:+")
   }
 
   save(blankFragmentXml(fragmentClass, packageName), resOut.resolve("layout/${layoutName}.xml"))

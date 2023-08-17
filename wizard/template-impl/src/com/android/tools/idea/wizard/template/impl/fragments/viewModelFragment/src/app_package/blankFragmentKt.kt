@@ -21,21 +21,39 @@ import com.android.tools.idea.wizard.template.escapeKotlinIdentifier
 import com.android.tools.idea.wizard.template.renderIf
 
 fun blankFragmentKt(
-  applicationPackage: String?,
-  fragmentClass: String,
-  layoutName: String,
-  packageName: String,
-  useAndroidX: Boolean,
-  viewModelName: String
+    applicationPackage: String?,
+    fragmentClass: String,
+    layoutName: String,
+    packageName: String,
+    useAndroidX: Boolean,
+    viewModelName: String
 ): String {
 
-  val viewModelInitializationBlock = if (useAndroidX) "ViewModelProvider(this).get(${viewModelName}::class.java)"
-  else "ViewModelProvider(this, ViewModelProvider.NewInstanceFactory()).get(${viewModelName}::class.java)"
+    val viewModelImport =
+        if (useAndroidX) {
+            "import androidx.fragment.app.viewModels"
+        } else {
+            "import android.arch.lifecycle.ViewModelProvider"
+        }
 
-  return """
+    val viewModelDeclaration =
+        if (useAndroidX) {
+            "private val viewModel: $viewModelName by viewModels()"
+        } else {
+            "private lateinit var viewModel: $viewModelName"
+        }
+
+    val viewModelInitializationBlock =
+        if (useAndroidX) {
+            "" // The viewModel is initialized above
+        } else {
+            "viewModel = ViewModelProvider(this, ViewModelProvider.NewInstanceFactory())[${viewModelName}::class.java]"
+        }
+
+    return """
 package ${escapeKotlinIdentifier(packageName)}
 
-import ${getMaterialComponentName("android.arch.lifecycle.ViewModelProvider", useAndroidX)}
+$viewModelImport
 import android.os.Bundle
 import ${getMaterialComponentName("android.support.v4.app.Fragment", useAndroidX)}
 import android.view.LayoutInflater
@@ -43,25 +61,24 @@ import android.view.View
 import android.view.ViewGroup
 ${renderIf(applicationPackage != null) { "import ${applicationPackage}.R" }}
 
-class ${fragmentClass} : Fragment() {
+class $fragmentClass : Fragment() {
 
     companion object {
         fun newInstance() = ${fragmentClass}()
     }
 
-    private lateinit var viewModel: ${viewModelName}
+    $viewModelDeclaration
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.${layoutName}, container, false)
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = $viewModelInitializationBlock
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        $viewModelInitializationBlock
         // TODO: Use the ViewModel
     }
 
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+                              savedInstanceState: Bundle?): View {
+        return inflater.inflate(R.layout.${layoutName}, container, false)
+    }
 }
 """
 }

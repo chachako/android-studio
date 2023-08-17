@@ -64,7 +64,7 @@ fun RecipeExecutor.viewModelActivityRecipe(
   addLifecycleDependencies(useAndroidX)
   addMaterialDependency(useAndroidX)
   if (generateKotlin && useAndroidX) {
-    addDependency("androidx.lifecycle:lifecycle-viewmodel-ktx:+")
+    addDependency("androidx.fragment:fragment-ktx:+")
   }
 
   mergeXml(activityXml(activityClass), resOut.resolve("layout/${activityLayout}.xml"))
