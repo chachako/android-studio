@@ -23,5 +23,13 @@ import javax.inject.Inject
 abstract class MultiDexConfigImpl @Inject constructor(
     val dslServices: DslServices,
 ) : MultiDexConfig {
+    // to capture if enable is explicitly set in the DSL
+    internal var enableSet = false
+        private set
 
+    override var enable: Boolean = false
+        set(value) {
+            field = value
+            enableSet = true
+        }
 }

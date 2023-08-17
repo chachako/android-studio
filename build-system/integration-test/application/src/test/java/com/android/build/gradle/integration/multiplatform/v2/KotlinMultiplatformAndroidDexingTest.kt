@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.multiplatform.v2
 
 import com.android.build.gradle.integration.common.fixture.DESUGAR_DEPENDENCY_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
+import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.apk.Apk
 import com.android.testutils.truth.DexClassSubject
@@ -36,21 +37,6 @@ class KotlinMultiplatformAndroidDexingTest {
 
     @Before
     fun setUp() {
-        TestFileUtils.searchAndReplace(
-            project.getSubproject("kmpFirstLib").ktsBuildFile,
-            """
-                withAndroidTestOnDevice(compilationName = "instrumentedTest")
-            """.trimIndent(),
-            """
-                withAndroidTestOnDevice(compilationName = "instrumentedTest") {
-                    multidex.enable = true
-                    multidex.mainDexKeepRules.files.add (
-                        File(project.projectDir, "dex-rules.pro")
-                    )
-                }
-            """.trimIndent()
-        )
-
         TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
@@ -85,6 +71,33 @@ class KotlinMultiplatformAndroidDexingTest {
     }
 
     @Test
+    fun testDesugaringFailureWhenMultidexFalse() {
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            """
+                withAndroidTestOnDevice(compilationName = "instrumentedTest")
+            """.trimIndent(),
+            """
+                withAndroidTestOnDevice(compilationName = "instrumentedTest") {
+                    multidex.enable = false
+                    multidex.mainDexKeepRules.files.add (
+                        File(project.projectDir, "dex-rules.pro")
+                    )
+                }
+            """.trimIndent()
+        )
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        val result = project.executor()
+            .withFailOnWarning(false)
+            .expectFailure()
+            .run(":kmpFirstLib:assembleInstrumentedTest")
+
+        ScannerSubject.assertThat(result.stderr).contains(
+            "In order to use core library desugaring, please enable multidex."
+        )
+    }
+
+    @Test
     fun testDesugaringForInstrumentedTestApk() {
         // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         project.executor()
@@ -104,6 +117,20 @@ class KotlinMultiplatformAndroidDexingTest {
 
     @Test
     fun testLegacyMultiDexWithKeepRules() {
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            """
+                withAndroidTestOnDevice(compilationName = "instrumentedTest")
+            """.trimIndent(),
+            """
+                withAndroidTestOnDevice(compilationName = "instrumentedTest") {
+                    multidex.enable = true
+                    multidex.mainDexKeepRules.files.add (
+                        File(project.projectDir, "dex-rules.pro")
+                    )
+                }
+            """.trimIndent()
+        )
         TestFileUtils.appendToFile(
             project.getSubproject("androidLib").ktsBuildFile,
             """

@@ -117,7 +117,7 @@ abstract class KotlinMultiplatformAndroidTestOnDeviceConfigurationImpl @Inject c
         action.execute(signingConfig)
     }
 
-    override val multidex: MultiDexConfig = dslServices.newDecoratedInstance(
+    override val multidex: MultiDexConfigImpl = dslServices.newDecoratedInstance(
         MultiDexConfigImpl::class.java,
         dslServices
     )

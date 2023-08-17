@@ -767,6 +767,8 @@ com.android.build.gradle.internal.dsl.ManagedVirtualDevice.setApiPreview: void (
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.setDevice: void (java.lang.String)
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.setRequire64Bit: void (boolean)
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.setSystemImageSource: void (java.lang.String)
+com.android.build.gradle.internal.dsl.MultiDexConfigImpl.getEnable: boolean ()
+com.android.build.gradle.internal.dsl.MultiDexConfigImpl.setEnable: void (boolean)
 com.android.build.gradle.internal.dsl.MultipleVariantsImpl.allVariants: void ()
 com.android.build.gradle.internal.dsl.MultipleVariantsImpl.includeBuildTypeValues: void (java.lang.String[])
 com.android.build.gradle.internal.dsl.MultipleVariantsImpl.includeFlavorDimensionAndValues: void (java.lang.String, java.lang.String[])
