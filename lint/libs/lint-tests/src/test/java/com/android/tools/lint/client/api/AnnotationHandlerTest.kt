@@ -59,6 +59,16 @@ class AnnotationHandlerTest {
         """)
       .indented()
 
+  private val experimentalKotlinAnnotation: TestFile =
+    kotlin(
+        """
+        package pkg.kotlin
+        @MyKotlinAnnotation
+        annotation class ExperimentalKotlinAnnotation
+        """
+      )
+      .indented()
+
   @Test
   fun testReferenceKotlinAnnotation() {
     lint()
@@ -1431,6 +1441,65 @@ class AnnotationHandlerTest {
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             15 errors, 0 warnings
             """
+      )
+  }
+
+  @Test
+  fun testPropertyAnnotationWithoutUseSite() {
+    // Regression test for 199932515
+    lint()
+      .files(
+        kotlin(
+            """
+                @file:Suppress("_AnnotationIssue")
+                package test.pkg
+                import pkg.kotlin.ExperimentalKotlinAnnotation
+
+                class AnnotatedKotlinMembers {
+                  @ExperimentalKotlinAnnotation
+                  var field: Int = -1
+
+                  @set:ExperimentalKotlinAnnotation
+                  var fieldWithSetMarker: Int = -1
+                }
+          """
+          )
+          .indented(),
+        java(
+            """
+                package test.pkg;
+
+                class Test {
+                  void unsafePropertyUsage() {
+                    new AnnotatedKotlinMembers().setField(-1);
+                    int value = new AnnotatedKotlinMembers().getField();
+                    new AnnotatedKotlinMembers().setFieldWithSetMarker(-1);
+                    int value2 = new AnnotatedKotlinMembers().getFieldWithSetMarker();
+                  }
+                }
+          """
+          )
+          .indented(),
+        kotlinAnnotation,
+        experimentalKotlinAnnotation
+      )
+      .run()
+      .expect(
+        """
+          src/test/pkg/Test.java:5: Error: METHOD_CALL_PARAMETER usage associated with @MyKotlinAnnotation on PROPERTY_DEFAULT [_AnnotationIssue]
+              new AnnotatedKotlinMembers().setField(-1);
+                                                    ~~
+          src/test/pkg/Test.java:5: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on PROPERTY_DEFAULT [_AnnotationIssue]
+              new AnnotatedKotlinMembers().setField(-1);
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          src/test/pkg/Test.java:6: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on PROPERTY_DEFAULT [_AnnotationIssue]
+              int value = new AnnotatedKotlinMembers().getField();
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          src/test/pkg/Test.java:7: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on METHOD [_AnnotationIssue]
+              new AnnotatedKotlinMembers().setFieldWithSetMarker(-1);
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          4 errors, 0 warnings
+        """
       )
   }
 

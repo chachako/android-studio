@@ -319,7 +319,7 @@ internal class AnnotationHandler(
     val annotations = getRelevantAnnotations(evaluator, owner)
     val count = addAnnotations(owner, annotations, source, prepend)
     if (source == PARAMETER || source == METHOD || source == FIELD) {
-      return addDefaultAnnotations(owner) + count
+      return addDefaultAnnotations(evaluator, owner) + count
     }
     return count
   }
@@ -331,16 +331,19 @@ internal class AnnotationHandler(
    * property itself. (If specifying for example get: or set:, then UAST will already propagate the
    * annotations to the correct place.)
    */
-  private fun MutableList<AnnotationInfo>.addDefaultAnnotations(owner: PsiModifierListOwner): Int {
+  private fun MutableList<AnnotationInfo>.addDefaultAnnotations(
+    evaluator: JavaEvaluator,
+    owner: PsiModifierListOwner
+  ): Int {
     if (owner is KtLightMember<*>) {
       val origin = owner.unwrapped
       if (origin is KtProperty) {
-        return addDefaultSiteAnnotations(owner, origin.annotationEntries)
+        return addDefaultSiteAnnotations(evaluator, owner, origin.annotationEntries)
       }
     } else if (owner is KtLightParameter) {
       val origin = owner.method.unwrapped as? KtDeclaration
       if (origin is KtProperty || origin is KtParameter) {
-        return addDefaultSiteAnnotations(owner, origin.annotationEntries)
+        return addDefaultSiteAnnotations(evaluator, owner, origin.annotationEntries)
       }
     }
 
@@ -348,6 +351,7 @@ internal class AnnotationHandler(
   }
 
   private fun MutableList<AnnotationInfo>.addDefaultSiteAnnotations(
+    evaluator: JavaEvaluator,
     owner: PsiModifierListOwner,
     entries: List<KtAnnotationEntry>
   ): Int {
@@ -355,7 +359,7 @@ internal class AnnotationHandler(
     for (ktAnnotation in entries) {
       val site = ktAnnotation.useSiteTarget?.getAnnotationUseSiteTarget()
       if (site == null || site == AnnotationUseSiteTarget.PROPERTY) {
-        val annotation =
+        val defaultSiteAnnotation =
           (UastFacade.convertElement(ktAnnotation, null) as? UAnnotation ?: continue).let {
             val signature = it.qualifiedName ?: ""
             if (isPlatformAnnotation(signature)) {
@@ -364,8 +368,12 @@ internal class AnnotationHandler(
               it
             }
           }
-        if (addAnnotation(annotation, owner, PROPERTY_DEFAULT, false)) {
-          count++
+        val relevantAnnotations =
+          filterRelevantAnnotations(evaluator, listOf(defaultSiteAnnotation))
+        for (annotation in relevantAnnotations) {
+          if (addAnnotation(annotation, owner, PROPERTY_DEFAULT, false)) {
+            count++
+          }
         }
       }
     }
@@ -1035,9 +1043,9 @@ internal class AnnotationHandler(
       if (cls == null || !cls.isAnnotationType) {
         continue
       }
-      val innerAnnotations = evaluator.getAnnotations(cls, inHierarchy = false)
-      for (j in innerAnnotations.indices) {
-        val inner = innerAnnotations[j]
+      val metaAnnotations = evaluator.getAnnotations(cls, inHierarchy = false)
+      for (j in metaAnnotations.indices) {
+        val inner = metaAnnotations[j]
         val innerName = inner.qualifiedName ?: continue
         if (relevantAnnotations.contains(innerName)) {
           if (result == null) {
