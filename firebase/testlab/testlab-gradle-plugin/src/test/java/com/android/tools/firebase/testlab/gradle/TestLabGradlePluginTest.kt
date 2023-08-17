@@ -92,10 +92,6 @@ class TestLabGradlePluginTest {
                 AndroidPluginVersion(8, 2),
                 AndroidPluginVersion(8, 3, 0).dev(),
         )
-        val unsupportedVersionsTooRecent = listOf(
-                AndroidPluginVersion(8, 3, 0).alpha(1),
-                AndroidPluginVersion(8, 3, 0),
-        )
 
         unsupportedVersionsTooOld.forEach {
             val e = assertThrows(IllegalStateException::class.java) {
@@ -107,13 +103,6 @@ class TestLabGradlePluginTest {
 
         supportedVersions.forEach {
             applyFtlPlugin(it)
-        }
-
-        unsupportedVersionsTooRecent.forEach {
-            val e = assertThrows(IllegalStateException::class.java) {
-                applyFtlPlugin(it)
-            }
-            assertThat(e).hasMessageThat().contains("It requires Android Gradle plugin version 8.2.0.")
         }
     }
 }
