@@ -120,6 +120,12 @@ class SdkLoadingStrategyTest {
         </ns2:repository>
     """.trimIndent()
 
+    private val BUILD_TOOL_LATEST_PROPERTIES = """
+        Pkg.UserSrc=false
+        Pkg.Revision=${SdkConstants.CURRENT_BUILD_TOOLS_VERSION}
+        #Pkg.Revision=34.0.0 rc3
+    """.trimIndent()
+
     private fun appendPreviewTag(): String {
         return if(ToolsRevisionUtils.MIN_BUILD_TOOLS_REV.isPreview) {
             "<preview>${ToolsRevisionUtils.MIN_BUILD_TOOLS_REV.preview}</preview>"
@@ -800,7 +806,7 @@ class SdkLoadingStrategyTest {
             buildToolsRoot.mkdirs()
 
             val buildToolInfo = BuildToolInfo.fromStandardDirectoryLayout(
-                ToolsRevisionUtils.DEFAULT_BUILD_TOOLS_REVISION, buildToolsRoot.toPath())
+                    ToolsRevisionUtils.DEFAULT_BUILD_TOOLS_REVISION, buildToolsRoot.toPath())
             for (id in BuildToolInfo.PathId.values()) {
                 if (!id.isPresentIn(ToolsRevisionUtils.DEFAULT_BUILD_TOOLS_REVISION)) {
                     continue
@@ -813,6 +819,8 @@ class SdkLoadingStrategyTest {
             val buildToolsPackageXml = buildToolsRoot.resolve("package.xml")
             buildToolsPackageXml.createNewFile()
             buildToolsPackageXml.writeText(BUILD_TOOL_LATEST_XML, Charsets.UTF_8)
+
+            buildToolsRoot.resolve("source.properties").writeText(BUILD_TOOL_LATEST_PROPERTIES)
         }
 
         if (configurePlatformTools) {

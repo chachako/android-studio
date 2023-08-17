@@ -197,9 +197,11 @@ class SdkParsingUtilsTest {
         val buildToolDir = testFolder.newFolder("sdk", "build-tools", "28.0.3")
         populateBuildToolDirectory(buildToolDir, Revision.parseRevision("28.0.2"))
 
-        val packageXml = buildToolDir.resolve("package.xml")
-        packageXml.createNewFile()
-        packageXml.writeText(BUILD_TOOL_28_0_2_XML, Charsets.UTF_8)
+        val sourceProperties = buildToolDir.resolve("source.properties")
+        sourceProperties.createNewFile()
+        sourceProperties.writeText("Pkg.UserSrc=false\n" +
+                "Pkg.Revision=30.0.2\n" +
+                "#Pkg.Revision=30.0.0 rc4", Charsets.UTF_8)
 
         val buildTool = buildBuildTools(sdkDir, Revision.parseRevision("28.0.3"))
         assertThat(buildTool).isNull()
@@ -234,26 +236,6 @@ class SdkParsingUtilsTest {
             System.setErr(originalErr)
         }
         verifyOutput(errContent)
-    }
-
-    @Test
-    fun buildBuildTools_validationFutureFormatWarnings() {
-        val sdkDir = testFolder.newFolder("sdk")
-        val buildToolDir = testFolder.newFolder("sdk", "build-tools", "88.0.0")
-        val revision = Revision.parseRevision("88.0.0")
-        populateBuildToolDirectory(
-            buildToolDir, revision, setOf(BuildToolInfo.PathId.CORE_LAMBDA_STUBS)
-        )
-
-        val packageXml = buildToolDir.resolve("package.xml")
-        packageXml.createNewFile()
-        packageXml.writeText(BUILD_TOOL_FUTURE_88_0_0_XML, Charsets.UTF_8)
-
-        verifyErrorOutput({ buildBuildTools(sdkDir, revision) }
-        ) { errContent: ByteArrayOutputStream ->
-            assertThat(errContent.toString("UTF-8"))
-                .contains("Warning: SDK processing. package.xml parsing problem. unexpected element (uri:")
-        }
     }
 
     @Test
@@ -370,6 +352,7 @@ class SdkParsingUtilsTest {
 
 
     private fun populateBuildToolDirectory(buildToolDir: File, buildToolRevision: Revision, skipSet: Set<BuildToolInfo.PathId> = emptySet()) {
+        File(buildToolDir, "source.properties").writeText("Pkg.UserSrc=false\nPkg.Revision=$buildToolRevision\n")
         val buildToolInfo = BuildToolInfo.fromStandardDirectoryLayout(buildToolRevision, buildToolDir.toPath())
         for (id in BuildToolInfo.PathId.values()) {
             if (!id.isPresentIn(buildToolRevision) || skipSet.contains(id)) {
