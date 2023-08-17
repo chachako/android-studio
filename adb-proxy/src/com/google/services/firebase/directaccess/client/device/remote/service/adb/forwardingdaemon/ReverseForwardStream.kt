@@ -27,6 +27,7 @@ import com.android.adblib.withInputChannelCollector
 import com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon.reverse.MessageParseException
 import com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon.reverse.MessageType
 import com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon.reverse.StreamDataHeader
+import java.io.EOFException
 import java.io.IOException
 import java.io.InputStream
 import java.net.Socket
@@ -42,6 +43,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -85,22 +87,29 @@ internal class ReverseForwardStream(
     scope.launch(Dispatchers.IO) {
       val stdinInputChannel = adbSession.channelFactory.createPipedChannel()
 
-      adbSession.deviceServices
-        .shellCommand(
-          device,
-          "CLASSPATH=/data/local/tmp/reverse_daemon.dex app_process " +
-            "/data/local/tmp/ " +
-            "com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon.reverse.daemon." +
-            "ReverseDaemon $devicePort"
-        )
-        .withInputChannelCollector()
-        .withStdin(stdinInputChannel)
-        .executeAsSingleOutput { inputChannelOutput ->
-          StreamReader(inputChannelOutput.stdout, stdinInputChannel.pipeSource).apply {
-            streamReader = this
-            run()
+      try {
+        adbSession.deviceServices
+          .shellCommand(
+            device,
+            "CLASSPATH=/data/local/tmp/reverse_daemon.dex app_process " +
+              "/data/local/tmp/ " +
+              "com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon.reverse.daemon." +
+              "ReverseDaemon $devicePort"
+          )
+          .withInputChannelCollector()
+          .withStdin(stdinInputChannel)
+          .executeAsSingleOutput { inputChannelOutput ->
+            StreamReader(inputChannelOutput.stdout, stdinInputChannel.pipeSource).apply {
+              streamReader = this
+              run()
+            }
           }
+      } catch (e: EOFException) {
+        // Remote channel may end unexpectedly when closing the forwarding daemon.
+        if (!scope.coroutineContext.job.isCancelled) {
+          throw e
         }
+      }
     }
 
     waitForReverseDaemonReady()
@@ -293,8 +302,11 @@ internal class ReverseForwardStream(
             ByteBuffer.wrap(StreamDataHeader(MessageType.CLSE, streamId, 0).toByteArray())
           )
         }
-      } catch (ignore: IOException) {
+      } catch (e: IOException) {
         // Output channel might be closed while writing CLSE message
+        if (!scope.coroutineContext.job.isCancelled) {
+          throw e
+        }
       }
     }
   }
