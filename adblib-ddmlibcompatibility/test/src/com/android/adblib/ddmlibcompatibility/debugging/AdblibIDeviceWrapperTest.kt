@@ -2,12 +2,14 @@ package com.android.adblib.ddmlibcompatibility.debugging
 
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.RemoteFileMode
 import com.android.adblib.connectedDevicesTracker
 import com.android.adblib.deviceInfo
 import com.android.adblib.serialNumber
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.android.adblib.testingutils.FakeAdbServerProviderRule
+import com.android.ddmlib.AdbHelper
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.IDevice.PROP_DEVICE_DENSITY
@@ -17,9 +19,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapNotNull
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import java.nio.file.Files
+import java.nio.file.attribute.FileTime
+import java.util.concurrent.TimeUnit
 
 class AdblibIDeviceWrapperTest {
 
@@ -124,6 +130,32 @@ class AdblibIDeviceWrapperTest {
         // Echo command outputs an additional newline
         assertEquals(2, listReceiver.lines.size)
         assertEquals("a\\nb", listReceiver.lines[0])
+    }
+
+    @Test
+    fun executeRemoteCommandCanHandleAbbExec() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, _) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.BOOTLOADER
+        )
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+        val listReceiver = ListReceiver()
+        val appId = "com.foo.bar.app"
+
+        // Act
+        adblibIDeviceWrapper.executeRemoteCommand(
+            AdbHelper.AdbService.ABB_EXEC,
+            "package path $appId",
+            listReceiver,
+            0,
+            TimeUnit.MILLISECONDS,
+            null
+        )
+
+        // Assert
+        // Echo command outputs an additional newline
+        assertEquals(1, listReceiver.lines.size)
+        assertEquals("/data/app/$appId/base.apk", listReceiver.lines[0])
     }
 
     @Test
@@ -346,6 +378,31 @@ class AdblibIDeviceWrapperTest {
         yieldUntil {adblibIDeviceWrapper.clients.size == 1}
         yieldUntil {adblibIDeviceWrapper.getClient("a.b.c") != null}
         assertEquals(10, adblibIDeviceWrapper.getClient("a.b.c")?.clientData?.pid)
+    }
+
+    @Test
+    fun pushFile() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, deviceState) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.ONLINE
+        )
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+        val lastModifiedTimeSec = 878392983L
+        val localFile = Files.createTempFile("sample", ".txt")
+        val fileBytes = "some content".toByteArray()
+        Files.write(localFile, fileBytes)
+        Files.setLastModifiedTime(localFile, FileTime.from(lastModifiedTimeSec, TimeUnit.SECONDS))
+        val remoteFilePath = "/sdcard/foo/bar.bin"
+
+        // Act
+        adblibIDeviceWrapper.pushFile(localFile.toAbsolutePath().toString(), remoteFilePath)
+
+        // Assert
+        assertNotNull(deviceState.getFile(remoteFilePath))
+        val remoteFile = deviceState.getFile(remoteFilePath)!!
+        assertEquals(lastModifiedTimeSec, remoteFile.modifiedDate.toLong())
+        assertEquals(RemoteFileMode.fromPath(localFile), RemoteFileMode.fromModeBits(remoteFile.permission))
+        assertEquals(fileBytes.toString(Charsets.UTF_8), remoteFile.bytes.toString(Charsets.UTF_8))
     }
 
     private suspend fun createConnectedDevice(

@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.runBlocking
 import java.io.IOException
+import java.io.InputStream
 import java.nio.ByteBuffer
 import java.time.Duration
 import java.util.concurrent.TimeUnit
@@ -61,7 +62,8 @@ internal fun executeShellCommand(
     receiver: IShellOutputReceiver,
     maxTimeout: Long,
     maxTimeToOutputResponse: Long,
-    maxTimeUnits: TimeUnit
+    maxTimeUnits: TimeUnit,
+    inputStream: InputStream?
 ) {
     val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
     val shellCommand = connectedDevice.session.deviceServices.shellCommand(deviceSelector, command)
@@ -78,6 +80,10 @@ internal fun executeShellCommand(
         shellCommand.withCommandTimeout(Duration.ofMillis(maxTimeUnits.toMillis(maxTimeout)))
     }
     val stdoutCollector = ShellCollectorToIShellOutputReceiver(receiver)
+    if (inputStream != null) {
+      shellCommand.withStdin(connectedDevice.session.channelFactory.wrapInputStream(inputStream))
+    }
+
     shellCommand.withLegacyCollector(stdoutCollector)
     runBlocking {
         mapToDdmlibException {

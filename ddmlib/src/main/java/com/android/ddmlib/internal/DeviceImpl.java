@@ -15,6 +15,8 @@
  */
 package com.android.ddmlib.internal;
 
+import static com.android.ddmlib.IDeviceSharedImpl.INSTALL_TIMEOUT_MINUTES;
+
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.annotations.concurrency.GuardedBy;
@@ -128,22 +130,7 @@ public final class DeviceImpl implements IDevice {
     private static final long INITIAL_GET_PROP_TIMEOUT_MS = 5000;
     private static final int QUERY_IS_ROOT_TIMEOUT_MS = 1000;
 
-    private static final long INSTALL_TIMEOUT_MINUTES;
-
     static final int WAIT_TIME = 5; // spin-wait sleep, in ms
-
-    static {
-        String installTimeout = System.getenv("ADB_INSTALL_TIMEOUT");
-        long time = 4;
-        if (installTimeout != null) {
-            try {
-                time = Long.parseLong(installTimeout);
-            } catch (NumberFormatException e) {
-                // use default value
-            }
-        }
-        INSTALL_TIMEOUT_MINUTES = time;
-    }
 
     /**
      * Socket for the connection monitoring client connection/disconnection.

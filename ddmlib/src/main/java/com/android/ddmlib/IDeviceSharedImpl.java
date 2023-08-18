@@ -54,6 +54,21 @@ public class IDeviceSharedImpl {
 
     private static final String LOG_TAG = "Device";
 
+    public static final long INSTALL_TIMEOUT_MINUTES;
+
+    static {
+        String installTimeout = System.getenv("ADB_INSTALL_TIMEOUT");
+        long time = 4;
+        if (installTimeout != null) {
+            try {
+                time = Long.parseLong(installTimeout);
+            } catch (NumberFormatException e) {
+                // use default value
+            }
+        }
+        INSTALL_TIMEOUT_MINUTES = time;
+    }
+
     public IDeviceSharedImpl(IDevice iDevice) {
         this.iDevice = iDevice;
     }
