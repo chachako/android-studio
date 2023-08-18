@@ -136,7 +136,7 @@ class FakeAdbDeviceProvisionerPlugin(
                 properties.manufacturer ?: "(Unknown manufacturer)",
                 properties.model ?: "(Unknown model)",
                 properties.androidRelease ?: "(Unknown release)",
-                properties.androidVersion.toString(),
+                properties.androidVersion?.apiLevel?.toString() ?: "",
                 com.android.fakeadbserver.DeviceState.HostConnectionType.USB
               )
               .also { it.deviceStatus = com.android.fakeadbserver.DeviceState.DeviceStatus.ONLINE }
