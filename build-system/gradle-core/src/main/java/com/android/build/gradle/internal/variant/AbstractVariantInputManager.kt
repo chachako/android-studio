@@ -135,6 +135,7 @@ abstract class AbstractVariantInputManager<
      */
     protected fun addProductFlavor(productFlavor: ProductFlavorT) {
         val name = productFlavor.name
+        productFlavor.dimension?.let { checkName(it, "FlavorDimension") }
         checkName(name, "ProductFlavor")
         if (buildTypes.containsKey(name)) {
             throw RuntimeException("ProductFlavor names cannot collide with BuildType names")
@@ -191,7 +192,20 @@ abstract class AbstractVariantInputManager<
             return name
         }
 
+        private fun checkWhitespace(name: String, displayName: String) {
+            if (name.contains(Regex("\\s+"))) {
+                throw RuntimeException(
+                        String.format(
+                                "%1\$s names cannot contain whitespace",
+                                displayName
+                        )
+                )
+            }
+
+        }
+
         private fun checkName(name: String, displayName: String) {
+            checkWhitespace(name, displayName)
             checkPrefix(
                 name,
                 displayName,

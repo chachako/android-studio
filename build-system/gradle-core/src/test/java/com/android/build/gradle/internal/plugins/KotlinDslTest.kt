@@ -37,6 +37,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.lang.RuntimeException
 
 /** Functional tests for the new Kotlin DSL. */
 class KotlinDslTest {
@@ -645,5 +646,22 @@ class KotlinDslTest {
         assertThat(postProcessingBlock.getProguardFiles(ProguardFileType.EXPLICIT)).hasSize(1)
         assertThat(postProcessingBlock.getProguardFiles(ProguardFileType.TEST)).hasSize(2)
         assertThat(postProcessingBlock.getProguardFiles(ProguardFileType.CONSUMER)).hasSize(3)
+    }
+
+    @Test
+    fun `whitespace handling in names`() {
+        assertFailsWith(RuntimeException::class) {
+            android.productFlavors.create("fla1 ")
+        }.also { exception ->
+            assertThat(exception).hasMessageThat()
+                    .isEqualTo("ProductFlavor names cannot contain whitespace")
+        }
+
+        assertFailsWith(RuntimeException::class) {
+            android.buildTypes.create("buildType ")
+        }.also { exception ->
+            assertThat(exception).hasMessageThat()
+                    .isEqualTo("BuildType names cannot contain whitespace")
+        }
     }
 }
