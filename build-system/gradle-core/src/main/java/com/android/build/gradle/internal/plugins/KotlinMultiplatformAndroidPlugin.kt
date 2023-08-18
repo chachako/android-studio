@@ -103,7 +103,7 @@ import org.gradle.build.event.BuildEventsListenerRegistry
 import javax.inject.Inject
 
 @Incubating
-abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
+class KotlinMultiplatformAndroidPlugin @Inject constructor(
     listenerRegistry: BuildEventsListenerRegistry
 ): AndroidPluginBaseServices(listenerRegistry), Plugin<Project> {
 

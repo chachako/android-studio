@@ -19,6 +19,13 @@
 package com.android.build.gradle.internal.utils
 
 import com.android.build.gradle.internal.services.RunOnceBuildServiceImpl
+import com.android.build.gradle.internal.plugins.AppPlugin
+import com.android.build.gradle.internal.plugins.DynamicFeaturePlugin
+import com.android.build.gradle.internal.plugins.FusedLibraryPlugin
+import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin
+import com.android.build.gradle.internal.plugins.LibraryPlugin
+import com.android.build.gradle.internal.plugins.PrivacySandboxSdkPlugin
+import com.android.build.gradle.internal.plugins.TestPlugin
 import com.android.builder.errors.IssueReporter
 import com.android.ide.common.repository.GradleVersion
 import com.google.common.annotations.VisibleForTesting
@@ -247,3 +254,14 @@ fun getBuildSrcPlugins(classLoader: ClassLoader): Set<String> {
 }
 
 const val ANDROID_GRADLE_PLUGIN_ID = "com.android.base"
+
+/** Android Gradle plugins where no two plugins can be applied together in the same project. */
+val MUTUALLY_EXCLUSIVE_ANDROID_GRADLE_PLUGINS = mapOf(
+    AppPlugin::class.java to "com.android.application",
+    LibraryPlugin::class.java to "com.android.library",
+    DynamicFeaturePlugin::class.java to "com.android.dynamic-feature",
+    TestPlugin::class.java to "com.android.test",
+    KotlinMultiplatformAndroidPlugin::class.java to "com.android.kotlin.multiplatform.library",
+    FusedLibraryPlugin::class.java to "com.android.fused-library",
+    PrivacySandboxSdkPlugin::class.java to "com.android.privacy-sandbox-sdk",
+)

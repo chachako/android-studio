@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.multiplatform.v2
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
+import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.google.common.truth.Truth
 import org.junit.Rule
@@ -28,6 +29,30 @@ class KotlinMultiplatformAndroidPluginBasicTest {
     val project = GradleTestProjectBuilder()
         .fromTestProject("kotlinMultiplatform")
         .create()
+
+    @Test
+    fun applyShouldFailIfAnotherAndroidPluginHasBeenAppliedBefore() {
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            """
+                id("com.android.kotlin.multiplatform.library")
+            """.trimIndent(),
+            """
+                id("com.android.library")
+                id("com.android.kotlin.multiplatform.library")
+            """.trimIndent()
+        )
+
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        val result =
+            project.executor()
+                .withFailOnWarning(false)
+                .expectFailure().run(":kmpFirstLib:assembleAndroidMain")
+
+        result.assertErrorContains(
+            "'com.android.kotlin.multiplatform.library' and 'com.android.library' plugins cannot be applied in the same project."
+        )
+    }
 
     @Test
     fun creatingArbitraryCompilationShouldFail() {

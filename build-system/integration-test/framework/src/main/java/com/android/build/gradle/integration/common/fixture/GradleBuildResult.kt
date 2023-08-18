@@ -159,6 +159,12 @@ class GradleBuildResult(
         }
     }
 
+    fun assertErrorContains(text: String) {
+        stderr.use {
+            ScannerSubject.assertThat(it).contains(text)
+        }
+    }
+
     fun assertOutputDoesNotContain(text: String) {
         stdout.use {
             ScannerSubject.assertThat(it).doesNotContain(text)
