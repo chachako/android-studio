@@ -149,6 +149,7 @@ public class IrToBazel {
                     Map<String, String> UNMANAGED = ImmutableMap.of(
                             "studio-sdk", "studio-sdk",
                             "studio-plugin", "studio-sdk-plugin",
+                            "rust-plugin", "rust-plugin",
                             "intellij-updater", "studio-sdk-updater",
                             "intellij-test-framework", "studio-sdk-test-framework"
                     );
@@ -169,7 +170,7 @@ public class IrToBazel {
                                     unmanagedEntry.getValue());
                             UnmanagedRule rule = unmanaged.get(newName);
                             if (rule == null) {
-                                if (newName.equals("studio-sdk-plugin-rust")) {
+                                if (newName.equals("rust-plugin")) {
                                     // Rust is not currently part of IntelliJ SDK so treat as a
                                     // special case.
                                     rule =
