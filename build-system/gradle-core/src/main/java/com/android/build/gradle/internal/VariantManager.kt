@@ -26,6 +26,7 @@ import com.android.build.api.dsl.TestedExtension
 import com.android.build.api.extension.impl.VariantApiOperationsRegistrar
 import com.android.build.api.variant.HasAndroidTestBuilder
 import com.android.build.api.variant.HasTestFixturesBuilder
+import com.android.build.api.variant.HasUnitTestBuilder
 import com.android.build.api.variant.Variant
 import com.android.build.api.variant.VariantBuilder
 import com.android.build.api.variant.VariantExtensionConfig
@@ -567,7 +568,7 @@ class VariantManager<
         testedComponentInfo: VariantComponentInfo<VariantBuilderT, VariantDslInfoT, VariantT>,
         componentType: ComponentType,
         testFixturesEnabled: Boolean,
-    ): TestComponentCreationConfig? {
+    ): TestComponentCreationConfig {
 
         // handle test variant
         // need a suppress warning because ProductFlavor.getTestSourceSet(type) is annotated
@@ -607,20 +608,6 @@ class VariantManager<
             }
         }
         val variantDslInfo = variantDslInfoBuilder.createDslInfo()
-        if (componentType.isApk
-            && testedComponentInfo.variantBuilder is HasAndroidTestBuilder) {
-            // this is ANDROID_TEST
-            if (!testedComponentInfo.variantBuilder.enableAndroidTest) {
-                return null
-            }
-        } else {
-            // this is UNIT_TEST
-            if (!testedComponentInfo.variantBuilder.enableUnitTest) {
-                return null
-            }
-        }
-
-        // now that we have the result of the filter, we can continue configuring the variant
         createCompoundSourceSets(productFlavorDataList, variantDslInfoBuilder)
         val variantSources = variantDslInfoBuilder.createVariantSources()
 
@@ -830,7 +817,8 @@ class VariantManager<
                 }
 
                 if (variantFactory.componentType.hasTestComponents) {
-                    if (buildTypeData == testBuildTypeData) {
+                    val androidTestEnabled = (variantBuilder as? HasAndroidTestBuilder)?.enableAndroidTest ?: false
+                    if (androidTestEnabled && buildTypeData == testBuildTypeData) {
                         val androidTest = createTestComponents<AndroidTestComponentDslInfo>(
                                 dimensionCombination,
                                 buildTypeData,
@@ -839,22 +827,21 @@ class VariantManager<
                                 ComponentTypeImpl.ANDROID_TEST,
                                 testFixturesEnabledForVariant,
                         )
-                        androidTest?.let {
-                            addTestComponent(it)
-                            (variant as HasAndroidTest).androidTest = it as AndroidTestImpl
-                        }
+                        addTestComponent(androidTest)
+                        (variant as HasAndroidTest).androidTest = androidTest as AndroidTestImpl
                     }
-                    val unitTest = createTestComponents<UnitTestComponentDslInfo>(
-                        dimensionCombination,
-                        buildTypeData,
-                        productFlavorDataList,
-                        variantInfo,
-                        ComponentTypeImpl.UNIT_TEST,
-                        testFixturesEnabledForVariant,
-                    )
-                    unitTest?.let {
-                        addTestComponent(it)
-                        (variant as HasUnitTest).unitTest = it as UnitTestImpl
+                    val unitTestEnabled = (variantBuilder as? HasUnitTestBuilder)?.enableUnitTest ?: false
+                    if (unitTestEnabled) {
+                        val unitTest = createTestComponents<UnitTestComponentDslInfo>(
+                                dimensionCombination,
+                                buildTypeData,
+                                productFlavorDataList,
+                                variantInfo,
+                                ComponentTypeImpl.UNIT_TEST,
+                                testFixturesEnabledForVariant,
+                        )
+                        addTestComponent(unitTest)
+                        (variant as HasUnitTest).unitTest = unitTest as UnitTestImpl
                     }
                 }
 
