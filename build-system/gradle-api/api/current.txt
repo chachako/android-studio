@@ -2713,7 +2713,11 @@ package com.android.build.api.variant {
 
   @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidCompilation extends org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions> {
     method public org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions<org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions> getCompilerOptions();
+    method @Deprecated public org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions getKotlinOptions();
+    method @Deprecated public void kotlinOptions(kotlin.jvm.functions.Function1<? super org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions,kotlin.Unit> configure);
+    method @Deprecated public void kotlinOptions(org.gradle.api.Action<org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions> configure);
     property public abstract org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions<org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions> compilerOptions;
+    property @Deprecated public abstract org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions kotlinOptions;
   }
 
   @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidComponentsExtension extends com.android.build.api.variant.DslLifecycle<com.android.build.api.dsl.KotlinMultiplatformAndroidExtension> com.android.build.api.variant.AndroidComponents {

@@ -16,6 +16,7 @@
 
 package com.android.build.api.variant
 
+import org.gradle.api.Action
 import org.gradle.api.Incubating
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
@@ -28,4 +29,19 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 @Incubating
 interface KotlinMultiplatformAndroidCompilation: KotlinCompilation<KotlinCommonOptions> {
     override val compilerOptions: HasCompilerOptions<KotlinJvmCompilerOptions>
+
+    @Deprecated("Use compilerOptions instead of kotlinOptions to configure compilations")
+    override val kotlinOptions: KotlinCommonOptions
+
+    @Deprecated(
+        "Use compilerOptions instead of kotlinOptions to configure compilations",
+        ReplaceWith("compilerOptions.configure { }")
+    )
+    override fun kotlinOptions(configure: KotlinCommonOptions.() -> Unit)
+
+    @Deprecated(
+        "Use compilerOptions instead of kotlinOptions to configure compilations",
+        ReplaceWith("compilerOptions.configure { }")
+    )
+    override fun kotlinOptions(configure: Action<KotlinCommonOptions>)
 }
