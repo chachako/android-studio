@@ -33,6 +33,8 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiNameHelper
 import com.intellij.psi.impl.PsiNameHelperImpl
 import com.intellij.util.io.URLUtil.JAR_SEPARATOR
+import java.io.File
+import kotlin.concurrent.withLock
 import org.jetbrains.kotlin.analysis.api.KtAnalysisApiInternals
 import org.jetbrains.kotlin.analysis.api.descriptors.CliFe10AnalysisFacade
 import org.jetbrains.kotlin.analysis.api.descriptors.Fe10AnalysisFacade
@@ -89,8 +91,6 @@ import org.jetbrains.uast.kotlin.KotlinUastLanguagePlugin
 import org.jetbrains.uast.kotlin.KotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.internal.CliKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.internal.UastAnalysisHandlerExtension
-import java.io.File
-import kotlin.concurrent.withLock
 
 /**
  * This class is FE1.0 version of [UastEnvironment].
@@ -140,7 +140,8 @@ private constructor(
         }
       UastEnvironment.Configuration.mergeRoots(modules, bootClassPaths).let { (sources, classPaths)
         ->
-        val allKlibPaths = modules.flatMap { it.klibs.map(File::getAbsolutePath) } +
+        val allKlibPaths =
+          modules.flatMap { it.klibs.map(File::getAbsolutePath) } +
             kotlinCompilerConfig.getKlibPaths()
         for (p in allKlibPaths) {
           klibs.computeIfAbsent(p, ::kotlinLibrary)

@@ -606,9 +606,7 @@ public class Project {
         }
     }
 
-    /**
-     * Returns the list of klibs that this project depends on.
-     */
+    /** Returns the list of klibs that this project depends on. */
     @NonNull
     public List<File> getKlibs() {
         if (klibs == null) {
@@ -1613,10 +1611,13 @@ public class Project {
     }
 
     /**
-     * For KMP projects
-     * See <a href="https://github.com/JetBrains/kotlin/blob/master/analysis/project-structure/src/org/jetbrains/kotlin/analysis/project/structure/KtModule.kt#L33-L41">...</a>
+     * For KMP projects See <a
+     * href="https://github.com/JetBrains/kotlin/blob/master/analysis/project-structure/src/org/jetbrains/kotlin/analysis/project/structure/KtModule.kt#L33-L41">...</a>
      */
-    public enum DependencyKind { Regular, DependsOn }
+    public enum DependencyKind {
+        Regular,
+        DependsOn
+    }
 
     private final Map<Project, DependencyKind> dependencyKind = new HashMap<>();
 

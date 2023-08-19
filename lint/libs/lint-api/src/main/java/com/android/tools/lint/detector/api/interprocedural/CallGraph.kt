@@ -24,6 +24,8 @@ import com.google.common.collect.HashMultimap
 import com.google.common.collect.Lists
 import com.google.common.collect.Multimap
 import com.intellij.psi.PsiElementFactory
+import java.io.File
+import java.util.ArrayDeque
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UElement
@@ -36,8 +38,6 @@ import org.jetbrains.uast.getContainingUClass
 import org.jetbrains.uast.getContainingUFile
 import org.jetbrains.uast.getContainingUMethod
 import org.jetbrains.uast.toUElement
-import java.io.File
-import java.util.ArrayDeque
 
 sealed class CallTarget {
   abstract val element: UElement
@@ -259,7 +259,8 @@ fun buildParamContextsFromCall(
   fun computeImplicitReceiverParam(): UParameter? {
     val project = call.getContainingUFile()?.sourcePsi?.project ?: return null
     val psiElementFactory = PsiElementFactory.getInstance(project)
-    val receiverParamPsi = psiElementFactory.createParameterFromText("ImplicitReceiverType __implicit_receiver", null)
+    val receiverParamPsi =
+      psiElementFactory.createParameterFromText("ImplicitReceiverType __implicit_receiver", null)
     return receiverParamPsi.toUElement(UParameter::class.java)
   }
   val explicitParams =

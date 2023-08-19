@@ -306,7 +306,6 @@ public class ExtractAnnotationsDriver {
                         sortAnnotations);
         extractor.setListIgnored(listFiltered);
 
-
         UastEnvironment.Configuration config = UastEnvironment.Configuration.create(false);
         if (sourceRoots == null) {
             sourceRoots = findSourceRoots(sources);

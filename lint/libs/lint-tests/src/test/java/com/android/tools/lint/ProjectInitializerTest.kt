@@ -2478,10 +2478,7 @@ class ProjectInitializerTest {
           """
               .trimIndent()
           ),
-        klib(
-          "libs/BlankKlib.klib",
-          ""
-        ),
+          klib("libs/BlankKlib.klib", ""),
         )
         .type(LIBRARY)
         .name("shared")

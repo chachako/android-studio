@@ -436,11 +436,8 @@ abstract class LintClient {
   open fun getJavaLibraries(project: Project, includeProvided: Boolean): List<File> =
     getClassPath(project).getLibraries(includeProvided)
 
-  /**
-   * Returns ths list of klibs
-   */
-  open fun getKlibs(project : Project) : List<File> =
-    getClassPath(project).klibs
+  /** Returns ths list of klibs */
+  open fun getKlibs(project: Project): List<File> = getClassPath(project).klibs
 
   /**
    * Returns the list of source folders for test source files
@@ -862,7 +859,8 @@ abstract class LintClient {
         }
       }
 
-      info = ClassPathInfo(sources, classes, libraries, libraries, tests, emptyList(), generated, klibs)
+      info =
+        ClassPathInfo(sources, classes, libraries, libraries, tests, emptyList(), generated, klibs)
       projectInfo[project] = info
     }
 

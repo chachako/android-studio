@@ -18,15 +18,19 @@ package com.android.tools.lint.checks.infrastructure
 import java.io.InputStream
 
 // TODO(b/292298949)
-class KlibTestFile(to : String, val encoded : String?) : TestFile() {
+class KlibTestFile(to: String, val encoded: String?) : TestFile() {
   private val files = mutableListOf<TestFile>()
 
   init {
     to(to)
-    from("/", object : TestResourceProvider {
-      override fun getTestResource(relativePath: String, expectExists: Boolean) = InputStream.nullInputStream()
-    })
+    from(
+      "/",
+      object : TestResourceProvider {
+        override fun getTestResource(relativePath: String, expectExists: Boolean) =
+          InputStream.nullInputStream()
+      }
+    )
   }
 
-  fun files(vararg files : TestFile) : KlibTestFile = this.also { this.files.addAll(files) }
+  fun files(vararg files: TestFile): KlibTestFile = this.also { this.files.addAll(files) }
 }
