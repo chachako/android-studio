@@ -223,6 +223,27 @@ class MissingClassDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testSuppress() {
+    lint()
+      .issues(MISSING)
+      .files(
+        xml(
+            "res/layout/customview.xml",
+            """
+          <!--suppress MissingClass -->
+          <com.tools.someclass
+              xmlns:tools="http://schemas.android.com/tools"
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              tools:ignore="MissingDefaultResource">
+          </com.tools.someclass>
+          """
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
+
   fun testFragment() {
     lint()
       .issues(INSTANTIATABLE)

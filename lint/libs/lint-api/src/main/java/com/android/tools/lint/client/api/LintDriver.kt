@@ -3624,7 +3624,9 @@ class LintDriver(
           if (customSuppressNames != null && isSuppressed(customSuppressNames, ignore)) {
             return true
           }
-        } else if (
+        }
+
+        if (
           checkComments && context != null && context.isSuppressedWithComment(currentNode, issue)
         ) {
           if (customSuppressNames != null) {
