@@ -16,6 +16,7 @@
 
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.checks.infrastructure.TestFiles.rClass
 import com.android.tools.lint.detector.api.Detector
 
 class TranslucentViewDetectorTest : AbstractCheckTest() {
@@ -58,8 +59,75 @@ class TranslucentViewDetectorTest : AbstractCheckTest() {
       )
   }
 
-  // TODO(142070838): re-enable this
-  fun failingTestThemeFromActivity() {
+  fun testThemeInActivityManifest292069881() {
+    // Regression test for https://issuetracker.google.com/292069881
+    lint()
+      .files(
+        manifest(
+          "" +
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+            "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+            "    package=\"test.pkg\">\n" +
+            "     <uses-sdk android:minSdkVersion=\"16\" android:targetSdkVersion=\"26\" />\n" +
+            "    <application\n" +
+            "        android:icon=\"@mipmap/ic_launcher\"\n" +
+            "        android:label=\"@string/app_name\">\n" +
+            "        <activity android:name=\".OtherActivity\"\n" +
+            "            android:screenOrientation=\"landscape\"\n" +
+            "            android:theme=\"@style/AppTheme\" />\n" +
+            "        <activity android:name=\".MainActivity\"\n" +
+            "            android:screenOrientation=\"landscape\"\n" +
+            "            android:theme=\"@style/AppTheme\" />\n" +
+            "        <activity android:name=\".Unrelated\"\n" +
+            "            android:screenOrientation=\"landscape\"\n" +
+            "            android:theme=\"@style/OpaqueTheme\" />\n" +
+            "    </application>\n" +
+            "</manifest>"
+        ),
+        themeFile
+      )
+      .run()
+      .expect(
+        "" +
+          "res/values/styles.xml:7: Warning: Should not specify screen orientation with translucent or floating theme [TranslucentOrientation]\n" +
+          "        <item name=\"android:windowIsFloating\">true</item>\n" +
+          "                    ~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+          "    AndroidManifest.xml:9: <No location-specific message>\n" +
+          "            android:screenOrientation=\"landscape\"\n" +
+          "                                       ~~~~~~~~~\n" +
+          "    AndroidManifest.xml:12: <No location-specific message>\n" +
+          "            android:screenOrientation=\"landscape\"\n" +
+          "                                       ~~~~~~~~~\n" +
+          "0 errors, 1 warnings"
+      )
+  }
+
+  fun testOrientationBehind() {
+    // Regression test for https://issuetracker.google.com/292114818
+    lint()
+      .files(
+        manifest(
+          "" +
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+            "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+            "    package=\"test.pkg\">\n" +
+            "     <uses-sdk android:minSdkVersion=\"16\" android:targetSdkVersion=\"26\" />\n" +
+            "    <application\n" +
+            "        android:icon=\"@mipmap/ic_launcher\"\n" +
+            "        android:label=\"@string/app_name\">\n" +
+            "        <activity android:name=\".MainActivity\"\n" +
+            "            android:screenOrientation=\"behind\"\n" +
+            "            android:theme=\"@style/AppTheme\" />\n" +
+            "    </application>\n" +
+            "</manifest>"
+        ),
+        themeFile
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun testThemeFromActivity() {
     // Like previous test, but instead of specifying theme in manifest, specifies it
     // via code in the activity
     lint()
@@ -82,14 +150,18 @@ class TranslucentViewDetectorTest : AbstractCheckTest() {
             "        setContentView(R.layout.activity_main);\n" +
             "    }\n" +
             "}\n"
-        )
+        ),
+        rClass("test.pkg", "@style/AppTheme", "@layout/activity_main")
       )
       .run()
       .expect(
-        "res/values/styles.xml:7: Warning: Should not specify screen orientation with translucent or floating theme [TranslucentOrientation]\n" +
+        "" +
+          "res/values/styles.xml:7: Warning: Should not specify screen orientation with translucent or floating theme [TranslucentOrientation]\n" +
           "        <item name=\"android:windowIsFloating\">true</item>\n" +
           "                    ~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-          "    AndroidManifest.xml:9: <No location-specific message\n" +
+          "    AndroidManifest.xml:9: <No location-specific message>\n" +
+          "            android:screenOrientation=\"landscape\" />\n" +
+          "                                       ~~~~~~~~~\n" +
           "0 errors, 1 warnings"
       )
   }

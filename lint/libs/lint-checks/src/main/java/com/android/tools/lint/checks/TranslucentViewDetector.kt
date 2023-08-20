@@ -16,7 +16,6 @@
 
 package com.android.tools.lint.checks
 
-import com.android.SdkConstants
 import com.android.SdkConstants.ANDROID_PKG
 import com.android.SdkConstants.ANDROID_URI
 import com.android.SdkConstants.ATTR_NAME
@@ -100,16 +99,21 @@ class TranslucentViewDetector : Detector(), XmlScanner, SourceCodeScanner {
     return folderType == ResourceFolderType.VALUES
   }
 
+  private fun isScreenOrientationFixed(orientation: String): Boolean {
+    return orientation.endsWith("portrait", ignoreCase = true) ||
+      orientation.endsWith("landscape", ignoreCase = true)
+  }
+
   override fun visitAttribute(context: XmlContext, attribute: Attr) {
     // If anyone specifies screenOrientation (other than "unspecified"), then
     // write down the theme applied on this activity.  (If theme is not specified,
     // look it up in the activity or worst of all, use default in manifest)
-    if (SdkConstants.ANDROID_URI != attribute.namespaceURI) {
+    if (ANDROID_URI != attribute.namespaceURI) {
       return
     }
 
     val value = attribute.value
-    if (value == "unspecified") {
+    if (!isScreenOrientationFixed(value)) {
       return
     }
 
@@ -181,9 +185,8 @@ class TranslucentViewDetector : Detector(), XmlScanner, SourceCodeScanner {
         if (attributeName == "android:windowIsFloating" || attributeName == "windowIsTranslucent") {
           val attributeNode = curr.getAttributeNode(ATTR_NAME)
           val location = context.getValueLocation(attributeNode)
-          val message =
-            "Should not specify screen orientation with translucent or " + "floating theme"
-          context.report(Incident(ISSUE, curr, location, message), map())
+          val message = "Should not specify screen orientation with translucent or floating theme"
+          context.report(Incident(ISSUE, curr, location, message), map().put(ATTR_THEME, themeName))
           break
         }
 
@@ -203,15 +206,20 @@ class TranslucentViewDetector : Detector(), XmlScanner, SourceCodeScanner {
     val mergedManifest = context.mainProject.mergedManifest ?: return false
     val application = XmlUtils.getFirstSubTagByName(mergedManifest.documentElement, TAG_APPLICATION)
     var currentActivity = XmlUtils.getFirstSubTag(application)
+    var last = incident.location
+    val theme = map.getString(ATTR_THEME, "")
     while (currentActivity != null) {
       val attr = currentActivity.getAttributeNodeNS(ANDROID_URI, ATTR_SCREEN_ORIENTATION)
       // TODO - pick the one that doesn't specify unspecified (and ideally
       // map back to the same activity that contributed the activity,
       // which is why it might make sense to compute forwards instead.)
       if (attr != null) {
-        val secondary = context.getLocation(attr, LocationType.VALUE)
-        incident.location.secondary = secondary
-        break
+        val name = getThemeName(currentActivity.getAttributeNS(ANDROID_URI, ATTR_THEME))
+        if (name == theme || name == null) {
+          val secondary = context.getLocation(attr, LocationType.VALUE)
+          last.secondary = secondary
+          last = secondary
+        }
       }
 
       currentActivity = XmlUtils.getNextTag(currentActivity)
@@ -229,7 +237,7 @@ class TranslucentViewDetector : Detector(), XmlScanner, SourceCodeScanner {
 
   override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
     val activities = interestingActivities ?: return
-    val uClass = node.getParentOfType<UClass>(UClass::class.java, true) ?: return
+    val uClass = node.getParentOfType(UClass::class.java, true) ?: return
     if (!activities.contains(uClass.qualifiedName)) {
       return
     }

@@ -307,7 +307,8 @@ open class Context(
         else -> null
       }
     if (element != null) {
-      val projects = sequenceOf(project) + project.allLibraries.filter { !it.isExternalLibrary }
+      val projects =
+        sequenceOf(project) + project.getAllLibraries().filter { !it.isExternalLibrary }
       for (p in projects) {
         for (manifest in p.getManifestFiles()) {
           try {
