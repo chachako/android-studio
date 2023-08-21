@@ -1439,6 +1439,7 @@ public class AndroidDebugBridge {
                     env.put("ADBHOST", adbHostValue);
                 }
             }
+            processBuilder.directory(new File(mAdbOsLocation).getParentFile());
             proc = processBuilder.start();
 
             ArrayList<String> errorOutput = new ArrayList<String>();
