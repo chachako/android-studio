@@ -132,6 +132,7 @@ import kotlin.system.measureTimeMillis
 import org.codehaus.groovy.ast.ASTNode
 import org.jetbrains.annotations.Contract
 import org.jetbrains.kotlin.config.LanguageVersionSettings
+import org.jetbrains.kotlin.psi.KtAnnotated
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.psi.KtClassBody
 import org.jetbrains.kotlin.psi.KtExpression
@@ -3462,6 +3463,7 @@ class LintDriver(
     val checkComments =
       client.checkForSuppressComments() && context != null && context.containsCommentSuppress()
     while (currentScope != null) {
+      // Java PSI
       if (currentScope is PsiModifierListOwner) {
         if (isAnnotatedWithSuppress(context, issue, currentScope)) {
           if (customSuppressNames != null && context != null) {
@@ -3479,6 +3481,30 @@ class LintDriver(
 
         if (
           customSuppressNames != null && isAnnotatedWith(context, currentScope, customSuppressNames)
+        ) {
+          return true
+        }
+      }
+
+      // Kotlin PSI
+      if (currentScope is KtAnnotated) {
+        val annotations = currentScope.annotationEntries
+        if (isSuppressedKt(issue, annotations)) {
+          if (customSuppressNames != null && context != null) {
+            flagInvalidSuppress(
+              context,
+              issue,
+              context.getLocation(currentScope),
+              currentScope,
+              issue.suppressNames
+            )
+            return false
+          }
+          return true
+        }
+
+        if (
+          customSuppressNames != null && isSuppressedKt(issue, annotations, customSuppressNames)
         ) {
           return true
         }
@@ -4270,26 +4296,39 @@ class LintDriver(
     }
 
     @JvmStatic
-    fun isSuppressedKt(issue: Issue, annotations: List<KtAnnotationEntry>): Boolean {
+    fun isSuppressedKt(
+      issue: Issue,
+      annotations: List<KtAnnotationEntry>,
+      customNames: Set<String>? = null
+    ): Boolean {
       if (annotations.isEmpty()) {
         return false
       }
 
       for (annotation in annotations) {
-        when (
+        val fqn =
           ApplicationManager.getApplication()
             .getService(BaseKotlinUastResolveProviderService::class.java)
             .qualifiedAnnotationName(annotation)
-        ) {
-          FQCN_SUPPRESS_LINT,
-          SUPPRESS_WARNINGS_FQCN,
-          KOTLIN_SUPPRESS,
-          SUPPRESS_LINT -> {
-            val attributeList = annotation.valueArgumentList ?: continue
-            for (attribute in attributeList.arguments) {
-              if (isSuppressedExpression(issue, attribute.getArgumentExpression())) {
-                return true
-              }
+
+        val isSuppressionAnnotation =
+          if (customNames == null) {
+            fqn in
+              setOf(
+                FQCN_SUPPRESS_LINT,
+                SUPPRESS_WARNINGS_FQCN,
+                KOTLIN_SUPPRESS,
+                SUPPRESS_LINT,
+              )
+          } else {
+            fqn in customNames
+          }
+
+        if (isSuppressionAnnotation) {
+          val attributeList = annotation.valueArgumentList ?: continue
+          for (attribute in attributeList.arguments) {
+            if (isSuppressedExpression(issue, attribute.getArgumentExpression())) {
+              return true
             }
           }
         }

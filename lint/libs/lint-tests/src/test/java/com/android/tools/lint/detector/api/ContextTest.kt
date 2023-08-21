@@ -147,9 +147,35 @@ class ContextTest : AbstractCheckTest() {
       .expectClean()
   }
 
+  fun testKotlinSuppressionAnnotationsWithPsiScope() {
+    // Regression test for b/274787712
+    // When a PsiElement is passed as the scope for an incident, LintDriver behaves differently.
+    // In particular, it needs to implement the same logic for both Kotlin and Java PSI, which it
+    // was not doing when b/274787712 was reported.
+    lint()
+      .files(
+        kotlin(
+            """
+                package test.pkg
+                import android.annotation.SuppressLint
+
+                class MyClass {
+                  @SuppressLint("_PsiTestIssueId")
+                  const val s: String = "/sdcard/mydir"
+                }
+                """
+          )
+          .indented(),
+        gradle("")
+      )
+      .issues(PSI_TEST_ISSUE)
+      .run()
+      .expectClean()
+  }
+
   override fun getDetector(): Detector = NoLocationNodeDetector()
 
-  override fun getIssues(): List<Issue> = listOf(TEST_ISSUE)
+  override fun getIssues(): List<Issue> = listOf(TEST_ISSUE, PSI_TEST_ISSUE)
 
   // Detector which reproduces problem in issue https://issuetracker.google.com/116838536
   class NoLocationNodeDetector : Detector(), SourceCodeScanner {
@@ -170,6 +196,14 @@ class ContextTest : AbstractCheckTest() {
             // to test that we suppress based on stashed location
             // source element from above; this tests issue 116838536
             context.report(TEST_ISSUE, location, message)
+
+            // If we pass a PsiElement as the scope of an incident, LintDriver will use a
+            // PSI-specific code path to deduce suppressions. We need to test this path
+            // explicitly, so tests may choose to look for this issue.
+            // See LintDriver.isSuppressedLocally,
+            // and LintDriver.isSuppressed(context: JavaContext?, issue: Issue, scope:
+            // PsiElement?)
+            context.report(PSI_TEST_ISSUE, scope = node.sourcePsi, location, message)
           }
         }
       }
@@ -179,6 +213,17 @@ class ContextTest : AbstractCheckTest() {
     val TEST_ISSUE =
       Issue.create(
         "_TestIssueId",
+        "Not applicable",
+        "Not applicable",
+        Category.MESSAGES,
+        5,
+        Severity.WARNING,
+        Implementation(NoLocationNodeDetector::class.java, Scope.JAVA_FILE_SCOPE)
+      )
+
+    val PSI_TEST_ISSUE =
+      Issue.create(
+        "_PsiTestIssueId",
         "Not applicable",
         "Not applicable",
         Category.MESSAGES,
