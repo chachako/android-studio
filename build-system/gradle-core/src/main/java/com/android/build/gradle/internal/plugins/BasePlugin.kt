@@ -88,7 +88,7 @@ import com.android.build.gradle.internal.tasks.factory.TaskManagerConfig
 import com.android.build.gradle.internal.tasks.factory.TaskManagerConfigImpl
 import com.android.build.gradle.internal.testing.ManagedDeviceRegistry
 import com.android.build.gradle.internal.utils.enforceMinimumVersionsOfPlugins
-import com.android.build.gradle.internal.utils.getKotlinPluginVersion
+import com.android.build.gradle.internal.utils.getKotlinAndroidPluginVersion
 import com.android.build.gradle.internal.utils.syncAgpAndKgpSources
 import com.android.build.gradle.internal.variant.ComponentInfo
 import com.android.build.gradle.internal.variant.LegacyVariantInputManager
@@ -696,7 +696,7 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
                 .setCompileSdk(extension.compileSdkVersion)
                 .setBuildToolsVersion(extension.buildToolsRevision.toString()).splits =
                 AnalyticsUtil.toProto(extension.splits)
-            getKotlinPluginVersion(project)?.let {
+            getKotlinAndroidPluginVersion(project)?.let {
                 projectBuilder.kotlinPluginVersion = it
             }
         }

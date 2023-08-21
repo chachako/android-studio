@@ -37,7 +37,7 @@ import com.android.build.gradle.internal.core.dsl.features.ShadersDslInfo
 import com.android.build.gradle.internal.dsl.LibraryKeepRulesImpl
 import com.android.build.gradle.internal.dsl.KmpOptimizationImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
-import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.androidExtensionOnKotlinExtensionName
+import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.ANDROID_EXTENSION_ON_KOTLIN_EXTENSION_NAME
 import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.getNamePrefixedWithTarget
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.builder.core.ComponentTypeImpl
@@ -69,7 +69,7 @@ class KmpVariantDslInfoImpl(
             ?: throw RuntimeException(
                 "Namespace not specified. Specify a namespace in the module's build file like so:\n" +
                         "kotlin {\n" +
-                        "    $androidExtensionOnKotlinExtensionName {\n" +
+                        "    $ANDROID_EXTENSION_ON_KOTLIN_EXTENSION_NAME {\n" +
                         "        namespace = \"com.example.namespace\"\n" +
                         "    }\n" +
                         "}\n"

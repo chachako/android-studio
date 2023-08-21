@@ -477,6 +477,7 @@ com/android/tools/build/gradle
   com/android/build/gradle/internal/manifest/
   com/android/build/gradle/internal/matcher/
   com/android/build/gradle/internal/model/
+  com/android/build/gradle/internal/multiplatform/
   com/android/build/gradle/internal/ndk/
   com/android/build/gradle/internal/packaging/
   com/android/build/gradle/internal/plugins/

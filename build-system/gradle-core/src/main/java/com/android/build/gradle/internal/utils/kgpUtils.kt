@@ -28,6 +28,7 @@ import com.android.build.gradle.internal.services.getBuildService
 import com.android.utils.appendCapitalized
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
@@ -76,9 +77,7 @@ fun isKotlinPluginAppliedInTheSameClassloader(project: Project): Boolean {
  * is applied but version can't be determined.
  */
 fun getProjectKotlinPluginKotlinVersion(project: Project): KotlinVersion? {
-    val currVersion = getKotlinPluginVersion(project)
-    if (currVersion == null || currVersion == "unknown")
-        return null
+    val currVersion = getKotlinAndroidPluginVersion(project) ?: return null
     return parseKotlinVersion(currVersion)
 }
 
@@ -103,8 +102,12 @@ fun parseKotlinVersion(currVersion: String): KotlinVersion? {
  * returns the kotlin plugin version as string, or null if plugin is not applied to this project, or
  * "unknown" if plugin is applied but version can't be determined.
  */
-fun getKotlinPluginVersion(project: Project): String? {
+fun getKotlinAndroidPluginVersion(project: Project): String? {
     val plugin = project.plugins.findPlugin("kotlin-android") ?: return null
+    return getKotlinPluginVersionFromPlugin(plugin)
+}
+
+fun getKotlinPluginVersionFromPlugin(plugin: Plugin<*>): String? {
     return try {
         // No null checks below because we're catching all exceptions.
         // KGP 1.7.0+ has getPluginVersion and older version have getKotlinPluginVersion
@@ -116,7 +119,7 @@ fun getKotlinPluginVersion(project: Project): String? {
     } catch (e: Throwable) {
         // Defensively catch all exceptions because we don't want it to crash
         // if kotlin plugin code changes unexpectedly.
-        "unknown"
+        null
     }
 }
 

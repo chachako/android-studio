@@ -16,7 +16,6 @@
 
 package com.android.build.api.dsl
 
-import com.android.build.api.variant.KotlinMultiplatformAndroidVariant
 import org.gradle.api.Incubating
 
 /**
