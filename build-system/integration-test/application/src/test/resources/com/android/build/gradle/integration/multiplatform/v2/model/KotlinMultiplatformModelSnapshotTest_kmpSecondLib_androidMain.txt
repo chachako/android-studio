@@ -16,45 +16,45 @@
   {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
-      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.0-Beta/kotlin-stdlib-jdk8-1.9.0-Beta.jar"
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.0/kotlin-stdlib-jdk8-1.9.0.jar"
     ],
     "coordinates": {
       "group": "org.jetbrains.kotlin",
       "module": "kotlin-stdlib-jdk8",
-      "version": "1.9.0-Beta"
+      "version": "1.9.0"
     },
     "extras": {
-      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-jdk8-1.9.0-Beta.jar (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.0-Beta)",
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-jdk8-1.9.0.jar (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.0)",
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
     }
   },
   {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
-      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.0-Beta/kotlin-stdlib-jdk7-1.9.0-Beta.jar"
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.0/kotlin-stdlib-jdk7-1.9.0.jar"
     ],
     "coordinates": {
       "group": "org.jetbrains.kotlin",
       "module": "kotlin-stdlib-jdk7",
-      "version": "1.9.0-Beta"
+      "version": "1.9.0"
     },
     "extras": {
-      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-jdk7-1.9.0-Beta.jar (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.0-Beta)",
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-jdk7-1.9.0.jar (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.0)",
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
     }
   },
   {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
-      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib/1.9.0-Beta/kotlin-stdlib-1.9.0-Beta.jar"
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib/1.9.0/kotlin-stdlib-1.9.0.jar"
     ],
     "coordinates": {
       "group": "org.jetbrains.kotlin",
       "module": "kotlin-stdlib",
-      "version": "1.9.0-Beta"
+      "version": "1.9.0"
     },
     "extras": {
-      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-1.9.0-Beta.jar (org.jetbrains.kotlin:kotlin-stdlib:1.9.0-Beta)",
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-1.9.0.jar (org.jetbrains.kotlin:kotlin-stdlib:1.9.0)",
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
     }
   },
