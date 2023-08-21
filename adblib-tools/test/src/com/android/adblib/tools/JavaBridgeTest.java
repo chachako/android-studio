@@ -16,7 +16,7 @@
 package com.android.adblib.tools;
 
 import static kotlinx.coroutines.DelayKt.delay;
-import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
