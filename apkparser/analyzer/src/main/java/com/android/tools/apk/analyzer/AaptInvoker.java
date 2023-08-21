@@ -110,6 +110,10 @@ public class AaptInvoker {
         return invokeAaptWithParameters("dump", "badging", apk.toString());
     }
 
+    public List<String> dumpResources(@NonNull File apk) throws ProcessException {
+        return invokeAaptWithParameters("dump", "resources", apk.getPath());
+    }
+
     /**
      * @return the path to aapt from the latest version of build tools that is installed, null if
      *     there are no build tools

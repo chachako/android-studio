@@ -21,8 +21,12 @@ import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
+import com.android.testutils.TestUtils
 import com.android.testutils.truth.PathSubject.assertThat
+import com.android.tools.apk.analyzer.AaptInvoker
 import com.android.utils.FileUtils
+import com.android.utils.StdLogger
+import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 
@@ -67,7 +71,7 @@ class StableResourceIDsTest {
     fun resourceIDsAreKept() {
         project.executor()
             .with(BooleanOption.ENABLE_STABLE_IDS, true)
-            .run(":app:assembleDebug")
+            .run(":app:assembleDebug", ":app:bundleDebugResources")
 
         val appProject = project.getSubproject(":app")
 
@@ -100,6 +104,15 @@ class StableResourceIDsTest {
             "attr attr_b 0x7f010001",
             "attr attr_c 0x7f010002"
         )
+        assertThat(dumpProtoApkRes()).containsExactly(
+            "resource 0x7f010000 attr/attr_a",
+            "resource 0x7f010001 attr/attr_b",
+            "resource 0x7f010002 attr/attr_c",
+            "resource 0x7f020000 color/my_color_a",
+            "resource 0x7f020001 color/my_color_b",
+            "resource 0x7f020002 color/my_color_c",
+            "resource 0x7f030000 styleable/ds",
+        )
 
         val valuesXml =
             FileUtils.join(appProject.mainSrcDir.parentFile, "res", "values", "colours.xml")
@@ -110,7 +123,7 @@ class StableResourceIDsTest {
 
         project.executor()
             .with(BooleanOption.ENABLE_STABLE_IDS, true)
-            .run(":app:assembleDebug")
+            .run(":app:assembleDebug", ":app:bundleDebugResources")
 
         assertThat(stableIdsTxt).containsAllOf(
             "com.example.app:color/my_color_a = 0x7f020000", // should use old ID
@@ -136,19 +149,38 @@ class StableResourceIDsTest {
             "attr attr_b 0x7f010001",
             "attr attr_c 0x7f010002"
         )
+        // Bundle resources should exactly match
+        assertThat(dumpProtoApkRes()).containsExactly(
+            "resource 0x7f010000 attr/attr_a",
+            "resource 0x7f010001 attr/attr_b",
+            "resource 0x7f010002 attr/attr_c",
+            "resource 0x7f020000 color/my_color_a",
+            "resource 0x7f020002 color/my_color_c",
+            "resource 0x7f020003 color/my_color_bb",
+            "resource 0x7f030000 styleable/ds",
+        )
     }
 
     @Test
     fun disabledStableIds() {
         project.executor()
             .with(BooleanOption.ENABLE_STABLE_IDS, false)
-            .run(":app:assembleDebug")
+            .run(":app:assembleDebug", ":app:bundleDebugResources")
 
         val appProject = project.getSubproject(":app")
 
         val stableIdsTxt =
             appProject.getIntermediateFile("stable_resource_ids_file", "debug", "stableIds.txt")
-        assertThat(stableIdsTxt).doesNotExist()
+
+        assertThat(stableIdsTxt).containsAllOf(
+            "com.example.app:color/my_color_a = 0x7f020000",
+            "com.example.app:color/my_color_b = 0x7f020001",
+            "com.example.app:color/my_color_c = 0x7f020002",
+            "com.example.app:styleable/ds = 0x7f030000",
+            "com.example.app:attr/attr_a = 0x7f010000",
+            "com.example.app:attr/attr_b = 0x7f010001",
+            "com.example.app:attr/attr_c = 0x7f010002"
+        )
 
         val rDotTxt =
             appProject.getIntermediateFile("runtime_symbol_list", "debug", "R.txt")
@@ -166,6 +198,16 @@ class StableResourceIDsTest {
             "attr attr_c 0x7f010002"
         )
 
+        assertThat(dumpProtoApkRes()).containsExactly(
+            "resource 0x7f010000 attr/attr_a",
+            "resource 0x7f010001 attr/attr_b",
+            "resource 0x7f010002 attr/attr_c",
+            "resource 0x7f020000 color/my_color_a",
+            "resource 0x7f020001 color/my_color_b",
+            "resource 0x7f020002 color/my_color_c",
+            "resource 0x7f030000 styleable/ds",
+        )
+
         val valuesXml =
             FileUtils.join(appProject.mainSrcDir.parentFile, "res", "values", "colours.xml")
         TestFileUtils.searchAndReplace(valuesXml, "my_color_b", "my_color_bb")
@@ -175,11 +217,19 @@ class StableResourceIDsTest {
 
         project.executor()
             .with(BooleanOption.ENABLE_STABLE_IDS, false)
-            .run(":app:assembleDebug")
-
-        assertThat(stableIdsTxt).doesNotExist()
+            .run(":app:assembleDebug", ":app:bundleDebugResources")
 
         // IDs should be assigned from scratch
+        assertThat(stableIdsTxt).containsAllOf(
+            "com.example.app:color/my_color_a = 0x7f020000",
+            "com.example.app:color/my_color_bb = 0x7f020001", // Re-numbered, not preserving previous values
+            "com.example.app:color/my_color_c = 0x7f020002",
+            "com.example.app:styleable/ds = 0x7f030000",
+            "com.example.app:attr/attr_a = 0x7f010000",
+            "com.example.app:attr/attr_b = 0x7f010001",
+            "com.example.app:attr/attr_c = 0x7f010002"
+        )
+
         assertThat(rDotTxt).containsAllOf(
             "my_color_a 0x7f020000",
             "my_color_bb 0x7f020001",
@@ -191,5 +241,21 @@ class StableResourceIDsTest {
             "attr attr_b 0x7f010001",
             "attr attr_c 0x7f010002"
         )
+        // Bundle resources should exactly match
+        assertThat(dumpProtoApkRes()).containsExactly(
+            "resource 0x7f010000 attr/attr_a",
+            "resource 0x7f010001 attr/attr_b",
+            "resource 0x7f010002 attr/attr_c",
+            "resource 0x7f020000 color/my_color_a",
+            "resource 0x7f020001 color/my_color_bb",
+            "resource 0x7f020002 color/my_color_c",
+            "resource 0x7f030000 styleable/ds",
+        )
+    }
+
+    private fun dumpProtoApkRes(): List<String> {
+        val bundleRes = project.getSubproject(":app").getIntermediateFile("linked_res_for_bundle/debug/bundled-res.ap_")
+        val protoApkDump = AaptInvoker(TestUtils.getAapt2(), StdLogger(StdLogger.Level.VERBOSE)).dumpResources(bundleRes)
+        return protoApkDump.map { it.trim().removeSuffix(" PUBLIC") }.filter { it.startsWith("resource") }
     }
 }
