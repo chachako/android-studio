@@ -48,6 +48,12 @@ kotlin {
        implementation(kotlin("test"))
      }
    }
+
+    sourceSets.getByName("commonMain") {
+        dependencies {
+            implementation("com.google.guava:guava:19.0")
+        }
+    }
 }
 
 androidComponents {

@@ -30,6 +30,112 @@
   {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
+      "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib-api.jar"
+    ],
+    "coordinates": {
+      "group": "com.example",
+      "module": "kmpSecondLib-android",
+      "version": "1.0"
+    },
+    "extras": {
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kmpSecondLib-api.jar (com.example:kmpSecondLib-android:1.0)",
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver",
+      "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
+        "library": {
+          "type": "ANDROID_LIBRARY",
+          "libraryInfo": {
+            "componentInfo": {
+              "productFlavors": {},
+              "attributes": {
+                "org.gradle.category": "library",
+                "org.gradle.jvm.environment": "android",
+                "org.gradle.libraryelements": "aar",
+                "org.gradle.status": "release",
+                "org.gradle.usage": "java-api",
+                "org.jetbrains.kotlin.platform.type": "jvm"
+              },
+              "capabilities": [
+                "com.example:kmpSecondLib-android:1.0"
+              ],
+              "isTestFixtures": false
+            },
+            "group": "com.example",
+            "name": "kmpSecondLib-android",
+            "version": "1.0"
+          },
+          "artifact": {
+            "absolutePath": "{GRADLE_CACHE}/{MODULES_2}/{LIBRARY_COORDINATES}/{CHECKSUM}/kmpSecondLib.aar"
+          },
+          "androidLibraryData": {
+            "manifest": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/AndroidManifest.xml"
+            },
+            "compileJarFiles": [
+              {
+                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/jars/classes.jar"
+              }
+            ],
+            "runtimeJarFiles": [
+              {
+                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/jars/classes.jar"
+              }
+            ],
+            "resFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/res"
+            },
+            "resStaticLibrary": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/res.apk"
+            },
+            "assetsFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/assets"
+            },
+            "jniFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/jni"
+            },
+            "aidlFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/aidl"
+            },
+            "renderscriptFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/rs"
+            },
+            "proguardRules": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/proguard.txt"
+            },
+            "externalAnnotations": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/annotations.zip"
+            },
+            "publicResources": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/public.txt"
+            },
+            "symbolFile": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/kmpSecondLib/R.txt"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{INCLUDED_BUILD(:kotlinMultiplatform)}/testRepo/com/example/kmpJvmOnly-jvm/1.0/kmpJvmOnly-jvm-1.0.jar"
+    ],
+    "coordinates": {
+      "group": "com.example",
+      "module": "kmpJvmOnly-jvm",
+      "version": "1.0"
+    },
+    "extras": {
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kmpJvmOnly-jvm-1.0.jar (com.example:kmpJvmOnly-jvm:1.0)",
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver",
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;sourcesClasspath": [
+        "{INCLUDED_BUILD(:kotlinMultiplatform)}/testRepo/com/example/kmpJvmOnly-jvm/1.0/kmpJvmOnly-jvm-1.0-sources.jar"
+      ]
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
       "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.0-Beta/kotlin-stdlib-jdk8-1.9.0-Beta.jar"
     ],
     "coordinates": {
@@ -69,36 +175,6 @@
     },
     "extras": {
       "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-test-1.9.0-Beta.jar (org.jetbrains.kotlin:kotlin-test:1.9.0-Beta)",
-      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
-    }
-  },
-  {
-    "binaryType": "KOTLIN_COMPILE",
-    "classpath": [
-      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.0-Beta/kotlin-stdlib-jdk7-1.9.0-Beta.jar"
-    ],
-    "coordinates": {
-      "group": "org.jetbrains.kotlin",
-      "module": "kotlin-stdlib-jdk7",
-      "version": "1.9.0-Beta"
-    },
-    "extras": {
-      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-jdk7-1.9.0-Beta.jar (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.0-Beta)",
-      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
-    }
-  },
-  {
-    "binaryType": "KOTLIN_COMPILE",
-    "classpath": [
-      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib/1.9.0-Beta/kotlin-stdlib-1.9.0-Beta.jar"
-    ],
-    "coordinates": {
-      "group": "org.jetbrains.kotlin",
-      "module": "kotlin-stdlib",
-      "version": "1.9.0-Beta"
-    },
-    "extras": {
-      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-1.9.0-Beta.jar (org.jetbrains.kotlin:kotlin-stdlib:1.9.0-Beta)",
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
     }
   },
@@ -191,6 +267,57 @@
           }
         }
       }
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/com/google/guava/guava/19.0/guava-19.0.jar"
+    ],
+    "coordinates": {
+      "group": "com.google.guava",
+      "module": "guava",
+      "version": "19.0"
+    },
+    "extras": {
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "guava-19.0.jar (com.google.guava:guava:19.0)",
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver",
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;sourcesClasspath": [
+        "{LOCAL_REPO}/com/google/guava/guava/19.0/guava-19.0-sources.jar"
+      ],
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;documentationClasspath": [
+        "{LOCAL_REPO}/com/google/guava/guava/19.0/guava-19.0-javadoc.jar"
+      ]
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.0-Beta/kotlin-stdlib-jdk7-1.9.0-Beta.jar"
+    ],
+    "coordinates": {
+      "group": "org.jetbrains.kotlin",
+      "module": "kotlin-stdlib-jdk7",
+      "version": "1.9.0-Beta"
+    },
+    "extras": {
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-jdk7-1.9.0-Beta.jar (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.0-Beta)",
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib/1.9.0-Beta/kotlin-stdlib-1.9.0-Beta.jar"
+    ],
+    "coordinates": {
+      "group": "org.jetbrains.kotlin",
+      "module": "kotlin-stdlib",
+      "version": "1.9.0-Beta"
+    },
+    "extras": {
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-1.9.0-Beta.jar (org.jetbrains.kotlin:kotlin-stdlib:1.9.0-Beta)",
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
     }
   },
   {

@@ -12,4 +12,11 @@ class KmpAndroidFirstLibClassTest {
         assert(x.callKmpSecondLibClass() == x.callAndroidLibClass())
         assert(x.callJvmLibClass() == x.callAndroidLibClass())
     }
+
+    @Test
+    fun testImplementationDependencyFromCommon() {
+        assert(
+            com.google.common.math.IntMath.checkedAdd(2, 3) == 5
+        )
+    }
 }

@@ -17,6 +17,27 @@
   {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
+      "{LOCAL_REPO}/com/google/guava/guava/19.0/guava-19.0.jar"
+    ],
+    "coordinates": {
+      "group": "com.google.guava",
+      "module": "guava",
+      "version": "19.0"
+    },
+    "extras": {
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "guava-19.0.jar (com.google.guava:guava:19.0)",
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver",
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;sourcesClasspath": [
+        "{LOCAL_REPO}/com/google/guava/guava/19.0/guava-19.0-sources.jar"
+      ],
+      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;documentationClasspath": [
+        "{LOCAL_REPO}/com/google/guava/guava/19.0/guava-19.0-javadoc.jar"
+      ]
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
       "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.0-Beta/kotlin-stdlib-jdk7-1.9.0-Beta.jar"
     ],
     "coordinates": {

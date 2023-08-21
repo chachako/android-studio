@@ -22,6 +22,8 @@ import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.androidExtensionOnKotlinExtensionName
 import com.android.utils.appendCapitalized
 import org.gradle.api.NamedDomainObjectFactory
+import org.gradle.api.Project
+import org.gradle.api.artifacts.Dependency
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -32,6 +34,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.targetHierarchy.SourceSetTreeClass
 
 @OptIn(ExternalKotlinTargetApi::class)
 internal class KotlinMultiplatformAndroidCompilationFactory(
+    private val project: Project,
     private val target: KotlinMultiplatformAndroidTargetImpl,
     private val kotlinExtension: KotlinMultiplatformExtension,
     private val androidExtension: KotlinMultiplatformAndroidExtensionImpl
@@ -69,11 +72,19 @@ internal class KotlinMultiplatformAndroidCompilationFactory(
 
             if (isTestComponent) {
                 compilationAssociator = CompilationAssociator { auxiliary, main ->
-                    // No-op when associating a test compilation with a main compilation since we
-                    // add a dependency from the configurations of the test components on the main
-                    // project later.
-                    if (main.compilationName != KmpPredefinedAndroidCompilation.MAIN.compilationName) {
-                        // TODO(KT-59562): kotlin will provide an external API of this at some point
+                    // When associating a test compilation with a main compilation, we add a
+                    // dependency from the configurations of the test components on the main project
+                    // later. But we still need to add implementation and compileOnly dependencies
+                    // from the main compilation to the test compilation to be consistent with the
+                    // behaviour of the other kotlin targets.
+                    if (main.compilationName == KmpPredefinedAndroidCompilation.MAIN.compilationName) {
+                        auxiliary.compileDependencyConfigurationName.addAllDependenciesFromOtherConfigurations(
+                            project,
+                            main.implementationConfigurationName,
+                            main.compileOnlyConfigurationName
+                        )
+                    } else {
+                        // TODO(b/295485387): kotlin will provide an external API of this in 1.9.20
                         val defaultAssociator = org.jetbrains.kotlin.gradle.plugin.mpp.compilationImpl.DefaultKotlinCompilationAssociator
                         defaultAssociator.associate(
                             target,
@@ -102,6 +113,25 @@ internal class KotlinMultiplatformAndroidCompilationFactory(
                     SourceSetTreeClassifier.Name(it)
                 } ?: SourceSetTreeClassifier.None
             else -> SourceSetTreeClassifier.Default
+        }
+    }
+
+    private fun String.addAllDependenciesFromOtherConfigurations(
+        project: Project,
+        vararg configurationNames: String
+    ) {
+        project.configurations.named(this).configure { receiverConfiguration ->
+            receiverConfiguration.dependencies.addAllLater(
+                project.objects.listProperty(Dependency::class.java).apply {
+                    set(
+                        project.provider {
+                            configurationNames
+                                .map { project.configurations.getByName(it) }
+                                .flatMap { it.allDependencies }
+                        }
+                    )
+                }
+            )
         }
     }
 }

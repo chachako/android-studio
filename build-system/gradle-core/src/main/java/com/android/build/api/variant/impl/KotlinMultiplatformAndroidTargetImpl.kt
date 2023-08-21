@@ -41,9 +41,10 @@ internal class KotlinMultiplatformAndroidTargetImpl(
         project.objects.domainObjectContainer(
             KotlinMultiplatformAndroidCompilation::class.java,
             KotlinMultiplatformAndroidCompilationFactory(
-                this,
-                kotlinExtension,
-                androidExtension
+                project = project,
+                target = this,
+                kotlinExtension = kotlinExtension,
+                androidExtension = androidExtension
             )
         )
 
