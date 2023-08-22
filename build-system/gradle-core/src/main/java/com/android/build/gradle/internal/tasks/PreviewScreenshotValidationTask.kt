@@ -26,6 +26,7 @@ import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.core.ComponentType
+import com.android.utils.usLocaleCapitalize
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
@@ -95,6 +96,11 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
 
     @TaskAction
     override fun doTaskAction() {
+        if (goldenImageDir.asFileTree.isEmpty) {
+            throw GradleException("No screenshots were found. To generate screenshots to"
+                    + " test against, run 'previewScreenshotUpdate${variantName.usLocaleCapitalize()}AndroidTest`")
+        }
+
         cliParams["previewJar"] = screenshotCliJar.singleFile.absolutePath
         cliParams["layoutlib.dir"] = layoutlibDir.singleFile.toPath().toString()
         val testClassesDependencies = testClassesDir.files
