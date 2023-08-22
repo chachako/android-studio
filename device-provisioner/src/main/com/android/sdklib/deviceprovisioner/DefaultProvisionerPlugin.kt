@@ -50,8 +50,7 @@ class DefaultProvisionerPlugin(val scope: CoroutineScope, private val defaultIco
       }
     val handle =
       DefaultDeviceHandle(
-        // Lifecycle is the same as the ConnectedDevice
-        device.scope.createChildScope(isSupervisor = true),
+        scope.createChildScope(isSupervisor = true),
         Connected(deviceProperties, device)
       )
 

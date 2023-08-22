@@ -28,7 +28,6 @@ import java.time.Duration
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -39,6 +38,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -150,7 +150,7 @@ private constructor(
         .trackSetChanges()
         .collect {
           if (it is Add) {
-            offerWhileConnected(it.value)
+            offerWhileConnected(this, it.value)
           }
         }
     }
@@ -173,21 +173,25 @@ private constructor(
    * Launches a coroutine that runs for the lifetime of the device, offering it to the plugins in
    * priority order. When it is claimed, wait to see if it becomes unclaimed, then offer it again.
    */
-  private suspend fun offerWhileConnected(device: ConnectedDevice) {
-    device.scope.launch {
-      logger.debug { "Offering ${device.serialNumber}" }
-      while (currentCoroutineContext().isActive) {
-        // Wait until the device becomes online, then offer it to a plugin.
-        device.deviceInfoFlow.takeWhile { it.deviceState != DeviceState.ONLINE }.collect()
+  private fun offerWhileConnected(scope: CoroutineScope, device: ConnectedDevice) {
+    val job =
+      scope.launch {
+        logger.debug { "Offering ${device.serialNumber}" }
+        while (device.scope.isActive) {
+          // Wait until the device becomes online, then offer it to a plugin.
+          device.deviceInfoFlow.takeWhile { it.deviceState != DeviceState.ONLINE }.collect()
 
-        val handle = offer(device)
+          val handle = offer(device)
 
-        // Once it is claimed, it's the plugin's responsibility; we wait until the plugin no
-        // longer holds the device before re-offering it.
-        handle.stateFlow.takeWhile { it.connectedDevice == device }.collect()
-        logger.debug { "Re-offering ${device.serialNumber}" }
+          // Once it is claimed, it's the plugin's responsibility; we wait until the plugin no
+          // longer holds the device before re-offering it.
+          handle.stateFlow.takeWhile { it.connectedDevice == device }.collect()
+          logger.debug { "Re-offering ${device.serialNumber}" }
+        }
       }
-    }
+    // When the device terminates, cancel the above job, which may be stuck collecting a StateFlow
+    // if we don't do this.
+    device.scope.coroutineContext.job.invokeOnCompletion { job.cancel() }
   }
 
   /**
