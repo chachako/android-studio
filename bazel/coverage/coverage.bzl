@@ -83,7 +83,7 @@ def coverage_report(name, tests, srcpath_include = [], srcpath_exclude = []):
         ],
         outs = ["{}/lcov".format(name)],
         tools = [":drop_exempt"],
-        cmd = "python $(location :drop_exempt) <{lcov} >$@ {em}".format(
+        cmd = "python3 $(location :drop_exempt) <{lcov} >$@ {em}".format(
             em = "$(location @baseline//:merged-baseline-exempt_markers)",
             lcov = "$(location {}.lcov.unexempted)".format(name),
         ),
