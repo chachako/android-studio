@@ -76,10 +76,9 @@ internal class AdblibIDeviceWrapper(
     private val propertyFetcher = PropertyFetcher(this)
 
     private val iDeviceSharedImpl = IDeviceSharedImpl(this)
-    private val deviceClientManager by lazy {
+    private val deviceClientManager =
         AdbLibClientManagerFactory.createClientManager(connectedDevice.session)
             .createDeviceClientManager(bridge, this)
-    }
 
     /** Name and path of the AVD  */
     private val mAvdData = connectedDevice.session.scope.async { createAvdData() }

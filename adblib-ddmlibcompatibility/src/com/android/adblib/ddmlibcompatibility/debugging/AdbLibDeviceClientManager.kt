@@ -98,8 +98,10 @@ internal class AdbLibDeviceClientManager(
                 throw CancellationException(msg)
             }
 
+            waitForDeviceOnline(connectedDevice)
+
             // Track processes running on the device
-            launchProcessTracking(connectedDevice)
+            startProcessTracking(connectedDevice)
         }
     }
 
@@ -113,7 +115,13 @@ internal class AdbLibDeviceClientManager(
             }
     }
 
-    private suspend fun launchProcessTracking(device: ConnectedDevice) {
+    private suspend fun waitForDeviceOnline(connectedDevice: ConnectedDevice) {
+        connectedDevice.deviceInfoFlow.first { deviceInfo ->
+            deviceInfo.deviceState == com.android.adblib.DeviceState.ONLINE
+        }
+    }
+
+    private suspend fun startProcessTracking(device: ConnectedDevice) {
         val host = ProcessTrackerHostImpl(device)
         if (device.isAppProcessTrackerSupported()) {
             AppProcessTracker(host).startTracking()

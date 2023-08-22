@@ -300,6 +300,7 @@ class AdblibIDeviceWrapperTest {
         assertEquals("test1-test2-device1", adblibIDeviceWrapper.name)
     }
 
+    @Test
     fun getClients() = runBlockingWithTimeout {
         // Prepare
         val (connectedDevice, deviceState) = createConnectedDevice(
@@ -312,6 +313,25 @@ class AdblibIDeviceWrapperTest {
         yieldUntil {adblibIDeviceWrapper.clients.size == 1}
         assertEquals(10, adblibIDeviceWrapper.clients[0].clientData.pid)
     }
+
+    @Test
+    fun getClients_whenDeviceStatusTransitionsToOnlineAfterAdblibIDeviceWrapperIsCreated() =
+        runBlockingWithTimeout {
+            // Prepare
+            val (connectedDevice, deviceState) = createConnectedDevice(
+                "device1", DeviceState.DeviceStatus.OFFLINE
+            )
+            val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+
+            // Act
+            deviceState.startClient(10, 0, "a.b.c", false)
+            assertEquals(0, adblibIDeviceWrapper.clients.size)
+            deviceState.deviceStatus = DeviceState.DeviceStatus.ONLINE
+
+            // Assert
+            yieldUntil { adblibIDeviceWrapper.clients.size == 1 }
+            assertEquals(10, adblibIDeviceWrapper.clients[0].clientData.pid)
+        }
 
     @Test
     fun getClient() = runBlockingWithTimeout {
