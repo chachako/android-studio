@@ -463,6 +463,9 @@ public class GroovyGradleVisitor extends GradleVisitor {
 
     @Override
     public int getStartOffset(@NonNull GradleContext context, @NonNull Object cookie) {
+        if (!(cookie instanceof ASTNode)) {
+            return -1;
+        }
         ASTNode node = (ASTNode) cookie;
         Pair<Integer, Integer> offsets = getOffsets(node, context);
         return offsets.getFirst();
