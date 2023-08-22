@@ -26,7 +26,7 @@ import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.crash.PluginCrashReporter
 import com.android.build.gradle.internal.dependency.AndroidAttributes
-import com.android.build.gradle.internal.dependency.getDexingArtifactConfiguration
+import com.android.build.gradle.internal.dependency.DexingRegistration
 import com.android.build.gradle.internal.errors.MessageReceiverImpl
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
@@ -38,6 +38,8 @@ import com.android.build.gradle.internal.tasks.DexMergingAction.MERGE_LIBRARY_PR
 import com.android.build.gradle.internal.tasks.DexMergingAction.MERGE_PROJECT
 import com.android.build.gradle.internal.tasks.DexMergingAction.MERGE_TRANSFORMED_CLASSES
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
+import com.android.build.gradle.internal.tasks.factory.features.DexingTaskCreationAction
+import com.android.build.gradle.internal.tasks.factory.features.DexingTaskCreationActionImpl
 import com.android.build.gradle.internal.utils.getGlobalSyntheticsInput
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
@@ -45,6 +47,7 @@ import com.android.build.gradle.options.IntegerOption
 import com.android.build.gradle.options.ProjectOptions
 import com.android.build.gradle.options.SyncOptions
 import com.android.build.gradle.tasks.toSerializable
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.dexing.DexArchiveEntry
 import com.android.builder.dexing.DexArchiveMerger
 import com.android.builder.dexing.DexEntry
@@ -56,9 +59,6 @@ import com.android.builder.dexing.getSortedFilesInDir
 import com.android.builder.dexing.getSortedRelativePathsInJar
 import com.android.builder.dexing.isJarFile
 import com.android.builder.files.SerializableFileChanges
-import com.android.build.gradle.internal.tasks.factory.features.DexingTaskCreationAction
-import com.android.build.gradle.internal.tasks.factory.features.DexingTaskCreationActionImpl
-import com.android.buildanalyzer.common.TaskCategory
 import com.android.utils.FileUtils
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Throwables
@@ -356,7 +356,8 @@ abstract class DexMergingTask : NewIncrementalTask() {
             creationConfig: ApkCreationConfig,
             action: DexMergingAction
         ): FileCollection {
-            val attributes = getDexingArtifactConfiguration(creationConfig).getAttributes()
+            val attributes =
+                DexingRegistration.ComponentSpecificParameters(creationConfig).getAttributes()
 
             fun forAction(action: DexMergingAction): FileCollection {
                 when (action) {
@@ -393,14 +394,10 @@ abstract class DexMergingTask : NewIncrementalTask() {
                                     LibraryElements::class.java,
                                     LibraryElements.CLASSES
                                 )
-                            check(!attributes.namedAttributes.containsKey(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE))
-                            val updatedAttributes = AndroidAttributes(
-                                stringAttributes = attributes.stringAttributes,
-                                namedAttributes = attributes.namedAttributes + Pair(
-                                    LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE,
-                                    classesLibraryElements
-                                ),
-                            )
+                            val updatedAttributes = attributes +
+                                    AndroidAttributes(
+                                        namedAttributes = mapOf(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE to classesLibraryElements)
+                                    )
                             creationConfig.variantDependencies.getArtifactFileCollection(
                                 AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                                 AndroidArtifacts.ArtifactScope.PROJECT,

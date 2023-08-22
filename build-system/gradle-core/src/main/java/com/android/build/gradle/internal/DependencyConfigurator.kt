@@ -37,6 +37,7 @@ import com.android.build.gradle.internal.dependency.AsmClassesTransform.Companio
 import com.android.build.gradle.internal.dependency.ClassesDirToClassesTransform
 import com.android.build.gradle.internal.dependency.CollectClassesTransform
 import com.android.build.gradle.internal.dependency.CollectResourceSymbolsTransform
+import com.android.build.gradle.internal.dependency.DexingRegistration
 import com.android.build.gradle.internal.dependency.EnumerateClassesTransform
 import com.android.build.gradle.internal.dependency.ExtractAarTransform
 import com.android.build.gradle.internal.dependency.ExtractCompileSdkShimTransform
@@ -57,7 +58,6 @@ import com.android.build.gradle.internal.dependency.PlatformAttrTransform
 import com.android.build.gradle.internal.dependency.RecalculateStackFramesTransform.Companion.registerGlobalRecalculateStackFramesTransform
 import com.android.build.gradle.internal.dependency.RecalculateStackFramesTransform.Companion.registerRecalculateStackFramesTransformForComponent
 import com.android.build.gradle.internal.dependency.VersionedCodeShrinker
-import com.android.build.gradle.internal.dependency.getDexingArtifactConfigurations
 import com.android.build.gradle.internal.dependency.registerDexingOutputSplitTransform
 import com.android.build.gradle.internal.dsl.BaseFlavor
 import com.android.build.gradle.internal.dsl.BuildType
@@ -66,8 +66,8 @@ import com.android.build.gradle.internal.dsl.ModulePropertyKey
 import com.android.build.gradle.internal.dsl.ProductFlavor
 import com.android.build.gradle.internal.dsl.SigningConfig
 import com.android.build.gradle.internal.packaging.getDefaultDebugKeystoreSigningConfig
-import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.publishing.AarOrJarTypeToConsume
+import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.res.namespaced.AutoNamespacePreProcessTransform
 import com.android.build.gradle.internal.res.namespaced.AutoNamespaceTransform
 import com.android.build.gradle.internal.scope.InternalArtifactType
@@ -98,7 +98,6 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.artifacts.transform.TransformAction
-import org.gradle.api.artifacts.transform.TransformParameters
 import org.gradle.api.artifacts.transform.TransformSpec
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.AttributesSchema
@@ -831,21 +830,19 @@ class DependencyConfigurator(
             val bootClasspath = project.files(bootClasspathConfig.bootClasspath)
             val services = allComponents.first().services
             if (projectOptions[BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM]) {
-                // Disable incremental dexing for main and androidTest components in dynamic
-                // feature module (b/246326007)
-                val disableIncrementalDexing = allComponents.any { it.componentType.isDynamicFeature }
-                for (artifactConfiguration in getDexingArtifactConfigurations(
-                        allComponents
-                )) {
-                    artifactConfiguration.registerTransform(
-                        project.name,
-                        dependencies,
-                        bootClasspath,
-                        getDesugarLibConfig(services),
-                        SyncOptions.getErrorFormatMode(projectOptions),
-                        disableIncrementalDexing = disableIncrementalDexing
+                DexingRegistration.registerTransforms(
+                    allComponents,
+                    DexingRegistration.ComponentAgnosticParameters(
+                        projectName = project.name,
+                        dependencyHandler = dependencies,
+                        bootClasspath = bootClasspath,
+                        libConfiguration = getDesugarLibConfig(services),
+                        errorFormat = SyncOptions.getErrorFormatMode(projectOptions),
+                        // Disable incremental dexing for main and androidTest components in dynamic
+                        // feature module (b/246326007)
+                        disableIncrementalDexing = allComponents.any { it.componentType.isDynamicFeature }
                     )
-                }
+                )
             }
 
             val d8Version = Version.getVersionString()
