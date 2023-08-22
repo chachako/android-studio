@@ -16,6 +16,7 @@
 package com.android.adblib.tools.debugging
 
 import com.android.adblib.AdbSession
+import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -45,7 +46,12 @@ interface JdwpSessionPipelineFactory {
      * @param previousPipeline The [JdwpSessionPipeline] the new end point should forward packets to
      * and from
      */
-    fun create(session: AdbSession, previousPipeline: JdwpSessionPipeline): JdwpSessionPipeline?
+    fun create(
+        session: AdbSession,
+        device: ConnectedDevice,
+        pid: Int,
+        previousPipeline: JdwpSessionPipeline
+    ): JdwpSessionPipeline?
 }
 
 /**
