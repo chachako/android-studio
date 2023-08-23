@@ -535,14 +535,14 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
                 val mContext: Context
                 fun test() {
                   // Intent(Context, Class)
-                  PendingIntent.getActivity(null, 0, Intent(mContext, PendingIntentKotlinTest::class), PendingIntent.FLAG_MUTABLE)
-                  PendingIntent.getBroadcast(null, 0, Intent(mContext, PendingIntentKotlinTest::class), PendingIntent.FLAG_MUTABLE)
-                  PendingIntent.getService(null, 0, Intent(mContext, PendingIntentKotlinTest::class), PendingIntent.FLAG_MUTABLE)
+                  PendingIntent.getActivity(null, 0, Intent(mContext, PendingIntentKotlinTest::class.java), PendingIntent.FLAG_MUTABLE)
+                  PendingIntent.getBroadcast(null, 0, Intent(mContext, PendingIntentKotlinTest::class.java), PendingIntent.FLAG_MUTABLE)
+                  PendingIntent.getService(null, 0, Intent(mContext, PendingIntentKotlinTest::class.java), PendingIntent.FLAG_MUTABLE)
 
                   // Intent(String, Uri, Context, Class)
-                  PendingIntent.getActivity(null, 0, Intent("TEST", mUri, mContext, PendingIntentKotlinTest::class), PendingIntent.FLAG_MUTABLE)
-                  PendingIntent.getBroadcast(null, 0, Intent("TEST", mUri, mContext, PendingIntentKotlinTest::class), PendingIntent.FLAG_MUTABLE)
-                  PendingIntent.getService(null, 0, Intent("TEST", mUri, mContext, PendingIntentKotlinTest::class), PendingIntent.FLAG_MUTABLE)
+                  PendingIntent.getActivity(null, 0, Intent("TEST", mUri, mContext, PendingIntentKotlinTest::class.java), PendingIntent.FLAG_MUTABLE)
+                  PendingIntent.getBroadcast(null, 0, Intent("TEST", mUri, mContext, PendingIntentKotlinTest::class.java), PendingIntent.FLAG_MUTABLE)
+                  PendingIntent.getService(null, 0, Intent("TEST", mUri, mContext, PendingIntentKotlinTest::class.java), PendingIntent.FLAG_MUTABLE)
                 }
               }
               """
@@ -618,13 +618,13 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
                 val mContext: Context
                 fun test() {
                   // Intent(Context, Class)
-                  val intentOne = Intent(mContext, PendingIntentKotlinTest::class)
+                  val intentOne = Intent(mContext, PendingIntentKotlinTest::class.java)
                   PendingIntent.getActivity(null, 0, intentOne, PendingIntent.FLAG_MUTABLE)
                   PendingIntent.getBroadcast(null, 0, intentOne, PendingIntent.FLAG_MUTABLE)
                   PendingIntent.getService(null, 0, intentOne, PendingIntent.FLAG_MUTABLE)
 
                   // Intent(String, Uri, Context, Class)
-                  val intentTwo = Intent("TEST", mUri, mContext, PendingIntentKotlinTest::class)
+                  val intentTwo = Intent("TEST", mUri, mContext, PendingIntentKotlinTest::class.java)
                   PendingIntent.getActivity(null, 0, intentTwo, PendingIntent.FLAG_MUTABLE)
                   PendingIntent.getBroadcast(null, 0, intentTwo, PendingIntent.FLAG_MUTABLE)
                   PendingIntent.getService(null, 0, intentTwo, PendingIntent.FLAG_MUTABLE)
@@ -637,6 +637,167 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
       )
       .run()
       .expectClean()
+  }
+
+  fun testMutableAndExplicitChangedToImplicit_complains() {
+    lint()
+      .projects(
+        project(
+          manifest().targetSdk(34),
+          java(
+              """
+              package test.pkg;
+
+              import android.app.PendingIntent;
+              import android.content.Context;
+              import android.content.Intent;
+              import android.net.Uri;
+
+              public class PendingIntentJavaTest {
+                Context mContext;
+                Uri mUri;
+                protected void test() {
+                  Intent intentOne = new Intent(mContext, PendingIntentJavaTest.class);
+                  intentOne.setPackage(null);
+                  PendingIntent.getActivity(null, 0, intentOne, PendingIntent.FLAG_MUTABLE); // does not complain
+                  intentOne.setComponent(null);
+                  PendingIntent.getBroadcast(null, 0, intentOne, PendingIntent.FLAG_MUTABLE); // complains
+                  intentOne.setPackage("package");
+                  PendingIntent.getService(null, 0, intentOne, PendingIntent.FLAG_MUTABLE); // does not complain
+                  PendingIntent.getActivities(null, 0, { intentOne.setPackage(null), intentOne }, PendingIntent.FLAG_MUTABLE); // complains
+                  PendingIntent.getActivities(null, 0, new Intent[] {  intentOne, intentOne }, PendingIntent.FLAG_MUTABLE); // complains
+                  intentOne.setClassName(mContext, "class");
+                  Intent[] intentsOneWithInitializer = new Intent[] {intentOne, intentOne};
+                  PendingIntent.getActivities(null, 0, intentsOneWithInitializer, PendingIntent.FLAG_MUTABLE); // does not complain
+                  intentOne.setComponent(null);
+                  Intent[] intentsOneWithDimensions = new Intent[2];
+                  intentsOneWithDimensions[0] = new Intent(mContext, PendingIntentJavaTest.class);
+                  intentsOneWithDimensions[1] = intentOne;
+                  PendingIntent.getActivities(null, 0, intentsOneWithDimensions, PendingIntent.FLAG_MUTABLE); // complains
+                  Intent intentTwo = new Intent().setPackage("package");
+                  PendingIntent.getActivity(null, 0, intentTwo, PendingIntent.FLAG_MUTABLE); // does not complain
+                  intentTwo.setPackage(null);
+                  PendingIntent.getActivity(null, 0, intentTwo, PendingIntent.FLAG_MUTABLE); // complains
+                }
+              }
+              """
+            )
+            .indented(),
+          kotlin(
+              """
+              package test.pkg
+
+              import android.app.PendingIntent
+              import android.content.Context
+              import android.content.Intent
+              import android.net.Uri
+
+              class PendingIntentKotlinTest {
+                val mUri: Uri
+                val mContext: Context
+                fun test() {
+                  val intentOne = Intent(mContext, PendingIntentKotlinTest::class.java)
+                  intentOne.setPackage(null)
+                  PendingIntent.getActivity(null, 0, intentOne, PendingIntent.FLAG_MUTABLE) // does not complain
+                  intentOne.setComponent(null)
+                  PendingIntent.getBroadcast(null, 0, intentOne, PendingIntent.FLAG_MUTABLE) // complains
+                  intentOne.setPackage("package")
+                  PendingIntent.getService(null, 0, intentOne, PendingIntent.FLAG_MUTABLE) // does not complain
+                  PendingIntent.getService(null, 0, intentOne.setPackage(null), PendingIntent.FLAG_MUTABLE) // complains
+                }
+              }
+            """
+            )
+            .indented()
+        )
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/PendingIntentJavaTest.java:16: Error: Mutable implicit PendingIntent will throw an exception, follow either of these recommendations: for an existing PendingIntent use FLAG_NO_CREATE and for a new PendingIntent either make it immutable or make the Intent within explicit [MutableImplicitPendingIntent]
+            PendingIntent.getBroadcast(null, 0, intentOne, PendingIntent.FLAG_MUTABLE); // complains
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/PendingIntentJavaTest.java:19: Error: Mutable implicit PendingIntent will throw an exception, follow either of these recommendations: for an existing PendingIntent use FLAG_NO_CREATE and for a new PendingIntent either make it immutable or make the Intent within explicit [MutableImplicitPendingIntent]
+            PendingIntent.getActivities(null, 0, { intentOne.setPackage(null), intentOne }, PendingIntent.FLAG_MUTABLE); // complains
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/PendingIntentJavaTest.java:20: Error: Mutable implicit PendingIntent will throw an exception, follow either of these recommendations: for an existing PendingIntent use FLAG_NO_CREATE and for a new PendingIntent either make it immutable or make the Intent within explicit [MutableImplicitPendingIntent]
+            PendingIntent.getActivities(null, 0, new Intent[] {  intentOne, intentOne }, PendingIntent.FLAG_MUTABLE); // complains
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/PendingIntentJavaTest.java:28: Error: Mutable implicit PendingIntent will throw an exception, follow either of these recommendations: for an existing PendingIntent use FLAG_NO_CREATE and for a new PendingIntent either make it immutable or make the Intent within explicit [MutableImplicitPendingIntent]
+            PendingIntent.getActivities(null, 0, intentsOneWithDimensions, PendingIntent.FLAG_MUTABLE); // complains
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/PendingIntentJavaTest.java:32: Error: Mutable implicit PendingIntent will throw an exception, follow either of these recommendations: for an existing PendingIntent use FLAG_NO_CREATE and for a new PendingIntent either make it immutable or make the Intent within explicit [MutableImplicitPendingIntent]
+            PendingIntent.getActivity(null, 0, intentTwo, PendingIntent.FLAG_MUTABLE); // complains
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/PendingIntentKotlinTest.kt:16: Error: Mutable implicit PendingIntent will throw an exception, follow either of these recommendations: for an existing PendingIntent use FLAG_NO_CREATE and for a new PendingIntent either make it immutable or make the Intent within explicit [MutableImplicitPendingIntent]
+            PendingIntent.getBroadcast(null, 0, intentOne, PendingIntent.FLAG_MUTABLE) // complains
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/PendingIntentKotlinTest.kt:19: Error: Mutable implicit PendingIntent will throw an exception, follow either of these recommendations: for an existing PendingIntent use FLAG_NO_CREATE and for a new PendingIntent either make it immutable or make the Intent within explicit [MutableImplicitPendingIntent]
+            PendingIntent.getService(null, 0, intentOne.setPackage(null), PendingIntent.FLAG_MUTABLE) // complains
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        7 errors, 0 warnings
+        """
+      )
+      .expectFixDiffs(
+        """
+        Fix for src/test/pkg/PendingIntentJavaTest.java line 16: Replace FLAG_MUTABLE with FLAG_IMMUTABLE:
+        @@ -16 +16
+        -     PendingIntent.getBroadcast(null, 0, intentOne, PendingIntent.FLAG_MUTABLE); // complains
+        +     PendingIntent.getBroadcast(null, 0, intentOne, PendingIntent.FLAG_IMMUTABLE); // complains
+        Fix for src/test/pkg/PendingIntentJavaTest.java line 16: Add FLAG_NO_CREATE:
+        @@ -16 +16
+        -     PendingIntent.getBroadcast(null, 0, intentOne, PendingIntent.FLAG_MUTABLE); // complains
+        +     PendingIntent.getBroadcast(null, 0, intentOne, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_NO_CREATE); // complains
+        Fix for src/test/pkg/PendingIntentJavaTest.java line 19: Replace FLAG_MUTABLE with FLAG_IMMUTABLE:
+        @@ -19 +19
+        -     PendingIntent.getActivities(null, 0, { intentOne.setPackage(null), intentOne }, PendingIntent.FLAG_MUTABLE); // complains
+        +     PendingIntent.getActivities(null, 0, { intentOne.setPackage(null), intentOne }, PendingIntent.FLAG_IMMUTABLE); // complains
+        Fix for src/test/pkg/PendingIntentJavaTest.java line 19: Add FLAG_NO_CREATE:
+        @@ -19 +19
+        -     PendingIntent.getActivities(null, 0, { intentOne.setPackage(null), intentOne }, PendingIntent.FLAG_MUTABLE); // complains
+        +     PendingIntent.getActivities(null, 0, { intentOne.setPackage(null), intentOne }, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_NO_CREATE); // complains
+        Fix for src/test/pkg/PendingIntentJavaTest.java line 20: Replace FLAG_MUTABLE with FLAG_IMMUTABLE:
+        @@ -20 +20
+        -     PendingIntent.getActivities(null, 0, new Intent[] {  intentOne, intentOne }, PendingIntent.FLAG_MUTABLE); // complains
+        +     PendingIntent.getActivities(null, 0, new Intent[] {  intentOne, intentOne }, PendingIntent.FLAG_IMMUTABLE); // complains
+        Fix for src/test/pkg/PendingIntentJavaTest.java line 20: Add FLAG_NO_CREATE:
+        @@ -20 +20
+        -     PendingIntent.getActivities(null, 0, new Intent[] {  intentOne, intentOne }, PendingIntent.FLAG_MUTABLE); // complains
+        +     PendingIntent.getActivities(null, 0, new Intent[] {  intentOne, intentOne }, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_NO_CREATE); // complains
+        Fix for src/test/pkg/PendingIntentJavaTest.java line 28: Replace FLAG_MUTABLE with FLAG_IMMUTABLE:
+        @@ -28 +28
+        -     PendingIntent.getActivities(null, 0, intentsOneWithDimensions, PendingIntent.FLAG_MUTABLE); // complains
+        +     PendingIntent.getActivities(null, 0, intentsOneWithDimensions, PendingIntent.FLAG_IMMUTABLE); // complains
+        Fix for src/test/pkg/PendingIntentJavaTest.java line 28: Add FLAG_NO_CREATE:
+        @@ -28 +28
+        -     PendingIntent.getActivities(null, 0, intentsOneWithDimensions, PendingIntent.FLAG_MUTABLE); // complains
+        +     PendingIntent.getActivities(null, 0, intentsOneWithDimensions, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_NO_CREATE); // complains
+        Fix for src/test/pkg/PendingIntentJavaTest.java line 32: Replace FLAG_MUTABLE with FLAG_IMMUTABLE:
+        @@ -32 +32
+        -     PendingIntent.getActivity(null, 0, intentTwo, PendingIntent.FLAG_MUTABLE); // complains
+        +     PendingIntent.getActivity(null, 0, intentTwo, PendingIntent.FLAG_IMMUTABLE); // complains
+        Fix for src/test/pkg/PendingIntentJavaTest.java line 32: Add FLAG_NO_CREATE:
+        @@ -32 +32
+        -     PendingIntent.getActivity(null, 0, intentTwo, PendingIntent.FLAG_MUTABLE); // complains
+        +     PendingIntent.getActivity(null, 0, intentTwo, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_NO_CREATE); // complains
+        Fix for src/test/pkg/PendingIntentKotlinTest.kt line 16: Replace FLAG_MUTABLE with FLAG_IMMUTABLE:
+        @@ -16 +16
+        -     PendingIntent.getBroadcast(null, 0, intentOne, PendingIntent.FLAG_MUTABLE) // complains
+        +     PendingIntent.getBroadcast(null, 0, intentOne, PendingIntent.FLAG_IMMUTABLE) // complains
+        Fix for src/test/pkg/PendingIntentKotlinTest.kt line 16: Add FLAG_NO_CREATE:
+        @@ -16 +16
+        -     PendingIntent.getBroadcast(null, 0, intentOne, PendingIntent.FLAG_MUTABLE) // complains
+        +     PendingIntent.getBroadcast(null, 0, intentOne, PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_NO_CREATE) // complains
+        Fix for src/test/pkg/PendingIntentKotlinTest.kt line 19: Replace FLAG_MUTABLE with FLAG_IMMUTABLE:
+        @@ -19 +19
+        -     PendingIntent.getService(null, 0, intentOne.setPackage(null), PendingIntent.FLAG_MUTABLE) // complains
+        +     PendingIntent.getService(null, 0, intentOne.setPackage(null), PendingIntent.FLAG_IMMUTABLE) // complains
+        Fix for src/test/pkg/PendingIntentKotlinTest.kt line 19: Add FLAG_NO_CREATE:
+        @@ -19 +19
+        -     PendingIntent.getService(null, 0, intentOne.setPackage(null), PendingIntent.FLAG_MUTABLE) // complains
+        +     PendingIntent.getService(null, 0, intentOne.setPackage(null), PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_NO_CREATE) // complains
+        """
+      )
   }
 
   fun testImmutableAndImplicit_isClean() {
