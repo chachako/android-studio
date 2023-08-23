@@ -513,6 +513,7 @@ com/android/tools/build/gradle
   com/android/build/gradle/internal/test/report/style.css
   com/android/build/gradle/internal/testFixtures/
   com/android/build/gradle/internal/testing/
+  com/android/build/gradle/internal/testing/screenshot/
   com/android/build/gradle/internal/testing/utp/
   com/android/build/gradle/internal/testing/utp/worker/
   com/android/build/gradle/internal/transforms/
