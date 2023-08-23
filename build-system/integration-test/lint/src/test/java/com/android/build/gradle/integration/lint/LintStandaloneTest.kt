@@ -23,7 +23,6 @@ import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.truth.PathSubject.assertThat
-import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -142,6 +141,47 @@ class LintStandaloneTest(
         assertThat(file).contains("0 errors, 3 warnings")
     }
 
+    /**
+     * Regression test for b/294385251
+     */
+    @Test
+    fun checkDuplicatePlatformClasses() {
+        TestFileUtils.searchAndReplace(
+            project.buildFile,
+            "ignoreTestSources true",
+            "ignoreTestSources false"
+        )
+
+        // We expect no DuplicatePlatformClasses issue for testImplementation dependency.
+        TestFileUtils.appendToFile(
+            project.buildFile,
+            """
+                lint {
+                    enable 'DuplicatePlatformClasses'
+                }
+                dependencies {
+                    testImplementation 'commons-logging:commons-logging:1.2'
+                }
+            """.trimIndent()
+        )
+        getExecutor().run(":lint")
+        val lintReport = project.file("lint-results.txt")
+        assertThat(lintReport).exists()
+        assertThat(lintReport).doesNotContain("DuplicatePlatformClasses")
+
+        // We expect a DuplicatePlatformClasses issue for implementation dependency.
+        TestFileUtils.appendToFile(
+            project.buildFile,
+            """
+                dependencies {
+                    implementation 'commons-logging:commons-logging:1.2'
+                }
+            """.trimIndent()
+        )
+        getExecutor().expectFailure().run(":lint")
+        assertThat(lintReport).exists()
+        assertThat(lintReport).contains("DuplicatePlatformClasses")
+    }
 
     private fun getExecutor(): GradleTaskExecutor =
         project.executor()

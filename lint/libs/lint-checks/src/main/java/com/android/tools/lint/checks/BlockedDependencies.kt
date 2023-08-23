@@ -17,6 +17,7 @@
 package com.android.tools.lint.checks
 
 import com.android.tools.lint.detector.api.Project
+import com.android.tools.lint.model.LintModelArtifactType
 import com.android.tools.lint.model.LintModelDependency
 import java.util.ArrayDeque
 
@@ -26,9 +27,11 @@ class BlockedDependencies(val project: Project) {
   private var map: MutableMap<String, List<LintModelDependency>>? = null
 
   init {
-    // TODO: Should skip provided
-    project.buildVariant?.mainArtifact?.dependencies?.compileDependencies?.let {
-      visitLibraries(ArrayDeque(), it.roots)
+    val artifact = project.buildVariant?.artifact
+    // Allow duplicate platform classes in unit test dependencies (b/294385251).
+    if (artifact?.type != LintModelArtifactType.UNIT_TEST) {
+      // TODO: Should skip provided
+      artifact?.dependencies?.compileDependencies?.let { visitLibraries(ArrayDeque(), it.roots) }
     }
   }
 
