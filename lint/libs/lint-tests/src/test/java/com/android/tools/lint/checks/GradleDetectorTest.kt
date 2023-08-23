@@ -6639,6 +6639,35 @@ class GradleDetectorTest : AbstractCheckTest() {
     }
   }
 
+  fun testJavaLanguageLevelWithToolChains() {
+    lint()
+      .files(
+        gradle(
+            """
+            plugins {
+                id 'java'
+                id 'org.jetbrains.kotlin.jvm'
+                id 'com.android.lint'
+            }
+
+            java {
+                toolchain {
+                    languageVersion = JavaLanguageVersion.of(17)
+                }
+            }
+
+            kotlin {
+                jvmToolchain(17)
+            }
+            """
+          )
+          .indented()
+      )
+      .issues(JAVA_PLUGIN_LANGUAGE_LEVEL)
+      .run()
+      .expectClean()
+  }
+
   fun testJavaLanguageLevelCleanKts() {
     val sourceCompatibility =
       listOf(

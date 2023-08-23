@@ -691,6 +691,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       property == "include" && parent == "abi" || property == "abiFilters" && parent == "ndk"
     ) {
       checkForChromeOSAbiSplits(context, valueCookie, value)
+    } else if (parent == "toolchain" && property == "languageVersion") {
+      mDeclaredSourceCompatibility = true
+      mDeclaredTargetCompatibility = true
     }
   }
 
