@@ -1,3 +1,4 @@
+"""Defines the Maven artifacts which are fetched and checked into source."""
 ARTIFACTS = [
     "androidx.annotation:annotation:1.1.0",
     "androidx.test.services:test-services:1.4.2",
@@ -255,7 +256,10 @@ DATA = [
     "androidx.compose.compiler:compiler:1.3.2",
     "androidx.compose.compiler:compiler:1.5.1",
     "androidx.compose:compose-bom:pom:2022.10.00",
+    "androidx.compose:compose-bom:pom:2023.03.00",
+    "androidx.compose:compose-bom:pom:2023.06.00",
     "androidx.compose:compose-bom:pom:2023.08.00",
+    "androidx.compose.compiler:compiler:1.4.7",
     "androidx.compose.material:material:1.3.0",  # Needed by //tools/base/build-system/integration-test/...
     "androidx.compose.material:material:1.5.0",
     "androidx.compose.material:material:1.5.0-alpha04",
@@ -289,6 +293,8 @@ DATA = [
     "androidx.compose.ui:ui-graphics-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.ui:ui-tooling:1.2.0",
     "androidx.compose.ui:ui-tooling:1.3.0",  # Still needed from //tools/base/build-system/integration-tests
+    "androidx.compose.ui:ui-tooling:1.4.0",
+    "androidx.compose.ui:ui-tooling:1.4.3",
     "androidx.compose.ui:ui-tooling:1.5.0",
     "androidx.compose.ui:ui-tooling:1.5.0-alpha04",
     "androidx.compose.ui:ui-tooling:1.5.0-beta01",  # Necessary for Compose for TV.
@@ -321,6 +327,11 @@ DATA = [
     "androidx.databinding:viewbinding:7.4.1",
     "androidx.databinding:viewbinding:8.0.0-beta04",
     "androidx.emoji2:emoji2-views-helper:1.4.0",
+    "androidx.datastore:datastore-preferences-core:1.1.0-alpha04",
+    "androidx.datastore:datastore-preferences-core-jvm:1.1.0-alpha04",
+    "androidx.datastore:datastore-core-android:1.1.0-alpha04",
+    "androidx.datastore:datastore-core-okio-jvm:1.1.0-alpha04",
+    "androidx.emoji2:emoji2-views-helper:1.3.0",
     "androidx.emoji2:emoji2-views-helper:1.4.0-beta03",  # Needed for TemplateTest#testNewComposeWearActivityWithTileAndComplication
     "androidx.emoji2:emoji2-views-helper:1.4.0-beta04",  # Necessary for Compose for TV.
     "androidx.fragment:fragment:1.3.0",
@@ -343,6 +354,7 @@ DATA = [
     "androidx.lifecycle:lifecycle-service:2.6.1",
     "androidx.lifecycle:lifecycle-runtime:2.4.0",  # Needed for tools/data-binding:runtimeLibrariesAndroidX
     "androidx.lifecycle:lifecycle-runtime:2.6.1",
+    "androidx.lifecycle:lifecycle-runtime-compose:2.6.1",
     "androidx.lifecycle:lifecycle-runtime-ktx:2.4.0",  # Needed for tools/data-binding:runtimeLibrariesAndroidX
     "androidx.lifecycle:lifecycle-runtime-ktx:2.6.1",
     "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1",
@@ -433,11 +445,13 @@ DATA = [
     "com.google.android.horologist:horologist-tiles:0.4.8",
     "com.android.application:com.android.application.gradle.plugin:7.2.0",
     "com.android.application:com.android.application.gradle.plugin:7.4.1",
+    "com.android.application:com.android.application.gradle.plugin:7.4.2",
     "com.android.application:com.android.application.gradle.plugin:8.0.2",
     "com.android.application:com.android.application.gradle.plugin:8.1.0",
     "com.android.application:com.android.application.gradle.plugin:8.2.0-beta01",
     "com.android.library:com.android.library.gradle.plugin:7.2.0",
     "com.android.library:com.android.library.gradle.plugin:7.4.1",
+    "com.android.library:com.android.library.gradle.plugin:7.4.2",
     "com.android.library:com.android.library.gradle.plugin:8.0.2",
     "com.android.library:com.android.library.gradle.plugin:8.1.0",
     "com.android.library:com.android.library.gradle.plugin:8.2.0-beta01",
@@ -477,6 +491,7 @@ DATA = [
     "com.android.tools.build:aapt2:jar:windows:7.2.0-7984345",
     "com.android.tools.build:aapt2:jar:linux:7.3.0-8691043",
     "com.android.tools.build:aapt2:jar:linux:7.4.1-8841542",
+    "com.android.tools.build:aapt2:jar:linux:7.4.2-8841542",
     "com.android.tools.build:aapt2:jar:osx:7.4.1-8841542",
     "com.android.tools.build:aapt2:jar:windows:7.4.1-8841542",
     "com.android.tools.build:aapt2:jar:linux:8.0.2-9289358",
@@ -519,6 +534,7 @@ DATA = [
     "com.android.tools.lint:lint-gradle:30.2.0",
     "com.android.tools.lint:lint-gradle:30.3.0",
     "com.android.tools.lint:lint-gradle:30.4.1",
+    "com.android.tools.lint:lint-gradle:30.4.2",
     "com.android.tools.lint:lint-gradle:31.0.2",
     "com.android.tools.lint:lint-gradle:31.1.0",
     "com.android.tools.lint:lint-gradle:31.2.0-beta01",
@@ -564,11 +580,16 @@ DATA = [
     "com.google.dagger:hilt-android:2.40.1",
     "com.google.dagger:hilt-android-gradle-plugin:2.40.1",
     "com.google.dagger:hilt-compiler:2.40.1",
+    "com.google.devtools.ksp:symbol-processing:1.8.21-1.0.11",
     "com.google.devtools.ksp:symbol-processing-api:1.7.10-1.0.6",
     "com.google.devtools.ksp:symbol-processing-api:1.9.20-Beta-1.0.13",
     "com.google.devtools.ksp:symbol-processing-gradle-plugin:1.7.10-1.0.6",
     "com.google.devtools.ksp:symbol-processing-gradle-plugin:1.9.20-Beta-1.0.13",
     "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.7.10-1.0.6",
+    "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.9.0-1.0.11",
+    "com.google.devtools.ksp:symbol-processing-gradle-plugin:1.8.21-1.0.11",
+    "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.7.10-1.0.6",
+    "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.8.21-1.0.11",
     "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.9.20-Beta-1.0.13",
     "com.google.firebase:firebase-common:12.0.1",
     "com.google.guava:guava:20.0",
@@ -726,6 +747,7 @@ DATA = [
     "org.jetbrains.kotlin:kotlin-gradle-plugin-api:jar:gradle71:1.7.21",
     "org.jetbrains.kotlin:kotlin-gradle-plugin-api:jar:gradle76:1.8.0",
     "org.jetbrains.kotlin:kotlin-gradle-plugin-api:jar:gradle76:1.8.10",
+    "org.jetbrains.kotlin:kotlin-klib-commonizer-embeddable:1.8.21",
     "org.jetbrains.kotlin:kotlin-reflect:1.4.31",
     "org.jetbrains.kotlin:kotlin-reflect:1.5.21",
     "org.jetbrains.kotlin:kotlin-reflect:1.6.10",
@@ -767,6 +789,7 @@ DATA = [
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.0",
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20-Beta",
     "org.jetbrains.kotlin:kotlin-test-junit:1.7.10",
+    "org.jetbrains.kotlin.multiplatform:org.jetbrains.kotlin.multiplatform.gradle.plugin:1.8.21",
     "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1",
     "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.6",
     "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1",
