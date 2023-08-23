@@ -20,6 +20,7 @@ import org.gradle.api.Transformer
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
 import java.util.function.BiFunction
+import java.util.function.Predicate
 
 class FakeListProperty<T>(
     private val values: MutableList<T>? = null
@@ -29,6 +30,9 @@ class FakeListProperty<T>(
 
 
     override fun getOrNull(): List<T>? = values
+    override fun filter(predicate: Predicate<in MutableList<T>>): Provider<MutableList<T>> {
+        TODO("Not yet implemented")
+    }
 
     override fun getOrElse(p0: List<T>): List<T> = values ?: p0
 

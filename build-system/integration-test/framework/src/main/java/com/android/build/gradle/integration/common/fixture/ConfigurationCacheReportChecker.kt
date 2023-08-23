@@ -338,6 +338,11 @@ class ConfigurationCacheReportChecker {
                 location = "SdkAutoDownloadTest",
                 name = "android-sdk-license"
             ),
+            // TODO (b/302407501): fix configuration cache issue and remove the manifest data errors here
+            Error.fileSystemEntry(
+                location = "com.android.build.gradle.internal.manifest.ManifestDataKt",
+                name = "AndroidManifest.xml"
+            )
         ),
     )
 

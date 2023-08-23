@@ -25,6 +25,7 @@ import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
 import java.io.File
 import java.util.function.BiFunction
+import java.util.function.Predicate
 
 class FakeGradleDirectoryProperty(private val directory: Directory?) : DirectoryProperty {
 
@@ -35,6 +36,10 @@ class FakeGradleDirectoryProperty(private val directory: Directory?) : Directory
     override fun getOrElse(defaultValue: Directory): Directory = directory ?: defaultValue
 
     override fun <S : Any?> map(transformer: Transformer<out S?, in Directory>): Provider<S> {
+        TODO("Not yet implemented")
+    }
+
+    override fun filter(predicate: Predicate<in Directory>): Provider<Directory> {
         TODO("Not yet implemented")
     }
 

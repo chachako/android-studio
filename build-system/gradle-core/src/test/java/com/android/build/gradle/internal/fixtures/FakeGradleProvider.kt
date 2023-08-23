@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.fixtures
 import org.gradle.api.Transformer
 import org.gradle.api.provider.Provider
 import java.util.function.BiFunction
+import java.util.function.Predicate
 
 class FakeGradleProvider<T>(private val v: (()-> T)?): Provider<T> {
 
@@ -40,6 +41,10 @@ class FakeGradleProvider<T>(private val v: (()-> T)?): Provider<T> {
     override fun get() = orNull!!
 
     override fun getOrNull() = v?.invoke()
+    
+    override fun filter(predicate: Predicate<in T>): Provider<T> {
+        TODO("Not yet implemented")
+    }
 
     override fun orElse(p0: T): Provider<T> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.

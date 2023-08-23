@@ -20,6 +20,7 @@ import org.gradle.api.Transformer
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Provider
 import java.util.function.BiFunction
+import java.util.function.Predicate
 
 class FakeMapProperty<K, V>(
     private val values: MutableMap<K, V>? = null
@@ -28,6 +29,9 @@ class FakeMapProperty<K, V>(
     override fun get(): Map<K, V> = values ?: mapOf()
 
     override fun getOrNull(): Map<K, V>? = values
+    override fun filter(predicate: Predicate<in MutableMap<K, V>>): Provider<MutableMap<K, V>> {
+        TODO("Not yet implemented")
+    }
 
     override fun getOrElse(p0: Map<K, V>): Map<K, V> = values ?: p0
 
