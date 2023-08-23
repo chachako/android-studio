@@ -201,7 +201,7 @@ interface DeviceProperties {
  */
 enum class DeviceType(val stringValue: String) {
   /** Handheld devices, e.g. phone, tablet, foldable. */
-  HANDHELD("Handheld"),
+  HANDHELD("Phone and Tablet"),
   WEAR("Wear"),
   TV("TV"),
   AUTOMOTIVE("Automotive");
