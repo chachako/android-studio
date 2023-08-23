@@ -52,8 +52,8 @@ public class ActivityTest {
                         return "com.example.myApp.MainActivity";
                     }
                 };
-        Activity activity = new Activity(info, "com.example.myApp", device, new TestLogger());
-        activity.activate(" --user 123", AppComponent.Mode.DEBUG, new NullOutputReceiver());
+        Activity activity = new Activity(info, "com.example.myApp", new TestLogger());
+        activity.activate(" --user 123", AppComponent.Mode.DEBUG, new NullOutputReceiver(), device);
 
         String expectedCommand =
                 "am start -n com.example.myApp/com.example.myApp.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -D --user 123";
@@ -82,9 +82,8 @@ public class ActivityTest {
                     new Activity(
                             manifestInfo.activities().get(0),
                             "com.example.myApp",
-                            device,
                             new TestLogger());
-            activity.activate("", AppComponent.Mode.RUN, new NullOutputReceiver());
+            activity.activate("", AppComponent.Mode.RUN, new NullOutputReceiver(), device);
 
             String expectedCommand =
                     "am start -n com.example.myApp/com.example.tv_app.MainActivity -a android.intent.action.MAIN -c android.intent.category.LEANBACK_LAUNCHER";

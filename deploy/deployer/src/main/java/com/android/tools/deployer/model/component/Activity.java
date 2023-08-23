@@ -31,16 +31,16 @@ public class Activity extends AppComponent {
 
     public Activity(@NonNull ManifestActivityInfo info,
             @NonNull String appId,
-            @NonNull IDevice device,
             @NonNull ILogger logger) {
-        super(device, appId, info, logger);
+        super(appId, info, logger);
     }
 
     @Override
     public void activate(
             @NonNull String extraFlags,
             @NonNull Mode activationMode,
-            @NonNull IShellOutputReceiver receiver)
+            @NonNull IShellOutputReceiver receiver,
+            @NonNull IDevice device)
             throws DeployerException {
         extraFlags = extraFlags.trim();
         logger.info("Activating Activity '%s' %s",
@@ -52,7 +52,7 @@ public class Activity extends AppComponent {
         }
         String command = getStartActivityCommand(extraFlags);
         logger.info("$ adb shell " + command);
-        runShellCommand(command, receiver);
+        runShellCommand(command, receiver, device);
     }
 
     @NonNull

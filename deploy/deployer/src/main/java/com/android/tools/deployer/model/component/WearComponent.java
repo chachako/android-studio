@@ -66,11 +66,10 @@ public abstract class WearComponent extends AppComponent {
     }
 
     protected WearComponent(
-            @NonNull IDevice device,
             @NonNull String appId,
             @NonNull ManifestAppComponentInfo info,
             @NonNull ILogger logger) {
-        super(device, appId, info, logger);
+        super(appId, info, logger);
     }
     public static class DebugCommandReceiver extends MultiLineReceiver {
         private final @NotNull Pattern exceptionPattern = Pattern.compile("(Exception)");
@@ -95,10 +94,10 @@ public abstract class WearComponent extends AppComponent {
         }
     }
 
-    protected void setUpAmDebugApp()
-            throws DeployerException {
+    protected void setUpAmDebugApp(@NonNull IDevice device) throws DeployerException {
         DebugCommandReceiver amReceiver = new DebugCommandReceiver();
-        runShellCommand(String.format("%s '%s'", ShellCommand.AM_SET_DEBUG_APP, appId), amReceiver);
+        runShellCommand(
+                String.format("%s '%s'", ShellCommand.AM_SET_DEBUG_APP, appId), amReceiver, device);
         if (amReceiver.hasException()) {
             throw DeployerException.componentActivationException(
                     "Activity Manager failed to set up the app for debugging.");
@@ -107,10 +106,12 @@ public abstract class WearComponent extends AppComponent {
 
     // Set up the app for debugging in the DebugSurface so that timeouts of SysUi and WCS can be
     // increased accordingly (see go/wear-service-debug-timeout).
-    protected void setUpDebugSurfaceDebugApp() throws DeployerException {
+    protected void setUpDebugSurfaceDebugApp(@NonNull IDevice device) throws DeployerException {
         CommandResultReceiver surfaceReceiver = new CommandResultReceiver();
-        runShellCommand(String.format("%s '%s'", ShellCommand.DEBUG_SURFACE_SET_DEBUG_APP, appId),
-                        surfaceReceiver);
+        runShellCommand(
+                String.format("%s '%s'", ShellCommand.DEBUG_SURFACE_SET_DEBUG_APP, appId),
+                surfaceReceiver,
+                device);
         if (surfaceReceiver.resultCode != CommandResultReceiver.SUCCESS_CODE) {
             this.logger.warning("Warning: Debug Surface failed to set the debug app.");
         }
@@ -119,12 +120,13 @@ public abstract class WearComponent extends AppComponent {
     protected void runStartCommand(
             @NonNull String command,
             @NonNull IShellOutputReceiver receiver,
-            @NonNull ILogger logger)
+            @NonNull ILogger logger,
+            @NonNull IDevice device)
             throws DeployerException {
         logger.info("$ adb shell " + command);
         CommandResultReceiver resultReceiver = new CommandResultReceiver();
         MultiReceiver multiReceiver = new MultiReceiver(resultReceiver, receiver);
-        runShellCommand(command, multiReceiver);
+        runShellCommand(command, multiReceiver, device);
         if (resultReceiver.getResultCode() != CommandResultReceiver.SUCCESS_CODE) {
             throw DeployerException.componentActivationException(
                     String.format("Invalid Success code `%d`", resultReceiver.getResultCode()));

@@ -43,12 +43,12 @@ public class ComplicationTest {
                         return "com.example.services.Complication";
                     }
                 };
-        Complication complication =
-                new Complication(info, "com.example.myApp", device, new TestLogger());
+        Complication complication = new Complication(info, "com.example.myApp", new TestLogger());
         complication.activate(
                 "debug.app.watchface com.example.WatchFaces$InnerWatchFace 1 LONG_TEXT",
                 AppComponent.Mode.RUN,
-                new NullOutputReceiver());
+                new NullOutputReceiver(),
+                device);
 
         String expectedCommand =
                 "am broadcast -a com.google.android.wearable.app.DEBUG_SURFACE --es operation set-complication --ecn component 'com.example.myApp/com.example.services.Complication' --ecn watchface 'debug.app.watchface/com.example.WatchFaces\\$InnerWatchFace' --ei slot 1 --ei type 4";
@@ -72,12 +72,12 @@ public class ComplicationTest {
                         return "com.example.services.Complication";
                     }
                 };
-        Complication complication =
-                new Complication(info, "com.example.myApp", device, new TestLogger());
+        Complication complication = new Complication(info, "com.example.myApp", new TestLogger());
         complication.activate(
                 "debug.app.watchface com.example.WatchFaces$InnerWatchFace 1 LONG_TEXT",
                 AppComponent.Mode.DEBUG,
-                new NullOutputReceiver());
+                new NullOutputReceiver(),
+                device);
 
         inOrderDevice
                 .verify(device)

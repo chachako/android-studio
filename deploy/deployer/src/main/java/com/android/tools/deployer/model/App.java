@@ -39,19 +39,15 @@ public class App {
 
     private final String appId;
 
-    private final IDevice device;
-
     private final ILogger logger;
 
     public App(
             @NonNull String appId,
             @NonNull List<Apk> apks,
-            @NonNull IDevice device,
             @NonNull ILogger logger
     ) {
         this.appId = appId;
         this.apks = apks;
-        this.device = device;
         this.logger = logger;
     }
 
@@ -62,25 +58,30 @@ public class App {
     public void activateComponent(
             @NonNull ComponentType type,
             @NonNull String componentName,
-            @NonNull IShellOutputReceiver receiver)
+            @NonNull IShellOutputReceiver receiver,
+            @NonNull IDevice device)
             throws DeployerException {
-        activateComponent(type, componentName, NO_FLAGS, AppComponent.Mode.RUN, receiver);
+        activateComponent(type, componentName, NO_FLAGS, AppComponent.Mode.RUN, receiver, device);
     }
 
     public void activateComponent(
             @NonNull ComponentType type,
             @NonNull String componentName,
             @NonNull String extraFlags,
-            @NonNull IShellOutputReceiver receiver)
+            @NonNull IShellOutputReceiver receiver,
+            @NonNull IDevice device)
             throws DeployerException {
-        activateComponent(type, componentName, extraFlags, AppComponent.Mode.RUN, receiver);
+        activateComponent(type, componentName, extraFlags, AppComponent.Mode.RUN, receiver, device);
     }
 
     public void activateComponent(
-            @NonNull ComponentType type, @NonNull String componentName,
-            @NonNull AppComponent.Mode mode, @NonNull IShellOutputReceiver receiver)
+            @NonNull ComponentType type,
+            @NonNull String componentName,
+            @NonNull AppComponent.Mode mode,
+            @NonNull IShellOutputReceiver receiver,
+            @NonNull IDevice device)
             throws DeployerException {
-        activateComponent(type, componentName, NO_FLAGS, mode, receiver);
+        activateComponent(type, componentName, NO_FLAGS, mode, receiver, device);
     }
 
     public void activateComponent(
@@ -88,13 +89,14 @@ public class App {
             @NonNull String componentName,
             @NonNull String extraFlags,
             @NonNull AppComponent.Mode mode,
-            @NonNull IShellOutputReceiver receiver)
+            @NonNull IShellOutputReceiver receiver,
+            @NonNull IDevice device)
             throws DeployerException {
         String qualifiedName = componentName.startsWith(".")
                                ? appId + componentName
                                : componentName;
         AppComponent component = getComponent(type, qualifiedName);
-        component.activate(extraFlags, mode, receiver);
+        component.activate(extraFlags, mode, receiver, device);
     }
 
     @NonNull
@@ -105,25 +107,25 @@ public class App {
             case ACTIVITY:
                 Optional<ManifestActivityInfo> optionalActivity = getActivity(qualifiedName);
                 if (optionalActivity.isPresent()) {
-                    component = new Activity(optionalActivity.get(), appId, device, logger);
+                    component = new Activity(optionalActivity.get(), appId, logger);
                 }
                 break;
             case WATCH_FACE:
                 Optional<ManifestServiceInfo> optionalService = getService(qualifiedName);
                 if (optionalService.isPresent()) {
-                    component = new WatchFace(optionalService.get(), appId, device, logger);
+                    component = new WatchFace(optionalService.get(), appId, logger);
                 }
                 break;
             case TILE:
                 optionalService = getService(qualifiedName);
                 if (optionalService.isPresent()) {
-                    component = new Tile(optionalService.get(), appId, device, logger);
+                    component = new Tile(optionalService.get(), appId, logger);
                 }
                 break;
             case COMPLICATION:
                 optionalService = getService(qualifiedName);
                 if (optionalService.isPresent()) {
-                    component = new Complication(optionalService.get(), appId, device, logger);
+                    component = new Complication(optionalService.get(), appId, logger);
                 }
                 break;
             default:
@@ -139,7 +141,7 @@ public class App {
         return component;
     }
 
-    public void forceStop() {
+    public void forceStop(@NonNull IDevice device) {
         device.forceStop(appId);
     }
 

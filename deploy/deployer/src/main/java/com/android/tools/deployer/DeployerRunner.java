@@ -244,7 +244,7 @@ public class DeployerRunner {
                 DeployRunnerParameters.Component component = parameters.getComponentToActivate();
                 assert component != null;
                 deployResult.app.activateComponent(
-                        component.type, component.name, new LoggerReceiver(logger));
+                        component.type, component.name, new LoggerReceiver(logger), device);
             }
         } catch (DeployerException e) {
             String commands =

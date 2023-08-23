@@ -40,16 +40,16 @@ public class Complication extends WearComponent {
     public Complication(
             @NonNull ManifestAppComponentInfo info,
             @NonNull String appId,
-            @NonNull IDevice device,
             @NonNull ILogger logger) {
-        super(device, appId, info, logger);
+        super(appId, info, logger);
     }
 
     @Override
     public void activate(
             @NonNull String extraFlags,
             @NonNull Mode activationMode,
-            @NonNull IShellOutputReceiver receiver)
+            @NonNull IShellOutputReceiver receiver,
+            @NonNull IDevice device)
             throws DeployerException {
         ComplicationParams params = ComplicationParams.parse(extraFlags);
         logger.info(
@@ -57,11 +57,11 @@ public class Complication extends WearComponent {
                 info.getQualifiedName(), activationMode.equals(Mode.DEBUG) ? "for debug" : "");
 
         if (activationMode.equals(Mode.DEBUG)) {
-            setUpAmDebugApp();
-            setUpDebugSurfaceDebugApp();
+            setUpAmDebugApp(device);
+            setUpDebugSurfaceDebugApp(device);
         }
         String command = getAddComplicationCommand(params);
-        runStartCommand(command, receiver, logger);
+        runStartCommand(command, receiver, logger, device);
     }
 
     @NonNull

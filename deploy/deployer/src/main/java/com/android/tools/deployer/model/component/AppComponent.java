@@ -29,9 +29,6 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public abstract class AppComponent {
-
-    @NonNull protected final IDevice device;
-
     @NonNull protected final String appId;
 
     @NonNull protected final ManifestAppComponentInfo info;
@@ -48,21 +45,25 @@ public abstract class AppComponent {
     }
 
     protected AppComponent(
-            @NonNull IDevice device,
             @NonNull String appId,
             @NonNull ManifestAppComponentInfo info,
             @NonNull ILogger logger) {
-        this.device = device;
         this.appId = appId;
         this.info = info;
         this.logger = logger;
     }
 
     public abstract void activate(
-            @NonNull String extraFlags, Mode activationMode, @NonNull IShellOutputReceiver receiver)
+            @NonNull String extraFlags,
+            Mode activationMode,
+            @NonNull IShellOutputReceiver receiver,
+            @NonNull IDevice device)
             throws DeployerException;
 
-    protected void runShellCommand(@NonNull String command, @NonNull IShellOutputReceiver receiver)
+    protected void runShellCommand(
+            @NonNull String command,
+            @NonNull IShellOutputReceiver receiver,
+            @NonNull IDevice device)
             throws DeployerException {
         try {
             device.executeShellCommand(command, receiver, SHELL_TIMEOUT, SHELL_TIMEUNIT);

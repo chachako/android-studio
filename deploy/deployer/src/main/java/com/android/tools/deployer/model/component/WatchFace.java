@@ -36,18 +36,16 @@ public class WatchFace extends WearComponent {
     }
 
     public WatchFace(
-            @NonNull ManifestServiceInfo info,
-            @NonNull String appId,
-            @NonNull IDevice device, @NonNull ILogger logger
-    ) {
-        super(device, appId, info, logger);
+            @NonNull ManifestServiceInfo info, @NonNull String appId, @NonNull ILogger logger) {
+        super(appId, info, logger);
     }
 
     @Override
     public void activate(
             @NonNull String extraFlags,
             @NonNull Mode activationMode,
-            @NonNull IShellOutputReceiver receiver)
+            @NonNull IShellOutputReceiver receiver,
+            @NonNull IDevice device)
             throws DeployerException {
         validate(extraFlags);
         logger.info("Activating WatchFace '%s' %s",
@@ -55,12 +53,12 @@ public class WatchFace extends WearComponent {
                     activationMode.equals(Mode.DEBUG) ? "for debug" : "");
 
         if (activationMode.equals(Mode.DEBUG)) {
-            setUpAmDebugApp();
+            setUpAmDebugApp(device);
             // Watch faces are independent of SysUI and WCS implementations so setting the debug app
             // in the Debug Surface as in case of the other surfaces is redundant.
         }
         String command = getStartWatchFaceCommand();
-        runStartCommand(command, receiver, logger);
+        runStartCommand(command, receiver, logger, device);
     }
 
     private void validate(String extraFlags) throws DeployerException {

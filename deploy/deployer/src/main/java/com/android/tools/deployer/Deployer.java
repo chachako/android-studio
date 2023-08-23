@@ -189,7 +189,7 @@ public class Deployer {
                                 sessionUID, packageName, apks, installOptions, installMode);
             }
 
-            App app = new App(packageName, info.apks, adb.getDevice(), logger);
+            App app = new App(packageName, info.apks, logger);
             if (options.skipPostInstallTasks) {
                 return new Result(info.skippedInstall, false, false, app);
             }
@@ -459,7 +459,7 @@ public class Deployer {
             throw result.getException();
         }
 
-        App app = new App(packageName.get(), newFiles.get(), adb.getDevice(), logger);
+        App app = new App(packageName.get(), newFiles.get(), logger);
 
         boolean skippedInstall = sessionId.get().equals(ApkPreInstaller.SKIPPED_INSTALLATION);
         return new Result(skippedInstall, false, false, app);
@@ -575,7 +575,7 @@ public class Deployer {
         // Wait only for swap to finish
         runner.runAsync(canceller);
 
-        App app = new App(packageName.get(), newFiles.get(), adb.getDevice(), logger);
+        App app = new App(packageName.get(), newFiles.get(), logger);
 
         // TODO: May be notify user we IWI'ed.
         // deployResult.didIwi = true;
