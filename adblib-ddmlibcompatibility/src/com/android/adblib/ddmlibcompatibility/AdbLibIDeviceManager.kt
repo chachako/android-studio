@@ -48,6 +48,7 @@ internal class AdbLibIDeviceManager(
     private val deviceList = AtomicReference<List<IDevice>>(emptyList())
     private val ddmlibEventQueue =
         AdbLibDeviceClientManager.DdmlibEventQueue(logger, "DeviceUpdates")
+    private var initialDeviceListDone = false
 
     init {
 
@@ -75,6 +76,8 @@ internal class AdbLibIDeviceManager(
                     }
 
                     deviceList.set(deviceMap.values.toList())
+                    // flag the fact that we have build the list at least once
+                    initialDeviceListDone = true
 
                     if (addedIDevices.isNotEmpty()) {
                         ddmlibEventQueue.post(scope, "devices added") {
@@ -98,5 +101,9 @@ internal class AdbLibIDeviceManager(
 
     override fun getDevices(): MutableList<IDevice> {
         return deviceList.get().toMutableList()
+    }
+
+    override fun hasInitialDeviceList(): Boolean {
+        return initialDeviceListDone
     }
 }

@@ -29,4 +29,7 @@ public interface IDeviceManager extends AutoCloseable {
     /** Returns the current of list of {@link IDevice} */
     @NonNull
     List<IDevice> getDevices();
+
+    /** Returns true if the device list data was built at least once */
+    boolean hasInitialDeviceList();
 }

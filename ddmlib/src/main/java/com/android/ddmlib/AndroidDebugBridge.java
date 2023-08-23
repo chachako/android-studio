@@ -849,7 +849,9 @@ public class AndroidDebugBridge {
             return mDeviceMonitor.hasInitialDeviceList();
         }
 
-        // TODO(b/296277142): implement the correct behavior for non-null `mIDeviceManager`
+        if (mIDeviceManager != null) {
+            return mIDeviceManager.hasInitialDeviceList();
+        }
         return false;
     }
 
