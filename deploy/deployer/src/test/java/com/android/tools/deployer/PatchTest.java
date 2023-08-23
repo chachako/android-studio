@@ -20,6 +20,7 @@ import static java.util.Collections.singletonList;
 
 import com.android.testutils.TestUtils;
 import com.android.tools.deployer.model.Apk;
+import com.android.tools.deployer.model.ApkParser;
 import com.android.utils.NullLogger;
 import com.android.utils.PathUtils;
 import com.android.zipflinger.BytesSource;
@@ -78,8 +79,6 @@ public class PatchTest {
         PatchSetGenerator patchSetGenerator =
                 new PatchSetGenerator(
                         PatchSetGenerator.WhenNoChanges.GENERATE_EMPTY_PATCH, new NullLogger());
-        ApkParser apkParser = new ApkParser();
-
         int fileSize = PatchSetGenerator.MAX_PATCHSET_SIZE - 1;
         byte[] bytes = new byte[fileSize];
 
@@ -102,8 +101,8 @@ public class PatchTest {
         localApksString.add(localApk1.toAbsolutePath().toString());
         localApksString.add(localApk2.toAbsolutePath().toString());
 
-        List<Apk> remoteApks = apkParser.parsePaths(remoteApksString);
-        List<Apk> localApks = apkParser.parsePaths(localApksString);
+        List<Apk> remoteApks = ApkParser.parsePaths(remoteApksString);
+        List<Apk> localApks = ApkParser.parsePaths(localApksString);
 
         PatchSet patchSet = patchSetGenerator.generateFromApks(remoteApks, localApks);
         Assert.assertSame("Patch size is too big", patchSet.getStatus(), SizeThresholdExceeded);
@@ -123,11 +122,10 @@ public class PatchTest {
         Path local = tempDirectory.resolve("remote.apk");
         createSimpleZip(local, bytes, "f");
 
-        ApkParser apkParser = new ApkParser();
         List<Apk> remoteApks =
-                apkParser.parsePaths(singletonList(remote.toAbsolutePath().toString()));
+                ApkParser.parsePaths(singletonList(remote.toAbsolutePath().toString()));
         List<Apk> localApks =
-                apkParser.parsePaths(singletonList(local.toAbsolutePath().toString()));
+                ApkParser.parsePaths(singletonList(local.toAbsolutePath().toString()));
         Apk remoteApk = remoteApks.get(0);
         Apk localApk = localApks.get(0);
 
@@ -152,11 +150,10 @@ public class PatchTest {
         Path local = tempDirectory.resolve("remote.apk");
         createSimpleZip(local, bytes, "f");
 
-        ApkParser apkParser = new ApkParser();
         List<Apk> remoteApks =
-                apkParser.parsePaths(singletonList(remote.toAbsolutePath().toString()));
+                ApkParser.parsePaths(singletonList(remote.toAbsolutePath().toString()));
         List<Apk> localApks =
-                apkParser.parsePaths(singletonList(local.toAbsolutePath().toString()));
+                ApkParser.parsePaths(singletonList(local.toAbsolutePath().toString()));
         Apk remoteApk = remoteApks.get(0);
         Apk localApk = localApks.get(0);
 

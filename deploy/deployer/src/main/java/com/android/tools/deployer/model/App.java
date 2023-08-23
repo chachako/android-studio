@@ -29,6 +29,8 @@ import com.android.tools.deployer.model.component.WatchFace;
 import com.android.tools.manifest.parser.components.ManifestActivityInfo;
 import com.android.tools.manifest.parser.components.ManifestServiceInfo;
 import com.android.utils.ILogger;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,6 +51,19 @@ public class App {
         this.appId = appId;
         this.apks = apks;
         this.logger = logger;
+    }
+
+    public static App from(
+            @NonNull String appId, @NonNull List<Path> paths, @NonNull ILogger logger) {
+        try {
+            List<Apk> apks = new ArrayList<>();
+            for (Path path : paths) {
+                apks.add(ApkParser.parse(path.toAbsolutePath().toString()));
+            }
+            return new App(appId, apks, logger);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     public String getAppId() {

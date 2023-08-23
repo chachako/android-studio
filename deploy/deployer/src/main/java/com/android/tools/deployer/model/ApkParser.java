@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.tools.deployer;
+package com.android.tools.deployer.model;
 
 import com.android.SdkConstants;
-import com.android.tools.deployer.model.Apk;
+import com.android.tools.deployer.DeployerException;
+import com.android.tools.deployer.ZipUtils;
 import com.android.tools.manifest.parser.ManifestInfo;
 import com.android.tools.tracer.Trace;
 import com.android.utils.FileUtils;
@@ -44,7 +45,7 @@ public class ApkParser {
     private static final byte[] SIGNATURE_BLOCK_MAGIC = "APK Sig Block 42".getBytes();
     private static final long USHRT_MAX = 65535;
     public static final int EOCD_SIZE = 22;
-    static final String NO_MANIFEST_MSG = "Missing AndroidManifest.xml entry";
+    public static final String NO_MANIFEST_MSG = "Missing AndroidManifest.xml entry";
     private static final String NO_MANIFEST_MSG_DETAILS = "in '%s'";
 
     public static class ApkArchiveMap {
@@ -54,12 +55,20 @@ public class ApkParser {
 
         long signatureBlockOffset = UNINITIALIZED;
         long signatureBlockSize = UNINITIALIZED;
+
+        public long getCdOffset() {
+            return cdOffset;
+        }
+
+        public long getSignatureBlockOffset() {
+            return signatureBlockOffset;
+        }
     }
 
     /** A class to manipulate .apk files. */
     public ApkParser() {}
 
-    public List<Apk> parsePaths(List<String> paths) throws DeployerException {
+    public static List<Apk> parsePaths(List<String> paths) throws DeployerException {
         try (Trace ignored = Trace.begin("parseApks")) {
             List<Apk> newFiles = new ArrayList<>();
             for (String apkPath : paths) {
@@ -71,7 +80,7 @@ public class ApkParser {
         }
     }
 
-    public ManifestInfo getApkDetails(String path) throws IOException {
+    public static ManifestInfo getApkDetails(String path) throws IOException {
         ManifestInfo manifestInfo;
         try (ZipFile zipFile = new ZipFile(path)) {
             ZipEntry manifestEntry = zipFile.getEntry("AndroidManifest.xml");
@@ -95,7 +104,7 @@ public class ApkParser {
      * jar file, the apk will be extracted and the returned {@link File} will point to a temporary
      * location.
      */
-    private File getApkFileFromPath(String apkPath) throws IOException {
+    private static File getApkFileFromPath(String apkPath) throws IOException {
         if (apkPath.startsWith("jar:")) {
             int separatorIndex = apkPath.lastIndexOf('!');
             if (separatorIndex != -1) {
@@ -112,7 +121,7 @@ public class ApkParser {
         return new File(apkPath);
     }
 
-    Apk parse(String apkPath) throws IOException, DeployerException {
+    public static Apk parse(String apkPath) throws IOException, DeployerException {
         File file = getApkFileFromPath(apkPath);
         String absolutePath = file.getAbsolutePath();
         String digest;
@@ -237,7 +246,7 @@ public class ApkParser {
         return true;
     }
 
-    private List<ZipUtils.ZipEntry> readZipEntries(
+    private static List<ZipUtils.ZipEntry> readZipEntries(
             RandomAccessFile randomAccessFile, ApkArchiveMap map) throws IOException {
         ByteBuffer buffer;
         // There is no method to unmap a MappedByteBuffer so we cannot use FileChannel.map() on Windows.
@@ -255,7 +264,7 @@ public class ApkParser {
         return ZipUtils.readZipEntries(buffer);
     }
 
-    private String generateDigest(RandomAccessFile randomAccessFile, ApkArchiveMap map)
+    private static String generateDigest(RandomAccessFile randomAccessFile, ApkArchiveMap map)
             throws IOException {
         byte[] sigContent;
         if (map.signatureBlockOffset != ApkArchiveMap.UNINITIALIZED) {

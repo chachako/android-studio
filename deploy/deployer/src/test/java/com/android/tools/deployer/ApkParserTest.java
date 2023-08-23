@@ -25,9 +25,9 @@ import static org.junit.Assert.fail;
 import com.android.testutils.TestUtils;
 import com.android.tools.deployer.model.Apk;
 import com.android.tools.deployer.model.ApkEntry;
+import com.android.tools.deployer.model.ApkParser;
 import com.android.tools.manifest.parser.components.ManifestActivityInfo;
 import com.android.tools.manifest.parser.components.ManifestServiceInfo;
-import com.android.utils.PathUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
@@ -65,7 +65,7 @@ public class ApkParserTest {
     public void testApkId() throws Exception {
         Path file = TestUtils.resolveWorkspacePath(BASE + "sample.apk");
         Map<String, ApkEntry> files =
-                new ApkParser().parsePaths(ImmutableList.of(file.toString())).get(0).apkEntries;
+                ApkParser.parsePaths(ImmutableList.of(file.toString())).get(0).apkEntries;
         Map<String, Long> expected = new HashMap<>();
         expected.put("META-INF/CERT.SF", 0x45E32198L);
         expected.put("AndroidManifest.xml", 0x7BF3141DL);
@@ -86,7 +86,7 @@ public class ApkParserTest {
     public void testApkArchiveV2Map() throws Exception {
         Path file = TestUtils.resolveWorkspacePath(BASE + "v2_signed.apk");
         Map<String, ApkEntry> files =
-                new ApkParser().parsePaths(ImmutableList.of(file.toString())).get(0).apkEntries;
+                ApkParser.parsePaths(ImmutableList.of(file.toString())).get(0).apkEntries;
         Map<String, Long> expected = new HashMap<>();
         expected.put(
                 "res/drawable/abc_list_selector_background_transition_holo_light.xml", 0x29EE1C29L);
@@ -104,7 +104,7 @@ public class ApkParserTest {
     public void testApkArchiveApkDumpdMatchCrcs() throws Exception {
         Path file = TestUtils.resolveWorkspacePath(BASE + "signed_app/base.apk");
         Map<String, ApkEntry> files =
-                new ApkParser().parsePaths(ImmutableList.of(file.toString())).get(0).apkEntries;
+                ApkParser.parsePaths(ImmutableList.of(file.toString())).get(0).apkEntries;
         Map<String, Long> expected = new HashMap<>();
         expected.put("res/drawable-nodpi-v4/frantic.jpg", 0x492381F1L);
         expected.put(
@@ -123,7 +123,7 @@ public class ApkParserTest {
     public void testApkArchiveApkNonV2SignedDumpdMatchDigest() throws Exception {
         Path file = TestUtils.resolveWorkspacePath(BASE + "nonsigned_app/base.apk");
         Map<String, ApkEntry> files =
-                new ApkParser().parsePaths(ImmutableList.of(file.toString())).get(0).apkEntries;
+                ApkParser.parsePaths(ImmutableList.of(file.toString())).get(0).apkEntries;
         Map<String, Long> expected = new HashMap<>();
         expected.put(
                 "res/drawable/abc_list_selector_background_transition_holo_light.xml", 0x29EE1C29L);
@@ -140,7 +140,7 @@ public class ApkParserTest {
     @Test
     public void testGetApkInstrumentation() throws Exception {
         Path file = TestUtils.resolveWorkspacePath(BASE + "instrument.apk");
-        Apk apk = new ApkParser().parsePaths(ImmutableList.of(file.toString())).get(0);
+        Apk apk = ApkParser.parsePaths(ImmutableList.of(file.toString())).get(0);
         assertEquals("com.example.android.basicgesturedetect.test", apk.packageName);
         assertEquals(1, apk.targetPackages.size());
         assertEquals("com.example.android.basicgesturedetect", apk.targetPackages.get(0));
@@ -149,7 +149,7 @@ public class ApkParserTest {
     @Test
     public void testGetApkNativeLibs() throws Exception {
         Path file = TestUtils.resolveWorkspacePath(BASE + "native_libs.apk");
-        Apk apk = new ApkParser().parsePaths(ImmutableList.of(file.toString())).get(0);
+        Apk apk = ApkParser.parsePaths(ImmutableList.of(file.toString())).get(0);
         assertEquals(4, apk.libraryAbis.size());
 
         String[] allExpected = new String[] {"x86", "x86_64", "armeabi-v7a", "arm64-v8a"};
@@ -166,7 +166,7 @@ public class ApkParserTest {
             assertEquals(
                     "CD of signed_app.apk found",
                     true,
-                    map.cdOffset != ApkParser.ApkArchiveMap.UNINITIALIZED);
+                    map.getCdOffset() != ApkParser.ApkArchiveMap.UNINITIALIZED);
         }
     }
 
@@ -178,7 +178,7 @@ public class ApkParserTest {
             assertEquals(
                     "CD of signed_app.apk found",
                     true,
-                    map.cdOffset != ApkParser.ApkArchiveMap.UNINITIALIZED);
+                    map.getCdOffset() != ApkParser.ApkArchiveMap.UNINITIALIZED);
         }
     }
 
@@ -191,7 +191,7 @@ public class ApkParserTest {
             assertEquals(
                     "Signature block of signed_app.apk found",
                     true,
-                    map.signatureBlockOffset != ApkParser.ApkArchiveMap.UNINITIALIZED);
+                    map.getSignatureBlockOffset() != ApkParser.ApkArchiveMap.UNINITIALIZED);
         }
     }
 
@@ -274,8 +274,7 @@ public class ApkParserTest {
             int numFiles = 1;
             int sizePerFile = 1;
             createZip(numFiles, sizePerFile, zip.toFile());
-            ApkParser parser = new ApkParser();
-            parser.parse(zip.toString());
+            ApkParser.parse(zip.toString());
             Assert.fail("No exception thrown in apk missing AndroidManifest.xml");
         } catch (IOException e) {
             Assert.assertTrue(e.getMessage().startsWith(ApkParser.NO_MANIFEST_MSG));
@@ -285,7 +284,7 @@ public class ApkParserTest {
     @Test
     public void testParseManifest() throws DeployerException {
         Path file = TestUtils.resolveWorkspacePath(BASE + "parserTest/app.apk");
-        Apk apk = new ApkParser().parsePaths(ImmutableList.of(file.toString())).get(0);
+        Apk apk = ApkParser.parsePaths(ImmutableList.of(file.toString())).get(0);
 
         assertEquals(1, apk.services.size());
         ManifestServiceInfo service = apk.services.get(0);
@@ -310,14 +309,14 @@ public class ApkParserTest {
     @Test
     public void testParseSdkManifest() throws DeployerException {
         Path file = TestUtils.resolveWorkspacePath(BASE + "apks/sdk.apk");
-        Apk apk = new ApkParser().parsePaths(ImmutableList.of(file.toString())).get(0);
+        Apk apk = ApkParser.parsePaths(ImmutableList.of(file.toString())).get(0);
 
         assertEquals(1, apk.sdkLibraries.size());
         String sdkName = apk.sdkLibraries.get(0);
         assertEquals("com.example.privacysandbox.provider", sdkName);
 
         file = TestUtils.resolveWorkspacePath(BASE + "apks/simple.apk");
-        apk = new ApkParser().parsePaths(ImmutableList.of(file.toString())).get(0);
+        apk = ApkParser.parsePaths(ImmutableList.of(file.toString())).get(0);
         assertEquals(0, apk.sdkLibraries.size());
     }
 
@@ -334,10 +333,10 @@ public class ApkParserTest {
             Files.copy(srcFile, destination);
         }
 
-        new ApkParser().parsePaths(ImmutableList.of(destinationPath)).get(0);
+        ApkParser.parsePaths(ImmutableList.of(destinationPath)).get(0);
 
         try {
-            new ApkParser().parsePaths(ImmutableList.of("jar:" + jarFile.toUri())).get(0);
+            ApkParser.parsePaths(ImmutableList.of("jar:" + jarFile.toUri())).get(0);
             fail("Parsing of an invalid path should fail.");
         } catch (DeployerException ignore) {
         } catch (Throwable t) {

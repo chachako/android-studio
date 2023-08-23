@@ -23,6 +23,7 @@ import com.android.ddmlib.InstallReceiver;
 import com.android.sdklib.AndroidVersion;
 import com.android.tools.deploy.proto.Deploy;
 import com.android.tools.deployer.model.Apk;
+import com.android.tools.deployer.model.ApkParser;
 import com.android.tools.deployer.model.FileDiff;
 import com.android.utils.ILogger;
 import java.io.IOException;
@@ -245,7 +246,7 @@ public class ApkInstaller {
             return new DeltaInstallResult(DeltaInstallStatus.API_NOT_SUPPORTED);
         }
 
-        List<Apk> localApks = new ApkParser().parsePaths(apks);
+        List<Apk> localApks = ApkParser.parsePaths(apks);
         ApplicationDumper.Dump dump;
         try {
             dump = new ApplicationDumper(installer).dump(localApks);

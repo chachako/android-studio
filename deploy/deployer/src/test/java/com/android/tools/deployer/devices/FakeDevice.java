@@ -20,8 +20,8 @@ import com.android.annotations.Nullable;
 import com.android.fakeadbserver.DeviceState;
 import com.android.fakeadbserver.FakeAdbServer;
 import com.android.testutils.TestUtils;
-import com.android.tools.deployer.ApkParser;
 import com.android.tools.deployer.devices.shell.Shell;
+import com.android.tools.deployer.model.ApkParser;
 import com.android.tools.idea.io.grpc.ManagedChannel;
 import com.android.tools.idea.io.grpc.Server;
 import com.android.tools.idea.io.grpc.netty.NettyChannelBuilder;
@@ -394,8 +394,7 @@ public class FakeDevice {
         for (byte[] bytes : session.apks) {
             Path tmp = Files.createTempFile(getStorage().toPath(), "apk", ".apk");
             Files.write(tmp, bytes);
-            ApkParser parser = new ApkParser();
-            Apk apk = new Apk(parser.getApkDetails(tmp.toFile().getAbsolutePath()));
+            Apk apk = new Apk(ApkParser.getApkDetails(tmp.toFile().getAbsolutePath()));
 
             stage.put(apk.getFileName(), bytes);
             details.put(apk.getFileName(), apk.details);
