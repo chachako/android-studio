@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.internal.variant
 
+import com.android.build.api.variant.FilterConfiguration
+import com.android.build.api.variant.impl.FilterConfigurationImpl
 import com.android.build.gradle.internal.core.dsl.MultiVariantComponentDslInfo
 import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.options.BooleanOption
@@ -74,6 +76,21 @@ internal class VariantPathHelperTest {
         )
         doReturn("x86").`when`(projectOptions).get(StringOption.IDE_BUILD_TARGET_ABI)
         Truth.assertThat(variantPathHelper.apkLocation.absolutePath).contains("intermediates")
+    }
+
+    @Test
+    fun testCustomAbiTargetFilterConfiguration() {
+        val variantPathHelper = VariantPathHelper(
+                buildDirectory,
+                variantDslInfo,
+                dslServices
+        )
+        doReturn("x86").`when`(projectOptions).get(StringOption.IDE_BUILD_TARGET_ABI)
+        doReturn("hdpi").`when`(projectOptions).get(StringOption.IDE_BUILD_TARGET_DENSITY)
+        Truth.assertThat(variantPathHelper.targetFilterConfigurations)
+                .containsExactly(
+                        FilterConfigurationImpl(FilterConfiguration.FilterType.ABI, "x86"),
+                        FilterConfigurationImpl(FilterConfiguration.FilterType.DENSITY, "hdpi"))
     }
 
     @Test

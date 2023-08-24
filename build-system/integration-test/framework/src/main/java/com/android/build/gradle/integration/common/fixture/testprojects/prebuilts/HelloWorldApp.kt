@@ -141,6 +141,7 @@ fun AndroidProjectBuilder.setUpHelloWorld(setupDefaultCompileSdk: Boolean = true
 
                     <application android:label="@string/app_name">
                         <activity android:name=".HelloWorld"
+                                  android:exported="true"
                                   android:label="@string/app_name">
                             <intent-filter>
                                 <action android:name="android.intent.action.MAIN" />

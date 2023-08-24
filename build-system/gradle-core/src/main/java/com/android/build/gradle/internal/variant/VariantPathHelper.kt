@@ -19,6 +19,8 @@ package com.android.build.gradle.internal.variant
 import com.android.SdkConstants
 import com.android.build.api.dsl.ProductFlavor
 import com.android.build.api.variant.ComponentIdentity
+import com.android.build.api.variant.FilterConfiguration
+import com.android.build.api.variant.impl.FilterConfigurationImpl
 import com.android.build.gradle.internal.core.dsl.ApkProducingComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.ComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.MultiVariantComponentDslInfo
@@ -302,6 +304,22 @@ class VariantPathHelper(
                 }
                 File(baseDirectory, dirName)
             }
+
+    val targetFilterConfigurations: Collection<FilterConfiguration>?
+        by lazy {
+            val filterConfigurations = mutableListOf<FilterConfiguration>()
+            dslServices.projectOptions.get(StringOption.IDE_BUILD_TARGET_ABI)?.
+            let {
+                filterConfigurations.add(
+                    FilterConfigurationImpl(FilterConfiguration.FilterType.ABI, it))
+            }
+            dslServices.projectOptions.get(StringOption.IDE_BUILD_TARGET_DENSITY)?.
+            let {
+                filterConfigurations.add(
+                        FilterConfigurationImpl(FilterConfiguration.FilterType.DENSITY, it))
+            }
+            filterConfigurations.ifEmpty { null }
+    }
 
     /**
      * Obtains the default location for APKs.

@@ -16,7 +16,6 @@
 
 package com.android.build.api.component.impl
 
-import com.android.build.api.attributes.ProductFlavorAttr
 import com.android.build.api.dsl.BuildType
 import com.android.build.api.dsl.ProductFlavor
 import com.android.build.api.variant.AnnotationProcessor
@@ -31,7 +30,6 @@ import com.android.build.api.variant.impl.baseName
 import com.android.build.api.variant.impl.fullName
 import com.android.build.gradle.api.AnnotationProcessorOptions
 import com.android.build.gradle.api.JavaCompileOptions
-import com.android.build.gradle.internal.DependencyConfigurator
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.DynamicFeatureCreationConfig
@@ -55,7 +53,6 @@ import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.options.BooleanOption
 import com.android.builder.errors.IssueReporter
-import com.google.common.collect.ImmutableMap
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileCollection
@@ -189,8 +186,7 @@ class OldVariantApiLegacySupportImpl(
                 versionCodeProperty = versionCodeProperty,
                 versionNameProperty = versionNameProperty,
                 outputFileName = (component as? LibraryCreationConfig)?.aarOutputFileName
-            )
-        )
+            ), component.paths.targetFilterConfigurations)
     }
 
     private fun getVariantOutputs(
