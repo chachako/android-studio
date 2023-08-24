@@ -2208,4 +2208,56 @@ class UastTest : TestCase() {
       )
     }
   }
+
+  fun testInheritedMethodsInJava() {
+    // from b/296638723
+    val source =
+      java(
+        """
+          class Parent {
+            void foo() {}
+          }
+
+          class Test extends Parent {
+            void callNoQualifier() {
+              foo();
+            }
+
+            void callWithThis() {
+              this.foo();
+            }
+
+            void callWithSuper() {
+              super.foo();
+            }
+          }
+        """
+      )
+
+    var count = 0
+    check(source) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val callee = node.resolve()
+            assertNotNull(callee)
+            val containingClass = callee!!.containingClass
+            assertNotNull(containingClass)
+
+            val id = "${containingClass!!.name}#${callee.name}"
+            assertEquals("Parent#foo", id)
+
+            val uMethod = callee.toUElement(UMethod::class.java)
+            assertNotNull(uMethod)
+            assertEquals(callee, uMethod!!.javaPsi)
+
+            count++
+
+            return super.visitCallExpression(node)
+          }
+        }
+      )
+    }
+    assertEquals(3, count)
+  }
 }
