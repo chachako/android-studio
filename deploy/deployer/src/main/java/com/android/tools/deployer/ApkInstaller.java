@@ -19,11 +19,12 @@ package com.android.tools.deployer;
 import static com.android.tools.deployer.InstallStatus.OK;
 import static com.android.tools.deployer.InstallStatus.SKIPPED_INSTALL;
 
+import com.android.annotations.NonNull;
 import com.android.ddmlib.InstallReceiver;
 import com.android.sdklib.AndroidVersion;
 import com.android.tools.deploy.proto.Deploy;
 import com.android.tools.deployer.model.Apk;
-import com.android.tools.deployer.model.ApkParser;
+import com.android.tools.deployer.model.App;
 import com.android.tools.deployer.model.FileDiff;
 import com.android.utils.ILogger;
 import java.io.IOException;
@@ -75,8 +76,7 @@ public class ApkInstaller {
 
     /** @return true if if installation happened. False if installation was skipped */
     public boolean install(
-            String packageName,
-            List<String> apks,
+            @NonNull App app,
             InstallOptions options,
             Deployer.InstallMode installMode,
             Collection<DeployMetric> metrics)
@@ -88,8 +88,7 @@ public class ApkInstaller {
         boolean allowReinstall = true;
         long deltaInstallStart = System.nanoTime();
         try {
-            deltaInstallResult =
-                    deltaInstall(apks, options, allowReinstall, installMode, packageName);
+            deltaInstallResult = deltaInstall(app, options, allowReinstall, installMode);
         } catch (DeployerException e) {
             logger.info("Unable to delta install: '%s'", e.getDetails());
         }
@@ -120,7 +119,7 @@ public class ApkInstaller {
                     switch (result.status) {
                         case NO_CERTIFICATE:
                         case INSTALL_PARSE_FAILED_NO_CERTIFICATES:
-                            result = adb.install(apks, options.getFlags(), allowReinstall);
+                            result = adb.install(app, options.getFlags(), allowReinstall);
                             long installStartTime = System.nanoTime();
                             DeployMetric installResult =
                                     new DeployMetric("INSTALL", installStartTime);
@@ -150,7 +149,7 @@ public class ApkInstaller {
                     deltaNotPatchableMetric.finish(deltaInstallResult.status.name(), metrics);
 
                     long installStartedNs = System.nanoTime();
-                    result = adb.install(apks, options.getFlags(), allowReinstall);
+                    result = adb.install(app, options.getFlags(), allowReinstall);
 
                     DeployMetric installResult = new DeployMetric("INSTALL", installStartedNs);
                     installResult.finish(result.status.name(), metrics);
@@ -165,11 +164,11 @@ public class ApkInstaller {
                     installMetric.finish(result.status.name(), metrics);
                     try {
                         adb.shell(
-                                new String[] {"am", "force-stop", packageName},
+                                new String[] {"am", "force-stop", app.getAppId()},
                                 Timeouts.SHELL_AM_STOP);
                     } catch (IOException e) {
                         throw DeployerException.installFailed(
-                                SKIPPED_INSTALL, "Failure to kill " + packageName);
+                                SKIPPED_INSTALL, "Failure to kill " + app.getAppId());
                     }
                     break;
                 }
@@ -203,8 +202,8 @@ public class ApkInstaller {
                 sb.append("\n\nWARNING: Uninstalling will remove the application data!\n\n");
                 sb.append("Do you want to uninstall the existing application?");
                 if (service.prompt(sb.toString())) {
-                    adb.uninstall(packageName);
-                    result = adb.install(apks, options.getFlags(), allowReinstall);
+                    adb.uninstall(app.getAppId());
+                    result = adb.install(app, options.getFlags(), allowReinstall);
                     message = message(result);
                 }
                 break;
@@ -217,8 +216,8 @@ public class ApkInstaller {
             installed = false;
         } else if (result.status != OK) {
             StringBuilder messageBuilder = new StringBuilder("\nList of apks:\n");
-            for (int i = 0; i < apks.size(); i++) {
-                String apkPath = apks.get(i);
+            for (int i = 0; i < app.getApks().size(); i++) {
+                String apkPath = app.getApks().get(i).path;
                 String line = String.format("[%d] '%s'\n", i, apkPath);
                 messageBuilder.append(line);
             }
@@ -229,11 +228,10 @@ public class ApkInstaller {
     }
 
     DeltaInstallResult deltaInstall(
-            List<String> apks,
+            @NonNull App app,
             InstallOptions options,
             boolean allowReinstall,
-            Deployer.InstallMode installMode,
-            String packageName)
+            Deployer.InstallMode installMode)
             throws DeployerException {
         if (installMode == Deployer.InstallMode.FULL) {
             return new DeltaInstallResult(DeltaInstallStatus.DISABLED);
@@ -246,7 +244,7 @@ public class ApkInstaller {
             return new DeltaInstallResult(DeltaInstallStatus.API_NOT_SUPPORTED);
         }
 
-        List<Apk> localApks = ApkParser.parsePaths(apks);
+        List<Apk> localApks = app.getApks();
         ApplicationDumper.Dump dump;
         try {
             dump = new ApplicationDumper(installer).dump(localApks);
@@ -295,11 +293,12 @@ public class ApkInstaller {
         // We use inheritance if there are more than one apks, and if the manifests
         // have not changed.
         boolean inherit =
-                canInherit(apks.size(), new ApkDiffer().diff(dump.apks, localApks), installMode);
+                canInherit(
+                        localApks.size(), new ApkDiffer().diff(dump.apks, localApks), installMode);
 
         builder.setInherit(inherit);
         builder.addAllPatchInstructions(patches);
-        builder.setPackageName(packageName);
+        builder.setPackageName(app.getAppId());
 
         Deploy.InstallInfo info = builder.build();
         // Check that size if not beyond the limit.

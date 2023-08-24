@@ -15,12 +15,13 @@
  */
 package com.android.tools.deployer;
 
+import com.android.annotations.NonNull;
 import com.android.ddmlib.AdbCommandRejectedException;
 import com.android.ddmlib.ShellCommandUnresponsiveException;
 import com.android.ddmlib.TimeoutException;
 import com.android.sdklib.AndroidVersion;
 import com.android.tools.deploy.proto.Deploy;
-import com.android.tools.deployer.model.Apk;
+import com.android.tools.deployer.model.App;
 import com.android.tools.deployer.model.FileDiff;
 import com.android.utils.ILogger;
 import java.io.IOException;
@@ -44,7 +45,7 @@ class RootPushApkInstaller {
         this.logger = logger;
     }
 
-    public boolean install(String packageName, List<Apk> apks) {
+    public boolean install(@NonNull App app) {
         if (!adb.getVersion()
                 .isGreaterOrEqualThan(AndroidVersion.BINDER_CMD_AVAILABLE.getApiLevel())) {
             logger.warning("RootPush: CMD service not available on target device");
@@ -67,7 +68,7 @@ class RootPushApkInstaller {
 
         ApplicationDumper.Dump dump;
         try {
-            dump = new ApplicationDumper(installer).dump(apks);
+            dump = new ApplicationDumper(installer).dump(app.getApks());
             if (dump.apks.isEmpty()) {
                 logger.warning("RootPush: No APKs in dump");
                 return false;
@@ -75,7 +76,7 @@ class RootPushApkInstaller {
 
             // Copying the APKs over the existing APKs is risky if the manifest has changed, since
             // changes could be present that the package manager needs to handle.
-            for (FileDiff fileDiff : new ApkDiffer().diff(dump.apks, apks)) {
+            for (FileDiff fileDiff : new ApkDiffer().diff(dump.apks, app.getApks())) {
                 if (fileDiff.oldFile != null
                         && fileDiff.oldFile.getName().equals("AndroidManifest.xml")) {
                     logger.info("RootPush: Manifest changes require pm install");
@@ -93,7 +94,7 @@ class RootPushApkInstaller {
 
         PatchSet patchSet =
                 new PatchSetGenerator(PatchSetGenerator.WhenNoChanges.GENERATE_EMPTY_PATCH, logger)
-                        .generateFromApks(apks, dump.apks);
+                        .generateFromApks(app.getApks(), dump.apks);
 
         if (patchSet.getStatus() == PatchSet.Status.NoChanges) {
             return true;
@@ -105,7 +106,7 @@ class RootPushApkInstaller {
         List<Deploy.PatchInstruction> patches = patchSet.getPatches();
         request.getInstallInfoBuilder()
                 .addAllPatchInstructions(patches)
-                .setPackageName(packageName);
+                .setPackageName(app.getAppId());
 
         if (request.getInstallInfo().getSerializedSize() > PatchSetGenerator.MAX_PATCHSET_SIZE) {
             logger.warning("RootPush: Patch too large");

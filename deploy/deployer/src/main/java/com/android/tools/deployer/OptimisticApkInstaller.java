@@ -15,9 +15,11 @@
  */
 package com.android.tools.deployer;
 
+import com.android.annotations.NonNull;
 import com.android.tools.deploy.proto.Deploy;
 import com.android.tools.deployer.model.Apk;
 import com.android.tools.deployer.model.ApkEntry;
+import com.android.tools.deployer.model.App;
 import com.android.tools.idea.protobuf.ByteString;
 import com.android.utils.ILogger;
 import java.io.IOException;
@@ -77,19 +79,18 @@ class OptimisticApkInstaller {
      * The set of "files to add" are extracted from the APK and pushed to the device. The set of
      * "files to delete" are removed from the overlay.
      */
-    public OverlayId install(String packageName, List<Apk> apks, List<String> userFlags)
-            throws DeployerException {
-        if (hasInstrumentedTests(apks)) {
+    public OverlayId install(@NonNull App app, List<String> userFlags) throws DeployerException {
+        if (hasInstrumentedTests(app.getApks())) {
             throw DeployerException.runTestsNotSupported();
         }
 
         // We do not support the case where an app is intended to be sandboxed by the SDK Runtime.
-        if (hasSdkLibrary(apks)) {
+        if (hasSdkLibrary(app.getApks())) {
             throw DeployerException.sdksNotSupported();
         }
 
         try {
-            return tracedInstall(packageName, apks, userFlags);
+            return tracedInstall(app, userFlags);
         } catch (DeployerException ex) {
             metrics.finish(ex.getError());
             throw ex;
@@ -100,21 +101,21 @@ class OptimisticApkInstaller {
         }
     }
 
-    private OverlayId tracedInstall(String packageName, List<Apk> apks, List<String> userFlags)
+    private OverlayId tracedInstall(@NonNull App app, List<String> userFlags)
             throws DeployerException {
         final String deviceSerial = adb.getSerial();
-        final String targetAbi = adb.getAbiForApks(apks);
+        final String targetAbi = adb.getAbiForApks(app.getApks());
         final Deploy.Arch targetArch = AdbClient.getArchForAbi(targetAbi);
 
         metrics.start(DUMP_METRIC);
-        DeploymentCacheDatabase.Entry entry = cache.get(deviceSerial, packageName);
+        DeploymentCacheDatabase.Entry entry = cache.get(deviceSerial, app.getAppId());
 
         // If we have no cache data or an install without OID file, we use the classic dump.
         if (entry == null || entry.getOverlayId().isBaseInstall()) {
             ApplicationDumper dumper = new ApplicationDumper(installer);
-            List<Apk> deviceApks = dumper.dump(apks).apks;
-            cache.store(deviceSerial, packageName, deviceApks, new OverlayId(deviceApks));
-            entry = cache.get(deviceSerial, packageName);
+            List<Apk> deviceApks = dumper.dump(app.getApks()).apks;
+            cache.store(deviceSerial, app.getAppId(), deviceApks, new OverlayId(deviceApks));
+            entry = cache.get(deviceSerial, app.getAppId());
         }
         metrics.finish();
 
@@ -124,7 +125,7 @@ class OptimisticApkInstaller {
         }
         final OverlayId overlayId = entry.getOverlayId();
         OverlayDiffer.Result diff =
-                new OverlayDiffer(options.optimisticInstallSupport).diff(apks, overlayId);
+                new OverlayDiffer(options.optimisticInstallSupport).diff(app.getApks(), overlayId);
         metrics.finish();
 
         metrics.start(EXTRACT_METRIC);
@@ -138,7 +139,7 @@ class OptimisticApkInstaller {
 
         Deploy.OverlayInstallRequest.Builder request =
                 Deploy.OverlayInstallRequest.newBuilder()
-                        .setPackageName(packageName)
+                        .setPackageName(app.getAppId())
                         .setArch(targetArch)
                         .setExpectedOverlayId(overlayId.isBaseInstall() ? "" : overlayId.getSha());
 

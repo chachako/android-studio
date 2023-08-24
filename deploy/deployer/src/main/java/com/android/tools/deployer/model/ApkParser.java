@@ -68,6 +68,7 @@ public class ApkParser {
     /** A class to manipulate .apk files. */
     public ApkParser() {}
 
+    // TODO: This should be private or package private to prevent wild apks parsing
     public static List<Apk> parsePaths(List<String> paths) throws DeployerException {
         try (Trace ignored = Trace.begin("parseApks")) {
             List<Apk> newFiles = new ArrayList<>();
@@ -75,8 +76,6 @@ public class ApkParser {
                 newFiles.add(parse(apkPath));
             }
             return newFiles;
-        } catch (IOException e) {
-            throw DeployerException.parseFailed(e.getMessage());
         }
     }
 
@@ -121,46 +120,51 @@ public class ApkParser {
         return new File(apkPath);
     }
 
-    public static Apk parse(String apkPath) throws IOException, DeployerException {
-        File file = getApkFileFromPath(apkPath);
-        String absolutePath = file.getAbsolutePath();
-        String digest;
-        List<ZipUtils.ZipEntry> zipEntries;
-        try (RandomAccessFile raf = new RandomAccessFile(absolutePath, "r");
-             FileChannel fileChannel = raf.getChannel()) {
-            ApkArchiveMap map = new ApkArchiveMap();
-            findCDLocation(fileChannel, map);
-            findSignatureLocation(fileChannel, map);
-            digest = generateDigest(raf, map);
-            zipEntries = readZipEntries(raf, map);
-        }
-        ManifestInfo manifest = getApkDetails(absolutePath);
-        String apkFileName = manifest.getSplitName() == null
-                             ? "base.apk"
-                             : "split_" + manifest.getSplitName() + ".apk";
-        Apk.Builder builder =
-                Apk.builder()
-                        .setName(apkFileName)
-                        .setChecksum(digest)
-                        .setPath(absolutePath)
-                        .setPackageName(manifest.getApplicationId())
-                        .setTargetPackages(manifest.getInstrumentationTargetPackages())
-                        .setActivities(manifest.activities())
-                        .setServices(manifest.services())
-                        .setSdkLibraries(manifest.getSdkLibraries());
-
-        for (ZipUtils.ZipEntry entry : zipEntries) {
-            // Native libraries are stored in the APK under lib/<ABI>/
-            if (entry.name.startsWith("lib/")) {
-                String[] paths = entry.name.split("/");
-                if (paths.length > 1) {
-                    builder.addLibraryAbi(paths[1]);
-                }
+    public static Apk parse(String apkPath) {
+        try {
+            File file = getApkFileFromPath(apkPath);
+            String absolutePath = file.getAbsolutePath();
+            String digest;
+            List<ZipUtils.ZipEntry> zipEntries;
+            try (RandomAccessFile raf = new RandomAccessFile(absolutePath, "r");
+                    FileChannel fileChannel = raf.getChannel()) {
+                ApkArchiveMap map = new ApkArchiveMap();
+                findCDLocation(fileChannel, map);
+                findSignatureLocation(fileChannel, map);
+                digest = generateDigest(raf, map);
+                zipEntries = readZipEntries(raf, map);
             }
-            builder.addApkEntry(entry);
-        }
+            ManifestInfo manifest = getApkDetails(absolutePath);
+            String apkFileName =
+                    manifest.getSplitName() == null
+                            ? "base.apk"
+                            : "split_" + manifest.getSplitName() + ".apk";
+            Apk.Builder builder =
+                    Apk.builder()
+                            .setName(apkFileName)
+                            .setChecksum(digest)
+                            .setPath(absolutePath)
+                            .setPackageName(manifest.getApplicationId())
+                            .setTargetPackages(manifest.getInstrumentationTargetPackages())
+                            .setActivities(manifest.activities())
+                            .setServices(manifest.services())
+                            .setSdkLibraries(manifest.getSdkLibraries());
 
-        return builder.build();
+            for (ZipUtils.ZipEntry entry : zipEntries) {
+                // Native libraries are stored in the APK under lib/<ABI>/
+                if (entry.name.startsWith("lib/")) {
+                    String[] paths = entry.name.split("/");
+                    if (paths.length > 1) {
+                        builder.addLibraryAbi(paths[1]);
+                    }
+                }
+                builder.addApkEntry(entry);
+            }
+
+            return builder.build();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     public static void findSignatureLocation(FileChannel channel, ApkArchiveMap map) {

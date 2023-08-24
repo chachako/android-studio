@@ -29,8 +29,10 @@ import com.android.tools.deployer.model.component.WatchFace;
 import com.android.tools.manifest.parser.components.ManifestActivityInfo;
 import com.android.tools.manifest.parser.components.ManifestServiceInfo;
 import com.android.utils.ILogger;
+import com.android.utils.StdLogger;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,31 +45,57 @@ public class App {
 
     private final ILogger logger;
 
-    public App(
-            @NonNull String appId,
-            @NonNull List<Apk> apks,
-            @NonNull ILogger logger
-    ) {
+    // TODO: Get rid of this annoying logger parameter. This is only used for some activation
+    // operations.
+    // We should move the activation in an Activator object.
+    private App(@NonNull String appId, @NonNull List<Apk> apks, @NonNull ILogger logger) {
         this.appId = appId;
         this.apks = apks;
         this.logger = logger;
     }
 
-    public static App from(
+    public static App fromApks(
+            @NonNull String appId, @NonNull List<Apk> apks, @NonNull ILogger logger) {
+        return new App(appId, apks, logger);
+    }
+
+    public static App fromApk(@NonNull String appId, @NonNull Apk apk, @NonNull ILogger logger) {
+        return new App(appId, Arrays.asList(apk), logger);
+    }
+
+    public static App fromApks(@NonNull String appId, @NonNull List<Apk> apks) {
+        return new App(appId, apks, new StdLogger(StdLogger.Level.WARNING));
+    }
+
+    public static App fromString(
+            @NonNull String appId, @NonNull String apkPath, @NonNull ILogger logger) {
+        return new App(appId, Arrays.asList(ApkParser.parse(apkPath)), logger);
+    }
+
+    public static App fromPaths(
             @NonNull String appId, @NonNull List<Path> paths, @NonNull ILogger logger) {
-        try {
-            List<Apk> apks = new ArrayList<>();
-            for (Path path : paths) {
-                apks.add(ApkParser.parse(path.toAbsolutePath().toString()));
-            }
-            return new App(appId, apks, logger);
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
+        return new App(appId, convert(paths), logger);
+    }
+
+    public static App fromPath(@NonNull String appId, @NonNull Path path, @NonNull ILogger logger) {
+        return fromPaths(appId, Arrays.asList(path), logger);
+    }
+
+    @NonNull
+    private static List<Apk> convert(@NonNull List<Path> paths) {
+        List<Apk> apks = new ArrayList<>();
+        for (Path path : paths) {
+            apks.add(ApkParser.parse(path.toAbsolutePath().toString()));
         }
+        return apks;
     }
 
     public String getAppId() {
         return appId;
+    }
+
+    public List<Apk> getApks() {
+        return apks;
     }
 
     public void activateComponent(

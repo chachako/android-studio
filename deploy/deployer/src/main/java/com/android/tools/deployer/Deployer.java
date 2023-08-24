@@ -21,7 +21,6 @@ import com.android.sdklib.AndroidVersion;
 import com.android.tools.deploy.proto.Deploy;
 import com.android.tools.deployer.model.Apk;
 import com.android.tools.deployer.model.ApkEntry;
-import com.android.tools.deployer.model.ApkParser;
 import com.android.tools.deployer.model.App;
 import com.android.tools.deployer.model.FileDiff;
 import com.android.tools.deployer.tasks.Canceller;
@@ -82,7 +81,6 @@ public class Deployer {
         VERIFY,
         COMPARE,
         SWAP,
-        PARSE_PATHS,
         APK_CHECK,
 
         // pipeline 2.0
@@ -167,11 +165,7 @@ public class Deployer {
      * failures from optimistic installations are recorded in metrics but not thrown up to the top
      * level.
      */
-    public Result install(
-            String packageName,
-            List<String> apks,
-            InstallOptions installOptions,
-            InstallMode installMode)
+    public Result install(@NonNull App app, InstallOptions installOptions, InstallMode installMode)
             throws DeployerException {
         try (Trace ignored = Trace.begin("install")) {
             Canceller canceller = installOptions.getCancelChecker();
@@ -179,18 +173,13 @@ public class Deployer {
 
             InstallInfo info;
             if (options.useRootPushInstall) {
-                info = rootPushInstall(sessionUID, packageName, apks, installOptions, installMode);
+                info = rootPushInstall(sessionUID, app, installOptions, installMode);
             } else if (supportsNewPipeline()) {
-                info =
-                        optimisticInstall(
-                                sessionUID, packageName, apks, installOptions, installMode);
+                info = optimisticInstall(sessionUID, app, installOptions, installMode);
             } else {
-                info =
-                        packageManagerInstall(
-                                sessionUID, packageName, apks, installOptions, installMode);
+                info = packageManagerInstall(sessionUID, app, installOptions, installMode);
             }
 
-            App app = new App(packageName, info.apks, logger);
             if (options.skipPostInstallTasks) {
                 return new Result(info.skippedInstall, false, false, app);
             }
@@ -201,7 +190,7 @@ public class Deployer {
                 installCoroutineDebugger =
                         runner.create(
                                 Tasks.INSTALL_COROUTINE_DEBUGGER,
-                                list -> installCoroutineDebugger(packageName, list),
+                                list -> installCoroutineDebugger(app),
                                 parsedApksTask);
             }
 
@@ -220,42 +209,31 @@ public class Deployer {
 
     private InstallInfo packageManagerInstall(
             String deploySessionUID,
-            String packageName,
-            List<String> paths,
+            @NonNull App app,
             InstallOptions installOptions,
             InstallMode installMode)
             throws DeployerException {
         logger.info("Deploy Install Session %s", deploySessionUID);
         ApkInstaller apkInstaller = new ApkInstaller(adb, service, installer, logger);
         boolean skippedInstall =
-                !apkInstaller.install(
-                        packageName,
-                        paths,
-                        installOptions,
-                        installMode,
-                        metrics.getDeployMetrics());
-        // TODO(b/138467905): Prevent double-parsing inside ApkInstaller and here
-        return new InstallInfo(skippedInstall, ApkParser.parsePaths(paths));
+                !apkInstaller.install(app, installOptions, installMode, metrics.getDeployMetrics());
+        return new InstallInfo(skippedInstall, app.getApks());
     }
 
     private InstallInfo rootPushInstall(
             String deploySessionUID,
-            String packageName,
-            List<String> paths,
+            @NonNull App app,
             InstallOptions installOptions,
             InstallMode installMode)
             throws DeployerException {
         logger.info("Deploy Root Push Install Session %s", deploySessionUID);
         Canceller canceller = installOptions.getCancelChecker();
 
-        Task<List<Apk>> apks =
-                runner.create(Tasks.PARSE_PATHS, ApkParser::parsePaths, runner.create(paths));
         Task<Boolean> installSuccess =
                 runner.create(
                         Tasks.ROOT_PUSH_INSTALL,
                         new RootPushApkInstaller(adb, installer, logger)::install,
-                        runner.create(packageName),
-                        apks);
+                        runner.create(app));
 
         TaskResult result = runner.run(canceller);
         result.getMetrics().forEach(metrics::add);
@@ -265,19 +243,14 @@ public class Deployer {
             ApkInstaller apkInstaller = new ApkInstaller(adb, service, installer, logger);
             skippedInstall =
                     !apkInstaller.install(
-                            packageName,
-                            paths,
-                            installOptions,
-                            installMode,
-                            metrics.getDeployMetrics());
+                            app, installOptions, installMode, metrics.getDeployMetrics());
         }
-        return new InstallInfo(skippedInstall, apks.get());
+        return new InstallInfo(skippedInstall, app.getApks());
     }
 
     private InstallInfo optimisticInstall(
             String deploySessionUID,
-            String pkgName,
-            List<String> paths,
+            @NonNull App app,
             InstallOptions installOptions,
             InstallMode installMode)
             throws DeployerException {
@@ -287,11 +260,10 @@ public class Deployer {
         // Do not skip installs; we need to ensure overlays are properly cleared.
         installMode = installMode == InstallMode.DELTA ? InstallMode.DELTA_NO_SKIP : installMode;
 
-        Task<String> packageName = runner.create(pkgName);
+        Task<App> taskApp = runner.create(app);
         Task<String> deviceSerial = runner.create(adb.getSerial());
-        Task<List<Apk>> apks =
-                runner.create(Tasks.PARSE_PATHS, ApkParser::parsePaths, runner.create(paths));
-
+        Task<String> packageName = runner.create(app.getAppId());
+        Task<List<Apk>> apks = runner.create(app.getApks());
         boolean installSuccess = false;
         if (!options.optimisticInstallSupport.isEmpty()) {
             OptimisticApkInstaller apkInstaller =
@@ -300,11 +272,7 @@ public class Deployer {
             Task<List<String>> userFlags = runner.create(installOptions.getUserFlags());
             Task<OverlayId> overlayId =
                     runner.create(
-                            Tasks.OPTIMISTIC_INSTALL,
-                            apkInstaller::install,
-                            packageName,
-                            apks,
-                            userFlags);
+                            Tasks.OPTIMISTIC_INSTALL, apkInstaller::install, taskApp, userFlags);
 
             TaskResult result = runner.run(canceller);
             installSuccess = result.isSuccess();
@@ -326,48 +294,42 @@ public class Deployer {
             ApkInstaller apkInstaller = new ApkInstaller(adb, service, installer, logger);
             skippedInstall =
                     !apkInstaller.install(
-                            pkgName,
-                            paths,
-                            installOptions,
-                            installMode,
-                            metrics.getDeployMetrics());
+                            app, installOptions, installMode, metrics.getDeployMetrics());
             runner.create(
                     Tasks.DEPLOY_CACHE_STORE, deployCache::invalidate, deviceSerial, packageName);
         }
 
         runner.runAsync(canceller);
-        return new InstallInfo(skippedInstall, apks.get());
+        return new InstallInfo(skippedInstall, app.getApks());
     }
 
     public Result codeSwap(
-            List<String> apks, Map<Integer, ClassRedefiner> debuggerRedefiners, Canceller canceller)
+            @NonNull App app, Map<Integer, ClassRedefiner> debuggerRedefiners, Canceller canceller)
             throws DeployerException {
         try (Trace ignored = Trace.begin("codeSwap")) {
             if (supportsNewPipeline()) {
-                return optimisticSwap(
-                        apks, false /* Restart Activity */, debuggerRedefiners, canceller);
+                return optimisticSwap(app, false, debuggerRedefiners, canceller);
             } else {
-                return swap(apks, false /* Restart Activity */, debuggerRedefiners, canceller);
+                return swap(app, false, debuggerRedefiners, canceller);
             }
         }
     }
 
-    public Result fullSwap(List<String> apks, Canceller canceller) throws DeployerException {
+    public Result fullSwap(@NonNull App app, Canceller canceller) throws DeployerException {
         try (Trace ignored = Trace.begin("fullSwap")) {
             if (supportsNewPipeline() && options.useOptimisticResourceSwap) {
-                return optimisticSwap(
-                        apks, /* Restart Activity */ true, ImmutableMap.of(), canceller);
+                return optimisticSwap(app, true, ImmutableMap.of(), canceller);
             } else {
-                return swap(apks, true /* Restart Activity */, ImmutableMap.of(), canceller);
+                return swap(app, true, ImmutableMap.of(), canceller);
             }
         }
     }
 
-    private boolean installCoroutineDebugger(String packageName, List<Apk> apk) {
+    private boolean installCoroutineDebugger(@NonNull App app) {
         try {
-            Deploy.Arch arch = AdbClient.getArchForAbi(adb.getAbiForApks(apk));
+            Deploy.Arch arch = AdbClient.getArchForAbi(adb.getAbiForApks(app.getApks()));
             Deploy.InstallCoroutineAgentResponse response =
-                    installer.installCoroutineAgent(packageName, arch);
+                    installer.installCoroutineAgent(app.getAppId(), arch);
             return response.getStatus() == Deploy.InstallCoroutineAgentResponse.Status.OK;
         } catch (Exception e) {
             logger.warning(e.getMessage());
@@ -384,7 +346,7 @@ public class Deployer {
     }
 
     private Result swap(
-            List<String> argPaths,
+            @NonNull App app,
             boolean argRestart,
             Map<Integer, ClassRedefiner> debuggerRedefiners,
             Canceller canceller)
@@ -398,13 +360,11 @@ public class Deployer {
         logger.info("Deploy Apply " + (argRestart ? "" : "Code ") + "Session %s", deploySessionUID);
 
         // Inputs
-        Task<List<String>> paths = runner.create(argPaths);
         Task<Boolean> restart = runner.create(argRestart);
         Task<DexSplitter> splitter =
                 runner.create(new CachedDexSplitter(dexDb, new D8DexSplitter()));
 
-        // Get the list of files from the local apks
-        Task<List<Apk>> newFiles = runner.create(Tasks.PARSE_PATHS, ApkParser::parsePaths, paths);
+        Task<List<Apk>> newFiles = runner.create(app.getApks());
 
         // Get the list of files from the installed app
         Task<ApplicationDumper.Dump> dumps =
@@ -441,8 +401,6 @@ public class Deployer {
 
         TaskResult result = runner.run(canceller);
         result.getMetrics().forEach(metrics::add);
-        Task<String> packageName =
-                runner.create(Tasks.PARSE_APP_IDS, ApplicationDumper::getPackageName, newFiles);
         // Update the database with the entire new apk. In the normal case this should
         // be a no-op because the dexes that were modified were extracted at comparison time.
         // However if the compare task doesn't get to execute we still update the database.
@@ -459,14 +417,12 @@ public class Deployer {
             throw result.getException();
         }
 
-        App app = new App(packageName.get(), newFiles.get(), logger);
-
         boolean skippedInstall = sessionId.get().equals(ApkPreInstaller.SKIPPED_INSTALLATION);
         return new Result(skippedInstall, false, false, app);
     }
 
     private Result optimisticSwap(
-            List<String> argPaths,
+            @NonNull App app,
             boolean argRestart,
             Map<Integer, ClassRedefiner> redefiners,
             Canceller canceller)
@@ -484,18 +440,14 @@ public class Deployer {
                 deploySessionUID);
 
         // Inputs
-        Task<List<String>> paths = runner.create(argPaths);
         Task<Boolean> restart = runner.create(argRestart);
         Task<DexSplitter> splitter =
                 runner.create(new CachedDexSplitter(dexDb, new D8DexSplitter()));
         Task<String> deviceSerial = runner.create(adb.getSerial());
 
-        // Get the list of files from the local apks
-        Task<List<Apk>> newFiles = runner.create(Tasks.PARSE_PATHS, ApkParser::parsePaths, paths);
-
+        Task<List<Apk>> apks = runner.create(app.getApks());
         // Get the App info. Some from the APK, some from DDMLib.
-        Task<String> packageName =
-                runner.create(Tasks.PARSE_APP_IDS, ApplicationDumper::getPackageName, newFiles);
+        Task<String> packageName = runner.create(app.getAppId());
         Task<List<Integer>> pids = runner.create(Tasks.GET_PIDS, adb::getPids, packageName);
         Task<Deploy.Arch> arch = runner.create(Tasks.GET_ARCH, adb::getArch, pids);
 
@@ -506,11 +458,11 @@ public class Deployer {
                         this::dumpWithCache,
                         packageName,
                         deviceSerial,
-                        newFiles);
+                        apks);
 
         // Calculate the difference between them speculating the deployment cache is correct.
         Task<List<FileDiff>> diffs =
-                runner.create(Tasks.DIFF, new ApkDiffer()::specDiff, speculativeDump, newFiles);
+                runner.create(Tasks.DIFF, new ApkDiffer()::specDiff, speculativeDump, apks);
 
         // Extract files from the APK for overlays. Currently only extract resources.
         Predicate<String> filter = file -> file.startsWith("res") || file.startsWith("assets");
@@ -522,7 +474,7 @@ public class Deployer {
 
         // Verify the changes are swappable and get only the dexes that we can change
         Task<List<FileDiff>> dexDiffs =
-                runner.create(Tasks.VERIFY, new SwapVerifier()::verify, newFiles, diffs, restart);
+                runner.create(Tasks.VERIFY, new SwapVerifier()::verify, apks, diffs, restart);
 
         // Compare the local vs remote dex files.
         Task<DexComparator.ChangedClasses> changedClasses =
@@ -558,23 +510,21 @@ public class Deployer {
         // be a no-op because the dexes that were modified were extracted at comparison time.
         // However if the compare task doesn't get to execute we still update the database.
         // Note we artificially block this task until swap is done.
-        runner.create(Tasks.CACHE, DexSplitter::cache, splitter, newFiles);
+        runner.create(Tasks.CACHE, DexSplitter::cache, splitter, apks);
         runner.create(
                 Tasks.DEPLOY_CACHE_STORE,
                 (serial, pkgName, files, swap) ->
-                        deployCache.store(serial, pkgName, files, swap.overlayId),
+                        deployCache.store(serial, app.getAppId(), app.getApks(), swap.overlayId),
                 deviceSerial,
                 packageName,
-                newFiles,
+                apks,
                 swapResultTask);
 
         ApkChecker checker = new ApkChecker(deploySessionUID, logger);
-        runner.create(Tasks.APK_CHECK, checker::log, newFiles);
+        runner.create(Tasks.APK_CHECK, checker::log, apks);
 
         // Wait only for swap to finish
         runner.runAsync(canceller);
-
-        App app = new App(packageName.get(), newFiles.get(), logger);
 
         // TODO: May be notify user we IWI'ed.
         // deployResult.didIwi = true;

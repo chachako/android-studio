@@ -22,6 +22,7 @@ import com.android.annotations.NonNull;
 import com.android.ddmlib.AdbInitOptions;
 import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.IDevice;
+import com.android.tools.deployer.model.App;
 import com.android.tools.deployer.tasks.Canceller;
 import com.android.tools.deployer.tasks.TaskRunner;
 import com.android.tools.tracer.Trace;
@@ -209,6 +210,7 @@ public class DeployerRunner {
                         logger,
                         deployerOption);
         final Deployer.Result deployResult;
+        App app = App.fromPaths(parameters.getApplicationId(), parameters.getApks(), logger);
         try {
             if (parameters.getCommands().contains(DeployRunnerParameters.Command.INSTALL)) {
                 InstallOptions.Builder options = defaultInstallOptions.toBuilder();
@@ -225,17 +227,11 @@ public class DeployerRunner {
                 if (parameters.getTargetUserId() != null) {
                     options.setInstallOnUser(parameters.getTargetUserId());
                 }
-                deployResult =
-                        deployer.install(
-                                parameters.getApplicationId(),
-                                parameters.getApks(),
-                                options.build(),
-                                installMode);
+                deployResult = deployer.install(app, options.build(), installMode);
             } else if (parameters.getCommands().contains(DeployRunnerParameters.Command.FULLSWAP)) {
-                deployResult = deployer.fullSwap(parameters.getApks(), Canceller.NO_OP);
+                deployResult = deployer.fullSwap(app, Canceller.NO_OP);
             } else if (parameters.getCommands().contains(DeployRunnerParameters.Command.CODESWAP)) {
-                deployResult =
-                        deployer.codeSwap(parameters.getApks(), ImmutableMap.of(), Canceller.NO_OP);
+                deployResult = deployer.codeSwap(app, ImmutableMap.of(), Canceller.NO_OP);
             } else {
                 throw new RuntimeException("UNKNOWN command");
             }

@@ -25,7 +25,6 @@ import com.android.tools.deployer.devices.FakeDevice;
 import com.android.tools.deployer.rules.ApiLevel;
 import com.android.tools.deployer.rules.FakeDeviceConnection;
 import com.android.utils.FileUtils;
-import com.android.utils.ILogger;
 import com.google.common.base.Charsets;
 import java.io.File;
 import java.io.IOException;
@@ -135,7 +134,7 @@ public class OptimisticInstallTest {
                 ":Success",
                 ":Success",
                 ":Success",
-                "PARSE_PATHS:Success",
+                ":Success",
                 ":Success",
                 "OPTIMISTIC_INSTALL:Failed",
                 "DELTAINSTALL:DUMP_UNKNOWN_PACKAGE",
@@ -182,7 +181,7 @@ public class OptimisticInstallTest {
                 ":Success",
                 ":Success",
                 ":Success",
-                "PARSE_PATHS:Success",
+                ":Success",
                 ":Success",
                 "OPTIMISTIC_INSTALL:Failed",
                 "DELTAINSTALL:CANNOT_GENERATE_DELTA",
@@ -212,7 +211,7 @@ public class OptimisticInstallTest {
                 metrics.stream()
                         .map(m -> m.getName() + (m.hasStatus() ? ":" + m.getStatus() : ""))
                         .toArray(String[]::new);
-        assertArrayEquals(expected, actual);
+        assertArrayEquals("metric differ", expected, actual);
     }
 
     private static String getLogcatContent(FakeDevice device) {

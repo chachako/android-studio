@@ -21,6 +21,7 @@ import com.android.adblib.AdbSession;
 import com.android.adblib.DeviceSelector;
 import com.android.adblib.tools.InstallerKt;
 import com.android.adblib.tools.JavaBridge;
+import com.android.annotations.NonNull;
 import com.android.ddmlib.AdbCommandRejectedException;
 import com.android.ddmlib.Client;
 import com.android.ddmlib.IDevice;
@@ -34,6 +35,7 @@ import com.android.ddmlib.TimeoutException;
 import com.android.sdklib.AndroidVersion;
 import com.android.tools.deploy.proto.Deploy;
 import com.android.tools.deployer.model.Apk;
+import com.android.tools.deployer.model.App;
 import com.android.tools.tracer.Trace;
 import com.android.utils.ILogger;
 import com.google.common.collect.ImmutableMap;
@@ -149,18 +151,16 @@ public class AdbClient {
         }
     }
 
-    public InstallResult install(List<String> apks, List<String> options, boolean reinstall) {
-        List<File> files = apks.stream().map(File::new).collect(Collectors.toList());
-
+    public InstallResult install(@NonNull App app, List<String> options, boolean reinstall) {
         String allowAdbLibProp = System.getProperty(ALLOW_ADBLIB_PROP_KEY);
         boolean allowAdbLib = Boolean.parseBoolean(allowAdbLibProp);
 
         if (adbSession.isPresent() && allowAdbLib) {
             logger.info("Installing with adblib");
-            return installWithAdbLib(files, options, reinstall);
+            return installWithAdbLib(app, options, reinstall);
         } else {
             logger.info("Installing with ddmlib");
-            return installWithDdmLib(files, options, reinstall);
+            return installWithDdmLib(app, options, reinstall);
         }
     }
 
@@ -183,15 +183,15 @@ public class AdbClient {
     }
 
     private InstallResult installWithAdbLib(
-            List<File> files, List<String> options, boolean reinstall) {
+            @NonNull App app, List<String> options, boolean reinstall) {
         try {
             if (reinstall) {
                 options.add("-r");
             }
-            List<Path> apks = new ArrayList<>();
-            for (File f : files) {
-                apks.add(Paths.get(f.getAbsolutePath()));
-            }
+            List<Path> apks =
+                    app.getApks().stream()
+                            .map(apk -> Paths.get(apk.path))
+                            .collect(Collectors.toList());
             DeviceSelector deviceSelector =
                     DeviceSelector.fromSerialNumber(device.getSerialNumber());
             Duration timeout = Duration.of(Timeouts.CMD_OINSTALL_MS, ChronoUnit.MILLIS);
@@ -210,7 +210,9 @@ public class AdbClient {
     }
 
     private InstallResult installWithDdmLib(
-            List<File> files, List<String> options, boolean reinstall) {
+            @NonNull App app, List<String> options, boolean reinstall) {
+        List<File> files =
+                app.getApks().stream().map(apk -> new File(apk.path)).collect(Collectors.toList());
         try {
             if (device.getVersion().isGreaterOrEqualThan(AndroidVersion.VersionCodes.LOLLIPOP)) {
                 device.installPackages(files, reinstall, options, 5, TimeUnit.MINUTES);

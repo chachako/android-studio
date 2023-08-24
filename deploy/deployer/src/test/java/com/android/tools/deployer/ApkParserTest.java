@@ -276,8 +276,8 @@ public class ApkParserTest {
             createZip(numFiles, sizePerFile, zip.toFile());
             ApkParser.parse(zip.toString());
             Assert.fail("No exception thrown in apk missing AndroidManifest.xml");
-        } catch (IOException e) {
-            Assert.assertTrue(e.getMessage().startsWith(ApkParser.NO_MANIFEST_MSG));
+        } catch (IllegalStateException e) {
+            Assert.assertTrue(e.getMessage().contains(ApkParser.NO_MANIFEST_MSG));
         }
     }
 
@@ -338,7 +338,7 @@ public class ApkParserTest {
         try {
             ApkParser.parsePaths(ImmutableList.of("jar:" + jarFile.toUri())).get(0);
             fail("Parsing of an invalid path should fail.");
-        } catch (DeployerException ignore) {
+        } catch (IllegalStateException ignore) {
         } catch (Throwable t) {
             fail(t.getMessage());
         }

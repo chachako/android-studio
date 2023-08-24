@@ -1627,7 +1627,6 @@ public class DeployerRunnerTest {
                     ":Success",
                     ":Success",
                     ":Success",
-                    "PARSE_PATHS:Success",
                     "DUMP:Success",
                     "DIFF:Success",
                     "PREINSTALL:Success",
@@ -1774,7 +1773,6 @@ public class DeployerRunnerTest {
                     ":Success",
                     ":Success",
                     ":Success",
-                    "PARSE_PATHS:Success",
                     "DUMP:Success",
                     "DIFF:Success",
                     "PREINSTALL:Success",
@@ -1802,7 +1800,6 @@ public class DeployerRunnerTest {
                     ":Success",
                     ":Success",
                     ":Success",
-                    "PARSE_PATHS:Success",
                     "DUMP:Success",
                     "DIFF:Success",
                     "PREINSTALL:Success",
@@ -1908,7 +1905,6 @@ public class DeployerRunnerTest {
                     ":Success",
                     ":Success",
                     ":Success",
-                    "PARSE_PATHS:Success",
                     "DUMP:Success",
                     "DIFF:Success",
                     "PREINSTALL:Success",
@@ -1958,7 +1954,6 @@ public class DeployerRunnerTest {
                     ":Success",
                     ":Success",
                     ":Success",
-                    "PARSE_PATHS:Success",
                     "DUMP:Success",
                     "DIFF:Success",
                     "PREINSTALL:Success",
@@ -2030,8 +2025,6 @@ public class DeployerRunnerTest {
         assertInstalled("com.example.simpleapp", newApk);
         assertMetrics(
                 runner.getMetrics(),
-                ":Success",
-                "PARSE_PATHS:Success",
                 ":Success",
                 "ROOT_PUSH_INSTALL:Success");
     }
@@ -2239,7 +2232,6 @@ public class DeployerRunnerTest {
                     ":Success",
                     ":Success",
                     ":Success",
-                    "PARSE_PATHS:Success",
                     "DUMP:Success",
                     "DIFF:Success",
                     "PREINSTALL:Success",
@@ -2265,7 +2257,6 @@ public class DeployerRunnerTest {
                     ":Success",
                     ":Success",
                     ":Success",
-                    "PARSE_PATHS:Success",
                     "DUMP:Success",
                     "DIFF:Success",
                     "PREINSTALL:Success",
@@ -2369,7 +2360,6 @@ public class DeployerRunnerTest {
                     ":Success",
                     ":Success",
                     ":Success",
-                    "PARSE_PATHS:Success",
                     "DUMP:Success",
                     "DIFF:Success",
                     "PREINSTALL:Success",
@@ -2419,7 +2409,6 @@ public class DeployerRunnerTest {
                     ":Success",
                     ":Success",
                     ":Success",
-                    "PARSE_PATHS:Success",
                     "DUMP:Success",
                     "DIFF:Success",
                     "PREINSTALL:Success",
@@ -2524,7 +2513,25 @@ public class DeployerRunnerTest {
                 metrics.stream()
                         .map(m -> m.getName() + (m.hasStatus() ? ":" + m.getStatus() : ""))
                         .toArray(String[]::new);
-        assertArrayEquals(expected, actual);
+
+        // Don't use assertArraysEqual, they don't show enough detail to understand what went wrong
+        // e.g: When several ":Success" are expected, we get only the index which failed.
+        if (expected.length != actual.length) {
+            dumpMetricDiff(expected, actual);
+            fail("metric differ");
+        }
+
+        for (int i = 0; i < expected.length; i++) {
+            if (!expected[i].equals(actual[i])) {
+                dumpMetricDiff(expected, actual);
+                fail("metric differ");
+            }
+        }
+    }
+
+    private void dumpMetricDiff(String[] expected, String[] actual) {
+        System.out.println("Expected:" + String.join(",", expected));
+        System.out.println("Actual  :" + String.join(",", actual));
     }
 
     private static String getLogcatContent(FakeDevice device) {
