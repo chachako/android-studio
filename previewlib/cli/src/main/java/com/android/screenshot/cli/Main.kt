@@ -432,7 +432,7 @@ class Main {
                 if (index == args.size - 1) {
                     throw InvalidArgumentException("Missing additional dependencies")
                 }
-                argumentState.additionalDeps = split(args[++index], (";"))
+                argumentState.additionalDeps = split(args[++index], File.pathSeparator)
             } else if (arg == ARG_IMAGE_DIFF_THRESHOLD) {
                 if (index == args.size - 1) {
                     throw InvalidArgumentException("Missing threshold value")

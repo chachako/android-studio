@@ -121,8 +121,8 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
                     "--golden-location", cliParams["golden.location"] + "/",
                     "--file-path", cliParams["sources"]!!.split(",").first(),
                     "--layoutlib-dir", cliParams["layoutlib.dir"],
-                    "--additional-deps", ";${cliParams["additional.deps"]};$testClassesDependencies")
-        ).apply {
+                    "--additional-deps", listOf(cliParams["additional.deps"]!!, testClassesDependencies).joinToString(File.pathSeparator))
+                ).apply {
             environment().remove("TEST_WORKSPACE")
             redirectErrorStream(true)
             redirectOutput(ProcessBuilder.Redirect.INHERIT)

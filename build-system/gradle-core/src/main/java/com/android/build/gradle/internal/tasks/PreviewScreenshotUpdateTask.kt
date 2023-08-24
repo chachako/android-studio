@@ -114,7 +114,7 @@ abstract class PreviewScreenshotUpdateTask : NonIncrementalTask(), VerificationT
                     "--golden-location", cliParams["golden.location"] + "/",
                     "--file-path", cliParams["sources"]!!.split(",").first(),
                     "--layoutlib-dir", cliParams["layoutlib.dir"],
-                    "--additional-deps", ";${cliParams["additional.deps"]};$testClassesDependencies",
+                    "--additional-deps", listOf(cliParams["additional.deps"]!!, testClassesDependencies).joinToString(File.pathSeparator),
                     "--record-golden")
         ).apply {
             environment().remove("TEST_WORKSPACE")
