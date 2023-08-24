@@ -119,8 +119,7 @@ public class OptimisticApkInstallerTest {
                                 "file3", "2",
                                 "file4", "2"));
         OverlayId nextId =
-                apkInstaller.install(
-                        App.fromApk(TEST_PACKAGE, nextApk, logger), ImmutableList.of());
+                apkInstaller.install(App.fromApk(TEST_PACKAGE, nextApk), ImmutableList.of());
         assertOverlay(nextId, "base/file2", "base/file3", "base/file4");
         cache.store(TEST_SERIAL, TEST_PACKAGE, ImmutableList.of(nextApk), nextId);
 
@@ -134,9 +133,7 @@ public class OptimisticApkInstallerTest {
                                 "file2", "99",
                                 "file3", "99",
                                 "file4", "99"));
-        nextId =
-                apkInstaller.install(
-                        App.fromApk(TEST_PACKAGE, nextApk, logger), ImmutableList.of());
+        nextId = apkInstaller.install(App.fromApk(TEST_PACKAGE, nextApk), ImmutableList.of());
         assertOverlay(nextId, "base/file1", "base/file2", "base/file3", "base/file4");
         cache.store(TEST_SERIAL, TEST_PACKAGE, ImmutableList.of(nextApk), nextId);
 
@@ -149,9 +146,7 @@ public class OptimisticApkInstallerTest {
                                 "file1", "0",
                                 "file2", "1",
                                 "file4", "2"));
-        nextId =
-                apkInstaller.install(
-                        App.fromApk(TEST_PACKAGE, nextApk, logger), ImmutableList.of());
+        nextId = apkInstaller.install(App.fromApk(TEST_PACKAGE, nextApk), ImmutableList.of());
         assertOverlay(nextId, "base/file4");
     }
 
@@ -182,8 +177,7 @@ public class OptimisticApkInstallerTest {
                                 "file3", "2",
                                 "file4", "2"));
         OverlayId nextId =
-                apkInstaller.install(
-                        App.fromApk(TEST_PACKAGE, nextApk, logger), ImmutableList.of());
+                apkInstaller.install(App.fromApk(TEST_PACKAGE, nextApk), ImmutableList.of());
         assertOverlay(nextId, "base/file2", "base/file3", "base/file4");
         cache.store(TEST_SERIAL, TEST_PACKAGE, ImmutableList.of(nextApk), nextId);
 
@@ -196,7 +190,7 @@ public class OptimisticApkInstallerTest {
                                 "file1", "0",
                                 "file4", "2"));
         thrown.expect(DeployerException.class);
-        apkInstaller.install(App.fromApk(TEST_PACKAGE, nextApk, logger), ImmutableList.of());
+        apkInstaller.install(App.fromApk(TEST_PACKAGE, nextApk), ImmutableList.of());
     }
 
     @Test
@@ -224,7 +218,7 @@ public class OptimisticApkInstallerTest {
                                 "file1", "0",
                                 "file2", "99"));
         thrown.expect(DeployerException.class);
-        apkInstaller.install(App.fromApk(TEST_PACKAGE, nextApk, logger), ImmutableList.of());
+        apkInstaller.install(App.fromApk(TEST_PACKAGE, nextApk), ImmutableList.of());
     }
 
     @Test
@@ -258,8 +252,7 @@ public class OptimisticApkInstallerTest {
                                 "lib/x86_64/baz", "3",
                                 "lib/x86_64/not", "99"));
         OverlayId nextId =
-                apkInstaller.install(
-                        App.fromApk(TEST_PACKAGE, nextApk, logger), ImmutableList.of());
+                apkInstaller.install(App.fromApk(TEST_PACKAGE, nextApk), ImmutableList.of());
         assertOverlay(nextId, "base/lib/x86_64/bar", "base/lib/x86_64/not");
     }
 
@@ -311,8 +304,7 @@ public class OptimisticApkInstallerTest {
         thrown.expect(DeployerException.class);
         try {
             apkInstaller.install(
-                    App.fromApks(TEST_PACKAGE, List.of(nextApk1, nextApk2), logger),
-                    ImmutableList.of());
+                    App.fromApks(TEST_PACKAGE, List.of(nextApk1, nextApk2)), ImmutableList.of());
         } finally {
             // Ensure that the metrics are not impacted by the early exit.
             assertThat(metrics.getDeployMetrics().size()).isEqualTo(1);
@@ -346,7 +338,7 @@ public class OptimisticApkInstallerTest {
                                 "file1", "0",
                                 "file2", "99"));
         thrown.expect(DeployerException.class);
-        apkInstaller.install(App.fromApk(TEST_PACKAGE, nextApk, logger), ImmutableList.of("-g"));
+        apkInstaller.install(App.fromApk(TEST_PACKAGE, nextApk), ImmutableList.of("-g"));
     }
 
     private static void assertOverlay(OverlayId id, String... files) {

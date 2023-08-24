@@ -210,7 +210,7 @@ public class DeployerRunner {
                         logger,
                         deployerOption);
         final Deployer.Result deployResult;
-        App app = App.fromPaths(parameters.getApplicationId(), parameters.getApks(), logger);
+        App app = App.fromPaths(parameters.getApplicationId(), parameters.getApks());
         try {
             if (parameters.getCommands().contains(DeployRunnerParameters.Command.INSTALL)) {
                 InstallOptions.Builder options = defaultInstallOptions.toBuilder();
@@ -239,7 +239,8 @@ public class DeployerRunner {
             if (parameters.getCommands().contains(DeployRunnerParameters.Command.ACTIVATE)) {
                 DeployRunnerParameters.Component component = parameters.getComponentToActivate();
                 assert component != null;
-                deployResult.app.activateComponent(
+                Activator activator = new Activator(deployResult.app, logger);
+                activator.activate(
                         component.type, component.name, new LoggerReceiver(logger), device);
             }
         } catch (DeployerException e) {
