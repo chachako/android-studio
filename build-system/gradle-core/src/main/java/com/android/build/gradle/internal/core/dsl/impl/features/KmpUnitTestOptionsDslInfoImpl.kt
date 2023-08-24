@@ -19,7 +19,7 @@ package com.android.build.gradle.internal.core.dsl.impl.features
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.gradle.internal.core.dsl.features.UnitTestOptionsDslInfo
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
-import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnJvmConfigurationImpl
+import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin
 import com.android.build.gradle.internal.utils.createTargetSdkVersion
 import org.gradle.api.tasks.testing.Test
 
@@ -27,16 +27,18 @@ internal class KmpUnitTestOptionsDslInfoImpl(
     private val extension: KotlinMultiplatformAndroidExtensionImpl,
 ): UnitTestOptionsDslInfo {
 
-    private val testOnJvmConfig: KotlinMultiplatformAndroidTestOnJvmConfigurationImpl?
-        get() = extension.androidTestOnJvmConfiguration
+    private val testOnJvmConfig
+        get() = extension.androidTestOnJvmOptions ?: throw RuntimeException(
+            "Android tests on jvm are not enabled. (use `kotlin.${KotlinMultiplatformAndroidPlugin.ANDROID_EXTENSION_ON_KOTLIN_EXTENSION_NAME}.withAndroidTestOnJvm()` to enable)"
+        )
 
     override val isIncludeAndroidResources: Boolean
-        get() = testOnJvmConfig?.isIncludeAndroidResources ?: false
+        get() = testOnJvmConfig.isIncludeAndroidResources
     override val isReturnDefaultValues: Boolean
-        get() = testOnJvmConfig?.isReturnDefaultValues ?: false
+        get() = testOnJvmConfig.isReturnDefaultValues
 
     override fun applyConfiguration(task: Test) {
-        testOnJvmConfig?.applyConfiguration(task)
+        testOnJvmConfig.applyConfiguration(task)
     }
     override val targetSdkVersion: AndroidVersion?
         get() = extension.run { createTargetSdkVersion(compileSdk, compileSdkPreview) }

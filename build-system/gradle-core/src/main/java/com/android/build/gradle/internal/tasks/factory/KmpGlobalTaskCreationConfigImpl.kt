@@ -152,7 +152,7 @@ internal class KmpGlobalTaskCreationConfigImpl(
     }
 
     override val installationOptions: Installation
-        get() = extension.androidTestOnDeviceConfiguration!!.installation
+        get() = extension.androidTestOnDeviceOptions!!.installation
 
     override val deviceProviders: List<DeviceProvider>
         get() = emptyList()

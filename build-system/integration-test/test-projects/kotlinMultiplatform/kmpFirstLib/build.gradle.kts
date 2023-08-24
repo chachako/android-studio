@@ -8,10 +8,21 @@ plugins {
 kotlin {
   androidLibrary {
     withJava()
-    withAndroidTestOnJvm(compilationName = "unitTest") {
+    withAndroidTestOnJvmBuilder {
+        compilationName = "unitTest"
+        defaultSourceSetName = "androidUnitTest"
+    }.configure {
       isIncludeAndroidResources = true
     }
-    withAndroidTestOnDevice(compilationName = "instrumentedTest")
+
+    withAndroidTestOnDeviceBuilder {
+        compilationName = "instrumentedTest"
+        defaultSourceSetName = "androidInstrumentedTest"
+    }
+
+    compilations.withType(com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceCompilation::class.java) {
+        instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 
     sourceSets.getByName("androidMain") {
       dependencies {
@@ -32,7 +43,6 @@ kotlin {
     compilations.getByName("instrumentedTest") {
         kotlinOptions.languageVersion = "1.8"
     }
-
 
     dependencyVariantSelection {
       buildTypes.add("debug")

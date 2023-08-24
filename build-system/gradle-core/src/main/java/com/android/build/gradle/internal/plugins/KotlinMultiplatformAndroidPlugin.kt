@@ -24,15 +24,15 @@ import com.android.build.api.attributes.ProductFlavorAttr
 import com.android.build.api.component.analytics.AnalyticsEnabledKotlinMultiplatformAndroidVariant
 import com.android.build.api.component.impl.KmpAndroidTestImpl
 import com.android.build.api.component.impl.KmpUnitTestImpl
+import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
 import com.android.build.api.dsl.SdkComponents
 import com.android.build.api.dsl.SettingsExtension
 import com.android.build.api.extension.impl.KotlinMultiplatformAndroidComponentsExtensionImpl
 import com.android.build.api.extension.impl.MultiplatformVariantApiOperationsRegistrar
-import com.android.build.api.variant.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension
-import com.android.build.api.variant.impl.KmpPredefinedAndroidCompilation
+import com.android.build.api.variant.impl.KmpAndroidCompilationType
 import com.android.build.api.variant.impl.KmpVariantImpl
 import com.android.build.api.variant.impl.KotlinMultiplatformAndroidCompilationImpl
 import com.android.build.api.variant.impl.KotlinMultiplatformAndroidTargetImpl
@@ -452,7 +452,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         val artifacts = ArtifactsImpl(project, dslInfo.componentIdentity.name)
 
         val kotlinCompilation = androidTarget.compilations.getByName(
-            KmpPredefinedAndroidCompilation.MAIN.compilationName
+            KmpAndroidCompilationType.MAIN.defaultCompilationName
         ) as KotlinMultiplatformAndroidCompilationImpl
 
         return KmpVariantImpl(
@@ -498,7 +498,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         val artifacts = ArtifactsImpl(project, dslInfo.componentIdentity.name)
 
         val kotlinCompilation = androidTarget.compilations.getByName(
-            androidExtension.androidTestOnJvmConfiguration!!.compilationName
+            androidExtension.androidTestOnJvmBuilder!!.compilationName
         ) as KotlinMultiplatformAndroidCompilationImpl
 
         return KmpUnitTestImpl(
@@ -532,7 +532,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         }
 
         val kotlinCompilation = androidTarget.compilations.getByName(
-            androidExtension.androidTestOnDeviceConfiguration!!.compilationName
+            androidExtension.androidTestOnDeviceBuilder!!.compilationName
         ) as KotlinMultiplatformAndroidCompilationImpl
 
         val manifestLocation = getAndroidManifestDefaultLocation(kotlinCompilation)
@@ -634,7 +634,6 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             KotlinMultiplatformAndroidComponentsExtension::class.java,
             "androidComponents",
             KotlinMultiplatformAndroidComponentsExtensionImpl::class.java,
-            dslServices,
             sdkComponents,
             managedDeviceRegistry,
             variantApiOperationsRegistrar
@@ -644,6 +643,6 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
     companion object {
         internal const val ANDROID_TARGET_NAME = "android"
         const val ANDROID_EXTENSION_ON_KOTLIN_EXTENSION_NAME = "androidLibrary"
-        fun String.getNamePrefixedWithTarget() = ANDROID_TARGET_NAME.appendCapitalized(this)
+        fun String.getNamePrefixedWithAndroidTarget() = ANDROID_TARGET_NAME.appendCapitalized(this)
     }
 }

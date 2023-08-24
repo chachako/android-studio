@@ -252,9 +252,6 @@ Deprecated from AGP 8.0.0
 Deprecated from AGP 8.2.0
   * com.android.build.api.dsl.BuildType.isRenderscriptDebuggable: boolean ()
   * com.android.build.api.dsl.BuildType.setRenderscriptDebuggable: void (boolean)
-  * com.android.build.api.variant.KotlinMultiplatformAndroidCompilation.getKotlinOptions: org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions ()
-  * com.android.build.api.variant.KotlinMultiplatformAndroidCompilation.kotlinOptions: void (kotlin.jvm.functions.Function1<? super org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions, kotlin.Unit>)
-  * com.android.build.api.variant.KotlinMultiplatformAndroidCompilation.kotlinOptions: void (org.gradle.api.Action<org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions>)
 Deprecated from AGP 7.2.0
   * com.android.build.api.dsl.BuildType.isTestCoverageEnabled: boolean ()
   * com.android.build.api.dsl.BuildType.setTestCoverageEnabled: void (boolean)
@@ -292,6 +289,10 @@ Deprecated from AGP 8.1.0
   * com.android.build.api.variant.VariantBuilder.getUnitTestEnabled: boolean ()
   * com.android.build.api.variant.VariantBuilder.setEnableUnitTest: void (boolean)
   * com.android.build.api.variant.VariantBuilder.setUnitTestEnabled: void (boolean)
+Deprecated from AGP 8.3.0
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation.getKotlinOptions: org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation.kotlinOptions: void (kotlin.jvm.functions.Function1<? super org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation.kotlinOptions: void (org.gradle.api.Action<org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions>)
 Deprecated from AGP 7.4.0
   * com.android.build.api.dsl.LibraryBaseFlavor.getTargetSdk: java.lang.Integer ()
   * com.android.build.api.dsl.LibraryBaseFlavor.getTargetSdkPreview: java.lang.String ()

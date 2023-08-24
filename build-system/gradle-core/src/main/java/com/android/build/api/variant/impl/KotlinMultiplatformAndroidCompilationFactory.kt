@@ -16,8 +16,9 @@
 
 package com.android.build.api.variant.impl
 
-import com.android.build.api.variant.KotlinMultiplatformAndroidCompilation
+import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
 import com.android.build.gradle.internal.CompileOptions
+import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidCompilationBuilderImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.ANDROID_EXTENSION_ON_KOTLIN_EXTENSION_NAME
 import com.android.utils.appendCapitalized
@@ -27,10 +28,8 @@ import org.gradle.api.artifacts.Dependency
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.plugin.KotlinTargetHierarchy
 import org.jetbrains.kotlin.gradle.plugin.mpp.external.ExternalKotlinCompilationDescriptor.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.external.createCompilation
-import org.jetbrains.kotlin.gradle.plugin.mpp.targetHierarchy.SourceSetTreeClassifier
 
 @OptIn(ExternalKotlinTargetApi::class)
 internal class KotlinMultiplatformAndroidCompilationFactory(
@@ -42,30 +41,50 @@ internal class KotlinMultiplatformAndroidCompilationFactory(
 
     @Suppress("INVISIBLE_MEMBER")
     override fun create(name: String): KotlinMultiplatformAndroidCompilationImpl {
-        if (KmpPredefinedAndroidCompilation.MAIN.compilationName != name &&
-            androidExtension.androidTestOnJvmConfiguration?.compilationName != name &&
-            androidExtension.androidTestOnDeviceConfiguration?.compilationName != name) {
-            throw IllegalAccessException(
+        val compilationType = when (name) {
+            KmpAndroidCompilationType.MAIN.defaultCompilationName -> KmpAndroidCompilationType.MAIN
+            androidExtension.androidTestOnJvmBuilder?.compilationName -> KmpAndroidCompilationType.TEST_ON_JVM
+            androidExtension.androidTestOnDeviceBuilder?.compilationName -> KmpAndroidCompilationType.TEST_ON_DEVICE
+            else -> throw IllegalStateException(
                 "Kotlin multiplatform android plugin doesn't support creating arbitrary " +
                         "compilations. Only three types of compilations are supported:\n" +
-                        "  * main compilation (named \"${KmpPredefinedAndroidCompilation.MAIN.compilationName}\"),\n" +
+                        "  * main compilation (named \"${KmpAndroidCompilationType.MAIN.defaultCompilationName}\"),\n" +
                         "  * test on jvm compilation (use `kotlin.$ANDROID_EXTENSION_ON_KOTLIN_EXTENSION_NAME.withAndroidTestOnJvm()` to enable),\n" +
                         "  * test on device compilation (use `kotlin.$ANDROID_EXTENSION_ON_KOTLIN_EXTENSION_NAME.withAndroidTestOnDevice()` to enable)."
             )
         }
 
-        val isTestComponent = androidExtension.androidTestOnJvmConfiguration?.compilationName == name ||
-                androidExtension.androidTestOnDeviceConfiguration?.compilationName == name
+        val compilationBuilder = when (compilationType) {
+            KmpAndroidCompilationType.MAIN -> KotlinMultiplatformAndroidCompilationBuilderImpl(
+                compilationType
+            )
+            KmpAndroidCompilationType.TEST_ON_JVM -> androidExtension.androidTestOnJvmBuilder!!
+            KmpAndroidCompilationType.TEST_ON_DEVICE -> androidExtension.androidTestOnDeviceBuilder!!
+        }
+
+        val isTestComponent = compilationType != KmpAndroidCompilationType.MAIN
 
         return target.createCompilation<KotlinMultiplatformAndroidCompilationImpl> {
             compilationName = name
             defaultSourceSet = kotlinExtension.sourceSets.getByName(
-                target.targetName.appendCapitalized(name)
+                compilationBuilder.defaultSourceSetName
             )
-            compilationFactory =
-                CompilationFactory(
-                    ::KotlinMultiplatformAndroidCompilationImpl
-                )
+            compilationFactory = CompilationFactory { delegate ->
+                when(compilationType) {
+                    KmpAndroidCompilationType.MAIN ->
+                        KotlinMultiplatformAndroidCompilationImpl(delegate)
+
+                    KmpAndroidCompilationType.TEST_ON_JVM ->
+                        KotlinMultiplatformAndroidTestOnJvmCompilationImpl(
+                            androidExtension.androidTestOnJvmOptions!!, delegate
+                        )
+
+                    KmpAndroidCompilationType.TEST_ON_DEVICE ->
+                        KotlinMultiplatformAndroidTestOnDeviceCompilationImpl(
+                            androidExtension.androidTestOnDeviceOptions!!, delegate
+                        )
+                }
+            }
             compileTaskName = "compile".appendCapitalized(
                 target.targetName.appendCapitalized(name)
             )
@@ -77,7 +96,7 @@ internal class KotlinMultiplatformAndroidCompilationFactory(
                     // later. But we still need to add implementation and compileOnly dependencies
                     // from the main compilation to the test compilation to be consistent with the
                     // behaviour of the other kotlin targets.
-                    if (main.compilationName == KmpPredefinedAndroidCompilation.MAIN.compilationName) {
+                    if (main.compilationName == KmpAndroidCompilationType.MAIN.defaultCompilationName) {
                         auxiliary.compileDependencyConfigurationName.addAllDependenciesFromOtherConfigurations(
                             project,
                             main.implementationConfigurationName,
@@ -94,25 +113,11 @@ internal class KotlinMultiplatformAndroidCompilationFactory(
                     }
                 }
             }
-            sourceSetTreeClassifier = getSourceSetTreeClassifierFromConfiguration(name)
+            sourceSetTreeClassifier = compilationBuilder.getSourceSetTreeClassifier()
         }.also {
             it.compilerOptions.options.jvmTarget.set(
                 JvmTarget.fromTarget(CompileOptions.DEFAULT_JAVA_VERSION.toString())
             )
-        }
-    }
-
-    private fun getSourceSetTreeClassifierFromConfiguration(name: String): SourceSetTreeClassifier {
-        return when {
-            androidExtension.androidTestOnJvmConfiguration?.compilationName == name ->
-                androidExtension.androidTestOnJvmConfiguration?.sourceSetTree?.let {
-                    SourceSetTreeClassifier.Name(it)
-                } ?: SourceSetTreeClassifier.Value(KotlinTargetHierarchy.SourceSetTree.test)
-            androidExtension.androidTestOnDeviceConfiguration?.compilationName == name ->
-                androidExtension.androidTestOnDeviceConfiguration?.sourceSetTree?.let {
-                    SourceSetTreeClassifier.Name(it)
-                } ?: SourceSetTreeClassifier.None
-            else -> SourceSetTreeClassifier.Default
         }
     }
 

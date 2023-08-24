@@ -41,16 +41,14 @@ class KotlinMultiplatformAndroidConnectedTest {
 
     @Before
     fun setUp() {
-        TestFileUtils.searchAndReplace(
+        TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-               withAndroidTestOnDevice(compilationName = "instrumentedTest")
-            """.trimIndent(),
-            """
-                withAndroidTestOnDevice(compilationName = "instrumentedTest") {
-                    instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-                    enableCoverage = true
-                }
+               kotlin.androidLibrary.compilations.withType(
+                 com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceCompilation::class.java
+               ) {
+                  enableCoverage = true
+               }
             """.trimIndent()
         )
         TestFileUtils.appendToFile(

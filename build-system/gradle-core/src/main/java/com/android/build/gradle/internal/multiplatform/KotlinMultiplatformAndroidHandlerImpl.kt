@@ -16,22 +16,21 @@
 
 package com.android.build.gradle.internal.multiplatform
 
+import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
+import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
-import com.android.build.api.variant.KotlinMultiplatformAndroidCompilation
-import com.android.build.api.variant.impl.KmpPredefinedAndroidCompilation
+import com.android.build.api.variant.impl.KmpAndroidCompilationType
 import com.android.build.api.variant.impl.KmpVariantImpl
 import com.android.build.api.variant.impl.KotlinMultiplatformAndroidTargetImpl
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.dependency.configureKotlinTestDependencyForInstrumentedTestCompilation
 import com.android.build.gradle.internal.dependency.configureKotlinTestDependencyForUnitTestCompilation
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
-import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestConfigurationImpl
 import com.android.build.gradle.internal.dsl.decorator.androidPluginDslDecorator
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker
 import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker.Companion.android
 import com.android.build.gradle.internal.ide.kmp.KotlinIdeImportConfigurator
 import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin
-import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.getNamePrefixedWithTarget
 import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.utils.KOTLIN_MPP_PLUGIN_ID
 import com.android.build.gradle.internal.utils.getKotlinPluginVersionFromPlugin
@@ -68,24 +67,13 @@ internal class KotlinMultiplatformAndroidHandlerImpl(
         androidExtension = dslServices.newInstance(
             extensionImplClass,
             dslServices,
-            { jvmConfiguration: KotlinMultiplatformAndroidTestConfigurationImpl ->
+            { compilationBuilder: KotlinMultiplatformAndroidCompilationBuilder ->
                 if (project.pluginManager.hasPlugin(KOTLIN_MPP_PLUGIN_ID)) {
                     createCompilation(
-                        compilationName = jvmConfiguration.compilationName,
-                        defaultSourceSetName = jvmConfiguration.defaultSourceSetName,
+                        compilationName = compilationBuilder.compilationName,
+                        defaultSourceSetName = compilationBuilder.defaultSourceSetName,
                         compilationToAssociateWith = listOf(androidTarget.compilations.getByName(
-                            KmpPredefinedAndroidCompilation.MAIN.compilationName
-                        ))
-                    )
-                }
-            },
-            { deviceConfiguration: KotlinMultiplatformAndroidTestConfigurationImpl ->
-                if (project.pluginManager.hasPlugin(KOTLIN_MPP_PLUGIN_ID)) {
-                    createCompilation(
-                        compilationName = deviceConfiguration.compilationName,
-                        defaultSourceSetName = deviceConfiguration.defaultSourceSetName,
-                        compilationToAssociateWith = listOf(androidTarget.compilations.getByName(
-                            KmpPredefinedAndroidCompilation.MAIN.compilationName
+                            KmpAndroidCompilationType.MAIN.defaultCompilationName
                         ))
                     )
                 }
@@ -142,12 +130,12 @@ internal class KotlinMultiplatformAndroidHandlerImpl(
             )
 
             val mainCompilation = createCompilation(
-                compilationName = KmpPredefinedAndroidCompilation.MAIN.compilationName,
-                defaultSourceSetName = KmpPredefinedAndroidCompilation.MAIN.compilationName.getNamePrefixedWithTarget(),
+                compilationName = KmpAndroidCompilationType.MAIN.defaultCompilationName,
+                defaultSourceSetName = KmpAndroidCompilationType.MAIN.defaultSourceSetName,
                 compilationToAssociateWith = emptyList()
             )
 
-            androidExtension.androidTestOnJvmConfiguration?.let { jvmConfiguration ->
+            androidExtension.androidTestOnJvmBuilder?.let { jvmConfiguration ->
                 createCompilation(
                     compilationName = jvmConfiguration.compilationName,
                     defaultSourceSetName = jvmConfiguration.defaultSourceSetName,
@@ -155,7 +143,7 @@ internal class KotlinMultiplatformAndroidHandlerImpl(
                 )
             }
 
-            androidExtension.androidTestOnDeviceConfiguration?.let { deviceConfiguration ->
+            androidExtension.androidTestOnDeviceBuilder?.let { deviceConfiguration ->
                 createCompilation(
                     compilationName = deviceConfiguration.compilationName,
                     defaultSourceSetName = deviceConfiguration.defaultSourceSetName,

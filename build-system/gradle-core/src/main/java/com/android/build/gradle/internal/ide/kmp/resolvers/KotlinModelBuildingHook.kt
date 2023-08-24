@@ -55,8 +55,8 @@ internal class KotlinModelBuildingHook(
 
             KotlinModelBuildingConfigurator.setupAndroidCompilations(
                 components = listOfNotNull(mainVariant.value, mainVariant.value.androidTest, mainVariant.value.unitTest),
-                androidExtension.androidTestOnDeviceConfiguration?.instrumentationRunner,
-                androidExtension.androidTestOnDeviceConfiguration?.instrumentationRunnerArguments ?: emptyMap(),
+                androidExtension.androidTestOnDeviceOptions?.instrumentationRunner,
+                androidExtension.androidTestOnDeviceOptions?.instrumentationRunnerArguments ?: emptyMap(),
             )
         }
     }

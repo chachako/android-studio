@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.dsl
+package com.android.build.api.dsl
 
-import com.android.build.api.dsl.KotlinMultiplatformAndroidTestConfiguration
+interface HasConfigurableValue<T> {
 
-abstract class KotlinMultiplatformAndroidTestConfigurationImpl(
-    val compilationName: String
-) : KotlinMultiplatformAndroidTestConfiguration
+    fun configure(action: T.() -> Unit)
+}

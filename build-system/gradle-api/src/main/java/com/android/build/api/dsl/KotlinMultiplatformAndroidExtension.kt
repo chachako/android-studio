@@ -268,88 +268,131 @@ interface KotlinMultiplatformAndroidExtension {
     fun optimization(action: KmpOptimization.() -> Unit)
 
     /**
-     * Helper function to create a compilation for tests that run on the JVM (previously
-     * referred to as unit tests) with some defaults
-     * - compilation name "testOnJvm"
-     * - source set name "androidTestOnJvm"
+     * Creates and configures a compilation for tests that run on the JVM (previously referred to as
+     * unit tests). Invoking this method will create a [KotlinMultiplatformAndroidTestOnJvmCompilation]
+     * object with the following defaults (You can change these defaults by using
+     * [withAndroidTestOnJvmBuilder] instead):
      *
-     * Only a single compilation of this test type can be created.
+     * * compilation name is "testOnJvm"
+     * * default sourceSet name is "androidTestOnJvm" (sources would be located at `$project/src/androidTestOnJvm`)
+     * * sourceSet tree is `test`, which means that the `commonTest` sourceSet would be included in
+     *   the compilation.
+     *
+     * Only a single compilation of this test type can be created. If you want to configure [KotlinMultiplatformAndroidTestOnJvm]
+     * options, you can modify it on the kotlin compilation as follows:
+     * ```
+     * kotlin {
+     *   androidLibrary {
+     *     compilations.withType(com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm::class.java) {
+     *       // configure options
+     *     }
+     *   }
+     * }
+     * ```
      */
     @Incubating
-    fun withAndroidTestOnJvm()
+    fun withAndroidTestOnJvm(
+        action: KotlinMultiplatformAndroidTestOnJvm.() -> Unit
+    )
 
     /**
-     * Helper function to create a compilation for tests that run on the JVM (previously
-     * referred to as unit tests) with a specific compilation name where the default source set name
-     * is the compilation name prefixed with "android"
+     * Creates and configures a compilation for tests that run on the JVM (previously referred to as
+     * unit tests). Invoking this method will create a [KotlinMultiplatformAndroidTestOnJvmCompilation]
+     * object using the values set in the [KotlinMultiplatformAndroidCompilationBuilder].
      *
-     * Only a single compilation of this test type can be created.
+     * The returned object can be used to configure [KotlinMultiplatformAndroidTestOnJvm] as follows:
+     * ```
+     * kotlin {
+     *   androidLibrary {
+     *     withAndroidTestOnJvmBuilder {
+     *       compilationName = "unitTest"
+     *       defaultSourceSetName = "androidUnitTest"
+     *     }.configure {
+     *       isIncludeAndroidResources = true
+     *     }
+     *   }
+     * }
+     * ```
+     *
+     * Only a single compilation of this test type can be created. If you want to configure [KotlinMultiplatformAndroidTestOnJvm]
+     * options, you can modify it on the kotlin compilation as follows:
+     * ```
+     * kotlin {
+     *   androidLibrary {
+     *     compilations.withType(com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm::class.java) {
+     *       // configure options
+     *     }
+     *   }
+     * }
+     * ```
      */
     @Incubating
-    fun withAndroidTestOnJvm(compilationName: String)
+    fun withAndroidTestOnJvmBuilder(
+        action: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit
+    ): HasConfigurableValue<KotlinMultiplatformAndroidTestOnJvm>
 
     /**
-     * Helper function to create and configure a compilation for tests that run on the JVM (previously
-     * referred to as unit tests) with some defaults
-     * - compilation name "testOnJvm"
-     * - source set name "androidTestOnJvm"
+     * Creates and configures a compilation for tests that run on the device (previously referred to as
+     * instrumented tests). Invoking this method will create a [KotlinMultiplatformAndroidTestOnDeviceCompilation]
+     * object with the following defaults:
      *
-     * Only a single compilation of this test type can be created.
+     * * compilation name is "testOnDevice"
+     * * default sourceSet name is "androidTestOnDevice" (sources would be located at `$project/src/androidTestOnDevice`)
+     * * sourceSet tree is `null`, which means that the `commonTest` sourceSet will **not** be included in
+     *   the compilation.
+     *
+     * Only a single compilation of this test type can be created. If you want to configure [KotlinMultiplatformAndroidTestOnDevice]
+     * options, you can modify it on the kotlin compilation as follows:
+     * ```
+     * kotlin {
+     *   androidLibrary {
+     *     compilations.withType(com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice::class.java) {
+     *       // configure options
+     *     }
+     *   }
+     * }
+     * ```
      */
     @Incubating
-    fun withAndroidTestOnJvm(action: KotlinMultiplatformAndroidTestOnJvmConfiguration.() -> Unit)
+    fun withAndroidTestOnDevice(
+        action: KotlinMultiplatformAndroidTestOnDevice.() -> Unit
+    )
 
     /**
-     * Helper function to create and configure a compilation for tests that run on the JVM (previously
-     * referred to as unit tests) with a specific compilation name where the default source set name
-     * is the compilation name prefixed with "android"
+     * Creates and configures a compilation for tests that run on the device (previously referred to as
+     * instrumented tests). Invoking this method will create a [KotlinMultiplatformAndroidTestOnDeviceCompilation]
+     * object using the values set in the [KotlinMultiplatformAndroidCompilationBuilder].
      *
-     * Only a single compilation of this test type can be created.
+     * The returned object can be used to configure [KotlinMultiplatformAndroidTestOnDevice] as follows:
+     * ```
+     * kotlin {
+     *   androidLibrary {
+     *     withAndroidTestOnDeviceBuilder {
+     *       compilationName = "instrumentedTest"
+     *       defaultSourceSetName = "androidInstrumentedTest"
+     *     }.configure {
+     *       instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+     *     }
+     *   }
+     * }
+     * ```
+     *
+     * Only a single compilation of this test type can be created. If you want to configure [KotlinMultiplatformAndroidTestOnDevice]
+     * options, you can modify it on the kotlin compilation as follows:
+     * ```
+     * kotlin {
+     *   androidLibrary {
+     *     compilations.withType(com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice::class.java) {
+     *       // configure options
+     *     }
+     *   }
+     * }
+     * ```
      */
     @Incubating
-    fun withAndroidTestOnJvm(compilationName: String, action: KotlinMultiplatformAndroidTestOnJvmConfiguration.() -> Unit)
-
-    /**
-     * Helper function to create a compilation for tests that run on a device (previously
-     * referred to as android instrumentation tests) with some defaults
-     * - compilation name "testOnDevice"
-     * - source set name "androidTestOnDevice"
-     *
-     * Only a single compilation of this test type can be created.
-     */
-    @Incubating
-    fun withAndroidTestOnDevice()
-
-    /**
-     * Helper function to create a compilation for tests that run on a device (previously
-     * referred to as android instrumentation tests) with a specific compilation name
-     * where the default source set name is the compilation name prefixed with "android"
-     *
-     * Only a single compilation of this test type can be created.
-     */
-    @Incubating
-    fun withAndroidTestOnDevice(compilationName: String)
-
-    /**
-     * Helper function to create and configure a compilation for tests that run on a device (previously
-     * referred to as android instrumentation tests) with some defaults
-     * - compilation name "testOnDevice"
-     * - source set name "androidTestOnDevice"
-     *
-     * Only a single compilation of this test type can be created.
-     */
-    @Incubating
-    fun withAndroidTestOnDevice(action: KotlinMultiplatformAndroidTestOnDeviceConfiguration.() -> Unit)
-
-    /**
-     * Helper function to create and configure a compilation for tests that run on a device (previously
-     * referred to as android instrumentation tests) with a specific compilation name
-     * where the default source set name is the compilation name prefixed with "android"
-     *
-     * Only a single compilation of this test type can be created.
-     */
-    @Incubating
-    fun withAndroidTestOnDevice(compilationName: String, action: KotlinMultiplatformAndroidTestOnDeviceConfiguration.() -> Unit)
+    fun withAndroidTestOnDeviceBuilder(
+        action: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit
+    ): HasConfigurableValue<KotlinMultiplatformAndroidTestOnDevice>
 
     /**
      * Whether core library desugaring is enabled.

@@ -63,12 +63,22 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         TestFileUtils.searchAndReplace(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                withAndroidTestOnJvm(compilationName = "unitTest") {
+                defaultSourceSetName = "androidUnitTest"
             """.trimIndent(),
             """
-                withAndroidTestOnJvm(compilationName = "unitTest") {
-                    sourceSetTree = "unitTest"
+                defaultSourceSetName = "androidUnitTest"
+                sourceSetTreeName = "unitTest"
+            """.trimIndent()
+        )
+
+        TestFileUtils.appendToFile(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            """
+                kotlin.androidLibrary.compilations.withType(
+                    com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvmCompilation::class.java
+                ) {
                     enableCoverage = true
+                }
             """.trimIndent()
         )
 
@@ -107,14 +117,14 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
     @Test
     fun testRunningUnitTests() {
         Assume.assumeFalse(publishLibs)
-        TestFileUtils.searchAndReplace(
+        TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                withAndroidTestOnJvm(compilationName = "unitTest") {
-            """.trimIndent(),
-            """
-                withAndroidTestOnJvm(compilationName = "unitTest") {
+                kotlin.androidLibrary.compilations.withType(
+                    com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvmCompilation::class.java
+                ) {
                     enableCoverage = true
+                }
             """.trimIndent()
         )
 

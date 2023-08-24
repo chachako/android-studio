@@ -16,8 +16,8 @@
 
 package com.android.build.api.variant.impl
 
+import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
-import com.android.build.api.variant.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import org.gradle.api.NamedDomainObjectContainer

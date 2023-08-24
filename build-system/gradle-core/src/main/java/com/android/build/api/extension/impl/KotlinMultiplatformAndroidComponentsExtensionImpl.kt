@@ -22,11 +22,9 @@ import com.android.build.api.dsl.SdkComponents
 import com.android.build.api.instrumentation.manageddevice.ManagedDeviceRegistry
 import com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension
 import com.android.build.api.variant.KotlinMultiplatformAndroidVariant
-import com.android.build.gradle.internal.services.DslServices
 import org.gradle.api.Action
 
 open class KotlinMultiplatformAndroidComponentsExtensionImpl(
-    private val dslServices: DslServices,
     override val sdkComponents: SdkComponents,
     override val managedDeviceRegistry: ManagedDeviceRegistry,
     private val variantApiOperations: MultiplatformVariantApiOperationsRegistrar,

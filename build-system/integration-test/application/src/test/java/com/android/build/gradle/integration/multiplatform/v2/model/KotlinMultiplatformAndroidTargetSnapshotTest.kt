@@ -18,7 +18,6 @@ package com.android.build.gradle.integration.multiplatform.v2.model
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.fixture.model.BaseModelComparator
-import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.utils.FileUtils
 import org.junit.Rule
 import org.junit.Test
@@ -32,18 +31,6 @@ class KotlinMultiplatformAndroidTargetSnapshotTest: BaseModelComparator {
 
     @Test
     fun testModels() {
-        TestFileUtils.searchAndReplace(
-            project.getSubproject("kmpFirstLib").ktsBuildFile,
-            """
-               withAndroidTestOnDevice(compilationName = "instrumentedTest")
-            """.trimIndent(),
-            """
-                withAndroidTestOnDevice(compilationName = "instrumentedTest") {
-                    instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-                }
-            """.trimIndent()
-        )
-
         KmpModelComparator(
             project = project,
             testClass = this,

@@ -128,8 +128,12 @@ object KotlinModelBuildingConfigurator {
                 )
                 .setTestInfo(
                     TestInfoImpl(
-                        animationsDisabled = mainVariant.global.androidTestOptions.animationsDisabled,
-                        execution = mainVariant.global.androidTestOptions.execution.convertToExecution(),
+                        animationsDisabled = mainVariant.global.androidTestOptions.takeIf {
+                            mainVariant.androidTest != null
+                        }?.animationsDisabled ?: false,
+                        execution = mainVariant.global.androidTestOptions.takeIf {
+                            mainVariant.androidTest != null
+                        }?.execution?.convertToExecution(),
                         additionalRuntimeApks = project
                             .configurations
                             .findByName(

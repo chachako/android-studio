@@ -122,7 +122,11 @@ class IncubatingApiTest {
             }
 
         private val METHODS_INTENTIONALLY_NOT_INCUBATING = listOf(
-            "com.android.build.api.dsl.KotlinMultiplatformAndroidTarget#getCompilations"
+            "com.android.build.api.dsl.KotlinMultiplatformAndroidTarget#getCompilations",
+            "com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation#getCompilerOptions",
+            "com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation#getKotlinOptions",
+            "com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation#kotlinOptions",
+            "com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation#kotlinOptions",
         )
 
         // TODO: clean these up

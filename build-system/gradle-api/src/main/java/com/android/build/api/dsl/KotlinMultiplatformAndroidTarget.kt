@@ -17,15 +17,11 @@
 package com.android.build.api.dsl
 
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
-import com.android.build.api.variant.KotlinMultiplatformAndroidCompilation
 import org.gradle.api.Incubating
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.plugins.ExtensionAware
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
-/**
- * Interface for kotlin multiplatform android target
- */
 @Incubating
 interface KotlinMultiplatformAndroidTarget: KotlinTarget, KotlinMultiplatformAndroidExtension {
     override val compilations: NamedDomainObjectContainer<KotlinMultiplatformAndroidCompilation>

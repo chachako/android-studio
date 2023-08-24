@@ -16,16 +16,18 @@
 
 package com.android.build.api.variant.impl
 
-import com.android.build.api.variant.KotlinMultiplatformAndroidCompilation
+import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
+import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.getNamePrefixedWithAndroidTarget
 import org.gradle.api.Action
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions
+import org.jetbrains.kotlin.gradle.plugin.KotlinTargetHierarchy
 import org.jetbrains.kotlin.gradle.plugin.mpp.external.DecoratedExternalKotlinCompilation
 
 @OptIn(ExternalKotlinTargetApi::class)
-class KotlinMultiplatformAndroidCompilationImpl(
+open class KotlinMultiplatformAndroidCompilationImpl(
     delegate: Delegate
 ) : DecoratedExternalKotlinCompilation(delegate), KotlinMultiplatformAndroidCompilation {
 
@@ -44,7 +46,7 @@ class KotlinMultiplatformAndroidCompilationImpl(
         ReplaceWith("compilerOptions.configure { }")
     )
     override fun kotlinOptions(configure: KotlinCommonOptions.() -> Unit) {
-        configure.invoke(kotlinOptions)
+        super.kotlinOptions(configure)
     }
 
     @Deprecated(
@@ -52,10 +54,23 @@ class KotlinMultiplatformAndroidCompilationImpl(
         ReplaceWith("compilerOptions.configure { }")
     )
     override fun kotlinOptions(configure: Action<KotlinCommonOptions>) {
-        configure.execute(kotlinOptions)
+        super.kotlinOptions(configure)
     }
 }
 
-internal enum class KmpPredefinedAndroidCompilation(val compilationName: String) {
-    MAIN("main");
+internal enum class KmpAndroidCompilationType(
+    val defaultCompilationName: String,
+    val defaultSourceSetName: String = defaultCompilationName.getNamePrefixedWithAndroidTarget(),
+    val defaultSourceSetTreeName: String?
+) {
+    MAIN(
+        defaultCompilationName = "main",
+        defaultSourceSetTreeName = KotlinTargetHierarchy.SourceSetTree.main.name
+    ), TEST_ON_JVM(
+        defaultCompilationName = "testOnJvm",
+        defaultSourceSetTreeName = KotlinTargetHierarchy.SourceSetTree.test.name
+    ), TEST_ON_DEVICE(
+        defaultCompilationName = "testOnDevice",
+        defaultSourceSetTreeName = null
+    )
 }

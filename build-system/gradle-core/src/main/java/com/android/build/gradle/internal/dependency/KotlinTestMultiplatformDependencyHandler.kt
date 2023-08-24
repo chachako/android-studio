@@ -18,7 +18,7 @@ package com.android.build.gradle.internal.dependency
 
 import com.android.build.api.component.impl.KmpAndroidTestImpl
 import com.android.build.api.component.impl.KmpUnitTestImpl
-import com.android.build.api.variant.KotlinMultiplatformAndroidCompilation
+import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
 import com.android.builder.core.ComponentType
 import com.android.ide.common.gradle.Version
 import org.gradle.api.Project

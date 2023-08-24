@@ -25,7 +25,7 @@ import com.android.build.api.variant.ResValue
 import com.android.build.gradle.internal.core.dsl.features.AndroidResourcesDslInfo
 import com.android.build.gradle.internal.dsl.AaptOptions
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
-import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.getNamePrefixedWithTarget
+import com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.Companion.getNamePrefixedWithAndroidTarget
 import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.builder.core.ComponentTypeImpl
@@ -44,12 +44,11 @@ class KmpUnitTestDslInfoImpl(
     extension, services, withJava
 ), UnitTestComponentDslInfo, KmpComponentDslInfo {
 
-    private val testOnJvmConfig
-        get() = (extension as KotlinMultiplatformAndroidExtensionImpl).androidTestOnJvmConfiguration!!
+    private val testOnJvmConfig = (extension as KotlinMultiplatformAndroidExtensionImpl).androidTestOnJvmOptions!!
 
     override val componentType = ComponentTypeImpl.UNIT_TEST
     override val componentIdentity = ComponentIdentityImpl(
-        testOnJvmConfig.compilationName.getNamePrefixedWithTarget()
+        (extension as KotlinMultiplatformAndroidExtensionImpl).androidTestOnJvmBuilder!!.compilationName.getNamePrefixedWithAndroidTarget()
     )
 
     override val namespace: Provider<String> by lazy {

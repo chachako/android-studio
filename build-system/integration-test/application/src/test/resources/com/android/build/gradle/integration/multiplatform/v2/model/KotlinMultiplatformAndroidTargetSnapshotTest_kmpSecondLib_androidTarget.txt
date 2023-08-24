@@ -65,7 +65,6 @@
       ],
       "testInfo": {
         "animationsDisabled": false,
-        "execution": "HOST",
         "additionalRuntimeApks": [],
         "instrumentedTestTaskName": ""
       },

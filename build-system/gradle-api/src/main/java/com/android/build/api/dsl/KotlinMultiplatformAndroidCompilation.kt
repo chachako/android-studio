@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.build.api.variant
+package com.android.build.api.dsl
 
 import org.gradle.api.Action
 import org.gradle.api.Incubating
@@ -23,9 +23,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 
-/**
- * Interface for kotlin multiplatform android compilation
- */
 @Incubating
 interface KotlinMultiplatformAndroidCompilation: KotlinCompilation<KotlinCommonOptions> {
     override val compilerOptions: HasCompilerOptions<KotlinJvmCompilerOptions>

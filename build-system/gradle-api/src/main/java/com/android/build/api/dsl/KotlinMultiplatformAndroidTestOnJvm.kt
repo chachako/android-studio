@@ -19,12 +19,8 @@ package com.android.build.api.dsl
 import org.gradle.api.Incubating
 import org.gradle.api.tasks.testing.Test
 
-/**
- * Specific options to configure jvm test configuration for kotlin multiplatform android
- */
 @Incubating
-interface KotlinMultiplatformAndroidTestOnJvmConfiguration:
-    KotlinMultiplatformAndroidTestConfiguration {
+interface KotlinMultiplatformAndroidTestOnJvm {
     /**
      * Whether unmocked methods from android.jar should throw exceptions or return default
      * values (i.e. zero or null).

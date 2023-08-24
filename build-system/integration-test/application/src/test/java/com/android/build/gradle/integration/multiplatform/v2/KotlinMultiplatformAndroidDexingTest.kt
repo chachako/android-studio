@@ -72,13 +72,12 @@ class KotlinMultiplatformAndroidDexingTest {
 
     @Test
     fun testDesugaringFailureWhenMultidexFalse() {
-        TestFileUtils.searchAndReplace(
+        TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                withAndroidTestOnDevice(compilationName = "instrumentedTest")
-            """.trimIndent(),
-            """
-                withAndroidTestOnDevice(compilationName = "instrumentedTest") {
+                kotlin.androidLibrary.compilations.withType(
+                    com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceCompilation::class.java
+                ) {
                     multidex.enable = false
                     multidex.mainDexKeepRules.files.add (
                         File(project.projectDir, "dex-rules.pro")
@@ -117,13 +116,12 @@ class KotlinMultiplatformAndroidDexingTest {
 
     @Test
     fun testLegacyMultiDexWithKeepRules() {
-        TestFileUtils.searchAndReplace(
+        TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                withAndroidTestOnDevice(compilationName = "instrumentedTest")
-            """.trimIndent(),
-            """
-                withAndroidTestOnDevice(compilationName = "instrumentedTest") {
+                kotlin.androidLibrary.compilations.withType(
+                    com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceCompilation::class.java
+                ) {
                     multidex.enable = true
                     multidex.mainDexKeepRules.files.add (
                         File(project.projectDir, "dex-rules.pro")

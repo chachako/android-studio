@@ -129,9 +129,7 @@
       ],
       "extras": {
         "org.jetbrains.kotlin.gradle.plugin.mpp.targetHierarchy.SourceSetTreeClassifier": {
-          "tree": {
-            "name": "test"
-          }
+          "name": "test"
         },
         "com.android.kotlin.multiplatform.models.AndroidCompilation;android-compilation-model": {
           "type": "UNIT_TEST",
