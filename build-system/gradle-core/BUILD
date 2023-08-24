@@ -233,6 +233,7 @@ filegroup(
     srcs = glob([
         "src/main/**/*.java",
         "src/fromGradle/**/*.java",
+        "src/fromGradle/**/*.kt",
         "src/fromGradle/resources/**",
         "src/main/**/*.kt",
         "src/main/proto/**/*.proto",
