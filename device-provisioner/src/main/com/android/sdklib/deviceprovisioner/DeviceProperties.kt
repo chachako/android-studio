@@ -18,7 +18,10 @@ package com.android.sdklib.deviceprovisioner
 import com.android.adblib.AdbFailResponseException
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.DevicePropertyNames.RO_BUILD_CHARACTERISTICS
+import com.android.adblib.DevicePropertyNames.RO_BUILD_TAGS
+import com.android.adblib.DevicePropertyNames.RO_BUILD_TYPE
 import com.android.adblib.DevicePropertyNames.RO_BUILD_VERSION_RELEASE
+import com.android.adblib.DevicePropertyNames.RO_KERNEL_QEMU
 import com.android.adblib.DevicePropertyNames.RO_MANUFACTURER
 import com.android.adblib.DevicePropertyNames.RO_MODEL
 import com.android.adblib.DevicePropertyNames.RO_PRODUCT_CPU_ABI
@@ -33,6 +36,9 @@ import com.android.resources.Density
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.AndroidVersionUtil
 import com.android.sdklib.devices.Abi
+import com.android.tools.analytics.Anonymizer
+import com.android.tools.analytics.CommonMetricsData
+import com.google.wireless.android.sdk.stats.DeviceInfo
 import java.time.Duration
 import java.util.concurrent.TimeoutException
 import javax.swing.Icon
@@ -110,6 +116,9 @@ interface DeviceProperties {
    */
   val wearPairingId: String?
 
+  /** The type of connection to the device, if known. */
+  val connectionType: ConnectionType?
+
   /** Default implementation of device title; may be overridden. */
   val title: String
     get() {
@@ -120,6 +129,9 @@ interface DeviceProperties {
       }
     }
 
+  /** A DeviceInfo proto for use in AndroidStudioEvent to describe the device in metrics. */
+  val deviceInfoProto: DeviceInfo
+
   companion object {
     /** Builds a basic DeviceProperties instance with no additional fields. */
     inline fun build(block: Builder.() -> Unit): DeviceProperties =
@@ -127,7 +139,6 @@ interface DeviceProperties {
   }
 
   open class Builder {
-
     var manufacturer: String? = null
     var model: String? = null
     var abi: Abi? = null
@@ -141,6 +152,22 @@ interface DeviceProperties {
     var resolution: Resolution? = null
     var density: Int? = null
     var icon: Icon? = null
+    var connectionType: ConnectionType? = null
+    var deviceInfoProto: DeviceInfo.Builder = DeviceInfo.newBuilder()
+
+    /** Uses the ADB serial number to determine if the device is WiFi-connected. */
+    fun readAdbSerialNumber(adbSerialNumber: String) {
+      SerialNumberAndMdnsConnectionType.fromAdbSerialNumber(adbSerialNumber).let {
+        wearPairingId = it.serialNumber
+        deviceInfoProto.mdnsConnectionType = it.mdnsConnectionType
+        when (it.mdnsConnectionType) {
+          DeviceInfo.MdnsConnectionType.MDNS_AUTO_CONNECT_UNENCRYPTED,
+          DeviceInfo.MdnsConnectionType.MDNS_AUTO_CONNECT_TLS ->
+            connectionType = ConnectionType.WIFI
+          else -> {}
+        }
+      }
+    }
 
     fun readCommonProperties(properties: Map<String, String>) {
       manufacturer = properties[RO_PRODUCT_MANUFACTURER] ?: properties[RO_MANUFACTURER]
@@ -156,8 +183,41 @@ interface DeviceProperties {
           characteristics.contains("automotive") -> DeviceType.AUTOMOTIVE
           else -> DeviceType.HANDHELD
         }
-      isVirtual = properties["ro.kernel.qemu"] == "1"
+      isVirtual = properties[RO_KERNEL_QEMU] == "1"
       density = properties[RO_SF_LCD_DENSITY]?.toIntOrNull()
+    }
+
+    /**
+     * Fills in the DeviceInfo proto based on previously-assigned properties. If the device is
+     * online, the serial number and system properties may be used to fill in additional fields that
+     * are only used in logging.
+     */
+    fun populateDeviceInfoProto(
+      pluginId: String,
+      serialNumber: String?,
+      properties: Map<String, String>
+    ) {
+      deviceInfoProto.anonymizedSerialNumber = Anonymizer.anonymize(serialNumber) ?: ""
+      deviceInfoProto.buildTags = properties[RO_BUILD_TAGS] ?: ""
+      deviceInfoProto.buildType = properties[RO_BUILD_TYPE] ?: ""
+      deviceInfoProto.buildVersionRelease = androidRelease ?: ""
+      deviceInfoProto.cpuAbi =
+        CommonMetricsData.applicationBinaryInterfaceFromString(abi?.toString())
+      deviceInfoProto.manufacturer = manufacturer ?: ""
+      deviceInfoProto.model = model ?: ""
+      deviceInfoProto.deviceType =
+        when {
+          isRemote == true && isVirtual == true -> DeviceInfo.DeviceType.CLOUD_EMULATOR
+          isRemote == true -> DeviceInfo.DeviceType.CLOUD_PHYSICAL
+          isVirtual == true -> DeviceInfo.DeviceType.LOCAL_EMULATOR
+          isVirtual == false -> DeviceInfo.DeviceType.LOCAL_PHYSICAL
+          else -> DeviceInfo.DeviceType.UNKNOWN_DEVICE_TYPE
+        }
+      deviceInfoProto.buildApiLevelFull = androidVersion?.apiStringWithExtension ?: ""
+      properties[RO_BUILD_CHARACTERISTICS]?.let {
+        deviceInfoProto.addAllCharacteristics(it.split(","))
+      }
+      deviceInfoProto.deviceProvisionerId = pluginId
     }
 
     fun buildBase(): DeviceProperties =
@@ -175,6 +235,8 @@ interface DeviceProperties {
         resolution = resolution,
         density = density,
         icon = checkNotNull(icon),
+        connectionType = connectionType,
+        deviceInfoProto = deviceInfoProto.build()
       )
   }
 
@@ -192,6 +254,8 @@ interface DeviceProperties {
     override val resolution: Resolution?,
     override val density: Int?,
     override val icon: Icon,
+    override val connectionType: ConnectionType?,
+    override val deviceInfoProto: DeviceInfo,
   ) : DeviceProperties
 }
 
@@ -207,6 +271,12 @@ enum class DeviceType(val stringValue: String) {
   AUTOMOTIVE("Automotive");
 
   override fun toString() = stringValue
+}
+
+enum class ConnectionType {
+  USB,
+  WIFI,
+  NETWORK
 }
 
 data class DeviceIcons(val handheld: Icon, val wear: Icon, val tv: Icon, val automotive: Icon) {
@@ -251,5 +321,39 @@ data class Resolution(val width: Int, val height: Int) {
         thisLogger(device.session).warn(e, "Timeout reading device resolution")
         null
       }
+  }
+}
+
+internal class SerialNumberAndMdnsConnectionType(
+  val serialNumber: String,
+  val mdnsConnectionType: DeviceInfo.MdnsConnectionType
+) {
+  companion object {
+    private const val ADB_MDNS_SERVICE_NAME = "adb"
+    private const val ADB_MDNS_TLS_SERVICE_NAME = "adb-tls-connect"
+
+    private val MDNS_AUTO_CONNECT_REGEX =
+      Regex("adb-(.*)-.*\\._(${ADB_MDNS_SERVICE_NAME}|$ADB_MDNS_TLS_SERVICE_NAME)\\._tcp\\.?")
+
+    /**
+     * Parses an ADB serial number, extracting the device serial number and mDNS connection type
+     * from it. Non-mDNS connections return the serial number unchanged with MDNS_NONE for
+     * mdnsConnectionType.
+     */
+    fun fromAdbSerialNumber(adbSerialNumber: String): SerialNumberAndMdnsConnectionType =
+      MDNS_AUTO_CONNECT_REGEX.matchEntire(adbSerialNumber)?.let {
+        SerialNumberAndMdnsConnectionType(
+          it.groupValues[1],
+          when (it.groupValues[2]) {
+            ADB_MDNS_TLS_SERVICE_NAME -> DeviceInfo.MdnsConnectionType.MDNS_AUTO_CONNECT_TLS
+            ADB_MDNS_SERVICE_NAME -> DeviceInfo.MdnsConnectionType.MDNS_AUTO_CONNECT_UNENCRYPTED
+            else -> DeviceInfo.MdnsConnectionType.MDNS_NONE
+          }
+        )
+      }
+        ?: SerialNumberAndMdnsConnectionType(
+          adbSerialNumber,
+          DeviceInfo.MdnsConnectionType.MDNS_NONE
+        )
   }
 }

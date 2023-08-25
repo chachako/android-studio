@@ -31,6 +31,10 @@ class PhysicalDeviceProvisionerPlugin(
   val scope: CoroutineScope,
   private val deviceIcons: DeviceIcons
 ) : DeviceProvisionerPlugin {
+
+  companion object {
+    const val PLUGIN_ID = "PhysicalDevice"
+  }
   override val priority = 0
 
   private val devicesBySerial = hashMapOf<String, PhysicalDeviceHandle>()
@@ -42,20 +46,14 @@ class PhysicalDeviceProvisionerPlugin(
     val properties = device.deviceProperties().all().asMap()
 
     val deviceProperties =
-      PhysicalDeviceProperties.build {
+      DeviceProperties.build {
+        readAdbSerialNumber(device.serialNumber)
         readCommonProperties(properties)
+        populateDeviceInfoProto(PLUGIN_ID, device.serialNumber, properties)
+        if (connectionType != ConnectionType.WIFI) {
+          connectionType = ConnectionType.USB
+        }
         resolution = Resolution.readFromDevice(device)
-        val matcher = WIFI_SERIAL_NUMBER.matchEntire(device.serialNumber)
-        connectionType =
-          when (matcher) {
-            null -> ConnectionType.USB
-            else -> ConnectionType.WIFI
-          }
-        wearPairingId =
-          when (matcher) {
-            null -> device.serialNumber
-            else -> matcher.groupValues[1]
-          }
         icon =
           when (deviceType) {
             DeviceType.HANDHELD -> deviceIcons.handheld
@@ -115,25 +113,3 @@ private class PhysicalDeviceHandle(
   override val scope: CoroutineScope,
   override val stateFlow: MutableStateFlow<DeviceState>
 ) : DeviceHandle
-
-class PhysicalDeviceProperties(base: DeviceProperties, val connectionType: ConnectionType) :
-  DeviceProperties by base {
-
-  class Builder : DeviceProperties.Builder() {
-    var connectionType: ConnectionType? = null
-  }
-
-  companion object {
-    inline fun build(block: Builder.() -> Unit) =
-      Builder().apply(block).run {
-        PhysicalDeviceProperties(buildBase(), checkNotNull(connectionType))
-      }
-  }
-}
-
-enum class ConnectionType {
-  USB,
-  WIFI
-}
-
-private val WIFI_SERIAL_NUMBER = "adb-(.*)-.*\\._adb-tls-connect\\._tcp\\.?".toRegex()

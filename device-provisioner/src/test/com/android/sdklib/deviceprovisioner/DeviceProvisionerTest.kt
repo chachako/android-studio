@@ -28,11 +28,12 @@ import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.sdklib.deviceprovisioner.DeviceState.Connected
 import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import com.google.common.truth.Truth.assertThat
+import com.google.wireless.android.sdk.stats.DeviceInfo.DeviceType
+import com.google.wireless.android.sdk.stats.DeviceInfo.MdnsConnectionType
 import java.time.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import org.junit.Test
@@ -117,22 +118,38 @@ class DeviceProvisionerTest {
           handles
         }
 
-      val handlesByType =
-        handles.associateBy { (it.state.properties as PhysicalDeviceProperties).connectionType }
+      val handlesByType = handles.associateBy { it.state.properties.connectionType }
 
       assertThat(handlesByType).hasSize(2)
       val usbHandle = checkNotNull(handlesByType[ConnectionType.USB])
       assertThat(usbHandle.state.connectedDevice?.serialNumber).isEqualTo(SerialNumbers.physicalUsb)
-      assertThat(usbHandle.state.properties.wearPairingId).isEqualTo(SerialNumbers.physicalUsb)
-      assertThat(usbHandle.state.properties.resolution).isEqualTo(Resolution(2000, 1500))
-      assertThat(usbHandle.state.properties.resolutionDp).isEqualTo(Resolution(1000, 750))
+      usbHandle.state.properties.apply {
+        assertThat(wearPairingId).isEqualTo(SerialNumbers.physicalUsb)
+        assertThat(deviceInfoProto.mdnsConnectionType).isEqualTo(MdnsConnectionType.MDNS_NONE)
+        checkPhysicalDeviceProperties()
+      }
 
       val wifiHandle = checkNotNull(handlesByType[ConnectionType.WIFI])
       assertThat(wifiHandle.state.connectedDevice?.serialNumber)
         .isEqualTo(SerialNumbers.physicalWifi)
-      assertThat(wifiHandle.state.properties.wearPairingId).isEqualTo("X1BQ704RX2B")
-      assertThat(usbHandle.state.properties.resolution).isEqualTo(Resolution(2000, 1500))
-      assertThat(usbHandle.state.properties.resolutionDp).isEqualTo(Resolution(1000, 750))
+      wifiHandle.state.properties.apply {
+        assertThat(wearPairingId).isEqualTo("X1BQ704RX2B")
+        assertThat(deviceInfoProto.mdnsConnectionType)
+          .isEqualTo(MdnsConnectionType.MDNS_AUTO_CONNECT_TLS)
+        checkPhysicalDeviceProperties()
+      }
+    }
+  }
+
+  private fun DeviceProperties.checkPhysicalDeviceProperties() {
+    assertThat(resolution).isEqualTo(Resolution(2000, 1500))
+    assertThat(resolutionDp).isEqualTo(Resolution(1000, 750))
+
+    deviceInfoProto.apply {
+      assertThat(manufacturer).isEqualTo("Google")
+      assertThat(model).isEqualTo("Pixel 6")
+      assertThat(deviceType).isEqualTo(DeviceType.LOCAL_PHYSICAL)
+      assertThat(deviceProvisionerId).isEqualTo(PhysicalDeviceProvisionerPlugin.PLUGIN_ID)
     }
   }
 
@@ -213,7 +230,7 @@ class DeviceProvisionerTest {
 
         val handle = handles[0]
         assertThat(handle.state).isInstanceOf(Connected::class.java)
-        assertThat(handle.state.properties).isInstanceOf(PhysicalDeviceProperties::class.java)
+        assertThat(handle.state.properties.connectionType).isEqualTo(ConnectionType.USB)
       }
     }
   }

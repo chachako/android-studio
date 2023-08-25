@@ -81,7 +81,9 @@ class LocalEmulatorProvisionerPlugin(
   rescanPeriod: Duration = Duration.ofSeconds(10),
 ) : DeviceProvisionerPlugin {
   val logger = thisLogger(adbSession)
-
+  companion object {
+    const val PLUGIN_ID = "LocalEmulator"
+  }
   /**
    * An abstraction of the AvdManager / AvdManagerConnection classes to be injected, allowing for
    * testing and decoupling from Studio.
@@ -156,7 +158,10 @@ class LocalEmulatorProvisionerPlugin(
 
   private fun disconnectedState(avdInfo: AvdInfo) =
     Disconnected(
-      LocalEmulatorProperties.build(avdInfo) { icon = iconForType() },
+      LocalEmulatorProperties.build(avdInfo) {
+        populateDeviceInfoProto(PLUGIN_ID, null, emptyMap())
+        icon = iconForType()
+      },
       isTransitioning = false,
       status = "Offline",
       error = avdInfo.deviceError
@@ -230,6 +235,7 @@ class LocalEmulatorProvisionerPlugin(
       val properties =
         LocalEmulatorProperties.build(handle.avdInfo) {
           readCommonProperties(deviceProperties)
+          populateDeviceInfoProto(PLUGIN_ID, device.serialNumber, deviceProperties)
           // Device type is not always reliably read from properties
           deviceType = handle.avdInfo.tag.toDeviceType()
           density = deviceProperties[DevicePropertyNames.QEMU_SF_LCD_DENSITY]?.toIntOrNull()

@@ -19,6 +19,7 @@ import com.android.SdkConstants
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.devices.Abi
 import com.google.common.truth.Truth.assertThat
+import com.google.wireless.android.sdk.stats.DeviceInfo
 import org.junit.Test
 
 class DevicePropertiesTest {
@@ -50,6 +51,35 @@ class DevicePropertiesTest {
     // Some Samsung physical devices do this:
     assertThat(props("ro.kernel.qemu" to "0").isVirtual).isFalse()
     assertThat(props("ro.kernel.qemu" to "1").isVirtual).isTrue()
+  }
+
+  @Test
+  fun parseMdnsConnectionType_notMdns() {
+    SerialNumberAndMdnsConnectionType.fromAdbSerialNumber("435DT06WH").apply {
+      assertThat(serialNumber).isEqualTo("435DT06WH")
+      assertThat(mdnsConnectionType).isEqualTo(DeviceInfo.MdnsConnectionType.MDNS_NONE)
+    }
+  }
+
+  @Test
+  fun parseMdnsConnectionType_clear() {
+    SerialNumberAndMdnsConnectionType.fromAdbSerialNumber("adb-435DT06WH-vWgJpq._adb._tcp.").apply {
+      assertThat(serialNumber).isEqualTo("435DT06WH")
+      assertThat(mdnsConnectionType)
+        .isEqualTo(DeviceInfo.MdnsConnectionType.MDNS_AUTO_CONNECT_UNENCRYPTED)
+    }
+  }
+
+  @Test
+  fun parseMdnsConnectionType_tls() {
+    SerialNumberAndMdnsConnectionType.fromAdbSerialNumber(
+        "adb-435DT06WH-vWgJpq._adb-tls-connect._tcp."
+      )
+      .apply {
+        assertThat(serialNumber).isEqualTo("435DT06WH")
+        assertThat(mdnsConnectionType)
+          .isEqualTo(DeviceInfo.MdnsConnectionType.MDNS_AUTO_CONNECT_TLS)
+      }
   }
 
   private fun props(vararg pairs: Pair<String, String>) =

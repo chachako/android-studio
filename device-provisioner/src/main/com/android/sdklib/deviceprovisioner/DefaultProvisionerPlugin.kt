@@ -18,6 +18,7 @@ package com.android.sdklib.deviceprovisioner
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.deviceProperties
 import com.android.adblib.scope
+import com.android.adblib.serialNumber
 import com.android.adblib.utils.createChildScope
 import com.android.sdklib.deviceprovisioner.DeviceState.Connected
 import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
@@ -35,6 +36,9 @@ import kotlinx.coroutines.launch
  */
 class DefaultProvisionerPlugin(val scope: CoroutineScope, private val defaultIcons: DeviceIcons) :
   DeviceProvisionerPlugin {
+  companion object {
+    const val PLUGIN_ID = "Default"
+  }
   override val priority: Int = Int.MIN_VALUE
 
   private val _devices = MutableStateFlow<List<DefaultDeviceHandle>>(emptyList())
@@ -44,7 +48,9 @@ class DefaultProvisionerPlugin(val scope: CoroutineScope, private val defaultIco
     val properties = device.deviceProperties().all().asMap()
     val deviceProperties =
       DeviceProperties.build {
+        readAdbSerialNumber(device.serialNumber)
         readCommonProperties(properties)
+        populateDeviceInfoProto(PLUGIN_ID, device.serialNumber, properties)
         icon = defaultIcons.iconForDeviceType(deviceType)
         Resolution.readFromDevice(device)
       }

@@ -93,12 +93,13 @@ class FakeAvdManager(val session: FakeAdbSession) : LocalEmulatorProvisionerPlug
       mapOf(
         "ro.serialno" to "EMULATOR31X3X7X0",
         DevicePropertyNames.RO_BUILD_VERSION_SDK to
-          LocalEmulatorProvisionerPluginTest.API_LEVEL.apiString,
+          LocalEmulatorProvisionerPluginTest.API_LEVEL.apiStringWithoutExtension,
         DevicePropertyNames.RO_BUILD_VERSION_RELEASE to LocalEmulatorProvisionerPluginTest.RELEASE,
         DevicePropertyNames.RO_PRODUCT_MANUFACTURER to
           LocalEmulatorProvisionerPluginTest.MANUFACTURER,
         DevicePropertyNames.RO_PRODUCT_MODEL to LocalEmulatorProvisionerPluginTest.MODEL,
-        DevicePropertyNames.RO_PRODUCT_CPU_ABI to LocalEmulatorProvisionerPluginTest.ABI.toString()
+        DevicePropertyNames.RO_PRODUCT_CPU_ABI to LocalEmulatorProvisionerPluginTest.ABI.toString(),
+        "ro.kernel.qemu" to "1"
       )
     )
     device.start()
