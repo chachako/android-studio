@@ -27,7 +27,6 @@ import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.getSeverity
-import com.android.utils.NullLogger
 import com.android.utils.StdLogger
 import com.google.wireless.android.sdk.stats.AndroidStudioEvent
 import com.google.wireless.android.sdk.stats.AndroidStudioEvent.EventKind.LINT_SESSION
@@ -37,7 +36,6 @@ import com.google.wireless.android.sdk.stats.LintSession
 import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.application.ApplicationManager
 import java.io.File
-import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 /** Helper for submitting analytics for batch usage of lint (for users who have opted in) */
@@ -165,11 +163,7 @@ class LintBatchAnalytics {
   private fun computeProjectId(projectPath: File?): String? {
     projectPath ?: return null
 
-    return try {
-      Anonymizer.anonymizeUtf8(NullLogger(), projectPath.absolutePath)
-    } catch (e: IOException) {
-      "*ANONYMIZATION_ERROR*"
-    }
+    return Anonymizer.anonymize(projectPath.absolutePath) ?: "*ANONYMIZATION_ERROR*"
   }
 
   private fun computePerformance(driver: LintDriver): LintPerformance =

@@ -441,13 +441,7 @@ class AnalyticsResourceManager constructor(
             .setGcCount(endMemorySample.gcCount - initialMemorySample.gcCount)
             .setGcTime(endMemorySample.gcTimeMs - initialMemorySample.gcTimeMs)
 
-        val anonymizedProjectId =
-            try {
-                Anonymizer.anonymizeUtf8(
-                    LoggerWrapper.getLogger(AnalyticsResourceManager::class.java), rootProjectPath)
-            } catch (e: IOException) {
-                "*ANONYMIZATION_ERROR*"
-            }
+        val anonymizedProjectId = Anonymizer.anonymize(rootProjectPath) ?: "*ANONYMIZATION_ERROR*"
 
         applicationIds?.let {
             profileBuilder.addAllRawProjectId(it.get().sorted())
