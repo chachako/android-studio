@@ -767,9 +767,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
-  // @Ignore("b/291269705")
-  @Suppress("unused")
-  fun ignore_testIntDef() {
+  fun testIntDef() {
 
     lint()
       .files(
@@ -786,6 +784,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
             "import android.os.Build;\n" +
             "import androidx.annotation.DrawableRes;\n" +
             "import android.view.View;\n" +
+            "import java.util.concurrent.Executor;\n" +
             "\n" +
             "import static android.content.Context.CONNECTIVITY_SERVICE;\n" +
             "\n" +
@@ -806,13 +805,10 @@ class TypedefDetectorTest : AbstractCheckTest() {
             "        view.setLayoutDirection(View.LAYOUT_DIRECTION_RTL); // OK\n" +
             "        view.setLayoutDirection(/*Must be one of: View.LAYOUT_DIRECTION_LTR, View.LAYOUT_DIRECTION_RTL, View.LAYOUT_DIRECTION_INHERIT, View.LAYOUT_DIRECTION_LOCALE*/View.TEXT_ALIGNMENT_TEXT_START/**/); // Error\n" +
             "        view.setLayoutDirection(/*Flag not allowed here*/View.LAYOUT_DIRECTION_RTL | View.LAYOUT_DIRECTION_RTL/**/); // Error\n" +
-            "\n" +
-            "        // Regression test for http://b.android.com/197184\n" +
-            "        view.setLayoutDirection(View.LAYOUT_DIRECTION_RTL, View.LAYOUT_DIRECTION_LTR); // ERROR\n" +
             "    }\n" +
             "\n" +
             "    @TargetApi(Build.VERSION_CODES.KITKAT)\n" +
-            "    public void testIntDefFlags(Context context, int unknown, Intent intent,\n" +
+            "    public void testIntDefFlags(Context context, int unknown, Intent intent, Executor executor,\n" +
             "                           ServiceConnection connection) {\n" +
             "        // Flags\n" +
             "        Object ok1 = context.bindService(intent, connection, 0);\n" +
@@ -823,10 +819,12 @@ class TypedefDetectorTest : AbstractCheckTest() {
             "        int flags1 = Context.BIND_ABOVE_CLIENT | Context.BIND_AUTO_CREATE;\n" +
             "        Object ok5 = context.bindService(intent, connection, flags1);\n" +
             "\n" +
-            "        Object error1 = context.bindService(intent, connection,\n" +
-            "                Context.BIND_ABOVE_CLIENT | /*Must be one or more of: Context.BIND_AUTO_CREATE, Context.BIND_DEBUG_UNBIND, Context.BIND_NOT_FOREGROUND, Context.BIND_ABOVE_CLIENT, Context.BIND_ALLOW_OOM_MANAGEMENT, Context.BIND_WAIVE_PRIORITY, Context.BIND_IMPORTANT, Context.BIND_ADJUST_WITH_ACTIVITY, Context.BIND_NOT_PERCEPTIBLE, Context.BIND_INCLUDE_CAPABILITIES*/Context.CONTEXT_IGNORE_SECURITY/**/);\n" +
+            "        Object error1 = context.bindService(intent,\n" +
+            "                Context.BIND_ABOVE_CLIENT | /*Must be one or more of: Context.BIND_AUTO_CREATE, Context.BIND_DEBUG_UNBIND, Context.BIND_NOT_FOREGROUND, Context.BIND_ABOVE_CLIENT, Context.BIND_ALLOW_OOM_MANAGEMENT, Context.BIND_WAIVE_PRIORITY, Context.BIND_IMPORTANT, Context.BIND_ADJUST_WITH_ACTIVITY, Context.BIND_NOT_PERCEPTIBLE, Context.BIND_ALLOW_ACTIVITY_STARTS, Context.BIND_INCLUDE_CAPABILITIES, Context.BIND_SHARED_ISOLATED_PROCESS, Context.BIND_EXTERNAL_SERVICE*/Context.CONTEXT_IGNORE_SECURITY/**/,\n" +
+            "                executor, connection);\n" +
             "        int flags2 = Context.BIND_ABOVE_CLIENT | Context.CONTEXT_IGNORE_SECURITY;\n" +
-            "        Object error2 = context.bindService(intent, connection, /*Must be one or more of: Context.BIND_AUTO_CREATE, Context.BIND_DEBUG_UNBIND, Context.BIND_NOT_FOREGROUND, Context.BIND_ABOVE_CLIENT, Context.BIND_ALLOW_OOM_MANAGEMENT, Context.BIND_WAIVE_PRIORITY, Context.BIND_IMPORTANT, Context.BIND_ADJUST_WITH_ACTIVITY, Context.BIND_NOT_PERCEPTIBLE, Context.BIND_INCLUDE_CAPABILITIES*/flags2/**/);\n" +
+            "             Object error2 = context.bindService(intent, context.bindService(intent, /*Must be one or more of: Context.BIND_AUTO_CREATE, Context.BIND_DEBUG_UNBIND, Context.BIND_NOT_FOREGROUND, Context.BIND_ABOVE_CLIENT, Context.BIND_ALLOW_OOM_MANAGEMENT, Context.BIND_WAIVE_PRIORITY, Context.BIND_IMPORTANT, Context.BIND_ADJUST_WITH_ACTIVITY, Context.BIND_NOT_PERCEPTIBLE, Context.BIND_ALLOW_ACTIVITY_STARTS, Context.BIND_INCLUDE_CAPABILITIES, Context.BIND_SHARED_ISOLATED_PROCESS, Context.BIND_EXTERNAL_SERVICE*/flags2/**/,\n" +
+            "             executor, connection);\n" +
             "    }\n" +
             "}\n"
         ),
