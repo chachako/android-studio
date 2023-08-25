@@ -123,9 +123,6 @@ public class GmavenZipTest {
                     "com/android/zipflinger",
                     "com/android/zipflinger:sources");
 
-    private static final Set<String> APPARENTLY_FLAKY =
-            ImmutableSet.of("com/android/tools/build/gradle:sources");
-
     private static class PomInfo implements Comparable<PomInfo> {
 
         private static final DocumentBuilder documentBuilder;
@@ -466,7 +463,7 @@ public class GmavenZipTest {
                             + repo
                             + ".\n"
                             + "Remove it from MISSING_LICENSE");
-        } else if (!found && !knownMissing && !APPARENTLY_FLAKY.contains(key)) {
+        } else if (!found && !knownMissing) {
             expect.fail("No license file in " + jarPath + " with key " + key);
         }
     }
