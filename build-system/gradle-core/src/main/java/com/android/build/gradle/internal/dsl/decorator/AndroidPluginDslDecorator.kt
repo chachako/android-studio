@@ -18,9 +18,7 @@ package com.android.build.gradle.internal.dsl.decorator
 
 import com.android.build.api.dsl.AarMetadata
 import com.android.build.api.dsl.AbiSplit
-import com.android.build.api.dsl.AndroidResources
 import com.android.build.api.dsl.AnnotationProcessorOptions
-import com.android.build.api.dsl.ApplicationAndroidResources
 import com.android.build.api.dsl.ApplicationPublishing
 import com.android.build.api.dsl.AssetPackBundleExtension
 import com.android.build.api.dsl.BaselineProfile
@@ -36,6 +34,7 @@ import com.android.build.api.dsl.BundleTexture
 import com.android.build.api.dsl.Cmake
 import com.android.build.api.dsl.CompileOptions
 import com.android.build.api.dsl.ConfigurableFiles
+import com.android.build.api.dsl.ConsumerKeepRules
 import com.android.build.api.dsl.DataBinding
 import com.android.build.api.dsl.DensitySplit
 import com.android.build.api.dsl.DependenciesInfo
@@ -46,9 +45,8 @@ import com.android.build.api.dsl.FusedLibraryExtension
 import com.android.build.api.dsl.JavaCompileOptions
 import com.android.build.api.dsl.JniLibsPackaging
 import com.android.build.api.dsl.KeepRules
-import com.android.build.api.dsl.ConsumerKeepRules
-import com.android.build.api.dsl.LibraryKeepRules
 import com.android.build.api.dsl.KmpOptimization
+import com.android.build.api.dsl.LibraryKeepRules
 import com.android.build.api.dsl.LibraryPublishing
 import com.android.build.api.dsl.Lint
 import com.android.build.api.dsl.MultiDexConfig
@@ -62,10 +60,8 @@ import com.android.build.api.dsl.SigningConfig
 import com.android.build.api.dsl.Split
 import com.android.build.api.dsl.Splits
 import com.android.build.api.dsl.ViewBinding
-import com.android.build.gradle.internal.dsl.AaptOptions
 import com.android.build.gradle.internal.dsl.AarMetadataImpl
 import com.android.build.gradle.internal.dsl.AbiSplitOptions
-import com.android.build.gradle.internal.dsl.ApplicationAndroidResourcesImpl
 import com.android.build.gradle.internal.dsl.ApplicationPublishingImpl
 import com.android.build.gradle.internal.dsl.AssetPackBundleExtensionImpl
 import com.android.build.gradle.internal.dsl.BundleOptions
@@ -79,6 +75,7 @@ import com.android.build.gradle.internal.dsl.BundleOptionsStoreArchive
 import com.android.build.gradle.internal.dsl.BundleOptionsTexture
 import com.android.build.gradle.internal.dsl.CmakeOptions
 import com.android.build.gradle.internal.dsl.ConfigurableFilesImpl
+import com.android.build.gradle.internal.dsl.ConsumerKeepRulesImpl
 import com.android.build.gradle.internal.dsl.DataBindingOptions
 import com.android.build.gradle.internal.dsl.DensitySplitOptions
 import com.android.build.gradle.internal.dsl.DependenciesInfoImpl
@@ -86,9 +83,8 @@ import com.android.build.gradle.internal.dsl.DependencyVariantSelectionImpl
 import com.android.build.gradle.internal.dsl.DexPackagingImpl
 import com.android.build.gradle.internal.dsl.FusedLibraryExtensionImpl
 import com.android.build.gradle.internal.dsl.JniLibsPackagingImpl
-import com.android.build.gradle.internal.dsl.ConsumerKeepRulesImpl
-import com.android.build.gradle.internal.dsl.LibraryKeepRulesImpl
 import com.android.build.gradle.internal.dsl.KmpOptimizationImpl
+import com.android.build.gradle.internal.dsl.LibraryKeepRulesImpl
 import com.android.build.gradle.internal.dsl.LibraryPublishingImpl
 import com.android.build.gradle.internal.dsl.LintImpl
 import com.android.build.gradle.internal.dsl.MultiDexConfigImpl
@@ -119,9 +115,7 @@ val AGP_SUPPORTED_PROPERTY_TYPES: List<SupportedPropertyType> = listOf(
 
     SupportedPropertyType.Block(AarMetadata::class.java, AarMetadataImpl::class.java),
     SupportedPropertyType.Block(AbiSplit::class.java, AbiSplitOptions::class.java),
-    SupportedPropertyType.Block(AndroidResources::class.java, AaptOptions::class.java),
     SupportedPropertyType.Block(AnnotationProcessorOptions::class.java, AnnotationProcessorOptionsImpl::class.java),
-    SupportedPropertyType.Block(ApplicationAndroidResources::class.java, ApplicationAndroidResourcesImpl::class.java),
     SupportedPropertyType.Block(ApplicationPublishing::class.java, ApplicationPublishingImpl::class.java),
     SupportedPropertyType.Block(AssetPackBundleExtension::class.java, AssetPackBundleExtensionImpl::class.java),
     SupportedPropertyType.Block(Bundle::class.java, BundleOptions::class.java),

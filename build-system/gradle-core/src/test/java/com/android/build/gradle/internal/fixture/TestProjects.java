@@ -21,9 +21,13 @@ import com.android.annotations.Nullable;
 import com.android.build.gradle.AppExtension;
 import com.android.build.gradle.BaseExtension;
 import com.android.build.gradle.LibraryExtension;
+import com.android.build.gradle.TestExtension;
 import com.android.build.gradle.internal.SdkLocator;
+import com.android.build.gradle.internal.dsl.DynamicFeatureExtension;
 import com.android.build.gradle.internal.plugins.AppPlugin;
+import com.android.build.gradle.internal.plugins.DynamicFeaturePlugin;
 import com.android.build.gradle.internal.plugins.LibraryPlugin;
+import com.android.build.gradle.internal.plugins.TestPlugin;
 import com.android.build.gradle.options.Option;
 import com.android.testutils.OsType;
 import com.android.testutils.TestUtils;
@@ -53,7 +57,11 @@ public class TestProjects {
     public enum Plugin {
         APP("com.android.application", AppPlugin.class, AppExtension.class),
         LIBRARY("com.android.library", LibraryPlugin.class, LibraryExtension.class),
-        ;
+        DYNAMIC_FEATURE(
+                "com.android.dynamic-feature",
+                DynamicFeaturePlugin.class,
+                DynamicFeatureExtension.class),
+        TEST("com.android.test", TestPlugin.class, TestExtension.class);
 
         @NonNull private final String pluginName;
         @NonNull private final Class<? extends org.gradle.api.Plugin> pluginClass;
