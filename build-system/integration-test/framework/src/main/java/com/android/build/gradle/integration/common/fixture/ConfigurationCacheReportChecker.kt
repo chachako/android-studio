@@ -37,20 +37,8 @@ class ConfigurationCacheReportChecker {
                 name = "local.properties"
             ),
             Error.file(
-                location = "com.android.build.gradle.internal.SdkParsingUtilsKt",
-                name = "package.xml"
-            ),
-            Error.file(
-                location = "com.android.build.gradle.internal.SdkParsingUtilsKt",
-                name = "package.xml"
-            ),
-            Error.file(
                 location = "com.android.io.CancellableFileIo",
                 name = "optional.json"
-            ),
-            Error.file(
-                location = "com.android.build.gradle.internal.SdkParsingUtilsKt",
-                name = "package.xml"
             ),
             Error.file(
                 location = "com.android.io.CancellableFileIo",
@@ -224,10 +212,6 @@ class ConfigurationCacheReportChecker {
                 name = "split-select"
             ),
             Error.fileSystemEntry(
-                location = "com.android.build.gradle.internal.SdkParsingUtilsKt",
-                name = "package.xml"
-            ),
-            Error.fileSystemEntry(
                 location = "com.android.io.CancellableFileIo",
                 name = "optional.json"
             ),
@@ -249,10 +233,6 @@ class ConfigurationCacheReportChecker {
             ),
             Error.fileSystemEntry(
                 location = "com.android.build.gradle.internal.SupportToolsComponents\$Companion",
-                name = "package.xml"
-            ),
-            Error.fileSystemEntry(
-                location = "com.android.build.gradle.internal.SdkParsingUtilsKt",
                 name = "package.xml"
             ),
             Error.fileSystemEntry(
