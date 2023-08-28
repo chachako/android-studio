@@ -112,8 +112,12 @@ class LintDriverCrashTest : AbstractCheckTest() {
     LintDriver.clearCrashCount()
   }
 
-  fun testErrorThrownInSuperClass() {
-    // Regression test for 263289356
+  fun testErrorThrownInAbstractDetector() {
+    // Regression test for b/263289356
+    // In this test, the problematic detector is an abstract detector from which the implementation
+    // detector inherits. But by the time the error is thrown, the implementation detector is
+    // already in the stacktrace so we should be able to extract the exact name of the detector
+    // that was running when the exception was thrown.
     lint()
       .files(
         xml("res/layout/foo.xml", "<LinearLayout/>"),
@@ -127,7 +131,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
       )
       .allowSystemErrors(true)
       .allowExceptions(true)
-      .issues(CrashingInheritorDetector.CRASHING_ISSUE)
+      .issues(CrashingImplementationDetector.CRASHING_ISSUE)
       .testModes(TestMode.DEFAULT)
       .run()
       .check({
@@ -137,16 +141,66 @@ class LintDriverCrashTest : AbstractCheckTest() {
           )
         assertThat(it)
           .contains(
-            "The crash seems to involve the detector com.android.tools.lint.client.api.LintDriverCrashTest＄CrashingInheritorDetector."
+            "The crash seems to involve the detector com.android.tools.lint.client.api.LintDriverCrashTest＄CrashingImplementationDetector."
           )
         assertThat(it)
           .contains(
             """
-                        The crash seems to involve the detector com.android.tools.lint.client.api.LintDriverCrashTest＄CrashingInheritorDetector.
+                        The crash seems to involve the detector com.android.tools.lint.client.api.LintDriverCrashTest＄CrashingImplementationDetector.
                         You can try disabling it with something like this:
                             android {
                                 lint {
-                                    disable "_TestCrashInheritor"
+                                    disable "_TestCrashImplementer"
+                                }
+                            }
+                        """
+              .trimIndent()
+          )
+      })
+    LintDriver.clearCrashCount()
+  }
+
+  fun testNoImplementationDetectorInStacktrace() {
+    // Regression test for b/263289356
+    // In this test there is an abstract crashing detector and two inheriting implementation
+    // detectors which do not override the crashing method. The result is that the crash will
+    // happen when the method in the abstract detector is invoked by the dispatch visitor, and
+    // so the implementation detectors won't show up in the stacktrace. The way for a user to
+    // solve this problem is to disable all such detectors, so the error message should
+    // suggest suppressing both of them.
+    lint()
+      .files(
+        xml("res/layout/foo.xml", "<LinearLayout/>"),
+        java(
+          """
+                    package test.pkg;
+                    @SuppressWarnings("ALL") class Foo {
+                    }
+                    """
+        )
+      )
+      .allowSystemErrors(true)
+      .allowExceptions(true)
+      .issues(CrashingInheritorDetector.CRASHING_ISSUE, CrashingInheritorDetector2.CRASHING_ISSUE)
+      .testModes(TestMode.DEFAULT)
+      .run()
+      .check({
+        assertThat(it)
+          .contains(
+            "Foo.java: Error: Unexpected failure during lint analysis of Foo.java (this is a bug in lint or one of the libraries it depends on)"
+          )
+        assertThat(it)
+          .contains(
+            "The crash seems to involve the detector com.android.tools.lint.client.api.LintDriverCrashTest＄CrashingDetector."
+          )
+        assertThat(it)
+          .contains(
+            """
+                        The crash seems to involve the detector com.android.tools.lint.client.api.LintDriverCrashTest＄CrashingDetector.
+                        You can try disabling it with something like this:
+                            android {
+                                lint {
+                                    disable "_TestCrashInheritor", "_TestCrashInheritor2"
                                 }
                             }
                         """
@@ -358,7 +412,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
     }
   }
 
-  class CrashingInheritorDetector : CrashingDetector() {
+  class CrashingImplementationDetector : CrashingDetector() {
 
     override fun createUastHandler(context: JavaContext): UElementHandler {
       val superHandler = super.createUastHandler(context)
@@ -372,6 +426,23 @@ class LintDriverCrashTest : AbstractCheckTest() {
       @Suppress("LintImplTextFormat")
       val CRASHING_ISSUE =
         Issue.create(
+          "_TestCrashImplementer",
+          "test",
+          "test",
+          Category.LINT,
+          10,
+          Severity.FATAL,
+          Implementation(CrashingImplementationDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        )
+    }
+  }
+
+  class CrashingInheritorDetector : CrashingDetector() {
+
+    companion object {
+      @Suppress("LintImplTextFormat")
+      val CRASHING_ISSUE =
+        Issue.create(
           "_TestCrashInheritor",
           "test",
           "test",
@@ -379,6 +450,23 @@ class LintDriverCrashTest : AbstractCheckTest() {
           10,
           Severity.FATAL,
           Implementation(CrashingInheritorDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        )
+    }
+  }
+
+  class CrashingInheritorDetector2 : CrashingDetector() {
+
+    companion object {
+      @Suppress("LintImplTextFormat")
+      val CRASHING_ISSUE =
+        Issue.create(
+          "_TestCrashInheritor2",
+          "test",
+          "test",
+          Category.LINT,
+          10,
+          Severity.FATAL,
+          Implementation(CrashingInheritorDetector2::class.java, Scope.JAVA_FILE_SCOPE)
         )
     }
   }

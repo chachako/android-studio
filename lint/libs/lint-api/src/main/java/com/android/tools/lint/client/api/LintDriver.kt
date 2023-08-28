@@ -3933,23 +3933,51 @@ class LintDriver(
       throwable: Throwable,
       driver: LintDriver
     ): kotlin.Pair<String, List<Issue>>? {
-      val issueMap = driver.registry.issues.groupBy { it.implementation.detectorClass.name }
+      // The issues associated with each implementation detector
+      val detectorIssuesMap =
+        driver.registry.issues.groupBy { it.implementation.detectorClass.name }
 
-      fun getDetectorName(className: String): String? =
-        if (issueMap.contains(className)) className
-        else
-          when (val prefix = className.substringBeforeLast("$", "")) {
-            "" -> null
-            else -> getDetectorName(prefix)
+      // First look for the name of a registered detector in the stacktrace
+      for (frame in throwable.stackTrace) {
+        val detectorFqn =
+          frame.className.split("$").let { simpleNames ->
+            // Look through each prefix of the stack trace class name to see if it is
+            // that of a registered detector.
+            (simpleNames.indices)
+              .map { i -> simpleNames.take(i + 1).joinToString("$") }
+              .firstOrNull { fqn -> detectorIssuesMap.contains(fqn) }
           }
-
-      return when (
-        val detectorName =
-          throwable.stackTrace.firstNotNullOfOrNull { getDetectorName(it.className) }
-      ) {
-        null -> null
-        else -> Pair(detectorName, issueMap[detectorName]!!)
+        if (detectorFqn != null) return Pair(detectorFqn, detectorIssuesMap[detectorFqn]!!)
       }
+
+      // If we don't find one, then maybe the error was thrown inside an abstract detector class
+      // before handing control to the implementation detector. So we look for a class with the
+      // "Detector" substring and then for inheritors of that class which are registered as
+      // implementation detectors.
+      for (frame in throwable.stackTrace) {
+        val abstractDetectorFqn =
+          frame.className.split("$").let { simpleNames ->
+            val detectorNameIndex = simpleNames.indexOfFirst { it.contains("Detector") }
+            if (detectorNameIndex == -1) null
+            else simpleNames.take(detectorNameIndex + 1).joinToString("$")
+          }
+            ?: continue
+
+        // Step through the superclasses of each registered detector, to see if it
+        // inherits from the abstract detector that threw the error.
+        val registeredInheritors =
+          driver.registry.issues.filter { issue ->
+            var superClass = issue.implementation.detectorClass.superclass
+            while (superClass.name.contains("Detector")) {
+              if (superClass.name == abstractDetectorFqn) return@filter true
+              superClass = superClass.superclass
+            }
+            false
+          }
+        if (registeredInheritors.isNotEmpty())
+          return Pair(abstractDetectorFqn, registeredInheritors)
+      }
+      return null
     }
 
     /** Returns the issues associated with the given detector class. */
