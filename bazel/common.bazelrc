@@ -18,7 +18,7 @@ test --jvmopt='-Dsun.jnu.encoding=UTF-8'
 test --jvmopt='-Dfile.encoding=UTF-8'
 test --jvmopt='-Xmx4G'
 test --jvmopt='-XX:+UseG1GC'
-test --jvmopt='-XX:ErrorFile=$TEST_UNDECLARED_OUTPUTS_DIR/jvm_crash.log'
+test --jvmopt='-XX:+ErrorFileToStderr'
 test --verbose_failures
 
 # TODO(b/242203555) cleanup opens/exports that was added for JDK17 migration
