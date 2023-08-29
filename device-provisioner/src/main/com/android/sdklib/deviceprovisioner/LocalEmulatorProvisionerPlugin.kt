@@ -47,6 +47,7 @@ import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.exists
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
@@ -60,6 +61,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -79,6 +81,7 @@ class LocalEmulatorProvisionerPlugin(
   private val avdManager: AvdManager,
   private val deviceIcons: DeviceIcons,
   private val defaultPresentation: DeviceAction.DefaultPresentation,
+  private val diskIoDispatcher: CoroutineDispatcher,
   rescanPeriod: Duration = Duration.ofSeconds(10),
 ) : DeviceProvisionerPlugin {
   val logger = thisLogger(adbSession)
@@ -93,7 +96,9 @@ class LocalEmulatorProvisionerPlugin(
     suspend fun rescanAvds(): List<AvdInfo>
     suspend fun createAvd(): AvdInfo?
     suspend fun editAvd(avdInfo: AvdInfo): AvdInfo?
-    suspend fun startAvd(avdInfo: AvdInfo, coldBoot: Boolean)
+    suspend fun startAvd(avdInfo: AvdInfo)
+    suspend fun coldBootAvd(avdInfo: AvdInfo)
+    suspend fun bootAvdFromSnapshot(avdInfo: AvdInfo, snapshot: LocalEmulatorSnapshot)
     suspend fun stopAvd(avdInfo: AvdInfo)
     suspend fun showOnDisk(avdInfo: AvdInfo)
     suspend fun duplicateAvd(avdInfo: AvdInfo)
@@ -334,7 +339,7 @@ class LocalEmulatorProvisionerPlugin(
         override val presentation = defaultPresentation.fromContext().enabledIfActivatable()
 
         override suspend fun activate() {
-          activate(coldBoot = false)
+          activate { avdManager.startAvd(avdInfo) }
         }
       }
 
@@ -343,11 +348,26 @@ class LocalEmulatorProvisionerPlugin(
         override val presentation = defaultPresentation.fromContext().enabledIfActivatable()
 
         override suspend fun activate() {
-          activate(coldBoot = true)
+          activate { avdManager.coldBootAvd(avdInfo) }
         }
       }
 
-    private suspend fun activate(coldBoot: Boolean) {
+    override val bootSnapshotAction =
+      object : BootSnapshotAction {
+        override val presentation = defaultPresentation.fromContext().enabledIfActivatable()
+
+        override suspend fun snapshots(): List<Snapshot> =
+          withContext(diskIoDispatcher) {
+            LocalEmulatorSnapshotReader(logger)
+              .readSnapshots(avdInfo.dataFolderPath.resolve("snapshots"))
+          }
+
+        override suspend fun activate(snapshot: Snapshot) {
+          activate { avdManager.bootAvdFromSnapshot(avdInfo, snapshot as LocalEmulatorSnapshot) }
+        }
+      }
+
+    private suspend fun activate(action: suspend () -> Unit) {
       try {
         withContext(scope.coroutineContext) {
           stateFlow.advanceStateWithTimeout(
@@ -355,7 +375,7 @@ class LocalEmulatorProvisionerPlugin(
             updateState = {
               (it as? Disconnected)?.copy(isTransitioning = true, status = "Starting up")
             },
-            advanceAction = { avdManager.startAvd(avdInfo, coldBoot) }
+            advanceAction = action
           )
         }
       } catch (e: TimeoutCancellationException) {

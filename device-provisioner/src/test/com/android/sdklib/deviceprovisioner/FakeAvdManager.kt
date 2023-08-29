@@ -29,7 +29,8 @@ import com.android.sdklib.repository.IdDisplay
 import com.android.sdklib.repository.targets.SystemImage
 import java.nio.file.Path
 
-class FakeAvdManager(val session: FakeAdbSession) : LocalEmulatorProvisionerPlugin.AvdManager {
+class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
+  LocalEmulatorProvisionerPlugin.AvdManager {
   val avds = mutableListOf<AvdInfo>()
   val runningDevices = mutableSetOf<FakeEmulatorConsole>()
   var avdIndex = 1
@@ -51,7 +52,7 @@ class FakeAvdManager(val session: FakeAdbSession) : LocalEmulatorProvisionerPlug
     avdStatus: AvdInfo.AvdStatus = AvdInfo.AvdStatus.OK,
     tag: IdDisplay = SystemImage.DEFAULT_TAG,
   ): AvdInfo {
-    val basePath = Path.of("/tmp/fake_avds/$index")
+    val basePath = avdRoot.resolve("avd_$index")
     return AvdInfo(
       "fake_avd_$index",
       basePath.resolve("config.ini"),
@@ -84,7 +85,14 @@ class FakeAvdManager(val session: FakeAdbSession) : LocalEmulatorProvisionerPlug
       return newAvdInfo
     }
 
-  override suspend fun startAvd(avdInfo: AvdInfo, coldBoot: Boolean) {
+  override suspend fun startAvd(avdInfo: AvdInfo) = boot(avdInfo, false, null)
+
+  override suspend fun coldBootAvd(avdInfo: AvdInfo) = boot(avdInfo, true, null)
+
+  override suspend fun bootAvdFromSnapshot(avdInfo: AvdInfo, snapshot: LocalEmulatorSnapshot) =
+    boot(avdInfo, false, snapshot)
+
+  private fun boot(avdInfo: AvdInfo, coldBoot: Boolean, snapshot: LocalEmulatorSnapshot?) {
     val device =
       FakeEmulatorConsole(avdInfo.name, avdInfo.dataFolderPath.toString()) { doStopAvd(avdInfo) }
     val selector = DeviceSelector.fromSerialNumber("emulator-${device.port}")
@@ -99,7 +107,9 @@ class FakeAvdManager(val session: FakeAdbSession) : LocalEmulatorProvisionerPlug
           LocalEmulatorProvisionerPluginTest.MANUFACTURER,
         DevicePropertyNames.RO_PRODUCT_MODEL to LocalEmulatorProvisionerPluginTest.MODEL,
         DevicePropertyNames.RO_PRODUCT_CPU_ABI to LocalEmulatorProvisionerPluginTest.ABI.toString(),
-        "ro.kernel.qemu" to "1"
+        "ro.kernel.qemu" to "1",
+        "ro.test.coldboot" to if (coldBoot) "1" else "0",
+        "ro.test.snapshot" to (snapshot?.path?.toString() ?: ""),
       )
     )
     device.start()
