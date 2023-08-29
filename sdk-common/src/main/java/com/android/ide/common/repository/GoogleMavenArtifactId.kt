@@ -53,6 +53,7 @@ enum class GoogleMavenArtifactId(val mavenGroupId: String, val mavenArtifactId: 
   ANDROIDX_RECYCLERVIEW_V7("androidx.recyclerview", "recyclerview", true),
   EXIF_INTERFACE("com.android.support", "exifinterface", true),
   ANDROIDX_EXIF_INTERFACE("androidx.exifinterface", "exifinterface", true),
+  ANDROIDX_PREFERENCE("androidx.preference", "preference", true),
 
   // Misc. layouts
   CONSTRAINT_LAYOUT("com.android.support.constraint", "constraint-layout", false),
