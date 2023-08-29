@@ -252,7 +252,7 @@ class JdkImageTransformDelegateTest {
             contains("exports java.lang")
             contains("exports android.icu.lang")
             contains("exports dalvik.system")
-            contains("platform android")
+            contains("platform LINUX-OTHER")
         }
     }
 
