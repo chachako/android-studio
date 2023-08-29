@@ -283,34 +283,37 @@ class ArtProfileMultipleLibrariesTest(
             SdkConstants.FD_INTERMEDIATES,
             InternalArtifactType.MERGED_ART_PROFILE.getFolderName(),
             "release",
-            "mergeReleaseArtProfile",
-            SdkConstants.FN_ART_PROFILE,
+            SdkConstants.FN_ART_PROFILE
         )
-        Truth.assertThat(mergedFilePreR8.exists()).isEqualTo(minifyEnabled)
-        if (minifyEnabled) {
-            Truth.assertThat(mergedFilePreR8.readText()).isEqualTo(expectedMergedFileContentBeforeWildcardTask)
-        }
+        Truth.assertThat(mergedFilePreR8.readText())
+            .isEqualTo(expectedMergedFileContentBeforeWildcardTask)
 
-        val mergedFile = FileUtils.join(
+        if (minifyEnabled) {
+            val mergedFile = FileUtils.join(
                 project.getSubproject(":app").buildDir,
                 SdkConstants.FD_INTERMEDIATES,
-                InternalArtifactType.MERGED_ART_PROFILE.getFolderName(),
+                InternalArtifactType.R8_ART_PROFILE.getFolderName(),
                 "release",
-                SdkConstants.FN_ART_PROFILE,
-        )
-        Truth.assertThat(
+                SdkConstants.FN_ART_PROFILE
+            )
+            Truth.assertThat(
                 mergedFile.readText().trimEnd() // R8 seems to add a newline at the end
-        ).isEqualTo(
-                if (withArtProfileR8Rewriting)
-                    expectedMergedRewrittenFileContent
-                else
-                    expectedMergedFileContent
-        )
-        Truth.assertThat(
-                HumanReadableProfile(mergedFile) {
+            ).isEqualTo(
+                if (withArtProfileR8Rewriting) expectedMergedRewrittenFileContent
+                else expectedMergedFileContent
+            )
+            Truth.assertThat(
+                    HumanReadableProfile(mergedFile) {
+                        fail(it)
+                    }
+            ).isNotNull()
+        } else {
+            Truth.assertThat(
+                HumanReadableProfile(mergedFilePreR8) {
                     fail(it)
                 }
-        ).isNotNull()
+            ).isNotNull()
+        }
 
         val binaryProfile = FileUtils.join(
                 project.getSubproject(":app").buildDir,

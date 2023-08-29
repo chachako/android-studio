@@ -27,6 +27,7 @@ import com.android.builder.dexing.r8.R8DiagnosticsHandler
 import com.android.ide.common.blame.MessageReceiver
 import com.android.tools.r8.ArchiveProgramResourceProvider
 import com.android.tools.r8.AssertionsConfiguration
+import com.android.tools.r8.BaseCompilerCommand
 import com.android.tools.r8.ClassFileConsumer
 import com.android.tools.r8.CompilationMode
 import com.android.tools.r8.DataDirectoryResource
@@ -344,12 +345,11 @@ fun runR8(
     }
 }
 
-private fun wireArtProfileRewriting(
-    r8CommandBuilder: R8Command.Builder,
-    inputArtProfile: Path?,
-    outputArtProfile: Path?
+fun wireArtProfileRewriting(
+    commandBuilder: BaseCompilerCommand.Builder<*, *>,
+    inputArtProfile: Path,
+    outputArtProfile: Path
 ) {
-
     // Supply the ART profile to the compiler by supplying an instance of ArtProfileProvider.
     val artProfileProvider: ArtProfileProvider = object : ArtProfileProvider {
         override fun getArtProfile(profileBuilder: ArtProfileBuilder) {
@@ -382,7 +382,7 @@ private fun wireArtProfileRewriting(
         override fun finished(handler: DiagnosticsHandler) {}
     }
 
-    r8CommandBuilder.addArtProfileForRewriting(artProfileProvider, residualArtProfileConsumer)
+    commandBuilder.addArtProfileForRewriting(artProfileProvider, residualArtProfileConsumer)
 }
 
 private fun wireMinimalStartupOptimization(

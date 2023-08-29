@@ -82,6 +82,7 @@ import com.android.build.gradle.internal.tasks.DexArchiveBuilderTask
 import com.android.build.gradle.internal.tasks.DexFileDependenciesTask
 import com.android.build.gradle.internal.tasks.DexMergingAction
 import com.android.build.gradle.internal.tasks.DexMergingTask
+import com.android.build.gradle.internal.tasks.ExpandArtProfileWildcardsTask
 import com.android.build.gradle.internal.tasks.ExtractProguardFiles
 import com.android.build.gradle.internal.tasks.FeatureDexMergeTask
 import com.android.build.gradle.internal.tasks.FeatureGlobalSyntheticsMergeTask
@@ -1870,6 +1871,15 @@ abstract class TaskManager(
 
     private fun maybeCreateDesugarLibTask(apkCreationConfig: ApkCreationConfig) {
         if (apkCreationConfig.dexingCreationConfig.shouldPackageDesugarLibDex) {
+            // The expansion of wildcards using the desugared lib jar should only run when
+            // needsShrinkDesugarLibrary is true, and this conditional should match the generation
+            // of desugared lib jar in [L8DexDesugarLibTask]
+            if (apkCreationConfig.dexingCreationConfig.needsShrinkDesugarLibrary) {
+                taskFactory.register(
+                    ExpandArtProfileWildcardsTask.ExpandL8ArtProfileCreationAction(apkCreationConfig)
+                )
+            }
+
             taskFactory.register(
                 L8DexDesugarLibTask.CreationAction(apkCreationConfig)
             )

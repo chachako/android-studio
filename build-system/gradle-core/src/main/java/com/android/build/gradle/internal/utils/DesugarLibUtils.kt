@@ -107,7 +107,7 @@ fun getDesugaredDesugarLib(
         fullBootClasspath
     )
 
-    return getDesugaredDesugarLibFromTransfrom(configuration)
+    return getDesugaredDesugarLibFromTransform(configuration)
 }
 
 /** Implementation of provider holding JSON file value. */
@@ -213,7 +213,7 @@ private fun getDesugarLibConfigFromTransform(configuration: Configuration): File
     }.artifacts.artifactFiles
 }
 
-private fun getDesugaredDesugarLibFromTransfrom(configuration: Configuration): FileCollection {
+private fun getDesugaredDesugarLibFromTransform(configuration: Configuration): FileCollection {
     return configuration.incoming.artifactView { configuration ->
         configuration.componentFilter { id ->
             !id.displayName.contains(DESUGAR_LIB_COMPONENT_NAME)

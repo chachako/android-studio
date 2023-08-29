@@ -23,6 +23,7 @@ import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.dsl.ModulePropertyKey
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.scope.InternalArtifactType
+import com.android.build.gradle.internal.tasks.MergeFileTask.Companion.mergeFiles
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.setDisallowChanges
@@ -66,6 +67,9 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
     @get: [InputFiles Optional PathSensitive(PathSensitivity.NAME_ONLY)]
     abstract val mergedArtProfile: RegularFileProperty
 
+    @get: [InputFiles Optional PathSensitive(PathSensitivity.NAME_ONLY)]
+    abstract val l8ArtProfile: RegularFileProperty
+
     @get: [InputFiles PathSensitive(PathSensitivity.RELATIVE)]
     abstract val dexFolders: ConfigurableFileCollection
 
@@ -88,6 +92,9 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
     @get: Optional
     abstract val dexMetadataDirectory: DirectoryProperty
 
+    @get: OutputFile
+    abstract val combinedArtProfile: RegularFileProperty
+
     abstract class CompileArtProfileWorkAction:
             ProfileAwareWorkAction<CompileArtProfileWorkAction.Parameters>() {
 
@@ -98,14 +105,22 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
             abstract val binaryArtProfileOutputFile: RegularFileProperty
             abstract val binaryArtProfileMetadataOutputFile: RegularFileProperty
             abstract val dexMetadataDirectory: DirectoryProperty
+            abstract val l8ArtProfile: RegularFileProperty
+            abstract val combinedArtProfile: RegularFileProperty
         }
 
         override fun run() {
+            val filesToCompile = mutableListOf(parameters.mergedArtProfile.get().asFile)
+            if (parameters.l8ArtProfile.isPresent) {
+                filesToCompile.add(parameters.l8ArtProfile.get().asFile)
+            }
+            mergeFiles(filesToCompile, parameters.combinedArtProfile.get().asFile)
+
             val diagnostics = Diagnostics {
                     error -> throw RuntimeException("Error parsing baseline-prof.txt : $error")
             }
             val humanReadableProfile = HumanReadableProfile(
-                parameters.mergedArtProfile.get().asFile,
+                parameters.combinedArtProfile.get().asFile,
                 diagnostics
             ) ?: throw RuntimeException(
                 "Merged ${SdkConstants.FN_ART_PROFILE} cannot be parsed successfully."
@@ -173,6 +188,8 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
             it.binaryArtProfileOutputFile.set(binaryArtProfile)
             it.binaryArtProfileMetadataOutputFile.set(binaryArtProfileMetadata)
             it.dexMetadataDirectory.set(dexMetadataDirectory)
+            it.l8ArtProfile.set(l8ArtProfile)
+            it.combinedArtProfile.set(combinedArtProfile)
         }
     }
 
@@ -205,15 +222,29 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
                     CompileArtProfileTask::dexMetadataDirectory
                 ).on(InternalArtifactType.DEX_METADATA_DIRECTORY)
             }
+
+            creationConfig.artifacts.setInitialProvider(
+                taskProvider,
+                CompileArtProfileTask::combinedArtProfile
+            ).on(InternalArtifactType.COMBINED_ART_PROFILE)
         }
 
         override fun configure(task: CompileArtProfileTask) {
             super.configure(task)
             task.mergedArtProfile.setDisallowChanges(
-                    creationConfig.artifacts.get(
-                            InternalArtifactType.MERGED_ART_PROFILE
-                    )
+                creationConfig.artifacts.get(
+                    if (creationConfig.optimizationCreationConfig.minifiedEnabled) {
+                        InternalArtifactType.R8_ART_PROFILE
+                    } else {
+                        InternalArtifactType.MERGED_ART_PROFILE
+                    }
+                )
             )
+            if (creationConfig.dexingCreationConfig.shouldPackageDesugarLibDex) {
+                task.l8ArtProfile.setDisallowChanges(
+                    creationConfig.artifacts.get(InternalArtifactType.L8_ART_PROFILE)
+                )
+            }
             task.dexFolders.fromDisallowChanges(
                     PackageAndroidArtifact.CreationAction.getDexFolders(creationConfig)
             )

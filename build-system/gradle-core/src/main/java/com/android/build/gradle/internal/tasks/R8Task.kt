@@ -316,7 +316,7 @@ abstract class R8Task @Inject constructor(
                 creationConfig.artifacts
                     .use(taskProvider)
                     .wiredWithFiles(R8Task::inputArtProfile, R8Task::outputArtProfile)
-                    .toTransform(InternalArtifactType.MERGED_ART_PROFILE)
+                    .toTransform(InternalArtifactType.R8_ART_PROFILE)
             }
         }
 

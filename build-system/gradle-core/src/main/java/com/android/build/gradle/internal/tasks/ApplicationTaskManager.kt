@@ -100,6 +100,13 @@ class ApplicationTaskManager(
         }
 
         taskFactory.register(MergeArtProfileTask.CreationAction(variant))
+        // The [ExpandArtProfileTask] should only run when the R8 task also runs, and this
+        // conditional should match the R8 registration conditional in
+        // [TaskManager#maybeCreateJavaCodeShrinkerTask]
+        if (variant.optimizationCreationConfig.minifiedEnabled) {
+            val classpathUtils = getClassPathUtils(variant)
+            taskFactory.register(ExpandArtProfileWildcardsTask.CreationAction(variant, classpathUtils))
+        }
         taskFactory.register(CompileArtProfileTask.CreationAction(variant))
 
         if (variant.generateLocaleConfig) {

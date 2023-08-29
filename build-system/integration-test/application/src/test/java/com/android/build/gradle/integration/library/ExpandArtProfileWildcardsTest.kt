@@ -71,16 +71,6 @@ class ExpandArtProfileWildcardsTest {
 
         Truth.assertThat(result.didWorkTasks)
             .doesNotContain(":app:expandReleaseArtProfileWildcards")
-
-        val mergedFile = FileUtils.join(
-            app.buildDir,
-            SdkConstants.FD_INTERMEDIATES,
-            InternalArtifactType.MERGED_ART_PROFILE.getFolderName(),
-            "release",
-            SdkConstants.FN_ART_PROFILE)
-
-        // Validate that art profile is the same as the input, without wildcards expanded
-        Truth.assertThat(mergedFile.readText()).isEqualTo("L*;")
     }
 
     @Test
@@ -161,10 +151,10 @@ class ExpandArtProfileWildcardsTest {
         Truth.assertThat(result.failedTasks).isEmpty()
         Truth.assertThat(result.didWorkTasks).contains(":app:expandReleaseArtProfileWildcards")
 
-        val mergedFile = FileUtils.join(
+        val expandedProfile = FileUtils.join(
             app.buildDir,
             SdkConstants.FD_INTERMEDIATES,
-            InternalArtifactType.MERGED_ART_PROFILE.getFolderName(),
+            InternalArtifactType.R8_ART_PROFILE.getFolderName(),
             "release",
             SdkConstants.FN_ART_PROFILE
         )
@@ -173,6 +163,6 @@ class ExpandArtProfileWildcardsTest {
         // - App classes (HelloWorld class)
         // - App resources (R.jar)
         // - Lib classes (classes.jar containing HelloWorld and Foo classes)
-        Truth.assertThat(mergedFile.readText()).isEqualTo(expectedArtProfile)
+        Truth.assertThat(expandedProfile.readText()).isEqualTo(expectedArtProfile)
     }
 }
