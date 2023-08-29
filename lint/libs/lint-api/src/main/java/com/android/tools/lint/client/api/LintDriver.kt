@@ -3795,6 +3795,10 @@ class LintDriver(
           // org.junit.Assert.fail() from test suite
           throw throwable
         }
+        throwable is OutOfMemoryError && LintClient.isGradle -> {
+          // Fail the build eagerly from AGP in case of OutOfMemoryError (b/297095583)
+          throw throwable
+        }
       }
 
       if (crashCount++ > MAX_REPORTED_CRASHES) {
