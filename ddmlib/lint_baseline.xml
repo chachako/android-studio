@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="5" by="lint 7.1.0-dev">
+<issues format="5" by="lint 8.3.0-dev">
 
     <issue
         id="DefaultLocale"
         message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
         <location
             file="src/main/java/com/android/ddmlib/AdbHelper.java"
-            line="276"/>
+            line="273"/>
     </issue>
 
     <issue
@@ -14,7 +14,7 @@
         message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
         <location
             file="src/main/java/com/android/ddmlib/ClientData.java"
-            line="879"/>
+            line="903"/>
     </issue>
 
     <issue
@@ -22,7 +22,7 @@
         message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
         <location
             file="src/main/java/com/android/ddmlib/internal/Debugger.java"
-            line="304"/>
+            line="313"/>
     </issue>
 
     <issue
@@ -30,7 +30,7 @@
         message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
         <location
             file="src/main/java/com/android/ddmlib/internal/Debugger.java"
-            line="314"/>
+            line="323"/>
     </issue>
 
     <issue
@@ -38,7 +38,7 @@
         message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
         <location
             file="src/main/java/com/android/ddmlib/internal/Debugger.java"
-            line="328"/>
+            line="337"/>
     </issue>
 
     <issue
@@ -46,7 +46,7 @@
         message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
         <location
             file="src/main/java/com/android/ddmlib/internal/DeviceImpl.java"
-            line="770"/>
+            line="953"/>
     </issue>
 
     <issue
@@ -54,7 +54,7 @@
         message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
         <location
             file="src/main/java/com/android/ddmlib/internal/DeviceImpl.java"
-            line="771"/>
+            line="954"/>
     </issue>
 
     <issue
@@ -62,7 +62,7 @@
         message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
         <location
             file="src/main/java/com/android/ddmlib/internal/DeviceImpl.java"
-            line="781"/>
+            line="964"/>
     </issue>
 
     <issue
@@ -70,7 +70,7 @@
         message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
         <location
             file="src/main/java/com/android/ddmlib/internal/DeviceImpl.java"
-            line="791"/>
+            line="974"/>
     </issue>
 
     <issue
@@ -126,7 +126,7 @@
         message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
         <location
             file="src/main/java/com/android/ddmlib/testrunner/InstrumentationResultParser.java"
-            line="655"/>
+            line="661"/>
     </issue>
 
     <issue
@@ -134,7 +134,7 @@
         message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/JdwpPacket.java"
-            line="340"/>
+            line="347"/>
     </issue>
 
     <issue
@@ -142,7 +142,7 @@
         message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/JdwpPacket.java"
-            line="346"/>
+            line="353"/>
     </issue>
 
     <issue
@@ -206,47 +206,23 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/DdmPreferences.java"
-            line="129"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
-        <location
-            file="src/main/java/com/android/ddmlib/internal/DeviceMonitor.java"
-            line="88"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
-        <location
-            file="src/main/java/com/android/ddmlib/internal/DeviceMonitor.java"
-            line="120"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
-        <location
-            file="src/main/java/com/android/ddmlib/internal/DeviceMonitor.java"
-            line="130"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
-        <location
-            file="src/main/java/com/android/ddmlib/internal/DeviceMonitor.java"
             line="136"/>
     </issue>
 
     <issue
         id="VisibleForTests"
+        message="This class should only be accessed from tests or within private scope">
+        <location
+            file="src/main/java/com/android/ddmlib/internal/DeviceMonitor.java"
+            line="67"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/DeviceMonitor.java"
-            line="140"/>
+            line="107"/>
     </issue>
 
     <issue
@@ -255,6 +231,38 @@
         <location
             file="src/main/java/com/android/ddmlib/internal/DeviceMonitor.java"
             line="144"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope">
+        <location
+            file="src/main/java/com/android/ddmlib/internal/DeviceMonitor.java"
+            line="174"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope">
+        <location
+            file="src/main/java/com/android/ddmlib/internal/DeviceMonitor.java"
+            line="180"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope">
+        <location
+            file="src/main/java/com/android/ddmlib/internal/DeviceMonitor.java"
+            line="184"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope">
+        <location
+            file="src/main/java/com/android/ddmlib/internal/DeviceMonitor.java"
+            line="188"/>
     </issue>
 
     <issue
@@ -1030,7 +1038,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="98"/>
+            line="102"/>
     </issue>
 
     <issue
@@ -1038,7 +1046,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="105"/>
+            line="109"/>
     </issue>
 
     <issue
@@ -1046,7 +1054,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="106"/>
+            line="110"/>
     </issue>
 
     <issue
@@ -1054,7 +1062,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="115"/>
+            line="119"/>
     </issue>
 
     <issue
@@ -1062,7 +1070,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="126"/>
+            line="131"/>
     </issue>
 
     <issue
@@ -1070,7 +1078,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="127"/>
+            line="132"/>
     </issue>
 
     <issue
@@ -1078,7 +1086,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="128"/>
+            line="133"/>
     </issue>
 
     <issue
@@ -1086,7 +1094,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="134"/>
+            line="139"/>
     </issue>
 
     <issue
@@ -1094,7 +1102,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="154"/>
+            line="159"/>
     </issue>
 
     <issue
@@ -1102,7 +1110,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="155"/>
+            line="160"/>
     </issue>
 
     <issue
@@ -1110,7 +1118,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="156"/>
+            line="161"/>
     </issue>
 
     <issue
@@ -1118,7 +1126,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="169"/>
+            line="174"/>
     </issue>
 
     <issue
@@ -1126,7 +1134,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="216"/>
+            line="222"/>
     </issue>
 
     <issue
@@ -1134,15 +1142,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="220"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
-        <location
-            file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="221"/>
+            line="226"/>
     </issue>
 
     <issue
@@ -1158,7 +1158,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="328"/>
+            line="233"/>
     </issue>
 
     <issue
@@ -1166,7 +1166,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="329"/>
+            line="330"/>
     </issue>
 
     <issue
@@ -1190,7 +1190,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="339"/>
+            line="335"/>
     </issue>
 
     <issue
@@ -1198,7 +1198,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="340"/>
+            line="341"/>
     </issue>
 
     <issue
@@ -1215,6 +1215,14 @@
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
             line="344"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope">
+        <location
+            file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
+            line="346"/>
     </issue>
 
 </issues>

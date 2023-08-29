@@ -72,6 +72,9 @@ class DeprecatedSinceApiDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
+            src/test/pkg/Api.kt:24: Warning: This class is deprecated as of API level 28 [DeprecatedSinceApi]
+                fun test(api: Api, api2: Api2) {
+                                         ~~~~
             src/test/pkg/Api.kt:26: Warning: This method is deprecated as of API level 25 [DeprecatedSinceApi]
                   api.someMethod2(0)         // WARN 1
                   ~~~~~~~~~~~~~~~~~~
@@ -93,7 +96,7 @@ class DeprecatedSinceApiDetectorTest : AbstractCheckTest() {
             src/test/pkg/Api.kt:32: Warning: This method is deprecated as of API level 25 [DeprecatedSinceApi]
                   println(api::someMethod2)  // WARN 7
                           ~~~~~~~~~~~~~~~~
-            0 errors, 7 warnings
+            0 errors, 8 warnings
             """
       )
   }

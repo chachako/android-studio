@@ -259,43 +259,61 @@ class AnnotationHandlerTest {
       .run()
       .expect(
         """
-            src/test/usage/Usage.java:6: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
-                    use(api.field);      // ERROR 1A and 1B
-                            ~~~~~
-            src/test/usage/Usage.java:6: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
-                    use(api.field);      // ERROR 1A and 1B
-                            ~~~~~
-            src/test/usage/Usage.java:7: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
-                    use(api.next.field); // ERROR 2A, 2B on next, 3A, 3B on field
-                            ~~~~
-            src/test/usage/Usage.java:7: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
-                    use(api.next.field); // ERROR 2A, 2B on next, 3A, 3B on field
-                                 ~~~~~
-            src/test/usage/Usage.java:7: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
-                    use(api.next.field); // ERROR 2A, 2B on next, 3A, 3B on field
-                            ~~~~
-            src/test/usage/Usage.java:7: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
-                    use(api.next.field); // ERROR 2A, 2B on next, 3A, 3B on field
-                                 ~~~~~
-            src/test/usage/test.kt:5: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
-                use(api.field)       // ERROR 4A and 4B
+        src/test/api/Api.java:8: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            public Api next = null;
+                   ~~~
+        src/test/api/Api.java:8: Error: CLASS_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+            public Api next = null;
+                   ~~~
+        src/test/usage/Usage.java:5: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            public void test(Api api) {
+                             ~~~
+        src/test/usage/Usage.java:5: Error: CLASS_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+            public void test(Api api) {
+                             ~~~
+        src/test/usage/Usage.java:6: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+                use(api.field);      // ERROR 1A and 1B
                         ~~~~~
-            src/test/usage/test.kt:5: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
-                use(api.field)       // ERROR 4A and 4B
+        src/test/usage/Usage.java:6: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+                use(api.field);      // ERROR 1A and 1B
                         ~~~~~
-            src/test/usage/test.kt:6: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
-                use(api.next.field)  // ERROR 5A, 5B on next, 6A, 6B on field
+        src/test/usage/Usage.java:7: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+                use(api.next.field); // ERROR 2A, 2B on next, 3A, 3B on field
                         ~~~~
-            src/test/usage/test.kt:6: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
-                use(api.next.field)  // ERROR 5A, 5B on next, 6A, 6B on field
+        src/test/usage/Usage.java:7: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+                use(api.next.field); // ERROR 2A, 2B on next, 3A, 3B on field
                              ~~~~~
-            src/test/usage/test.kt:6: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
-                use(api.next.field)  // ERROR 5A, 5B on next, 6A, 6B on field
+        src/test/usage/Usage.java:7: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+                use(api.next.field); // ERROR 2A, 2B on next, 3A, 3B on field
                         ~~~~
-            src/test/usage/test.kt:6: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
-                use(api.next.field)  // ERROR 5A, 5B on next, 6A, 6B on field
+        src/test/usage/Usage.java:7: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+                use(api.next.field); // ERROR 2A, 2B on next, 3A, 3B on field
                              ~~~~~
-            12 errors, 0 warnings
+        src/test/usage/test.kt:4: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+        fun test(api: Api) {
+                      ~~~
+        src/test/usage/test.kt:4: Error: CLASS_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+        fun test(api: Api) {
+                      ~~~
+        src/test/usage/test.kt:5: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            use(api.field)       // ERROR 4A and 4B
+                    ~~~~~
+        src/test/usage/test.kt:5: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+            use(api.field)       // ERROR 4A and 4B
+                    ~~~~~
+        src/test/usage/test.kt:6: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            use(api.next.field)  // ERROR 5A, 5B on next, 6A, 6B on field
+                    ~~~~
+        src/test/usage/test.kt:6: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            use(api.next.field)  // ERROR 5A, 5B on next, 6A, 6B on field
+                         ~~~~~
+        src/test/usage/test.kt:6: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+            use(api.next.field)  // ERROR 5A, 5B on next, 6A, 6B on field
+                    ~~~~
+        src/test/usage/test.kt:6: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+            use(api.next.field)  // ERROR 5A, 5B on next, 6A, 6B on field
+                         ~~~~~
+        18 errors, 0 warnings
             """
       )
   }
@@ -441,55 +459,67 @@ class AnnotationHandlerTest {
       .run()
       .expect(
         """
-            src/test/usage/JavaUsage.java:10: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
-                    use(InnerApi.CONSTANT); // ERROR 1A and 1B
-                                 ~~~~~~~~
-            src/test/usage/JavaUsage.java:10: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
-                    use(InnerApi.CONSTANT); // ERROR 1A and 1B
-                                 ~~~~~~~~
-            src/test/usage/JavaUsage.java:11: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
-                    use(CONSTANT);          // ERROR 2A and 2B
-                        ~~~~~~~~
-            src/test/usage/JavaUsage.java:11: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
-                    use(CONSTANT);          // ERROR 2A and 2B
-                        ~~~~~~~~
-            src/test/usage/JavaUsage.java:12: Error: METHOD_CALL usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
-                    use(innerApi.method()); // ERROR 3A and 3B
-                        ~~~~~~~~~~~~~~~~~
-            src/test/usage/JavaUsage.java:12: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
-                    use(innerApi.method()); // ERROR 3A and 3B
-                        ~~~~~~~~~~~~~~~~~
-            src/test/usage/JavaUsage.java:13: Error: METHOD_CALL usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
-                    use(method());          // ERROR 4A and 4B
-                        ~~~~~~~~
-            src/test/usage/JavaUsage.java:13: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
-                    use(method());          // ERROR 4A and 4B
-                        ~~~~~~~~
-            src/test/usage/KotlinUsage.kt:10: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
-                    use(InnerApi.CONSTANT)     // ERROR 5A and 5B
-                                 ~~~~~~~~
-            src/test/usage/KotlinUsage.kt:10: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
-                    use(InnerApi.CONSTANT)     // ERROR 5A and 5B
-                                 ~~~~~~~~
-            src/test/usage/KotlinUsage.kt:11: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
-                    use(CONSTANT)              // ERROR 6A and 6B
-                        ~~~~~~~~
-            src/test/usage/KotlinUsage.kt:11: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
-                    use(CONSTANT)              // ERROR 6A and 6B
-                        ~~~~~~~~
-            src/test/usage/KotlinUsage.kt:12: Error: METHOD_CALL usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
-                    use(InnerApi.method())     // ERROR 7A and 7B
-                        ~~~~~~~~~~~~~~~~~
-            src/test/usage/KotlinUsage.kt:12: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
-                    use(InnerApi.method())     // ERROR 7A and 7B
-                        ~~~~~~~~~~~~~~~~~
-            src/test/usage/KotlinUsage.kt:13: Error: METHOD_CALL usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
-                    use(method())              // ERROR 8A and 8B
-                        ~~~~~~~~
-            src/test/usage/KotlinUsage.kt:13: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
-                    use(method())              // ERROR 8A and 8B
-                        ~~~~~~~~
-            16 errors, 0 warnings
+        src/test/usage/JavaUsage.java:9: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
+            public void test(InnerApi innerApi) {
+                             ~~~~~~~~
+        src/test/usage/JavaUsage.java:9: Error: CLASS_REFERENCE usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
+            public void test(InnerApi innerApi) {
+                             ~~~~~~~~
+        src/test/usage/JavaUsage.java:10: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
+                use(InnerApi.CONSTANT); // ERROR 1A and 1B
+                             ~~~~~~~~
+        src/test/usage/JavaUsage.java:10: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
+                use(InnerApi.CONSTANT); // ERROR 1A and 1B
+                             ~~~~~~~~
+        src/test/usage/JavaUsage.java:11: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
+                use(CONSTANT);          // ERROR 2A and 2B
+                    ~~~~~~~~
+        src/test/usage/JavaUsage.java:11: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
+                use(CONSTANT);          // ERROR 2A and 2B
+                    ~~~~~~~~
+        src/test/usage/JavaUsage.java:12: Error: METHOD_CALL usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
+                use(innerApi.method()); // ERROR 3A and 3B
+                    ~~~~~~~~~~~~~~~~~
+        src/test/usage/JavaUsage.java:12: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
+                use(innerApi.method()); // ERROR 3A and 3B
+                    ~~~~~~~~~~~~~~~~~
+        src/test/usage/JavaUsage.java:13: Error: METHOD_CALL usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
+                use(method());          // ERROR 4A and 4B
+                    ~~~~~~~~
+        src/test/usage/JavaUsage.java:13: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
+                use(method());          // ERROR 4A and 4B
+                    ~~~~~~~~
+        src/test/usage/KotlinUsage.kt:9: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
+            fun test(innerApi: InnerApi?) {
+                               ~~~~~~~~~
+        src/test/usage/KotlinUsage.kt:9: Error: CLASS_REFERENCE usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
+            fun test(innerApi: InnerApi?) {
+                               ~~~~~~~~~
+        src/test/usage/KotlinUsage.kt:10: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
+                use(InnerApi.CONSTANT)     // ERROR 5A and 5B
+                             ~~~~~~~~
+        src/test/usage/KotlinUsage.kt:10: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
+                use(InnerApi.CONSTANT)     // ERROR 5A and 5B
+                             ~~~~~~~~
+        src/test/usage/KotlinUsage.kt:11: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
+                use(CONSTANT)              // ERROR 6A and 6B
+                    ~~~~~~~~
+        src/test/usage/KotlinUsage.kt:11: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
+                use(CONSTANT)              // ERROR 6A and 6B
+                    ~~~~~~~~
+        src/test/usage/KotlinUsage.kt:12: Error: METHOD_CALL usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
+                use(InnerApi.method())     // ERROR 7A and 7B
+                    ~~~~~~~~~~~~~~~~~
+        src/test/usage/KotlinUsage.kt:12: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
+                use(InnerApi.method())     // ERROR 7A and 7B
+                    ~~~~~~~~~~~~~~~~~
+        src/test/usage/KotlinUsage.kt:13: Error: METHOD_CALL usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
+                use(method())              // ERROR 8A and 8B
+                    ~~~~~~~~
+        src/test/usage/KotlinUsage.kt:13: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
+                use(method())              // ERROR 8A and 8B
+                    ~~~~~~~~
+        20 errors, 0 warnings
             """
       )
   }
@@ -555,15 +585,24 @@ class AnnotationHandlerTest {
 
   @Test
   fun testTypeReferences() {
+    // Regression test for b/228961124 and b/286595849
     lint()
       .files(
+        java(
+          """
+                package test.api;
+                import pkg.java.MyJavaAnnotation;
+
+                public interface I { }
+          """
+        ),
         java(
             """
                 package test.api;
                 import pkg.java.MyJavaAnnotation;
 
                 @MyJavaAnnotation
-                public class Api { }
+                public class Api implements I { }
                 """
           )
           .indented(),
@@ -573,10 +612,12 @@ class AnnotationHandlerTest {
                 import test.api.Api;
 
                 public class JavaUsage {
-                    private void use(Api api) { }
+                    private void use(Api /*ERROR*/ api) { }
                     public void test(Object o) {
                         use((Api) o); // ERROR
+                        Api a = null; // ERROR
                     }
+                    Api field = null; // ERROR
                 }
                 """
           )
@@ -584,11 +625,22 @@ class AnnotationHandlerTest {
         kotlin(
             """
                 package test.usage
+                import test.api.I
                 import test.api.Api
 
-                private fun use(api: Api) {}
+                private fun get(): Api = Api() // ERROR
+
+                private fun use(api: Api /*ERROR*/) {}
                 fun test(o: Object) {
-                    use(o as Api)  // ERROR2
+                    use(o as Api)  // ERROR
+                    val a: Api // ERROR
+                    val b = Api() // ERROR
+                    val c: Api = get() // ERROR
+                    val b: I = get() // OK
+                }
+
+                class MyClass {
+                  val field: Api // ERROR
                 }
                 """
           )
@@ -598,13 +650,43 @@ class AnnotationHandlerTest {
       .run()
       .expect(
         """
-            src/test/usage/JavaUsage.java:7: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
-                    use((Api) o); // ERROR
-                         ~~~
-            src/test/usage/test.kt:6: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
-                use(o as Api)  // ERROR2
-                         ~~~
-            2 errors, 0 warnings
+        src/test/usage/JavaUsage.java:5: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            private void use(Api /*ERROR*/ api) { }
+                             ~~~
+        src/test/usage/JavaUsage.java:7: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+                use((Api) o); // ERROR
+                     ~~~
+        src/test/usage/JavaUsage.java:8: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+                Api a = null; // ERROR
+                ~~~
+        src/test/usage/JavaUsage.java:10: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            Api field = null; // ERROR
+            ~~~
+        src/test/usage/MyClass.kt:5: Error: METHOD_CALL usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+        private fun get(): Api = Api() // ERROR
+                                 ~~~~~
+        src/test/usage/MyClass.kt:7: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+        private fun use(api: Api /*ERROR*/) {}
+                             ~~~
+        src/test/usage/MyClass.kt:9: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            use(o as Api)  // ERROR
+                     ~~~
+        src/test/usage/MyClass.kt:10: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            val a: Api // ERROR
+                   ~~~
+        src/test/usage/MyClass.kt:11: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            val b = Api() // ERROR
+            ~~~~~~~~~~~~~~~~~~~~~~
+        src/test/usage/MyClass.kt:11: Error: METHOD_CALL usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            val b = Api() // ERROR
+                    ~~~~~
+        src/test/usage/MyClass.kt:12: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            val c: Api = get() // ERROR
+                   ~~~
+        src/test/usage/MyClass.kt:17: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+          val field: Api // ERROR
+                     ~~~
+        12 errors, 0 warnings
         """
       )
   }
@@ -939,11 +1021,15 @@ class AnnotationHandlerTest {
       .run()
       .expect(
         """
+            src/test/usage/Usage.java:5: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on PACKAGE [_AnnotationIssue]
+                public void test(Api api) {
+                                 ~~~
             src/test/usage/Usage.java:6: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on PACKAGE [_AnnotationIssue]
                     use(api.field);
                             ~~~~~
             libs/packageinfoclass.jar!/test/api/package-info.class: Error: Incident reported on package annotation [_AnnotationIssue]
-            2 errors, 0 warnings
+            libs/packageinfoclass.jar!/test/api/package-info.class: Error: Incident reported on package annotation [_AnnotationIssue]
+            4 errors, 0 warnings
             """
       )
   }
