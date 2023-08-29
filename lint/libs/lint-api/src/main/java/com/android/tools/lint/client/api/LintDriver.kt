@@ -2605,16 +2605,7 @@ class LintDriver(
       if (
         context is GradleContext && (scope is UElement || scope is PsiElement || scope is ASTNode)
       ) {
-        // This may return false if scope is of the wrong type or from the wrong file, so we fall
-        // through in this case.
-        if (driver.isSuppressedGradle(context, issue, scope)) {
-          return true
-        }
-        // UElement and PsiElement could be from Java/Kotlin, and so might be handled below.
-        // ASTNode can only be handled by GradleContext, so we return false early in this case.
-        if (scope is ASTNode) {
-          return false
-        }
+        return driver.isSuppressedGradle(context, issue, scope)
       }
 
       // XML DOM

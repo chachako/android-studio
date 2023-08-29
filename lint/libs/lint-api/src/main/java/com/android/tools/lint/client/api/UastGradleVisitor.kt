@@ -269,8 +269,7 @@ class UastGradleVisitor(override val javaContext: JavaContext) : GradleVisitor()
   }
 
   override fun getStartOffset(context: GradleContext, cookie: Any): Int {
-    if (cookie !is UElement) return -1
-    val start = javaContext.getLocation(cookie).start
+    val start = javaContext.getLocation(cookie as UElement).start
     return start?.offset ?: -1
   }
 }

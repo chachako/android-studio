@@ -19,9 +19,6 @@ package com.android.tools.lint.detector.api
 import com.android.tools.lint.checks.AbstractCheckTest
 import com.android.tools.lint.client.api.UElementHandler
 import com.android.tools.lint.detector.api.Context.Companion.isSuppressedWithComment
-import com.intellij.psi.PsiMethod
-import java.util.EnumSet
-import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.ULiteralExpression
 import org.jetbrains.uast.getValueIfStringLiteral
@@ -174,95 +171,6 @@ class ContextTest : AbstractCheckTest() {
       .issues(PSI_TEST_ISSUE)
       .run()
       .expectClean()
-  }
-
-  fun testSuppressKotlinViaGradleContext() {
-    // The ReportsUElementFromGradleContextDetector stores the call to foo() (a UElement) in a field
-    // and then reports a Gradle element, but passes the UElement as the scope (so that the user
-    // could suppress the warning by adding an annotation to the foo() call). It is unclear whether
-    // this is really a good idea, but there are detectors out there that already do this, so lint
-    // should at least not fail. This would previously cause a ClassCastException because the scope
-    // was assumed to be a Gradle element, and was unsafely cast.
-    // Regression test for b/296986527 and b/293517205
-
-    lint()
-      .files(
-        kotlin(
-            """
-                package test.pkg
-
-                class MyClass {
-                  fun foo() {
-                  }
-                  fun bar() {
-                    foo()
-                  }
-                }
-                """
-          )
-          .indented(),
-        gradle(
-            """
-          android {
-            defaultConfig {
-              applicationId "com.android.tools.test"
-            }
-          }
-          """
-          )
-          .indented(),
-      )
-      .issues(ReportsUElementFromGradleContextDetector.ISSUE)
-      .run()
-      .expect(
-        """
-          build.gradle:3: Warning: Bad [_UElementIssue]
-              applicationId "com.android.tools.test"
-                            ~~~~~~~~~~~~~~~~~~~~~~~~
-          0 errors, 1 warnings
-          """
-      )
-  }
-
-  class ReportsUElementFromGradleContextDetector : Detector(), SourceCodeScanner, GradleScanner {
-    // See testSuppressKotlinViaGradleContext.
-
-    var element: UElement? = null
-
-    override fun getApplicableMethodNames() = listOf("foo")
-
-    override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
-      element = node
-    }
-
-    override fun checkDslPropertyAssignment(
-      context: GradleContext,
-      property: String,
-      value: String,
-      parent: String,
-      parentParent: String?,
-      propertyCookie: Any,
-      valueCookie: Any,
-      statementCookie: Any
-    ) {
-      context.report(Incident(ISSUE, element!!, context.getLocation(valueCookie), "Bad"))
-    }
-
-    companion object {
-      val ISSUE =
-        Issue.create(
-          "_UElementIssue",
-          "Not applicable",
-          "Not applicable",
-          Category.MESSAGES,
-          5,
-          Severity.WARNING,
-          Implementation(
-            ReportsUElementFromGradleContextDetector::class.java,
-            EnumSet.of(Scope.JAVA_FILE, Scope.GRADLE_FILE)
-          ),
-        )
-    }
   }
 
   override fun getDetector(): Detector = NoLocationNodeDetector()
