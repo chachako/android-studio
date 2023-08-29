@@ -214,8 +214,7 @@ public class ApkPreInstaller {
         }
 
         for (Apk apk : fullApks.values()) {
-            try {
-                FileInputStream stream = new FileInputStream(new File(apk.path));
+            try (FileInputStream stream = new FileInputStream(new File(apk.path))) {
                 long size = Files.size(Paths.get(apk.path));
                 byte[] rawResponse =
                         adb.binder(
