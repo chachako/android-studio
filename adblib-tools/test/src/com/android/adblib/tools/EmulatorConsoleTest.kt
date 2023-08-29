@@ -26,7 +26,11 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.ExpectedException
+import org.junit.rules.TemporaryFolder
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -41,6 +45,14 @@ class EmulatorConsoleTest {
 
     private val scope = CoroutineScope(EmptyCoroutineContext)
     private val fakeEmulator = FakeEmulator()
+
+    @JvmField
+    @Rule
+    val exceptionRule: ExpectedException = ExpectedException.none()
+
+    @JvmField
+    @Rule
+    val folder = TemporaryFolder()
 
     @After
     fun tearDown() {
@@ -188,6 +200,24 @@ class EmulatorConsoleTest {
         fakeEmulator.outputQueue.put("OK\r\n")
 
         runBlockingWithTimeout { consoleAsync.await() }
+    }
+
+    @Test
+    fun openEmulatorConsoleThrows_whenAuthTokenFileIsNotFound() = runBlockingWithTimeout {
+        // Prepare
+        fakeEmulator.start()
+        fakeEmulator.outputQueue.put("Android Console: Authentication required\r\nOK\r\n")
+        exceptionRule.expect(EmulatorCommandException::class.java)
+        exceptionRule.expectMessage("Cannot read emulator console auth token")
+
+        // Act
+        FakeAdbSession().openEmulatorConsole(
+            localConsoleAddress(fakeEmulator.port),
+            folder.root.toPath().resolve("this_file_does_not_exist.txt")
+        )
+
+        // Assert
+        fail("Should not reach")
     }
 
     fun <T> runBlockingWithTimeout(block: suspend CoroutineScope.() -> T) =

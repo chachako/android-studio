@@ -27,6 +27,8 @@ import com.android.adblib.isOnline
 import com.android.adblib.property
 import com.android.adblib.serialNumber
 import com.android.adblib.syncSend
+import com.android.adblib.thisLogger
+import com.android.adblib.tools.EmulatorCommandException
 import com.android.adblib.tools.defaultAuthTokenPath
 import com.android.adblib.tools.localConsoleAddress
 import com.android.adblib.tools.openEmulatorConsole
@@ -84,6 +86,8 @@ internal class AdblibIDeviceWrapper(
     private val connectedDevice: ConnectedDevice,
     bridge: AndroidDebugBridge,
 ) : IDevice {
+
+    private val logger = thisLogger(connectedDevice.session)
 
     // TODO(b/294559068): Create our own implementation of PropertyFetcher before we can get rid of ddmlib
     private val propertyFetcher = PropertyFetcher(this)
@@ -335,17 +339,23 @@ internal class AdblibIDeviceWrapper(
         val emulatorMatchResult = RE_EMULATOR_SN.toRegex().matchEntire(serialNumber) ?: return null
         val port = emulatorMatchResult.groupValues[1]?.toIntOrNull() ?: return null
 
-        val emulatorConsole = connectedDevice.session.openEmulatorConsole(
-            localConsoleAddress(port),
-            defaultAuthTokenPath()
-        )
+        try {
+            connectedDevice.session.openEmulatorConsole(
+                localConsoleAddress(port),
+                defaultAuthTokenPath()
+            ).use {
+                val nameResult = kotlin.runCatching { it.avdName() }
+                val avdName = nameResult.getOrNull()
+                val pathResult = kotlin.runCatching { it.avdPath() }
+                val path = pathResult.getOrNull()
 
-        val nameResult = kotlin.runCatching { emulatorConsole.avdName() }
-        val avdName = nameResult.getOrNull()
-        val pathResult = kotlin.runCatching { emulatorConsole.avdPath() }
-        val path = pathResult.getOrNull()
-
-        return AvdData(avdName, path)
+                return AvdData(avdName, path)
+            }
+        } catch (e: EmulatorCommandException) {
+            logger.warn(e, "Couldn't open emulator console")
+            return null
+        }
+        return null
     }
 
     /** Returns the state of the device.  */

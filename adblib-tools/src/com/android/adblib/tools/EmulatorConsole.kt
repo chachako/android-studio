@@ -22,6 +22,7 @@ import com.android.adblib.testing.FakeAdbSession
 import com.android.adblib.toChannelReader
 import com.android.adblib.utils.ResizableBuffer
 import kotlinx.coroutines.runBlocking
+import java.io.IOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.nio.channels.AsynchronousCloseException
@@ -183,10 +184,15 @@ suspend fun AdbSession.openEmulatorConsole(
     authTokenPath: Path = defaultAuthTokenPath()
 ): EmulatorConsole =
     openEmulatorConsole(address) {
-        channelFactory.openFile(authTokenPath)
-            .toChannelReader()
-            .readLine()
-            ?.trim() ?: ""
+        try {
+            channelFactory.openFile(authTokenPath).use {
+                it.toChannelReader()
+                    .readLine()
+                    ?.trim() ?: ""
+            }
+        } catch (e: IOException) {
+            throw EmulatorCommandException("Cannot read emulator console auth token", e)
+        }
     }
 
 /**
@@ -232,4 +238,4 @@ fun main(args: Array<String>) {
     }
 }
 
-class EmulatorCommandException(error: String) : Exception(error)
+class EmulatorCommandException(error: String, cause: Throwable? = null) : Exception(error, cause)
