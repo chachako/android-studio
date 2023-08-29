@@ -2167,4 +2167,45 @@ class UastTest : TestCase() {
       )
     }
   }
+
+  fun testFindAnnotationOnObjectFunWithJvmStatic() {
+    // Regression test from b/296891200
+    val source =
+      kotlin(
+          """
+            object ObjectModule {
+              @JvmStatic
+              fun provideFoo(): String {
+                return "Foo"
+              }
+            }
+        """
+        )
+        .indented()
+
+    val jvmStatic = "kotlin.jvm.JvmStatic"
+
+    check(source) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitMethod(node: UMethod): Boolean {
+            if (node.isConstructor) return super.visitMethod(node)
+
+            assertTrue(node.hasAnnotation(jvmStatic))
+            // Not intuitive...
+            // TODO: https://youtrack.jetbrains.com/issue/KTIJ-26803
+            assertNull(node.findAnnotation(jvmStatic))
+            // Workaround
+            val findAnnotation =
+              node.findAnnotation(jvmStatic)?.javaPsi
+                ?: node.javaPsi.modifierList.findAnnotation(jvmStatic)
+            assertNotNull(findAnnotation)
+            assertEquals(jvmStatic, findAnnotation!!.qualifiedName)
+
+            return super.visitMethod(node)
+          }
+        }
+      )
+    }
+  }
 }
