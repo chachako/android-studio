@@ -99,7 +99,7 @@ class FakeAdbDeviceProvisionerPlugin(
 
   companion object {
     val DEFAULT_PROPERTIES =
-      DeviceProperties.build {
+      DeviceProperties.buildForTest {
         manufacturer = "Google"
         model = "Pixel 6"
         androidVersion = AndroidVersion(31)

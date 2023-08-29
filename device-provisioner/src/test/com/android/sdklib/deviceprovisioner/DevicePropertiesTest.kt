@@ -20,6 +20,7 @@ import com.android.sdklib.AndroidVersion
 import com.android.sdklib.devices.Abi
 import com.google.common.truth.Truth.assertThat
 import com.google.wireless.android.sdk.stats.DeviceInfo
+import org.junit.Assert.fail
 import org.junit.Test
 
 class DevicePropertiesTest {
@@ -82,11 +83,17 @@ class DevicePropertiesTest {
       }
   }
 
+  @Test
+  fun build() {
+    try {
+      DeviceProperties.build { icon = EmptyIcon.DEFAULT }
+      fail("Expected exception")
+    } catch (expected: Exception) {}
+  }
+
   private fun props(vararg pairs: Pair<String, String>) =
-    DeviceProperties.Builder()
-      .apply {
-        readCommonProperties(mapOf(*pairs))
-        icon = EmptyIcon.DEFAULT
-      }
-      .buildBase()
+    DeviceProperties.buildForTest {
+      readCommonProperties(mapOf(*pairs))
+      icon = EmptyIcon.DEFAULT
+    }
 }

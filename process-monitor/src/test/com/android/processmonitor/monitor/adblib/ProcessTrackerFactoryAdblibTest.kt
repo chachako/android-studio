@@ -33,37 +33,34 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 
-/**
- * Tests for [com.android.processmonitor.monitor.adblib.ProcessTrackerFactoryAdblib]
- */
+/** Tests for [com.android.processmonitor.monitor.adblib.ProcessTrackerFactoryAdblib] */
 class ProcessTrackerFactoryAdblibTest {
 
-    private val adbSession = AdbSession.create(AdbSessionHost())
-    private val logger = FakeAdbLoggerFactory().logger
+  private val adbSession = AdbSession.create(AdbSessionHost())
+  private val logger = FakeAdbLoggerFactory().logger
 
-    @Test
-    fun providesData(): Unit = runBlocking {
-        val device = DeviceState.Connected(deviceProperties(25, Abi.X86), mockDevice("device1"))
-        val factory = ProcessTrackerFactoryAdblib(adbSession, null, logger)
+  @Test
+  fun providesData(): Unit = runBlocking {
+    val device = DeviceState.Connected(deviceProperties(25, Abi.X86), mockDevice("device1"))
+    val factory = ProcessTrackerFactoryAdblib(adbSession, null, logger)
 
-        assertThat(factory.getDeviceSerialNumber(device)).isEqualTo("device1")
-        assertThat(factory.getDeviceApiLevel(device)).isEqualTo(25)
-        assertThat(factory.getDeviceAbi(device)).isEqualTo("x86")
-        assertThat(factory.createProcessTracker(device)).isInstanceOf(JdwpProcessTracker::class.java)
-    }
+    assertThat(factory.getDeviceSerialNumber(device)).isEqualTo("device1")
+    assertThat(factory.getDeviceApiLevel(device)).isEqualTo(25)
+    assertThat(factory.getDeviceAbi(device)).isEqualTo("x86")
+    assertThat(factory.createProcessTracker(device)).isInstanceOf(JdwpProcessTracker::class.java)
+  }
 }
 
 @Suppress("SameParameterValue")
 private fun deviceProperties(aplLevel: Int, abi: Abi) =
-    DeviceProperties.build {
-        androidVersion = AndroidVersion(aplLevel)
-        this.abi = abi
-        icon = EmptyIcon.DEFAULT
-    }
+  DeviceProperties.buildForTest {
+    androidVersion = AndroidVersion(aplLevel)
+    this.abi = abi
+    icon = EmptyIcon.DEFAULT
+  }
 
 @Suppress("SameParameterValue")
-private fun mockDevice(serialNumber: String): ConnectedDevice = mock<ConnectedDevice>().apply {
-    whenever(deviceInfoFlow).thenReturn(
-        MutableStateFlow(DeviceInfo(serialNumber, ONLINE))
-    )
-}
+private fun mockDevice(serialNumber: String): ConnectedDevice =
+  mock<ConnectedDevice>().apply {
+    whenever(deviceInfoFlow).thenReturn(MutableStateFlow(DeviceInfo(serialNumber, ONLINE)))
+  }

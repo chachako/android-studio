@@ -38,6 +38,7 @@ import com.android.sdklib.AndroidVersionUtil
 import com.android.sdklib.devices.Abi
 import com.android.tools.analytics.Anonymizer
 import com.android.tools.analytics.CommonMetricsData
+import com.google.common.annotations.VisibleForTesting
 import com.google.wireless.android.sdk.stats.DeviceInfo
 import java.time.Duration
 import java.util.concurrent.TimeoutException
@@ -136,6 +137,11 @@ interface DeviceProperties {
     /** Builds a basic DeviceProperties instance with no additional fields. */
     inline fun build(block: Builder.() -> Unit): DeviceProperties =
       Builder().apply(block).buildBase()
+
+    /** Builds a basic DeviceProperties instance for testing; some validation is skipped. */
+    @VisibleForTesting
+    inline fun buildForTest(block: Builder.() -> Unit): DeviceProperties =
+      Builder().apply(block).buildBaseForTest()
   }
 
   open class Builder {
@@ -220,7 +226,16 @@ interface DeviceProperties {
       deviceInfoProto.deviceProvisionerId = pluginId
     }
 
-    fun buildBase(): DeviceProperties =
+    fun buildBase(): DeviceProperties {
+      check(deviceInfoProto.deviceProvisionerId.isNotEmpty()) {
+        "populateDeviceInfoProto was not invoked"
+      }
+      return buildBaseWithoutChecks()
+    }
+
+    @VisibleForTesting fun buildBaseForTest() = buildBaseWithoutChecks()
+
+    private fun buildBaseWithoutChecks(): DeviceProperties =
       Impl(
         manufacturer = manufacturer,
         model = model,

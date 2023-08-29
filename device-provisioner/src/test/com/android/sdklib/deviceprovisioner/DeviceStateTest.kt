@@ -36,7 +36,7 @@ class DeviceStateTest {
   val connectedDevice = mock(ConnectedDevice::class.java)
 
   val properties =
-    DeviceProperties.build {
+    DeviceProperties.buildForTest {
       connectionType = ConnectionType.USB
       icon = EmptyIcon.DEFAULT
     }

@@ -146,7 +146,11 @@ class LocalEmulatorProvisionerPluginTest {
     val api29WithPlay = avdManager.makeAvdInfo(1, AndroidVersion(29), hasPlayStore = true)
     val api31NoPlay = avdManager.makeAvdInfo(2, AndroidVersion(29), hasPlayStore = false)
     val api30WithPlay = avdManager.makeAvdInfo(3, AndroidVersion(30), hasPlayStore = true)
-    fun build(info: AvdInfo) = LocalEmulatorProperties.build(info) { icon = EmptyIcon.DEFAULT }
+    fun build(info: AvdInfo) =
+      LocalEmulatorProperties.build(info) {
+        icon = EmptyIcon.DEFAULT
+        populateDeviceInfoProto("Test", null, emptyMap())
+      }
     assertThat(build(api29WithPlay).wearPairingId).isNull()
     assertThat(build(api31NoPlay).wearPairingId).isNull()
     assertThat(build(api30WithPlay).wearPairingId).isNotNull()
