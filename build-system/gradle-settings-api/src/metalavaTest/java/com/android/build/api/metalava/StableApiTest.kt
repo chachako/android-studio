@@ -28,10 +28,10 @@ import java.nio.file.Paths
 /**
  * Test that tries to ensure that our public API remains stable.
  */
+@Suppress("UnstableApiUsage")
 class StableApiTest {
     @Test
     fun checkCurrentApi() {
-        @Suppress("UnstableApiUsage")
         val expected: List<String> = Resources.asCharSource(EXPECTED_CURRENT_API_FILE, StandardCharsets.UTF_8).readLines()
         val actual = Files.readAllLines(ACTUAL_CURRENT_API_FILE, StandardCharsets.UTF_8)
         if (expected != actual) {
@@ -52,9 +52,33 @@ class StableApiTest {
         }
     }
 
+    @Test
+    fun checkApiLevels() {
+        val expected: List<String> = Resources.asCharSource(EXPECTED_API_LEVELS_FILE, StandardCharsets.UTF_8).readLines()
+        val actual = Files.readAllLines(ACTUAL_API_LEVELS_FILE, StandardCharsets.UTF_8)
+        if (expected != actual) {
+            throw AssertionError(
+                """
+                    The Android Gradle Plugin API does not match the expectation file.
+
+                    Either:
+                      * revert the api change
+                      * or apply the below changes by running the updateApi task:
+                            gradle :base:gradle-api:updateMetalavaApi
+
+                    To update all the API expectation files, run
+                        gradlew updateApi
+                    """.trimIndent() +
+                        TestUtils.getDiff(expected.toTypedArray(), actual.toTypedArray())
+            )
+        }
+    }
+
     companion object {
-        @Suppress("UnstableApiUsage")
         private val EXPECTED_CURRENT_API_FILE = Resources.getResource("current.txt")
         private val ACTUAL_CURRENT_API_FILE: Path = Paths.get(System.getProperty("metalavaCurrentApiFile")!!).resolve("current.txt")
+
+        private val EXPECTED_API_LEVELS_FILE = Resources.getResource("apiLevels.json")
+        private val ACTUAL_API_LEVELS_FILE: Path = Paths.get(System.getProperty("metalavaCurrentApiFile")!!).resolve("apiLevels.json")
     }
 }
