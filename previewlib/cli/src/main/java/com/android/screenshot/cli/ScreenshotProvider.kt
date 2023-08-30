@@ -17,12 +17,11 @@ package com.android.screenshot.cli
 
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.resources.configuration.FolderConfiguration
-import com.android.screenshot.cli.diff.ImageDiffer
-import com.android.screenshot.cli.diff.Verify
 import com.android.screenshot.cli.util.CODE_ERROR
 import com.android.screenshot.cli.util.CODE_SUCCESS
+import com.android.screenshot.cli.util.CODE_RENDER_ERROR
+import com.android.screenshot.cli.util.CODE_RUNTIME_ERROR
 import com.android.screenshot.cli.util.PreviewResult
-import com.android.screenshot.cli.util.toPreviewResponse
 import com.android.tools.idea.AndroidPsiUtils
 import com.android.tools.idea.compose.preview.ComposeAdapterLightVirtualFile
 import com.android.tools.configurations.Configuration
@@ -107,11 +106,8 @@ class ScreenshotProvider(
 
     fun verifyScreenshot(
         previewNodes: List<ComposePreviewElement>,
-        goldenLocation: String,
         outputLocation: String,
-        recordGoldens: Boolean,
         rootLintModule: LintModelModule,
-        imageDiffThreshold: Float
     ): List<PreviewResult> {
         val results = mutableListOf<PreviewResult>()
         val instances =
@@ -125,35 +121,23 @@ class ScreenshotProvider(
             val renderResult = renderPreviewElement(previewElement, model)
             val errorMessage = verifyRenderResult(renderResult!!)
             val fileName = previewElement.displaySettings.name
-            val goldenPath = "$goldenLocation$fileName.png"
-            if (recordGoldens && errorMessage == null) {
+            if (errorMessage != null) {
+                results.add(PreviewResult(CODE_RENDER_ERROR, previewElement.instanceId, errorMessage))
+            }
+            else {
+                val actualPath = outputLocation + fileName + "_actual.png"
                 try {
-                    renderResult.renderedImage.copy?.let { saveImage(it, goldenPath) }
-                    results.add(PreviewResult(CODE_SUCCESS, "Golden image saved", goldenPath))
-                } catch (e: Exception) {
-                    results.add(PreviewResult(CODE_ERROR, "Error saving golden image"))
-                }
-            } else if (errorMessage == null) {
-                var actualPath: String? = null
-                var diffPath: String? = null
-                val result = compareImages(
-                    renderResult,
-                    goldenLocation,
-                    outputLocation,
-                    "$fileName.png",
-                    imageDiffThreshold
-                )
-                if ( result is Verify.AnalysisResult.Failed || result is Verify.AnalysisResult.SizeMismatch || result is Verify.AnalysisResult.MissingGolden) {
-                    actualPath = outputLocation + fileName + "_actual.png"
                     renderResult.renderedImage.copy?.let { saveImage(it, actualPath) }
+                    results.add(PreviewResult(CODE_SUCCESS, previewElement.instanceId))
+                } catch (e: Exception) {
+                    results.add(
+                        PreviewResult(
+                            CODE_RUNTIME_ERROR,
+                            previewElement.instanceId,
+                            "Error saving image"
+                        )
+                    )
                 }
-                if (result is Verify.AnalysisResult.Failed) {
-                    diffPath = outputLocation + fileName + "_diff.png"
-                    saveImage(result.imageDiff.highlights, diffPath)
-                }
-                results.add(result.toPreviewResponse(goldenPath, actualPath, diffPath))
-            } else {
-                results.add(PreviewResult(CODE_ERROR, errorMessage, "$goldenLocation$fileName.png"))
             }
         }
         return results
@@ -224,12 +208,5 @@ class ScreenshotProvider(
             File(fileName)
         )
 
-    }
-
-    private fun compareImages(renderResult: RenderResult, goldenLocation: String, outputLocation: String, fileName: String, imageDiffThreshold: Float): Verify.AnalysisResult {
-        val imageDiffer = ImageDiffer.MSSIMMatcher
-        imageDiffer.imageDiffThreshold = imageDiffThreshold
-        val verifier = Verify(imageDiffer, outputLocation + fileName)
-        return verifier.assertMatchGolden(goldenLocation + fileName, renderResult.renderedImage.copy!!)
     }
 }

@@ -15,44 +15,12 @@
  */
 package com.android.screenshot.cli.util
 
-import com.android.screenshot.cli.util.CODE_ERROR
-import com.android.screenshot.cli.util.CODE_FAILURE
-import com.android.screenshot.cli.util.CODE_SUCCESS
-import com.android.screenshot.cli.diff.Verify
-
 data class PreviewResult(
     val responseCode: Int,
-    val message: String,
-    val goldenPath: String? = null,
-    val actualPath: String? = null,
-    val diffPath: String? = null
-) {
-}
+    val previewName: String,
+    val message: String? = null,
 
-fun Verify.AnalysisResult.toPreviewResponse(golden: String? = null,
-    diff: String? = null,
-    actual: String? = null): PreviewResult{
-    when (this) {
-        is Verify.AnalysisResult.Failed -> {
-            return PreviewResult(CODE_FAILURE, message, golden, actual, diff)
-        }
-
-        is Verify.AnalysisResult.Passed -> {
-            return PreviewResult(CODE_SUCCESS, message, golden, actual, diff)
-        }
-
-        is Verify.AnalysisResult.SizeMismatch -> {
-            return PreviewResult(CODE_FAILURE, message, golden, actual, diff)
-        }
-
-        is Verify.AnalysisResult.MissingGolden -> {
-            return PreviewResult(CODE_FAILURE, message, golden, actual, diff)
-        }
-
-        else -> {
-            return PreviewResult(CODE_ERROR, message, golden, actual, diff)
-        }
-    }
+    ) {
 }
 
 data class Response(val status: Int, val message: String, val previewResults: List<PreviewResult>?) {

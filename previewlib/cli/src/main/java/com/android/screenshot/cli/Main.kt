@@ -16,10 +16,11 @@
 package com.android.screenshot.cli
 
 import com.android.screenshot.cli.util.CODE_ERROR
-import com.android.screenshot.cli.util.CODE_FAILURE
 import com.android.screenshot.cli.util.CODE_NO_PREVIEWS
 import com.android.screenshot.cli.util.CODE_SUCCESS
 import com.android.screenshot.cli.util.CODE_INVALID_ARGUMENT
+import com.android.screenshot.cli.util.CODE_RENDER_ERROR
+import com.android.screenshot.cli.util.CODE_RUNTIME_ERROR
 import com.android.screenshot.cli.util.PreviewResult
 import com.android.screenshot.cli.util.Response
 import com.android.tools.idea.AndroidPsiUtils
@@ -130,16 +131,13 @@ class Main {
             val dependencies = Dependencies(projects[0], argumentState.rootModule, argumentState.additionalDeps)
             val screenshot = ScreenshotProvider(projects[0], sdkHomePath!!.absolutePath, dependencies)
             val results = screenshot.verifyScreenshot(findPreviewNodes(projects[0], argumentState.filePath),
-                                                      argumentState.goldenLocation,
                                                       argumentState.outputLocation!!,
-                                                      argumentState.recordGoldens,
-                                                      argumentState.rootModule,
-                                                      argumentState.imageDiffThreshold)
+                                                      argumentState.rootModule,)
             val response = processResults(results)
             saveResults(response, argumentState.outputLocation!!)
             exitProcess(response.status)
         } catch (e: Exception) {
-            val response = Response(2, e.message!!, null)
+            val response = Response(CODE_ERROR, e.message!!, null)
             argumentState.outputLocation?.let {
                 saveResults(response, it)
                 exitProcess(response.status)
@@ -163,11 +161,11 @@ class Main {
         if (results.isEmpty()) {
             return Response(CODE_NO_PREVIEWS, "Unable to find previews in file", null)
         }
-        if (!results.none { it.responseCode == CODE_ERROR }) {
+        if (!results.none { it.responseCode == CODE_RENDER_ERROR }) {
             return Response(CODE_ERROR, "Error rendering 1 or more previews", results)
         }
-        if (!results.none { it.responseCode == CODE_FAILURE }) {
-            return Response(CODE_FAILURE, "One or more previews failed to match reference", results)
+        if (!results.none { it.responseCode == CODE_RUNTIME_ERROR }) {
+            return Response(CODE_ERROR, "Error saving 1 or more images", results)
         }
         return Response(CODE_SUCCESS, "Test run successfully", results)
     }
