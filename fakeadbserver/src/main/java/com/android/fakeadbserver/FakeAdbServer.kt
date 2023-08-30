@@ -41,6 +41,8 @@ import com.android.fakeadbserver.hostcommandhandlers.MdnsCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.NetworkConnectCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.NetworkDisconnectCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.PairCommandHandler
+import com.android.fakeadbserver.devicecommandhandlers.RootCommandHandler
+import com.android.fakeadbserver.devicecommandhandlers.UnRootCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.TrackDevicesCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.VersionCommandHandler
 import com.android.fakeadbserver.shellcommandhandlers.ActivityManagerCommandHandler
@@ -62,6 +64,12 @@ import com.android.fakeadbserver.shellcommandhandlers.WriteNoStopCommandHandler
 import com.android.fakeadbserver.statechangehubs.DeviceStateChangeHub
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ThreadFactoryBuilder
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runInterruptible
 import java.io.IOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -79,6 +87,8 @@ import java.util.function.Supplier
 /** See `FakeAdbServerTest#testInteractiveServer()` for example usage.  */
 class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEATURES) :
     AutoCloseable {
+
+    val coroutineScope = SupervisorScope(Dispatchers.IO)
 
     private val mServerSocket: ServerSocketChannel
     private var mServerSocketLocalAddress: InetSocketAddress? = null
@@ -215,6 +225,7 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
 
     @Throws(Exception::class)
     override fun close() {
+        coroutineScope.cancel("${this::class.simpleName} has been closed")
         try {
             stop()!!.get()
         } catch (ignored: InterruptedException) { // Catch InterruptedException as specified by JavaDoc.
@@ -243,7 +254,8 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
         sdk: String,
         cpuAbi: String,
         properties: Map<String, String>,
-        hostConnectionType: HostConnectionType
+        hostConnectionType: HostConnectionType,
+        isRoot: Boolean = false
     ): Future<DeviceState> {
         val device = DeviceState(
             this,
@@ -255,7 +267,8 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
             cpuAbi,
             properties,
             hostConnectionType,
-            newTransportId()
+            newTransportId(),
+            isRoot
         )
         return connectDevice(device)
     }
@@ -308,7 +321,8 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
         deviceModel: String,
         release: String,
         sdk: String,
-        hostConnectionType: HostConnectionType
+        hostConnectionType: HostConnectionType,
+        isRoot: Boolean = false
     ) {
         val device = DeviceState(
             this,
@@ -320,7 +334,8 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
             "x86_64",
             emptyMap(),
             hostConnectionType,
-            newTransportId()
+            newTransportId(),
+            isRoot
         )
         mNetworkDevices[address] = device
     }
@@ -388,6 +403,48 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
             val removedDevice = mDevices.remove(deviceId)
             removedDevice?.stop()
             deviceChangeHub.deviceListChanged(mDevices.values)
+        }
+    }
+
+    /**
+     * Simulate `adbd` (Adb Daemon) restarting for a given [device] and returns
+     * the new [DeviceState] with a [DeviceStateConfig] modified by the mapping
+     * function [mapDeviceConfig]. The new device will have the same serial number
+     * but a new [DeviceState.transportId].
+     */
+    fun restartDeviceAsync(
+        device: DeviceState,
+        mapDeviceConfig: (DeviceStateConfig) -> DeviceStateConfig
+    ): Deferred<DeviceState> {
+        return coroutineScope.async {
+            val deviceConfig = device.config
+
+            // Disconnect device
+            runInterruptible {
+                disconnectDevice(device.deviceId).get()
+            }
+
+            // Simulate adbd restarting
+            delay(100)
+
+            // Modify the device config if needed
+            val newDeviceConfig = mapDeviceConfig(deviceConfig)
+
+            // Reconnect device with the new config and new transport ID (same serial
+            // number though)
+            runInterruptible {
+                connectDevice(
+                    deviceId = device.deviceId,
+                    manufacturer = newDeviceConfig.manufacturer,
+                    deviceModel = newDeviceConfig.model,
+                    release = newDeviceConfig.buildVersionRelease,
+                    sdk = newDeviceConfig.buildVersionSdk,
+                    cpuAbi = newDeviceConfig.cpuAbi,
+                    properties = newDeviceConfig.properties,
+                    hostConnectionType = newDeviceConfig.hostConnectionType,
+                    isRoot = newDeviceConfig.isRoot,
+                ).get()
+            }
         }
     }
 
@@ -527,6 +584,8 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
             addDeviceHandler(StatCommandHandler(ShellProtocolType.SHELL))
             addDeviceHandler(ServiceCommandHandler(ShellProtocolType.SHELL))
             addDeviceHandler(ServiceCommandHandler(ShellProtocolType.SHELL_V2))
+            addDeviceHandler(RootCommandHandler())
+            addDeviceHandler(UnRootCommandHandler())
             return this
         }
 

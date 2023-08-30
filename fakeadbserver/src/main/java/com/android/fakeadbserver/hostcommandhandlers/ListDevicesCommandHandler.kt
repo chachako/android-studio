@@ -83,7 +83,7 @@ class ListDevicesCommandHandler @JvmOverloads constructor(private val longFormat
                     }
                     builder.append(" ")
                     builder.append("transport_id:")
-                    builder.append("1")
+                    builder.append(deviceState.transportId)
                 }
                 builder.append("\n")
             }

@@ -39,7 +39,7 @@ class FakeAdbServerConfig {
 /**
  * The properties of a [DeviceState] that can be re-used across [FakeAdbServer] instances.
  */
-class DeviceStateConfig(
+data class DeviceStateConfig(
     val serialNumber: String,
     val files: ArrayList<DeviceFileState>,
     val logcatMessages: ArrayList<String>,
@@ -51,5 +51,6 @@ class DeviceStateConfig(
     val buildVersionSdk: String,
     val cpuAbi: String,
     val properties: Map<String, String>,
-    var deviceStatus: DeviceState.DeviceStatus,
+    val deviceStatus: DeviceState.DeviceStatus,
+    val isRoot: Boolean,
 )

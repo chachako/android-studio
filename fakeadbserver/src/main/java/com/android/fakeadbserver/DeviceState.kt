@@ -39,7 +39,8 @@ class DeviceState internal constructor(
     val cpuAbi: String,
     properties: Map<String, String>,
     val hostConnectionType: HostConnectionType,
-    val transportId: Int
+    val transportId: Int,
+    val isRoot: Boolean
 ) {
 
     val clientChangeHub = ClientStateChangeHub()
@@ -90,7 +91,8 @@ class DeviceState internal constructor(
         config.cpuAbi,
         config.properties,
         config.hostConnectionType,
-        transportId
+        transportId,
+        config.isRoot,
     ) {
         config.files.forEach(Consumer { fileState: DeviceFileState ->
             mFiles[fileState.path] =
@@ -316,7 +318,8 @@ class DeviceState internal constructor(
             buildVersionSdk,
             cpuAbi,
             properties,
-            mDeviceStatus
+            mDeviceStatus,
+            isRoot,
         )
 
     fun setActivityManager(newActivityManager: Service?) {
