@@ -91,10 +91,8 @@ class Main {
     private val ARG_LINT_MODEL = "--lint-model"
     private val ARG_CACHE_DIR = "--cache-dir"
     private val ARG_OUTPUT_LOCATION = "--output-location"
-    private val ARG_GOLDEN_LOCATION = "--golden-location"
     private val ARG_FILE_PATH = "--file-path"
     private val ARG_ROOT_LINT_MODEL = "--root-lint-model"
-    private val ARG_RECORD_GOLDENS = "--record-golden"
     private val ARG_ADDITIONAL_DEPS = "--additional-deps"
     private val ARG_LAYOUTLIB_DIR = "--layoutlib-dir"
     private val ARG_IMAGE_DIFF_THRESHOLD = "--image-diff-threshold"
@@ -172,12 +170,8 @@ class Main {
 
     private fun setupPaths(argumentState: Main.ArgumentState) {
         val output = File(argumentState.outputLocation!!)
-        val golden = File(argumentState.goldenLocation)
         if (!output.exists()) {
             output.mkdirs()
-        }
-        if (!golden.exists()) {
-            golden.mkdirs()
         }
 
     }
@@ -404,13 +398,6 @@ class Main {
                     throw InvalidArgumentException("Missing argument location")
                 }
                 argumentState.outputLocation = args[++index]
-            } else if (arg == ARG_GOLDEN_LOCATION) {
-                if (index == args.size - 1) {
-                    throw InvalidArgumentException("Missing argument location")
-                }
-                argumentState.goldenLocation = args[++index]
-            } else if (arg == ARG_RECORD_GOLDENS) {
-                argumentState.recordGoldens = true
             } else if (arg == ARG_FILE_PATH) {
                 if (index == args.size - 1) {
                     throw InvalidArgumentException("Missing input file path")
@@ -558,8 +545,6 @@ class Main {
 
         fun validate() {
             var errorMessage = ""
-            if (!this::goldenLocation.isInitialized)
-                errorMessage += "Missing Golden Directory;"
             if (!this::clientName.isInitialized)
                 errorMessage += "Missing Client Name;"
             if (!this::clientVersion.isInitialized)
@@ -568,17 +553,13 @@ class Main {
                 errorMessage += "Missing File Path;"
             if (!this::layoutlibDir.isInitialized)
                 errorMessage += "Missing Layoutlib directory;"
-            if (!recordGoldens && outputLocation == null)
-                errorMessage += "Missing output directory to save diff images;"
             if (errorMessage != "") {
                 throw InvalidArgumentException(errorMessage)
             }
         }
 
         var additionalDeps: List<String>? = null
-        var recordGoldens: Boolean = false
         var imageDiffThreshold: Float = 0f
-        lateinit var goldenLocation: String
         lateinit var rootModule: LintModelModule
         lateinit var clientVersion: String
         lateinit var clientName: String

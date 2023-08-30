@@ -41,6 +41,7 @@ import com.android.build.gradle.internal.tasks.JacocoTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceCleanTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceInstrumentationTestSetupTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceSetupTask
+import com.android.build.gradle.internal.tasks.PreviewScreenshotRenderTask
 import com.android.build.gradle.internal.tasks.PreviewScreenshotUpdateTask
 import com.android.build.gradle.internal.tasks.PreviewScreenshotValidationTask
 import com.android.build.gradle.internal.tasks.SigningConfigVersionsWriterTask
@@ -531,15 +532,23 @@ class AndroidTestTaskManager(
         //compileAppClassesJar jar needed for rendering; and lint does not include in its dependency lists. This will not be required in new cli tool
         additionalDependencyPaths.add("$compileAppClassesJar/classes.jar")
 
+        val previewScreenshotRenderTask = taskFactory.register(
+            PreviewScreenshotRenderTask.CreationAction(
+                creationConfig,
+                resultsDir,
+                creationConfig.services.layoutlibFromMaven.layoutlibDirectory,
+                lintModelDir,
+                lintCacheDir,
+                additionalDependencyPaths
+            )
+        )
+
+
         val previewScreenshotValidationTask = taskFactory.register(
                 PreviewScreenshotValidationTask.CreationAction(
                         creationConfig,
                         resultsDir,
                         goldenImagesDir,
-                         creationConfig.services.layoutlibFromMaven.layoutlibDirectory,
-                        lintModelDir,
-                        lintCacheDir,
-                        additionalDependencyPaths
                 ))
 
         val previewScreenshotUpdateTask = taskFactory.register(
@@ -547,13 +556,11 @@ class AndroidTestTaskManager(
                         creationConfig,
                         resultsDir,
                         goldenImagesDir,
-                        creationConfig.services.layoutlibFromMaven.layoutlibDirectory,
-                        lintModelDir,
-                        lintCacheDir,
-                        additionalDependencyPaths
                 ))
 
-        previewScreenshotValidationTask.dependsOn("lint")
-        previewScreenshotUpdateTask.dependsOn("lint")
+        previewScreenshotRenderTask.dependsOn("lint")
+        previewScreenshotValidationTask.dependsOn(previewScreenshotRenderTask)
+        previewScreenshotUpdateTask.dependsOn(previewScreenshotRenderTask)
+
     }
 }
