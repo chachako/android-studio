@@ -21,7 +21,7 @@ import java.net.Socket
 import java.util.UUID
 
 /** Simulates the behavior of the `pair` command  */
-class PairCommandHandler : HostCommandHandler() {
+class PairCommandHandler : SimpleHostCommandHandler("pair") {
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
@@ -57,8 +57,4 @@ class PairCommandHandler : HostCommandHandler() {
         return false
     }
 
-    companion object {
-
-        const val COMMAND = "pair"
-    }
 }

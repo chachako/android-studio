@@ -54,7 +54,7 @@ class FakeAdbRule : ExternalResource() {
   private val startingDevices: MutableMap<String, CountDownLatch> = mutableMapOf()
   private var consoleFactory: (String, String) -> EmulatorConsole =
         { name, path -> FakeEmulatorConsole(name, path) }
-  private val hostCommandHandlers: MutableMap<String, () -> HostCommandHandler> = mutableMapOf()
+  private val hostCommandHandlers: MutableList<HostCommandHandler> = mutableListOf()
   private val deviceCommandHandlers: MutableList<DeviceCommandHandler> = mutableListOf(
     object : DeviceCommandHandler("track-jdwp") {
       override fun accept(
@@ -74,8 +74,8 @@ class FakeAdbRule : ExternalResource() {
   /**
    * Adds a [HostCommandHandler]. Must be called before @Before tasks are run.
    */
-  fun withHostCommandHandler(command: String, handlerConstructor: () -> HostCommandHandler) = apply {
-    hostCommandHandlers[command] = handlerConstructor
+  fun withHostCommandHandler(handler: HostCommandHandler) = apply {
+    hostCommandHandlers.add(handler)
   }
 
   /**
@@ -163,7 +163,7 @@ class FakeAdbRule : ExternalResource() {
 
   override fun before() {
     val builder = FakeAdbServer.Builder().installDefaultCommandHandlers()
-    hostCommandHandlers.forEach { (command, constructor) -> builder.setHostCommandHandler(command, constructor) }
+    hostCommandHandlers.forEach { handler -> builder.addHostHandler(handler) }
     deviceCommandHandlers.forEach { builder.addDeviceHandler(it) }
     fakeAdbServer = builder.build()
     fakeAdbServer.start()

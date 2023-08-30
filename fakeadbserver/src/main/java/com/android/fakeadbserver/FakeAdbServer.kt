@@ -30,7 +30,6 @@ import com.android.fakeadbserver.hostcommandhandlers.ForwardCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.GetDevPathCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.GetSerialNoCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.GetStateCommandHandler
-import com.android.fakeadbserver.hostcommandhandlers.HostCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.HostFeaturesCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.KillCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.KillForwardAllCommandHandler
@@ -43,6 +42,7 @@ import com.android.fakeadbserver.hostcommandhandlers.NetworkDisconnectCommandHan
 import com.android.fakeadbserver.hostcommandhandlers.PairCommandHandler
 import com.android.fakeadbserver.devicecommandhandlers.RootCommandHandler
 import com.android.fakeadbserver.devicecommandhandlers.UnRootCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.HostCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.TrackDevicesCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.VersionCommandHandler
 import com.android.fakeadbserver.shellcommandhandlers.ActivityManagerCommandHandler
@@ -81,8 +81,6 @@ import java.util.concurrent.Future
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.function.Consumer
-import java.util.function.Supplier
 
 /** See `FakeAdbServerTest#testInteractiveServer()` for example usage.  */
 class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEATURES) :
@@ -98,8 +96,8 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
      * pre-allocated [CommandHandler] object, the constructor is passed in and a new object is
      * created as-needed.
      */
-    private val mHostCommandHandlers: MutableMap<String, Supplier<HostCommandHandler>> = HashMap()
-    val handlers: MutableList<DeviceCommandHandler> = ArrayList()
+    private val mHostCommandHandlers = mutableListOf<HostCommandHandler>()
+    val handlers = mutableListOf<DeviceCommandHandler>()
     private val mDevices: MutableMap<String, DeviceState> = HashMap()
 
     // Device ip address to DeviceState. Device may or may not currently be connected to adb.
@@ -454,15 +452,21 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
          */
         get() = mMainServerThreadExecutor.submit<List<DeviceState>> { ArrayList(mDevices.values) }
 
+    /**
+     * Returns the [HostCommandHandler] for [command] with the highest priority
+     */
     fun getHostCommandHandler(command: String): HostCommandHandler? {
-        val supplier = mHostCommandHandlers[command]
-        return supplier?.get()
+        return mHostCommandHandlers.filter { handler ->
+            handler.handles(command)
+        }.maxByOrNull {
+            it.priority
+        }
     }
 
     val currentConfig: FakeAdbServerConfig
         get() {
             val config = FakeAdbServerConfig()
-            config.hostHandlers.putAll(mHostCommandHandlers)
+            config.hostHandlers.addAll(mHostCommandHandlers)
             config.deviceHandlers.addAll(handlers)
             config.mdnsServices.addAll(mMdnsServices)
             mDevices.forEach { (serial: String?, device: DeviceState) ->
@@ -494,10 +498,8 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
          * @param command            The ADB protocol string of the command.
          * @param handlerConstructor The constructor for the handler.
          */
-        fun setHostCommandHandler(
-            command: String, handlerConstructor: Supplier<HostCommandHandler>
-        ): Builder {
-            mServer.mHostCommandHandlers[command] = handlerConstructor
+        fun addHostHandler(handler: HostCommandHandler): Builder {
+            mServer.mHostCommandHandlers.add(handler)
             return this
         }
 
@@ -515,43 +517,24 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
          * handler.
          */
         fun installDefaultCommandHandlers(): Builder {
-            setHostCommandHandler(KillCommandHandler.COMMAND) { KillCommandHandler() }
-            setHostCommandHandler(
-                ListDevicesCommandHandler.COMMAND
-            ) { ListDevicesCommandHandler() }
-            setHostCommandHandler(
-                ListDevicesCommandHandler.LONG_COMMAND
-            ) { ListDevicesCommandHandler(true) }
-            setHostCommandHandler(
-                TrackDevicesCommandHandler.COMMAND
-            ) { TrackDevicesCommandHandler() }
-            setHostCommandHandler(
-                TrackDevicesCommandHandler.LONG_COMMAND
-            ) { TrackDevicesCommandHandler(true) }
-            setHostCommandHandler(ForwardCommandHandler.COMMAND) { ForwardCommandHandler() }
-            setHostCommandHandler(KillForwardCommandHandler.COMMAND) { KillForwardCommandHandler() }
-            setHostCommandHandler(
-                KillForwardAllCommandHandler.COMMAND
-            ) { KillForwardAllCommandHandler() }
-            setHostCommandHandler(
-                ListForwardCommandHandler.COMMAND
-            ) { ListForwardCommandHandler() }
-            setHostCommandHandler(FeaturesCommandHandler.COMMAND) { FeaturesCommandHandler() }
-            setHostCommandHandler(
-                HostFeaturesCommandHandler.COMMAND
-            ) { HostFeaturesCommandHandler() }
-            setHostCommandHandler(VersionCommandHandler.COMMAND) { VersionCommandHandler() }
-            setHostCommandHandler(MdnsCommandHandler.COMMAND) { MdnsCommandHandler() }
-            setHostCommandHandler(PairCommandHandler.COMMAND) { PairCommandHandler() }
-            setHostCommandHandler(GetStateCommandHandler.COMMAND) { GetStateCommandHandler() }
-            setHostCommandHandler(GetSerialNoCommandHandler.COMMAND) { GetSerialNoCommandHandler() }
-            setHostCommandHandler(GetDevPathCommandHandler.COMMAND) { GetDevPathCommandHandler() }
-            setHostCommandHandler(
-                NetworkConnectCommandHandler.COMMAND
-            ) { NetworkConnectCommandHandler() }
-            setHostCommandHandler(
-                NetworkDisconnectCommandHandler.COMMAND
-            ) { NetworkDisconnectCommandHandler() }
+            addHostHandler(KillCommandHandler())
+            addHostHandler(ListDevicesCommandHandler())
+            addHostHandler(TrackDevicesCommandHandler())
+            addHostHandler(ForwardCommandHandler())
+            addHostHandler(KillForwardCommandHandler())
+            addHostHandler(KillForwardAllCommandHandler())
+            addHostHandler(ListForwardCommandHandler())
+            addHostHandler(FeaturesCommandHandler())
+            addHostHandler(HostFeaturesCommandHandler())
+            addHostHandler(VersionCommandHandler())
+            addHostHandler(MdnsCommandHandler())
+            addHostHandler(PairCommandHandler())
+            addHostHandler(GetStateCommandHandler())
+            addHostHandler(GetSerialNoCommandHandler())
+            addHostHandler(GetDevPathCommandHandler())
+            addHostHandler(NetworkConnectCommandHandler())
+            addHostHandler(NetworkDisconnectCommandHandler())
+
             addDeviceHandler(TrackJdwpCommandHandler())
             addDeviceHandler(TrackAppCommandHandler())
             addDeviceHandler(FakeSyncCommandHandler())
@@ -591,26 +574,22 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
 
         fun build(): FakeAdbServer {
             if (mConfig != null) {
-                mConfig!!.hostHandlers.forEach { (command: String, handlerConstructor: Supplier<HostCommandHandler>) ->
-                    setHostCommandHandler(
-                        command, handlerConstructor
-                    )
+                mConfig!!.hostHandlers.forEach { handler ->
+                    addHostHandler(handler)
                 }
-                mConfig!!.deviceHandlers.forEach(Consumer { handler: DeviceCommandHandler ->
-                    addDeviceHandler(
-                        handler
-                    )
-                })
-                mConfig!!.devices.forEach(Consumer { deviceConfig: DeviceStateConfig? ->
+                mConfig!!.deviceHandlers.forEach { handler ->
+                    addDeviceHandler(handler)
+                }
+                mConfig!!.devices.forEach { deviceConfig: DeviceStateConfig? ->
                     mServer.addDevice(
                         deviceConfig
                     )
-                })
-                mConfig!!.mdnsServices.forEach(Consumer { service: MdnsService ->
+                }
+                mConfig!!.mdnsServices.forEach { service: MdnsService ->
                     mServer.addMdnsService(
                         service
                     )
-                })
+                }
             }
             return mServer
         }

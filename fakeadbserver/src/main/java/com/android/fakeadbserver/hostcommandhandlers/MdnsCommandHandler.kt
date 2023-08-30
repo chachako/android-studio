@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutionException
 import java.util.function.Consumer
 
 /** host:mdns:check returns the status of mDNS support  */
-class MdnsCommandHandler : HostCommandHandler() {
+class MdnsCommandHandler : SimpleHostCommandHandler("mdns") {
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
@@ -72,8 +72,4 @@ class MdnsCommandHandler : HostCommandHandler() {
         return sb.toString()
     }
 
-    companion object {
-
-        const val COMMAND = "mdns"
-    }
 }

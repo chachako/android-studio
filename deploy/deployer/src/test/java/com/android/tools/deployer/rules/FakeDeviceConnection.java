@@ -67,14 +67,12 @@ public class FakeDeviceConnection implements TestRule {
     private void startFakeAdbServer() throws Exception {
         device = new FakeDeviceLibrary().build(deviceId);
         FakeAdbServer.Builder builder = new FakeAdbServer.Builder();
-        builder.setHostCommandHandler(
-                TrackDevicesCommandHandler.COMMAND, TrackDevicesCommandHandler::new);
+        builder.addHostHandler(new TrackDevicesCommandHandler());
 
         FakeDeviceHandler handler = new FakeDeviceHandler();
         builder.addDeviceHandler(handler);
-        builder.setHostCommandHandler(FeaturesCommandHandler.COMMAND, FeaturesCommandHandler::new);
-        builder.setHostCommandHandler(
-                HostFeaturesCommandHandler.COMMAND, HostFeaturesCommandHandler::new);
+        builder.addHostHandler(new FeaturesCommandHandler());
+        builder.addHostHandler(new HostFeaturesCommandHandler());
 
         server = builder.build();
         handler.connect(device, server);

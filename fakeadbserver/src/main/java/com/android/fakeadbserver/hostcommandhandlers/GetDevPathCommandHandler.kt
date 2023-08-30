@@ -22,7 +22,7 @@ import java.net.Socket
 /**
  * host-prefix:get-devpath return the last known state of the device
  */
-class GetDevPathCommandHandler : HostCommandHandler() {
+class GetDevPathCommandHandler : SimpleHostCommandHandler("get-devpath") {
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
@@ -35,8 +35,4 @@ class GetDevPathCommandHandler : HostCommandHandler() {
         return false
     }
 
-    companion object {
-
-        const val COMMAND = "get-devpath"
-    }
 }

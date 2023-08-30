@@ -22,7 +22,7 @@ import java.net.Socket
 /**
  * host-prefix:get-serialno return the last known state of the device
  */
-class GetSerialNoCommandHandler : HostCommandHandler() {
+class GetSerialNoCommandHandler : SimpleHostCommandHandler("get-serialno") {
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
@@ -38,8 +38,4 @@ class GetSerialNoCommandHandler : HostCommandHandler() {
         return false
     }
 
-    companion object {
-
-        const val COMMAND = "get-serialno"
-    }
 }

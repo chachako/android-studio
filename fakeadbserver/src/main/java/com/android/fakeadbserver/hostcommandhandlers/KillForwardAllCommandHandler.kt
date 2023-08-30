@@ -8,7 +8,7 @@ import java.net.Socket
  * host-prefix:killforward-all ADB command removes all port forwarding from this device. This
  * implementation only handles tcp sockets, and not Unix domain sockets.
  */
-class KillForwardAllCommandHandler : HostCommandHandler() {
+class KillForwardAllCommandHandler : SimpleHostCommandHandler("killforward-all") {
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
@@ -28,8 +28,4 @@ class KillForwardAllCommandHandler : HostCommandHandler() {
         return false
     }
 
-    companion object {
-
-        const val COMMAND = "killforward-all"
-    }
 }

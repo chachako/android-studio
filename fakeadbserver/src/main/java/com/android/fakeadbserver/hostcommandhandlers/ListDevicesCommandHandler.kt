@@ -18,7 +18,6 @@ package com.android.fakeadbserver.hostcommandhandlers
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import java.io.IOException
-import java.io.OutputStream
 import java.net.Socket
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.ExecutionException
@@ -27,21 +26,27 @@ import java.util.concurrent.ExecutionException
  * host:devices is a one-shot command to list devices and their states that are presently connected
  * to the server.
  */
-class ListDevicesCommandHandler @JvmOverloads constructor(private val longFormat: Boolean = false) :
-    HostCommandHandler() {
+class ListDevicesCommandHandler: HostCommandHandler() {
+
+    override fun handles(command: String): Boolean {
+        return command == COMMAND || command == LONG_COMMAND
+    }
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
         responseSocket: Socket,
         device: DeviceState?,
+        command: String,
         args: String
     ): Boolean {
-        val stream: OutputStream
-        stream = try {
+        val longFormat = command == LONG_COMMAND
+
+        val stream = try {
             responseSocket.getOutputStream()
         } catch (ignored: IOException) {
             return false
         }
+
         try {
             val deviceListString = formatDeviceList(
                 fakeAdbServer.deviceListCopy.get(),
@@ -63,6 +68,7 @@ class ListDevicesCommandHandler @JvmOverloads constructor(private val longFormat
 
         const val COMMAND = "devices"
         const val LONG_COMMAND = "devices-l"
+
         fun formatDeviceList(deviceList: List<DeviceState>, longFormat: Boolean): String {
             val builder = StringBuilder()
             for (deviceState in deviceList) {

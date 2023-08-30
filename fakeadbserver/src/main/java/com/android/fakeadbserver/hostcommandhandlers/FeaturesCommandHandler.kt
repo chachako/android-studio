@@ -20,7 +20,7 @@ import com.android.fakeadbserver.FakeAdbServer
 import java.net.Socket
 
 /** host:features returns list of features supported by both the device and the HOST.  */
-class FeaturesCommandHandler : HostCommandHandler() {
+class FeaturesCommandHandler : SimpleHostCommandHandler("features") {
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
@@ -29,7 +29,7 @@ class FeaturesCommandHandler : HostCommandHandler() {
         args: String
     ): Boolean {
         if (device == null) {
-            writeFailMissingDevice(responseSocket.getOutputStream(), COMMAND)
+            writeFailMissingDevice(responseSocket.getOutputStream(), command)
             return false
         }
         val out = responseSocket.getOutputStream()
@@ -43,8 +43,4 @@ class FeaturesCommandHandler : HostCommandHandler() {
         return false
     }
 
-    companion object {
-
-        const val COMMAND = "features"
-    }
 }

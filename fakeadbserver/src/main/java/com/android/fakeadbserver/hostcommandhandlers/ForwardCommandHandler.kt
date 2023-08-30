@@ -27,7 +27,7 @@ import java.net.Socket
  * host-prefix:forward ADB command adds a port forward to the connected device. This implementation
  * only handles tcp sockets, and not Unix domain sockets.
  */
-class ForwardCommandHandler : HostCommandHandler() {
+class ForwardCommandHandler : SimpleHostCommandHandler("forward") {
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
@@ -121,8 +121,4 @@ class ForwardCommandHandler : HostCommandHandler() {
         return false
     }
 
-    companion object {
-
-        const val COMMAND = "forward"
-    }
 }

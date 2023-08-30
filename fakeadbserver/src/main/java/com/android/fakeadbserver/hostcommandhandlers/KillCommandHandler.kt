@@ -22,7 +22,7 @@ import java.net.Socket
 /**
  * host:kill terminates the server when the command is received.
  */
-class KillCommandHandler : HostCommandHandler() {
+class KillCommandHandler : SimpleHostCommandHandler("kill") {
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
@@ -35,8 +35,4 @@ class KillCommandHandler : HostCommandHandler() {
         return false
     }
 
-    companion object {
-
-        const val COMMAND = "kill"
-    }
 }

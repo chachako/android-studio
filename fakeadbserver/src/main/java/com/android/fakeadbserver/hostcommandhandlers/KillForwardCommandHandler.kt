@@ -25,7 +25,7 @@ import java.net.Socket
  * host-prefix:killforward ADB command removes a port forward from the specified local port. This
  * implementation only handles tcp sockets, and not Unix domain sockets.
  */
-class KillForwardCommandHandler : HostCommandHandler() {
+class KillForwardCommandHandler : SimpleHostCommandHandler("killforward") {
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
@@ -76,8 +76,4 @@ class KillForwardCommandHandler : HostCommandHandler() {
         return false
     }
 
-    companion object {
-
-        const val COMMAND = "killforward"
-    }
 }

@@ -27,6 +27,15 @@ import java.net.Socket
 abstract class HostCommandHandler : CommandHandler() {
 
     /**
+     * Priority when calling [handles] on each registered [HostCommandHandler].
+     * Higher priority handlers are called first.
+     */
+    open val priority: Int
+        get() = 0
+
+    abstract fun handles(command: String): Boolean
+
+    /**
      * This is the main execution method of the command.
      *
      * @param fakeAdbServer  Fake ADB Server itself.
@@ -35,8 +44,38 @@ abstract class HostCommandHandler : CommandHandler() {
      * @param args           Arguments for the command.
      * @return a boolean, with true meaning keep the connection alive, false to close the connection
      */
-    abstract operator fun invoke(
+    abstract fun invoke(
         fakeAdbServer: FakeAdbServer,
-        responseSocket: Socket, device: DeviceState?, args: String
+        responseSocket: Socket,
+        device: DeviceState?,
+        command: String,
+        args: String
+    ): Boolean
+}
+
+/**
+ * A [HostCommandHandler] with a fixed [command].
+ */
+abstract class SimpleHostCommandHandler(protected val command: String) : HostCommandHandler() {
+
+    override fun handles(command: String): Boolean {
+        return command == this.command
+    }
+
+    override fun invoke(
+        fakeAdbServer: FakeAdbServer,
+        responseSocket: Socket,
+        device: DeviceState?,
+        command: String,
+        args: String
+    ): Boolean {
+        return invoke(fakeAdbServer, responseSocket, device, args)
+    }
+
+    abstract fun invoke(
+        fakeAdbServer: FakeAdbServer,
+        responseSocket: Socket,
+        device: DeviceState?,
+        args: String
     ): Boolean
 }

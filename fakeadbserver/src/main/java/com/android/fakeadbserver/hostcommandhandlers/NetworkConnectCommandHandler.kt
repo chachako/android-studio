@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutionException
  * "host:connect:<addr>" implementation: Simulates connecting to device over the network.
  * Devices should be registered with FakeAdbServerProvider.registerNetworkDevice(...)
  */
-class NetworkConnectCommandHandler : HostCommandHandler() {
+class NetworkConnectCommandHandler : SimpleHostCommandHandler("connect") {
   override fun invoke(
     fakeAdbServer: FakeAdbServer,
     responseSocket: Socket,
@@ -44,7 +44,4 @@ class NetworkConnectCommandHandler : HostCommandHandler() {
     return false
   }
 
-  companion object {
-    const val COMMAND = "connect"
-  }
 }

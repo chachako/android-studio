@@ -18,7 +18,6 @@ package com.android.fakeadbserver
 import com.android.fakeadbserver.DeviceState.HostConnectionType
 import com.android.fakeadbserver.devicecommandhandlers.DeviceCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.HostCommandHandler
-import java.util.function.Supplier
 
 /**
  * The properties of a [FakeAdbServer] instance, that can be re-used to create
@@ -27,7 +26,7 @@ import java.util.function.Supplier
  */
 class FakeAdbServerConfig {
 
-    val hostHandlers = HashMap<String, Supplier<HostCommandHandler>>()
+    val hostHandlers = ArrayList<HostCommandHandler>()
 
     val deviceHandlers = ArrayList<DeviceCommandHandler>()
 

@@ -20,7 +20,8 @@ import com.android.fakeadbserver.FakeAdbServer
 import java.net.Socket
 
 /** host:version returns the internal ADB server version.  */
-open class VersionCommandHandler : HostCommandHandler() {
+open class VersionCommandHandler : SimpleHostCommandHandler("version") {
+
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
@@ -37,7 +38,6 @@ open class VersionCommandHandler : HostCommandHandler() {
 
     companion object {
 
-        const val COMMAND = "version"
         const val ADB_INTERNAL_VERSION = 40
     }
 }

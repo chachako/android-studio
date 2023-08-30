@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets
 /**
  * Sends a list of all forward socket connections for all active devices
  */
-internal class ListForwardCommandHandler : HostCommandHandler() {
+internal class ListForwardCommandHandler : SimpleHostCommandHandler("list-forward") {
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
@@ -59,8 +59,4 @@ internal class ListForwardCommandHandler : HostCommandHandler() {
         return builder.toString()
     }
 
-    companion object {
-
-        const val COMMAND = "list-forward"
-    }
 }

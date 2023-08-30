@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutionException
  * If the device was registered with FakeAdbServerProvider.registerNetworkDevice(...) it will
  * become disconnected.
  */
-class NetworkDisconnectCommandHandler : HostCommandHandler() {
+class NetworkDisconnectCommandHandler : SimpleHostCommandHandler("disconnect") {
   override fun invoke(
     fakeAdbServer: FakeAdbServer,
     responseSocket: Socket,
@@ -44,7 +44,4 @@ class NetworkDisconnectCommandHandler : HostCommandHandler() {
     return false
   }
 
-  companion object {
-    const val COMMAND = "disconnect"
-  }
 }

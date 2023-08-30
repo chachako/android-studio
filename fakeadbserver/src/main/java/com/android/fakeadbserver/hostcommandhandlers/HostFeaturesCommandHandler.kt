@@ -20,7 +20,7 @@ import com.android.fakeadbserver.FakeAdbServer
 import java.net.Socket
 
 /** host:host-features returns list of features supported by the HOST.  */
-class HostFeaturesCommandHandler : HostCommandHandler() {
+class HostFeaturesCommandHandler : SimpleHostCommandHandler("host-features") {
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
@@ -35,8 +35,4 @@ class HostFeaturesCommandHandler : HostCommandHandler() {
         return false
     }
 
-    companion object {
-
-        const val COMMAND = "host-features"
-    }
 }

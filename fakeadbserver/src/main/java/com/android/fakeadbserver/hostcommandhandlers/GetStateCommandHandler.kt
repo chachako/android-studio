@@ -22,7 +22,7 @@ import java.net.Socket
 /**
  * host-prefix:get-state return the last known state of the device
  */
-class GetStateCommandHandler : HostCommandHandler() {
+class GetStateCommandHandler : SimpleHostCommandHandler("get-state") {
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
@@ -35,8 +35,4 @@ class GetStateCommandHandler : HostCommandHandler() {
         return false
     }
 
-    companion object {
-
-        const val COMMAND = "get-state"
-    }
 }

@@ -227,18 +227,20 @@ internal class ConnectionHandler(private val mServer: FakeAdbServer, socket: Soc
             mSmartSocket.sendOkay()
             return
         }
-        val handler = mServer.getHostCommandHandler(request.nextToken())
+
+        val hostCommand = request.nextToken()
+        val handler = mServer.getHostCommandHandler(hostCommand)
         if (handler == null) {
             val err = String.format(
                 Locale.US,
                 "Unimplemented host command received: '%s'",
-                request.currToken()
+                hostCommand
             )
             mSmartSocket.sendFailWithReason(err)
             return
         }
         mKeepRunning = handler.invoke(
-            mServer, mSmartSocket.socket, mTargetDevice, request.remaining()
+            mServer, mSmartSocket.socket, mTargetDevice, hostCommand, request.remaining()
         )
     }
 

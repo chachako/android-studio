@@ -30,12 +30,16 @@ import java.util.concurrent.ExecutionException
  * well as device state changes (such as coming online, going offline, etc...). Every time an event
  * occurs, the list of connected devices and their states are sent.
  */
-class TrackDevicesCommandHandler @JvmOverloads constructor(private val longFormat: Boolean = false) :
-    HostCommandHandler() {
+class TrackDevicesCommandHandler: HostCommandHandler() {
+
+    override fun handles(command: String): Boolean {
+        return command == COMMAND || command == LONG_COMMAND
+    }
 
     private fun sendDeviceList(
+        server: FakeAdbServer,
         responseSocket: Socket,
-        server: FakeAdbServer
+        longFormat: Boolean
     ): Callable<StateChangeHandlerFactory.HandlerResult> {
         return Callable {
             try {
@@ -60,9 +64,14 @@ class TrackDevicesCommandHandler @JvmOverloads constructor(private val longForma
     }
 
     override fun invoke(
-        fakeAdbServer: FakeAdbServer, responseSocket: Socket,
-        device: DeviceState?, args: String
+        fakeAdbServer: FakeAdbServer,
+        responseSocket: Socket,
+        device: DeviceState?,
+        command: String,
+        args: String
     ): Boolean {
+        val longFormat = (command == LONG_COMMAND)
+
         val queue = fakeAdbServer
             .deviceChangeHub
             .subscribe(
@@ -70,14 +79,14 @@ class TrackDevicesCommandHandler @JvmOverloads constructor(private val longForma
                     override fun createDeviceListChangedHandler(
                         deviceList: Collection<DeviceState?>
                     ): Callable<StateChangeHandlerFactory.HandlerResult> {
-                        return sendDeviceList(responseSocket, fakeAdbServer)
+                        return sendDeviceList(fakeAdbServer, responseSocket, longFormat)
                     }
 
                     override fun createDeviceStateChangedHandler(
                         device: DeviceState,
                         status: DeviceState.DeviceStatus
                     ): Callable<StateChangeHandlerFactory.HandlerResult> {
-                        return sendDeviceList(responseSocket, fakeAdbServer)
+                        return sendDeviceList(fakeAdbServer, responseSocket, longFormat)
                     }
                 })
             ?: return false // Server has shutdown before we are able to start listening to the queue.
@@ -85,7 +94,7 @@ class TrackDevicesCommandHandler @JvmOverloads constructor(private val longForma
             writeOkay(responseSocket.getOutputStream()) // Send ok first.
 
             // Then send over the full list of devices before going into monitoring mode.
-            sendDeviceList(responseSocket, fakeAdbServer).call()
+            sendDeviceList(fakeAdbServer, responseSocket, longFormat).call()
             while (true) {
                 try {
                     // Grab a command from the queue (take()), and execute the command (get(), as
