@@ -19,9 +19,10 @@ import com.android.SdkConstants
 import com.android.resources.ScreenSize
 import com.android.sdklib.IAndroidTarget
 import com.android.sdklib.devices.Device
+import com.android.tools.configurations.Configuration
+import com.android.tools.configurations.DefaultThemeProvider
 import com.android.tools.configurations.ThemeInfoProvider
 import com.android.tools.dom.ActivityAttributesSnapshot
-import com.android.tools.idea.configurations.getDefaultTheme
 import com.android.tools.idea.model.MergedManifestManager
 import com.android.tools.module.AndroidModuleInfo
 
@@ -46,14 +47,17 @@ class ScreenshotThemeInfoProvider(
             ?.takeIf { it.startsWith(SdkConstants.PREFIX_RESOURCE_REF) }
     }
 
-    override fun getDefaultTheme(
+    override fun getDeviceDefaultTheme(
         renderingTarget: IAndroidTarget?,
         screenSize: ScreenSize?,
         device: Device?
-    ): String = getDefaultTheme(
+    ): String = com.android.tools.idea.configurations.getDeviceDefaultTheme(
         moduleInfo,
         renderingTarget,
         screenSize,
         device
     )
+
+    override fun getDefaultTheme(configuration: Configuration): String =
+        DefaultThemeProvider.computeDefaultThemeForConfiguration(configuration)
 }
