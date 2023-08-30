@@ -57,8 +57,13 @@ class TestDataImpl (
         get() = _testedApksFinder ?: TestedApksFinder(
                 testedApksDir
                         ?.let { BuiltArtifactsLoaderImpl().load(testedApksDir) },
-                privacySandboxCompatSdkApks
-                        ?.let { BuiltArtifactsLoaderImpl().load(privacySandboxCompatSdkApks) },
+                privacySandboxCompatSdkApks?.let {
+                    if (privacySandboxCompatSdkApks.isPresent) {
+                        BuiltArtifactsLoaderImpl().load(privacySandboxCompatSdkApks.get())
+                    } else {
+                        null
+                    }
+                },
                 supportedAbis)
                 .also {
                     _testedApksFinder = it

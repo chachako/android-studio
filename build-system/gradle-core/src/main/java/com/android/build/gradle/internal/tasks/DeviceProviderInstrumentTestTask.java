@@ -86,7 +86,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -95,7 +94,6 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.inject.Inject;
 import org.gradle.api.GradleException;
 import org.gradle.api.InvalidUserDataException;
@@ -113,7 +111,6 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.Nested;
@@ -436,13 +433,13 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
             Execution execution)
             throws DeviceException, ExecutionException {
 
-        boolean devicesSupportPrivacySandbox =
-                deviceProvider.getDevices().stream()
-                        .allMatch(DeviceConnector::getSupportsPrivacySandbox);
-
         return deviceProvider.use(
                 () -> {
                     try {
+                        boolean devicesSupportPrivacySandbox =
+                                deviceProvider.getDevices().stream()
+                                        .allMatch(DeviceConnector::getSupportsPrivacySandbox);
+
                         return testRunner.runTests(
                                 projectPath,
                                 staticTestData.getFlavorName(),
