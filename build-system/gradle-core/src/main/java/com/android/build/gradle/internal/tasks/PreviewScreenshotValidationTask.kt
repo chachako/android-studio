@@ -20,8 +20,13 @@ import com.android.Version
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
+import com.android.build.gradle.internal.testing.screenshot.ImageDiffer
+import com.android.build.gradle.internal.testing.screenshot.Verify
+import com.android.build.gradle.internal.testing.screenshot.Response
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.core.ComponentType
+import com.google.gson.Gson
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.plugins.JavaBasePlugin
@@ -33,6 +38,7 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 import org.gradle.api.tasks.VerificationTask
+import javax.imageio.ImageIO
 
 /**
  * Runs screenshot tests of a variant.
@@ -58,6 +64,54 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
     abstract val imageOutputDir: DirectoryProperty
 
     override fun doTaskAction() {
+        var exitValue = 0
+        try {
+            val responseFile = imageOutputDir.get().file("response.json").asFile
+            val response = Gson().fromJson(responseFile.readText(), Response::class.java)
+            exitValue = response.status
+        } catch (e: Exception) {
+            throw GradleException("Unable to render screenshots.", e)
+        }
+        if (exitValue in listOf(1, 2)) {
+            throw GradleException("Screenshots could not be generated. See report for details.")
+        } else if (exitValue > 3) {
+            throw GradleException("Unknown error code $exitValue returned.")
+        }
+
+        var missingGoldens = 0
+        var verificationFailures = 0
+        for (screenshot in imageOutputDir.asFileTree.files) {
+            val imageDiffer = ImageDiffer.MSSIMMatcher()
+            // TODO(b/296430073) Support custom image difference threshold from DSL or task argument
+            val verifier =
+                Verify(imageDiffer, imageOutputDir.asFile.get().absolutePath + screenshot.name)
+            // Verify that golden image directory contains a file with the same name
+            val goldenImageForScreenshot =
+                goldenImageDir.files().files.filter { it.name == screenshot.name }.first()
+            if (goldenImageForScreenshot == null) {
+                missingGoldens++
+            } else {
+                val result =
+                    verifier.assertMatchGolden(
+                        goldenImageForScreenshot.absolutePath,
+                        ImageIO.read(screenshot)
+                    )
+                if (result !is Verify.AnalysisResult.Passed) {
+                    verificationFailures++
+                }
+            }
+        }
+        if (missingGoldens > 0 || verificationFailures > 0) {
+            var message = "Failed to validate screenshots."
+            if (missingGoldens > 0) {
+                message += " There were $missingGoldens golden images missing."
+            }
+            if (verificationFailures > 0) {
+              message += " $verificationFailures screenshots failed to match their golden images."
+            }
+            message += " See test report for details."
+            throw GradleException(message)
+        }
     }
 
     class CreationAction(
