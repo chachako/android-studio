@@ -40,6 +40,9 @@ test --jvmopt='--add-opens=java.base/java.lang.ref=ALL-UNNAMED'
 test --jvmopt='--add-opens=java.base/sun.nio.fs=ALL-UNNAMED'
 test --jvmopt='--add-opens=jdk.jdi/com.sun.tools.jdi=ALL-UNNAMED'
 
+# TODO(b/270757509) remove after tests switched to flags from product-info.json (//tools/adt/idea/studio:default_user_jvm_args)
+test --jvmopt='-XX:CompileCommand=quiet -XX:CompileCommand=exclude,com/intellij/openapi/vfs/impl/FilePartNodeRoot,trieDescend'
+
 build --jvmopt='--add-exports java.base/jdk.internal.vm=ALL-UNNAMED'
 build --jvmopt='--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED'
 build --jvmopt='--add-exports=java.desktop/sun.java2d=ALL-UNNAMED'
