@@ -49,6 +49,7 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.exists
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -135,8 +136,13 @@ class LocalEmulatorProvisionerPlugin(
       // Remove any current DeviceHandles that are no longer present on disk, unless they are
       // connected. (If a client holds on to the disconnected device handle, and it gets
       // recreated with the same path, the client will get a new device handle, which is fine.)
-      deviceHandles.entries.removeIf { (path, handle) ->
-        !avdsOnDisk.containsKey(path) && handle.state is Disconnected
+      val iterator = deviceHandles.entries.iterator()
+      while (iterator.hasNext()) {
+        val (path, handle) = iterator.next()
+        if (!avdsOnDisk.containsKey(path) && handle.state is Disconnected) {
+          iterator.remove()
+          handle.scope.cancel()
+        }
       }
 
       for ((path, avdInfo) in avdsOnDisk) {

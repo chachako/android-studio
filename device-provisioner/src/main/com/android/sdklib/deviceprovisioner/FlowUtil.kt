@@ -26,9 +26,13 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 sealed interface SetChange<T> {
-  class Add<T>(val value: T) : SetChange<T>
+  class Add<T>(val value: T) : SetChange<T> {
+    override fun toString() = "Add($value)"
+  }
 
-  class Remove<T>(val value: T) : SetChange<T>
+  class Remove<T>(val value: T) : SetChange<T> {
+    override fun toString() = "Remove($value)"
+  }
 }
 
 /**

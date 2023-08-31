@@ -22,6 +22,7 @@ import com.android.adblib.utils.createChildScope
 import com.android.sdklib.deviceprovisioner.DeviceState.Connected
 import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -65,6 +66,7 @@ class DefaultProvisionerPlugin(val scope: CoroutineScope, private val defaultIco
       device.awaitDisconnection()
       handle.stateFlow.value = Disconnected(deviceProperties)
       _devices.update { it - handle }
+      handle.scope.cancel()
     }
 
     return handle

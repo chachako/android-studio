@@ -154,19 +154,6 @@ private constructor(
           }
         }
     }
-
-    // Cancel the scope of any DeviceHandle that is removed. Plugins should never republish the
-    // same DeviceHandle instance after it is removed.
-    scope.launch {
-      devices
-        .map { it.toSet() }
-        .trackSetChanges()
-        .collect {
-          if (it is SetChange.Remove) {
-            it.value.scope.cancel()
-          }
-        }
-    }
   }
 
   /**

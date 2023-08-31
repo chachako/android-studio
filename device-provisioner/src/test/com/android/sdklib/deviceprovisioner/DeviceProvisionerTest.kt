@@ -25,6 +25,7 @@ import com.android.adblib.deviceInfo
 import com.android.adblib.serialNumber
 import com.android.adblib.testing.FakeAdbSession
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
+import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.android.sdklib.deviceprovisioner.DeviceState.Connected
 import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import com.google.common.truth.Truth.assertThat
@@ -261,13 +262,15 @@ class DeviceProvisionerTest {
 
       setDevices()
 
+      // Check this first, since changes to it don't result in a new message on `channel`
+      yieldUntil { originalHandle.scope.coroutineContext.job.isCancelled }
+
       // We get two messages on the channel, one for the device becoming disconnected, and one
       // for the device list changing. We don't know what order they will occur in, but it
       // doesn't matter; just check the state after the second.
       channel.receiveUntilPassing { handles ->
         assertThat(handles).isEmpty()
         assertThat(originalHandle.state).isInstanceOf(Disconnected::class.java)
-        assertThat(originalHandle.scope.coroutineContext.job.isCancelled).isTrue()
       }
 
       setDevices(SerialNumbers.emulator)
