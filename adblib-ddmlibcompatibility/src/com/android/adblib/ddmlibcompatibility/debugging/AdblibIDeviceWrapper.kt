@@ -1290,7 +1290,9 @@ internal class AdblibIDeviceWrapper(
         maxTimeUnits: TimeUnit,
         inputStream: InputStream?
     ) {
-        runBlockingLegacy {
+        val maxTimeoutDuration =
+            if (maxTimeout > 0) Duration.ofMillis(maxTimeUnits.toMillis(maxTimeout)) else INFINITE_DURATION
+        runBlockingLegacy (timeout = maxTimeoutDuration) {
             if (adbService != AdbHelper.AdbService.ABB_EXEC) {
                 executeShellCommand(
                     connectedDevice,
@@ -1304,7 +1306,6 @@ internal class AdblibIDeviceWrapper(
             } else {
                 val adbInputChannel = if (inputStream != null) connectedDevice.session.channelFactory.wrapInputStream(inputStream) else null
                 val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
-                val timeout = if (maxTimeout > 0) Duration.ofMillis(maxTimeUnits.toMillis(maxTimeout)) else INFINITE_DURATION
                 val abbExecFlow = connectedDevice.session.deviceServices.abb_exec(
                     deviceSelector,
                     command.split(" "),
@@ -1312,7 +1313,12 @@ internal class AdblibIDeviceWrapper(
                         receiver
                     ),
                     adbInputChannel,
-                    timeout
+                    maxTimeoutDuration,
+                    // TODO(b/298475728): Revisit this when we are closer to having a working implementation of `IDevice`
+                    // If `shutdownOutput` is true then we get a "java.lang.SecurityException: Files still open" exception
+                    // when executing a "package install-commit" command after the "package install-write" command
+                    // since the package manager doesn't handle shutdown correctly.
+                    shutdownOutput = false
                 )
                 abbExecFlow.first()
             }
