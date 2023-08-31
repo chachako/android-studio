@@ -58,7 +58,9 @@ class DependenciesResolverTest {
 
         val dependencies = ProjectDependenciesDAG.create(runBlocking {
             DependenciesResolver(issueLogger).readAllProjectsDependencies(
-                temporaryFolderRule.root,
+                { relativePath, fileName ->
+                    File(File(temporaryFolderRule.root, relativePath.substring(1)), fileName).readText()
+                },
                 parsedDcl
 
             )

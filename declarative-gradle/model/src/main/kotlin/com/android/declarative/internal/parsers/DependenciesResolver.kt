@@ -37,7 +37,7 @@ class DependenciesResolver(
      * @return a [Map] indexed by Gradle's project path and the associated [ResolvedModuleInfo]
      */
     suspend fun readAllProjectsDependencies(
-        rootDir: File,
+        fileReader: (relativePath: String, fileName: String) -> String?,
         parsedDecl: TomlParseResult
     ): Map<String, ResolvedModuleInfo> {
         val mapOfDependencies = mutableMapOf<String, ResolvedModuleInfo>()
@@ -45,7 +45,7 @@ class DependenciesResolver(
             coroutineScope {
                 parsedDecl.forEach("includes") { projectPath ->
                     launch {
-                        readProjectDependencies(rootDir, projectPath)?.let {
+                        readProjectDependencies(fileReader, projectPath)?.let {
                             synchronized(mapOfDependencies) {
                                 mapOfDependencies[projectPath] = it
                             }
@@ -62,14 +62,16 @@ class DependenciesResolver(
      * Read a project's `build.gradle.toml` file and produced a [ResolvedModuleInfo] if parsing
      * is successful.
      */
-    private suspend fun readProjectDependencies(rootDir: File, projectPath: String): ResolvedModuleInfo? =
+    private suspend fun readProjectDependencies(
+        fileReader: (relativePath: String, fileName: String) -> String?,
+        projectPath: String
+    ): ResolvedModuleInfo? =
         withContext(Dispatchers.IO) {
-            File(File(rootDir, projectPath.substring(1)), "build.gradle.toml").let { buildFile ->
-                if (buildFile.exists()) {
-                    val tomlParseResult = DeclarativeFileParser(logger).parseDeclarativeFile(buildFile.toPath())
-                    return@withContext ModuleInfoResolver().parse(tomlParseResult, projectPath, logger)
-                }
+            return@withContext fileReader(projectPath, "build.gradle.toml")?.let {
+                val tomlParseResult = DeclarativeFileParser(logger).parseDeclarativeFile(
+                    "$projectPath${File.separatorChar}build.gradle.toml",
+                    it)
+                 ModuleInfoResolver().parse(tomlParseResult, projectPath, logger)
             }
-            return@withContext null
         }
 }

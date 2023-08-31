@@ -26,15 +26,35 @@ import kotlin.io.path.pathString
  * [TomlParseResult] instance.
  */
 class DeclarativeFileParser(
-    val issueLogger: IssueLogger? = null
+    val issueLogger: IssueLogger? = null,
 ) {
-     fun  parseDeclarativeFile(buildFile: Path): TomlParseResult {
-        val result: TomlParseResult = Toml.parse(buildFile)
+    fun  parseDeclarativeFile(buildFile: Path): TomlParseResult =
+        _parseDeclarativeFile(
+            buildFile.pathString,
+        ) {
+            Toml.parse(buildFile)
+        }
+
+    fun parseDeclarativeFile(
+        buildFileLocation: String,
+        buildFileContent: String): TomlParseResult =
+        _parseDeclarativeFile(
+            buildFileLocation,
+        ) {
+            Toml.parse(buildFileContent)
+        }
+
+
+    private fun _parseDeclarativeFile(
+         location: String,
+         parser: () -> TomlParseResult
+    ): TomlParseResult {
+        val result =  parser()
         issueLogger?.run {
             result.errors().forEach { error ->
                 raiseError(
                     """
-                    Error parsing ${buildFile.pathString}
+                    Error parsing $location
                     ${error.position().line()}:${error.position().column()} ${error.message}
                     """.trimIndent()
                 )
