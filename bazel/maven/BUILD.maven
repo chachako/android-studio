@@ -9931,13 +9931,13 @@ maven_import(
 )
 
 maven_artifact(
-    name = "org.ow2.asm.asm-analysis_9.2",
-    pom = "repository/org/ow2/asm/asm-analysis/9.2/asm-analysis-9.2.pom",
+    name = "org.ow2.asm.asm-analysis_9.3",
+    pom = "repository/org/ow2/asm/asm-analysis/9.3/asm-analysis-9.3.pom",
     repo_root_path = "repository",
-    repo_path = "org/ow2/asm/asm-analysis/9.2",
+    repo_path = "org/ow2/asm/asm-analysis/9.3",
     parent = "org.ow2.ow2_1.5",
     deps = [
-        "org.ow2.asm.asm-tree_9.2",
+        "org.ow2.asm.asm-tree_9.3",
     ],
     visibility = ["//visibility:public"],
 )
@@ -9947,30 +9947,30 @@ maven_import(
     classifiers = [],
     parent = "org.ow2.ow2_1.5",
     jars = [
-        "repository/org/ow2/asm/asm-analysis/9.2/asm-analysis-9.2.jar"
+        "repository/org/ow2/asm/asm-analysis/9.3/asm-analysis-9.3.jar"
     ],
     exports = [
         "org.ow2.asm.asm-tree",
     ],
     original_deps = [
-        "org.ow2.asm.asm-tree_9.2",
+        "org.ow2.asm.asm-tree_9.3",
     ],
-    pom = "repository/org/ow2/asm/asm-analysis/9.2/asm-analysis-9.2.pom",
+    pom = "repository/org/ow2/asm/asm-analysis/9.3/asm-analysis-9.3.pom",
     repo_root_path = "repository",
-    repo_path = "org/ow2/asm/asm-analysis/9.2",
+    repo_path = "org/ow2/asm/asm-analysis/9.3",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.ow2.asm.asm-commons_9.2",
-    pom = "repository/org/ow2/asm/asm-commons/9.2/asm-commons-9.2.pom",
+    name = "org.ow2.asm.asm-commons_9.3",
+    pom = "repository/org/ow2/asm/asm-commons/9.3/asm-commons-9.3.pom",
     repo_root_path = "repository",
-    repo_path = "org/ow2/asm/asm-commons/9.2",
+    repo_path = "org/ow2/asm/asm-commons/9.3",
     parent = "org.ow2.ow2_1.5",
     deps = [
-        "org.ow2.asm.asm_9.2",
-        "org.ow2.asm.asm-tree_9.2",
-        "org.ow2.asm.asm-analysis_9.2",
+        "org.ow2.asm.asm_9.3",
+        "org.ow2.asm.asm-tree_9.3",
+        "org.ow2.asm.asm-analysis_9.3",
     ],
     visibility = ["//visibility:public"],
 )
@@ -9980,7 +9980,7 @@ maven_import(
     classifiers = [],
     parent = "org.ow2.ow2_1.5",
     jars = [
-        "repository/org/ow2/asm/asm-commons/9.2/asm-commons-9.2.jar"
+        "repository/org/ow2/asm/asm-commons/9.3/asm-commons-9.3.jar"
     ],
     exports = [
         "org.ow2.asm.asm",
@@ -9988,24 +9988,24 @@ maven_import(
         "org.ow2.asm.asm-analysis",
     ],
     original_deps = [
-        "org.ow2.asm.asm_9.2",
-        "org.ow2.asm.asm-tree_9.2",
-        "org.ow2.asm.asm-analysis_9.2",
+        "org.ow2.asm.asm_9.3",
+        "org.ow2.asm.asm-tree_9.3",
+        "org.ow2.asm.asm-analysis_9.3",
     ],
-    pom = "repository/org/ow2/asm/asm-commons/9.2/asm-commons-9.2.pom",
+    pom = "repository/org/ow2/asm/asm-commons/9.3/asm-commons-9.3.pom",
     repo_root_path = "repository",
-    repo_path = "org/ow2/asm/asm-commons/9.2",
+    repo_path = "org/ow2/asm/asm-commons/9.3",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.ow2.asm.asm-tree_9.2",
-    pom = "repository/org/ow2/asm/asm-tree/9.2/asm-tree-9.2.pom",
+    name = "org.ow2.asm.asm-tree_9.3",
+    pom = "repository/org/ow2/asm/asm-tree/9.3/asm-tree-9.3.pom",
     repo_root_path = "repository",
-    repo_path = "org/ow2/asm/asm-tree/9.2",
+    repo_path = "org/ow2/asm/asm-tree/9.3",
     parent = "org.ow2.ow2_1.5",
     deps = [
-        "org.ow2.asm.asm_9.2",
+        "org.ow2.asm.asm_9.3",
     ],
     visibility = ["//visibility:public"],
 )
@@ -10015,30 +10015,30 @@ maven_import(
     classifiers = [],
     parent = "org.ow2.ow2_1.5",
     jars = [
-        "repository/org/ow2/asm/asm-tree/9.2/asm-tree-9.2.jar"
+        "repository/org/ow2/asm/asm-tree/9.3/asm-tree-9.3.jar"
     ],
     exports = [
         "org.ow2.asm.asm",
     ],
     original_deps = [
-        "org.ow2.asm.asm_9.2",
+        "org.ow2.asm.asm_9.3",
     ],
-    pom = "repository/org/ow2/asm/asm-tree/9.2/asm-tree-9.2.pom",
+    pom = "repository/org/ow2/asm/asm-tree/9.3/asm-tree-9.3.pom",
     repo_root_path = "repository",
-    repo_path = "org/ow2/asm/asm-tree/9.2",
+    repo_path = "org/ow2/asm/asm-tree/9.3",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.ow2.asm.asm-util_9.2",
-    pom = "repository/org/ow2/asm/asm-util/9.2/asm-util-9.2.pom",
+    name = "org.ow2.asm.asm-util_9.3",
+    pom = "repository/org/ow2/asm/asm-util/9.3/asm-util-9.3.pom",
     repo_root_path = "repository",
-    repo_path = "org/ow2/asm/asm-util/9.2",
+    repo_path = "org/ow2/asm/asm-util/9.3",
     parent = "org.ow2.ow2_1.5",
     deps = [
-        "org.ow2.asm.asm_9.2",
-        "org.ow2.asm.asm-tree_9.2",
-        "org.ow2.asm.asm-analysis_9.2",
+        "org.ow2.asm.asm_9.3",
+        "org.ow2.asm.asm-tree_9.3",
+        "org.ow2.asm.asm-analysis_9.3",
     ],
     visibility = ["//visibility:public"],
 )
@@ -10048,7 +10048,7 @@ maven_import(
     classifiers = [],
     parent = "org.ow2.ow2_1.5",
     jars = [
-        "repository/org/ow2/asm/asm-util/9.2/asm-util-9.2.jar"
+        "repository/org/ow2/asm/asm-util/9.3/asm-util-9.3.jar"
     ],
     exports = [
         "org.ow2.asm.asm",
@@ -10056,21 +10056,21 @@ maven_import(
         "org.ow2.asm.asm-analysis",
     ],
     original_deps = [
-        "org.ow2.asm.asm_9.2",
-        "org.ow2.asm.asm-tree_9.2",
-        "org.ow2.asm.asm-analysis_9.2",
+        "org.ow2.asm.asm_9.3",
+        "org.ow2.asm.asm-tree_9.3",
+        "org.ow2.asm.asm-analysis_9.3",
     ],
-    pom = "repository/org/ow2/asm/asm-util/9.2/asm-util-9.2.pom",
+    pom = "repository/org/ow2/asm/asm-util/9.3/asm-util-9.3.pom",
     repo_root_path = "repository",
-    repo_path = "org/ow2/asm/asm-util/9.2",
+    repo_path = "org/ow2/asm/asm-util/9.3",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.ow2.asm.asm_9.2",
-    pom = "repository/org/ow2/asm/asm/9.2/asm-9.2.pom",
+    name = "org.ow2.asm.asm_9.3",
+    pom = "repository/org/ow2/asm/asm/9.3/asm-9.3.pom",
     repo_root_path = "repository",
-    repo_path = "org/ow2/asm/asm/9.2",
+    repo_path = "org/ow2/asm/asm/9.3",
     parent = "org.ow2.ow2_1.5",
     visibility = ["//visibility:public"],
 )
@@ -10080,12 +10080,12 @@ maven_import(
     classifiers = [],
     parent = "org.ow2.ow2_1.5",
     jars = [
-        "repository/org/ow2/asm/asm/9.2/asm-9.2.jar"
+        "repository/org/ow2/asm/asm/9.3/asm-9.3.jar"
     ],
     original_deps = [],
-    pom = "repository/org/ow2/asm/asm/9.2/asm-9.2.pom",
+    pom = "repository/org/ow2/asm/asm/9.3/asm-9.3.pom",
     repo_root_path = "repository",
-    repo_path = "org/ow2/asm/asm/9.2",
+    repo_path = "org/ow2/asm/asm/9.3",
     visibility = ["//visibility:public"],
 )
 
@@ -50264,13 +50264,13 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.ow2.asm.asm-analysis_9.3",
-    pom = "repository/org/ow2/asm/asm-analysis/9.3/asm-analysis-9.3.pom",
+    name = "org.ow2.asm.asm-analysis_9.2",
+    pom = "repository/org/ow2/asm/asm-analysis/9.2/asm-analysis-9.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/ow2/asm/asm-analysis/9.3",
+    repo_path = "org/ow2/asm/asm-analysis/9.2",
     parent = "org.ow2.ow2_1.5",
     deps = [
-        "org.ow2.asm.asm-tree_9.3",
+        "org.ow2.asm.asm-tree_9.2",
     ],
     visibility = ["//visibility:public"],
 )
@@ -50354,15 +50354,15 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.ow2.asm.asm-commons_9.3",
-    pom = "repository/org/ow2/asm/asm-commons/9.3/asm-commons-9.3.pom",
+    name = "org.ow2.asm.asm-commons_9.2",
+    pom = "repository/org/ow2/asm/asm-commons/9.2/asm-commons-9.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/ow2/asm/asm-commons/9.3",
+    repo_path = "org/ow2/asm/asm-commons/9.2",
     parent = "org.ow2.ow2_1.5",
     deps = [
-        "org.ow2.asm.asm_9.3",
-        "org.ow2.asm.asm-tree_9.3",
-        "org.ow2.asm.asm-analysis_9.3",
+        "org.ow2.asm.asm_9.2",
+        "org.ow2.asm.asm-tree_9.2",
+        "org.ow2.asm.asm-analysis_9.2",
     ],
     visibility = ["//visibility:public"],
 )
@@ -50473,13 +50473,13 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.ow2.asm.asm-tree_9.3",
-    pom = "repository/org/ow2/asm/asm-tree/9.3/asm-tree-9.3.pom",
+    name = "org.ow2.asm.asm-tree_9.2",
+    pom = "repository/org/ow2/asm/asm-tree/9.2/asm-tree-9.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/ow2/asm/asm-tree/9.3",
+    repo_path = "org/ow2/asm/asm-tree/9.2",
     parent = "org.ow2.ow2_1.5",
     deps = [
-        "org.ow2.asm.asm_9.3",
+        "org.ow2.asm.asm_9.2",
     ],
     visibility = ["//visibility:public"],
 )
@@ -50546,6 +50546,20 @@ maven_artifact(
         "org.ow2.asm.asm_9.1",
         "org.ow2.asm.asm-tree_9.1",
         "org.ow2.asm.asm-analysis_9.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.ow2.asm.asm-util_9.2",
+    pom = "repository/org/ow2/asm/asm-util/9.2/asm-util-9.2.pom",
+    repo_root_path = "repository",
+    repo_path = "org/ow2/asm/asm-util/9.2",
+    parent = "org.ow2.ow2_1.5",
+    deps = [
+        "org.ow2.asm.asm_9.2",
+        "org.ow2.asm.asm-tree_9.2",
+        "org.ow2.asm.asm-analysis_9.2",
     ],
     visibility = ["//visibility:public"],
 )
@@ -50632,10 +50646,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.ow2.asm.asm_9.3",
-    pom = "repository/org/ow2/asm/asm/9.3/asm-9.3.pom",
+    name = "org.ow2.asm.asm_9.2",
+    pom = "repository/org/ow2/asm/asm/9.2/asm-9.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/ow2/asm/asm/9.3",
+    repo_path = "org/ow2/asm/asm/9.2",
     parent = "org.ow2.ow2_1.5",
     visibility = ["//visibility:public"],
 )
