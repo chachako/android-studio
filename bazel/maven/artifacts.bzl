@@ -180,6 +180,7 @@ ARTIFACTS = [
     "org.slf4j:slf4j-simple:1.7.2",
     "org.tensorflow:tensorflow-lite-metadata:0.1.0-rc2",
     "org.xerial:sqlite-jdbc:3.21.0.1",
+    "org.xerial:sqlite-jdbc:3.34.0",
     "xerces:xercesImpl:2.12.0",
     "org.tomlj:tomlj:1.1.0",
 ]

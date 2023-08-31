@@ -10303,10 +10303,10 @@ maven_import(
 )
 
 maven_artifact(
-    name = "org.xerial.sqlite-jdbc_3.21.0.1",
-    pom = "repository/org/xerial/sqlite-jdbc/3.21.0.1/sqlite-jdbc-3.21.0.1.pom",
+    name = "org.xerial.sqlite-jdbc_3.34.0",
+    pom = "repository/org/xerial/sqlite-jdbc/3.34.0/sqlite-jdbc-3.34.0.pom",
     repo_root_path = "repository",
-    repo_path = "org/xerial/sqlite-jdbc/3.21.0.1",
+    repo_path = "org/xerial/sqlite-jdbc/3.34.0",
     parent = "org.sonatype.oss.oss-parent_9",
     visibility = ["//visibility:public"],
 )
@@ -10316,13 +10316,12 @@ maven_import(
     classifiers = [],
     parent = "org.sonatype.oss.oss-parent_9",
     jars = [
-        "repository/org/xerial/sqlite-jdbc/3.21.0.1/sqlite-jdbc-3.21.0.1.jar"
+        "repository/org/xerial/sqlite-jdbc/3.34.0/sqlite-jdbc-3.34.0.jar"
     ],
     original_deps = [],
-    pom = "repository/org/xerial/sqlite-jdbc/3.21.0.1/sqlite-jdbc-3.21.0.1.pom",
+    pom = "repository/org/xerial/sqlite-jdbc/3.34.0/sqlite-jdbc-3.34.0.pom",
     repo_root_path = "repository",
-    repo_path = "org/xerial/sqlite-jdbc/3.21.0.1",
-    srcjar = "repository/org/xerial/sqlite-jdbc/3.21.0.1/sqlite-jdbc-3.21.0.1-sources.jar",
+    repo_path = "org/xerial/sqlite-jdbc/3.34.0",
     visibility = ["//visibility:public"],
 )
 
@@ -50940,6 +50939,15 @@ maven_artifact(
     pom = "repository/org/xerial/sqlite-jdbc/3.20.1/sqlite-jdbc-3.20.1.pom",
     repo_root_path = "repository",
     repo_path = "org/xerial/sqlite-jdbc/3.20.1",
+    parent = "org.sonatype.oss.oss-parent_9",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.xerial.sqlite-jdbc_3.21.0.1",
+    pom = "repository/org/xerial/sqlite-jdbc/3.21.0.1/sqlite-jdbc-3.21.0.1.pom",
+    repo_root_path = "repository",
+    repo_path = "org/xerial/sqlite-jdbc/3.21.0.1",
     parent = "org.sonatype.oss.oss-parent_9",
     visibility = ["//visibility:public"],
 )
