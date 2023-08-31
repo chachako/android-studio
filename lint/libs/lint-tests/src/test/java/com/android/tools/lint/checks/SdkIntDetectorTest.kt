@@ -15,6 +15,7 @@
  */
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 
 /** Unit tests for [SdkIntDetector] */
@@ -680,33 +681,51 @@ class SdkIntDetectorTest : AbstractCheckTest() {
             0 errors, 8 warnings
             """
       )
+      .verifyFixes(TestMode.DEFAULT)
+      .window(1)
       .expectFixDiffs(
         """
-            Fix for src/test/pkg/SdkExtensionsTest.java line 12: Annotate with @ChecksSdkIntAtLeast:
-            @@ -11 +11
-            +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, extension=Build.VERSION_CODES.R)
-            Fix for src/test/pkg/SdkExtensionsTest.java line 15: Annotate with @ChecksSdkIntAtLeast:
-            @@ -14 +14
-            +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, extension=Build.VERSION_CODES.R)
-            Fix for src/test/pkg/SdkExtensionsTest.java line 18: Annotate with @ChecksSdkIntAtLeast:
-            @@ -17 +17
-            +     @androidx.annotation.ChecksSdkIntAtLeast(extension=Build.VERSION_CODES.R)
-            Fix for src/test/pkg/SdkExtensionsTest.java line 21: Annotate with @ChecksSdkIntAtLeast:
-            @@ -20 +20
-            +     @androidx.annotation.ChecksSdkIntAtLeast(extension=Build.VERSION_CODES.R)
-            Fix for src/test/pkg/SdkExtensionsTest.java line 24: Annotate with @ChecksSdkIntAtLeast:
-            @@ -23 +23
-            +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, extension=Build.VERSION_CODES.R)
-            Fix for src/test/pkg/SdkExtensionsTest.java line 29: Annotate with @ChecksSdkIntAtLeast:
-            @@ -28 +28
-            +     @androidx.annotation.ChecksSdkIntAtLeast(parameter=0, extension=Build.VERSION_CODES.R)
-            Fix for src/test/pkg/SdkExtensionsTest.java line 34: Annotate with @ChecksSdkIntAtLeast:
-            @@ -33 +33
-            +     @androidx.annotation.ChecksSdkIntAtLeast(parameter=0, extension=Build.VERSION_CODES.R)
-            Fix for src/test/pkg/SdkExtensionsTest.java line 40: Annotate with @ChecksSdkIntAtLeast:
-            @@ -39 +39
-            +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, lambda=0, extension=Build.VERSION_CODES.R)
-            """
+        Fix for src/test/pkg/SdkExtensionsTest.java line 12: Annotate with @ChecksSdkIntAtLeast:
+        @@ -12 +12
+              //@ChecksSdkIntAtLeast(api = 4, extension = Build.VERSION_CODES.R)
+        +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, extension=Build.VERSION_CODES.R)
+              public static final boolean HAS_R_4 = SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 4; // WARN 1
+        Fix for src/test/pkg/SdkExtensionsTest.java line 15: Annotate with @ChecksSdkIntAtLeast:
+        @@ -15 +15
+              //@ChecksSdkIntAtLeast(api = 4, extension = Build.VERSION_CODES.R)
+        +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, extension=Build.VERSION_CODES.R)
+              public static final boolean HAS_R_4B = SDK_INT >= TIRAMISU && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 4; // WARN 2
+        Fix for src/test/pkg/SdkExtensionsTest.java line 18: Annotate with @ChecksSdkIntAtLeast:
+        @@ -18 +18
+              //@ChecksSdkIntAtLeast(extension = Build.VERSION_CODES.R)
+        +     @androidx.annotation.ChecksSdkIntAtLeast(extension=Build.VERSION_CODES.R)
+              public static final boolean R_VERSION = SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R); // WARN 3
+        Fix for src/test/pkg/SdkExtensionsTest.java line 21: Annotate with @ChecksSdkIntAtLeast:
+        @@ -21 +21
+              //@ChecksSdkIntAtLeast(extension = Build.VERSION_CODES.R)
+        +     @androidx.annotation.ChecksSdkIntAtLeast(extension=Build.VERSION_CODES.R)
+              public static final boolean R_VERSION2 = getExtensionVersion(Build.VERSION_CODES.R); // WARN 4
+        Fix for src/test/pkg/SdkExtensionsTest.java line 24: Annotate with @ChecksSdkIntAtLeast:
+        @@ -24 +24
+              //@ChecksSdkIntAtLeast(api = 4, extension = Build.VERSION_CODES.R)
+        +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, extension=Build.VERSION_CODES.R)
+              public boolean hasR4() { // WARN 5
+        Fix for src/test/pkg/SdkExtensionsTest.java line 29: Annotate with @ChecksSdkIntAtLeast:
+        @@ -29 +29
+              //@ChecksSdkIntAtLeast(parameter=0, extension = Build.VERSION_CODES.R)
+        +     @androidx.annotation.ChecksSdkIntAtLeast(parameter=0, extension=Build.VERSION_CODES.R)
+              public static boolean hasR(int rev) { // WARN 6
+        Fix for src/test/pkg/SdkExtensionsTest.java line 34: Annotate with @ChecksSdkIntAtLeast:
+        @@ -34 +34
+              //@ChecksSdkIntAtLeast(parameter=0, extension = Build.VERSION_CODES.R)
+        +     @androidx.annotation.ChecksSdkIntAtLeast(parameter=0, extension=Build.VERSION_CODES.R)
+              public static boolean hasRB(int rev) {
+        Fix for src/test/pkg/SdkExtensionsTest.java line 40: Annotate with @ChecksSdkIntAtLeast:
+        @@ -40 +40
+              // @ChecksSdkIntAtLeast(api=4, lambda=0, extension=Build.VERSION_CODES.R)
+        +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, lambda=0, extension=Build.VERSION_CODES.R)
+              public static void runOnR4(Runnable runnable) { // WARN 7
+        """
       )
   }
 

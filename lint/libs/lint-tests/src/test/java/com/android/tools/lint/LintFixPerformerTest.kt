@@ -478,4 +478,84 @@ class LintFixPerformerTest : TestCase() {
       includeMarkers = true
     )
   }
+
+  fun testAnnotate() {
+    val file = File("Test.java")
+    @Language("Java")
+    val source =
+      """
+      public class Test {
+          /** Comment */
+          public void test() { }
+      }
+      """
+        .trimIndent()
+
+    val range = Location.create(file, source, source.indexOf("/** Comment"), source.length)
+    val fix = fix().annotate("androidx.annotation.UiThread").range(range).autoFix().build()
+    check(
+      file,
+      source,
+      fix,
+      expected =
+        // language=Java
+        """
+      public class Test {
+          /** Comment */
+          @androidx.annotation.UiThread
+          public void test() { }
+      }
+      """
+    )
+  }
+
+  fun testAnnotateComplex() {
+    // Checks that we really find the first non-whitespace non-comment line to insert the new
+    // annotation (and that we respect import statements)
+    val file = File("test.kt")
+    @Language("KT")
+    val source =
+      """
+      import androidx.annotation.UiThread
+      class Test {
+          /** Comment
+            *
+            * /* nested comment 1 /* nested nested comment */ */
+            *    */
+
+          // Also line comment
+
+          @ExistingAnnotation(1)
+          inline fun test() {
+          }
+      }
+      """
+        .trimIndent()
+
+    val range = Location.create(file, source, source.indexOf("/** Comment"), source.length)
+    val fix = fix().annotate("androidx.annotation.UiThread").range(range).autoFix().build()
+    check(
+      file,
+      source,
+      fix,
+      expected =
+        // language=KT
+        """
+      import androidx.annotation.UiThread
+      class Test {
+          /** Comment
+            *
+            * /* nested comment 1 /* nested nested comment */ */
+            *    */
+
+          // Also line comment
+
+          @UiThread
+          @ExistingAnnotation(1)
+          inline fun test() {
+          }
+      }
+      """
+    )
+  }
 }

@@ -27,9 +27,12 @@ import com.android.SdkConstants.ATTR_NAME
 import com.android.SdkConstants.ATTR_STYLE
 import com.android.SdkConstants.AUTO_URI
 import com.android.SdkConstants.DOT_JAVA
+import com.android.SdkConstants.DOT_KT
+import com.android.SdkConstants.DOT_KTS
 import com.android.SdkConstants.TOOLS_URI
 import com.android.SdkConstants.XMLNS_PREFIX
 import com.android.tools.lint.LintCliClient.Companion.printWriter
+import com.android.tools.lint.detector.api.DefaultPosition
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.LintFix
 import com.android.tools.lint.detector.api.LintFix.AnnotateFix
@@ -359,11 +362,11 @@ constructor(
   private fun addCreateFile(file: PendingEditFile, fix: CreateFileFix): Boolean {
     if (fix.delete) {
       file.delete = true
-      return true
+    } else {
+      file.createText = fix.text
+      file.createBytes = fix.binary
+      fix.selectPattern?.let { file.selection = Selection(Pattern.compile(it), 0) }
     }
-    file.createText = fix.text
-    file.createBytes = fix.binary
-    fix.selectPattern?.let { file.selection = Selection(Pattern.compile(it), 0) }
     return true
   }
 
@@ -937,6 +940,7 @@ constructor(
       location: Location?,
       contents: String?
     ): ReplaceString {
+      var range = location
       // Don't use fully qualified names for implicitly imported packages
       val annotation =
         fix.annotation.let {
@@ -945,14 +949,79 @@ constructor(
           if (packageEnd != -1 && implicitlyImported(it.substring(1, packageEnd))) {
             "@" + it.substring(packageEnd + 1)
           } else {
-            it
+            val fqn = it.substring(1, argStart)
+            if (
+              contents != null &&
+                contents.contains(fqn) &&
+                (contents.contains("import $fqn\n") || contents.contains("import $fqn;"))
+            ) {
+              "@" + it.substring(packageEnd + 1)
+            } else {
+              it
+            }
           }
         }
 
+      // Skip comments
+      if (range?.start != null && contents != null) {
+        val start = range.start!!
+        val startOffset = start.offset
+        var offset = startOffset
+        val length = contents.length
+        val isKotlin = range.file.path.endsWith(DOT_KT) || range.file.path.endsWith(DOT_KTS)
+
+        while (offset < length) {
+          val c = contents[offset]
+          when {
+            c.isWhitespace() -> offset++
+            contents.startsWith("//", offset) -> {
+              val lineEnd = contents.indexOf('\n', offset + 2)
+              if (lineEnd == -1) {
+                break
+              }
+              offset = lineEnd + 1
+            }
+            contents.startsWith("/*", offset) -> {
+              var depth = 1
+              offset += 2
+              while (offset < length) {
+                when {
+                  contents.startsWith("*/", offset) -> {
+                    offset += 2
+                    depth--
+                    if (depth == 0) {
+                      break
+                    }
+                  }
+                  isKotlin && contents.startsWith("/*", offset) -> {
+                    // Kotlin allows nested block comments
+                    depth++
+                    offset += 2
+                  }
+                  else -> offset++
+                }
+              }
+            }
+            else -> {
+              if (offset > startOffset) {
+                // We skipped past whitespace and/or comments; update the range
+                range =
+                  Location.create(
+                    range!!.file,
+                    DefaultPosition(-1, -1, offset),
+                    DefaultPosition(-1, -1, max(range.end?.offset ?: -1, startOffset))
+                  )
+              }
+              break
+            }
+          }
+        }
+      }
+
       // Add indent?
       var replacement: String = annotation + "\n"
-      if (location != null && contents != null) {
-        val start = location.start!!
+      if (range != null && contents != null) {
+        val start = range.start!!
         val startOffset = start.offset
         var lineBegin = startOffset
         while (lineBegin > 0) {
@@ -969,7 +1038,6 @@ constructor(
 
       val replaceFixBuilder =
         LintFix.create().replace().beginning().with(replacement).shortenNames().reformat(true)
-      val range = fix.range
       if (range != null) {
         replaceFixBuilder.range(range)
       }
