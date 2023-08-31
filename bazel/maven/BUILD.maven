@@ -7590,6 +7590,208 @@ maven_import(
 )
 
 maven_artifact(
+    name = "org.eclipse.elk.org.eclipse.elk.alg.common.compaction_0.3.0",
+    pom = "repository/org/eclipse/elk/org.eclipse.elk.alg.common.compaction/0.3.0/org.eclipse.elk.alg.common.compaction-0.3.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/elk/org.eclipse.elk.alg.common.compaction/0.3.0",
+    parent = "org.eclipse.elk.parent_0.3.0",
+    deps = [
+        "org.eclipse.elk.org.eclipse.elk.core_0.3.0",
+        "org.eclipse.elk.org.eclipse.elk.graph_0.3.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "org.eclipse.elk.org.eclipse.elk.alg.common.compaction",
+    classifiers = [],
+    parent = "org.eclipse.elk.parent_0.3.0",
+    jars = [
+        "repository/org/eclipse/elk/org.eclipse.elk.alg.common.compaction/0.3.0/org.eclipse.elk.alg.common.compaction-0.3.0.jar"
+    ],
+    exports = [
+        "org.eclipse.elk.org.eclipse.elk.core",
+        "org.eclipse.elk.org.eclipse.elk.graph",
+    ],
+    original_deps = [
+        "org.eclipse.elk.org.eclipse.elk.core_0.3.0",
+        "org.eclipse.elk.org.eclipse.elk.graph_0.3.0",
+    ],
+    pom = "repository/org/eclipse/elk/org.eclipse.elk.alg.common.compaction/0.3.0/org.eclipse.elk.alg.common.compaction-0.3.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/elk/org.eclipse.elk.alg.common.compaction/0.3.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.eclipse.elk.org.eclipse.elk.alg.layered_0.3.0",
+    pom = "repository/org/eclipse/elk/org.eclipse.elk.alg.layered/0.3.0/org.eclipse.elk.alg.layered-0.3.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/elk/org.eclipse.elk.alg.layered/0.3.0",
+    parent = "org.eclipse.elk.parent_0.3.0",
+    deps = [
+        "org.eclipse.elk.org.eclipse.elk.core_0.3.0",
+        "org.eclipse.elk.org.eclipse.elk.alg.common.compaction_0.3.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "org.eclipse.elk.org.eclipse.elk.alg.layered",
+    classifiers = [],
+    parent = "org.eclipse.elk.parent_0.3.0",
+    jars = [
+        "repository/org/eclipse/elk/org.eclipse.elk.alg.layered/0.3.0/org.eclipse.elk.alg.layered-0.3.0.jar"
+    ],
+    exports = [
+        "org.eclipse.elk.org.eclipse.elk.core",
+        "org.eclipse.elk.org.eclipse.elk.alg.common.compaction",
+    ],
+    original_deps = [
+        "org.eclipse.elk.org.eclipse.elk.core_0.3.0",
+        "org.eclipse.elk.org.eclipse.elk.alg.common.compaction_0.3.0",
+    ],
+    pom = "repository/org/eclipse/elk/org.eclipse.elk.alg.layered/0.3.0/org.eclipse.elk.alg.layered-0.3.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/elk/org.eclipse.elk.alg.layered/0.3.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.eclipse.elk.org.eclipse.elk.core_0.3.0",
+    pom = "repository/org/eclipse/elk/org.eclipse.elk.core/0.3.0/org.eclipse.elk.core-0.3.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/elk/org.eclipse.elk.core/0.3.0",
+    parent = "org.eclipse.elk.parent_0.3.0",
+    deps = [
+        "org.eclipse.elk.org.eclipse.elk.graph_0.3.0",
+        "org.eclipse.emf.org.eclipse.emf.ecore.xmi_2.12.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "org.eclipse.elk.org.eclipse.elk.core",
+    classifiers = [],
+    parent = "org.eclipse.elk.parent_0.3.0",
+    jars = [
+        "repository/org/eclipse/elk/org.eclipse.elk.core/0.3.0/org.eclipse.elk.core-0.3.0.jar"
+    ],
+    exports = [
+        "org.eclipse.elk.org.eclipse.elk.graph",
+        "org.eclipse.emf.org.eclipse.emf.ecore.xmi",
+    ],
+    original_deps = [
+        "org.eclipse.elk.org.eclipse.elk.graph_0.3.0",
+        "org.eclipse.emf.org.eclipse.emf.ecore.xmi_2.12.0",
+    ],
+    pom = "repository/org/eclipse/elk/org.eclipse.elk.core/0.3.0/org.eclipse.elk.core-0.3.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/elk/org.eclipse.elk.core/0.3.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.eclipse.elk.org.eclipse.elk.graph_0.3.0",
+    pom = "repository/org/eclipse/elk/org.eclipse.elk.graph/0.3.0/org.eclipse.elk.graph-0.3.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/elk/org.eclipse.elk.graph/0.3.0",
+    parent = "org.eclipse.elk.parent_0.3.0",
+    deps = [
+        "com.google.guava.guava_18.0",
+        "org.eclipse.emf.org.eclipse.emf.common_2.12.0",
+        "org.eclipse.emf.org.eclipse.emf.ecore_2.12.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "org.eclipse.elk.org.eclipse.elk.graph",
+    classifiers = [],
+    parent = "org.eclipse.elk.parent_0.3.0",
+    jars = [
+        "repository/org/eclipse/elk/org.eclipse.elk.graph/0.3.0/org.eclipse.elk.graph-0.3.0.jar"
+    ],
+    exports = [
+        "com.google.guava.guava",
+        "org.eclipse.emf.org.eclipse.emf.common",
+        "org.eclipse.emf.org.eclipse.emf.ecore",
+    ],
+    original_deps = [
+        "com.google.guava.guava_18.0",
+        "org.eclipse.emf.org.eclipse.emf.common_2.12.0",
+        "org.eclipse.emf.org.eclipse.emf.ecore_2.12.0",
+    ],
+    pom = "repository/org/eclipse/elk/org.eclipse.elk.graph/0.3.0/org.eclipse.elk.graph-0.3.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/elk/org.eclipse.elk.graph/0.3.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.eclipse.emf.org.eclipse.emf.common_2.12.0",
+    pom = "repository/org/eclipse/emf/org.eclipse.emf.common/2.12.0/org.eclipse.emf.common-2.12.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/emf/org.eclipse.emf.common/2.12.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "org.eclipse.emf.org.eclipse.emf.common",
+    classifiers = [],
+    jars = [
+        "repository/org/eclipse/emf/org.eclipse.emf.common/2.12.0/org.eclipse.emf.common-2.12.0.jar"
+    ],
+    original_deps = [],
+    pom = "repository/org/eclipse/emf/org.eclipse.emf.common/2.12.0/org.eclipse.emf.common-2.12.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/emf/org.eclipse.emf.common/2.12.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.eclipse.emf.org.eclipse.emf.ecore.xmi_2.12.0",
+    pom = "repository/org/eclipse/emf/org.eclipse.emf.ecore.xmi/2.12.0/org.eclipse.emf.ecore.xmi-2.12.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/emf/org.eclipse.emf.ecore.xmi/2.12.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "org.eclipse.emf.org.eclipse.emf.ecore.xmi",
+    classifiers = [],
+    jars = [
+        "repository/org/eclipse/emf/org.eclipse.emf.ecore.xmi/2.12.0/org.eclipse.emf.ecore.xmi-2.12.0.jar"
+    ],
+    original_deps = [],
+    pom = "repository/org/eclipse/emf/org.eclipse.emf.ecore.xmi/2.12.0/org.eclipse.emf.ecore.xmi-2.12.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/emf/org.eclipse.emf.ecore.xmi/2.12.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.eclipse.emf.org.eclipse.emf.ecore_2.12.0",
+    pom = "repository/org/eclipse/emf/org.eclipse.emf.ecore/2.12.0/org.eclipse.emf.ecore-2.12.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/emf/org.eclipse.emf.ecore/2.12.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "org.eclipse.emf.org.eclipse.emf.ecore",
+    classifiers = [],
+    jars = [
+        "repository/org/eclipse/emf/org.eclipse.emf.ecore/2.12.0/org.eclipse.emf.ecore-2.12.0.jar"
+    ],
+    original_deps = [],
+    pom = "repository/org/eclipse/emf/org.eclipse.emf.ecore/2.12.0/org.eclipse.emf.ecore-2.12.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/emf/org.eclipse.emf.ecore/2.12.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.eclipse.sisu.org.eclipse.sisu.inject_0.3.5",
     pom = "repository/org/eclipse/sisu/org.eclipse.sisu.inject/0.3.5/org.eclipse.sisu.inject-0.3.5.pom",
     repo_root_path = "repository",
@@ -52588,6 +52790,13 @@ maven_artifact(
     pom = "repository/org/eclipse/ee4j/project/1.0.5/project-1.0.5.pom",
     repo_root_path = "repository",
     repo_path = "org/eclipse/ee4j/project/1.0.5",
+)
+
+maven_artifact(
+    name = "org.eclipse.elk.parent_0.3.0",
+    pom = "repository/org/eclipse/elk/parent/0.3.0/parent-0.3.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/eclipse/elk/parent/0.3.0",
 )
 
 maven_artifact(
