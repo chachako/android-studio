@@ -152,6 +152,7 @@ ARTIFACTS = [
     "org.gradle:gradle-tooling-api:8.3-rc-2",
     "org.hamcrest:hamcrest-core:1.3",
     "org.hamcrest:hamcrest-library:1.3",
+    "org.hdrhistogram:HdrHistogram:2.1.12",
     "org.jacoco:org.jacoco.agent:0.8.8",
     "org.jacoco:org.jacoco.core:0.8.8",
     "org.jacoco:org.jacoco.report:0.8.8",

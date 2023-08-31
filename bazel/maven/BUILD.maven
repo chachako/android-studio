@@ -8080,6 +8080,27 @@ maven_import(
 )
 
 maven_artifact(
+    name = "org.hdrhistogram.HdrHistogram_2.1.12",
+    pom = "repository/org/hdrhistogram/HdrHistogram/2.1.12/HdrHistogram-2.1.12.pom",
+    repo_root_path = "repository",
+    repo_path = "org/hdrhistogram/HdrHistogram/2.1.12",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "org.hdrhistogram.HdrHistogram",
+    classifiers = [],
+    jars = [
+        "repository/org/hdrhistogram/HdrHistogram/2.1.12/HdrHistogram-2.1.12.jar"
+    ],
+    original_deps = [],
+    pom = "repository/org/hdrhistogram/HdrHistogram/2.1.12/HdrHistogram-2.1.12.pom",
+    repo_root_path = "repository",
+    repo_path = "org/hdrhistogram/HdrHistogram/2.1.12",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jacoco.org.jacoco.agent_0.8.8",
     pom = "repository/org/jacoco/org.jacoco.agent/0.8.8/org.jacoco.agent-0.8.8.pom",
     repo_root_path = "repository",
