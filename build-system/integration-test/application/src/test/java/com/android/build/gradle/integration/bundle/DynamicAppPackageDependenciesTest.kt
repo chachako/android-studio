@@ -93,6 +93,9 @@ class DynamicAppPackageDependenciesTest {
         assertThat(feature1Dependencies).doesNotContain("guava")
     }
 
+    /**
+     * regression test for b/295205663
+     */
     @Test
     fun testExclusionOfLocalFileDependency() {
         // Add a local jar
@@ -109,6 +112,7 @@ class DynamicAppPackageDependenciesTest {
 
         TestFileUtils.appendToFile(
             project.getSubproject("app").buildFile,
+            //language=groovy
             """
                 dependencies {
                   implementation rootProject.files("libs/local.jar")
@@ -120,6 +124,43 @@ class DynamicAppPackageDependenciesTest {
                             minifyEnabled = true
                         }
                     }
+                }
+
+                import kotlin.Unit
+
+                import com.android.build.api.instrumentation.AsmClassVisitorFactory
+                import com.android.build.api.instrumentation.ClassData
+                import com.android.build.api.instrumentation.ClassContext
+                import com.android.build.api.instrumentation.InstrumentationParameters
+                import com.android.build.api.instrumentation.InstrumentationScope
+
+                import org.objectweb.asm.ClassVisitor
+                import org.objectweb.asm.util.TraceClassVisitor
+
+                abstract class ClassVisitorFactory
+                        implements AsmClassVisitorFactory<InstrumentationParameters.None> {
+
+                    @Override
+                    ClassVisitor createClassVisitor(
+                            ClassContext classContext, ClassVisitor nextClassVisitor) {
+                        return new TraceClassVisitor(nextClassVisitor, new PrintWriter(
+                                new StringWriter()
+                        ))
+                    }
+
+                    @Override
+                    boolean isInstrumentable(ClassData classData) {
+                        return true
+                    }
+                }
+
+                androidComponents {
+                    onVariants(selector().all(), { variant ->
+                        variant.instrumentation.transformClassesWith(
+                                ClassVisitorFactory.class,
+                                InstrumentationScope.ALL,
+                                params -> Unit.INSTANCE)
+                    })
                 }
             """.trimIndent()
         )

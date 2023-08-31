@@ -228,18 +228,16 @@ abstract class ProguardConfigurableTask(
 
         private val externalInputScopes =
             when {
-                componentType.isAar -> mutableSetOf(
+                componentType.isAar -> setOf(
                     InternalScopedArtifacts.InternalScope.LOCAL_DEPS
                 )
-                includeFeaturesInScopes -> mutableSetOf(
+                else -> setOf(
                     InternalScopedArtifacts.InternalScope.SUB_PROJECTS,
                     InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS,
-                    InternalScopedArtifacts.InternalScope.FEATURES
-                )
-                else -> mutableSetOf(
-                    InternalScopedArtifacts.InternalScope.SUB_PROJECTS,
-                    InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS
-                )
+                    InternalScopedArtifacts.InternalScope.FEATURES.takeIf {
+                        includeFeaturesInScopes
+                    }
+                ).filterNotNull().toSet()
             }
 
         init {
