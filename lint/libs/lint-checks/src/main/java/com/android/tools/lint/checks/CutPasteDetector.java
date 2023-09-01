@@ -19,6 +19,7 @@ package com.android.tools.lint.checks;
 import static com.android.SdkConstants.RESOURCE_CLZ_ID;
 import static com.android.tools.lint.checks.ViewTypeDetector.FIND_VIEW_BY_ID;
 import static com.android.tools.lint.checks.ViewTypeDetector.REQUIRE_VIEW_BY_ID;
+import static com.android.tools.lint.detector.api.Lint.isKotlin;
 import static org.jetbrains.uast.UastUtils.skipParenthesizedExprUp;
 
 import com.android.annotations.NonNull;
@@ -302,6 +303,26 @@ public class CutPasteDetector extends Detector implements SourceCodeScanner {
                             && UastUtils.isUastChildOf(target, node, false)) {
                         isTargetReachable = true;
                         isFinished = true;
+                    }
+                    return true;
+                } else if (node instanceof USwitchExpression) {
+                    USwitchExpression switchExpression = (USwitchExpression) node;
+                    UExpression expression = switchExpression.getExpression();
+                    if (expression != null) {
+                        expression.accept(this);
+                    }
+                    boolean isFromReached = this.isFromReached;
+                    boolean isKotlin = isKotlin(switchExpression.getSourcePsi());
+
+                    for (UExpression caseExpression : switchExpression.getBody().getExpressions()) {
+                        boolean fallthrough = !isKotlin && this.breakedExpression == null;
+                        if (fallthrough || isFromReached == this.isFromReached) {
+                            caseExpression.accept(this);
+                        }
+                    }
+
+                    if (node.equals(breakedExpression)) {
+                        breakedExpression = null;
                     }
                     return true;
                 }
