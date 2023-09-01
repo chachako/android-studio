@@ -42,7 +42,7 @@ fun buildMultipreview(
 private fun forEachClass(jarsPaths: Collection<String>, classProcessor: ClassProcessor) {
   jarsPaths.forEach { jarPath ->
     ZipFile(jarPath).use { zipFile ->
-      zipFile.stream().filter { it.name.endsWith(".class") }.map {
+      zipFile.stream().filter { it.name.endsWith(".class") }.forEach {
         zipFile.getInputStream(it).use { stream ->
           classProcessor.onClassBytecode(stream.readAllBytes())
         }
