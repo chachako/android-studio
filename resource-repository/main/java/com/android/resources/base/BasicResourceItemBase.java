@@ -33,7 +33,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /** Base class for implementations of the {@link BasicResourceItem} interface. */
-public abstract class BasicResourceItemBase implements BasicResourceItem, ResourceValue {
+public abstract class BasicResourceItemBase implements BasicResourceItem {
   @NotNull private final String myName;
   // Store enums as their ordinals in byte form to minimize memory footprint.
   private final byte myTypeOrdinal;
