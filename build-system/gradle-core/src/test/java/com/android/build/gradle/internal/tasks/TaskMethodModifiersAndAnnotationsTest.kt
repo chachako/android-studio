@@ -111,6 +111,30 @@ class TaskMethodModifiersAndAnnotationsTest {
     }
 
     @Test
+    fun `check for tasks that don't extend AndroidVariantTask`() {
+
+        val doesNotExtendAndroidVariantTask = tasks.filter { !VariantAwareTask::class.java.isAssignableFrom(it) }.map { it.name }
+        assertWithMessage("All Agp tasks should generally extend NonIncrementalTask, NonIncrementalGlobalTask or NewIncrementalTask, " +
+                "or manually implement VariantAwareTask if using a Gradle task type.")
+        // Don't add new tasks to this list
+        assertThat(doesNotExtendAndroidVariantTask).containsExactly(
+                "com.android.build.gradle.internal.lint.AndroidLintGlobalTask",
+                "com.android.build.gradle.internal.tasks.AndroidReportTask",
+                "com.android.build.gradle.internal.tasks.BaseTask",
+                "com.android.build.gradle.internal.tasks.DependencyReportTask",
+                "com.android.build.gradle.internal.tasks.DeviceSerialTestTask",
+                "com.android.build.gradle.internal.tasks.SigningReportTask",
+                "com.android.build.gradle.internal.tasks.SourceSetsTask",
+                "com.android.build.gradle.tasks.FusedLibraryBundle",
+                "com.android.build.gradle.tasks.FusedLibraryBundleAar",
+                "com.android.build.gradle.tasks.FusedLibraryBundleClasses",
+                "com.android.build.gradle.tasks.FusedLibraryMergeClasses",
+                "com.android.build.gradle.tasks.PrivacySandboxSdkGenerateJarStubsTask",
+                "com.android.build.gradle.tasks.sync.AppIdListTask",
+        )
+    }
+
+    @Test
     fun `check for fields with gradle input or output annotations`() {
         val annotatedFields =
             classPath
