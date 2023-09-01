@@ -31,8 +31,6 @@ public class IDeviceManagerUtils {
             public void addedDevices(@NonNull List<IDevice> deviceList) {
                 for (IDevice device : deviceList) {
                     AndroidDebugBridge.deviceConnected(device);
-
-                    // TODO: Start client tracking here?
                 }
             }
 

@@ -19,6 +19,7 @@ import com.android.adblib.ConnectedDevice
 import com.android.adblib.DeviceSelector
 import com.android.adblib.INFINITE_DURATION
 import com.android.adblib.RemoteFileMode
+import com.android.adblib.SocketSpec
 import com.android.adblib.availableFeatures
 import com.android.adblib.ddmlibcompatibility.AdbLibDdmlibCompatibilityProperties
 import com.android.adblib.deviceInfo
@@ -637,7 +638,14 @@ internal class AdblibIDeviceWrapper(
      * @throws IOException in case of I/O error on the connection.
      */
     override fun createForward(localPort: Int, remotePort: Int) {
-        TODO("Not yet implemented")
+        runBlockingLegacy {
+            val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+            connectedDevice.session.hostServices.forward(
+                deviceSelector,
+                SocketSpec.Tcp(localPort),
+                SocketSpec.Tcp(remotePort)
+            )
+        }
     }
 
     /**
@@ -652,10 +660,40 @@ internal class AdblibIDeviceWrapper(
      */
     override fun createForward(
         localPort: Int,
-        remoteSocketName: String?,
-        namespace: IDevice.DeviceUnixSocketNamespace?
+        remoteSocketName: String,
+        namespace: IDevice.DeviceUnixSocketNamespace
     ) {
-        TODO("Not yet implemented")
+        runBlockingLegacy {
+            val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+            val remoteSocketSpec = when (namespace) {
+                IDevice.DeviceUnixSocketNamespace.ABSTRACT -> SocketSpec.LocalAbstract(
+                    remoteSocketName
+                )
+
+                IDevice.DeviceUnixSocketNamespace.RESERVED -> SocketSpec.LocalReserved(
+                    remoteSocketName
+                )
+
+                IDevice.DeviceUnixSocketNamespace.FILESYSTEM -> SocketSpec.LocalFileSystem(
+                    remoteSocketName
+                )
+            }
+            connectedDevice.session.hostServices.forward(
+                deviceSelector,
+                SocketSpec.Tcp(localPort),
+                remoteSocketSpec
+            )
+        }
+    }
+
+    override fun removeForward(localPort: Int) {
+        runBlockingLegacy {
+            val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+            connectedDevice.session.hostServices.killForward(
+                deviceSelector,
+                SocketSpec.Tcp(localPort)
+            )
+        }
     }
 
     /**

@@ -39,7 +39,9 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.job
@@ -100,8 +102,7 @@ internal class AdbLibDeviceClientManager(
 
             waitForDeviceOnline(connectedDevice)
 
-            // Track processes running on the device
-            startProcessTracking(connectedDevice)
+            startOnlineDeviceTracking(connectedDevice)
         }
     }
 
@@ -118,6 +119,18 @@ internal class AdbLibDeviceClientManager(
     private suspend fun waitForDeviceOnline(connectedDevice: ConnectedDevice) {
         connectedDevice.deviceInfoFlow.first { deviceInfo ->
             deviceInfo.deviceState == com.android.adblib.DeviceState.ONLINE
+        }
+    }
+
+    private suspend fun startOnlineDeviceTracking(connectedDevice: ConnectedDevice) {
+        // Track processes running on the device
+        startProcessTracking(connectedDevice)
+
+        // Track changes to the `DeviceState`
+        connectedDevice.scope.launch {
+            connectedDevice.deviceInfoFlow.map { it.deviceState }.conflate().collect {
+                AndroidDebugBridge.deviceChanged(device, IDevice.CHANGE_STATE)
+            }
         }
     }
 
