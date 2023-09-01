@@ -50,7 +50,6 @@ abstract class ProcessLibraryArtProfileTask: NonIncrementalTask() {
     @get:OutputFile
     abstract val outputFile: RegularFileProperty
 
-    @TaskAction
     override fun doTaskAction() {
         val sourceFile = profileSource.get().asFile
         if (sourceFile.isFile) {

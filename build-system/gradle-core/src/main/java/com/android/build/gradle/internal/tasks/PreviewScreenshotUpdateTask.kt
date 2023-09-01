@@ -92,7 +92,6 @@ abstract class PreviewScreenshotUpdateTask : NonIncrementalTask(), VerificationT
 
     private val cliParams: MutableMap<String, String> = mutableMapOf()
 
-    @TaskAction
     override fun doTaskAction() {
         cliParams["previewJar"] = screenshotCliJar.singleFile.absolutePath
         cliParams["layoutlib.dir"] = layoutlibDir.singleFile.toPath().toString()

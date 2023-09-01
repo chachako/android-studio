@@ -92,7 +92,6 @@ abstract class ProcessPackagedManifestTask @Inject constructor(
         workersProperty.set(workers)
     }
 
-    @TaskAction
     override fun doTaskAction() {
 
         transformationRequest.get().submit(this,

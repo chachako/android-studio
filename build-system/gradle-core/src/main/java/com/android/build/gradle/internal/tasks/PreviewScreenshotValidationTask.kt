@@ -94,7 +94,6 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
 
     private val cliParams: MutableMap<String, String> = mutableMapOf()
 
-    @TaskAction
     override fun doTaskAction() {
         if (goldenImageDir.asFileTree.isEmpty) {
             throw GradleException("No screenshots were found. To generate screenshots to"
