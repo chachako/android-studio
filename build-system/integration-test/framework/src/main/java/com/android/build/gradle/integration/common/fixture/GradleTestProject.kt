@@ -1614,6 +1614,7 @@ buildCache {
                         + "version('buildToolsVersion', '%s')%n"
                         + "version('latestCompileSdk', '%s')%n"
                         + "version('kotlinVersion', '%s')%n"
+                        + "version('kotlinVersionForCompose', '%s')%n"
                         + "version('composeVersion', '%s')%n"
                         + "version('composeCompilerVersion', '%s')%n",
                 Version.ANDROID_GRADLE_PLUGIN_VERSION,
@@ -1627,6 +1628,7 @@ buildCache {
                 DEFAULT_BUILD_TOOL_VERSION,
                 compileSdkVersion,
                 kotlinVersion,
+                TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS,
                 TaskManager.COMPOSE_UI_VERSION,
                 TaskManager.COMPOSE_KOTLIN_COMPILER_EXTENSION_VERSION,
         )

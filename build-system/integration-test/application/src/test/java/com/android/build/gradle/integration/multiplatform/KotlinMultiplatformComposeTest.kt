@@ -88,6 +88,7 @@ class KotlinMultiplatformComposeTest {
     fun testLibraryBuilds() {
         project.executor()
             .with(BooleanOption.USE_ANDROID_X, true)
+            .withFailOnWarning(false) // TODO(298678053): Remove after updating TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS to 1.8.0+
             .run("assembleDebug")
     }
 }

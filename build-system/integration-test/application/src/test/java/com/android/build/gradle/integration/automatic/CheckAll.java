@@ -96,12 +96,21 @@ public class CheckAll {
     }
 
     private GradleTaskExecutor executor() {
-        return project.executor();
+        if (PROJECTS_TO_RUN_WITH_FAIL_ON_WARNING_DISABLED.contains(project.getName())) {
+            return project.executor().withFailOnWarning(false);
+        } else {
+            return project.executor();
+        }
     }
 
     private static boolean canAssemble(@NonNull GradleTestProject project) {
         return !BROKEN_ALWAYS_ASSEMBLE.contains(project.getName());
     }
+
+    private static final ImmutableSet<String> PROJECTS_TO_RUN_WITH_FAIL_ON_WARNING_DISABLED =
+            ImmutableSet.of(
+                    "composeHelloWorld" // TODO(298678053): Remove after updating TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS to 1.8.0+
+            );
 
     private static final ImmutableSet<String> BROKEN_ALWAYS_ASSEMBLE =
             ImmutableSet.of(
