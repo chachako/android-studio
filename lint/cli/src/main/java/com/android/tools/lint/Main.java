@@ -263,10 +263,10 @@ public class Main {
         // here for a while:
         // logArguments(args, new File("lint-invocation.txt"));
 
-        LintClient.setClientName(LintClient.CLIENT_CLI);
 
         ArgumentState argumentState = new ArgumentState();
-        LintCliClient client = createClient(argumentState);
+        String clientName = getClientId(args);
+        LintCliClient client = createClient(argumentState, clientName);
         int exitCode = parseArguments(args, client, argumentState);
         if (exitCode != ERRNO_INTERNAL_CONTINUE) {
             return exitCode;
@@ -464,15 +464,15 @@ public class Main {
         FilesKt.appendText(log, sb.toString(), Charsets.UTF_8);
     }
 
-    private LintCliClient createClient(ArgumentState argumentState) {
-        return new MainLintClient(flags, argumentState);
+    private LintCliClient createClient(ArgumentState argumentState, String clientName) {
+        return new MainLintClient(flags, argumentState, clientName);
     }
 
     class MainLintClient extends LintCliClient {
         final ArgumentState argumentState;
 
-        MainLintClient(LintCliFlags flags, ArgumentState argumentState) {
-            super(flags, LintClient.CLIENT_CLI);
+        MainLintClient(LintCliFlags flags, ArgumentState argumentState, String clientName) {
+            super(flags, clientName);
             this.argumentState = argumentState;
         }
 
@@ -1584,6 +1584,26 @@ public class Main {
         }
 
         return ERRNO_INTERNAL_CONTINUE;
+    }
+
+    /**
+     * Returns the client id specified via the --client-id flag or returns "cli" if there's no
+     * --client-id flag
+     *
+     * @param args The command line arguments
+     * @return the client id (either specified by --client-id or the default "cli")
+     */
+    private static String getClientId(String[] args) {
+        for (int index = 0; index < args.length; index++) {
+            String arg = args[index];
+            if (arg.equals(ARG_CLIENT_ID)) {
+                index++;
+                if (index < args.length) {
+                    return args[index];
+                }
+            }
+        }
+        return LintClient.CLIENT_CLI;
     }
 
     private void initializeConfigurations(LintCliClient client, ArgumentState argumentState) {
