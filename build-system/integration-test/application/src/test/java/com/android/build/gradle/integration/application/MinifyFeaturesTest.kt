@@ -21,7 +21,6 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.truth.AabSubject.Companion.assertThat
-import com.android.build.gradle.integration.common.truth.ModelContainerSubject
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -717,11 +716,15 @@ class MinifyFeaturesTest {
         project.getSubproject(":foo:otherFeature1")
             .buildFile
             .appendText("android.buildTypes.minified.minifyEnabled true")
-        val container = project.model().ignoreSyncIssues().fetchAndroidProjects()
-        ModelContainerSubject.assertThat(container).rootBuild().project(":foo:otherFeature1")
-            .hasSingleError(SyncIssue.TYPE_GENERIC)
-            .that()
-            .hasMessageThatContains("cannot set minifyEnabled to true.")
+        val container = project.modelV2().ignoreSyncIssues().fetchModels().container
+        val syncIssues = container.getProject(":foo:otherFeature1").issues?.syncIssues!!
+
+        Truth.assertThat(syncIssues.size).isEqualTo(1)
+        Truth.assertThat(syncIssues.first().type).isEqualTo(SyncIssue.TYPE_GENERIC)
+        Truth.assertThat(syncIssues.first().data).isNull()
+        Truth.assertThat(syncIssues.first().message).contains(
+            "cannot set minifyEnabled to true."
+        )
     }
 
     @Test
@@ -739,11 +742,15 @@ class MinifyFeaturesTest {
                     }
                     """
             )
-        val container = project.model().ignoreSyncIssues().fetchAndroidProjects()
-        ModelContainerSubject.assertThat(container).rootBuild().project(otherFeature2GradlePath)
-            .hasSingleError(SyncIssue.TYPE_GENERIC)
-            .that()
-            .hasMessageThatContains("should not be specified in this module.")
+
+        val container = project.modelV2().ignoreSyncIssues().fetchModels().container
+        val syncIssues = container.getProject(otherFeature2GradlePath).issues?.syncIssues!!
+        Truth.assertThat(syncIssues.size).isEqualTo(1)
+        Truth.assertThat(syncIssues.first().type).isEqualTo(SyncIssue.TYPE_GENERIC)
+        Truth.assertThat(syncIssues.first().data).isNull()
+        Truth.assertThat(syncIssues.first().message).contains(
+            "should not be specified in this module."
+        )
     }
 
     @Test

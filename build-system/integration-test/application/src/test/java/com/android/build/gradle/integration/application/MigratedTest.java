@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,15 @@
 
 package com.android.build.gradle.integration.application;
 
-import static com.android.builder.model.AndroidProject.ARTIFACT_ANDROID_TEST;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
 
-import com.android.AndroidProjectTypes;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.SourceSetContainerUtils;
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.utils.SourceProviderHelper;
 import com.android.builder.core.ComponentType;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.ProductFlavorContainer;
-import com.android.builder.model.SourceProviderContainer;
+import com.android.builder.model.v2.ide.ProjectType;
 import java.io.File;
+import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -39,21 +35,21 @@ public class MigratedTest {
             GradleTestProject.builder().fromTestProject("migrated").create();
 
     @Test
-    public void checkModelReflectsMigratedSourceProviders() throws Exception {
-        AndroidProject model =
-                project.executeAndReturnModel("clean", "assembleDebug").getOnlyModel();
+    public void checkModelReflectsMigratedSourceProviders() throws IOException {
+        project.execute("clean", "assembleDebug");
+
+        ModelContainerV2 container = project.modelV2().fetchModels().getContainer();
+        ModelContainerV2.ModelInfo modelInfo = container.getProject();
         File projectDir = project.getProjectDir();
 
-        assertNotEquals(
-                "Library Project",
-                AndroidProjectTypes.PROJECT_TYPE_LIBRARY,
-                model.getProjectType());
-        assertEquals("Project Type", AndroidProjectTypes.PROJECT_TYPE_APP, model.getProjectType());
-
-        ProductFlavorContainer defaultConfig = model.getDefaultConfig();
+        assertThat(modelInfo.getBasicAndroidProject().getProjectType())
+                .isEqualTo(ProjectType.APPLICATION);
 
         new SourceProviderHelper(
-                        model.getName(), projectDir, "main", defaultConfig.getSourceProvider())
+                        project.getName(),
+                        projectDir,
+                        "main",
+                        modelInfo.getBasicAndroidProject().getMainSourceSet().getSourceProvider())
                 .setJavaDir("src")
                 .setKotlinDirs()
                 .setResourcesDir("src")
@@ -62,27 +58,26 @@ public class MigratedTest {
                 .setResDir("res")
                 .setAssetsDir("assets")
                 .setManifestFile("AndroidManifest.xml")
-                .test();
-
-        SourceProviderContainer testSourceProviderContainer =
-                SourceSetContainerUtils.getExtraSourceProviderContainer(
-                        defaultConfig, ARTIFACT_ANDROID_TEST);
+                .testV2();
 
         new SourceProviderHelper(
-                        model.getName(),
+                        project.getName(),
                         projectDir,
                         ComponentType.ANDROID_TEST_PREFIX,
-                        testSourceProviderContainer.getSourceProvider())
+                        modelInfo
+                                .getBasicAndroidProject()
+                                .getMainSourceSet()
+                                .getAndroidTestSourceProvider())
                 .setJavaDir("tests/java")
                 .setKotlinDirs("tests/kotlin", "tests/java")
                 .setResourcesDir("tests/resources")
                 .setAidlDir("tests/aidl")
-                .setJniDir("tests/jni")
+                .setJniDir("tests/jniLibs")
                 .setRenderscriptDir("tests/rs")
                 .setBaselineProfileDir("tests/baselineProfiles")
                 .setResDir("tests/res")
                 .setAssetsDir("tests/assets")
                 .setManifestFile("tests/AndroidManifest.xml")
-                .test();
+                .testV2();
     }
 }

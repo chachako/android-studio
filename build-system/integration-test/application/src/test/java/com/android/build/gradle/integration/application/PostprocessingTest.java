@@ -19,15 +19,15 @@ package com.android.build.gradle.integration.application;
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThatApk;
 import static com.android.testutils.truth.PathSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.ModelContainer;
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
-import com.android.build.gradle.integration.common.truth.ModelContainerSubject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.BuildTypeContainer;
+import com.android.builder.model.v2.dsl.BuildType;
+import com.android.builder.model.v2.models.AndroidDsl;
 import com.android.utils.FileUtils;
 import com.google.common.io.Files;
 import java.io.File;
@@ -48,9 +48,10 @@ public class PostprocessingTest {
                 project.getBuildFile(),
                 "android.buildTypes.release { postprocessing.removeUnusedCode = true; minifyEnabled = true\n }");
 
-        ModelContainer<AndroidProject> container =
-                project.model().ignoreSyncIssues().fetchAndroidProjects();
-        ModelContainerSubject.assertThat(container).rootBuild().onlyProject().hasNoIssues();
+        ModelContainerV2 container =
+                project.modelV2().ignoreSyncIssues().fetchModels().getContainer();
+
+        assertTrue(container.getProject().getIssues().getSyncIssues().isEmpty());
     }
 
     @Test
@@ -59,23 +60,20 @@ public class PostprocessingTest {
                 project.getBuildFile(),
                 "android.buildTypes.release { postprocessing.removeUnusedCode = true\n }");
 
-        ModelContainer<AndroidProject> container = project.model().fetchAndroidProjects();
-        ModelContainerSubject.assertThat(container).rootBuild().onlyProject().hasNoIssues();
+        ModelContainerV2 container =
+                project.modelV2().ignoreSyncIssues().fetchModels().getContainer();
 
-        AndroidProject model = container.getOnlyModel();
-        BuildTypeContainer buildTypeContainer =
-                model.getBuildTypes()
-                        .stream()
-                        .filter(c -> c.getBuildType().getName().equals("release"))
+        assertTrue(container.getProject().getIssues().getSyncIssues().isEmpty());
+
+        AndroidDsl androidDsl = container.getProject().getAndroidDsl();
+        BuildType release =
+                androidDsl.getBuildTypes().stream()
+                        .filter(v -> v.getName().equals("release"))
                         .findFirst()
                         .orElse(null);
 
-        assertThat(buildTypeContainer).named("release build type container").isNotNull();
-
-        //noinspection deprecation: we're testing the old method returns a value that makes sense.
-        assertThat(buildTypeContainer.getBuildType().isMinifyEnabled())
-                .named("isMinifyEnabled()")
-                .isTrue();
+        assertThat(release).named("release variant").isNotNull();
+        assertThat(release.isMinifyEnabled()).named("isMinifyEnabled()").isTrue();
     }
 
     @Test

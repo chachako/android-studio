@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
-import com.android.builder.model.SourceProvider;
+import com.android.builder.model.v2.ide.SourceProvider;
 import com.google.common.truth.Truth;
 import java.io.File;
 import java.nio.file.Path;
@@ -34,8 +34,9 @@ public final class SourceProviderHelper {
     @NonNull
     private final String projectName;
     @NonNull private final String configName;
-    @Nullable private final SourceProvider sourceProvider;
     @NonNull private final File projectDir;
+    @Nullable private final SourceProvider sourceProvider;
+
     private String javaDir;
     private List<String> kotlinDirs;
     private String resourcesDir;
@@ -66,7 +67,7 @@ public final class SourceProviderHelper {
         setAidlDir("src/" + configName + "/aidl");
         setRenderscriptDir("src/" + configName + "/rs");
         setBaselineProfileDir("src/" + configName + "/baselineProfiles");
-        setJniDir("src/" + configName + "/jni");
+        setJniDir("src/" + configName + "/jniLibs");
     }
 
     @NonNull
@@ -129,13 +130,20 @@ public final class SourceProviderHelper {
         return this;
     }
 
-    public void test() {
+    public void testV2() {
         testSinglePathCollection("java", javaDir, sourceProvider.getJavaDirectories());
-        testSinglePathCollection("resources", resourcesDir, sourceProvider.getResourcesDirectories());
+        testSinglePathCollection(
+                "resources", resourcesDir, sourceProvider.getResourcesDirectories());
         testSinglePathCollection("res", resDir, sourceProvider.getResDirectories());
         testSinglePathCollection("assets", assetsDir, sourceProvider.getAssetsDirectories());
+        testSinglePathCollection("jniLibs", jniDir, sourceProvider.getJniLibsDirectories());
+        testSinglePathCollection(
+                "baselineProfiles",
+                baselineProfileDir,
+                sourceProvider.getBaselineProfileDirectories());
         testSinglePathCollection("aidl", aidlDir, sourceProvider.getAidlDirectories());
-        testSinglePathCollection("rs", renderscriptDir, sourceProvider.getRenderscriptDirectories());
+        testSinglePathCollection(
+                "rs", renderscriptDir, sourceProvider.getRenderscriptDirectories());
 
         Truth.assertWithMessage("AndroidManifest")
                 .that((Comparable<Path>) new File(projectDir, manifestFile).toPath())
@@ -151,7 +159,8 @@ public final class SourceProviderHelper {
     private void testSinglePathCollection(
             @NonNull String setName,
             @NonNull String referencePath,
-            @NonNull Collection<File> pathSet) {
+            @Nullable Collection<File> pathSet) {
+        if (pathSet == null) return;
         assertEquals(1, pathSet.size());
         Truth.assertWithMessage(projectName + ": " + configName + "/" + setName)
                 .that((Comparable<Path>) new File(projectDir, referencePath).toPath())

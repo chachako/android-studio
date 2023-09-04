@@ -18,49 +18,41 @@ package com.android.build.gradle.integration.common.utils;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.android.builder.model.AndroidArtifact;
-import com.android.builder.model.Variant;
-import com.android.builder.model.VariantBuildInformation;
+import com.android.builder.model.v2.ide.Variant;
 import java.io.File;
 import java.util.Collection;
+import java.util.List;
 
 public class VariantHelper {
-
-    private final Variant variant;
-    private final VariantBuildInformation variantOutput;
     private final File projectDir;
     private final String outputFileName;
+    private final Variant variant;
 
     public VariantHelper(
             Variant variant,
-            VariantBuildInformation variantOutput,
             File projectDir,
             String outputFileName) {
         this.variant = variant;
-        this.variantOutput = variantOutput;
         this.projectDir = projectDir;
         this.outputFileName = outputFileName;
     }
 
     public void test() {
-        AndroidArtifact artifact = variant.getMainArtifact();
-        assertThat(artifact).named("Main Artifact null-check").isNotNull();
+        com.android.builder.model.v2.ide.AndroidArtifact mainArtifact = variant.getMainArtifact();
+        assertThat(mainArtifact).named("Main Artifact null-check").isNotNull();
 
         String variantName = variant.getName();
-        assertThat(variantName).isEqualTo(variantOutput.getVariantName());
         File build = new File(projectDir,  "build");
         File apk = new File(build, "outputs/apk/" + outputFileName);
 
-        Collection<File> sourceFolders = artifact.getGeneratedSourceFolders();
+        Collection<File> generatedSourceFolders = mainArtifact.getGeneratedSourceFolders();
+        assertThat(generatedSourceFolders).named("Gen src Folder count").hasSize(2);
 
-        assertThat(sourceFolders).named("Gen src Folder count").hasSize(2);
+        List<String> apkFolderOutput = ProjectBuildOutputUtilsV2.getApkFolderOutput(variant);
+        assertThat(apkFolderOutput).named("artifact output").isNotNull();
+        assertThat(apkFolderOutput).hasSize(1);
 
-        Collection<String> outputs = ProjectBuildOutputUtils.getApkFolderOutput(variantOutput);
-        assertThat(outputs).named("artifact output").isNotNull();
-        assertThat(outputs).hasSize(1);
-
-        File output = new File(ProjectBuildOutputUtils.getSingleOutputFile(variantOutput));
-
-        assertThat(output).named(variantName + " output").isEqualTo(apk);
+        File singleOutputFile = new File(ProjectBuildOutputUtilsV2.getSingleOutputFile(variant));
+        assertThat(singleOutputFile).named(variantName + " output").isEqualTo(apk);
     }
 }

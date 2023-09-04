@@ -21,7 +21,7 @@ import static com.android.build.gradle.integration.common.utils.TestFileUtils.ap
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
-import com.android.builder.model.SyncIssue;
+import com.android.builder.model.v2.ide.SyncIssue;
 import com.google.common.collect.Iterables;
 import java.util.Collection;
 import org.junit.Rule;
@@ -65,13 +65,20 @@ public class MistypedSourceSetTest {
                         + "}\n"
                         + "\n");
 
-        Collection<SyncIssue> issues =
-                project.model().ignoreSyncIssues().fetchAndroidProjects().getOnlyModelSyncIssues();
-        assertThat(issues).hasSize(1);
+        Collection<SyncIssue> syncIssues =
+                project.modelV2()
+                        .ignoreSyncIssues()
+                        .fetchModels()
+                        .getContainer()
+                        .getProject()
+                        .getIssues()
+                        .getSyncIssues();
 
-        SyncIssue issue = Iterables.getOnlyElement(issues);
-        assertThat(issue).hasType(SyncIssue.TYPE_GENERIC);
-        assertThat(issue).hasSeverity(SyncIssue.SEVERITY_ERROR);
+        assertThat(syncIssues).hasSize(1);
+
+        SyncIssue issue = Iterables.getOnlyElement(syncIssues);
+        assertThat(issue.getType()).isEqualTo(SyncIssue.TYPE_GENERIC);
+        assertThat(issue.getSeverity()).isEqualTo(SyncIssue.SEVERITY_ERROR);
         assertThat(issue.getMessage()).contains("blooo");
     }
 }

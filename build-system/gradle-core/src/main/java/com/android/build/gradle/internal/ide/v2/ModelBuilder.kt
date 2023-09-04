@@ -60,6 +60,7 @@ import com.android.build.gradle.internal.scope.MutableTaskContainer
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.AnchorTaskNames
 import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask
+import com.android.build.gradle.internal.tasks.ExportConsumerProguardFilesTask.Companion.checkProguardFiles
 import com.android.build.gradle.internal.tasks.ExtractPrivacySandboxCompatApks
 import com.android.build.gradle.internal.utils.getDesugarLibConfigFile
 import com.android.build.gradle.internal.utils.getDesugaredMethods
@@ -372,6 +373,8 @@ class ModelBuilder<
                 testFixturesNamespace = it.testFixtures?.namespace?.get()
             }
 
+            checkProguardFiles(it)
+
             createVariant(it, instantAppResultMap)
         }
 
@@ -411,6 +414,23 @@ class ModelBuilder<
             modelSyncFiles = modelSyncFiles,
             desugarLibConfig = desugarLibConfig,
         )
+    }
+
+    private fun checkProguardFiles(component: VariantCreationConfig) {
+        // We check for default files unless it's a base module, which can include default files.
+        val isBaseModule = component.componentType.isBaseModule
+        val isDynamicFeature = component.componentType.isDynamicFeature
+        if (!isBaseModule) {
+            val consumerProguardFiles = component.optimizationCreationConfig.consumerProguardFiles
+            checkProguardFiles(
+                project.layout.buildDirectory,
+                isDynamicFeature,
+                consumerProguardFiles
+            ) { errorMessage: String -> variantModel
+                .syncIssueReporter
+                .reportError(IssueReporter.Type.GENERIC, errorMessage)
+            }
+        }
     }
 
     private fun buildAndroidDslModel(project: Project): AndroidDsl {
