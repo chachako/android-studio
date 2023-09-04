@@ -447,13 +447,6 @@ public class IncrementalPackagerBuilder {
         return this;
     }
 
-    public IncrementalPackagerBuilder withChangedPrivacySandboxRuntimeEnabledSdkTable(
-            @NonNull Collection<SerializableChange> changedPrivacySandboxRuntimeEnabledSdkTable) {
-        this.changedPrivacySandboxRuntimeEnabledSdkTable =
-                ImmutableList.copyOf(changedPrivacySandboxRuntimeEnabledSdkTable);
-        return this;
-    }
-
     /**
      * Creates the packager, verifying that all the minimum data has been provided. The required
      * information are:

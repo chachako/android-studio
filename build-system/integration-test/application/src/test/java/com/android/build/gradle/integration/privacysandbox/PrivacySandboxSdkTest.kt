@@ -447,9 +447,10 @@ class PrivacySandboxSdkTest {
                     )
             )
 
-            // TODO(b/295172892) permit this asset for non-sandbox deployments only, for now always package.
+            // This asset must only be packaged in non-sandbox capable devices, otherwise it may
+            // cause runtime exceptions on supported privacy sandbox platforms.
             assertThat(it.entries.map { it.toString() })
-                    .contains("/assets/RuntimeEnabledSdkTable.xml")
+                    .doesNotContain("/assets/RuntimeEnabledSdkTable.xml")
 
             val manifestContentString = manifestContent.joinToString("\n")
             assertThat(manifestContentString).contains(INTERNET_PERMISSION)
@@ -531,7 +532,10 @@ class PrivacySandboxSdkTest {
                 .filter { it.extension == "apk" }
                 .toList()
         assertThat(extractedSdkApks.map { it.name })
-                .containsExactly("comexampleprivacysandboxsdk-master.apk")
+                .containsExactly(
+                        "comexampleprivacysandboxsdkconsumer-injected-privacy-sandbox-compat.apk",
+                        "comexampleprivacysandboxsdk-master.apk"
+                )
 
         Apk(extractedSdkApks.single { it.name == "comexampleprivacysandboxsdk-master.apk" }).use {
             val manifestContent = ApkSubject.getManifestContent(it.file)
