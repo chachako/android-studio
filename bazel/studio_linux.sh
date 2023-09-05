@@ -225,6 +225,21 @@ function collect_logs() {
     ${perfgate_arg}
 }
 
+# Validate studio coverage is valid, but don't build or test.
+# This is to prevent studio_coverage.sh from breaking before submitting changes.
+"${SCRIPT_DIR}/bazel" \
+  --max_idle_secs=60 \
+  build \
+  ${CONFIG_OPTIONS} --nobuild \
+  -- \
+  @cov//:all.suite
+
+if [ $? -ne 0 ]; then
+  echo "Coverage build configuration is broken; You may need to update\
+ tools/adt/idea/bazel/coverage/BUILD"
+  exit 1
+fi
+
 run_bazel_test
 readonly BAZEL_STATUS=$?
 
