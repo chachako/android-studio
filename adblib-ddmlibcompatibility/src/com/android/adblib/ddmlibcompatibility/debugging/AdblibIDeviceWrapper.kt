@@ -346,10 +346,8 @@ internal class AdblibIDeviceWrapper(
                 localConsoleAddress(port),
                 defaultAuthTokenPath()
             ).use {
-                val nameResult = kotlin.runCatching { it.avdName() }
-                val avdName = nameResult.getOrNull()
-                val pathResult = kotlin.runCatching { it.avdPath() }
-                val path = pathResult.getOrNull()
+                val avdName = kotlin.runCatching { it.avdName() }.getOrNull()
+                val path = kotlin.runCatching { it.avdPath() }.getOrNull()
 
                 return AvdData(avdName, path)
             }
@@ -648,7 +646,8 @@ internal class AdblibIDeviceWrapper(
             connectedDevice.session.hostServices.forward(
                 deviceSelector,
                 SocketSpec.Tcp(localPort),
-                SocketSpec.Tcp(remotePort)
+                SocketSpec.Tcp(remotePort),
+                rebind = true
             )
         }
     }
@@ -686,7 +685,8 @@ internal class AdblibIDeviceWrapper(
             connectedDevice.session.hostServices.forward(
                 deviceSelector,
                 SocketSpec.Tcp(localPort),
-                remoteSocketSpec
+                remoteSocketSpec,
+                rebind = true
             )
         }
     }

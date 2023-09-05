@@ -2,7 +2,9 @@ package com.android.adblib.ddmlibcompatibility.debugging
 
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.DeviceSelector
 import com.android.adblib.RemoteFileMode
+import com.android.adblib.SocketSpec
 import com.android.adblib.connectedDevicesTracker
 import com.android.adblib.deviceInfo
 import com.android.adblib.serialNumber
@@ -417,6 +419,46 @@ class AdblibIDeviceWrapperTest {
         assertEquals(lastModifiedTimeSec, remoteFile.modifiedDate.toLong())
         assertEquals(RemoteFileMode.fromPath(localFile), RemoteFileMode.fromModeBits(remoteFile.permission))
         assertEquals(fileBytes.toString(Charsets.UTF_8), remoteFile.bytes.toString(Charsets.UTF_8))
+    }
+
+    @Test
+    fun testForward() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, deviceState) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.ONLINE
+        )
+        assertEquals(0, deviceState.allPortForwarders.size)
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+
+        // Act
+        adblibIDeviceWrapper.createForward(0, 4000)
+
+        // Assert
+        assertEquals(1, deviceState.allPortForwarders.size)
+        val portForwarder = deviceState.allPortForwarders.values.asList()[0]
+        assertEquals(4000, portForwarder?.destination?.port)
+    }
+
+    @Test
+    fun testKillForward() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, deviceState) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.ONLINE
+        )
+        val port =
+            hostServices.forward(
+                DeviceSelector.any(),
+                SocketSpec.Tcp(),
+                SocketSpec.Tcp(4000)
+            ) ?: throw Exception("`forward` command should have returned a port")
+        assertEquals(1, deviceState.allPortForwarders.size)
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+
+        // Act
+        adblibIDeviceWrapper.removeForward(Integer.valueOf(port))
+
+        // Assert
+        assertEquals(0, deviceState.allPortForwarders.size)
     }
 
     private suspend fun createConnectedDevice(
