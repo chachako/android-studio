@@ -108,16 +108,14 @@ fun interface ImageDiffer {
      * Simoncelli. Details can be read in their paper:
      * https://ece.uwaterloo.ca/~z70wang/publications/ssim.pdf
      */
-    object MSSIMMatcher : ImageDiffer {
-        var imageDiffThreshold: Float = 0f
+    class MSSIMMatcher(private var imageDiffThreshold: Float = 0f) : ImageDiffer {
         override fun diff(a: BufferedImage, b: BufferedImage): DiffResult {
             val aIntArray = a.toIntArray()
             val bIntArray = b.toIntArray()
             val SSIMTotal = calculateSSIM(aIntArray, bIntArray, a.width, a.height)
             val SSIMThreshold = 1 - imageDiffThreshold
 
-            val stats = "[MSSIM] Required SSIM: $SSIMThreshold, Actual " +
-                    "SSIM: " + "%.3f".format(SSIMTotal)
+            val stats = "[MSSIM] Required SSIM: ${String.format("%.3f", SSIMThreshold)}, Actual SSIM: ${String.format("%.3f", SSIMTotal)}"
             if (SSIMTotal >= SSIMThreshold) {
                 return DiffResult.Similar(stats)
             }

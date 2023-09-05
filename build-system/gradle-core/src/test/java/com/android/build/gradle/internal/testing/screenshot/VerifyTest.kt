@@ -16,17 +16,13 @@
 
 package com.android.build.gradle.internal.testing.screenshot
 
-import org.junit.Assert.assertThrows
 import java.awt.image.BufferedImage
-import java.io.File
 import javax.imageio.ImageIO
 import org.junit.Test
 import kotlin.test.assertIs
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import org.junit.rules.TestName
-import java.lang.IllegalArgumentException
-import kotlin.test.assertFailsWith
 
 class VerifyTest {
     @get:Rule
@@ -58,6 +54,22 @@ class VerifyTest {
     }
 
     @Test
+    fun assertMatchGoldenWithThreshold_passed() {
+        createGolden("circle")
+        val differ = ImageDiffer.MSSIMMatcher(0.9f)
+        val verifier = Verify(
+                differ,
+                outputDirectory.root.absolutePath
+        )
+
+        val analysis = verifier.assertMatchGolden(goldenFilePath("circle"), loadTestImage("star"))
+
+        assertIs<Verify.AnalysisResult.Passed>(analysis)
+        assertEquals(loadTestImage("star"), analysis.actual)
+        assertEquals(loadTestImage("circle"), analysis.expected)
+    }
+
+    @Test
     fun assertMatchGolden_failed() {
         createGolden("circle")
 
@@ -81,14 +93,14 @@ class VerifyTest {
     }
 
     private fun verifier() = Verify(
-            ImageDiffer.MSSIMMatcher,
+            ImageDiffer.MSSIMMatcher(),
             outputDirectory.root.absolutePath
     )
 
     /** Compare two images using [ImageDiffer.MSSIMMatcher]. */
     private fun assertEquals(expected: BufferedImage, actual: BufferedImage) {
         assertIs<ImageDiffer.DiffResult.Similar>(
-                ImageDiffer.MSSIMMatcher.diff(expected, actual),
+                ImageDiffer.MSSIMMatcher().diff(expected, actual),
                 message = "Expected images to be identical, but they were not."
         )
     }

@@ -25,15 +25,25 @@ import org.junit.Assert.assertEquals
 class ImageDifferTest {
     @Test
     fun mssimMatcherSimilar() {
-        val result = ImageDiffer.MSSIMMatcher.diff(loadTestImage("circle"), loadTestImage("circle"))
+        val result = ImageDiffer.MSSIMMatcher().diff(loadTestImage("circle"), loadTestImage("circle"))
         assertIs<ImageDiffer.DiffResult.Similar>(result)
-        assertEquals("[MSSIM] Required SSIM: 1.0, Actual SSIM: 1.000", result.description)
+        assertEquals("[MSSIM] Required SSIM: 1.000, Actual SSIM: 1.000", result.description)
+        assertNull(result.highlights)
+    }
+
+    @Test
+    fun mssimMatcherDifferentWithImageDifferenceThreshold() {
+        val differ = ImageDiffer.MSSIMMatcher(0.9f)
+
+        val result = differ.diff(loadTestImage("circle"), loadTestImage("star"))
+        assertIs<ImageDiffer.DiffResult.Similar>(result)
+        assertEquals("[MSSIM] Required SSIM: 0.100, Actual SSIM: 0.338", result.description)
         assertNull(result.highlights)
     }
 
     @Test
     fun mssimMatcherDifferent() {
-        val result = ImageDiffer.MSSIMMatcher.diff(loadTestImage("circle"), loadTestImage("star"))
+        val result = ImageDiffer.MSSIMMatcher().diff(loadTestImage("circle"), loadTestImage("star"))
         assertIs<ImageDiffer.DiffResult.Different>(result)
         assertEquals("17837 of 65536 pixels different", result.description)
         assertIs<ImageDiffer.DiffResult.Similar>(
@@ -43,7 +53,7 @@ class ImageDifferTest {
 
     @Test
     fun mmsimName() {
-        assertEquals("MSSIMMatcher", ImageDiffer.MSSIMMatcher.name)
+        assertEquals("MSSIMMatcher", ImageDiffer.MSSIMMatcher().name)
     }
 
     @Test
