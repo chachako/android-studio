@@ -51,6 +51,7 @@ import com.android.ddmlib.InstallException
 import com.android.ddmlib.InstallMetrics
 import com.android.ddmlib.InstallReceiver
 import com.android.ddmlib.Log
+import com.android.ddmlib.ProfileableClient
 import com.android.ddmlib.PropertyFetcher
 import com.android.ddmlib.RawImage
 import com.android.ddmlib.SimpleConnectedSocket
@@ -544,6 +545,10 @@ internal class AdblibIDeviceWrapper(
      */
     override fun getClient(applicationName: String?): Client? {
         return clients.firstOrNull { applicationName == it.clientData.clientDescription }
+    }
+
+    override fun getProfileableClients(): Array<ProfileableClient> {
+        return deviceClientManager.profileableClients.toTypedArray()
     }
 
     /**

@@ -381,6 +381,20 @@ class AdblibIDeviceWrapperTest {
     }
 
     @Test
+    fun getProfileableClients() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, deviceState) = createConnectedDevice(
+            "device1", sdk = "31" // required for "track-app"
+        )
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+        deviceState.startProfileableProcess(25, "x86", "a.b.c")
+
+        // Act / Assert
+        yieldUntil {adblibIDeviceWrapper.profileableClients.size == 1}
+        assertEquals(25, adblibIDeviceWrapper.profileableClients[0].profileableClientData.pid)
+    }
+
+    @Test
     fun pushFile() = runBlockingWithTimeout {
         // Prepare
         val (connectedDevice, deviceState) = createConnectedDevice(
@@ -406,10 +420,12 @@ class AdblibIDeviceWrapperTest {
     }
 
     private suspend fun createConnectedDevice(
-        serialNumber: String, deviceStatus: DeviceState.DeviceStatus
+        serialNumber: String,
+        deviceStatus: DeviceState.DeviceStatus = DeviceState.DeviceStatus.ONLINE,
+        sdk: String = "30"
     ): Pair<ConnectedDevice, DeviceState> {
         val fakeDevice = fakeAdb.connectDevice(
-            serialNumber, "test1", "test2", "model", "30", DeviceState.HostConnectionType.USB
+            serialNumber, "test1", "test2", "model", sdk, DeviceState.HostConnectionType.USB
         )
         fakeDevice.deviceStatus = deviceStatus
         val connectedDevice = waitForConnectedDevice(
