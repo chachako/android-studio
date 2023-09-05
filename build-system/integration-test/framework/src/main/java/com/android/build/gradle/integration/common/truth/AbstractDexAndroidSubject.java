@@ -76,6 +76,11 @@ public class AbstractDexAndroidSubject<
     }
 
     @NonNull
+    public final IndirectSubject<DexClassSubject> hasClass(@NonNull final Class clazz) {
+        return hasClass("L" + clazz.getName().replace('.', '/') + ";");
+    }
+
+    @NonNull
     public final IndirectSubject<DexClassSubject> hasClass(
             @NonNull final String expectedClassName) {
         DexBackedClassDef mainClassDef = getMainClass(expectedClassName);

@@ -25,7 +25,7 @@ import com.android.build.gradle.internal.dexing.writeDesugarGraph
 import com.android.build.gradle.internal.errors.MessageReceiverImpl
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.Java8LangSupport
-import com.android.build.gradle.options.SyncOptions
+import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.SyncOptions.ErrorFormatMode
 import com.android.build.gradle.tasks.toSerializable
 import com.android.builder.dexing.ClassFileInput
@@ -38,7 +38,6 @@ import com.android.builder.dexing.MutableDependencyGraph
 import com.android.builder.dexing.isJarFile
 import com.android.builder.dexing.r8.ClassFileProviderFactory
 import com.android.builder.files.SerializableFileChanges
-import com.android.sdklib.AndroidVersion
 import com.android.utils.FileUtils
 import com.google.common.io.Closer
 import org.gradle.api.artifacts.dsl.DependencyHandler
@@ -78,7 +77,7 @@ abstract class BaseDexingTransform<T : BaseDexingTransform.Parameters> : Transfo
         @get:Classpath
         val bootClasspath: ConfigurableFileCollection
         @get:Internal
-        val errorFormat: Property<SyncOptions.ErrorFormatMode>
+        val errorFormat: Property<ErrorFormatMode>
         @get:Optional
         @get:Input
         val libConfiguration: Property<String>
@@ -361,6 +360,30 @@ abstract class DexingWithClasspathTransform : BaseDexingTransform<BaseDexingTran
     override fun computeClasspathFiles() = classpath.files.toList()
 }
 
+/**
+ * Dexing transform which uses the full classpath. This classpath consists of all external artifacts
+ * ([com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope.EXTERNAL])
+ * in addition to the input artifact's dependencies provided by Gradle through
+ * [org.gradle.api.artifacts.transform.InputArtifactDependencies].
+ */
+@CacheableTransform
+abstract class DexingWithFullClasspathTransform :
+    BaseDexingTransform<DexingWithFullClasspathTransform.Parameters>() {
+
+    @get:CompileClasspath
+    @get:InputArtifactDependencies
+    abstract val inputArtifactDependencies: FileCollection
+
+    interface Parameters : BaseDexingTransform.Parameters {
+
+        @get:CompileClasspath
+        val externalArtifacts: ConfigurableFileCollection
+    }
+
+    override fun computeClasspathFiles() =
+        inputArtifactDependencies.files.toList() + parameters.externalArtifacts.files
+}
+
 object DexingRegistration {
 
     /** Parameters that are shared across all [ComponentCreationConfig]s. */
@@ -370,7 +393,8 @@ object DexingRegistration {
         val bootClasspath: ConfigurableFileCollection,
         val errorFormat: ErrorFormatMode,
         val libConfiguration: Provider<String>,
-        val disableIncrementalDexing: Boolean
+        val disableIncrementalDexing: Boolean,
+        val components: List<ComponentCreationConfig>
     )
 
     /**
@@ -380,35 +404,54 @@ object DexingRegistration {
      * (see [registerTransforms]).
      *
      * IMPORTANT: The properties of this class must be of primitive types (e.g., [Boolean], [Int],
-     * [String]) so that the [getAttributes] method, which calls [toString], can uniquely
-     * represent the contents of this class.
+     * [String]) because the [getAttributes] method relies on [toString], and the implementation of
+     * [toString] on non-primitive types are not well-defined and subject to change (i.e., it can't
+     * be used to uniquely represent an object).
      */
     data class ComponentSpecificParameters(
         val minSdkVersion: Int,
         val debuggable: Boolean,
-        val enableDesugaring: Boolean,
         val enableCoreLibraryDesugaring: Boolean,
         val enableGlobalSynthetics: Boolean,
         val enableApiModeling: Boolean,
         val dependenciesClassesAreInstrumented: Boolean,
         val asmTransformComponent: String?, // Not-null iff dependenciesClassesAreInstrumented == true
         val useJacocoTransformInstrumentation: Boolean,
+        val enableDesugaring: Boolean,
+        val needsClasspath: Boolean,
+        val useFullClasspath: Boolean,
+        val componentIfUsingFullClasspath: String? // Not-null iff useFullClasspath == true
     ) {
 
         constructor(creationConfig: ApkCreationConfig) : this(
             minSdkVersion = creationConfig.dexingCreationConfig.minSdkVersionForDexing.getFeatureLevel(),
             debuggable = creationConfig.debuggable,
-            enableDesugaring = creationConfig.dexingCreationConfig.java8LangSupportType == Java8LangSupport.D8,
             enableCoreLibraryDesugaring = creationConfig.dexingCreationConfig.isCoreLibraryDesugaringEnabled,
             enableGlobalSynthetics = creationConfig.enableGlobalSynthetics,
             enableApiModeling = creationConfig.enableApiModeling,
             dependenciesClassesAreInstrumented = creationConfig.instrumentationCreationConfig?.dependenciesClassesAreInstrumented == true,
             asmTransformComponent = creationConfig.name.takeIf { creationConfig.instrumentationCreationConfig?.dependenciesClassesAreInstrumented == true },
-            useJacocoTransformInstrumentation = creationConfig.useJacocoTransformInstrumentation
+            useJacocoTransformInstrumentation = creationConfig.useJacocoTransformInstrumentation,
+            enableDesugaring = needsDesugaring(creationConfig),
+            needsClasspath = needsClasspath(creationConfig),
+            useFullClasspath = useFullClasspath(creationConfig),
+            componentIfUsingFullClasspath = creationConfig.name.takeIf { useFullClasspath(creationConfig) }
         )
 
-        // Desugaring for API level lower than N (24) requires a classpath
-        val needsClasspath = enableDesugaring && minSdkVersion < AndroidVersion.VersionCodes.N
+        companion object {
+
+            private fun needsDesugaring(creationConfig: ApkCreationConfig): Boolean =
+                creationConfig.dexingCreationConfig.java8LangSupportType == Java8LangSupport.D8
+
+            private fun needsClasspath(creationConfig: ApkCreationConfig): Boolean =
+                needsDesugaring(creationConfig) &&
+                        creationConfig.dexingCreationConfig.minSdkVersionForDexing.getFeatureLevel() < 24
+
+            private fun useFullClasspath(creationConfig: ApkCreationConfig): Boolean =
+                needsClasspath(creationConfig) &&
+                        creationConfig.services.projectOptions.get(BooleanOption.USE_FULL_CLASSPATH_FOR_DEXING_TRANSFORM)
+
+        }
 
         /**
          * Returns [AndroidAttributes] that uniquely represent the contents of this object.
@@ -445,10 +488,11 @@ object DexingRegistration {
         allComponents: ComponentAgnosticParameters,
         component: ComponentSpecificParameters
     ) {
-        val transformClass = if (component.needsClasspath) {
-            DexingWithClasspathTransform::class.java
-        } else {
-            DexingNoClasspathTransform::class.java
+        @Suppress("UNCHECKED_CAST")
+        val transformClass = when {
+            !component.needsClasspath -> DexingNoClasspathTransform::class.java
+            !component.useFullClasspath -> DexingWithClasspathTransform::class.java
+            else -> DexingWithFullClasspathTransform::class.java as Class<BaseDexingTransform<BaseDexingTransform.Parameters>>
         }
 
         allComponents.dependencyHandler.registerTransform(transformClass) { spec ->
@@ -494,12 +538,11 @@ object DexingRegistration {
             // In the case that the JacocoTransform is executed, the Jacoco equivalent artifact is
             // used. These artifacts are the same as CLASSES, CLASSES_JAR and ASM_INSTRUMENTED_JARS,
             // but they have been offline instrumented by Jacoco and include Jacoco dependencies.
-            val inputArtifact: AndroidArtifacts.ArtifactType =
+            val inputArtifactType: AndroidArtifacts.ArtifactType =
                 if (component.useJacocoTransformInstrumentation) {
                     when {
                         component.dependenciesClassesAreInstrumented ->
                             AndroidArtifacts.ArtifactType.JACOCO_ASM_INSTRUMENTED_JARS
-
                         !component.needsClasspath && !allComponents.disableIncrementalDexing ->
                             AndroidArtifacts.ArtifactType.JACOCO_CLASSES
                         else ->
@@ -509,18 +552,26 @@ object DexingRegistration {
                     when {
                         component.dependenciesClassesAreInstrumented ->
                             AndroidArtifacts.ArtifactType.ASM_INSTRUMENTED_JARS
-
                         !component.needsClasspath && !allComponents.disableIncrementalDexing ->
                             AndroidArtifacts.ArtifactType.CLASSES
                         else ->
                             AndroidArtifacts.ArtifactType.CLASSES_JAR
                     }
                 }
-            spec.from.attribute(
-                ARTIFACT_TYPE_ATTRIBUTE,
-                inputArtifact.type
-            )
 
+            if (component.useFullClasspath) {
+                val componentName = component.componentIfUsingFullClasspath!!
+                val creationConfig = allComponents.components.first { it.name == componentName }
+                (spec.parameters as DexingWithFullClasspathTransform.Parameters).externalArtifacts.from(
+                    creationConfig.variantDependencies.getArtifactCollection(
+                        AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                        AndroidArtifacts.ArtifactScope.EXTERNAL,
+                        inputArtifactType
+                    ).artifactFiles
+                )
+            }
+
+            spec.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, inputArtifactType.type)
             if (component.enableGlobalSynthetics) {
                 spec.to.attribute(
                     ARTIFACT_TYPE_ATTRIBUTE,

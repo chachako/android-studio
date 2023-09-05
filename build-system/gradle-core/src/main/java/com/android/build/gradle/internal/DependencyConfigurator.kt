@@ -840,7 +840,8 @@ class DependencyConfigurator(
                         errorFormat = SyncOptions.getErrorFormatMode(projectOptions),
                         // Disable incremental dexing for main and androidTest components in dynamic
                         // feature module (b/246326007)
-                        disableIncrementalDexing = allComponents.any { it.componentType.isDynamicFeature }
+                        disableIncrementalDexing = allComponents.any { it.componentType.isDynamicFeature },
+                        components = allComponents
                     )
                 )
             }
