@@ -20,5 +20,7 @@ iml_module(
         "//tools/adt/idea/.idea/libraries:studio-analytics-proto",
         "//tools/adt/idea/.idea/libraries:studio-proto",
         "//tools/analytics-library/shared:analytics-shared[module]",
+        "//tools/adt/idea/.idea/libraries:emulator-proto",
+        "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
     ],
 )

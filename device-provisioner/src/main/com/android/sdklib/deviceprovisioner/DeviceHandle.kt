@@ -54,6 +54,9 @@ interface DeviceHandle {
   val coldBootAction: ColdBootAction?
     get() = null
 
+  val bootSnapshotAction: BootSnapshotAction?
+    get() = null
+
   /** An action that allows deactivating the device, or null if deactivation is not supported. */
   val deactivationAction: DeactivationAction?
     get() = null

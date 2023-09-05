@@ -47,6 +47,7 @@ interface DeviceAction {
     val createDeviceTemplateAction: Presentation
     val activationAction: Presentation
     val coldBootAction: Presentation
+    val bootSnapshotAction: Presentation
     val deactivationAction: Presentation
     val editAction: Presentation
     val showAction: Presentation
@@ -94,6 +95,18 @@ interface ColdBootAction : DeviceAction {
   suspend fun activate()
 
   override fun DefaultPresentation.fromContext() = coldBootAction
+}
+
+interface BootSnapshotAction : DeviceAction {
+  suspend fun activate(snapshot: Snapshot)
+
+  suspend fun snapshots(): List<Snapshot>
+
+  override fun DefaultPresentation.fromContext() = bootSnapshotAction
+}
+
+interface Snapshot {
+  val name: String
 }
 
 interface DeactivationAction : DeviceAction {
