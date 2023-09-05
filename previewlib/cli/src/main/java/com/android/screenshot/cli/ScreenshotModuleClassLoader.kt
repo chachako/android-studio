@@ -39,6 +39,8 @@ class ScreenshotModuleClassLoader(parent: ClassLoader?, loader: ScreenshotModule
     override val isDisposed: Boolean
         get() = _isDisposed.get()
 
+    private val loadedClasses = mutableSetOf<String>()
+
     /**
      * Package name used to "re-package" certain classes that would conflict with the ones in the Studio class loader.
      * This applies to all packages defined in [StudioModuleClassLoader.PACKAGES_TO_RENAME].
@@ -129,5 +131,13 @@ class ScreenshotModuleClassLoader(parent: ClassLoader?, loader: ScreenshotModule
             durationMs
         )
     }
+
+    override fun loadClass(name: String, resolve: Boolean): Class<*> {
+        val clazz = super.loadClass(name, resolve);
+        loadedClasses.add(name)
+        return clazz
+    }
+
+    override fun hasLoadedClass(fqcn: String): Boolean = loadedClasses.contains(fqcn)
 }
 
