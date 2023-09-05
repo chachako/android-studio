@@ -263,7 +263,7 @@ object TestFiles {
     return result.toString()
   }
 
-  private fun toBase64gzipString(bytes: ByteArray): String {
+  internal fun toBase64gzipString(bytes: ByteArray): String {
     val out = ByteArrayOutputStream()
     GZIPOutputStream(out).use { stream -> stream.write(bytes) }
     val gzipped = out.toByteArray()
@@ -440,7 +440,12 @@ object TestFiles {
     return source(".classpath", source)
   }
 
-  @JvmStatic fun klib(to: String, encoded: String? = null): KlibTestFile = KlibTestFile(to, encoded)
+  @JvmStatic
+  fun klib(to: String, vararg files: TestFile): KlibTestFile = klib(to, null, null, *files)
+
+  @JvmStatic
+  fun klib(to: String, encoded: String?, checksum: Int?, vararg files: TestFile): KlibTestFile =
+    KlibTestFile(to, encoded, checksum, *files)
 
   @JvmStatic
   fun jar(to: String): JarTestFile {

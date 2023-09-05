@@ -535,7 +535,7 @@ internal class CompiledSourceFile(
       }
     }
 
-    private fun executeProcess(args: List<String>) {
+    internal fun executeProcess(args: List<String>) {
       var input: BufferedReader? = null
       var error: BufferedReader? = null
       try {

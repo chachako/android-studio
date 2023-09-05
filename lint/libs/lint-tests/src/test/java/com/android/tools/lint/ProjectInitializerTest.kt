@@ -33,6 +33,7 @@ import com.android.tools.lint.checks.infrastructure.ProjectDescription.Type.LIBR
 import com.android.tools.lint.checks.infrastructure.TestFile
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.klib
+import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestFiles.kt
 import com.android.tools.lint.checks.infrastructure.TestFiles.manifest
 import com.android.tools.lint.checks.infrastructure.TestFiles.source
@@ -2478,7 +2479,72 @@ class ProjectInitializerTest {
           """
               .trimIndent()
           ),
-          klib("libs/BlankKlib.klib", ""),
+          klib(
+            "libs/SomeKlib.klib",
+            "" +
+              "H4sIAAAAAAAA/52Xe1BTVx7HL3kHApMXDykyCUgKKw0BfKwVuwGUAYI0Vsva" +
+              "Gprk5iaQJSSQB4MPmIRUjARcFC1ixbVAi1P7h7Bry0zrlmLSggJaaq11dbYG" +
+              "7aqruz62re6a7V7CqvdK7uWmlxkeczmf3/d7zsk5359cRqaEA7OPEEA+DIAD" +
+              "QFqd2mawZry6IRKgI1/KMYdFIIbpzcFH8gEGgzFn5AL0SIu+wqi22sxai7jK" +
+              "aJ3D0ahUKlClkpB9qwU6KlhKc8XRWye8k17PcKpntG942Pu5d1TkGY3i+eQq" +
+              "yvsq5/v87Te5jgPDzG/GUlg6SeZA4bbur6Y+3Xq+6fRzC3KbB8IzB2uZjkpR" +
+              "HbTi8KvSE4pLea05sFo64yNK+BYdXLEXV33MM+qtZr2xAlf6KOArFXxPAetg" +
+              "6bF7X2B4DPJxVg/v/ist97LX33OTue496y3cDvMr5YrLOX5FeY6/KT/Bf7B8" +
+              "2qnoLl91UuE0FGdluW8P3peZs+4n3P+VMN6uu0PKjBjPObJKslLlayo0q37a" +
+              "2xfTyYf6yZFFE4sdFys7ujpfIx0X8Ecprzed5GxURAYcRn846miDhflxHcah" +
+              "HUJa0FZRZNSZYI8QlkeVA5QAgRpnJZ8URMIv+Lg1+Oga1s01+Msvd4A6gY4M" +
+              "1rHPgxxVh2oKjK7UOOTSxNylCm5JoPCBqQ0iETxiA27hhejCevNqrcagNqut" +
+              "epPRguewkAJm0BjPUSD7Rqary3EhyrVvO3/o1ysuUPanvDWY1seUFN2tra21" +
+              "ZjOP2R+wSE0Fra15LdJ3lrXvIedIUxLYKQnSFOlLTvsiOfOsoOAIlSQ1pEBh" +
+              "S/+1682m+HF5VFgU+w+5w+tkJcVvylzuHb27mUd0L36at4ncYbdTnZxkXsBj" +
+              "WsyDThes6aNQJlenNwQmV4dlrYYO0sUimk64SZzt33OJ1JBviZBZNDIZOTtf" +
+              "Y+ElJ0fI8pP9vh7I7/lkb8+jcb7/Eei3e3qunjvo6Tu44cQtrlBHU0emiWgF" +
+              "4gKa0CImP3pvZj9ej4X6neOF8Ia8HnuOfIMesBCXuOxyDVy7A9dCNNoCaIL0" +
+              "AQ8g5gYMA9fTGCoKWL5rJbc4XjEiLW75vfvyzn29u9e6cu3rfLsonYLC9h3u" +
+              "4+7dO52R6ZSAmILov65ZAUPW4IphI8RUq416ndYyd6OunciMIgnZ0i8PnWz3" +
+              "Gs41j4yM7L9QaRgT9HZRaDHNE4nK29eV//2pu4e9/LdJoyu/gUz9X1zbXNat" +
+              "v3E9jntxa2l929WvF/fncY5uGlh2ytD20s3udWER5soPix5k31nich7iO8+2" +
+              "lB5ulB9o8zRY/tJYxqSSGKzG8wVfDu1vdGTMmFEsWO5rhJUcAfDObS7CDHzm" +
+              "mmxmjdYSysHPQQAMemMVpLaqQzn+Y4ONrzZBNoN2DmXaN8icPLP2h8mxksE/" +
+              "gsfAtKIXxAM+YPcW6rc3ym7t3Jy25mFXWplC3vxG4wDPydvYxSvhBhb2ztGh" +
+              "vKUwYDWuFWEwKTVqTZW6QqtUGyGzSQ+FYk1MhCd5/Bu8navnOgbZYDtYP+x9" +
+              "0OJelZnxbupvsqkBR9uaPzdHw//Aw3W0iIACsQljvYObSieIlChNluCWBq+B" +
+              "L4/L0k6dKbkCnsr4HowoTC8unbgCnp7MGBsbnwbrxo9e9W1niETX+m5qO2tq" +
+              "hUN5v1OUkFiK9AQWqVVhSGgllXBZUo5O8PZrduoobedAkaQwM5Vp7mNmZhVK" +
+              "GkDoCpileviZN5wHrmGs+g6s93qptvY3Gu8+LxaJymavvtM/n3HAYvpwpy8J" +
+              "z6sV/tiLa6oqQpm8xYSAEiX8PejcpUwMhI9I+AVXtpqMmkf98s7vUn0bL11q" +
+              "ICmFFwVTU8Vv0+vqbl2t9PwwPfwZ88BXB9WHLi/8kdu/BPrAd7Z0und7a7b8" +
+              "zlv/rr/NO//z4RvmEzvqm168x/r7BdnhpPdcd19f3RBdKfu4beW5ktzJPx3L" +
+              "2/U1/UfqlpP+P6/9Vqx6SJqZtuq/HfNsg3W4cKctMZhLs8lkVf7faihTFnQL" +
+              "o2AS5bwfnbDAoje52dei4Des0NUj1ygU9anzwiSz6z6fg3cXHR+avaQ+Lqte" +
+              "yAVmriE8F8hLyqo2V2itIZ3q8UGGw/pt9cr6ZUtCASXjgvRGjcEGaTFO1flP" +
+              "6blEuHfQ12FssF/CqzJZ4T+C8cJI4QBWC8UE0M/Thoo6i8EbHoEavhwxPNBY" +
+              "IQh84OmuQ7YrC1CEWjTh2QYLg4dsDmJQvIwwALPlwYAhu4A4FIxDAnC6Cwwc" +
+              "MtvzUTgbGodoJDBQyAi9EIX6BxoVrDXAYCIzLVreFBnAiOIYKGQijUah9lEA" +
+              "rEiMwUIGQjaKlUQFgiRaAluVi8L8E4FBZkkCIA4KJKEBwTIlhi9kuItFcWqC" +
+              "cR5nSwKqhCjaf4LR5sZDDJXIwCZGcWV0AtxnYiIB8YtQRSYIFJlNgljnASIx" +
+              "paPQAgYx9NNESEB9EqoEi4lTAhHEMLQjY8tiFLicEBgRyAhIT0RVyA8PUuGZ" +
+              "MIQhG5lX0KvZPi/0cSgKWW9YxDwzgq0XmUxSUdDSeaHIGERAM/r8+gKBfxp2" +
+              "CGDiURgaay4GGXoIAJNRwJdxgYjwE/JZ9A4u+UkICpl7F5f7JAw94VJpMz8T" +
+              "4C8qjMmdueOB/wFP4UXFXBYAAA==",
+            0x2a5ba622,
+            kotlin(
+                """
+            package test.pkg
+            import android.os.Parcelable
+            abstract class Parent : Parcelable
+                """
+              )
+              .indented(),
+            kotlin(
+                """
+                  package android.os
+                  interface Parcelable
+                  interface Parcel
+                """
+              )
+              .indented()
+          ),
         )
         .type(LIBRARY)
         .name("shared")
@@ -2735,7 +2801,7 @@ class ProjectInitializerTest {
             <src file="shared/src/commonMain/kotlin/pkg/Platform.kt" />
             <src file="shared/src/androidMain/kotlin/pkg/Platform.kt" />
             <src file="shared/src/iosMain/kotlin/pkg/Platform.kt" />
-            <klib file="libs/BlankKlib.klib" />
+            <klib file="libs/SomeKlib.klib" />
           </module>
         </project>
       """
