@@ -55,6 +55,9 @@ function run_bazel_test() {
   local test_tag_filters=-no_linux,-no_test_linux,-no_k2,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate,-very_flaky,-kotlin-plugin-k2
   local target_name="studio-linux-k2"
 
+  # provide BES keyword(s) identifying run features (in this instance, the K2 compiler)
+  local -r bes_features="k2"
+
   declare -a conditional_flags
   if [[ $BUILD_TYPE == "POSTSUBMIT" ]]; then
     conditional_flags+=(--bes_keywords=ab-postsubmit)
@@ -96,6 +99,7 @@ function run_bazel_test() {
     --tool_tag=${SCRIPT_NAME} \
     --embed_label="${AS_BUILD_NUMBER}" \
     --profile="${DIST_DIR:-/tmp}/profile-${BUILD_NUMBER}.json.gz" \
+    --bes_keywords="$bes_features" \
     "${extra_test_flags[@]}" \
     "${conditional_flags[@]}" \
     -- \
