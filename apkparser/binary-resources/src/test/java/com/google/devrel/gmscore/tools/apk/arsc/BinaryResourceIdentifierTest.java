@@ -18,12 +18,11 @@ package com.google.devrel.gmscore.tools.apk.arsc;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-
-import java.util.Arrays;
 
 @RunWith(Parameterized.class)
 public class BinaryResourceIdentifierTest {
@@ -36,31 +35,44 @@ public class BinaryResourceIdentifierTest {
     });
   }
 
+  private final BinaryResourceIdentifier resourceIdentifier;
+  private final BinaryResourceIdentifier resourceIdPkgTypeEntry;
   private final int packageId;
   private final int typeId;
   private final int entryId;
-  private BinaryResourceIdentifier resourceIdentifier;
+  private final int resourceId;
 
   public BinaryResourceIdentifierTest(int resourceId, int packageId, int typeId, int entryId) {
     resourceIdentifier = BinaryResourceIdentifier.create(resourceId);
+    resourceIdPkgTypeEntry = BinaryResourceIdentifier.create(packageId, typeId, entryId);
     this.packageId = packageId;
     this.typeId = typeId;
     this.entryId = entryId;
+    this.resourceId = resourceId;
   }
 
   @Test
   public void resourceIdentifier_comparePackage() {
     assertThat(resourceIdentifier.packageId()).isEqualTo(packageId);
+    assertThat(resourceIdentifier.packageId()).isEqualTo(resourceIdPkgTypeEntry.packageId());
   }
 
   @Test
   public void resourceIdentifier_compareType() {
     assertThat(resourceIdentifier.typeId()).isEqualTo(typeId);
+    assertThat(resourceIdentifier.typeId()).isEqualTo(resourceIdPkgTypeEntry.typeId());
   }
 
   @Test
   public void resourceIdentifier_compareEntry() {
     assertThat(resourceIdentifier.entryId()).isEqualTo(entryId);
+    assertThat(resourceIdentifier.entryId()).isEqualTo(resourceIdPkgTypeEntry.entryId());
+  }
+
+  @Test
+  public void resourceIdentifier_compareId() {
+    assertThat(resourceIdPkgTypeEntry.resourceId()).isEqualTo(resourceId);
+    assertThat(resourceIdPkgTypeEntry.resourceId()).isEqualTo(resourceIdentifier.resourceId());
   }
 }
 
