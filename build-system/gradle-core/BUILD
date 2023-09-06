@@ -166,11 +166,13 @@ kotlin_test(
         "//tools/base/build-system/aapt2:aapt2_for_tests",
     ],
     friends = [":gradle-core"],
+    # TODO: Make it easier to configure AndroidLocation per project.
     jvm_flags = [
         "-Dtest.suite.jar=tests.jar",
-        # TODO: Make it easier to configure AndroidLocation per project.
-        "-DANDROID_PREFS_ROOT=/tmp/android_prefs_root",
-    ],
+    ] + select({
+        "@platforms//os:windows": ["-DANDROID_PREFS_ROOT=C:/temp/android_prefs_root"],
+        "//conditions:default": ["-DANDROID_PREFS_ROOT=/tmp/android_prefs_root"],
+    }),
     resources = glob(["src/test/resources/**"]),
     tags = [
         "slow",

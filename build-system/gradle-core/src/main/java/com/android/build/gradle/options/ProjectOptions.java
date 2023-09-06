@@ -20,6 +20,7 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.annotations.concurrency.Immutable;
 import com.android.build.gradle.internal.LoggerWrapper;
+import com.android.build.gradle.internal.utils.AnalyticsSettingsUtils;
 import com.android.tools.analytics.AnalyticsSettings;
 import com.android.utils.Environment;
 import com.google.common.collect.ImmutableMap;
@@ -197,7 +198,9 @@ public final class ProjectOptions {
      * the configuration cache miss caused by file creation in configuration phase for CI users.
      */
     private boolean needToInitializeAnalytics() {
-        return AnalyticsSettings.settingsFileExists()
+        Provider<Boolean> analyticsSettingsFileExistsProvider =
+                AnalyticsSettingsUtils.analyticsSettingsFileExists(providerFactory);
+        return analyticsSettingsFileExistsProvider.get()
                 || get(BooleanOption.ENABLE_PROFILE_JSON)
                 || get(StringOption.PROFILE_OUTPUT_DIR) != null;
     }
