@@ -585,13 +585,9 @@ abstract class SystemPropertyInputs {
     @get:Optional
     abstract val androidLintLogJarProblems: Property<String>
 
-    // Use @get:Internal because javaVendor and javaVersion act as proxy inputs for javaHome
+    // Use @get:Internal because javaVersion acts as proxy input for javaHome
     @get:Internal
     abstract val javaHome: Property<String>
-
-    @get:Input
-    @get:Optional
-    abstract val javaVendor: Property<String>
 
     @get:Input
     @get:Optional
@@ -653,7 +649,6 @@ abstract class SystemPropertyInputs {
             providerFactory.systemProperty("android.lint.log-jar-problems")
         )
         javaHome.setDisallowChanges(providerFactory.systemProperty("java.home"))
-        javaVendor.setDisallowChanges(providerFactory.systemProperty("java.vendor"))
         javaVersion.setDisallowChanges(providerFactory.systemProperty("java.version"))
         lintApiDatabase.fileProvider(
             providerFactory.systemProperty("LINT_API_DATABASE").map {
