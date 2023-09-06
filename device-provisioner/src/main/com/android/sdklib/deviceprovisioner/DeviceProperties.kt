@@ -80,6 +80,9 @@ interface DeviceProperties {
    */
   val isRemote: Boolean?
 
+  /** If true, the device allows debugging. */
+  val isDebuggable: Boolean?
+
   /** Icon used to represent this device in UIs */
   val icon: Icon
 
@@ -154,6 +157,7 @@ interface DeviceProperties {
     var deviceType: DeviceType? = null
     var isVirtual: Boolean? = null
     var isRemote: Boolean? = null
+    var isDebuggable: Boolean? = null
     var wearPairingId: String? = null
     var resolution: Resolution? = null
     var density: Int? = null
@@ -190,6 +194,7 @@ interface DeviceProperties {
           else -> DeviceType.HANDHELD
         }
       isVirtual = properties[RO_KERNEL_QEMU] == "1"
+      isDebuggable = properties[RO_BUILD_TYPE] in setOf("userdebug", "eng")
       density = properties[RO_SF_LCD_DENSITY]?.toIntOrNull()
     }
 
@@ -246,6 +251,7 @@ interface DeviceProperties {
         deviceType = deviceType,
         isVirtual = isVirtual,
         isRemote = isRemote,
+        isDebuggable = isDebuggable,
         wearPairingId = wearPairingId,
         resolution = resolution,
         density = density,
@@ -265,6 +271,7 @@ interface DeviceProperties {
     override val deviceType: DeviceType?,
     override val isVirtual: Boolean?,
     override val isRemote: Boolean?,
+    override val isDebuggable: Boolean?,
     override val wearPairingId: String?,
     override val resolution: Resolution?,
     override val density: Int?,

@@ -34,6 +34,7 @@ class DevicePropertiesTest {
         "ro.product.cpu.abi" to SdkConstants.ABI_ARM64_V8A,
         "ro.build.version.release" to "10",
         "ro.build.characteristics" to "watch,nosdcard",
+        "ro.build.type" to "userdebug",
         "ro.kernel.qemu" to "1",
       )
 
@@ -44,6 +45,7 @@ class DevicePropertiesTest {
     assertThat(props.abi).isEqualTo(Abi.ARM64_V8A)
     assertThat(props.deviceType).isEqualTo(DeviceType.WEAR)
     assertThat(props.isVirtual).isTrue()
+    assertThat(props.isDebuggable).isTrue()
   }
 
   @Test

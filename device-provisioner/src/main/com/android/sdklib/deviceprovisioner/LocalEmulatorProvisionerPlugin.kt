@@ -551,6 +551,7 @@ class LocalEmulatorProperties(
         wearPairingId = avdInfo.id.takeIf { isPairable() }
         density = avdInfo.density
         resolution = avdInfo.resolution
+        isDebuggable = !avdInfo.hasPlayStore()
       }
   }
 
