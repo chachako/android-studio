@@ -32,9 +32,6 @@ class ManifestFilesImpl(private val variantServices: VariantServices) : Manifest
 
     override fun addStaticManifestFile(relativeFilePath: String) {
         val file = variantServices.projectInfo.projectDirectory.file(relativeFilePath)
-        if (file.asFile.exists() && !file.asFile.isFile) {
-            throw IllegalArgumentException("$relativeFilePath does not point to a file")
-        }
         addSource(
                 FileBasedFileEntry(
                         name = "variant",
@@ -73,9 +70,6 @@ class ManifestFilesImpl(private val variantServices: VariantServices) : Manifest
      * For internal usage. File may not exist.
      */
     internal fun addSourceFile(file: File) {
-        if (file.exists() && !file.isFile) {
-            throw IllegalArgumentException("${file.path} does not point to a file")
-        }
         addSource(
                 FileBasedFileEntry(
                         name = "variant",

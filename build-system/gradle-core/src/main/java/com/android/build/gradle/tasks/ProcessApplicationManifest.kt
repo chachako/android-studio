@@ -121,8 +121,8 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
     abstract val testOnly: Property<Boolean>
 
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    @get:InputFiles
-    abstract val manifestOverlays: ListProperty<File>
+    @get:InputFiles // Note: The files may not exist
+    abstract val manifestOverlayFilePaths: ListProperty<File>
 
     @get:Optional
     @get:Input
@@ -177,7 +177,7 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
 
         val mergingReport = mergeManifests(
             mainManifest.get(),
-            manifestOverlays.get().filter(File::isFile),
+            manifestOverlayFilePaths.get().filter(File::isFile),
             computeFullProviderList(),
             navJsons,
             featureName.orNull,
@@ -510,7 +510,7 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
             )
             task.manifestPlaceholders.disallowChanges()
             task.mainManifest.setDisallowChanges(creationConfig.sources.manifestFile)
-            task.manifestOverlays.setDisallowChanges(creationConfig.sources.manifestOverlayFiles)
+            task.manifestOverlayFilePaths.setDisallowChanges(creationConfig.sources.manifestOverlayFiles)
             task.isFeatureSplitVariantType = creationConfig.componentType.isDynamicFeature
             task.buildTypeName = creationConfig.buildType
             task.projectBuildFile.set(task.project.buildFile)

@@ -90,22 +90,6 @@ class ConfigurationCacheReportChecker {
         ),
         ErrorType.FileSystemEntry to listOf(
             Error.fileSystemEntry(
-                location = "com.android.build.gradle.tasks.ProcessApplicationManifest\$CreationAction\$configure\$4",
-                name = "AndroidManifest.xml"
-            ),
-            Error.fileSystemEntry(
-                location = "com.android.build.gradle.tasks.ProcessTestManifest\$CreationAction\$configure\$1",
-                name = "AndroidManifest.xml"
-            ),
-            Error.fileSystemEntry(
-                location = "com.android.build.gradle.tasks.ProcessLibraryManifest\$CreationAction\$configure\$2",
-                name = "AndroidManifest.xml"
-            ),
-            Error.fileSystemEntry(
-                location = "com.android.build.gradle.tasks.ProcessTestManifest\$CreationAction\$configure\$1",
-                name = "AndroidManifest.xml"
-            ),
-            Error.fileSystemEntry(
                 location = "android_prefs_root/analytics.settings",
                 name = "analytics.settings"
             ),
