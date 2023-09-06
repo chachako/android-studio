@@ -21,11 +21,19 @@ import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
+import com.android.build.gradle.internal.test.report.ReportType
+import com.android.build.gradle.internal.test.report.TestReport
+import com.android.build.gradle.internal.testing.screenshot.ImageDetails
 import com.android.build.gradle.internal.testing.screenshot.ImageDiffer
+import com.android.build.gradle.internal.testing.screenshot.PERIOD
+import com.android.build.gradle.internal.testing.screenshot.PreviewResult
 import com.android.build.gradle.internal.testing.screenshot.Verify
-import com.android.build.gradle.internal.testing.screenshot.ResponseTypeAdapter
+import com.android.build.gradle.internal.testing.screenshot.ResponseProcessor
+import com.android.build.gradle.internal.testing.screenshot.saveResults
+import com.android.build.gradle.internal.testing.screenshot.toPreviewResponse
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.core.ComponentType
+import com.android.utils.FileUtils
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
@@ -38,6 +46,7 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import java.io.File
 import org.gradle.api.tasks.VerificationTask
+import java.nio.file.StandardCopyOption
 import javax.imageio.ImageIO
 
 /**
@@ -67,55 +76,102 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
     abstract val imageOutputDir: DirectoryProperty
 
     override fun doTaskAction() {
-        var exitValue = 0
-        try {
-            val responseFile = renderTaskOutputDir.get().file("response.json").asFile
-            val response = ResponseTypeAdapter().fromJson(responseFile.readText())
-            exitValue = response.status
-        } catch (e: Exception) {
-            throw GradleException("Unable to render screenshots.", e)
-        }
-        if (exitValue in listOf(1, 2)) {
-            throw GradleException("Screenshots could not be generated. See report for details.")
-        } else if (exitValue > 3) {
-            throw GradleException("Unknown error code $exitValue returned.")
+        val response = ResponseProcessor(renderTaskOutputDir.get().asFile.toPath()).process()
+
+        var verificationFailures = 0
+        val resultsToSave = mutableListOf<PreviewResult>()
+        for (previewResult in response.previewResults) {
+            val imageComparison = compareImages(previewResult)
+            resultsToSave.add(imageComparison)
+            if (imageComparison.responseCode != 0) {
+                verificationFailures++
+            }
         }
 
-        var missingGoldens = 0
-        var verificationFailures = 0
-        for (screenshot in renderTaskOutputDir.asFileTree.files) {
-            screenshot.copyTo(File(imageOutputDir.asFile.get().absolutePath + "/" +  screenshot.name))
-            val imageDiffer = ImageDiffer.MSSIMMatcher()
-            // TODO(b/296430073) Support custom image difference threshold from DSL or task argument
-            val verifier =
-                Verify(imageDiffer, imageOutputDir.asFile.get().absolutePath + screenshot.name)
-            // Verify that golden image directory contains a file with the same name
-            val goldenImageForScreenshot =
-                goldenImageDir.files().files.filter { it.name == screenshot.name }.first()
-            if (goldenImageForScreenshot == null) {
-                missingGoldens++
-            } else {
-                val result =
-                    verifier.assertMatchGolden(
-                        goldenImageForScreenshot.absolutePath,
-                        ImageIO.read(screenshot)
-                    )
-                if (result !is Verify.AnalysisResult.Passed) {
-                    verificationFailures++
-                }
-            }
-        }
-        if (missingGoldens > 0 || verificationFailures > 0) {
-            var message = "Failed to validate screenshots."
-            if (missingGoldens > 0) {
-                message += " There were $missingGoldens golden images missing."
-            }
-            if (verificationFailures > 0) {
-              message += " $verificationFailures screenshots failed to match their golden images."
-            }
-            message += " See test report for details."
+        val xmlFilePath = saveResults(resultsToSave, imageOutputDir.asFile.get().toPath())
+        val reportDir = imageOutputDir.get().asFile
+        val report = TestReport(
+            ReportType.SINGLE_FLAVOR,
+            reportDir,
+            reportDir
+        )
+        report.generateScreenshotTestReport(false)
+        val xmlFile = xmlFilePath.toFile()
+        xmlFile.delete()
+        if (verificationFailures > 0) {
+            val reportUrl = File(reportDir, "index.html").toURI().toASCIIString()
+            val message = "There were failing tests. See the report at: $reportUrl"
             throw GradleException(message)
         }
+    }
+
+    private fun compareImages(previewResult: PreviewResult): PreviewResult {
+        val imageDiffer = ImageDiffer.MSSIMMatcher()
+        // TODO(b/296430073) Support custom image difference threshold from DSL or task argument
+        val screenshotName = previewResult.previewName.substring(
+            previewResult.previewName.lastIndexOf(PERIOD) + 1)
+        val screenshotNamePng = "$screenshotName.png"
+        var goldenPath = goldenImageDir.asFile.get().toPath().resolve(screenshotNamePng)
+        var goldenMessage: String? = null
+        val actualPath = imageOutputDir.asFile.get().toPath().resolve(screenshotName + "_actual.png")
+        var diffPath = imageOutputDir.asFile.get().toPath().resolve(screenshotName + "_diff.png")
+        var diffMessage: String? = null
+        var code = 0
+        val verifier =
+            Verify(imageDiffer, diffPath)
+
+        //If the CLI tool could not render the preview, return the preview result with the
+        //code and message along with golden path if it exists
+        if (previewResult.responseCode != 0 ) {
+            if (!goldenPath.toFile().exists()) {
+                goldenPath = null
+                goldenMessage = "Golden image missing"
+            }
+
+            return previewResult.copy(
+                responseCode = previewResult.responseCode,
+                previewName = previewResult.previewName,
+                message = previewResult.message,
+                goldenImage = ImageDetails(goldenPath, goldenMessage),
+                actualImage = ImageDetails(null, previewResult.message)
+            )
+
+        }
+        // copy rendered image from intermediate dir to output dir
+        FileUtils.copyFile(renderTaskOutputDir.asFile.get().toPath().resolve(screenshotName + "_actual.png").toFile(), actualPath.toFile())
+
+        val result =
+            verifier.assertMatchGolden(
+                goldenPath,
+                ImageIO.read(actualPath.toFile())
+            )
+        when (result) {
+            is Verify.AnalysisResult.Failed -> {
+                code = 1
+            }
+            is Verify.AnalysisResult.Passed -> {
+                if (result.imageDiff.highlights == null) {
+                    diffPath = null
+                    diffMessage = "Images match!"
+                }
+            }
+            is Verify.AnalysisResult.MissingGolden -> {
+                goldenPath = null
+                diffPath = null
+                goldenMessage = "Golden image missing"
+                diffMessage = "No diff available"
+                code = 1
+            }
+            is Verify.AnalysisResult.SizeMismatch -> {
+                diffMessage = result.message
+                diffPath = null
+                code = 1
+            }
+        }
+        return result.toPreviewResponse(code, previewResult.previewName,
+            ImageDetails(goldenPath, goldenMessage),
+            ImageDetails(actualPath, null),
+            ImageDetails(diffPath, diffMessage))
     }
 
     class CreationAction(
@@ -123,10 +179,10 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
             private val imageOutputDir: File,
             private val goldenImageDir: File,
     ) :
-            VariantTaskCreationAction<
-                    PreviewScreenshotValidationTask,
-                    InstrumentedTestCreationConfig
-                    >(androidTestCreationConfig) {
+        VariantTaskCreationAction<
+                PreviewScreenshotValidationTask,
+                InstrumentedTestCreationConfig
+                >(androidTestCreationConfig) {
 
         override val name = computeTaskName(ComponentType.PREVIEW_SCREENSHOT_PREFIX)
         override val type = PreviewScreenshotValidationTask::class.java
@@ -166,8 +222,8 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
                     description = "A configuration to resolve PreviewLib CLI tool dependencies."
                 }
                 dependencies.add(
-                        previewlibCliToolConfigurationName,
-                        "com.android.screenshot.cli:screenshot:${Version.ANDROID_TOOLS_BASE_VERSION}")
+                    previewlibCliToolConfigurationName,
+                    "com.android.screenshot.cli:screenshot:${Version.ANDROID_TOOLS_BASE_VERSION}")
             }
         }
     }

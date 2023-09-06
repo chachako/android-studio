@@ -117,7 +117,8 @@ public class TestReport {
                 Element testCase = (Element) testCases.item(i);
                 String className = testCase.getAttribute("classname");
                 String testName = testCase.getAttribute("name");
-                BigDecimal duration = parse(testCase.getAttribute("time"));
+                String timeString = testCase.getAttribute("time");
+                BigDecimal duration = !timeString.isBlank()? parse(timeString) : BigDecimal.valueOf(0);
                 duration = duration.multiply(BigDecimal.valueOf(1000));
                 NodeList failures = testCase.getElementsByTagName("failure");
 

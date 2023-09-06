@@ -177,6 +177,7 @@ dependencies {
     implementation libs.grpc_stub
     implementation libs.tink
     implementation libs.unified_test_platform
+    implementation libs.kxml
 
     compileOnly libs.kotlin_gradle_plugin
     compileOnly libs.kotlin_gradle_plugin_idea

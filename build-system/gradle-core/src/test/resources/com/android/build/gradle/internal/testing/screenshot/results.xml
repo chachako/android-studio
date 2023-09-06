@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="package" tests="4" failures="2" errors="zero" skipped="zero">
+  <properties />
+  <testcase name="previewTest1" classname="package">
+    <success>Golden saved</success>
+    <images>
+      <golden path="goldenPath" />
+    </images>
+  </testcase>
+  <testcase name="previewTest1" classname="package">
+    <success>Golden saved</success>
+    <images>
+      <golden path="goldenPath" />
+    </images>
+  </testcase>
+  <testcase name="previewTest3" classname="package">
+    <failure>Render error</failure>
+    <images>
+      <golden path="goldenPath" />
+      <actual message="Render error: Class XYZ not found" />
+    </images>
+  </testcase>
+  <testcase name="previewTest2" classname="package">
+    <failure>Images don't match</failure>
+    <images>
+      <golden path="goldenPath" />
+      <actual path="actualPath" />
+      <diff path="diffPath" />
+    </images>
+  </testcase>
+</testsuite>

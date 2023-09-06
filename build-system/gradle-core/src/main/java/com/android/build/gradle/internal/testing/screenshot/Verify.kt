@@ -18,30 +18,35 @@ package com.android.build.gradle.internal.testing.screenshot
 
 import java.awt.image.BufferedImage
 import java.io.File
+import java.nio.file.Path
 import javax.imageio.ImageIO
 
-class Verify (private val imageDiffer: ImageDiffer = ImageDiffer.PixelPerfect(), val outputFile: String) {
-    fun assertMatchGolden(goldenPath: String, image: BufferedImage) : AnalysisResult {
+class Verify(private val imageDiffer: ImageDiffer = ImageDiffer.PixelPerfect(), private val diffFilePath: Path) {
+    fun assertMatchGolden(goldenPath: Path, image: BufferedImage) : AnalysisResult {
 
         return analyze(goldenPath, image)
     }
 
-    private fun analyze(goldenPath: String, given: BufferedImage): AnalysisResult {
+    private fun analyze(goldenPath: Path, actual: BufferedImage): AnalysisResult {
         var golden: BufferedImage? = null
-        if (File(goldenPath).exists()) {
-            golden = ImageIO.read(File(goldenPath))
+        if (goldenPath.toFile().exists()) {
+            golden = ImageIO.read(goldenPath.toFile())
+
         }
-        if (golden == null) return AnalysisResult.MissingGolden(given, "MISSING GOLDEN")
-        if (given.width != golden.width || given.height != golden.height) {
-            return AnalysisResult.SizeMismatch(given, "SIZE MISMATCH", golden)
+        if (golden == null) return AnalysisResult.MissingGolden(actual, "MISSING GOLDEN")
+        if (actual.width != golden.width || actual.height != golden.height) {
+            return AnalysisResult.SizeMismatch(actual, "Size Mismatch. Golden image size: ${golden.width}X${golden.height}. Rendered image size: ${actual.width}X${actual.height}", golden)
         }
-        val diff = imageDiffer.diff(given, golden)
+        val diff = imageDiffer.diff(actual, golden)
+        if (diff.highlights != null) {
+            val diffFile = diffFilePath.toFile()
+            ImageIO.write(diff.highlights, "png", diffFile)
+        }
+
         if (diff is ImageDiffer.DiffResult.Different) {
-            val goldenFile = File(outputFile)
-            ImageIO.write(diff.highlights, "png", goldenFile)
-            return AnalysisResult.Failed(given, "FAILED", golden, diff)
+            return AnalysisResult.Failed(actual, "FAILED", golden, diff)
         }
-        return AnalysisResult.Passed(given,
+        return AnalysisResult.Passed(actual,
                 "PASSED",
                 golden,
                 diff as ImageDiffer.DiffResult.Similar)

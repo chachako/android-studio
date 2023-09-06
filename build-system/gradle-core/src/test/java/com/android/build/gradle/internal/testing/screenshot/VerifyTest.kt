@@ -23,6 +23,7 @@ import kotlin.test.assertIs
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import org.junit.rules.TestName
+import java.nio.file.Path
 
 class VerifyTest {
     @get:Rule
@@ -38,6 +39,8 @@ class VerifyTest {
     fun assertMatchGolden_missingGolden() {
         val analysis = verifier().assertMatchGolden(goldenFilePath("circle"), loadTestImage("circle"))
 
+        val previewResult = analysis.toPreviewResponse(1, "name", ImageDetails(Path.of("goldenPath"), null))
+        assert(previewResult.message == analysis.message)
         assertIs<Verify.AnalysisResult.MissingGolden>(analysis)
         assertEquals(loadTestImage("circle"), analysis.actual)
     }
@@ -48,6 +51,8 @@ class VerifyTest {
 
         val analysis = verifier().assertMatchGolden(goldenFilePath("circle"), loadTestImage("circle"))
 
+        val previewResult = analysis.toPreviewResponse(1, "name", ImageDetails(Path.of("goldenPath"), null))
+        assert(previewResult.message == analysis.message)
         assertIs<Verify.AnalysisResult.Passed>(analysis)
         assertEquals(loadTestImage("circle"), analysis.actual)
         assertEquals(loadTestImage("circle"), analysis.expected)
@@ -59,7 +64,7 @@ class VerifyTest {
         val differ = ImageDiffer.MSSIMMatcher(0.9f)
         val verifier = Verify(
                 differ,
-                outputDirectory.root.absolutePath
+                outputDirectory.root.toPath()
         )
 
         val analysis = verifier.assertMatchGolden(goldenFilePath("circle"), loadTestImage("star"))
@@ -75,6 +80,8 @@ class VerifyTest {
 
         val analysis = verifier().assertMatchGolden(goldenFilePath("circle"), loadTestImage("star"))
 
+        val previewResult = analysis.toPreviewResponse(1, "name", ImageDetails(Path.of("goldenPath"), null))
+        assert(previewResult.message == analysis.message)
         assertIs<Verify.AnalysisResult.Failed>(analysis)
         assertEquals(loadTestImage("star"), analysis.actual)
         assertEquals(loadTestImage("circle"), analysis.expected)
@@ -87,6 +94,8 @@ class VerifyTest {
 
         val analysis = verifier().assertMatchGolden(goldenFilePath("vertical_rectangle"), loadTestImage("horizontal_rectangle"))
 
+        val previewResult = analysis.toPreviewResponse(1, "name", ImageDetails(Path.of("goldenPath"), null))
+        assert(previewResult.message == analysis.message)
         assertIs<Verify.AnalysisResult.SizeMismatch>(analysis)
         assertEquals(loadTestImage("vertical_rectangle"), analysis.expected)
         assertEquals(loadTestImage("horizontal_rectangle"), analysis.actual)
@@ -94,7 +103,7 @@ class VerifyTest {
 
     private fun verifier() = Verify(
             ImageDiffer.MSSIMMatcher(),
-            outputDirectory.root.absolutePath
+            outputDirectory.root.toPath()
     )
 
     /** Compare two images using [ImageDiffer.MSSIMMatcher]. */
@@ -108,13 +117,13 @@ class VerifyTest {
     /** Create a golden image for this test from the supplied test image [name]. */
     private fun createGolden(name: String) =
         javaClass.getResourceAsStream("$name.png")!!
-                .copyTo(goldenDirectory.root.resolve("$name.png").canonicalFile.apply { parentFile!!.mkdirs() }.outputStream())
+            .copyTo(goldenDirectory.root.resolve("$name.png").canonicalFile.apply { parentFile!!.mkdirs() }.outputStream())
 
     /** Creates a file path for the golden from the supplied test image [name]. */
     private fun goldenFilePath(name: String) =
-        goldenDirectory.root.resolve("$name.png").canonicalFile.absolutePath
+        goldenDirectory.root.resolve("$name.png").toPath()
 
     /** Load a test image from resources. */
     private fun loadTestImage(name: String) =
-            ImageIO.read(javaClass.getResourceAsStream("$name.png")!!)
+        ImageIO.read(javaClass.getResourceAsStream("$name.png")!!)
 }

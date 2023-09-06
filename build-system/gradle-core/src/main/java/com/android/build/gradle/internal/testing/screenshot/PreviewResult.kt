@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.internal.testing.screenshot
 
+import java.nio.file.Path
+
 /*
 * Result of a rendered preview that indicates if the preview was rendered successfully
 */
@@ -23,8 +25,17 @@ data class PreviewResult(
     val responseCode: Int,
     val previewName: String,
     val message: String? = null,
+    val goldenImage: ImageDetails? = null,
+    val actualImage: ImageDetails? = null,
+    val diffImage: ImageDetails? = null
 
-    ) {
+) {
+}
+
+fun Verify.AnalysisResult.toPreviewResponse(code: Int, name: String, golden: ImageDetails,
+    actual: ImageDetails? = null,
+    diff: ImageDetails? = null): PreviewResult{
+      return PreviewResult(code, name, message, golden, actual, diff)
 }
 
 /*
@@ -32,3 +43,9 @@ data class PreviewResult(
 */
 data class Response(val status: Int, val message: String, val previewResults: List<PreviewResult>) {
 }
+
+/**
+ * class to encapsulate comparison images to be consumed by report generator
+ * In case of missing image, the message will contain the text to be displayed instead
+ */
+data class ImageDetails(val path: Path?, val message: String?)
