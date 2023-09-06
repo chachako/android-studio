@@ -17,7 +17,9 @@ package com.android.fakeadbserver.hostcommandhandlers
 
 import com.android.fakeadbserver.CommandHandler
 import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.DeviceStateSelector
 import com.android.fakeadbserver.FakeAdbServer
+import kotlinx.coroutines.CoroutineScope
 import java.net.Socket
 
 /**
@@ -40,14 +42,15 @@ abstract class HostCommandHandler : CommandHandler() {
      *
      * @param fakeAdbServer  Fake ADB Server itself.
      * @param responseSocket Socket for this connection.
-     * @param device         Target device for the command, if any.
+     * @param deviceSelector Provides access to the target device for the command, if any.
      * @param args           Arguments for the command.
      * @return a boolean, with true meaning keep the connection alive, false to close the connection
      */
     abstract fun invoke(
         fakeAdbServer: FakeAdbServer,
+        socketScope: CoroutineScope,
         responseSocket: Socket,
-        device: DeviceState?,
+        deviceSelector: DeviceStateSelector,
         command: String,
         args: String
     ): Boolean
@@ -64,14 +67,32 @@ abstract class SimpleHostCommandHandler(protected val command: String) : HostCom
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
+        socketScope: CoroutineScope,
         responseSocket: Socket,
-        device: DeviceState?,
+        deviceSelector: DeviceStateSelector,
         command: String,
         args: String
     ): Boolean {
-        return invoke(fakeAdbServer, responseSocket, device, args)
+        val deviceState = when(val deviceResult = deviceSelector.invoke(reportError = true)) {
+            DeviceStateSelector.DeviceResult.Ambiguous,
+            DeviceStateSelector.DeviceResult.None ->  {
+                // Error has been reported, use `null`
+                null
+            }
+            is DeviceStateSelector.DeviceResult.One -> deviceResult.deviceState
+        }
+        return invoke(fakeAdbServer, responseSocket, deviceState, args)
     }
 
+    /**
+     * This is the main execution method of this [SimpleHostCommandHandler].
+     *
+     * @param fakeAdbServer  Fake ADB Server itself.
+     * @param responseSocket Socket for this connection.
+     * @param device         Target device for the command, if any.
+     * @param args           Arguments for the command.
+     * @return a boolean, with true meaning keep the connection alive, false to close the connection
+     */
     abstract fun invoke(
         fakeAdbServer: FakeAdbServer,
         responseSocket: Socket,

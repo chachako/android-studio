@@ -16,7 +16,9 @@
 package com.android.fakeadbserver.hostcommandhandlers
 
 import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.DeviceStateSelector
 import com.android.fakeadbserver.FakeAdbServer
+import kotlinx.coroutines.CoroutineScope
 import java.io.IOException
 import java.net.Socket
 import java.nio.charset.StandardCharsets
@@ -34,34 +36,24 @@ class ListDevicesCommandHandler: HostCommandHandler() {
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
+        socketScope: CoroutineScope,
         responseSocket: Socket,
-        device: DeviceState?,
+        deviceSelector: DeviceStateSelector,
         command: String,
         args: String
     ): Boolean {
         val longFormat = command == LONG_COMMAND
 
-        val stream = try {
-            responseSocket.getOutputStream()
-        } catch (ignored: IOException) {
-            return false
-        }
-
-        try {
-            val deviceListString = formatDeviceList(
-                fakeAdbServer.deviceListCopy.get(),
-                longFormat
-            )
-            writeOkay(stream) // Send ok first.
-            write4ByteHexIntString(stream, deviceListString.length)
-            stream.write(deviceListString.toByteArray(StandardCharsets.US_ASCII))
-        } catch (ignored: InterruptedException) {
-            Thread.currentThread().interrupt()
-        } catch (e: ExecutionException) {
-            writeFailResponse(stream, "Failed to retrieve the list of devices from the server.")
-            return false
-        }
-        return true
+        val stream = responseSocket.getOutputStream()
+        val deviceListString = formatDeviceList(
+            fakeAdbServer.deviceListCopy.get(),
+            longFormat
+        )
+        // Send ok first, then a prefixed length string with the list of devices
+        writeOkay(stream)
+        write4ByteHexIntString(stream, deviceListString.length)
+        stream.write(deviceListString.toByteArray(StandardCharsets.US_ASCII))
+        return false /* close connection */
     }
 
     companion object {

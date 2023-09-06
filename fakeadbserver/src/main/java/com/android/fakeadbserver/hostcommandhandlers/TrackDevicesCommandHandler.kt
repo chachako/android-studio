@@ -16,9 +16,11 @@
 package com.android.fakeadbserver.hostcommandhandlers
 
 import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.DeviceStateSelector
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.statechangehubs.DeviceStateChangeHandlerFactory
 import com.android.fakeadbserver.statechangehubs.StateChangeHandlerFactory
+import kotlinx.coroutines.CoroutineScope
 import java.io.IOException
 import java.net.Socket
 import java.nio.charset.StandardCharsets
@@ -65,8 +67,9 @@ class TrackDevicesCommandHandler: HostCommandHandler() {
 
     override fun invoke(
         fakeAdbServer: FakeAdbServer,
+        socketScope: CoroutineScope,
         responseSocket: Socket,
-        device: DeviceState?,
+        deviceSelector: DeviceStateSelector,
         command: String,
         args: String
     ): Boolean {

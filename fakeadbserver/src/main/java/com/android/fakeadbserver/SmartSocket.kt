@@ -17,6 +17,8 @@ package com.android.fakeadbserver
 
 import java.io.IOException
 import java.net.Socket
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.nio.channels.SocketChannel
 import java.nio.charset.StandardCharsets
 
@@ -51,6 +53,13 @@ internal constructor(private val mSocket: SocketChannel) : AutoCloseable {
     fun sendOkay() {
         val stream = mSocket.socket().getOutputStream()
         stream.write("OKAY".toByteArray(StandardCharsets.US_ASCII))
+    }
+
+    fun sendTransportId(tid: Long) {
+        val buffer = ByteBuffer.allocate(Long.SIZE_BYTES).order(ByteOrder.LITTLE_ENDIAN)
+        buffer.putLong(tid)
+        buffer.flip()
+        mSocket.socket().getOutputStream().write(buffer.array())
     }
 
     fun sendFailWithReason(reason: String) {

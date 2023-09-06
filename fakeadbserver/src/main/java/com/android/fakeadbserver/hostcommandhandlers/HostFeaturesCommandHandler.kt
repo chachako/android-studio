@@ -32,7 +32,7 @@ class HostFeaturesCommandHandler : SimpleHostCommandHandler("host-features") {
             responseSocket.getOutputStream(),
             java.lang.String.join(",", fakeAdbServer.features)
         )
-        return false
+        return false /* don't keep running */
     }
 
 }

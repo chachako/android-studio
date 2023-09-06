@@ -45,6 +45,7 @@ import com.android.fakeadbserver.devicecommandhandlers.UnRootCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.HostCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.TrackDevicesCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.VersionCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.WaitForCommandHandler
 import com.android.fakeadbserver.shellcommandhandlers.ActivityManagerCommandHandler
 import com.android.fakeadbserver.shellcommandhandlers.CatCommandHandler
 import com.android.fakeadbserver.shellcommandhandlers.CmdCommandHandler
@@ -63,6 +64,8 @@ import com.android.fakeadbserver.shellcommandhandlers.WindowManagerCommandHandle
 import com.android.fakeadbserver.shellcommandhandlers.WriteNoStopCommandHandler
 import com.android.fakeadbserver.statechangehubs.DeviceStateChangeHub
 import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -127,7 +130,7 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
 
     // All "external" server controls are synchronized through a central executor, much like the EDT
     // thread in Swing.
-    private val mMainServerThreadExecutor = Executors.newSingleThreadExecutor()
+    private val mMainServerThreadExecutor = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor())
 
     @Volatile
     private var mServerKeepAccepting = false
@@ -446,7 +449,7 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
         }
     }
 
-    val deviceListCopy: Future<List<DeviceState>>
+    val deviceListCopy: ListenableFuture<List<DeviceState>>
         /**
          * Thread-safely gets a copy of the device list. This is useful for asynchronous handlers.
          */
@@ -534,6 +537,7 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
             addHostHandler(GetDevPathCommandHandler())
             addHostHandler(NetworkConnectCommandHandler())
             addHostHandler(NetworkDisconnectCommandHandler())
+            addHostHandler(WaitForCommandHandler())
 
             addDeviceHandler(TrackJdwpCommandHandler())
             addDeviceHandler(TrackAppCommandHandler())

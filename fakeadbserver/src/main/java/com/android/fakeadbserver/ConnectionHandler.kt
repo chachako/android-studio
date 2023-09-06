@@ -16,13 +16,14 @@
 package com.android.fakeadbserver
 
 import com.android.fakeadbserver.DeviceState.HostConnectionType
+import com.android.fakeadbserver.devicecommandhandlers.DeviceCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.HostCommandHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.nio.channels.SocketChannel
-import java.util.Arrays
 import java.util.Locale
 import java.util.Optional
 import java.util.concurrent.ExecutionException
@@ -39,7 +40,15 @@ internal class ConnectionHandler(private val mServer: FakeAdbServer, socket: Soc
     Runnable {
 
     private val mSmartSocket: SmartSocket
-    private var mTargetDevice: DeviceState? = null
+
+    /**
+     * On demand access to the [DeviceState] associated to the current request being processed.
+     * Most [HostCommandHandler] and [DeviceCommandHandler] implementation require either a single
+     * device or no device to be specified in the request device "header". There are a few
+     * exceptions where the device is optional, so we need to account for that.
+     */
+    private var mTargetDeviceSelector = DeviceStateSelector { DeviceStateSelector.DeviceResult.None }
+
     private var mKeepRunning: Boolean
 
     init {
@@ -60,7 +69,7 @@ internal class ConnectionHandler(private val mServer: FakeAdbServer, socket: Soc
                 while (mKeepRunning) {
                     request = mSmartSocket.readServiceRequest()
                     if (request.peekToken().startsWith("host")) {
-                        handleHostService(request)
+                        handleHostService(request, socketScope)
                     } else {
                         handleDeviceService(request, socketScope)
                     }
@@ -75,7 +84,7 @@ internal class ConnectionHandler(private val mServer: FakeAdbServer, socket: Soc
         }
     }
 
-    private fun handleHostService(request: ServiceRequest) {
+    private fun handleHostService(request: ServiceRequest, socketScope: CoroutineScope) {
         when (request.nextToken()) {
             "host" -> {
                 //  'host:command' can also be used to run a HOST command target a device. In that
@@ -83,57 +92,71 @@ internal class ConnectionHandler(private val mServer: FakeAdbServer, socket: Soc
                 // to/running
                 // on the HOST'.
                 //  e.g.: Port forwarding is a HOST command which targets a device.
-                val devices = findAnyDevice()
-                if (devices.size == 1) {
-                    mTargetDevice = devices[0]
-                }
+                mTargetDeviceSelector =
+                    DeviceStateSelector.forCollection(
+                        deviceListProvider = { findAnyDevice() },
+                        errorReporter = { }
+                    )
             }
 
             "host-usb" -> {
-                val devicesUSB = findDevicesWithProtocol(HostConnectionType.USB)
-                if (devicesUSB.size != 1) {
-                    reportDevicesErrorAndStop(devicesUSB.size)
-                    return
-                }
-                mTargetDevice = devicesUSB[0]
+                mTargetDeviceSelector =
+                    DeviceStateSelector.forCollection(
+                        deviceListProvider = { findDevicesWithProtocol(HostConnectionType.USB) },
+                        errorReporter = { reportDevicesErrorAndStop(it.size) }
+                    )
             }
 
             "host-local" -> {
-                val emulators = findDevicesWithProtocol(HostConnectionType.LOCAL)
-                if (emulators.size != 1) {
-                    reportDevicesErrorAndStop(emulators.size)
-                    return
-                }
-                mTargetDevice = emulators[0]
+                mTargetDeviceSelector =
+                    DeviceStateSelector.forCollection(
+                        deviceListProvider = { findDevicesWithProtocol(HostConnectionType.LOCAL) },
+                        errorReporter = { reportDevicesErrorAndStop(it.size) }
+                    )
             }
 
             "host-serial" -> {
                 val serial = request.nextToken()
-                val device = findDeviceWithSerial(serial)
-                if (device.isEmpty) {
-                    reportErrorAndStop("No device with serial: '$serial' is connected.")
-                    return
-                }
-                mTargetDevice = device.get()
+                mTargetDeviceSelector =
+                    DeviceStateSelector.forOptional(
+                        deviceProvider = { findDeviceWithSerial(serial) },
+                        errorReporter = {
+                            reportErrorAndStop("No device with serial: '$serial' is connected.")
+                        }
+                    )
+            }
+
+            "host-transport-id" -> {
+                val transportId = request.nextToken()
+                mTargetDeviceSelector =
+                    DeviceStateSelector.forOptional(
+                        deviceProvider = { findDeviceWithTransportId(transportId) },
+                        errorReporter = {
+                            reportErrorAndStop("No device with transport id: '$transportId' is connected.")
+                        }
+                    )
             }
 
             else -> {
-                val err = String.format(
-                    Locale.US,
-                    "Command not handled '%s' '%s'",
-                    request.currToken(),
-                    request.original()
-                )
-                mSmartSocket.sendFailWithReason(err)
-                return
+                mTargetDeviceSelector =
+                    DeviceStateSelector.forError(
+                        errorReporter = {
+                            val err = String.format(
+                                Locale.US,
+                                "Command not handled '%s' '%s'",
+                                request.currToken(),
+                                request.original()
+                            )
+                            mSmartSocket.sendFailWithReason(err)
+                        }
+                    )
             }
         }
-        dispatchToHostHandlers(request)
+        dispatchToHostHandlers(request, socketScope)
     }
 
     private fun reportDevicesErrorAndStop(numDevices: Int) {
-        val msg: String
-        msg = if (numDevices == 0) {
+        val msg: String = if (numDevices == 0) {
             "No devices available."
         } else {
             String.format(
@@ -154,27 +177,35 @@ internal class ConnectionHandler(private val mServer: FakeAdbServer, socket: Soc
     private fun handleDeviceService(request: ServiceRequest, socketScope: CoroutineScope) {
         // Regardless of the outcome, this will be the last request this connection handles.
         mKeepRunning = false
-        val targetDevice = mTargetDevice ?: run {
-            mSmartSocket.sendFailWithReason("No device available to honor LOCAL service request")
-            return
-        }
-
-        targetDevice.trackCommand(request.original(), socketScope, mSmartSocket.socket) {
-            val serviceName = request.nextToken()
-            val command = request.remaining()
-            for (handler in mServer.handlers) {
-                val accepted = handler.accept(
-                    mServer, socketScope, mSmartSocket.socket, targetDevice, serviceName, command
-                )
-                if (accepted) {
-                    return@handleDeviceService
+        when(val targetDevice = mTargetDeviceSelector.invoke(reportError = true)) {
+            DeviceStateSelector.DeviceResult.Ambiguous,
+            DeviceStateSelector.DeviceResult.None -> {
+                // Nothing to do, error has been reported already
+            }
+            is DeviceStateSelector.DeviceResult.One -> {
+                targetDevice.deviceState.trackCommand(request.original(), socketScope, mSmartSocket.socket) {
+                    val serviceName = request.nextToken()
+                    val command = request.remaining()
+                    for (handler in mServer.handlers) {
+                        val accepted = handler.accept(
+                            mServer,
+                            socketScope,
+                            mSmartSocket.socket,
+                            targetDevice.deviceState,
+                            serviceName,
+                            command
+                        )
+                        if (accepted) {
+                            return@handleDeviceService
+                        }
+                    }
+                    mSmartSocket.sendFailWithReason("Unknown request $serviceName-$command")
                 }
             }
-            mSmartSocket.sendFailWithReason("Unknown request $serviceName-$command")
         }
     }
 
-    private fun dispatchToHostHandlers(request: ServiceRequest) {
+    private fun dispatchToHostHandlers(request: ServiceRequest, socketScope: CoroutineScope) {
         // Intercepting the host:transport* service request because it has the special side-effect
         // of changing the target device.
         // TODO: This should be in a host TransportCommandHandler! Following in next CL.
@@ -182,53 +213,129 @@ internal class ConnectionHandler(private val mServer: FakeAdbServer, socket: Soc
             when (request.nextToken()) {
                 "transport" -> {
                     val serial = request.nextToken()
-                    val device = findDeviceWithSerial(serial)
-                    if (device.isEmpty) {
-                        reportErrorAndStop("No device with serial: '$serial' is connected.")
-                        return
-                    }
-                    mTargetDevice = device.get()
+                    mTargetDeviceSelector =
+                        DeviceStateSelector.forOptional(
+                            deviceProvider = { findDeviceWithSerial(serial) },
+                            errorReporter = {
+                                reportErrorAndStop("No device with serial: '$serial' is connected.")
+                            },
+                            successBlock = { mSmartSocket.sendOkay() })
+                }
+
+                "transport-id" -> {
+                    val transportId = request.nextToken()
+                    mTargetDeviceSelector =
+                        DeviceStateSelector.forOptional(
+                            deviceProvider = { findDeviceWithTransportId(transportId) },
+                            errorReporter = {
+                                reportErrorAndStop("No device with transport id: '$transportId' is connected.")
+                            },
+                            successBlock = { mSmartSocket.sendOkay() })
                 }
 
                 "transport-usb" -> {
-                    val devicesUSB = findDevicesWithProtocol(HostConnectionType.USB)
-                    if (devicesUSB.size != 1) {
-                        reportDevicesErrorAndStop(devicesUSB.size)
-                        return
-                    }
-                    mTargetDevice = devicesUSB[0]
+                    mTargetDeviceSelector =
+                        DeviceStateSelector.forCollection(
+                            deviceListProvider = { findDevicesWithProtocol(HostConnectionType.USB) },
+                            errorReporter = { reportDevicesErrorAndStop(it.size) },
+                            successBlock = { mSmartSocket.sendOkay() })
                 }
 
                 "transport-local" -> {
-                    val emulators = findDevicesWithProtocol(HostConnectionType.LOCAL)
-                    if (emulators.size != 1) {
-                        reportDevicesErrorAndStop(emulators.size)
-                        return
-                    }
-                    mTargetDevice = emulators[0]
+                    mTargetDeviceSelector =
+                        DeviceStateSelector.forCollection(
+                            deviceListProvider = { findDevicesWithProtocol(HostConnectionType.LOCAL) },
+                            errorReporter = { reportDevicesErrorAndStop(it.size) },
+                            successBlock = { mSmartSocket.sendOkay() })
                 }
 
                 "transport-any" -> {
-                    val allDevices = findAnyDevice()
-                    if (allDevices.size < 1) {
-                        reportDevicesErrorAndStop(allDevices.size)
-                        return
-                    }
-                    mTargetDevice = allDevices[0]
+                    mTargetDeviceSelector =
+                        DeviceStateSelector.forCollection(
+                            deviceListProvider = { findAnyDevice() },
+                            errorReporter = { reportDevicesErrorAndStop(it.size) },
+                            successBlock = { mSmartSocket.sendOkay() })
                 }
 
                 else -> {
-                    val err = String.format(
-                        Locale.US, "Unsupported request '%s'", request.original()
-                    )
-                    mSmartSocket.sendFailWithReason(err)
+                    mTargetDeviceSelector =
+                        DeviceStateSelector.forError(
+                            errorReporter = {
+                                val err = String.format(
+                                    Locale.US,
+                                    "Unsupported request '%s'",
+                                    request.original()
+                                )
+                                mSmartSocket.sendFailWithReason(err)
+                            }
+                        )
                 }
             }
-            mSmartSocket.sendOkay()
-            return
+        } else if (request.peekToken() == "tport") {
+            fun sendTransportId(deviceState: DeviceState): DeviceState {
+                // Send 'OKAY' then transport ID as 64-bit little endian value
+                mSmartSocket.sendOkay()
+                mSmartSocket.sendTransportId(deviceState.transportId.toLong())
+                return deviceState
+            }
+
+            request.nextToken() // skip 'tport'
+            when (request.nextToken()) {
+                "serial" -> {
+                    val serial = request.nextToken()
+                    mTargetDeviceSelector =
+                        DeviceStateSelector.forOptional(
+                            deviceProvider = { findDeviceWithSerial(serial) },
+                            errorReporter = {
+                                reportErrorAndStop("No device with serial: '$serial' is connected.")
+                            },
+                            successBlock = { sendTransportId(it) })
+                }
+
+                "usb" -> {
+                    mTargetDeviceSelector =
+                        DeviceStateSelector.forCollection(
+                            deviceListProvider = { findDevicesWithProtocol(HostConnectionType.USB) },
+                            errorReporter = { reportDevicesErrorAndStop(it.size) },
+                            successBlock = { sendTransportId(it) })
+                }
+
+                "local" -> {
+                    mTargetDeviceSelector =
+                        DeviceStateSelector.forCollection(
+                            deviceListProvider = { findDevicesWithProtocol(HostConnectionType.LOCAL) },
+                            errorReporter = { reportDevicesErrorAndStop(it.size) },
+                            successBlock = { sendTransportId(it) })
+                }
+
+                "any" -> {
+                    mTargetDeviceSelector =
+                        DeviceStateSelector.forCollection(
+                            deviceListProvider = { findAnyDevice() },
+                            errorReporter = { reportDevicesErrorAndStop(it.size) },
+                            successBlock = { sendTransportId(it) })
+                }
+
+                else -> {
+                    mTargetDeviceSelector =
+                        DeviceStateSelector.forError {
+                            val err = String.format(
+                                Locale.US, "Unsupported request '%s'", request.original()
+                            )
+                            mSmartSocket.sendFailWithReason(err)
+                        }
+                }
+            }
         }
 
         val hostCommand = request.nextToken()
+        if (hostCommand.isEmpty()) {
+            // Host command was a "switch to transport", so we need to fetch the device target
+            // device
+            val device = mTargetDeviceSelector.invoke(reportError = true)
+            mTargetDeviceSelector = DeviceStateSelector { device }
+            return
+        }
         val handler = mServer.getHostCommandHandler(hostCommand)
         if (handler == null) {
             val err = String.format(
@@ -240,16 +347,12 @@ internal class ConnectionHandler(private val mServer: FakeAdbServer, socket: Soc
             return
         }
         mKeepRunning = handler.invoke(
-            mServer, mSmartSocket.socket, mTargetDevice, hostCommand, request.remaining()
+            mServer, socketScope, mSmartSocket.socket, mTargetDeviceSelector, hostCommand, request.remaining()
         )
     }
 
     private fun findAnyDevice(): List<DeviceState> {
-        return findDevicesWithProtocols(
-            Arrays.asList(
-                HostConnectionType.LOCAL, HostConnectionType.USB
-            )
-        )
+        return findDevicesWithProtocols(listOf(HostConnectionType.LOCAL, HostConnectionType.USB))
     }
 
     private fun findDevicesWithProtocol(
@@ -299,4 +402,17 @@ internal class ConnectionHandler(private val mServer: FakeAdbServer, socket: Soc
         }
     }
 
+    private fun findDeviceWithTransportId(transportId: String): Optional<DeviceState> {
+        return try {
+            val devices = mServer.deviceListCopy.get()
+            devices.stream()
+                .filter { streamDevice: DeviceState -> transportId == streamDevice.transportId.toString() }
+                .findAny()
+        } catch (e: InterruptedException) {
+            throw IllegalStateException(e)
+        } catch (e: ExecutionException) {
+            throw IllegalStateException(e)
+        }
+    }
 }
+

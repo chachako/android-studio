@@ -127,6 +127,10 @@ class DeviceState internal constructor(
             mServer.deviceChangeHub.deviceStatusChanged(this, status)
         }
 
+    override fun toString(): String {
+        return "${this::class.simpleName}(deviceId=$deviceId, deviceStatus=$deviceStatus, apiLevel=$apiLevel, transportId=$transportId)"
+    }
+
     fun addLogcatMessage(message: String) {
         synchronized(mLogcatMessages) {
             mLogcatMessages.add(message)
