@@ -83,12 +83,6 @@ public abstract class BasicResourceItemBase implements BasicResourceItem {
 
   @Override
   @NotNull
-  public final ResourceReference getReferenceToSelf() {
-    return asReference();
-  }
-
-  @Override
-  @NotNull
   public final ResourceValue getResourceValue() {
     return this;
   }
@@ -106,7 +100,7 @@ public abstract class BasicResourceItemBase implements BasicResourceItem {
   @Override
   @NotNull
   public final ResourceReference asReference() {
-    return new ResourceReference(getNamespace(), getResourceType(), myName);
+    return getReferenceToSelf();
   }
 
   /**

@@ -46,7 +46,9 @@ public interface ResourceItem extends Configurable {
 
     /** Returns a {@link ResourceReference} that points to this resource. */
     @NonNull
-    ResourceReference getReferenceToSelf();
+    default ResourceReference getReferenceToSelf() {
+        return new ResourceReference(getNamespace(), getType(), getName());
+    }
 
     /**
      * Returns a string that combines the namespace, type, name and qualifiers and should uniquely
