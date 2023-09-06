@@ -19,11 +19,8 @@ package com.android.build.gradle.integration.analytics
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.ProfileCapturer
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
-import com.android.build.gradle.internal.LoggerWrapper
-import com.android.build.gradle.internal.profile.AnalyticsService
 import com.google.common.truth.Truth
 import com.google.wireless.android.sdk.stats.GradleBuildProfileSpan.ExecutionType
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -38,37 +35,31 @@ class AnalyticsConfigurationCachingTest {
         .enableProfileOutput()
         .create()
 
-    @Before
-    fun initialRun() {
-        // The idea of I9066834a315171f0dc424a5a66009e785c898ba2 is to not initialize analytics
-        // for CI users to avoid configuration cache miss issue. However, if we need to test
-        // analytics and its configuration cache related behaviors, analytics can be enabled using
-        // enableProfileOutput. In that case, the first run and second run are both non cached run
-        // because analytics.settings is created in the first run. We need to have a initial run
-        // so that the second run in the test would be config cached run.
-        project.execute("assembleDebug")
-    }
-
     @Test
     fun buildLevelStatisticsExistInConfigurationCachedRun() {
         val capturer = ProfileCapturer(project)
         val nonCachedRun = capturer.capture { project.execute("assembleDebug") }.single()
+        project.buildResult.assertConfigurationCacheMiss()
         val configCachedRun = capturer.capture { project.execute("assembleDebug") }.single()
         Truth.assertThat(configCachedRun.gradleVersion).isEqualTo(nonCachedRun.gradleVersion)
+        project.buildResult.assertConfigurationCacheHit()
     }
 
     @Test
     fun projectLevelStatisticsExistInConfigurationCachedRun() {
         val capturer = ProfileCapturer(project)
         val nonCachedRun = capturer.capture { project.execute("assembleDebug") }.single()
+        project.buildResult.assertConfigurationCacheMiss()
         val configCachedRun = capturer.capture { project.execute("assembleDebug") }.single()
         Truth.assertThat(configCachedRun.projectCount).isEqualTo(nonCachedRun.projectCount)
+        project.buildResult.assertConfigurationCacheHit()
     }
 
     @Test
     fun testConfigurationSpans() {
         val capturer = ProfileCapturer(project)
         val nonCachedRun = capturer.capture { project.execute("assembleDebug") }.single()
+        project.buildResult.assertConfigurationCacheMiss()
 
         var configurationSpans = nonCachedRun.spanList.filter {
             it.type == ExecutionType.BASE_PLUGIN_PROJECT_CONFIGURE
@@ -83,12 +74,14 @@ class AnalyticsConfigurationCachingTest {
             it.type == ExecutionType.BASE_PLUGIN_PROJECT_CONFIGURE
         }
         Truth.assertThat(configurationSpans).isEmpty()
+        project.buildResult.assertConfigurationCacheHit()
     }
 
     @Test
     fun testSpanIdAllocation() {
         val capturer = ProfileCapturer(project)
         val nonCachedRun = capturer.capture { project.execute("assembleDebug") }.single()
+        project.buildResult.assertConfigurationCacheMiss()
 
         // ensure uniqueness of allocated ids
         var allSpansWithId = nonCachedRun.spanList.filter { it.hasId() }
@@ -103,14 +96,17 @@ class AnalyticsConfigurationCachingTest {
         Truth.assertThat(allSpansWithId.size).isEqualTo(uniqueSpanIds.size)
         // ensure id is allocated from a fixed number
         Truth.assertThat(uniqueSpanIds.minOrNull()).isEqualTo(2)
+        project.buildResult.assertConfigurationCacheHit()
     }
 
     @Test
     fun totalBuildTimeRecorded() {
         val capturer = ProfileCapturer(project)
         val nonCachedRun = capturer.capture { project.execute("assembleDebug") }.single()
+        project.buildResult.assertConfigurationCacheMiss()
         Truth.assertThat(nonCachedRun.buildTime).isGreaterThan(0)
         val configCachedRun = capturer.capture { project.execute("assembleDebug") }.single()
         Truth.assertThat(configCachedRun.buildTime).isGreaterThan(0)
+        project.buildResult.assertConfigurationCacheHit()
     }
 }

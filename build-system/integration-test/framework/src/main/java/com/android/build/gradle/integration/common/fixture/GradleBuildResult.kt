@@ -174,5 +174,12 @@ class GradleBuildResult(
     /** Checks that the [GradleBuildResult] hit the configuration cache */
     fun assertConfigurationCacheHit() {
         assertOutputContains("Reusing configuration cache")
+        assertOutputDoesNotContain("Calculating task graph")
+    }
+
+    /** Checks that the [GradleBuildResult] did not hit the configuration cache */
+    fun assertConfigurationCacheMiss() {
+        assertOutputContains("Calculating task graph")
+        assertOutputDoesNotContain("Reusing configuration cache")
     }
 }

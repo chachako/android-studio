@@ -69,6 +69,14 @@ class AgpVersionConsistencyTest {
             """.trimIndent()
         )
 
+        // allow known configuration cache issue from DIFFERENT_AGP version (b/278767328)
+        TestFileUtils.appendToFile(
+            project.gradlePropertiesFile,
+            """
+                org.gradle.configuration-cache.inputs.unsafe.ignore.file-system-checks=**/analytics.settings
+            """.trimIndent()
+        )
+
         val result =
             project.executor()
                 .withFailOnWarning(false)

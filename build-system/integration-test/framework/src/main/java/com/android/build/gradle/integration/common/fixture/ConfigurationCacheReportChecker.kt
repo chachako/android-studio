@@ -90,10 +90,6 @@ class ConfigurationCacheReportChecker {
         ),
         ErrorType.FileSystemEntry to listOf(
             Error.fileSystemEntry(
-                location = "android_prefs_root/analytics.settings",
-                name = "analytics.settings"
-            ),
-            Error.fileSystemEntry(
                 location = "AGP Plugin",
                 name = "android_prefs_root"
             ),
@@ -224,10 +220,6 @@ class ConfigurationCacheReportChecker {
                 name = "package.xml"
             ),
             Error.fileSystemEntry(
-                location = "plugin 'com.android.internal.application'",
-                name = "android_prefs_root/uid.txt"
-            ),
-            Error.fileSystemEntry(
                 location = "com.android.build.gradle.integration.bundle.AssetPackBundleTest",
                 name = "build.prop"
             ),
@@ -345,10 +337,6 @@ class ConfigurationCacheReportChecker {
             Error.fileSystemEntry(
                 location = "SdkAutoDownloadTest",
                 name = "android-sdk-license"
-            ),
-            Error.fileSystemEntry(
-                location = "SdkAutoDownloadTest",
-                name = "uid.txt"
             ),
         ),
         ErrorType.ValueFromCustomSource to listOf(
