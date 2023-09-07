@@ -136,11 +136,6 @@ public abstract class BasicResourceItemBase implements BasicResourceItem {
   }
 
   @Override
-  public final void setValue(@Nullable String value) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public boolean equals(@Nullable Object obj) {
     if (this == obj) {
       return true;

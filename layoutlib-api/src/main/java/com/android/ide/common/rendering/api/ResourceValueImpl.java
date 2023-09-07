@@ -120,7 +120,6 @@ public class ResourceValueImpl implements ResourceValue {
      *
      * @param value the new value
      */
-    @Override
     public void setValue(@Nullable String value) {
         this.value = value;
     }

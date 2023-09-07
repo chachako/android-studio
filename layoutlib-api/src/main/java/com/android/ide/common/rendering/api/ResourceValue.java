@@ -94,13 +94,6 @@ public interface ResourceValue extends Serializable {
     }
 
     /**
-     * Sets the value of the resource.
-     *
-     * @param value the new value
-     */
-    void setValue(@Nullable String value);
-
-    /**
      * Returns the namespace resolver that can be used to resolve any name prefixes in the string
      * values associated with this resource.
      */
