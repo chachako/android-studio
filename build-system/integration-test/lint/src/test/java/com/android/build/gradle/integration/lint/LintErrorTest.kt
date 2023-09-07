@@ -19,8 +19,10 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject.Com
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import org.junit.Assume.assumeFalse
 import org.junit.Rule
 import org.junit.Test
+import java.util.Locale
 
 class LintErrorTest {
 
@@ -36,6 +38,8 @@ class LintErrorTest {
      */
     @Test
     fun testOutOfMemoryErrorCausesBuildFailureWhenUpdatingLintBaseline() {
+        // Flaky on Windows (b/298483978)
+        assumeFalse(System.getProperty("os.name").lowercase(Locale.US).contains("windows"))
         TestFileUtils.appendToFile(
             project.buildFile,
             """
