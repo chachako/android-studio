@@ -215,7 +215,7 @@ package com.android.build.api.attributes {
   }
 
   public interface ProductFlavorAttr extends org.gradle.api.Named {
-    method @org.gradle.api.Incubating public default static org.gradle.api.attributes.Attribute<com.android.build.api.attributes.ProductFlavorAttr> of(String flavorDimension);
+    method @org.gradle.api.Incubating public static org.gradle.api.attributes.Attribute<com.android.build.api.attributes.ProductFlavorAttr> of(String flavorDimension);
     field public static final com.android.build.api.attributes.ProductFlavorAttr.Companion Companion;
   }
 
