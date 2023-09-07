@@ -42,7 +42,10 @@ public interface ResourceValue extends Serializable {
     /** Returns true if the resource is user defined. */
     boolean isUserDefined();
 
-    boolean isFramework();
+    default boolean isFramework() {
+        // When transferring this across the wire, the instance check won't be correct.
+        return getNamespace().equals(ResourceNamespace.ANDROID);
+    }
 
     /**
      * Returns the value of the resource, as defined in the XML. This can be null, for example for

@@ -98,12 +98,6 @@ public class ResourceValueImpl implements ResourceValue {
     }
 
     @Override
-    public boolean isFramework() {
-        // When transferring this across the wire, the instance check won't be correct.
-        return ResourceNamespace.ANDROID.equals(namespace);
-    }
-
-    @Override
     @Nullable
     public String getValue() {
         return value;

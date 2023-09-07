@@ -93,11 +93,6 @@ public abstract class BasicResourceItemBase implements BasicResourceItem {
   }
 
   @Override
-  public final boolean isFramework() {
-    return getNamespace().equals(ResourceNamespace.ANDROID);
-  }
-
-  @Override
   @NotNull
   public final ResourceReference asReference() {
     return getReferenceToSelf();
