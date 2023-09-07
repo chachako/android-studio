@@ -42,10 +42,31 @@ class DevicePropertiesTest {
     assertThat(props.model).isEqualTo("Pixel 5")
     assertThat(props.androidVersion).isEqualTo(AndroidVersion(29))
     assertThat(props.androidRelease).isEqualTo("10")
-    assertThat(props.abi).isEqualTo(Abi.ARM64_V8A)
+    assertThat(props.primaryAbi).isEqualTo(Abi.ARM64_V8A)
     assertThat(props.deviceType).isEqualTo(DeviceType.WEAR)
     assertThat(props.isVirtual).isTrue()
     assertThat(props.isDebuggable).isTrue()
+  }
+
+  @Test
+  fun readAbiList() {
+    val props =
+      props(
+        "ro.product.cpu.abilist" to "${SdkConstants.ABI_ARM64_V8A},${SdkConstants.ABI_ARMEABI_V7A}"
+      )
+    assertThat(props.primaryAbi).isEqualTo(Abi.ARM64_V8A)
+    assertThat(props.abiList).containsExactly(Abi.ARM64_V8A, Abi.ARMEABI_V7A)
+  }
+
+  @Test
+  fun readAbi2() {
+    val props =
+      props(
+        "ro.product.cpu.abi" to SdkConstants.ABI_ARMEABI_V7A,
+        "ro.product.cpu.abi2" to SdkConstants.ABI_ARMEABI,
+      )
+    assertThat(props.primaryAbi).isEqualTo(Abi.ARMEABI_V7A)
+    assertThat(props.abiList).containsExactly(Abi.ARMEABI_V7A, Abi.ARMEABI)
   }
 
   @Test

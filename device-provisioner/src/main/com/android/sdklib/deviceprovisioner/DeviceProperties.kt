@@ -25,6 +25,8 @@ import com.android.adblib.DevicePropertyNames.RO_KERNEL_QEMU
 import com.android.adblib.DevicePropertyNames.RO_MANUFACTURER
 import com.android.adblib.DevicePropertyNames.RO_MODEL
 import com.android.adblib.DevicePropertyNames.RO_PRODUCT_CPU_ABI
+import com.android.adblib.DevicePropertyNames.RO_PRODUCT_CPU_ABI2
+import com.android.adblib.DevicePropertyNames.RO_PRODUCT_CPU_ABILIST
 import com.android.adblib.DevicePropertyNames.RO_PRODUCT_MANUFACTURER
 import com.android.adblib.DevicePropertyNames.RO_PRODUCT_MODEL
 import com.android.adblib.DevicePropertyNames.RO_SF_LCD_DENSITY
@@ -55,7 +57,11 @@ interface DeviceProperties {
 
   val model: String?
   val manufacturer: String?
-  val abi: Abi?
+  val primaryAbi: Abi?
+    get() = abiList.firstOrNull()
+
+  val abiList: List<Abi>
+
   /**
    * The Android API level. May include a codename if not a release version.
    *
@@ -150,7 +156,7 @@ interface DeviceProperties {
   open class Builder {
     var manufacturer: String? = null
     var model: String? = null
-    var abi: Abi? = null
+    var abiList: List<Abi> = emptyList()
     var androidVersion: AndroidVersion? = null
     var androidRelease: String? = null
     var disambiguator: String? = null
@@ -183,7 +189,13 @@ interface DeviceProperties {
       manufacturer = properties[RO_PRODUCT_MANUFACTURER] ?: properties[RO_MANUFACTURER]
       model = properties[RO_PRODUCT_MODEL] ?: properties[RO_MODEL]
       androidVersion = AndroidVersionUtil.androidVersionFromDeviceProperties(properties)
-      abi = properties[RO_PRODUCT_CPU_ABI]?.let { Abi.getEnum(it) }
+
+      // Try abilist first (implemented in L onwards); otherwise, fall back to abi and abi2.
+      val abiStrings =
+        properties[RO_PRODUCT_CPU_ABILIST]?.split(",")
+          ?: listOfNotNull(properties[RO_PRODUCT_CPU_ABI], properties[RO_PRODUCT_CPU_ABI2])
+      abiList = abiStrings.mapNotNull { Abi.getEnum(it) }
+
       androidRelease = properties[RO_BUILD_VERSION_RELEASE]
       val characteristics = (properties[RO_BUILD_CHARACTERISTICS] ?: "").split(",")
       deviceType =
@@ -214,7 +226,7 @@ interface DeviceProperties {
       deviceInfoProto.buildType = properties[RO_BUILD_TYPE] ?: ""
       deviceInfoProto.buildVersionRelease = androidRelease ?: ""
       deviceInfoProto.cpuAbi =
-        CommonMetricsData.applicationBinaryInterfaceFromString(abi?.toString())
+        CommonMetricsData.applicationBinaryInterfaceFromString(abiList.firstOrNull()?.toString())
       deviceInfoProto.manufacturer = manufacturer ?: ""
       deviceInfoProto.model = model ?: ""
       deviceInfoProto.deviceType =
@@ -254,7 +266,7 @@ interface DeviceProperties {
         manufacturer = manufacturer,
         model = model,
         androidVersion = androidVersion,
-        abi = abi,
+        abiList = abiList,
         androidRelease = androidRelease,
         disambiguator = disambiguator,
         deviceType = deviceType,
@@ -274,7 +286,7 @@ interface DeviceProperties {
     override val manufacturer: String?,
     override val model: String?,
     override val androidVersion: AndroidVersion?,
-    override val abi: Abi?,
+    override val abiList: List<Abi>,
     override val androidRelease: String?,
     override val disambiguator: String?,
     override val deviceType: DeviceType?,

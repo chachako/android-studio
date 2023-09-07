@@ -561,7 +561,7 @@ class LocalEmulatorProperties(
         model = avdInfo.deviceName
         androidVersion = avdInfo.androidVersion
         androidRelease = SdkVersionInfo.getVersionString(avdInfo.androidVersion.apiLevel)
-        abi = Abi.getEnum(avdInfo.abiType)
+        abiList = listOfNotNull(Abi.getEnum(avdInfo.abiType))
         avdName = avdInfo.name
         displayName = avdInfo.displayName
         deviceType = avdInfo.tag.toDeviceType()

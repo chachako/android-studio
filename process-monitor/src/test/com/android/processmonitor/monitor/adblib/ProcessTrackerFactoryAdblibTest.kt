@@ -55,7 +55,7 @@ class ProcessTrackerFactoryAdblibTest {
 private fun deviceProperties(aplLevel: Int, abi: Abi) =
   DeviceProperties.buildForTest {
     androidVersion = AndroidVersion(aplLevel)
-    this.abi = abi
+    this.abiList = listOf(abi)
     icon = EmptyIcon.DEFAULT
   }
 

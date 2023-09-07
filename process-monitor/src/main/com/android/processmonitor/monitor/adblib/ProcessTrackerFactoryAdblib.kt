@@ -36,7 +36,7 @@ internal class ProcessTrackerFactoryAdblib(
         device.properties.androidVersion?.apiLevel ?: 1
 
     override suspend fun getDeviceAbi(device: DeviceState.Connected): String? =
-        device.properties.abi?.toString()
+        device.properties.primaryAbi?.toString()
 
     override fun getDeviceSerialNumber(device: DeviceState.Connected): String =
         device.connectedDevice.serialNumber

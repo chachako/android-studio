@@ -321,7 +321,7 @@ class LocalEmulatorProvisionerPluginTest {
       .isEqualTo(MANUFACTURER)
     assertThat(properties.model).isEqualTo(MODEL)
     assertThat(properties.androidVersion).isEqualTo(API_LEVEL)
-    assertThat(properties.abi).isEqualTo(ABI)
+    assertThat(properties.primaryAbi).isEqualTo(ABI)
     assertThat(properties.avdName).startsWith("fake_avd_")
     assertThat(properties.displayName).startsWith("Fake Device")
     assertThat(Path.of(properties.wearPairingId!!).parent).isEqualTo(avdsPath)
