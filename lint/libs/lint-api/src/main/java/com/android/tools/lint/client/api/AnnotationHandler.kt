@@ -477,7 +477,13 @@ internal class AnnotationHandler(
           error("Unexpected $annotated")
         }
       }
-    list.addAnnotations(evaluator, containingClass, CLASS)
+
+    // Don't inherit annotations inside annotations; this can lead to false positives like
+    // b/298283135 and while possible we don't have examples of annotations today
+    // where this behavior would be desirable.
+    if (!containingClass.isAnnotationType) {
+      list.addAnnotations(evaluator, containingClass, CLASS)
+    }
 
     var topLevelClass = containingClass
     var outerClass = containingClass.containingClass

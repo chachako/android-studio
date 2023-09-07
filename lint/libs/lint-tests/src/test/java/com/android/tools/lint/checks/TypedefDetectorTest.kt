@@ -2178,4 +2178,43 @@ class TypedefDetectorTest : AbstractCheckTest() {
             """
       )
   }
+
+  fun test298283135() {
+    lint()
+      .files(
+        java(
+            """
+            package test.pkg;
+
+            import androidx.annotation.IntDef;
+
+            import java.lang.annotation.Retention;
+            import java.lang.annotation.RetentionPolicy;
+
+            @IntDef({NotificationAction.SHOWN, NotificationAction.COMPLETE,
+                        NotificationAction.CANCEL_PRESSED, NotificationAction.DISMISSED})
+            @Retention(RetentionPolicy.SOURCE)
+            public @interface NotificationAction {
+                int SHOWN = 0;
+                int COMPLETE = 1;
+                int CANCEL_PRESSED = 2;
+                int DISMISSED = 3;
+                int TAPPED = 4;
+
+                int NUM_ENTRIES = 5;
+            }
+
+            class Test {
+                public void test() {
+                    System.out.println(NotificationAction.NUM_ENTRIES); // OK
+                }
+            }
+            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 }
