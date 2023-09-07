@@ -17,20 +17,20 @@ package com.android.adblib.ddmlibcompatibility.debugging
 
 import com.android.adblib.AdbChannel
 import com.android.ddmlib.SimpleConnectedSocket
+import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
 /** Wraps {@link AdbChannel} and provides a way to perform blocking reads/writes with timeout. */
 internal class AdblibChannelWrapper(
-    private val adblibIDeviceWrapper: AdblibIDeviceWrapper,
     val channel: AdbChannel
 ) : SimpleConnectedSocket {
 
     private var closed = false
 
     override fun read(dst: ByteBuffer, timeoutMs: Long): Int =
-        adblibIDeviceWrapper.runBlockingLegacy {
+        runBlocking {
             try {
                 channel.read(dst, timeoutMs, TimeUnit.MILLISECONDS)
             } catch (e: TimeoutException) {
@@ -39,7 +39,7 @@ internal class AdblibChannelWrapper(
         }
 
     override fun write(dst: ByteBuffer, timeoutMs: Long): Int =
-        adblibIDeviceWrapper.runBlockingLegacy {
+        runBlocking {
             try {
                 channel.write(dst, timeoutMs, TimeUnit.MILLISECONDS)
             } catch (e: TimeoutException) {

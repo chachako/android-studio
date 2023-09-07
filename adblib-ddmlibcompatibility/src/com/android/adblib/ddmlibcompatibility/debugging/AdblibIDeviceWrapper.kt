@@ -21,11 +21,9 @@ import com.android.adblib.INFINITE_DURATION
 import com.android.adblib.RemoteFileMode
 import com.android.adblib.SocketSpec
 import com.android.adblib.availableFeatures
-import com.android.adblib.ddmlibcompatibility.AdbLibDdmlibCompatibilityProperties
 import com.android.adblib.deviceInfo
 import com.android.adblib.isOffline
 import com.android.adblib.isOnline
-import com.android.adblib.property
 import com.android.adblib.serialNumber
 import com.android.adblib.syncSend
 import com.android.adblib.thisLogger
@@ -1295,22 +1293,24 @@ internal class AdblibIDeviceWrapper(
         maxTimeUnits: TimeUnit,
         inputStream: InputStream?
     ) {
-        val maxTimeoutDuration =
-            if (maxTimeout > 0) Duration.ofMillis(maxTimeUnits.toMillis(maxTimeout)) else INFINITE_DURATION
-        runBlockingLegacy (timeout = maxTimeoutDuration) {
-            if (adbService != AdbHelper.AdbService.ABB_EXEC) {
-                executeShellCommand(
-                    connectedDevice,
-                    command,
-                    receiver,
-                    maxTimeout,
-                    maxTimeToOutputResponse,
-                    maxTimeUnits,
-                    inputStream
-                )
-            } else {
-                val adbInputChannel = if (inputStream != null) connectedDevice.session.channelFactory.wrapInputStream(inputStream) else null
+        if (adbService != AdbHelper.AdbService.ABB_EXEC) {
+            executeShellCommand(
+                connectedDevice,
+                command,
+                receiver,
+                maxTimeout,
+                maxTimeToOutputResponse,
+                maxTimeUnits,
+                inputStream
+            )
+        } else {
+            val maxTimeoutDuration =
+                if (maxTimeout > 0) Duration.ofMillis(maxTimeUnits.toMillis(maxTimeout)) else INFINITE_DURATION
+            runBlockingLegacy(timeout = maxTimeoutDuration) {
+                val adbInputChannel = inputStream?.let {connectedDevice.session.channelFactory.wrapInputStream(it)}
                 val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+                // TODO: Use `maxTimeToOutputResponse`
+                // TODO(b/299483329): wrap abb_exec and abb with a AbbCommand (similar to ShellCommand)
                 val abbExecFlow = connectedDevice.session.deviceServices.abb_exec(
                     deviceSelector,
                     command.split(" "),
@@ -1318,7 +1318,6 @@ internal class AdblibIDeviceWrapper(
                         receiver
                     ),
                     adbInputChannel,
-                    maxTimeoutDuration,
                     // TODO(b/298475728): Revisit this when we are closer to having a working implementation of `IDevice`
                     // If `shutdownOutput` is true then we get a "java.lang.SecurityException: Files still open" exception
                     // when executing a "package install-commit" command after the "package install-write" command
@@ -1348,7 +1347,7 @@ internal class AdblibIDeviceWrapper(
                 serialNumber
             ), command.toString()
         )
-        AdblibChannelWrapper(this@AdblibIDeviceWrapper, channel)
+        AdblibChannelWrapper(channel)
     }
 
     /**
@@ -1357,7 +1356,7 @@ internal class AdblibIDeviceWrapper(
      * @throws TimeoutException if [block] take more than [timeout] to execute
      */
     internal fun <R> runBlockingLegacy(
-        timeout: Duration = connectedDevice.session.property(AdbLibDdmlibCompatibilityProperties.RUN_BLOCKING_LEGACY_DEFAULT_TIMEOUT),
+        timeout: Duration = Duration.ofMillis(DdmPreferences.getTimeOut().toLong()),
         block: suspend CoroutineScope.() -> R
     ): R {
         return runBlocking {
