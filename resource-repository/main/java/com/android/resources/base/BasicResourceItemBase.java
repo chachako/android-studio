@@ -124,17 +124,6 @@ public abstract class BasicResourceItemBase implements BasicResourceItem {
   @NotNull
   public abstract RepositoryConfiguration getRepositoryConfiguration();
 
-    @Override
-  @NotNull
-  public final String getKey() {
-    String qualifiers = getConfiguration().getQualifierString();
-    if (!qualifiers.isEmpty()) {
-      return getType().getName() + '-' + qualifiers + '/' + getName();
-    }
-
-    return getType().getName() + '/' + getName();
-  }
-
   @Override
   public boolean equals(@Nullable Object obj) {
     if (this == obj) {
