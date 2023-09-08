@@ -15,6 +15,9 @@
  */
 package com.android.adblib.ddmlibcompatibility.debugging
 
+import com.android.adblib.AdbDeviceSyncServices
+import com.android.adblib.AdbFailResponseException
+import com.android.adblib.AdbProtocolErrorException
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.DeviceSelector
 import com.android.adblib.INFINITE_DURATION
@@ -55,6 +58,7 @@ import com.android.ddmlib.SimpleConnectedSocket
 import com.android.ddmlib.ScreenRecorderOptions
 import com.android.ddmlib.ServiceInfo
 import com.android.ddmlib.SplitApkInstaller
+import com.android.ddmlib.SyncException
 import com.android.ddmlib.SyncService
 import com.android.ddmlib.log.LogReceiver
 import com.android.sdklib.AndroidVersion
@@ -65,6 +69,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.guava.asListenableFuture
 import kotlinx.coroutines.runBlocking
 import java.io.File
+import java.io.IOException
 import java.io.InputStream
 import java.nio.channels.SocketChannel
 import java.nio.file.Files
@@ -74,6 +79,7 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Implementation of [IDevice] that entirely relies on adblib services, i.e. does not depend on
@@ -208,9 +214,9 @@ internal class AdblibIDeviceWrapper(
             return null
         }
         val emulatorMatchResult = RE_EMULATOR_SN.toRegex().matchEntire(serialNumber) ?: return null
-        val port = emulatorMatchResult.groupValues[1]?.toIntOrNull() ?: return null
+        val port = emulatorMatchResult.groupValues[1].toIntOrNull() ?: return null
 
-        try {
+        return try {
             connectedDevice.session.openEmulatorConsole(
                 localConsoleAddress(port),
                 defaultAuthTokenPath()
@@ -218,13 +224,12 @@ internal class AdblibIDeviceWrapper(
                 val avdName = kotlin.runCatching { it.avdName() }.getOrNull()
                 val path = kotlin.runCatching { it.avdPath() }.getOrNull()
 
-                return AvdData(avdName, path)
+                AvdData(avdName, path)
             }
         } catch (e: EmulatorCommandException) {
             logger.warn(e, "Couldn't open emulator console")
-            return null
+            null
         }
-        return null
     }
 
     override fun getState(): DeviceState? {
@@ -428,13 +433,15 @@ internal class AdblibIDeviceWrapper(
             val localFileDate = Files.getLastModifiedTime(localFile)
             Log.d(LOG_TAG, "Uploading $localFile onto device '$serialNumber'")
 
-            connectedDevice.session.deviceServices.syncSend(
-                deviceSelector,
-                localFile,
-                remote,
-                RemoteFileMode.fromPath(localFile) ?: RemoteFileMode.DEFAULT,
-                localFileDate
-            )
+            mapToSyncException {
+                connectedDevice.session.deviceServices.syncSend(
+                    deviceSelector,
+                    localFile,
+                    remote,
+                    RemoteFileMode.fromPath(localFile) ?: RemoteFileMode.DEFAULT,
+                    localFileDate
+                )
+            }
         }
     }
 
@@ -736,6 +743,26 @@ internal class AdblibIDeviceWrapper(
             connectedDevice.session.withErrorTimeout(timeout) {
                 block()
             }
+        }
+    }
+
+    /**
+     * Maps exceptions throws from the [AdbDeviceSyncServices] methods of `adblib` to the
+     * (approximately) equivalent [SyncException] of `ddmlib`.
+     *
+     * TODO: Map [IOException] and [AdbFailResponseException] to the corresponding [SyncException].
+     *       This is not trivial as we don't have enough info in the exceptions thrown
+     *       to correctly map to SyncException
+     */
+    private inline fun <R> mapToSyncException(block: () -> R): R {
+        return try {
+            block()
+        } catch (e: CancellationException) {
+            throw SyncException(SyncException.SyncError.CANCELED, e)
+        } catch (e: AdbProtocolErrorException) {
+            throw SyncException(SyncException.SyncError.TRANSFER_PROTOCOL_ERROR, e)
+        } catch (e: AdbFailResponseException) {
+            throw SyncException(SyncException.SyncError.TRANSFER_PROTOCOL_ERROR, e)
         }
     }
 
