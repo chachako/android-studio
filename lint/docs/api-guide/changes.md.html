@@ -5,6 +5,15 @@ authors: new features, API and behavior changes, and so on. For
 information about user visible changes to lint, see the User
 Guide.
 
+**8.3**
+
+* If you'd like to change your error message reported by your
+  detector, you can now override your `Detector`'s `sameMessage`
+  method: match the details in the previous error message with the
+  new format. This is used by the baseline mechanism such that your
+  message change doesn't suddenly invalidate all existing baseline
+  files for your issue.
+
 **8.2**
 
 * For unit tests, you can now specify the language level to be used

@@ -24,6 +24,7 @@ import com.android.tools.lint.LintCliFlags.ERRNO_SUCCESS
 import com.android.tools.lint.MainTest
 import com.android.tools.lint.checks.AccessibilityDetector
 import com.android.tools.lint.checks.ApiDetector
+import com.android.tools.lint.checks.BuiltinIssueRegistry
 import com.android.tools.lint.checks.HardcodedValuesDetector
 import com.android.tools.lint.checks.IconDetector
 import com.android.tools.lint.checks.LayoutConsistencyDetector
@@ -679,6 +680,7 @@ class LintBaselineTest {
   fun testChangedUrl() {
     val baselineFile = temporaryFolder.newFile("baseline.xml")
 
+    @Language("text")
     val errorMessage =
       "The attribute android:allowBackup is deprecated from Android 12 and higher and ..."
 
@@ -2263,6 +2265,178 @@ class LintBaselineTest {
       assertTrue(target.tokenPrecededBy(prev, 7))
       assertThrows(IndexOutOfBoundsException::class.java) { target.tokenPrecededBy(prev, 8) }
     }
+  }
+
+  @Test
+  fun tolerate3rdPartyMessageChanges() {
+    val root = temporaryFolder.newFolder("lintjar")
+
+    lint()
+      .files(
+        *JarFileIssueRegistryTest.lintApiStubs,
+        bytecode(
+          "lint.jar",
+          source(
+            "META-INF/services/com.android.tools.lint.client.api.IssueRegistry",
+            "test.pkg.MyIssueRegistry"
+          ),
+          0x70522285
+        ),
+        bytecode(
+          "lint.jar",
+          kotlin(
+              """
+            package test.pkg
+            import com.android.tools.lint.client.api.*
+            import com.android.tools.lint.detector.api.*
+            import java.util.EnumSet
+
+            class MyIssueRegistry : IssueRegistry() {
+              override val issues: List<Issue> = listOf(testIssue)
+              override val api: Int = 10000
+              override val minApi: Int = 7
+              override val vendor: Vendor = Vendor(
+                vendorName = "Android Open Source Project: Lint Unit Tests",
+                contact = "/dev/null"
+              )
+            }
+
+            class MyDetector : Detector() {
+              override fun sameMessage(issue: Issue, new: String, old: String): Boolean {
+                return new == "PreviousMessage"
+              }
+            }
+            private val testIssue =
+              Issue.create(id = "_TestIssueId", briefDescription = "Desc", explanation = "Desc", implementation = Implementation(
+                MyDetector::class.java,
+                Scope.JAVA_FILE_SCOPE
+              )
+              )
+            """
+            )
+            .indented(),
+          0x77a720c0,
+          """
+          META-INF/main.kotlin_module:
+          H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijgMuZSTM7P1UvMSynKz0zRK8nPzynW
+          y8nMK9FLzslMBVKJBZlCfM5gdnxxSWlSsXcJlywXR0lqcYleQXa6kKBvpWdx
+          cWlqUGp6ZnFJUaV3iRKDFgMARSnsbWwAAAA=
+          """,
+          """
+          test/pkg/MyDetector.class:
+          H4sIAAAAAAAA/5VUy1ITQRQ9PSHJEDCEIDFBRRSUhNeE+NhgWeWzjJUgBcoC
+          Vp2kKzSZzOB0J8qOb3HtxpWUC4ty6UdZ3p5MCZZUiUnmntNn+j765s78+Pn1
+          G4B7eMAwoYXSzkGn7dQPnwktmtoPkmAMS02/63CvFfiy5Wjfd5XjSk87rWiT
+          ww+kc+oRY0g8lJ7UjxhixdL2KOJIpDCEJMOQ3pOKYbJ2Tq41hhHFu6IulOJt
+          wbBZrF0kc1Wpnlir7fM+d1zutZ0tHUivfY5S2mGYrflB29kXuhFw6SmK7vma
+          a+kTX/f1es91qZC4NEFtpBmmO76mpM5+v+tQbhF43HWqnomoZFMlkaHzNPdE
+          sxO5b/CATkEbGeaLZ4p43dinos8ri1qUxUQK47hMLfPEexs5Ir7bspFnGNsI
+          RF/6PRV1xsYUg80D8fxdj7v/zBIppZ1RXMN1k2WaYfE/WsuQ/btohvFa1Jm6
+          0LzFNSfN6vZjNE/MmGFjwMA6pH+QZlUm1lpleHtyNJ2y8tbgsunKjKROjsKl
+          gUyaIH9yVLHK7En8+8eElbFezWRiU1Z5qJLIxAkThElCm3DY4MucCV5hWLnQ
+          0c5MHdWYrR+GZ90Ubal0cLjS0TSsT/0WjeFYTXpivddtiOANb7jCtMNvcneb
+          B9KsI3Fus+dp2RVVry+VJOn3HDw+HTGG1JbfC5rihTQ+hchne+BxZiNWYdEj
+          Yz4W1UdPENkyrRzTUcL4whfYn8Pbq2QToZhBhezoYAOGkQr/gBFSrNCZR0EL
+          i9mxY0wuZa+QXc4WQn71GDc+/REwS18TcGHgFAU0LI2ZMEkBOdwkD8PyxGK4
+          S3wiRjcvhblPrUVvGWMd3CesknqLapzdRayKuSpuV3EH80RRrKKEhV0whUUs
+          7SKlzG9ZIaHoBYEVhbTCjEIu5PlfzQb31cMEAAA=
+          """,
+          """
+          test/pkg/MyIssueRegistry.class:
+          H4sIAAAAAAAA/6VVW28bRRT+Zn1bu26yMQk4TkPd1rSOm2ad9AZ1mpImFJY6
+          CUpKBMrTxp6aSda71s7Yojyg/Ap+AOKRB5CIWoGEoj7yoxBnd12S2omg8LBz
+          Zs5858y5fDP7x5+//g7gFjYY8opLZXb2W+baM0vKLt/kLSGV/ywFxmA2vLZp
+          u03fE01TeZ4jTUe4ymw4gpOwO8IcMIoxJBeFK9QSQ6w8s51FAskM4kgxFM46
+          67FKIc0wYTcaXMpSi6snhAwhpQ7DjfJM/YxAmlzxhvL841BqWZxDNoMMzjMU
+          9z1FOErDcQgnPFeaK8fz4NxRCtihKDaeMpTK9T27Z5uO7bbMjd09gtVmIlVX
+          CcesE478jyGXgYG3yFIER0oGYxg1gbfT0PAO1YGCY2BWFpMoBLopsmwLd7kj
+          spiOVO8ylP+52NvcbXp+CkWG2eUIWdzocLe45XX9Bi9+5ntB0PeKdTIsfk5t
+          KAaVlDouM6SpWj3T7TqOjhLDNyeT3VK+cFu1/6ax6v0y7/XaJh3Mfdd2zFX+
+          1O46aoXqrPxu0KQ129/nfi0ixdUMLuEaFaIX5sRQOavHQ/lTcWdQCap2nSGu
+          vhLUgEL9LHLVKHNilNXvVK481FGGB0PKxTdg3BJ5uFL3/Ja5x9Wubwtime26
+          nrIjxq17ap2qTqgkBbIckIGuhhXFtRbyIJpv90sxezbhh4vBcP9/xj72qn9r
+          XNlNW9mk09q9GL0RLBjSwQBi8D7pvxbBqkqz5jzDD0cH5YyW16JPp8/QScZI
+          Fvu6xKu9/NHBglZlDxMvv09qhrY5bsQKWjX+xcvvVkmjZ44OCnE9YSQ3C0aq
+          oOfiOa2aruq0HT/ezhjnyC47bHee7MaNEdoYfd3CMMaCWBcY5v9FTQeZQ1lf
+          f4NqEr0G2De3r6i3W6Ll2qrrc4apza6rRJtbbk9Isevw5WOmEJtXvCaBRun+
+          8vVue5f7T2zCkN+617CdbdsXwbqvzETX/pEIFpN9x9tDbjFPVyVOXYsjFzxL
+          tPqEVhreh0UySUkukMwFz1Mop/uSbhntncQkSCbC1ae0+hZpmhEbKs+hV15g
+          5AXGD5GvjF0zDnGhYqQOcbHyGy59mbvCWO49I8meo3yI2Z/D0x/TWKF3OvBO
+          /weMQKfo0pgiXZEe8cskS8jiKkmTMHVCZqPzcANzISVNmsfCWMyAoEGElV+Q
+          /+nvA5KhMnXCONE3jkow/1p6DDfpt8iGHF74ccChfopDhtunGl8cNE6fanwH
+          dwk1aDw7mErmFOOTKWhYC8ePsU7SJu0HhLu3g5iFmoVFC/exRFM8sPAhlnfA
+          JB5iZQc5iTmJVYmkxKTERxI3JW5JTITzRxKmRFViWuK2xIxEReKOxN2/AAbm
+          ojBNCAAA
+          """,
+          """
+          test/pkg/MyIssueRegistryKt.class:
+          H4sIAAAAAAAA/51VW08TURD+pkV6sVIogtxEhQqtCMtFvBUxWCCuFjCUEJUH
+          ctgem4XtbrN7SuSN+Oq/8BcoPmg0MYRHf42/wDhbKxDkobCb7JwzZ75v57Iz
+          +/P3tx8A7uAxoUtJT2nlraK2sKN7XkUuy6LpKXfnuQqBCM2bYltolrCL2tLG
+          pjRYGyS0CcOQnpcsSrXC+CowWSYMp9I5wylpwi64jlnQlONYnmaZttIKUjHa
+          cTVRNrUqIEOIqH9owtAZkDGEEI4ggAghPGWwmammCcFUepWQrpsnhEvsQ9Yp
+          lYVtOjZhsn4fkocw9iaO5gia0EKIrR8mRC+E0UpomJWeEUYbYbwu8lLZkiVp
+          K6GYO4QrhNZjNZqt2YbQWWekecMpc6TdhPizmdWZ9Xk9N7eezy69mGPmXLW8
+          FWVa2pxdKeWl4miuojeCHlwjNE7VMjuYyh19CFlLeF7mFGh6NYYb6IuiA/2E
+          iXPkMoSbhCbDlULJZEG+ERVLEb1Pnasux1zOK9e0i/Vpzl6l87JkOcqi4+5k
+          9LrM83Jbuqbaybw+9r4nbCyFfVo5jqmyjmUxke+rnjvZ0pmzNG0Mg0hFMYA0
+          oT/nuEVtU6oNV5i2xwy28zcjnrboqMWKZXGTt+S2HMV02oJUoiCUYF2gtB3k
+          EUT+I+I/QKAtfxHgw7emvxrlVWGM0Lu/2xjd340GOgJ9Tc37u12BUXp58K7h
+          4ENjgPW+1TghcWJ+jWwpQvdyxVZmSer2tumZG5acOfKQOzPrFHjwxHOmLRcr
+          pQ3prgi24SbWbVu61c9csl0071RcQ86b/llnjXL1P0KM8UBqqIbS5c8nlg94
+          18hyyA+suRMXqruHvOth6V8Ne4h+rGIyNVt/HcZFxGqWT3m6+FdqD4nE5UR7
+          ov07Ol4luvZw/QuSREG+iVriv+grbn1G9NMhWxP8NLYzvgMJlkFM8T7KpwN8
+          FkcnHvl+4T6mWY6x/jZ7OLyGoI4RHZqOUYzpGMeEzj+LyTWQh7u4t4aAh5CH
+          8B89/7DSSAYAAA==
+          """
+        )
+      )
+      .testModes(TestMode.DEFAULT)
+      .createProjects(root)
+
+    val lintJar = File(root, "app/lint.jar")
+    assertTrue(lintJar.exists())
+
+    val registry =
+      CompositeIssueRegistry(
+        JarFileIssueRegistry.get(TestLintClient(), listOf(lintJar)) + BuiltinIssueRegistry()
+      )
+
+    val issue = registry.getIssue("_TestIssueId")!!
+
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
+    baseline.sameMessage(
+      ApiDetector.UNSUPPORTED,
+      "Call requires API level 23 (current min is 1): `foo`",
+      "Call requires API level 23 (current min is 22): `foo`"
+    )
+
+    assertTrue(
+      // default matching on string equivalence, even if this isn't specially coded there
+      baseline.sameMessage(
+        issue,
+        new = "Value must be ≥ 0 but can be -1",
+        old = "Value must be ≥ 0"
+      )
+    )
+
+    // Now make sure our sameMessage implementations are called
+
+    assertTrue(
+      baseline.sameMessage(
+        issue,
+        new = "PreviousMessage", // matches hardcoded check in Detector's sameMessage()
+        old = "Value must be ≥ 0"
+      )
+    )
+
+    assertFalse(
+      baseline.sameMessage(
+        RangeDetector.RANGE, // make sure this only works for the new issue, not an unrelated one
+        new = "PreviousDetector",
+        old = "Value must be ≥ 0"
+      )
+    )
   }
 
   companion object {

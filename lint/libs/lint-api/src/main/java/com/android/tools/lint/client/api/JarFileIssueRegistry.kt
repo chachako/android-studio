@@ -75,6 +75,8 @@ private constructor(
   override val minApi: Int = registry.minApi
   override val maxApi: Int = registry.maxApi
 
+  override val deletedIssues: List<String> = registry.deletedIssues
+
   companion object Factory {
     /**
      * Pattern for matching lint jar paths in Gradle's cache, like

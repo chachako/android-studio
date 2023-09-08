@@ -260,8 +260,7 @@ class LintBaseline(
       // Sometimes messages are changed in lint; try to gracefully handle this via #sameMessage
       val messages = idToMessages[issue.id]
       if (
-        messages != null &&
-          messages.isNotEmpty() &&
+        !messages.isNullOrEmpty() &&
           (messages.size > 1 || messages.size == 1 && messages.first() != message)
       ) {
         val checked = alreadyChecked ?: mutableSetOf<String>().apply { add(message) }
@@ -319,14 +318,15 @@ class LintBaseline(
     return false
   }
 
+  /**
+   * Sometimes the exact message format for a given error shifts over time, for example when we
+   * decide to make it clearer. Since baselines are primarily matched by the error message, any
+   * format change would mean the recorded issue in the baseline no longer matches the error, and
+   * the same error is now shown as a new error. To prevent this, the baseline mechanism will call
+   * this method to check if two messages represent the same error, and if so, we'll continue to
+   * match them. This jump table should record the various changes in error messages over time.
+   */
   fun sameMessage(issue: Issue, new: String, old: String): Boolean {
-    // Sometimes the exact message format for a given error shifts over time, for example
-    // when we decide to make it clearer. Since baselines are primarily matched by
-    // the error message, any format change would mean the recorded issue in the baseline
-    // no longer matches the error, and the same error is now shown as a new error.
-    // To prevent this, the baseline mechanism will call this method to check if
-    // two messages represent the same error, and if so, we'll continue to match them.
-    // This jump table should record the various changes in error messages over time.
     return when (issue.id) {
       "InvalidPackage" -> sameSuffixFrom("not included in", new, old)
       // See https://issuetracker.google.com/68802305
@@ -385,7 +385,13 @@ class LintBaseline(
 
       // Sometimes we just append (or remove trailing period in error messages, now
       // flagged by lint)
-      else -> stringsEquivalent(old, new)
+      else -> {
+        stringsEquivalent(old, new) ||
+          issue.implementation.detectorClass
+            .getDeclaredConstructor()
+            .newInstance()
+            .sameMessage(issue, new, old)
+      }
     }
   }
 

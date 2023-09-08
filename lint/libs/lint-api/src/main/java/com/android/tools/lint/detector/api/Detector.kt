@@ -18,6 +18,7 @@ package com.android.tools.lint.detector.api
 
 import com.android.resources.ResourceFolderType
 import com.android.resources.ResourceType
+import com.android.tools.lint.client.api.LintBaseline
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.LintDriver
 import com.android.tools.lint.client.api.UElementHandler
@@ -703,5 +704,23 @@ abstract class Detector {
         "Detector.filterIncident(Context, Incident, LintMap) " +
         "when you report conditional incidents via Context.report(Incident, LintMap)"
     )
+  }
+
+  /**
+   * Returns true if the given new error message reported by this detector for the given [issue] is
+   * equivalent to a message previously created by the detector.
+   *
+   * This is used to allow error messages to change without invalidating older lint baseline
+   * warnings. If there is no match found in the baseline, the detector is consulted via this method
+   * to check whether it should be treated as the same.
+   *
+   * Note that the baseline mechanism will first try some simple checks on its own, such as allowing
+   * messages to append new details, so you don't have to explicitly check for equality.
+   *
+   * (There are some utility methods in [LintBaseline.Companion] which you can find useful here,
+   * such as [LintBaseline.sameSuffixFrom].)
+   */
+  open fun sameMessage(issue: Issue, new: String, old: String): Boolean {
+    return false
   }
 }

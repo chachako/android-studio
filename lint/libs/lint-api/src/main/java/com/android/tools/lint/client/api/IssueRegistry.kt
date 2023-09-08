@@ -30,11 +30,8 @@ import com.android.tools.lint.detector.api.editDistance
 import com.android.tools.lint.detector.api.isApplicableTo
 import com.google.common.collect.Maps
 import com.google.common.collect.Sets
-import java.util.ArrayList
 import java.util.Collections
 import java.util.EnumSet
-import java.util.HashMap
-import java.util.HashSet
 
 /** Registry which provides a list of checks to be performed on an Android project */
 abstract class IssueRegistry protected constructor() {
