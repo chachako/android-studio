@@ -175,9 +175,4 @@ class GradleBuildResult(
     fun assertConfigurationCacheHit() {
         assertOutputContains("Reusing configuration cache")
     }
-
-    /** Checks that the [GradleBuildResult] did not hit the configuration cache */
-    fun assertConfigurationCacheMiss() {
-        assertOutputDoesNotContain("Reusing configuration cache")
-    }
 }
