@@ -330,7 +330,11 @@ internal class ReverseForwardStream(
       if (result == null) {
         val resource = ReverseForwardStream::class.java.getResource("ReverseForwardStream.class")
         if (resource != null) {
-          val path = URI(resource.path).path.substringBefore("!")
+          // we're just looking for the jar location, so remove the path within the jar.
+          // (after the !). Also on Windows there can be a leading / before the drive letter, which
+          // is invalid. Strip it off.
+          val path =
+            URI(resource.path).path.substringBefore("!").replaceFirst(Regex("^/(?=[a-zA-Z]:/)"), "")
           val builtRoot = Paths.get(path).parent.parent
           result = builtRoot.resolve("resources/reverse_daemon.dex")
         }
