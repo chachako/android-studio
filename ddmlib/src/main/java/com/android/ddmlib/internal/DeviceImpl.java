@@ -39,7 +39,6 @@ import com.android.ddmlib.InstallMetrics;
 import com.android.ddmlib.InstallReceiver;
 import com.android.ddmlib.Log;
 import com.android.ddmlib.MultiLineReceiver;
-import com.android.ddmlib.NullOutputReceiver;
 import com.android.ddmlib.ProfileableClient;
 import com.android.ddmlib.PropertyFetcher;
 import com.android.ddmlib.RawImage;
@@ -49,7 +48,6 @@ import com.android.ddmlib.ServiceInfo;
 import com.android.ddmlib.ShellCommandUnresponsiveException;
 import com.android.ddmlib.SimpleConnectedSocket;
 import com.android.ddmlib.SocketChannelWithTimeouts;
-import com.android.ddmlib.SplitApkInstaller;
 import com.android.ddmlib.SyncException;
 import com.android.ddmlib.SyncService;
 import com.android.ddmlib.TimeoutException;
@@ -96,9 +94,6 @@ public final class DeviceImpl implements IDevice {
 
     /** True if ADB is running as root */
     private boolean mIsRoot;
-
-    /** Information about the most recent installation via this device */
-    private InstallMetrics lastInstallMetrics;
 
     /** Device properties. */
     private final PropertyFetcher mPropFetcher = new PropertyFetcher(this);
@@ -1355,26 +1350,13 @@ public final class DeviceImpl implements IDevice {
             TimeUnit maxTimeUnits,
             String... extraArgs)
             throws InstallException {
-        try {
-            long uploadStartNs = System.nanoTime();
-            String remoteFilePath = syncPackageToDevice(packageFilePath);
-            long uploadFinishNs = System.nanoTime();
-            installRemotePackage(
-                    remoteFilePath,
-                    reinstall,
-                    receiver,
-                    maxTimeout,
-                    maxTimeToOutputResponse,
-                    maxTimeUnits,
-                    extraArgs);
-            long installFinishNs = System.nanoTime();
-            removeRemotePackage(remoteFilePath);
-            lastInstallMetrics =
-                    new InstallMetrics(
-                            uploadStartNs, uploadFinishNs, uploadFinishNs, installFinishNs);
-        } catch (IOException | AdbCommandRejectedException | TimeoutException | SyncException e) {
-            throw new InstallException(e);
-        }
+        iDeviceSharedImpl.installPackage(packageFilePath,
+                                         reinstall,
+                                         receiver,
+                                         maxTimeout,
+                                         maxTimeToOutputResponse,
+                                         maxTimeUnits,
+                                         extraArgs);
     }
 
     @Override
@@ -1385,15 +1367,7 @@ public final class DeviceImpl implements IDevice {
             long timeout,
             @NonNull TimeUnit timeoutUnit)
             throws InstallException {
-        try {
-            lastInstallMetrics =
-                    SplitApkInstaller.create(this, apks, reinstall, installOptions)
-                            .install(timeout, timeoutUnit);
-        } catch (InstallException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new InstallException(e);
-        }
+        iDeviceSharedImpl.installPackages(apks, reinstall, installOptions, timeout, timeoutUnit);
     }
 
     @Override
@@ -1406,7 +1380,7 @@ public final class DeviceImpl implements IDevice {
 
     @Override
     public InstallMetrics getLastInstallMetrics() {
-        return lastInstallMetrics;
+        return iDeviceSharedImpl.getLastInstallMetrics();
     }
 
     @Override
@@ -1519,44 +1493,19 @@ public final class DeviceImpl implements IDevice {
             TimeUnit maxTimeUnits,
             String... extraArgs)
             throws InstallException {
-        try {
-            StringBuilder optionString = new StringBuilder();
-            if (reinstall) {
-                optionString.append("-r ");
-            }
-            if (extraArgs != null) {
-                optionString.append(Joiner.on(' ').join(extraArgs));
-            }
-            String cmd =
-                    String.format(
-                            "pm install %1$s \"%2$s\"", optionString.toString(), remoteFilePath);
-            executeShellCommand(cmd, receiver, maxTimeout, maxTimeToOutputResponse, maxTimeUnits);
-            String error = receiver.getErrorMessage();
-            if (error != null) {
-                throw new InstallException(error, receiver.getErrorCode());
-            }
-        } catch (TimeoutException
-                | AdbCommandRejectedException
-                | ShellCommandUnresponsiveException
-                | IOException e) {
-            throw new InstallException(e);
-        }
+        iDeviceSharedImpl.installRemotePackage(
+                remoteFilePath,
+                reinstall,
+                receiver,
+                maxTimeout,
+                maxTimeToOutputResponse,
+                maxTimeUnits,
+                extraArgs);
     }
 
     @Override
     public void removeRemotePackage(String remoteFilePath) throws InstallException {
-        try {
-            executeShellCommand(
-                    String.format("rm \"%1$s\"", remoteFilePath),
-                    new NullOutputReceiver(),
-                    INSTALL_TIMEOUT_MINUTES,
-                    TimeUnit.MINUTES);
-        } catch (IOException
-                | TimeoutException
-                | AdbCommandRejectedException
-                | ShellCommandUnresponsiveException e) {
-            throw new InstallException(e);
-        }
+        iDeviceSharedImpl.removeRemotePackage(remoteFilePath);
     }
 
     @Override

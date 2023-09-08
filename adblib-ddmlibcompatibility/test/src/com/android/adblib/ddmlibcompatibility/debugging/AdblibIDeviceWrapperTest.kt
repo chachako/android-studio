@@ -25,6 +25,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import java.nio.file.Files
 import java.nio.file.attribute.FileTime
 import java.util.concurrent.TimeUnit
@@ -37,6 +38,10 @@ class AdblibIDeviceWrapperTest {
         installDefaultCommandHandlers()
         installDeviceHandler(SyncCommandHandler())
     }
+
+    @JvmField
+    @Rule
+    val temporaryFolder = TemporaryFolder()
 
     private val fakeAdb get() = fakeAdbRule.fakeAdb
     private val hostServices get() = fakeAdbRule.adbSession.hostServices
@@ -404,7 +409,7 @@ class AdblibIDeviceWrapperTest {
         )
         val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
         val lastModifiedTimeSec = 878392983L
-        val localFile = Files.createTempFile("sample", ".txt")
+        val localFile = temporaryFolder.newFile("sample.txt").toPath()
         val fileBytes = "some content".toByteArray()
         Files.write(localFile, fileBytes)
         Files.setLastModifiedTime(localFile, FileTime.from(lastModifiedTimeSec, TimeUnit.SECONDS))
@@ -419,6 +424,48 @@ class AdblibIDeviceWrapperTest {
         assertEquals(lastModifiedTimeSec, remoteFile.modifiedDate.toLong())
         assertEquals(RemoteFileMode.fromPath(localFile), RemoteFileMode.fromModeBits(remoteFile.permission))
         assertEquals(fileBytes.toString(Charsets.UTF_8), remoteFile.bytes.toString(Charsets.UTF_8))
+    }
+
+    @Test
+    fun installLegacy() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, deviceState) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.ONLINE
+        )
+        val apk = temporaryFolder.newFile("adblib-tools_test.apk").toPath()
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+
+        // Act
+        adblibIDeviceWrapper.installPackage(apk.toAbsolutePath().toString(), false)
+
+        // Assert
+        assertEquals(1, deviceState.pmLogs.size)
+        assertEquals("install  \"/data/local/tmp/${apk.fileName}\"", deviceState.pmLogs[0])
+    }
+
+    @Test
+    fun install() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, deviceState) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.ONLINE
+        )
+        val apk = temporaryFolder.newFile("adblib-tools_test.apk")
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+
+        // Act
+        adblibIDeviceWrapper.installPackages(
+            mutableListOf(apk),
+            false,
+            mutableListOf(),
+            0,
+            TimeUnit.SECONDS
+        )
+
+        // Assert
+        assertEquals(3, deviceState.abbLogs.size)
+        assertTrue(deviceState.abbLogs[0].matches(Regex("^package\u0000install-create.*")))
+        assertTrue(deviceState.abbLogs[1].matches(Regex("^package\u0000install-write\u0000.+adblib-tools_test.apk.*")))
+        assertTrue(deviceState.abbLogs[2].matches(Regex("^package\u0000install-commit\u0000.*")))
     }
 
     @Test

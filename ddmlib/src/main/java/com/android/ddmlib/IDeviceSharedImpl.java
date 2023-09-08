@@ -23,7 +23,10 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.AndroidVersionUtil;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +58,9 @@ public class IDeviceSharedImpl {
     private static final String LOG_TAG = "Device";
 
     public static final long INSTALL_TIMEOUT_MINUTES;
+
+    /** Information about the most recent installation via this device */
+    private InstallMetrics lastInstallMetrics;
 
     static {
         String installTimeout = System.getenv("ADB_INSTALL_TIMEOUT");
@@ -322,5 +328,107 @@ public class IDeviceSharedImpl {
         }
 
         return sb.toString();
+    }
+
+    public void installRemotePackage(
+            String remoteFilePath,
+            boolean reinstall,
+            @NonNull InstallReceiver receiver,
+            long maxTimeout,
+            long maxTimeToOutputResponse,
+            TimeUnit maxTimeUnits,
+            String... extraArgs)
+            throws InstallException {
+        try {
+            StringBuilder optionString = new StringBuilder();
+            if (reinstall) {
+                optionString.append("-r ");
+            }
+            if (extraArgs != null) {
+                optionString.append(Joiner.on(' ').join(extraArgs));
+            }
+            String cmd =
+                    String.format(
+                            "pm install %1$s \"%2$s\"", optionString.toString(), remoteFilePath);
+            iDevice.executeShellCommand(
+                    cmd, receiver, maxTimeout, maxTimeToOutputResponse, maxTimeUnits);
+            String error = receiver.getErrorMessage();
+            if (error != null) {
+                throw new InstallException(error, receiver.getErrorCode());
+            }
+        } catch (TimeoutException
+                | AdbCommandRejectedException
+                | ShellCommandUnresponsiveException
+                | IOException e) {
+            throw new InstallException(e);
+        }
+    }
+
+    public void installPackage(
+            String packageFilePath,
+            boolean reinstall,
+            InstallReceiver receiver,
+            long maxTimeout,
+            long maxTimeToOutputResponse,
+            TimeUnit maxTimeUnits,
+            String... extraArgs)
+            throws InstallException {
+        try {
+            long uploadStartNs = System.nanoTime();
+            String remoteFilePath = iDevice.syncPackageToDevice(packageFilePath);
+            long uploadFinishNs = System.nanoTime();
+            installRemotePackage(
+                    remoteFilePath,
+                    reinstall,
+                    receiver,
+                    maxTimeout,
+                    maxTimeToOutputResponse,
+                    maxTimeUnits,
+                    extraArgs);
+            long installFinishNs = System.nanoTime();
+            removeRemotePackage(remoteFilePath);
+            lastInstallMetrics =
+                    new InstallMetrics(
+                            uploadStartNs, uploadFinishNs, uploadFinishNs, installFinishNs);
+        } catch (IOException | AdbCommandRejectedException | TimeoutException | SyncException e) {
+            throw new InstallException(e);
+        }
+    }
+
+    public void installPackages(
+            @NonNull List<File> apks,
+            boolean reinstall,
+            @NonNull List<String> installOptions,
+            long timeout,
+            @NonNull TimeUnit timeoutUnit)
+            throws InstallException {
+        try {
+            lastInstallMetrics =
+                    SplitApkInstaller.create(iDevice, apks, reinstall, installOptions)
+                            .install(timeout, timeoutUnit);
+        } catch (InstallException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new InstallException(e);
+        }
+    }
+
+    public InstallMetrics getLastInstallMetrics() {
+        return lastInstallMetrics;
+    }
+
+    public void removeRemotePackage(String remoteFilePath) throws InstallException {
+        try {
+            iDevice.executeShellCommand(
+                    String.format("rm \"%1$s\"", remoteFilePath),
+                    new NullOutputReceiver(),
+                    INSTALL_TIMEOUT_MINUTES,
+                    TimeUnit.MINUTES);
+        } catch (IOException
+                | TimeoutException
+                | AdbCommandRejectedException
+                | ShellCommandUnresponsiveException e) {
+            throw new InstallException(e);
+        }
     }
 }
