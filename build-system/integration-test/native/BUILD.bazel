@@ -489,12 +489,28 @@ single_gradle_integration_test(
     deps = DEPS,
 )
 
+single_gradle_integration_test(
+    name = "KotlinMultiplatformAndroidPluginNativeTest",
+    srcs = "src/test/java/com/android/build/gradle/integration/nativebuild/",
+    data = DATA + CMAKE + NDK + [
+        "//tools/base/build-system/integration-test:test-projects/kotlinMultiplatform",
+    ],
+    maven_repo_zips = MAVEN_REPO_ZIPS,
+    maven_repos = MAVEN_REPOS,
+    tags = ["no_test_windows"],
+    deps = DEPS,
+)
+
 maven_repository(
     name = "prebuilts",
     # keep sorted
     artifacts = [
+        "@maven//:androidx.test.core_1.4.0-alpha06",
+        "@maven//:androidx.test.ext.junit_1.1.2",
+        "@maven//:androidx.test.runner_1.4.0-alpha06",
         "@maven//:com.android.support.constraint.constraint-layout_1.0.2",
         "@maven//:com.android.support.multidex_1.0.2",
         "@maven//:com.google.guava.guava_19.0",
+        "@maven//:com.google.protobuf.protobuf-java-util_3.21.8",
     ],
 )
