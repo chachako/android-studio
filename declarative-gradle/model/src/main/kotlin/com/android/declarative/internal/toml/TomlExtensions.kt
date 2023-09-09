@@ -33,9 +33,13 @@ fun TomlArray.forEachTable(action: (TomlTable) -> Unit) {
     }
 }
 
-fun <T> TomlArray.mapTable(action: (TomlTable) -> T): List<T> {
+fun <T> TomlArray.mapTable(action: (TomlTable) -> T?): List<T> {
     val results = mutableListOf<T>()
-    forEachTable { results.add(action.invoke(it)) }
+    forEachTable { source ->
+        action.invoke(source)?.let { result ->
+            results.add(result)
+        }
+    }
     return results.toList()
 }
 
@@ -63,10 +67,10 @@ fun TomlTable.checkElementsPresence(context: String, vararg elements: String) {
     elements.forEach { element ->
         get(element)
             ?: throw IncorrectTomlSpecificationException(
-                context,
-                element,
-                elements.toList(),
-                keySet()
+                context = context,
+                missingElement = element,
+                providedElements = keySet(),
+                requiredElements = elements.toList(),
             )
     }
 }

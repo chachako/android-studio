@@ -16,11 +16,12 @@
 package com.android.declarative.internal.parsers
 
 import com.android.declarative.internal.IssueLogger
+import com.android.declarative.internal.model.DependencyInfo.Alias
 import com.android.declarative.internal.model.DependencyInfo
 import com.android.declarative.internal.model.DependencyType
-import com.android.declarative.internal.model.FilesDependencyInfo
-import com.android.declarative.internal.model.MavenDependencyInfo
-import com.android.declarative.internal.model.NotationDependencyInfo
+import com.android.declarative.internal.model.DependencyInfo.Files
+import com.android.declarative.internal.model.DependencyInfo.Maven
+import com.android.declarative.internal.model.DependencyInfo.Notation
 import com.android.declarative.internal.toml.safeGetString
 import org.tomlj.TomlArray
 import org.tomlj.TomlTable
@@ -44,11 +45,22 @@ class DependencyParser(
                     key = key,
                     dependencies = dependencies
                 )
-                is String -> parseStringDeclaration(
-                    notation = value,
-                    configurationName = "implementation",
-                    dependencies = dependencies
-                )
+                is String -> when(key) {
+                    "alias" -> {
+                        println("Adding ALIAS dependency")
+                        dependencies.add(
+                            Alias(
+                                "implementation",
+                                value
+                            )
+
+                        )
+                    } else -> parseStringDeclaration(
+                            notation = value,
+                            configurationName = "implementation",
+                            dependencies = dependencies
+                        )
+                }
             }
         }
         return dependencies.toList()
@@ -116,7 +128,7 @@ class DependencyParser(
             // lib1 = { configuration = "testImplementation" }
             // will be like testImplementation { project(":lib1") }
             dependencies.add(
-                NotationDependencyInfo(
+                Notation(
                     DependencyType.PROJECT,
                     configurationName,
                     ":$key")
@@ -124,7 +136,7 @@ class DependencyParser(
         } else {
             depTable.getString("project")?.let { notation ->
                 dependencies.add(
-                    NotationDependencyInfo(
+                    Notation(
                         DependencyType.PROJECT,
                         configurationName,
                         notation)
@@ -144,7 +156,7 @@ class DependencyParser(
                 }
                 println("adding files dependency $files to $configurationName")
                 dependencies.add(
-                    FilesDependencyInfo(
+                    Files(
                         configurationName,
                         fileCollection,
                     )
@@ -155,7 +167,7 @@ class DependencyParser(
             }
             depTable.getString("name")?.let { name ->
                 dependencies.add(
-                    MavenDependencyInfo(
+                    Maven(
                         configurationName,
                         depTable.safeGetString("group"),
                         name,
@@ -172,7 +184,7 @@ class DependencyParser(
         dependencies: MutableList<DependencyInfo>,
     ) {
         dependencies.add(
-            NotationDependencyInfo(
+            Notation(
                 DependencyType.NOTATION,
                 configurationName,
                 notation

@@ -15,7 +15,10 @@
  */
 package com.android.declarative.internal
 
+import com.android.declarative.internal.toml.InvalidTomlException
 import com.android.utils.ILogger
+import org.tomlj.TomlPosition
+import org.tomlj.TomlTable
 
 /**
  * Temporary class to handle logging in the declarative world.
@@ -39,6 +42,18 @@ open class IssueLogger(
             logger.error(null, "ERROR: $error")
         } else {
             throw RuntimeException(error)
+        }
+    }
+
+    fun raiseError(exception: InvalidTomlException) {
+        val message = exception.location?.let {
+            "${it.line()}:${it.column()} -> ${exception.error}"
+        } ?: exception.error
+
+        if (lenient) {
+            logger.error(null, "ERROR: $message")
+        } else {
+            throw RuntimeException(message)
         }
     }
 

@@ -17,9 +17,9 @@ package com.android.declarative.internal.parsers
 
 import com.android.declarative.internal.IssueLogger
 import com.android.declarative.internal.model.DependencyType
-import com.android.declarative.internal.model.FilesDependencyInfo
-import com.android.declarative.internal.model.MavenDependencyInfo
-import com.android.declarative.internal.model.NotationDependencyInfo
+import com.android.declarative.internal.model.DependencyInfo.Files
+import com.android.declarative.internal.model.DependencyInfo.Maven
+import com.android.declarative.internal.model.DependencyInfo.Notation
 import com.android.utils.ILogger
 import com.google.common.truth.Truth.*
 import org.junit.Test
@@ -42,8 +42,8 @@ class DependencyParserTest {
         result.single().also {
             assertThat(it.configuration).isEqualTo("implementation")
             assertThat(it.type).isEqualTo(DependencyType.PROJECT)
-            assertThat(it).isInstanceOf(NotationDependencyInfo::class.java)
-            (it as NotationDependencyInfo).also {
+            assertThat(it).isInstanceOf(Notation::class.java)
+            (it as Notation).also {
                 assertThat(it.notation).isEqualTo(":lib1")
             }
         }
@@ -63,16 +63,16 @@ class DependencyParserTest {
         result.get(0).also {
             assertThat(it.configuration).isEqualTo("implementation")
             assertThat(it.type).isEqualTo(DependencyType.PROJECT)
-            assertThat(it).isInstanceOf(NotationDependencyInfo::class.java)
-            (it as NotationDependencyInfo).also {
+            assertThat(it).isInstanceOf(Notation::class.java)
+            (it as Notation).also {
                 assertThat(it.notation).isEqualTo(":lib1")
             }
         }
         result.get(1).also {
             assertThat(it.configuration).isEqualTo("testImplementation")
             assertThat(it.type).isEqualTo(DependencyType.PROJECT)
-            assertThat(it).isInstanceOf(NotationDependencyInfo::class.java)
-            (it as NotationDependencyInfo).also {
+            assertThat(it).isInstanceOf(Notation::class.java)
+            (it as Notation).also {
                 assertThat(it.notation).isEqualTo(":lib2")
             }
         }
@@ -92,8 +92,8 @@ class DependencyParserTest {
         result.single().also {
             assertThat(it.configuration).isEqualTo("implementation")
             assertThat(it.type).isEqualTo(DependencyType.NOTATION)
-            assertThat(it).isInstanceOf(NotationDependencyInfo::class.java)
-            (it as NotationDependencyInfo).also {
+            assertThat(it).isInstanceOf(Notation::class.java)
+            (it as Notation).also {
                 assertThat(it.notation).isEqualTo("org.mockito:mockito-core:4.8.0")
             }
         }
@@ -113,8 +113,8 @@ class DependencyParserTest {
         result.single().also {
             assertThat(it.configuration).isEqualTo("implementation")
             assertThat(it.type).isEqualTo(DependencyType.NOTATION)
-            assertThat(it).isInstanceOf(NotationDependencyInfo::class.java)
-            (it as NotationDependencyInfo).also {
+            assertThat(it).isInstanceOf(Notation::class.java)
+            (it as Notation).also {
                 assertThat(it.notation).isEqualTo("org.mockito:mockito-core:4.8.0")
             }
         }
@@ -134,8 +134,8 @@ class DependencyParserTest {
         result.single().also {
             assertThat(it.configuration).isEqualTo("implementation")
             assertThat(it.type).isEqualTo(DependencyType.LIBRARY)
-            assertThat(it).isInstanceOf(MavenDependencyInfo::class.java)
-            (it as MavenDependencyInfo).also {
+            assertThat(it).isInstanceOf(Maven::class.java)
+            (it as Maven).also {
                 assertThat(it.group).isEqualTo("org.mockito")
                 assertThat(it.name).isEqualTo("mockito-core")
                 assertThat(it.version).isEqualTo("4.8.0")
@@ -158,8 +158,8 @@ class DependencyParserTest {
         result[0].also {
             assertThat(it.configuration).isEqualTo("testImplementation")
             assertThat(it.type).isEqualTo(DependencyType.LIBRARY)
-            assertThat(it).isInstanceOf(MavenDependencyInfo::class.java)
-            (it as MavenDependencyInfo).also {
+            assertThat(it).isInstanceOf(Maven::class.java)
+            (it as Maven).also {
                 assertThat(it.group).isEqualTo("org.mockito")
                 assertThat(it.name).isEqualTo("mockito-core")
                 assertThat(it.version).isEqualTo("4.8.0")
@@ -181,8 +181,8 @@ class DependencyParserTest {
         result.single().also {
             assertThat(it.configuration).isEqualTo("implementation")
             assertThat(it.type).isEqualTo(DependencyType.NOTATION)
-            assertThat(it).isInstanceOf(NotationDependencyInfo::class.java)
-            (it as NotationDependencyInfo).also {
+            assertThat(it).isInstanceOf(Notation::class.java)
+            (it as Notation).also {
                 assertThat(it.notation).isEqualTo("libs.junit")
             }
         }
@@ -205,16 +205,16 @@ class DependencyParserTest {
         result[0].also {
             assertThat(it.configuration).isEqualTo("implementation")
             assertThat(it.type).isEqualTo(DependencyType.FILES)
-            assertThat(it).isInstanceOf(FilesDependencyInfo::class.java)
-            (it as FilesDependencyInfo).also {
+            assertThat(it).isInstanceOf(Files::class.java)
+            (it as Files).also {
                 assertThat(it.files).isEqualTo(listOf("local.jar"))
             }
         }
         result[1].also {
             assertThat(it.configuration).isEqualTo("implementation")
             assertThat(it.type).isEqualTo(DependencyType.FILES)
-            assertThat(it).isInstanceOf(FilesDependencyInfo::class.java)
-            (it as FilesDependencyInfo).also {
+            assertThat(it).isInstanceOf(Files::class.java)
+            (it as Files).also {
                 assertThat(it.files).isEqualTo(listOf("some.jar", "something.else", "final.one" ))
             }
         }
@@ -237,24 +237,24 @@ class DependencyParserTest {
         result[0].also {
             assertThat(it.configuration).isEqualTo("implementation")
             assertThat(it.type).isEqualTo(DependencyType.PROJECT)
-            assertThat(it).isInstanceOf(NotationDependencyInfo::class.java)
-            (it as NotationDependencyInfo).also {
+            assertThat(it).isInstanceOf(Notation::class.java)
+            (it as Notation).also {
                 assertThat(it.notation).isEqualTo(":lib1")
             }
         }
         result[1].also {
             assertThat(it.configuration).isEqualTo("implementation")
             assertThat(it.type).isEqualTo(DependencyType.PROJECT)
-            assertThat(it).isInstanceOf(NotationDependencyInfo::class.java)
-            (it as NotationDependencyInfo).also {
+            assertThat(it).isInstanceOf(Notation::class.java)
+            (it as Notation).also {
                 assertThat(it.notation).isEqualTo(":lib2")
             }
         }
         result[2].also {
             assertThat(it.configuration).isEqualTo("implementation")
             assertThat(it.type).isEqualTo(DependencyType.PROJECT)
-            assertThat(it).isInstanceOf(NotationDependencyInfo::class.java)
-            (it as NotationDependencyInfo).also {
+            assertThat(it).isInstanceOf(Notation::class.java)
+            (it as Notation).also {
                 assertThat(it.notation).isEqualTo(":lib3")
             }
         }

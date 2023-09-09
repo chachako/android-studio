@@ -26,51 +26,64 @@ enum class DependencyType {
     FILES,
     LIBRARY,
     NOTATION,
+    ALIAS,
 }
 
 /**
  * Supertype for the description of a dependency with common information amongst
  * all dependency types.
  */
-abstract class DependencyInfo(
+sealed class DependencyInfo(
     val configuration: String,
 ) {
+
     abstract val type: DependencyType
-}
 
-/**
- * Dependency based on a Gradle notation. A gradle notation can be a full maven
- * identifier like "org.junit:junit:4.7.0" or a project reference like ":lib1",
- * or a version catalog reference like "libs.junit"/
- */
-class NotationDependencyInfo(
-    override val type: DependencyType,
-    configuration: String,
-    val notation: String,
-): DependencyInfo(configuration) {
-    override fun toString(): String =
-        "$type dependency on $notation"
-}
+    /**
+     * Dependency based on a Gradle notation. A gradle notation can be a full maven
+     * identifier like "org.junit:junit:4.7.0" or a project reference like ":lib1",
+     * or a version catalog reference like "libs.junit"/
+     */
+    class Notation(
+        override val type: DependencyType,
+        configuration: String,
+        val notation: String,
+    ) : DependencyInfo(configuration) {
 
-/**
- * A maven dependency with the maven group, name and version specified individually.
- */
-class MavenDependencyInfo(
-    configuration: String,
-    val group: String,
-    val name: String,
-    val version: String,
-): DependencyInfo(configuration) {
-    override val type: DependencyType = DependencyType.LIBRARY
-}
+        override fun toString(): String =
+            "$type dependency on $notation"
+    }
 
-/**
- * A files dependency with files added from the local file system.
- */
-class FilesDependencyInfo(
-    configuration: String,
-    val files: List<String>,
+    class Alias(
+        configuration: String,
+        val alias: String,
+    ) : DependencyInfo(configuration) {
 
-): DependencyInfo(configuration) {
-    override val type: DependencyType = DependencyType.FILES
+        override val type: DependencyType = DependencyType.ALIAS
+    }
+
+    /**
+     * A maven dependency with the maven group, name and version specified individually.
+     */
+    class Maven(
+        configuration: String,
+        val group: String,
+        val name: String,
+        val version: String,
+    ) : DependencyInfo(configuration) {
+
+        override val type: DependencyType = DependencyType.LIBRARY
+    }
+
+    /**
+     * A files dependency with files added from the local file system.
+     */
+    class Files(
+        configuration: String,
+        val files: List<String>,
+
+        ) : DependencyInfo(configuration) {
+
+        override val type: DependencyType = DependencyType.FILES
+    }
 }

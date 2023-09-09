@@ -44,7 +44,7 @@ class ProjectDependenciesDAG {
                             dependenciesDAG.addEdge(
                                 edgeType,
                                 node,
-                                dependenciesDAG.maybeCreate((dependency as NotationDependencyInfo).notation)
+                                dependenciesDAG.maybeCreate((dependency as DependencyInfo.Notation).notation)
                             )
                         }
                 }

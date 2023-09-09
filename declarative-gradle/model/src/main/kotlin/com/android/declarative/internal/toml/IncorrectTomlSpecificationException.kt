@@ -21,7 +21,7 @@ class IncorrectTomlSpecificationException(
     private val providedElements: Collection<String>,
     private val requiredElements: Collection<String>,
 ): Exception() {
-    override val message: String?
+    override val message: String
         get() = StringBuilder().also {
             it.append("An error occurred while configuring $context\n")
             it.append("The following elements were provided : ${providedElements.joinToString()}\n")
