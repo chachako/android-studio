@@ -89,8 +89,14 @@ class OptimisticApkInstaller {
             throw DeployerException.sdksNotSupported();
         }
 
+        // If the user has specified additional package manager flags, we should use the package
+        // manager.
+        if (!userFlags.isEmpty()) {
+            throw DeployerException.pmFlagsNotSupported();
+        }
+
         try {
-            return tracedInstall(app, userFlags);
+            return tracedInstall(app);
         } catch (DeployerException ex) {
             metrics.finish(ex.getError());
             throw ex;
@@ -101,8 +107,7 @@ class OptimisticApkInstaller {
         }
     }
 
-    private OverlayId tracedInstall(@NonNull App app, List<String> userFlags)
-            throws DeployerException {
+    private OverlayId tracedInstall(@NonNull App app) throws DeployerException {
         final String deviceSerial = adb.getSerial();
         final String targetAbi = adb.getAbiForApks(app.getApks());
         final Deploy.Arch targetArch = AdbClient.getArchForAbi(targetAbi);
@@ -120,9 +125,6 @@ class OptimisticApkInstaller {
         metrics.finish();
 
         metrics.start(DIFF_METRIC);
-        if (!userFlags.isEmpty()) {
-            throw DeployerException.pmFlagsNotSupported();
-        }
         final OverlayId overlayId = entry.getOverlayId();
         OverlayDiffer.Result diff =
                 new OverlayDiffer(options.optimisticInstallSupport).diff(app.getApks(), overlayId);

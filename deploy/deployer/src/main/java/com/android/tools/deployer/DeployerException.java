@@ -321,7 +321,7 @@ public class DeployerException extends Exception {
                 ResolutionAction.NONE),
 
         UNSUPPORTED_IWI_FILE_DELETE(
-                "Deleting installed files is not supported by the IWI pipeline. Deployment should fall back to regular installation",
+                "Deleting files from installed APKs is not supported by the IWI pipeline. Deployment should fall back to regular installation",
                 "",
                 "",
                 ResolutionAction.NONE),

@@ -213,7 +213,7 @@ public class Deployer {
             InstallOptions installOptions,
             InstallMode installMode)
             throws DeployerException {
-        logger.info("Deploy Install Session %s", deploySessionUID);
+        logger.info("Deploying with package manager for install session %s", deploySessionUID);
         ApkInstaller apkInstaller = new ApkInstaller(adb, service, installer, logger);
         boolean skippedInstall =
                 !apkInstaller.install(app, installOptions, installMode, metrics.getDeployMetrics());
@@ -226,7 +226,7 @@ public class Deployer {
             InstallOptions installOptions,
             InstallMode installMode)
             throws DeployerException {
-        logger.info("Deploy Root Push Install Session %s", deploySessionUID);
+        logger.info("Deploying with root push for install session %s", deploySessionUID);
         Canceller canceller = installOptions.getCancelChecker();
 
         Task<Boolean> installSuccess =
@@ -240,6 +240,7 @@ public class Deployer {
 
         boolean skippedInstall = false;
         if (!result.isSuccess() || !installSuccess.get()) {
+            logger.info("Deploying with package manager for install session %s", deploySessionUID);
             ApkInstaller apkInstaller = new ApkInstaller(adb, service, installer, logger);
             skippedInstall =
                     !apkInstaller.install(
@@ -254,7 +255,6 @@ public class Deployer {
             InstallOptions installOptions,
             InstallMode installMode)
             throws DeployerException {
-        logger.info("Optimistic Deploy Install Session %s", deploySessionUID);
         Canceller canceller = installOptions.getCancelChecker();
 
         // Do not skip installs; we need to ensure overlays are properly cleared.
@@ -266,6 +266,7 @@ public class Deployer {
         Task<List<Apk>> apks = runner.create(app.getApks());
         boolean installSuccess = false;
         if (!options.optimisticInstallSupport.isEmpty()) {
+            logger.info("Deploying with optimistic install for session %s", deploySessionUID);
             OptimisticApkInstaller apkInstaller =
                     new OptimisticApkInstaller(
                             installer, adb, deployCache, metrics, options, logger);
@@ -284,13 +285,17 @@ public class Deployer {
                         packageName,
                         apks,
                         overlayId);
+            } else {
+                logger.info(
+                        "Optimistic install session %s did not complete: %s",
+                        deploySessionUID, result.getException());
             }
             result.getMetrics().forEach(metrics::add);
         }
 
         boolean skippedInstall = false;
         if (!installSuccess) {
-            logger.info("Optimistic Install Session %s: falling back to PM", deploySessionUID);
+            logger.info("Deploying with package manager for session %s", deploySessionUID);
             ApkInstaller apkInstaller = new ApkInstaller(adb, service, installer, logger);
             skippedInstall =
                     !apkInstaller.install(
