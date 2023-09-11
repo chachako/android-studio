@@ -476,6 +476,7 @@ gradle_build(
     repos = [
         "//tools/base:agp_dependencies",
         "//tools/base:agp_artifacts",
+        ":metalava_tool",
     ],
     tags = ["no_windows"],  # TODO(b/202837927) Investigate getting Dackka to run on windows
     tasks = [":base:build-system:docs:dackkaZip"],
