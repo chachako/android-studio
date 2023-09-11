@@ -206,7 +206,8 @@ interface DeviceProperties {
     fun populateDeviceInfoProto(
       pluginId: String,
       serialNumber: String?,
-      properties: Map<String, String>
+      properties: Map<String, String>,
+      connectionId: String
     ) {
       deviceInfoProto.anonymizedSerialNumber = Anonymizer.anonymize(serialNumber) ?: ""
       deviceInfoProto.buildTags = properties[RO_BUILD_TAGS] ?: ""
@@ -229,6 +230,14 @@ interface DeviceProperties {
         deviceInfoProto.addAllCharacteristics(it.split(","))
       }
       deviceInfoProto.deviceProvisionerId = pluginId
+      deviceInfoProto.connectionId = connectionId
+    }
+
+    /** Generates a random hex string with [length] characters */
+    fun randomConnectionId(length: Int = 8): String = buildString {
+      // 0 - 9 and a - f
+      val intRange = 0 until 16
+      repeat(length) { append(intRange.random().toString(Character.MAX_RADIX)) }
     }
 
     fun buildBase(): DeviceProperties {

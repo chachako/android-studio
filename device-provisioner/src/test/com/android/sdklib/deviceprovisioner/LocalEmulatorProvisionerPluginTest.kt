@@ -181,7 +181,7 @@ class LocalEmulatorProvisionerPluginTest {
   private fun buildProperties(info: AvdInfo) =
     LocalEmulatorProperties.build(info) {
       icon = EmptyIcon.DEFAULT
-      populateDeviceInfoProto("Test", null, emptyMap())
+      populateDeviceInfoProto("Test", null, emptyMap(), "")
     }
 
   @Test

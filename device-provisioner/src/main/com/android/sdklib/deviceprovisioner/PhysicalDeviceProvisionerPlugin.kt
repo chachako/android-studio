@@ -49,7 +49,7 @@ class PhysicalDeviceProvisionerPlugin(
       DeviceProperties.build {
         readAdbSerialNumber(device.serialNumber)
         readCommonProperties(properties)
-        populateDeviceInfoProto(PLUGIN_ID, device.serialNumber, properties)
+        populateDeviceInfoProto(PLUGIN_ID, device.serialNumber, properties, randomConnectionId())
         if (connectionType != ConnectionType.WIFI) {
           connectionType = ConnectionType.USB
         }
