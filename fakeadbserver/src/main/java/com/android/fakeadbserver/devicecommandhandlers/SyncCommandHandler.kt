@@ -15,7 +15,6 @@
  */
 package com.android.fakeadbserver.devicecommandhandlers
 
-import com.android.fakeadbserver.CommandHandler
 import com.android.fakeadbserver.DeviceFileState
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
@@ -46,7 +45,7 @@ class SyncCommandHandler : DeviceCommandHandler("sync") {
         val input = socket.getInputStream()
 
         // Tell client we accepted the `sync` service request
-        CommandHandler.writeOkay(output)
+        writeOkay(output)
 
         //
         // Handle the various "SEND", "RECV", etc. requests
@@ -79,6 +78,10 @@ class SyncCommandHandler : DeviceCommandHandler("sync") {
                 "DONE" -> {
                     val modifiedDate = readDonePacket(input)
                     val bytes = bytePackets.flatMap { it.asIterable() }.toByteArray()
+                    if (path.isEmpty()) {
+                        sendSyncFail(output, "'$path' not a directory")
+                        return
+                    }
                     val file = DeviceFileState(path, permission, modifiedDate, bytes)
                     device.createFile(file)
                     sendSyncOkay(output)
