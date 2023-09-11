@@ -71,34 +71,20 @@ fun interface ImageDiffer {
      * channel is 0 (fully transparent).
      */
     // TODO(b/244752233): Support wide gamut images.
-    object PixelPerfect : ImageDiffer {
+    class PixelPerfect(private var imageDiffThreshold: Float = 0f) : ImageDiffer {
         override fun diff(a: BufferedImage, b: BufferedImage): DiffResult {
-            check(a.width == b.width && a.height == b.height) { "Images are different sizes" }
-            val width = a.width
-            val height = b.height
-            val highlights = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
-            var count = 0
+            val pixelDiff = generatePixelDiffImage(a, b)
+            val highlights = pixelDiff.first
+            val numPixelsDifferent = pixelDiff.second
 
-            for (x in 0 until width) {
-                for (y in 0 until height) {
-                    val aPixel = a.getRGB(x, y)
-                    val bPixel = b.getRGB(x, y)
-
-                    // Compare full ARGB pixels, but allow other channels to differ if alpha is 0
-                    if (aPixel == bPixel || (aPixel ushr 24 == 0 && bPixel ushr 24 == 0)) {
-                        highlights.setRGB(x, y, TRANSPARENT.toInt())
-                    } else {
-                        count++
-                        highlights.setRGB(x, y, MAGENTA.toInt())
-                    }
-                }
-            }
-
-            val description = "$count of ${width * height} pixels different"
-            return if (count > 0) {
-                DiffResult.Different(description, highlights)
-            } else {
+            val percentDiff: Float = numPixelsDifferent.toFloat() / (a.width * a.height)
+            val description = "Pixel percentage difference: ${percentDiff}. $numPixelsDifferent of ${a.width * a.height} pixels are different"
+            return if (numPixelsDifferent == 0) {
                 DiffResult.Similar(description)
+            } else if (percentDiff.compareTo(imageDiffThreshold) <= 0) {
+                DiffResult.Similar(description, highlights)
+            } else {
+                DiffResult.Different(description, highlights)
             }
         }
     }
@@ -116,10 +102,18 @@ fun interface ImageDiffer {
             val SSIMThreshold = 1 - imageDiffThreshold
 
             val stats = "[MSSIM] Required SSIM: ${String.format("%.3f", SSIMThreshold)}, Actual SSIM: ${String.format("%.3f", SSIMTotal)}"
-            if (SSIMTotal >= SSIMThreshold) {
-                return DiffResult.Similar(stats)
+            val pixelDiff = generatePixelDiffImage(a, b)
+            val highlights = pixelDiff.first
+            val numPixelsDifferent = pixelDiff.second
+            return if (SSIMTotal >= SSIMThreshold) {
+                if (numPixelsDifferent == 0) {
+                    DiffResult.Similar(stats)
+                } else {
+                    DiffResult.Similar(stats, highlights)
+                }
+            } else {
+                DiffResult.Different(stats, highlights)
             }
-            return PixelPerfect.diff(a, b)
         }
 
         internal fun calculateSSIM(
@@ -360,5 +354,32 @@ fun interface ImageDiffer {
         private val CONSTANT_C1 = (CONSTANT_L * CONSTANT_K1).pow(2.0)
         private val CONSTANT_C2 = (CONSTANT_L * CONSTANT_K2).pow(2.0)
         private const val WINDOW_SIZE = 10
+
+        /**
+         * Returns an image highlighting the pixels that differ between image a and b and the number of pixels that differed.
+         */
+        private fun generatePixelDiffImage(a: BufferedImage, b: BufferedImage): Pair<BufferedImage, Int> {
+            check(a.width == b.width && a.height == b.height) { "Images are different sizes" }
+            val width = a.width
+            val height = b.height
+            val highlights = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+            var count = 0
+
+            for (x in 0 until width) {
+                for (y in 0 until height) {
+                    val aPixel = a.getRGB(x, y)
+                    val bPixel = b.getRGB(x, y)
+
+                    // Compare full ARGB pixels, but allow other channels to differ if alpha is 0
+                    if (aPixel == bPixel || (aPixel ushr 24 == 0 && bPixel ushr 24 == 0)) {
+                        highlights.setRGB(x, y, TRANSPARENT.toInt())
+                    } else {
+                        count++
+                        highlights.setRGB(x, y, MAGENTA.toInt())
+                    }
+                }
+            }
+            return Pair(highlights, count)
+        }
     }
 }

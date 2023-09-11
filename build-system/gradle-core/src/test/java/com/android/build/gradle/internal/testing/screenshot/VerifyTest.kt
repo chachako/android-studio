@@ -88,8 +88,8 @@ class VerifyTest {
         val analysis = verifier().assertMatchGolden(goldenFilePath("vertical_rectangle"), loadTestImage("horizontal_rectangle"))
 
         assertIs<Verify.AnalysisResult.SizeMismatch>(analysis)
-        assertEquals(loadTestImage("vertical_rectangle"), analysis.actual)
-        assertEquals(loadTestImage("horizontal_rectangle"), analysis.expected)
+        assertEquals(loadTestImage("vertical_rectangle"), analysis.expected)
+        assertEquals(loadTestImage("horizontal_rectangle"), analysis.actual)
     }
 
     private fun verifier() = Verify(

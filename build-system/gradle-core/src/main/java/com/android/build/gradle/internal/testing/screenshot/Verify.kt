@@ -20,7 +20,7 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
-class Verify (private val imageDiffer: ImageDiffer = ImageDiffer.PixelPerfect, val outputFile: String) {
+class Verify (private val imageDiffer: ImageDiffer = ImageDiffer.PixelPerfect(), val outputFile: String) {
     fun assertMatchGolden(goldenPath: String, image: BufferedImage) : AnalysisResult {
 
         return analyze(goldenPath, image)
