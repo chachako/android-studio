@@ -145,6 +145,18 @@ class UnitTestTaskManager(
                     "packageNameOfFinalRClassProvider",
                     testConfigInputs.packageNameOfFinalRClass)
             }
+
+            taskContainer.assembleTask.configure { task: Task ->
+                task.dependsOn(
+                    unitTestCreationConfig.artifacts.get(
+                        InternalArtifactType.APK_FOR_LOCAL_TEST
+                    )
+                )
+            }
+
+            taskFactory.configure(ASSEMBLE_UNIT_TEST) { assembleTest: Task ->
+                assembleTest.dependsOn(unitTestCreationConfig.taskContainer.assembleTask.name)
+            }
         } else {
             if (testedVariant.componentType.isAar && testedVariant.buildFeatures.androidResources) {
                 // With compile classpath R classes, we need to generate a dummy R class for unit
@@ -191,9 +203,6 @@ class UnitTestTaskManager(
 
         // TODO: use merged java res for unit tests (bug 118690729)
         createRunUnitTestTask(unitTestCreationConfig)
-
-        // This hides the assemble unit test task from the task list.
-        taskContainer.assembleTask.configure { task: Task -> task.group = null }
     }
 
     private fun createRunUnitTestTask(unitTestCreationConfig: UnitTestCreationConfig) {

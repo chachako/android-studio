@@ -1922,6 +1922,7 @@ abstract class TaskManager(
         const val CONNECTED_ANDROID_TEST =
                 BuilderConstants.CONNECTED + ComponentType.ANDROID_TEST_SUFFIX
         const val ASSEMBLE_ANDROID_TEST = "assembleAndroidTest"
+        const val ASSEMBLE_UNIT_TEST = "assembleUnitTest"
 
         // Temporary static variables for Kotlin+Compose configuration
         const val COMPOSE_KOTLIN_COMPILER_EXTENSION_VERSION = "1.3.2"
@@ -1975,6 +1976,12 @@ abstract class TaskManager(
             ) { assembleAndroidTestTask: Task ->
                 assembleAndroidTestTask.group = BasePlugin.BUILD_GROUP
                 assembleAndroidTestTask.description = "Assembles all the Test applications."
+            }
+            taskFactory.register(
+                ASSEMBLE_UNIT_TEST
+            ) { assembleUnitTestTask: Task ->
+                assembleUnitTestTask.group = BasePlugin.BUILD_GROUP
+                assembleUnitTestTask.description = "Assembles all the unit test applications."
             }
             taskFactory.register(LintCompile.CreationAction(globalConfig))
             // Don't register global lint or lintFix tasks for dynamic features because dynamic
