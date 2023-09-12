@@ -113,7 +113,7 @@ public class AndroidDebugBridge {
     /** Last known good {@link InetSocketAddress} to ADB. */
     private static InetSocketAddress sLastKnownGoodAddress;
 
-    private static AndroidDebugBridge sThis;
+    private static volatile AndroidDebugBridge sThis;
     private static boolean sInitialized = false;
     private static boolean sClientSupport;
     private static ClientManager sClientManager;
@@ -729,10 +729,7 @@ public class AndroidDebugBridge {
     public static void addDebugBridgeChangeListener(@NonNull IDebugBridgeChangeListener listener) {
         sBridgeListeners.add(listener);
 
-        AndroidDebugBridge localThis;
-        synchronized (sLock) {
-            localThis = sThis;
-        }
+        AndroidDebugBridge localThis = sThis;
 
         if (localThis != null) {
             // we attempt to catch any exception so that a bad listener doesn't kill our thread
