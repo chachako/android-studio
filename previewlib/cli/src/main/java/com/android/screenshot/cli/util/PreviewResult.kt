@@ -23,6 +23,6 @@ data class PreviewResult(
     ) {
 }
 
-data class Response(val status: Int, val message: String, val previewResults: List<PreviewResult>?) {
+data class Response(val status: Int, val message: String, val previewResults: List<PreviewResult>) {
 }
 

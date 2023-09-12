@@ -135,7 +135,7 @@ class Main {
             saveResults(response, argumentState.outputLocation!!)
             exitProcess(response.status)
         } catch (e: Exception) {
-            val response = Response(CODE_ERROR, e.message!!, null)
+            val response = Response(CODE_ERROR, e.message!!, listOf<PreviewResult>())
             argumentState.outputLocation?.let {
                 saveResults(response, it)
                 exitProcess(response.status)
@@ -157,7 +157,7 @@ class Main {
 
     private fun processResults(results: List<PreviewResult>): Response {
         if (results.isEmpty()) {
-            return Response(CODE_NO_PREVIEWS, "Unable to find previews in file", null)
+            return Response(CODE_NO_PREVIEWS, "Unable to find previews in file", listOf<PreviewResult>())
         }
         if (!results.none { it.responseCode == CODE_RENDER_ERROR }) {
             return Response(CODE_ERROR, "Error rendering 1 or more previews", results)
