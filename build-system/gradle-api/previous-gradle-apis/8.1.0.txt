@@ -2836,4 +2836,3 @@ package com.android.build.gradle.api {
   }
 
 }
-
