@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-/*
+/**
  * This establishes a socket connection to the adb host, and issues a {@link
  * #ADB_TRACK_DEVICES_COMMAND}. It then monitors that socket for all changes about device connection
  * and device state.

@@ -494,6 +494,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           WorkManagerDetector.ISSUE,
           WrongCallDetector.ISSUE,
           WrongCaseDetector.WRONG_CASE,
+          WrongCommentTypeDetector.ISSUE,
           WrongConstructorDetector.ISSUE,
           WrongIdDetector.INVALID,
           WrongIdDetector.NOT_SIBLING,
@@ -595,10 +596,10 @@ open class BuiltinIssueRegistry : IssueRegistry() {
         scope.contains(Scope.ALL_RESOURCE_FILES) -> initialSize += 12
       }
       when {
-        scope.contains(Scope.JAVA_FILE) -> initialSize += 180
+        scope.contains(Scope.JAVA_FILE) -> initialSize += 190
         scope.contains(Scope.CLASS_FILE) -> initialSize += 16
         scope.contains(Scope.MANIFEST) -> initialSize += 84
-        scope.contains(Scope.GRADLE_FILE) -> initialSize += 30
+        scope.contains(Scope.GRADLE_FILE) -> initialSize += 40
       }
       initialSize
     }
