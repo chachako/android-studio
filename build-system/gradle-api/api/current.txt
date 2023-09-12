@@ -187,6 +187,10 @@ package com.android.build.api.artifact {
     field public static final com.android.build.api.artifact.SingleArtifact.PUBLIC_ANDROID_RESOURCES_LIST INSTANCE;
   }
 
+  @org.gradle.api.Incubating public static final class SingleArtifact.RUNTIME_SYMBOL_LIST extends com.android.build.api.artifact.SingleArtifact<org.gradle.api.file.RegularFile> {
+    field public static final com.android.build.api.artifact.SingleArtifact.RUNTIME_SYMBOL_LIST INSTANCE;
+  }
+
   public interface TaskBasedOperation<TaskT extends org.gradle.api.Task> {
     method public <FileTypeT extends org.gradle.api.file.FileSystemLocation> com.android.build.api.artifact.OutOperationRequest<FileTypeT> wiredWith(kotlin.jvm.functions.Function1<? super TaskT,? extends org.gradle.api.file.FileSystemLocationProperty<FileTypeT>> taskOutput);
     method public <FileTypeT extends org.gradle.api.file.FileSystemLocation> com.android.build.api.artifact.CombiningOperationRequest<FileTypeT> wiredWith(kotlin.jvm.functions.Function1<? super TaskT,? extends org.gradle.api.provider.ListProperty<FileTypeT>> taskInput, kotlin.jvm.functions.Function1<? super TaskT,? extends org.gradle.api.file.FileSystemLocationProperty<FileTypeT>> taskOutput);
