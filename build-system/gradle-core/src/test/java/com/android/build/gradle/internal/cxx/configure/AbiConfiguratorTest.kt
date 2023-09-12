@@ -266,6 +266,39 @@ class AbiConfiguratorTest {
     }
 
     @Test
+    fun testToleratedAndValidInjectedAbi() {
+        val configurator = configure(
+            ideBuildOnlyTargetAbi = true,
+            ideBuildTargetAbi = "mips64,x86")
+
+        assertThat(logger.infos).containsExactly(
+            "C/C++: ABIs [mips64,x86] set by 'android.injected.build.abi' gradle flag " +
+                    "contained 'mips64' which is known but invalid for this NDK.")
+        assertThat(logger.warnings).isEmpty()
+        assertThat(logger.errors).isEmpty()
+        assertThat(configurator.validAbis).containsExactly("x86")
+        assertThat(configurator.allAbis).containsExactlyElementsIn(ALL_ABI)
+    }
+
+    @Test
+    fun testToleratedAndBogusInjectedAbi() {
+        val configurator = configure(
+            ideBuildOnlyTargetAbi = true,
+            ideBuildTargetAbi = "mips64,bogus,x86")
+        assertThat(logger.infos).containsExactly(
+            "C/C++: ABIs [mips64,bogus,x86] set by 'android.injected.build.abi' gradle flag " +
+                    "contained 'mips64' which is known but invalid for this NDK."
+        )
+        assertThat(logger.warnings).containsExactly(
+            "[CXX5200] ABIs [mips64,bogus,x86] set by 'android.injected.build.abi' gradle flag " +
+                    "contained 'bogus' which is invalid."
+        )
+        assertThat(logger.errors).isEmpty()
+        assertThat(configurator.validAbis).containsExactly("x86")
+        assertThat(configurator.allAbis).containsExactlyElementsIn(ALL_ABI)
+    }
+
+    @Test
     fun testBogusInjectedAbi() {
         val configurator = configure(
             ideBuildOnlyTargetAbi = true,

@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.cxx.configure
 
+import com.android.build.gradle.internal.core.Abi
 import com.android.build.gradle.internal.cxx.logging.errorln
 import com.android.build.gradle.internal.cxx.logging.infoln
 import com.android.build.gradle.internal.cxx.logging.warnln
@@ -65,6 +66,7 @@ class AbiConfigurator(
         with(key) {
             val supports64Bits = ndkMetaAbiList.filter { it.bitness == 64 }.map { it.name }.toSet()
             val legalAbiNames = ndkMetaAbiList.map { it.name }.toSet()
+            val toleratedAbiNames = Abi.values().map { it.tag }
             val userChosenAbis =
                 externalNativeBuildAbiFilters union splitsFilterAbis union ndkConfigAbiFilters
             val userMistakes =
@@ -125,16 +127,30 @@ class AbiConfigurator(
                     )
                     configurationAbis
                 } else {
-                    val invalidAbis = injectedAbis.filter { !legalAbiNames.contains(it) }
+                    val invalidAbis = injectedAbis
+                        .filter { !legalAbiNames.contains(it) }
                     if (invalidAbis.isNotEmpty()) {
-                        // The user (or android studio) selected some illegal ABIs. Give a warning and
-                        // continue on.
-                        warnln(
-                            ABI_IS_INVALID,
-                            "ABIs [$ideBuildTargetAbi] set by " +
-                                    "'${StringOption.IDE_BUILD_TARGET_ABI.propertyName}' gradle " +
-                                    "flag contained '${sortAndJoinAbiStrings(invalidAbis)}' which is invalid."
-                        )
+                        val (toleratedInvalid, nontoleratedInvalid) = invalidAbis
+                            .partition { toleratedAbiNames.contains(it) }
+                        if (nontoleratedInvalid.isNotEmpty()) {
+                            // The user (or android studio) selected some illegal ABIs. Give a warning and
+                            // continue on.
+                            warnln(
+                                ABI_IS_INVALID,
+                                "ABIs [$ideBuildTargetAbi] set by " +
+                                        "'${StringOption.IDE_BUILD_TARGET_ABI.propertyName}' gradle " +
+                                        "flag contained '${sortAndJoinAbiStrings(nontoleratedInvalid)}' which is invalid."
+                            )
+                        }
+                        if (toleratedInvalid.isNotEmpty()) {
+                            // The user (or android studio) selected some illegal ABIs but they are known (probably old
+                            // and deprecated) so we just issue an info message
+                            infoln(
+                                "ABIs [$ideBuildTargetAbi] set by " +
+                                        "'${StringOption.IDE_BUILD_TARGET_ABI.propertyName}' gradle " +
+                                        "flag contained '${sortAndJoinAbiStrings(toleratedInvalid)}' which is known but invalid for this NDK."
+                            )
+                        }
                     }
 
                     val legalButNotTargetedByConfiguration =
