@@ -393,7 +393,8 @@ fun createCxxMetadataGenerator(
         )
         CMAKE -> {
             val cmake = abi.variant.module.cmake
-            if (cmake == null) {
+            val cmakePath = cmake?.cmakeExe?.path
+            if (cmakePath == null || cmakePath == "") {
                 errorln(CMAKE_IS_MISSING, "No valid CMake executable was found.")
                 CxxNopMetadataGenerator(variantBuilder)
             } else {
