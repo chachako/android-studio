@@ -383,8 +383,8 @@ class MergeJavaResWorkActionTest {
                 2 files found with path 'duplicate' from inputs:
                  - ${jarFile1.absolutePath}
                  - ${jarFile2.absolutePath}
-                Adding a packagingOptions block may help, please refer to
-                https://developer.android.com/reference/tools/gradle-api/$agpReferenceDocsVersion/com/android/build/api/dsl/ResourcesPackagingOptions
+                Adding a packaging block may help, please refer to
+                https://developer.android.com/reference/tools/gradle-api/$agpReferenceDocsVersion/com/android/build/api/dsl/Packaging
                 for more information
             """.trimIndent()
         )
