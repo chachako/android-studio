@@ -30,5 +30,5 @@ data class PreviewResult(
 /*
 * Response from [PreviewScreenshotRenderTask] that indicates if previews were rendered successfully and provides a list of [PreviewResult]s
 */
-data class Response(val status: Int, val message: String, val previewResults: List<PreviewResult>?) {
+data class Response(val status: Int, val message: String, val previewResults: List<PreviewResult>) {
 }
