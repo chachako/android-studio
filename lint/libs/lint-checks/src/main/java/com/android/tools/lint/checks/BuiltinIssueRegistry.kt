@@ -392,6 +392,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           ScrollViewChildDetector.ISSUE,
           SdCardDetector.ISSUE,
           SdkIntDetector.ISSUE,
+          SdkSuppressDetector.ISSUE,
           SecureRandomDetector.ISSUE,
           SecureRandomGeneratorDetector.ISSUE,
           SecurityDetector.EXPORTED_PROVIDER,
