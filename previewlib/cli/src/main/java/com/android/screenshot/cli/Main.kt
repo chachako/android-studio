@@ -23,6 +23,7 @@ import com.android.screenshot.cli.util.CODE_RENDER_ERROR
 import com.android.screenshot.cli.util.CODE_RUNTIME_ERROR
 import com.android.screenshot.cli.util.PreviewResult
 import com.android.screenshot.cli.util.Response
+import com.android.screenshot.cli.util.ResponseTypeAdapter
 import com.android.tools.idea.AndroidPsiUtils
 import com.android.tools.idea.compose.preview.getPreviewNodes
 import com.android.tools.idea.util.toVirtualFile
@@ -65,7 +66,6 @@ import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.extensions.Extensions
 import com.intellij.psi.util.PsiTreeUtil
-import com.google.gson.Gson
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.utils.PathUtil
 import org.jetbrains.uast.UAnnotation
@@ -146,8 +146,7 @@ class Main {
     }
 
     private fun saveResults(response: Response, outputLocation: String) {
-        //TODO - find a XMLParser to be used here
-        val jsonString = Gson().toJson(response)
+        val jsonString = ResponseTypeAdapter().toJson(response)
         val outputFile = File("$outputLocation/response.json")
         if (!outputFile.exists()) {
             outputFile.createNewFile()
