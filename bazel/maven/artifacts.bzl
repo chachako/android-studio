@@ -202,6 +202,7 @@ ARTIFACTS = [
     "org.tensorflow:tensorflow-lite-metadata:0.1.0-rc2",
     "org.xerial:sqlite-jdbc:3.21.0.1",
     "org.xerial:sqlite-jdbc:3.34.0",
+    "org.xerial:sqlite-jdbc:3.43.0.0",
     "xerces:xercesImpl:2.12.0",
     "org.tomlj:tomlj:1.1.0",
 ]
