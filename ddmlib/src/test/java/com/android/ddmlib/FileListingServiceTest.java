@@ -83,6 +83,30 @@ public class FileListingServiceTest extends TestCase {
         assertTrue(m.matches());
     }
 
+    public void test_STAT_PATTERN() {
+        Matcher m;
+
+        // adb shell stat -c \"%A %U %G %z %s %n\" /
+        m = FileListingService.STAT_PATTERN.matcher(
+                "drwxr-xr-x root root 2021-08-02 09:20:53.000000000 -0700 4096 /");
+        assertTrue(m.matches());
+
+        // adb shell stat -c \"%A %U %G %z %s %n\" /data/data
+        m = FileListingService.STAT_PATTERN.matcher(
+                "drwxr-xr-x root root 2021-08-02 09:20:53.000000000 +0700 4096 /data/data");
+        assertTrue(m.matches());
+
+        // adb shell stat -c \"%A %U %G %z %s %n\" /
+        m = FileListingService.STAT_PATTERN.matcher(
+                "drwxr-xr-x root root 2021-08-02 09:20:53 -0700 4096 /");
+        assertFalse(m.matches());
+
+        // adb shell stat -c \"%A %U %G %z %s %n\" /
+        m = FileListingService.STAT_PATTERN.matcher(
+                "drwxr-xr-x root root 2021-08-02 09:20:53.000000000 -0700 4096");
+        assertFalse(m.matches());
+    }
+
     public void testFileEntryEscape() {
         assertEquals("file\\\"name", FileListingService.FileEntry.escape("file\"name"));
         assertEquals("file\\$name", FileListingService.FileEntry.escape("file$name"));
