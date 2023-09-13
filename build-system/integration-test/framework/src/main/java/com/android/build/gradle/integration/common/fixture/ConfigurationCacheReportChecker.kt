@@ -339,16 +339,6 @@ class ConfigurationCacheReportChecker {
                 name = "android-sdk-license"
             ),
         ),
-        ErrorType.ValueFromCustomSource to listOf(
-            Error.valueFromCustomSource(
-                location = "AGP Plugin",
-                name = "FakeDependencyJarCreator"
-            ),
-            Error.valueFromCustomSource(
-                location = "AGP Plugin",
-                name = "AndroidDirectoryCreator"
-            ),
-        )
     )
 
     /**
