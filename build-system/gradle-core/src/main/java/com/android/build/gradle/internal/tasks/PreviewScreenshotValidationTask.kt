@@ -22,10 +22,9 @@ import com.android.build.gradle.internal.component.InstrumentedTestCreationConfi
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.testing.screenshot.ImageDiffer
 import com.android.build.gradle.internal.testing.screenshot.Verify
-import com.android.build.gradle.internal.testing.screenshot.Response
+import com.android.build.gradle.internal.testing.screenshot.ResponseTypeAdapter
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.core.ComponentType
-import com.google.gson.Gson
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
@@ -35,7 +34,6 @@ import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.TaskAction
 import java.io.File
 import org.gradle.api.tasks.VerificationTask
 import javax.imageio.ImageIO
@@ -67,7 +65,7 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
         var exitValue = 0
         try {
             val responseFile = imageOutputDir.get().file("response.json").asFile
-            val response = Gson().fromJson(responseFile.readText(), Response::class.java)
+            val response = ResponseTypeAdapter().fromJson(responseFile.readText())
             exitValue = response.status
         } catch (e: Exception) {
             throw GradleException("Unable to render screenshots.", e)

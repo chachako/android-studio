@@ -21,33 +21,50 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import org.gradle.api.GradleException
 
-class PreviewResultTypeAdapter: TypeAdapter<PreviewResult>() {
-    override fun write(writer: JsonWriter, src: PreviewResult) {
+class ResponseTypeAdapter() : TypeAdapter<Response>() {
+    private val previewResultTypeAdapter = PreviewResultTypeAdapter()
+
+    override fun write(writer: JsonWriter, src: Response) {
         writer.beginObject()
 
-        writer.name("responseCode").value(src.responseCode)
-        writer.name("previewName").value(src.previewName)
+        writer.name("status").value(src.status)
         writer.name("message").value(src.message)
+
+        if (!src.previewResults.isNullOrEmpty()) {
+            writer.name("previewResults")
+            writer.beginArray()
+            for(result in src.previewResults) {
+                previewResultTypeAdapter.write(writer, result)
+            }
+            writer.endArray()
+        }
 
         writer.endObject()
     }
 
-    override fun read(reader: JsonReader): PreviewResult {
-        var responseCode: Int? = null
-        var previewName: String? = null
+    override fun read(reader: JsonReader): Response {
+        var status: Int? = null
         var message: String? = null
+        var previewResults = mutableListOf<PreviewResult>()
+
         reader.beginObject()
         while (reader.hasNext()) {
             when (reader.nextName()) {
-                "responseCode" -> responseCode = reader.nextInt()
-                "previewName" -> previewName = reader.nextString()
+                "status" -> status = reader.nextInt()
                 "message" -> message = reader.nextString()
+                "previewResults" -> {
+                    reader.beginArray()
+                    while(reader.hasNext()) {
+                        previewResults.add(previewResultTypeAdapter.read(reader))
+                    }
+                    reader.endArray()
+                }
             }
         }
         reader.endObject()
-        if (responseCode == null || previewName == null) {
-            throw GradleException("Could not read PreviewResult.")
+        if (status == null || message == null) {
+            throw GradleException("Could not read Response.")
         }
-        return PreviewResult(responseCode, previewName, message)
+        return Response(status, message, previewResults)
     }
 }
