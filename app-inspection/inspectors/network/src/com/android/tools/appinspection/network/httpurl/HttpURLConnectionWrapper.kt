@@ -73,14 +73,6 @@ class HttpURLConnectionWrapper(
         return trackedConnection.getRequestMethod()
     }
 
-    override fun getResponseCode(): Int {
-        return trackedConnection.responseCode
-    }
-
-    override fun getResponseMessage(): String? {
-        return trackedConnection.responseMessage
-    }
-
     override fun getPermission(): Permission {
         return trackedConnection.permission
     }
@@ -157,6 +149,10 @@ class HttpURLConnectionWrapper(
         return trackedConnection.getContent(classes)
     }
 
+    /**
+     * Fields of [responseCode] and [responseMessage] are derived from this method and implemented
+     * in [HttpURLConnection].
+     */
     override fun getInputStream(): InputStream {
         return trackedConnection.inputStream
     }

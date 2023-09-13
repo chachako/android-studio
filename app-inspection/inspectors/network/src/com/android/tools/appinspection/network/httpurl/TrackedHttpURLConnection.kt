@@ -314,24 +314,6 @@ class TrackedHttpURLConnection(
             }
         }
 
-    // Internally, HttpURLConnection#getResponseCode() calls HttpURLConnection#getInputStream(),
-    // but since we don't have hooks inside that class, we need to call it ourselves here, to
-    // ensure the event is tracked.
-    val responseCode: Int
-        get() {
-            // Internally, HttpURLConnection#getResponseCode() calls HttpURLConnection#getInputStream(),
-            // but since we don't have hooks inside that class, we need to call it ourselves here, to
-            // ensure the event is tracked.
-            tryTrackResponse()
-            return wrapped.responseCode
-        }
-
-    val responseMessage: String?
-        get() {
-            tryTrackResponse()
-            return wrapped.responseMessage
-        }
-
     fun getHeaderField(n: Int): String? {
         tryTrackResponse()
         return if (::interceptedHeaders.isInitialized) {

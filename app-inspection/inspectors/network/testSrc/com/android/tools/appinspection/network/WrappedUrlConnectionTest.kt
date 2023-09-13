@@ -196,6 +196,8 @@ class WrappedUrlConnectionTest {
         assertThat(httpsWrapper.getHeaderFieldLong("myLong", 0)).isEqualTo(123123123123123L)
         assertThat(httpsWrapper.getHeaderFieldDate("myData", 0)).isEqualTo(1445412480000L)
         assertThat(httpsWrapper.inputStream.reader().use { it.readText() }).isEqualTo("myBody")
+        assertThat(httpsWrapper.responseCode).isEqualTo(200)
+        assertThat(httpsWrapper.responseMessage).isEqualTo("OK")
     }
 
     private fun assertNullableApi(urlConnection: HttpURLConnection) {
