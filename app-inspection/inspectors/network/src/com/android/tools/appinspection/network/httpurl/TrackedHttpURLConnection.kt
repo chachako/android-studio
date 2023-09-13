@@ -19,7 +19,6 @@ import com.android.tools.appinspection.network.HttpTrackerFactory
 import com.android.tools.appinspection.network.rules.InterceptionRuleService
 import com.android.tools.appinspection.network.rules.NetworkConnection
 import com.android.tools.appinspection.network.rules.NetworkResponse
-import com.android.tools.appinspection.network.rules.InterceptedResponseBody
 import com.android.tools.appinspection.network.trackers.HttpConnectionTracker
 import java.io.IOException
 import java.io.InputStream
@@ -41,6 +40,7 @@ class TrackedHttpURLConnection(
     trackerFactory: HttpTrackerFactory,
     private val interceptionRuleService: InterceptionRuleService
 ) {
+    private data class HeaderEntry(val key: String?, val value: String)
 
     private val connectionTracker: HttpConnectionTracker =
         trackerFactory.trackConnection(wrapped.url.toString(), callstack)
@@ -59,6 +59,7 @@ class TrackedHttpURLConnection(
      * rules. This is what the app gets.
      */
     private lateinit var interceptedResponse: NetworkResponse
+    private lateinit var interceptedHeaders: List<HeaderEntry>
 
     /**
      * Calls [HttpConnectionTracker.trackRequest] only if it hasn't been called
@@ -118,6 +119,10 @@ class TrackedHttpURLConnection(
                     ),
                     NetworkResponse(wrapped.headerFields, wrapped.inputStream)
                 )
+                // Create a list for intercepted headers.
+                interceptedHeaders = interceptedResponse.responseHeaders.entries.flatMap { entries ->
+                    entries.value.map { HeaderEntry(entries.key, it) }
+                }
                 // Don't call our getHeaderFields overrides, as it would call
                 // this method recursively.
                 connectionTracker.trackResponseHeaders(interceptedResponse.responseHeaders)
@@ -327,9 +332,14 @@ class TrackedHttpURLConnection(
             return wrapped.responseMessage
         }
 
-    fun getHeaderField(pos: Int): String? {
+    fun getHeaderField(n: Int): String? {
         tryTrackResponse()
-        return wrapped.getHeaderField(pos)
+        return if (::interceptedHeaders.isInitialized) {
+            interceptedHeaders.getOrNull(n)?.value
+        }
+        else {
+            wrapped.getHeaderField(n)
+        }
     }
 
     val headerFields: Map<String?, List<String>>
@@ -340,27 +350,17 @@ class TrackedHttpURLConnection(
 
     fun getHeaderField(key: String?): String? {
         tryTrackResponse()
-        return wrapped.getHeaderField(key)
+        return interceptedResponse.responseHeaders[key]?.firstOrNull()
     }
 
-    fun getHeaderFieldInt(field: String?, defaultValue: Int): Int {
+    fun getHeaderFieldKey(n: Int): String? {
         tryTrackResponse()
-        return wrapped.getHeaderFieldInt(field, defaultValue)
-    }
-
-    fun getHeaderFieldKey(posn: Int): String? {
-        tryTrackResponse()
-        return wrapped.getHeaderFieldKey(posn)
-    }
-
-    fun getHeaderFieldDate(field: String?, defaultValue: Long): Long {
-        tryTrackResponse()
-        return wrapped.getHeaderFieldDate(field, defaultValue)
-    }
-
-    fun getHeaderFieldLong(name: String?, Default: Long): Long {
-        tryTrackResponse()
-        return wrapped.getHeaderFieldLong(name, Default)
+        return if (::interceptedHeaders.isInitialized) {
+            interceptedHeaders.getOrNull(n)?.key
+        }
+        else {
+            wrapped.getHeaderFieldKey(n)
+        }
     }
 
     // getInputStream internally calls connect if not already connected.
