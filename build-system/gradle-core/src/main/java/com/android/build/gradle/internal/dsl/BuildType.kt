@@ -247,7 +247,6 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
         isCrunchPngsDefault = thatBuildType.isCrunchPngsDefault
         setMatchingFallbacks(thatBuildType.matchingFallbacks)
         // we don't want to dynamically link these values. We just want to copy the current value.
-        isDefault = thatBuildType.isDefault
         isProfileable = thatBuildType.isProfileable
         aarMetadata.minCompileSdk = thatBuildType.aarMetadata.minCompileSdk
         (optimization as OptimizationImpl).initWith(that.optimization as OptimizationImpl)

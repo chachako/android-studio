@@ -105,6 +105,9 @@ class BuildTypeTest {
                 dslServices,
                 ComponentTypeImpl.BASE_APK),
             listOf(
+                // isDefault is not copied
+                "isDefault",
+                "getIsDefault",
                 // Extensions are not copied as AGP doesn't manage them
                 "getExtensions",
                 "isZipAlignEnabled\$annotations"
@@ -117,9 +120,6 @@ class BuildTypeTest {
             copy.initWith(original)
             // Ndk and ndkConfig refer to the same object
             original.ndk
-            // Covered by original.isDefault
-            original.getIsDefault()
-            // Uses the private _isDefault
             original.isShrinkResources
             // Covered by _useProguard
             original.isUseProguard
