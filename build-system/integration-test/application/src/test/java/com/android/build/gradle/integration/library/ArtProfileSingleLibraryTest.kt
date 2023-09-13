@@ -184,6 +184,27 @@ class ArtProfileSingleLibraryTest {
 
         Truth.assertThat(binaryProfileMetadata.exists())
 
+        // check contents of dex metadata properties file produced in CompileArtProfileTask
+        val dexMetadataProperties = FileUtils.join(
+            project.getSubproject(":app").buildDir,
+            SdkConstants.FD_INTERMEDIATES,
+            InternalArtifactType.DEX_METADATA_DIRECTORY.getFolderName(),
+            "release",
+            SdkConstants.FN_DEX_METADATA_PROP
+        )
+
+        Truth.assertThat(dexMetadataProperties.readText()).isEqualTo(
+            """
+                31=0/.dm
+                32=0/.dm
+                33=0/.dm
+                34=0/.dm
+                28=1/.dm
+                29=1/.dm
+                30=1/.dm
+            """.trimIndent()
+        )
+
         // check packaging.
         project.getSubproject(":app").getApk(GradleTestProject.ApkType.RELEASE).also {
             checkAndroidArtifact(tempFolder, it, apkEntryName) { fileContent ->

@@ -52,6 +52,7 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskProvider
+import shadow.bundletool.com.android.utils.PathUtils
 import java.io.File
 
 /**
@@ -131,7 +132,11 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
 
                 val dexMetadataMap =
                     artProfileWithDexMetadata.dexMetadata.entries.joinToString("\n") {
-                        it.key.toString() + "=" + parameters.dexMetadataDirectory.get().asFile.toPath().relativize(it.value.toPath())
+                        it.key.toString() + "=" +
+                            PathUtils.toSystemIndependentPath(
+                                parameters.dexMetadataDirectory.get().asFile.toPath()
+                                    .relativize(it.value.toPath())
+                            )
                     }
                 FileUtils.writeToFile(
                     File(parameters.dexMetadataDirectory.get().asFile, SdkConstants.FN_DEX_METADATA_PROP),

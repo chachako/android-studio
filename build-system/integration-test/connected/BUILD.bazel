@@ -808,6 +808,16 @@ gradle_connected_test(
     deps = TEST_DEPS,
 )
 
+gradle_connected_test(
+    name = "InstallProfilesPerDeviceApiConnectedTest",
+    srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
+    avd = ":avd",
+    data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/basic"],
+    maven_repo_zips = MAVEN_REPO_ZIPS,
+    maven_repos = TEST_MAVEN_REPOS,
+    deps = TEST_DEPS,
+)
+
 # Maven repo with all the dependencies required by test projects.
 #
 # Quick way of updating this list:

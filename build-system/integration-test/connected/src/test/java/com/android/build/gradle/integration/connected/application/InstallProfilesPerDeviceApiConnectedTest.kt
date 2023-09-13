@@ -154,6 +154,6 @@ class InstallProfilesPerDeviceApiConnectedTest {
         )
 
         ScannerSubject.assertThat(project.buildResult.stdout)
-            .contains("Installing APK 'basic-x86-release.apk, basic-x86-release.dm'")
+            .contains("Installing APK 'basic-x86_64-release.apk, basic-x86_64-release.dm'")
     }
 }
