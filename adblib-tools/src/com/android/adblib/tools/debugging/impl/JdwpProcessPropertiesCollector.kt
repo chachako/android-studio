@@ -140,8 +140,8 @@ internal class JdwpProcessPropertiesCollector(
 
                     else -> {
                         logger.info(throwable) {
-                            "Exception while collecting process " +
-                                    "'${stateFlow.value.processName}' properties"
+                            "Exception while collecting process properties" +
+                                    " (processName: '${stateFlow.value.processName}')"
                         }
                         throwable // Record any other unexpected exception
                     }
