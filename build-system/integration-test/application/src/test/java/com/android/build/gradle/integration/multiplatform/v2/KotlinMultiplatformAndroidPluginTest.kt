@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuil
 import com.android.build.gradle.integration.common.truth.ApkSubject
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThatApk
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.testutils.apk.Aar
 import com.android.testutils.apk.Apk
 import com.android.utils.FileUtils
@@ -54,6 +55,37 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
     fun setUpProject() {
         if (publishLibs) {
             project.publishLibs()
+        }
+    }
+
+    @Test
+    fun testKmpLibraryTestApkContentsWithBuildTypeSelection() {
+        TestFileUtils.appendToFile(
+            project.getSubproject("kmpFirstLib").ktsBuildFile,
+            """
+                kotlin.androidLibrary {
+                    dependencyVariantSelection {
+                      buildTypes.add("release")
+                    }
+                }
+            """.trimIndent()
+        )
+
+        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+        project.executor()
+            .withFailOnWarning(false)
+            .run(":kmpFirstLib:mergeAndroidInstrumentedTestJavaResource")
+
+        val androidTestMergedRes = project.getSubproject("kmpFirstLib").getIntermediateFile(
+            InternalArtifactType.MERGED_JAVA_RES.getFolderName() + "/androidInstrumentedTest/feature-kmpFirstLib.jar"
+        )
+
+        assertThat(androidTestMergedRes.exists()).isTrue()
+
+        Apk(androidTestMergedRes).use { apk ->
+            assertThat(apk.getEntry("android_lib_resource.txt").readText()).isEqualTo(
+                "android lib resource\n"
+            )
         }
     }
 
@@ -229,7 +261,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             )
 
             assertThat(apk.getEntry("android_lib_resource.txt").readText()).isEqualTo(
-                "android lib resource\n"
+                "android lib debug resource\n"
             )
         }
     }
@@ -348,7 +380,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             )
 
             assertThat(apk.getEntry("android_lib_resource.txt").readText()).isEqualTo(
-                "android lib resource\n"
+                "android lib debug resource\n"
             )
 
             // all contents

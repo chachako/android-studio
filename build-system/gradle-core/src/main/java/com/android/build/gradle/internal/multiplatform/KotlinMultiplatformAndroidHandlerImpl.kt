@@ -36,6 +36,7 @@ import com.android.build.gradle.internal.utils.KOTLIN_MPP_PLUGIN_ID
 import com.android.build.gradle.internal.utils.getKotlinPluginVersionFromPlugin
 import com.android.ide.common.gradle.Version
 import org.gradle.api.Project
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.ExtensionAware
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -47,7 +48,8 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.external.createExternalKotlinTarge
 @OptIn(ExternalKotlinTargetApi::class)
 internal class KotlinMultiplatformAndroidHandlerImpl(
     private val project: Project,
-    private val dslServices: DslServices
+    private val dslServices: DslServices,
+    private val objectFactory: ObjectFactory
 ): KotlinMultiplatformAndroidHandler {
 
     private lateinit var kotlinExtension: KotlinMultiplatformExtension
@@ -67,6 +69,7 @@ internal class KotlinMultiplatformAndroidHandlerImpl(
         androidExtension = dslServices.newInstance(
             extensionImplClass,
             dslServices,
+            objectFactory,
             { compilationBuilder: KotlinMultiplatformAndroidCompilationBuilder ->
                 if (project.pluginManager.hasPlugin(KOTLIN_MPP_PLUGIN_ID)) {
                     createCompilation(

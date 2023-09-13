@@ -134,7 +134,8 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
         withProject("kotlinMultiplatformHandler") { project ->
             KotlinMultiplatformAndroidHandlerImpl(
                 project = project,
-                dslServices = dslServices
+                dslServices = dslServices,
+                objectFactory = projectServices.objectFactory
             )
         }
     }
@@ -584,13 +585,11 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
     private fun configureDisambiguationRules(project: Project) {
         project.dependencies.attributesSchema { schema ->
             val buildTypesToMatch = androidExtension.dependencyVariantSelection.buildTypes.get()
-            if (buildTypesToMatch.isNotEmpty()){
-                schema.attribute(BuildTypeAttr.ATTRIBUTE)
-                    .disambiguationRules
-                    .add(SingleVariantBuildTypeRule::class.java) { config ->
-                        config.setParams(buildTypesToMatch)
-                    }
-            }
+            schema.attribute(BuildTypeAttr.ATTRIBUTE)
+                .disambiguationRules
+                .add(SingleVariantBuildTypeRule::class.java) { config ->
+                    config.setParams(buildTypesToMatch)
+                }
 
             androidExtension.dependencyVariantSelection.productFlavors.get().forEach { (dimension, fallbacks) ->
                 schema.attribute(ProductFlavorAttr.of(dimension))

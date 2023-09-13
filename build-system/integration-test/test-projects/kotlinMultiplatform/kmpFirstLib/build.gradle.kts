@@ -45,7 +45,6 @@ kotlin {
     }
 
     dependencyVariantSelection {
-      buildTypes.add("debug")
       productFlavors.put("type", mutableListOf("typeone"))
       productFlavors.put("mode", mutableListOf("modetwo"))
     }

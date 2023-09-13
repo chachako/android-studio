@@ -49,6 +49,6 @@ abstract class KmpComponentDslInfoImpl(
             )
         }
 
-    override val buildTypeMatchingFallbacks: ListProperty<String>
-        get() = extension.dependencyVariantSelection.buildTypes
+    override val buildTypeMatchingFallbacks: List<String>
+        get() = extension.dependencyVariantSelection.buildTypes.get()
 }

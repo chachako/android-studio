@@ -36,6 +36,6 @@ class KmpAndroidFirstLibActivityTest {
             it!!.bufferedReader().readLine()
         }
 
-        Assert.assertTrue(androidLibResValue == "android lib resource")
+        Assert.assertTrue(androidLibResValue == "android lib debug resource")
     }
 }

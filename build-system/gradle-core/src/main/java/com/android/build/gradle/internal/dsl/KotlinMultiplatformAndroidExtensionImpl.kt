@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.dsl
 
+import com.android.build.api.dsl.DependencyVariantSelection
 import com.android.build.api.dsl.HasConfigurableValue
 import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder
 import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
@@ -33,10 +34,12 @@ import com.android.builder.core.BuilderConstants
 import com.android.builder.core.LibraryRequest
 import com.android.builder.core.ToolsRevisionUtils
 import com.android.builder.signing.DefaultSigningConfig
+import org.gradle.api.model.ObjectFactory
 import javax.inject.Inject
 
 internal abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLazyInitialization("lazyInit") constructor(
     private val dslServices: DslServices,
+    private val objectFactory: ObjectFactory,
     private val compilationEnabledCallback: (KotlinMultiplatformAndroidCompilationBuilder) -> Unit,
 ): KotlinMultiplatformAndroidExtension, Lockable {
 
@@ -48,6 +51,13 @@ internal abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLaz
                 AndroidLocationsBuildService::class.java
             ).get().getDefaultDebugKeystoreLocation()
         ).copyToSigningConfig(signingConfig)
+    }
+
+    override val dependencyVariantSelection: DependencyVariantSelection =
+        dslServices.newDecoratedInstance(DependencyVariantSelectionImpl::class.java, dslServices, objectFactory)
+
+    override fun dependencyVariantSelection(action: DependencyVariantSelection.() -> Unit) {
+        action.invoke(dependencyVariantSelection)
     }
 
     abstract val libraryRequests: MutableList<LibraryRequest>
