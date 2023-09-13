@@ -40,6 +40,13 @@ abstract class AnalyticsEnabledComponent(
     val objectFactory: ObjectFactory
 ) : Component {
 
+
+    override val debuggable: Boolean
+        get() {
+            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type = VariantPropertiesMethodType.DEBUGGABLE_VALUE
+            return delegate.debuggable
+        }
+
     override val artifacts: Artifacts
         get() {
             stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =

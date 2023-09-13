@@ -58,6 +58,17 @@ class AnalyticsEnabledComponentTest {
     abstract class MockedVisitor : AsmClassVisitorFactory<InstrumentationParameters.None>
 
     @Test
+    fun isDebug() {
+        Mockito.`when`(delegate.debuggable).thenReturn(true)
+        Truth.assertThat(proxy.debuggable).isEqualTo(true)
+
+        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
+        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessList.first().type)
+                .isEqualTo(VariantPropertiesMethodType.DEBUGGABLE_VALUE)
+        Mockito.verify(delegate, Mockito.times(1)).debuggable
+    }
+
+    @Test
     fun transformClasspathWith() {
         Mockito.`when`(delegate.instrumentation)
             .thenReturn(Mockito.mock(Instrumentation::class.java))

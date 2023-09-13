@@ -65,6 +65,9 @@ interface Component: ComponentIdentity {
      */
     val namespace: Provider<String>
 
+    /** Whether the produced artifacts will be debuggable */
+    val debuggable: Boolean
+
     /**
      * Access to the variant's compile classpath.
      *
