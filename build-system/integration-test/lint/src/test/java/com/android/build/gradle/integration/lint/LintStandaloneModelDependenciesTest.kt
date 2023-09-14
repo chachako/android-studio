@@ -75,7 +75,12 @@ class LintStandaloneModelDependenciesTest {
                 "main-artifact-dependencies.xml"
             )
         assertThat(artifactDependenciesFile).exists()
-        assertThat(artifactDependenciesFile).containsAllOf("guava", "java-lib2", "java-lib3")
+        assertThat(artifactDependenciesFile).containsAllOf(
+            "guava",
+            "java-lib2",
+            "java-lib3",
+            "gradle-api"
+        )
         assertThat(artifactDependenciesFile).doesNotContain("junit")
 
         val testArtifactDependenciesFile =
@@ -86,7 +91,7 @@ class LintStandaloneModelDependenciesTest {
                 "main-artifact-dependencies.xml"
             )
         assertThat(testArtifactDependenciesFile).exists()
-        assertThat(testArtifactDependenciesFile).containsAllOf("junit", "java-lib2")
+        assertThat(testArtifactDependenciesFile).containsAllOf("junit", "java-lib2", "gradle-api")
         assertThat(testArtifactDependenciesFile).doesNotContain("guava")
         assertThat(testArtifactDependenciesFile).doesNotContain("java-lib3")
     }
