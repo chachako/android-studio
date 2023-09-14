@@ -343,6 +343,7 @@ class NamespacedDynamicFeatureIntegrationTest {
                 .getIntermediateFile(
                     "feature_set_metadata",
                     "debug",
+                    "generateDebugFeatureMetadata",
                     "feature-metadata.json")
         assertThat(idsList).exists()
         val featureSetMetadata = FeatureSetMetadata.load(idsList)

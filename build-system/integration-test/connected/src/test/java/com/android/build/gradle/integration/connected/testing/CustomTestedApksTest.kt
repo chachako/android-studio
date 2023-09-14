@@ -208,7 +208,8 @@ class CustomTestedApksTest {
                 project.getSubproject("test").buildDir,
                 SdkConstants.FD_INTERMEDIATES,
                 InternalArtifactType.PACKAGED_MANIFESTS.getFolderName(),
-                "benchmark"
+                "benchmark",
+                "processBenchmarkManifest"
             )
         Truth.assertThat(packagedManifestFolder.exists()).isTrue()
         val manifests = BuiltArtifactsLoaderImpl.loadFromDirectory(packagedManifestFolder)

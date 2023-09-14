@@ -41,7 +41,7 @@ class WindowsSystemDependencyTest {
 
         project.execute("assembleDebug")
 
-        val buildElementsJson = project.file("build/intermediates/aapt_friendly_merged_manifests/debug/aapt/${BuiltArtifactsImpl.METADATA_FILE_NAME}")
+        val buildElementsJson = project.file("build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/${BuiltArtifactsImpl.METADATA_FILE_NAME}")
 
         assertThat(buildElementsJson).doesNotContain("\\\\")
     }

@@ -17,7 +17,6 @@
 package com.android.build.gradle.integration.annotationprocessor
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.getOutputDir
 import com.android.build.gradle.tasks.ANNOTATION_PROCESSOR_LIST_FILE_NAME
@@ -34,11 +33,11 @@ class KspJavaPreCompileTest {
 
     @Test
     fun kspJavaPreCompileTest() {
-        val result = project.executor().run(":app:javaPreCompileDebug")
+        project.executor().run(":app:javaPreCompileDebug")
 
         val annotationProcessorList =
             InternalArtifactType.ANNOTATION_PROCESSOR_LIST.getOutputDir(project.getSubproject("app").buildDir)
-                .resolve("debug/$ANNOTATION_PROCESSOR_LIST_FILE_NAME").readText()
+                .resolve("debug/javaPreCompileDebug/$ANNOTATION_PROCESSOR_LIST_FILE_NAME").readText()
         Truth.assertThat(annotationProcessorList).isEqualTo(
             "{\"mock-processor.jar (project :mock-processor)\":\"KSP_PROCESSOR\"}")
     }

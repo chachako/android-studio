@@ -110,6 +110,7 @@ class FeatureOnFeatureDependencyTest {
         val manifestFile = project.getSubproject(":leafFeature").getIntermediateFile(
             "packaged_manifests",
             "debug",
+            "processDebugManifestForPackage",
             "AndroidManifest.xml")
 
         assertThat(manifestFile).exists()
@@ -147,6 +148,7 @@ class FeatureOnFeatureDependencyTest {
         return project.getIntermediateFile(
             "packaged_manifests",
             "debug",
+            "processDebugManifestForPackage",
             "AndroidManifest.xml")
     }
 }

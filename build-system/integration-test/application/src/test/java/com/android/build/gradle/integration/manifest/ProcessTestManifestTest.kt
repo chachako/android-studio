@@ -201,7 +201,7 @@ class ProcessTestManifestTest {
             """.trimIndent()
         )
         project.executor().run("assembleFlavor1Flavor2DebugAndroidTest")
-        val manifestContent = project.file("build/intermediates/packaged_manifests/flavor1Flavor2DebugAndroidTest/AndroidManifest.xml")
+        val manifestContent = project.file("build/intermediates/packaged_manifests/flavor1Flavor2DebugAndroidTest/processFlavor1Flavor2DebugAndroidTestManifest/AndroidManifest.xml")
         // merged from androidTestDebug
         assertThat(manifestContent).contains("android:isGame=\"false\"")
         // merged from androidTestFlavor2
@@ -288,7 +288,7 @@ class ProcessTestManifestTest {
         )
         val result = project.executor().run("processReleaseUnitTestManifest")
         assertTrue { result.failedTasks.isEmpty()}
-        val manifestFile = project.file("build/intermediates/packaged_manifests/releaseUnitTest/AndroidManifest.xml")
+        val manifestFile = project.file("build/intermediates/packaged_manifests/releaseUnitTest/processReleaseUnitTestManifest/AndroidManifest.xml")
         assertThat(manifestFile).contains("android:label=\"unit test from tested variant\"")
     }
 
@@ -333,7 +333,7 @@ class ProcessTestManifestTest {
         )
         val result = project.executor().run("processReleaseUnitTestManifest")
         assertTrue { result.failedTasks.isEmpty()}
-        val manifestFile = project.file("build/intermediates/packaged_manifests/releaseUnitTest/AndroidManifest.xml")
+        val manifestFile = project.file("build/intermediates/packaged_manifests/releaseUnitTest/processReleaseUnitTestManifest/AndroidManifest.xml")
         assertThat(manifestFile).contains("android:label=\"unit test from tested variant\"")
     }
 
@@ -355,7 +355,7 @@ class ProcessTestManifestTest {
         """.trimIndent())
         val result = project.executor().run("processReleaseUnitTestManifest")
         assertTrue { result.failedTasks.isEmpty()}
-        val manifestFile = project.file("build/intermediates/packaged_manifests/releaseUnitTest/AndroidManifest.xml")
+        val manifestFile = project.file("build/intermediates/packaged_manifests/releaseUnitTest/processReleaseUnitTestManifest/AndroidManifest.xml")
         assertThat(manifestFile).contains("android:targetSdkVersion=\"22\"")
     }
 
@@ -373,7 +373,7 @@ class ProcessTestManifestTest {
         """.trimIndent())
         val result = project.executor().run("processReleaseUnitTestManifest")
         assertTrue { result.failedTasks.isEmpty()}
-        val manifestFile = project.file("build/intermediates/packaged_manifests/releaseUnitTest/AndroidManifest.xml")
+        val manifestFile = project.file("build/intermediates/packaged_manifests/releaseUnitTest/processReleaseUnitTestManifest/AndroidManifest.xml")
         assertThat(manifestFile).contains("android:targetSdkVersion=\"22\"")
     }
 

@@ -20,11 +20,9 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelBuilderV2;
-import com.android.build.gradle.integration.common.fixture.ModelContainer;
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.builder.model.AndroidProject;
 import com.android.builder.model.v2.ide.SyncIssue;
 import com.android.utils.XmlUtils;
 import com.google.common.collect.Iterables;
@@ -64,7 +62,8 @@ public class DslTest {
         project.execute("processDebugManifest");
 
         File manifestFile =
-                project.file("build/intermediates/merged_manifests/debug/AndroidManifest.xml");
+                project.file(
+                        "build/intermediates/merged_manifests/debug/processDebugManifest/AndroidManifest.xml");
 
         Document document =
                 XmlUtils.parseDocument(

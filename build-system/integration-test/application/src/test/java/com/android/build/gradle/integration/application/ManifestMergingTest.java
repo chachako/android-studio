@@ -81,7 +81,7 @@ public class ManifestMergingTest {
                                 + SdkConstants.FD_INTERMEDIATES
                                 + File.separator
                                 + SingleArtifact.MERGED_MANIFEST.INSTANCE.getFolderName()
-                                + "/debug/AndroidManifest.xml");
+                                + "/debug/processDebugManifest/AndroidManifest.xml");
 
         assertThat(fileOutput).isFile();
 
@@ -91,7 +91,7 @@ public class ManifestMergingTest {
                                 + SdkConstants.FD_INTERMEDIATES
                                 + File.separator
                                 + SingleArtifact.MERGED_MANIFEST.INSTANCE.getFolderName()
-                                + "/release/AndroidManifest.xml");
+                                + "/release/processReleaseManifest/AndroidManifest.xml");
 
         assertThat(fileOutput).isFile();
     }
@@ -117,8 +117,10 @@ public class ManifestMergingTest {
         Truth.assertThat(dirs.listFiles()).hasLength(8);
 
         for (File dir : Objects.requireNonNull(dirs.listFiles())) {
-            Truth.assertThat(dir.listFiles()).hasLength(1);
-            Truth.assertThat(Objects.requireNonNull(dir.listFiles())[0].getName())
+            Truth.assertThat(Objects.requireNonNull(dir.listFiles())).hasLength(1);
+            File taskFolder = Objects.requireNonNull(dir.listFiles())[0];
+
+            Truth.assertThat(Objects.requireNonNull(taskFolder.listFiles())[0].getName())
                     .startsWith("manifest-merger-blame");
         }
     }
@@ -131,7 +133,7 @@ public class ManifestMergingTest {
 
         assertThat(
                         flavors.file(
-                                "build/intermediates/packaged_manifests/f1FaDebug/AndroidManifest.xml"))
+                                "build/intermediates/packaged_manifests/f1FaDebug/processF1FaDebugManifestForPackage/AndroidManifest.xml"))
                 .doesNotContain("android:testOnly=\"true\"");
 
         flavors.executor()
@@ -140,7 +142,7 @@ public class ManifestMergingTest {
 
         assertThat(
                         flavors.file(
-                                "build/intermediates/packaged_manifests/f1FaDebug/AndroidManifest.xml"))
+                                "build/intermediates/packaged_manifests/f1FaDebug/processF1FaDebugManifestForPackage/AndroidManifest.xml"))
                 .contains("android:testOnly=\"true\"");
     }
 
@@ -161,7 +163,7 @@ public class ManifestMergingTest {
         libsTest.executor().run("clean", ":app:build");
         assertThat(
                         appProject.file(
-                                "build/intermediates/packaged_manifests/debug/AndroidManifest.xml"))
+                                "build/intermediates/packaged_manifests/debug/processDebugManifestForPackage/AndroidManifest.xml"))
                 .containsAllOf(
                         "android:minSdkVersion=\"15\"",
                         "android:targetSdkVersion=\"N\"",
@@ -173,7 +175,7 @@ public class ManifestMergingTest {
 
         assertThat(
                         appProject.file(
-                                "build/intermediates/packaged_manifests/debug/AndroidManifest.xml"))
+                                "build/intermediates/packaged_manifests/debug/processDebugManifestForPackage/AndroidManifest.xml"))
                 .doesNotContain("android:testOnly=\"true\"");
     }
 
@@ -194,7 +196,7 @@ public class ManifestMergingTest {
         libsTest.execute("clean", ":app:assembleDebug");
         assertThat(
                         appProject.file(
-                                "build/intermediates/packaged_manifests/debug/AndroidManifest.xml"))
+                                "build/intermediates/packaged_manifests/debug/processDebugManifestForPackage/AndroidManifest.xml"))
                 .containsAllOf(
                         "android:minSdkVersion=\"N\"",
                         "android:targetSdkVersion=\"15\"",
@@ -219,7 +221,7 @@ public class ManifestMergingTest {
                 .run("clean", "assembleF1FaDebug");
         File manifestFile =
                 flavors.file(
-                        "build/intermediates/packaged_manifests/f1FaDebug/AndroidManifest.xml");
+                        "build/intermediates/packaged_manifests/f1FaDebug/processF1FaDebugManifestForPackage/AndroidManifest.xml");
         assertThat(manifestFile)
                 .containsAllOf("android:minSdkVersion=\"15\"", "android:targetSdkVersion=\"24\"");
     }
@@ -233,7 +235,7 @@ public class ManifestMergingTest {
         navigation.executor().run("clean", ":app:assembleF1Debug");
         File manifestFile =
                 navigation.file(
-                        "app/build/intermediates/packaged_manifests/f1Debug/AndroidManifest.xml");
+                        "app/build/intermediates/packaged_manifests/f1Debug/processF1DebugManifestForPackage/AndroidManifest.xml");
         assertThat(manifestFile).contains("/main/nav1");
         assertThat(manifestFile).contains("/f1/nav2");
         assertThat(manifestFile).contains("/debug/nav3");
@@ -268,7 +270,7 @@ public class ManifestMergingTest {
                         "library/build/intermediates"
                                 + File.separator
                                 + SingleArtifact.MERGED_MANIFEST.INSTANCE.getFolderName()
-                                + "/debug/AndroidManifest.xml");
+                                + "/debug/processDebugManifest/AndroidManifest.xml");
         // Deep links from nav graph are NOT resolved into intent filters at the lib level
         assertThat(manifestFile).contains("nav-graph android:value=\"@navigation/nav1\"");
     }
@@ -321,7 +323,7 @@ public class ManifestMergingTest {
 
         File manifestFile =
                 navigation.file(
-                        "app/build/intermediates/merged_manifests/debug/AndroidManifest.xml");
+                        "app/build/intermediates/merged_manifests/debug/processDebugManifest/AndroidManifest.xml");
 
         // Deep links from nav graph ARE resolved into intent filters at the app level
         assertThat(manifestFile).contains("library/nav1");
@@ -345,7 +347,7 @@ public class ManifestMergingTest {
 
         File manifestFile =
                 navigation.file(
-                        "library/build/intermediates/packaged_manifests/debugAndroidTest/AndroidManifest.xml");
+                        "library/build/intermediates/packaged_manifests/debugAndroidTest/processDebugAndroidTestManifest/AndroidManifest.xml");
         assertThat(manifestFile).contains("/library/nav1");
     }
 
@@ -387,7 +389,7 @@ public class ManifestMergingTest {
         navigation.executor().run("clean", ":app:assembleDebug");
         File manifestFile =
                 navigation.file(
-                        "app/build/intermediates/packaged_manifests/f1Debug/AndroidManifest.xml");
+                        "app/build/intermediates/packaged_manifests/f1Debug/processF1DebugManifestForPackage/AndroidManifest.xml");
 
         long timestampAfterFirstBuild = manifestFile.lastModified();
 
@@ -422,7 +424,10 @@ public class ManifestMergingTest {
         Truth.assertThat(buildResult.getDidWorkTasks()).contains(":processF1FaDebugManifest");
         assertThat(
                         flavors.getIntermediateFile(
-                                "merged_manifests", "f1FaDebug", "AndroidManifest.xml"))
+                                "merged_manifests",
+                                "f1FaDebug",
+                                "processF1FaDebugManifest",
+                                "AndroidManifest.xml"))
                 .contains("android:versionCode=\"124\"");
     }
 
@@ -432,7 +437,10 @@ public class ManifestMergingTest {
         Truth.assertThat(buildResult.getDidWorkTasks()).contains(":processF1FaDebugManifest");
         assertThat(
                         flavors.getIntermediateFile(
-                                "merged_manifest", "f1FaDebug", "AndroidManifest.xml"))
+                                "merged_manifest",
+                                "f1FaDebug",
+                                "processF1FaDebugMainManifest",
+                                "AndroidManifest.xml"))
                 .contains("package=\"com.android.tests.flavors\" >");
     }
 
@@ -523,7 +531,10 @@ public class ManifestMergingTest {
 
         assertThat(
                         flavors.getIntermediateFile(
-                                "merged_manifest", "f1FaDebug", "AndroidManifest.xml"))
+                                "merged_manifest",
+                                "f1FaDebug",
+                                "processF1FaDebugMainManifest",
+                                "AndroidManifest.xml"))
                 .contains("android:versionCode=\"123\"");
     }
 
@@ -567,7 +578,10 @@ public class ManifestMergingTest {
 
         assertThat(
                         flavors.getIntermediateFile(
-                                "merged_manifest", "f1FaDebug", "AndroidManifest.xml"))
+                                "merged_manifest",
+                                "f1FaDebug",
+                                "processF1FaDebugMainManifest",
+                                "AndroidManifest.xml"))
                 .contains("android:versionCode=\"123\"");
     }
 }

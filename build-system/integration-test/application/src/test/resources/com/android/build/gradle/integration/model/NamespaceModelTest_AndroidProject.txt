@@ -3,25 +3,25 @@
       > debug:
          - mainArtifact:
             - classesFolders:
-               * {PROJECT}/build/intermediates/compile_r_class_jar/debug/R.jar{!}{ADDED}
-               * {PROJECT}/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debug/R.jar{!}{REMOVED}
+               * {PROJECT}/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar{!}{ADDED}
+               * {PROJECT}/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debug/processDebugResources/R.jar{!}{REMOVED}
             - bundleInfo{REMOVED} = (null)
          - androidTestArtifact:
             - classesFolders:
-               * {PROJECT}/build/intermediates/compile_r_class_jar/debugAndroidTest/R.jar{!}{ADDED}
-               * {PROJECT}/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debugAndroidTest/R.jar{!}{REMOVED}
+               * {PROJECT}/build/intermediates/compile_r_class_jar/debugAndroidTest/generateDebugAndroidTestRFile/R.jar{!}{ADDED}
+               * {PROJECT}/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debugAndroidTest/processDebugAndroidTestResources/R.jar{!}{REMOVED}
          - unitTestArtifact:
             - classesFolders:
-               * {PROJECT}/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debug/R.jar{!}{REMOVED}
+               * {PROJECT}/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debug/processDebugResources/R.jar{!}{REMOVED}
       < debug
       - release:
          - mainArtifact:
             - classesFolders:
-               * {PROJECT}/build/intermediates/compile_r_class_jar/release/R.jar{!}{ADDED}
-               * {PROJECT}/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/release/R.jar{!}{REMOVED}
+               * {PROJECT}/build/intermediates/compile_r_class_jar/release/generateReleaseRFile/R.jar{!}{ADDED}
+               * {PROJECT}/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/release/processReleaseResources/R.jar{!}{REMOVED}
             - bundleInfo{REMOVED} = (null)
          - unitTestArtifact:
             - classesFolders:
-               * {PROJECT}/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/release/R.jar{!}{REMOVED}
+               * {PROJECT}/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/release/processReleaseResources/R.jar{!}{REMOVED}
    < variants
 < AndroidProject

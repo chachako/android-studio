@@ -4,8 +4,8 @@
     minSdkVersion="15"
     targetSdkVersion="${androidHighestKnownStableApi}"
     debuggable="true"
-    mergedManifest="build/intermediates/merged_manifest/debug/AndroidManifest.xml"
-    partialResultsDir="build/intermediates/test_fixtures_lint_partial_results/debug/out"
+    mergedManifest="build/intermediates/merged_manifest/debug/processDebugMainManifest/AndroidManifest.xml"
+    partialResultsDir="build/intermediates/test_fixtures_lint_partial_results/debug/lintAnalyzeDebugTestFixtures/out"
     desugaredMethodsFiles="${gradleCacheDir}/<digest>/transformed/D8BackportedDesugaredMethods.txt">
   <buildFeatures
       namespacing="REQUIRED"/>
@@ -21,7 +21,7 @@
         testFixture="true"/>
   </testFixturesSourceProviders>
   <artifact
-      classOutputs="build/intermediates/javac/debugTestFixtures/classes"
+      classOutputs="build/intermediates/javac/debugTestFixtures/compileDebugTestFixturesJavaWithJavac/classes"
       type="TEST_FIXTURES"
       applicationId="com.example.android.lint.kotlin.testFixtures"
       generatedSourceFolders="build/generated/ap_generated_sources/debugTestFixtures/out"

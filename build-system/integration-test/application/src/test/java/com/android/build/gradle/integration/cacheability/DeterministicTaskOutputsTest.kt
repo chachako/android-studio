@@ -51,14 +51,14 @@ class DeterministicTaskOutputsTest {
             "app/build/intermediates/incremental/packageDebug/tmp/debug/dex-renamer-state.txt",
             "app/build/intermediates/incremental/packageDebug/tmp/debug/zip-cache",
             "app/build/intermediates/incremental/debug-mergeJavaRes/zip-cache",
-            "app/build/intermediates/manifest_merge_blame_file/debug/manifest-merger-blame-debug-report.txt",
+            "app/build/intermediates/manifest_merge_blame_file/debug/processDebugMainManifest/manifest-merger-blame-debug-report.txt",
             "app/build/intermediates/merged_java_res/debug/base.jar",
             "app/build/intermediates/merged_res_blame_folder/debug/out",
             "app/build/intermediates/merged_res/debug",
             // MapSourceSetPathsTask is dependent on the absolute project path, as this test uses
             // two different project file paths for comparisons it causes the file-map.txt
             // contents to differ.
-            "app/build/intermediates/source_set_path_map/debug/file-map.txt",
+            "app/build/intermediates/source_set_path_map/debug/mapDebugSourceSetPaths/file-map.txt",
             "app/build/outputs/apk/debug/app-debug.apk",
             "app/build/outputs/logs/manifest-merger-debug-report.txt",
             // Coverage data contains timestamps.
@@ -69,8 +69,8 @@ class DeterministicTaskOutputsTest {
             "app/build/test-results/testDebugUnitTest/",
 
             // This is @LocalState for the dexing task
-            "app/build/intermediates/dex_archive_input_jar_hashes/debug/out",
-            "app/build/intermediates/desugar_graph/debug/out/currentProject/",
+            "app/build/intermediates/dex_archive_input_jar_hashes/debug/dexBuilderDebug/out",
+            "app/build/intermediates/desugar_graph/debug/dexBuilderDebug/out/currentProject/",
 
             // Gradle's own cache
             "app/build/tmp/.cache/expanded/"

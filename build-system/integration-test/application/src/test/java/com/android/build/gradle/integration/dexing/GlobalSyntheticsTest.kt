@@ -22,7 +22,6 @@ import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestPr
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.getOutputDir
-import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.IntegerOption
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.apk.AndroidArchive
@@ -125,15 +124,15 @@ class GlobalSyntheticsTest(private val dexType: DexType) {
         executor().run("assembleDebug")
 
         val localeGlobalFromApp = InternalArtifactType.GLOBAL_SYNTHETICS_PROJECT
-            .getOutputDir(app.buildDir).resolve("debug/out/com/example/app/$exceptionGlobalTriggerClass.globals")
+            .getOutputDir(app.buildDir).resolve("debug/dexBuilderDebug/out/com/example/app/$exceptionGlobalTriggerClass.globals")
         Truth.assertThat(localeGlobalFromApp.exists()).isTrue()
         val recordGlobalFromFileDep = InternalArtifactType.GLOBAL_SYNTHETICS_FILE_LIB
-            .getOutputDir(app.buildDir).resolve("debug/0_record.jar")
+            .getOutputDir(app.buildDir).resolve("debug/desugarDebugFileDependencies/0_record.jar")
         Truth.assertThat(recordGlobalFromFileDep.exists()).isTrue()
 
         if (dexType == DexType.NATIVE) {
             val globalDex = InternalArtifactType.GLOBAL_SYNTHETICS_DEX.getOutputDir(app.buildDir)
-                .resolve("debug/classes.dex")
+                .resolve("debug/mergeDebugGlobalSynthetics/classes.dex")
             Truth.assertThat(globalDex.exists()).isTrue()
         }
 
@@ -162,7 +161,7 @@ class GlobalSyntheticsTest(private val dexType: DexType) {
 
         if (dexType == DexType.NATIVE) {
             val globalDex = InternalArtifactType.GLOBAL_SYNTHETICS_DEX.getOutputDir(app.buildDir)
-                .resolve("debug/classes.dex")
+                .resolve("debug/mergeDebugGlobalSynthetics/classes.dex")
             Truth.assertThat(globalDex.exists()).isTrue()
         }
 
@@ -187,11 +186,11 @@ class GlobalSyntheticsTest(private val dexType: DexType) {
         executor().run("assembleDebug")
 
         val localeGlobalFromApp = InternalArtifactType.GLOBAL_SYNTHETICS_PROJECT
-            .getOutputDir(app.buildDir).resolve("debug/out/com/example/app/$exceptionGlobalTriggerClass.globals")
+            .getOutputDir(app.buildDir).resolve("debug/dexBuilderDebug/out/com/example/app/$exceptionGlobalTriggerClass.globals")
         Truth.assertThat(localeGlobalFromApp.exists()).isTrue()
 
         val localeGlobalFromLib = InternalArtifactType.GLOBAL_SYNTHETICS_SUBPROJECT
-            .getOutputDir(app.buildDir).resolve("debug/out")
+            .getOutputDir(app.buildDir).resolve("debug/dexBuilderDebug/out")
         Truth.assertThat(localeGlobalFromLib.listFiles()).hasLength(1)
 
         checkPackagedGlobal(exceptionGlobalDex)

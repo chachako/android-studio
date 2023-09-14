@@ -78,7 +78,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             .run(":kmpFirstLib:mergeAndroidInstrumentedTestJavaResource")
 
         val androidTestMergedRes = project.getSubproject("kmpFirstLib").getIntermediateFile(
-            InternalArtifactType.MERGED_JAVA_RES.getFolderName() + "/androidInstrumentedTest/feature-kmpFirstLib.jar"
+            InternalArtifactType.MERGED_JAVA_RES.getFolderName() + "/androidInstrumentedTest/mergeAndroidInstrumentedTestJavaResource/feature-kmpFirstLib.jar"
         )
 
         assertThat(androidTestMergedRes.exists()).isTrue()
@@ -423,10 +423,11 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             project.getSubproject("kmpFirstLib").intermediatesDir,
             "apk_ide_redirect_file",
             "androidInstrumentedTest",
+            "createAndroidInstrumentedTestApkListingFileRedirect",
             "redirect.txt"
         )
         assertThat(apkIdeRedirectFile.exists()).isTrue()
         assertThat(apkIdeRedirectFile.readText())
-            .contains("listingFile=../../../outputs/apk/androidTest/main/output-metadata.json")
+            .contains("listingFile=../../../../outputs/apk/androidTest/main/output-metadata.json")
     }
 }

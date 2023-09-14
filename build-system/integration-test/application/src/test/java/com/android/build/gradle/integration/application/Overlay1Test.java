@@ -43,7 +43,7 @@ public class Overlay1Test {
         File resOutput =
                 new File(
                         ArtifactTypeUtil.getOutputDir(MERGED_RES.INSTANCE, project.getBuildDir()),
-                        "debug");
+                        "debug" + File.separatorChar + "mergeDebugResources");
         assertThat(new File(resOutput, "drawable_no_overlay.png.flat")).exists();
         assertThat(new File(resOutput, "drawable_type_overlay.png.flat")).exists();
 

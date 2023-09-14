@@ -61,7 +61,7 @@ class BundleLibraryJavaResTest {
         }
         // ensure test_dir empty directory is packaged
         val resDir =
-            project.projectDir.resolve("lib/build/intermediates/java_res/debug/out/test_dir")
+            project.projectDir.resolve("lib/build/intermediates/java_res/debug/processDebugJavaRes/out/test_dir")
 
         assertThat(resDir.exists()).isTrue()
 

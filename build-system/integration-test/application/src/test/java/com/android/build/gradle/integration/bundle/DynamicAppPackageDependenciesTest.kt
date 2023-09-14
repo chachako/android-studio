@@ -45,13 +45,13 @@ class DynamicAppPackageDependenciesTest {
 
         val feature1Dependencies = project.getSubproject("feature1").getIntermediateFile(
             InternalArtifactType.PACKAGED_DEPENDENCIES.getFolderName(),
-            "debug/deps.txt"
+            "debug/generateDebugFeatureTransitiveDeps/deps.txt"
         )
         assertThat(feature1Dependencies).contains("feature1::debug")
 
         val feature2Dependencies = project.getSubproject("feature2").getIntermediateFile(
             InternalArtifactType.PACKAGED_DEPENDENCIES.getFolderName(),
-            "debug/deps.txt"
+            "debug/generateDebugFeatureTransitiveDeps/deps.txt"
         )
         assertThat(feature2Dependencies).contains("feature2::debug")
 
@@ -88,7 +88,7 @@ class DynamicAppPackageDependenciesTest {
 
         val feature1Dependencies = project.getSubproject("feature1").getIntermediateFile(
             InternalArtifactType.PACKAGED_DEPENDENCIES.getFolderName(),
-            "debug/deps.txt"
+            "debug/generateDebugFeatureTransitiveDeps/deps.txt"
         )
         assertThat(feature1Dependencies).doesNotContain("guava")
     }

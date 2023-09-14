@@ -143,7 +143,7 @@ public class UnitTestingRClassLoadTest {
                                 InternalArtifactType.COMPILE_AND_RUNTIME_NOT_NAMESPACED_R_CLASS_JAR
                                         .INSTANCE,
                                 project.getSubproject("c").getBuildDir()),
-                        "debugUnitTest/" + FN_R_CLASS_JAR);
+                        "debugUnitTest/generateDebugUnitTestStubRFile/" + FN_R_CLASS_JAR);
 
         assertThat(debugUnitTest.getClassesFolders()).contains(rJar);
 

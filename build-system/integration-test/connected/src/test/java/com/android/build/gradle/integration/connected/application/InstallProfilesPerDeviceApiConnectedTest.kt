@@ -97,6 +97,7 @@ class InstallProfilesPerDeviceApiConnectedTest {
             SdkConstants.FD_INTERMEDIATES,
             InternalArtifactType.DEX_METADATA_DIRECTORY.getFolderName(),
             "release",
+            "compileReleaseArtProfile",
             SdkConstants.FN_DEX_METADATA_PROP
         )
 
@@ -138,6 +139,7 @@ class InstallProfilesPerDeviceApiConnectedTest {
             SdkConstants.FD_INTERMEDIATES,
             InternalArtifactType.DEX_METADATA_DIRECTORY.getFolderName(),
             "release",
+            "compileReleaseArtProfile",
             SdkConstants.FN_DEX_METADATA_PROP
         )
 

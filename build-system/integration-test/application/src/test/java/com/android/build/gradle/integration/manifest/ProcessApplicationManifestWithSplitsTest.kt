@@ -101,7 +101,7 @@ class ProcessApplicationManifestWithSplitsTest(private val abi: String, private 
                 .with(StringOption.IDE_BUILD_TARGET_ABI, abi)
                 .run(":app:assembleDebug")
         assertTrue { result.failedTasks.isEmpty()}
-        val manifestFile =  project.getSubproject(":app").file("build/intermediates/merged_manifest/debug/AndroidManifest.xml")
+        val manifestFile =  project.getSubproject(":app").file("build/intermediates/merged_manifest/debug/processDebugMainManifest/AndroidManifest.xml")
         assertThat(manifestFile).contains("android:versionCode=\"$expectedVersion\"")
     }
 }

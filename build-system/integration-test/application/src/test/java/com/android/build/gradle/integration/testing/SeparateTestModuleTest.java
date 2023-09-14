@@ -104,7 +104,7 @@ public class SeparateTestModuleTest {
 
         assertThat(
                         testProject.file(
-                                "build/intermediates/packaged_manifests/debug/AndroidManifest.xml"))
+                                "build/intermediates/packaged_manifests/debug/processDebugManifest/AndroidManifest.xml"))
                 .containsAllOf(
                         "package=\"com.example.android.testing.blueprint.test\"",
                         "android:name=\"android.support.test.runner.AndroidJUnitRunner\"",
@@ -118,7 +118,7 @@ public class SeparateTestModuleTest {
 
         assertThat(
                         testProject.file(
-                                "build/intermediates/packaged_manifests/debug/AndroidManifest.xml"))
+                                "build/intermediates/packaged_manifests/debug/processDebugManifest/AndroidManifest.xml"))
                 .containsAllOf(
                         "package=\"com.example.android.testing.blueprint.test\"",
                         "<instrumentation",

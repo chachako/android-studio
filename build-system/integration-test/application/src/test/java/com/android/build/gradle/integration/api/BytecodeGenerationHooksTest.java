@@ -78,7 +78,7 @@ public class BytecodeGenerationHooksTest {
                 project.file(
                         "library/build/intermediates/"
                                 + COMPILE_LIBRARY_CLASSES_JAR.INSTANCE.getFolderName()
-                                + "/debug/classes.jar");
+                                + "/debug/bundleLibCompileToJarDebug/classes.jar");
         assertThat(classesJar).isFile();
         assertThat(
                 classesJar,
@@ -87,7 +87,8 @@ public class BytecodeGenerationHooksTest {
                     it.contains("META-INF/post-lib.kotlin_module");
                 });
 
-        File resDir = project.file("library/build/intermediates/java_res/debug/out");
+        File resDir =
+                project.file("library/build/intermediates/java_res/debug/processDebugJavaRes/out");
         assertThat(resDir).exists();
         assertThat(FileUtils.join(resDir, "META-INF", "lib.kotlin_module")).isFile();
         assertThat(FileUtils.join(resDir, "META-INF", "post-lib.kotlin_module")).isFile();
@@ -99,7 +100,7 @@ public class BytecodeGenerationHooksTest {
                 true,
                 "library/build/intermediates/"
                         + COMPILE_LIBRARY_CLASSES_JAR.INSTANCE.getFolderName()
-                        + "/debug/classes.jar",
+                        + "/debug/bundleLibCompileToJarDebug/classes.jar",
                 "jar/build/libs/jar.jar");
 
         // verify source folders
@@ -119,7 +120,7 @@ public class BytecodeGenerationHooksTest {
         File classesJar =
                 appProject.getIntermediateFile(
                         InternalArtifactType.COMPILE_APP_CLASSES_JAR.INSTANCE.getFolderName()
-                                + "/debug/classes.jar");
+                                + "/debug/bundleDebugClassesToCompileJar/classes.jar");
         assertThat(classesJar).isFile();
         assertThat(
                 classesJar,
@@ -135,10 +136,10 @@ public class BytecodeGenerationHooksTest {
                 true,
                 "app/build/intermediates/"
                         + InternalArtifactType.COMPILE_APP_CLASSES_JAR.INSTANCE.getFolderName()
-                        + "/debug/classes.jar",
+                        + "/debug/bundleDebugClassesToCompileJar/classes.jar",
                 "library/build/intermediates/"
                         + COMPILE_LIBRARY_CLASSES_JAR.INSTANCE.getFolderName()
-                        + "/debug/classes.jar",
+                        + "/debug/bundleLibCompileToJarDebug/classes.jar",
                 "jar/build/libs/jar.jar");
     }
 
@@ -156,10 +157,10 @@ public class BytecodeGenerationHooksTest {
                 false,
                 "app/build/intermediates/"
                         + InternalArtifactType.COMPILE_APP_CLASSES_JAR.INSTANCE.getFolderName()
-                        + "/debug/classes.jar",
+                        + "/debug/bundleDebugClassesToCompileJar/classes.jar",
                 "library/build/intermediates/"
                         + COMPILE_LIBRARY_CLASSES_JAR.INSTANCE.getFolderName()
-                        + "/debug/classes.jar",
+                        + "/debug/bundleLibCompileToJarDebug/classes.jar",
                 "jar/build/libs/jar.jar");
     }
 
@@ -200,7 +201,7 @@ public class BytecodeGenerationHooksTest {
                 true,
                 "library/build/intermediates/"
                         + COMPILE_LIBRARY_CLASSES_JAR.INSTANCE.getFolderName()
-                        + "/debug/classes.jar");
+                        + "/debug/bundleLibCompileToJarDebug/classes.jar");
     }
 
     @Test
@@ -219,11 +220,11 @@ public class BytecodeGenerationHooksTest {
                 true,
                 "app/build/intermediates/"
                         + InternalArtifactType.COMPILE_APP_CLASSES_JAR.INSTANCE.getFolderName()
-                        + "/debug/classes.jar",
+                        + "/debug/bundleDebugClassesToCompileJar/classes.jar",
                 "jar/build/libs/jar.jar",
                 "library/build/intermediates/"
                         + COMPILE_LIBRARY_CLASSES_JAR.INSTANCE.getFolderName()
-                        + "/debug/classes.jar");
+                        + "/debug/bundleLibCompileToJarDebug/classes.jar");
     }
 
     private void checkDependencies(

@@ -108,7 +108,7 @@ class BundleOptionsTest {
         // test redirect file presence.
         val redirectFile = FileUtils.join(
             InternalArtifactType.BUNDLE_IDE_REDIRECT_FILE.getOutputDir(project.buildDir),
-            "debug",
+            "debug"  + File.separator + "createDebugBundleListingFileRedirect",
             ListingFileRedirect.REDIRECT_FILE_NAME
         )
         assertThat(redirectFile.exists()).isTrue()
@@ -123,6 +123,7 @@ class BundleOptionsTest {
             project.getIntermediateFile(
                 "apks_from_bundle",
                 "debug",
+                "makeApkFromBundleForDebug",
                 "bundle.apks"
             ).toPath()
         ).use { apks ->

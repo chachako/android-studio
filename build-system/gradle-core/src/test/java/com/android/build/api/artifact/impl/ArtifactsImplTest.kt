@@ -116,12 +116,12 @@ class ArtifactsImplTest {
         // no-one has provided it so far, so it's not present.
         Truth.assertThat(finalVersion.isPresent).isFalse()
         // now provide it.
-
+        val taskName = "agpTask"
         abstract class AGPTask: DefaultTask() {
             @get:OutputFile abstract val outputFile: RegularFileProperty
         }
         val agpInitialized = AtomicBoolean(false)
-        val agpTaskProvider = project.tasks.register("agpTaskProvider", AGPTask::class.java) {
+        val agpTaskProvider = project.tasks.register(taskName, AGPTask::class.java) {
             agpInitialized.set(true)
         }
         artifacts.setInitialProvider(agpTaskProvider, AGPTask::outputFile).on(TEST_FILE)
@@ -132,6 +132,7 @@ class ArtifactsImplTest {
                 Artifact.Category.INTERMEDIATES.name.lowercase(Locale.getDefault()),
                 TEST_FILE.getFolderName(),
                 "debug",
+                taskName,
                 "out.jar")
         )
     }
@@ -204,7 +205,7 @@ class ArtifactsImplTest {
             @get:OutputDirectory abstract val outputFiles: DirectoryProperty
         }
         val agpInitialized = AtomicBoolean(false)
-        val agpTaskProvider = project.tasks.register("agpTaskProvider", AGPTask::class.java) {
+        val agpTaskProvider = project.tasks.register("agpTask", AGPTask::class.java) {
             agpInitialized.set(true)
         }
         artifacts.setInitialProvider(agpTaskProvider, AGPTask::outputFiles).on(TEST_DIRECTORY)
@@ -214,7 +215,8 @@ class ArtifactsImplTest {
             FileUtils.join(
                 Artifact.Category.INTERMEDIATES.name.lowercase(Locale.getDefault()),
                 TEST_DIRECTORY.getFolderName(),
-                "debug"))
+                "debug",
+                "agpTask"))
     }
 
     @Test
@@ -251,7 +253,7 @@ class ArtifactsImplTest {
         Truth.assertThat(agpInitialized.get()).isFalse()
         val artifactContainer = artifacts.getArtifactContainer(TEST_DIRECTORY)
         Truth.assertThat(agpTaskProvider.get().outputFolder.get().asFile.absolutePath).contains("test_directory")
-        Truth.assertThat(agpTaskProvider.get().outputFolder.get().asFile.absolutePath).doesNotContain("agpTaskProvider")
+        Truth.assertThat(agpTaskProvider.get().outputFolder.get().asFile.absolutePath).contains("agpTaskProvider")
         // final artifact value should be the agp producer task output
         Truth.assertThat(artifactContainer.get().get().asFile.absolutePath)
             .isEqualTo(agpTaskProvider.get().outputFolder.asFile.get().absolutePath)
@@ -385,7 +387,7 @@ class ArtifactsImplTest {
         val transformerOut = transformerProvider.get().outputFile.get().asFile.absolutePath
         Truth.assertThat(transformerOut).contains(TEST_TRANSFORMABLE_FILE.name().lowercase())
         Truth.assertThat(transformerOut).endsWith("transformed.jar")
-        Truth.assertThat(transformerOut).doesNotContain("transformer")
+        Truth.assertThat(transformerOut).contains("transformer")
 
         // final artifact value should be the transformer task output
         Truth.assertThat(artifactContainer.get().get().asFile.absolutePath)
@@ -502,7 +504,7 @@ class ArtifactsImplTest {
         // transformTwo output should not have the task name in its output.
         val outputTwo = transformerTwoProvider.get().outputFile.get().asFile.absolutePath
         Truth.assertThat(outputTwo).contains(TEST_TRANSFORMABLE_FILE.name().lowercase())
-        Truth.assertThat(outputTwo).doesNotContain("transformerTwo")
+        Truth.assertThat(outputTwo).contains("transformerTwo")
 
         // the producers have been looked up, it should now be configured
         Truth.assertThat(agpInitialized.get()).isTrue()
@@ -1205,12 +1207,13 @@ class ArtifactsImplTest {
         abstract class AGPTask: DefaultTask() {
             @get:OutputFile abstract val outputFile: RegularFileProperty
         }
-        val agpTaskProvider = project.tasks.register("agpTaskProvider", AGPTask::class.java)
+
+        val agpTaskProvider = project.tasks.register("agpTask", AGPTask::class.java)
         artifacts.setInitialProvider(agpTaskProvider, AGPTask::outputFile).on(TEST_FILE)
 
         Truth.assertThat(artifacts.getArtifactContainer(TEST_FILE).get().get().asFile.absolutePath)
             .endsWith(
-                FileUtils.join("test_file", "debug", DEFAULT_FILE_NAME_OF_REGULAR_FILE_ARTIFACTS)
+                FileUtils.join("test_file", "debug", "agpTask", DEFAULT_FILE_NAME_OF_REGULAR_FILE_ARTIFACTS)
             )
     }
 

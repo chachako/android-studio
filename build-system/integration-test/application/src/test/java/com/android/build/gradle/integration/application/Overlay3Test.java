@@ -49,7 +49,7 @@ public class Overlay3Test {
         File resOutput =
                 new File(
                         ArtifactTypeUtil.getOutputDir(MERGED_RES.INSTANCE, project.getBuildDir()),
-                        "freeBetaDebug");
+                        "freeBetaDebug" + File.separatorChar + "mergeFreeBetaDebugResources");
         assertThat(new File(resOutput, "drawable_no_overlay.png.flat")).exists();
         assertThat(new File(resOutput, "drawable_debug_overlay.png.flat")).exists();
         assertThat(new File(resOutput, "drawable_beta_overlay.png.flat")).exists();
@@ -61,7 +61,7 @@ public class Overlay3Test {
         resOutput =
                 new File(
                         ArtifactTypeUtil.getOutputDir(MERGED_RES.INSTANCE, project.getBuildDir()),
-                        "freeNormalDebug");
+                        "freeNormalDebug" + File.separatorChar + "mergeFreeNormalDebugResources");
         assertThat(new File(resOutput, "drawable_no_overlay.png.flat")).exists();
         assertThat(new File(resOutput, "drawable_debug_overlay.png.flat")).exists();
         assertThat(new File(resOutput, "drawable_beta_overlay.png.flat")).exists();
@@ -73,7 +73,7 @@ public class Overlay3Test {
         resOutput =
                 new File(
                         ArtifactTypeUtil.getOutputDir(MERGED_RES.INSTANCE, project.getBuildDir()),
-                        "paidBetaDebug");
+                        "paidBetaDebug" + File.separatorChar + "mergePaidBetaDebugResources");
         assertThat(new File(resOutput, "drawable_no_overlay.png.flat")).exists();
         assertThat(new File(resOutput, "drawable_debug_overlay.png.flat")).exists();
         assertThat(new File(resOutput, "drawable_beta_overlay.png.flat")).exists();

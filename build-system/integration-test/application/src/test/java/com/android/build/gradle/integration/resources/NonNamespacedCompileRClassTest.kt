@@ -125,19 +125,19 @@ class NonNamespacedCompileRClassTest {
         val app = project.getSubproject("app")
 
         // Check that we only parsed the local app files
-        val rDef = app.getIntermediateFile("local_only_symbol_list", "debug", "R-def.txt")
+        val rDef = app.getIntermediateFile("local_only_symbol_list", "debug", "parseDebugLocalResources", "R-def.txt")
         assertThat(rDef).contains("string app_string")
         assertThat(rDef).doesNotContain("lib_string")
         assertThat(rDef).doesNotContain("abc_action_bar_home_description")
 
         // Check that the compile R class was generated
         val compileR =
-            app.getIntermediateFile("compile_r_class_jar", "debug", "R.jar")
+            app.getIntermediateFile("compile_r_class_jar", "debug", "generateDebugRFile", "R.jar")
         assertThat(compileR).exists()
 
         // Check that the compile R.txt contains symbols from the app, lib and transitive
         // dependencies, and also they are initialized with the mock value of 0.
-        val compileRTxt = app.getIntermediateFile("compile_symbol_list", "debug", "R.txt")
+        val compileRTxt = app.getIntermediateFile("compile_symbol_list", "debug", "generateDebugRFile", "R.txt")
         assertThat(compileRTxt).exists()
         if (nonTransitiveRClass) {
             assertThat(compileRTxt).containsAllOf("int string app_string 0x0")

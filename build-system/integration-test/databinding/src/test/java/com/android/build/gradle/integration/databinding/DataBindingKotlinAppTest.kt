@@ -63,7 +63,8 @@ class DataBindingKotlinAppTest(useAndroidX: Boolean) {
         // Dependency artifacts should be present: 2 from androidx.databinding.library.baseAdapters
         // and 2 from the library subproject (regression test for bug 161814391).
         val dependencyArtifactsDir =
-            File(DATA_BINDING_DEPENDENCY_ARTIFACTS.getOutputDir(app.buildDir), "debug")
+            File(DATA_BINDING_DEPENDENCY_ARTIFACTS.getOutputDir(app.buildDir),
+                "debug" + File.separator + "dataBindingMergeDependencyArtifactsDebug")
         assertThat(dependencyArtifactsDir.list().size).isEqualTo(4)
 
         // Check APK's contents

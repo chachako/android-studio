@@ -152,6 +152,7 @@ public class AndroidTestResourcesTest {
                 fixture.getIntermediateFile(
                         "compile_and_runtime_not_namespaced_r_class_jar",
                         "debugAndroidTest",
+                        "processDebugAndroidTestResources",
                         "R.jar");
 
         Assert.assertTrue("Should have generated R.jar file", rJar.exists());

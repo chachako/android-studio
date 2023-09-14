@@ -135,30 +135,35 @@ class NonNamespacedApplicationLightRClassesTest {
             libFiles.getIntermediateFile(
                     "compile_r_class_jar",
                     "debug",
+                    "generateDebugRFile",
                     "R.jar")).exists()
 
         assertThat(
             libFiles.getIntermediateFile(
                     "local_only_symbol_list",
                     "debug",
+                    "parseDebugLocalResources",
                     "R-def.txt")).exists()
 
         assertThat(
             libFiles.getIntermediateFile(
                     "local_only_symbol_list",
                     "debug",
+                    "parseDebugLocalResources",
                     "R-def.txt")).contains("lib_string")
 
         assertThat(
             libFiles.getIntermediateFile(
                     "symbol_list_with_package_name",
                     "debug",
+                    "generateDebugRFile",
                     "package-aware-r.txt")).exists()
 
         assertThat(
             libFiles.getIntermediateFile(
                     "symbol_list_with_package_name",
                     "debug",
+                    "generateDebugRFile",
                     "package-aware-r.txt")).contains("lib_string")
 
         // Application resources
@@ -168,17 +173,20 @@ class NonNamespacedApplicationLightRClassesTest {
             appFiles.getIntermediateFile(
                 "runtime_symbol_list",
                 "debug",
+                "processDebugResources",
                 "R.txt")).exists()
 
         assertThat(
             appFiles.getIntermediateFile(
                     "runtime_symbol_list",
                     "debug",
+                    "processDebugResources",
                     "R.txt")).containsAllOf("lib_string", "app_string")
 
         val rJarFile = appFiles.getIntermediateFile(
             "compile_and_runtime_not_namespaced_r_class_jar",
             "debug",
+            "processDebugResources",
             "R.jar"
         )
         assertThat(rJarFile).exists()
@@ -197,6 +205,7 @@ class NonNamespacedApplicationLightRClassesTest {
         val rJarFile = appFiles.getIntermediateFile(
             "compile_and_runtime_not_namespaced_r_class_jar",
             "debugAndroidTest",
+            "processDebugAndroidTestResources",
             "R.jar"
         )
         assertThat(rJarFile).exists()

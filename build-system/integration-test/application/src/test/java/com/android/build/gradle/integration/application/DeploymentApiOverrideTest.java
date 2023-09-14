@@ -69,7 +69,7 @@ public class DeploymentApiOverrideTest {
         // ics flavor has minSdk = 14
         GradleBuildResult result = project.executor().run("clean", "assembleIcsDebug");
 
-        assertThat(getMainDexListFile(project, "icsDebug").exists()).isTrue();
+        assertThat(getMainDexListFile(project, "icsDebug/mergeDexIcsDebug").exists()).isTrue();
         assertThat(project.getApk(GradleTestProject.ApkType.DEBUG, "ics"))
                 .hasDexVersion(DEX_VERSION_FOR_MIN_SDK_14);
         assertDexTask(result, genExpectedTaskStatesFor("IcsDebug", false));
@@ -80,7 +80,8 @@ public class DeploymentApiOverrideTest {
         // lollipop flavor has minSdk = 21
         GradleBuildResult result = project.executor().run("clean", "assembleLollipopDebug");
 
-        assertThat(getMainDexListFile(project, "lollipopDebug").exists()).isFalse();
+        assertThat(getMainDexListFile(project, "lollipopDebug/mergeDexIcsDebug").exists())
+                .isFalse();
         assertThat(project.getApk(GradleTestProject.ApkType.DEBUG, "lollipop"))
                 .hasDexVersion(DEX_VERSION_FOR_MIN_SDK_21);
         assertDexTask(result, genExpectedTaskStatesFor("LollipopDebug", true));
@@ -94,7 +95,7 @@ public class DeploymentApiOverrideTest {
                         .with(IntegerOption.IDE_TARGET_DEVICE_API, 21)
                         .run("clean", "assembleIcsDebug");
 
-        assertThat(getMainDexListFile(project, "icsDebug").exists()).isFalse();
+        assertThat(getMainDexListFile(project, "icsDebug/mergeDexIcsDebug").exists()).isFalse();
         assertThat(
                         project.getApk(
                                 GradleTestProject.ApkType.DEBUG,
@@ -111,7 +112,7 @@ public class DeploymentApiOverrideTest {
                 project.executor()
                         .run("clean", "assembleIcsRelease");
 
-        assertThat(getMainDexListFile(project, "icsRelease").exists()).isTrue();
+        assertThat(getMainDexListFile(project, "icsRelease/mergeDexIcsRelease").exists()).isTrue();
         assertThat(project.getApk(GradleTestProject.ApkType.RELEASE, "ics"))
                 .hasDexVersion(DEX_VERSION_FOR_MIN_SDK_14);
         assertDexTask(result, genExpectedTaskStatesFor("IcsRelease", false));
@@ -124,7 +125,8 @@ public class DeploymentApiOverrideTest {
                 project.executor()
                         .run("clean", "assembleLollipopRelease");
 
-        assertThat(getMainDexListFile(project, "lollipopRelease").exists()).isFalse();
+        assertThat(getMainDexListFile(project, "lollipopRelease/mergeDexIcsRelease").exists())
+                .isFalse();
         assertThat(project.getApk(GradleTestProject.ApkType.RELEASE, "lollipop"))
                 .hasDexVersion(DEX_VERSION_FOR_MIN_SDK_21);
         assertDexTask(result, genExpectedTaskStatesFor("LollipopRelease", true));
@@ -138,7 +140,7 @@ public class DeploymentApiOverrideTest {
                         .with(IntegerOption.IDE_TARGET_DEVICE_API, 21)
                         .run("clean", "assembleIcsRelease");
 
-        assertThat(getMainDexListFile(project, "icsRelease").exists()).isFalse();
+        assertThat(getMainDexListFile(project, "icsRelease/mergeDexIcsRelease").exists()).isFalse();
         assertThat(
                         project.getApk(
                                 GradleTestProject.ApkType.RELEASE,
@@ -161,7 +163,7 @@ public class DeploymentApiOverrideTest {
                         GradleTestProject.ApkType.DEBUG,
                         GradleTestProject.ApkLocation.Intermediates,
                         "ics");
-        assertThat(getMainDexListFile(project, "icsDebug").exists()).isTrue();
+        assertThat(getMainDexListFile(project, "icsDebug/mergeDexIcsDebug").exists()).isTrue();
         assertThat(apk).hasDexVersion(DEX_VERSION_FOR_MIN_SDK_14);
         // because minSdkVersion = 14 and targetApi = 19
         assertDexTask(result, genExpectedTaskStatesFor("IcsDebug", false));
@@ -212,7 +214,7 @@ public class DeploymentApiOverrideTest {
                         .with(IntegerOption.IDE_TARGET_DEVICE_API, 24)
                         .run("clean", "assembleIcsRelease");
 
-        assertThat(getMainDexListFile(project, "icsRelease").exists()).isFalse();
+        assertThat(getMainDexListFile(project, "icsRelease/mergeDexIcsRelease").exists()).isFalse();
         assertThat(
                         project.getApk(
                                 GradleTestProject.ApkType.RELEASE,
@@ -227,7 +229,7 @@ public class DeploymentApiOverrideTest {
                         .with(IntegerOption.IDE_TARGET_DEVICE_API, 25)
                         .run("assembleIcsRelease");
 
-        assertThat(getMainDexListFile(project, "icsRelease").exists()).isFalse();
+        assertThat(getMainDexListFile(project, "icsRelease/mergeDexIcsRelease").exists()).isFalse();
         assertThat(
                         project.getApk(
                                 GradleTestProject.ApkType.RELEASE,
@@ -241,7 +243,7 @@ public class DeploymentApiOverrideTest {
     public void testDexingUsesDeviceApi() throws Exception {
 
         GradleBuildResult result = project.executor().run("clean", "assembleIcsDebug");
-        assertThat(getMainDexListFile(project, "icsDebug").exists()).isTrue();
+        assertThat(getMainDexListFile(project, "icsDebug/mergeDexIcsDebug").exists()).isTrue();
         assertThat(project.getApk(GradleTestProject.ApkType.DEBUG, "ics"))
                 .hasDexVersion(DEX_VERSION_FOR_MIN_SDK_14);
         // because minSdkVersion = 14

@@ -239,6 +239,7 @@ class PrecompileRemoteResourcesTest {
         val compressed = project.getSubproject(":app").getIntermediateFile(
             "shrunk_processed_res",
             "release",
+            "shrinkReleaseRes",
             "resources-release-stripped.ap_"
         )
 
@@ -297,7 +298,7 @@ class PrecompileRemoteResourcesTest {
 
     private fun checkValuesResourcedAreMerged() {
         val mergedResDir =
-                File(MERGED_RES.getOutputDir(project.getSubproject(":app").buildDir), "debug")
+                File(MERGED_RES.getOutputDir(project.getSubproject(":app").buildDir), "debug" + File.separator + "mergeDebugResources")
         assertThat(mergedResDir.listFiles()).hasLength(3)
         assertThat(mergedResDir.listFiles()!!.map { file -> file.name }.toSortedSet()).containsExactlyElementsIn(
             listOf(

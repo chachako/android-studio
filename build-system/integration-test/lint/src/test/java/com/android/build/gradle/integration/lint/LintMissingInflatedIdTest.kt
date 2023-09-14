@@ -122,6 +122,7 @@ class LintMissingInflatedIdTest {
                 project.getSubproject(":lib")
                     .getIntermediateFile(LINT_PARTIAL_RESULTS.getFolderName()),
                 "debug",
+                "lintAnalyzeDebug",
                 "out",
                 "lint-resources.xml"
             )

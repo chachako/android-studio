@@ -6,7 +6,7 @@
             - compileTaskName               = "compileDebugTestFixturesSources"
             - assembleTaskName              = "assembleDebugTestFixtures"
             - classesFolders:
-               * {PROJECT}/build/intermediates/javac/debugTestFixtures/classes{!}
+               * {PROJECT}/build/intermediates/javac/debugTestFixtures/compileDebugTestFixturesJavaWithJavac/classes{!}
             - ideSetupTaskNames             = ["generateDebugTestFixturesSources"]
             - generatedSourceFolders:
                * {PROJECT}/build/generated/ap_generated_sources/debugTestFixtures/out{!}
@@ -34,7 +34,7 @@
             - compileTaskName               = "compileReleaseTestFixturesSources"
             - assembleTaskName              = "assembleReleaseTestFixtures"
             - classesFolders:
-               * {PROJECT}/build/intermediates/javac/releaseTestFixtures/classes{!}
+               * {PROJECT}/build/intermediates/javac/releaseTestFixtures/compileReleaseTestFixturesJavaWithJavac/classes{!}
             - ideSetupTaskNames             = ["generateReleaseTestFixturesSources"]
             - generatedSourceFolders:
                * {PROJECT}/build/generated/ap_generated_sources/releaseTestFixtures/out{!}

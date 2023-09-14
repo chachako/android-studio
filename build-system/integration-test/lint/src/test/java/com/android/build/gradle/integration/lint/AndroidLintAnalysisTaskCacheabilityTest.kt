@@ -215,6 +215,13 @@ class AndroidLintAnalysisTaskCacheabilityTest {
             )
         moduleNameToArtifactTypeMap.forEach { moduleName, artifactTypes ->
             artifactTypes.forEach { artifactType ->
+                val taskFolder = when(artifactType){
+                    is LINT_PARTIAL_RESULTS -> "lintAnalyzeDebug"
+                    is TEST_FIXTURES_LINT_PARTIAL_RESULTS -> "lintAnalyzeDebugTestFixtures"
+                    is ANDROID_TEST_LINT_PARTIAL_RESULTS -> "lintAnalyzeDebugAndroidTest"
+                    is UNIT_TEST_LINT_PARTIAL_RESULTS -> "lintAnalyzeDebugUnitTest"
+                    else -> ""
+                }
                 val partialResultsDir1 =
                     if (moduleName == ":java-lib") {
                         FileUtils.join(
@@ -232,6 +239,7 @@ class AndroidLintAnalysisTaskCacheabilityTest {
                             project1.getSubproject(moduleName)
                                 .getIntermediateFile(artifactType.getFolderName()),
                             "debug",
+                            taskFolder,
                             "out"
                         )
                     }
@@ -252,6 +260,7 @@ class AndroidLintAnalysisTaskCacheabilityTest {
                             project2.getSubproject(moduleName)
                                 .getIntermediateFile(artifactType.getFolderName()),
                             "debug",
+                            taskFolder,
                             "out"
                         )
                     }

@@ -203,7 +203,8 @@ class LocaleConfigGenerationTest {
     private fun assertLocaleList(subproject: String, variant: String): IterableSubject {
         return Truth.assertThat(
             localeListFromFile(
-                project.getSubproject(subproject).file("$localeListPath/$variant/supported_locales.txt"))
+                project.getSubproject(subproject).file("$localeListPath/$variant/extract" +
+                        variant.replaceFirstChar { it.uppercase() } + "SupportedLocales/supported_locales.txt"))
         )
     }
 
@@ -235,7 +236,7 @@ class LocaleConfigGenerationTest {
         PathSubject.assertThat(project.getSubproject("lib2").file(localeListPath))
             .doesNotExist()
         PathSubject.assertThat(project.getSubproject("app")
-            .file("$mergedManifestPath/debug/AndroidManifest.xml"))
+            .file("$mergedManifestPath/debug/processDebugMainManifest/AndroidManifest.xml"))
             .doesNotContain("android:localeConfig")
     }
 
@@ -259,7 +260,7 @@ class LocaleConfigGenerationTest {
         PathSubject.assertThat(project.getSubproject("lib2").file(localeListPath))
             .doesNotExist()
         val mergedManifest = project.getSubproject("app")
-            .file("$mergedManifestPath/debug/AndroidManifest.xml")
+            .file("$mergedManifestPath/debug/processDebugMainManifest/AndroidManifest.xml")
         PathSubject.assertThat(mergedManifest)
             .contains("""android:localeConfig="@xml/user_locale_config"""")
         PathSubject.assertThat(mergedManifest)
@@ -288,7 +289,7 @@ class LocaleConfigGenerationTest {
 
         // Test that manifest change is present
         val mergedManifest = project.getSubproject("app")
-            .file("$mergedManifestPath/debug/AndroidManifest.xml")
+            .file("$mergedManifestPath/debug/processDebugMainManifest/AndroidManifest.xml")
         PathSubject.assertThat(mergedManifest)
             .contains("""android:localeConfig="@xml/$LOCALE_CONFIG_FILE_NAME""")
         PathSubject.assertThat(mergedManifest)

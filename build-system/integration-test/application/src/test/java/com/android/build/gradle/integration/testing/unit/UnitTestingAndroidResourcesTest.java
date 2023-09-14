@@ -119,6 +119,7 @@ public class UnitTestingAndroidResourcesTest {
         }
     }
 
+
     @Test
     public void runUnitTests() throws Exception {
         GradleTaskExecutor runGradleTasks = project.executor();

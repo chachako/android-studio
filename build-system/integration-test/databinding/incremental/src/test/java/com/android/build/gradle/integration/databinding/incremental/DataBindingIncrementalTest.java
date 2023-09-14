@@ -155,7 +155,7 @@ public class DataBindingIncrementalTest {
         return new File(
                 ArtifactTypeUtil.getOutputDir(
                         DATA_BINDING_LAYOUT_INFO_TYPE_MERGE.INSTANCE, project.getBuildDir()),
-                "debug/out");
+                "debug/mergeDebugResources/out");
     }
 
     private File getLayoutInfoFile(String fileName) {

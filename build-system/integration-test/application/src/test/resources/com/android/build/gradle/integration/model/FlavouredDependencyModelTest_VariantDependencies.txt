@@ -82,7 +82,7 @@
                * "project:lib1:unspecified"
          < projectInfo
          - libraryInfo        = (null)
-         - lintJar            = {PROJECT}/lib1/build/intermediates/lint_publish_jar/global/lint.jar{!}
+         - lintJar            = {PROJECT}/lib1/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
          - androidLibraryData = (null)
       < :|:lib1|debug|market>play, model>basic|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>basicPlayDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|project:lib1:unspecified
       > :|:lib1|debug|market>play, model>basic|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>basicPlayDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|project:lib1:unspecified:
@@ -105,7 +105,7 @@
                * "project:lib1:unspecified"
          < projectInfo
          - libraryInfo        = (null)
-         - lintJar            = {PROJECT}/lib1/build/intermediates/lint_publish_jar/global/lint.jar{!}
+         - lintJar            = {PROJECT}/lib1/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
          - androidLibraryData = (null)
       < :|:lib1|debug|market>play, model>basic|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>basicPlayDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|project:lib1:unspecified
       > :|:lib2|debug|market>play, model>basic|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>basicPlayDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|project:lib2:unspecified:
@@ -128,7 +128,7 @@
                * "project:lib2:unspecified"
          < projectInfo
          - libraryInfo        = (null)
-         - lintJar            = {PROJECT}/lib2/build/intermediates/lint_publish_jar/global/lint.jar{!}
+         - lintJar            = {PROJECT}/lib2/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
          - androidLibraryData = (null)
       < :|:lib2|debug|market>play, model>basic|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>basicPlayDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|project:lib2:unspecified
       > :|:lib2|debug|market>play, model>basic|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>basicPlayDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|project:lib2:unspecified:
@@ -151,7 +151,7 @@
                * "project:lib2:unspecified"
          < projectInfo
          - libraryInfo        = (null)
-         - lintJar            = {PROJECT}/lib2/build/intermediates/lint_publish_jar/global/lint.jar{!}
+         - lintJar            = {PROJECT}/lib2/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
          - androidLibraryData = (null)
       < :|:lib2|debug|market>play, model>basic|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>basicPlayDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|project:lib2:unspecified
       > :|:lib3|debug|market>play|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>playDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|project:lib3:unspecified:
@@ -173,7 +173,7 @@
                * "project:lib3:unspecified"
          < projectInfo
          - libraryInfo        = (null)
-         - lintJar            = {PROJECT}/lib3/build/intermediates/lint_publish_jar/global/lint.jar{!}
+         - lintJar            = {PROJECT}/lib3/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
          - androidLibraryData = (null)
       < :|:lib3|debug|market>play|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>playDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|project:lib3:unspecified
    < libraries

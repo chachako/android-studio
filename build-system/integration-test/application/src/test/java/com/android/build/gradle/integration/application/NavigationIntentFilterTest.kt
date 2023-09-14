@@ -121,7 +121,7 @@ class NavigationIntentFilterTest {
         project.executor().run(":app:assembleDebug")
         val mergedManifest =
             project.file(
-                "app/build/${SdkConstants.FD_INTERMEDIATES}/${SingleArtifact.MERGED_MANIFEST.getFolderName()}/debug/AndroidManifest.xml"
+                "app/build/${SdkConstants.FD_INTERMEDIATES}/${SingleArtifact.MERGED_MANIFEST.getFolderName()}/debug/processDebugMainManifest/AndroidManifest.xml"
             )
         PathSubject.assertThat(mergedManifest)
             .contentWithUnixLineSeparatorsIsExactly(expectedMergedManifestContent)
@@ -159,7 +159,7 @@ class NavigationIntentFilterTest {
         project.executor().run(":app:assembleDebug")
         val mergedManifest =
             project.file(
-                "app/build/${SdkConstants.FD_INTERMEDIATES}/${SingleArtifact.MERGED_MANIFEST.getFolderName()}/debug/AndroidManifest.xml"
+                "app/build/${SdkConstants.FD_INTERMEDIATES}/${SingleArtifact.MERGED_MANIFEST.getFolderName()}/debug/processDebugMainManifest/AndroidManifest.xml"
             )
         PathSubject.assertThat(mergedManifest)
             .contentWithUnixLineSeparatorsIsExactly(expectedMergedManifestContent)
@@ -182,7 +182,7 @@ class NavigationIntentFilterTest {
         project.executor().run(":app:assembleDebug")
         val mergedManifest =
             project.file(
-                "app/build/${SdkConstants.FD_INTERMEDIATES}/${SingleArtifact.MERGED_MANIFEST.getFolderName()}/debug/AndroidManifest.xml"
+                "app/build/${SdkConstants.FD_INTERMEDIATES}/${SingleArtifact.MERGED_MANIFEST.getFolderName()}/debug/processDebugMainManifest/AndroidManifest.xml"
             )
         // Validate there is only one occurrence of VIEW action in the merged manifest
         PathSubject.assertThat(mergedManifest).containsExactlyOnce(

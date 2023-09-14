@@ -2,11 +2,11 @@
    - name                 = "debug"
    - mainArtifact:
       - compileDependencies:
-         - __local_asars__|{PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/sdk-interface-descriptors.jar{!}|unspecified||:
+         - __local_asars__|{PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/privacySandboxClassesJarStubs/sdk-interface-descriptors.jar{!}|unspecified||:
             - requestedCoordinates = (null)
             - dependencies         = []
       - runtimeDependencies:
-         - __local_asars__|{PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/sdk-interface-descriptors.jar{!}|unspecified||:
+         - __local_asars__|{PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/privacySandboxClassesJarStubs/sdk-interface-descriptors.jar{!}|unspecified||:
             - dependencies = "*visited*"
       - unresolvedDependencies = []
    > androidTestArtifact:
@@ -14,7 +14,7 @@
          - :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|project:app:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
-         - __local_asars__|{PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/sdk-interface-descriptors.jar{!}|unspecified||:
+         - __local_asars__|{PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/privacySandboxClassesJarStubs/sdk-interface-descriptors.jar{!}|unspecified||:
             - requestedCoordinates = (null)
             - dependencies         = []
       - runtimeDependencies    = []
@@ -25,16 +25,16 @@
          - :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|project:app:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
-         - __local_asars__|{PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/sdk-interface-descriptors.jar{!}|unspecified||:
+         - __local_asars__|{PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/privacySandboxClassesJarStubs/sdk-interface-descriptors.jar{!}|unspecified||:
             - requestedCoordinates = (null)
             - dependencies         = []
       - runtimeDependencies:
          - :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|project:app:unspecified:
             - requestedCoordinates = (null)
             - dependencies:
-               - __local_asars__|{PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/sdk-interface-descriptors.jar{!}|unspecified||:
+               - __local_asars__|{PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/privacySandboxClassesJarStubs/sdk-interface-descriptors.jar{!}|unspecified||:
                   - dependencies = "*visited*"
-         - __local_asars__|{PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/sdk-interface-descriptors.jar{!}|unspecified||:
+         - __local_asars__|{PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/privacySandboxClassesJarStubs/sdk-interface-descriptors.jar{!}|unspecified||:
             - dependencies = "*visited*"
       - unresolvedDependencies = []
    < unitTestArtifact
@@ -81,13 +81,13 @@
          - lintJar            = (null)
          - androidLibraryData = (null)
       < :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|project:app:unspecified
-      > __local_asars__|{PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/sdk-interface-descriptors.jar{!}|unspecified||:
+      > __local_asars__|{PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/privacySandboxClassesJarStubs/sdk-interface-descriptors.jar{!}|unspecified||:
          - type               = JAVA_LIBRARY
-         - artifact           = {PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/sdk-interface-descriptors.jar{!}
+         - artifact           = {PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/privacySandboxClassesJarStubs/sdk-interface-descriptors.jar{!}
          - projectInfo        = (null)
          - libraryInfo:
             - group          = "__local_asars__"
-            - name           = {PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/sdk-interface-descriptors.jar{!}
+            - name           = {PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/privacySandboxClassesJarStubs/sdk-interface-descriptors.jar{!}
             - version        = "unspecified"
             - isTestFixtures = false
             - buildType      = (null)
@@ -96,6 +96,6 @@
             - capabilities   = []
          - lintJar            = (null)
          - androidLibraryData = (null)
-      < __local_asars__|{PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/sdk-interface-descriptors.jar{!}|unspecified||
+      < __local_asars__|{PROJECT}/privacy-sandbox-sdk/build/intermediates/stub_jar/single/privacySandboxClassesJarStubs/sdk-interface-descriptors.jar{!}|unspecified||
    < libraries
 < VariantDependencies

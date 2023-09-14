@@ -134,6 +134,7 @@ class ArtProfileSingleLibraryTest {
                 SdkConstants.FD_INTERMEDIATES,
                 InternalArtifactType.LIBRARY_ART_PROFILE.getFolderName(),
                 "release",
+                "prepareReleaseArtProfile",
                 SdkConstants.FN_ART_PROFILE,
         )
         Truth.assertThat(libFile.readText()).isEqualTo(libraryFileContent)
@@ -150,6 +151,7 @@ class ArtProfileSingleLibraryTest {
                 SdkConstants.FD_INTERMEDIATES,
                 InternalArtifactType.MERGED_ART_PROFILE.getFolderName(),
                 "release",
+                "mergeReleaseArtProfile",
                 SdkConstants.FN_ART_PROFILE,
         )
         val expectedContent = if (addApplicationProfile) {
@@ -168,6 +170,7 @@ class ArtProfileSingleLibraryTest {
                 SdkConstants.FD_INTERMEDIATES,
                 InternalArtifactType.BINARY_ART_PROFILE.getFolderName(),
                 "release",
+                "compileReleaseArtProfile",
                 SdkConstants.FN_BINARY_ART_PROFILE,
         )
         Truth.assertThat(
@@ -179,6 +182,7 @@ class ArtProfileSingleLibraryTest {
             SdkConstants.FD_INTERMEDIATES,
             InternalArtifactType.BINARY_ART_PROFILE_METADATA.getFolderName(),
             "release",
+            "compileReleaseArtProfile",
             SdkConstants.FN_BINARY_ART_PROFILE_METADATA,
         )
 
@@ -190,6 +194,7 @@ class ArtProfileSingleLibraryTest {
             SdkConstants.FD_INTERMEDIATES,
             InternalArtifactType.DEX_METADATA_DIRECTORY.getFolderName(),
             "release",
+            "compileReleaseArtProfile",
             SdkConstants.FN_DEX_METADATA_PROP
         )
 
@@ -221,7 +226,7 @@ class ArtProfileSingleLibraryTest {
             }
         }
 
-        val bundleApks = project.getSubproject(":app").getIntermediateFile("apks_from_bundle", "release", "bundle.apks").toPath()
+        val bundleApks = project.getSubproject(":app").getIntermediateFile("apks_from_bundle", "release", "makeApkFromBundleForRelease", "bundle.apks").toPath()
 
         val base: ByteArray
         ZipInputStream(bundleApks.inputStream().buffered()).use {

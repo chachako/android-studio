@@ -198,7 +198,7 @@ public class DexArchivesTest {
                         ArtifactTypeUtil.getOutputDir(
                                 InternalArtifactType.DEX_ARCHIVE_INPUT_JAR_HASHES.INSTANCE,
                                 project.getBuildDir()),
-                        "debug/out");
+                        "debug/dexBuilderDebug/out");
         assertThat(inputJarHashes).exists();
         executor.run("clean");
         GradleBuildResult result = executor.run("assembleDebug");
@@ -218,7 +218,7 @@ public class DexArchivesTest {
                         ArtifactTypeUtil.getOutputDir(
                                 InternalArtifactType.DEX_NUMBER_OF_BUCKETS_FILE.INSTANCE,
                                 project.getBuildDir()),
-                        "debug/out");
+                        "debug/dexBuilderDebug/out");
         assertThat(previousRunDexBuckets).exists();
         executor.run("clean");
 
@@ -279,7 +279,7 @@ public class DexArchivesTest {
                         ArtifactTypeUtil.getOutputDir(
                                 InternalArtifactType.PROJECT_DEX_ARCHIVE.INSTANCE,
                                 project.getBuildDir()),
-                        "debug/out");
+                        "debug/dexBuilderDebug/out");
 
         List<String> dexInDirs = new ArrayList<>();
         List<String> dexInJars = new ArrayList<>();
@@ -355,7 +355,7 @@ public class DexArchivesTest {
         return new File(
                 ArtifactTypeUtil.getOutputDir(
                         InternalArtifactType.PROJECT_DEX_ARCHIVE.INSTANCE, project.getBuildDir()),
-                "debug/out");
+                "debug/dexBuilderDebug/out");
     }
 
     private void addNewClass() throws IOException {

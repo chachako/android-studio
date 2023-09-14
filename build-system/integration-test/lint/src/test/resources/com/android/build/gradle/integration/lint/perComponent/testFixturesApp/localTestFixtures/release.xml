@@ -3,8 +3,8 @@
     package="com.example.app"
     minSdkVersion="14"
     targetSdkVersion="14"
-    mergedManifest="build/intermediates/merged_manifest/release/AndroidManifest.xml"
-    partialResultsDir="build/intermediates/test_fixtures_lint_partial_results/release/out"
+    mergedManifest="build/intermediates/merged_manifest/release/processReleaseMainManifest/AndroidManifest.xml"
+    partialResultsDir="build/intermediates/test_fixtures_lint_partial_results/release/lintAnalyzeReleaseTestFixtures/out"
     desugaredMethodsFiles="${gradleCacheDir}/<digest>/transformed/D8BackportedDesugaredMethods.txt">
   <buildFeatures
       namespacing="REQUIRED"/>
@@ -20,7 +20,7 @@
         testFixture="true"/>
   </testFixturesSourceProviders>
   <artifact
-      classOutputs="build/intermediates/javac/releaseTestFixtures/classes"
+      classOutputs="build/intermediates/javac/releaseTestFixtures/compileReleaseTestFixturesJavaWithJavac/classes"
       type="TEST_FIXTURES"
       applicationId="com.example.app.testFixtures"
       generatedSourceFolders="build/generated/ap_generated_sources/releaseTestFixtures/out"

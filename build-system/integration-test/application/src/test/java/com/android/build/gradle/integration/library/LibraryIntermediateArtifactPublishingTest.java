@@ -103,7 +103,7 @@ public class LibraryIntermediateArtifactPublishingTest {
                 project.getSubproject(":lib")
                         .getIntermediateFile(
                                 RUNTIME_LIBRARY_CLASSES_JAR.INSTANCE.getFolderName()
-                                        + "/debug/classes.jar");
+                                        + "/debug/bundleLibRuntimeToJarDebug/classes.jar");
         assertThat(
                 classesJar,
                 it -> {
@@ -111,7 +111,9 @@ public class LibraryIntermediateArtifactPublishingTest {
                     it.doesNotContain("foo.txt");
                 });
 
-        File resDir = project.getSubproject(":lib").getIntermediateFile("java_res/debug/out");
+        File resDir =
+                project.getSubproject(":lib")
+                        .getIntermediateFile("java_res/debug/processDebugJavaRes/out");
         Truth.assertThat(
                         FileUtils.join(resDir, "com", "example", "helloworld", "HelloWorld.class")
                                 .exists())
@@ -120,6 +122,7 @@ public class LibraryIntermediateArtifactPublishingTest {
     }
 
     private File getJar(String fileName) {
-        return project.getSubproject(":lib").file("build/intermediates/full_jar/debug/" + fileName);
+        return project.getSubproject(":lib")
+                .file("build/intermediates/full_jar/debug/createFullJarDebug/" + fileName);
     }
 }

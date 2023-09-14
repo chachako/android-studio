@@ -46,7 +46,7 @@
                * ":project:unspecified"
          < projectInfo
          - libraryInfo        = (null)
-         - lintJar            = {PROJECT}/build/intermediates/lint_publish_jar/global/lint.jar{!}
+         - lintJar            = {PROJECT}/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
          - androidLibraryData = (null)
       < :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified
       > :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|:project:unspecified:
@@ -67,7 +67,7 @@
                * ":project:unspecified"
          < projectInfo
          - libraryInfo        = (null)
-         - lintJar            = {PROJECT}/build/intermediates/lint_publish_jar/global/lint.jar{!}
+         - lintJar            = {PROJECT}/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
          - androidLibraryData = (null)
       < :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|:project:unspecified
    < libraries

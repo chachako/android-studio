@@ -57,9 +57,9 @@ class IncrementalGlobalSyntheticsTest {
         app = project.getSubproject("app")
 
         changedSourceInApp = app.mainSrcDir.resolve("com/example/app/IllformedLocaleExceptionUsage.java")
-        changedGlobalInApp = app.buildDir.resolve("intermediates/global_synthetics_project/debug/out/com/example/app/IllformedLocaleExceptionUsage.globals")
-        changedDexInApp = app.buildDir.resolve("intermediates/project_dex_archive/debug/out/com/example/app/IllformedLocaleExceptionUsage.dex")
-        unchangedDexInApp = app.buildDir.resolve("intermediates/project_dex_archive/debug/out/com/example/app/Main.dex")
+        changedGlobalInApp = app.buildDir.resolve("intermediates/global_synthetics_project/debug/dexBuilderDebug/out/com/example/app/IllformedLocaleExceptionUsage.globals")
+        changedDexInApp = app.buildDir.resolve("intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/app/IllformedLocaleExceptionUsage.dex")
+        unchangedDexInApp = app.buildDir.resolve("intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/app/Main.dex")
 
         TestFileUtils.appendToFile(
             app.buildFile,

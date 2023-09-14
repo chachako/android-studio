@@ -16,31 +16,27 @@
 
 package com.android.build.gradle.integration.testing.unit;
 
+import static com.android.SdkConstants.FN_R_CLASS_JAR;
+import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
+
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.internal.scope.ArtifactTypeUtil;
 import com.android.build.gradle.internal.scope.InternalArtifactType;
-import com.android.builder.model.SourceProviderContainer;
-import com.android.builder.model.v2.dsl.ProductFlavor;
 import com.android.builder.model.v2.ide.JavaArtifact;
 import com.android.builder.model.v2.ide.SourceProvider;
 import com.android.builder.model.v2.ide.SourceSetContainer;
 import com.android.builder.model.v2.ide.Variant;
-import com.android.builder.model.v2.models.BasicAndroidProject;
 import com.android.utils.FileUtils;
 import com.android.utils.StringHelper;
 import com.google.common.truth.Truth;
-import org.junit.Rule;
-import org.junit.Test;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import static com.android.SdkConstants.FN_R_CLASS_JAR;
-import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
+import org.junit.Rule;
+import org.junit.Test;
 
 /** Tests for the unit-tests related parts of the builder model. */
 public class UnitTestingModelTest {
@@ -61,6 +57,10 @@ public class UnitTestingModelTest {
 
         for (Variant variant : model.getAndroidProject().getVariants()) {
             List<File> expectedClassesFolders = new ArrayList<>();
+            String processResourcesTask =
+                    (variant.getName().equals("release"))
+                            ? "processReleaseResources"
+                            : "processDebugResources";
             expectedClassesFolders.add(
                     new File(
                             ArtifactTypeUtil.getOutputDir(
@@ -68,18 +68,19 @@ public class UnitTestingModelTest {
                                             .COMPILE_AND_RUNTIME_NOT_NAMESPACED_R_CLASS_JAR
                                             .INSTANCE,
                                     project.getSubproject("app").getBuildDir()),
-                            variant.getName() + "/" + FN_R_CLASS_JAR)
-            );
+                            variant.getName() + "/" + processResourcesTask + "/" + FN_R_CLASS_JAR));
             expectedClassesFolders.add(project.file("app/build/tmp/kotlin-classes/"
                     + variant.getName()));
             if (variant.getName().equals("release")) {
                 expectedClassesFolders.add(
                         project.file("app/build/kotlinToolingMetadata"));
                 expectedClassesFolders.add(
-                        project.file("app/build/intermediates/javac/release/classes"));
+                        project.file(
+                                "app/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes"));
             } else {
                 expectedClassesFolders.add(
-                        project.file("app/build/intermediates/javac/debug/classes"));
+                        project.file(
+                                "app/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes"));
             }
             Truth.assertThat(variant.getMainArtifact().getClassesFolders())
                     .containsExactlyElementsIn(expectedClassesFolders);
@@ -95,6 +96,11 @@ public class UnitTestingModelTest {
             assertThat(unitTestArtifact.getClassesFolders())
                     .isNotEqualTo(variant.getMainArtifact().getClassesFolders());
 
+            String compileTask =
+                    (variant.getName().equals("release"))
+                            ? "compileReleaseUnitTestJavaWithJavac"
+                            : "compileDebugUnitTestJavaWithJavac";
+
             assertThat(unitTestArtifact.getClassesFolders())
                     .containsExactly(
                             project.file(
@@ -104,11 +110,15 @@ public class UnitTestingModelTest {
                             project.file(
                                     "app/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/"
                                             + variant.getName()
+                                            + "/"
+                                            + processResourcesTask
                                             + "/R.jar"),
-                            project.file("app/build/intermediates/javac/"
-                                    + variant.getName()
-                                    + "UnitTest/classes")
-                    );
+                            project.file(
+                                    "app/build/intermediates/javac/"
+                                            + variant.getName()
+                                            + "UnitTest/"
+                                            + compileTask
+                                            + "/classes"));
         }
 
         SourceProvider sourceProvider = model.getBasicAndroidProject()

@@ -49,7 +49,7 @@ class ProcessManifestTest {
 
         project.executor().run("processDebugManifest")
         val manifestContent =
-            File(project.buildDir, "intermediates/merged_manifest/debug/AndroidManifest.xml")
+            File(project.buildDir, "intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml")
                 .readLines().joinToString("\n")
         Truth.assertThat(manifestContent).contains("android:minSdkVersion=\"21\"")
         Truth.assertThat(manifestContent).doesNotContain("android:targetSdkVersion")

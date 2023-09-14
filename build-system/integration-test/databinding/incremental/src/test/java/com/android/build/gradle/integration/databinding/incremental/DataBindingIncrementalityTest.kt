@@ -60,7 +60,7 @@ import java.io.File
  *               - BR.java
  *           - androidx.databinding.library.baseAdapters.BR.java
  *           - androidx.databinding.DataBindingComponent.java
- *       - build/intermediates/javac/debug/classes (7 files)
+ *       - build/intermediates/javac/debug/compileDebugJavaWithJavac/classes (7 files)
  *   - lib
  *       - src/main/java
  *           - com.example.lib
@@ -83,7 +83,7 @@ import java.io.File
  *               - BR.java
  *           - androidx.databinding.library.baseAdapters.BR.java
  *           - androidx.databinding.DataBindingComponent.java
- *       - build/intermediates/javac/debug/classes (11 files)
+ *       - build/intermediates/javac/debug/compileDebugJavaWithJavac/classes (11 files)
  *
  * The layout1.xml and layout2.xml layout files use expressions defined in Data1.java and
  * Data2.java, whereas Loner1.java and Loner2.java are source files that do not have any
@@ -104,7 +104,7 @@ class DataBindingIncrementalityTest {
         private const val LAYOUT_DIR = "src/main/res/layout"
         private const val GENERATED_SOURCE_DIR = "build/generated/ap_generated_sources/debug/out"
         private const val COMPILED_CLASSES_DIR =
-            "build/intermediates/javac/debug/classes"
+            "build/intermediates/javac/debug/compileDebugJavaWithJavac/classes"
 
         // Original source files in app/src/main/java
         private const val APP_NAMESPACE = "com.example.app"

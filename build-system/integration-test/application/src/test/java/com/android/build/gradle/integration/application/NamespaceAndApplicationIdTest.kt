@@ -133,7 +133,7 @@ class NamespaceAndApplicationIdTest {
             .hasApplicationId("com.example.app.test")
         assertThat(
             JAVAC.getOutputDir(project.getSubproject(":app").buildDir)
-                .resolve("debugAndroidTest/classes/com/example/app/test/BuildConfig.class")
+                .resolve("debugAndroidTest/compileDebugAndroidTestJavaWithJavac/classes/com/example/app/test/BuildConfig.class")
         ).isFile()
     }
 
@@ -159,7 +159,7 @@ class NamespaceAndApplicationIdTest {
             .hasApplicationId("com.example.applicationId.test")
         assertThat(
             JAVAC.getOutputDir(project.getSubproject(":app").buildDir)
-                .resolve("debugAndroidTest/classes/com/example/app/test/BuildConfig.class")
+                .resolve("debugAndroidTest/compileDebugAndroidTestJavaWithJavac/classes/com/example/app/test/BuildConfig.class")
         ).isFile()
     }
 
@@ -177,7 +177,7 @@ class NamespaceAndApplicationIdTest {
             .hasApplicationId("com.example.testApplicationId")
         assertThat(
             JAVAC.getOutputDir(project.getSubproject(":app").buildDir)
-                .resolve("debugAndroidTest/classes/com/example/app/test/BuildConfig.class")
+                .resolve("debugAndroidTest/compileDebugAndroidTestJavaWithJavac/classes/com/example/app/test/BuildConfig.class")
         ).isFile()
     }
 
@@ -196,7 +196,7 @@ class NamespaceAndApplicationIdTest {
             .hasApplicationId("com.example.testApplicationId")
         assertThat(
             JAVAC.getOutputDir(project.getSubproject(":app").buildDir)
-                .resolve("debugAndroidTest/classes/com/example/app/test/BuildConfig.class")
+                .resolve("debugAndroidTest/compileDebugAndroidTestJavaWithJavac/classes/com/example/app/test/BuildConfig.class")
         ).isFile()
     }
 
@@ -240,7 +240,7 @@ class NamespaceAndApplicationIdTest {
             .hasApplicationId("com.example.namespace.test")
         assertThat(
             JAVAC.getOutputDir(project.getSubproject(":app").buildDir)
-                .resolve("debugAndroidTest/classes/com/example/namespace/test/BuildConfig.class")
+                .resolve("debugAndroidTest/compileDebugAndroidTestJavaWithJavac/classes/com/example/namespace/test/BuildConfig.class")
         ).isFile()
     }
 
@@ -294,7 +294,7 @@ class NamespaceAndApplicationIdTest {
             .hasApplicationId("com.example.app.test")
         assertThat(
             JAVAC.getOutputDir(project.getSubproject(":app").buildDir)
-                .resolve("debugAndroidTest/classes/com/example/testNamespace/BuildConfig.class")
+                .resolve("debugAndroidTest/compileDebugAndroidTestJavaWithJavac/classes/com/example/testNamespace/BuildConfig.class")
         ).isFile()
     }
 
@@ -339,7 +339,7 @@ class NamespaceAndApplicationIdTest {
             .hasApplicationId("com.example.namespace.test")
         assertThat(
             JAVAC.getOutputDir(project.getSubproject(":app").buildDir)
-                .resolve("debugAndroidTest/classes/com/example/testNamespace/BuildConfig.class")
+                .resolve("debugAndroidTest/compileDebugAndroidTestJavaWithJavac/classes/com/example/testNamespace/BuildConfig.class")
         ).isFile()
     }
 
@@ -385,7 +385,7 @@ class NamespaceAndApplicationIdTest {
             .hasApplicationId("com.example.testApplicationId")
         assertThat(
             JAVAC.getOutputDir(project.getSubproject(":app").buildDir)
-                .resolve("debugAndroidTest/classes/com/example/testNamespace/BuildConfig.class")
+                .resolve("debugAndroidTest/compileDebugAndroidTestJavaWithJavac/classes/com/example/testNamespace/BuildConfig.class")
         ).isFile()
     }
 

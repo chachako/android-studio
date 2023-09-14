@@ -209,6 +209,7 @@ class AnalyzeDependenciesTest {
         val dependencyAnalysisReport = project.getSubproject(":app").getIntermediateFile(
             InternalArtifactType.ANALYZE_DEPENDENCIES_REPORT.getFolderName(),
             buildType,
+            "analyzeDebugDependencies",
             "analyzeDependencies",
             "dependenciesReport.json"
         )

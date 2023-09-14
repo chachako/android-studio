@@ -147,6 +147,7 @@ class L8ArtProfileRewritingTest {
             SdkConstants.FD_INTERMEDIATES,
             InternalArtifactType.L8_ART_PROFILE.getFolderName(),
             "release",
+            "l8DexDesugarLibRelease",
             SdkConstants.FN_ART_PROFILE
         )
 
@@ -160,6 +161,7 @@ class L8ArtProfileRewritingTest {
             SdkConstants.FD_INTERMEDIATES,
             InternalArtifactType.BINARY_ART_PROFILE.getFolderName(),
             "release",
+            "compileReleaseArtProfile",
             SdkConstants.FN_BINARY_ART_PROFILE
         )
         val artProfileFromBinary = ArtProfile(ByteArrayInputStream(binaryProfile.readBytes()))

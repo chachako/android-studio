@@ -85,6 +85,7 @@ class ArtProfileExternalDependenciesTest {
             SdkConstants.FD_INTERMEDIATES,
             InternalArtifactType.MERGED_ART_PROFILE.getFolderName(),
             "release",
+            "mergeReleaseArtProfile",
             SdkConstants.FN_ART_PROFILE)
 
         Truth.assertThat(mergedFile.readText()).contains(baselineProfileContent)
@@ -141,6 +142,7 @@ class ArtProfileExternalDependenciesTest {
             SdkConstants.FD_INTERMEDIATES,
             InternalArtifactType.MERGED_ART_PROFILE.getFolderName(),
             "release",
+            "mergeReleaseArtProfile",
             SdkConstants.FN_ART_PROFILE)
 
         Truth.assertThat(mergedFile.readText()).contains(baselineProfileContent)

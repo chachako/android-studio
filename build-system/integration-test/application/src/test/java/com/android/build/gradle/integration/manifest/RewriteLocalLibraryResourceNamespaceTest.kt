@@ -122,14 +122,14 @@ class RewriteLocalLibraryResourceNamespaceTest {
 
         val libraryManifest =
             project.getSubproject("library")
-                .file("build/intermediates/${SingleArtifact.MERGED_MANIFEST.getFolderName()}/debug/AndroidManifest.xml")
+                .file("build/intermediates/${SingleArtifact.MERGED_MANIFEST.getFolderName()}/debug/processDebugManifest/AndroidManifest.xml")
 
         // namespaces in library are resolved
         assertThat(libraryManifest).contains("@com.example.android.multiproject.library:string/app_name")
 
         val mergedManifest =
             project.getSubproject("app")
-                .file("build/intermediates/packaged_manifests/debug/AndroidManifest.xml")
+                .file("build/intermediates/packaged_manifests/debug/processDebugManifestForPackage/AndroidManifest.xml")
 
         // namespaces in main app are resolved only for library
         assertThat(mergedManifest).contains("@com.example.android.multiproject.library:string/app_name")

@@ -31,7 +31,7 @@ class MapSourceSetPathsTaskTest {
         val run = project.executor().run("mapF1FaDebugSourceSetPaths")
         val filePathMapsDir = FileUtils.join(project.intermediatesDir, InternalArtifactType
                 .SOURCE_SET_PATH_MAP.getFolderName())
-        val sourceSetMap = FileUtils.join(filePathMapsDir, "f1FaDebug", "file-map.txt")
+        val sourceSetMap = FileUtils.join(filePathMapsDir, "f1FaDebug", "mapF1FaDebugSourceSetPaths", "file-map.txt")
         val projectDir = project.projectDir.absolutePath
         val expectedContents = """
             com.android.tests.flavors-f1Fa-0 $projectDir/build/generated/res/pngs/f1Fa/debug
@@ -39,7 +39,7 @@ class MapSourceSetPathsTaskTest {
             com.android.tests.flavors-packageF1FaDebugResources-2 $projectDir/build/intermediates/incremental/f1FaDebug/packageF1FaDebugResources/merged.dir
             com.android.tests.flavors-packageF1FaDebugResources-3 $projectDir/build/intermediates/incremental/f1FaDebug/packageF1FaDebugResources/stripped.dir
             com.android.tests.flavors-f1Fa-4 $projectDir/build/intermediates/merged-not-compiled-resources/f1Fa/debug
-            com.android.tests.flavors-merged_res-5 $projectDir/build/intermediates/merged_res/f1FaDebug
+            com.android.tests.flavors-f1FaDebug-5 $projectDir/build/intermediates/merged_res/f1FaDebug/mergeF1FaDebugResources
             com.android.tests.flavors-debug-6 $projectDir/src/debug/res
             com.android.tests.flavors-f1-7 $projectDir/src/f1/res
             com.android.tests.flavors-f1Fa-8 $projectDir/src/f1Fa/res

@@ -198,7 +198,7 @@ class SourceSetsTest {
         project.executor().run(":api-use:mapDebugSourceSetPaths")
         val content = File(
             project.projectDir,
-            "./api-use/build/intermediates/source_set_path_map/debug/file-map.txt"
+            "./api-use/build/intermediates/source_set_path_map/debug/mapDebugSourceSetPaths/file-map.txt"
         ).readText()
 
         Truth.assertThat(content).contains("tmp_test")

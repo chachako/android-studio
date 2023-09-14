@@ -94,6 +94,7 @@ class OverlayableResourcesTest {
         val mergedLibValues = libFiles.getIntermediateFile(
             "packaged_res",
             "debug",
+            "packageDebugResources",
             "values",
             "values.xml")
 
@@ -106,6 +107,7 @@ class OverlayableResourcesTest {
         val libRdef = libFiles.getIntermediateFile(
             "local_only_symbol_list",
             "debug",
+            "parseDebugLocalResources",
             "R-def.txt"
         )
         assertThat(libRdef).exists()
@@ -138,6 +140,7 @@ class OverlayableResourcesTest {
         val appRTxt = appFiles.getIntermediateFile(
             "runtime_symbol_list",
             "debug",
+            "processDebugResources",
             "R.txt"
         )
         assertThat(appRTxt).exists()

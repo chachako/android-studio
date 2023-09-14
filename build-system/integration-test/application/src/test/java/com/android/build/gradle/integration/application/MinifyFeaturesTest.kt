@@ -559,6 +559,7 @@ class MinifyFeaturesTest {
                         project.getSubproject("baseModule").intermediatesDir,
                         "aapt_proguard_file",
                         "minified",
+                        "processMinifiedResources",
                         SdkConstants.FN_AAPT_RULES)
         assertThat(aaptProguardFile).exists()
         assertThat(aaptProguardFile)
@@ -568,6 +569,7 @@ class MinifyFeaturesTest {
                         project.getSubproject("baseModule").intermediatesDir,
                         "merged_aapt_proguard_file",
                         "minified",
+                        "mergeMinifiedAaptProguardFiles",
                         SdkConstants.FN_MERGED_AAPT_RULES)
         assertThat(mergedAaptProguardFile).exists()
         assertThat(mergedAaptProguardFile)

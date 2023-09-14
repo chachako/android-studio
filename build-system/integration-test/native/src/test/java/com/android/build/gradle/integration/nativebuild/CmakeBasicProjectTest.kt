@@ -674,10 +674,10 @@ class CmakeBasicProjectTest(
         return (if (mode == Mode.NinjaRedirect) """
                 {PROJECT}/build/intermediates/${mode.buildFolderTag}/debug/obj/armeabi-v7a/libhello-jni.so{F}
                 {PROJECT}/build/intermediates/${mode.buildFolderTag}/debug/obj/x86_64/libhello-jni.so{F}
-                {PROJECT}/build/intermediates/merged_native_libs/debug/out/lib/armeabi-v7a/libhello-jni.so{F}
-                {PROJECT}/build/intermediates/merged_native_libs/debug/out/lib/x86_64/libhello-jni.so{F}
-                {PROJECT}/build/intermediates/stripped_native_libs/debug/out/lib/armeabi-v7a/libhello-jni.so{F}
-                {PROJECT}/build/intermediates/stripped_native_libs/debug/out/lib/x86_64/libhello-jni.so{F}
+                {PROJECT}/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/armeabi-v7a/libhello-jni.so{F}
+                {PROJECT}/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/x86_64/libhello-jni.so{F}
+                {PROJECT}/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/armeabi-v7a/libhello-jni.so{F}
+                {PROJECT}/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/x86_64/libhello-jni.so{F}
                 {PROJECT}/build/intermediates/{DEBUG}/obj/armeabi-v7a/libhello-jni.so{F}
                 {PROJECT}/build/intermediates/{DEBUG}/obj/x86_64/libhello-jni.so{F}
             """
@@ -686,10 +686,10 @@ class CmakeBasicProjectTest(
                {PROJECT}/.cxx/{DEBUG}/x86_64/CMakeFiles/hello-jni.dir/src/main/cxx/hello-jni.c.o{F}
                {PROJECT}/build/intermediates/${mode.buildFolderTag}/debug/obj/armeabi-v7a/libhello-jni.so{F}
                {PROJECT}/build/intermediates/${mode.buildFolderTag}/debug/obj/x86_64/libhello-jni.so{F}
-               {PROJECT}/build/intermediates/merged_native_libs/debug/out/lib/armeabi-v7a/libhello-jni.so{F}
-               {PROJECT}/build/intermediates/merged_native_libs/debug/out/lib/x86_64/libhello-jni.so{F}
-               {PROJECT}/build/intermediates/stripped_native_libs/debug/out/lib/armeabi-v7a/libhello-jni.so{F}
-               {PROJECT}/build/intermediates/stripped_native_libs/debug/out/lib/x86_64/libhello-jni.so{F}
+               {PROJECT}/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/armeabi-v7a/libhello-jni.so{F}
+               {PROJECT}/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/x86_64/libhello-jni.so{F}
+               {PROJECT}/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/armeabi-v7a/libhello-jni.so{F}
+               {PROJECT}/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/x86_64/libhello-jni.so{F}
                {PROJECT}/build/intermediates/{DEBUG}/obj/armeabi-v7a/libhello-jni.so{F}
                {PROJECT}/build/intermediates/{DEBUG}/obj/x86_64/libhello-jni.so{F}
                """)

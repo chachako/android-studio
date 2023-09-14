@@ -69,7 +69,7 @@ class IncrementalJavaCompileWithAPsTest(
         private const val GENERATED_SOURCE_DIR = "build/generated/ap_generated_sources/debug/out"
         private const val GENERATED_SOURCE_KAPT_DIR = "build/generated/source/kapt/debug"
         private const val COMPILED_CLASSES_DIR =
-            "build/intermediates/javac/debug/classes"
+            "build/intermediates/javac/debug/compileDebugJavaWithJavac/classes"
 
         private const val NAMESPACE = "com.example.app"
         private const val MAIN_ACTIVITY = "MainActivity"

@@ -57,6 +57,7 @@ class MergeResourcesTest {
             project.getSubproject("library").intermediatesDir,
             "local_only_symbol_list",
             "debug",
+            "parseDebugLocalResources",
             "R-def.txt"
         )
 
@@ -83,13 +84,14 @@ class MergeResourcesTest {
 
         val inIntermediate = File(
                 MERGED_RES.getOutputDir(project.getSubproject("app").buildDir),
-                "debug/raw_me.raw.flat")
+                "debug/mergeDebugResources/raw_me.raw.flat")
         val inCompiledLocalResources = FileUtils.join(
             project.getSubproject("library").projectDir,
             "build",
             "intermediates",
             "compiled_local_resources",
             "debug",
+            "compileDebugLibraryResources",
             "out",
             "raw_me.raw.flat"
         )
@@ -133,6 +135,7 @@ class MergeResourcesTest {
             "intermediates",
             "processed_res",
             "debug",
+            "processDebugResources",
             "out",
             "resources-debug.ap_"
         )
@@ -168,7 +171,7 @@ class MergeResourcesTest {
          */
         val inIntermediate = File(
                 MERGED_RES.getOutputDir(project.getSubproject("app").buildDir),
-                "debug/raw_me.raw.flat")
+                "debug/mergeDebugResources/raw_me.raw.flat")
         assertThat(inIntermediate).exists()
 
         val apUnderscore = FileUtils.join(
@@ -177,6 +180,7 @@ class MergeResourcesTest {
             "intermediates",
             "processed_res",
             "debug",
+            "processDebugResources",
             "out",
             "resources-debug.ap_"
         )
@@ -217,7 +221,7 @@ class MergeResourcesTest {
          */
         val inIntermediate = File(
                 MERGED_RES.getOutputDir(project.getSubproject("app").buildDir),
-                "debug/raw_me.raw.flat")
+                "debug/mergeDebugResources/raw_me.raw.flat")
         assertThat(inIntermediate).exists()
 
         val apUnderscore = FileUtils.join(
@@ -226,6 +230,7 @@ class MergeResourcesTest {
             "intermediates",
             "processed_res",
             "debug",
+            "processDebugResources",
             "out",
             "resources-debug.ap_"
         )
@@ -315,7 +320,7 @@ class MergeResourcesTest {
          */
         val inIntermediate = File(
                 MERGED_RES.getOutputDir(project.getSubproject("app").buildDir),
-                "debug/raw_me.raw.flat")
+                "debug/mergeDebugResources/raw_me.raw.flat")
         assertThat(inIntermediate).exists()
 
         val apUnderscore = FileUtils.join(
@@ -324,6 +329,7 @@ class MergeResourcesTest {
             "intermediates",
             "processed_res",
             "debug",
+            "processDebugResources",
             "out",
             "resources-debug.ap_"
         )
@@ -471,6 +477,7 @@ class MergeResourcesTest {
             "intermediates",
             "packaged_res",
             "debug",
+            "packageDebugResources",
             "values",
             "values.xml"
         )

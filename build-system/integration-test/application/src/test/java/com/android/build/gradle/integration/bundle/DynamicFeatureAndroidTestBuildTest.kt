@@ -126,7 +126,7 @@ class DynamicFeatureAndroidTestBuildTest {
         project.executor().run(":feature:processDebugAndroidTestResources")
 
         val androidTestFeatureR = project.getSubproject("feature")
-            .getIntermediateFile("runtime_symbol_list", "debugAndroidTest", "R.txt")
+            .getIntermediateFile("runtime_symbol_list", "debugAndroidTest", "processDebugAndroidTestResources", "R.txt")
         // R.txt should contain everything the AT feature depends on, but not libraries only the app
         // or the feature depend on.
         assertThat(androidTestFeatureR).contains("android_test_feature_file")
@@ -143,7 +143,7 @@ class DynamicFeatureAndroidTestBuildTest {
         // The R.jar should only contain things that are ONLY in the AT feature subtree. It should
         // not contain any libs that the app or feature depend on.
         val androidTestFeatureRJar = project.getSubproject("feature").getIntermediateFile(
-            "compile_and_runtime_not_namespaced_r_class_jar", "debugAndroidTest", "R.jar")
+            "compile_and_runtime_not_namespaced_r_class_jar", "debugAndroidTest", "processDebugAndroidTestResources","R.jar")
         ZipFileSubject.assertThat(androidTestFeatureRJar) {
             it.contains("com/example/feature/test/R\$raw.class")
             it.contains("com/example/testFeatureLib/R\$raw.class")

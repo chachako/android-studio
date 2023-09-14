@@ -62,7 +62,7 @@ class DynamicFeatureNamespaceTest {
 
         val manifestFile =
             project.getSubproject("feature")
-                .getIntermediateFile("metadata_feature_manifest", "debug", ANDROID_MANIFEST_XML)
+                .getIntermediateFile("metadata_feature_manifest", "debug", "processManifestDebugForFeature", ANDROID_MANIFEST_XML)
 
         val document =
             XmlUtils.parseDocument(

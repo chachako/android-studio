@@ -110,6 +110,7 @@ internal class PrivacySandboxSdkLinkAndroidResourcesTaskTest {
         val bundledResourcesFile = privacySandboxSdk.getIntermediateFile(
                 PrivacySandboxSdkInternalArtifactType.LINKED_MERGE_RES_FOR_ASB.getFolderName(),
                 "single",
+                "linkPrivacySandboxResources",
                 "bundled-res.ap_")
         assertThat(bundledResourcesFile.exists()).isTrue()
         ZipFile(bundledResourcesFile).use { zip ->

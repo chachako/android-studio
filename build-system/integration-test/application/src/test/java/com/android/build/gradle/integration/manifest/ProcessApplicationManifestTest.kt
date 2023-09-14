@@ -69,7 +69,7 @@ class ProcessApplicationManifestTest {
 
         val manifestFile =
             project.getSubproject(":app")
-                .file("build/intermediates/merged_manifests/debug/AndroidManifest.xml")
+                .file("build/intermediates/merged_manifests/debug/processDebugManifest/AndroidManifest.xml")
         assertThat(manifestFile).exists()
         assertThat(manifestFile).contains("android:extractNativeLibs=\"false\"")
 
@@ -99,7 +99,7 @@ class ProcessApplicationManifestTest {
         """.trimIndent())
         val result = project.executor().run(":lib:processReleaseUnitTestManifest")
         assertTrue { result.failedTasks.isEmpty()}
-        val manifestFile =  project.getSubproject(":lib").file("build/intermediates/packaged_manifests/releaseUnitTest/AndroidManifest.xml")
+        val manifestFile =  project.getSubproject(":lib").file("build/intermediates/packaged_manifests/releaseUnitTest/processReleaseUnitTestManifest/AndroidManifest.xml")
         assertThat(manifestFile).contains("android:targetSdkVersion=\"22\"")
     }
 

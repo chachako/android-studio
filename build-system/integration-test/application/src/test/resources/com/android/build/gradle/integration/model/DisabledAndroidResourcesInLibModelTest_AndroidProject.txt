@@ -3,7 +3,7 @@
       > debug:
          - mainArtifact:
             - classesFolders:
-               * {PROJECT}/build/intermediates/compile_r_class_jar/debug/R.jar{!}{REMOVED}
+               * {PROJECT}/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar{!}{REMOVED}
             - resGenTaskName = (null)
             - generatedResourceFolders:
                * {PROJECT}/build/generated/res/resValues/debug{!}{REMOVED}
@@ -13,18 +13,18 @@
                * {PROJECT}/build/generated/res/resValues/androidTest/debug{!}{REMOVED}
          - unitTestArtifact:
             - classesFolders:
-               * {PROJECT}/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debugUnitTest/R.jar{!}{REMOVED}
+               * {PROJECT}/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debugUnitTest/generateDebugUnitTestStubRFile/R.jar{!}{REMOVED}
       < debug
       > release:
          - mainArtifact:
             - classesFolders:
-               * {PROJECT}/build/intermediates/compile_r_class_jar/release/R.jar{!}{REMOVED}
+               * {PROJECT}/build/intermediates/compile_r_class_jar/release/generateReleaseRFile/R.jar{!}{REMOVED}
             - resGenTaskName = (null)
             - generatedResourceFolders:
                * {PROJECT}/build/generated/res/resValues/release{!}{REMOVED}
          - unitTestArtifact:
             - classesFolders:
-               * {PROJECT}/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/releaseUnitTest/R.jar{!}{REMOVED}
+               * {PROJECT}/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/releaseUnitTest/generateReleaseUnitTestStubRFile/R.jar{!}{REMOVED}
       < release
    < variants
 < AndroidProject

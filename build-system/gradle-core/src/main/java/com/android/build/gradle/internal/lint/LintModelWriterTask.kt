@@ -56,6 +56,7 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
@@ -89,11 +90,11 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
      * returns the absolute path of the file (https://github.com/gradle/gradle/issues/5789).
      */
     @get:Internal
-    abstract val partialResultsDir: RegularFileProperty
+    abstract val partialResultsDir: DirectoryProperty
 
     @get:Input
     @get:Optional
-    abstract val partialResultsDirPath: Property<String>
+    val partialResultsDirPath: Provider<String> = partialResultsDir.locationOnly.map { it.asFile.absolutePath }
 
     @get:OutputDirectory
     abstract val outputDirectory: DirectoryProperty
@@ -148,7 +149,6 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
             )
         this.partialResultsDir.set(partialResultsDir)
         this.partialResultsDir.disallowChanges()
-        this.partialResultsDirPath.setDisallowChanges(partialResultsDir.absolutePath)
     }
 
     /**
@@ -199,18 +199,14 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
                 addBaseModuleLintModel = creationConfig is DynamicFeatureCreationConfig,
                 fatalOnly = fatalOnly
             )
-            val partialResultsDir =
-                creationConfig.artifacts.getOutputPath(
-                    if (fatalOnly) {
-                        LINT_VITAL_PARTIAL_RESULTS
-                    } else {
-                        LINT_PARTIAL_RESULTS
-                    },
-                    PARTIAL_RESULTS_DIR_NAME
-                )
+            val type = if (fatalOnly) {
+                LINT_VITAL_PARTIAL_RESULTS
+            } else {
+                LINT_PARTIAL_RESULTS
+            }
+            val partialResultsDir = creationConfig.artifacts.get(type)
             task.partialResultsDir.set(partialResultsDir)
             task.partialResultsDir.disallowChanges()
-            task.partialResultsDirPath.setDisallowChanges(partialResultsDir.absolutePath)
         }
     }
 
@@ -289,23 +285,20 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
                 includeMainArtifact = creationConfig is VariantCreationConfig,
                 isPerComponentLintAnalysis = true
             )
-            val partialResultsDir =
-                mainVariant.artifacts.getOutputPath(
-                    when (creationConfig) {
-                        is UnitTestCreationConfig -> UNIT_TEST_LINT_PARTIAL_RESULTS
-                        is AndroidTestCreationConfig -> ANDROID_TEST_LINT_PARTIAL_RESULTS
-                        is TestFixturesCreationConfig -> TEST_FIXTURES_LINT_PARTIAL_RESULTS
-                        else -> if (fatalOnly) {
-                            LINT_VITAL_PARTIAL_RESULTS
-                        } else {
-                            LINT_PARTIAL_RESULTS
-                        }
-                    },
-                    PARTIAL_RESULTS_DIR_NAME
-                )
+
+            val type = when (creationConfig) {
+                is UnitTestCreationConfig -> UNIT_TEST_LINT_PARTIAL_RESULTS
+                is AndroidTestCreationConfig -> ANDROID_TEST_LINT_PARTIAL_RESULTS
+                is TestFixturesCreationConfig -> TEST_FIXTURES_LINT_PARTIAL_RESULTS
+                else -> if (fatalOnly) {
+                    LINT_VITAL_PARTIAL_RESULTS
+                } else {
+                    LINT_PARTIAL_RESULTS
+                }
+            }
+            val partialResultsDir = mainVariant.artifacts.get(type)
             task.partialResultsDir.set(partialResultsDir)
             task.partialResultsDir.disallowChanges()
-            task.partialResultsDirPath.setDisallowChanges(partialResultsDir.absolutePath)
         }
     }
 

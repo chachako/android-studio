@@ -102,6 +102,7 @@ class PartialRTest {
                 project.getSubproject("app").intermediatesDir,
             "compile_r_class_jar",
             "debug",
+            "generateDebugRFile",
             "R.jar")
         assertThat(rJar).exists()
 

@@ -125,7 +125,7 @@ class ExtractVersionControlInfoTest {
 
     private fun validateBundleApkFileContents(sha: String) {
         val bundleApksFile = project.getSubproject("app")
-            .getIntermediateFile("apks_from_bundle", "debug", "bundle.apks")
+            .getIntermediateFile("apks_from_bundle", "debug", "makeApkFromBundleForDebug", "bundle.apks")
 
         val baseMasterApk: ByteArray
         ZipInputStream(bundleApksFile.inputStream().buffered()).use {

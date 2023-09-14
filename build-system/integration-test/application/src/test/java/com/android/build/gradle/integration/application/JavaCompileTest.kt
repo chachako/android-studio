@@ -196,7 +196,7 @@ class JavaCompileTest {
 
         val fooClassFile =
             JAVAC.getOutputDir(project.getSubproject("app").buildDir)
-                .resolve("debug/classes/com/example/Foo.class")
+                .resolve("debug/compileDebugJavaWithJavac/classes/com/example/Foo.class")
         val fooClass = ClassNode(Opcodes.ASM7).also {
             ClassReader(fooClassFile.readBytes()).accept(it, 0)
         }

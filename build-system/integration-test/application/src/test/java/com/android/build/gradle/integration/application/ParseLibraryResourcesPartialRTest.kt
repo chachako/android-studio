@@ -33,7 +33,7 @@ class ParseLibraryResourcesPartialRTest {
         executor.run("assembleDebug")
         val partialRIntermediateDir = FileUtils.join(project.projectDir,
                 "lib", "build", "intermediates", InternalArtifactType
-                .LOCAL_ONLY_PARTIAL_SYMBOL_DIRECTORY.getFolderName(), "debug", "partial-r")
+                .LOCAL_ONLY_PARTIAL_SYMBOL_DIRECTORY.getFolderName(), "debug", "parseDebugLocalResources", "partial-r")
         val partialRFiles = partialRIntermediateDir.listFiles()
                 ?: error("No partial-r files generated.")
         checkLibPartialRFiles(partialRFiles.toList())
@@ -51,7 +51,7 @@ class ParseLibraryResourcesPartialRTest {
         project.execute("assembleDebug")
         val partialRIntermediateDir = FileUtils.join(project.projectDir,
                 "lib", "build", "intermediates", InternalArtifactType.
-        LOCAL_ONLY_PARTIAL_SYMBOL_DIRECTORY.getFolderName(), "debug", "partial-r")
+        LOCAL_ONLY_PARTIAL_SYMBOL_DIRECTORY.getFolderName(), "debug", "parseDebugLocalResources", "partial-r")
         val partialRFiles =
                 partialRIntermediateDir.listFiles() ?: error("No partial-r files generated.")
         checkLibPartialRFiles(partialRFiles.toList())

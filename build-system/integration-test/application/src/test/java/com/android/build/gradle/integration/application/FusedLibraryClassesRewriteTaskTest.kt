@@ -86,13 +86,15 @@ internal class FusedLibraryClassesRewriteTaskTest {
             project.getSubproject("fusedLib1")
                 .getIntermediateFile(
                     FusedLibraryInternalArtifactType.CLASSES_WITH_REWRITTEN_R_CLASS_REFS.getFolderName(),
-                    "single"
+                    "single",
+                    "rewriteClasses"
                 )
         val fusedLibraryRjar =
             project.getSubproject("fusedLib1")
                 .getIntermediateFile(
                     FusedLibraryInternalArtifactType.FUSED_R_CLASS.getFolderName(),
                     "single",
+                    "rewriteClasses",
                     "R.jar"
                 )
 

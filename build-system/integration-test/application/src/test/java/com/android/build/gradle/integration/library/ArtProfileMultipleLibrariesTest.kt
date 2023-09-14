@@ -261,6 +261,7 @@ class ArtProfileMultipleLibrariesTest(
                     SdkConstants.FD_INTERMEDIATES,
                     InternalArtifactType.LIBRARY_ART_PROFILE.getFolderName(),
                     "release",
+                    "prepareReleaseArtProfile",
                     SdkConstants.FN_ART_PROFILE,
             )
             val expectedBaselineProfContent = libraryBaselineProfContents.get(i - 1)
@@ -283,6 +284,7 @@ class ArtProfileMultipleLibrariesTest(
             SdkConstants.FD_INTERMEDIATES,
             InternalArtifactType.MERGED_ART_PROFILE.getFolderName(),
             "release",
+            "mergeReleaseArtProfile",
             SdkConstants.FN_ART_PROFILE
         )
         Truth.assertThat(mergedFilePreR8.readText())
@@ -294,6 +296,7 @@ class ArtProfileMultipleLibrariesTest(
                 SdkConstants.FD_INTERMEDIATES,
                 InternalArtifactType.R8_ART_PROFILE.getFolderName(),
                 "release",
+                "minifyReleaseWithR8",
                 SdkConstants.FN_ART_PROFILE
             )
             Truth.assertThat(
@@ -320,6 +323,7 @@ class ArtProfileMultipleLibrariesTest(
                 SdkConstants.FD_INTERMEDIATES,
                 InternalArtifactType.BINARY_ART_PROFILE.getFolderName(),
                 "release",
+                "compileReleaseArtProfile",
                 SdkConstants.FN_BINARY_ART_PROFILE,
         )
         Truth.assertThat(

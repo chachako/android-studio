@@ -18,6 +18,7 @@ package com.android.build.api.artifact.impl
 
 import com.android.build.api.artifact.ArtifactKind
 import com.android.build.api.artifact.Artifact
+import com.android.build.api.artifact.Artifact.Category.INTERMEDIATES
 import com.android.build.api.artifact.Artifact.Multiple
 import com.android.build.api.artifact.Artifact.Single
 import com.android.build.api.artifact.SingleArtifact
@@ -159,25 +160,49 @@ class ArtifactsImpl(
 
     fun calculateOutputPath(type: Single<*>, task: Task): File {
         with(getArtifactContainer(type)) {
-            val fileName = namingContext?.getFilename() ?: calculateFileName(type)
-            return if (getFinalProvider() == null || task.name == getFinalProvider()?.name) {
-                val output = namingContext?.getOutputLocation()
-                if (output != null)
-                    //final transformer with
-                    FileUtils.join(output, fileName)
-                else
-                    getOutputPath(type, forceFilename = fileName)
-            } else getIntermediateOutputPath(
+            return when {
+                type.category == INTERMEDIATES -> generateIntermediatePath(type, task, false)
+                //  this switching is for non-intermediate artifacts is safe as the final artifact
+                //  ends up in a completely separate directory structure
+                getFinalProvider() == null || task.name == getFinalProvider()?.name -> generateDefaultPath(type)
+                else -> generateIntermediatePath(type, task, true) // for outputs type non-final transformations
+            }
+        }
+    }
+
+    /**
+     * Intermediate path always has task name in it
+     */
+    private fun generateIntermediatePath(type: Single<*>, task: Task, ignorePredefinedLocation:Boolean): File {
+        val container = getArtifactContainer(type)
+        val fileName = container.namingContext?.getFilename() ?: calculateFileName(type)
+        val output = container.namingContext?.getOutputLocation()
+        return if (output == null || ignorePredefinedLocation)
+            getIntermediateOutputPath(
                 type,
                 task.name,
                 forceFilename = fileName
             )
+        else
+            FileUtils.join(output, fileName)
+
+    }
+
+    private fun generateDefaultPath(type: Single<*>): File {
+        with(getArtifactContainer(type)) {
+            val fileName = namingContext?.getFilename() ?: calculateFileName(type)
+            val output = namingContext?.getOutputLocation()
+            return if (output != null)
+            //final transformer with
+                FileUtils.join(output, fileName)
+            else
+                getOutputPath(type, forceFilename = fileName)
         }
     }
 
-    fun calculateFileName(type:Single<*>):String {
-        if(type.kind is ArtifactKind.FILE){
-            return if(!type.getFileSystemLocationName().isNullOrEmpty())
+    private fun calculateFileName(type: Single<*>, ): String {
+        if (type.kind is ArtifactKind.FILE) {
+            return if (type.getFileSystemLocationName().isNotEmpty())
                 type.getFileSystemLocationName()
             else
                 DEFAULT_FILE_NAME_OF_REGULAR_FILE_ARTIFACTS

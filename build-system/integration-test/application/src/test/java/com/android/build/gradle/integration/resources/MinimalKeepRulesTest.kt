@@ -49,7 +49,7 @@ class MinimalKeepRulesTest {
             File(layouts, "layoutone.xml"),
             """<?xml version="1.0" encoding="utf-8"?><com.custom.MyView/>""")
 
-        val rules = project.getIntermediateFile("aapt_proguard_file", "debug", "aapt_rules.txt")
+        val rules = project.getIntermediateFile("aapt_proguard_file", "debug", "processDebugResources", "aapt_rules.txt")
 
         project.executor().run("assembleDebug") // Verify the default behavior.
         assertThat(rules).contains("-keep class com.custom.MyView { <init>(android.content.Context, android.util.AttributeSet); }")

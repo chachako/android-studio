@@ -147,10 +147,10 @@ class NdkBuildBuildSettingsTest {
         project.execute("assembleDebug")
         val golden = project.goldenBuildProducts()
         assertThat(golden).isEqualTo("""
-            {PROJECT}/build/intermediates/merged_native_libs/debug/out/lib/arm64-v8a/libhello-jni.so{F}
-            {PROJECT}/build/intermediates/merged_native_libs/debug/out/lib/armeabi-v7a/libhello-jni.so{F}
-            {PROJECT}/build/intermediates/stripped_native_libs/debug/out/lib/arm64-v8a/libhello-jni.so{F}
-            {PROJECT}/build/intermediates/stripped_native_libs/debug/out/lib/armeabi-v7a/libhello-jni.so{F}
+            {PROJECT}/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/arm64-v8a/libhello-jni.so{F}
+            {PROJECT}/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/armeabi-v7a/libhello-jni.so{F}
+            {PROJECT}/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/arm64-v8a/libhello-jni.so{F}
+            {PROJECT}/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/armeabi-v7a/libhello-jni.so{F}
             {PROJECT}/build/intermediates/{DEBUG}/obj/local/arm64-v8a/libhello-jni.so{F}
             {PROJECT}/build/intermediates/{DEBUG}/obj/local/arm64-v8a/objs-debug/hello-jni/hello-jni.o{F}
             {PROJECT}/build/intermediates/{DEBUG}/obj/local/armeabi-v7a/libhello-jni.so{F}

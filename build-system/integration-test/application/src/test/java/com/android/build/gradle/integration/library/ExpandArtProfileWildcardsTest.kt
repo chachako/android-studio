@@ -156,6 +156,7 @@ class ExpandArtProfileWildcardsTest {
             SdkConstants.FD_INTERMEDIATES,
             InternalArtifactType.R8_ART_PROFILE.getFolderName(),
             "release",
+            "minifyReleaseWithR8",
             SdkConstants.FN_ART_PROFILE
         )
 

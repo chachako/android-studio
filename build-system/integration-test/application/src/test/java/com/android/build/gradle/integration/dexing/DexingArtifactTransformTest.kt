@@ -160,7 +160,7 @@ class DexingArtifactTransformTest {
         assertThat(
             File(
                 InternalArtifactType.EXTERNAL_LIBS_DEX_ARCHIVE.getOutputDir(project.buildDir),
-                "debug/out"
+                "debug/dexBuilderDebug/out"
             ).listFiles()
         ).named("dexing task output for external libs").isEmpty()
 

@@ -285,6 +285,7 @@ class AarMetadataTaskTest {
                 SdkConstants.FD_INTERMEDIATES,
                 InternalArtifactType.AAR_METADATA.getFolderName(),
                 "debug",
+                "writeDebugAarMetadata",
                 AarMetadataTask.AAR_METADATA_FILE_NAME
             )
         PathSubject.assertThat(aarMetadataFile).contains(

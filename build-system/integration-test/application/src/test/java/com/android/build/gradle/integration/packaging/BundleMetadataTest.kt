@@ -45,6 +45,7 @@ class BundleMetadataTest {
         return project.getIntermediateFile(
             "apks_from_bundle",
             "debug",
+            "makeApkFromBundleForDebug",
             "bundle.apks"
         ).toPath()
     }

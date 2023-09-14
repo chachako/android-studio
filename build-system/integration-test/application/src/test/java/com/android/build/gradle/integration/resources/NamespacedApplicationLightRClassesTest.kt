@@ -97,6 +97,7 @@ class NamespacedApplicationLightRClassesTest {
             libFiles.getIntermediateFile(
                 "compile_r_class_jar",
                 "debug",
+                "generateDebugRFile",
                 "R.jar")).exists()
 
         assertThat(
@@ -133,6 +134,7 @@ class NamespacedApplicationLightRClassesTest {
             appFiles.getIntermediateFile(
                 "compile_r_class_jar",
                 "debug",
+                "generateDebugRFile",
                 "R.jar")).exists()
 
         // TODO: check that it does not exist when b/130110629 is fixed

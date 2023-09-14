@@ -43,10 +43,11 @@ class DataBindingDeterminismTest {
             // is a subset of DeterministicTaskOutputsTest.INCONSISTENT_TASK_OUTPUTS).
             "build/intermediates/incremental/debug/mergeDebugResources",
             "build/intermediates/incremental/debug/packageDebugResources",
-            "build/intermediates/manifest_merge_blame_file/debug/manifest-merger-blame-debug-report.txt",
-            "build/intermediates/merged_res_blame_folder/debug/out",
+            "build/intermediates/manifest_merge_blame_file/debug/mergeDebugResources/manifest-merger-blame-debug-report.txt",
+            "build/intermediates/manifest_merge_blame_file/debug/processDebugMainManifest/manifest-merger-blame-debug-report.txt",
+            "build/intermediates/merged_res_blame_folder/debug/mergeDebugResources/out",
             "build/intermediates/merged_res/debug",
-            "build/intermediates/source_set_path_map/debug/file-map.txt",
+            "build/intermediates/source_set_path_map/debug/mapDebugSourceSetPaths/file-map.txt",
             "build/outputs/logs/manifest-merger-debug-report.txt",
 
             // The following are specific to data binding.

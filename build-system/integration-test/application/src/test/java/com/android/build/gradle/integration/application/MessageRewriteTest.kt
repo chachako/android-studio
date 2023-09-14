@@ -93,6 +93,7 @@ class MessageRewriteTest {
                     "intermediates",
                     "packaged_res",
                     "flavor1Debug",
+                    "packageFlavor1DebugResources",
                     "layout",
                     "lib_main.xml"
                 ),

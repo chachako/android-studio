@@ -586,6 +586,7 @@ class ResourceShrinkerTest {
             getIntermediateFile(
                     "intermediary_bundle",
                     "release",
+                    "shrinkBundleReleaseResources",
                     "intermediary-bundle.aab"
             )
 
@@ -594,6 +595,7 @@ class ResourceShrinkerTest {
                 getIntermediateFile(
                         "shrunk_processed_res",
                         "release",
+                        "shrinkReleaseRes",
                         listOfNotNull(
                                 "original",
                                 splitName,
@@ -602,13 +604,14 @@ class ResourceShrinkerTest {
                         ).joinToString("-")
                 )
             } else {
-                getIntermediateFile("linked_res_for_bundle", "release", "bundled-res.ap_")
+                getIntermediateFile("linked_res_for_bundle", "release", "bundleReleaseResources", "bundled-res.ap_")
             }
 
     private fun GradleTestProject.getShrunkResources(splitName: String? = null) =
             getIntermediateFile(
                     "shrunk_processed_res",
                     "release",
+                    "shrinkReleaseRes",
                     listOfNotNull(
                             "resources",
                             splitName,
@@ -622,6 +625,7 @@ class ResourceShrinkerTest {
             getIntermediateFile(
                     "shrunk_processed_res",
                     "release",
+                    "shrinkReleaseRes",
                     listOfNotNull("resources",
                             splitName,
                             "release",

@@ -26,6 +26,7 @@ import com.android.utils.FileUtils
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.io.File
 
 /**
  * Integration test for generating Java docs from pure java library projects.
@@ -81,7 +82,8 @@ class JavaDocGenerationJavaSourceTest {
         )
         project.execute("clean", "javaDocDebugGeneration")
 
-        val docDirectory = InternalArtifactType.JAVA_DOC_DIR.getOutputDir(project.buildDir).resolve("debug")
+        val docDirectory = InternalArtifactType.JAVA_DOC_DIR.getOutputDir(project.buildDir)
+            .resolve("debug" + File.separator + "javaDocDebugGeneration")
         val javaSourceDoc = docDirectory.resolve("com/example/HelloWorld.html")
         val javaSourceDoc2 = docDirectory.resolve("com/example/Greeting.html")
 

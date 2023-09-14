@@ -76,7 +76,7 @@ class StableResourceIDsTest {
         val appProject = project.getSubproject(":app")
 
         val stableIdsTxt =
-           appProject.getIntermediateFile("stable_resource_ids_file", "debug", "stableIds.txt")
+           appProject.getIntermediateFile("stable_resource_ids_file", "debug", "processDebugResources", "stableIds.txt")
         assertThat(stableIdsTxt).exists()
 
         assertThat(stableIdsTxt).containsAllOf(
@@ -90,7 +90,7 @@ class StableResourceIDsTest {
         )
 
         val rDotTxt =
-            appProject.getIntermediateFile("runtime_symbol_list", "debug", "R.txt")
+            appProject.getIntermediateFile("runtime_symbol_list", "debug", "processDebugResources", "R.txt")
         assertThat(rDotTxt).exists()
         assertThat(rDotTxt).containsAllOf(
             "my_color_a 0x7f020000",
@@ -170,7 +170,7 @@ class StableResourceIDsTest {
         val appProject = project.getSubproject(":app")
 
         val stableIdsTxt =
-            appProject.getIntermediateFile("stable_resource_ids_file", "debug", "stableIds.txt")
+            appProject.getIntermediateFile("stable_resource_ids_file", "debug", "processDebugResources", "stableIds.txt")
 
         assertThat(stableIdsTxt).containsAllOf(
             "com.example.app:color/my_color_a = 0x7f020000",
@@ -183,7 +183,7 @@ class StableResourceIDsTest {
         )
 
         val rDotTxt =
-            appProject.getIntermediateFile("runtime_symbol_list", "debug", "R.txt")
+            appProject.getIntermediateFile("runtime_symbol_list", "debug", "processDebugResources","R.txt")
         assertThat(rDotTxt).exists()
         assertThat(rDotTxt).containsAllOf(
             "my_color_a 0x7f020000",
@@ -254,7 +254,7 @@ class StableResourceIDsTest {
     }
 
     private fun dumpProtoApkRes(): List<String> {
-        val bundleRes = project.getSubproject(":app").getIntermediateFile("linked_res_for_bundle/debug/bundled-res.ap_")
+        val bundleRes = project.getSubproject(":app").getIntermediateFile("linked_res_for_bundle/debug/bundleDebugResources/bundled-res.ap_")
         val protoApkDump = AaptInvoker(TestUtils.getAapt2(), StdLogger(StdLogger.Level.VERBOSE)).dumpResources(bundleRes)
         return protoApkDump.map { it.trim().removeSuffix(" PUBLIC") }.filter { it.startsWith("resource") }
     }

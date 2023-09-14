@@ -72,7 +72,7 @@ class BuildDirRelocationTest {
          */
         project.execute("generateDebugUnitTestConfig")
 
-        val testConfigFile = project.file("foo/bar/intermediates/unit_test_config_directory/debugUnitTest/out/com/android/tools/test_config.properties")
+        val testConfigFile = project.file("foo/bar/intermediates/unit_test_config_directory/debugUnitTest/generateDebugUnitTestConfig/out/com/android/tools/test_config.properties")
             .readText()
 
         /*

@@ -184,6 +184,7 @@ class CompileLibraryResourcesTest {
             project.getSubproject(":library").intermediatesDir,
             "compiled_local_resources",
             "debug",
+            "compileDebugLibraryResources",
             "out"
         ).listFiles()!!.sorted().map { it.lastModified() }
 
@@ -206,6 +207,7 @@ class CompileLibraryResourcesTest {
             project.getSubproject(":library").intermediatesDir,
             "compiled_local_resources",
             "debug",
+            "compileDebugLibraryResources",
             "out"
         ).listFiles()!!.sorted().forEachIndexed { index, file ->
             // Check only the raw file was updated
@@ -275,6 +277,7 @@ class CompileLibraryResourcesTest {
         val compressed = project.getSubproject(":app").getIntermediateFile(
             "shrunk_processed_res",
             "release",
+            "shrinkReleaseRes",
             "resources-release-stripped.ap_"
         )
 
@@ -320,6 +323,7 @@ class CompileLibraryResourcesTest {
             project.getSubproject(":library").intermediatesDir,
             "compiled_local_resources",
             "debug",
+            "compileDebugLibraryResources",
             "out"
         )
 
@@ -329,7 +333,8 @@ class CompileLibraryResourcesTest {
     }
 
     private fun checkOnlyValuesWasMerged() {
-        val mergedResDir = File(MERGED_RES.getOutputDir( project.getSubproject(":app").buildDir), "debug")
+        val mergedResDir = File(MERGED_RES.getOutputDir(project.getSubproject(":app").buildDir),
+            "debug" + File.separatorChar + "mergeDebugResources")
 
         assertThat(mergedResDir.listFiles()!!.map { it.name }.toSet()).containsExactlyElementsIn(
             setOf(

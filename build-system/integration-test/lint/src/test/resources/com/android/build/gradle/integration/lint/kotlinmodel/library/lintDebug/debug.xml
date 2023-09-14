@@ -4,10 +4,10 @@
     minSdkVersion="24"
     targetSdkVersion="${androidHighestKnownStableApi}"
     debuggable="true"
-    mergedManifest="build/intermediates/merged_manifest/debug/AndroidManifest.xml"
+    mergedManifest="build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml"
     manifestMergeReport="build/outputs/logs/manifest-merger-debug-report.txt"
     proguardFiles="build/intermediates/default_proguard_files/global/proguard-android.txt-$androidGradlePluginVersion"
-    partialResultsDir="build/intermediates/lint_partial_results/debug/out">
+    partialResultsDir="build/intermediates/lint_partial_results/debug/lintAnalyzeDebug/out">
   <buildFeatures
       coreLibraryDesugaring="true"
       namespacing="REQUIRED"/>
@@ -34,7 +34,7 @@
   <testFixturesSourceProviders>
   </testFixturesSourceProviders>
   <artifact
-      classOutputs="build/intermediates/javac/debug/classes:build/tmp/kotlin-classes/debug:build/intermediates/compile_r_class_jar/debug/R.jar"
+      classOutputs="build/intermediates/javac/debug/compileDebugJavaWithJavac/classes:build/tmp/kotlin-classes/debug:build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar"
       type="MAIN"
       applicationId="com.example.android.lint.kotlin.library"
       generatedSourceFolders="build/generated/ap_generated_sources/debug/out"

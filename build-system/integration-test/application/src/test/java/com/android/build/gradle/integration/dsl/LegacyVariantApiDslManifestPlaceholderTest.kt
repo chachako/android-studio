@@ -112,7 +112,7 @@ class LegacyVariantApiDslManifestPlaceholderTest {
     fun applicationVariantManifestPlaceholder() {
         project.execute(":app:processDebugManifest")
         verifyPermissionAddedToManifest(
-                "app/build/intermediates/merged_manifests/debug/AndroidManifest.xml",
+                "app/build/intermediates/merged_manifests/debug/processDebugManifest/AndroidManifest.xml",
                 mainPermissionSuffix)
     }
 
@@ -120,7 +120,7 @@ class LegacyVariantApiDslManifestPlaceholderTest {
     fun androidTestManifestPlaceholder() {
         project.execute(":lib1:processDebugAndroidTestManifest")
         verifyPermissionAddedToManifest(
-                "lib1/build/intermediates/packaged_manifests/debugAndroidTest/AndroidManifest.xml",
+                "lib1/build/intermediates/packaged_manifests/debugAndroidTest/processDebugAndroidTestManifest/AndroidManifest.xml",
                 androidTestPermissionSuffix)
     }
 
@@ -128,7 +128,7 @@ class LegacyVariantApiDslManifestPlaceholderTest {
     fun unitTestManifestPlaceholder() {
         project.execute(":lib1:processDebugUnitTestManifest")
         verifyPermissionAddedToManifest(
-                "lib1/build/intermediates/packaged_manifests/debugUnitTest/AndroidManifest.xml",
+                "lib1/build/intermediates/packaged_manifests/debugUnitTest/processDebugUnitTestManifest/AndroidManifest.xml",
                 unitTestPermissionSuffix)
     }
 

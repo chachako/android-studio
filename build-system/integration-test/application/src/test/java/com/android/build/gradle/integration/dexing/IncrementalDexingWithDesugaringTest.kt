@@ -235,7 +235,7 @@ class IncrementalDexingWithDesugaringTest(
             when (scenario) {
                 APP, ANDROID_LIB, ANDROID_LIB_WITH_POST_JAVAC_CLASSES -> { classFullName ->
                     JAVAC.getOutputDir(subproject.buildDir)
-                        .resolve("debug/classes/$classFullName.class")
+                        .resolve("debug/compileDebugJavaWithJavac/classes/$classFullName.class")
                 }
                 JAVA_LIB -> { classFullName ->
                     subproject.buildDir.resolve("classes/java/main/$classFullName.class")
@@ -255,19 +255,19 @@ class IncrementalDexingWithDesugaringTest(
                 ANDROID_LIB -> { classFullName ->
                     if (withMinSdk24Plus) {
                         RUNTIME_LIBRARY_CLASSES_DIR.getOutputDir(subproject.buildDir)
-                            .resolve("debug/$classFullName.class")
+                            .resolve("debug/bundleLibRuntimeToDirDebug/$classFullName.class")
                     } else {
                         RUNTIME_LIBRARY_CLASSES_JAR.getOutputDir(subproject.buildDir)
-                            .resolve("debug/classes.jar")
+                            .resolve("debug/bundleLibRuntimeToJarDebug/classes.jar")
                     }
                 }
                 ANDROID_LIB_WITH_POST_JAVAC_CLASSES -> { _ ->
                     if (withMinSdk24Plus) {
                         RUNTIME_LIBRARY_CLASSES_DIR.getOutputDir(subproject.buildDir)
-                            .resolve("debug/classes.jar")
+                            .resolve("debug/bundleLibRuntimeToDirDebug/classes.jar")
                     } else {
                         RUNTIME_LIBRARY_CLASSES_JAR.getOutputDir(subproject.buildDir)
-                            .resolve("debug/classes.jar")
+                            .resolve("debug/bundleLibRuntimeToJarDebug/classes.jar")
                     }
                 }
                 JAVA_LIB -> { classFullName ->
@@ -320,11 +320,11 @@ class IncrementalDexingWithDesugaringTest(
             when (scenario) {
                 APP -> { classFullName ->
                     PROJECT_DEX_ARCHIVE.getOutputDir(app.buildDir)
-                        .resolve("debug/out/$classFullName.dex")
+                        .resolve("debug/dexBuilderDebug/out/$classFullName.dex")
                 }
                 ANDROID_LIB -> { classFullName ->
                     if (withMinSdk24Plus) {
-                        findDexTransformDir(androidLib).resolve("transformed/debug/debug_dex/$classFullName.dex")
+                        findDexTransformDir(androidLib).resolve("transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/$classFullName.dex")
                     } else {
                         findDexTransformDir(androidLib).resolve("transformed/classes/classes_dex/classes.dex")
                     }

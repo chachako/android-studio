@@ -135,7 +135,7 @@ class NavigationPlaceholderTest {
         project.executor().run(":app:processDebugMainManifest")
         val mergedManifest =
             project.file(
-                "app/build/${SdkConstants.FD_INTERMEDIATES}/${SingleArtifact.MERGED_MANIFEST.getFolderName()}/debug/AndroidManifest.xml"
+                "app/build/${SdkConstants.FD_INTERMEDIATES}/${SingleArtifact.MERGED_MANIFEST.getFolderName()}/debug/processDebugMainManifest/AndroidManifest.xml"
             )
 
         PathSubject.assertThat(mergedManifest)
@@ -165,7 +165,7 @@ class NavigationPlaceholderTest {
         project.executor().run(":app:processDebugMainManifest")
         val mergedManifest =
             project.file(
-                "app/build/${SdkConstants.FD_INTERMEDIATES}/${SingleArtifact.MERGED_MANIFEST.getFolderName()}/debug/AndroidManifest.xml"
+                "app/build/${SdkConstants.FD_INTERMEDIATES}/${SingleArtifact.MERGED_MANIFEST.getFolderName()}/debug/processDebugMainManifest/AndroidManifest.xml"
             )
 
         PathSubject.assertThat(mergedManifest)
@@ -211,7 +211,7 @@ class NavigationPlaceholderTest {
         project.executor().run(":app:processDebugMainManifest")
         val mergedManifest =
             project.file(
-                "app/build/${SdkConstants.FD_INTERMEDIATES}/${SingleArtifact.MERGED_MANIFEST.getFolderName()}/debug/AndroidManifest.xml"
+                "app/build/${SdkConstants.FD_INTERMEDIATES}/${SingleArtifact.MERGED_MANIFEST.getFolderName()}/debug/processDebugMainManifest/AndroidManifest.xml"
             )
         PathSubject.assertThat(mergedManifest)
             .contentWithUnixLineSeparatorsIsExactly(

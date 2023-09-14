@@ -45,7 +45,7 @@
               "isSigningReady": true
             },
             "assembleTaskOutputListingFile": {
-              "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/build/intermediates/apk_ide_redirect_file/androidInstrumentedTest/redirect.txt"
+              "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/build/intermediates/apk_ide_redirect_file/androidInstrumentedTest/createAndroidInstrumentedTestApkListingFileRedirect/redirect.txt"
             }
           },
           "defaultSourceSetName": "androidInstrumentedTest",

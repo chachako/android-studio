@@ -72,7 +72,7 @@ android {
 
         // First make sure the conditional rules were generated if the flag is used.
         project.executor().with(BooleanOption.CONDITIONAL_KEEP_RULES, true).run("assembleDebug")
-        val rules = project.getIntermediateFile("aapt_proguard_file", "debug", "aapt_rules.txt")
+        val rules = project.getIntermediateFile("aapt_proguard_file", "debug", "processDebugResources", "aapt_rules.txt")
         assertThat(rules).exists()
         assertThat(rules).contains("-if class **.R\$layout { int layouttwo; }")
         assertThat(rules).contains("-keep class com.custom.MyView2")

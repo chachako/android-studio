@@ -44,6 +44,7 @@ class AndroidLintAnalysisTaskTest {
                 lintKotlinProject.getSubproject(":app")
                     .getIntermediateFile(InternalArtifactType.LINT_PARTIAL_RESULTS.getFolderName()),
                 "debug",
+                "lintAnalyzeDebug",
                 "out"
             )
         assertThat(partialResultsDir.listFiles()?.asList())
@@ -69,6 +70,7 @@ class AndroidLintAnalysisTaskTest {
                 lintKotlinProject.getSubproject(":library")
                     .getIntermediateFile(InternalArtifactType.LINT_PARTIAL_RESULTS.getFolderName()),
                 "debug",
+                "lintAnalyzeDebug",
                 "out"
             )
         assertThat(partialResultsDir.listFiles()?.asList())

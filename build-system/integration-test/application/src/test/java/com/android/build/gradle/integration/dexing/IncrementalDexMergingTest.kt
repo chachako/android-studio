@@ -197,7 +197,7 @@ class IncrementalDexMergingTest {
             // file (except for R classes, see the comments in `getBucketNumber` of DexMergingTask)
             val rClassesPath =
                     COMPILE_AND_RUNTIME_NOT_NAMESPACED_R_CLASS_JAR.getOutputDir(app.buildDir)
-                            .resolve("debug/R.jar")
+                            .resolve("debug/processDebugResources/R.jar")
             val rClasses = Zip(rClassesPath).entries
                     .map {
                         // Normalize to the form of Lcom/example/package/ExampleClass;

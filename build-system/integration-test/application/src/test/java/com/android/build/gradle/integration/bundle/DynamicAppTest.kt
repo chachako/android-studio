@@ -157,6 +157,7 @@ class DynamicAppTest {
                     "intermediates",
                     "instant_app_manifest",
                     "debug",
+                    "processDebugManifestForInstantApp",
                     "AndroidManifest.xml")
             assertThat(manifestFile).isFile()
             assertThat(manifestFile).contains("android:targetSandboxVersion=\"2\"")
@@ -179,6 +180,7 @@ class DynamicAppTest {
             "intermediates",
             "packaged_manifests",
             "debug",
+            "processDebugManifestForPackage",
             "AndroidManifest.xml")
         assertThat(manifestFile).isFile()
         assertThat(manifestFile).doesNotContain("splitName")
@@ -188,6 +190,7 @@ class DynamicAppTest {
             "intermediates",
             "bundle_manifest",
             "debug",
+            "processApplicationManifestDebugForBundle",
             "AndroidManifest.xml")
         assertThat(bundleManifest).isFile()
         assertThat(bundleManifest).contains("android:splitName=\"feature1\"")
@@ -197,6 +200,7 @@ class DynamicAppTest {
             "intermediates",
             "packaged_manifests",
             "debug",
+            "processDebugManifestForPackage",
             "AndroidManifest.xml")
         assertThat(baseManifest).isFile()
         assertThat(baseManifest).doesNotContain("splitName")
@@ -206,6 +210,7 @@ class DynamicAppTest {
             "intermediates",
             "bundle_manifest",
             "debug",
+            "processApplicationManifestDebugForBundle",
             "AndroidManifest.xml")
         assertThat(baseBundleManifest).isFile()
         assertThat(baseBundleManifest).contains("android:splitName=\"feature1\"")
@@ -253,6 +258,7 @@ class DynamicAppTest {
             "intermediates",
             "packaged_manifests",
             "debug",
+            "processDebugManifestForPackage",
             "AndroidManifest.xml")
         assertThat(manifestFile).isFile()
         assertThat(manifestFile).doesNotContain("splitName")
@@ -274,6 +280,7 @@ class DynamicAppTest {
             "intermediates",
             "packaged_manifests",
             "debug",
+            "processDebugManifestForPackage",
             "AndroidManifest.xml")
         assertThat(baseManifest).isFile()
         assertThat(baseManifest).doesNotContain("splitName")
@@ -284,6 +291,7 @@ class DynamicAppTest {
             "intermediates",
             "bundle_manifest",
             "debug",
+            "processApplicationManifestDebugForBundle",
             "AndroidManifest.xml")
         assertThat(featureBundleManifest).isFile()
         assertThat(featureBundleManifest).contains("android:splitName=\"feature1\"")
@@ -292,6 +300,7 @@ class DynamicAppTest {
             "intermediates",
             "bundle_manifest",
             "debug",
+            "processApplicationManifestDebugForBundle",
             "AndroidManifest.xml")
         assertThat(baseBundleManifest).isFile()
         assertThat(baseBundleManifest).contains("android:splitName=\"feature1\"")
@@ -932,6 +941,7 @@ class DynamicAppTest {
                 "intermediates",
                 "base_module_metadata",
                 "debug",
+                "writeDebugModuleMetadata",
                 "application-metadata.json")
         assertThat(appMetadataFile).isFile()
         assertThat(appMetadataFile).contains("\"versionCode\":\"12\"")
@@ -946,6 +956,7 @@ class DynamicAppTest {
                     "intermediates",
                     "packaged_manifests",
                     "debug",
+                    "processDebugManifestForPackage",
                     "AndroidManifest.xml")
             assertThat(manifestFile).isFile()
             assertThat(manifestFile).contains("android:versionCode=\"12\"")
@@ -1244,6 +1255,7 @@ class DynamicAppTest {
                         InternalArtifactType
                                 .APK_FROM_BUNDLE_IDE_MODEL.getFolderName(),
                         "debug",
+                        "extractApksFromBundleForDebug",
                         "output-metadata.json")
         var apkFolder = project.locateApkFolderViaModel("debug", ":app")
         assertThat(outputMetadataFile).isFile()
@@ -1257,21 +1269,21 @@ class DynamicAppTest {
                 "          \"value\": \"INSTALL_TIME\"\n" +
                 "        }\n" +
                 "      ],\n" +
-                "      \"outputFile\": \"../../extracted_apks/debug/base-master.apk\"")
+                "      \"outputFile\": \"../../../extracted_apks/debug/extractApksFromBundleForDebug/base-master.apk\"")
         assertThat(outputMetadataFile).contains("\"attributes\": [\n" +
                 "        {\n" +
                 "          \"key\": \"deliveryType\",\n" +
                 "          \"value\": \"ON_DEMAND\"\n" +
                 "        }\n" +
                 "      ],\n" +
-                "      \"outputFile\": \"../../extracted_apks/debug/feature1-master.apk\"")
+                "      \"outputFile\": \"../../../extracted_apks/debug/extractApksFromBundleForDebug/feature1-master.apk\"")
         assertThat(outputMetadataFile).contains("\"attributes\": [\n" +
                 "        {\n" +
                 "          \"key\": \"deliveryType\",\n" +
                 "          \"value\": \"ON_DEMAND\"\n" +
                 "        }\n" +
                 "      ],\n" +
-                "      \"outputFile\": \"../../extracted_apks/debug/feature2-master.apk\"")
+                "      \"outputFile\": \"../../../extracted_apks/debug/extractApksFromBundleForDebug/feature2-master.apk\"")
     }
 
     // Regression test for https://issuetracker.google.com/171462060

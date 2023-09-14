@@ -200,7 +200,7 @@ class PrivacySandboxSdkTest {
     @Test
     fun testDexing() {
         val dexLocation = project.getSubproject(":privacy-sandbox-sdk")
-                .getIntermediateFile("dex", "single", "classes.dex")
+                .getIntermediateFile("dex", "single", "mergeDex", "classes.dex")
 
         executor().run(":privacy-sandbox-sdk:mergeDex")
 
@@ -242,7 +242,7 @@ class PrivacySandboxSdkTest {
         executor().run(":privacy-sandbox-sdk:assemble")
         val asbManifest =
                 project.getSubproject(":privacy-sandbox-sdk")
-                        .getIntermediateFile("merged_manifest", "single", "AndroidManifest.xml")
+                        .getIntermediateFile("merged_manifest", "single", "mergeManifest", "AndroidManifest.xml")
         assertThat(asbManifest).hasContents(
                 """
             <?xml version="1.0" encoding="utf-8"?>
@@ -353,6 +353,7 @@ class PrivacySandboxSdkTest {
         val privacySandboxSdkApk = project.getSubproject(":example-app")
                 .getIntermediateFile("extracted_apks_from_privacy_sandbox_sdks",
                         "debug",
+                        "buildPrivacySandboxSdkApksForDebug",
                         "privacy-sandbox-sdk",
                         "standalone.apk")
 
@@ -374,7 +375,7 @@ class PrivacySandboxSdkTest {
                 .run(":example-app:extractApksFromBundleForDebug")
 
         val extractedApks = project.getSubproject(":example-app")
-                .getIntermediateFile("extracted_apks", "debug")
+                .getIntermediateFile("extracted_apks", "debug", "extractApksFromBundleForDebug")
                 .toPath()
         val baseMaster2Apk = extractedApks.resolve("base-master_2.apk")
         val baseMaster3Apk = extractedApks.resolve("base-master_3.apk")

@@ -589,7 +589,8 @@ public class VectorDrawableTest {
     @NonNull
     private File getMergedResDir() {
         return new File(
-                ArtifactTypeUtil.getOutputDir(MERGED_RES.INSTANCE, project.getBuildDir()), "debug");
+                ArtifactTypeUtil.getOutputDir(MERGED_RES.INSTANCE, project.getBuildDir()),
+                "debug" + File.separatorChar + "mergeDebugResources");
     }
 
     private static void assertPngGenerationDisabled(Apk apk) throws Exception {

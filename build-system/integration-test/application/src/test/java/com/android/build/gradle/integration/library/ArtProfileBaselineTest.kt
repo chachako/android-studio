@@ -121,6 +121,7 @@ class ArtProfileBaselineTest {
             SdkConstants.FD_INTERMEDIATES,
             InternalArtifactType.MERGED_ART_PROFILE.getFolderName(),
             "release",
+            "mergeReleaseArtProfile",
             SdkConstants.FN_ART_PROFILE,
         )
 
@@ -142,6 +143,7 @@ class ArtProfileBaselineTest {
             SdkConstants.FD_INTERMEDIATES,
             InternalArtifactType.BINARY_ART_PROFILE.getFolderName(),
             "release",
+            "compileReleaseArtProfile",
             SdkConstants.FN_BINARY_ART_PROFILE,
         )
         Truth.assertThat(
@@ -153,6 +155,7 @@ class ArtProfileBaselineTest {
             SdkConstants.FD_INTERMEDIATES,
             InternalArtifactType.BINARY_ART_PROFILE_METADATA.getFolderName(),
             "release",
+            "compileReleaseArtProfile",
             SdkConstants.FN_BINARY_ART_PROFILE_METADATA,
         )
 

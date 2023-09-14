@@ -119,11 +119,11 @@ class ManifestFullyQualifiedClassNamesTest {
 
         val libMergedManifest =
             project.getSubproject("lib")
-                .file("build/intermediates/merged_manifest/debug/AndroidManifest.xml")
+                .file("build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml")
 
         val appMergedManifest =
             project.getSubproject("app")
-                .file("build/intermediates/packaged_manifests/debug/AndroidManifest.xml")
+                .file("build/intermediates/packaged_manifests/debug/processDebugManifestForPackage/AndroidManifest.xml")
 
         // library and app merged manifests contain correct package values
         assertThat(libMergedManifest).contains("package=\"com.example.lib\"")

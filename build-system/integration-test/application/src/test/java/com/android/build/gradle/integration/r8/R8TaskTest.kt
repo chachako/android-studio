@@ -72,7 +72,7 @@ class R8TaskTest {
                         .withLoggingLevel(LoggingLevel.DEBUG)
                         .run(":assembleDebugAndroidTest")
         val appClasses = project.getIntermediateFile(
-                InternalArtifactType.COMPILE_APP_CLASSES_JAR.getFolderName() + "/debug/classes.jar"
+                InternalArtifactType.COMPILE_APP_CLASSES_JAR.getFolderName() + "/debug/bundleDebugClassesToCompileJar/classes.jar"
         );
         buildResult.stdout.use {
             ScannerSubject.assertThat(it)
@@ -126,7 +126,7 @@ class R8TaskTest {
         project.executor().run(":assembleDebug")
         val mainDexListFile = InternalArtifactType.LEGACY_MULTIDEX_MAIN_DEX_LIST
             .getOutputDir(project.buildDir)
-            .resolve("debug/mainDexList.txt")
+            .resolve("debug/minifyDebugWithR8/mainDexList.txt")
         assertThat(mainDexListFile).exists()
     }
 

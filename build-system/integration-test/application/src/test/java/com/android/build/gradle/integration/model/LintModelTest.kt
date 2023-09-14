@@ -159,7 +159,7 @@ class AppAndLibWithLintPublishModelTest {
         Truth.assertWithMessage("lib Library instance").that(lib).isNotNull()
 
         Truth.assertThat(lib?.lintJar?.toValueString(result.normalizer)).isEqualTo(
-            "{PROJECT}/lib/build/intermediates/lint_publish_jar/global/lint.jar{!}"
+            "{PROJECT}/lib/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}"
         )
     }
 

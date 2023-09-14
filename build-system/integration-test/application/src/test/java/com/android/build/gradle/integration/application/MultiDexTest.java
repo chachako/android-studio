@@ -122,7 +122,7 @@ public class MultiDexTest {
         assertThat(
                         FileUtils.join(
                                 project.getProjectDir(),
-                                "build/intermediates/merged_manifests/icsDebug/AndroidManifest.xml"))
+                                "build/intermediates/merged_manifests/icsDebug/processIcsDebugManifest/AndroidManifest.xml"))
                 .contains("android:name=\"android.support.multidex.MultiDexApplication\"");
     }
 
@@ -134,6 +134,7 @@ public class MultiDexTest {
                                 project.getIntermediateFile(
                                                 "apks_from_bundle",
                                                 "icsDebug",
+                                                "makeApkFromBundleForIcsDebug",
                                                 "bundle.apks")
                                         .toPath());
                 BufferedOutputStream out =
@@ -171,7 +172,7 @@ public class MultiDexTest {
                                     InternalArtifactType.LEGACY_MULTIDEX_AAPT_DERIVED_PROGUARD_RULES
                                             .INSTANCE,
                                     project.getBuildDir()),
-                            "icsR8/manifest_keep.txt");
+                            "icsR8/processIcsR8Resources/manifest_keep.txt");
 
             ScannerSubject.assertThat(scanner)
                     .contains(

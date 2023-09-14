@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.application;
 import static com.android.SdkConstants.FN_R_CLASS_JAR;
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
 import static com.android.build.gradle.internal.scope.InternalArtifactType.COMPILE_AND_RUNTIME_NOT_NAMESPACED_R_CLASS_JAR;
+
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
@@ -33,11 +34,11 @@ import com.android.builder.model.v2.ide.JavaArtifact;
 import com.android.builder.model.v2.ide.UnresolvedDependency;
 import com.android.builder.model.v2.ide.Variant;
 import com.android.builder.model.v2.models.AndroidProject;
+import com.google.common.base.CaseFormat;
 import com.google.common.collect.Iterables;
 import com.google.common.truth.Truth;
 import java.io.File;
 import java.util.List;
-
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -101,12 +102,18 @@ public class ModelTest {
                 .getAndroidProject();
 
         for (Variant variant : androidProject.getVariants()) {
+            String fileName =
+                    variant.getName()
+                            + "/process"
+                            + CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, variant.getName())
+                            + "Resources/"
+                            + FN_R_CLASS_JAR;
             File rJar =
                     new File(
                             ArtifactTypeUtil.getOutputDir(
                                     COMPILE_AND_RUNTIME_NOT_NAMESPACED_R_CLASS_JAR.INSTANCE,
                                     project.getBuildDir()),
-                            variant.getName() + "/" + FN_R_CLASS_JAR);
+                            fileName);
             assertThat(variant.getMainArtifact().getClassesFolders()).contains(rJar);
         }
     }

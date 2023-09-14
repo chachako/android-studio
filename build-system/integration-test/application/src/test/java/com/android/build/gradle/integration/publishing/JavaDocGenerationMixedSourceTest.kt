@@ -25,6 +25,7 @@ import com.android.utils.FileUtils
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.io.File
 
 /**
  * Integration test for generating Java docs from java & kotlin mixed source.
@@ -82,7 +83,8 @@ class JavaDocGenerationMixedSourceTest {
             """.trimIndent()
         )
         library.execute("clean", "javaDocDebugGeneration")
-        val docDirectory = InternalArtifactType.JAVA_DOC_DIR.getOutputDir(library.buildDir).resolve("debug")
+        val docDirectory = InternalArtifactType.JAVA_DOC_DIR.getOutputDir(library.buildDir)
+            .resolve("debug" + File.separator + "javaDocDebugGeneration")
 
         val javaSourceDoc = docDirectory.resolve(JAVA_SOURCE_DOC)
         val kotlinSourceDoc = docDirectory.resolve(KOTLIN_SOURCE_DOC)

@@ -138,6 +138,7 @@ class NoManifestTest {
                                 project.getSubproject(":lib").buildDir
                         ),
                         "debug",
+                        "processDebugManifest",
                         "AndroidManifest.xml"
                 )
         assertThat(fileOutput.isFile).isTrue()
