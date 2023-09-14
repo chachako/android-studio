@@ -47,6 +47,7 @@ import com.google.common.base.Preconditions
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.transform.TransformParameters
 import org.gradle.api.artifacts.transform.TransformSpec
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
 import org.gradle.api.attributes.Usage
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
@@ -54,7 +55,6 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.internal.artifacts.ArtifactAttributes
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -378,7 +378,7 @@ abstract class ProguardConfigurableTask(
                 AarToRClassTransform::class.java
             ) { reg: TransformSpec<TransformParameters.None> ->
                 reg.from.attribute(
-                    ArtifactAttributes.ARTIFACT_FORMAT,
+                    ARTIFACT_TYPE_ATTRIBUTE,
                     creationConfig.global.aarOrJarTypeToConsume.aar.type
                 )
                 reg.from.attribute(
@@ -386,7 +386,7 @@ abstract class ProguardConfigurableTask(
                     apiUsage
                 )
                 reg.to.attribute(
-                    ArtifactAttributes.ARTIFACT_FORMAT,
+                    ARTIFACT_TYPE_ATTRIBUTE,
                     AndroidArtifacts.ArtifactType.R_CLASS_JAR.type
                 )
                 reg.to.attribute(

@@ -17,10 +17,10 @@
 package com.android.build.gradle.internal.dependency
 
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
 import org.gradle.api.attributes.AttributeCompatibilityRule
 import org.gradle.api.attributes.AttributesSchema
 import org.gradle.api.attributes.CompatibilityCheckDetails
-import org.gradle.api.internal.artifacts.ArtifactAttributes.ARTIFACT_FORMAT
 
 class ModelArtifactCompatibilityRule : AttributeCompatibilityRule<String> {
 
@@ -45,7 +45,7 @@ class ModelArtifactCompatibilityRule : AttributeCompatibilityRule<String> {
 
     companion object {
         fun setUp(attributesSchema: AttributesSchema) {
-            val strategy = attributesSchema.attribute<String>(ARTIFACT_FORMAT)
+            val strategy = attributesSchema.attribute(ARTIFACT_TYPE_ATTRIBUTE)
             strategy.compatibilityRules.add(ModelArtifactCompatibilityRule::class.java) { config -> }
         }
     }

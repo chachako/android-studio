@@ -34,7 +34,7 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.ArtifactView
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.transform.TransformSpec
-import org.gradle.api.internal.artifacts.ArtifactAttributes.ARTIFACT_FORMAT
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import org.junit.Rule
@@ -66,32 +66,32 @@ class AutoNamespaceTransformFunctionalTest {
         dependencies.registerTransform(
             AutoNamespacePreProcessTransform::class.java
         ) { reg: TransformSpec<AutoNamespaceParameters> ->
-            reg.from.attribute(ARTIFACT_FORMAT, AndroidArtifacts.ArtifactType.AAR.type)
-            reg.to.attribute(ARTIFACT_FORMAT, TYPE_AUTO_NAMESPACE_INTERMEDIATE_PROCESSED_AAR)
+            reg.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, AndroidArtifacts.ArtifactType.AAR.type)
+            reg.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, TYPE_AUTO_NAMESPACE_INTERMEDIATE_PROCESSED_AAR)
             reg.parameters.initialize()
         }
 
         dependencies.registerTransform(
             AutoNamespacePreProcessTransform::class.java
         ) { reg: TransformSpec<AutoNamespaceParameters> ->
-            reg.from.attribute(ARTIFACT_FORMAT, AndroidArtifacts.ArtifactType.JAR.type)
-            reg.to.attribute(ARTIFACT_FORMAT, TYPE_AUTO_NAMESPACE_INTERMEDIATE_PROCESSED_AAR)
+            reg.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, AndroidArtifacts.ArtifactType.JAR.type)
+            reg.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, TYPE_AUTO_NAMESPACE_INTERMEDIATE_PROCESSED_AAR)
             reg.parameters.initialize()
         }
 
         dependencies.registerTransform(
             AutoNamespaceTransform::class.java
         ) { reg: TransformSpec<AutoNamespaceParameters> ->
-            reg.from.attribute(ARTIFACT_FORMAT, TYPE_AUTO_NAMESPACE_INTERMEDIATE_PROCESSED_AAR)
-            reg.to.attribute(ARTIFACT_FORMAT, AndroidArtifacts.ArtifactType.PROCESSED_AAR.type)
+            reg.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, TYPE_AUTO_NAMESPACE_INTERMEDIATE_PROCESSED_AAR)
+            reg.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, AndroidArtifacts.ArtifactType.PROCESSED_AAR.type)
             reg.parameters.initialize()
         }
         // Ignore the interactions with jetifier for this functional test.
         dependencies.registerTransform(
             IdentityTransform::class.java
         ) { reg: TransformSpec<IdentityTransform.Parameters> ->
-            reg.from.attribute(ARTIFACT_FORMAT, AndroidArtifacts.ArtifactType.JAR.type)
-            reg.to.attribute(ARTIFACT_FORMAT, AndroidArtifacts.ArtifactType.PROCESSED_JAR.type)
+            reg.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, AndroidArtifacts.ArtifactType.JAR.type)
+            reg.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, AndroidArtifacts.ArtifactType.PROCESSED_JAR.type)
             reg.parameters.projectName.set(project.name)
         }
     }
@@ -230,7 +230,7 @@ class AutoNamespaceTransformFunctionalTest {
 
     private fun getArtifactView(type: AndroidArtifacts.ArtifactType): ArtifactView {
         return configuration.incoming.artifactView { config ->
-            config.attributes.attribute(ARTIFACT_FORMAT, type.type)
+            config.attributes.attribute(ARTIFACT_TYPE_ATTRIBUTE, type.type)
         }
     }
 

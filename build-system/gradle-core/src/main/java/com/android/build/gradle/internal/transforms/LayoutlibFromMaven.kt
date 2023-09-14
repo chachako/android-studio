@@ -24,9 +24,9 @@ import org.gradle.api.artifacts.transform.InputArtifact
 import org.gradle.api.artifacts.transform.TransformAction
 import org.gradle.api.artifacts.transform.TransformOutputs
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileSystemLocation
-import org.gradle.api.internal.artifacts.ArtifactAttributes
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.provider.Provider
@@ -71,16 +71,16 @@ class LayoutlibFromMaven(val layoutlibDirectory: FileCollection) {
             project.dependencies.registerTransform(LayoutLibExtractor::class.java) {
                 it.parameters.projectName.set(project.name)
                 it.from.attribute(
-                    ArtifactAttributes.ARTIFACT_FORMAT,
+                    ARTIFACT_TYPE_ATTRIBUTE,
                     ArtifactTypeDefinition.JAR_TYPE
                 )
-                it.to.attribute(ArtifactAttributes.ARTIFACT_FORMAT, TYPE_EXTRACTED_LAYOUTLIB)
+                it.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, TYPE_EXTRACTED_LAYOUTLIB)
             }
 
             val layoutlibDirectory = configuration.incoming.artifactView { config ->
                 config.attributes {
                     it.attribute(
-                        ArtifactAttributes.ARTIFACT_FORMAT,
+                        ARTIFACT_TYPE_ATTRIBUTE,
                         TYPE_EXTRACTED_LAYOUTLIB
                     )
                 }

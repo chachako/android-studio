@@ -100,10 +100,10 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.artifacts.transform.TransformAction
 import org.gradle.api.artifacts.transform.TransformSpec
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
 import org.gradle.api.attributes.AttributesSchema
 import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.Usage
-import org.gradle.api.internal.artifacts.ArtifactAttributes
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import java.lang.Boolean.FALSE
 import java.lang.Boolean.TRUE
@@ -211,7 +211,7 @@ class DependencyConfigurator(
             spec.parameters.projectName.set(project.name)
             spec.parameters.returnDefaultValues.set(true)
             spec.from.attribute(
-                ArtifactAttributes.ARTIFACT_FORMAT,
+                ARTIFACT_TYPE_ATTRIBUTE,
                 AndroidArtifacts.ArtifactType.JAR.type
             )
             spec.from.attribute(
@@ -219,7 +219,7 @@ class DependencyConfigurator(
                 true
             )
             spec.to.attribute(
-                ArtifactAttributes.ARTIFACT_FORMAT,
+                ARTIFACT_TYPE_ATTRIBUTE,
                 AndroidArtifacts.TYPE_MOCKABLE_JAR
             )
             spec.to.attribute(
@@ -234,7 +234,7 @@ class DependencyConfigurator(
             spec.parameters.projectName.set(project.name)
             spec.parameters.returnDefaultValues.set(false)
             spec.from.attribute(
-                ArtifactAttributes.ARTIFACT_FORMAT,
+                ARTIFACT_TYPE_ATTRIBUTE,
                 AndroidArtifacts.ArtifactType.JAR.type
             )
             spec.from.attribute(
@@ -242,7 +242,7 @@ class DependencyConfigurator(
                 false
             )
             spec.to.attribute(
-                ArtifactAttributes.ARTIFACT_FORMAT,
+                ARTIFACT_TYPE_ATTRIBUTE,
                 AndroidArtifacts.TYPE_MOCKABLE_JAR
             )
             spec.to.attribute(
@@ -291,7 +291,7 @@ class DependencyConfigurator(
             AarToClassTransform::class.java
         ) { reg: TransformSpec<AarToClassTransform.Params> ->
             reg.from.attribute(
-                ArtifactAttributes.ARTIFACT_FORMAT,
+                ARTIFACT_TYPE_ATTRIBUTE,
                 aarOrJarTypeToConsume.aar.type
             )
             reg.from.attribute(
@@ -299,7 +299,7 @@ class DependencyConfigurator(
                 apiUsage
             )
             reg.to.attribute(
-                ArtifactAttributes.ARTIFACT_FORMAT,
+                ARTIFACT_TYPE_ATTRIBUTE,
                 AndroidArtifacts.ArtifactType.CLASSES_JAR.type
             )
             reg.to.attribute(
@@ -318,7 +318,7 @@ class DependencyConfigurator(
             AarToClassTransform::class.java
         ) { reg: TransformSpec<AarToClassTransform.Params> ->
             reg.from.attribute(
-                ArtifactAttributes.ARTIFACT_FORMAT,
+                ARTIFACT_TYPE_ATTRIBUTE,
                 aarOrJarTypeToConsume.aar.type
             )
             reg.from.attribute(
@@ -326,7 +326,7 @@ class DependencyConfigurator(
                 runtimeUsage
             )
             reg.to.attribute(
-                ArtifactAttributes.ARTIFACT_FORMAT,
+                ARTIFACT_TYPE_ATTRIBUTE,
                 AndroidArtifacts.ArtifactType.CLASSES_JAR.type
             )
             reg.to.attribute(
@@ -401,7 +401,7 @@ class DependencyConfigurator(
                 configuration
                     .attributes
                     .attribute(
-                        ArtifactAttributes.ARTIFACT_FORMAT,
+                        ARTIFACT_TYPE_ATTRIBUTE,
                         aarOrJarTypeToConsume.jar.type
                     )
             }
@@ -585,7 +585,7 @@ class DependencyConfigurator(
                 ) { reg ->
                     val usageObj: Usage = project.objects.named(Usage::class.java, usage)
                     reg.from.attribute(
-                            ArtifactAttributes.ARTIFACT_FORMAT,
+                            ARTIFACT_TYPE_ATTRIBUTE,
                             AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR.type
                     )
                     reg.from.attribute(
@@ -593,7 +593,7 @@ class DependencyConfigurator(
                             usageObj
                     )
                     reg.to.attribute(
-                            ArtifactAttributes.ARTIFACT_FORMAT,
+                            ARTIFACT_TYPE_ATTRIBUTE,
                             AndroidArtifacts.ArtifactType.CLASSES_JAR.type
                     )
                     reg.to.attribute(
@@ -680,8 +680,8 @@ class DependencyConfigurator(
         project.dependencies.registerTransform(
             transformClass
         ) { spec: TransformSpec<T> ->
-            spec.from.attribute(ArtifactAttributes.ARTIFACT_FORMAT, fromArtifactType)
-            spec.to.attribute(ArtifactAttributes.ARTIFACT_FORMAT, toArtifactType)
+            spec.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, fromArtifactType)
+            spec.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, toArtifactType)
             spec.parameters.projectName.setDisallowChanges(project.name)
             parametersSetter?.let { it(spec.parameters) }
         }
@@ -856,9 +856,9 @@ class DependencyConfigurator(
                     parameters.coreLibDesugarConfig.set(getDesugarLibConfig(services))
                     parameters.bootclasspath.from(bootClasspath)
                 }
-                spec.from.attribute(ArtifactAttributes.ARTIFACT_FORMAT, ArtifactTypeDefinition.JAR_TYPE)
+                spec.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
                 spec.from.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, TRUE.toString())
-                spec.to.attribute(ArtifactAttributes.ARTIFACT_FORMAT, D8_DESUGAR_METHODS)
+                spec.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, D8_DESUGAR_METHODS)
                 spec.to.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, TRUE.toString())
             }
 
@@ -869,9 +869,9 @@ class DependencyConfigurator(
                 spec.parameters { parameters ->
                     parameters.d8Version.set(d8Version)
                 }
-                spec.from.attribute(ArtifactAttributes.ARTIFACT_FORMAT, ArtifactTypeDefinition.JAR_TYPE)
+                spec.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
                 spec.from.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, FALSE.toString())
-                spec.to.attribute(ArtifactAttributes.ARTIFACT_FORMAT, D8_DESUGAR_METHODS)
+                spec.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, D8_DESUGAR_METHODS)
                 spec.to.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, FALSE.toString())
             }
         }
@@ -885,12 +885,12 @@ class DependencyConfigurator(
             ) { reg: TransformSpec<FilterShrinkerRulesTransform.Parameters> ->
                 reg.from
                         .attribute(
-                                ArtifactAttributes.ARTIFACT_FORMAT,
+                                ARTIFACT_TYPE_ATTRIBUTE,
                                 AndroidArtifacts.ArtifactType.UNFILTERED_PROGUARD_RULES.type
                         )
                 reg.to
                         .attribute(
-                                ArtifactAttributes.ARTIFACT_FORMAT,
+                                ARTIFACT_TYPE_ATTRIBUTE,
                                 AndroidArtifacts.ArtifactType.FILTERED_PROGUARD_RULES.type
                         )
                 reg.parameters { params: FilterShrinkerRulesTransform.Parameters ->
