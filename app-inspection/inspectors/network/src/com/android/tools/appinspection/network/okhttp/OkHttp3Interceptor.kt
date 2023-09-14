@@ -17,10 +17,12 @@ package com.android.tools.appinspection.network.okhttp
 
 import com.android.tools.appinspection.common.logError
 import com.android.tools.appinspection.network.HttpTrackerFactory
+import com.android.tools.appinspection.network.rules.FIELD_RESPONSE_STATUS_CODE
 import com.android.tools.appinspection.network.rules.InterceptionRuleService
 import com.android.tools.appinspection.network.rules.NetworkConnection
 import com.android.tools.appinspection.network.rules.NetworkResponse
 import com.android.tools.appinspection.network.trackers.HttpConnectionTracker
+import okhttp3.Headers
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
@@ -92,7 +94,7 @@ class OkHttp3Interceptor(
     ): Response {
         val fields = mutableMapOf<String?, List<String>>()
         fields.putAll(response.headers().toMultimap())
-        fields["response-status-code"] = listOf(response.code().toString())
+        fields[FIELD_RESPONSE_STATUS_CODE] = listOf(response.code().toString())
         val body = response.body() ?: throw Exception("No response body found")
 
         val interceptedResponse = interceptionRuleService.interceptResponse(
@@ -107,6 +109,17 @@ class OkHttp3Interceptor(
         val responseBody = ResponseBody.create(
             body.contentType(), body.contentLength(), source
         )
-        return response.newBuilder().body(responseBody).build()
+        if (interceptedResponse.responseHeaders.containsKey(null)) {
+            throw Exception("OkHttp3 does not allow null in headers")
+        }
+        val headers = Headers.of(
+            *interceptedResponse.responseHeaders.entries
+                .flatMap { entry -> entry.value.map { listOf(entry.key, it) } }
+                .flatten()
+                .filterNotNull()
+                .toTypedArray()
+        )
+        val code = headers[FIELD_RESPONSE_STATUS_CODE]?.toIntOrNull() ?: response.code()
+        return response.newBuilder().headers(headers).code(code).body(responseBody).build()
     }
 }

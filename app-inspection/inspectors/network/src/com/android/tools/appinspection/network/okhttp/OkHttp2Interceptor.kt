@@ -17,10 +17,12 @@ package com.android.tools.appinspection.network.okhttp
 
 import com.android.tools.appinspection.common.logError
 import com.android.tools.appinspection.network.HttpTrackerFactory
+import com.android.tools.appinspection.network.rules.FIELD_RESPONSE_STATUS_CODE
 import com.android.tools.appinspection.network.rules.InterceptionRuleService
 import com.android.tools.appinspection.network.rules.NetworkConnection
 import com.android.tools.appinspection.network.rules.NetworkResponse
 import com.android.tools.appinspection.network.trackers.HttpConnectionTracker
+import com.squareup.okhttp.Headers
 import com.squareup.okhttp.Interceptor
 import com.squareup.okhttp.Request
 import com.squareup.okhttp.Response
@@ -92,7 +94,7 @@ class OkHttp2Interceptor(
     ): Response {
         val fields = mutableMapOf<String?, List<String>>()
         fields.putAll(response.headers().toMultimap())
-        fields["response-status-code"] = listOf(response.code().toString())
+        fields[FIELD_RESPONSE_STATUS_CODE] = listOf(response.code().toString())
 
         val interceptedResponse = interceptionRuleService.interceptResponse(
             NetworkConnection(request.urlString(), request.method()),
@@ -106,6 +108,17 @@ class OkHttp2Interceptor(
         val body = ResponseBody.create(
             response.body().contentType(), response.body().contentLength(), source
         )
-        return response.newBuilder().body(body).build()
+        if (interceptedResponse.responseHeaders.containsKey(null)) {
+            throw Exception("OkHttp2 does not allow null in headers")
+        }
+        val headers = Headers.of(
+            *interceptedResponse.responseHeaders.entries
+                .flatMap { entry -> entry.value.map { listOf(entry.key, it) } }
+                .flatten()
+                .filterNotNull()
+                .toTypedArray()
+        )
+        val code = headers[FIELD_RESPONSE_STATUS_CODE]?.toIntOrNull() ?: response.code()
+        return response.newBuilder().headers(headers).code(code).body(body).build()
     }
 }

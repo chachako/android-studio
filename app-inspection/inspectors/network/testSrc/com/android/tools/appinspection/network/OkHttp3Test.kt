@@ -122,6 +122,10 @@ class OkHttp3Test {
         val request = Request.Builder().url(FAKE_URL).build()
         val fakeResponse = createFakeResponse(request)
         val response = client.newCall(request, fakeResponse).execute()
+
+        assertThat(response.code()).isEqualTo(404)
+        assertThat(response.headers()["Name"]).isEqualTo("Value")
+
         response.body()!!.byteStream().use { it.readBytes() }
         assertThat(
             inspectorRule.connection.findHttpEvent(

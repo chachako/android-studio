@@ -46,6 +46,23 @@ fun createFakeRuleAddedEvent(url: URL): NetworkInspectorProtocol.InterceptRuleAd
                             ByteString.copyFrom("InterceptedBody1".toByteArray())
                     }
                 })
+            addTransformation(
+                NetworkInspectorProtocol.Transformation.newBuilder().apply {
+                    statusCodeReplacedBuilder.apply {
+                        targetCodeBuilder.apply {
+                            text = "200"
+                            type = NetworkInspectorProtocol.MatchingText.Type.PLAIN
+                        }
+                        newCode = "404"
+                    }
+                })
+            addTransformation(
+                NetworkInspectorProtocol.Transformation.newBuilder().apply {
+                    headerAddedBuilder.apply {
+                        name = "Name"
+                        value = "Value"
+                    }
+                })
         }
     }.build()
 
