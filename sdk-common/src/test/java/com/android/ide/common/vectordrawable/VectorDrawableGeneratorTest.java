@@ -581,6 +581,10 @@ public class VectorDrawableGeneratorTest extends TestCase {
                                            "ERROR @ line 11: <image> is not supported");
     }
 
+    public void testSvgEmptyAttribute() throws Exception {
+        checkSvgConversion("test_empty_attribute");
+    }
+
     // Clip Path Tests
     public void testSvgClipPathGroup() throws Exception {
         checkSvgConversion("test_clip_path_group");
