@@ -5385,6 +5385,73 @@ class VersionChecksTest : AbstractCheckTest() {
       )
   }
 
+  fun testRecursiveUtilityFunction() {
+    // Regression test for b/290340814
+    lint()
+      .files(
+        kotlin(
+            """
+            package test.pkg
+
+            import androidx.annotation.RequiresApi
+
+            fun recursive(i: Int): Boolean {
+                return i > 0 && recursive(i - 1)
+            }
+
+            fun testSimpleRecursion() {
+                if (recursive(5)) {
+                    requires30() // ERROR 1
+                }
+            }
+
+            @RequiresApi(30)
+            fun requires30() { }
+            """
+          )
+          .indented(),
+        kotlin(
+            """
+            package test.pkg
+
+            import androidx.annotation.RequiresApi
+
+            fun recursiveA(i: Int): Boolean {
+                return recursiveB(i)
+            }
+
+            fun recursiveB(i: Int): Boolean {
+                return recursiveC(i)
+            }
+
+            fun recursiveC(i: Int): Boolean {
+                return i > 0 && recursiveA(i - 1)
+            }
+
+            fun test() {
+                if (recursiveA(5)) {
+                    requires30() // ERROR 2
+                }
+            }
+            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/test.kt:11: Error: Call requires API level 30 (current min is 1): requires30 [NewApi]
+                requires30() // ERROR 1
+                ~~~~~~~~~~
+        src/test/pkg/test2.kt:19: Error: Call requires API level 30 (current min is 1): requires30 [NewApi]
+                requires30() // ERROR 2
+                ~~~~~~~~~~
+        2 errors, 0 warnings
+        """
+      )
+  }
+
   override fun getDetector(): Detector {
     return ApiDetector()
   }

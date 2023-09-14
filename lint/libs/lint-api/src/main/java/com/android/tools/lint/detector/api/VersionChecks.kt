@@ -100,6 +100,35 @@ class VersionChecks(
 ) {
   companion object {
     /**
+     * Maximum number of levels we'll check for surrounding version checks.
+     *
+     * The version checker searches for surrounding version checks, such as an if statement
+     * surrounding the dangerous call.
+     *
+     * It also handles version utility functions, such as this:
+     * ```
+     * if (enabled() && isBiometricsAvailable()) {
+     *     biometricsCall()
+     * }
+     * ```
+     *
+     * If `biometricsCall()` requires API level X, we'll go into both the `enabled()` call and the
+     * `isBiometricsAvailable()` to see if they look like version checks -- for example `return
+     * SDK_INT > 28`. And these methods can themselves make simple references to other version
+     * checks.
+     *
+     * But we need to watch out to make sure we don't have unbounded recursion, so when we're
+     * computing version constraints for a method call, we'll keep track of the call depth to ensure
+     * that we aren't back in a cycle, or get lost in a pathologically deep hierarchy (which is
+     * unlikely for a legitimate version checking utility function).
+     *
+     * Note that the depth here is only for calls and variable initializers; we don't increment the
+     * count when we're searching upwards in the AST hierarchy (which will always be reasonably
+     * bounded) or combining terms in a polyadic expression (also reasonably bounded).
+     */
+    private const val MAX_CALL_DEPTH = 50
+
+    /**
      * The `SdkIntDetector` analyzes methods and looks for SDK_INT checks inside method bodies. If
      * it recognizes that something is a version check, it will record this as partial analysis
      * data. This mechanism needs an associated issue to tie the data to. We want to peek at this
@@ -339,7 +368,8 @@ class VersionChecks(
       val project = context.project
       val check = VersionChecks(client, evaluator, project)
       val constraint =
-        check.getWithinVersionCheckConditional(element = element, apiLookup = null) ?: return false
+        check.getWithinVersionCheckConditional(element = element, apiLookup = null, depth = 0)
+          ?: return false
       return if (lowerBound) {
         constraint.isAtLeast(api)
       } else {
@@ -356,7 +386,7 @@ class VersionChecks(
       val evaluator = context.evaluator
       val project = context.project
       val check = VersionChecks(client, evaluator, project)
-      return check.getWithinVersionCheckConditional(element = element, apiLookup = null)
+      return check.getWithinVersionCheckConditional(element = element, apiLookup = null, depth = 0)
     }
 
     @Deprecated(
@@ -394,7 +424,8 @@ class VersionChecks(
     ): Boolean {
       val check = VersionChecks(client, evaluator, null)
       val constraint =
-        check.getWithinVersionCheckConditional(element = element, apiLookup = null) ?: return false
+        check.getWithinVersionCheckConditional(element = element, apiLookup = null, depth = 0)
+          ?: return false
       return if (lowerBound) {
         constraint.isAtLeast(api)
       } else {
@@ -796,7 +827,8 @@ class VersionChecks(
 
   private fun getWithinVersionCheckConditional(
     element: UElement,
-    apiLookup: ApiLevelLookup?
+    apiLookup: ApiLevelLookup?,
+    depth: Int
   ): ApiConstraint? {
     var current = element.uastParent
     var prev = element
@@ -807,7 +839,7 @@ class VersionChecks(
       } else if (current is UFile) {
         break
       } else {
-        val currentConstraint = getVersionConditional(current, prev, apiLookup)
+        val currentConstraint = getVersionConditional(current, prev, apiLookup, depth)
         constraint = max(currentConstraint, constraint, either = false)
         val parent = skipParenthesizedExprUp(current.uastParent)
         if (parent is USwitchClauseExpression) {
@@ -834,13 +866,14 @@ class VersionChecks(
   private fun getVersionConditional(
     current: UElement,
     prev: UElement?,
-    apiLookup: ApiLevelLookup?
+    apiLookup: ApiLevelLookup?,
+    depth: Int
   ): ApiConstraint? {
     if (current is UPolyadicExpression) {
       return if (current.operator === UastBinaryOperator.LOGICAL_AND) {
-        getAndedWithConstraint(current, prev, apiLookup)
+        getAndedWithConstraint(current, prev, apiLookup, depth)
       } else if (current.operator === UastBinaryOperator.LOGICAL_OR) {
-        getOredWithConstraint(current, prev, apiLookup)
+        getOredWithConstraint(current, prev, apiLookup, depth)
       } else {
         null
       }
@@ -854,7 +887,12 @@ class VersionChecks(
           return null
         }
         val thenConstraint =
-          getVersionCheckConstraint(element = condition, prev = prev, apiLookup = apiLookup)
+          getVersionCheckConstraint(
+            element = condition,
+            prev = prev,
+            apiLookup = apiLookup,
+            depth = depth
+          )
         thenConstraint?.let { if (fromThen) it else it.not() }
       } else {
         null
@@ -895,7 +933,8 @@ class VersionChecks(
             val constraint =
               getWithinVersionCheckConditional(
                 element = lambdaInvocation,
-                apiLookup = getReferenceApiLookup(current)
+                apiLookup = getReferenceApiLookup(current),
+                depth = depth + 1
               )
             if (constraint != null) {
               return constraint
@@ -926,7 +965,8 @@ class VersionChecks(
             val constraint =
               getWithinVersionCheckConditional(
                 element = lambdaInvocation,
-                apiLookup = getReferenceApiLookup(current)
+                apiLookup = getReferenceApiLookup(current),
+                depth = depth + 1
               )
             if (constraint != null) {
               return constraint
@@ -1005,11 +1045,11 @@ class VersionChecks(
   private fun uncertain(expression: UExpression, constant: (UElement) -> Boolean): Boolean {
     if (expression !is UBinaryExpression) return true
     val left = expression.leftOperand.skipParenthesizedExprDown()
-    if (!(constant(left) || getVersionCheckConstraint(left) != null)) {
+    if (!(constant(left) || getVersionCheckConstraint(left, depth = 0) != null)) {
       return true
     }
     val right = expression.rightOperand.skipParenthesizedExprDown()
-    return !(constant(right) || getVersionCheckConstraint(right) != null)
+    return !(constant(right) || getVersionCheckConstraint(right, depth = 0) != null)
   }
 
   /**
@@ -1035,7 +1075,7 @@ class VersionChecks(
       // When the when-statement has no subject, there's exactly one case (we've ruled out the else
       // clause above).
       val case = caseValues.first().skipParenthesizedExprDown()
-      return getVersionCheckConstraint(element = case, apiLookup = apiLevelLookup)
+      return getVersionCheckConstraint(element = case, apiLookup = apiLevelLookup, depth = 0)
     }
 
     // When the SDK_INT is the subject of the when, we can have multiple cases, and combinations of
@@ -1152,8 +1192,12 @@ class VersionChecks(
   private fun getVersionCheckConstraint(
     element: UElement,
     prev: UElement? = null,
-    apiLookup: ApiLevelLookup? = null
+    apiLookup: ApiLevelLookup? = null,
+    depth: Int
   ): ApiConstraint? {
+    if (depth >= MAX_CALL_DEPTH) {
+      return null
+    }
     if (element is UPolyadicExpression) {
       if (element is UBinaryExpression) {
         getVersionCheckConditional(binary = element, apiLevelLookup = apiLookup)?.let {
@@ -1162,18 +1206,18 @@ class VersionChecks(
       }
       val tokenType = element.operator
       if (tokenType === UastBinaryOperator.LOGICAL_AND) {
-        val constraint = getAndedWithConstraint(element, prev, apiLookup)
+        val constraint = getAndedWithConstraint(element, prev, apiLookup, depth)
         if (constraint != null) {
           return constraint
         }
       } else if (tokenType === UastBinaryOperator.LOGICAL_OR) {
-        val constraint = getOredWithConstraint(element, prev, apiLookup)
+        val constraint = getOredWithConstraint(element, prev, apiLookup, depth)
         if (constraint != null) {
           return constraint.not()
         }
       }
     } else if (element is UCallExpression) {
-      return getValidVersionCall(element)
+      return getValidVersionCall(element, depth + 1)
     } else if (element is UReferenceExpression) {
       // Constant expression for an SDK version check?
       val resolved = element.resolve()
@@ -1192,7 +1236,7 @@ class VersionChecks(
         if (modifierList != null && modifierList.hasExplicitModifier(PsiModifier.STATIC)) {
           val initializer = UastFacade.getInitializerBody(field)?.skipParenthesizedExprDown()
           if (initializer != null) {
-            val constraint = getVersionCheckConstraint(element = initializer)
+            val constraint = getVersionCheckConstraint(element = initializer, depth = depth + 1)
             if (constraint != null) {
               return constraint
             }
@@ -1210,7 +1254,7 @@ class VersionChecks(
         // would be changed.
         val initializer = UastFacade.getInitializerBody(resolved)?.skipParenthesizedExprDown()
         if (initializer != null) {
-          val constraint = getVersionCheckConstraint(element = initializer)
+          val constraint = getVersionCheckConstraint(element = initializer, depth = depth + 1)
           if (constraint != null) {
             return constraint
           }
@@ -1221,25 +1265,25 @@ class VersionChecks(
           element.selector is UCallExpression
       ) {
         val call = element.selector as UCallExpression
-        return getValidVersionCall(call)
+        return getValidVersionCall(call, depth + 1)
       } else if (resolved is PsiMethod) {
         // Method call via Kotlin property syntax
-        return getValidVersionCall(call = element, method = resolved)
+        return getValidVersionCall(call = element, method = resolved, depth = depth + 1)
       } else if (resolved == null && element is UQualifiedReferenceExpression) {
         val selector = element.selector
         if (selector is UCallExpression) {
-          return getValidVersionCall(call = selector)
+          return getValidVersionCall(call = selector, depth = depth + 1)
         }
       }
     } else if (element is UUnaryExpression) {
       if (element.operator === UastPrefixOperator.LOGICAL_NOT) {
         val operand = element.operand
-        getVersionCheckConstraint(element = operand)?.let {
+        getVersionCheckConstraint(element = operand, depth = depth)?.let {
           return it.not()
         }
       }
     } else if (element is UParenthesizedExpression) {
-      return getVersionCheckConstraint(element.expression, element, apiLookup)
+      return getVersionCheckConstraint(element.expression, element, apiLookup, depth)
     }
     return null
   }
@@ -1270,7 +1314,7 @@ class VersionChecks(
     return atLeast(value, annotation.sdkId)
   }
 
-  private fun getValidVersionCall(call: UCallExpression): ApiConstraint? {
+  private fun getValidVersionCall(call: UCallExpression, depth: Int): ApiConstraint? {
     val method = call.resolve()
     if (method == null) {
       // Fallback when we can't resolve call: Try to guess just based on the method name
@@ -1284,10 +1328,10 @@ class VersionChecks(
       }
       return null
     }
-    return getValidVersionCall(call, method)
+    return getValidVersionCall(call, method, depth)
   }
 
-  private fun getValidVersionCall(call: UElement, method: PsiMethod): ApiConstraint? {
+  private fun getValidVersionCall(call: UElement, method: PsiMethod, depth: Int): ApiConstraint? {
     val callExpression = call as? UCallExpression
     val validFromAnnotation = getValidFromAnnotation(method, callExpression)
     if (validFromAnnotation != null) {
@@ -1353,7 +1397,7 @@ class VersionChecks(
               returnValue is UCallExpression ||
               returnValue is UQualifiedReferenceExpression
           ) {
-            val constraint = getVersionCheckConstraint(element = returnValue)
+            val constraint = getVersionCheckConstraint(element = returnValue, depth = depth + 1)
             if (constraint != null) {
               return constraint
             }
@@ -1379,7 +1423,8 @@ class VersionChecks(
                   }
                 }
                 apiLevel
-              }
+              },
+              depth = depth + 1
             )
           if (constraint != null) {
             return constraint
@@ -1395,16 +1440,19 @@ class VersionChecks(
   private fun getOredWithConstraint(
     element: UElement,
     before: UElement?,
-    apiLookup: ApiLevelLookup?
+    apiLookup: ApiLevelLookup?,
+    depth: Int
   ): ApiConstraint? {
     if (element is UBinaryExpression) {
       if (element.operator === UastBinaryOperator.LOGICAL_OR) {
         val left = element.leftOperand
         if (before !== left) {
-          val leftConstraint = getVersionCheckConstraint(element = left, apiLookup = apiLookup)
+          val leftConstraint =
+            getVersionCheckConstraint(element = left, apiLookup = apiLookup, depth = depth)
           val right = element.rightOperand
           return if (right !== before) {
-            val rightConstraint = getVersionCheckConstraint(element = right, apiLookup = apiLookup)
+            val rightConstraint =
+              getVersionCheckConstraint(element = right, apiLookup = apiLookup, depth = depth)
             max(leftConstraint?.not(), rightConstraint?.not(), either = false)
           } else {
             leftConstraint?.not()
@@ -1424,7 +1472,8 @@ class VersionChecks(
             constraint =
               max(
                 constraint,
-                getVersionCheckConstraint(element = operand, apiLookup = apiLookup)?.not(),
+                getVersionCheckConstraint(element = operand, apiLookup = apiLookup, depth = depth)
+                  ?.not(),
                 either = false
               )
           }
@@ -1433,7 +1482,7 @@ class VersionChecks(
       }
       return null
     } else if (element is UParenthesizedExpression) {
-      return getOredWithConstraint(element.expression, element, apiLookup)
+      return getOredWithConstraint(element.expression, element, apiLookup, depth)
     }
     return null
   }
@@ -1442,16 +1491,19 @@ class VersionChecks(
   private fun getAndedWithConstraint(
     element: UElement,
     before: UElement?,
-    apiLookup: ApiLevelLookup?
+    apiLookup: ApiLevelLookup?,
+    depth: Int
   ): ApiConstraint? {
     if (element is UBinaryExpression) {
       if (element.operator === UastBinaryOperator.LOGICAL_AND) {
         val left = element.leftOperand
         if (before !== left) {
-          val leftConstraint = getVersionCheckConstraint(element = left, apiLookup = apiLookup)
+          val leftConstraint =
+            getVersionCheckConstraint(element = left, apiLookup = apiLookup, depth = depth)
           val right = element.rightOperand
           if (right !== before) {
-            val rightConstraint = getVersionCheckConstraint(element = right, apiLookup = apiLookup)
+            val rightConstraint =
+              getVersionCheckConstraint(element = right, apiLookup = apiLookup, depth = depth)
             return max(leftConstraint, rightConstraint)
           }
           return leftConstraint
@@ -1467,13 +1519,17 @@ class VersionChecks(
           if (operand == before) {
             break
           } else {
-            constraint = max(constraint, getVersionCheckConstraint(operand, apiLookup = apiLookup))
+            constraint =
+              max(
+                constraint,
+                getVersionCheckConstraint(operand, apiLookup = apiLookup, depth = depth)
+              )
           }
         }
         return constraint
       }
     } else if (element is UParenthesizedExpression) {
-      return getAndedWithConstraint(element.expression, element, apiLookup)
+      return getAndedWithConstraint(element.expression, element, apiLookup, depth)
     }
     return null
   }
@@ -1507,7 +1563,7 @@ class VersionChecks(
       }
       val thenBranch = node.thenExpression
       val elseBranch = node.elseExpression
-      val constraint = getVersionCheckConstraint(element = node.condition)
+      val constraint = getVersionCheckConstraint(element = node.condition, depth = 0)
       if (thenBranch != null) {
         if (constraint?.not()?.isAtLeast(api) == true) {
           // See if the body does an immediate return
