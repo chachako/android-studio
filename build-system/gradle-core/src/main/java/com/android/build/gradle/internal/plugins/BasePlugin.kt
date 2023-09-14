@@ -798,7 +798,7 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
     private fun findHighestSdkInstalled(): String? {
         var highestSdk: String? = null
         val folder = withProject("findHighestSdkInstalled") { project ->
-            File(getSdkDir(project.rootDir, syncIssueReporter), "platforms")
+            File(getSdkDir(project.rootDir, syncIssueReporter, project.providers), "platforms")
         }
         val listOfFiles = folder.listFiles()
         if (listOfFiles != null) {

@@ -22,6 +22,7 @@ import com.android.build.gradle.internal.ndk.NdkInstallStatus.Invalid
 import com.android.build.gradle.internal.ndk.NdkInstallStatus.NotInstalled
 import com.android.build.gradle.internal.ndk.NdkInstallStatus.Valid
 import org.gradle.api.InvalidUserDataException
+import org.gradle.api.provider.ProviderFactory
 
 sealed class NdkInstallStatus {
     /**
@@ -67,7 +68,8 @@ sealed class NdkInstallStatus {
  * Handles NDK related information.
  */
 open class NdkHandler(
-    private val ndkLocator: NdkLocator
+    private val ndkLocator: NdkLocator,
+    private val providers: ProviderFactory,
 ) {
     private var ndkInstallStatus: NdkInstallStatus? = null
 
@@ -81,8 +83,8 @@ open class NdkHandler(
         else -> DefaultNdkInfo(ndk.ndk)
     }
 
-    private fun getNdkStatus(downloadOkay: Boolean): NdkInstallStatus {
-        val ndk = ndkLocator.findNdkPath(downloadOkay)
+    private fun getNdkStatus(downloadOkay: Boolean, providers: ProviderFactory): NdkInstallStatus {
+        val ndk = ndkLocator.findNdkPath(downloadOkay, providers)
             ?: return NotInstalled
         val ndkInfo = getNdkInfo(ndk)
         val error = ndkInfo.validate()
@@ -90,16 +92,16 @@ open class NdkHandler(
         return Valid(NdkPlatform(ndk.ndk, ndkInfo, ndk.revision))
     }
 
-    fun getNdkPlatform(downloadOkay: Boolean) : NdkInstallStatus {
+    fun getNdkPlatform(downloadOkay: Boolean, providers: ProviderFactory) : NdkInstallStatus {
         if (ndkInstallStatus == null ||
             (downloadOkay && ndkInstallStatus == NotInstalled)) {
             // Calculate NDK platform if that hadn't been done before or if it's
             // okay to download now.
-            ndkInstallStatus = getNdkStatus(downloadOkay)
+            ndkInstallStatus = getNdkStatus(downloadOkay, providers)
         }
         return ndkInstallStatus!!
     }
 
     val ndkPlatform: NdkInstallStatus
-        get() = getNdkPlatform(downloadOkay = false)
+        get() = getNdkPlatform(downloadOkay = false, providers)
 }

@@ -65,6 +65,7 @@ import com.android.utils.cxx.CxxDiagnosticCode.CMAKE_IS_MISSING
 import com.android.utils.cxx.CxxDiagnosticCode.INVALID_EXTERNAL_NATIVE_BUILD_CONFIG
 import com.android.utils.cxx.CxxDiagnosticCode.NINJA_IS_MISSING
 import org.gradle.api.file.FileCollection
+import org.gradle.api.provider.ProviderFactory
 import java.io.File
 import java.util.Locale
 
@@ -188,7 +189,8 @@ data class CxxConfigurationParameters(
  */
 fun tryCreateConfigurationParameters(
     projectOptions: ProjectOptions,
-    variant: VariantCreationConfig
+    variant: VariantCreationConfig,
+    providers: ProviderFactory,
 ): CxxConfigurationParameters? {
     val globalConfig = variant.global
     val projectInfo = variant.services.projectInfo
@@ -212,7 +214,7 @@ fun tryCreateConfigurationParameters(
      * in Android Studio
      */
     val ndkHandler = globalConfig.versionedNdkHandler
-    val ndkInstall = ndkHandler.getNdkPlatform(downloadOkay = true);
+    val ndkInstall = ndkHandler.getNdkPlatform(downloadOkay = true, providers)
 
     if (!ndkInstall.isConfigured) {
         infoln("Not creating C/C++ model because NDK could not be configured.")

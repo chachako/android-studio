@@ -18,6 +18,7 @@ package com.android.build.gradle.internal
 
 import com.android.SdkConstants
 import com.android.SdkConstants.FN_CORE_FOR_SYSTEM_MODULES
+import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import com.android.build.gradle.internal.fixtures.FakeSyncIssueReporter
 import com.android.builder.core.ToolsRevisionUtils
 import com.android.builder.internal.compiler.RenderScriptProcessor
@@ -401,6 +402,7 @@ class SdkLoadingStrategyTest {
         sdkLocationSourceSet =
             SdkLocationSourceSet(
                 projectRootDir,
+                FakeProviderFactory.factory,
                 localProperties = Properties(),
                 environmentProperties = Properties(),
                 systemProperties = Properties()
@@ -748,7 +750,7 @@ class SdkLoadingStrategyTest {
         platformHash: String = "android-28",
         buildTools: String = SdkConstants.CURRENT_BUILD_TOOLS_VERSION): SdkDirectLoadingStrategy {
         return SdkDirectLoadingStrategy(
-            SdkLocationSourceSet(testFolder.root, Properties(), Properties(), Properties()),
+            SdkLocationSourceSet(testFolder.root, FakeProviderFactory.factory, Properties(), Properties(), Properties()),
             platformHash,
             Revision.parseRevision(buildTools),
             true,

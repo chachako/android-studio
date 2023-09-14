@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.internal.fixtures
 
+import org.gradle.api.file.FileContents
+import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 
@@ -30,6 +32,10 @@ class FakeProviderFactory(
         } else {
             return originalFactory.provider { null }
         }
+    }
+
+    override fun fileContents(file: Provider<RegularFile>): FileContents {
+        return FakeFileContents(file.get().asFile)
     }
 
     companion object {

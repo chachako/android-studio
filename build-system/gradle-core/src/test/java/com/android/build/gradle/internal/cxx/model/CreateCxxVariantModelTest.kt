@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.cxx.model
 
+import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import org.junit.Test
 
 class CreateCxxVariantModelTest {
@@ -25,7 +26,8 @@ class CreateCxxVariantModelTest {
         BasicCmakeMock().let {
             val module = createCxxModuleModel(
                 it.sdkComponents,
-                it.configurationParameters
+                it.configurationParameters,
+                FakeProviderFactory.factory,
             )
             createCxxVariantModel(
                 it.configurationParameters,

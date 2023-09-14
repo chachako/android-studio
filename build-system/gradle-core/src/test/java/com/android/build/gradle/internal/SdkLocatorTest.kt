@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal
 
 import com.android.SdkConstants
+import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import com.android.build.gradle.internal.fixtures.FakeSyncIssueReporter
 import com.google.common.base.Charsets
 import com.google.common.truth.Truth.assertThat
@@ -350,7 +351,7 @@ class SdkLocatorTest {
         val systemProperties = Properties()
         systemAndroidHome?.let { systemProperties.setProperty(SdkLocator.ANDROID_HOME_SYSTEM_PROPERTY, systemAndroidHome) }
 
-        return SdkLocationSourceSet(projectRootDir, localProperties, envProperties, systemProperties)
+        return SdkLocationSourceSet(projectRootDir, FakeProviderFactory.factory, localProperties, envProperties, systemProperties)
     }
 
     private fun writeLocalPropertiesFile(properties: Properties) {

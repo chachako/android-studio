@@ -44,7 +44,8 @@ import com.android.build.gradle.internal.cxx.settings.Macro.NDK_ABI
 import com.android.build.gradle.internal.cxx.settings.Macro.NDK_CONFIGURATION_HASH
 import com.android.build.gradle.internal.cxx.settings.Macro.NDK_FULL_CONFIGURATION_HASH
 import com.android.build.gradle.internal.cxx.settings.Macro.NDK_MODULE_NDK_DIR
-import com.android.build.gradle.internal.fixtures.FakeGradleProvider
+import com.android.build.gradle.internal.fixtures.FakeFileContents
+import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import com.android.build.gradle.options.ProjectOptions
 import com.android.build.gradle.tasks.NativeBuildSystem
 import com.android.utils.FileUtils
@@ -79,7 +80,7 @@ class SettingsConfigurationRewriterKtTest {
                       }]
                     }
                 """.trimIndent())
-                Mockito.doReturn(FakeGradleProvider(cmakeSettingsFile.readText())).`when`(fileContents).asText
+                fileContents = FakeFileContents(cmakeSettingsFile)
                 abi.toJsonString() // Force lazy fields to evaluate
                 val rewritten = abi.calculateConfigurationArguments(providers, layout)
                 rewritten.toJsonString() // Force lazy fields to evaluate
@@ -393,12 +394,14 @@ class SettingsConfigurationRewriterKtTest {
                 }]
                 }""".trimIndent()
             )
-            Mockito.doReturn(FakeGradleProvider(settings.readText())).`when`(fileContents).asText
+            fileContents = FakeFileContents(settings)
             setup(this, 1)
 
             val configurationModel1 = tryCreateConfigurationParameters(
                     Mockito.mock(ProjectOptions::class.java),
-                    variantImpl)!!
+                    variantImpl,
+                    FakeProviderFactory.factory,
+            )!!
             val variant1 = createCxxVariantModel(configurationModel1, module)
             val result1 = createCxxAbiModel(
                 sdkComponents, configurationModel1,
@@ -408,7 +411,9 @@ class SettingsConfigurationRewriterKtTest {
             setup(this, 2)
             val configurationModel2 = tryCreateConfigurationParameters(
                 Mockito.mock(ProjectOptions::class.java),
-                variantImpl)!!
+                variantImpl,
+                FakeProviderFactory.factory,
+            )!!
             val variant2 = createCxxVariantModel(configurationModel2, module)
             val result2 = createCxxAbiModel(
                 sdkComponents, configurationModel2,

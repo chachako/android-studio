@@ -17,21 +17,16 @@
 package com.android.build.gradle.internal
 
 import com.android.build.gradle.internal.component.ComponentCreationConfig
-import com.android.build.gradle.internal.core.Abi
 import com.android.build.gradle.internal.cxx.configure.NdkLocator
 import com.android.build.gradle.internal.cxx.stripping.SymbolStripExecutableFinder
 import com.android.build.gradle.internal.cxx.stripping.createSymbolStripExecutableFinder
 import com.android.build.gradle.internal.errors.SyncIssueReporterImpl
-import com.android.build.gradle.internal.fusedlibrary.FusedLibraryVariantScope
 import com.android.build.gradle.internal.ndk.NdkHandler
 import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkVariantScope
 import com.android.build.gradle.internal.services.AndroidLocationsBuildService
-import com.android.build.gradle.internal.services.ProjectServices
 import com.android.build.gradle.internal.services.ServiceRegistrationAction
 import com.android.build.gradle.internal.services.getBuildService
-import com.android.build.gradle.internal.tasks.NonIncrementalTask
 import com.android.build.gradle.internal.utils.setDisallowChanges
-import com.android.build.gradle.internal.utils.validatePreviewTargetValue
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.IntegerOption
 import com.android.build.gradle.options.ProjectOptions
@@ -42,7 +37,6 @@ import com.android.sdklib.AndroidTargetHash.SYSTEM_IMAGE_PREFIX
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.BuildToolInfo
 import com.android.sdklib.OptionalLibrary
-import com.android.tools.analytics.Environment
 import org.gradle.api.DefaultTask
 import org.gradle.api.NonExtensible
 import org.gradle.api.Project
@@ -91,7 +85,7 @@ abstract class SdkComponentsBuildService @Inject constructor(
     }
 
     private val sdkSourceSet: SdkLocationSourceSet by lazy {
-        SdkLocationSourceSet(parameters.projectRootDir.get().asFile)
+        SdkLocationSourceSet(parameters.projectRootDir.get().asFile, providerFactory)
     }
 
     class Environment: SdkLibDataFactory.Environment() {
@@ -218,7 +212,8 @@ abstract class SdkComponentsBuildService @Inject constructor(
             objectFactory.directoryProperty().fileProvider(providerFactory.provider {
                 getSdkDir(
                     parameters.projectRootDir.get().asFile,
-                    parameters.issueReporter.get()
+                    parameters.issueReporter.get(),
+                    providerFactory,
                 )
             })
 
@@ -291,7 +286,7 @@ abstract class SdkComponentsBuildService @Inject constructor(
         ndkLocator: NdkLocator,
         objectFactory: ObjectFactory,
         providerFactory: ProviderFactory
-    ): NdkHandler(ndkLocator) {
+    ): NdkHandler(ndkLocator, providerFactory) {
 
         val ndkDirectoryProvider: Provider<Directory> =
             objectFactory.directoryProperty().fileProvider(providerFactory.provider {
@@ -374,7 +369,8 @@ abstract class SdkComponentsBuildService @Inject constructor(
         objectFactory.directoryProperty().fileProvider(providerFactory.provider {
             getSdkDir(
                 parameters.projectRootDir.get().asFile,
-                parameters.issueReporter.get()
+                parameters.issueReporter.get(),
+                providerFactory,
             )
         })
 
@@ -411,8 +407,8 @@ abstract class SdkComponentsBuildService @Inject constructor(
  * location. This is needed when AGP handles missing [com.android.build.gradle.BaseExtension.compileSdkVersion]
  * and it tries to add highest installed API when invoked from the IDE.
  */
-fun getSdkDir(projectRootDir: File, issueReporter: IssueReporter): File {
-    return SdkLocator.getSdkDirectory(projectRootDir, issueReporter)
+fun getSdkDir(projectRootDir: File, issueReporter: IssueReporter, providers: ProviderFactory): File {
+    return SdkLocator.getSdkDirectory(projectRootDir, issueReporter, providers)
 }
 
 /** This can be used by tasks requiring android.jar as input with [org.gradle.api.tasks.Nested]. */

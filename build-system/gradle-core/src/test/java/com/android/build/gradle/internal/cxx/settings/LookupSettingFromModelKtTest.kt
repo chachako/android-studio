@@ -27,6 +27,7 @@ import com.android.build.gradle.internal.cxx.model.createCxxVariantModel
 import com.android.build.gradle.internal.cxx.model.name
 import com.android.build.gradle.internal.cxx.settings.Token.LiteralToken
 import com.android.build.gradle.internal.cxx.settings.Token.MacroToken
+import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import com.android.build.gradle.tasks.NativeBuildSystem
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -47,7 +48,9 @@ class LookupSettingFromModelKtTest {
             // Walk all vals in the model and invoke them
             val module = createCxxModuleModel(
                 it.sdkComponents,
-                it.configurationParameters)
+                it.configurationParameters,
+                FakeProviderFactory.factory,
+            )
             val variant = createCxxVariantModel(
                 it.configurationParameters,
                 module)

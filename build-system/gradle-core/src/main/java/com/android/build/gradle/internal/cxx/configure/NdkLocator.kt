@@ -39,6 +39,7 @@ import com.android.utils.cxx.CxxDiagnosticCode.NDK_VERSION_IS_UNMATCHED
 import com.android.utils.cxx.CxxDiagnosticCode.NDK_VERSION_UNSUPPORTED
 import com.google.common.annotations.VisibleForTesting
 import org.gradle.api.InvalidUserDataException
+import org.gradle.api.provider.ProviderFactory
 import java.io.File
 
 /**
@@ -415,9 +416,9 @@ data class NdkLocator(
      * If the user specifies android.ndkVersion in build.gradle then that version must be available
      * or it is an error. If no such version is specified then the default version is used.
      */
-    fun findNdkPath(downloadOkay: Boolean): NdkLocatorRecord? {
-        val properties = gradleLocalProperties(projectDir)
-        val sdkPath = SdkLocator.getSdkDirectory(projectDir, issueReporter)
+    fun findNdkPath(downloadOkay: Boolean, providers: ProviderFactory): NdkLocatorRecord? {
+        val properties = gradleLocalProperties(projectDir, providers)
+        val sdkPath = SdkLocator.getSdkDirectory(projectDir, issueReporter, providers)
         return findNdkPathImpl(
             ndkVersionFromDsl,
             ndkPathFromDsl,

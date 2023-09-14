@@ -39,9 +39,10 @@ import com.android.build.gradle.internal.dsl.NdkBuildOptions
 import com.android.build.gradle.internal.dsl.Splits
 import com.android.build.gradle.internal.fixtures.FakeGradleDirectory
 import com.android.build.gradle.internal.fixtures.FakeGradleProvider
+import com.android.build.gradle.internal.fixtures.FakeProjectLayout
+import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import com.android.build.gradle.internal.ndk.NdkInstallStatus
 import com.android.build.gradle.internal.ndk.NdkPlatform
-import com.android.build.gradle.internal.ndk.NdkR19Info
 import com.android.build.gradle.internal.ndk.NdkR25Info
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.BuildFeatureValues
@@ -60,12 +61,9 @@ import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileContents
-import org.gradle.api.file.ProjectLayout
-import org.gradle.api.file.RegularFile
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.SetProperty
-import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.mock
@@ -75,7 +73,6 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 import java.util.Locale
-import java.util.concurrent.Callable
 
 /**
  * Set up up a mock for constructing [CxxModuleModel]. It takes a lot of plumbing so this can
@@ -276,16 +273,17 @@ open class BasicModuleModelMock {
         Gradle::class.java
     )
 
-    val providers = mock(org.gradle.api.provider.ProviderFactory::class.java, throwUnmocked)
+    val providers = FakeProviderFactory(FakeProviderFactory.factory, emptyMap())
 
-    val layout = mock(ProjectLayout::class.java, throwUnmocked)
+    val layout = FakeProjectLayout()
 
-    val fileContents = mock(FileContents::class.java, throwUnmocked)
+    lateinit var fileContents : FileContents
 
     val configurationParameters by lazy {
         tryCreateConfigurationParameters(
             projectOptions,
-            variantImpl
+            variantImpl,
+            FakeProviderFactory.factory,
         )!!
     }
 
@@ -365,12 +363,6 @@ open class BasicModuleModelMock {
         doReturn(false).`when`(abiSplitOptions).isUniversalApk
         doReturn(":$appName").`when`(project).path
 
-        val fileProvider = FakeGradleProvider(File::class.java)
-        doReturn(fileProvider).`when`(providers).provider(ArgumentMatchers.any(Callable::class.java))
-        val regularFileProvider = FakeGradleProvider(mock(RegularFile::class.java))
-        doReturn(regularFileProvider).`when`(layout).file(ArgumentMatchers.any())
-        doReturn(fileContents).`when`(providers).fileContents(regularFileProvider)
-
         return appFolder
     }
 
@@ -446,7 +438,7 @@ open class BasicModuleModelMock {
         )
         doReturn(ndkHandler).`when`(globalConfig).versionedNdkHandler
         doReturn(ndkInstallStatus).`when`(ndkHandler).ndkPlatform
-        doReturn(ndkInstallStatus).`when`(ndkHandler).getNdkPlatform(true)
+        doReturn(ndkInstallStatus).`when`(ndkHandler).getNdkPlatform(true, FakeProviderFactory.factory)
         doReturn(true).`when`(variantImpl).debuggable
 
         val ndkInfo = NdkR25Info(ndkFolder)

@@ -30,6 +30,7 @@ import com.android.build.gradle.internal.cxx.settings.Macro.NDK_MODULE_CMAKE_EXE
 import com.android.build.gradle.tasks.NativeBuildSystem.CMAKE
 import com.android.build.gradle.tasks.NativeBuildSystem.NINJA
 import com.android.utils.FileUtils.join
+import org.gradle.api.provider.ProviderFactory
 import java.io.File
 import java.io.FileReader
 
@@ -39,11 +40,12 @@ import java.io.FileReader
 fun createCxxModuleModel(
     sdkComponents : SdkComponentsBuildService,
     configurationParameters: CxxConfigurationParameters,
+    providers: ProviderFactory
 ) : CxxModuleModel {
 
     val cxxFolder = configurationParameters.cxxFolder
-    fun localPropertyFile(property : String) : File? {
-        val path = gradleLocalProperties(configurationParameters.rootDir)
+    fun localPropertyFile(property : String, providers: ProviderFactory) : File? {
+        val path = gradleLocalProperties(configurationParameters.rootDir, providers)
             .getProperty(property) ?: return null
         return File(path)
     }
@@ -54,7 +56,7 @@ fun createCxxModuleModel(
     val ndkSymlinkFolder = computeNdkSymLinkFolder(
             ndk.ndkDirectory,
             cxxFolder,
-            localPropertyFile(NDK_SYMLINK_DIR))
+            localPropertyFile(NDK_SYMLINK_DIR, providers))
     val finalNdkFolder = ndkSymlinkFolder ?: ndk.ndkDirectory
     val ndkMetaPlatformsFile = NdkMetaPlatforms.jsonFile(ndk.ndkDirectory)
     val ndkMetaPlatforms = if (ndkMetaPlatformsFile.isFile) {
@@ -88,7 +90,7 @@ fun createCxxModuleModel(
     val ndkMetaAbiList = NdkAbiFile(ndkMetaAbisFile(ndk.ndkDirectory)).abiInfoList
     val cmake = if (configurationParameters.buildSystem == CMAKE) {
         CxxCmakeModuleModel(
-            cmakeDirFromPropertiesFile = localPropertyFile(CMAKE_DIR_PROPERTY),
+            cmakeDirFromPropertiesFile = localPropertyFile(CMAKE_DIR_PROPERTY, providers),
             cmakeVersionFromDsl = configurationParameters.cmakeVersion,
             cmakeExe = File(NDK_MODULE_CMAKE_EXECUTABLE.configurationPlaceholder)
         )

@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.cxx.model
 import com.android.build.gradle.internal.cxx.RandomInstanceGenerator
 import com.android.build.gradle.internal.cxx.gradle.generator.tryCreateConfigurationParameters
 import com.android.build.gradle.internal.cxx.logging.PassThroughRecordingLoggingEnvironment
+import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import com.android.utils.FileUtils.join
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -33,7 +34,8 @@ class CreateCxxModuleModelTest {
             assertThat(
             tryCreateConfigurationParameters(
                 it.projectOptions,
-                it.variantImpl
+                it.variantImpl,
+                FakeProviderFactory.factory,
             )
             ).isNull()
         }
@@ -45,7 +47,9 @@ class CreateCxxModuleModelTest {
             doReturn(File("./CMakeLists.txt")).`when`(it.cmake).path
             assertThat(createCxxModuleModel(
                 it.sdkComponents,
-                it.configurationParameters)).isNotNull()
+                it.configurationParameters,
+                FakeProviderFactory.factory,
+            )).isNotNull()
         }
     }
 
@@ -55,7 +59,8 @@ class CreateCxxModuleModelTest {
             doReturn(File("./Android.mk")).`when`(it.ndkBuild).path
             assertThat(createCxxModuleModel(
                 it.sdkComponents,
-                it.configurationParameters
+                it.configurationParameters,
+                FakeProviderFactory.factory,
             )).isNotNull()
         }
     }
@@ -68,7 +73,8 @@ class CreateCxxModuleModelTest {
                 assertThat(
                     tryCreateConfigurationParameters(
                             it.projectOptions,
-                            it.variantImpl
+                            it.variantImpl,
+                            FakeProviderFactory.factory,
                     )
                 ).isNull()
                 assertThat(logEnvironment.errors).hasSize(1)
@@ -86,11 +92,13 @@ class CreateCxxModuleModelTest {
                 val componentModel =
                     tryCreateConfigurationParameters(
                             it.projectOptions,
-                            it.variantImpl
+                            it.variantImpl,
+                            FakeProviderFactory.factory,
                     )!!
                 val module = createCxxModuleModel(
                     it.sdkComponents,
-                    it.configurationParameters
+                    it.configurationParameters,
+                    FakeProviderFactory.factory,
                 )
                 val finalStagingDir = module.cxxFolder
                 assertThat(logEnvironment.errors).hasSize(0)
@@ -107,10 +115,13 @@ class CreateCxxModuleModelTest {
                     .`when`(it.cmake).buildStagingDirectory
                 val configurationParameters = tryCreateConfigurationParameters(
                         it.projectOptions,
-                        it.variantImpl)!!
+                        it.variantImpl,
+                        FakeProviderFactory.factory,
+                )!!
                 val module = createCxxModuleModel(
                     it.sdkComponents,
-                    configurationParameters
+                    configurationParameters,
+                    FakeProviderFactory.factory,
                 )
                 val finalStagingDir = module.cxxFolder
                 assertThat(logEnvironment.warnings).hasSize(1)
