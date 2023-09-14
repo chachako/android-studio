@@ -17,9 +17,9 @@ package com.android.adblib.tools.cli
 
 import com.android.adblib.AdbSession
 import com.android.adblib.DeviceSelector
+import com.android.adblib.adbLogger
 import com.android.adblib.tools.InstallException
 import com.android.adblib.tools.install
-import com.android.adblib.thisLogger
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Files
 import java.nio.file.Path
@@ -32,7 +32,7 @@ internal class Install : DeviceCommand("install")  {
     }
 
     override fun run(session: AdbSession, device : DeviceSelector, args: Arguments) : Boolean {
-        val logger = thisLogger(session.host)
+        val logger = adbLogger(session.host)
         val options = mutableListOf<String>()
         val apks = mutableListOf<Path>()
 

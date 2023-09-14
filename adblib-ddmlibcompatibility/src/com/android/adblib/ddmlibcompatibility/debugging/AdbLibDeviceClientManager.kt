@@ -19,13 +19,13 @@ import com.android.adblib.AdbLogger
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.DeviceSelector
+import com.android.adblib.adbLogger
 import com.android.adblib.connectedDevicesTracker
 import com.android.adblib.ddmlibcompatibility.AdbLibDdmlibCompatibilityProperties.DEVICE_TRACKER_WAIT_TIMEOUT
 import com.android.adblib.ddmlibcompatibility.debugging.ProcessTrackerHost.ClientUpdateKind
 import com.android.adblib.property
 import com.android.adblib.scope
 import com.android.adblib.serialNumber
-import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.isAppProcessTrackerSupported
 import com.android.adblib.withPrefix
 import com.android.ddmlib.AndroidDebugBridge
@@ -58,7 +58,7 @@ internal class AdbLibDeviceClientManager(
 
     private val deviceSelector = DeviceSelector.fromSerialNumber(iDevice.serialNumber)
 
-    private val logger = thisLogger(clientManager.session).withPrefix("device '$deviceSelector': ")
+    private val logger = adbLogger(clientManager.session).withPrefix("device '$deviceSelector': ")
 
     internal val session: AdbSession
         get() = clientManager.session

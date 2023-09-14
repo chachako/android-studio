@@ -29,9 +29,9 @@ import com.android.adblib.DevicePropertyNames.RO_PRODUCT_MANUFACTURER
 import com.android.adblib.DevicePropertyNames.RO_PRODUCT_MODEL
 import com.android.adblib.DevicePropertyNames.RO_SF_LCD_DENSITY
 import com.android.adblib.ShellCommandOutputElement
+import com.android.adblib.adbLogger
 import com.android.adblib.selector
 import com.android.adblib.shellAsLines
-import com.android.adblib.thisLogger
 import com.android.resources.Density
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.AndroidVersionUtil
@@ -340,16 +340,16 @@ data class Resolution(val width: Int, val height: Int) {
         when (shellOutput) {
           is ShellCommandOutputElement.StdoutLine -> parseWmSizeOutput(shellOutput.contents)
           else -> {
-            thisLogger(device.session)
+            adbLogger(device.session)
               .warn("Failed to read device resolution successfully: $shellOutput")
             null
           }
         }
       } catch (e: AdbFailResponseException) {
-        thisLogger(device.session).warn(e, "Failed to read device resolution")
+        adbLogger(device.session).warn(e, "Failed to read device resolution")
         null
       } catch (e: TimeoutException) {
-        thisLogger(device.session).warn(e, "Timeout reading device resolution")
+        adbLogger(device.session).warn(e, "Timeout reading device resolution")
         null
       }
   }

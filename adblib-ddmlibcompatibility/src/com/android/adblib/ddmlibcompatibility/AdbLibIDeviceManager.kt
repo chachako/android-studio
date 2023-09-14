@@ -17,10 +17,10 @@ package com.android.adblib.ddmlibcompatibility
 
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.adbLogger
 import com.android.adblib.connectedDevicesTracker
 import com.android.adblib.ddmlibcompatibility.debugging.AdbLibDeviceClientManager
 import com.android.adblib.ddmlibcompatibility.debugging.AdblibIDeviceWrapper
-import com.android.adblib.thisLogger
 import com.android.adblib.utils.createChildScope
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.IDevice
@@ -37,7 +37,7 @@ internal class AdbLibIDeviceManager(
     private val iDeviceManagerListener: IDeviceManagerListener
 ) : IDeviceManager {
 
-    private val logger = thisLogger(session)
+    private val logger = adbLogger(session)
 
     private val scope = session.scope.createChildScope(isSupervisor = true)
 

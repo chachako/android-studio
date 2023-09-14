@@ -17,8 +17,8 @@ package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
+import com.android.adblib.adbLogger
 import com.android.adblib.scope
-import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.AtomicStateFlow
 import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.SharedJdwpSession
@@ -42,7 +42,7 @@ internal class JdwpProcessImpl(
     private val onClosed: (JdwpProcessImpl) -> Unit
 ) : AbstractJdwpProcess() {
 
-    private val logger = thisLogger(device.session)
+    private val logger = adbLogger(device.session)
         .withPrefix("${device.session} - $device - pid=$pid - ")
 
     private val stateFlow = AtomicStateFlow(MutableStateFlow(JdwpProcessProperties(pid)))

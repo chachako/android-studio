@@ -15,9 +15,9 @@
  */
 package com.android.adblib.tools.debugging.impl
 
+import com.android.adblib.adbLogger
 import com.android.adblib.selector
 import com.android.adblib.shellCommand
-import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.AppProcess
 import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.scope
@@ -31,7 +31,7 @@ import java.time.Duration
 
 internal class AppProcessNameRetriever(private val process: AppProcess) {
 
-    val logger = thisLogger(process.device.session)
+    val logger = adbLogger(process.device.session)
 
     suspend fun retrieve(retryCount: Int, retryDelay: Duration): String {
         return process.jdwpProcess?.let {

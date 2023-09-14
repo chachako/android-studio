@@ -16,9 +16,9 @@
 package com.android.adblib.ddmlibcompatibility.debugging
 
 import com.android.adblib.AdbSession
+import com.android.adblib.adbLogger
 import com.android.adblib.ddmlibcompatibility.AdbLibDdmlibCompatibilityProperties.RUN_BLOCKING_LEGACY_DEFAULT_TIMEOUT
 import com.android.adblib.property
-import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.DdmsCommandException
 import com.android.adblib.tools.debugging.JdwpCommandProgress
 import com.android.adblib.tools.debugging.JdwpProcess
@@ -71,7 +71,7 @@ internal class AdblibClientWrapper(
     private val session: AdbSession
         get() = trackerHost.device.session
 
-    private val logger = thisLogger(session).withPrefix("pid: ${jdwpProcess.pid}: ")
+    private val logger = adbLogger(session).withPrefix("pid: ${jdwpProcess.pid}: ")
 
     private val clientDataWrapper = ClientData(this, jdwpProcess.pid)
 

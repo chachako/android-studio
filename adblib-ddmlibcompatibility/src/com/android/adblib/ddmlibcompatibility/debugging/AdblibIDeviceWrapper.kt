@@ -23,21 +23,21 @@ import com.android.adblib.DeviceSelector
 import com.android.adblib.INFINITE_DURATION
 import com.android.adblib.RemoteFileMode
 import com.android.adblib.SocketSpec
+import com.android.adblib.adbLogger
 import com.android.adblib.availableFeatures
 import com.android.adblib.deviceInfo
 import com.android.adblib.isOffline
 import com.android.adblib.isOnline
 import com.android.adblib.serialNumber
 import com.android.adblib.syncSend
-import com.android.adblib.thisLogger
 import com.android.adblib.tools.EmulatorCommandException
 import com.android.adblib.tools.defaultAuthTokenPath
 import com.android.adblib.tools.localConsoleAddress
 import com.android.adblib.tools.openEmulatorConsole
 import com.android.adblib.withErrorTimeout
 import com.android.ddmlib.AdbHelper
-import com.android.ddmlib.AvdData
 import com.android.ddmlib.AndroidDebugBridge
+import com.android.ddmlib.AvdData
 import com.android.ddmlib.Client
 import com.android.ddmlib.DdmPreferences
 import com.android.ddmlib.FileListingService
@@ -54,9 +54,9 @@ import com.android.ddmlib.Log
 import com.android.ddmlib.ProfileableClient
 import com.android.ddmlib.PropertyFetcher
 import com.android.ddmlib.RawImage
-import com.android.ddmlib.SimpleConnectedSocket
 import com.android.ddmlib.ScreenRecorderOptions
 import com.android.ddmlib.ServiceInfo
+import com.android.ddmlib.SimpleConnectedSocket
 import com.android.ddmlib.SplitApkInstaller
 import com.android.ddmlib.SyncException
 import com.android.ddmlib.SyncService
@@ -90,7 +90,7 @@ internal class AdblibIDeviceWrapper(
     bridge: AndroidDebugBridge,
 ) : IDevice {
 
-    private val logger = thisLogger(connectedDevice.session)
+    private val logger = adbLogger(connectedDevice.session)
 
     // TODO(b/294559068): Create our own implementation of PropertyFetcher before we can get rid of ddmlib
     private val propertyFetcher = PropertyFetcher(this)

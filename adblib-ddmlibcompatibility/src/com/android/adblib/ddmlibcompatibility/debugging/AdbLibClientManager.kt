@@ -16,7 +16,7 @@
 package com.android.adblib.ddmlibcompatibility.debugging
 
 import com.android.adblib.AdbSession
-import com.android.adblib.thisLogger
+import com.android.adblib.adbLogger
 import com.android.annotations.concurrency.WorkerThread
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.Client
@@ -30,7 +30,7 @@ import com.android.ddmlib.clientmanager.DeviceClientManagerListener
  */
 internal class AdbLibClientManager(val session: AdbSession) : ClientManager {
 
-    private val logger = thisLogger(session)
+    private val logger = adbLogger(session)
 
     override fun createDeviceClientManager(
         bridge: AndroidDebugBridge,

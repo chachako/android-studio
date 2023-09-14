@@ -17,7 +17,7 @@ package com.android.adblib.tools.cli
 
 import com.android.adblib.AdbSession
 import com.android.adblib.DeviceSelector
-import com.android.adblib.thisLogger
+import com.android.adblib.adbLogger
 import com.android.adblib.tools.UninstallResult
 import com.android.adblib.tools.uninstall
 import kotlinx.coroutines.runBlocking
@@ -29,7 +29,7 @@ internal class Uninstall : DeviceCommand("uninstall")  {
     }
 
     override fun run(session : AdbSession, device : DeviceSelector, args : Arguments) : Boolean {
-        val logger = thisLogger(session.host)
+        val logger = adbLogger(session.host)
         val options : Array<String>
         val applicationID : String
         when (args.size()) {

@@ -17,10 +17,10 @@ package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.AppProcessEntry
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.adbLogger
 import com.android.adblib.property
 import com.android.adblib.scope
 import com.android.adblib.selector
-import com.android.adblib.thisLogger
 import com.android.adblib.tools.AdbLibToolsProperties.JDWP_PROCESS_TRACKER_CLOSE_NOTIFICATION_DELAY
 import com.android.adblib.tools.AdbLibToolsProperties.TRACK_APP_RETRY_DELAY
 import com.android.adblib.tools.debugging.AppProcess
@@ -45,7 +45,7 @@ internal class AppProcessTrackerImpl(
     private val session
         get() = device.session
 
-    private val logger = thisLogger(device.session)
+    private val logger = adbLogger(device.session)
         .withPrefix("${device.session} - $device -")
 
     private val processesMutableFlow = MutableStateFlow<List<AppProcess>>(emptyList())

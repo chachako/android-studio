@@ -18,8 +18,8 @@ package com.android.adblib.tools.debugging.packets.impl
 import com.android.adblib.AdbInputChannel
 import com.android.adblib.AdbInputChannelSlice
 import com.android.adblib.AdbSession
+import com.android.adblib.adbLogger
 import com.android.adblib.property
-import com.android.adblib.thisLogger
 import com.android.adblib.tools.AdbLibToolsProperties
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.payloadLength
@@ -35,7 +35,7 @@ internal open class PayloadProviderFactory(
         session.property(AdbLibToolsProperties.SHARED_JDWP_PACKET_IN_MEMORY_MAX_PAYLOAD_LENGTH)
 ) {
 
-    private val logger = thisLogger(session)
+    private val logger = adbLogger(session)
 
     /**
      * Creates a [PayloadProvider] instance for the given [packetPayload] of [packet],

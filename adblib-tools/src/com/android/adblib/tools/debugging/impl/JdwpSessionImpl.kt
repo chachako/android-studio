@@ -22,10 +22,10 @@ import com.android.adblib.AdbLogger
 import com.android.adblib.AdbOutputChannel
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.adbLogger
 import com.android.adblib.readNBytes
 import com.android.adblib.scope
 import com.android.adblib.serialNumber
-import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_BYTE_ORDER
 import com.android.adblib.tools.debugging.packets.JdwpPacketConstants.PACKET_HEADER_LENGTH
@@ -58,7 +58,7 @@ internal class JdwpSessionImpl(
     private val session: AdbSession
         get() = device.session
 
-    private val logger = thisLogger(session)
+    private val logger = adbLogger(session)
         .withPrefix("(hash=${hashCode()}, '$peerName') device='${device.serialNumber}' pid=$pid: ")
 
     private val inputChannel = session.channelFactory.createReadAheadChannel(channel)

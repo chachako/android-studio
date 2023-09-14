@@ -16,12 +16,10 @@
 package com.android.adblib.tools.debugging
 
 import com.android.adblib.AdbInputChannel
+import com.android.adblib.adbLogger
 import com.android.adblib.property
-import com.android.adblib.thisLogger
 import com.android.adblib.tools.AdbLibToolsProperties.DDMS_REPLY_WAIT_TIMEOUT
-import com.android.adblib.tools.debugging.packets.impl.JdwpCommands
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
-import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType.Companion.MPRQ
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType.Companion.VURTOpCode
@@ -33,6 +31,8 @@ import com.android.adblib.tools.debugging.packets.ddms.clone
 import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
 import com.android.adblib.tools.debugging.packets.ddms.throwFailException
 import com.android.adblib.tools.debugging.packets.ddms.withPayload
+import com.android.adblib.tools.debugging.packets.impl.JdwpCommands
+import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.payloadLength
 import com.android.adblib.withPrefix
 import kotlinx.coroutines.CompletableDeferred
@@ -327,7 +327,7 @@ private suspend fun <R> SharedJdwpSession.processDdmsReplyPacket(
   chunkType: DdmsChunkType,
   block: suspend (packet: DdmsChunkView) -> R
 ): R {
-    val logger = thisLogger(device.session)
+    val logger = adbLogger(device.session)
     val chunkTypeString = chunkType.text
 
     // Error: FAIL packet
@@ -377,7 +377,7 @@ suspend fun SharedJdwpSession.handleDdmsCommandWithEmptyReply(
   chunkType: DdmsChunkType,
   progress: JdwpCommandProgress?
 ) {
-    val logger = thisLogger(device.session).withPrefix("pid=$pid: ")
+    val logger = adbLogger(device.session).withPrefix("pid=$pid: ")
     logger.debug { "Invoking DDMS command ${chunkType.text}" }
 
     return handleDdmsCommandAndReplyProtocol(progress) { signal ->
@@ -391,7 +391,7 @@ private suspend fun SharedJdwpSession.handleAlwaysEmptyReplyDdmsCommand(
   progress: JdwpCommandProgress?,
   signal: Signal<Unit>
 ) {
-    val logger = thisLogger(device.session).withPrefix("pid=$pid: ")
+    val logger = adbLogger(device.session).withPrefix("pid=$pid: ")
     newPacketReceiver()
         .withName("handleEmptyReplyDdmsCommand(${chunkType.text})")
         .withActivation {
@@ -424,7 +424,7 @@ suspend fun SharedJdwpSession.processEmptyDdmsReplyPacket(
     packet: JdwpPacketView,
     chunkType: DdmsChunkType
 ) {
-    val logger = thisLogger(device.session).withPrefix("pid=$pid: ")
+    val logger = adbLogger(device.session).withPrefix("pid=$pid: ")
     val chunkTypeString = chunkType.text
 
     // Error: FAIL packet
@@ -464,7 +464,7 @@ suspend fun <R> SharedJdwpSession.handleJdwpCommand(
     progress: JdwpCommandProgress?,
     replyHandler: suspend (JdwpPacketView) -> R
 ): R {
-    val logger = thisLogger(device.session)
+    val logger = adbLogger(device.session)
 
     if (!commandPacket.isCommand) {
         throw IllegalArgumentException("JDWP packet is not a command packet")
@@ -517,7 +517,7 @@ suspend fun AdbInputChannel.toByteArray(size: Int): ByteArray {
 fun SharedJdwpSession.createDdmsPacket(chunkType: DdmsChunkType, chunkPayload: ByteBuffer): JdwpPacketView {
     return JdwpPacketFactory.createDdmsPacket(nextPacketId(), chunkType, chunkPayload)
         .also { packet ->
-            val logger = thisLogger(device.session)
+            val logger = adbLogger(device.session)
             logger.verbose { "Sending DDMS command '$chunkType' in JDWP packet $packet" }
         }
 }

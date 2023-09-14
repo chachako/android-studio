@@ -19,13 +19,13 @@ import com.android.adblib.AdbDeviceServices
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
 import com.android.adblib.DeviceState
+import com.android.adblib.adbLogger
 import com.android.adblib.deviceProperties
 import com.android.adblib.flowWhenOnline
 import com.android.adblib.property
 import com.android.adblib.scope
 import com.android.adblib.selector
 import com.android.adblib.serialNumber
-import com.android.adblib.thisLogger
 import com.android.adblib.tools.AdbLibToolsProperties.APP_PROCESS_TRACKER_RETRY_DELAY
 import com.android.adblib.tools.debugging.impl.AppProcessTrackerImpl
 import kotlinx.coroutines.CoroutineScope
@@ -122,7 +122,7 @@ suspend fun ConnectedDevice.isAppProcessTrackerSupported(): Boolean {
         session.deviceServices.trackApp(selector).first()
         true
     }.onFailure { throwable ->
-        thisLogger(session).warn(
+        adbLogger(session).warn(
             throwable,
             "There was an error invoking the `track-app` service on device $serialNumber, " +
                     "falling back to `track-jdwp`"

@@ -17,8 +17,8 @@ package com.android.adblib.ddmlibcompatibility.debugging
 
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.adbLogger
 import com.android.adblib.scope
-import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.jdwpProcessFlow
 import com.android.ddmlib.IDevice
@@ -36,7 +36,7 @@ internal class JdwpTracker(private val trackerHost: ProcessTrackerHost) {
     private val iDevice: IDevice
         get() = trackerHost.iDevice
 
-    private val logger = thisLogger(session)
+    private val logger = adbLogger(session)
 
     fun startTracking() {
         device.scope.launch(session.host.ioDispatcher) {

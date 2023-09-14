@@ -15,11 +15,11 @@
  */
 package com.android.adblib.tools.debugging.utils
 
+import com.android.adblib.adbLogger
 import com.android.adblib.serialNumber
-import com.android.adblib.thisLogger
-import com.android.adblib.tools.debugging.SharedJdwpSessionFilterFactory
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSessionFilter
+import com.android.adblib.tools.debugging.SharedJdwpSessionFilterFactory
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.ddms.isDdmsCommand
 import com.android.adblib.withPrefix
@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 internal class NoDdmsPacketFilter(session: SharedJdwpSession) : SharedJdwpSessionFilter {
 
-    private val logger = thisLogger(session.device.session)
+    private val logger = adbLogger(session.device.session)
         .withPrefix("device=${session.device.serialNumber}, pid=${session.pid}: ")
 
     private val activeDdmsCommands = ConcurrentHashMap.newKeySet<Int>()

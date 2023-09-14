@@ -20,9 +20,8 @@ import com.android.adblib.AdbLogger
 import com.android.adblib.AdbSession
 import com.android.adblib.AutoShutdown
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.adbLogger
 import com.android.adblib.scope
-import com.android.adblib.serialNumber
-import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.JdwpPacketReceiver
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSession
@@ -81,7 +80,7 @@ internal class SharedJdwpSessionImpl(
     private val session: AdbSession
         get() = device.session
 
-    private val logger = thisLogger(device.session)
+    private val logger = adbLogger(device.session)
         .withPrefix("${device.session} - $device - pid=$pid - ")
 
     private val jdwpSessionMutex = Mutex()

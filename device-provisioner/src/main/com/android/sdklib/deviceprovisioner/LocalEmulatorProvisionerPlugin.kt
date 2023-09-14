@@ -18,9 +18,9 @@ package com.android.sdklib.deviceprovisioner
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.DevicePropertyNames
+import com.android.adblib.adbLogger
 import com.android.adblib.deviceProperties
 import com.android.adblib.serialNumber
-import com.android.adblib.thisLogger
 import com.android.adblib.tools.EmulatorConsole
 import com.android.adblib.tools.defaultAuthTokenPath
 import com.android.adblib.tools.localConsoleAddress
@@ -83,7 +83,7 @@ class LocalEmulatorProvisionerPlugin(
   private val diskIoDispatcher: CoroutineDispatcher,
   rescanPeriod: Duration = Duration.ofSeconds(10),
 ) : DeviceProvisionerPlugin {
-  val logger = thisLogger(adbSession)
+  val logger = adbLogger(adbSession)
   companion object {
     const val PLUGIN_ID = "LocalEmulator"
   }

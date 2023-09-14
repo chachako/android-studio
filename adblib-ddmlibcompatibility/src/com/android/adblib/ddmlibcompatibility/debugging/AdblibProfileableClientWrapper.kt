@@ -15,7 +15,7 @@
  */
 package com.android.adblib.ddmlibcompatibility.debugging
 
-import com.android.adblib.thisLogger
+import com.android.adblib.adbLogger
 import com.android.adblib.tools.debugging.AppProcess
 import com.android.adblib.tools.debugging.retrieveProcessName
 import com.android.adblib.tools.debugging.scope
@@ -32,7 +32,7 @@ internal class AdblibProfileableClientWrapper(
     private val appProcess: AppProcess
 ) : ProfileableClient {
 
-    private val logger = thisLogger(trackerHost.device.session)
+    private val logger = adbLogger(trackerHost.device.session)
 
     private val data = ProfileableClientData(appProcess.pid, "", appProcess.architecture)
 

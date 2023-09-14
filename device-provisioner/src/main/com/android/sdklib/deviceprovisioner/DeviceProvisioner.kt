@@ -19,10 +19,10 @@ import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.DeviceSelector
 import com.android.adblib.DeviceState
+import com.android.adblib.adbLogger
 import com.android.adblib.connectedDevicesTracker
 import com.android.adblib.scope
 import com.android.adblib.serialNumber
-import com.android.adblib.thisLogger
 import com.android.sdklib.deviceprovisioner.SetChange.Add
 import java.time.Duration
 import kotlinx.coroutines.CancellationException
@@ -78,7 +78,7 @@ private constructor(
       )
   }
 
-  private val logger = thisLogger(adbSession)
+  private val logger = adbLogger(adbSession)
 
   private val offerMutex = Mutex()
 
