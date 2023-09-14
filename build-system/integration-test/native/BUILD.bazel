@@ -1,3 +1,4 @@
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_repository")
 load("//tools/base/build-system/integration-test:integration-test.bzl", "single_gradle_integration_test")
 
@@ -499,6 +500,29 @@ single_gradle_integration_test(
     maven_repos = MAVEN_REPOS,
     tags = ["no_test_windows"],
     deps = DEPS,
+)
+
+filegroup(
+    name = "all_test_files",
+    srcs = glob(
+        [
+            "src/test/java/**/*.java",
+            "src/test/java/**/*.kt",
+            "BUILD.bazel",
+        ],
+    ),
+    visibility = ["//visibility:private"],
+)
+
+kotlin_test(
+    name = "BazelTargetTest",
+    srcs = ["src/test/java/com/android/build/gradle/integration/BazelTargetTest.kt"],
+    data = [":all_test_files"],
+    test_class = "com.android.build.gradle.integration.BazelTargetTest",
+    deps = [
+        "//tools/base/testutils:tools.testutils",
+        "@maven//:junit.junit",
+    ],
 )
 
 maven_repository(
