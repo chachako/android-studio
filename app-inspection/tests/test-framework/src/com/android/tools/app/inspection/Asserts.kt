@@ -23,28 +23,27 @@ import com.android.tools.app.inspection.AppInspection.CreateInspectorResponse
 import com.google.common.truth.Truth.assertThat
 
 fun assertRawResponse(response: AppInspectionResponse, responseContent: ByteArray) {
-    assertThat(response.hasRawResponse()).isTrue()
-    assertThat(response.rawResponse.content.toByteArray()).isEqualTo(responseContent)
+  assertThat(response.hasRawResponse()).isTrue()
+  assertThat(response.rawResponse.content.toByteArray()).isEqualTo(responseContent)
 }
 
 fun assertDisposeInspectorResponseStatus(
-    response: AppInspectionResponse,
-    expected: AppInspectionResponse.Status
+  response: AppInspectionResponse,
+  expected: AppInspectionResponse.Status
 ) {
-    assertThat(response.hasDisposeInspectorResponse()).isTrue()
-    assertThat(response.status).isEqualTo(expected)
+  assertThat(response.hasDisposeInspectorResponse()).isTrue()
+  assertThat(response.status).isEqualTo(expected)
 }
 
 fun assertCreateInspectorResponseStatus(
-    response: AppInspectionResponse,
-    expected: CreateInspectorResponse.Status
+  response: AppInspectionResponse,
+  expected: CreateInspectorResponse.Status
 ) {
-    assertThat(response.hasCreateInspectorResponse()).isTrue()
-    assertThat(response.createInspectorResponse.status).isEqualTo(expected)
-    if (expected == CreateInspectorResponse.Status.SUCCESS) {
-        assertThat(response.status).isEqualTo(AppInspectionResponse.Status.SUCCESS)
-    } else {
-        assertThat(response.status).isEqualTo(AppInspectionResponse.Status.ERROR)
-    }
+  assertThat(response.hasCreateInspectorResponse()).isTrue()
+  assertThat(response.createInspectorResponse.status).isEqualTo(expected)
+  if (expected == CreateInspectorResponse.Status.SUCCESS) {
+    assertThat(response.status).isEqualTo(AppInspectionResponse.Status.SUCCESS)
+  } else {
+    assertThat(response.status).isEqualTo(AppInspectionResponse.Status.ERROR)
+  }
 }
-

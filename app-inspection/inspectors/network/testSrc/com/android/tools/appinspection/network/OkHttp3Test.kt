@@ -18,6 +18,8 @@ package com.android.tools.appinspection.network
 
 import com.android.tools.appinspection.network.okhttp3.FakeOkHttp3Client
 import com.google.common.truth.Truth.assertThat
+import java.io.IOException
+import java.net.URL
 import okhttp3.MediaType
 import okhttp3.Protocol
 import okhttp3.Request
@@ -29,8 +31,6 @@ import org.junit.Rule
 import org.junit.Test
 import studio.network.inspection.NetworkInspectorProtocol
 import studio.network.inspection.NetworkInspectorProtocol.InterceptCommand
-import java.io.IOException
-import java.net.URL
 
 private const val URL_PARAMS = "activity=OkHttp3Test"
 private val FAKE_URL = URL("https://www.google.com?$URL_PARAMS")
@@ -38,171 +38,167 @@ private const val EXPECTED_RESPONSE_CODE = "response-status-code = 200"
 
 class OkHttp3Test {
 
-    @get:Rule
-    val inspectorRule = NetworkInspectorRule()
+  @get:Rule val inspectorRule = NetworkInspectorRule()
 
-    @Test
-    fun get() {
-        val client = createFakeOkHttp3Client()
+  @Test
+  fun get() {
+    val client = createFakeOkHttp3Client()
 
-        val request = Request.Builder().url(FAKE_URL).build()
-        val fakeResponse = createFakeResponse(request)
+    val request = Request.Builder().url(FAKE_URL).build()
+    val fakeResponse = createFakeResponse(request)
 
-        val response = client.newCall(request, fakeResponse).execute()
-        response.body()!!.byteStream().use { it.readBytes() }
+    val response = client.newCall(request, fakeResponse).execute()
+    response.body()!!.byteStream().use { it.readBytes() }
 
-        assertThat(inspectorRule.connection.httpData).hasSize(6)
-        val httpRequestStarted = inspectorRule.connection.httpData.first().httpRequestStarted
-        assertThat(httpRequestStarted.url).contains(URL_PARAMS)
-        assertThat(httpRequestStarted.method).isEqualTo("GET")
+    assertThat(inspectorRule.connection.httpData).hasSize(6)
+    val httpRequestStarted = inspectorRule.connection.httpData.first().httpRequestStarted
+    assertThat(httpRequestStarted.url).contains(URL_PARAMS)
+    assertThat(httpRequestStarted.method).isEqualTo("GET")
 
-        val httpResponseStarted =
-            inspectorRule.connection.findHttpEvent(
-                NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.HTTP_RESPONSE_STARTED
-            )!!
-        assertThat(httpResponseStarted.httpResponseStarted.fields)
-            .contains(EXPECTED_RESPONSE_CODE)
+    val httpResponseStarted =
+      inspectorRule.connection.findHttpEvent(
+        NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.HTTP_RESPONSE_STARTED
+      )!!
+    assertThat(httpResponseStarted.httpResponseStarted.fields).contains(EXPECTED_RESPONSE_CODE)
 
-        assertThat(
-            inspectorRule.connection.findHttpEvent(
-                NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.RESPONSE_PAYLOAD
-            )!!.responsePayload.payload.toStringUtf8()
-        ).isEqualTo("Test")
+    assertThat(
+        inspectorRule.connection
+          .findHttpEvent(NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.RESPONSE_PAYLOAD)!!
+          .responsePayload
+          .payload
+          .toStringUtf8()
+      )
+      .isEqualTo("Test")
 
-        assertThat(inspectorRule.connection.httpData.last().httpClosed.completed).isTrue()
-    }
+    assertThat(inspectorRule.connection.httpData.last().httpClosed.completed).isTrue()
+  }
 
-    @Test
-    fun post() {
-        val client = createFakeOkHttp3Client()
-        val requestBody = object : RequestBody() {
-            override fun contentType(): MediaType {
-                return MediaType.parse("text/text")!!
-            }
-
-            override fun writeTo(bufferedSink: BufferedSink) {
-                val requestBody = "request body"
-                bufferedSink.write(requestBody.toByteArray())
-            }
-        }
-        val request = Request.Builder().url(FAKE_URL).post(requestBody).build()
-        val fakeResponse = createFakeResponse(request)
-
-        val response = client.newCall(request, fakeResponse).execute()
-        response.body()!!.byteStream().use { it.readBytes() }
-
-        assertThat(inspectorRule.connection.httpData).hasSize(8)
-        val httpRequestStarted = inspectorRule.connection.httpData.first().httpRequestStarted
-        assertThat(httpRequestStarted.url).contains(URL_PARAMS)
-        assertThat(httpRequestStarted.method).isEqualTo("POST")
-
-        val httpRequestCompleted =
-            inspectorRule.connection.findHttpEvent(
-                NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.HTTP_REQUEST_COMPLETED
-            )
-        assertThat(httpRequestCompleted).isNotNull()
-
-        val requestPayload =
-            inspectorRule.connection.findHttpEvent(
-                NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.REQUEST_PAYLOAD
-            )
-        assertThat(requestPayload!!.requestPayload.payload.toStringUtf8())
-            .isEqualTo("request body")
-    }
-
-    @Test
-    fun intercept() {
-        val ruleAdded = createFakeRuleAddedEvent(FAKE_URL)
-
-        inspectorRule.inspector.receiveInterceptCommand(InterceptCommand.newBuilder().apply {
-            interceptRuleAdded = ruleAdded
-        }.build())
-
-        val client = createFakeOkHttp3Client()
-        val request = Request.Builder().url(FAKE_URL).build()
-        val fakeResponse = createFakeResponse(request)
-        val response = client.newCall(request, fakeResponse).execute()
-
-        assertThat(response.code()).isEqualTo(404)
-        assertThat(response.headers()["Name"]).isEqualTo("Value")
-
-        response.body()!!.byteStream().use { it.readBytes() }
-        assertThat(
-            inspectorRule.connection.findHttpEvent(
-                NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.RESPONSE_PAYLOAD
-            )!!.responsePayload.payload.toStringUtf8()
-        ).isEqualTo("InterceptedBody1")
-
-        assertThat(inspectorRule.connection.httpData.last().httpClosed.completed).isTrue()
-    }
-
-    @Test
-    fun abort() {
-        val client = createFakeOkHttp3Client()
-        val request = Request.Builder().url(FAKE_URL).build()
-        val fakeResponse = createFakeResponse(request)
-
-        val call = client.newCall(request, fakeResponse)
-        try {
-            call.executeThenBlowUp()
-        } catch (e: IOException) {
-            // This exception comes from blowing up the interceptor chain and is expected.
+  @Test
+  fun post() {
+    val client = createFakeOkHttp3Client()
+    val requestBody =
+      object : RequestBody() {
+        override fun contentType(): MediaType {
+          return MediaType.parse("text/text")!!
         }
 
-        val response = client.newCall(request, fakeResponse).execute()
-        response.body()!!.byteStream().use { it.readBytes() }
-
-        val events = inspectorRule.connection.httpData.groupBy { it.connectionId }
-
-        run {
-            // events for the aborted call
-            val abortedEvents = events[0]!!
-            assertThat(abortedEvents).hasSize(3)
-            assertThat(abortedEvents[2].hasHttpClosed()).isTrue()
-            assertThat(abortedEvents[2].httpClosed.completed).isFalse()
-            assertThat(abortedEvents[1].hasHttpThread()).isTrue()
+        override fun writeTo(bufferedSink: BufferedSink) {
+          val requestBody = "request body"
+          bufferedSink.write(requestBody.toByteArray())
         }
+      }
+    val request = Request.Builder().url(FAKE_URL).post(requestBody).build()
+    val fakeResponse = createFakeResponse(request)
 
-        run {
-            // events for the follow up GET call that is successful
-            val successEvents = events[1]!!
-            assertThat(successEvents).hasSize(6)
-            assertThat(successEvents[2].hasHttpResponseStarted()).isTrue()
-            val httpResponseStarted =
-                inspectorRule.connection.findHttpEvent(
-                    NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.HTTP_RESPONSE_STARTED
-                )
-            assertThat(httpResponseStarted!!.httpResponseStarted.fields).contains(
-                EXPECTED_RESPONSE_CODE
-            )
-            assertThat(successEvents[5].hasHttpClosed()).isTrue()
-            assertThat(successEvents[5].httpClosed.completed).isTrue()
-        }
+    val response = client.newCall(request, fakeResponse).execute()
+    response.body()!!.byteStream().use { it.readBytes() }
+
+    assertThat(inspectorRule.connection.httpData).hasSize(8)
+    val httpRequestStarted = inspectorRule.connection.httpData.first().httpRequestStarted
+    assertThat(httpRequestStarted.url).contains(URL_PARAMS)
+    assertThat(httpRequestStarted.method).isEqualTo("POST")
+
+    val httpRequestCompleted =
+      inspectorRule.connection.findHttpEvent(
+        NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.HTTP_REQUEST_COMPLETED
+      )
+    assertThat(httpRequestCompleted).isNotNull()
+
+    val requestPayload =
+      inspectorRule.connection.findHttpEvent(
+        NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.REQUEST_PAYLOAD
+      )
+    assertThat(requestPayload!!.requestPayload.payload.toStringUtf8()).isEqualTo("request body")
+  }
+
+  @Test
+  fun intercept() {
+    val ruleAdded = createFakeRuleAddedEvent(FAKE_URL)
+
+    inspectorRule.inspector.receiveInterceptCommand(
+      InterceptCommand.newBuilder().apply { interceptRuleAdded = ruleAdded }.build()
+    )
+
+    val client = createFakeOkHttp3Client()
+    val request = Request.Builder().url(FAKE_URL).build()
+    val fakeResponse = createFakeResponse(request)
+    val response = client.newCall(request, fakeResponse).execute()
+
+    assertThat(response.code()).isEqualTo(404)
+    assertThat(response.headers()["Name"]).isEqualTo("Value")
+
+    response.body()!!.byteStream().use { it.readBytes() }
+    assertThat(
+        inspectorRule.connection
+          .findHttpEvent(NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.RESPONSE_PAYLOAD)!!
+          .responsePayload
+          .payload
+          .toStringUtf8()
+      )
+      .isEqualTo("InterceptedBody1")
+
+    assertThat(inspectorRule.connection.httpData.last().httpClosed.completed).isTrue()
+  }
+
+  @Test
+  fun abort() {
+    val client = createFakeOkHttp3Client()
+    val request = Request.Builder().url(FAKE_URL).build()
+    val fakeResponse = createFakeResponse(request)
+
+    val call = client.newCall(request, fakeResponse)
+    try {
+      call.executeThenBlowUp()
+    } catch (e: IOException) {
+      // This exception comes from blowing up the interceptor chain and is expected.
     }
 
-    private fun createFakeOkHttp3Client(): FakeOkHttp3Client {
-        return FakeOkHttp3Client(
-            inspectorRule.environment.fakeArtTooling.triggerExitHook(
-                okhttp3.OkHttpClient::class.java,
-                "networkInterceptors()Ljava/util/List;",
-                emptyList()
-            )
+    val response = client.newCall(request, fakeResponse).execute()
+    response.body()!!.byteStream().use { it.readBytes() }
+
+    val events = inspectorRule.connection.httpData.groupBy { it.connectionId }
+
+    run {
+      // events for the aborted call
+      val abortedEvents = events[0]!!
+      assertThat(abortedEvents).hasSize(3)
+      assertThat(abortedEvents[2].hasHttpClosed()).isTrue()
+      assertThat(abortedEvents[2].httpClosed.completed).isFalse()
+      assertThat(abortedEvents[1].hasHttpThread()).isTrue()
+    }
+
+    run {
+      // events for the follow up GET call that is successful
+      val successEvents = events[1]!!
+      assertThat(successEvents).hasSize(6)
+      assertThat(successEvents[2].hasHttpResponseStarted()).isTrue()
+      val httpResponseStarted =
+        inspectorRule.connection.findHttpEvent(
+          NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.HTTP_RESPONSE_STARTED
         )
-
+      assertThat(httpResponseStarted!!.httpResponseStarted.fields).contains(EXPECTED_RESPONSE_CODE)
+      assertThat(successEvents[5].hasHttpClosed()).isTrue()
+      assertThat(successEvents[5].httpClosed.completed).isTrue()
     }
+  }
+
+  private fun createFakeOkHttp3Client(): FakeOkHttp3Client {
+    return FakeOkHttp3Client(
+      inspectorRule.environment.fakeArtTooling.triggerExitHook(
+        okhttp3.OkHttpClient::class.java,
+        "networkInterceptors()Ljava/util/List;",
+        emptyList()
+      )
+    )
+  }
 }
 
 private fun createFakeResponse(request: Request): Response {
-    return Response.Builder()
-        .request(request)
-        .protocol(Protocol.HTTP_2)
-        .code(200)
-        .message("")
-        .body(
-            ResponseBody.create(
-                MediaType.parse("text/text; charset=utf-8"),
-                "Test"
-            )
-        )
-        .build()
+  return Response.Builder()
+    .request(request)
+    .protocol(Protocol.HTTP_2)
+    .code(200)
+    .message("")
+    .body(ResponseBody.create(MediaType.parse("text/text; charset=utf-8"), "Test"))
+    .build()
 }

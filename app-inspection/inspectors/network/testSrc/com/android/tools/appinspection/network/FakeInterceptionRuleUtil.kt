@@ -18,67 +18,71 @@ package com.android.tools.appinspection.network
 
 import androidx.inspection.Inspector
 import com.android.tools.idea.protobuf.ByteString
-import studio.network.inspection.NetworkInspectorProtocol
 import java.net.URL
 import java.util.concurrent.Executor
+import studio.network.inspection.NetworkInspectorProtocol
 
 fun createFakeRuleAddedEvent(url: URL): NetworkInspectorProtocol.InterceptRuleAdded =
-    NetworkInspectorProtocol.InterceptRuleAdded.newBuilder().apply {
-        ruleId = 1
-        ruleBuilder.apply {
-            enabled = true
-            criteriaBuilder.apply {
-                protocol = when (url.protocol) {
-                    "https" -> NetworkInspectorProtocol.InterceptCriteria.Protocol.PROTOCOL_HTTPS
-                    "http" -> NetworkInspectorProtocol.InterceptCriteria.Protocol.PROTOCOL_HTTP
-                    else -> NetworkInspectorProtocol.InterceptCriteria.Protocol.PROTOCOL_UNSPECIFIED
-                }
-                host = url.host
-                port = ""
-                path = url.path
-                query = url.query
-                method = NetworkInspectorProtocol.InterceptCriteria.Method.METHOD_GET
+  NetworkInspectorProtocol.InterceptRuleAdded.newBuilder()
+    .apply {
+      ruleId = 1
+      ruleBuilder.apply {
+        enabled = true
+        criteriaBuilder.apply {
+          protocol =
+            when (url.protocol) {
+              "https" -> NetworkInspectorProtocol.InterceptCriteria.Protocol.PROTOCOL_HTTPS
+              "http" -> NetworkInspectorProtocol.InterceptCriteria.Protocol.PROTOCOL_HTTP
+              else -> NetworkInspectorProtocol.InterceptCriteria.Protocol.PROTOCOL_UNSPECIFIED
             }
-            addTransformation(
-                NetworkInspectorProtocol.Transformation.newBuilder().apply {
-                    bodyReplacedBuilder.apply {
-                        body =
-                            ByteString.copyFrom("InterceptedBody1".toByteArray())
-                    }
-                })
-            addTransformation(
-                NetworkInspectorProtocol.Transformation.newBuilder().apply {
-                    statusCodeReplacedBuilder.apply {
-                        targetCodeBuilder.apply {
-                            text = "200"
-                            type = NetworkInspectorProtocol.MatchingText.Type.PLAIN
-                        }
-                        newCode = "404"
-                    }
-                })
-            addTransformation(
-                NetworkInspectorProtocol.Transformation.newBuilder().apply {
-                    headerAddedBuilder.apply {
-                        name = "Name"
-                        value = "Value"
-                    }
-                })
+          host = url.host
+          port = ""
+          path = url.path
+          query = url.query
+          method = NetworkInspectorProtocol.InterceptCriteria.Method.METHOD_GET
         }
-    }.build()
+        addTransformation(
+          NetworkInspectorProtocol.Transformation.newBuilder().apply {
+            bodyReplacedBuilder.apply {
+              body = ByteString.copyFrom("InterceptedBody1".toByteArray())
+            }
+          }
+        )
+        addTransformation(
+          NetworkInspectorProtocol.Transformation.newBuilder().apply {
+            statusCodeReplacedBuilder.apply {
+              targetCodeBuilder.apply {
+                text = "200"
+                type = NetworkInspectorProtocol.MatchingText.Type.PLAIN
+              }
+              newCode = "404"
+            }
+          }
+        )
+        addTransformation(
+          NetworkInspectorProtocol.Transformation.newBuilder().apply {
+            headerAddedBuilder.apply {
+              name = "Name"
+              value = "Value"
+            }
+          }
+        )
+      }
+    }
+    .build()
 
 fun NetworkInspector.receiveInterceptCommand(
-    interceptCommand: NetworkInspectorProtocol.InterceptCommand
+  interceptCommand: NetworkInspectorProtocol.InterceptCommand
 ) {
-    onReceiveCommand(NetworkInspectorProtocol.Command.newBuilder()
-        .apply {
-            this.interceptCommand = interceptCommand
-        }
-        .build()
-        .toByteArray(), object : Inspector.CommandCallback {
-        override fun reply(response: ByteArray) {
-        }
+  onReceiveCommand(
+    NetworkInspectorProtocol.Command.newBuilder()
+      .apply { this.interceptCommand = interceptCommand }
+      .build()
+      .toByteArray(),
+    object : Inspector.CommandCallback {
+      override fun reply(response: ByteArray) {}
 
-        override fun addCancellationListener(executor: Executor, runnable: Runnable) {
-        }
-    })
+      override fun addCancellationListener(executor: Executor, runnable: Runnable) {}
+    }
+  )
 }

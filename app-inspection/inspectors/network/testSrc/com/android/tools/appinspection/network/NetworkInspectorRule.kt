@@ -18,39 +18,37 @@ package com.android.tools.appinspection.network
 
 import androidx.inspection.Inspector
 import com.android.tools.appinspection.network.utils.ConnectionIdGenerator
+import java.util.concurrent.Executor
 import org.junit.rules.ExternalResource
 import studio.network.inspection.NetworkInspectorProtocol
-import java.util.concurrent.Executor
 
 class NetworkInspectorRule : ExternalResource() {
 
-    lateinit var connection: FakeConnection
-    lateinit var environment: FakeEnvironment
-    lateinit var inspector: NetworkInspector
+  lateinit var connection: FakeConnection
+  lateinit var environment: FakeEnvironment
+  lateinit var inspector: NetworkInspector
 
-    override fun before() {
-        connection = FakeConnection()
-        environment = FakeEnvironment()
-        inspector = NetworkInspectorFactory().createInspector(connection, environment)
-        inspector.onReceiveCommand(
-            NetworkInspectorProtocol.Command.newBuilder()
-                .setStartInspectionCommand(
-                    NetworkInspectorProtocol.StartInspectionCommand.getDefaultInstance()
-                )
-                .build()
-                .toByteArray(),
-            object : Inspector.CommandCallback {
-                override fun reply(response: ByteArray) {
-                }
-
-                override fun addCancellationListener(executor: Executor, runnable: Runnable) {
-                }
-            }
+  override fun before() {
+    connection = FakeConnection()
+    environment = FakeEnvironment()
+    inspector = NetworkInspectorFactory().createInspector(connection, environment)
+    inspector.onReceiveCommand(
+      NetworkInspectorProtocol.Command.newBuilder()
+        .setStartInspectionCommand(
+          NetworkInspectorProtocol.StartInspectionCommand.getDefaultInstance()
         )
-    }
+        .build()
+        .toByteArray(),
+      object : Inspector.CommandCallback {
+        override fun reply(response: ByteArray) {}
 
-    override fun after() {
-        inspector.onDispose()
-        ConnectionIdGenerator.id.set(0)
-    }
+        override fun addCancellationListener(executor: Executor, runnable: Runnable) {}
+      }
+    )
+  }
+
+  override fun after() {
+    inspector.onDispose()
+    ConnectionIdGenerator.id.set(0)
+  }
 }

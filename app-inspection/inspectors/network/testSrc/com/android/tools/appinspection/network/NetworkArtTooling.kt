@@ -20,11 +20,11 @@ import android.app.Application
 import com.android.tools.appinspection.common.FakeArtTooling
 
 class NetworkArtTooling : FakeArtTooling() {
-    override fun <T> findInstances(clazz: Class<T>): List<T> {
-        if (clazz.name == Application::class.java.name) {
-            return listOf(Application(), Application()) as List<T>
-        } else {
-            throw UnsupportedOperationException()
-        }
+  override fun <T> findInstances(clazz: Class<T>): List<T> {
+    if (clazz.name == Application::class.java.name) {
+      return listOf(Application(), Application()) as List<T>
+    } else {
+      throw UnsupportedOperationException()
     }
+  }
 }

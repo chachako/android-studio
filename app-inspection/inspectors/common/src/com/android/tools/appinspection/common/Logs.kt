@@ -20,9 +20,10 @@ import android.util.Log
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
-private const val ERROR_HEADER = ("Network Inspector encountered an unexpected error. "
-        + "Consider reporting a bug, including logcat output below.\n"
-        + "See also: https://developer.android.com/studio/report-bugs.html#studio-bugs\n\n")
+private const val ERROR_HEADER =
+  ("Network Inspector encountered an unexpected error. " +
+    "Consider reporting a bug, including logcat output below.\n" +
+    "See also: https://developer.android.com/studio/report-bugs.html#studio-bugs\n\n")
 
 private const val LOG_TAG = "Network Inspector"
 private val LOG_BUFFER_NS = TimeUnit.SECONDS.toNanos(10)
@@ -30,23 +31,23 @@ private val LOG_BUFFER_NS = TimeUnit.SECONDS.toNanos(10)
 private val MESSAGE_TIMESTAMPS = ConcurrentHashMap<String, Long>()
 
 private fun shouldLog(message: String): Boolean {
-    val currentTime = System.nanoTime()
-    val lastMessageTimestamp = MESSAGE_TIMESTAMPS[message]
-    if (lastMessageTimestamp == null || currentTime > lastMessageTimestamp + LOG_BUFFER_NS) {
-        MESSAGE_TIMESTAMPS[message] = currentTime
-        return true
-    }
-    return false
+  val currentTime = System.nanoTime()
+  val lastMessageTimestamp = MESSAGE_TIMESTAMPS[message]
+  if (lastMessageTimestamp == null || currentTime > lastMessageTimestamp + LOG_BUFFER_NS) {
+    MESSAGE_TIMESTAMPS[message] = currentTime
+    return true
+  }
+  return false
 }
 
 /**
  * Logs an error to the commandline.
  *
- * To avoid spamming user's logcat, we cap the number of times a message
- * can be sent to once every [LOG_BUFFER_NS].
+ * To avoid spamming user's logcat, we cap the number of times a message can be sent to once every
+ * [LOG_BUFFER_NS].
  */
 fun logError(message: String, throwable: Throwable) {
-    if (shouldLog(message)) {
-        Log.e(LOG_TAG, "$ERROR_HEADER$message", throwable)
-    }
+  if (shouldLog(message)) {
+    Log.e(LOG_TAG, "$ERROR_HEADER$message", throwable)
+  }
 }

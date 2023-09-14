@@ -19,59 +19,55 @@ package com.android.tools.appinspection.network.trackers
 import com.android.tools.appinspection.network.reporters.StreamReporter
 import java.io.InputStream
 
-/**
- * Wraps an InputStream to enable the network inspector capturing of response body
- */
-class InputStreamTracker(
-    private val myWrapped: InputStream,
-    private val reporter: StreamReporter
-) : InputStream() {
+/** Wraps an InputStream to enable the network inspector capturing of response body */
+class InputStreamTracker(private val myWrapped: InputStream, private val reporter: StreamReporter) :
+  InputStream() {
 
-    override fun available(): Int {
-        return myWrapped.available()
-    }
+  override fun available(): Int {
+    return myWrapped.available()
+  }
 
-    override fun markSupported(): Boolean {
-        return myWrapped.markSupported()
-    }
+  override fun markSupported(): Boolean {
+    return myWrapped.markSupported()
+  }
 
-    override fun mark(readLimit: Int) {
-        myWrapped.mark(readLimit)
-    }
+  override fun mark(readLimit: Int) {
+    myWrapped.mark(readLimit)
+  }
 
-    override fun reset() {
-        myWrapped.reset()
-    }
+  override fun reset() {
+    myWrapped.reset()
+  }
 
-    override fun close() {
-        myWrapped.close()
-        reporter.onStreamClose()
-    }
+  override fun close() {
+    myWrapped.close()
+    reporter.onStreamClose()
+  }
 
-    override fun read(buffer: ByteArray): Int {
-        return read(buffer, 0, buffer.size)
-    }
+  override fun read(buffer: ByteArray): Int {
+    return read(buffer, 0, buffer.size)
+  }
 
-    override fun read(): Int {
-        val b = myWrapped.read()
-        // b is -1 if we've read to stream end
-        if (b > 0) reporter.addOneByte(b)
-        reporter.reportCurrentThread()
-        return b
-    }
+  override fun read(): Int {
+    val b = myWrapped.read()
+    // b is -1 if we've read to stream end
+    if (b > 0) reporter.addOneByte(b)
+    reporter.reportCurrentThread()
+    return b
+  }
 
-    override fun read(buffer: ByteArray, byteOffset: Int, byteCount: Int): Int {
-        val bytesRead = myWrapped.read(buffer, byteOffset, byteCount)
-        // bytesRead is -1 if we've read to stream's end.
-        if (bytesRead > 0) {
-            reporter.addBytes(buffer, byteOffset, bytesRead)
-        }
-        reporter.reportCurrentThread()
-        return bytesRead
+  override fun read(buffer: ByteArray, byteOffset: Int, byteCount: Int): Int {
+    val bytesRead = myWrapped.read(buffer, byteOffset, byteCount)
+    // bytesRead is -1 if we've read to stream's end.
+    if (bytesRead > 0) {
+      reporter.addBytes(buffer, byteOffset, bytesRead)
     }
+    reporter.reportCurrentThread()
+    return bytesRead
+  }
 
-    override fun skip(byteCount: Long): Long {
-        reporter.reportCurrentThread()
-        return myWrapped.skip(byteCount)
-    }
+  override fun skip(byteCount: Long): Long {
+    reporter.reportCurrentThread()
+    return myWrapped.skip(byteCount)
+  }
 }

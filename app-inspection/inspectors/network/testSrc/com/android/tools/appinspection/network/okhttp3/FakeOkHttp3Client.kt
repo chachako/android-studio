@@ -16,72 +16,71 @@
 
 package com.android.tools.appinspection.network.okhttp3
 
+import java.io.IOException
+import java.util.concurrent.TimeUnit
 import okhttp3.Call
 import okhttp3.Connection
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import java.io.IOException
-import java.util.concurrent.TimeUnit
 
 class FakeOkHttp3Client(private val networkInterceptorz: List<Interceptor>) : OkHttpClient() {
 
-    override fun networkInterceptors() = networkInterceptorz
+  override fun networkInterceptors() = networkInterceptorz
 
-    fun newCall(request: Request, fakeResponse: Response): FakeCall {
-        return FakeCall(this, request, fakeResponse)
-    }
+  fun newCall(request: Request, fakeResponse: Response): FakeCall {
+    return FakeCall(this, request, fakeResponse)
+  }
 
-    fun triggerInterceptor(
-        request: Request,
-        response: Response,
-        blowUp: Boolean = false
-    ): Response {
-        return networkInterceptorz.first().intercept(object : Interceptor.Chain {
-            override fun request(): Request {
-                return request
+  fun triggerInterceptor(request: Request, response: Response, blowUp: Boolean = false): Response {
+    return networkInterceptorz
+      .first()
+      .intercept(
+        object : Interceptor.Chain {
+          override fun request(): Request {
+            return request
+          }
+
+          override fun proceed(request: Request): Response {
+            if (blowUp) {
+              throw IOException("BLOWING UP")
             }
+            return response
+          }
 
-            override fun proceed(request: Request): Response {
-                if (blowUp) {
-                    throw IOException("BLOWING UP")
-                }
-                return response
-            }
+          override fun connection(): Connection {
+            throw NotImplementedError()
+          }
 
-            override fun connection(): Connection {
-                throw NotImplementedError()
-            }
+          override fun call(): Call {
+            TODO("Not yet implemented")
+          }
 
-            override fun call(): Call {
-                TODO("Not yet implemented")
-            }
+          override fun connectTimeoutMillis(): Int {
+            TODO("Not yet implemented")
+          }
 
-            override fun connectTimeoutMillis(): Int {
-                TODO("Not yet implemented")
-            }
+          override fun withConnectTimeout(p0: Int, p1: TimeUnit): Interceptor.Chain {
+            TODO("Not yet implemented")
+          }
 
-            override fun withConnectTimeout(p0: Int, p1: TimeUnit): Interceptor.Chain {
-                TODO("Not yet implemented")
-            }
+          override fun readTimeoutMillis(): Int {
+            TODO("Not yet implemented")
+          }
 
-            override fun readTimeoutMillis(): Int {
-                TODO("Not yet implemented")
-            }
+          override fun withReadTimeout(p0: Int, p1: TimeUnit): Interceptor.Chain {
+            TODO("Not yet implemented")
+          }
 
-            override fun withReadTimeout(p0: Int, p1: TimeUnit): Interceptor.Chain {
-                TODO("Not yet implemented")
-            }
+          override fun writeTimeoutMillis(): Int {
+            TODO("Not yet implemented")
+          }
 
-            override fun writeTimeoutMillis(): Int {
-                TODO("Not yet implemented")
-            }
-
-            override fun withWriteTimeout(p0: Int, p1: TimeUnit): Interceptor.Chain {
-                TODO("Not yet implemented")
-            }
+          override fun withWriteTimeout(p0: Int, p1: TimeUnit): Interceptor.Chain {
+            TODO("Not yet implemented")
+          }
         }
-        )
-    }
+      )
+  }
 }

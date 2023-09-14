@@ -26,53 +26,51 @@ import org.junit.Test
 
 class WakeLockHandlerTest {
 
-    @get:Rule
-    val inspectorRule = BackgroundTaskInspectorRule()
+  @get:Rule val inspectorRule = BackgroundTaskInspectorRule()
 
-    @Test
-    fun wakeLockAcquired() {
-        val wakeLockHandler = inspectorRule.inspector.wakeLockHandler
-        wakeLockHandler.onNewWakeLockEntry(1, "tag")
-        val wakeLock = PowerManager().newWakeLock(3, "tag2")
-        wakeLockHandler.onNewWakeLockExit(wakeLock)
-        wakeLockHandler.onWakeLockAcquired(wakeLock, 10)
+  @Test
+  fun wakeLockAcquired() {
+    val wakeLockHandler = inspectorRule.inspector.wakeLockHandler
+    wakeLockHandler.onNewWakeLockEntry(1, "tag")
+    val wakeLock = PowerManager().newWakeLock(3, "tag2")
+    wakeLockHandler.onNewWakeLockExit(wakeLock)
+    wakeLockHandler.onWakeLockAcquired(wakeLock, 10)
 
-        inspectorRule.connection.consume {
-            with(wakeLockAcquired) {
-                assertThat(tag).isEqualTo("tag")
-                assertThat(level).isEqualTo(WakeLockAcquired.Level.PARTIAL_WAKE_LOCK)
-            }
-        }
+    inspectorRule.connection.consume {
+      with(wakeLockAcquired) {
+        assertThat(tag).isEqualTo("tag")
+        assertThat(level).isEqualTo(WakeLockAcquired.Level.PARTIAL_WAKE_LOCK)
+      }
     }
+  }
 
-    @Test
-    fun wakeLockAcquiredWithoutParameter() {
-        val wakeLockHandler = inspectorRule.inspector.wakeLockHandler
-        val wakeLock = PowerManager().newWakeLock(1, "tag")
-        wakeLockHandler.onWakeLockAcquired(wakeLock, 10)
+  @Test
+  fun wakeLockAcquiredWithoutParameter() {
+    val wakeLockHandler = inspectorRule.inspector.wakeLockHandler
+    val wakeLock = PowerManager().newWakeLock(1, "tag")
+    wakeLockHandler.onWakeLockAcquired(wakeLock, 10)
 
-        inspectorRule.connection.consume {
-            with(wakeLockAcquired) {
-                assertThat(tag).isEqualTo("tag")
-                assertThat(level).isEqualTo(WakeLockAcquired.Level.PARTIAL_WAKE_LOCK)
-            }
-        }
+    inspectorRule.connection.consume {
+      with(wakeLockAcquired) {
+        assertThat(tag).isEqualTo("tag")
+        assertThat(level).isEqualTo(WakeLockAcquired.Level.PARTIAL_WAKE_LOCK)
+      }
     }
+  }
 
-    @Test
-    fun wakeLockReleased() {
-        val wakeLockHandler = inspectorRule.inspector.wakeLockHandler
-        val wakeLock = PowerManager().newWakeLock(1, "tag")
-        wakeLock.isHeld = true
-        wakeLockHandler.onWakeLockReleasedEntry(wakeLock, RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY)
-        wakeLockHandler.onWakeLockReleasedExit()
-        inspectorRule.connection.consume {
-            with(wakeLockReleased) {
-                assertThat(flagsList[0]).isEqualTo(
-                    WakeLockReleased.ReleaseFlag.RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY
-                )
-                assertThat(isHeld).isTrue()
-            }
-        }
+  @Test
+  fun wakeLockReleased() {
+    val wakeLockHandler = inspectorRule.inspector.wakeLockHandler
+    val wakeLock = PowerManager().newWakeLock(1, "tag")
+    wakeLock.isHeld = true
+    wakeLockHandler.onWakeLockReleasedEntry(wakeLock, RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY)
+    wakeLockHandler.onWakeLockReleasedExit()
+    inspectorRule.connection.consume {
+      with(wakeLockReleased) {
+        assertThat(flagsList[0])
+          .isEqualTo(WakeLockReleased.ReleaseFlag.RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY)
+        assertThat(isHeld).isTrue()
+      }
     }
+  }
 }

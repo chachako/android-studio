@@ -41,152 +41,147 @@ private const val ACQUIRE_CAUSES_WAKEUP = 0x10000000
 private const val ON_AFTER_RELEASE = 0x20000000
 
 /** Wake lock release flags */
-@VisibleForTesting
-const val RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY = 0x00000001
+@VisibleForTesting const val RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY = 0x00000001
 
-/**
- * A handler class that adds necessary hooks to track events for wake locks.
- */
+/** A handler class that adds necessary hooks to track events for wake locks. */
 interface WakeLockHandler {
 
-    /**
-     * Entry hook for [PowerManager.newWakeLock(int, String)]. Captures the flags
-     * and tag parameters.
-     */
-    fun onNewWakeLockEntry(levelAndFlags: Int, tag: String)
+  /**
+   * Entry hook for [PowerManager.newWakeLock(int, String)]. Captures the flags and tag parameters.
+   */
+  fun onNewWakeLockEntry(levelAndFlags: Int, tag: String)
 
-    /**
-     * Exit hook for [PowerManager#newWakeLock(int, String)]. Associates wake lock
-     * instance with the previously captured flags and myTag parameters.
-     */
-    fun onNewWakeLockExit(wakeLock: WakeLock): WakeLock
+  /**
+   * Exit hook for [PowerManager#newWakeLock(int, String)]. Associates wake lock instance with the
+   * previously captured flags and myTag parameters.
+   */
+  fun onNewWakeLockExit(wakeLock: WakeLock): WakeLock
 
-    /**
-     * Wrapper method for [WakeLock.acquire].
-     *
-     * Since [WakeLock.acquire] does not call [WakeLock.acquire] (vice
-     * versa), this will not cause double-instrumentation.
-     *
-     * @param wakeLock the wrapped [WakeLock] instance.
-     * @param timeout the timeout parameter passed to the original method.
-     */
-    fun onWakeLockAcquired(wakeLock: WakeLock, timeout: Long)
+  /**
+   * Wrapper method for [WakeLock.acquire].
+   *
+   * Since [WakeLock.acquire] does not call [WakeLock.acquire] (vice versa), this will not cause
+   * double-instrumentation.
+   *
+   * @param wakeLock the wrapped [WakeLock] instance.
+   * @param timeout the timeout parameter passed to the original method.
+   */
+  fun onWakeLockAcquired(wakeLock: WakeLock, timeout: Long)
 
-    /**
-     * Entry hook for [WakeLock.release(int)]. Capture the flags passed to the method
-     * and the "this" instance so the exit hook can retrieve them back.
-     */
-    fun onWakeLockReleasedEntry(wakeLock: WakeLock, flag: Int)
+  /**
+   * Entry hook for [WakeLock.release(int)]. Capture the flags passed to the method and the "this"
+   * instance so the exit hook can retrieve them back.
+   */
+  fun onWakeLockReleasedEntry(wakeLock: WakeLock, flag: Int)
 
-    /**
-     * Add exit hook for [WakeLock.release(int)]. [WakeLock.isHeld()] may be updated in the
-     * method, so we should retrieve the value in an exit hook. Then we send the held state
-     * along with the flags from the entry hook to Studio Profiler.
-     */
-    fun onWakeLockReleasedExit()
+  /**
+   * Add exit hook for [WakeLock.release(int)]. [WakeLock.isHeld()] may be updated in the method, so
+   * we should retrieve the value in an exit hook. Then we send the held state along with the flags
+   * from the entry hook to Studio Profiler.
+   */
+  fun onWakeLockReleasedExit()
 }
 
 class WakeLockHandlerImpl(private val connection: Connection) : WakeLockHandler {
 
-    /** Data structure for wake lock creation parameters. */
-    private data class CreationParams(val levelAndFlags: Int, val tag: String)
+  /** Data structure for wake lock creation parameters. */
+  private data class CreationParams(val levelAndFlags: Int, val tag: String)
 
-    /** Data structure for wake lock release parameters. */
-    private data class ReleaseParams(val wakeLock: WakeLock, val flag: Int)
+  /** Data structure for wake lock release parameters. */
+  private data class ReleaseParams(val wakeLock: WakeLock, val flag: Int)
 
-    /**
-     * Use a thread-local variable for wake lock creation parameters, so a value can be temporarily
-     * stored when we enter a wakelock's constructor and retrieved when we exit it. Using a
-     * ThreadLocal protects against the situation when multiple threads create wake locks at the
-     * same time.
-     */
-    private val newWakeLockData = ThreadLocal<CreationParams>()
+  /**
+   * Use a thread-local variable for wake lock creation parameters, so a value can be temporarily
+   * stored when we enter a wakelock's constructor and retrieved when we exit it. Using a
+   * ThreadLocal protects against the situation when multiple threads create wake locks at the same
+   * time.
+   */
+  private val newWakeLockData = ThreadLocal<CreationParams>()
 
-    /**
-     * Use a thread-local variable for wake lock release parameters, so a value can be temporarily
-     * stored when we enter the release method and retrieved when we exit it.
-     */
-    private val releaseWakeLockData = ThreadLocal<ReleaseParams>()
+  /**
+   * Use a thread-local variable for wake lock release parameters, so a value can be temporarily
+   * stored when we enter the release method and retrieved when we exit it.
+   */
+  private val releaseWakeLockData = ThreadLocal<ReleaseParams>()
 
-    /** Used by acquire and release hooks to look up the generated ID by wake lock instance.  */
-    private val eventIdMap = mutableMapOf<WakeLock, Long>()
+  /** Used by acquire and release hooks to look up the generated ID by wake lock instance. */
+  private val eventIdMap = mutableMapOf<WakeLock, Long>()
 
-    /** Used by acquire hooks to retrieve wake lock creation parameters.  */
-    private val wakeLockCreationParamsMap = mutableMapOf<WakeLock, CreationParams>()
+  /** Used by acquire hooks to retrieve wake lock creation parameters. */
+  private val wakeLockCreationParamsMap = mutableMapOf<WakeLock, CreationParams>()
 
-    override fun onNewWakeLockEntry(levelAndFlags: Int, tag: String) {
-        newWakeLockData.set(CreationParams(levelAndFlags, tag))
+  override fun onNewWakeLockEntry(levelAndFlags: Int, tag: String) {
+    newWakeLockData.set(CreationParams(levelAndFlags, tag))
+  }
+
+  override fun onNewWakeLockExit(wakeLock: WakeLock): WakeLock {
+    wakeLockCreationParamsMap[wakeLock] = newWakeLockData.get()
+    return wakeLock
+  }
+
+  override fun onWakeLockAcquired(wakeLock: WakeLock, timeout: Long) {
+    val eventId = eventIdMap.getOrPut(wakeLock) { BackgroundTaskUtil.nextId() }
+    var creationParams = CreationParams(1, DEFAULT_TAG)
+    if (wakeLockCreationParamsMap.containsKey(wakeLock)) {
+      creationParams = wakeLockCreationParamsMap[wakeLock]!!
+    } else {
+      try {
+        val wakeLockClass: Class<*> = wakeLock.javaClass
+        val flagsField: Field = wakeLockClass.getDeclaredField("mFlags")
+        val tagField: Field = wakeLockClass.getDeclaredField("mTag")
+        flagsField.isAccessible = true
+        tagField.isAccessible = true
+        val flags: Int = flagsField.getInt(wakeLock)
+        val tag = tagField.get(wakeLock) as String
+        creationParams = CreationParams(flags, tag)
+      } catch (e: NoSuchFieldException) {
+        Log.e("Failed to retrieve wake lock parameters: ", e.localizedMessage)
+      } catch (e: IllegalAccessException) {
+        Log.e("Failed to retrieve wake lock parameters: ", e.localizedMessage)
+      }
     }
-
-    override fun onNewWakeLockExit(wakeLock: WakeLock): WakeLock {
-        wakeLockCreationParamsMap[wakeLock] = newWakeLockData.get()
-        return wakeLock
-    }
-
-    override fun onWakeLockAcquired(wakeLock: WakeLock, timeout: Long) {
-        val eventId = eventIdMap.getOrPut(wakeLock) { BackgroundTaskUtil.nextId() }
-        var creationParams = CreationParams(1, DEFAULT_TAG)
-        if (wakeLockCreationParamsMap.containsKey(wakeLock)) {
-            creationParams = wakeLockCreationParamsMap[wakeLock]!!
-        } else {
-            try {
-                val wakeLockClass: Class<*> = wakeLock.javaClass
-                val flagsField: Field = wakeLockClass.getDeclaredField("mFlags")
-                val tagField: Field = wakeLockClass.getDeclaredField("mTag")
-                flagsField.isAccessible = true
-                tagField.isAccessible = true
-                val flags: Int = flagsField.getInt(wakeLock)
-                val tag = tagField.get(wakeLock) as String
-                creationParams = CreationParams(flags, tag)
-            } catch (e: NoSuchFieldException) {
-                Log.e("Failed to retrieve wake lock parameters: ", e.localizedMessage)
-            } catch (e: IllegalAccessException) {
-                Log.e("Failed to retrieve wake lock parameters: ", e.localizedMessage)
-            }
+    connection.sendBackgroundTaskEvent(eventId) {
+      stacktrace = getStackTrace(1)
+      wakeLockAcquiredBuilder.apply {
+        level =
+          when (creationParams.levelAndFlags and WAKE_LOCK_LEVEL_MASK) {
+            PARTIAL_WAKE_LOCK -> WakeLockAcquired.Level.PARTIAL_WAKE_LOCK
+            SCREEN_DIM_WAKE_LOCK -> WakeLockAcquired.Level.SCREEN_DIM_WAKE_LOCK
+            SCREEN_BRIGHT_WAKE_LOCK -> WakeLockAcquired.Level.SCREEN_BRIGHT_WAKE_LOCK
+            FULL_WAKE_LOCK -> WakeLockAcquired.Level.FULL_WAKE_LOCK
+            PROXIMITY_SCREEN_OFF_WAKE_LOCK -> WakeLockAcquired.Level.PROXIMITY_SCREEN_OFF_WAKE_LOCK
+            else -> WakeLockAcquired.Level.UNDEFINED_WAKE_LOCK_LEVEL
+          }
+        if (creationParams.levelAndFlags and ACQUIRE_CAUSES_WAKEUP != 0) {
+          addFlags(WakeLockAcquired.CreationFlag.ACQUIRE_CAUSES_WAKEUP)
         }
-        connection.sendBackgroundTaskEvent(eventId) {
-            stacktrace = getStackTrace(1)
-            wakeLockAcquiredBuilder.apply {
-                level = when (creationParams.levelAndFlags and WAKE_LOCK_LEVEL_MASK) {
-                    PARTIAL_WAKE_LOCK -> WakeLockAcquired.Level.PARTIAL_WAKE_LOCK
-                    SCREEN_DIM_WAKE_LOCK -> WakeLockAcquired.Level.SCREEN_DIM_WAKE_LOCK
-                    SCREEN_BRIGHT_WAKE_LOCK -> WakeLockAcquired.Level.SCREEN_BRIGHT_WAKE_LOCK
-                    FULL_WAKE_LOCK -> WakeLockAcquired.Level.FULL_WAKE_LOCK
-                    PROXIMITY_SCREEN_OFF_WAKE_LOCK ->
-                        WakeLockAcquired.Level.PROXIMITY_SCREEN_OFF_WAKE_LOCK
-                    else -> WakeLockAcquired.Level.UNDEFINED_WAKE_LOCK_LEVEL
-                }
-                if (creationParams.levelAndFlags and ACQUIRE_CAUSES_WAKEUP != 0) {
-                    addFlags(WakeLockAcquired.CreationFlag.ACQUIRE_CAUSES_WAKEUP)
-                }
-                if (creationParams.levelAndFlags and ON_AFTER_RELEASE != 0) {
-                    addFlags(WakeLockAcquired.CreationFlag.ON_AFTER_RELEASE)
-                }
-                tag = creationParams.tag
-                this.timeout = timeout
-            }
+        if (creationParams.levelAndFlags and ON_AFTER_RELEASE != 0) {
+          addFlags(WakeLockAcquired.CreationFlag.ON_AFTER_RELEASE)
         }
+        tag = creationParams.tag
+        this.timeout = timeout
+      }
     }
+  }
 
-    override fun onWakeLockReleasedEntry(wakeLock: WakeLock, flag: Int) {
-        releaseWakeLockData.set(ReleaseParams(wakeLock, flag))
-    }
+  override fun onWakeLockReleasedEntry(wakeLock: WakeLock, flag: Int) {
+    releaseWakeLockData.set(ReleaseParams(wakeLock, flag))
+  }
 
-    override fun onWakeLockReleasedExit() {
-        val releaseParams = releaseWakeLockData.get()
-        val eventId =
-            eventIdMap.getOrPut(releaseParams.wakeLock) { BackgroundTaskUtil.nextId() }
-        connection.sendBackgroundTaskEvent(eventId) {
-            stacktrace = getStackTrace(2)
-            wakeLockReleasedBuilder.apply {
-                if (releaseParams.flag and RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY != 0) {
-                    addFlags(
-                        BackgroundTaskInspectorProtocol.WakeLockReleased.ReleaseFlag
-                            .RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY
-                    )
-                }
-                isHeld = releaseParams.wakeLock.isHeld
-            }
+  override fun onWakeLockReleasedExit() {
+    val releaseParams = releaseWakeLockData.get()
+    val eventId = eventIdMap.getOrPut(releaseParams.wakeLock) { BackgroundTaskUtil.nextId() }
+    connection.sendBackgroundTaskEvent(eventId) {
+      stacktrace = getStackTrace(2)
+      wakeLockReleasedBuilder.apply {
+        if (releaseParams.flag and RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY != 0) {
+          addFlags(
+            BackgroundTaskInspectorProtocol.WakeLockReleased.ReleaseFlag
+              .RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY
+          )
         }
+        isHeld = releaseParams.wakeLock.isHeld
+      }
     }
+  }
 }

@@ -22,14 +22,14 @@ import backgroundtask.inspection.BackgroundTaskInspectorProtocol.Event
 
 class FakeConnection : Connection() {
 
-    private var lastEvent: BackgroundTaskEvent? = null
+  private var lastEvent: BackgroundTaskEvent? = null
 
-    override fun sendEvent(data: ByteArray) {
-        lastEvent = Event.parseFrom(data).backgroundTaskEvent
-    }
+  override fun sendEvent(data: ByteArray) {
+    lastEvent = Event.parseFrom(data).backgroundTaskEvent
+  }
 
-    fun consume(checker: BackgroundTaskEvent.() -> Unit) {
-        checker(lastEvent!!)
-        lastEvent = null
-    }
+  fun consume(checker: BackgroundTaskEvent.() -> Unit) {
+    checker(lastEvent!!)
+    lastEvent = null
+  }
 }

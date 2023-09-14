@@ -23,109 +23,97 @@ import com.android.tools.appinspection.network.utils.sendHttpConnectionEvent
 import studio.network.inspection.NetworkInspectorProtocol
 
 /**
- * A class that is used to report connection related activity to Studio such as
- * making requests or receiving responses.
+ * A class that is used to report connection related activity to Studio such as making requests or
+ * receiving responses.
  */
 interface ConnectionReporter : ThreadReporter {
 
-    fun onRequest(
-        url: String,
-        callstack: String,
-        method: String,
-        fields: String
-    )
+  fun onRequest(url: String, callstack: String, method: String, fields: String)
 
-    fun onResponse(fields: String)
+  fun onResponse(fields: String)
 
-    fun onInterception(interception: NetworkInterceptionMetrics)
+  fun onInterception(interception: NetworkInterceptionMetrics)
 
-    fun onError(status: String)
+  fun onError(status: String)
 
-    fun createInputStreamReporter(): StreamReporter
+  fun createInputStreamReporter(): StreamReporter
 
-    fun createOutputStreamReporter(): StreamReporter
+  fun createOutputStreamReporter(): StreamReporter
 
-    companion object {
+  companion object {
 
-        fun createConnectionTracker(connection: Connection): ConnectionReporter =
-            ConnectionReporterImpl(connection)
-    }
+    fun createConnectionTracker(connection: Connection): ConnectionReporter =
+      ConnectionReporterImpl(connection)
+  }
 }
 
-private class ConnectionReporterImpl(
-    private val connection: Connection
-) : ConnectionReporter, ThreadReporter {
+private class ConnectionReporterImpl(private val connection: Connection) :
+  ConnectionReporter, ThreadReporter {
 
-    private val connectionId = ConnectionIdGenerator.nextId()
-    private val threadReporter = ThreadReporter.createThreadReporter(connection, connectionId)
+  private val connectionId = ConnectionIdGenerator.nextId()
+  private val threadReporter = ThreadReporter.createThreadReporter(connection, connectionId)
 
-    override fun reportCurrentThread() {
-        threadReporter.reportCurrentThread()
-    }
+  override fun reportCurrentThread() {
+    threadReporter.reportCurrentThread()
+  }
 
-    override fun createInputStreamReporter(): StreamReporter {
-        return InputStreamReporterImpl(connection, connectionId, threadReporter)
-    }
+  override fun createInputStreamReporter(): StreamReporter {
+    return InputStreamReporterImpl(connection, connectionId, threadReporter)
+  }
 
-    override fun createOutputStreamReporter(): StreamReporter {
-        return OutputStreamReporterImpl(connection, connectionId, threadReporter)
-    }
+  override fun createOutputStreamReporter(): StreamReporter {
+    return OutputStreamReporterImpl(connection, connectionId, threadReporter)
+  }
 
-    override fun onRequest(
-        url: String,
-        callstack: String,
-        method: String,
-        fields: String
-    ) {
-        connection.sendHttpConnectionEvent(
-            NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
-                .setHttpRequestStarted(
-                    NetworkInspectorProtocol.HttpConnectionEvent.RequestStarted.newBuilder()
-                        .setUrl(url)
-                        .setTrace(callstack)
-                        .setMethod(method)
-                        .setFields(fields)
-                )
-                .setConnectionId(connectionId)
+  override fun onRequest(url: String, callstack: String, method: String, fields: String) {
+    connection.sendHttpConnectionEvent(
+      NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
+        .setHttpRequestStarted(
+          NetworkInspectorProtocol.HttpConnectionEvent.RequestStarted.newBuilder()
+            .setUrl(url)
+            .setTrace(callstack)
+            .setMethod(method)
+            .setFields(fields)
         )
-    }
+        .setConnectionId(connectionId)
+    )
+  }
 
-    override fun onResponse(fields: String) {
-        connection.sendHttpConnectionEvent(
-            NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
-                .setHttpResponseStarted(
-                    NetworkInspectorProtocol.HttpConnectionEvent.ResponseStarted.newBuilder()
-                        .setFields(fields)
-                )
-                .setConnectionId(connectionId)
+  override fun onResponse(fields: String) {
+    connection.sendHttpConnectionEvent(
+      NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
+        .setHttpResponseStarted(
+          NetworkInspectorProtocol.HttpConnectionEvent.ResponseStarted.newBuilder()
+            .setFields(fields)
         )
-    }
+        .setConnectionId(connectionId)
+    )
+  }
 
-    override fun onInterception(interception: NetworkInterceptionMetrics) {
-        if (interception.criteriaMatched) {
-            connection.sendHttpConnectionEvent(
-                NetworkInspectorProtocol.HttpConnectionEvent.newBuilder().apply {
-                    httpResponseInterceptedBuilder.apply {
-                        statusCode = interception.statusCode
-                        headerAdded = interception.headerAdded
-                        headerReplaced = interception.headerReplaced
-                        bodyReplaced = interception.bodyReplaced
-                        bodyModified = interception.bodyModified
-                    }
-                    this.connectionId = this@ConnectionReporterImpl.connectionId
-                }
-            )
+  override fun onInterception(interception: NetworkInterceptionMetrics) {
+    if (interception.criteriaMatched) {
+      connection.sendHttpConnectionEvent(
+        NetworkInspectorProtocol.HttpConnectionEvent.newBuilder().apply {
+          httpResponseInterceptedBuilder.apply {
+            statusCode = interception.statusCode
+            headerAdded = interception.headerAdded
+            headerReplaced = interception.headerReplaced
+            bodyReplaced = interception.bodyReplaced
+            bodyModified = interception.bodyModified
+          }
+          this.connectionId = this@ConnectionReporterImpl.connectionId
         }
+      )
     }
+  }
 
-    override fun onError(status: String) {
-        connection.sendHttpConnectionEvent(
-            NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
-                .setHttpClosed(
-                    NetworkInspectorProtocol.HttpConnectionEvent.Closed.newBuilder()
-                        .setCompleted(false)
-                )
-                .setConnectionId(connectionId)
+  override fun onError(status: String) {
+    connection.sendHttpConnectionEvent(
+      NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
+        .setHttpClosed(
+          NetworkInspectorProtocol.HttpConnectionEvent.Closed.newBuilder().setCompleted(false)
         )
-    }
+        .setConnectionId(connectionId)
+    )
+  }
 }

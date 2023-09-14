@@ -16,47 +16,47 @@
 
 package com.android.tools.appinspection.network.rules
 
-import studio.network.inspection.NetworkInspectorProtocol.InterceptCriteria
 import java.net.URL
+import studio.network.inspection.NetworkInspectorProtocol.InterceptCriteria
 
-/**
- * A criteria class that checks if a connection should be intercepted.
- */
+/** A criteria class that checks if a connection should be intercepted. */
 class InterceptionCriteria(private val interceptCriteria: InterceptCriteria) {
 
-    fun appliesTo(connection: NetworkConnection): Boolean {
-        if (!interceptCriteria.method.appliesTo(connection.method)) {
-            return false
-        }
-        val url = URL(connection.url)
-        if (!interceptCriteria.protocol.appliesTo(url.protocol)) {
-            return false
-        }
-        return wildCardMatches(interceptCriteria.port, url.port.toString()) &&
-                wildCardMatches(interceptCriteria.host, url.host) &&
-                wildCardMatches(interceptCriteria.path, url.path) &&
-                wildCardMatches(interceptCriteria.query, url.query)
+  fun appliesTo(connection: NetworkConnection): Boolean {
+    if (!interceptCriteria.method.appliesTo(connection.method)) {
+      return false
     }
+    val url = URL(connection.url)
+    if (!interceptCriteria.protocol.appliesTo(url.protocol)) {
+      return false
+    }
+    return wildCardMatches(interceptCriteria.port, url.port.toString()) &&
+      wildCardMatches(interceptCriteria.host, url.host) &&
+      wildCardMatches(interceptCriteria.path, url.path) &&
+      wildCardMatches(interceptCriteria.query, url.query)
+  }
 }
 
 private fun InterceptCriteria.Method.appliesTo(connectionMethod: String): Boolean {
-    val method = when (this) {
-        InterceptCriteria.Method.METHOD_UNSPECIFIED -> return true
-        InterceptCriteria.Method.METHOD_GET -> "GET"
-        InterceptCriteria.Method.METHOD_POST -> "POST"
-        else -> return false
+  val method =
+    when (this) {
+      InterceptCriteria.Method.METHOD_UNSPECIFIED -> return true
+      InterceptCriteria.Method.METHOD_GET -> "GET"
+      InterceptCriteria.Method.METHOD_POST -> "POST"
+      else -> return false
     }
 
-    return method == connectionMethod
+  return method == connectionMethod
 }
 
 private fun InterceptCriteria.Protocol.appliesTo(connectionProtocol: String): Boolean {
-    val protocol = when (this) {
-        InterceptCriteria.Protocol.PROTOCOL_UNSPECIFIED -> return true
-        InterceptCriteria.Protocol.PROTOCOL_HTTPS -> "https"
-        InterceptCriteria.Protocol.PROTOCOL_HTTP -> "http"
-        else -> return false
+  val protocol =
+    when (this) {
+      InterceptCriteria.Protocol.PROTOCOL_UNSPECIFIED -> return true
+      InterceptCriteria.Protocol.PROTOCOL_HTTPS -> "https"
+      InterceptCriteria.Protocol.PROTOCOL_HTTP -> "http"
+      else -> return false
     }
 
-    return protocol == connectionProtocol
+  return protocol == connectionProtocol
 }

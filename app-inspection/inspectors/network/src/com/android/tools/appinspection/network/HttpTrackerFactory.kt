@@ -19,29 +19,27 @@ import com.android.tools.appinspection.network.reporters.ConnectionReporter
 import com.android.tools.appinspection.network.trackers.ConnectionTracker
 import com.android.tools.appinspection.network.trackers.HttpConnectionTracker
 
-/**
- * This is the factory for the [HttpConnectionTracker] instances.
- */
+/** This is the factory for the [HttpConnectionTracker] instances. */
 interface HttpTrackerFactory {
 
-    /**
-     * Starts tracking an HTTP request based on the provided url.
-     *
-     * The stacktrace is used to report the call stacks of the calling code
-     *
-     * Returns an [HttpConnectionTracker] which can be used to track request and response details.
-     */
-    fun trackConnection(url: String, callstack: String): HttpConnectionTracker
+  /**
+   * Starts tracking an HTTP request based on the provided url.
+   *
+   * The stacktrace is used to report the call stacks of the calling code
+   *
+   * Returns an [HttpConnectionTracker] which can be used to track request and response details.
+   */
+  fun trackConnection(url: String, callstack: String): HttpConnectionTracker
 }
 
-class HttpTrackerFactoryImpl(
-    private val inspectorConnection: androidx.inspection.Connection
-) : HttpTrackerFactory {
+class HttpTrackerFactoryImpl(private val inspectorConnection: androidx.inspection.Connection) :
+  HttpTrackerFactory {
 
-    override fun trackConnection(url: String, callstack: String): HttpConnectionTracker {
-        return ConnectionTracker(
-            url, callstack,
-            ConnectionReporter.createConnectionTracker(inspectorConnection)
-        )
-    }
+  override fun trackConnection(url: String, callstack: String): HttpConnectionTracker {
+    return ConnectionTracker(
+      url,
+      callstack,
+      ConnectionReporter.createConnectionTracker(inspectorConnection)
+    )
+  }
 }

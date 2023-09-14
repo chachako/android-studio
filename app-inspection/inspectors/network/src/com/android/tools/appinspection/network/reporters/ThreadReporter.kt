@@ -20,43 +20,39 @@ import androidx.inspection.Connection
 import com.android.tools.appinspection.network.utils.sendHttpConnectionEvent
 import studio.network.inspection.NetworkInspectorProtocol
 
-/**
- * A reporter used for sending and reporting thread related events.
- */
+/** A reporter used for sending and reporting thread related events. */
 interface ThreadReporter {
 
-    /**
-     * Reports the current thread's call frames to Studio.
-     */
-    fun reportCurrentThread()
+  /** Reports the current thread's call frames to Studio. */
+  fun reportCurrentThread()
 
-    companion object {
+  companion object {
 
-        fun createThreadReporter(connection: Connection, connectionId: Long): ThreadReporter =
-            ThreadReporterImpl(connection, connectionId)
-    }
+    fun createThreadReporter(connection: Connection, connectionId: Long): ThreadReporter =
+      ThreadReporterImpl(connection, connectionId)
+  }
 }
 
 private class ThreadReporterImpl(
-    private val connection: Connection,
-    private val connectionId: Long
+  private val connection: Connection,
+  private val connectionId: Long
 ) : ThreadReporter {
 
-    private var lastThread: Thread? = null
+  private var lastThread: Thread? = null
 
-    override fun reportCurrentThread() {
-        val thread = Thread.currentThread()
-        if (thread !== lastThread) {
-            connection.sendHttpConnectionEvent(
-                NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
-                    .setHttpThread(
-                        NetworkInspectorProtocol.HttpConnectionEvent.ThreadData.newBuilder()
-                            .setThreadId(thread.id)
-                            .setThreadName(thread.name)
-                    )
-                    .setConnectionId(connectionId)
-            )
-            lastThread = thread
-        }
+  override fun reportCurrentThread() {
+    val thread = Thread.currentThread()
+    if (thread !== lastThread) {
+      connection.sendHttpConnectionEvent(
+        NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
+          .setHttpThread(
+            NetworkInspectorProtocol.HttpConnectionEvent.ThreadData.newBuilder()
+              .setThreadId(thread.id)
+              .setThreadName(thread.name)
+          )
+          .setConnectionId(connectionId)
+      )
+      lastThread = thread
     }
+  }
 }

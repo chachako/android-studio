@@ -20,50 +20,50 @@ import java.io.IOException
 import java.io.InputStream
 
 data class NetworkConnection(
-    val url: String,
-    val method: String,
+  val url: String,
+  val method: String,
 )
 
 sealed class InterceptedResponseBody {
 
-    abstract fun get(): InputStream
-    class SuccessfulResponseBody(private val responseBody: InputStream) : InterceptedResponseBody() {
+  abstract fun get(): InputStream
+  class SuccessfulResponseBody(private val responseBody: InputStream) : InterceptedResponseBody() {
 
-        override fun get() = responseBody
-    }
+    override fun get() = responseBody
+  }
 
-    class FailedResponseBody(val exception: IOException) : InterceptedResponseBody() {
+  class FailedResponseBody(val exception: IOException) : InterceptedResponseBody() {
 
-        override fun get() = throw exception
-    }
+    override fun get() = throw exception
+  }
 }
 
 data class NetworkResponse(
-    val responseHeaders: Map<String?, List<String>>,
-    val responseBody: InterceptedResponseBody,
-    val interception: NetworkInterceptionMetrics = NetworkInterceptionMetrics()
+  val responseHeaders: Map<String?, List<String>>,
+  val responseBody: InterceptedResponseBody,
+  val interception: NetworkInterceptionMetrics = NetworkInterceptionMetrics()
 ) {
-    constructor(
-        responseHeaders: Map<String?, List<String>>,
-        responseBody: InputStream
-    ): this(responseHeaders, InterceptedResponseBody.SuccessfulResponseBody(responseBody))
+  constructor(
+    responseHeaders: Map<String?, List<String>>,
+    responseBody: InputStream
+  ) : this(responseHeaders, InterceptedResponseBody.SuccessfulResponseBody(responseBody))
 
-    constructor(
-        responseHeaders: Map<String?, List<String>>,
-        error: IOException
-    ): this(responseHeaders, InterceptedResponseBody.FailedResponseBody(error))
+  constructor(
+    responseHeaders: Map<String?, List<String>>,
+    error: IOException
+  ) : this(responseHeaders, InterceptedResponseBody.FailedResponseBody(error))
 
-    val body: InputStream
-        get() = responseBody.get()
+  val body: InputStream
+    get() = responseBody.get()
 }
 
 data class NetworkInterceptionMetrics(
-    val criteriaMatched: Boolean = false,
-    val statusCode: Boolean = false,
-    val headerAdded: Boolean = false,
-    val headerReplaced: Boolean = false,
-    val bodyReplaced: Boolean = false,
-    val bodyModified: Boolean = false
+  val criteriaMatched: Boolean = false,
+  val statusCode: Boolean = false,
+  val headerAdded: Boolean = false,
+  val headerReplaced: Boolean = false,
+  val bodyReplaced: Boolean = false,
+  val bodyModified: Boolean = false
 )
 
 /**
@@ -72,61 +72,52 @@ data class NetworkInterceptionMetrics(
  */
 interface InterceptionRuleService {
 
-    /**
-     * Intercepts the provided [response] with the current rules.
-     */
-    fun interceptResponse(connection: NetworkConnection, response: NetworkResponse): NetworkResponse
+  /** Intercepts the provided [response] with the current rules. */
+  fun interceptResponse(connection: NetworkConnection, response: NetworkResponse): NetworkResponse
 
-    /**
-     * Adds a new rule to the service. If the rule id already exists, overwrite the existing one.
-     */
-    fun addRule(ruleId: Int, rule: InterceptionRule)
+  /** Adds a new rule to the service. If the rule id already exists, overwrite the existing one. */
+  fun addRule(ruleId: Int, rule: InterceptionRule)
 
-    /**
-     * Removes a rule from the service.
-     */
-    fun removeRule(ruleId: Int)
+  /** Removes a rule from the service. */
+  fun removeRule(ruleId: Int)
 
-    /**
-     * Reorders rules according to the [ruleIdList].
-     */
-    fun reorderRules(ruleIdList: List<Int>)
+  /** Reorders rules according to the [ruleIdList]. */
+  fun reorderRules(ruleIdList: List<Int>)
 }
 
 class InterceptionRuleServiceImpl : InterceptionRuleService {
 
-    private val rules = mutableMapOf<Int, InterceptionRule>()
-    private var ruleIdList = mutableListOf<Int>()
+  private val rules = mutableMapOf<Int, InterceptionRule>()
+  private var ruleIdList = mutableListOf<Int>()
 
-    @Synchronized
-    override fun interceptResponse(
-        connection: NetworkConnection,
-        response: NetworkResponse
-    ): NetworkResponse = ruleIdList.mapNotNull { id -> rules[id] }
-        .filter { it.isEnabled }
-        .fold(response) { intermediateResponse, rule ->
-            rule.transform(
-                connection,
-                intermediateResponse
-            )
-        }
+  @Synchronized
+  override fun interceptResponse(
+    connection: NetworkConnection,
+    response: NetworkResponse
+  ): NetworkResponse =
+    ruleIdList
+      .mapNotNull { id -> rules[id] }
+      .filter { it.isEnabled }
+      .fold(response) { intermediateResponse, rule ->
+        rule.transform(connection, intermediateResponse)
+      }
 
-    @Synchronized
-    override fun addRule(ruleId: Int, rule: InterceptionRule) {
-        if (!rules.containsKey(ruleId)) {
-            ruleIdList.add(ruleId)
-        }
-        rules[ruleId] = rule
+  @Synchronized
+  override fun addRule(ruleId: Int, rule: InterceptionRule) {
+    if (!rules.containsKey(ruleId)) {
+      ruleIdList.add(ruleId)
     }
+    rules[ruleId] = rule
+  }
 
-    @Synchronized
-    override fun removeRule(ruleId: Int) {
-        ruleIdList.remove(ruleId)
-        rules.remove(ruleId)
-    }
+  @Synchronized
+  override fun removeRule(ruleId: Int) {
+    ruleIdList.remove(ruleId)
+    rules.remove(ruleId)
+  }
 
-    @Synchronized
-    override fun reorderRules(ruleIdList: List<Int>) {
-        this.ruleIdList = ruleIdList.toMutableList()
-    }
+  @Synchronized
+  override fun reorderRules(ruleIdList: List<Int>) {
+    this.ruleIdList = ruleIdList.toMutableList()
+  }
 }

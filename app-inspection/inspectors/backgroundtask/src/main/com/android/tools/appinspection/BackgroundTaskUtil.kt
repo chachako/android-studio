@@ -24,31 +24,31 @@ import java.util.concurrent.atomic.AtomicLong
 
 object BackgroundTaskUtil {
 
-    @VisibleForTesting
-    val atomicLong: AtomicLong = AtomicLong()
+  @VisibleForTesting val atomicLong: AtomicLong = AtomicLong()
 
-    /** Generates a unique energy event ID.  */
-    fun nextId(): Long {
-        return atomicLong.incrementAndGet()
-    }
+  /** Generates a unique energy event ID. */
+  fun nextId(): Long {
+    return atomicLong.incrementAndGet()
+  }
 
-    /**
-     * Send a background task event from connection.
-     *
-     * @param taskId a unique id across different background events.
-     * @param setMetaData a unit function that adds information to the event builder.
-     */
-    fun Connection.sendBackgroundTaskEvent(
-        taskId: Long,
-        setMetaData: BackgroundTaskEvent.Builder.() -> Unit
-    ) {
-        val eventBuilder = Event.newBuilder().apply {
-            this.backgroundTaskEventBuilder.apply {
-                this.taskId = taskId
-                setMetaData()
-            }
-            timestamp = System.currentTimeMillis()
+  /**
+   * Send a background task event from connection.
+   *
+   * @param taskId a unique id across different background events.
+   * @param setMetaData a unit function that adds information to the event builder.
+   */
+  fun Connection.sendBackgroundTaskEvent(
+    taskId: Long,
+    setMetaData: BackgroundTaskEvent.Builder.() -> Unit
+  ) {
+    val eventBuilder =
+      Event.newBuilder().apply {
+        this.backgroundTaskEventBuilder.apply {
+          this.taskId = taskId
+          setMetaData()
         }
-        sendEvent(eventBuilder.build().toByteArray())
-    }
+        timestamp = System.currentTimeMillis()
+      }
+    sendEvent(eventBuilder.build().toByteArray())
+  }
 }

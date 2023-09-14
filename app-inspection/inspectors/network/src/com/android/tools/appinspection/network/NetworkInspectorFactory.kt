@@ -24,7 +24,7 @@ private const val INSPECTOR_ID = "studio.network.inspection"
 
 class NetworkInspectorFactory : InspectorFactory<NetworkInspector>(INSPECTOR_ID) {
 
-    override fun createInspector(con: Connection, env: InspectorEnvironment): NetworkInspector {
-        return NetworkInspector(con, env)
-    }
+  override fun createInspector(con: Connection, env: InspectorEnvironment): NetworkInspector {
+    return NetworkInspector(con, env)
+  }
 }

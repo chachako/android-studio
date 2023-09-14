@@ -19,36 +19,34 @@ package com.android.tools.appinspection.network.trackers
 import com.android.tools.appinspection.network.reporters.StreamReporter
 import java.io.OutputStream
 
-/**
- * Wraps an OutputStream to enable the network inspector capturing of request body
- */
+/** Wraps an OutputStream to enable the network inspector capturing of request body */
 class OutputStreamTracker(
-    private val myWrapped: OutputStream,
-    private val reporter: StreamReporter
+  private val myWrapped: OutputStream,
+  private val reporter: StreamReporter
 ) : OutputStream() {
 
-    override fun close() {
-        myWrapped.close()
-        reporter.onStreamClose()
-    }
+  override fun close() {
+    myWrapped.close()
+    reporter.onStreamClose()
+  }
 
-    override fun flush() {
-        myWrapped.flush()
-    }
+  override fun flush() {
+    myWrapped.flush()
+  }
 
-    override fun write(buffer: ByteArray, offset: Int, length: Int) {
-        myWrapped.write(buffer, offset, length)
-        reporter.addBytes(buffer, offset, length)
-        reporter.reportCurrentThread()
-    }
+  override fun write(buffer: ByteArray, offset: Int, length: Int) {
+    myWrapped.write(buffer, offset, length)
+    reporter.addBytes(buffer, offset, length)
+    reporter.reportCurrentThread()
+  }
 
-    override fun write(oneByte: Int) {
-        myWrapped.write(oneByte)
-        reporter.addOneByte(oneByte)
-        reporter.reportCurrentThread()
-    }
+  override fun write(oneByte: Int) {
+    myWrapped.write(oneByte)
+    reporter.addOneByte(oneByte)
+    reporter.reportCurrentThread()
+  }
 
-    override fun write(buffer: ByteArray) {
-        write(buffer, 0, buffer.size)
-    }
+  override fun write(buffer: ByteArray) {
+    write(buffer, 0, buffer.size)
+  }
 }

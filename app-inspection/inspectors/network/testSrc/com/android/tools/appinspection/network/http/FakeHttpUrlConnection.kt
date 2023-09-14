@@ -20,39 +20,40 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 open class FakeHttpUrlConnection(
-    url: URL,
-    fakeResponseBody: ByteArray = ByteArray(0),
-    private val requestMethod: String = "GET",
-    private val headers: Map<String, List<String>> = mapOf(
-        "null" to listOf("HTTP/1.0 200 OK"),
+  url: URL,
+  fakeResponseBody: ByteArray = ByteArray(0),
+  private val requestMethod: String = "GET",
+  private val headers: Map<String, List<String>> =
+    mapOf(
+      "null" to listOf("HTTP/1.0 200 OK"),
     )
 ) : HttpURLConnection(url) {
 
-    private val inputStream = FakeInputStream(fakeResponseBody)
-    private val outputStream = FakeOutputStream()
+  private val inputStream = FakeInputStream(fakeResponseBody)
+  private val outputStream = FakeOutputStream()
 
-    private var dooOutput = false
+  private var dooOutput = false
 
-    override fun connect() = Unit
-    override fun disconnect() = Unit
+  override fun connect() = Unit
+  override fun disconnect() = Unit
 
-    override fun getDoOutput() = dooOutput
+  override fun getDoOutput() = dooOutput
 
-    override fun setDoOutput(dooOutput: Boolean) {
-        this.dooOutput = dooOutput
-    }
+  override fun setDoOutput(dooOutput: Boolean) {
+    this.dooOutput = dooOutput
+  }
 
-    override fun getHeaderFields() = headers
+  override fun getHeaderFields() = headers
 
-    override fun getRequestMethod() = requestMethod
+  override fun getRequestMethod() = requestMethod
 
-    override fun usingProxy() = false
+  override fun usingProxy() = false
 
-    override fun getInputStream() = inputStream
+  override fun getInputStream() = inputStream
 
-    override fun getResponseMessage() = "OKAY"
+  override fun getResponseMessage() = "OKAY"
 
-    override fun getResponseCode() = 0
+  override fun getResponseCode() = 0
 
-    override fun getOutputStream() = outputStream
+  override fun getOutputStream() = outputStream
 }

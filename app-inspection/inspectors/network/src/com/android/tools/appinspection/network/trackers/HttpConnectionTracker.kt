@@ -26,65 +26,58 @@ import java.io.OutputStream
  * The methods in this interface are expected to be called in the following order (the calls marked
  * with question mark are optional)
  *
- * trackRequest() --->
- *   trackRequestBody()? --->
- *     trackResponse() --->
- *       trackResponseBody()? --->
- *         disconnect()?
- *
+ * trackRequest() ---> trackRequestBody()? ---> trackResponse() ---> trackResponseBody()? --->
+ * disconnect()?
  *
  * Each method must be called on the thread that initiates the corresponding operation.
  */
 interface HttpConnectionTracker {
 
-    /**
-     * Reports an explicit disconnect request
-     */
-    fun disconnect()
+  /** Reports an explicit disconnect request */
+  fun disconnect()
 
-    /**
-     * Reports a fatal HTTP exchange failure
-     *
-     * @param message error message
-     */
-    fun error(message: String)
+  /**
+   * Reports a fatal HTTP exchange failure
+   *
+   * @param message error message
+   */
+  fun error(message: String)
 
-    /**
-     * Tracks an optional request body (before the request is sent)
-     *
-     * @param stream the stream used to write the request body
-     * @return an output stream which may wrap the original stream
-     */
-    fun trackRequestBody(stream: OutputStream): OutputStream
+  /**
+   * Tracks an optional request body (before the request is sent)
+   *
+   * @param stream the stream used to write the request body
+   * @return an output stream which may wrap the original stream
+   */
+  fun trackRequestBody(stream: OutputStream): OutputStream
 
-    /**
-     * A HTTP request is about to be sent to the wire
-     *
-     * @param method HTTP method
-     * @param fields HTTP request header fields
-     */
-    fun trackRequest(method: String, fields: Map<String, List<String>>)
+  /**
+   * A HTTP request is about to be sent to the wire
+   *
+   * @param method HTTP method
+   * @param fields HTTP request header fields
+   */
+  fun trackRequest(method: String, fields: Map<String, List<String>>)
 
-    /**
-     * Tracks the receiving of a HTTP response
-     *
-     * @param fields   HTTP response header fields
-     */
-    fun trackResponseHeaders(fields: Map<String?, List<String>>)
+  /**
+   * Tracks the receiving of a HTTP response
+   *
+   * @param fields HTTP response header fields
+   */
+  fun trackResponseHeaders(fields: Map<String?, List<String>>)
 
-    /**
-     * Tracks an optional response body after the response is received
-     *
-     * @param stream the stream used to read the response body
-     * @return an input stream which may wrap the original stream
-     */
-    fun trackResponseBody(stream: InputStream): InputStream
+  /**
+   * Tracks an optional response body after the response is received
+   *
+   * @param stream the stream used to read the response body
+   * @return an input stream which may wrap the original stream
+   */
+  fun trackResponseBody(stream: InputStream): InputStream
 
-    /**
-     * Tracks an optional response interception after the response is received
-     * and intercepted.
-     *
-     * @param interception metadata about how the response is intercepted.
-     */
-    fun trackResponseInterception(interception: NetworkInterceptionMetrics)
+  /**
+   * Tracks an optional response interception after the response is received and intercepted.
+   *
+   * @param interception metadata about how the response is intercepted.
+   */
+  fun trackResponseInterception(interception: NetworkInterceptionMetrics)
 }

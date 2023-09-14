@@ -23,44 +23,42 @@ import okhttp3.Response
 import okio.Timeout
 
 class FakeCall(
-    private val client: FakeOkHttp3Client,
-    private val request: Request,
-    private val response: Response
+  private val client: FakeOkHttp3Client,
+  private val request: Request,
+  private val response: Response
 ) : Call {
 
-    override fun clone(): Call {
-        TODO("Not yet implemented")
-    }
+  override fun clone(): Call {
+    TODO("Not yet implemented")
+  }
 
-    override fun request(): Request {
-        return request
-    }
+  override fun request(): Request {
+    return request
+  }
 
-    override fun execute(): Response {
-        return client.triggerInterceptor(request, response)
-    }
+  override fun execute(): Response {
+    return client.triggerInterceptor(request, response)
+  }
 
-    override fun enqueue(p0: Callback) {
-    }
+  override fun enqueue(p0: Callback) {}
 
-    override fun cancel() {
-    }
+  override fun cancel() {}
 
-    override fun isExecuted(): Boolean {
-        // does not matter
-        return false
-    }
+  override fun isExecuted(): Boolean {
+    // does not matter
+    return false
+  }
 
-    override fun isCanceled(): Boolean {
-        // does not matter
-        return false
-    }
+  override fun isCanceled(): Boolean {
+    // does not matter
+    return false
+  }
 
-    override fun timeout(): Timeout {
-        TODO("Not yet implemented")
-    }
+  override fun timeout(): Timeout {
+    TODO("Not yet implemented")
+  }
 
-    fun executeThenBlowUp(): Response {
-        return client.triggerInterceptor(request, response, true)
-    }
+  fun executeThenBlowUp(): Response {
+    return client.triggerInterceptor(request, response, true)
+  }
 }

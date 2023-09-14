@@ -32,253 +32,252 @@ import javax.net.ssl.SSLSocketFactory
  * [TrackedHttpURLConnection], which ensures that the appropriate methods are instrumented.
  */
 class HttpsURLConnectionWrapper(
-    private val wrappedHttps: HttpsURLConnection,
-    callstack: String,
-    trackerFactory: HttpTrackerFactory,
-    interceptionRuleService: InterceptionRuleService
+  private val wrappedHttps: HttpsURLConnection,
+  callstack: String,
+  trackerFactory: HttpTrackerFactory,
+  interceptionRuleService: InterceptionRuleService
 ) : HttpsURLConnection(wrappedHttps.url) {
 
-    private val trackedConnection =
-        TrackedHttpURLConnection(wrappedHttps, callstack, trackerFactory, interceptionRuleService)
+  private val trackedConnection =
+    TrackedHttpURLConnection(wrappedHttps, callstack, trackerFactory, interceptionRuleService)
 
-    override fun getCipherSuite(): String {
-        return wrappedHttps.cipherSuite
-    }
+  override fun getCipherSuite(): String {
+    return wrappedHttps.cipherSuite
+  }
 
-    override fun getLocalCertificates(): Array<Certificate>? {
-        return wrappedHttps.localCertificates
-    }
+  override fun getLocalCertificates(): Array<Certificate>? {
+    return wrappedHttps.localCertificates
+  }
 
-    override fun getServerCertificates(): Array<Certificate> {
-        return wrappedHttps.serverCertificates
-    }
+  override fun getServerCertificates(): Array<Certificate> {
+    return wrappedHttps.serverCertificates
+  }
 
-    override fun getPeerPrincipal(): Principal {
-        return wrappedHttps.peerPrincipal
-    }
+  override fun getPeerPrincipal(): Principal {
+    return wrappedHttps.peerPrincipal
+  }
 
-    override fun getLocalPrincipal(): Principal? {
-        return wrappedHttps.localPrincipal
-    }
+  override fun getLocalPrincipal(): Principal? {
+    return wrappedHttps.localPrincipal
+  }
 
-    override fun setHostnameVerifier(hostnameVerifier: HostnameVerifier?) {
-        wrappedHttps.hostnameVerifier = hostnameVerifier
-    }
+  override fun setHostnameVerifier(hostnameVerifier: HostnameVerifier?) {
+    wrappedHttps.hostnameVerifier = hostnameVerifier
+  }
 
-    override fun getHostnameVerifier(): HostnameVerifier {
-        return wrappedHttps.hostnameVerifier
-    }
+  override fun getHostnameVerifier(): HostnameVerifier {
+    return wrappedHttps.hostnameVerifier
+  }
 
-    override fun setSSLSocketFactory(sslSocketFactory: SSLSocketFactory?) {
-        wrappedHttps.sslSocketFactory = sslSocketFactory
-    }
+  override fun setSSLSocketFactory(sslSocketFactory: SSLSocketFactory?) {
+    wrappedHttps.sslSocketFactory = sslSocketFactory
+  }
 
-    override fun getSSLSocketFactory(): SSLSocketFactory {
-        return wrappedHttps.sslSocketFactory
-    }
+  override fun getSSLSocketFactory(): SSLSocketFactory {
+    return wrappedHttps.sslSocketFactory
+  }
 
-    override fun getHeaderFieldKey(n: Int): String? {
-        return trackedConnection.getHeaderFieldKey(n)
-    }
+  override fun getHeaderFieldKey(n: Int): String? {
+    return trackedConnection.getHeaderFieldKey(n)
+  }
 
-    override fun setFixedLengthStreamingMode(contentLength: Int) {
-        trackedConnection.setFixedLengthStreamingMode(contentLength)
-    }
+  override fun setFixedLengthStreamingMode(contentLength: Int) {
+    trackedConnection.setFixedLengthStreamingMode(contentLength)
+  }
 
-    override fun setFixedLengthStreamingMode(contentLength: Long) {
-        trackedConnection.setFixedLengthStreamingMode(contentLength)
-    }
+  override fun setFixedLengthStreamingMode(contentLength: Long) {
+    trackedConnection.setFixedLengthStreamingMode(contentLength)
+  }
 
-    override fun setChunkedStreamingMode(chunklen: Int) {
-        trackedConnection.setChunkedStreamingMode(chunklen)
-    }
+  override fun setChunkedStreamingMode(chunklen: Int) {
+    trackedConnection.setChunkedStreamingMode(chunklen)
+  }
 
-    override fun getHeaderField(n: Int): String? {
-        return trackedConnection.getHeaderField(n)
-    }
+  override fun getHeaderField(n: Int): String? {
+    return trackedConnection.getHeaderField(n)
+  }
 
-    override fun setInstanceFollowRedirects(followRedirects: Boolean) {
-        trackedConnection.instanceFollowRedirects = followRedirects
-    }
+  override fun setInstanceFollowRedirects(followRedirects: Boolean) {
+    trackedConnection.instanceFollowRedirects = followRedirects
+  }
 
-    override fun getInstanceFollowRedirects(): Boolean {
-        return trackedConnection.instanceFollowRedirects
-    }
+  override fun getInstanceFollowRedirects(): Boolean {
+    return trackedConnection.instanceFollowRedirects
+  }
 
-    override fun setRequestMethod(method: String?) {
-        trackedConnection.setRequestMethod(method)
-    }
+  override fun setRequestMethod(method: String?) {
+    trackedConnection.setRequestMethod(method)
+  }
 
-    override fun getRequestMethod(): String {
-        return trackedConnection.getRequestMethod()
-    }
+  override fun getRequestMethod(): String {
+    return trackedConnection.getRequestMethod()
+  }
 
-    override fun getPermission(): Permission {
-        return trackedConnection.permission
-    }
+  override fun getPermission(): Permission {
+    return trackedConnection.permission
+  }
 
-    override fun getErrorStream(): InputStream? {
-        return trackedConnection.errorStream
-    }
+  override fun getErrorStream(): InputStream? {
+    return trackedConnection.errorStream
+  }
 
-    override fun setConnectTimeout(timeout: Int) {
-        trackedConnection.connectTimeout = timeout
-    }
+  override fun setConnectTimeout(timeout: Int) {
+    trackedConnection.connectTimeout = timeout
+  }
 
-    override fun getConnectTimeout(): Int {
-        return trackedConnection.connectTimeout
-    }
+  override fun getConnectTimeout(): Int {
+    return trackedConnection.connectTimeout
+  }
 
-    override fun setReadTimeout(timeout: Int) {
-        trackedConnection.readTimeout = timeout
-    }
+  override fun setReadTimeout(timeout: Int) {
+    trackedConnection.readTimeout = timeout
+  }
 
-    override fun getReadTimeout(): Int {
-        return trackedConnection.readTimeout
-    }
+  override fun getReadTimeout(): Int {
+    return trackedConnection.readTimeout
+  }
 
-    override fun getURL(): URL {
-        return trackedConnection.url
-    }
+  override fun getURL(): URL {
+    return trackedConnection.url
+  }
 
-    override fun getContentLength(): Int {
-        return trackedConnection.contentLength
-    }
+  override fun getContentLength(): Int {
+    return trackedConnection.contentLength
+  }
 
-    override fun getContentLengthLong(): Long {
-        return trackedConnection.contentLengthLong
-    }
+  override fun getContentLengthLong(): Long {
+    return trackedConnection.contentLengthLong
+  }
 
-    override fun getContentType(): String? {
-        return trackedConnection.contentType
-    }
+  override fun getContentType(): String? {
+    return trackedConnection.contentType
+  }
 
-    override fun getContentEncoding(): String? {
-        return trackedConnection.contentEncoding
-    }
+  override fun getContentEncoding(): String? {
+    return trackedConnection.contentEncoding
+  }
 
-    override fun getExpiration(): Long {
-        return trackedConnection.expiration
-    }
+  override fun getExpiration(): Long {
+    return trackedConnection.expiration
+  }
 
-    override fun getDate(): Long {
-        return trackedConnection.date
-    }
+  override fun getDate(): Long {
+    return trackedConnection.date
+  }
 
-    override fun getLastModified(): Long {
-        return trackedConnection.lastModified
-    }
+  override fun getLastModified(): Long {
+    return trackedConnection.lastModified
+  }
 
-    /**
-     * Methods of [getHeaderFieldDate], [getHeaderFieldInt] and [getHeaderFieldLong] are derived
-     * from this method and implemented in [HttpsURLConnection].
-     */
-    override fun getHeaderField(name: String?): String? {
-        return trackedConnection.getHeaderField(name)
-    }
+  /**
+   * Methods of [getHeaderFieldDate], [getHeaderFieldInt] and [getHeaderFieldLong] are derived from
+   * this method and implemented in [HttpsURLConnection].
+   */
+  override fun getHeaderField(name: String?): String? {
+    return trackedConnection.getHeaderField(name)
+  }
 
-    override fun getHeaderFields(): Map<String?, List<String>> {
-        return trackedConnection.headerFields
-    }
+  override fun getHeaderFields(): Map<String?, List<String>> {
+    return trackedConnection.headerFields
+  }
 
-    override fun getContent(): Any {
-        return trackedConnection.content
-    }
+  override fun getContent(): Any {
+    return trackedConnection.content
+  }
 
-    override fun getContent(classes: Array<Class<*>>): Any? {
-        return trackedConnection.getContent(classes)
-    }
+  override fun getContent(classes: Array<Class<*>>): Any? {
+    return trackedConnection.getContent(classes)
+  }
 
-    /**
-     * Fields of [responseCode] and [responseMessage] are derived from this method and implemented
-     * in [HttpsURLConnection].
-     */
-    override fun getInputStream(): InputStream {
-        return trackedConnection.inputStream
-    }
+  /**
+   * Fields of [responseCode] and [responseMessage] are derived from this method and implemented in
+   * [HttpsURLConnection].
+   */
+  override fun getInputStream(): InputStream {
+    return trackedConnection.inputStream
+  }
 
-    override fun getOutputStream(): OutputStream {
-        return trackedConnection.outputStream
-    }
+  override fun getOutputStream(): OutputStream {
+    return trackedConnection.outputStream
+  }
 
-    override fun toString(): String {
-        return trackedConnection.toString()
-    }
+  override fun toString(): String {
+    return trackedConnection.toString()
+  }
 
-    override fun setDoInput(doinput: Boolean) {
-        trackedConnection.doInput = doinput
-    }
+  override fun setDoInput(doinput: Boolean) {
+    trackedConnection.doInput = doinput
+  }
 
-    override fun getDoInput(): Boolean {
-        return trackedConnection.doInput
-    }
+  override fun getDoInput(): Boolean {
+    return trackedConnection.doInput
+  }
 
-    override fun setDoOutput(dooutput: Boolean) {
-        trackedConnection.doOutput = dooutput
-    }
+  override fun setDoOutput(dooutput: Boolean) {
+    trackedConnection.doOutput = dooutput
+  }
 
-    override fun getDoOutput(): Boolean {
-        return trackedConnection.doOutput
-    }
+  override fun getDoOutput(): Boolean {
+    return trackedConnection.doOutput
+  }
 
-    override fun setAllowUserInteraction(allowuserinteraction: Boolean) {
-        trackedConnection.allowUserInteraction = allowuserinteraction
-    }
+  override fun setAllowUserInteraction(allowuserinteraction: Boolean) {
+    trackedConnection.allowUserInteraction = allowuserinteraction
+  }
 
-    override fun getAllowUserInteraction(): Boolean {
-        return trackedConnection.allowUserInteraction
-    }
+  override fun getAllowUserInteraction(): Boolean {
+    return trackedConnection.allowUserInteraction
+  }
 
-    override fun setUseCaches(usecaches: Boolean) {
-        trackedConnection.useCaches = usecaches
-    }
+  override fun setUseCaches(usecaches: Boolean) {
+    trackedConnection.useCaches = usecaches
+  }
 
-    override fun getUseCaches(): Boolean {
-        return trackedConnection.useCaches
-    }
+  override fun getUseCaches(): Boolean {
+    return trackedConnection.useCaches
+  }
 
-    override fun setIfModifiedSince(ifmodifiedsince: Long) {
-        trackedConnection.ifModifiedSince = ifmodifiedsince
-    }
+  override fun setIfModifiedSince(ifmodifiedsince: Long) {
+    trackedConnection.ifModifiedSince = ifmodifiedsince
+  }
 
-    override fun getIfModifiedSince(): Long {
-        return trackedConnection.ifModifiedSince
-    }
+  override fun getIfModifiedSince(): Long {
+    return trackedConnection.ifModifiedSince
+  }
 
-    override fun getDefaultUseCaches(): Boolean {
-        return trackedConnection.defaultUseCaches
-    }
+  override fun getDefaultUseCaches(): Boolean {
+    return trackedConnection.defaultUseCaches
+  }
 
-    override fun setDefaultUseCaches(defaultusecaches: Boolean) {
-        trackedConnection.defaultUseCaches = defaultusecaches
-    }
+  override fun setDefaultUseCaches(defaultusecaches: Boolean) {
+    trackedConnection.defaultUseCaches = defaultusecaches
+  }
 
-    override fun setRequestProperty(key: String?, value: String?) {
-        trackedConnection.setRequestProperty(key, value)
-    }
+  override fun setRequestProperty(key: String?, value: String?) {
+    trackedConnection.setRequestProperty(key, value)
+  }
 
-    override fun addRequestProperty(key: String?, value: String?) {
-        trackedConnection.addRequestProperty(key, value)
-    }
+  override fun addRequestProperty(key: String?, value: String?) {
+    trackedConnection.addRequestProperty(key, value)
+  }
 
-    override fun getRequestProperty(key: String?): String? {
-        return trackedConnection.getRequestProperty(key)
-    }
+  override fun getRequestProperty(key: String?): String? {
+    return trackedConnection.getRequestProperty(key)
+  }
 
-    override fun getRequestProperties(): Map<String, List<String>> {
-        return trackedConnection.requestProperties
-    }
+  override fun getRequestProperties(): Map<String, List<String>> {
+    return trackedConnection.requestProperties
+  }
 
-    override fun disconnect() {
-        trackedConnection.disconnect()
-    }
+  override fun disconnect() {
+    trackedConnection.disconnect()
+  }
 
-    override fun usingProxy(): Boolean {
-        return trackedConnection.usingProxy()
-    }
+  override fun usingProxy(): Boolean {
+    return trackedConnection.usingProxy()
+  }
 
-    override fun connect() {
-        trackedConnection.connect()
-    }
-
+  override fun connect() {
+    trackedConnection.connect()
+  }
 }

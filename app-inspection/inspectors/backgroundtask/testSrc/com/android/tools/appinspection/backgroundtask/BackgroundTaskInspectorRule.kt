@@ -22,36 +22,34 @@ import backgroundtask.inspection.BackgroundTaskInspectorProtocol.TrackBackground
 import com.android.tools.appinspection.BackgroundTaskInspector
 import com.android.tools.appinspection.BackgroundTaskInspectorFactory
 import com.android.tools.appinspection.BackgroundTaskUtil
-import org.junit.rules.ExternalResource
 import java.util.concurrent.Executor
+import org.junit.rules.ExternalResource
 
 class BackgroundTaskInspectorRule : ExternalResource() {
 
-    lateinit var connection: FakeConnection
-    lateinit var environment: FakeEnvironment
-    lateinit var inspector: BackgroundTaskInspector
+  lateinit var connection: FakeConnection
+  lateinit var environment: FakeEnvironment
+  lateinit var inspector: BackgroundTaskInspector
 
-    override fun before() {
-        connection = FakeConnection()
-        environment = FakeEnvironment()
-        inspector = BackgroundTaskInspectorFactory().createInspector(connection, environment)
-        inspector.onReceiveCommand(
-            Command.newBuilder()
-                .setTrackBackgroundTask(TrackBackgroundTaskCommand.getDefaultInstance())
-                .build()
-                .toByteArray(),
-            object : Inspector.CommandCallback {
-                override fun reply(response: ByteArray) {
-                }
+  override fun before() {
+    connection = FakeConnection()
+    environment = FakeEnvironment()
+    inspector = BackgroundTaskInspectorFactory().createInspector(connection, environment)
+    inspector.onReceiveCommand(
+      Command.newBuilder()
+        .setTrackBackgroundTask(TrackBackgroundTaskCommand.getDefaultInstance())
+        .build()
+        .toByteArray(),
+      object : Inspector.CommandCallback {
+        override fun reply(response: ByteArray) {}
 
-                override fun addCancellationListener(executor: Executor, runnable: Runnable) {
-                }
-            }
-        )
-    }
+        override fun addCancellationListener(executor: Executor, runnable: Runnable) {}
+      }
+    )
+  }
 
-    override fun after() {
-        inspector.onDispose()
-        BackgroundTaskUtil.atomicLong.set(0)
-    }
+  override fun after() {
+    inspector.onDispose()
+    BackgroundTaskUtil.atomicLong.set(0)
+  }
 }

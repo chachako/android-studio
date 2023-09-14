@@ -28,23 +28,23 @@ import javax.net.ssl.HttpsURLConnection
  * url.openConnection() ⇒ HttpURLWrapper.wrapURLConnection(url.openConnection())
  */
 fun wrapURLConnection(
-    wrapped: URLConnection,
-    trackerFactory: HttpTrackerFactory,
-    interceptionRuleService: InterceptionRuleService
+  wrapped: URLConnection,
+  trackerFactory: HttpTrackerFactory,
+  interceptionRuleService: InterceptionRuleService
 ): URLConnection {
-    // Skip the irrelevant stack trace elements (including app inspection stack frames)
-    val callstack = getStackTrace(2)
+  // Skip the irrelevant stack trace elements (including app inspection stack frames)
+  val callstack = getStackTrace(2)
 
-    // Create the wrapper class based on the dynamic type of the wrapped object
-    return when (wrapped) {
-        is HttpsURLConnection -> {
-            HttpsURLConnectionWrapper(wrapped, callstack, trackerFactory, interceptionRuleService)
-        }
-        is HttpURLConnection -> {
-            HttpURLConnectionWrapper(wrapped, callstack, trackerFactory, interceptionRuleService)
-        }
-        else -> {
-            wrapped
-        }
+  // Create the wrapper class based on the dynamic type of the wrapped object
+  return when (wrapped) {
+    is HttpsURLConnection -> {
+      HttpsURLConnectionWrapper(wrapped, callstack, trackerFactory, interceptionRuleService)
     }
+    is HttpURLConnection -> {
+      HttpURLConnectionWrapper(wrapped, callstack, trackerFactory, interceptionRuleService)
+    }
+    else -> {
+      wrapped
+    }
+  }
 }

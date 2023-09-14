@@ -21,23 +21,23 @@ import java.io.InputStream
 
 class FakeInputStream(data: ByteArray) : InputStream() {
 
-    private val bytes = ByteArrayInputStream(data)
+  private val bytes = ByteArrayInputStream(data)
 
-    override fun close() = bytes.close()
+  override fun close() = bytes.close()
 
-    override fun read() = bytes.read()
+  override fun read() = bytes.read()
 
-    override fun read(b: ByteArray) = bytes.read(b)
+  override fun read(b: ByteArray) = bytes.read(b)
 
-    override fun read(b: ByteArray, off: Int, len: Int) = bytes.read(b, off, len)
+  override fun read(b: ByteArray, off: Int, len: Int) = bytes.read(b, off, len)
 
-    override fun skip(n: Long) = bytes.skip(n)
+  override fun skip(n: Long) = bytes.skip(n)
 
-    override fun available() = bytes.available()
+  override fun available() = bytes.available()
 
-    override fun mark(readlimit: Int) = bytes.mark(readlimit)
+  override fun mark(readlimit: Int) = bytes.mark(readlimit)
 
-    override fun reset() = bytes.reset()
+  override fun reset() = bytes.reset()
 
-    override fun markSupported() = bytes.markSupported()
+  override fun markSupported() = bytes.markSupported()
 }

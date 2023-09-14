@@ -18,53 +18,49 @@ package com.android.tools.appinspection.network.rules
 
 import studio.network.inspection.NetworkInspectorProtocol.InterceptRule
 
-/**
- * A rule class that intercepts connections and their responses that matches certain [criteria].
- */
+/** A rule class that intercepts connections and their responses that matches certain [criteria]. */
 interface InterceptionRule {
-    val isEnabled: Boolean
-    fun transform(
-        connection: NetworkConnection,
-        response: NetworkResponse
-    ): NetworkResponse
+  val isEnabled: Boolean
+  fun transform(connection: NetworkConnection, response: NetworkResponse): NetworkResponse
 }
 
 class InterceptionRuleImpl(proto: InterceptRule) : InterceptionRule {
 
-    override val isEnabled = proto.enabled
-    private val criteria: InterceptionCriteria
-    private val transformations: List<InterceptionTransformation>
+  override val isEnabled = proto.enabled
+  private val criteria: InterceptionCriteria
+  private val transformations: List<InterceptionTransformation>
 
-    init {
-        criteria = InterceptionCriteria(proto.criteria)
-        transformations = proto.transformationList.mapNotNull { transformationProto ->
-            when {
-                transformationProto.hasStatusCodeReplaced() ->
-                    StatusCodeReplacedTransformation(transformationProto.statusCodeReplaced)
-                transformationProto.hasHeaderAdded() ->
-                    HeaderAddedTransformation(transformationProto.headerAdded)
-                transformationProto.hasHeaderReplaced() ->
-                    HeaderReplacedTransformation(transformationProto.headerReplaced)
-                transformationProto.hasBodyReplaced() ->
-                    BodyReplacedTransformation(transformationProto.bodyReplaced)
-                transformationProto.hasBodyModified() ->
-                    BodyModifiedTransformation(transformationProto.bodyModified)
-                else -> null
-            }
+  init {
+    criteria = InterceptionCriteria(proto.criteria)
+    transformations =
+      proto.transformationList.mapNotNull { transformationProto ->
+        when {
+          transformationProto.hasStatusCodeReplaced() ->
+            StatusCodeReplacedTransformation(transformationProto.statusCodeReplaced)
+          transformationProto.hasHeaderAdded() ->
+            HeaderAddedTransformation(transformationProto.headerAdded)
+          transformationProto.hasHeaderReplaced() ->
+            HeaderReplacedTransformation(transformationProto.headerReplaced)
+          transformationProto.hasBodyReplaced() ->
+            BodyReplacedTransformation(transformationProto.bodyReplaced)
+          transformationProto.hasBodyModified() ->
+            BodyModifiedTransformation(transformationProto.bodyModified)
+          else -> null
         }
-    }
+      }
+  }
 
-    override fun transform(
-        connection: NetworkConnection,
-        response: NetworkResponse
-    ): NetworkResponse {
-        if (criteria.appliesTo(connection)) {
-            return transformations.fold(
-                response.copy(interception = response.interception.copy(criteriaMatched = true))
-            ) { intermediateResponse, transformation ->
-                transformation.transform(intermediateResponse)
-            }
-        }
-        return response
+  override fun transform(
+    connection: NetworkConnection,
+    response: NetworkResponse
+  ): NetworkResponse {
+    if (criteria.appliesTo(connection)) {
+      return transformations.fold(
+        response.copy(interception = response.interception.copy(criteriaMatched = true))
+      ) { intermediateResponse, transformation ->
+        transformation.transform(intermediateResponse)
+      }
     }
+    return response
+  }
 }

@@ -22,101 +22,97 @@ import com.android.tools.idea.protobuf.ByteString
 import studio.network.inspection.NetworkInspectorProtocol
 
 /**
- * The initial capacity of the buffer that stores payload data.
- * It is automatically expanded when capacity is reached.
+ * The initial capacity of the buffer that stores payload data. It is automatically expanded when
+ * capacity is reached.
  */
 const val DEFAULT_THRESHOLD = 1024
 
 /**
- * A class that reports on [InputStream] and [OutputStream]. It
- * records the payload that is sent/received in a temporary buffer
- * before reporting it to Studio.
+ * A class that reports on [InputStream] and [OutputStream]. It records the payload that is
+ * sent/received in a temporary buffer before reporting it to Studio.
  */
 sealed class StreamReporter(
-    private val connection: Connection,
-    threadReporter: ThreadReporter,
-    private val connectionId: Long
+  private val connection: Connection,
+  threadReporter: ThreadReporter,
+  private val connectionId: Long
 ) : ThreadReporter by threadReporter {
 
-    private val buffer = ByteString.newOutput(DEFAULT_THRESHOLD)
-    private var isClosed = false
+  private val buffer = ByteString.newOutput(DEFAULT_THRESHOLD)
+  private var isClosed = false
 
-    protected abstract fun onClosed(data: ByteString)
+  protected abstract fun onClosed(data: ByteString)
 
-    fun addOneByte(byte: Int) {
-        buffer.write(byte)
+  fun addOneByte(byte: Int) {
+    buffer.write(byte)
+  }
+
+  fun addBytes(bytes: ByteArray, offset: Int, len: Int) {
+    buffer.write(bytes, offset, len)
+  }
+
+  fun onStreamClose() {
+    // This is to prevent the double reporting of stream closed events
+    // because this is reachable by both calling disconnect() on the
+    // HttpUrlConnection, and calling close() on the stream.
+    if (!isClosed) {
+      isClosed = true
+      onClosed(buffer.toByteString())
     }
+  }
 
-    fun addBytes(bytes: ByteArray, offset: Int, len: Int) {
-        buffer.write(bytes, offset, len)
-    }
-
-    fun onStreamClose() {
-        // This is to prevent the double reporting of stream closed events
-        // because this is reachable by both calling disconnect() on the
-        // HttpUrlConnection, and calling close() on the stream.
-        if (!isClosed) {
-            isClosed = true
-            onClosed(buffer.toByteString())
-        }
-    }
-
-    protected fun sendHttpConnectionEvent(builder: NetworkInspectorProtocol.HttpConnectionEvent.Builder) {
-        connection.sendHttpConnectionEvent(
-            builder.setConnectionId(connectionId)
-        )
-    }
+  protected fun sendHttpConnectionEvent(
+    builder: NetworkInspectorProtocol.HttpConnectionEvent.Builder
+  ) {
+    connection.sendHttpConnectionEvent(builder.setConnectionId(connectionId))
+  }
 }
 
 class InputStreamReporterImpl(
-    connection: Connection,
-    connectionId: Long,
-    threadReporter: ThreadReporter
+  connection: Connection,
+  connectionId: Long,
+  threadReporter: ThreadReporter
 ) : StreamReporter(connection, threadReporter, connectionId) {
 
-    override fun onClosed(data: ByteString) {
-        sendHttpConnectionEvent(
-            NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
-                .setResponsePayload(
-                    NetworkInspectorProtocol.HttpConnectionEvent.Payload.newBuilder()
-                        .setPayload(data)
-                )
+  override fun onClosed(data: ByteString) {
+    sendHttpConnectionEvent(
+      NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
+        .setResponsePayload(
+          NetworkInspectorProtocol.HttpConnectionEvent.Payload.newBuilder().setPayload(data)
         )
-        sendHttpConnectionEvent(
-            NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
-                .setHttpResponseCompleted(
-                    NetworkInspectorProtocol.HttpConnectionEvent.ResponseCompleted.getDefaultInstance()
-                )
+    )
+    sendHttpConnectionEvent(
+      NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
+        .setHttpResponseCompleted(
+          NetworkInspectorProtocol.HttpConnectionEvent.ResponseCompleted.getDefaultInstance()
         )
-        sendHttpConnectionEvent(
-            NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
-                .setHttpClosed(
-                    NetworkInspectorProtocol.HttpConnectionEvent.Closed.newBuilder()
-                        .setCompleted(true)
-                )
+    )
+    sendHttpConnectionEvent(
+      NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
+        .setHttpClosed(
+          NetworkInspectorProtocol.HttpConnectionEvent.Closed.newBuilder().setCompleted(true)
         )
-    }
+    )
+  }
 }
 
 class OutputStreamReporterImpl(
-    connection: Connection,
-    connectionId: Long,
-    threadReporter: ThreadReporter
+  connection: Connection,
+  connectionId: Long,
+  threadReporter: ThreadReporter
 ) : StreamReporter(connection, threadReporter, connectionId) {
 
-    override fun onClosed(data: ByteString) {
-        sendHttpConnectionEvent(
-            NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
-                .setRequestPayload(
-                    NetworkInspectorProtocol.HttpConnectionEvent.Payload.newBuilder()
-                        .setPayload(data)
-                )
+  override fun onClosed(data: ByteString) {
+    sendHttpConnectionEvent(
+      NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
+        .setRequestPayload(
+          NetworkInspectorProtocol.HttpConnectionEvent.Payload.newBuilder().setPayload(data)
         )
-        sendHttpConnectionEvent(
-            NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
-                .setHttpRequestCompleted(
-                    NetworkInspectorProtocol.HttpConnectionEvent.RequestCompleted.getDefaultInstance()
-                )
+    )
+    sendHttpConnectionEvent(
+      NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
+        .setHttpRequestCompleted(
+          NetworkInspectorProtocol.HttpConnectionEvent.RequestCompleted.getDefaultInstance()
         )
-    }
+    )
+  }
 }

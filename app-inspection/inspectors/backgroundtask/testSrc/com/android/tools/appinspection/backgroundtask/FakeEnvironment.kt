@@ -24,21 +24,23 @@ import com.google.common.util.concurrent.MoreExecutors
 
 class FakeEnvironment : InspectorEnvironment {
 
-    private val fakeArtTooling = object : FakeArtTooling() {
-        override fun <T : Any?> findInstances(clazz: Class<T>): MutableList<T> {
-            throw RuntimeException()
-        }
+  private val fakeArtTooling =
+    object : FakeArtTooling() {
+      override fun <T : Any?> findInstances(clazz: Class<T>): MutableList<T> {
+        throw RuntimeException()
+      }
     }
 
-    override fun executors() = object : InspectorExecutors {
-        private val primaryExecutor = MoreExecutors.directExecutor()
+  override fun executors() =
+    object : InspectorExecutors {
+      private val primaryExecutor = MoreExecutors.directExecutor()
 
-        override fun handler() = throw NotImplementedError()
-        override fun primary() = primaryExecutor
-        override fun io() = throw NotImplementedError()
+      override fun handler() = throw NotImplementedError()
+      override fun primary() = primaryExecutor
+      override fun io() = throw NotImplementedError()
     }
 
-    override fun artTooling(): ArtTooling {
-        return fakeArtTooling
-    }
+  override fun artTooling(): ArtTooling {
+    return fakeArtTooling
+  }
 }

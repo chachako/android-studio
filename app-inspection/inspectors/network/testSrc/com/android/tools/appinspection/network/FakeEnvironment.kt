@@ -23,17 +23,18 @@ import com.google.common.util.concurrent.MoreExecutors
 
 class FakeEnvironment : InspectorEnvironment {
 
-    val fakeArtTooling = NetworkArtTooling()
+  val fakeArtTooling = NetworkArtTooling()
 
-    override fun executors() = object : InspectorExecutors {
-        private val primaryExecutor = MoreExecutors.directExecutor()
+  override fun executors() =
+    object : InspectorExecutors {
+      private val primaryExecutor = MoreExecutors.directExecutor()
 
-        override fun handler() = throw NotImplementedError()
-        override fun primary() = primaryExecutor
-        override fun io() = throw NotImplementedError()
+      override fun handler() = throw NotImplementedError()
+      override fun primary() = primaryExecutor
+      override fun io() = throw NotImplementedError()
     }
 
-    override fun artTooling(): ArtTooling {
-        return fakeArtTooling
-    }
+  override fun artTooling(): ArtTooling {
+    return fakeArtTooling
+  }
 }

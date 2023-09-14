@@ -25,110 +25,105 @@ import com.android.tools.appinspection.BackgroundTaskUtil.sendBackgroundTaskEven
 import com.android.tools.appinspection.common.getStackTrace
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * A handler class that adds necessary hooks to track alarm related events.
- */
+/** A handler class that adds necessary hooks to track alarm related events. */
 interface AlarmHandler {
 
-    fun onAlarmSet(
-        type: Int,
-        triggerMs: Long,
-        windowMs: Long,
-        intervalMs: Long,
-        operation: PendingIntent?,
-        listener: OnAlarmListener?,
-        listenerTag: String?
-    )
+  fun onAlarmSet(
+    type: Int,
+    triggerMs: Long,
+    windowMs: Long,
+    intervalMs: Long,
+    operation: PendingIntent?,
+    listener: OnAlarmListener?,
+    listenerTag: String?
+  )
 
-    fun onAlarmCancelled(operation: PendingIntent)
-    fun onAlarmCancelled(listener: OnAlarmListener)
-    fun onAlarmFired(listener: OnAlarmListener)
-    fun onAlarmFired(operation: PendingIntent)
+  fun onAlarmCancelled(operation: PendingIntent)
+  fun onAlarmCancelled(listener: OnAlarmListener)
+  fun onAlarmFired(listener: OnAlarmListener)
+  fun onAlarmFired(operation: PendingIntent)
 }
 
 class AlarmHandlerImpl(private val connection: Connection) : AlarmHandler {
 
-    private val operationIdMap = ConcurrentHashMap<PendingIntent, Long>()
-    private val listenerIdMap = ConcurrentHashMap<OnAlarmListener, Long>()
+  private val operationIdMap = ConcurrentHashMap<PendingIntent, Long>()
+  private val listenerIdMap = ConcurrentHashMap<OnAlarmListener, Long>()
 
-    override fun onAlarmSet(
-        type: Int,
-        triggerMs: Long,
-        windowMs: Long,
-        intervalMs: Long,
-        operation: PendingIntent?,
-        listener: OnAlarmListener?,
-        listenerTag: String?
-    ) {
-        if (type != AlarmManager.RTC_WAKEUP
-            && type != AlarmManager.ELAPSED_REALTIME_WAKEUP
-        ) {
-            // Only instrument wakeup alarms.
-            return
-        }
-        var taskId = -1L
-        val builder = BackgroundTaskInspectorProtocol.AlarmSet.newBuilder().apply {
-            this.type =
-                if (type == AlarmManager.RTC_WAKEUP)
-                    BackgroundTaskInspectorProtocol.AlarmSet.Type.RTC_WAKEUP
-                else BackgroundTaskInspectorProtocol.AlarmSet.Type.ELAPSED_REALTIME_WAKEUP
-            this.triggerMs = triggerMs
-            this.windowMs = windowMs
-            this.intervalMs = intervalMs
-            when {
-                operation != null -> {
-                    taskId =
-                        operationIdMap.getOrPut(operation) { BackgroundTaskUtil.nextId() }
-                    this.operation =
-                        BackgroundTaskInspectorProtocol.PendingIntent.newBuilder()
-                            .setCreatorPackage(operation.creatorPackage)
-                            .setCreatorUid(operation.creatorUid)
-                            .build()
-                }
-                listener != null -> {
-                    taskId =
-                        listenerIdMap.getOrPut(listener) { BackgroundTaskUtil.nextId() }
-                    this.listener = BackgroundTaskInspectorProtocol.AlarmListener.newBuilder()
-                        .setTag(listenerTag)
-                        .build()
-                }
-                else -> throw IllegalStateException("Invalid alarm: neither operation or listener is set.")
-            }
-        }
-
-        connection.sendBackgroundTaskEvent(taskId) {
-            stacktrace = getStackTrace(1)
-            alarmSet = builder.build()
-        }
+  override fun onAlarmSet(
+    type: Int,
+    triggerMs: Long,
+    windowMs: Long,
+    intervalMs: Long,
+    operation: PendingIntent?,
+    listener: OnAlarmListener?,
+    listenerTag: String?
+  ) {
+    if (type != AlarmManager.RTC_WAKEUP && type != AlarmManager.ELAPSED_REALTIME_WAKEUP) {
+      // Only instrument wakeup alarms.
+      return
     }
-
-    override fun onAlarmCancelled(operation: PendingIntent) {
-        val taskId = operationIdMap[operation] ?: return
-        connection.sendBackgroundTaskEvent(taskId) {
-            stacktrace = getStackTrace(1)
-            alarmCancelled = BackgroundTaskInspectorProtocol.AlarmCancelled.getDefaultInstance()
+    var taskId = -1L
+    val builder =
+      BackgroundTaskInspectorProtocol.AlarmSet.newBuilder().apply {
+        this.type =
+          if (type == AlarmManager.RTC_WAKEUP)
+            BackgroundTaskInspectorProtocol.AlarmSet.Type.RTC_WAKEUP
+          else BackgroundTaskInspectorProtocol.AlarmSet.Type.ELAPSED_REALTIME_WAKEUP
+        this.triggerMs = triggerMs
+        this.windowMs = windowMs
+        this.intervalMs = intervalMs
+        when {
+          operation != null -> {
+            taskId = operationIdMap.getOrPut(operation) { BackgroundTaskUtil.nextId() }
+            this.operation =
+              BackgroundTaskInspectorProtocol.PendingIntent.newBuilder()
+                .setCreatorPackage(operation.creatorPackage)
+                .setCreatorUid(operation.creatorUid)
+                .build()
+          }
+          listener != null -> {
+            taskId = listenerIdMap.getOrPut(listener) { BackgroundTaskUtil.nextId() }
+            this.listener =
+              BackgroundTaskInspectorProtocol.AlarmListener.newBuilder().setTag(listenerTag).build()
+          }
+          else ->
+            throw IllegalStateException("Invalid alarm: neither operation or listener is set.")
         }
-    }
+      }
 
-    override fun onAlarmCancelled(listener: OnAlarmListener) {
-        val taskId = listenerIdMap[listener] ?: return
-        connection.sendBackgroundTaskEvent(taskId) {
-            stacktrace = getStackTrace(1)
-            alarmCancelled = BackgroundTaskInspectorProtocol.AlarmCancelled.getDefaultInstance()
-        }
+    connection.sendBackgroundTaskEvent(taskId) {
+      stacktrace = getStackTrace(1)
+      alarmSet = builder.build()
     }
+  }
 
-    override fun onAlarmFired(listener: OnAlarmListener) {
-        val taskId = listenerIdMap[listener] ?: return
-        connection.sendBackgroundTaskEvent(taskId) {
-            alarmFired = BackgroundTaskInspectorProtocol.AlarmFired.getDefaultInstance()
-        }
+  override fun onAlarmCancelled(operation: PendingIntent) {
+    val taskId = operationIdMap[operation] ?: return
+    connection.sendBackgroundTaskEvent(taskId) {
+      stacktrace = getStackTrace(1)
+      alarmCancelled = BackgroundTaskInspectorProtocol.AlarmCancelled.getDefaultInstance()
     }
+  }
 
-    override fun onAlarmFired(operation: PendingIntent) {
-        val taskId = operationIdMap[operation] ?: return
-        connection.sendBackgroundTaskEvent(taskId) {
-            alarmFired = BackgroundTaskInspectorProtocol.AlarmFired.getDefaultInstance()
-        }
+  override fun onAlarmCancelled(listener: OnAlarmListener) {
+    val taskId = listenerIdMap[listener] ?: return
+    connection.sendBackgroundTaskEvent(taskId) {
+      stacktrace = getStackTrace(1)
+      alarmCancelled = BackgroundTaskInspectorProtocol.AlarmCancelled.getDefaultInstance()
     }
+  }
+
+  override fun onAlarmFired(listener: OnAlarmListener) {
+    val taskId = listenerIdMap[listener] ?: return
+    connection.sendBackgroundTaskEvent(taskId) {
+      alarmFired = BackgroundTaskInspectorProtocol.AlarmFired.getDefaultInstance()
+    }
+  }
+
+  override fun onAlarmFired(operation: PendingIntent) {
+    val taskId = operationIdMap[operation] ?: return
+    connection.sendBackgroundTaskEvent(taskId) {
+      alarmFired = BackgroundTaskInspectorProtocol.AlarmFired.getDefaultInstance()
+    }
+  }
 }

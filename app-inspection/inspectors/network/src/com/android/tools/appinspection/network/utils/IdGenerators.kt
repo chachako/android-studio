@@ -21,10 +21,9 @@ import java.util.concurrent.atomic.AtomicLong
 
 sealed class IdGenerator {
 
-    @VisibleForTesting
-    val id = AtomicLong()
+  @VisibleForTesting val id = AtomicLong()
 
-    fun nextId() = id.getAndIncrement()
+  fun nextId() = id.getAndIncrement()
 }
 
 object ConnectionIdGenerator : IdGenerator()

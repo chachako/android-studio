@@ -22,59 +22,59 @@ import java.io.InputStream
 import java.io.OutputStream
 
 /**
- * This is the concrete AndroidStudio implementation of the public HTTP tracking interface.
- * We're passing the HTTP events and content to the network inspector.
+ * This is the concrete AndroidStudio implementation of the public HTTP tracking interface. We're
+ * passing the HTTP events and content to the network inspector.
  *
- * Note that the HTTP stacks using [HttpConnectionTracker] should not care or know about
- * the details of the implementation of the interface.
+ * Note that the HTTP stacks using [HttpConnectionTracker] should not care or know about the details
+ * of the implementation of the interface.
  */
 class ConnectionTracker(
-    private val myUrl: String,
-    private val callstack: String,
-    private val reporter: ConnectionReporter
+  private val myUrl: String,
+  private val callstack: String,
+  private val reporter: ConnectionReporter
 ) : HttpConnectionTracker {
 
-    override fun disconnect() {}
+  override fun disconnect() {}
 
-    override fun error(message: String) {
-        reporter.onError(message)
-    }
+  override fun error(message: String) {
+    reporter.onError(message)
+  }
 
-    override fun trackRequestBody(stream: OutputStream): OutputStream {
-        return OutputStreamTracker(stream, reporter.createOutputStreamReporter())
-    }
+  override fun trackRequestBody(stream: OutputStream): OutputStream {
+    return OutputStreamTracker(stream, reporter.createOutputStreamReporter())
+  }
 
-    override fun trackRequest(method: String, fields: Map<String, List<String>>) {
-        val s = StringBuilder()
-        for ((key, value) in fields) {
-            s.append(key).append(" = ")
-            for (`val` in value) {
-                s.append(`val`).append("; ")
-            }
-            s.append('\n')
-        }
-        reporter.onRequest(myUrl, callstack, method, s.toString())
-        reporter.reportCurrentThread()
+  override fun trackRequest(method: String, fields: Map<String, List<String>>) {
+    val s = StringBuilder()
+    for ((key, value) in fields) {
+      s.append(key).append(" = ")
+      for (`val` in value) {
+        s.append(`val`).append("; ")
+      }
+      s.append('\n')
     }
+    reporter.onRequest(myUrl, callstack, method, s.toString())
+    reporter.reportCurrentThread()
+  }
 
-    override fun trackResponseHeaders(fields: Map<String?, List<String>>) {
-        val s = StringBuilder()
-        for ((key, value) in fields) {
-            s.append(key).append(" = ")
-            for (`val` in value) {
-                s.append(`val`).append("; ")
-            }
-            s.append('\n')
-        }
-        reporter.onResponse(s.toString())
-        reporter.reportCurrentThread()
+  override fun trackResponseHeaders(fields: Map<String?, List<String>>) {
+    val s = StringBuilder()
+    for ((key, value) in fields) {
+      s.append(key).append(" = ")
+      for (`val` in value) {
+        s.append(`val`).append("; ")
+      }
+      s.append('\n')
     }
+    reporter.onResponse(s.toString())
+    reporter.reportCurrentThread()
+  }
 
-    override fun trackResponseBody(stream: InputStream): InputStream {
-        return InputStreamTracker(stream, reporter.createInputStreamReporter())
-    }
+  override fun trackResponseBody(stream: InputStream): InputStream {
+    return InputStreamTracker(stream, reporter.createInputStreamReporter())
+  }
 
-    override fun trackResponseInterception(interception: NetworkInterceptionMetrics) {
-        reporter.onInterception(interception)
-    }
+  override fun trackResponseInterception(interception: NetworkInterceptionMetrics) {
+    reporter.onInterception(interception)
+  }
 }

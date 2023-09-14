@@ -25,35 +25,34 @@ import java.io.IOException
 
 class FakeOkHttp2Client : OkHttpClient() {
 
-    private val _networkInterceptors = mutableListOf<Interceptor>()
+  private val _networkInterceptors = mutableListOf<Interceptor>()
 
-    override fun networkInterceptors() = _networkInterceptors
+  override fun networkInterceptors() = _networkInterceptors
 
-    fun newCall(request: Request, fakeResponse: Response): FakeCall {
-        return FakeCall(this, request, fakeResponse)
-    }
+  fun newCall(request: Request, fakeResponse: Response): FakeCall {
+    return FakeCall(this, request, fakeResponse)
+  }
 
-    fun triggerInterceptor(
-        request: Request,
-        response: Response,
-        blowUp: Boolean = false
-    ): Response {
-        return _networkInterceptors.first().intercept(object : Interceptor.Chain {
-            override fun request(): Request {
-                return request
+  fun triggerInterceptor(request: Request, response: Response, blowUp: Boolean = false): Response {
+    return _networkInterceptors
+      .first()
+      .intercept(
+        object : Interceptor.Chain {
+          override fun request(): Request {
+            return request
+          }
+
+          override fun proceed(request: Request): Response {
+            if (blowUp) {
+              throw IOException("BLOWING UP")
             }
+            return response
+          }
 
-            override fun proceed(request: Request): Response {
-                if (blowUp) {
-                    throw IOException("BLOWING UP")
-                }
-                return response
-            }
-
-            override fun connection(): Connection {
-                throw NotImplementedError()
-            }
+          override fun connection(): Connection {
+            throw NotImplementedError()
+          }
         }
-        )
-    }
+      )
+  }
 }

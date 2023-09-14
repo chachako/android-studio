@@ -27,45 +27,47 @@ import org.junit.Test
 
 class NetworkInspectorTest {
 
-    @get:Rule
-    val inspectorRule = NetworkInspectorRule()
+  @get:Rule val inspectorRule = NetworkInspectorRule()
 
-    @Test
-    fun speedDataCollection() = runBlocking<Unit> {
-        val speedEventCount = inspectorRule.connection.speedData.size
-        delay(1000)
-        // Test the speed data is being collected at regular intervals in the background.
-        assertThat(inspectorRule.connection.speedData.size).isGreaterThan(speedEventCount)
+  @Test
+  fun speedDataCollection() =
+    runBlocking<Unit> {
+      val speedEventCount = inspectorRule.connection.speedData.size
+      delay(1000)
+      // Test the speed data is being collected at regular intervals in the background.
+      assertThat(inspectorRule.connection.speedData.size).isGreaterThan(speedEventCount)
     }
 
-    @Test
-    fun failToAddOkHttp2And3Hooks_doesNotThrowException() {
-        // This test simulates an app that does not depend on OkHttp and the
-        // inspector can be initialized without problems.
-        val environment = object : InspectorEnvironment {
-            override fun artTooling(): ArtTooling {
-                return object : ArtTooling by inspectorRule.environment.artTooling() {
-                    override fun <T : Any?> registerExitHook(
-                        originClass: Class<*>,
-                        originMethod: String,
-                        exitHook: ArtTooling.ExitHook<T>
-                    ) {
-                        if (originClass.name.endsWith("OkHttpClient")) {
-                            throw NoClassDefFoundError()
-                        } else {
-                            inspectorRule.environment.artTooling()
-                                .registerExitHook(originClass, originMethod, exitHook)
-                        }
-                    }
-                }
+  @Test
+  fun failToAddOkHttp2And3Hooks_doesNotThrowException() {
+    // This test simulates an app that does not depend on OkHttp and the
+    // inspector can be initialized without problems.
+    val environment =
+      object : InspectorEnvironment {
+        override fun artTooling(): ArtTooling {
+          return object : ArtTooling by inspectorRule.environment.artTooling() {
+            override fun <T : Any?> registerExitHook(
+              originClass: Class<*>,
+              originMethod: String,
+              exitHook: ArtTooling.ExitHook<T>
+            ) {
+              if (originClass.name.endsWith("OkHttpClient")) {
+                throw NoClassDefFoundError()
+              } else {
+                inspectorRule.environment
+                  .artTooling()
+                  .registerExitHook(originClass, originMethod, exitHook)
+              }
             }
-
-            override fun executors(): InspectorExecutors {
-                return inspectorRule.environment.executors()
-            }
+          }
         }
 
-        // This test passes if no exception thrown here.
-        NetworkInspector(inspectorRule.connection, environment)
-    }
+        override fun executors(): InspectorExecutors {
+          return inspectorRule.environment.executors()
+        }
+      }
+
+    // This test passes if no exception thrown here.
+    NetworkInspector(inspectorRule.connection, environment)
+  }
 }
