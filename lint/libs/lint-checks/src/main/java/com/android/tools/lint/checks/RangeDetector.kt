@@ -546,7 +546,7 @@ class RangeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         briefDescription = "Outside Range",
         explanation =
           """
-                Some parameters are required to in a particular numerical range; this check \
+                Some parameters are required to be in a particular numerical range; this check \
                 makes sure that arguments passed fall within the range. For arrays, Strings \
                 and collections this refers to the size or length.""",
         category = Category.CORRECTNESS,
