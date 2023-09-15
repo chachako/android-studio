@@ -1,5 +1,5 @@
 load("//tools/base/bazel:maven.bzl", "maven_repository")
-load("//tools/base/bazel:kotlin.bzl", "kotlin_library")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/build-system/integration-test/connected:connected-test.bzl", "gradle_connected_test")
 load("//tools/base/bazel/avd:avd.bzl", "avd")
 
@@ -816,6 +816,30 @@ gradle_connected_test(
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
+)
+
+filegroup(
+    name = "all_test_files",
+    srcs = glob(
+        [
+            "src/test/java/**/*.java",
+            "src/test/java/**/*.kt",
+            "BUILD.bazel",
+        ],
+    ),
+    visibility = ["//visibility:private"],
+)
+
+kotlin_test(
+    name = "BazelTargetTest",
+    srcs = ["src/test/java/com/android/build/gradle/integration/connected/BazelTargetTest.kt"],
+    data = [":all_test_files"],
+    test_class = "com.android.build.gradle.integration.connected.BazelTargetTest",
+    deps = [
+        "//tools/base/build-system/integration-test/framework",
+        "//tools/base/testutils:tools.testutils",
+        "@maven//:junit.junit",
+    ],
 )
 
 # Maven repo with all the dependencies required by test projects.

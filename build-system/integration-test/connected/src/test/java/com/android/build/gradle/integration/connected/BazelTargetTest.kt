@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.integration
+package com.android.build.gradle.integration.connected
 
 import com.android.build.gradle.integration.common.utils.checkBazelTargetsMatchTestSourceFiles
 import org.junit.Test
@@ -22,17 +22,23 @@ import org.junit.Test
 class BazelTargetTest {
 
     /**
-     * Regression test for b/171017713.
-     *
      * This test prevents someone adding a new test file without also adding a corresponding bazel
      * target.
      */
     @Test
     fun testBazelTargetsMatchTestSourceFiles() {
         checkBazelTargetsMatchTestSourceFiles(
-            "tools/base/build-system/integration-test/native/src/test",
-            "tools/base/build-system/integration-test/native/BUILD.bazel",
-            ignoredBazelTargets = listOf("all_test_files", "prebuilts")
+            "tools/base/build-system/integration-test/connected/src/test",
+            "tools/base/build-system/integration-test/connected/BUILD.bazel",
+            ignoredBazelTargets = listOf(
+                "all_test_files",
+                "avd",
+                "avd_TiramisuPrivacySandbox",
+                "avd_old_emulator_binary",
+                "connected",
+                "databinding_prebuilts",
+                "prebuilts"
+            )
         )
     }
 }

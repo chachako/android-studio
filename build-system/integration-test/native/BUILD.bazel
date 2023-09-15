@@ -520,6 +520,7 @@ kotlin_test(
     data = [":all_test_files"],
     test_class = "com.android.build.gradle.integration.BazelTargetTest",
     deps = [
+        "//tools/base/build-system/integration-test/framework",
         "//tools/base/testutils:tools.testutils",
         "@maven//:junit.junit",
     ],
