@@ -15,8 +15,11 @@
  */
 package com.android.sdklib.deviceprovisioner
 
+import kotlin.time.Duration
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.withTimeout
 
 /**
  * Receives messages on this channel until one is received that does not cause an [AssertionError]
@@ -37,4 +40,21 @@ suspend fun <T, R> Channel<T>.receiveUntilPassing(block: (T) -> R): R {
       }
     }
   }
+}
+
+/**
+ * Receives messages from the channel for the given time [duration]. Returns the number of received
+ * messages.
+ */
+suspend fun <T> Channel<T>.drainFor(duration: Duration): Int {
+  var count = 0
+  try {
+    withTimeout(duration) {
+      while (true) {
+        receive()
+        count++
+      }
+    }
+  } catch (_: TimeoutCancellationException) {}
+  return count
 }

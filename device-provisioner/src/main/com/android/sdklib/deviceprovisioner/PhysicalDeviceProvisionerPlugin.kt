@@ -23,10 +23,16 @@ import com.android.sdklib.deviceprovisioner.DeviceState.Connected
 import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 
-/** Plugin providing access to physical devices, connected over USB or WiFi. */
+/** Plugin providing access to physical devices, connected over USB or Wi-Fi. */
 class PhysicalDeviceProvisionerPlugin(
   val scope: CoroutineScope,
   private val deviceIcons: DeviceIcons
@@ -66,10 +72,9 @@ class PhysicalDeviceProvisionerPlugin(
 
     val serialNumber = checkNotNull(properties["ro.serialno"]) { "Missing [ro.serialno] property" }
 
-    // We want to be fairly confident this is a physical device; we expect USB-connected devices
-    // to have their ADB serial number match their device serial number.
-    val isUsb = deviceProperties.connectionType == ConnectionType.USB
-    if (isUsb && serialNumber != device.serialNumber) {
+    // We want to be fairly confident this is a physical device. We expect the device to have its
+    // ADB serial number be based on their device serial number.
+    if (serialNumber != deviceProperties.wearPairingId) {
       return null
     }
     // If a system property says it's virtual, it probably is.
@@ -86,10 +91,11 @@ class PhysicalDeviceProvisionerPlugin(
               // Physical devices normally live as long as the plugin, since we remember offline
               // devices, however they can be explicitly deleted by the user.
               PhysicalDeviceHandle(
+                serialNumber,
                 scope.createChildScope(isSupervisor = true),
-                MutableStateFlow(newState)
+                newState
               )
-            else -> handle.also { it.stateFlow.value = newState }
+            else -> handle.apply { updateState(device, newState) }
           }
         }
       )
@@ -99,7 +105,7 @@ class PhysicalDeviceProvisionerPlugin(
     scope.launch {
       // Update device state on termination. We keep it around in case it reconnects.
       device.awaitDisconnection()
-      handle.stateFlow.value = Disconnected(handle.state.properties)
+      handle.updateState(device, Disconnected(handle.state.properties))
     }
     return handle
   }
@@ -109,7 +115,41 @@ class PhysicalDeviceProvisionerPlugin(
   }
 }
 
+/** Handle of a physical device. */
 private class PhysicalDeviceHandle(
+  private val serialNumber: String,
   override val scope: CoroutineScope,
-  override val stateFlow: MutableStateFlow<DeviceState>
-) : DeviceHandle
+  initialState: Connected,
+) : DeviceHandle {
+
+  override val stateFlow: StateFlow<DeviceState>
+    get() = combinedFlow // Workaround for https://youtrack.jetbrains.com/issue/KT-61228
+  private val usbConnectionFlow: MutableStateFlow<DeviceState>
+  private val wifiConnectionFlow: MutableStateFlow<DeviceState>
+  private val combinedFlow: StateFlow<DeviceState>
+
+  init {
+    if (initialState.properties.connectionType == ConnectionType.USB) {
+      usbConnectionFlow = MutableStateFlow(initialState)
+      wifiConnectionFlow = MutableStateFlow(Disconnected(initialState.properties))
+    } else {
+      usbConnectionFlow = MutableStateFlow(Disconnected(initialState.properties))
+      wifiConnectionFlow = MutableStateFlow(initialState)
+    }
+    combinedFlow =
+      combine(usbConnectionFlow, wifiConnectionFlow) { usbState, wifiState ->
+          (usbState as? Connected) ?: (wifiState as? Connected) ?: usbState
+        }
+        .stateIn(scope, SharingStarted.Eagerly, initialState)
+  }
+
+  override suspend fun awaitRelease(device: ConnectedDevice) {
+    val flow = if (device.serialNumber == serialNumber) usbConnectionFlow else wifiConnectionFlow
+    flow.takeWhile { it.connectedDevice == device }.collect()
+  }
+
+  fun updateState(device: ConnectedDevice, newState: DeviceState) {
+    val flow = if (device.serialNumber == serialNumber) usbConnectionFlow else wifiConnectionFlow
+    flow.value = newState
+  }
+}

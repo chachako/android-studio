@@ -32,6 +32,7 @@ import com.google.common.truth.Truth.assertThat
 import com.google.wireless.android.sdk.stats.DeviceInfo.DeviceType
 import com.google.wireless.android.sdk.stats.DeviceInfo.MdnsConnectionType
 import java.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
@@ -44,7 +45,7 @@ import org.junit.Test
  * [DefaultProvisionerPlugin]
  */
 class DeviceProvisionerTest {
-  val fakeSession = FakeAdbSession()
+  private val fakeSession = FakeAdbSession()
 
   private val deviceIcons =
     DeviceIcons(EmptyIcon.DEFAULT, EmptyIcon.DEFAULT, EmptyIcon.DEFAULT, EmptyIcon.DEFAULT)
@@ -52,17 +53,20 @@ class DeviceProvisionerTest {
   private val provisioner =
     DeviceProvisioner.create(fakeSession.scope, fakeSession, listOf(plugin), deviceIcons)
 
-  object SerialNumbers {
-    const val physicalUsb = "X1058A"
-    const val physicalWifi = "adb-X1BQ704RX2B-VQ4ADB._adb-tls-connect._tcp."
-    const val emulator = "emulator-5554"
+  private object SerialNumbers {
+    const val PHYSICAL1_USB = "X1058A"
+    const val PHYSICAL2_USB = "X1BQ704RX2B"
+    const val PHYSICAL2_WIFI = "adb-X1BQ704RX2B-VQ4ADB._adb-tls-connect._tcp."
+    const val EMULATOR = "emulator-5554"
+
+    val ALL = listOf(PHYSICAL1_USB, PHYSICAL2_USB, PHYSICAL2_WIFI, EMULATOR)
   }
 
   init {
     fakeSession.deviceServices.configureDeviceProperties(
-      DeviceSelector.fromSerialNumber(SerialNumbers.physicalUsb),
+      DeviceSelector.fromSerialNumber(SerialNumbers.PHYSICAL1_USB),
       mapOf(
-        "ro.serialno" to SerialNumbers.physicalUsb,
+        "ro.serialno" to SerialNumbers.PHYSICAL1_USB,
         DevicePropertyNames.RO_BUILD_VERSION_SDK to "31",
         DevicePropertyNames.RO_PRODUCT_MANUFACTURER to "Google",
         DevicePropertyNames.RO_PRODUCT_MODEL to "Pixel 6",
@@ -70,9 +74,9 @@ class DeviceProvisionerTest {
       )
     )
     fakeSession.deviceServices.configureDeviceProperties(
-      DeviceSelector.fromSerialNumber(SerialNumbers.physicalWifi),
+      DeviceSelector.fromSerialNumber(SerialNumbers.PHYSICAL2_USB),
       mapOf(
-        "ro.serialno" to "X1BQ704RX2B",
+        "ro.serialno" to SerialNumbers.PHYSICAL2_USB,
         DevicePropertyNames.RO_BUILD_VERSION_SDK to "31",
         DevicePropertyNames.RO_PRODUCT_MANUFACTURER to "Google",
         DevicePropertyNames.RO_PRODUCT_MODEL to "Pixel 6",
@@ -80,7 +84,17 @@ class DeviceProvisionerTest {
       )
     )
     fakeSession.deviceServices.configureDeviceProperties(
-      DeviceSelector.fromSerialNumber(SerialNumbers.emulator),
+      DeviceSelector.fromSerialNumber(SerialNumbers.PHYSICAL2_WIFI),
+      mapOf(
+        "ro.serialno" to SerialNumbers.PHYSICAL2_USB,
+        DevicePropertyNames.RO_BUILD_VERSION_SDK to "31",
+        DevicePropertyNames.RO_PRODUCT_MANUFACTURER to "Google",
+        DevicePropertyNames.RO_PRODUCT_MODEL to "Pixel 6",
+        DevicePropertyNames.RO_SF_LCD_DENSITY to "320",
+      )
+    )
+    fakeSession.deviceServices.configureDeviceProperties(
+      DeviceSelector.fromSerialNumber(SerialNumbers.EMULATOR),
       mapOf(
         "ro.serialno" to "EMULATOR31X3X7X0",
         DevicePropertyNames.RO_BUILD_VERSION_SDK to "31",
@@ -89,8 +103,7 @@ class DeviceProvisionerTest {
         DevicePropertyNames.RO_SF_LCD_DENSITY to "320",
       )
     )
-    for (serial in
-      listOf(SerialNumbers.emulator, SerialNumbers.physicalWifi, SerialNumbers.physicalUsb)) {
+    for (serial in SerialNumbers.ALL) {
       fakeSession.deviceServices.configureShellCommand(
         DeviceSelector.fromSerialNumber(serial),
         command = "wm size",
@@ -110,7 +123,7 @@ class DeviceProvisionerTest {
     fakeSession.scope.launch { provisioner.devices.collect { channel.send(it) } }
 
     runBlockingWithTimeout {
-      setDevices(SerialNumbers.physicalUsb, SerialNumbers.physicalWifi)
+      setDevices(SerialNumbers.PHYSICAL1_USB, SerialNumbers.PHYSICAL2_WIFI)
 
       // The plugin adds the devices one at a time, so there are two events here
       val handles =
@@ -123,21 +136,105 @@ class DeviceProvisionerTest {
 
       assertThat(handlesByType).hasSize(2)
       val usbHandle = checkNotNull(handlesByType[ConnectionType.USB])
-      assertThat(usbHandle.state.connectedDevice?.serialNumber).isEqualTo(SerialNumbers.physicalUsb)
+      assertThat(usbHandle.state.connectedDevice?.serialNumber)
+        .isEqualTo(SerialNumbers.PHYSICAL1_USB)
       usbHandle.state.properties.apply {
-        assertThat(wearPairingId).isEqualTo(SerialNumbers.physicalUsb)
+        assertThat(wearPairingId).isEqualTo(SerialNumbers.PHYSICAL1_USB)
         assertThat(deviceInfoProto.mdnsConnectionType).isEqualTo(MdnsConnectionType.MDNS_NONE)
         checkPhysicalDeviceProperties()
       }
 
       val wifiHandle = checkNotNull(handlesByType[ConnectionType.WIFI])
       assertThat(wifiHandle.state.connectedDevice?.serialNumber)
-        .isEqualTo(SerialNumbers.physicalWifi)
+        .isEqualTo(SerialNumbers.PHYSICAL2_WIFI)
       wifiHandle.state.properties.apply {
-        assertThat(wearPairingId).isEqualTo("X1BQ704RX2B")
+        assertThat(wearPairingId).isEqualTo(SerialNumbers.PHYSICAL2_USB)
         assertThat(deviceInfoProto.mdnsConnectionType)
           .isEqualTo(MdnsConnectionType.MDNS_AUTO_CONNECT_TLS)
         checkPhysicalDeviceProperties()
+      }
+    }
+  }
+
+  @Test
+  fun twoConnectionsToTheSameDevice() {
+    val channel = Channel<List<DeviceHandle>>(1)
+    fakeSession.scope.launch { provisioner.devices.collect { channel.send(it) } }
+
+    runBlockingWithTimeout {
+      setDevices(SerialNumbers.PHYSICAL2_USB)
+      val handle1 =
+        channel.receiveUntilPassing { handles ->
+          assertThat(handles).hasSize(1)
+          handles[0]
+        }
+      // We also want to update whenever the state changes.
+      fakeSession.scope.launch {
+        handle1.stateFlow.collect { channel.send(provisioner.devices.value) }
+      }
+      channel.drainFor(100.milliseconds)
+
+      // Add a Wi-Fi connection to the same device.
+      setDevices(SerialNumbers.PHYSICAL2_USB, SerialNumbers.PHYSICAL2_WIFI)
+      // Device handles and their states didn't change.
+      assertThat(channel.drainFor(100.milliseconds)).isEqualTo(0)
+      assertThat(provisioner.devices.value).containsExactly(handle1)
+      assertThat(handle1.state.properties.connectionType).isEqualTo(ConnectionType.USB)
+
+      // Disconnect Wi-Fi.
+      setDevices(SerialNumbers.PHYSICAL2_USB)
+      assertThat(channel.drainFor(100.milliseconds)).isEqualTo(0)
+      assertThat(provisioner.devices.value).containsExactly(handle1)
+      assertThat(handle1.state.properties.connectionType).isEqualTo(ConnectionType.USB)
+      // The handle is still connected.
+      assertThat(handle1.state).isInstanceOf(Connected::class.java)
+
+      // Connect Wi-Fi again.
+      setDevices(SerialNumbers.PHYSICAL2_USB, SerialNumbers.PHYSICAL2_WIFI)
+      assertThat(channel.drainFor(100.milliseconds)).isEqualTo(0)
+      // Device handles and their states didn't change.
+      assertThat(channel.drainFor(100.milliseconds)).isEqualTo(0)
+      assertThat(provisioner.devices.value).containsExactly(handle1)
+      assertThat(handle1.state.properties.connectionType).isEqualTo(ConnectionType.USB)
+
+      // Disconnect USB.
+      setDevices(SerialNumbers.PHYSICAL2_WIFI)
+      val handle2 =
+        channel.receiveUntilPassing { handles ->
+          assertThat(handles).hasSize(1)
+          assertThat(handles[0].state.properties.connectionType).isEqualTo(ConnectionType.WIFI)
+          handles[0]
+        }
+      assertThat(handle2).isEqualTo(handle1)
+      assertThat(provisioner.devices.value).containsExactly(handle1)
+
+      // Reconnect USB.
+      setDevices(SerialNumbers.PHYSICAL2_WIFI, SerialNumbers.PHYSICAL2_USB)
+      val handle3 =
+        channel.receiveUntilPassing { handles ->
+          assertThat(handles).hasSize(1)
+          assertThat(handles[0].state.properties.connectionType).isEqualTo(ConnectionType.USB)
+          handles[0]
+        }
+      assertThat(handle3).isEqualTo(handle1)
+      assertThat(provisioner.devices.value).containsExactly(handle1)
+
+      // Disconnect USB.
+      setDevices(SerialNumbers.PHYSICAL2_WIFI)
+      val handle4 =
+        channel.receiveUntilPassing { handles ->
+          assertThat(handles).hasSize(1)
+          assertThat(handles[0].state.properties.connectionType).isEqualTo(ConnectionType.WIFI)
+          handles[0]
+        }
+      assertThat(handle4).isEqualTo(handle1)
+      assertThat(provisioner.devices.value).containsExactly(handle1)
+
+      // Disconnect completely.
+      setDevices()
+      channel.receiveUntilPassing { handles ->
+        assertThat(handles).hasSize(1)
+        assertThat(handles[0].state).isInstanceOf(Disconnected::class.java)
       }
     }
   }
@@ -160,7 +257,7 @@ class DeviceProvisionerTest {
     fakeSession.scope.launch { provisioner.devices.collect { channel.send(it) } }
 
     runBlockingWithTimeout {
-      setDevices(SerialNumbers.physicalUsb)
+      setDevices(SerialNumbers.PHYSICAL1_USB)
 
       val originalHandle =
         channel.receiveUntilPassing { handles ->
@@ -187,7 +284,7 @@ class DeviceProvisionerTest {
         assertThat(handle.state).isInstanceOf(Disconnected::class.java)
       }
 
-      setDevices(SerialNumbers.physicalUsb)
+      setDevices(SerialNumbers.PHYSICAL1_USB)
 
       channel.receiveUntilPassing { handles ->
         assertThat(handles).hasSize(1)
@@ -210,7 +307,7 @@ class DeviceProvisionerTest {
       // Show the device as unauthorized
       fakeSession.hostServices.devices =
         DeviceList(
-          listOf(DeviceInfo(SerialNumbers.physicalUsb, DeviceState.UNAUTHORIZED)),
+          listOf(DeviceInfo(SerialNumbers.PHYSICAL1_USB, DeviceState.UNAUTHORIZED)),
           emptyList()
         )
 
@@ -222,7 +319,7 @@ class DeviceProvisionerTest {
       }
 
       // Now show the device as online
-      setDevices(SerialNumbers.physicalUsb)
+      setDevices(SerialNumbers.PHYSICAL1_USB)
 
       unclaimedDevices.receiveUntilPassing { devices -> assertThat(devices).isEmpty() }
 
@@ -242,7 +339,7 @@ class DeviceProvisionerTest {
     fakeSession.scope.launch { provisioner.devices.collect { channel.send(it) } }
 
     runBlockingWithTimeout {
-      setDevices(SerialNumbers.emulator)
+      setDevices(SerialNumbers.EMULATOR)
 
       val originalHandle =
         channel.receiveUntilPassing { handles ->
@@ -273,7 +370,7 @@ class DeviceProvisionerTest {
         assertThat(originalHandle.state).isInstanceOf(Disconnected::class.java)
       }
 
-      setDevices(SerialNumbers.emulator)
+      setDevices(SerialNumbers.EMULATOR)
 
       channel.receiveUntilPassing { handles ->
         assertThat(handles).hasSize(1)
@@ -288,18 +385,18 @@ class DeviceProvisionerTest {
   @Test
   fun findConnectedDeviceHandle() {
     runBlockingWithTimeout {
-      setDevices(SerialNumbers.physicalWifi, SerialNumbers.emulator)
+      setDevices(SerialNumbers.PHYSICAL2_WIFI, SerialNumbers.EMULATOR)
 
       val emulator =
         async(Dispatchers.IO) {
           provisioner.findConnectedDeviceHandle(
-            DeviceSelector.fromSerialNumber(SerialNumbers.emulator),
+            DeviceSelector.fromSerialNumber(SerialNumbers.EMULATOR),
             Duration.ofSeconds(5)
           )
         }
 
       val handle = emulator.await()
-      assertThat(handle?.state?.connectedDevice?.serialNumber).isEqualTo(SerialNumbers.emulator)
+      assertThat(handle?.state?.connectedDevice?.serialNumber).isEqualTo(SerialNumbers.EMULATOR)
     }
   }
 }

@@ -15,8 +15,11 @@
  */
 package com.android.sdklib.deviceprovisioner
 
+import com.android.adblib.ConnectedDevice
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.takeWhile
 
 /**
  * A specific device known to the DeviceProvisioner. It may or may not be connected.
@@ -94,4 +97,9 @@ interface DeviceHandle {
   /** Attempts to repair a problem with the device. */
   val repairDeviceAction: RepairDeviceAction?
     get() = null
+
+  /** Waits until this device handle is no longer associated with [device]. */
+  suspend fun awaitRelease(device: ConnectedDevice) {
+    stateFlow.takeWhile { it.connectedDevice == device }.collect()
+  }
 }

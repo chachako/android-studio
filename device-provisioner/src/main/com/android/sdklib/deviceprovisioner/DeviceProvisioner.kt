@@ -27,7 +27,6 @@ import com.android.sdklib.deviceprovisioner.SetChange.Add
 import java.time.Duration
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -172,7 +171,7 @@ private constructor(
 
           // Once it is claimed, it's the plugin's responsibility; we wait until the plugin no
           // longer holds the device before re-offering it.
-          handle.stateFlow.takeWhile { it.connectedDevice == device }.collect()
+          handle.awaitRelease(device)
           logger.debug { "Re-offering ${device.serialNumber}" }
         }
       }
