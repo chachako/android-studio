@@ -123,10 +123,8 @@ private class PhysicalDeviceHandle(
 ) : DeviceHandle {
 
   override val stateFlow: StateFlow<DeviceState>
-    get() = combinedFlow // Workaround for https://youtrack.jetbrains.com/issue/KT-61228
   private val usbConnectionFlow: MutableStateFlow<DeviceState>
   private val wifiConnectionFlow: MutableStateFlow<DeviceState>
-  private val combinedFlow: StateFlow<DeviceState>
 
   init {
     if (initialState.properties.connectionType == ConnectionType.USB) {
@@ -136,7 +134,7 @@ private class PhysicalDeviceHandle(
       usbConnectionFlow = MutableStateFlow(Disconnected(initialState.properties))
       wifiConnectionFlow = MutableStateFlow(initialState)
     }
-    combinedFlow =
+    stateFlow =
       combine(usbConnectionFlow, wifiConnectionFlow) { usbState, wifiState ->
           (usbState as? Connected) ?: (wifiState as? Connected) ?: usbState
         }
