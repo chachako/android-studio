@@ -13,6 +13,7 @@ ARTIFACTS = [
     "com.android.tools:desugar_jdk_libs_nio:2.0.2",
     "com.android.tools:desugar_jdk_libs_configuration_nio:2.0.2",
     "com.github.javaparser:javaparser-core:3.23.0",
+    "com.google.apis:google-api-services-monitoring:v3-rev20230806-2.0.0",
     "com.google.apis:google-api-services-sourcerepo:v1-rev20230123-2.0.0",
     "com.google.apis:google-api-services-storage:v1-rev82-1.22.0",
     "com.google.apis:google-api-services-storage:v1-rev20230301-2.0.0",

@@ -883,6 +883,37 @@ maven_import(
 )
 
 maven_artifact(
+    name = "com.google.apis.google-api-services-monitoring_v3-rev20230806-2.0.0",
+    pom = "repository/com/google/apis/google-api-services-monitoring/v3-rev20230806-2.0.0/google-api-services-monitoring-v3-rev20230806-2.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/apis/google-api-services-monitoring/v3-rev20230806-2.0.0",
+    parent = "org.sonatype.oss.oss-parent_7",
+    deps = [
+        "com.google.api-client.google-api-client_2.2.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "com.google.apis.google-api-services-monitoring",
+    classifiers = [],
+    parent = "org.sonatype.oss.oss-parent_7",
+    jars = [
+        "repository/com/google/apis/google-api-services-monitoring/v3-rev20230806-2.0.0/google-api-services-monitoring-v3-rev20230806-2.0.0.jar"
+    ],
+    exports = [
+        "com.google.api-client.google-api-client",
+    ],
+    original_deps = [
+        "com.google.api-client.google-api-client_2.2.0",
+    ],
+    pom = "repository/com/google/apis/google-api-services-monitoring/v3-rev20230806-2.0.0/google-api-services-monitoring-v3-rev20230806-2.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/apis/google-api-services-monitoring/v3-rev20230806-2.0.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.apis.google-api-services-oauth2_v2-rev20200213-2.0.0",
     pom = "repository/com/google/apis/google-api-services-oauth2/v2-rev20200213-2.0.0/google-api-services-oauth2-v2-rev20200213-2.0.0.pom",
     repo_root_path = "repository",
