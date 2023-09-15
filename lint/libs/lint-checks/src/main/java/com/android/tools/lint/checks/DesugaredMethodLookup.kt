@@ -141,7 +141,9 @@ class DesugaredMethodLookup(private val methodDescriptors: Array<String>) {
       val lines = ArrayList<String>(1024)
       for (path in paths) {
         try {
-          if (path.startsWith("jar:")) {
+          if (path == "none") {
+            // deliberately providing an empty list
+          } else if (path.startsWith("jar:")) {
             val url = URL(path)
             val connection = url.openConnection() as JarURLConnection
             connection.jarFile.use { jarFile ->
@@ -174,7 +176,7 @@ class DesugaredMethodLookup(private val methodDescriptors: Array<String>) {
       lines.sort()
       // make sure the files aren't Windows line separator encoded or that the line sequence methods
       // handles it gracefully
-      assert(lines.isNotEmpty() && !lines[0].endsWith('\r'))
+      assert(lines.isEmpty() || !lines[0].endsWith('\r'))
 
       lookup = DesugaredMethodLookup(lines.distinct().toTypedArray())
       return null

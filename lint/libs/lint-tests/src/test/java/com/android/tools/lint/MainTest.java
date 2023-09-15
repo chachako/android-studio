@@ -31,6 +31,7 @@ import com.android.annotations.Nullable;
 import com.android.testutils.TestUtils;
 import com.android.tools.lint.checks.AbstractCheckTest;
 import com.android.tools.lint.checks.AccessibilityDetector;
+import com.android.tools.lint.checks.DesugaredMethodLookup;
 import com.android.tools.lint.checks.infrastructure.TestFile;
 import com.android.tools.lint.client.api.ConfigurationHierarchy;
 import com.android.tools.lint.client.api.LintDriver;
@@ -1078,6 +1079,50 @@ public class MainTest extends AbstractCheckTest {
                     "LintError",
                     project.getPath()
                 });
+    }
+
+    public void testNoDesugaring() throws Exception {
+        // Tests b/296372320#comment9
+        File project =
+                getProjectDir(
+                        null,
+                        manifest().minSdk(1),
+                        java(
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "public class Test {\n"
+                                        + "    public int test(byte b) {\n"
+                                        + "        return java.lang.Byte.hashCode(b);\n"
+                                        + "    }\n"
+                                        + "}\n"));
+
+        try {
+            checkDriver(
+                    ""
+                            + "src/test/pkg/Test.java:4: Error: Call requires API level 24 (current min is 1): java.lang.Byte#hashCode [NewApi]\n"
+                            + "        return java.lang.Byte.hashCode(b);\n"
+                            + "                              ~~~~~~~~\n"
+                            + "1 errors, 0 warnings",
+                    "",
+
+                    // Expected exit code
+                    ERRNO_SUCCESS,
+
+                    // Args
+                    new String[] {
+                        "--check",
+                        "NewApi",
+                        "--ignore",
+                        "LintError",
+                        "--sdk-home",
+                        TestUtils.getSdk().toString(),
+                        "--Xdesugared-methods",
+                        "none",
+                        project.getPath()
+                    });
+        } finally {
+            DesugaredMethodLookup.Companion.reset();
+        }
     }
 
     public void testFatalOnly() throws Exception {
