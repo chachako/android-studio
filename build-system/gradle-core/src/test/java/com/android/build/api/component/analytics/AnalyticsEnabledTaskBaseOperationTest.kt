@@ -19,6 +19,7 @@ package com.android.build.api.component.analytics
 import com.android.build.api.artifact.CombiningOperationRequest
 import com.android.build.api.artifact.InAndOutDirectoryOperationRequest
 import com.android.build.api.artifact.InAndOutFileOperationRequest
+import com.android.build.api.artifact.MultipleArtifactTypeOutOperationRequest
 import com.android.build.api.artifact.OutOperationRequest
 import com.android.build.api.artifact.TaskBasedOperation
 import com.android.build.gradle.internal.fixtures.FakeObjectFactory
@@ -168,5 +169,37 @@ class AnalyticsEnabledTaskBaseOperationTest {
             .wiredWith(
                 DirectoryBasedTask::inputFiles,
                 DirectoryBasedTask::outputFile)
+    }
+
+    @Test
+    fun testWiredWithMultiple() {
+        abstract class MultipleRegularFilesBasedTask : Task {
+            @get:InputFiles abstract val inputFiles: ListProperty<RegularFile>
+        }
+        @Suppress("UNCHECKED_CAST")
+        val delegate: TaskBasedOperation<MultipleRegularFilesBasedTask> =
+            Mockito.mock(TaskBasedOperation::class.java) as TaskBasedOperation<MultipleRegularFilesBasedTask>
+        @Suppress("UNCHECKED_CAST")
+        val proxy = AnalyticsEnabledTaskBaseOperation(delegate, stats, FakeObjectFactory.factory)
+        @Suppress("UNCHECKED_CAST")
+        val fakeOutputRequest = Mockito.mock(MultipleArtifactTypeOutOperationRequest::class.java)
+                as MultipleArtifactTypeOutOperationRequest<RegularFile>
+
+        Mockito.`when`(delegate.wiredWithMultiple(
+            MultipleRegularFilesBasedTask::inputFiles,
+        )).thenReturn(fakeOutputRequest)
+        Truth.assertThat(proxy.wiredWithMultiple(
+            MultipleRegularFilesBasedTask::inputFiles,
+        )).isInstanceOf(
+            MultipleArtifactTypeOutOperationRequest::class.java
+        )
+
+        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.first().type
+        ).isEqualTo(VariantPropertiesMethodType.WIRED_WITH_MULTIPLE_VALUE)
+        Mockito.verify(delegate, Mockito.times(1))
+            .wiredWithMultiple(
+                MultipleRegularFilesBasedTask::inputFiles)
     }
 }

@@ -832,7 +832,8 @@ abstract class LintPlugin : Plugin<Project> {
             fileResolver = { o: Any -> project.file(o) },
             configurationContainer = project.configurations,
             dependencyHandler = project.dependencies,
-            extraProperties = project.extensions.extraProperties
+            extraProperties = project.extensions.extraProperties,
+            emptyTaskCreator = { name -> project.tasks.register(name) },
         )
         projectOptions
             .allOptions

@@ -67,7 +67,8 @@ fun createProjectServices(
         fileResolver = fileResolver,
         project.configurations,
         project.dependencies,
-        project.extensions.extraProperties
+        project.extensions.extraProperties,
+        project.tasks::register,
     )
 
 @JvmOverloads

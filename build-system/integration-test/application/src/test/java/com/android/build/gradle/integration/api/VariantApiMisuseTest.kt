@@ -106,7 +106,7 @@ androidComponents {
         val result = project.executor().expectFailure().run("clean", "debugSomeTask")
         result.stderr.use {
             ScannerSubject.assertThat(it).contains(
-                    "was wired with an output but neither toAppend or toCreate methods were " +
+                    "was wired with an output but neither toAppend, toCreate, toListenTo methods were " +
                             "invoked."
             )
         }

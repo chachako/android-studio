@@ -146,7 +146,8 @@ open class TestVariantImpl @Inject constructor(
         DexingCreationConfigImpl(
             this,
             dslInfo.dexingDslInfo,
-            internalServices
+            internalServices,
+            taskCreationServices,
         )
     }
     override val targetSdk: AndroidVersion by lazy(LazyThreadSafetyMode.NONE) {

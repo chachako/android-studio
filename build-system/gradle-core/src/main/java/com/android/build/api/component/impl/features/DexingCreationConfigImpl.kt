@@ -25,7 +25,9 @@ import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.DynamicFeatureCreationConfig
 import com.android.build.gradle.internal.component.features.DexingCreationConfig
 import com.android.build.gradle.internal.core.dsl.features.DexingDslInfo
+import com.android.build.gradle.internal.core.dsl.impl.computeMergedOptions
 import com.android.build.gradle.internal.scope.Java8LangSupport
+import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.options.BooleanOption
 import com.android.builder.dexing.DexingType
@@ -36,13 +38,24 @@ import kotlin.math.max
 class DexingCreationConfigImpl(
     private val component: ApkCreationConfig,
     private val dslInfo: DexingDslInfo,
-    private val internalServices: VariantServices
+    private val internalServices: VariantServices,
+    private val taskCreationServices: TaskCreationServices,
 ): DexingCreationConfig {
 
     init {
+
         dslInfo.multiDexKeepProguard?.let {
-            component.artifacts.getArtifactContainer(MultipleArtifact.MULTIDEX_KEEP_PROGUARD)
-                .addInitialProvider(null, internalServices.toRegularFileProvider(it))
+            // register the file in the global scope for the project as several variants might
+            // be registering the same file. This would create a Gradle validation error as multiple
+            // tasks would be producing the same file.
+            val item = internalServices.projectInfo.projectDirectory.file(it.absolutePath)
+            component.global.globalArtifacts
+                .addStaticProvider(
+                    component.artifacts
+                        .getArtifactContainer(MultipleArtifact.MULTIDEX_KEEP_PROGUARD),
+                    MultipleArtifact.MULTIDEX_KEEP_PROGUARD,
+                    item = item
+                )
         }
     }
 

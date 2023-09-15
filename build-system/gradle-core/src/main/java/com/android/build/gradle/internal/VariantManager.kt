@@ -879,6 +879,8 @@ class VariantManager<
                         )
                     }
                 }
+
+                // execute the public variant API callbacks.
                 variantApiOperationsRegistrar.variantOperations.executeOperations(userVisibleVariant)
 
                 // all the variant public APIs have run, we can now safely fill the analytics with

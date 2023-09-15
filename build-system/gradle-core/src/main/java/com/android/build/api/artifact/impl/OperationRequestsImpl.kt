@@ -24,10 +24,10 @@ import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.artifact.CombiningOperationRequest
 import com.android.build.api.artifact.InAndOutDirectoryOperationRequest
 import com.android.build.api.artifact.InAndOutFileOperationRequest
+import com.android.build.api.artifact.MultipleArtifactTypeOutOperationRequest
 import com.android.build.api.artifact.OutOperationRequest
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.gradle.internal.scope.InternalArtifactType
-import com.android.build.gradle.internal.scope.getOutputPath
 import org.gradle.api.Task
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
@@ -42,7 +42,7 @@ import org.gradle.api.tasks.TaskProvider
 import java.io.File
 import java.util.concurrent.atomic.AtomicReference
 
-class OutOperationRequestImpl<TaskT: Task, FileTypeT: FileSystemLocation>(
+open class OutOperationRequestImpl<TaskT: Task, FileTypeT: FileSystemLocation>(
     override val artifacts: ArtifactsImpl,
     val taskProvider: TaskProvider<TaskT>,
     val with: (TaskT) -> FileSystemLocationProperty<FileTypeT>
@@ -62,9 +62,40 @@ class OutOperationRequestImpl<TaskT: Task, FileTypeT: FileSystemLocation>(
         toCreate(artifacts, taskProvider, with, type)
     }
 
+    override fun <ArtifactTypeT : Single<FileTypeT>> toListenTo(type: ArtifactTypeT) {
+        closeRequest()
+        toListenTo(
+            artifacts,
+            taskProvider,
+            with,
+            type
+        )
+    }
+
     override val description: String
-        get() = "Task ${taskProvider.name} was wired with an output but neither toAppend or toCreate " +
+        get() = "Task ${taskProvider.name} was wired with an output but neither toAppend, toCreate, toListenTo " +
             "methods were invoked."
+}
+
+class MultipleArtifactTypeOutOperationRequestImpl<TaskT: Task, FileTypeT: FileSystemLocation>(
+    override val artifacts: ArtifactsImpl,
+    val taskProvider: TaskProvider<TaskT>,
+    val with: (TaskT) -> ListProperty<FileTypeT>
+) : MultipleArtifactTypeOutOperationRequest<FileTypeT>, ArtifactOperationRequest {
+
+    override fun <ArtifactTypeT : Multiple<FileTypeT>> toListenTo(type: ArtifactTypeT) {
+        closeRequest()
+        toListenTo(
+            artifacts,
+            taskProvider,
+            with,
+            type
+        )
+    }
+
+    override val description: String
+        get() = "Task ${taskProvider.name} was wired with an output but neither toListenTo " +
+                "methods were invoked."
 }
 
 class InAndOutFileOperationRequestImpl<TaskT: Task>(
@@ -336,3 +367,58 @@ private fun <TaskT: Task, FileTypeT: FileSystemLocation, ArtifactTypeT> toTransf
     }
 }
 
+private fun <TaskT: Task, FileTypeT: FileSystemLocation, ArtifactTypeT> toListenTo(
+    artifacts: ArtifactsImpl,
+    taskProvider: TaskProvider<TaskT>,
+    with: (TaskT) -> FileSystemLocationProperty<FileTypeT>,
+    type: ArtifactTypeT
+) where ArtifactTypeT : Single<FileTypeT> {
+
+    val artifactContainer = artifacts.getArtifactContainer(type)
+    taskProvider.configure {
+        with(it).set(artifactContainer.get())
+    }
+    _toListenTo(
+        artifacts,
+        taskProvider,
+        type,
+        artifactContainer
+    )
+}
+
+private fun <TaskT: Task, FileTypeT: FileSystemLocation, ArtifactTypeT> toListenTo(
+    artifacts: ArtifactsImpl,
+    taskProvider: TaskProvider<TaskT>,
+    with: (TaskT) -> ListProperty<FileTypeT>,
+    type: ArtifactTypeT
+) where ArtifactTypeT : Multiple<FileTypeT> {
+
+    val artifactContainer= artifacts.getArtifactContainer(type)
+    taskProvider.configure {
+        with(it).set(artifactContainer.get())
+    }
+
+    _toListenTo(
+        artifacts,
+        taskProvider,
+        type,
+        artifactContainer
+    )
+}
+
+private fun <TaskT: Task, FileTypeT: FileSystemLocation, ArtifactTypeT> _toListenTo(
+    artifacts: ArtifactsImpl,
+    taskProvider: TaskProvider<TaskT>,
+    type: ArtifactTypeT,
+    artifactContainer: ArtifactContainer<*, *>,
+) where ArtifactTypeT : Artifact<FileTypeT> {
+    // Do not register the listener on the current final provider as it may change as long as
+    // the variant API callbacks are running so instead register a deferred action.
+    artifacts.listenerManager.addAction {
+        artifactContainer.getFinalProvider()?.configure {
+            it.finalizedBy(taskProvider)
+        } ?: artifacts.logger.warn("${taskProvider.name} was registered to listen to the " +
+                "production of the ${type.name()} artifact, but there are no producer for this " +
+                "type. The ${taskProvider.name} will never be invoked.")
+    }
+}

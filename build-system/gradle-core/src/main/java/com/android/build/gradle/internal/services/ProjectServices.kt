@@ -23,7 +23,6 @@ import com.android.build.gradle.internal.res.Aapt2FromMaven
 import com.android.build.gradle.internal.scope.ProjectInfo
 import com.android.build.gradle.internal.transforms.LayoutlibFromMaven
 import com.android.build.gradle.internal.utils.setDisallowChanges
-import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.ProjectOptions
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.dsl.DependencyHandler
@@ -31,9 +30,9 @@ import org.gradle.api.file.ProjectLayout
 import org.gradle.api.logging.Logger
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.ExtraPropertiesExtension
-import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.services.BuildServiceRegistry
+import org.gradle.api.tasks.TaskProvider
 import java.io.File
 
 /**
@@ -64,7 +63,8 @@ class ProjectServices constructor(
     val fileResolver: (Any) -> File,
     val configurationContainer: ConfigurationContainer,
     val dependencyHandler: DependencyHandler,
-    val extraProperties: ExtraPropertiesExtension
+    val extraProperties: ExtraPropertiesExtension,
+    val emptyTaskCreator: (String) -> TaskProvider<*>,
 ) {
     fun initializeAapt2Input(aapt2Input: Aapt2Input) {
         aapt2Input.buildService.setDisallowChanges(getBuildService(buildServiceRegistry))

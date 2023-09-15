@@ -155,15 +155,15 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
      * This creates tasks common to all variant types.
      */
     private fun createTasksForVariant(
-        variant: ComponentInfo<VariantBuilderT, VariantT>,
+        componentInfo: ComponentInfo<VariantBuilderT, VariantT>,
     ) {
-        val variantProperties = variant.variant
-        val componentType = variantProperties.componentType
-        val variantDependencies = variantProperties.variantDependencies
-        if (variantProperties is ApkCreationConfig &&
-            variantProperties.dexingCreationConfig.dexingType.isLegacyMultiDexMode()) {
+        val variant = componentInfo.variant
+        val componentType = variant.componentType
+        val variantDependencies = variant.variantDependencies
+        if (variant is ApkCreationConfig &&
+            variant.dexingCreationConfig.dexingType.isLegacyMultiDexMode()) {
             val multiDexDependency =
-                if (variantProperties
+                if (variant
                         .services
                         .projectOptions[BooleanOption.USE_ANDROID_X])
                     ANDROIDX_MULTIDEX_MULTIDEX
@@ -173,7 +173,7 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
             project.dependencies
                 .add(variantDependencies.runtimeClasspath.name, multiDexDependency)
         }
-        if (variantProperties.renderscriptCreationConfig?.renderscript?.supportModeEnabled?.get()
+        if (variant.renderscriptCreationConfig?.renderscript?.supportModeEnabled?.get()
             == true) {
             val fileCollection = project.files(
                 globalConfig.versionedSdkLoader.flatMap {
@@ -185,9 +185,14 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
                 project.dependencies.add(variantDependencies.runtimeClasspath.name, fileCollection)
             }
         }
-        createAssembleTask(variantProperties)
+        createAssembleTask(variant)
 
-        doCreateTasksForVariant(variant)
+        doCreateTasksForVariant(componentInfo)
+
+        // now that the onVariants callback has run and tasks have been created,
+        // register all the listeners so we can ensure there is a Task providing the artifact
+        // they are listening too.
+        variant.artifacts.listenerManager.executeActions()
     }
 
     open fun createTopLevelTasks(componentType: ComponentType, variantModel: VariantModel) {

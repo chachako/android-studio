@@ -20,6 +20,7 @@ import com.android.build.gradle.internal.lint.LintFromMaven
 import com.android.build.gradle.internal.transforms.LayoutlibFromMaven
 import org.gradle.api.Action
 import org.gradle.api.Named
+import org.gradle.api.Task
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.file.ConfigurableFileCollection
@@ -32,6 +33,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ValueSource
 import org.gradle.api.provider.ValueSourceParameters
 import org.gradle.api.provider.ValueSourceSpec
+import org.gradle.api.tasks.TaskProvider
 import java.io.File
 
 class TaskCreationServicesImpl(projectServices: ProjectServices) : BaseServicesImpl(projectServices), TaskCreationServices {
@@ -58,6 +60,9 @@ class TaskCreationServicesImpl(projectServices: ProjectServices) : BaseServicesI
     override fun initializeAapt2Input(aapt2Input: Aapt2Input) {
         projectServices.initializeAapt2Input(aapt2Input)
     }
+
+    override fun createEmptyTask(name: String): TaskProvider<*> =
+        projectServices.emptyTaskCreator(name)
 
     override fun <T> provider(callable: () -> T?): Provider<T> {
         return projectServices.providerFactory.provider(callable)

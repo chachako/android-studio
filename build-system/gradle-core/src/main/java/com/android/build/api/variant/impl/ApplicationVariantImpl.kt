@@ -154,7 +154,8 @@ open class ApplicationVariantImpl @Inject constructor(
         DexingCreationConfigImpl(
             this,
             dslInfo.dexingDslInfo,
-            internalServices
+            internalServices,
+            taskCreationServices,
         )
     }
 

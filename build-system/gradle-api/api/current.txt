@@ -128,9 +128,14 @@ package com.android.build.api.artifact {
     field public static final com.android.build.api.artifact.MultipleArtifact.NATIVE_SYMBOL_TABLES INSTANCE;
   }
 
+  @org.gradle.api.Incubating public interface MultipleArtifactTypeOutOperationRequest<FileTypeT extends org.gradle.api.file.FileSystemLocation> {
+    method public <ArtifactTypeT extends com.android.build.api.artifact.Artifact.Multiple<FileTypeT>> void toListenTo(ArtifactTypeT type);
+  }
+
   public interface OutOperationRequest<FileTypeT extends org.gradle.api.file.FileSystemLocation> {
     method public <ArtifactTypeT extends com.android.build.api.artifact.Artifact.Multiple<FileTypeT> & com.android.build.api.artifact.Artifact.Appendable> void toAppendTo(ArtifactTypeT type);
     method public <ArtifactTypeT extends com.android.build.api.artifact.Artifact.Single<FileTypeT> & com.android.build.api.artifact.Artifact.Replaceable> void toCreate(ArtifactTypeT type);
+    method @org.gradle.api.Incubating public <ArtifactTypeT extends com.android.build.api.artifact.Artifact.Single<FileTypeT>> void toListenTo(ArtifactTypeT type);
   }
 
   public abstract sealed class ScopedArtifact extends com.android.build.api.artifact.Artifact.Single<org.gradle.api.file.RegularFile> {
@@ -196,6 +201,7 @@ package com.android.build.api.artifact {
     method public <FileTypeT extends org.gradle.api.file.FileSystemLocation> com.android.build.api.artifact.CombiningOperationRequest<FileTypeT> wiredWith(kotlin.jvm.functions.Function1<? super TaskT,? extends org.gradle.api.provider.ListProperty<FileTypeT>> taskInput, kotlin.jvm.functions.Function1<? super TaskT,? extends org.gradle.api.file.FileSystemLocationProperty<FileTypeT>> taskOutput);
     method public com.android.build.api.artifact.InAndOutDirectoryOperationRequest<TaskT> wiredWithDirectories(kotlin.jvm.functions.Function1<? super TaskT,? extends org.gradle.api.file.DirectoryProperty> taskInput, kotlin.jvm.functions.Function1<? super TaskT,? extends org.gradle.api.file.DirectoryProperty> taskOutput);
     method public com.android.build.api.artifact.InAndOutFileOperationRequest wiredWithFiles(kotlin.jvm.functions.Function1<? super TaskT,? extends org.gradle.api.file.RegularFileProperty> taskInput, kotlin.jvm.functions.Function1<? super TaskT,? extends org.gradle.api.file.RegularFileProperty> taskOutput);
+    method @org.gradle.api.Incubating public <FileTypeT extends org.gradle.api.file.FileSystemLocation> com.android.build.api.artifact.MultipleArtifactTypeOutOperationRequest<FileTypeT> wiredWithMultiple(kotlin.jvm.functions.Function1<? super TaskT,? extends org.gradle.api.provider.ListProperty<FileTypeT>> taskInput);
   }
 
 }

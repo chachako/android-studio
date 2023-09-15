@@ -103,7 +103,8 @@ abstract class AssetPackBundlePlugin : Plugin<Project> {
             project::file,
             project.configurations,
             project.dependencies,
-            project.extensions.extraProperties
+            project.extensions.extraProperties,
+            { name -> project.tasks.register(name) },
         )
         registerServices(project, projectOptions)
 

@@ -31,6 +31,7 @@ import com.android.build.api.artifact.impl.ArtifactsImplTest.TestSingleArtifactT
 import com.android.build.api.artifact.impl.ArtifactsImplTest.TestSingleArtifactType.TEST_REPLACABLE_FILE
 import com.android.build.api.artifact.impl.ArtifactsImplTest.TestSingleArtifactType.TEST_TRANSFORMABLE_DIRECTORY
 import com.android.build.api.artifact.impl.ArtifactsImplTest.TestSingleArtifactType.TEST_TRANSFORMABLE_FILE
+import com.android.build.gradle.internal.fixtures.FakeGradleRegularFile
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth
 import org.gradle.api.DefaultTask
@@ -52,8 +53,11 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.mockito.Mockito
 import java.io.File
+import java.lang.RuntimeException
 import java.util.Locale
+import java.util.Random
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -127,7 +131,9 @@ class ArtifactsImplTest {
         artifacts.setInitialProvider(agpTaskProvider, AGPTask::outputFile).on(TEST_FILE)
 
         // now get it.
-        Truth.assertThat(finalVersion.get().asFile.relativeTo(project.buildDir).path).isEqualTo(
+        Truth.assertThat(finalVersion.get().asFile.relativeTo(
+            project.layout.buildDirectory.asFile.get()).path
+        ).isEqualTo(
             FileUtils.join(
                 Artifact.Category.INTERMEDIATES.name.lowercase(Locale.getDefault()),
                 TEST_FILE.getFolderName(),
@@ -144,6 +150,26 @@ class ArtifactsImplTest {
         Truth.assertThat(artifacts.getAll(TEST_DIRECTORIES).get())
                 .containsExactly(
                         project.layout.buildDirectory.get(), project.layout.projectDirectory)
+    }
+
+    @Test
+    fun testTooManyStaticArtifacts() {
+        try {
+            repeat(6) {
+                artifacts.addStaticProvider(
+                    artifacts.getArtifactContainer(TEST_DIRECTORIES),
+                    TEST_DIRECTORIES,
+                    project.layout.buildDirectory.dir(
+                        "file-${Random().nextInt()}"
+                    ).get()
+                )
+            }
+        } catch(e: RuntimeException) {
+            Truth.assertThat(e.message).isEqualTo(
+                "There are more than 5 static files registered for TEST_DIRECTORIES, " +
+                        "which is not supported."
+            )
+        }
     }
 
     @Test
@@ -964,6 +990,34 @@ class ArtifactsImplTest {
     }
 
     @Test
+    fun testMultipleDirectoriesToListenTo() {
+        abstract class ProducerTask: DefaultTask() {
+            @get:OutputDirectory abstract val outputDirectory: DirectoryProperty
+        }
+
+        val appendTaskProvider = project.tasks.register("producerTask", ProducerTask::class.java)
+        artifacts.use(appendTaskProvider)
+            .wiredWith(ProducerTask::outputDirectory)
+            .toAppendTo(TEST_APPENDABLE_DIRECTORIES)
+
+        // now registers an artifact listener.
+        abstract class ListenerTask: DefaultTask() {
+            @get:InputFiles abstract val inputDirectories: ListProperty<Directory>
+        }
+
+        val agpTaskProvider = project.tasks.register("listenerTask", ListenerTask::class.java)
+        artifacts.use(agpTaskProvider)
+            .wiredWithMultiple(ListenerTask::inputDirectories)
+            .toListenTo(TEST_APPENDABLE_DIRECTORIES)
+
+
+        val artifactContainer = artifacts.getArtifactContainer(TEST_APPENDABLE_DIRECTORIES)
+        // final artifact values should have all tasks output.
+        Truth.assertThat(artifactContainer.get().get()).hasSize(1)
+        Truth.assertThat(artifacts.listenerManager.registeredListeners).hasSize(1)
+    }
+
+    @Test
     fun testMultipleAGPProvidersReplacementOnMultipleFileArtifactType() {
         abstract class AGPTask: DefaultTask() {
             @get:OutputFile
@@ -1218,6 +1272,24 @@ class ArtifactsImplTest {
     }
 
     @Test
+    fun testAddingSameStaticFileMultipleTimes() {
+        val container = MultipleArtifactContainer {
+            @Suppress("UNCHECKED_CAST")
+            Mockito.mock(MultiplePropertyAdapter::class.java) as MultiplePropertyAdapter<RegularFile>
+        }
+
+        artifacts.addStaticProvider(
+            container,
+            MultipleArtifact.MULTIDEX_KEEP_PROGUARD,
+            FakeGradleRegularFile(File("/tmp/foo.txt")))
+
+        artifacts.addStaticProvider(
+            container,
+            MultipleArtifact.MULTIDEX_KEEP_PROGUARD,
+            FakeGradleRegularFile(File("/tmp/foo.txt")))
+    }
+
+    @Test
     fun testToTransformOnContainsManyArtifact() {
         abstract class TransformTask: DefaultTask() {
             @get:InputDirectory abstract val inputFolder: DirectoryProperty
@@ -1244,47 +1316,7 @@ class ArtifactsImplTest {
         @get:OutputFile abstract val outputFile: RegularFileProperty
     }
 
-    private fun <U> `test deprecated artifacts are rerouted correctly`(
-        artifactToRegister: U,
-        artifactToQuery: U
-    ) where U: MultipleArtifact<RegularFile>, U: Artifact.Appendable {
-
-        val agpTaskProvider = project.tasks.register("agpTaskProvider", AgpFileTask::class.java)
-        artifacts.use(agpTaskProvider)
-            .wiredWith(AgpFileTask::outputFile)
-            .toAppendTo(artifactToRegister)
-
-        // now check that the appended file is visible from the query artifact type
-        val allJars = artifacts.getAll(artifactToQuery).get()
-        Truth.assertThat(allJars.size).isEqualTo(1)
-        Truth.assertThat(allJars[0].asFile.absolutePath)
-            .endsWith(
-                "build/intermediates/${artifactToRegister.getFolderName()}/debug/agpTaskProvider"
-                    .replace('/', File.separatorChar)
-            )
-    }
-
     abstract class AgpDirectoryTask: DefaultTask() {
         @get:OutputFile abstract val outputFolder: DirectoryProperty
-    }
-
-    private fun <U> `test directory deprecated artifacts are rerouted correctly`(
-        artifactToRegister: U,
-        artifactToQuery: U
-    ) where U: MultipleArtifact<Directory>, U: Artifact.Appendable {
-
-        val agpTaskProvider = project.tasks.register("agpTaskProvider", AgpDirectoryTask::class.java)
-        artifacts.use(agpTaskProvider)
-            .wiredWith(AgpDirectoryTask::outputFolder)
-            .toAppendTo(artifactToRegister)
-
-        // now check that the appended file is visible from the query artifact type
-        val allJars = artifacts.getAll(artifactToQuery).get()
-        Truth.assertThat(allJars.size).isEqualTo(1)
-        Truth.assertThat(allJars[0].asFile.absolutePath)
-            .endsWith(
-                "build/intermediates/${artifactToRegister.getFolderName()}/debug/agpTaskProvider"
-                    .replace('/', File.separatorChar)
-            )
     }
 }

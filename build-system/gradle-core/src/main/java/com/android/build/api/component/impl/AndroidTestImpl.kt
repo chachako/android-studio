@@ -258,7 +258,8 @@ open class AndroidTestImpl @Inject constructor(
         DexingCreationConfigImpl(
             this,
             dslInfo.dexingDslInfo,
-            internalServices
+            internalServices,
+            taskCreationServices,
         )
     }
 

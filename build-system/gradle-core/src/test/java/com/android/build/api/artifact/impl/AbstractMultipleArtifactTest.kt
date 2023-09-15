@@ -16,11 +16,15 @@
 
 package com.android.build.api.artifact.impl
 
+import com.android.build.gradle.internal.fixtures.FakeGradleRegularFile
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.Transformer
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileSystemLocation
+import org.gradle.api.file.RegularFile
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
@@ -33,6 +37,9 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.mockito.ArgumentCaptor
+import org.mockito.Mockito
+import java.io.File
 import java.lang.RuntimeException
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.test.fail

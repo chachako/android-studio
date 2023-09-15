@@ -27,6 +27,7 @@ import com.android.build.api.artifact.MultipleArtifact
 import com.android.build.api.variant.BuiltArtifactsLoader
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.variant.ScopedArtifacts
+import com.android.build.api.variant.impl.DeferredActionManager
 import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.getIntermediateOutputPath
@@ -61,9 +62,12 @@ class ArtifactsImpl(
 ): Artifacts {
 
     private val storageProvider = StorageProviderImpl()
+    internal val listenerManager = DeferredActionManager()
     val objects: ObjectFactory = project.objects
     internal val buildDirectory = project.layout.buildDirectory
     private val outstandingRequests = Collections.synchronizedList(ArrayList<ArtifactOperationRequest>())
+    val logger = project.logger
+    val taskContainer = project.tasks
 
     override fun getBuiltArtifactsLoader(): BuiltArtifactsLoader {
         return BuiltArtifactsLoaderImpl()
@@ -131,13 +135,23 @@ class ArtifactsImpl(
     fun <FileTypeT: FileSystemLocation> add(
             type: Multiple<FileTypeT>,
             artifact: FileTypeT) {
-        storageProvider.getStorage(type.kind).add(objects, type, artifact)
+
+        addStaticProvider(
+            getArtifactContainer(type),
+            type,
+            artifact,
+        )
     }
 
     override fun <FileTypeT : FileSystemLocation> add(
             type: MultipleArtifact<FileTypeT>,
             artifact: FileTypeT) {
-        storageProvider.getStorage(type.kind).add(objects, type, artifact)
+
+        addStaticProvider(
+            getArtifactContainer(type),
+            type,
+            artifact
+        )
     }
 
     override fun <TaskT : Task> use(taskProvider: TaskProvider<TaskT>): TaskBasedOperationImpl<TaskT> {
@@ -409,6 +423,41 @@ class ArtifactsImpl(
             transform = ArtifactOperationRequest::description,
             postfix = "\nMake sure to correctly chain all calls."
         ))
+    }
+
+    // Keep the list of statically provided artifact type since we register one task for all
+    // static files of that artifact type.
+    val staticProviders = mutableMapOf<Artifact<*>, TaskProvider<*>>()
+
+    /**
+     * add a static file/directory to this [ArtifactContainer]
+     *
+     * @param item the static file/directory to add.
+     */
+    internal fun <T: FileSystemLocation> addStaticProvider(
+        container: MultipleArtifactContainer<T>,
+        type: Artifact<T>,
+        item: T,
+    ) {
+        // if no one is producing T yet, create an empty Task, register its output to be T
+        // and register it to the providers for this artifact type.
+        synchronized(staticProviders) {
+            val taskProvider = staticProviders.getOrPut(type) {
+                // register a unique task by combining the artifact type name and the variant name
+                var taskName = "prepare$identifier${type.name()}StaticFile"
+                taskContainer.register(taskName)
+            }
+            // whether the task just go registered or not, we need to add the new static file or
+            // directory to its output.
+            taskProvider.configure { task ->
+                task.outputs.file(item)
+            }
+
+            val mappedValue = taskProvider.map { _ ->
+                item
+            }
+            container.addInitialProvider(taskProvider, mappedValue)
+        }
     }
 }
 

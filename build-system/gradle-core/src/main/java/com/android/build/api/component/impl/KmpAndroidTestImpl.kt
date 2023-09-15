@@ -164,7 +164,8 @@ open class KmpAndroidTestImpl @Inject constructor(
         DexingCreationConfigImpl(
             this,
             dslInfo.dexingDslInfo,
-            internalServices
+            internalServices,
+            services,
         )
     }
 
