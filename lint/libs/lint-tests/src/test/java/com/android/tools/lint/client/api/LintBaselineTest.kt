@@ -1004,6 +1004,72 @@ class LintBaselineTest {
   }
 
   @Test
+  fun testNewApiMessageTolerance() {
+    // Makes sure that we're really calling the message matching code
+    // in an end-to-end scenario (in this case, with the ApiDetector
+    // and the error message's current minSdkVersion being different in
+    // the baseline and the current message)
+    val root = temporaryFolder.newFolder().canonicalFile.absoluteFile
+
+    val testFile =
+      kotlin(
+          """
+          package test.pkg
+          fun test(manager: android.app.GameManager) {
+              val x = manager.getGameMode()
+          }
+          """
+        )
+        .indented()
+
+    val existingBaseline = File(root, "baseline.xml")
+    existingBaseline.writeText(
+      // language=XML
+      """
+      <?xml version="1.0" encoding="UTF-8"?>
+      <issues>
+
+          <issue
+              id="NewApi"
+              message="Call requires API level 31 (current min is 1): `android.app.GameManager#getGameMode`">
+              <location
+                  file="src/test/pkg/test.kt"/>
+          </issue>
+
+      </issues>
+        """
+        .trimIndent()
+    )
+    val project = lint().files(testFile, manifest().minSdk(31)).createProjects(root).single()
+    MainTest.checkDriver(
+      // Expected output
+      """
+      ../baseline.xml: Information: 1 errors/warnings were listed in the baseline file (../baseline.xml) but not found in the project; perhaps they have been fixed? Unmatched issue types: NewApi [LintBaseline]
+      0 errors, 0 warnings
+        """
+        .trimIndent(),
+      // Expected error
+      "",
+      // Expected exit code
+      ERRNO_SUCCESS,
+      arrayOf(
+        "--check",
+        "NewApi",
+        "--nolines",
+        "--baseline",
+        existingBaseline.path,
+        "--disable",
+        "LintError",
+        "--sdk-home",
+        TestUtils.getSdk().toFile().path,
+        project.path
+      ),
+      { it.replace(root.path, "ROOT") },
+      null
+    )
+  }
+
+  @Test
   fun testPlatformTestCase() {
     val baselineFile = temporaryFolder.newFile("baseline.xml")
 
