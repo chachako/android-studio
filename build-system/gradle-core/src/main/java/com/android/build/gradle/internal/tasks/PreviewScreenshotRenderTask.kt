@@ -22,6 +22,7 @@ import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
+import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.buildanalyzer.common.TaskCategory
@@ -31,7 +32,6 @@ import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
-import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFiles
@@ -39,11 +39,11 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.TaskAction
 import java.io.File
 import org.gradle.api.tasks.VerificationTask
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.Classpath
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.jvm.toolchain.JavaToolchainService
 
@@ -76,7 +76,7 @@ abstract class PreviewScreenshotRenderTask : NonIncrementalTask(), VerificationT
     abstract val lintCacheDir: DirectoryProperty
 
     @get:OutputDirectory
-    abstract val imageOutputDir: DirectoryProperty
+    abstract val outputDir: DirectoryProperty
 
     @get:Internal
     abstract val layoutlibDir: ConfigurableFileCollection
@@ -91,6 +91,7 @@ abstract class PreviewScreenshotRenderTask : NonIncrementalTask(), VerificationT
         cliParams["layoutlib.dir"] = layoutlibDir.singleFile.toPath().toString()
         val testClassesDependencies = testClassesDir.files
             .filter { it.exists() && it.isDirectory}.map { it.absolutePath + '/' }.joinToString(";")
+        cliParams["output.location"] = outputDir.get().asFile.absolutePath
 
         // invoke CLI tool
         val process = ProcessBuilder(
@@ -121,8 +122,7 @@ abstract class PreviewScreenshotRenderTask : NonIncrementalTask(), VerificationT
     }
 
     class CreationAction(
-        private val androidTestCreationConfig: AndroidTestCreationConfig,
-        private val imageOutputDir: File,
+        androidTestCreationConfig: AndroidTestCreationConfig,
         private val layoutlibDir: FileCollection,
         private val lintModelDir: File,
         private val lintCacheDir: File,
@@ -135,6 +135,12 @@ abstract class PreviewScreenshotRenderTask : NonIncrementalTask(), VerificationT
 
         override val name = computeTaskName(ComponentType.PREVIEW_SCREENSHOT_RENDER_PREFIX)
         override val type = PreviewScreenshotRenderTask::class.java
+
+        override fun handleProvider(taskProvider: TaskProvider<PreviewScreenshotRenderTask>) {
+            super.handleProvider(taskProvider)
+            creationConfig.artifacts.setInitialProvider(taskProvider) { it.outputDir }
+                .on(InternalArtifactType.SCREENSHOTS_RENDERED)
+        }
 
         override fun configure(task: PreviewScreenshotRenderTask) {
             val testedConfig = (creationConfig as? AndroidTestCreationConfig)?.mainVariant
@@ -174,10 +180,6 @@ abstract class PreviewScreenshotRenderTask : NonIncrementalTask(), VerificationT
                     creationConfig.services.buildServiceRegistry,
                     SdkComponentsBuildService::class.java)
                     .get().sdkDirectoryProvider.get().asFile.absolutePath
-
-            task.imageOutputDir.set(imageOutputDir)
-            task.imageOutputDir.disallowChanges()
-            task.cliParams["output.location"] = imageOutputDir.absolutePath
 
             task.lintModelDir.set(lintModelDir)
             task.lintModelDir.disallowChanges()

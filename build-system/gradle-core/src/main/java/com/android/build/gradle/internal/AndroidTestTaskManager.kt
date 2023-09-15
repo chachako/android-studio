@@ -535,7 +535,6 @@ class AndroidTestTaskManager(
         val previewScreenshotRenderTask = taskFactory.register(
             PreviewScreenshotRenderTask.CreationAction(
                 creationConfig,
-                resultsDir,
                 creationConfig.services.layoutlibFromMaven.layoutlibDirectory,
                 lintModelDir,
                 lintCacheDir,
@@ -548,13 +547,12 @@ class AndroidTestTaskManager(
                 PreviewScreenshotValidationTask.CreationAction(
                         creationConfig,
                         resultsDir,
-                        goldenImagesDir,
+                        goldenImagesDir
                 ))
 
         val previewScreenshotUpdateTask = taskFactory.register(
                 PreviewScreenshotUpdateTask.CreationAction(
                         creationConfig,
-                        resultsDir,
                         goldenImagesDir,
                 ))
 

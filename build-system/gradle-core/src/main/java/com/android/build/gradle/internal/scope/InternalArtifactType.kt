@@ -608,6 +608,8 @@ InternalArtifactType<T : FileSystemLocation>(
             FILE,
             fileName = GenerateRuntimeEnabledSdkTableTask.RUNTIME_ENABLED_SDK_TABLE_FILE_NAME)
 
+    object SCREENSHOTS_RENDERED: InternalArtifactType<Directory>(DIRECTORY), Replaceable
+
     override fun getFileSystemLocationName(): String {
         return fileName ?: super.getFileSystemLocationName()
     }

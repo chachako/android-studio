@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.tasks
 import com.android.Version
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
+import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.testing.screenshot.ImageDiffer
 import com.android.build.gradle.internal.testing.screenshot.Verify
@@ -32,6 +33,7 @@ import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import java.io.File
@@ -59,12 +61,15 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
 
     @get:InputDirectory
     @get:PathSensitive(PathSensitivity.NONE)
+    abstract val renderTaskOutputDir: DirectoryProperty
+
+    @get:OutputDirectory
     abstract val imageOutputDir: DirectoryProperty
 
     override fun doTaskAction() {
         var exitValue = 0
         try {
-            val responseFile = imageOutputDir.get().file("response.json").asFile
+            val responseFile = renderTaskOutputDir.get().file("response.json").asFile
             val response = ResponseTypeAdapter().fromJson(responseFile.readText())
             exitValue = response.status
         } catch (e: Exception) {
@@ -78,7 +83,8 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
 
         var missingGoldens = 0
         var verificationFailures = 0
-        for (screenshot in imageOutputDir.asFileTree.files) {
+        for (screenshot in renderTaskOutputDir.asFileTree.files) {
+            screenshot.copyTo(File(imageOutputDir.asFile.get().absolutePath + "/" +  screenshot.name))
             val imageDiffer = ImageDiffer.MSSIMMatcher()
             // TODO(b/296430073) Support custom image difference threshold from DSL or task argument
             val verifier =
@@ -141,6 +147,11 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
 
             task.imageOutputDir.set(imageOutputDir)
             task.imageOutputDir.disallowChanges()
+
+            creationConfig.artifacts.setTaskInputToFinalProduct(
+                InternalArtifactType.SCREENSHOTS_RENDERED, task.renderTaskOutputDir
+            )
+
 
         }
 

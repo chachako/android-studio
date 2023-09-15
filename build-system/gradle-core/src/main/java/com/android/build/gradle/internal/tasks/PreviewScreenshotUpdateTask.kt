@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.tasks
 import com.android.Version
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
+import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.core.ComponentType
@@ -55,14 +56,13 @@ abstract class PreviewScreenshotUpdateTask : NonIncrementalTask(), VerificationT
 
     @get:InputDirectory
     @get:PathSensitive(PathSensitivity.NONE)
-    abstract val imageOutputDir: DirectoryProperty
+    abstract val renderTaskOutputDir: DirectoryProperty
 
     override fun doTaskAction() {
     }
 
     class CreationAction(
             private val androidTestCreationConfig: AndroidTestCreationConfig,
-            private val imageOutputDir: File,
             private val goldenImageDir: File,
     ) :
             VariantTaskCreationAction<
@@ -87,8 +87,10 @@ abstract class PreviewScreenshotUpdateTask : NonIncrementalTask(), VerificationT
             task.goldenImageDir.set(goldenImageDir)
             task.goldenImageDir.disallowChanges()
 
-            task.imageOutputDir.set(imageOutputDir)
-            task.imageOutputDir.disallowChanges()
+            creationConfig.artifacts.setTaskInputToFinalProduct(
+                InternalArtifactType.SCREENSHOTS_RENDERED, task.renderTaskOutputDir
+            )
+
         }
 
         private fun maybeCreatePreviewlibCliToolConfiguration(project: Project) {
