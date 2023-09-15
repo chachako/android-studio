@@ -21,8 +21,17 @@ import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
+import com.android.build.gradle.internal.test.report.ReportType
+import com.android.build.gradle.internal.test.report.TestReport
+import com.android.build.gradle.internal.testing.screenshot.ImageDetails
+import com.android.build.gradle.internal.testing.screenshot.PERIOD
+import com.android.build.gradle.internal.testing.screenshot.PreviewResult
+import com.android.build.gradle.internal.testing.screenshot.ResponseProcessor
+import com.android.build.gradle.internal.testing.screenshot.saveResults
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.core.ComponentType
+import com.android.utils.FileUtils
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.plugins.JavaBasePlugin
@@ -32,9 +41,11 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.TaskAction
 import java.io.File
 import org.gradle.api.tasks.VerificationTask
+import java.io.PrintWriter
+import java.io.StringWriter
+import java.nio.file.StandardCopyOption
 
 /**
  * Update golden images of a variant.
@@ -59,16 +70,36 @@ abstract class PreviewScreenshotUpdateTask : NonIncrementalTask(), VerificationT
     abstract val renderTaskOutputDir: DirectoryProperty
 
     override fun doTaskAction() {
+        //throw exception at the first encountered error
+        val response = ResponseProcessor(renderTaskOutputDir.get().asFile.toPath()).process()
+
+        val resultsToSave = mutableListOf<PreviewResult>()
+        for (previewResult in response.previewResults) {
+            saveGoldenImage(previewResult)
+        }
+    }
+
+    private fun saveGoldenImage(previewResult: PreviewResult) {
+        if (previewResult.responseCode != 0) {
+            throw GradleException(previewResult.message)
+        }
+        val screenshotName = previewResult.previewName.substring(
+            previewResult.previewName.lastIndexOf(PERIOD) + 1)
+        val screenshotNamePng = "$screenshotName.png"
+        val goldenPath = goldenImageDir.asFile.get().toPath().resolve(screenshotNamePng)
+        val goldenImageDetails = ImageDetails(goldenPath, null)
+        val actualPath = renderTaskOutputDir.asFile.get().toPath().resolve(screenshotName + "_actual.png")
+        FileUtils.copyFile(actualPath.toFile(), goldenPath.toFile())
     }
 
     class CreationAction(
-            private val androidTestCreationConfig: AndroidTestCreationConfig,
-            private val goldenImageDir: File,
+        private val androidTestCreationConfig: AndroidTestCreationConfig,
+        private val goldenImageDir: File,
     ) :
-            VariantTaskCreationAction<
-                    PreviewScreenshotUpdateTask,
-                    InstrumentedTestCreationConfig
-                    >(androidTestCreationConfig) {
+        VariantTaskCreationAction<
+                PreviewScreenshotUpdateTask,
+                InstrumentedTestCreationConfig
+                >(androidTestCreationConfig) {
 
         override val name = computeTaskName(ComponentType.PREVIEW_SCREENSHOT_UPDATE_PREFIX)
         override val type = PreviewScreenshotUpdateTask::class.java
@@ -90,7 +121,6 @@ abstract class PreviewScreenshotUpdateTask : NonIncrementalTask(), VerificationT
             creationConfig.artifacts.setTaskInputToFinalProduct(
                 InternalArtifactType.SCREENSHOTS_RENDERED, task.renderTaskOutputDir
             )
-
         }
 
         private fun maybeCreatePreviewlibCliToolConfiguration(project: Project) {
@@ -104,8 +134,8 @@ abstract class PreviewScreenshotUpdateTask : NonIncrementalTask(), VerificationT
                     description = "A configuration to resolve PreviewLib CLI tool dependencies."
                 }
                 dependencies.add(
-                        previewlibCliToolConfigurationName,
-                        "com.android.screenshot.cli:screenshot:${Version.ANDROID_TOOLS_BASE_VERSION}")
+                    previewlibCliToolConfigurationName,
+                    "com.android.screenshot.cli:screenshot:${Version.ANDROID_TOOLS_BASE_VERSION}")
             }
         }
     }

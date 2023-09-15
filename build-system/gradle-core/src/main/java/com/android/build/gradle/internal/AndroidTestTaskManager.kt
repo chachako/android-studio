@@ -553,7 +553,7 @@ class AndroidTestTaskManager(
         val previewScreenshotUpdateTask = taskFactory.register(
                 PreviewScreenshotUpdateTask.CreationAction(
                         creationConfig,
-                        goldenImagesDir,
+                        goldenImagesDir
                 ))
 
         previewScreenshotRenderTask.dependsOn("lint")
