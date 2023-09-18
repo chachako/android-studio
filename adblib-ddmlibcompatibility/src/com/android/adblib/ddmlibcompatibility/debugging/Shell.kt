@@ -24,10 +24,12 @@ import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.DeviceSelector
 import com.android.adblib.ShellCollector
+import com.android.adblib.ShellCommand
 import com.android.adblib.serialNumber
 import com.android.adblib.shellCommand
 import com.android.annotations.concurrency.WorkerThread
 import com.android.ddmlib.AdbCommandRejectedException
+import com.android.ddmlib.AdbHelper
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.IShellOutputReceiver
 import com.android.ddmlib.ShellCommandUnresponsiveException
@@ -57,6 +59,7 @@ import java.util.concurrent.TimeUnit
         ShellCommandUnresponsiveException::class
 )
 internal fun executeShellCommand(
+    adbService: AdbHelper.AdbService,
     connectedDevice: ConnectedDevice,
     command: String,
     receiver: IShellOutputReceiver,
@@ -67,6 +70,7 @@ internal fun executeShellCommand(
 ) {
     val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
     val shellCommand = connectedDevice.session.deviceServices.shellCommand(deviceSelector, command)
+    setShellProtocol(shellCommand, adbService)
     if (maxTimeToOutputResponse > 0) {
         shellCommand.withCommandOutputTimeout(
             Duration.ofMillis(
@@ -92,6 +96,15 @@ internal fun executeShellCommand(
             //       the IShellOutputReceiver
             shellCommand.execute().single()
         }
+    }
+}
+
+private fun setShellProtocol(shellCommand: ShellCommand<*>, adbService: AdbHelper.AdbService) {
+    when (adbService) {
+        // We are forcing a shell-v1 protocol here to match the behavior of the `DeviceImpl`
+        AdbHelper.AdbService.SHELL -> shellCommand.forceLegacyShell()
+        AdbHelper.AdbService.EXEC -> shellCommand.forceLegacyExec()
+        AdbHelper.AdbService.ABB_EXEC -> throw IllegalArgumentException("ABB_EXEC is not supported by ShellCommand")
     }
 }
 

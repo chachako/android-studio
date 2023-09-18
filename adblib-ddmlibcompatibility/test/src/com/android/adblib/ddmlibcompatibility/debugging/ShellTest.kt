@@ -23,6 +23,7 @@ import com.android.adblib.serialNumber
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.FakeAdbServerProviderRule
 import com.android.ddmlib.AdbCommandRejectedException
+import com.android.ddmlib.AdbHelper
 import com.android.ddmlib.MultiLineReceiver
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.devicecommandhandlers.SyncCommandHandler
@@ -58,6 +59,7 @@ class ShellTest {
 
         // Act
         executeShellCommand(
+            AdbHelper.AdbService.SHELL,
             device,
             "getprop",
             receiver,
@@ -91,6 +93,7 @@ class ShellTest {
         // Act
         exceptionRule.expect(AdbCommandRejectedException::class.java)
         executeShellCommand(
+            AdbHelper.AdbService.SHELL,
             device,
             "foobarz",
             receiver,

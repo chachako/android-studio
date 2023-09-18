@@ -675,6 +675,7 @@ internal class AdblibIDeviceWrapper(
     ) {
         if (adbService != AdbHelper.AdbService.ABB_EXEC) {
             executeShellCommand(
+                adbService,
                 connectedDevice,
                 command,
                 receiver,
