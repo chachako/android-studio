@@ -123,6 +123,9 @@ private class PhysicalDeviceHandle(
   initialState: Connected,
 ) : DeviceHandle {
 
+  override val id =
+    DeviceId(PhysicalDeviceProvisionerPlugin.PLUGIN_ID, false, "serial=$serialNumber")
+
   override val stateFlow: StateFlow<DeviceState>
   private val usbConnectionFlow: MutableStateFlow<DeviceState>
   private val wifiConnectionFlow: MutableStateFlow<DeviceState>

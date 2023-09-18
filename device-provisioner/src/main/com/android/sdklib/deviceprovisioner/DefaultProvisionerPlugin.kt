@@ -75,6 +75,12 @@ class DefaultProvisionerPlugin(val scope: CoroutineScope, private val defaultIco
 
   private class DefaultDeviceHandle(override val scope: CoroutineScope, state: Connected) :
     DeviceHandle {
+    override val id =
+      DeviceId(
+        PLUGIN_ID,
+        false,
+        "serial=${state.properties.wearPairingId!!};connection=${state.properties.deviceInfoProto.connectionId}"
+      )
     override val stateFlow = MutableStateFlow<DeviceState>(state)
   }
 }

@@ -23,6 +23,7 @@ import com.android.sdklib.AndroidVersion
 import com.android.sdklib.deviceprovisioner.ActivationAction
 import com.android.sdklib.deviceprovisioner.DeactivationAction
 import com.android.sdklib.deviceprovisioner.DeviceHandle
+import com.android.sdklib.deviceprovisioner.DeviceId
 import com.android.sdklib.deviceprovisioner.DeviceProperties
 import com.android.sdklib.deviceprovisioner.DeviceProvisionerPlugin
 import com.android.sdklib.deviceprovisioner.DeviceState
@@ -116,6 +117,9 @@ class FakeAdbDeviceProvisionerPlugin(
     initialState: DeviceState,
     val serialNumber: String,
   ) : DeviceHandle {
+
+    override val id = DeviceId(PLUGIN_ID, false, "serial=$serialNumber")
+
     var fakeAdbDevice: com.android.fakeadbserver.DeviceState? = null
       get() =
         synchronized(this) {
@@ -159,3 +163,5 @@ class FakeAdbDeviceProvisionerPlugin(
       }
   }
 }
+
+private val PLUGIN_ID = "FakeAdb"

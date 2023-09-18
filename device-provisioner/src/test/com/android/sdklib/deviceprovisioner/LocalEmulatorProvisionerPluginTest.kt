@@ -203,6 +203,26 @@ class LocalEmulatorProvisionerPluginTest {
   }
 
   @Test
+  fun id() = runBlockingWithTimeout {
+    val avdInfo = avdManager.createAvd()
+    yieldUntil { provisioner.devices.value.size == 1 }
+    val handle = provisioner.devices.value[0]
+
+    handle.id.apply {
+      assertThat(pluginId).isEqualTo(LocalEmulatorProvisionerPlugin.PLUGIN_ID)
+      assertThat(isTemplate).isFalse()
+      assertThat(identifier).isEqualTo("path=${avdInfo.dataFolderPath}")
+    }
+
+    // Editing the device adds "Edited" to its name. Verify that updating display name doesn't
+    // affect ID equality.
+    val id1 = handle.id
+    handle.editAction?.edit()
+
+    assertThat(id1).isEqualTo(handle.id)
+  }
+
+  @Test
   fun isActivatable() = runBlockingWithTimeout {
     avdManager.createAvd()
 

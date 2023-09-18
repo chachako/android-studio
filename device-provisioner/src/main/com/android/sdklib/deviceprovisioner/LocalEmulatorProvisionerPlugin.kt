@@ -310,6 +310,9 @@ class LocalEmulatorProvisionerPlugin(
     initialState: DeviceState,
     initialAvdInfo: AvdInfo
   ) : DeviceHandle {
+
+    override val id = DeviceId(PLUGIN_ID, false, "path=${initialAvdInfo.dataFolderPath}")
+
     override val stateFlow = MutableStateFlow(initialState)
 
     private val avdInfoFlow = MutableStateFlow(initialAvdInfo)

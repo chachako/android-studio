@@ -23,6 +23,8 @@ package com.android.sdklib.deviceprovisioner
  * A [DeviceTemplate] instance should be immutable.
  */
 interface DeviceTemplate {
+  val id: DeviceId
+
   val properties: DeviceProperties
 
   /**

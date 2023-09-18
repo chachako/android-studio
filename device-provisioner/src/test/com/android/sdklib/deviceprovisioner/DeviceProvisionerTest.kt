@@ -143,6 +143,11 @@ class DeviceProvisionerTest {
         assertThat(deviceInfoProto.mdnsConnectionType).isEqualTo(MdnsConnectionType.MDNS_NONE)
         checkPhysicalDeviceProperties()
       }
+      usbHandle.id.apply {
+        assertThat(pluginId).isEqualTo(PhysicalDeviceProvisionerPlugin.PLUGIN_ID)
+        assertThat(isTemplate).isFalse()
+        assertThat(identifier).isEqualTo("serial=${SerialNumbers.PHYSICAL1_USB}")
+      }
 
       val wifiHandle = checkNotNull(handlesByType[ConnectionType.WIFI])
       assertThat(wifiHandle.state.connectedDevice?.serialNumber)
@@ -152,6 +157,11 @@ class DeviceProvisionerTest {
         assertThat(deviceInfoProto.mdnsConnectionType)
           .isEqualTo(MdnsConnectionType.MDNS_AUTO_CONNECT_TLS)
         checkPhysicalDeviceProperties()
+      }
+      wifiHandle.id.apply {
+        assertThat(pluginId).isEqualTo(PhysicalDeviceProvisionerPlugin.PLUGIN_ID)
+        assertThat(isTemplate).isFalse()
+        assertThat(identifier).isEqualTo("serial=${SerialNumbers.PHYSICAL2_USB}")
       }
     }
   }
@@ -376,6 +386,7 @@ class DeviceProvisionerTest {
         assertThat(handles).hasSize(1)
 
         val handle = handles[0]
+        assertThat(handle.id).isNotEqualTo(originalHandle.id)
         assertThat(handle).isNotSameAs(originalHandle)
         assertThat(handle.state).isInstanceOf(Connected::class.java)
       }

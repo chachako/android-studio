@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.takeWhile
  * disconnected, and reconnected, this DeviceHandle should remain linked to it.
  */
 interface DeviceHandle {
+  val id: DeviceId
 
   /**
    * A [CoroutineScope] tied to the lifecycle of this [DeviceHandle]: when this [DeviceHandle] goes
