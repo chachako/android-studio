@@ -60,7 +60,6 @@ import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticDeclarationProvi
 import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticModificationTrackerFactory
 import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticPackageProviderFactory
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
-import org.jetbrains.kotlin.cli.common.CompilerSystemProperties
 import org.jetbrains.kotlin.cli.jvm.compiler.CliBindingTrace
 import org.jetbrains.kotlin.cli.jvm.compiler.CliModuleAnnotationsResolver
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles.JVM_CONFIG_FILES
@@ -287,15 +286,6 @@ private fun createKotlinCompilerEnv(
   parentDisposable: Disposable,
   config: Fe10UastEnvironment.Configuration
 ): KotlinCoreEnvironment {
-  // We don't bundle .dll files in the Gradle plugin for native file system access;
-  // prevent warning logs on Windows when it's not found (see b.android.com/260180).
-  System.setProperty("idea.use.native.fs.for.win", "false")
-
-  // By default, the Kotlin compiler will dispose the application environment when there
-  // are no projects left. However, that behavior is poorly tested and occasionally buggy
-  // (see KT-45289). So, instead we manage the application lifecycle manually.
-  CompilerSystemProperties.KOTLIN_COMPILER_ENVIRONMENT_KEEPALIVE_PROPERTY.value = "true"
-
   val env =
     KotlinCoreEnvironment.createForProduction(
       parentDisposable,

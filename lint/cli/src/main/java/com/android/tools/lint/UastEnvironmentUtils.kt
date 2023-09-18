@@ -35,6 +35,7 @@ import com.intellij.openapi.vfs.VirtualFileSet
 import com.intellij.openapi.vfs.VirtualFileSetFactory
 import java.util.concurrent.locks.ReentrantLock
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
+import org.jetbrains.kotlin.cli.common.CompilerSystemProperties
 import org.jetbrains.kotlin.cli.common.messages.GradleStyleMessageRenderer
 import org.jetbrains.kotlin.cli.common.messages.PrintingMessageCollector
 import org.jetbrains.kotlin.config.CommonConfigurationKeys
@@ -52,6 +53,11 @@ internal fun createCommonKotlinCompilerConfig(): CompilerConfiguration {
 
   config.put(CommonConfigurationKeys.MODULE_NAME, "lint-module")
 
+  // By default, the Kotlin compiler will dispose the application environment when there
+  // are no projects left. However, that behavior is poorly tested and occasionally buggy
+  // (see KT-45289). So, instead we manage the application lifecycle manually.
+  CompilerSystemProperties.KOTLIN_COMPILER_ENVIRONMENT_KEEPALIVE_PROPERTY.value = "true"
+
   // We're not running compiler checks, but we still want to register a logger
   // in order to see warnings related to misconfiguration.
   val logger = PrintingMessageCollector(System.err, GradleStyleMessageRenderer(), false)
@@ -60,6 +66,10 @@ internal fun createCommonKotlinCompilerConfig(): CompilerConfiguration {
   // The Kotlin compiler uses a fast, ASM-based class file reader.
   // However, Lint still relies on representing class files with PSI.
   config.put(JVMConfigurationKeys.USE_PSI_CLASS_FILES_READING, true)
+
+  // We don't bundle .dll files in the Gradle plugin for native file system access;
+  // prevent warning logs on Windows when it's not found (see b.android.com/260180).
+  System.setProperty("idea.use.native.fs.for.win", "false")
 
   config.put(JVMConfigurationKeys.NO_JDK, true)
 

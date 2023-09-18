@@ -52,7 +52,6 @@ import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtScriptModu
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtSdkModule
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtSourceModule
 import org.jetbrains.kotlin.analysis.project.structure.impl.getPsiFilesFromPaths
-import org.jetbrains.kotlin.cli.common.CompilerSystemProperties
 import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.idea.KotlinFileType
@@ -142,11 +141,6 @@ private fun createAnalysisSession(
   parentDisposable: Disposable,
   config: FirUastEnvironment.Configuration
 ): StandaloneAnalysisAPISession {
-  // [configureApplicationEnvironment] will register app disposable and dispose it at
-  // [UastEnvironment#disposeApplicationEnvironment].
-  // I.e., we manage the application lifecycle manually.
-  CompilerSystemProperties.KOTLIN_COMPILER_ENVIRONMENT_KEEPALIVE_PROPERTY.value = "true"
-
   val analysisSession =
     buildStandaloneAnalysisAPISession(
       applicationDisposable = parentDisposable,
