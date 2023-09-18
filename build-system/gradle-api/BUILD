@@ -73,7 +73,6 @@ filegroup(
     srcs = glob([
         "src/metalavaTest/**/*.kt",
         "api/**/*.txt",
-        "api/**/*.json",
     ]),
     visibility = ["//tools/base/build-system:__pkg__"],
 )
