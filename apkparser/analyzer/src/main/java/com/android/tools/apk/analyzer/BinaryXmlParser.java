@@ -32,6 +32,7 @@ import com.google.devrel.gmscore.tools.apk.arsc.XmlNamespaceEndChunk;
 import com.google.devrel.gmscore.tools.apk.arsc.XmlNamespaceStartChunk;
 import com.google.devrel.gmscore.tools.apk.arsc.XmlResourceMapChunk;
 import com.google.devrel.gmscore.tools.apk.arsc.XmlStartElementChunk;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -198,11 +199,11 @@ public class BinaryXmlParser {
                         ? stringPool.getString(data)
                         : String.format(Locale.US, "@string/0x%1$x", data);
             case DIMENSION:
-                return String.format(Locale.US, "dimension(%1$d)", data);
+                return complexToString(data, false);
             case FRACTION:
-                return String.format(Locale.US, "fraction(%1$d)", data);
+                return complexToString(data, true);
             case FLOAT:
-                return String.format(Locale.US, "%f", (float) data);
+                return DECIMAL_FORMAT.format(Float.intBitsToFloat(data));
             case DYNAMIC_ATTRIBUTE:
                 //TODO: implement
                 break;
@@ -213,15 +214,44 @@ public class BinaryXmlParser {
             case INT_BOOLEAN:
                 return Boolean.toString(data != 0);
             case INT_COLOR_ARGB8:
-                return String.format("argb8(0x%x)", data);
+                return String.format("#%08X", data);
             case INT_COLOR_RGB8:
-                return String.format("rgb8(0x%x)", data);
+                return String.format("#%06X", 0xFFFFFF & data);
             case INT_COLOR_ARGB4:
-                return String.format("argb4(0x%x)", data);
+                return String.format("#%04X", 0xFFFF & data);
             case INT_COLOR_RGB4:
-                return String.format("rgb4(0x%x)", data);
+                return String.format("#%03X", 0xFFF & data);
         }
 
         return String.format("@res/0x%x", data);
+    }
+
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.######");
+    private static final String[] DIMENSION_UNITS = {"px", "dp", "sp", "pt", "in", "mm"};
+    private static final String[] FACTION_UNITS = {"%", "%p"};
+    private static final String UNKNOWN_UNIT = "???";
+    private static final int[] RADIX_SHIFTS = {23, 16, 8, 0};
+    private static final int COMPLEX_RADIX_SHIFT = 4;
+    private static final int COMPLEX_RADIX_MASK = 0x3;
+    private static final int COMPLEX_MANTISSA_SHIFT = 8;
+    private static final int COMPLEX_MANTISSA_MASK = 0xFFFFFF;
+    private static final int COMPLEX_UNIT_SHIFT = 0;
+    private static final int COMPLEX_UNIT_MASK = 0xF;
+
+    // Java implementation of frameworks/base/tools/aapt2/ResourceValues.cpp ComplexToString
+    private static String complexToString(int complexValue, boolean isFraction) {
+        int radix = (complexValue >> COMPLEX_RADIX_SHIFT) & COMPLEX_RADIX_MASK;
+        long mantissa =
+                ((long) ((complexValue >> COMPLEX_MANTISSA_SHIFT) & COMPLEX_MANTISSA_MASK))
+                        << RADIX_SHIFTS[radix];
+        float value = mantissa * (1.0f / (1 << 23));
+        // AAPT seem to dump fraction instead of percents, hence convert to percents
+        if (isFraction) {
+            value *= 100.0f;
+        }
+        int unitType = (complexValue >> COMPLEX_UNIT_SHIFT) & COMPLEX_UNIT_MASK;
+        String[] unitValues = isFraction ? FACTION_UNITS : DIMENSION_UNITS;
+        String units = unitType < unitValues.length ? unitValues[unitType] : UNKNOWN_UNIT;
+        return String.format("%s%s", DECIMAL_FORMAT.format(value), units);
     }
 }

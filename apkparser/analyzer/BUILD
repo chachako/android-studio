@@ -84,6 +84,7 @@ coverage_java_test(
     deps = [
         ":tools.analyzer",
         "//tools/base/annotations",
+        "//tools/base/apkparser:tools.binary-resources",
         "//tools/base/common:tools.common",
         "//tools/base/testutils:tools.testutils",
         "@maven//:com.android.tools.smali.smali-dexlib2",
