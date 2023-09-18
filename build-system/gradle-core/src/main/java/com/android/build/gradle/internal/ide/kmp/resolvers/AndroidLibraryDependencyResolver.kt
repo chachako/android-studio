@@ -16,16 +16,20 @@
 
 package com.android.build.gradle.internal.ide.kmp.resolvers
 
+import com.android.build.api.attributes.BuildTypeAttr
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.ide.kmp.LibraryResolver
 import com.android.build.gradle.internal.ide.proto.convert
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import com.android.builder.model.v2.ide.LibraryInfo
 import com.android.builder.model.v2.ide.LibraryType
 import com.android.kotlin.multiplatform.ide.models.serialization.androidDependencyKey
 import com.android.kotlin.multiplatform.models.DependencyInfo
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.internal.component.local.model.OpaqueComponentArtifactIdentifier
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
+import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinBinaryAttributes
+import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinBinaryCapability
 import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinDependency
 import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinResolvedBinaryDependency
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
@@ -67,7 +71,13 @@ internal class AndroidLibraryDependencyResolver(
                 it.coordinates?.let { coordinates ->
                     coordinates.group == library.libraryInfo?.group &&
                     coordinates.module == library.libraryInfo?.name &&
-                    coordinates.version == library.libraryInfo?.version
+                    coordinates.version == library.libraryInfo?.version &&
+                    coordinates.capabilities.equalsAndroidLibraryCapabilities(
+                        library.libraryInfo!!
+                    ) &&
+                    coordinates.attributes.equalsAndroidLibraryAttributes(
+                        library.libraryInfo!!
+                    )
                 } ?: false
             }
 
@@ -80,6 +90,34 @@ internal class AndroidLibraryDependencyResolver(
                     )
                     .build()
             )
+        }
+    }
+
+    private fun Set<IdeaKotlinBinaryCapability>.equalsAndroidLibraryCapabilities(
+        libraryInfo: LibraryInfo
+    ): Boolean {
+        return this.map { "${it.group}:${it.name}:${it.version}" }.toSet() ==
+                libraryInfo.capabilities.toSet()
+    }
+
+    private fun IdeaKotlinBinaryAttributes.equalsAndroidLibraryAttributes(
+        libraryInfo: LibraryInfo
+    ): Boolean {
+        val allLibraryAttrs = libraryInfo.attributes + libraryInfo.productFlavors.mapKeys {
+            "com.android.build.api.attributes.ProductFlavor:${it.key}"
+        } + (libraryInfo.buildType?.let {
+            mapOf(BuildTypeAttr.ATTRIBUTE.name to it)
+        } ?: emptyMap())
+
+        val allKeys = keys.filter { it != "artifactType" } + allLibraryAttrs.keys
+
+        // Check if the libraryInfo attributes are a subset of the kotlin attributes (b/301431703).
+        return allKeys.all { key ->
+            if (allLibraryAttrs.containsKey(key)) {
+                this[key] == allLibraryAttrs[key]
+            } else {
+                true
+            }
         }
     }
 }

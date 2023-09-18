@@ -148,9 +148,7 @@ class DataBindingKmpTest {
     // Regression test for bug 238964168
     @Test
     fun testCompilation() {
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         project.executor()
-            .withFailOnWarning(false)
             .run("clean", "compileDebugJavaWithJavac")
     }
 }

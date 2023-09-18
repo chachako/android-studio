@@ -27,6 +27,7 @@ import com.android.build.gradle.integration.common.fixture.model.normalizeAgpVer
 import com.android.build.gradle.integration.common.fixture.model.normalizeBuildToolsVersion
 import com.android.build.gradle.integration.multiplatform.v2.getBuildMap
 import com.android.testutils.TestUtils
+import com.android.testutils.TestUtils.KOTLIN_VERSION_FOR_TESTS
 import com.google.common.truth.Truth
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
@@ -41,14 +42,11 @@ class KmpModelComparator(
 
     private val buildMap = project.getBuildMap()
 
-    // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
     private fun fetchModels(
         projectPath: String,
-        printModelToStdout: Boolean = true,
-        failOnWarning: Boolean = true
+        printModelToStdout: Boolean = true
     ): Map<String, String> {
         val executor = project.executor()
-            .withFailOnWarning(failOnWarning)
             .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
         executor.run("$projectPath:$modelSnapshotTask")
 
@@ -67,7 +65,7 @@ class KmpModelComparator(
         ) {
             val normalizedString = normalizeBuildToolsVersion(
                 normaliseCompileTarget(it).toString()
-            ).toString()
+            ).toString().replace(KOTLIN_VERSION_FOR_TESTS, "{KOTLIN_VERSION}")
 
             // the normalizer doesn't cover the modules-2 files, since the path contains the library
             // itself, we just override it here.
@@ -104,13 +102,11 @@ class KmpModelComparator(
         }
     }
 
-    // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
     fun fetchAndCompareModels(
-        projects: List<String>,
-        failOnWarning: Boolean = true
+        projects: List<String>
     ) {
         projects.forEach { projectPath ->
-            fetchModels(projectPath, failOnWarning=failOnWarning).forEach { (reportName, content) ->
+            fetchModels(projectPath).forEach { (reportName, content) ->
                 runComparison(
                     name = projectPath.substringAfterLast(":") + "/" + reportName,
                     actualContent = content,

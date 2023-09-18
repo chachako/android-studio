@@ -43,10 +43,8 @@ class KotlinMultiplatformAndroidPluginBasicTest {
             """.trimIndent()
         )
 
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         val result =
             project.executor()
-                .withFailOnWarning(false)
                 .expectFailure().run(":kmpFirstLib:assembleAndroidMain")
 
         result.assertErrorContains(
@@ -67,10 +65,8 @@ class KotlinMultiplatformAndroidPluginBasicTest {
             """.trimIndent()
         )
 
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         val result =
             project.executor()
-                .withFailOnWarning(false)
                 .expectFailure().run(":kmpFirstLib:assembleAndroidMain")
 
         Truth.assertThat(result.failureMessage).contains(
@@ -91,10 +87,8 @@ class KotlinMultiplatformAndroidPluginBasicTest {
             """.trimIndent()
         )
 
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         val result =
             project.executor()
-                .withFailOnWarning(false)
                 .expectFailure().run(":kmpFirstLib:assembleAndroidMain")
 
         Truth.assertThat(result.failureMessage).contains(
@@ -124,9 +118,7 @@ class KotlinMultiplatformAndroidPluginBasicTest {
             """.trimIndent()
         )
 
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         project.executor()
-            .withFailOnWarning(false)
             .run(":kmpFirstLib:androidPrebuild")
     }
 }

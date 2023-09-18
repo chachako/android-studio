@@ -2,15 +2,31 @@
   {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
-      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.0/kotlin-stdlib-jdk8-1.9.0.jar"
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib/{KOTLIN_VERSION}/kotlin-stdlib-{KOTLIN_VERSION}.jar"
     ],
     "coordinates": {
       "group": "org.jetbrains.kotlin",
-      "module": "kotlin-stdlib-jdk8",
-      "version": "1.9.0"
+      "module": "kotlin-stdlib",
+      "version": "{KOTLIN_VERSION}",
+      "capabilities": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "name": "kotlin-stdlib",
+          "version": "{KOTLIN_VERSION}"
+        }
+      ],
+      "attributes": {
+        "artifactType": "android-classes-jar",
+        "org.gradle.category": "library",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "jvm",
+        "org.gradle.status": "release"
+      }
     },
     "extras": {
-      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-jdk8-1.9.0.jar (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.0)",
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-{KOTLIN_VERSION}.jar (org.jetbrains.kotlin:kotlin-stdlib:{KOTLIN_VERSION})",
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
     }
   },
@@ -22,47 +38,28 @@
     "coordinates": {
       "group": "com.google.guava",
       "module": "guava",
-      "version": "19.0"
+      "version": "19.0",
+      "capabilities": [
+        {
+          "group": "com.google.guava",
+          "name": "guava",
+          "version": "19.0"
+        }
+      ],
+      "attributes": {
+        "artifactType": "android-classes-jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-api",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.category": "library"
+      }
     },
     "extras": {
       "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "guava-19.0.jar (com.google.guava:guava:19.0)",
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver",
       "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;sourcesClasspath": [
         "{LOCAL_REPO}/com/google/guava/guava/19.0/guava-19.0-sources.jar"
-      ],
-      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;documentationClasspath": [
-        "{LOCAL_REPO}/com/google/guava/guava/19.0/guava-19.0-javadoc.jar"
       ]
-    }
-  },
-  {
-    "binaryType": "KOTLIN_COMPILE",
-    "classpath": [
-      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.0/kotlin-stdlib-jdk7-1.9.0.jar"
-    ],
-    "coordinates": {
-      "group": "org.jetbrains.kotlin",
-      "module": "kotlin-stdlib-jdk7",
-      "version": "1.9.0"
-    },
-    "extras": {
-      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-jdk7-1.9.0.jar (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.0)",
-      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
-    }
-  },
-  {
-    "binaryType": "KOTLIN_COMPILE",
-    "classpath": [
-      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib/1.9.0/kotlin-stdlib-1.9.0.jar"
-    ],
-    "coordinates": {
-      "group": "org.jetbrains.kotlin",
-      "module": "kotlin-stdlib",
-      "version": "1.9.0"
-    },
-    "extras": {
-      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-1.9.0.jar (org.jetbrains.kotlin:kotlin-stdlib:1.9.0)",
-      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
     }
   },
   {
@@ -73,16 +70,27 @@
     "coordinates": {
       "group": "org.jetbrains",
       "module": "annotations",
-      "version": "13.0"
+      "version": "13.0",
+      "capabilities": [
+        {
+          "group": "org.jetbrains",
+          "name": "annotations",
+          "version": "13.0"
+        }
+      ],
+      "attributes": {
+        "artifactType": "android-classes-jar",
+        "org.gradle.status": "release",
+        "org.gradle.usage": "java-api",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.category": "library"
+      }
     },
     "extras": {
       "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "annotations-13.0.jar (org.jetbrains:annotations:13.0)",
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver",
       "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;sourcesClasspath": [
         "{LOCAL_REPO}/org/jetbrains/annotations/13.0/annotations-13.0-sources.jar"
-      ],
-      "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;documentationClasspath": [
-        "{LOCAL_REPO}/org/jetbrains/annotations/13.0/annotations-13.0-javadoc.jar"
       ]
     }
   },
@@ -94,7 +102,9 @@
     "coordinates": {
       "group": "__local_aars__",
       "module": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local-api.jar",
-      "version": "unspecified"
+      "version": "unspecified",
+      "capabilities": [],
+      "attributes": {}
     },
     "extras": {
       "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
@@ -172,7 +182,9 @@
     "coordinates": {
       "group": "__local_aars__",
       "module": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/libs/local.jar",
-      "version": "unspecified"
+      "version": "unspecified",
+      "capabilities": [],
+      "attributes": {}
     },
     "extras": {
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.LocalFileDependencyResolver"
@@ -181,7 +193,8 @@
   {
     "type": "Regular",
     "coordinates": {
-      "buildId": ":",
+      "buildName": ":",
+      "buildPath": ":",
       "projectPath": ":androidLib",
       "projectName": "androidLib"
     },
@@ -221,7 +234,8 @@
   {
     "type": "Regular",
     "coordinates": {
-      "buildId": ":",
+      "buildName": ":",
+      "buildPath": ":",
       "projectPath": ":kmpSecondLib",
       "projectName": "kmpSecondLib"
     },
@@ -259,7 +273,8 @@
   {
     "type": "Regular",
     "coordinates": {
-      "buildId": ":",
+      "buildName": ":",
+      "buildPath": ":",
       "projectPath": ":kmpJvmOnly",
       "projectName": "kmpJvmOnly"
     },

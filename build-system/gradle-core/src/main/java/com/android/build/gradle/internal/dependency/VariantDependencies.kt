@@ -20,6 +20,7 @@ import com.android.Version
 import com.android.build.api.attributes.AgpVersionAttr
 import com.android.build.api.attributes.BuildTypeAttr
 import com.android.build.api.attributes.ProductFlavorAttr
+import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
@@ -424,14 +425,15 @@ class VariantDependencies internal constructor(
             runtimeElements: Configuration?,
             sourcesElements: Configuration?,
             apiPublication: Configuration?,
-            runtimePublication: Configuration?
+            runtimePublication: Configuration?,
+            sourcesPublication: Configuration?,
         ): VariantDependencies {
             val incomingConfigurations = listOf(compileClasspath, runtimeClasspath)
             val outgoingConfigurations = listOfNotNull(
-                apiElements, runtimeElements, sourcesElements, apiPublication, runtimePublication
+                apiElements, runtimeElements, sourcesElements, apiPublication, runtimePublication, sourcesPublication
             )
             val publicationConfigurations = listOfNotNull(
-                apiPublication, runtimePublication
+                apiPublication, runtimePublication, sourcesPublication
             )
 
             // This is set to be able to consume artifacts published with the library plugin.

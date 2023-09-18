@@ -73,9 +73,7 @@ class KotlinMultiplatformAndroidMinificationTest {
 
     @Test
     fun testKmpLibClassesAreMinified() {
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         project.executor()
-            .withFailOnWarning(false)
             .run(":kmpFirstLib:assemble")
 
         Aar(
@@ -96,9 +94,7 @@ class KotlinMultiplatformAndroidMinificationTest {
 
     @Test
     fun testAppClassesAreMinified() {
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         project.executor()
-            .withFailOnWarning(false)
             .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
@@ -126,9 +122,7 @@ class KotlinMultiplatformAndroidMinificationTest {
             """.trimIndent()
         )
 
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         project.executor()
-            .withFailOnWarning(false)
             .run(":kmpFirstLib:assemble")
 
         Aar(
@@ -160,9 +154,7 @@ class KotlinMultiplatformAndroidMinificationTest {
             """.trimIndent()
         )
 
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         project.executor()
-            .withFailOnWarning(false)
             .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
@@ -194,9 +186,7 @@ class KotlinMultiplatformAndroidMinificationTest {
             """.trimIndent()
         )
 
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         project.executor()
-            .withFailOnWarning(false)
             .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
@@ -228,9 +218,7 @@ class KotlinMultiplatformAndroidMinificationTest {
             """.trimIndent()
         )
 
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         project.executor()
-            .withFailOnWarning(false)
             .run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use { apk ->

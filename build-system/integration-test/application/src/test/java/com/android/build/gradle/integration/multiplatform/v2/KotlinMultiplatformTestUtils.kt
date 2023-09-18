@@ -162,11 +162,9 @@ internal fun GradleTestProject.publishLibs(
         )
     }
 
-    // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
     projectsToPublish.forEach {
         @Suppress("DEPRECATION") // publishing with kmp isn't configuration cache compatible (b/276472789)
         executor()
-            .withFailOnWarning(false)
             .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
             .run(":$it:publish")
     }

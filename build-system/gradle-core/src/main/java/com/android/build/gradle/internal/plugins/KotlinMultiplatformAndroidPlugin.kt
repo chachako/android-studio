@@ -100,7 +100,9 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.provider.Provider
 import org.gradle.build.event.BuildEventsListenerRegistry
+import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import javax.inject.Inject
+import org.jetbrains.kotlin.gradle.plugin.mpp.external.publishSources
 
 @Incubating
 class KotlinMultiplatformAndroidPlugin @Inject constructor(
@@ -392,33 +394,39 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
         }
     }
 
+    @OptIn(ExternalKotlinTargetApi::class)
     private fun createVariantDependencies(
         project: Project,
         dslInfo: KmpComponentDslInfo,
         androidKotlinCompilation: KotlinMultiplatformAndroidCompilation,
         androidTarget: KotlinMultiplatformAndroidTarget
-    ): VariantDependencies = VariantDependencies.createForKotlinMultiplatform(
-        project = project,
-        projectOptions = projectServices.projectOptions,
-        dslInfo = dslInfo,
-        apiClasspath = project.configurations.getByName(
-            androidKotlinCompilation.apiConfigurationName
-        ),
-        compileClasspath = project.configurations.getByName(
-            androidKotlinCompilation.compileDependencyConfigurationName
-        ),
-        runtimeClasspath = project.configurations.getByName(
-            androidKotlinCompilation.runtimeDependencyConfigurationName!!
-        ),
-        apiElements = (androidTarget as KotlinMultiplatformAndroidTargetImpl)
-            .apiElementsConfiguration.forMainVariantConfiguration(dslInfo),
-        runtimeElements = androidTarget.runtimeElementsConfiguration.forMainVariantConfiguration(dslInfo),
-        sourcesElements = project.configurations.findByName(
-            androidTarget.sourcesElementsConfigurationName
-        )?.forMainVariantConfiguration(dslInfo),
-        apiPublication = androidTarget.apiElementsPublishedConfiguration.forMainVariantConfiguration(dslInfo),
-        runtimePublication = androidTarget.runtimeElementsPublishedConfiguration.forMainVariantConfiguration(dslInfo)
-    )
+    ): VariantDependencies {
+        return VariantDependencies.createForKotlinMultiplatform(
+            project = project,
+            projectOptions = projectServices.projectOptions,
+            dslInfo = dslInfo,
+            apiClasspath = project.configurations.getByName(
+                androidKotlinCompilation.apiConfigurationName
+            ),
+            compileClasspath = project.configurations.getByName(
+                androidKotlinCompilation.compileDependencyConfigurationName
+            ),
+            runtimeClasspath = project.configurations.getByName(
+                androidKotlinCompilation.runtimeDependencyConfigurationName!!
+            ),
+            apiElements = (androidTarget as KotlinMultiplatformAndroidTargetImpl)
+                .apiElementsConfiguration.forMainVariantConfiguration(dslInfo),
+            runtimeElements = androidTarget.runtimeElementsConfiguration.forMainVariantConfiguration(dslInfo),
+            sourcesElements = project.configurations.findByName(
+                androidTarget.sourcesElementsConfigurationName
+            )?.forMainVariantConfiguration(dslInfo),
+            apiPublication = androidTarget.apiElementsPublishedConfiguration.forMainVariantConfiguration(dslInfo),
+            runtimePublication = androidTarget.runtimeElementsPublishedConfiguration.forMainVariantConfiguration(dslInfo),
+            sourcesPublication = androidTarget.sourcesElementsPublishedConfiguration.forMainVariantConfiguration(dslInfo).also {
+                it?.let { androidTarget.publishSources(androidKotlinCompilation as KotlinMultiplatformAndroidCompilationImpl) }
+            }
+        )
+    }
 
     private fun getAndroidManifestDefaultLocation(
         compilation: KotlinMultiplatformAndroidCompilation

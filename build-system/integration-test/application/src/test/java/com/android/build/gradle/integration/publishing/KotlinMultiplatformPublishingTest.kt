@@ -63,9 +63,7 @@ class KotlinMultiplatformPublishingTest {
 
     @Test
     fun testKotlinMultiplatform() {
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         project.executor()
-            .withFailOnWarning(false)
             .run("publishAllPublicationsToBuildDirRepository")
 
         val mainModule =

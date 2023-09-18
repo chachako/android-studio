@@ -216,14 +216,14 @@ java_import(
 # Latest Kotlin Gradle plugin dependencies
 # DO NOT MIX different versions in this list
 KGP_LATEST = [
-    "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin_1.9.0",
-    "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin-api_1.9.0",
-    "@maven//:org.jetbrains.kotlin.kotlin-android-extensions-runtime_1.9.0",
-    "@maven//:org.jetbrains.kotlin.kotlin-annotation-processing-gradle_1.9.0",
-    "@maven//:org.jetbrains.kotlin.kotlin-script-runtime_1.9.0",
-    "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.0",
-    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.9.0",
-    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.0",
+    "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin_1.9.20-Beta",
+    "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin-api_1.9.20-Beta",
+    "@maven//:org.jetbrains.kotlin.kotlin-android-extensions-runtime_1.9.20-Beta",
+    "@maven//:org.jetbrains.kotlin.kotlin-annotation-processing-gradle_1.9.20-Beta",
+    "@maven//:org.jetbrains.kotlin.kotlin-script-runtime_1.9.20-Beta",
+    "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.20-Beta",
+    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.9.20-Beta",
+    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20-Beta",
 ]
 
 # Kotlin Gradle plugin dependencies for projects using Compose (these are typically used when the
@@ -244,6 +244,7 @@ KGP_FOR_COMPOSE = [
 maven_repository(
     name = "performance_test_repo",
     artifacts = KGP_LATEST + KGP_FOR_COMPOSE + [
+        # todo: why are these needed?
         "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin_1.6.10",
         "@maven//:org.jetbrains.kotlin.kotlin-android-extensions-runtime_1.6.10",
         "@maven//:org.jetbrains.kotlin.kotlin-script-runtime_1.6.10",
@@ -431,7 +432,7 @@ maven_repository(
     # keep sorted
     artifacts = [
         "//tools/base/testutils:tools.testutils",
-        "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.9.0",
+        "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.9.20-Beta",
     ],
 )
 

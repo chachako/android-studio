@@ -82,7 +82,8 @@ class DataBindingCachingTest(private val withKotlin: Boolean) {
             mapOf(
                 ":compileDebugKotlin" to SKIPPED,
                 ":kaptDebugKotlin" to FROM_CACHE,
-                ":kaptGenerateStubsDebugKotlin" to FROM_CACHE
+                ":kaptGenerateStubsDebugKotlin" to FROM_CACHE,
+                ":checkKotlinGradlePluginConfigurationErrors" to DID_WORK
             )
         } else {
             emptyMap()

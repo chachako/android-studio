@@ -3,7 +3,8 @@
     "type": "Regular",
     "coordinates": {
       "project": {
-        "buildId": ":",
+        "buildName": ":",
+        "buildPath": ":",
         "projectPath": ":kmpLibraryPlugin",
         "projectName": "kmpLibraryPlugin"
       },
@@ -11,6 +12,23 @@
     },
     "extras": {
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeVisibleMultiplatformSourceDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{INCLUDED_BUILD(:kotlinMultiplatform)}/.gradle/kotlin/kotlinTransformedMetadataLibraries/org.jetbrains.kotlin-kotlin-stdlib-{KOTLIN_VERSION}-commonMain-SsyL5g.klib"
+    ],
+    "coordinates": {
+      "group": "org.jetbrains.kotlin",
+      "module": "kotlin-stdlib",
+      "version": "{KOTLIN_VERSION}",
+      "sourceSetName": "commonMain",
+      "capabilities": [],
+      "attributes": {}
+    },
+    "extras": {
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeTransformedMetadataDependencyResolver"
     }
   }
 ]

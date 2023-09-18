@@ -137,9 +137,7 @@ class KotlinMultiplatformAndroidPluginNativeTest {
 
     @Test
     fun testKmpLibraryAarContents() {
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         project.executor()
-            .withFailOnWarning(false)
             .run(":kmpFirstLib:assemble")
 
         Aar(
@@ -181,9 +179,7 @@ class KotlinMultiplatformAndroidPluginNativeTest {
             """.trimIndent()
         )
 
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         project.executor()
-            .withFailOnWarning(false)
             .run(":kmpFirstLib:assembleInstrumentedTest")
 
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
@@ -236,11 +232,9 @@ class KotlinMultiplatformAndroidPluginNativeTest {
             """.trimIndent()
         )
 
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         @Suppress("DEPRECATION") // publishing with kmp isn't configuration cache compatible (b/276472789)
         project.executor()
             .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
-            .withFailOnWarning(false)
             .run(":kmpFirstLib:publish")
 
 

@@ -23,7 +23,7 @@
         }
       ],
       "extras": {
-        "org.jetbrains.kotlin.gradle.plugin.mpp.targetHierarchy.SourceSetTreeClassifier": {},
+        "org.jetbrains.kotlin.gradle.plugin.hierarchy.KotlinSourceSetTreeClassifier": {},
         "com.android.kotlin.multiplatform.models.AndroidCompilation;android-compilation-model": {
           "type": "INSTRUMENTED_TEST",
           "instrumentedTestInfo": {
@@ -79,7 +79,7 @@
         }
       ],
       "extras": {
-        "org.jetbrains.kotlin.gradle.plugin.mpp.targetHierarchy.SourceSetTreeClassifier": {},
+        "org.jetbrains.kotlin.gradle.plugin.hierarchy.KotlinSourceSetTreeClassifier": {},
         "com.android.kotlin.multiplatform.models.AndroidCompilation;android-compilation-model": {
           "type": "MAIN",
           "mainInfo": {
@@ -128,7 +128,7 @@
         }
       ],
       "extras": {
-        "org.jetbrains.kotlin.gradle.plugin.mpp.targetHierarchy.SourceSetTreeClassifier": {
+        "org.jetbrains.kotlin.gradle.plugin.hierarchy.KotlinSourceSetTreeClassifier": {
           "name": "test"
         },
         "com.android.kotlin.multiplatform.models.AndroidCompilation;android-compilation-model": {

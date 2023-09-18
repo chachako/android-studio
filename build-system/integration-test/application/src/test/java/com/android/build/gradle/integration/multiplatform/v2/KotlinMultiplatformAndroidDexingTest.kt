@@ -85,9 +85,8 @@ class KotlinMultiplatformAndroidDexingTest {
                 }
             """.trimIndent()
         )
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
+
         val result = project.executor()
-            .withFailOnWarning(false)
             .expectFailure()
             .run(":kmpFirstLib:assembleInstrumentedTest")
 
@@ -98,9 +97,7 @@ class KotlinMultiplatformAndroidDexingTest {
 
     @Test
     fun testDesugaringForInstrumentedTestApk() {
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         project.executor()
-            .withFailOnWarning(false)
             .run(":kmpFirstLib:assembleInstrumentedTest")
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
             "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"
@@ -156,9 +153,7 @@ class KotlinMultiplatformAndroidDexingTest {
             """.trimIndent()
         )
 
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         project.executor()
-            .withFailOnWarning(false)
             .run(":kmpFirstLib:assembleInstrumentedTest")
         val testApk = project.getSubproject("kmpFirstLib").getOutputFile(
             "apk", "androidTest", "main", "kmpFirstLib-androidTest.apk"

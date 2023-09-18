@@ -51,8 +51,7 @@ class KotlinMultiplatformPublicationModelSnapshotTest: BaseModelComparator {
         )
 
         comparator.fetchAndCompareModels(
-            projects = listOf(":kmpFirstLib"),
-            false
+            projects = listOf(":kmpFirstLib")
         )
     }
 }
