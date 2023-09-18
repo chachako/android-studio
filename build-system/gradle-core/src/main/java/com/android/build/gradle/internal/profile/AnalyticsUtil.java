@@ -359,11 +359,6 @@ public class AnalyticsUtil {
         Descriptors.EnumValueDescriptor value =
                 GradleBuildProject.GradlePlugin.getDescriptor().findValueByName(enumName);
         if (value == null) {
-            Logging.getLogger(AnalyticsUtil.class)
-                    .info(
-                            "Analytics other plugin to proto: Unknown plugin type {} expected enum {}",
-                            pluginClassName,
-                            enumName);
             return GradleBuildProject.GradlePlugin.UNKNOWN_GRADLE_PLUGIN;
         }
         return GradleBuildProject.GradlePlugin.valueOf(value);
