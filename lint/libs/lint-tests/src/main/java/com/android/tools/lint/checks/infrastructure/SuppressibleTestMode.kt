@@ -375,7 +375,7 @@ class SuppressibleTestMode :
             ?: continue
         val attributes = parameters.attributes
         val count = attributes.size
-        val begin = attributes.first().startOffset
+        val begin = attributes.firstOrNull()?.startOffset ?: continue
         if (count == 1 || ids.size > 1) {
           // Must insert { } around value since there's more than one
           val startCode = "{${ids.joinToString(", ") { "\"$it\"" }}, "

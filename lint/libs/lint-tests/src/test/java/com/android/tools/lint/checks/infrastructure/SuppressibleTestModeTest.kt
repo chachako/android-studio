@@ -800,4 +800,35 @@ class SuppressibleTestModeTest {
             """
     )
   }
+
+  @Test
+  fun test289695599() {
+    // b/289695599
+    val testFiles =
+      listOf(
+        java(
+            """
+            package foo;
+
+            @Module @SuppressWarnings public interface MyModule {
+            }
+            """
+          )
+          .indented(),
+      )
+    val output =
+      """
+      src/foo/MyModule.java:3: Warning: Annotations are in wrong order. Should be @SuppressWarnings @Module [WrongAnnotationOrder]
+      @Module @SuppressWarnings public interface MyModule {
+                                                 ~~~~~~~~
+      0 errors, 1 warnings
+      """
+        .trimIndent()
+    check(
+      output,
+      testFiles,
+      // The source code is broken; don't attempt to fix it
+      "foo/MyModule.java:"
+    )
+  }
 }
