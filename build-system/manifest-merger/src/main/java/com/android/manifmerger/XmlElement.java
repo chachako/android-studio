@@ -33,6 +33,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -73,7 +74,7 @@ public class XmlElement extends OrphanXmlElement {
     @NonNull private ImmutableList<XmlAttribute> mAttributes;
 
     // list of mergeable children elements.
-    @NonNull private ImmutableList<XmlElement> mMergeableChildren = ImmutableList.of();
+    @NonNull private Map<Element, XmlElement> mMergeableChildren = new LinkedHashMap();
 
     public XmlElement(@NonNull Element xml, @NonNull XmlDocument document) {
         super(xml, document.getModel());
@@ -280,7 +281,7 @@ public class XmlElement extends OrphanXmlElement {
     public Node removeChild(Node oldChild) {
         Node nodeBeingDeleted = getXml().removeChild(oldChild);
         if (oldChild instanceof Element) {
-            mMergeableChildren = initMergeableChildren();
+            mMergeableChildren.remove(oldChild);
         }
         return nodeBeingDeleted;
     }
@@ -337,7 +338,8 @@ public class XmlElement extends OrphanXmlElement {
     public Node appendChild(Node newChild) {
         Node nodeBeingAppended = getXml().appendChild(newChild);
         if (nodeBeingAppended instanceof Element) {
-            mMergeableChildren = initMergeableChildren();
+            Element element = (Element) nodeBeingAppended;
+            mMergeableChildren.put(element, new XmlElement(element, mDocument));
         }
         return nodeBeingAppended;
     }
@@ -372,9 +374,7 @@ public class XmlElement extends OrphanXmlElement {
 
     @NonNull
     public Optional<XmlElement> findMergeableChild(Element childElement) {
-        return mMergeableChildren.stream()
-                .filter(xmlElement -> xmlElement.getXml().isSameNode(childElement))
-                .findAny();
+        return Optional.ofNullable(mMergeableChildren.get(childElement));
     }
 
     @NonNull
@@ -389,7 +389,6 @@ public class XmlElement extends OrphanXmlElement {
         var elementName = document.getModel().toXmlName(nodeType);
         var node = getXml().getOwnerDocument().createElement(elementName);
         appendChild(node);
-        initMergeableChildren();
         var createdXmlElement = getFirstChildElementOfType(nodeType).get();
         postCreationAction.accept(createdXmlElement);
         return createdXmlElement;
@@ -599,7 +598,7 @@ public class XmlElement extends OrphanXmlElement {
 
     @NonNull
     public ImmutableList<XmlElement> getMergeableElements() {
-        return mMergeableChildren;
+        return ImmutableList.copyOf(mMergeableChildren.values());
     }
 
     /**
@@ -613,7 +612,7 @@ public class XmlElement extends OrphanXmlElement {
     public Optional<XmlElement> getNodeByTypeAndKey(
             ManifestModel.NodeTypes type, @Nullable String keyValue) {
 
-        for (XmlElement xmlElement : mMergeableChildren) {
+        for (XmlElement xmlElement : mMergeableChildren.values()) {
             if (xmlElement.isA(type) &&
                     (keyValue == null || keyValue.equals(xmlElement.getKey()))) {
                 return Optional.of(xmlElement);
@@ -631,7 +630,7 @@ public class XmlElement extends OrphanXmlElement {
     @NonNull
     public ImmutableList<XmlElement> getAllNodesByType(ManifestModel.NodeTypes type) {
         ImmutableList.Builder<XmlElement> listBuilder = ImmutableList.builder();
-        for (XmlElement mergeableChild : mMergeableChildren) {
+        for (XmlElement mergeableChild : mMergeableChildren.values()) {
             if (mergeableChild.isA(type)) {
                 listBuilder.add(mergeableChild);
             }
@@ -1237,25 +1236,19 @@ public class XmlElement extends OrphanXmlElement {
     }
 
     @SuppressWarnings("SpellCheckingInspection")
-    private ImmutableList<XmlElement> initMergeableChildren() {
-        ImmutableList.Builder<XmlElement> mergeableNodes = new ImmutableList.Builder<>();
+    private Map<Element, XmlElement> initMergeableChildren() {
+        Map<Element, XmlElement> mergeableNodes = new LinkedHashMap<>();
         NodeList nodeList = getXml().getChildNodes();
         for (int i = 0; i < nodeList.getLength(); i++) {
             Node node = nodeList.item(i);
             if (node instanceof Element) {
-                Optional<XmlElement> maybeExistingNode =
-                        mMergeableChildren.stream()
-                                .filter(existingNode -> existingNode.getXml().isSameNode(node))
-                                .findAny();
-                if (maybeExistingNode.isEmpty()) {
-                    XmlElement xmlElement = new XmlElement((Element) node, mDocument);
-                    mergeableNodes.add(xmlElement);
-                } else {
-                    mergeableNodes.add(maybeExistingNode.get());
-                }
+                XmlElement xmlElement =
+                        Optional.ofNullable(mMergeableChildren.get(node))
+                                .orElseGet(() -> new XmlElement((Element) node, mDocument));
+                mergeableNodes.put(xmlElement.getXml(), xmlElement);
             }
         }
-        return mergeableNodes.build();
+        return mergeableNodes;
     }
 
     /**
