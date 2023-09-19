@@ -2,17 +2,17 @@
   <library name="mockito" type="repository">
     <properties maven-id="org.mockito:mockito-core:3.12.4" />
     <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/org/mockito/mockito-core/3.12.4/mockito-core-3.12.4.jar!/" />
-      <root url="jar://$MAVEN_REPOSITORY$/net/bytebuddy/byte-buddy/1.11.13/byte-buddy-1.11.13.jar!/" />
-      <root url="jar://$MAVEN_REPOSITORY$/net/bytebuddy/byte-buddy-agent/1.11.13/byte-buddy-agent-1.11.13.jar!/" />
-      <root url="jar://$MAVEN_REPOSITORY$/org/objenesis/objenesis/3.2/objenesis-3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../prebuilts/tools/common/m2/repository/org/objenesis/objenesis/3.2/mockito-core-3.12.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../prebuilts/tools/common/m2/repository/org/objenesis/objenesis/3.2/byte-buddy-1.11.13.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../prebuilts/tools/common/m2/repository/org/objenesis/objenesis/3.2/byte-buddy-agent-1.11.13.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../prebuilts/tools/common/m2/repository/org/objenesis/objenesis/3.2/objenesis-3.2.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
-      <root url="jar://$MAVEN_REPOSITORY$/org/mockito/mockito-core/3.12.4/mockito-core-3.12.4-sources.jar!/" />
-      <root url="jar://$MAVEN_REPOSITORY$/net/bytebuddy/byte-buddy/1.11.13/byte-buddy-1.11.13-sources.jar!/" />
-      <root url="jar://$MAVEN_REPOSITORY$/net/bytebuddy/byte-buddy-agent/1.11.13/byte-buddy-agent-1.11.13-sources.jar!/" />
-      <root url="jar://$MAVEN_REPOSITORY$/org/objenesis/objenesis/3.2/objenesis-3.2-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../prebuilts/tools/common/m2/repository/org/objenesis/objenesis/3.2/mockito-core-3.12.4-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../prebuilts/tools/common/m2/repository/org/objenesis/objenesis/3.2/byte-buddy-1.11.13-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../prebuilts/tools/common/m2/repository/org/objenesis/objenesis/3.2/byte-buddy-agent-1.11.13-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../prebuilts/tools/common/m2/repository/org/objenesis/objenesis/3.2/objenesis-3.2-sources.jar!/" />
     </SOURCES>
   </library>
 </component>
