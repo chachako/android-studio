@@ -99,7 +99,6 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
      */
     interface Parameters : BuildServiceParameters {
         val offlineMode: Property<Boolean>
-        val quotaProjectName: Property<String>
         val credentialFile: RegularFileProperty
         val cloudStorageBucket: Property<String>
         val timeoutMinutes: Property<Int>
@@ -124,7 +123,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
     private val httpRequestInitializer: HttpRequestInitializer = HttpRequestInitializer { request ->
         credential.initialize(request)
-        request.headers[xGoogUserProjectHeaderKey] = parameters.quotaProjectName.get()
+        request.headers[xGoogUserProjectHeaderKey] = quotaProjectName
     }
 
     private val jacksonFactory: JacksonFactory
@@ -138,9 +137,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val specifiedBucket = parameters.cloudStorageBucket.orNull.let {
             if (it.isNullOrBlank()) { null } else { it }
         }
-        val initSettingsResult = toolResultsManager.initializeSettings(
-            parameters.quotaProjectName.get()
-        )
+        val initSettingsResult = toolResultsManager.initializeSettings(quotaProjectName)
         specifiedBucket ?: initSettingsResult.defaultBucket
     }
 
@@ -194,7 +191,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
     private val testRunner: TestRunner by lazy(LazyThreadSafetyMode.NONE) {
         TestRunner(
             ProjectSettings(
-                name = parameters.quotaProjectName.get(),
+                name = quotaProjectName,
                 storageBucket = bucketName,
                 testHistoryName = parameters.resultsHistoryName.orNull.let {
                     if (it.isNullOrBlank()) { null } else { it }
@@ -219,6 +216,10 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             storageManager,
             testResultProcessor
         )
+    }
+
+    private val quotaProjectName by lazy {
+        getQuotaProjectName(parameters.credentialFile.get().asFile)
     }
 
     fun getStorageObject(fileUri: String) =
@@ -276,7 +277,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
     fun catalog(): AndroidDeviceCatalog =
         requireOnline("Access Firebase device catalog") {
-            testingManager.catalog(parameters.quotaProjectName.get())
+            testingManager.catalog(quotaProjectName)
         }
 
     private fun <T> requireOnline(actionName: String, action: () -> T): T =
@@ -285,6 +286,43 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         } else {
             action()
         }
+
+    private fun getQuotaProjectName(credentialFile: File): String {
+        if (!credentialFile.exists() || !credentialFile.isFile) {
+            throwCredentialNotFoundError()
+        }
+        val quotaProjectName = credentialFile.inputStream().use {
+            val parser = JsonObjectParser(Utils.getDefaultJsonFactory())
+            val fileContents = parser.parseAndClose<GenericJson>(
+                it, StandardCharsets.UTF_8,
+                GenericJson::class.java
+            )
+
+            val quota = fileContents["quota_project_id"] as? String
+            if (!quota.isNullOrBlank()) {
+                quota
+            } else {
+                // Falls-back to project ID.
+                fileContents["project_id"] as? String
+            }
+        }
+        if (quotaProjectName.isNullOrBlank()) {
+            throwCredentialNotFoundError()
+        }
+        return quotaProjectName
+    }
+
+    private fun throwCredentialNotFoundError(): Nothing {
+        error("""
+            Unable to find the application-default credentials to send a request to
+            Firebase TestLab. Please initialize your credentials using gcloud CLI.
+            Examples:
+              gcloud config set project ${"$"}YOUR_PROJECT_ID
+              gcloud auth application-default login
+              gcloud auth application-default set-quota-project ${"$"}YOUR_PROJECT_ID
+            Please read https://cloud.google.com/sdk/gcloud for details.
+        """.trimIndent())
+    }
 
     /**
      * An action to register TestLabBuildService to a project.
@@ -350,43 +388,6 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 }
                 return File(cloudConfigPath, WELL_KNOWN_CREDENTIALS_FILE)
             }
-
-            private fun getQuotaProjectName(credentialFile: File): String {
-                if (!credentialFile.exists() || !credentialFile.isFile) {
-                    throwCredentialNotFoundError()
-                }
-                val quotaProjectName = credentialFile.inputStream().use {
-                    val parser = JsonObjectParser(Utils.getDefaultJsonFactory())
-                    val fileContents = parser.parseAndClose<GenericJson>(
-                        it, StandardCharsets.UTF_8,
-                        GenericJson::class.java
-                    )
-
-                    val quota = fileContents["quota_project_id"] as? String
-                    if (!quota.isNullOrBlank()) {
-                        quota
-                    } else {
-                        // Falls-back to project ID.
-                        fileContents["project_id"] as? String
-                    }
-                }
-                if (quotaProjectName.isNullOrBlank()) {
-                    throwCredentialNotFoundError()
-                }
-                return quotaProjectName
-            }
-
-            private fun throwCredentialNotFoundError(): Nothing {
-                error("""
-                    Unable to find the application-default credentials to send a request to
-                    Firebase TestLab. Please initialize your credentials using gcloud CLI.
-                    Examples:
-                      gcloud config set project ${"$"}YOUR_PROJECT_ID
-                      gcloud auth application-default login
-                      gcloud auth application-default set-quota-project ${"$"}YOUR_PROJECT_ID
-                    Please read https://cloud.google.com/sdk/gcloud for details.
-                """.trimIndent())
-            }
         }
 
         /**
@@ -429,9 +430,6 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 } else {
                     getGcloudApplicationDefaultCredentialsFile()
                 }
-            })
-            params.quotaProjectName.set(params.credentialFile.map {
-                getQuotaProjectName(it.asFile)
             })
             params.cloudStorageBucket.set(providerFactory.provider {
                 testLabExtension.testOptions.results.cloudStorageBucket

@@ -19,12 +19,10 @@ package com.android.tools.firebase.testlab.gradle.services
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.ManagedDevices
 import com.android.build.api.dsl.TestOptions
-import com.android.tools.firebase.testlab.gradle.TestLabGradlePlugin
 import com.android.tools.firebase.testlab.gradle.TestLabGradlePluginExtensionImpl
 import com.google.common.truth.Truth.assertThat
 import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
 import org.gradle.api.Project
-import org.gradle.api.provider.Property
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import org.junit.Rule
@@ -164,7 +162,6 @@ class RegistrationActionTest {
         TestLabBuildService.RegistrationAction(project).configure(buildServiceParameters)
 
         buildServiceParameters.apply {
-            assertThat(quotaProjectName.get()).isEqualTo("test_quota_project_id")
             assertThat(credentialFile.get().asFile)
                 .isEqualTo(fakeCredentialFile)
             assertThat(cloudStorageBucket.get()).isEqualTo("my_bucket")

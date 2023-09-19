@@ -121,9 +121,6 @@ class TestLabBuildServiceTest {
         configAction.execute(mockSpec)
 
         verify(mockParams.credentialFile).fileProvider(eq(credentialFileProvider))
-        verify(mockParams.quotaProjectName).set(argThat<Provider<String>> {
-            it.get() == "test_quota_project_id"
-        })
     }
 
     @Test
@@ -142,6 +139,17 @@ class TestLabBuildServiceTest {
 
     @Test
     fun catalog() {
+        val testCredentialFile = temporaryFolderRule.newFile("testCredentialFile").apply {
+            writeText("""
+                {
+                  "client_id": "test_client_id",
+                  "client_secret": "test_client_secret",
+                  "quota_project_id": "test_quota_project_id",
+                  "refresh_token": "test_refresh_token",
+                  "type": "authorized_user"
+                }
+            """.trimIndent())
+        }
         val service = object: TestLabBuildService() {
             override val credential: GoogleCredential
                 get() = mock()
@@ -162,14 +170,12 @@ class TestLabBuildServiceTest {
                     })
                 }.build()
             override fun getParameters() = mock<Parameters>(
-                    withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS)).apply {
-                        val mockProperty: Property<String> = mock()
-                        `when`(mockProperty.get()).thenReturn("projectName")
-                        `when`(quotaProjectName).thenReturn(mockProperty)
-                        val mockOffline: Property<Boolean> = mock()
-                        `when`(mockOffline.get()).thenReturn(false)
-                        `when`(offlineMode).thenReturn(mockOffline)
-                    }
+                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS)).apply {
+                    val mockOffline: Property<Boolean> = mock()
+                    `when`(mockOffline.get()).thenReturn(false)
+                    `when`(offlineMode).thenReturn(mockOffline)
+                    `when`(credentialFile.get().asFile).thenReturn(testCredentialFile)
+                }
         }
 
         val catalog = service.catalog()
