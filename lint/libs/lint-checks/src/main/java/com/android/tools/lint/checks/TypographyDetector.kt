@@ -189,7 +189,7 @@ class TypographyDetector : ResourceXmlDetector() {
 
         // Check for apostrophes that can be replaced by typographic apostrophes
         if (
-          quoteEnd == -1 &&
+          quoteEnd != quoteStart + 1 &&
             quoteStart > 0 &&
             (text[quoteStart - 1].isLetterOrDigit() ||
               quoteStart > 1 &&

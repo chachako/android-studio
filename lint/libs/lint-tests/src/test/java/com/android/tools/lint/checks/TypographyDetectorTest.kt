@@ -111,10 +111,16 @@ class TypographyDetectorTest : AbstractCheckTest() {
             res/values/typography.xml:11: Warning: Replace straight quotes ('') with directional quotes (‘’, &#8216; and &#8217;) ? [TypographyQuotes]
                 <string name="notbadquotes">Type Option-` then 'Escape'</string>
                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            res/values/typography.xml:22: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
+                <string name="notdirectional">A's and B's</string>
+                                              ~~~~~~~~~~~
+            res/values/typography.xml:29: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
+                <string>something somthing d\'avoir something something l\'écran.</string>
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             res/values/typography.xml:8: Warning: Replace (c) with copyright symbol © (&#169;) ? [TypographyOther]
                 <string name="copyright">(c) 2011</string>
                                          ~~~~~~~~
-            0 errors, 16 warnings
+            0 errors, 18 warnings
             """
       )
       .expectFixDiffs(
@@ -179,6 +185,14 @@ class TypographyDetectorTest : AbstractCheckTest() {
             @@ -11 +11
             -     <string name="notbadquotes">Type Option-` then 'Escape'</string>
             +     <string name="notbadquotes">Type Option-` then ‘Escape’</string>
+            Fix for res/values/typography.xml line 22: Replace with ’:
+            @@ -22 +22
+            -     <string name="notdirectional">A's and B's</string>
+            +     <string name="notdirectional">A’s and B's</string>
+            Fix for res/values/typography.xml line 29: Replace with ’:
+            @@ -29 +29
+            -     <string>something somthing d\'avoir something something l\'écran.</string>
+            +     <string>something somthing d\’avoir something something l\'écran.</string>
             Fix for res/values/typography.xml line 8: Replace with ©:
             @@ -8 +8
             -     <string name="copyright">(c) 2011</string>
@@ -427,6 +441,98 @@ class TypographyDetectorTest : AbstractCheckTest() {
             <string name="test2">Hello John\'s Cat</string> <!-- error 1 -->
                                  ~~~~~~~~~~~~~~~~~
         0 errors, 2 warnings
+        """
+      )
+  }
+
+  fun testMultipleApostrophes() {
+    // Regression test for
+    //   https://issuetracker.google.com/293397291
+    lint()
+      .files(
+        xml(
+            "res/values/strings.xml",
+            """
+            <resources>
+                <string name="app_name">Test</string>
+
+                <string name="single_control">This\'s found.</string>
+
+                <string name="single_line_2">This\'s not found, because it\'s in a pair.</string>
+
+                <string name="single_line_3">This\'s not found, because it\'s more than just'one.</string>
+
+                <string name="multi_line_2">
+                    Even then the problem\'s are separate
+                    by new lines they\'re ignored.
+                </string>
+
+                <string name="multi_line_5">
+                    Even then the problem\'s are separate
+                    by new lines they\'re ignored.
+                    Doesn\'t matter how many,
+                    they\'re just ignored.
+                    Just\' one more to make it 5.
+                </string>
+
+                <string name="apostrophe_before_quotes">
+                    Problem\'s before 'quotes'
+                </string>
+            </resources>
+          """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        res/values/strings.xml:4: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
+            <string name="single_control">This\'s found.</string>
+                                          ~~~~~~~~~~~~~~
+        res/values/strings.xml:6: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
+            <string name="single_line_2">This\'s not found, because it\'s in a pair.</string>
+                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        res/values/strings.xml:8: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
+            <string name="single_line_3">This\'s not found, because it\'s more than just'one.</string>
+                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        res/values/strings.xml:11: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
+                Even then the problem\'s are separate
+                ^
+        res/values/strings.xml:16: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
+                Even then the problem\'s are separate
+                ^
+        res/values/strings.xml:24: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
+                Problem\'s before 'quotes'
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 6 warnings
+        """
+      )
+      .expectFixDiffs(
+        """
+        Fix for res/values/strings.xml line 4: Replace with ’:
+        @@ -4 +4
+        -     <string name="single_control">This\'s found.</string>
+        +     <string name="single_control">This\’s found.</string>
+        Fix for res/values/strings.xml line 6: Replace with ’:
+        @@ -6 +6
+        -     <string name="single_line_2">This\'s not found, because it\'s in a pair.</string>
+        +     <string name="single_line_2">This\’s not found, because it\'s in a pair.</string>
+        Fix for res/values/strings.xml line 8: Replace with ’:
+        @@ -8 +8
+        -     <string name="single_line_3">This\'s not found, because it\'s more than just'one.</string>
+        +     <string name="single_line_3">This\’s not found, because it\'s more than just'one.</string>
+        Fix for res/values/strings.xml line 11: Replace with ’:
+        @@ -11 +11
+        -         Even then the problem\'s are separate
+        +         Even then the problem\’s are separate
+        Fix for res/values/strings.xml line 16: Replace with ’:
+        @@ -16 +16
+        -         Even then the problem\'s are separate
+        +         Even then the problem\’s are separate
+        Fix for res/values/strings.xml line 24: Replace with ’:
+        @@ -24 +24
+        -         Problem\'s before 'quotes'
+        +         Problem\’s before 'quotes'
         """
       )
   }
