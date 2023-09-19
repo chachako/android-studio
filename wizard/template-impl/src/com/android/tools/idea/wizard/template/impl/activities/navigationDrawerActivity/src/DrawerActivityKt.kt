@@ -82,7 +82,8 @@ ${renderIf(isViewBindingSupported) {"""
           className = "FloatingActionButton",
           bindingName = "binding.${appBarMainBinding}")}.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
+                    .setAction("Action", null)
+                    .setAnchorView(R.id.fab).show()
         }
         val drawerLayout: DrawerLayout = ${findViewById(Language.Kotlin, isViewBindingSupported, id = "drawer_layout")}
         val navView: NavigationView = ${findViewById(Language.Kotlin, isViewBindingSupported, id = "nav_view")}

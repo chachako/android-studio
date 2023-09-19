@@ -65,7 +65,7 @@ public class $activityClass extends AppCompatActivity {
         setSupportActionBar(binding.${appBarMainBinding}.toolbar);
         if (binding.${appBarMainBinding}.fab != null) {
             binding.${appBarMainBinding}.fab.setOnClickListener(view -> Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show());
+                    .setAction("Action", null).setAnchorView(R.id.fab).show());
         }
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
         assert navHostFragment != null;
