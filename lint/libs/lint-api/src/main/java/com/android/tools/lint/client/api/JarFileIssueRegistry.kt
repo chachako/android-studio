@@ -31,6 +31,8 @@ import java.io.InputStreamReader
 import java.lang.ref.SoftReference
 import java.net.URLClassLoader
 import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArraySet
 import java.util.jar.Attributes
 import java.util.jar.JarFile
 import java.util.regex.Pattern
@@ -99,10 +101,10 @@ private constructor(
     private const val MF_LINT_REGISTRY_OLD = "Lint-Registry"
 
     /** Cache of custom lint check issue registries. */
-    private var cache: MutableMap<File, SoftReference<JarFileIssueRegistry>>? = null
+    private val cache = ConcurrentHashMap<File, SoftReference<JarFileIssueRegistry>>()
 
     /** Known issue id's we've ignored because the implemented was incompatible */
-    private var rejectedIssueIds: MutableSet<String>? = null
+    private val rejectedIssueIds = CopyOnWriteArraySet<String>()
 
     /**
      * Loads custom rules from the given list of jar files and returns a list
@@ -164,15 +166,11 @@ private constructor(
       driver: LintDriver?,
       skipVerification: Boolean
     ): JarFileIssueRegistry? {
-      if (cache == null) {
-        cache = HashMap()
-      } else {
-        val reference = cache!![jarFile]
-        if (reference != null) {
-          val registry = reference.get()
-          if (registry != null && registry.isUpToDate) {
-            return registry
-          }
+      val reference = cache[jarFile]
+      if (reference != null) {
+        val registry = reference.get()
+        if (registry != null && registry.isUpToDate) {
+          return registry
         }
       }
 
@@ -202,7 +200,7 @@ private constructor(
             )
           }
         }
-        cache!![jarFile] = SoftReference(jarIssueRegistry)
+        cache[jarFile] = SoftReference(jarIssueRegistry)
         jarIssueRegistry
       } else {
         null
@@ -211,7 +209,7 @@ private constructor(
 
     /** Clear out any cached jar files. */
     fun clearCache() {
-      cache?.clear()
+      cache.clear()
     }
 
     /** Combine one or more issue registries into a single one. */
@@ -437,12 +435,11 @@ private constructor(
 
     /** Is the given [issueId] the id of an issue which was rejected as incompatible */
     fun isRejectedIssueId(issueId: String): Boolean {
-      return rejectedIssueIds?.contains(issueId) ?: false
+      return rejectedIssueIds.contains(issueId)
     }
 
     private fun recordRejectedIssues(issues: List<Issue>) {
-      val rejectedIssues = rejectedIssueIds ?: HashSet<String>().also { rejectedIssueIds = it }
-      issues.forEach { rejectedIssues.add(it.id) }
+      rejectedIssueIds.addAll(issues.map { it.id })
     }
 
     private fun getVendor(client: LintClient, registry: IssueRegistry, jarFile: File): Vendor {
