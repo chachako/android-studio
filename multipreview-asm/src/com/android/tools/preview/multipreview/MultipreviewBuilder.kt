@@ -1,5 +1,6 @@
 package com.android.tools.preview.multipreview
 
+import com.android.tools.preview.multipreview.visitors.MethodsFilter
 import com.android.tools.preview.multipreview.visitors.MultipreviewClassVisitor
 import java.util.zip.ZipFile
 import org.objectweb.asm.ClassReader
@@ -26,16 +27,20 @@ data class MultipreviewSettings(
   val parameterAnnotation: String
 )
 
-/** Builds multipreview structure based on the [settings] and bytecode data from [provider]. */
+/**
+ * Builds multipreview structure based on the [settings] and bytecode data from [provider] for
+ * methods allowed by [methodsFilter].
+ */
 fun buildMultipreview(
   settings: MultipreviewSettings,
-  provider: ClassBytecodeProvider
+  methodsFilter: MethodsFilter = MethodsFilter { true },
+  provider: ClassBytecodeProvider,
 ): Multipreview {
   val multipreviewGraph = Graph()
   provider.forEachClass {
     val cr = ClassReader(it)
     cr.accept(
-      MultipreviewClassVisitor(settings, cr.className.classPathToName, multipreviewGraph),
+      MultipreviewClassVisitor(settings, cr.className.classPathToName, multipreviewGraph, methodsFilter),
       0
     )
   }
@@ -61,8 +66,12 @@ private fun forEachClass(paths: Collection<String>, classProcessor: ClassProcess
   }
 }
 
-fun buildMultipreview(settings: MultipreviewSettings, paths: Collection<String>): Multipreview {
-  return buildMultipreview(settings) { processor ->
+fun buildMultipreview(
+  settings: MultipreviewSettings,
+  paths: Collection<String>,
+  methodsFilter: MethodsFilter = MethodsFilter { true }
+): Multipreview {
+  return buildMultipreview(settings, methodsFilter) { processor ->
     forEachClass(paths, processor::onClassBytecode)
   }
 }

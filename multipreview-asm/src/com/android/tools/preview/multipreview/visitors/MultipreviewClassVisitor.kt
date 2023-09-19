@@ -31,14 +31,15 @@ import org.objectweb.asm.Type
  * [ClassVisitor] that processes all the classes that might be related to the multipreview.
  * Currently, it has 2 main purposes:
  *
- * 1) For every method it delegates the job to the [AnnotatedMethodVisitor]
+ * 1) For every method, if not skipped, it delegates the job to the [AnnotatedMethodVisitor]
  * 2) For every class that is annotation class it records the class and annotations it is annotated
  * with. Those are potential derived annotations.
  */
 internal class MultipreviewClassVisitor(
     private val settings: MultipreviewSettings,
     private val className: String,
-    private val graph: Graph
+    private val graph: Graph,
+    private val methodsFilter: MethodsFilter,
 ) : ClassVisitor(Opcodes.ASM8) {
     private var isAnnotationClass: Boolean = false
     private var annotationRecorder: AnnotationRecorder? = null
@@ -66,7 +67,7 @@ internal class MultipreviewClassVisitor(
         signature: String?,
         exceptions: Array<out String>?,
     ): MethodVisitor? {
-        return if (name == null || descriptor == null)
+        return if (name == null || descriptor == null || !methodsFilter.allowMethod("$className.$name"))
             super.visitMethod(access, name, descriptor, signature, exceptions)
         else
             AnnotatedMethodVisitor(settings, graph, "$className.$name")

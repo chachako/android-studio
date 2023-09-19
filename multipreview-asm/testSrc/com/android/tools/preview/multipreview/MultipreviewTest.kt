@@ -135,6 +135,41 @@ class MultipreviewTest {
   }
 
   @Test
+  fun testMethodsFiltering() {
+    val classStreams = listOf(
+        Class.forName("$PKG.SimpleAnnotatedMethodKt"),
+        Class.forName("$PKG.filtered.FilteredMethodsKt")
+    ).map { loadClassBytecode(it) }
+
+    run {
+      val multipreview = buildMultipreview(settings) { processor ->
+        classStreams.forEach { processor.onClassBytecode(it) }
+      }
+
+      assertArrayEquals(
+        arrayOf(
+          method("$PKG.SimpleAnnotatedMethodKt.simpleMethod"),
+          method("$PKG.filtered.FilteredMethodsKt.filteredMethod"),
+        ),
+        multipreview.methods.sortedWith(MethodComparator).toTypedArray()
+      )
+    }
+
+    run {
+      val multipreview = buildMultipreview(settings, { it.startsWith("$PKG.filtered") }) { processor ->
+        classStreams.forEach { processor.onClassBytecode(it) }
+      }
+
+      assertArrayEquals(
+        arrayOf(
+          method("$PKG.filtered.FilteredMethodsKt.filteredMethod"),
+        ),
+        multipreview.methods.sortedWith(MethodComparator).toTypedArray()
+      )
+    }
+  }
+
+  @Test
   fun testComplexMultipreviewCase() {
     commonTestCase(
       listOf(
