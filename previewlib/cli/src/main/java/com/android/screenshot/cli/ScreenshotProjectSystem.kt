@@ -191,7 +191,7 @@ class ScreenshotProjectSystem(private val project: ComposeProject) : AndroidProj
         }
     }
 
-    override fun validateRunConfiguration(runConfiguration: RunConfiguration): List<ValidationError> {
+    override fun validateRunConfiguration(runConfiguration: RunConfiguration, quickFixCallback: Runnable?): List<ValidationError> {
         return emptyList()
     }
 
