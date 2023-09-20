@@ -327,7 +327,7 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun getClient(applicationName: String?): Client? {
-        return clients.firstOrNull { applicationName == it.clientData.clientDescription }
+        return clients.firstOrNull { applicationName == it.clientData.packageName }
     }
 
     override fun getProfileableClients(): Array<ProfileableClient> {
@@ -343,7 +343,7 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun getScreenshot(): RawImage {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     override fun getScreenshot(timeout: Long, unit: TimeUnit?): RawImage {
@@ -418,7 +418,8 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun getClientName(pid: Int): String {
-        TODO("Not yet implemented")
+        return clients.firstOrNull { c -> c.clientData.pid == pid }?.clientData?.packageName
+            ?: IDevice.UNKNOWN_PACKAGE
     }
 
     override fun pushFile(local: String, remote: String) {
@@ -572,16 +573,16 @@ internal class AdblibIDeviceWrapper(
         iDeviceSharedImpl.removeRemotePackage(remoteFilePath)
     }
 
-    override fun uninstallPackage(packageName: String?): String {
-        TODO("Not yet implemented")
+    override fun uninstallPackage(packageName: String): String {
+        return uninstallApp(packageName)
     }
 
-    override fun uninstallApp(applicationID: String?, vararg extraArgs: String?): String {
-        TODO("Not yet implemented")
+    override fun uninstallApp(applicationID: String, vararg extraArgs: String): String {
+        return iDeviceSharedImpl.uninstallApp(applicationID, *extraArgs)
     }
 
     override fun reboot(into: String?) {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     override fun root(): Boolean {
@@ -602,20 +603,20 @@ internal class AdblibIDeviceWrapper(
 
     @Deprecated("")
     override fun getBatteryLevel(): Int {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     @Deprecated("")
     override fun getBatteryLevel(freshnessMs: Long): Int {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     override fun getBattery(): Future<Int> {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     override fun getBattery(freshnessTime: Long, timeUnit: TimeUnit): Future<Int> {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     override fun getAbis(): MutableList<String> {

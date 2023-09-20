@@ -25,7 +25,6 @@ import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.AndroidVersionUtil;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -428,6 +427,29 @@ public class IDeviceSharedImpl {
                 | TimeoutException
                 | AdbCommandRejectedException
                 | ShellCommandUnresponsiveException e) {
+            throw new InstallException(e);
+        }
+    }
+
+    public String uninstallApp(String applicationID, String... extraArgs) throws InstallException {
+        try {
+            StringBuilder command = new StringBuilder("pm uninstall");
+
+            if (extraArgs != null) {
+                command.append(" ");
+                Joiner.on(' ').appendTo(command, extraArgs);
+            }
+
+            command.append(" ").append(applicationID);
+
+            InstallReceiver receiver = new InstallReceiver();
+            iDevice.executeShellCommand(
+                    command.toString(), receiver, INSTALL_TIMEOUT_MINUTES, TimeUnit.MINUTES);
+            return receiver.getErrorMessage();
+        } catch (TimeoutException
+                | AdbCommandRejectedException
+                | ShellCommandUnresponsiveException
+                | IOException e) {
             throw new InstallException(e);
         }
     }

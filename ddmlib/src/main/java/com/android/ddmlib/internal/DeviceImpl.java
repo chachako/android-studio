@@ -55,7 +55,6 @@ import com.android.ddmlib.clientmanager.DeviceClientManager;
 import com.android.ddmlib.log.LogReceiver;
 import com.android.sdklib.AndroidVersion;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Joiner;
 import com.google.common.util.concurrent.Atomics;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
@@ -1515,26 +1514,7 @@ public final class DeviceImpl implements IDevice {
 
     @Override
     public String uninstallApp(String applicationID, String... extraArgs) throws InstallException {
-        try {
-            StringBuilder command = new StringBuilder("pm uninstall");
-
-            if (extraArgs != null) {
-                command.append(" ");
-                Joiner.on(' ').appendTo(command, extraArgs);
-            }
-
-            command.append(" ").append(applicationID);
-
-            InstallReceiver receiver = new InstallReceiver();
-            executeShellCommand(
-                    command.toString(), receiver, INSTALL_TIMEOUT_MINUTES, TimeUnit.MINUTES);
-            return receiver.getErrorMessage();
-        } catch (TimeoutException
-                | AdbCommandRejectedException
-                | ShellCommandUnresponsiveException
-                | IOException e) {
-            throw new InstallException(e);
-        }
+        return iDeviceSharedImpl.uninstallApp(applicationID, extraArgs);
     }
 
     /*

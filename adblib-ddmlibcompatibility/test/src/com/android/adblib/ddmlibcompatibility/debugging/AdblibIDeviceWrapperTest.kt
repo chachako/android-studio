@@ -383,12 +383,12 @@ class AdblibIDeviceWrapperTest {
             "device1", DeviceState.DeviceStatus.ONLINE
         )
         val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
-        deviceState.startClient(10, 0, "a.b.c", false)
+        deviceState.startClient(10, 0, "processName1", "packageName1", false)
 
         // Act / Assert
         yieldUntil {adblibIDeviceWrapper.clients.size == 1}
-        yieldUntil {adblibIDeviceWrapper.getClient("a.b.c") != null}
-        assertEquals(10, adblibIDeviceWrapper.getClient("a.b.c")?.clientData?.pid)
+        yieldUntil {adblibIDeviceWrapper.getClient("packageName1") != null}
+        assertEquals(10, adblibIDeviceWrapper.getClient("packageName1")?.clientData?.pid)
     }
 
     @Test
@@ -403,6 +403,21 @@ class AdblibIDeviceWrapperTest {
         // Act / Assert
         yieldUntil {adblibIDeviceWrapper.profileableClients.size == 1}
         assertEquals(25, adblibIDeviceWrapper.profileableClients[0].profileableClientData.pid)
+    }
+
+    @Test
+    fun getClientName() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, deviceState) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.ONLINE
+        )
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+        deviceState.startClient(10, 0, "processName1", "packageName1", false)
+
+        // Act / Assert
+        yieldUntil {adblibIDeviceWrapper.clients.size == 1}
+        yieldUntil {adblibIDeviceWrapper.getClient("packageName1") != null}
+        assertEquals("packageName1", adblibIDeviceWrapper.getClientName(10))
     }
 
     @Test
