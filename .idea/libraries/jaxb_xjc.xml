@@ -1,6 +1,5 @@
 <component name="libraryTable">
-  <library name="jaxb-xjc" type="repository">
-    <properties maven-id="org.glassfish.jaxb:jaxb-xjc:2.3.2" />
+  <library name="jaxb-xjc">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/../../prebuilts/tools/common/m2/repository/org/glassfish/jaxb/jaxb-xjc/2.3.2/jaxb-xjc-2.3.2.jar!/" />
       <root url="jar://$PROJECT_DIR$/../../prebuilts/tools/common/m2/repository/org/glassfish/jaxb/jaxb-runtime/2.3.2/jaxb-runtime-2.3.2.jar!/" />
