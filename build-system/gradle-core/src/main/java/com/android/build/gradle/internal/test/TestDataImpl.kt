@@ -34,7 +34,7 @@ class TestDataImpl (
     namespace: Provider<String>,
     testConfig: AndroidTestCreationConfig,
     testApkDir: Provider<Directory>,
-    testedApksDir: FileCollection?,
+    testedApksDir: Provider<Directory>?,
     privacySandboxSdkApks: FileCollection?,
     privacySandboxCompatSdkApksDir: Provider<Directory>?
 ) : AbstractTestDataImpl(

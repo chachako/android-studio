@@ -2900,8 +2900,10 @@ package com.android.build.api.variant {
 
   public interface TestVariant extends com.android.build.api.variant.GeneratesTestApk com.android.build.api.variant.Variant {
     method public org.gradle.api.provider.Property<java.lang.String> getApplicationId();
+    method @org.gradle.api.Incubating public org.gradle.api.provider.Provider<org.gradle.api.file.Directory> getTestedApks();
     method public org.gradle.api.provider.Provider<java.lang.String> getTestedApplicationId();
     property public abstract org.gradle.api.provider.Property<java.lang.String> applicationId;
+    property @org.gradle.api.Incubating public abstract org.gradle.api.provider.Provider<org.gradle.api.file.Directory> testedApks;
     property public abstract org.gradle.api.provider.Provider<java.lang.String> testedApplicationId;
   }
 

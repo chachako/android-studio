@@ -51,10 +51,10 @@ abstract class AbstractTestDataImpl(
     val namespace: Provider<String>,
     creationConfig: InstrumentedTestCreationConfig,
     override val testApkDir: Provider<Directory>,
-    @get:InputFiles
+    @get:InputDirectory
     @get:PathSensitive(PathSensitivity.RELATIVE)
     @get:Optional
-    val testedApksDir: FileCollection?,
+    val testedApksDir: Provider<Directory>?,
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.NONE)
     @get:Optional

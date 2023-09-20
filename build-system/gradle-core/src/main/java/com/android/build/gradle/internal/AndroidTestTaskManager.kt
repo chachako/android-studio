@@ -283,15 +283,13 @@ class AndroidTestTaskManager(
                 privacySandboxSdkApks,
                 privacySandboxCompatSdkApks)
         } else {
-            val testedApkFileCollection =
-                project.files(testedVariant.artifacts.get(SingleArtifact.APK))
             TestDataImpl(
                 androidTestProperties.namespace,
                 androidTestProperties,
                 androidTestProperties.artifacts.get(SingleArtifact.APK),
-                if (isLibrary) null else testedApkFileCollection,
-                    privacySandboxSdkApks,
-                    privacySandboxCompatSdkApks)
+                if (isLibrary) null else testedVariant.artifacts.get(SingleArtifact.APK),
+                privacySandboxSdkApks,
+                privacySandboxCompatSdkApks)
         }
         configureTestData(androidTestProperties, testData)
         val connectedCheckSerials: Provider<List<String>> =

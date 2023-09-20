@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal;
 
-import static com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType.APK;
 
 import com.android.annotations.NonNull;
 import com.android.build.api.artifact.SingleArtifact;
@@ -50,7 +49,6 @@ import java.util.Collection;
 import org.gradle.api.Project;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.FileCollection;
-import org.gradle.api.file.FileTree;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskProvider;
 import org.jetbrains.annotations.NotNull;
@@ -97,15 +95,6 @@ public class TestApplicationTaskManager
 
         taskFactory.register(new TestModuleVariantModelTask.CreationAction(testVariantProperties));
 
-        // The APKs to be tested.
-        FileCollection testedApks =
-                testVariantProperties
-                        .getVariantDependencies()
-                        .getArtifactFileCollection(
-                                AndroidArtifacts.ConsumedConfigType.PROVIDED_CLASSPATH,
-                                AndroidArtifacts.ArtifactScope.ALL,
-                                APK);
-
         FileCollection privacySandboxSdkApks =
                 testVariantProperties
                                 .getServices()
@@ -135,7 +124,7 @@ public class TestApplicationTaskManager
                         testVariantProperties.getNamespace(),
                         testVariantProperties,
                         testingApk,
-                        testedApks,
+                        testVariantProperties.getTestedApks(),
                         privacySandboxSdkApks,
                         privacySandboxCompatSdkApks);
 

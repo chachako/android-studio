@@ -15,6 +15,8 @@
  */
 package com.android.build.api.variant
 
+import org.gradle.api.Incubating
+import org.gradle.api.file.Directory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 
@@ -31,4 +33,13 @@ interface TestVariant: GeneratesTestApk, Variant {
      * The application of the app under tests.
      */
     val testedApplicationId: Provider<String>
+
+    /**
+     * The [Directory] containing the APKs of the application under test.
+     *
+     * The [Directory] content should be read using a
+     * [com.android.build.api.variant.BuiltArtifactsLoader]
+     */
+    @get:Incubating
+    val testedApks: Provider<Directory>
 }

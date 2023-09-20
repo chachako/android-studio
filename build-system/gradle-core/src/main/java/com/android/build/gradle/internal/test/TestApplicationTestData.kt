@@ -32,7 +32,7 @@ class TestApplicationTestData constructor(
     namespace: Provider<String>,
     creationConfig: TestVariantCreationConfig,
     testApkDir: Provider<Directory>,
-    testedApksDir: FileCollection,
+    testedApksDir: Provider<Directory>,
     privacySandboxSdkApks: FileCollection?,
     privacySandboxCompatSdkApksDir: Provider<Directory>?,
 ) : AbstractTestDataImpl(
@@ -52,7 +52,9 @@ class TestApplicationTestData constructor(
     // application instead of tested application. To always return the tested application ID from
     // this method, we override this method.
     override val testedApplicationId: Provider<String> =
-        testedApksDir.elements.map { BuiltArtifactsLoaderImpl().load(it.single())?.applicationId!! }
+        testedApksDir.map {
+            BuiltArtifactsLoaderImpl().load(it)?.applicationId!!
+        }
 
     override val testedApksFinder: ApksFinder
         get() = _testedApksFinder ?:

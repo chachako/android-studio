@@ -41,6 +41,7 @@ import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
+import org.gradle.api.file.Directory
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -123,6 +124,18 @@ open class TestVariantImpl @Inject constructor(
 
     override val renderscript: Renderscript? by lazy {
         renderscriptCreationConfig?.renderscript
+    }
+    override val testedApks: Provider<Directory> by lazy {
+        val projectDirectory = services.projectInfo.projectDirectory
+        variantDependencies.getArtifactFileCollection(
+            AndroidArtifacts.ConsumedConfigType.PROVIDED_CLASSPATH,
+            AndroidArtifacts.ArtifactScope.ALL,
+            AndroidArtifacts.ArtifactType.APK
+        ).elements.map {
+            projectDirectory.dir(
+                it.single().asFile.absolutePath
+            )
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
