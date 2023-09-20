@@ -3,6 +3,10 @@ package com.android.tools.preview.multipreview
 import com.android.tools.preview.multipreview.visitors.MultipreviewClassVisitor
 import java.util.zip.ZipFile
 import org.objectweb.asm.ClassReader
+import java.io.File
+import java.nio.file.Files
+import kotlin.io.path.extension
+import kotlin.io.path.readBytes
 
 /** Consumer interface processing class bytecode. */
 fun interface ClassProcessor {
@@ -39,20 +43,26 @@ fun buildMultipreview(
   return multipreviewGraph
 }
 
-private fun forEachClass(jarsPaths: Collection<String>, classProcessor: ClassProcessor) {
-  jarsPaths.forEach { jarPath ->
-    ZipFile(jarPath).use { zipFile ->
-      zipFile.stream().filter { it.name.endsWith(".class") }.forEach {
-        zipFile.getInputStream(it).use { stream ->
-          classProcessor.onClassBytecode(stream.readAllBytes())
-        }
+private fun forEachClass(paths: Collection<String>, classProcessor: ClassProcessor) {
+  paths.forEach { path ->
+      if (path.endsWith(".jar")) {
+          ZipFile(path).use { zipFile ->
+              zipFile.stream().filter { it.name.endsWith(".class") }.forEach {
+                  zipFile.getInputStream(it).use { stream ->
+                      classProcessor.onClassBytecode(stream.readAllBytes())
+                  }
+              }
+          }
+      } else if (File(path).isDirectory) {
+          File(path).walk().filter { it.name.endsWith(".class") }.forEach {
+              classProcessor.onClassBytecode(it.readBytes())
+          }
       }
-    }
   }
 }
 
-fun buildMultipreview(settings: MultipreviewSettings, jarsPaths: Collection<String>): Multipreview {
+fun buildMultipreview(settings: MultipreviewSettings, paths: Collection<String>): Multipreview {
   return buildMultipreview(settings) { processor ->
-    forEachClass(jarsPaths, processor::onClassBytecode)
+    forEachClass(paths, processor::onClassBytecode)
   }
 }
