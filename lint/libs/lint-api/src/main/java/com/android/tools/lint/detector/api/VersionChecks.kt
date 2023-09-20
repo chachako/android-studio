@@ -154,6 +154,7 @@ class VersionChecks(
 
     class FakeDetector : Detector() {
       override fun checkPartialResults(context: Context, partialResults: PartialResult) {}
+
       override fun filterIncident(context: Context, incident: Incident, map: LintMap) = false
     }
 
@@ -1388,8 +1389,7 @@ class VersionChecks(
           } else {
             // Kotlin: may not have an explicit return statement
             statement
-          }
-            ?: return null
+          } ?: return null
         val arguments = if (call is UCallExpression) call.valueArguments else emptyList()
         if (arguments.isEmpty()) {
           if (
@@ -1541,6 +1541,7 @@ class VersionChecks(
   ) : AbstractUastVisitor() {
     private var found = false
     private var done = false
+
     override fun visitElement(node: UElement): Boolean {
       if (done) {
         return true

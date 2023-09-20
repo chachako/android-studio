@@ -43,7 +43,9 @@ sealed class CallTarget {
   abstract val element: UElement
 
   data class Method(override val element: UMethod) : CallTarget()
+
   data class Lambda(override val element: ULambdaExpression) : CallTarget()
+
   data class DefaultCtor(override val element: UClass) : CallTarget()
 }
 

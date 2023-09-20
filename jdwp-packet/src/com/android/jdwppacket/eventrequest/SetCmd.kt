@@ -23,14 +23,21 @@ import com.android.jdwppacket.ModKind
 data class SetCmd(val kind: EventKind, val suspendPolicy: Byte, val modifiers: List<Modifier>) {
 
   open class Modifier(val kind: ModKind)
+
   class ModifierCount(val count: Int) : Modifier(ModKind.COUNT)
 
   class ModifierConditional(val exprID: Int) : Modifier(ModKind.CONDITIONAL)
+
   class ModifierThreadOnly(val threadID: Long) : Modifier(ModKind.THREAD_ONLY)
+
   class ModifierClassOnly(val referenceTypeID: Long) : Modifier(ModKind.CLASS_ONLY)
+
   class ModifierClassMatch(val pattern: String) : Modifier(ModKind.CLASS_MATCH)
+
   class ModifierClassExclude(val pattern: String) : Modifier(ModKind.CLASS_EXCLUDE)
+
   class ModifierLocationOnly(val location: Location) : Modifier(ModKind.LOCATION_ONLY)
+
   class ModifierExceptionOnly(
     val exceptionOrNull: Long,
     val caught: Boolean,
@@ -38,9 +45,11 @@ data class SetCmd(val kind: EventKind, val suspendPolicy: Byte, val modifiers: L
   ) : Modifier(ModKind.EXCEPTION_ONLY)
 
   class ModifierFieldOnly(val declaring: Long, val fieldID: Long) : Modifier(ModKind.FIELD_ONLY)
+
   class ModifierStep(val threadID: Long, val size: Int, val depth: Int) : Modifier(ModKind.STEP)
 
   class ModifierInstanceOnly(val instance: Long) : Modifier(ModKind.INSTANCE_ONLY)
+
   class ModifierSourceNameMatch(val sourceNameMatch: String) : Modifier(ModKind.SOURCE_NAME_MATCH)
 
   companion object {

@@ -1029,8 +1029,7 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
                 val resource =
                   ktImport.importedReference
                     ?.let { it.toUElement() }
-                    ?.let { ResourceReference.get(it) }
-                    ?: continue
+                    ?.let { ResourceReference.get(it) } ?: continue
                 for (v in resourceFieldDetectors) {
                   val uastScanner = v.uastScanner
                   uastScanner.visitResourceReference(

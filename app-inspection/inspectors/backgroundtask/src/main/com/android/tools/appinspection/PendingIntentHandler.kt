@@ -99,9 +99,13 @@ const val SET_PENDING_RESULT_METHOD_NAME =
 interface PendingIntentHandler {
 
   fun onIntentCapturedEntry(intent: Intent)
+
   fun onIntentCapturedExit(pendingIntent: PendingIntent): PendingIntent
+
   fun onIntentReceived(intent: Intent)
+
   fun onReceiverDataCreated(data: Any)
+
   fun onReceiverDataResult(data: Any)
 }
 

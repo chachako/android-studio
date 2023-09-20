@@ -661,8 +661,8 @@ protected constructor(
       val severity =
         issueMap[issue.id]?.severity
           ?: issueMap[issue.category.name]?.severity // id's can also refer to categories
-           ?: issueMap[issue.category.fullName]?.severity
-            ?: run { // recursively
+          ?: issueMap[issue.category.fullName]?.severity
+          ?: run { // recursively
             var currentCategory = issue.category.parent
             var s: Severity? = null
             while (currentCategory != null) {
@@ -1169,8 +1169,8 @@ protected constructor(
       val data = issueMap[id] ?: IssueData().also { issueMap[id] = it }
       val options =
         data.options
-        // LinkedHashMap: preserve lint.xml order
-        ?: LinkedHashMap<String, String>().also { data.options = it }
+          // LinkedHashMap: preserve lint.xml order
+          ?: LinkedHashMap<String, String>().also { data.options = it }
       options[key] = value
     }
   }

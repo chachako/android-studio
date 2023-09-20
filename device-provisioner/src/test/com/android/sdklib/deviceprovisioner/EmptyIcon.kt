@@ -24,6 +24,7 @@ data class EmptyIcon(private val iconWidth: Int, private val iconHeight: Int) : 
   override fun paintIcon(c: Component?, g: Graphics?, x: Int, y: Int) {}
 
   override fun getIconWidth() = iconWidth
+
   override fun getIconHeight() = iconHeight
 
   companion object {

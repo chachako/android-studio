@@ -1132,8 +1132,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
           false,
           false
         ) // Couldn't compute description of method for some reason; probably
-        // failure to resolve parameter types
-        ?: return
+          // failure to resolve parameter types
+          ?: return
 
       val api = apiDatabase.getMethodVersions(owner, name, desc)
       if (api == ApiConstraint.UNKNOWN) {
@@ -1609,8 +1609,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
           includeName = false,
           includeReturn = false
         ) // Couldn't compute description of method for some reason; probably
-        // failure to resolve parameter types
-        ?: return
+          // failure to resolve parameter types
+          ?: return
 
       visitCall(method, call, reference, containingClass, owner, name, desc)
     }
@@ -2855,8 +2855,10 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       val constant =
         when (argument) {
           is ULiteralExpression -> argument.value
-          is UInjectionHost -> argument.evaluateToString()
-              ?: ConstantEvaluator().allowUnknowns().evaluate(argument) ?: return
+          is UInjectionHost ->
+            argument.evaluateToString()
+              ?: ConstantEvaluator().allowUnknowns().evaluate(argument)
+              ?: return
           else -> ConstantEvaluator().allowUnknowns().evaluate(argument) ?: return
         }
       if (constant is String) {

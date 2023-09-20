@@ -36,7 +36,9 @@ class FakeEnvironment : InspectorEnvironment {
       private val primaryExecutor = MoreExecutors.directExecutor()
 
       override fun handler() = throw NotImplementedError()
+
       override fun primary() = primaryExecutor
+
       override fun io() = throw NotImplementedError()
     }
 

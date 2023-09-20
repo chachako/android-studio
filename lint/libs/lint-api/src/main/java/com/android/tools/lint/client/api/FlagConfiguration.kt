@@ -35,17 +35,29 @@ open class FlagConfiguration(configurations: ConfigurationHierarchy) :
   var associatedLocation: Location? = null
 
   open fun fatalOnly(): Boolean = false
+
   open fun isWarningsAsErrors(): Boolean = false
+
   open fun isIgnoreWarnings(): Boolean = false
+
   open fun isCheckAllWarnings(): Boolean = false
+
   open fun allowSuppress(): Boolean = true
+
   open fun disabledIds(): Set<String> = emptySet()
+
   open fun enabledIds(): Set<String> = emptySet()
+
   open fun exactCheckedIds(): Set<String>? = null
+
   open fun disabledCategories(): Set<Category>? = null
+
   open fun enabledCategories(): Set<Category>? = null
+
   open fun exactCategories(): Set<Category>? = null
+
   open fun severityOverride(issue: Issue): Severity? = null
+
   open fun severityOverrides(): Set<String> = emptySet()
 
   override fun getDefinedSeverity(
@@ -91,7 +103,7 @@ open class FlagConfiguration(configurations: ConfigurationHierarchy) :
       val impliedSeverity =
         severity
           ?: configurations.getDefinedSeverityWithoutOverride(source, issue, visibleDefault)
-            ?: getDefaultSeverity(issue, visibleDefault)
+          ?: getDefaultSeverity(issue, visibleDefault)
       if (isWarningsAsErrors() && impliedSeverity === Severity.WARNING) {
         if (issue === IssueRegistry.BASELINE) {
           // Don't promote the baseline informational issue

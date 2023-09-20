@@ -2132,8 +2132,7 @@ private fun search(path: List<Element>, index: Int, parent: Element): Element? {
             val child = curr as Element
             search(path, index + 1, child)?.let {
               return it
-            }
-              ?: break
+            } ?: break
           }
         }
       }

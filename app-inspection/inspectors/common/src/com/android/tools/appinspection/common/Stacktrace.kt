@@ -29,8 +29,7 @@ fun getStackTrace(offset: Int, packagePrefix: String? = APPINSPECTION_PACKAGE_PR
     val trimmed =
       packagePrefix?.let { prefix ->
         stacks.dropWhile { element -> element.className.startsWith(prefix) }
-      }
-        ?: stacks.toList()
+      } ?: stacks.toList()
     trimmed.drop(offset).fold("") { acc, stackTraceElement -> "$acc$stackTraceElement\n" }
   }
 }

@@ -186,8 +186,8 @@ class AppBundleLocaleChangesDetector : Detector(), SourceCodeScanner, GradleScan
           context,
           getLocation(KEY_LOCALE_CHANGE_LOCATION),
           playCoreLanguageRequestFound = getBoolean(KEY_PLAYCORE_LANGUAGE_REQUEST_FOUND) ?: false,
-          bundleLanguageSplittingDisabled = getBoolean(KEY_BUNDLE_LANGUAGE_SPLITTING_DISABLED)
-              ?: false
+          bundleLanguageSplittingDisabled =
+            getBoolean(KEY_BUNDLE_LANGUAGE_SPLITTING_DISABLED) ?: false
         )
       }
     }

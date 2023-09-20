@@ -27,6 +27,7 @@ data class NetworkConnection(
 sealed class InterceptedResponseBody {
 
   abstract fun get(): InputStream
+
   class SuccessfulResponseBody(private val responseBody: InputStream) : InterceptedResponseBody() {
 
     override fun get() = responseBody

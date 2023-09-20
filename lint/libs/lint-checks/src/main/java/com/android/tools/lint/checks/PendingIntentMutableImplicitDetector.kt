@@ -332,8 +332,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
     ): Pair<UExpression, UMethod?>? {
       val assign =
         findLastAssignment(intent.resolve() as? PsiVariable ?: return null, call)
-          ?.skipParenthesizedExprDown()
-          ?: return null
+          ?.skipParenthesizedExprDown() ?: return null
       return Pair(assign, assign.getParentOfType(UMethod::class.java))
     }
 
@@ -443,6 +442,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
         return intentInfo.javaEvaluator.isMemberInClass(call.resolve(), PendingIntentUtils.CLASS) &&
           PendingIntentUtils.GET_METHOD_NAMES.contains(call.methodName)
       }
+
       private fun isIntentAnalyzable(): Boolean =
         isAssignReached && !isEscaped && !isIntentLocationReached
 

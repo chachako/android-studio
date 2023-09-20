@@ -486,6 +486,7 @@ class DefaultJavaEvaluatorTest {
               checkResolve(method!!)
               return super.visitCallExpression(node)
             }
+
             private fun checkResolve(method: PsiMethod) {
               val name = method.name
               if (name.startsWith("isSuspend")) {
@@ -547,10 +548,12 @@ class DefaultJavaEvaluatorTest {
                 )
                 .append("\n\n")
             }
+
             override fun visitMethod(node: UMethod): Boolean {
               addMethod(node.javaPsi)
               return super.visitMethod(node)
             }
+
             override fun visitCallExpression(node: UCallExpression): Boolean {
               node.resolve()?.let { addMethod(it) }
               return super.visitCallExpression(node)

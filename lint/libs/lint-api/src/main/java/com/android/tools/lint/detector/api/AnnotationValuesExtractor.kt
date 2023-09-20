@@ -32,6 +32,7 @@ internal sealed class AnnotationValuesExtractor {
   }
 
   internal abstract fun getAnnotationConstantObject(annotation: UAnnotation?, name: String): Any?
+
   internal fun getAnnotationBooleanValue(annotation: UAnnotation?, name: String): Boolean? =
     getAnnotationConstantObject(annotation, name) as? Boolean
 

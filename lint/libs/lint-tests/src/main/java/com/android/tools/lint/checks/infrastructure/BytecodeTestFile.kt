@@ -17,8 +17,11 @@ package com.android.tools.lint.checks.infrastructure
 
 interface BytecodeTestFile {
   val type: Type
+
   fun getSources(): List<TestFile>
+
   fun getBytecodeFiles(): List<TestFile>
+
   fun getGeneratedPaths(): List<String>
 
   /** The type of test file to create. */

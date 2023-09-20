@@ -121,11 +121,11 @@ class UnusedResourceDetector :
       for (field in resFields) {
         val type =
           ResourceType.fromClassName(field.type)
-          // Highly unlikely. This would happen if in the future we add
-          // some new ResourceType, that the Gradle plugin (and the user's
-          // Gradle file is creating) and it's an older version of Studio which
-          // doesn't yet have this ResourceType in its enum.
-          ?: continue
+            // Highly unlikely. This would happen if in the future we add
+            // some new ResourceType, that the Gradle plugin (and the user's
+            // Gradle file is creating) and it's an older version of Studio which
+            // doesn't yet have this ResourceType in its enum.
+            ?: continue
         val resource = model.declareResource(type, field.name, null) as LintResource
         resource.recordLocation(location)
       }
@@ -155,8 +155,7 @@ class UnusedResourceDetector :
       partialResults
         .asSequence()
         .mapNotNull { (_, map) -> ResourceUsageModel.deserialize(map.getString(KEY_MODEL, "")) }
-        .reduceOrNull { acc, model -> acc.apply { merge(model) } }
-        ?: return
+        .reduceOrNull { acc, model -> acc.apply { merge(model) } } ?: return
 
     for (resource in findUnused(context, model)) {
       val field = resource.field
@@ -164,7 +163,7 @@ class UnusedResourceDetector :
       val location =
         partialResults.firstNotNullOfOrNull { (_, lintMap) -> lintMap.getLocation(field) }
           ?: resource.declarations?.first()?.toFile()?.let(Location::create)
-            ?: Location.create(context.project.dir)
+          ?: Location.create(context.project.dir)
       val fix = fix().data(KEY_RESOURCE_FIELD, field)
       context.report(Incident(getIssue(resource), location, message, fix))
     }
@@ -507,6 +506,7 @@ class UnusedResourceDetector :
     ResourceUsageModel.Resource(type, name, value) {
     /** Chained list of declaration locations */
     var locations: Location? = null
+
     fun recordLocation(location: Location) {
       val oldLocation = locations
       if (oldLocation != null) {
@@ -520,6 +520,7 @@ class UnusedResourceDetector :
     var xmlContext: XmlContext? = null
     var context: Context? = null
     var unused: Set<Resource> = hashSetOf()
+
     override fun createResource(type: ResourceType, name: String, realValue: Int) =
       LintResource(type, name, realValue)
 
@@ -675,6 +676,7 @@ class UnusedResourceDetector :
      * references in source sets that are not the primary/active variant)
      */
     @JvmField var sIncludeInactiveReferences = true
+
     private fun findUnused(
       context: Context,
       model: ResourceUsageModel

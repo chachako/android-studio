@@ -346,6 +346,7 @@ class LintFixVerifierTest {
 
   class ClassVerificationFailureDetector : Detector(), SourceCodeScanner {
     override fun getApplicableMethodNames(): List<String> = listOf("setBackgroundTintList")
+
     @Suppress("BooleanLiteralArgument")
     override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
       val part1 =

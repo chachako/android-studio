@@ -153,8 +153,7 @@ class IntellijThreadDetector : Detector(), SourceCodeScanner {
         .asSequence()
         .flatMap { caller -> calleeThreads.asSequence().map { callee -> Pair(caller, callee) } }
         .mapNotNull { (caller, callee) -> checkForThreadViolation(caller, callee, method) }
-        .firstOrNull()
-        ?: return
+        .firstOrNull() ?: return
 
     report(context, node, violation)
   }

@@ -405,8 +405,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
         parameterMapping,
         ATTR_INTENT_PARAMETER,
         allowReference = false
-      )
-        ?: return null
+      ) ?: return null
 
     checkParent(context, parameterMapping) ?: return null
 
@@ -423,8 +422,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
       parameterMapping,
       TAG_FULFILLMENT,
       TAG_PARAMETER_MAPPING
-    )
-      ?: return null
+    ) ?: return null
 
     return urlParameter
   }

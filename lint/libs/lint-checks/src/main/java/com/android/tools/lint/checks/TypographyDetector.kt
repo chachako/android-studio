@@ -482,6 +482,7 @@ class TypographyDetector : ResourceXmlDetector() {
       Pattern.compile(".*\\W*'[^']+'(\\W.*)?", Pattern.UNICODE_CHARACTER_CLASS)
 
     private const val FRACTION_MESSAGE = "Use fraction character %1\$c (%2\$s) instead of %3\$s?"
+
     private fun isAnalyticsTrackingId(element: Element): Boolean {
       val name = element.getAttribute(ATTR_NAME)
       return "ga_trackingId" == name

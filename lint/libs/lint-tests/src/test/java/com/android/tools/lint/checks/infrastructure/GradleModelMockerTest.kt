@@ -34,6 +34,7 @@ import org.junit.rules.TemporaryFolder
 
 class GradleModelMockerTest {
   @get:Rule var tempFolder = TemporaryFolder()
+
   private fun createMocker(@Language("Groovy") gradle: String): GradleModelMocker {
     return createMocker(gradle, tempFolder)
   }
@@ -557,6 +558,7 @@ dependencies {
             }
 
             override fun info(msgFormat: String, vararg args: Any) {}
+
             override fun verbose(msgFormat: String, vararg args: Any) {}
           }
         )
@@ -1039,6 +1041,7 @@ dependencies {
               }
 
               override fun info(msgFormat: String, vararg args: Any) {}
+
               override fun verbose(msgFormat: String, vararg args: Any) {}
             }
           )

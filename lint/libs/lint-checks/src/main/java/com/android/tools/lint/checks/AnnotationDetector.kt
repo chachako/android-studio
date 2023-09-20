@@ -372,7 +372,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
           val attributeValue =
             annotation.findDeclaredAttributeValue(ATTR_VALUE)
               ?: annotation.findDeclaredAttributeValue(null)
-                ?: run {
+              ?: run {
                 context.report(
                   ANNOTATION_USAGE,
                   annotation,
@@ -593,6 +593,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
       val attribute = annotation.findDeclaredAttributeValue(name) ?: return null
       return context.getLocation(attribute)
     }
+
     private fun checkRequiresApi(annotation: UAnnotation) {
       if (annotation.attributeValues.isEmpty()) {
         val name = "Specify API level"
@@ -812,7 +813,8 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
         if (annotation != null) {
           val value =
             annotation.findAttributeValue(ATTR_VALUE)?.skipParenthesizedExprDown()
-              ?: annotation.findAttributeValue(null)?.skipParenthesizedExprDown() ?: return
+              ?: annotation.findAttributeValue(null)?.skipParenthesizedExprDown()
+              ?: return
           if (value.isArrayInitializer()) {
             val open = getAnnotationBooleanValue(annotation, ATTR_OPEN, false)
             if (open) {
@@ -890,7 +892,8 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
     private fun ensureUniqueValues(node: UAnnotation) {
       val value =
         node.findDeclaredAttributeValue(ATTR_VALUE)?.skipParenthesizedExprDown()
-          ?: node.findDeclaredAttributeValue(null)?.skipParenthesizedExprDown() ?: return
+          ?: node.findDeclaredAttributeValue(null)?.skipParenthesizedExprDown()
+          ?: return
 
       if (!value.isArrayInitializer()) {
         return
@@ -999,8 +1002,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
           if (resolved !is PsiCompiledElement && resolved is PsiField) {
             val initializer =
               UastFacade.getInitializerBody(resolved)?.skipParenthesizedExprDown()
-                as? ULiteralExpression
-                ?: continue
+                as? ULiteralExpression ?: continue
             val o = initializer.value as? Number ?: continue
             val value = o.toLong()
             // Allow -1, 0 and 1. You can write 1 as "1 << 0" but IntelliJ for
@@ -1088,6 +1090,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
       private val fields: MutableList<Any>
       private val seenValues: MutableList<Int?>
       private var reported = false
+
       override fun visitSwitchClauseExpression(node: USwitchClauseExpression): Boolean {
         if (reported) {
           return true
@@ -1114,9 +1117,9 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
           } else if (caseValue is UReferenceExpression) { // default case can have null expression
             var resolved: PsiElement? =
               caseValue.resolve()
-              // If there are compilation issues (e.g. user is editing code) we
-              // can't be certain, so don't flag anything.
-              ?: return true
+                // If there are compilation issues (e.g. user is editing code) we
+                // can't be certain, so don't flag anything.
+                ?: return true
             if (resolved is PsiField) {
               // We can't just do
               //    fields.remove(resolved);

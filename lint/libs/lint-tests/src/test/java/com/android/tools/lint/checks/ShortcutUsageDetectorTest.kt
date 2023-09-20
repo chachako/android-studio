@@ -70,6 +70,7 @@ class ShortcutUsageDetectorTest : AbstractCheckTest() {
             """
       )
   }
+
   fun testAddDynamicShortcutsExample() {
     val expected =
       """

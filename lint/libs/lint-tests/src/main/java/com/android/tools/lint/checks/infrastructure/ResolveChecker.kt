@@ -89,7 +89,8 @@ fun JavaContext.checkFile(root: UFile?, task: TestLintTask, isStub: Boolean = fa
       ?.map { it.implementation.detectorClass }
       ?.distinct()
       ?.map { it.getDeclaredConstructor().newInstance() }
-      ?: task.detector?.let { sequenceOf(it) } ?: emptySequence()
+      ?: task.detector?.let { sequenceOf(it) }
+      ?: emptySequence()
 
   val applicableCalls: Set<String> =
     detectors.mapNotNull { it.getApplicableMethodNames() }.flatten().toSet()

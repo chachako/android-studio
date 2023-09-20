@@ -175,7 +175,8 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
           tag == VIEW_FRAGMENT -> {
             val attr =
               element.getAttributeNodeNS(ANDROID_URI, ATTR_NAME)
-                ?: element.getAttributeNode(ATTR_CLASS) ?: return
+                ?: element.getAttributeNode(ATTR_CLASS)
+                ?: return
             checkClassReference(
               context,
               null,
@@ -253,7 +254,8 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
           }
           val provider =
             element.getAttributeNodeNS(AUTO_URI, ATTR_ACTION_PROVIDER_CLASS)
-              ?: element.getAttributeNodeNS(ANDROID_URI, ATTR_ACTION_PROVIDER_CLASS) ?: return
+              ?: element.getAttributeNodeNS(ANDROID_URI, ATTR_ACTION_PROVIDER_CLASS)
+              ?: return
           // Consider checking for one of the action provider parent classes
           checkClassReference(context, null, provider.value, provider, element)
         }

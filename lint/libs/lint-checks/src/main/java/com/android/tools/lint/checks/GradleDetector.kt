@@ -2211,8 +2211,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       "$artifactId-ktx",
       filter = { it == version },
       allowPreview = true
-    )
-      ?: return
+    ) ?: return
 
     // Note: once b/155974293 is fixed, we can check whether the KTX extension is
     // already a direct dependency. If it is, then we could offer a slightly better
@@ -2440,8 +2439,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           property.startsWith("testFixtures") -> variant.testFixturesArtifact
           property.startsWith("test") -> variant.testArtifact
           else -> variant.mainArtifact
-        }
-          ?: return null
+        } ?: return null
       for (library in artifact.dependencies.getAll()) {
         if (library is LintModelExternalLibrary) {
           val mc = library.resolvedCoordinates
@@ -3826,8 +3824,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           ?.getMappedValues()
           ?.asIterable()
           ?.find { it.key.replace('-', '.').replace('_', '.') == libName }
-          ?.value
-          ?: return null
+          ?.value ?: return null
 
       // Find full coordinates of lib, including version
       val versions = context.getTomlValue(VC_VERSIONS) as? LintTomlMapValue
@@ -3857,8 +3854,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           ?.getMappedValues()
           ?.asIterable()
           ?.find { it.key.replace('-', '.').replace('_', '.') == pluginName }
-          ?.value
-          ?: return null
+          ?.value ?: return null
 
       // Find full coordinates of plugin, including version
       val versions = context.getTomlValue(VC_VERSIONS) as? LintTomlMapValue

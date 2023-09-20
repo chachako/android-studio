@@ -32,7 +32,7 @@ constructor(
   val baselineFixedCount: Int = 0,
   val autoFixedCount: Int = 0,
   val hasAutoFixCount: Int = 0
-// TODO: Timing stats too?
+  // TODO: Timing stats too?
 ) {
 
   fun count(): Int {

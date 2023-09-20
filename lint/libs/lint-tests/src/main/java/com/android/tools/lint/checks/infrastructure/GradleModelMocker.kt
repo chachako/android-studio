@@ -1357,7 +1357,8 @@ constructor(
             lintConfig = lintConfig ?: it.lintOptions.lintConfig,
             severityOverrides = severities ?: severityOverrides,
             checkTestSources = tests ?: it.lintOptions.checkTestSources,
-            checkDependencies = dependencies
+            checkDependencies =
+              dependencies
                 ?: it.lintOptions
                   .checkDependencies, // TODO: Allow these to be customized by model mocker
           )
@@ -1859,6 +1860,7 @@ constructor(
     val promotedTo: String?
     val children: MutableList<Dep> = mutableListOf()
     val depth: Int
+
     private fun trimStars(coordinateString: String): String {
       var coordinateString = coordinateString
       if (coordinateString.endsWith(" (*)")) {
@@ -1873,6 +1875,7 @@ constructor(
 
     val isJavaLibrary: Boolean
       get() = isJavaLibrary(coordinateString)
+
     val isProject: Boolean
       get() = component == null && coordinateString.startsWith("project ")
 
@@ -1964,6 +1967,7 @@ constructor(
     private val configurationPattern =
       Pattern.compile("^dependencies\\.(|test|androidTest)([Cc]ompile|[Ii]mplementation)[ (].*")
     private var libraryVersion = 0
+
     private fun normalize(line: String): String {
       var line = line
       line = line.trim { it <= ' ' }
@@ -2247,6 +2251,7 @@ private data class TestLintModelModule(
 ) : LintModelModule {
   override val loader: LintModelModuleLoader
     get() = TestLintModelModuleLoader
+
   override fun neverShrinking(): Boolean = neverShrinking
 }
 
@@ -2348,8 +2353,11 @@ private data class TestLintModelDependencies(
 
 object EmptyLintModelDependencyGraph : LintModelDependencyGraph {
   override val roots: List<LintModelDependency> = emptyList()
+
   override fun findLibrary(mavenName: String, direct: Boolean): LintModelLibrary? = null
+
   override fun getAllGraphItems(): List<LintModelDependency> = emptyList()
+
   override fun getAllLibraries(): List<LintModelLibrary> = emptyList()
 }
 
@@ -2466,8 +2474,7 @@ private fun getMavenName(artifactAddress: String): LintModelMavenName {
         val index = artifactAddress.indexOf(it, startIndex = this + 1)
         if (index == -1) artifactAddress.length else index
       }
-      .minOrNull()
-      ?: artifactAddress.length
+      .minOrNull() ?: artifactAddress.length
   }
 
   val lastDelimiterIndex =

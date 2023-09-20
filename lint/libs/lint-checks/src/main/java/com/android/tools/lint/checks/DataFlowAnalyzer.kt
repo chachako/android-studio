@@ -365,12 +365,12 @@ abstract class DataFlowAnalyzer(
   override fun visitCallableReferenceExpression(node: UCallableReferenceExpression): Boolean {
     val qualifier =
       node.qualifierExpression
-      // For odd reasons, UCallableReferenceExpression#qualifierExpression
-      // "can be null if the qualifierType is known" which the Kotlin implementation
-      // does. But we care about more than the type; we want to make sure
-      // that it's bound to the right instance, so we have to work a bit
-      // harder here.
-      ?: (node.sourcePsi as? KtCallableReferenceExpression)?.receiverExpression?.toUElement()
+        // For odd reasons, UCallableReferenceExpression#qualifierExpression
+        // "can be null if the qualifierType is known" which the Kotlin implementation
+        // does. But we care about more than the type; we want to make sure
+        // that it's bound to the right instance, so we have to work a bit
+        // harder here.
+        ?: (node.sourcePsi as? KtCallableReferenceExpression)?.receiverExpression?.toUElement()
 
     if (qualifier != null) {
       if (instances.contains(qualifier)) {
@@ -728,8 +728,7 @@ abstract class DataFlowAnalyzer(
             false,
             UBlockExpression::class.java,
             UIfExpression::class.java
-          )
-            ?: return
+          ) ?: return
 
         if (initialBlock === block) {
           references.remove(lhs)
@@ -973,6 +972,7 @@ open class EscapeCheckingDataFlowAnalyzer(
   initialReferences: Collection<PsiVariable> = emptyList()
 ) : DataFlowAnalyzer(initial, initialReferences) {
   var escaped: Boolean = false
+
   override fun field(field: UElement) {
     escaped = true
   }
@@ -1067,12 +1067,14 @@ abstract class TargetMethodDataFlowAnalyzer(
         if (isTargetMethod(name, resolved, null, call)) {
           val method =
             initial.firstOrNull()?.getParentOfType<UMethod>()
-              ?: call.getParentOfType<UMethod>() ?: return
+              ?: call.getParentOfType<UMethod>()
+              ?: return
           val callTracker =
             object : EscapeCheckingDataFlowAnalyzer(listOf(call)) {
               override fun visitElement(node: UElement): Boolean {
                 return targetReached
               }
+
               override fun receiver(call: UCallExpression) {
                 targetReference = call
                 targetReached = true

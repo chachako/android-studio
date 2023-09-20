@@ -101,6 +101,7 @@ class StubClassFileTest {
     accept(
       object : JavaRecursiveElementVisitor() {
         private var depth = 0
+
         private fun indent(level: Int) {
           for (i in 0 until level) {
             sb.append("    ")

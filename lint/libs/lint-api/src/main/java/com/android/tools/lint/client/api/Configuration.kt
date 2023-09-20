@@ -337,7 +337,7 @@ abstract class Configuration(val configurations: ConfigurationHierarchy) {
     // TODO: IF you enable all warnings with -w, those will be enabled individually
     // here. Decide if that's the right behavior. Probably more relevant for
     // -nowarn.
-    )
+  )
 
   /**
    * Attempts to find the configuration location responsible for a given [issue]'s configuration

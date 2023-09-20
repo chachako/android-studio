@@ -117,6 +117,7 @@ class StringFormatDetector
    * invalid when used from a String#format call
    */
   private var mIgnoreStrings: MutableSet<String>? = null
+
   override fun appliesTo(folderType: ResourceFolderType): Boolean {
     return folderType == ResourceFolderType.VALUES
   }
@@ -1148,6 +1149,7 @@ This will ensure that in other languages the right set of translations are provi
     private const val CONVERSION_CLASS_PERCENT = 7
     private const val CONVERSION_CLASS_NEWLINE = 8
     private const val CONVERSION_CLASS_DATETIME = 9
+
     private fun getConversionClass(conversion: Char): Int {
       // See http://developer.android.com/reference/java/util/Formatter.html
       when (conversion) {
@@ -1285,7 +1287,7 @@ This will ensure that in other languages the right set of translations are provi
         //   %[argument_index$][flags][width][.precision]conversion
         //
         "%" + // Argument Index
-        "(\\d+\\$)?" + // Flags
+          "(\\d+\\$)?" + // Flags
           "([-+#, 0(<]*)?" + // Width
           "(\\d+)?" + // Precision
           "(\\.\\d+)?" + // Conversion. These are all a single character, except date/time
@@ -1353,8 +1355,7 @@ This will ensure that in other languages the right set of translations are provi
       getFormatArgumentSequenceWithIndex(s)
         .map { (number, _) -> number }
         .onEach { seenArguments?.add(it) }
-        .maxOrNull()
-        ?: 0
+        .maxOrNull() ?: 0
 
     /** Given a format string returns whether it has any flags/width/precision modifiers. */
     fun hasFormatArgumentModifiers(s: String, argument: Int): Boolean =
@@ -1366,8 +1367,7 @@ This will ensure that in other languages the right set of translations are provi
           !matcher.group(2).isNullOrEmpty() ||
             !matcher.group(3).isNullOrEmpty() ||
             !matcher.group(4).isNullOrEmpty()
-        }
-        ?: false
+        } ?: false
 
     /**
      * Determines whether the given [String.format] formatting string is "locale dependent", meaning
@@ -1427,6 +1427,7 @@ This will ensure that in other languages the right set of translations are provi
       (PsiType) -> Boolean {
       override fun invoke(t: PsiType) =
         t in prims || t is PsiClassType && t.getCanonicalText() in tags
+
       infix fun or(that: TypeTest): TypeTest = TypeTest(prims + that.prims, tags + that.tags)
     }
 

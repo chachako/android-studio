@@ -567,8 +567,8 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         else -> {
           val value =
             annotation.findDeclaredAttributeValue(ATTR_OTHERWISE)
-            // Guava within Google3:
-            ?: annotation.findDeclaredAttributeValue(ATTR_PRODUCTION_VISIBILITY)
+              // Guava within Google3:
+              ?: annotation.findDeclaredAttributeValue(ATTR_PRODUCTION_VISIBILITY)
               // Used in many android versions like
               // com.android.internal.annotations.VisibleForTesting
               ?: annotation.findDeclaredAttributeValue(ATTR_VISIBILITY)
@@ -608,7 +608,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
               val otherwise =
                 psi.findAttribute(ATTR_OTHERWISE)
                   ?: psi.findAttribute(ATTR_PRODUCTION_VISIBILITY)
-                    ?: psi.findAttribute(ATTR_VISIBILITY)
+                  ?: psi.findAttribute(ATTR_VISIBILITY)
               val v = otherwise?.attributeValue
               if (v is JvmAnnotationConstantValue) {
                 val constant = v.constantValue

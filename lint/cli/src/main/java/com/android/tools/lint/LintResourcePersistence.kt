@@ -412,7 +412,7 @@ object LintResourcePersistence {
             it.normalizeByAddingImpliedVersionQualifier()
             parentConfigMap[folderName] = it
           }
-            ?: continue
+          ?: continue
       folderConfigMap[file] = config
     }
 

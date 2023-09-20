@@ -45,6 +45,7 @@ class ShortcutUsageDetector : Detector(), SourceCodeScanner {
    * [visitMethodCall].
    */
   private var numSetOrAddDynamicShortcutsCalls = 0
+
   override fun getApplicableMethodNames(): List<String>? {
     return listOf(
       "addDynamicShortcuts",

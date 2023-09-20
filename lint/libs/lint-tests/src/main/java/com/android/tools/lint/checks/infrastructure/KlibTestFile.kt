@@ -65,7 +65,7 @@ class KlibTestFile(
       val target =
         System.getenv(flag)
           ?: findOnPath("$tag${if (isWindows) ".bat" else ""}")
-            ?: error(
+          ?: error(
             "Couldn't find $tag to update test file $targetPath with. Point to it with \$$flag"
           )
       if (!File(target).isFile) Assert.fail("$target is not a file")

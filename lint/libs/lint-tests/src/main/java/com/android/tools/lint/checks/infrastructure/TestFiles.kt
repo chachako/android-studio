@@ -507,7 +507,7 @@ object TestFiles {
     // TODO: Preserve artifact name, and then in test infrastructure, make sure
     // all exploded-aar files are accounted for in the dependency graph!
     // Maybe even build dependency graph here with a PomBuilder?
-    ): TestFile {
+  ): TestFile {
     val default =
       if (byteOnly) BytecodeTestFile.Type.BYTECODE_ONLY
       else BytecodeTestFile.Type.SOURCE_AND_BYTECODE
@@ -620,7 +620,7 @@ object TestFiles {
       name.endsWith(".lint.tests") ||
       name.endsWith("lint-tests.jar") ||
       name == "main" && file.path.contains("lint-tests")) || // Gradle
-    name.endsWith(".lint.cli"))
+      name.endsWith(".lint.cli"))
   }
 
   class LibraryReferenceTestFile(to: String, file: File) : TestFile() {

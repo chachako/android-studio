@@ -33,17 +33,29 @@ open class CliConfiguration(
   private val fatalOnly: Boolean
 ) : FlagConfiguration(configurations) {
   override fun fatalOnly(): Boolean = fatalOnly
+
   override fun isWarningsAsErrors(): Boolean = flags.isWarningsAsErrors
+
   override fun isIgnoreWarnings(): Boolean = flags.isIgnoreWarnings
+
   override fun isCheckAllWarnings(): Boolean = flags.isCheckAllWarnings
+
   override fun enabledIds(): Set<String> = flags.enabledIds
+
   override fun disabledIds(): Set<String> = flags.suppressedIds
+
   override fun exactCheckedIds(): Set<String>? = flags.exactCheckedIds
+
   override fun disabledCategories(): Set<Category>? = flags.disabledCategories
+
   override fun enabledCategories(): Set<Category>? = flags.enabledCategories
+
   override fun exactCategories(): Set<Category>? = flags.exactCategories
+
   override fun severityOverride(issue: Issue): Severity? =
     flags.severityOverrides[issue.id]?.getSeverity(issue)
+
   override fun allowSuppress(): Boolean = flags.allowSuppress
+
   override fun severityOverrides(): Set<String> = flags.severityOverrides.keys
 }

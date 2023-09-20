@@ -53,6 +53,7 @@ class PermissionErrorDetectorTest : AbstractCheckTest() {
       .listener(
         object : LintListener {
           private var mode: LintDriver.DriverMode? = null
+
           override fun update(
             driver: LintDriver,
             type: LintListener.EventType,

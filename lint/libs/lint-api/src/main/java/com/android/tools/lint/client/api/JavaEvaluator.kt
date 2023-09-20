@@ -1096,7 +1096,7 @@ class JavaEvaluator {
             JavaPsiFacade.getInstance(project)
               .findClass(signature, GlobalSearchScope.projectScope(project))
           }
-            ?: continue
+          ?: continue
       if (cls !is PsiClass || !cls.isAnnotationType) {
         continue
       }
@@ -1175,7 +1175,7 @@ class JavaEvaluator {
               null
             }
           }
-            ?: continue
+          ?: continue
       if (!cls.isAnnotationType) {
         continue
       }

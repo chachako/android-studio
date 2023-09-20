@@ -1128,6 +1128,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 """
       )
   }
+
   fun testAdditionalFlagScenarios() {
     lint()
       .files(

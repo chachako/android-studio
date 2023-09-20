@@ -219,8 +219,7 @@ class TestLintRunner(private val task: TestLintTask) {
       results[TestMode.DEFAULT]?.let {
         val state = TestModeContext(this, root, projectList, files, null, results = results)
         mode.partition(state)
-      }
-        ?: listOf(mode)
+      } ?: listOf(mode)
 
     if (partitions.size == 1 && partitions[0] == mode) {
       runMode(mode, notApplicable, rootDir, projectMap, results, root, projectList, files)
@@ -230,6 +229,7 @@ class TestLintRunner(private val task: TestLintTask) {
       }
     }
   }
+
   private fun TestLintTask.runMode(
     mode: TestMode,
     notApplicable: HashSet<TestMode>,

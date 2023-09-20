@@ -39,6 +39,7 @@ class DefaultProvisionerPlugin(val scope: CoroutineScope, private val defaultIco
   companion object {
     const val PLUGIN_ID = "Default"
   }
+
   override val priority: Int = Int.MIN_VALUE
 
   private val _devices = MutableStateFlow<List<DefaultDeviceHandle>>(emptyList())

@@ -41,6 +41,7 @@ class PhysicalDeviceProvisionerPlugin(
   companion object {
     const val PLUGIN_ID = "PhysicalDevice"
   }
+
   override val priority = 0
 
   private val devicesBySerial = hashMapOf<String, PhysicalDeviceHandle>()

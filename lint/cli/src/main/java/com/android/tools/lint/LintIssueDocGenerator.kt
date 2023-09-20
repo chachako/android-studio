@@ -588,14 +588,15 @@ class LintIssueDocGenerator(
 
         try {
           versionTable.append(
-            "|%20s|%10s|%8s|%12s|%15s|%10s|\n".format(
-              v.toString(),
-              entry.date,
-              r.issues.size.toString(),
-              compatible,
-              describeApi(r.api),
-              describeApi(max(r.minApi, minApiFromBytecodeLevel)),
-            )
+            "|%20s|%10s|%8s|%12s|%15s|%10s|\n"
+              .format(
+                v.toString(),
+                entry.date,
+                r.issues.size.toString(),
+                compatible,
+                describeApi(r.api),
+                describeApi(max(r.minApi, minApiFromBytecodeLevel)),
+              )
           )
         } catch (ignore: Throwable) {}
       }
@@ -1088,7 +1089,7 @@ class LintIssueDocGenerator(
           val desc =
             builtin
               ?: registryNames[conflict.registry]
-                ?: "$id: ${conflict.getBriefDescription(TextFormat.RAW)}"
+              ?: "$id: ${conflict.getBriefDescription(TextFormat.RAW)}"
           sb.append("* [$desc](${getFileName(conflict, this.format)})\n")
         }
         sb.append("\n\n")
@@ -1369,7 +1370,7 @@ class LintIssueDocGenerator(
         ?.firstOrNull { containsSuppress(it.source, issue) }
         ?.language
         ?: issueData?.example?.files?.firstOrNull { containsSuppress(it.source, issue) }?.language
-          ?: issueData?.example?.files?.firstOrNull()?.language
+        ?: issueData?.example?.files?.firstOrNull()?.language
 
     val kotlinOrJava = issueScope.contains(Scope.JAVA_FILE)
     val resourceFile = issueScope.contains(Scope.RESOURCE_FILE)
@@ -1394,7 +1395,7 @@ class LintIssueDocGenerator(
           ?: detector?.getApplicableConstructorTypes()?.firstOrNull()?.let {
             "new ${it.substring(it.lastIndexOf('.') + 1)}(...)"
           }
-            ?: "problematicStatement()"
+          ?: "problematicStatement()"
 
       annotation =
         """
@@ -3119,6 +3120,7 @@ class LintIssueDocGenerator(
         -o1.compareTo(o2)
       }
       var registry: IssueRegistry? = null
+
       fun addVersion(entry: LibraryVersionEntry) {
         versions[entry.version] = entry
       }
@@ -3269,6 +3271,7 @@ class LintIssueDocGenerator(
     enum class Type {
       JAR,
       AAR;
+
       fun getExtension(): String {
         return when (this) {
           JAR -> DOT_JAR
@@ -3551,7 +3554,9 @@ class LintIssueDocGenerator(
       override val vendor: Vendor? = original.vendor
       override val deletedIssues: List<String> = original.deletedIssues
       override val isUpToDate: Boolean = true
+
       override fun cacheable(): Boolean = true
+
       init {
         for (issue in issues) {
           issue.registry = this
@@ -3922,10 +3927,10 @@ class LintIssueDocGenerator(
           ?: findDetectorSource(library, detectorPath, test, "java", ".java", cacheDir)?.also {
             url = library.getUrl(true, test, issue, detectorPath, "java", ".java")
           }
-            ?: findDetectorSource(library, detectorPath, test, "kotlin", ".kt", cacheDir)?.also {
+          ?: findDetectorSource(library, detectorPath, test, "kotlin", ".kt", cacheDir)?.also {
             url = library.getUrl(true, test, issue, detectorPath, "kotlin", ".kt")
           }
-            ?: run {
+          ?: run {
             println("Couldn't find ${if (test) "test " else ""}sources for $detectorPath")
             null
           }
@@ -3985,6 +3990,7 @@ class LintIssueDocGenerator(
 
   private fun getFileName(issueId: String, format: DocFormat): String =
     "$issueId${format.extension}"
+
   private fun getFileName(issue: Issue, format: DocFormat): String {
     val fileName = getFileName(issue.id, format)
     // If there are multiple issues with the same id, link them together

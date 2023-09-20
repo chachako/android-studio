@@ -244,8 +244,7 @@ fun createMoveToTomlFix(
             true,
             autoFix = true,
             independent = false
-          )
-            ?: return null
+          ) ?: return null
         )
     return null to fix
   } else {
@@ -397,8 +396,7 @@ private fun createAddNewCatalogLibrary(
       dependency,
       usedVariable,
       document
-    )
-      ?: return null
+    ) ?: return null
   val gradleFix =
     createReplaceWithLibraryReferenceFix(document, context, valueCookie, libraryVariable, true)
 

@@ -84,6 +84,7 @@ class LocalEmulatorProvisionerPlugin(
   rescanPeriod: Duration = Duration.ofSeconds(10),
 ) : DeviceProvisionerPlugin {
   val logger = adbLogger(adbSession)
+
   companion object {
     const val PLUGIN_ID = "LocalEmulator"
   }
@@ -93,16 +94,27 @@ class LocalEmulatorProvisionerPlugin(
    */
   interface AvdManager {
     suspend fun rescanAvds(): List<AvdInfo>
+
     suspend fun createAvd(): AvdInfo?
+
     suspend fun editAvd(avdInfo: AvdInfo): AvdInfo?
+
     suspend fun startAvd(avdInfo: AvdInfo)
+
     suspend fun coldBootAvd(avdInfo: AvdInfo)
+
     suspend fun bootAvdFromSnapshot(avdInfo: AvdInfo, snapshot: LocalEmulatorSnapshot)
+
     suspend fun stopAvd(avdInfo: AvdInfo)
+
     suspend fun showOnDisk(avdInfo: AvdInfo)
+
     suspend fun duplicateAvd(avdInfo: AvdInfo)
+
     suspend fun wipeData(avdInfo: AvdInfo)
+
     suspend fun deleteAvd(avdInfo: AvdInfo)
+
     suspend fun downloadAvdSystemImage(avdInfo: AvdInfo)
   }
 
@@ -186,8 +198,7 @@ class LocalEmulatorProvisionerPlugin(
     val authTokenPath =
       AndroidLocationsSingleton.userHomeLocation.resolve(".emulator_console_auth_token").takeIf {
         it.exists()
-      }
-        ?: defaultAuthTokenPath()
+      } ?: defaultAuthTokenPath()
     val emulatorConsole = adbSession.openEmulatorConsole(localConsoleAddress(port), authTokenPath)
     emulatorConsoles[device] = emulatorConsole
 

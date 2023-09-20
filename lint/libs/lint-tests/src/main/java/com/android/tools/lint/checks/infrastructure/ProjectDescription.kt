@@ -45,6 +45,7 @@ class ProjectDescription : Comparable<ProjectDescription> {
       field = value
       haveSetType = true
     }
+
   var haveSetType = false
   var report: Boolean = true
   var primary: Boolean = true

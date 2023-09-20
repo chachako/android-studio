@@ -58,8 +58,10 @@ class ForwardingDaemonTest {
           }
 
           override fun sendClose() = Unit
+
           override suspend fun receiveCommand(command: StreamCommand) = Unit
         }
+
       override fun connect(forwardingDaemon: ForwardingDaemon) {
         fakeAdbSession.scope.launch {
           forwardingDaemon.onStateChanged(DeviceState.MISSING)

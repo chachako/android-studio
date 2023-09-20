@@ -866,6 +866,7 @@ internal open class StubClassFile(
         error("Unexpected type $type of class ${type.javaClass}")
       }
     }
+
     private fun appendClassTypeSignature(type: PsiClassType, signature: StringBuilder) {
       // We can't use type.rawType()canonicalText here because it will flatten
       // inner classes using "." instead of "$" so we can't tell A.B from A$B

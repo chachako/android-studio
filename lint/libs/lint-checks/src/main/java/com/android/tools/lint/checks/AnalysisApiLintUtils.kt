@@ -36,5 +36,5 @@ internal fun KtAnalysisSession.getFunctionLikeSymbol(ktElement: KtElement): KtFu
   val callInfo = ktElement.resolveCall() ?: return null
   return callInfo.singleFunctionCallOrNull()?.symbol
     ?: callInfo.singleConstructorCallOrNull()?.symbol
-      ?: callInfo.singleCallOrNull<KtAnnotationCall>()?.symbol
+    ?: callInfo.singleCallOrNull<KtAnnotationCall>()?.symbol
 }

@@ -82,7 +82,7 @@ constructor(client: LintCliClient, output: File) : Reporter(client, output) {
   private fun getRoot(incident: Incident): File? {
     return root
       ?: client.getRootDir()
-        ?: run {
+      ?: run {
           val project = incident.project
           if (project != null) {
             // Workaround: we need the root project; and the client couldn't compute it.

@@ -67,8 +67,7 @@ class LeanbackWifiUsageDetector : Detector(), XmlScanner {
     val wifiFeatureNodeRequired =
       wifiFeatureNode?.let { wifiNode ->
         wifiNode.getAttributeNS(ANDROID_URI, ATTR_REQUIRED) != VALUE_FALSE
-      }
-        ?: false
+      } ?: false
 
     if (wifiFeatureNode != null) {
       if (wifiFeatureNodeRequired) {

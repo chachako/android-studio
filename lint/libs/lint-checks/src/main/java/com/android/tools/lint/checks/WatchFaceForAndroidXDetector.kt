@@ -67,8 +67,7 @@ class WatchFaceForAndroidXDetector : Detector(), XmlScanner {
     ) {
       context.project.buildVariant
         ?.mainArtifact
-        ?.findCompileDependency("androidx.wear.watchface:watchface")
-        ?: return
+        ?.findCompileDependency("androidx.wear.watchface:watchface") ?: return
       val fix = fix().set().attribute("value").value(WATCH_FACE_EDITOR_ACTION).android().build()
       context.report(
         Incident(

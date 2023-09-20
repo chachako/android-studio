@@ -185,6 +185,7 @@ protected constructor(
   }
 
   private var stripPrefix: String? = null
+
   protected fun stripPath(path: String): String {
     val stripPrefix = stripPrefix
     if (stripPrefix != null && path.startsWith(stripPrefix) && path.length > stripPrefix.length) {

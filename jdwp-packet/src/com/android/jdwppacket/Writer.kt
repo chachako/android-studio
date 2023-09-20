@@ -26,8 +26,11 @@ abstract class Writer(val s: IDSizes) {
   val classIDSize = s.referenceTypeIDSize
 
   abstract fun putByte(byte: Byte)
+
   abstract fun putInt(int: Int)
+
   abstract fun putShort(short: Short)
+
   abstract fun putLong(long: Long)
 
   abstract fun putID(size: Int, value: Long)

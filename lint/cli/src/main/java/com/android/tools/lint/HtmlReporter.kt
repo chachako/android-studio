@@ -1299,7 +1299,7 @@ pre.errorlines {
 }
 .error {
 """ + // General > Errors and Warnings > Error
-        (if (USE_WAVY_UNDERLINES_FOR_ERRORS)
+          (if (USE_WAVY_UNDERLINES_FOR_ERRORS)
             if (USE_CSS_DECORATION_FOR_WAVY_UNDERLINES)
               """    text-decoration: underline wavy #DC322F;
     text-decoration-color: #DC322F;
@@ -1322,6 +1322,7 @@ pre.errorlines {
           "    color: #073642;\n" +
           "    background-color: #FFDF80;\n" +
           "}\n")
+
     private var cssSyntaxColors: String = "" // set by initializePreferences() called from init { }
 
     /**

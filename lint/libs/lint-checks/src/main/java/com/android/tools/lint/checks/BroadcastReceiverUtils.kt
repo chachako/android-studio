@@ -213,8 +213,7 @@ object BroadcastReceiverUtils {
       if (parent?.sourcePsi == intentFilterField) return true
       return (parent as? UBinaryExpression)?.let {
         it.operator == UastBinaryOperator.ASSIGN && it.leftOperand.tryResolve() == intentFilterField
-      }
-        ?: false
+      } ?: false
     }
   }
 

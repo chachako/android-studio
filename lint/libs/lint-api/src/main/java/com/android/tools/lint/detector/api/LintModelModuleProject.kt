@@ -130,11 +130,14 @@ open class LintModelModuleProject(
     get() = variant.testFixturesSourceProviders
 
   override fun getBuildModule(): LintModelModule = variant.module
+
   override fun getBuildVariant(): LintModelVariant = variant
+
   override fun isLibrary(): Boolean =
     model.type === LintModelModuleType.LIBRARY || model.type === LintModelModuleType.JAVA_LIBRARY
 
   override fun isAndroidProject(): Boolean = type != LintModelModuleType.JAVA_LIBRARY
+
   override fun hasDynamicFeatures(): Boolean =
     model.type === LintModelModuleType.APP && model.dynamicFeatures.isNotEmpty()
 

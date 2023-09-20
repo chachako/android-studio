@@ -123,8 +123,7 @@ constructor(
   override fun toString(): String {
     project?.name?.let {
       return "Resources for $it without dependencies"
-    }
-      ?: return super.toString()
+    } ?: return super.toString()
   }
 
   internal class MergedResourceRepository(
@@ -278,8 +277,7 @@ constructor(
             library.resFolder.listFiles { folder ->
               val folderType = ResourceFolderType.getFolderType(folder.name)
               folderType != null && folderTypes.contains(folderType)
-            }
-              ?: emptyArray()
+            } ?: emptyArray()
 
           val libraryName = library.resolvedCoordinates.toString()
           for (folder in folders.sorted()) { // sorted: offer stable order in resource lists
@@ -428,8 +426,7 @@ constructor(
             ?.dependencies
             ?.getAll()
             ?.filterIsInstance<LintModelAndroidLibrary>()
-            ?.toList()
-            ?: project.buildLibraryModel?.let { listOf(it) } ?: emptyList()
+            ?.toList() ?: project.buildLibraryModel?.let { listOf(it) } ?: emptyList()
 
         // No libraries? Just share the same repository instance as
         // local only
@@ -607,8 +604,8 @@ constructor(
       cache: MutableMap<LintModelAndroidLibrary, LintResourceRepository>
     ): LintResourceRepository {
       return cache[library]
-      // TODO: Handle relative paths over in AAR folders under ~/.gradle/
-      ?: getOrCreateRepository(getLibraryResourceCacheFile(client, library), client, null, null) {
+        // TODO: Handle relative paths over in AAR folders under ~/.gradle/
+        ?: getOrCreateRepository(getLibraryResourceCacheFile(client, library), client, null, null) {
             LintLibraryRepository(client, library, ResourceNamespace.TODO())
           }
           .also { cache[library] = it }

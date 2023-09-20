@@ -46,12 +46,17 @@ class WrappedUrlConnectionTest {
         override fun trackConnection(url: String, callstack: String): HttpConnectionTracker {
           return object : HttpConnectionTracker {
             override fun disconnect() = Unit
+
             override fun error(message: String) = Unit
+
             override fun trackRequestBody(stream: OutputStream) = stream
+
             override fun trackRequest(method: String, fields: Map<String, List<String>>) = Unit
 
             override fun trackResponseHeaders(fields: Map<String?, List<String>>) = Unit
+
             override fun trackResponseBody(stream: InputStream) = stream
+
             override fun trackResponseInterception(interception: NetworkInterceptionMetrics) = Unit
           }
         }
@@ -69,7 +74,9 @@ class WrappedUrlConnectionTest {
           response
 
         override fun addRule(ruleId: Int, rule: InterceptionRule) = Unit
+
         override fun removeRule(ruleId: Int) = Unit
+
         override fun reorderRules(ruleIdList: List<Int>) = Unit
       }
 
@@ -77,24 +84,43 @@ class WrappedUrlConnectionTest {
     val httpsConnection =
       object : HttpsURLConnection(URL("https://www.google.com")) {
         override fun connect() = Unit
+
         override fun getLocalPrincipal() = null
+
         override fun getResponseMessage() = null
+
         override fun getHeaderFieldDate(name: String?, Default: Long) = 0L
+
         override fun getRequestMethod() = "GET"
+
         override fun getHeaderFields() = mutableMapOf<String, MutableList<String>>()
+
         override fun getInputStream() = ByteArrayInputStream(byteArrayOf())
+
         override fun getRequestProperty(key: String?) = null
+
         override fun disconnect() = Unit
+
         override fun usingProxy() = false
+
         override fun getCipherSuite() = ""
+
         override fun getLocalCertificates(): Array<Certificate>? = null
+
         override fun getServerCertificates(): Array<Certificate> = emptyArray()
+
         override fun getHeaderFieldKey(n: Int) = null
+
         override fun getHeaderField(name: String?) = null
+
         override fun getErrorStream() = null
+
         override fun getHeaderField(n: Int) = null
+
         override fun getContentType() = null
+
         override fun getContentEncoding() = null
+
         override fun getContent(classes: Array<out Class<Any>>?) = null
       }
     val httpsWrapper = HttpsURLConnectionWrapper(httpsConnection, "", factory, interceptionService)
@@ -107,20 +133,35 @@ class WrappedUrlConnectionTest {
     val httpConnection =
       object : HttpURLConnection(URL("https://www.google.com")) {
         override fun getHeaderFieldKey(n: Int) = null
+
         override fun getResponseMessage() = null
+
         override fun getHeaderFieldDate(name: String?, Default: Long) = 0L
+
         override fun getRequestMethod() = "GET"
+
         override fun getHeaderFields() = mutableMapOf<String, MutableList<String>>()
+
         override fun getInputStream() = ByteArrayInputStream(byteArrayOf())
+
         override fun getRequestProperty(key: String?) = null
+
         override fun disconnect() = Unit
+
         override fun usingProxy() = false
+
         override fun getHeaderField(name: String?) = null
+
         override fun getErrorStream() = null
+
         override fun getHeaderField(n: Int) = null
+
         override fun connect() = Unit
+
         override fun getContentType() = null
+
         override fun getContentEncoding() = null
+
         override fun getContent(classes: Array<out Class<Any>>?) = null
       }
     val httpWrapper = HttpURLConnectionWrapper(httpConnection, "", factory, interceptionService)
@@ -148,7 +189,9 @@ class WrappedUrlConnectionTest {
           newResponse
 
         override fun addRule(ruleId: Int, rule: InterceptionRule) = Unit
+
         override fun removeRule(ruleId: Int) = Unit
+
         override fun reorderRules(ruleIdList: List<Int>) = Unit
       }
 
@@ -156,24 +199,43 @@ class WrappedUrlConnectionTest {
     val httpsConnection =
       object : HttpsURLConnection(URL("https://www.google.com")) {
         override fun connect() = Unit
+
         override fun getLocalPrincipal() = null
+
         override fun getResponseMessage() = null
+
         override fun getHeaderFieldDate(name: String?, Default: Long) = 0L
+
         override fun getRequestMethod() = "GET"
+
         override fun getHeaderFields() = mutableMapOf<String, MutableList<String>>()
+
         override fun getInputStream() = ByteArrayInputStream(byteArrayOf())
+
         override fun getRequestProperty(key: String?) = null
+
         override fun disconnect() = Unit
+
         override fun usingProxy() = false
+
         override fun getCipherSuite() = ""
+
         override fun getLocalCertificates(): Array<Certificate>? = null
+
         override fun getServerCertificates(): Array<Certificate> = emptyArray()
+
         override fun getHeaderFieldKey(n: Int) = null
+
         override fun getHeaderField(name: String?) = null
+
         override fun getErrorStream() = null
+
         override fun getHeaderField(n: Int) = null
+
         override fun getContentType() = null
+
         override fun getContentEncoding() = null
+
         override fun getContent(classes: Array<out Class<Any>>?) = null
       }
     val httpsWrapper = HttpsURLConnectionWrapper(httpsConnection, "", factory, interceptionService)

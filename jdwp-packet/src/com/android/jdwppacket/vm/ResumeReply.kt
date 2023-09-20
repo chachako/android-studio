@@ -31,5 +31,6 @@ class ResumeReply : Reply() {
   override fun equals(other: Any?): Boolean {
     return other is ResumeReply
   }
+
   override fun writePayload(writer: Writer) {}
 }

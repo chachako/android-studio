@@ -57,6 +57,7 @@ private constructor(
 ) : IssueRegistry() {
 
   override fun cacheable(): Boolean = LintClient.isStudio
+
   override val issues: List<Issue> = registry.issues.toList()
   private var timestamp: Long = jarFile.lastModified()
 

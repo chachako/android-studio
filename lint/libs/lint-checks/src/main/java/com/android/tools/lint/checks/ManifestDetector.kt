@@ -1292,8 +1292,8 @@ class ManifestDetector : Detector(), XmlScanner {
     val mergedManifest =
       mainProject
         .mergedManifest // This only happens when there is a parse error, for example if user
-      // is editing the manifest in the IDE and it's currently invalid
-      ?: return
+        // is editing the manifest in the IDE and it's currently invalid
+        ?: return
     lookForNonUniqueNames(context, mainProject, mergedManifest, "permission", TAG_PERMISSION)
     lookForNonUniqueNames(
       context,
@@ -1414,7 +1414,7 @@ class ManifestDetector : Detector(), XmlScanner {
       }
       if (
         context.isEnabled(MIPMAP) && // Only complain if this app is skipping some densities
-        context.project.applicableDensities != null
+          context.project.applicableDensities != null
       ) {
         context.report(
           MIPMAP,

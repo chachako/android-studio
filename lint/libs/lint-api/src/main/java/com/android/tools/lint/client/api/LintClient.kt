@@ -347,6 +347,7 @@ abstract class LintClient {
 
   /** Returns whether the given file exists */
   open fun fileExists(file: File): Boolean = file.isFile()
+
   open fun fileExists(
     file: File,
     requireFile: Boolean = false,
@@ -947,6 +948,7 @@ abstract class LintClient {
           addDefaultPathVariables(this)
           _pathVariables = this
         }
+
   private var _pathVariables: PathVariables? = null // backing field for [pathVariables]
 
   /**
@@ -1089,7 +1091,7 @@ abstract class LintClient {
     // is not known or not found, but having *any* SDK is better than not (without
     // it, most symbol resolution will fail.)
     return lookup.getLatestSdkTarget(includePreviews = false) // prefer stable
-     ?: lookup.getLatestSdkTarget(includePreviews = true)
+    ?: lookup.getLatestSdkTarget(includePreviews = true)
   }
 
   /** The highest known API level. */
@@ -1869,7 +1871,8 @@ abstract class LintClient {
       // See org.gradle.wrapper.GradleUserHomeLookup
       val gradleUserHome =
         System.getProperty("gradle.user.home")
-          ?: System.getenv("GRADLE_USER_HOME") ?: "$userHome/.gradle"
+          ?: System.getenv("GRADLE_USER_HOME")
+          ?: "$userHome/.gradle"
       add("GRADLE_USER_HOME", File(gradleUserHome), false)
       add("HOME", File(userHome), false)
       sort()
@@ -2103,8 +2106,7 @@ abstract class LintClient {
           file != null ->
             client.configurations
               .getConfigurationForFolder(if (file.isFile) file.parentFile else file)
-              ?.getSeverity(issue)
-              ?: issue.defaultSeverity
+              ?.getSeverity(issue) ?: issue.defaultSeverity
           project != null && driver != null -> project.getConfiguration(driver).getSeverity(issue)
           else -> issue.defaultSeverity
         }

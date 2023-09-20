@@ -3965,6 +3965,7 @@ fun createGlobalLintJarClient(lintJar: File, clientName: String? = null) =
     com.android.tools.lint.checks.infrastructure.TestLintClient(clientName ?: CLIENT_UNIT_TESTS) {
     override fun findGlobalRuleJars(driver: LintDriver?, warnDeprecated: Boolean): List<File> =
       listOf(lintJar)
+
     override fun findRuleJars(project: Project): List<File> = emptyList()
   }
 
@@ -3972,5 +3973,6 @@ fun createProjectLintJarClient(lintJar: File) =
   object : com.android.tools.lint.checks.infrastructure.TestLintClient() {
     override fun findGlobalRuleJars(driver: LintDriver?, warnDeprecated: Boolean): List<File> =
       emptyList()
+
     override fun findRuleJars(project: Project): List<File> = listOf(lintJar)
   }

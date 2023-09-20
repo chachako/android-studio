@@ -763,8 +763,7 @@ fun PsiMember.getReceiver(): PsiClass? {
       is KtProperty -> unwrapped as KtCallableDeclaration
       is KtPropertyAccessor -> getNonStrictParentOfType<KtProperty>(unwrapped)
       else -> return null
-    }
-      ?: return null
+    } ?: return null
   val typeReference = callable.receiverTypeReference?.toUElement() as? UTypeReferenceExpression
   return (typeReference?.type as? PsiClassType)?.resolve()
 }

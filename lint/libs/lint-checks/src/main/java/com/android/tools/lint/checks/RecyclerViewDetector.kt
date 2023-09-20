@@ -60,6 +60,7 @@ class RecyclerViewDetector : Detector(), SourceCodeScanner {
   override fun applicableSuperClasses(): List<String> {
     return listOf(SUPERCLASS_SUPPORTLIB, SUPERCLASS_ANDROIDX)
   }
+
   override fun getApplicableMethodNames(): List<String> {
     return listOf(NOTIFY_DATA_SET_CHANGED)
   }

@@ -138,6 +138,7 @@ class ViewConstructorDetectorTest : AbstractCheckTest() {
             """
       )
   }
+
   fun testAbstract() {
     //noinspection all // Sample code
     lint()

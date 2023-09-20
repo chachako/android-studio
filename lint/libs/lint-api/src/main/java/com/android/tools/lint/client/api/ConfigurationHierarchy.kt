@@ -467,10 +467,13 @@ open class ConfigurationHierarchy(
           )
         ) {
         override var baselineFile: File? = null
+
         override fun ignore(context: Context, issue: Issue, location: Location?, message: String) {}
 
         override fun ignore(issue: Issue, file: File) {}
+
         override fun ignore(issueId: String, file: File) {}
+
         override fun setSeverity(issue: Issue, severity: Severity?) {}
 
         override fun addConfiguredIssues(
@@ -480,7 +483,9 @@ open class ConfigurationHierarchy(
         ) {}
 
         override fun getOption(issue: Issue, name: String, default: String?): String? = default
+
         override fun getOption(option: Option): Any? = null
+
         override fun getOptionAsFile(issue: Issue, name: String, default: File?): File? = default
 
         override fun toString(): String = "NONE"

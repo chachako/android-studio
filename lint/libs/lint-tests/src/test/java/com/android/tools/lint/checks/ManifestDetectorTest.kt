@@ -24,6 +24,7 @@ import java.io.File
 
 class ManifestDetectorTest : AbstractCheckTest() {
   private var sdkDir: File? = null
+
   override fun getDetector(): Detector {
     return ManifestDetector()
   }

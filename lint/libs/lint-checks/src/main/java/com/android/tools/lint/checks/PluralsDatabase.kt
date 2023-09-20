@@ -89,7 +89,9 @@ abstract class PluralsDatabase(
   }
 
   protected abstract fun getExampleForQuantityZero(language: String): String?
+
   protected abstract fun getExampleForQuantityOne(language: String): String?
+
   protected abstract fun getExampleForQuantityTwo(language: String): String?
 
   private fun getFlags(language: String): Int {

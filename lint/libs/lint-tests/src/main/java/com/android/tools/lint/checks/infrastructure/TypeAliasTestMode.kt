@@ -110,10 +110,11 @@ class TypeAliasTestMode :
             aliasesPerPackage[pkg]
               ?: linkedMapOf<String, String>().also { aliasesPerPackage[pkg] = it }
           return packageMap[typeText]
-            ?: "TYPE_ALIAS_${packageAliases.nextAliasId++}".also {
-              packageMap[typeText] = it
-              newAliases[typeText] = it
-            }
+            ?: "TYPE_ALIAS_${packageAliases.nextAliasId++}"
+              .also {
+                packageMap[typeText] = it
+                newAliases[typeText] = it
+              }
         }
 
         override fun visitAnnotation(node: UAnnotation): Boolean {
@@ -157,8 +158,7 @@ class TypeAliasTestMode :
                 }
               }
               name
-            }
-              ?: return
+            } ?: return
           if (typeText.isBlank() || type is PsiEllipsisType || type.hasTypeParameter()) {
             return
           }

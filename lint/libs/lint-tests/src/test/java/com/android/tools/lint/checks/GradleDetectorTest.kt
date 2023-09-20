@@ -1871,6 +1871,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 """
       )
   }
+
   fun testSnapshots() {
     // Regression test for b/183137869:
     // Gradle special-cases the SNAPSHOT version; make sure we don't offer updates to/from it except

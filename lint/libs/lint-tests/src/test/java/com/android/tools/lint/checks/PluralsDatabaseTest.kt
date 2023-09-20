@@ -135,6 +135,7 @@ class PluralsDatabaseTest : TestCase() {
     }
 
     private lateinit var setNamePerLanguage: MutableMap<String, String>
+
     fun getRelevant(language: String): EnumSet<Quantity>? {
       ensureInitialized()
       val relevantSet = plurals[language]
@@ -339,6 +340,7 @@ class PluralsDatabaseTest : TestCase() {
       private const val DEBUG = false
       private val EMPTY_SET = EnumSet.noneOf(Quantity::class.java)
       private val instance = PluralsTextDatabase()
+
       fun get(): PluralsTextDatabase {
         return instance
       }

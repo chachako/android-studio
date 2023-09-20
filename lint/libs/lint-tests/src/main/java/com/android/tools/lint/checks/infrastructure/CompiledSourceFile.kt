@@ -228,7 +228,7 @@ internal class CompiledSourceFile(
     val sdkHome =
       System.getenv("ANDROID_SDK_ROOT")
         ?: System.getenv("ANDROID_HOME")
-          ?: error(
+        ?: error(
           "Couldn't find an Android SDK environment to compile with; " + "set \$ANDROID_SDK_ROOT"
         )
     if (!File(sdkHome).isDirectory) {
@@ -238,8 +238,7 @@ internal class CompiledSourceFile(
     val platforms =
       File(sdkHome, "platforms").listFiles { _: File, name: String ->
         name.startsWith("android-") && name.indexOf('.') == -1
-      }
-        ?: error("Couldn't find platforms")
+      } ?: error("Couldn't find platforms")
     Arrays.sort(platforms) { o1: File, o2: File ->
       val n1 = o1.name
       val n2 = o2.name
@@ -271,7 +270,7 @@ internal class CompiledSourceFile(
     val kotlinc =
       System.getenv("LINT_TEST_KOTLINC")
         ?: findOnPath("kotlinc" + if (isWindows) ".bat" else "")
-          ?: error(
+        ?: error(
           "Couldn't find kotlinc to update test file $target " +
             "with. Point to it with \$LINT_TEST_KOTLINC"
         )

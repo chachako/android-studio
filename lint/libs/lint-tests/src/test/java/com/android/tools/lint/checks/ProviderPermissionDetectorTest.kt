@@ -265,6 +265,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
         """
       )
   }
+
   fun testIsolatedLibraryClass_ReadPermissionOnly_singleWriteApiImplemented_throwsWarningInLibraryClass() {
     val project1 =
       project()

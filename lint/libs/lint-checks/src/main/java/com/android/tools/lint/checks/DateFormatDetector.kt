@@ -87,8 +87,10 @@ class DateFormatDetector : Detector(), SourceCodeScanner {
     val value =
       when (argument) {
         is ULiteralExpression -> argument.value
-        is UInjectionHost -> argument.evaluateToString()
-            ?: ConstantEvaluator().allowUnknowns().evaluate(argument) ?: return
+        is UInjectionHost ->
+          argument.evaluateToString()
+            ?: ConstantEvaluator().allowUnknowns().evaluate(argument)
+            ?: return
         else -> ConstantEvaluator().allowUnknowns().evaluate(argument) ?: return
       }
     val format = value.toString()

@@ -119,6 +119,7 @@ sealed class Option(
 
   /** Associated issue: automatically set when the option is registered with an [Issue]. */
   lateinit var issue: Issue
+
   protected fun ensureRegistered() {
     if (!this::issue.isInitialized) {
       error(

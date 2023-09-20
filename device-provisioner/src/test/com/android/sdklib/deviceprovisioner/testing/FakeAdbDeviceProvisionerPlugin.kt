@@ -97,6 +97,7 @@ class FakeAdbDeviceProvisionerPlugin(
   }
 
   private var serialNumber = 1
+
   fun nextSerial(): String = "fake-device-${serialNumber++}"
 
   companion object {
@@ -129,6 +130,7 @@ class FakeAdbDeviceProvisionerPlugin(
       object : ActivationAction {
         override val presentation =
           MutableStateFlow(TestDefaultDeviceActionPresentation.fromContext())
+
         override suspend fun activate() {
           val properties = state.properties
           fakeAdbDevice =
@@ -149,6 +151,7 @@ class FakeAdbDeviceProvisionerPlugin(
       object : DeactivationAction {
         override val presentation =
           MutableStateFlow(TestDefaultDeviceActionPresentation.fromContext())
+
         override suspend fun deactivate() {
           fakeAdb.disconnectDevice(serialNumber)
           fakeAdbDevice = null

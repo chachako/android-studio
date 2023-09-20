@@ -35,6 +35,7 @@ open class FakeHttpUrlConnection(
   private var dooOutput = false
 
   override fun connect() = Unit
+
   override fun disconnect() = Unit
 
   override fun getDoOutput() = dooOutput

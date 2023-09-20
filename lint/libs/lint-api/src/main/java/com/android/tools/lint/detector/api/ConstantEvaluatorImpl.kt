@@ -197,11 +197,12 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
                     ?.let(::evaluate)
                     ?.let(::getArraySize)
                     ?.takeUnless { it == -1 }
-                else -> resolved.computeConstantValue()
+                else ->
+                  resolved.computeConstantValue()
                     ?: resolved.getAllowedInitializer()?.let(::evaluate)?.takeUnless {
                       surroundedByVariableCheck(node, resolved)
                     }
-                      ?: (resolved as? KtLightField)?.let(::evaluate)
+                    ?: (resolved as? KtLightField)?.let(::evaluate)
               }
             }
             node is UQualifiedReferenceExpression -> {
@@ -315,13 +316,13 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
               ?.let { array ->
                 array.asArray(Array<*>::indices, Array<*>::get)
                   ?: array.asArray(IntArray::indices, IntArray::get)
-                    ?: array.asArray(BooleanArray::indices, BooleanArray::get)
-                    ?: array.asArray(CharArray::indices, CharArray::get)
-                    ?: array.asArray(LongArray::indices, LongArray::get)
-                    ?: array.asArray(FloatArray::indices, FloatArray::get)
-                    ?: array.asArray(DoubleArray::indices, DoubleArray::get)
-                    ?: array.asArray(ByteArray::indices, ByteArray::get)
-                    ?: array.asArray(ShortArray::indices, ShortArray::get)
+                  ?: array.asArray(BooleanArray::indices, BooleanArray::get)
+                  ?: array.asArray(CharArray::indices, CharArray::get)
+                  ?: array.asArray(LongArray::indices, LongArray::get)
+                  ?: array.asArray(FloatArray::indices, FloatArray::get)
+                  ?: array.asArray(DoubleArray::indices, DoubleArray::get)
+                  ?: array.asArray(ByteArray::indices, ByteArray::get)
+                  ?: array.asArray(ShortArray::indices, ShortArray::get)
               }
               ?.invoke(index)
           }
@@ -358,7 +359,8 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
   fun evaluate(node: PsiElement?): Any? =
     when (node) {
       null -> null
-      is PsiLiteral -> node.value
+      is PsiLiteral ->
+        node.value
           ?: (node as? KtLightPsiLiteral)?.kotlinOrigin?.let { origin ->
             (convertElement(origin, null, UExpression::class.java) as? UExpression)?.evaluate()
           }
@@ -418,8 +420,8 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
                   ?.let(::evaluate)
                   ?.let(::getArraySize)
                   ?.takeUnless { it == -1 }
-              else -> resolved.computeConstantValue()
-                  ?: resolved.getAllowedInitializer()?.let(::evaluate)
+              else ->
+                resolved.computeConstantValue() ?: resolved.getAllowedInitializer()?.let(::evaluate)
             }
           // TODO: Clamp value as is done for UAST?
           is PsiLocalVariable -> findLastAssignment(node, resolved)?.let(::evaluate)
@@ -708,6 +710,7 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
     private var currentLevel = 0
     var lastAssignment: UElement? = UastFacade.getInitializerBody(variable)
       private set
+
     var currentValue: Any? = lastAssignment?.let { constantEvaluator?.evaluate(it) }
       private set
 
@@ -771,6 +774,7 @@ sealed class ArrayReference {
   abstract val size: Int
   abstract val dimensions: Int
   protected abstract val className: String
+
   private data class ByClass(
     private val type: Class<*>,
     override val size: Int,
@@ -779,6 +783,7 @@ sealed class ArrayReference {
     override val className
       get() = type.toString()
   }
+
   private data class ByName(
     override val className: String,
     override val size: Int,
@@ -796,6 +801,7 @@ sealed class ArrayReference {
     @JvmStatic
     fun of(klass: Class<*>, size: Int, dimensions: Int): ArrayReference =
       ByClass(klass, size, dimensions)
+
     @JvmStatic
     fun of(name: String, size: Int, dimensions: Int): ArrayReference =
       ByName(name, size, dimensions)
@@ -824,27 +830,38 @@ private value class ArgList<out X>(val values: List<X>) {
     }
 
   inline fun <reified T> ifAny(): ArgList<X>? = takeIf { values.any { it is T } }
+
   inline fun <reified T> ifAll(): ArgList<T>? =
     (takeIf { values.all { it is T } })?.let { this as ArgList<T> }
+
   inline fun ifAny(p: (X) -> Boolean): ArgList<X>? = takeIf { values.any(p) }
+
   inline fun ifAll(p: (X) -> Boolean): ArgList<X>? = takeIf { values.all(p) }
+
   inline fun ifFirst(p: (X) -> Boolean): ArgList<X>? = takeIf {
     values.firstOrNull()?.let(p) == true
   }
+
   inline fun <T> split(onSplit: (X, ArgList<X>) -> T): T? =
     when {
       values.isEmpty() -> null
       else -> onSplit(values[0], ArgList(values.subList(1, values.size)))
     }
+
   inline fun <A> join(f: (List<X>) -> A): A = f(values)
+
   fun <T : Any> reduceOn(onElem: (X) -> T, f: (T, T) -> T): T? =
     values.asSequence().map(onElem).reduceOrNull(f)
+
   fun <R, T> foldOn(onElem: (X) -> T, init: R, op: (R, T) -> R): R =
     values.asSequence().map(onElem).fold(init, op)
+
   inline fun isOrdered(ordered: (X, X) -> Boolean) =
     values.asSequence().zipWithNext().all { (l, r) -> ordered(l, r) }
+
   inline fun <T> isOrderedOn(noinline prop: (X) -> T, ordered: (T, T) -> Boolean) =
     values.asSequence().map(prop).zipWithNext().all { (l, r) -> ordered(l, r) }
+
   fun <T> const(x: T): T = x
 }
 
@@ -861,8 +878,8 @@ private fun ArgList<Any?>.reduceAsNumbers(
   ifAll<Number>()?.let {
     it.ifAny<Double>()?.reduceOn(Number::toDouble, opDouble)
       ?: it.ifAny<Float>()?.reduceOn(Number::toFloat, opFloat)
-        ?: it.ifAny<Long>()?.reduceOn(Number::toLong, opLong)
-        ?: it.ifAny<Int>()?.reduceOn(Number::toInt, opInt)
+      ?: it.ifAny<Long>()?.reduceOn(Number::toLong, opLong)
+      ?: it.ifAny<Int>()?.reduceOn(Number::toInt, opInt)
   }
 
 private fun ArgList<Any?>.reduceAsInts(
@@ -922,8 +939,7 @@ private fun Any?.tryToNum(type: PsiType) =
       PsiTypes.byteType() -> n.toByte()
       else -> this
     }
-  }
-    ?: this
+  } ?: this
 
 private fun ArgList<Any?>.plus(allowUnknown: Boolean) =
   reduceAsNumbers(Double::plus, Float::plus, Long::plus, Int::plus)
@@ -952,14 +968,12 @@ private fun ArgList<Any?>.bitwiseXor() =
 private fun ArgList<Any?>.div() =
   ifFirst { it == 0 }?.const(0)
     ?: ifFirst { it == 0L }?.const(0L)
-      ?: ifAll { it != 0 && it != 0L }
-      ?.reduceAsNumbers(Double::div, Float::div, Long::div, Int::div)
+    ?: ifAll { it != 0 && it != 0L }?.reduceAsNumbers(Double::div, Float::div, Long::div, Int::div)
 
 private fun ArgList<Any?>.mod() =
   ifFirst { it == 0 }?.const(0)
     ?: ifFirst { it == 0L }?.const(0L)
-      ?: ifAll { it != 0 && it != 0L }
-      ?.reduceAsNumbers(Double::mod, Float::mod, Long::mod, Int::mod)
+    ?: ifAll { it != 0 && it != 0L }?.reduceAsNumbers(Double::mod, Float::mod, Long::mod, Int::mod)
 
 private fun ArgList<Any?>.shl() = shift(Long::shl, Int::shl)
 

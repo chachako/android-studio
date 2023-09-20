@@ -480,7 +480,8 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
 
           val language =
             getLanguageTagFromFolder(folderName)
-              ?: getLanguageTagFromQualifiers(defaultLocale) ?: ""
+              ?: getLanguageTagFromQualifiers(defaultLocale)
+              ?: ""
 
           recordTranslation(name, language)
         }

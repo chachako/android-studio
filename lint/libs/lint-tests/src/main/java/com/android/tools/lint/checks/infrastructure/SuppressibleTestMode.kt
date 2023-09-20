@@ -496,7 +496,7 @@ class SuppressibleTestMode :
     // using comments on import or package statements
     return findJavaAnnotationTarget(element)
       ?: element.getParentOfType<PsiImportStatementBase>(false)
-        ?: element.getParentOfType<PsiPackageStatement>(false)
+      ?: element.getParentOfType<PsiPackageStatement>(false)
   }
 
   private fun findJavaAnnotationTarget(element: PsiElement?): PsiModifierListOwner? {

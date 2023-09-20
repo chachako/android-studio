@@ -173,6 +173,7 @@ object ReverseDaemon {
 
   private interface SocketAcceptor {
     fun accept(streamId: Int): SocketReader
+
     fun stopAccepting()
   }
 

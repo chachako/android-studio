@@ -106,9 +106,8 @@ class ImportAliasTestMode :
         private fun getImportAlias(qualified: String?): String? {
           return if (qualified != null && imported.contains(qualified)) {
             aliasNames[qualified]
-              ?: "IMPORT_ALIAS_${aliasNames.size + 1}_${qualified.substring(qualified.lastIndexOf('.') + 1).uppercase(Locale.US)}".also {
-                aliasNames[qualified] = it
-              }
+              ?: "IMPORT_ALIAS_${aliasNames.size + 1}_${qualified.substring(qualified.lastIndexOf('.') + 1).uppercase(Locale.US)}"
+                .also { aliasNames[qualified] = it }
           } else {
             null
           }
@@ -149,7 +148,7 @@ class ImportAliasTestMode :
             val start =
               node.imports.lastOrNull()?.textRange?.endOffset
                 ?: node.classes.firstOrNull()?.textRange?.startOffset
-                  ?: run {
+                ?: run {
                   val index = source.indexOf(node.packageName)
                   val end = index + node.packageName.length
                   source.indexOf('\n', end) + 1

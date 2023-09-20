@@ -155,6 +155,7 @@ internal class ForwardingDaemonImpl(
               serverSocket.accept().let { adbChannel ->
                 object : AdbChannel by adbChannel {
                   val writeMutex = Mutex()
+
                   override suspend fun write(
                     buffer: ByteBuffer,
                     timeout: Long,

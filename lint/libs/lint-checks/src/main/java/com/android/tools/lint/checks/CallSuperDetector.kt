@@ -170,6 +170,7 @@ class CallSuperDetector : Detector(), SourceCodeScanner {
     val superCalls = mutableListOf<USuperExpression>()
     val callsSuperCount: Int
       get() = superCalls.size
+
     var anySuperCallCount: Int = 0
 
     override fun visitSuperExpression(node: USuperExpression): Boolean {
@@ -181,7 +182,7 @@ class CallSuperDetector : Detector(), SourceCodeScanner {
           val resolved = parent.resolve()
           if (
             resolved == null || // Avoid false positives for type resolution problems
-            targetMethod.isEquivalentTo(resolved)
+              targetMethod.isEquivalentTo(resolved)
           ) {
             superCalls.add(node)
           }

@@ -66,6 +66,7 @@ import org.jetbrains.uast.tryResolve
 /** Looks for SDK_INT checks and suggests annotating these. */
 class SdkIntDetector : Detector(), SourceCodeScanner {
   override fun getApplicableReferenceNames(): List<String> = listOf("SDK_INT")
+
   override fun getApplicableMethodNames(): List<String> =
     listOf("getBuildSdkInt", "getExtensionVersion")
 
@@ -197,7 +198,8 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
             ?.expressions
             ?.firstOrNull()
             ?.skipParenthesizedExprDown()
-            ?: parent.thenExpression?.skipParenthesizedExprDown() ?: return
+            ?: parent.thenExpression?.skipParenthesizedExprDown()
+            ?: return
         val receiver =
           when (then) {
             is UQualifiedReferenceExpression -> then.receiver.skipParenthesizedExprDown() ?: return
@@ -240,7 +242,8 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
       val method: UMethod =
         if (parentParent is UReturnExpression) {
           parentParent.uastParent as? UMethod
-            ?: parentParent.uastParent?.uastParent as? UMethod ?: return
+            ?: parentParent.uastParent?.uastParent as? UMethod
+            ?: return
         } else if (parentParent is UBlockExpression && parentParent.uastParent is UMethod) {
           val expressions = parentParent.expressions
           if (
@@ -249,7 +252,8 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
                 expressions[1].skipParenthesizedExprDown() is UReturnExpression
           ) {
             parentParent.uastParent as? UMethod
-              ?: parentParent.uastParent?.uastParent as? UMethod ?: return
+              ?: parentParent.uastParent?.uastParent as? UMethod
+              ?: return
           } else {
             return
           }

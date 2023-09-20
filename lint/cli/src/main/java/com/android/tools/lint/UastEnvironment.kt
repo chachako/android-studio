@@ -191,8 +191,11 @@ interface UastEnvironment {
     private val logger =
       object : Logger {
         override fun error(message: String) = kotlin.error(message)
+
         override fun fatal(message: String) = kotlin.error(message)
+
         override fun log(message: String) {}
+
         override fun warning(message: String) {}
       }
   }
@@ -244,6 +247,7 @@ interface UastEnvironment {
         }
       }
     }
+
     val variant: Variant
       get() =
         if (project.isAndroidProject) {

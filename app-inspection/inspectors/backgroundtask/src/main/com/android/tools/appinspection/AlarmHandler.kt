@@ -39,8 +39,11 @@ interface AlarmHandler {
   )
 
   fun onAlarmCancelled(operation: PendingIntent)
+
   fun onAlarmCancelled(listener: OnAlarmListener)
+
   fun onAlarmFired(listener: OnAlarmListener)
+
   fun onAlarmFired(operation: PendingIntent)
 }
 

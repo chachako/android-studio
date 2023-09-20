@@ -183,7 +183,7 @@ enum class TextFormat {
           sb.append('\n')
         } else if (
           tag.equals("p", ignoreCase = true) || // Most common block tags
-          tag.equals("div", ignoreCase = true) ||
+            tag.equals("div", ignoreCase = true) ||
             tag.equals("pre", ignoreCase = true) ||
             tag.equals("blockquote", ignoreCase = true) ||
             tag.equals("dl", ignoreCase = true) ||

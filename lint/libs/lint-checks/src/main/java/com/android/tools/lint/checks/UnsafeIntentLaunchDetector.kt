@@ -167,8 +167,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
         evaluator.extendsClass(declaration.javaPsi, BROADCAST_RECEIVER_CLASS, true) ->
           UNSAFE_INTENT_AS_PARAMETER_METHODS[BROADCAST_RECEIVER_CLASS]
         else -> return
-      }
-        ?: return
+      } ?: return
     for (methodName in methodNames) {
       for (psiMethod in declaration.javaPsi.findMethodsByName(methodName, false)) {
         val method = psiMethod.toUElementOfType<UMethod>()
@@ -407,8 +406,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
           // case of let, also)
           val tracked =
             (if (lambda.valueParameters.isEmpty()) getThisExpression(lambda.body)
-            else lambda.valueParameters[0])
-              ?: break
+            else lambda.valueParameters[0]) ?: break
           val returnsTracker = ReturnsTracker(context, tracked)
           lambda.body.accept(returnsTracker)
           if (returnsTracker.returned) return true
@@ -699,8 +697,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
         val tracked =
           context.evaluator
             .computeArgumentMapping(call, containingMethod.javaPsi)[reference]
-            .toUElement()
-            ?: return
+            .toUElement() ?: return
         val returnsTracker =
           ReturnsTracker(context, tracked, resolveCallDepth = resolveCallDepth + 1)
         call.resolve()?.toUElementOfType<UMethod>()?.accept(returnsTracker)

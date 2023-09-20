@@ -31,6 +31,7 @@ import org.jetbrains.uast.getContainingUMethod
 
 class BinderGetCallingInMainThreadDetector : Detector(), Detector.UastScanner {
   private data class Method(val className: String, val methodsNames: List<String>)
+
   companion object {
     @JvmField
     val ISSUE =
@@ -69,6 +70,7 @@ class BinderGetCallingInMainThreadDetector : Detector(), Detector.UastScanner {
   }
 
   override fun getApplicableMethodNames() = GET_CALLING_METHODS.methodsNames
+
   override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
     val containingMethod = node.getContainingUMethod() ?: return
     val containingClass = containingMethod.javaPsi.containingClass ?: return

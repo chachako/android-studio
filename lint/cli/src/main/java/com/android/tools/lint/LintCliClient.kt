@@ -153,6 +153,7 @@ open class LintCliClient : LintClient {
   var uastEnvironment: UastEnvironment? = null
   val ideaProject: MockProject?
     get() = uastEnvironment?.ideaProject
+
   private var hasErrors = false
   protected var errorCount = 0
   protected var warningCount = 0
@@ -454,8 +455,7 @@ open class LintCliClient : LintClient {
       partialFile.parentFile?.mkdirs()
       val resultMap = map.mapValues { it.value.mapFor(project) }
       XmlWriter(this, partialFile, type).writePartialResults(resultMap, project)
-    }
-      ?: partialFile.delete()
+    } ?: partialFile.delete()
   }
 
   private fun writeConfiguredIssues(project: Project) {
@@ -663,7 +663,9 @@ open class LintCliClient : LintClient {
     val variant = project.buildVariant
     val dir =
       variant?.partialResultsDir
-        ?: variant?.module?.buildFolder ?: project.partialResultsDir ?: File(project.dir, "build")
+        ?: variant?.module?.buildFolder
+        ?: project.partialResultsDir
+        ?: File(project.dir, "build")
     return File(dir, xmlType.getDefaultFileName())
   }
 

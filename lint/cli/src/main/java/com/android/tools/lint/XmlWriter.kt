@@ -691,8 +691,7 @@ constructor(
                 null
               is ApiConstraint -> ApiConstraint.serialize(value)
               else -> error("Unexpected fix map value type ${value?.javaClass}")
-            }
-              ?: continue
+            } ?: continue
           writeAttribute(writer, -1, key, valueString)
         }
         writer.write("/>\n")

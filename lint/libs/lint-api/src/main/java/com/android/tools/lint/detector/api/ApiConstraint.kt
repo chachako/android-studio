@@ -684,6 +684,7 @@ sealed class ApiConstraint {
     }
 
     override fun getSdk(): Int = sdkId
+
     override fun getConstraints(): List<SdkApiConstraint> = listOf(this)
 
     companion object {
@@ -845,6 +846,7 @@ sealed class ApiConstraint {
   internal data class SdkApiConstraints
   constructor(val sdkId: Int, val always: SdkApiConstraint?, val sometimes: SdkApiConstraint?) {
     fun lowest(): SdkApiConstraint = always ?: sometimes!!
+
     fun highest(): SdkApiConstraint = sometimes ?: always!!
 
     constructor(
@@ -1244,6 +1246,7 @@ sealed class ApiConstraint {
     }
 
     override fun getSdk(): Int = -1
+
     override fun getConstraints(): List<SdkApiConstraint> {
       return sdkConstraints.map { it.lowest() }
     }

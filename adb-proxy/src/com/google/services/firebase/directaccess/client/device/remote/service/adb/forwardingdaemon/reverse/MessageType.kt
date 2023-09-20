@@ -37,6 +37,7 @@ enum class MessageType(val const: Int) {
 
   companion object {
     private val commandsByConstants = values().associateBy { it.const }
+
     fun fromConstant(int: Int) =
       commandsByConstants[int] ?: throw MessageParseException(int.toString())
   }

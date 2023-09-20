@@ -74,8 +74,7 @@ class MediaBrowserServiceCompatVersionDetector : Detector(), SourceCodeScanner {
 
     val library =
       context.project.buildVariant?.mainArtifact?.findCompileDependency(SUPPORT_LIB_ARTIFACT)
-        as? LintModelExternalLibrary
-        ?: return
+        as? LintModelExternalLibrary ?: return
     val mc = library.resolvedCoordinates
     if (mc.version.isNotBlank()) {
       val libVersion = Version.parse(mc.version)

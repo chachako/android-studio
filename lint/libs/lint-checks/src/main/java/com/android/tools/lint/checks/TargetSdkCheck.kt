@@ -57,6 +57,7 @@ sealed interface TargetSdkCheckResult {
     override val requiredVersion: Int,
     override val message: String = expiredMessage(requiredVersion)
   ) : TargetSdkCheckResult
+
   data class Expiring(
     override val requiredVersion: Int,
     override val message: String = expiringMessage(requiredVersion)

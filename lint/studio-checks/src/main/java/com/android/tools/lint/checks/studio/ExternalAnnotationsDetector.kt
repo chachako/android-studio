@@ -64,6 +64,7 @@ class ExternalAnnotationsDetector : Detector(), SourceCodeScanner {
   }
 
   override fun getApplicableMethodNames() = listOf("getAnnotations", "getUAnnotations")
+
   override fun getApplicableReferenceNames() = listOf("annotations", "uAnnotations")
 
   // For references to Java/Kotlin methods.

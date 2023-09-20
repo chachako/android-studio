@@ -70,6 +70,7 @@ internal class ReverseForwardStream(
   private val openSockets = mutableMapOf<Int, Socket>()
   var localPort: String = localPort
     private set
+
   private var streamReader: StreamReader? = null
   private val outputLock = Mutex()
   private val reverseDaemonReadyLatch = CountDownLatch(1)

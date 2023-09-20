@@ -121,7 +121,9 @@ class FullyQualifyNamesTestMode :
   abstract class TypeVisitor(private val context: JavaContext, private val source: String) :
     EditVisitor() {
     open fun checkClassReference(node: UElement, cls: PsiClass, offset: Int, name: String) {}
+
     open fun checkTypeReference(node: UElement, cls: PsiClass?, offset: Int, type: PsiType) {}
+
     open fun allowKotlinCoreTypes() = true
 
     private fun replaceClassReference(cls: PsiClass, node: UElement, type: PsiType?) {

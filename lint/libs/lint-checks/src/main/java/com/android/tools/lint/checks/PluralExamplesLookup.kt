@@ -23,8 +23,7 @@ class PluralExamplesLookup {
       PluralExamplesLookup::class.java.getResourceAsStream(filename)?.buffered()?.reader()?.use {
         stream ->
         stream.readLines()
-      }
-        ?: error("Could not load plural-examples.txt")
+      } ?: error("Could not load plural-examples.txt")
     exampleMap = lines.map(Companion::parseLine).associate { it }
   }
 
@@ -35,6 +34,7 @@ class PluralExamplesLookup {
   companion object {
     private const val filename = "/plural-examples.txt"
     private var instance: PluralExamplesLookup? = null
+
     fun getInstance(): PluralExamplesLookup =
       instance ?: PluralExamplesLookup().also { instance = it }
 

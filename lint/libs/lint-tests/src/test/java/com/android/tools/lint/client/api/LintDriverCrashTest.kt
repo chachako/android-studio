@@ -581,6 +581,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
   // Invalid detector which includes absolute paths in error messages which should not be done
   class AbsPathTestDetector : ResourceXmlDetector() {
     override fun appliesTo(folderType: ResourceFolderType) = true
+
     override fun afterCheckFile(context: Context) {
       context.report(
         ABS_PATH_ISSUE,
@@ -605,7 +606,9 @@ class LintDriverCrashTest : AbstractCheckTest() {
 
   class ColorCasingDetector : ResourceXmlDetector() {
     override fun appliesTo(folderType: ResourceFolderType) = true
+
     override fun getApplicableElements(): List<String> = ALL
+
     override fun visitElement(context: XmlContext, element: Element) {
       element
         .attributes()

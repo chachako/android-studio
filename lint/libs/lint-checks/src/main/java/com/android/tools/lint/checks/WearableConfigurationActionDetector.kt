@@ -96,8 +96,7 @@ class WearableConfigurationActionDetector : Detector(), XmlScanner {
   override fun checkMergedProject(context: Context) {
     context.project.buildVariant
       ?.mainArtifact
-      ?.findCompileDependency("androidx.wear.watchface:watchface")
-      ?: return
+      ?.findCompileDependency("androidx.wear.watchface:watchface") ?: return
     beforeScanningManifest()
     val document = context.mainProject.mergedManifest?.documentElement ?: return
     document.visitElements { visitManifestElement(it) }

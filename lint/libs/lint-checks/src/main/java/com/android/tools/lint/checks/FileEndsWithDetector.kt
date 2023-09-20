@@ -67,6 +67,7 @@ class FileEndsWithDetector : Detector(), SourceCodeScanner {
   }
 
   override fun getApplicableMethodNames(): List<String> = listOf("endsWith")
+
   override fun getApplicableReferenceNames(): List<String> = listOf("extension")
 
   override fun visitReference(

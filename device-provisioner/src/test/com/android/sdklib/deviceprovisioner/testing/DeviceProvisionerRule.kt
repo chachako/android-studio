@@ -28,6 +28,7 @@ class DeviceProvisionerRule(
 
   lateinit var deviceProvisioner: DeviceProvisioner
     private set
+
   lateinit var deviceProvisionerPlugin: FakeAdbDeviceProvisionerPlugin
     private set
 

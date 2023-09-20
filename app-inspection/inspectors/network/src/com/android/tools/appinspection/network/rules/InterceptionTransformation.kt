@@ -157,6 +157,7 @@ class BodyReplacedTransformation(private val bodyReplaced: BodyReplaced) :
 
   private val body: InputStream
     get() = bodyReplaced.body.toByteArray().inputStream()
+
   private val gzipBody: InputStream
     get() = bodyReplaced.body.toByteArray().gzip().inputStream()
 

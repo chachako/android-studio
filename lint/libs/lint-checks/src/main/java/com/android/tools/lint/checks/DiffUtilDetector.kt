@@ -198,8 +198,7 @@ class DiffUtilDetector : Detector(), SourceCodeScanner {
     }
     val ifStatement =
       node.getParentOfType<UElement>(UIfExpression::class.java, false, UMethod::class.java)
-        as? UIfExpression
-        ?: return false
+        as? UIfExpression ?: return false
     val condition = ifStatement.condition
     return isCastWithEquals(context, condition, target)
   }

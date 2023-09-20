@@ -103,6 +103,7 @@ enum class Method(val id: Int) : CmdType {
 
 enum class Field(val id: Int) : CmdType {
   UNUSED(0);
+
   override val ID = id
   override val setID = CmdSet.Field.id
 }
@@ -124,6 +125,7 @@ enum class ObjectReference(val id: Int) : CmdType {
 
 enum class StringReference(val id: Int) : CmdType {
   Value(1);
+
   override val ID = id
   override val setID = CmdSet.StringReference.id
 }

@@ -23,6 +23,7 @@ data class FramesCountReply(val count: Int) : Reply() {
   override fun writePayload(writer: Writer) {
     writer.putInt(count)
   }
+
   companion object {
     @JvmStatic
     fun parse(reader: MessageReader): FramesCountReply {

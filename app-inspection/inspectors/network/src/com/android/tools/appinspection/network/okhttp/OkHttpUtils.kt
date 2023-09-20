@@ -54,7 +54,9 @@ fun getOkHttpCallStack(okHttpPackage: String): String {
 fun createNullOutputStream(): OutputStream {
   return object : OutputStream() {
     override fun write(b: Int) {}
+
     override fun write(b: ByteArray) {}
+
     override fun write(b: ByteArray, off: Int, len: Int) {}
   }
 }

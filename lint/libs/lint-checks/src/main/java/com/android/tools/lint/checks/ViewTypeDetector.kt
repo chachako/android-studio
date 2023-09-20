@@ -599,8 +599,8 @@ open class ViewTypeDetector : ResourceXmlDetector(), SourceCodeScanner {
 
   private fun isCompatible(context: JavaContext, castClass: PsiClass, tag: String): Boolean {
     return findViewForTag(tag, context)?.isInheritor(castClass, true)
-    // If can't find class, just assume it's compatible since we don't want false positives
-    ?: true
+      // If can't find class, just assume it's compatible since we don't want false positives
+      ?: true
   }
 
   private fun findViewForTag(tag: String, context: JavaContext): PsiClass? {

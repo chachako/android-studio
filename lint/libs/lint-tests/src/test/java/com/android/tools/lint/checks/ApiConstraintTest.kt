@@ -609,6 +609,8 @@ class ApiConstraintTest {
 
   private fun multiSdk(desc: String, anyOf: Boolean = true): ApiConstraint =
     ApiConstraint.MultiSdkApiConstraint.create(desc, anyOf)
+
   private fun multiSdkAnyOf(desc: String): ApiConstraint = multiSdk(desc, true)
+
   private fun multiSdkAllOf(desc: String): ApiConstraint = multiSdk(desc, false)
 }

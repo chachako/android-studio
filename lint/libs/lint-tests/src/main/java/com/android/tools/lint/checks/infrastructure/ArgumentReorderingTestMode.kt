@@ -98,8 +98,8 @@ class ArgumentReorderingTestMode :
               val parameter = argumentMapping[argument]
               val ktParameter =
                 (parameter as? KtLightElement<*, *>)?.kotlinOrigin as? KtParameter
-                // We can't just reorder some and not all so if any are not found, skip this call
-                ?: return
+                  // We can't just reorder some and not all so if any are not found, skip this call
+                  ?: return
               if (ktParameter.isVarArg) {
                 // Currently, we're not trying to reorder varags. This is a bit more complicated
                 // since the parameter mapping we're getting has a number of repeats and we

@@ -946,10 +946,8 @@ class ProjectInitializerTest {
       "" +
         // We only find this error if we correctly include the jar dependency
         // which provides the parent class which implements Parcelable.
-        "src/test/pkg/Child.java:6: Error: This class implements Parcelable but does not provide a CREATOR field [ParcelCreator]\n".replace(
-          '/',
-          File.separatorChar
-        ) +
+        "src/test/pkg/Child.java:6: Error: This class implements Parcelable but does not provide a CREATOR field [ParcelCreator]\n"
+          .replace('/', File.separatorChar) +
         "public class Child extends Parent {\n" +
         "             ~~~~~\n" +
         "1 errors, 0 warnings\n",

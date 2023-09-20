@@ -279,7 +279,8 @@ class NotificationPermissionDetector : Detector(), SourceCodeScanner, ClassScann
   ): Boolean {
     val requirement =
       method.invisibleAnnotations?.getPermissionRequirement()
-        ?: classNode.invisibleAnnotations?.getPermissionRequirement() ?: return false
+        ?: classNode.invisibleAnnotations?.getPermissionRequirement()
+        ?: return false
 
     return isHoldingPostNotificationsViaAnnotations(requirement)
   }

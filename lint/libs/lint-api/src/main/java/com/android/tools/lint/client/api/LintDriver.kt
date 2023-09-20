@@ -1499,11 +1499,11 @@ class LintDriver(
       // Gradle version catalogs in TOML Files resolution.
       val tomlDocument =
         gradleToml
-        // The TOML file sits *outside* of the individual Gradle projects, and
-        // we're making sure we only process these files once as part of one
-        // of the projects, but we do need the values for resolution from all
-        // the projects.
-        ?: client.getRootDir()?.let { root ->
+          // The TOML file sits *outside* of the individual Gradle projects, and
+          // we're making sure we only process these files once as part of one
+          // of the projects, but we do need the values for resolution from all
+          // the projects.
+          ?: client.getRootDir()?.let { root ->
             val tomlFile = File(root, "$FD_GRADLE/$FN_VERSION_CATALOG")
             if (tomlFile.exists()) {
               client.getTomlParser().parse(tomlFile, client.readFile(tomlFile))
@@ -3960,8 +3960,7 @@ class LintDriver(
             val detectorNameIndex = simpleNames.indexOfFirst { it.contains("Detector") }
             if (detectorNameIndex == -1) null
             else simpleNames.take(detectorNameIndex + 1).joinToString("$")
-          }
-            ?: continue
+          } ?: continue
 
         // Step through the superclasses of each registered detector, to see if it
         // inherits from the abstract detector that threw the error.
@@ -4244,11 +4243,11 @@ class LintDriver(
         emptyList()
       } else {
         context?.evaluator?.getAnnotations(modifierListOwner, false)
-        //noinspection ExternalAnnotations - We try external annotations first.
-        ?: modifierListOwner.modifierList?.annotations?.mapNotNull {
+          //noinspection ExternalAnnotations - We try external annotations first.
+          ?: modifierListOwner.modifierList?.annotations?.mapNotNull {
             it.toUElement() as? UAnnotation
           }
-            ?: emptyList()
+          ?: emptyList()
       }
     }
 

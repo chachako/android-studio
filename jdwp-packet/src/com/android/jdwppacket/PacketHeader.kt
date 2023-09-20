@@ -60,6 +60,7 @@ class PacketHeader(reader: MessageReader) {
   }
 
   fun isReply(): Boolean = (flags.toInt() and REPLY_BIT) == REPLY_BIT
+
   fun isCmd(): Boolean = !isReply()
 
   fun isA(cmdSet: Int, cmd: Int): Boolean = this.cmdSet == cmdSet && this.cmd == cmd

@@ -96,8 +96,7 @@ internal class SimplePlatformLookup(private val sdkHome: File) : PlatformLookup 
         targets.lastOrNull { it.isPlatform }
       } else {
         targets.lastOrNull { it.isPlatform && it.version.codename == null }
-      }
-        ?: return null
+      } ?: return null
     return if (latest.version.apiLevel >= minApi) latest else null
   }
 
@@ -388,9 +387,13 @@ internal class SimplePlatformLookup(private val sdkHome: File) : PlatformLookup 
           val library =
             object : OptionalLibrary {
               override fun getName(): String = name
+
               override fun getJar(): Path = jarPath
+
               override fun getDescription(): String = name
+
               override fun isManifestEntryRequired(): Boolean = manifest
+
               override fun getLocalJarPath(): String = getJar().fileName.toString()
             }
           libraries.add(library)
@@ -417,9 +420,13 @@ internal class SimplePlatformLookup(private val sdkHome: File) : PlatformLookup 
     private val platform: Boolean
   ) : IAndroidTarget, Comparable<IAndroidTarget> {
     override fun isPlatform(): Boolean = platform
+
     override fun hashString(): String = buildTargetHash
+
     override fun getVersion(): AndroidVersion = version
+
     override fun getLocation(): String = location.path
+
     override fun getPath(pathId: Int): Path = getFile(pathId).toPath()
 
     /**
@@ -465,21 +472,37 @@ internal class SimplePlatformLookup(private val sdkHome: File) : PlatformLookup 
     }
 
     override fun getVendor(): String = unsupported()
+
     override fun getName(): String = unsupported()
+
     override fun getFullName(): String = unsupported()
+
     override fun getClasspathName(): String = unsupported()
+
     override fun getShortClasspathName(): String = unsupported()
+
     override fun getVersionName(): String = unsupported()
+
     override fun getParent(): IAndroidTarget = unsupported()
+
     override fun getBuildToolInfo(): BuildToolInfo = unsupported()
+
     override fun getBootClasspath(): List<String> = unsupported()
+
     override fun hasRenderingLibrary(): Boolean = unsupported()
+
     override fun getSkins(): Array<Path> = unsupported()
+
     override fun getDefaultSkin(): Path = unsupported()
+
     override fun getPlatformLibraries(): Array<String> = unsupported()
+
     override fun getProperty(name: String?): String = unsupported()
+
     override fun getProperties(): Map<String, String> = unsupported()
+
     override fun canRunOn(target: IAndroidTarget?): Boolean = unsupported()
+
     override fun getAdditionalLibraries(): MutableList<OptionalLibrary> = unsupported()
 
     private fun unsupported(): Nothing =

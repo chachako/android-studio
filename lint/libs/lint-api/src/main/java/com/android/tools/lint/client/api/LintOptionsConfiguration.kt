@@ -38,6 +38,7 @@ open class LintOptionsConfiguration(
   private var enabledCategories: Set<Category>
   private var exactIds: Set<String>?
   private var exactCategories: Set<Category>?
+
   init {
     val disable = lintOptions.disable
     if (disable.isEmpty()) {
@@ -89,15 +90,25 @@ open class LintOptionsConfiguration(
   }
 
   override fun fatalOnly(): Boolean = fatalOnly
+
   override fun isWarningsAsErrors(): Boolean = lintOptions.warningsAsErrors
+
   override fun isIgnoreWarnings(): Boolean = lintOptions.ignoreWarnings
+
   override fun isCheckAllWarnings(): Boolean = lintOptions.checkAllWarnings
+
   override fun disabledIds(): Set<String> = disabledIds
+
   override fun enabledIds(): Set<String> = enabledIds
+
   override fun exactCheckedIds(): Set<String>? = exactIds
+
   override fun disabledCategories(): Set<Category>? = disabledCategories
+
   override fun enabledCategories(): Set<Category>? = enabledCategories
+
   override fun exactCategories(): Set<Category>? = exactCategories
+
   override fun severityOverride(issue: Issue): Severity? {
     return when (lintOptions.severityOverrides?.get(issue.id)) {
       LintModelSeverity.FATAL -> Severity.FATAL
@@ -109,6 +120,7 @@ open class LintOptionsConfiguration(
       else -> null
     }
   }
+
   override fun severityOverrides(): Set<String> = lintOptions.severityOverrides?.keys ?: emptySet()
 
   // Not currently settable via LintOptions

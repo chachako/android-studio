@@ -112,6 +112,7 @@ interface DeviceError {
     WARNING,
     ERROR
   }
+
   val severity: Severity
 
   /** User-visible representation of the device error. */

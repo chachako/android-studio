@@ -187,8 +187,7 @@ class LocaleDetector : Detector(), SourceCodeScanner {
         true,
         UMethod::class.java,
         ULambdaExpression::class.java
-      )
-        ?: return
+      ) ?: return
 
     val evaluator = context.evaluator
     if (evaluator.isStatic(field) && evaluator.isFinal(field)) {

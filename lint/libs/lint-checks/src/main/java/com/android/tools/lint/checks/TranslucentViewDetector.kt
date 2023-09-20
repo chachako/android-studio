@@ -94,7 +94,9 @@ class TranslucentViewDetector : Detector(), XmlScanner, SourceCodeScanner {
   private var defaultTheme: String? = null
 
   override fun getApplicableAttributes(): Collection<String> = listOf(ATTR_SCREEN_ORIENTATION)
+
   override fun getApplicableElements(): Collection<String> = listOf(TAG_STYLE)
+
   override fun appliesTo(folderType: ResourceFolderType): Boolean {
     return folderType == ResourceFolderType.VALUES
   }

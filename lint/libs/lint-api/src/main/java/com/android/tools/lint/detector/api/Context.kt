@@ -243,7 +243,7 @@ open class Context(
                 ?: (doc.getUserData(PsiFile::class.java.name) as? PsiFile)?.virtualFile?.let {
                   VfsUtilCore.virtualToIoFile(it)
                 }
-                  ?: return Location.create(project.getManifestFiles().firstOrNull() ?: project.dir)
+                ?: return Location.create(project.getManifestFiles().firstOrNull() ?: project.dir)
             // We're only calling location methods here so we don't need an accurate
             // folder type for example
             XmlContext(driver, project, main, file, null, null, doc)

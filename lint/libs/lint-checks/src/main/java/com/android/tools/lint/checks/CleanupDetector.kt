@@ -444,6 +444,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
           override fun isTargetMethodName(name: String): Boolean {
             return name == SHOW || name.startsWith(COMMIT)
           }
+
           override fun isTargetMethod(name: String, method: PsiMethod?): Boolean {
             method ?: return true
             return when (name) {

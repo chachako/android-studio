@@ -425,13 +425,13 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     val methodAnnotation =
       method.findAnnotation(PERMISSION_ANNOTATION.oldName())
         ?: method.findAnnotation(PERMISSION_ANNOTATION.newName())
-          ?: method.findAnnotation(AOSP_PERMISSION_ANNOTATION)
+        ?: method.findAnnotation(AOSP_PERMISSION_ANNOTATION)
 
     val containingClass = method.getContainingUClass()
     val classAnnotation =
       containingClass?.findAnnotation(PERMISSION_ANNOTATION.oldName())
         ?: containingClass?.findAnnotation(PERMISSION_ANNOTATION.newName())
-          ?: containingClass?.findAnnotation(AOSP_PERMISSION_ANNOTATION)
+        ?: containingClass?.findAnnotation(AOSP_PERMISSION_ANNOTATION)
 
     return listOfNotNull(methodAnnotation, classAnnotation).map { PermissionRequirement.create(it) }
   }

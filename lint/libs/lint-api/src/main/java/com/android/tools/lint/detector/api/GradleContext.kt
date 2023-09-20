@@ -76,6 +76,7 @@ constructor(
    * will return the source text of the TOML value.
    */
   open fun getTomlValue(key: String, source: Boolean = true): LintTomlValue? = null
+
   open fun getTomlValue(key: List<String>, source: Boolean = true): LintTomlValue? = null
 
   /**
