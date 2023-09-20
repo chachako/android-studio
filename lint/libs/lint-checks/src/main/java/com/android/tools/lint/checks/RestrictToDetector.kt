@@ -140,25 +140,6 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     return false
   }
 
-  private fun getVisibility(member: PsiMember): Int {
-    val defaultForLanguage =
-      when (member.language) {
-        is KotlinLanguage -> VISIBILITY_PUBLIC
-        is JavaLanguage -> VISIBILITY_PACKAGE_PRIVATE
-        else -> VISIBILITY_NONE
-      }
-
-    val modifierList = member.modifierList ?: return defaultForLanguage
-
-    return when {
-      modifierList.hasExplicitModifier(PsiModifier.PUBLIC) -> VISIBILITY_PUBLIC
-      modifierList.hasExplicitModifier(PsiModifier.PROTECTED) -> VISIBILITY_PROTECTED
-      modifierList.hasExplicitModifier(PsiModifier.PRIVATE) -> VISIBILITY_PRIVATE
-      modifierList.hasExplicitModifier(PsiModifier.DEFAULT) -> defaultForLanguage
-      else -> defaultForLanguage
-    }
-  }
-
   private fun checkVisibleForTesting(
     context: JavaContext,
     node: UElement,
@@ -166,7 +147,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     annotation: UAnnotation,
     usageInfo: AnnotationUsageInfo
   ) {
-    val visibility = getVisibilityForTesting(annotation, getVisibility(member))
+    val visibility = getVisibilityNotForTesting(annotation, getVisibility(member))
     if (visibility == VISIBILITY_NONE) { // not the default
       checkRestrictTo(context, node, member, annotation, usageInfo, RESTRICT_TO_TESTS)
     } else {
@@ -526,14 +507,33 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     private const val ATTR_VISIBILITY = "visibility"
 
     // Must match constants in @VisibleForTesting:
-    private const val VISIBILITY_PRIVATE = 2
+    const val VISIBILITY_PRIVATE = 2
     private const val VISIBILITY_PACKAGE_PRIVATE = 3
-    private const val VISIBILITY_PROTECTED = 4
+    const val VISIBILITY_PROTECTED = 4
     private const val VISIBILITY_NONE = 5
     private const val VISIBILITY_PUBLIC = 6
     // TODO: Kotlin "module" visibility
 
-    private fun getVisibilityForTesting(annotation: UAnnotation, visibility: Int): Int {
+    fun getVisibility(member: PsiMember): Int {
+      val defaultForLanguage =
+        when (member.language) {
+          is KotlinLanguage -> VISIBILITY_PUBLIC
+          is JavaLanguage -> VISIBILITY_PACKAGE_PRIVATE
+          else -> VISIBILITY_NONE
+        }
+
+      val modifierList = member.modifierList ?: return defaultForLanguage
+
+      return when {
+        modifierList.hasExplicitModifier(PsiModifier.PUBLIC) -> VISIBILITY_PUBLIC
+        modifierList.hasExplicitModifier(PsiModifier.PROTECTED) -> VISIBILITY_PROTECTED
+        modifierList.hasExplicitModifier(PsiModifier.PRIVATE) -> VISIBILITY_PRIVATE
+        modifierList.hasExplicitModifier(PsiModifier.DEFAULT) -> defaultForLanguage
+        else -> defaultForLanguage
+      }
+    }
+
+    fun getVisibilityNotForTesting(annotation: UAnnotation, visibility: Int): Int {
       // The VisibleForTesting annotations from AndroidX and IntelliJ have slightly
       // different specs:
       //

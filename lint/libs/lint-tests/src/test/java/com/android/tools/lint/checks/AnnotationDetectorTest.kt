@@ -1932,6 +1932,37 @@ class AnnotationDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
+  fun testVisibleForTestingOtherwisePrivateOuterClass() {
+    lint()
+      .files(
+        java(
+            """
+                package test.pkg;
+
+                import androidx.annotation.VisibleForTesting;
+
+                @VisibleForTesting
+                public class MainActivityJava {
+                    @VisibleForTesting
+                    public static class A {
+                    }
+                }
+                """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
+            src/test/pkg/MainActivityJava.java:5: Error: Top level class can't have private or protected access level [SupportAnnotationUsage]
+            @VisibleForTesting
+            ~~~~~~~~~~~~~~~~~~
+            1 errors, 0 warnings
+            """
+      )
+  }
+
   override fun getDetector(): Detector {
     return AnnotationDetector()
   }
