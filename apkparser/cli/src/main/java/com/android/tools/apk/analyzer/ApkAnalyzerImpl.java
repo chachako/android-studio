@@ -214,7 +214,7 @@ public class ApkAnalyzerImpl {
             if (!archiveContext.getArchive().isBinaryXml(path, bytes)) {
                 throw new IOException("The supplied file is not a binary XML resource.");
             }
-            out.write(BinaryXmlParser.decodeXml(path.getFileName().toString(), bytes));
+            out.write(BinaryXmlParser.decodeXml(bytes));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -760,9 +760,7 @@ public class ApkAnalyzerImpl {
     private ManifestData getManifestData(@NonNull Archive archive)
             throws IOException, ParserConfigurationException, SAXException {
         Path manifestPath = archive.getContentRoot().resolve(SdkConstants.ANDROID_MANIFEST_XML);
-        byte[] manifestBytes =
-                BinaryXmlParser.decodeXml(
-                        SdkConstants.ANDROID_MANIFEST_XML, Files.readAllBytes(manifestPath));
+        byte[] manifestBytes = BinaryXmlParser.decodeXml(Files.readAllBytes(manifestPath));
         return AndroidManifestParser.parse(new ByteArrayInputStream(manifestBytes));
     }
 
@@ -858,7 +856,7 @@ public class ApkAnalyzerImpl {
                             .getContentRoot()
                             .resolve(SdkConstants.ANDROID_MANIFEST_XML);
             byte[] bytes = Files.readAllBytes(path);
-            out.write(BinaryXmlParser.decodeXml(path.getFileName().toString(), bytes));
+            out.write(BinaryXmlParser.decodeXml(bytes));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

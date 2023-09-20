@@ -533,7 +533,7 @@ class PermissionDataGenerator {
     val stream = loader.getResourceAsStream("AndroidManifest.xml")
     val bytes = ByteStreams.toByteArray(stream)
     stream.close()
-    val xml = String(BinaryXmlParser.decodeXml("AndroidManifest.xml", bytes), UTF_8)
+    val xml = String(BinaryXmlParser.decodeXml(bytes), UTF_8)
     return XmlUtils.parseDocumentSilently(xml, true)
   }
 

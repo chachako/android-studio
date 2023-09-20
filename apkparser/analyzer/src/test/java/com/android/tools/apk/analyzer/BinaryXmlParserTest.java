@@ -172,4 +172,29 @@ public class BinaryXmlParserTest {
         assertEquals("#F567", BinaryXmlParser.formatValue(value3, null));
         assertEquals("#567", BinaryXmlParser.formatValue(value4, null));
     }
+
+    @Test
+    public void testFormatReferenceValue() {
+        ResourceIdResolver resolver =
+                i -> {
+                    if (i == 0x12345678) {
+                        return "@package:restype/res_name";
+                    } else {
+                        return "";
+                    }
+                };
+
+        BinaryResourceValue value1 =
+                BinaryResourceValue.create(
+                        ByteBuffer.wrap(
+                                Bytes.concat(
+                                        new byte[] {
+                                            0x0, 0x8, 0x0, BinaryResourceValue.Type.REFERENCE.code()
+                                        },
+                                        Ints.toByteArray(0x12345678))));
+
+        assertEquals("@ref/0x12345678", BinaryXmlParser.formatValue(value1, null));
+        assertEquals(
+                "@package:restype/res_name", BinaryXmlParser.formatValue(value1, null, resolver));
+    }
 }

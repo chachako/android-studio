@@ -42,7 +42,8 @@ import java.util.Map;
 
 public class BinaryXmlParser {
     @NonNull
-    public static byte[] decodeXml(@NonNull String fileName, @NonNull byte[] bytes) {
+    public static byte[] decodeXml(
+            @NonNull byte[] bytes, @NonNull ResourceIdResolver resIdResolver) {
         BinaryResourceFile file = new BinaryResourceFile(bytes);
         List<Chunk> chunks = file.getChunks();
         if (chunks.size() != 1) {
@@ -56,7 +57,7 @@ public class BinaryXmlParser {
             return bytes;
         }
 
-        XmlPrinter printer = new XmlPrinter();
+        XmlPrinter printer = new XmlPrinter(resIdResolver);
         XmlChunk xmlChunk = (XmlChunk) chunks.get(0);
 
         visitChunks(xmlChunk.getChunks(), printer);
@@ -64,6 +65,11 @@ public class BinaryXmlParser {
         String reconstructedXml =
                 "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" + printer.getReconstructedXml();
         return reconstructedXml.getBytes(Charsets.UTF_8);
+    }
+
+    @NonNull
+    public static byte[] decodeXml(@NonNull byte[] bytes) {
+        return decodeXml(bytes, ResourceIdResolver.NO_RESOLUTION);
     }
 
     private static void visitChunks(
@@ -121,9 +127,11 @@ public class BinaryXmlParser {
         private Map<String, String> namespaces = new HashMap<>();
         private boolean namespacesAdded;
         private StringPoolChunk stringPool;
+        private final ResourceIdResolver resIdResolver;
 
-        public XmlPrinter() {
+        public XmlPrinter(@NonNull ResourceIdResolver resourceIdResolver) {
             builder = new XmlBuilder();
+            resIdResolver = resourceIdResolver;
         }
 
         @Override
@@ -177,23 +185,25 @@ public class BinaryXmlParser {
             }
 
             BinaryResourceValue resValue = attribute.typedValue();
-            return formatValue(resValue, stringPool);
+            return formatValue(resValue, stringPool, resIdResolver);
         }
     }
 
     public static String formatValue(
-            @NonNull BinaryResourceValue resValue, @Nullable StringPoolChunk stringPool) {
+            @NonNull BinaryResourceValue resValue,
+            @Nullable StringPoolChunk stringPool,
+            @NonNull ResourceIdResolver resourceIdResolver) {
         int data = resValue.data();
 
         switch (resValue.type()) {
             case NULL:
-                return "null";
+                return data == 1 ? "@empty" : "@null";
             case DYNAMIC_REFERENCE:
-                return String.format(Locale.US, "@dref/0x%1$08x", data);
             case REFERENCE:
-                return String.format(Locale.US, "@ref/0x%1$08x", data);
+                return resourceIdResolver.resolve(data);
             case ATTRIBUTE:
-                return String.format(Locale.US, "@attr/0x%1$x", data);
+            case DYNAMIC_ATTRIBUTE:
+                return "?" + resourceIdResolver.resolve(data).substring(1);
             case STRING:
                 return stringPool != null && stringPool.getStringCount() < data
                         ? stringPool.getString(data)
@@ -204,9 +214,6 @@ public class BinaryXmlParser {
                 return complexToString(data, true);
             case FLOAT:
                 return DECIMAL_FORMAT.format(Float.intBitsToFloat(data));
-            case DYNAMIC_ATTRIBUTE:
-                //TODO: implement
-                break;
             case INT_DEC:
                 return Integer.toString(data);
             case INT_HEX:
@@ -224,6 +231,11 @@ public class BinaryXmlParser {
         }
 
         return String.format("@res/0x%x", data);
+    }
+
+    public static String formatValue(
+            @NonNull BinaryResourceValue resValue, @Nullable StringPoolChunk stringPool) {
+        return formatValue(resValue, stringPool, ResourceIdResolver.NO_RESOLUTION);
     }
 
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.######");
