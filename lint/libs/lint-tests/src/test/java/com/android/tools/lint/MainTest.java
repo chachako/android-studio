@@ -57,6 +57,14 @@ public class MainTest extends AbstractCheckTest {
         String cleanup(String s);
     }
 
+    /**
+     * Checks the output using the given custom checker, which should throw an exception if the
+     * result is not as expected.
+     */
+    public interface Check {
+        void check(String s);
+    }
+
     @Override
     public String cleanup(String result) {
         return super.cleanup(result);
@@ -80,6 +88,17 @@ public class MainTest extends AbstractCheckTest {
             @NonNull String[] args,
             @Nullable Cleanup cleanup,
             @Nullable LintListener listener) {
+        checkDriver(expectedOutput, expectedError, expectedExitCode, args, cleanup, listener, null);
+    }
+
+    public static void checkDriver(
+            @Nullable String expectedOutput,
+            @Nullable String expectedError,
+            int expectedExitCode,
+            @NonNull String[] args,
+            @Nullable Cleanup cleanup,
+            @Nullable LintListener listener,
+            @Nullable Check check) {
 
         PrintStream previousOut = System.out;
         PrintStream previousErr = System.err;
@@ -108,12 +127,17 @@ public class MainTest extends AbstractCheckTest {
 
             int exitCode = main.run(args);
 
-            String stderr = new String(error.toByteArray(), Charsets.UTF_8);
+            String stdout = output.toString(Charsets.UTF_8);
+
+            if (check != null) {
+                check.check(stdout);
+            }
+
+            String stderr = error.toString(Charsets.UTF_8);
             if (cleanup != null) {
                 stderr = cleanup.cleanup(stderr);
             }
             if (expectedOutput != null) {
-                String stdout = new String(output.toByteArray(), Charsets.UTF_8);
                 expectedOutput = StringsKt.trimIndent(expectedOutput);
                 stdout = StringsKt.trimIndent(stdout);
                 if (cleanup != null) {
@@ -595,22 +619,28 @@ public class MainTest extends AbstractCheckTest {
 
         String expected =
                 "    <issue\n"
-                        + "        id=\"ContentDescription\"\n"
-                        + "        message=\"Missing `contentDescription` attribute on image\">\n"
-                        + "        <location\n"
-                        + "            file=\"res/layout/accessibility.xml\"\n"
-                        + "            line=\"4\"/>\n"
-                        + "    </issue>\n"
-                        + "\n"
-                        + "    <issue\n"
-                        + "        id=\"ContentDescription\"\n"
-                        + "        message=\"Missing `contentDescription` attribute on image\">\n"
-                        + "        <location\n"
-                        + "            file=\"res/layout/accessibility.xml\"\n"
-                        + "            line=\"5\"/>\n"
-                        + "    </issue>\n"
-                        + "\n"
-                        + "</issues>";
+                    + "        id=\"ContentDescription\"\n"
+                    + "        message=\"Missing `contentDescription` attribute on image\"\n"
+                    + "        errorLine1=\"    &lt;ImageView android:id=&quot;@+id/android_logo&quot; android:layout_width=&quot;wrap_content&quot; android:layout_height=&quot;wrap_content&quot; android:src=&quot;@drawable/android_button&quot; android:focusable=&quot;false&quot; android:clickable=&quot;false&quot; android:layout_weight=&quot;1.0&quot; />\"\n"
+                    + "        errorLine2=\"     ~~~~~~~~~\">\n"
+                    + "        <location\n"
+                    + "            file=\"res/layout/accessibility.xml\"\n"
+                    + "            line=\"4\"\n"
+                    + "            column=\"6\"/>\n"
+                    + "    </issue>\n"
+                    + "\n"
+                    + "    <issue\n"
+                    + "        id=\"ContentDescription\"\n"
+                    + "        message=\"Missing `contentDescription` attribute on image\"\n"
+                    + "        errorLine1=\"    &lt;ImageButton android:importantForAccessibility=&quot;yes&quot; android:id=&quot;@+id/android_logo2&quot; android:layout_width=&quot;wrap_content&quot; android:layout_height=&quot;wrap_content&quot; android:src=&quot;@drawable/android_button&quot; android:focusable=&quot;false&quot; android:clickable=&quot;false&quot; android:layout_weight=&quot;1.0&quot; />\"\n"
+                    + "        errorLine2=\"     ~~~~~~~~~~~\">\n"
+                    + "        <location\n"
+                    + "            file=\"res/layout/accessibility.xml\"\n"
+                    + "            line=\"5\"\n"
+                    + "            column=\"6\"/>\n"
+                    + "    </issue>\n"
+                    + "\n"
+                    + "</issues>";
 
         assertEquals(expected, newBaseline);
 

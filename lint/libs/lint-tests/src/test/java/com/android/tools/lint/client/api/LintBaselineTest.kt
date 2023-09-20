@@ -799,10 +799,13 @@ class LintBaselineTest {
 
                 <issue
                     id="InlinedApi"
-                    message="Field requires API level 19 (current min is 1): `android.location.LocationManager#MODE_CHANGED_ACTION`">
+                    message="Field requires API level 19 (current min is 1): `android.location.LocationManager#MODE_CHANGED_ACTION`"
+                    errorLine1="    val mode = LocationManager.MODE_CHANGED_ACTION"
+                    errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
                     <location
                         file="src/test/pkg/test.kt"
-                        line="4"/>
+                        line="4"
+                        column="16"/>
                 </issue>
 
             </issues>
@@ -1460,65 +1463,37 @@ class LintBaselineTest {
 
       val newBaseline = readBaseline(outputBaseline)
 
-      // Expected baseline: lint uses a more detailed report when not rewriting an
-      // existing baseline (because with baseline matching it doesn't have details
-      // about the filtered items)
       @Language("XML")
       val expected =
-        if (baselineFile != null)
-          """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <issues>
+        """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <issues>
 
-                    <issue
-                        id="ContentDescription"
-                        message="Missing `contentDescription` attribute on image">
-                        <location
-                            file="res/layout/accessibility.xml"
-                            line="2"/>
-                    </issue>
+                  <issue
+                      id="ContentDescription"
+                      message="Missing `contentDescription` attribute on image"
+                      errorLine1="    &lt;ImageView android:id=&quot;@+id/android_logo&quot; android:layout_width=&quot;wrap_content&quot; android:layout_height=&quot;wrap_content&quot; android:src=&quot;@drawable/android_button&quot; android:focusable=&quot;false&quot; android:clickable=&quot;false&quot; android:layout_weight=&quot;1.0&quot; />"
+                      errorLine2="     ~~~~~~~~~">
+                      <location
+                          file="res/layout/accessibility.xml"
+                          line="2"
+                          column="6"/>
+                  </issue>
 
-                    <issue
-                        id="ContentDescription"
-                        message="Missing `contentDescription` attribute on image">
-                        <location
-                            file="res/layout/accessibility.xml"
-                            line="3"/>
-                    </issue>
+                  <issue
+                      id="ContentDescription"
+                      message="Missing `contentDescription` attribute on image"
+                      errorLine1="    &lt;ImageButton android:importantForAccessibility=&quot;yes&quot; android:id=&quot;@+id/android_logo2&quot; android:layout_width=&quot;wrap_content&quot; android:layout_height=&quot;wrap_content&quot; android:src=&quot;@drawable/android_button&quot; android:focusable=&quot;false&quot; android:clickable=&quot;false&quot; android:layout_weight=&quot;1.0&quot; />"
+                      errorLine2="     ~~~~~~~~~~~">
+                      <location
+                          file="res/layout/accessibility.xml"
+                          line="3"
+                          column="6"/>
+                  </issue>
 
-                </issues>
-            """
-            .trimIndent()
-        else
-          """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <issues>
-
-                <issue
-                    id="ContentDescription"
-                    message="Missing `contentDescription` attribute on image"
-                    errorLine1="    &lt;ImageView android:id=&quot;@+id/android_logo&quot; android:layout_width=&quot;wrap_content&quot; android:layout_height=&quot;wrap_content&quot; android:src=&quot;@drawable/android_button&quot; android:focusable=&quot;false&quot; android:clickable=&quot;false&quot; android:layout_weight=&quot;1.0&quot; />"
-                    errorLine2="     ~~~~~~~~~">
-                    <location
-                        file="res/layout/accessibility.xml"
-                        line="2"
-                        column="6"/>
-                </issue>
-
-                <issue
-                    id="ContentDescription"
-                    message="Missing `contentDescription` attribute on image"
-                    errorLine1="    &lt;ImageButton android:importantForAccessibility=&quot;yes&quot; android:id=&quot;@+id/android_logo2&quot; android:layout_width=&quot;wrap_content&quot; android:layout_height=&quot;wrap_content&quot; android:src=&quot;@drawable/android_button&quot; android:focusable=&quot;false&quot; android:clickable=&quot;false&quot; android:layout_weight=&quot;1.0&quot; />"
-                    errorLine2="     ~~~~~~~~~~~">
-                    <location
-                        file="res/layout/accessibility.xml"
-                        line="3"
-                        column="6"/>
-                </issue>
-
-            </issues>
-            """
-            .trimIndent()
+              </issues>
+        """
+          .trimIndent()
       assertEquals(expected, newBaseline.dos2unix()) // b/209433064
     }
   }
@@ -2502,7 +2477,7 @@ class LintBaselineTest {
 
     // Writing to the baseline the way Lint CLI does when creating a new
     // baseline file.
-    client.writeNewBaselineFile(LintStats(0, 0), outputBaseline, true)
+    client.writeBaselineFile(LintStats(0, 0), outputBaseline, true)
 
     assertEquals(
       """

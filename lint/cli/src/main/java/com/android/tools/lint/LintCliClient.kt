@@ -41,7 +41,6 @@ import com.android.tools.lint.checks.HardcodedValuesDetector
 import com.android.tools.lint.client.api.Configuration
 import com.android.tools.lint.client.api.GradleVisitor
 import com.android.tools.lint.client.api.IssueRegistry
-import com.android.tools.lint.client.api.IssueRegistry.Companion.LINT_ERROR
 import com.android.tools.lint.client.api.JarFileIssueRegistry
 import com.android.tools.lint.client.api.LintBaseline
 import com.android.tools.lint.client.api.LintClient
@@ -326,7 +325,7 @@ open class LintCliClient : LintClient {
     val writeBaselineIfMissing = !flags.missingBaselineIsEmptyBaseline || flags.isUpdateBaseline
     if (outputBaselineFile != null && baseline != null) {
       baseline.file = outputBaselineFile
-      baseline.close()
+      writeBaselineFile(stats, file = outputBaselineFile, writeEmptyBaseline = true)
       // Not setting exit code to ERRNO_CREATED_BASELINE; that's the contract for this flag
     } else if (
       baselineFile != null && !baselineFile.exists() && writeBaselineIfMissing ||
@@ -334,7 +333,7 @@ open class LintCliClient : LintClient {
     ) {
       val fileToWrite = outputBaselineFile ?: baselineFile!!
       val exitCode =
-        writeNewBaselineFile(
+        writeBaselineFile(
           stats,
           file = fileToWrite,
           writeEmptyBaseline = !flags.missingBaselineIsEmptyBaseline || outputBaselineFile != null
@@ -360,13 +359,13 @@ open class LintCliClient : LintClient {
         baseline.fixedCount > 0 &&
         flags.isRemoveFixedBaselineIssues
     ) {
-      baseline.close()
+      writeBaselineFile(stats, file = baseline.file, writeEmptyBaseline = true)
       return ERRNO_CREATED_BASELINE
     } else if (baseline != null && flags.isUpdateBaseline) {
       if (flags.missingBaselineIsEmptyBaseline && definiteIncidents.isEmpty()) {
         flags.baselineFile?.toPath()?.let { Files.deleteIfExists(it) }
       } else {
-        baseline.close()
+        writeBaselineFile(stats, file = baseline.file, writeEmptyBaseline = true)
       }
       return ERRNO_CREATED_BASELINE
     }
@@ -403,8 +402,13 @@ open class LintCliClient : LintClient {
    * @return [ERRNO_INTERNAL_CONTINUE] or another exit code in case of a problem
    */
   @VisibleForTesting
-  fun writeNewBaselineFile(stats: LintStats, file: File, writeEmptyBaseline: Boolean): Int {
-    if (writeEmptyBaseline || definiteIncidents.isNotEmpty()) {
+  fun writeBaselineFile(stats: LintStats, file: File, writeEmptyBaseline: Boolean): Int {
+    val incidents =
+      (driver.baseline?.entriesToWrite?.map { it.incident } ?: definiteIncidents).filter {
+        LintBaseline.shouldBaseline(it.issue.id)
+      }
+
+    if (writeEmptyBaseline || incidents.isNotEmpty()) {
       val dir = file.parentFile
       if (dir != null && !dir.isDirectory) {
         if (!dir.mkdirs()) {
@@ -412,12 +416,10 @@ open class LintCliClient : LintClient {
           return ERRNO_INVALID_ARGS
         }
       }
-      val incidentsToBaseline =
-        definiteIncidents.filter { LintBaseline.shouldBaseline(it.issue.id) }
       val reporter = Reporter.createXmlReporter(this, file, XmlFileType.BASELINE)
       reporter.pathVariables = pathVariables.filter(PathVariables::isPrivatePathVariable)
       reporter.setBaselineAttributes(this, baselineVariantName, flags.isCheckDependencies)
-      reporter.write(stats, incidentsToBaseline, driver.registry)
+      reporter.write(stats, incidents, driver.registry)
     } else {
       Files.deleteIfExists(file.toPath())
     }

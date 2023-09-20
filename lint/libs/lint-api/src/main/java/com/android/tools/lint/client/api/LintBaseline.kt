@@ -107,7 +107,7 @@ class LintBaseline(
    * If non-null, a list of issues to write back out to the baseline file when the baseline is
    * closed.
    */
-  private var entriesToWrite: MutableList<ReportedEntry>? = null
+  var entriesToWrite: MutableList<ReportedEntry>? = null
 
   /**
    * Returns the number of issues that appear to have been fixed (e.g. are present in the baseline
@@ -237,7 +237,7 @@ class LintBaseline(
     if (writeOnClose && (!removeFixed || found)) {
       if (entriesToWrite != null && shouldBaseline(issue.id)) {
         val project = incident.project
-        entriesToWrite!!.add(ReportedEntry(issue, project, location, message))
+        entriesToWrite!!.add(ReportedEntry(incident))
       }
     }
 
@@ -566,13 +566,11 @@ class LintBaseline(
    * write a baseline file (since we need to sort them before writing out the result file, to ensure
    * stable files.)
    */
-  private inner class ReportedEntry(
-    val issue: Issue,
-    val project: Project?,
-    location: Location,
-    val message: String
-  ) : Comparable<ReportedEntry> {
-    val location = LightLocation(location)
+  inner class ReportedEntry(val incident: Incident) : Comparable<ReportedEntry> {
+    private val issue: Issue = incident.issue
+    private val project: Project? = incident.project
+    private val location: LightLocation = LightLocation(incident.location)
+    private val message: String = incident.message
 
     override fun compareTo(other: ReportedEntry): Int {
       // Sort by category, then by priority, then by id,

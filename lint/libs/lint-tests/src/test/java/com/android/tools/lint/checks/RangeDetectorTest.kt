@@ -1400,18 +1400,21 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
 
       assertEquals(
         """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <issues>
+          <?xml version="1.0" encoding="UTF-8"?>
+          <issues>
 
-                    <issue
-                        id="Range"
-                        message="Value must be ≥ -90.0 (was -150.0)">
-                        <location
-                            file="src/test/pkg/FloatRangeTest.java"
-                            line="8"/>
-                    </issue>
+              <issue
+                  id="Range"
+                  message="Value must be ≥ -90.0 (was -150.0)"
+                  errorLine1="        call(-150.0); // ERROR"
+                  errorLine2="             ~~~~~~">
+                  <location
+                      file="src/test/pkg/FloatRangeTest.java"
+                      line="8"
+                      column="14"/>
+              </issue>
 
-                </issues>
+          </issues>
                 """
           .trimIndent()
           .trim(),
