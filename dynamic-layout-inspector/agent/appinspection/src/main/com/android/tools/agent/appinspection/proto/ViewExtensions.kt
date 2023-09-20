@@ -21,11 +21,11 @@ import android.graphics.Matrix
 import android.graphics.Point
 import android.os.Build
 import android.util.AndroidRuntimeException
+import android.view.Display
 import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.view.Display
 import android.webkit.WebView
 import com.android.tools.agent.appinspection.framework.getChildren
 import com.android.tools.agent.appinspection.framework.getTextValue
@@ -134,7 +134,7 @@ private fun View.toNodeImpl(
  * proto representation.
  */
 fun View.createResource(stringTable: StringTable, resourceId: Int): Resource? {
-    if (resourceId <= 0) return null
+    if (!isValidResourceId(resourceId)) return null
 
     return try {
         return Resource.newBuilder().apply {
@@ -145,6 +145,15 @@ fun View.createResource(stringTable: StringTable, resourceId: Int): Resource? {
     } catch (ex: Resources.NotFoundException) {
         null
     }
+}
+
+private fun isValidResourceId(resourceId: Int): Boolean {
+    if (resourceId == Resources.ID_NULL) {
+        return false
+    }
+    // The platform and type should be non zero.
+    // See the function: is_valid_resid in the frameworks ResourceUtils.h
+    return (resourceId and Resources.ID_PACKAGE_MASK) != 0 && (resourceId and Resources.ID_TYPE_MASK) != 0
 }
 
 fun View.getNamespace(attributeId: Int): String =

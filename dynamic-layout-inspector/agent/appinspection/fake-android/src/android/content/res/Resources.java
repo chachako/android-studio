@@ -21,6 +21,24 @@ import androidx.annotation.VisibleForTesting;
 import java.util.Map;
 
 public final class Resources {
+
+    /** The {@code null} resource ID. This denotes an invalid resource ID */
+    public static final int ID_NULL = 0;
+
+    /**
+     * The package of a resource ID.
+     *
+     * <ul>
+     *   <li>0x10 for the platform
+     *   <li>0x7F for applications
+     *   <li>other values are allocated at build time for dynamic and shared libraries
+     * </ul>
+     */
+    public static final int ID_PACKAGE_MASK = 0xff000000;
+
+    /** The type of a resource ID. */
+    public static final int ID_TYPE_MASK = 0x00ff0000;
+
     public static final class NotFoundException extends RuntimeException {
         public NotFoundException(@NonNull String message) {
             super(message);
@@ -38,6 +56,7 @@ public final class Resources {
     }
 
     public String getResourceName(int resourceId) throws NotFoundException {
+        check(resourceId);
         if (!mResourceNames.containsKey(resourceId)) {
             throw new NotFoundException("Resource not found: " + resourceId);
         }
@@ -63,5 +82,15 @@ public final class Resources {
 
     public Configuration getConfiguration() {
         return mConfiguration;
+    }
+
+    private static void check(int resourceId) {
+        // A test should fail if our production code is asking for resources with an invalid
+        // resourceId. This check is similar to the function is_valid_resid in ResourceUtils.h
+        // of the framework.
+        if (resourceId < 0 || ((resourceId & 0x00ff0000) != 0 && (resourceId & 0xff000000) != 0)) {
+            return;
+        }
+        throw new RuntimeException("Invalid resource ID " + Integer.toHexString(resourceId));
     }
 }

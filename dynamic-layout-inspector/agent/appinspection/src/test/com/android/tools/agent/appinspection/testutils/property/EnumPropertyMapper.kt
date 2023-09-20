@@ -19,7 +19,7 @@ import android.view.inspector.PropertyMapper
 import com.google.common.base.CaseFormat
 import java.util.function.IntFunction
 
-const val ATTR_OFFSET = 7001
+const val ATTR_OFFSET = 0x7F010000
 
 /**
  * Class which wraps a [PropertyMapper] but adds support for using enums instead of managing your
