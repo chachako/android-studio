@@ -19,6 +19,10 @@ import com.android.adblib.AdbChannel
 import com.google.common.truth.Truth.assertThat
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.coroutines.coroutineContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.job
 
 internal fun createByteBuffer(
   command: Int,
@@ -54,3 +58,6 @@ suspend fun AdbChannel.assertCommand(vararg values: Int, payload: String? = null
 
 val String.hexLength: String
   get() = String.format("%04X", length)
+
+val CoroutineScope.children: List<Job>
+  get() = coroutineContext.job.children.toList()

@@ -17,6 +17,8 @@
 package com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon
 
 import com.android.adblib.AdbChannel
+import com.android.adblib.AdbInputChannel
+import com.android.adblib.AdbOutputChannel
 import com.android.adblib.AdbServerSocket
 import com.android.adblib.AdbSession
 import com.android.adblib.DeviceAddress
@@ -47,6 +49,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.cancel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -92,6 +95,8 @@ internal class ForwardingDaemonImpl(
   private val deviceState = MutableStateFlow(DeviceState.MISSING)
   private val onlineStates = setOf(DeviceState.DEVICE, DeviceState.RECOVERY, DeviceState.RESCUE)
   private lateinit var adbCommandHandler: Job
+  private var roundTripLatencyCollector: Job? = null
+  private var consecutiveConnectionLostCount = 0
 
   @OptIn(ExperimentalCoroutinesApi::class)
   override val roundTripLatencyMsFlow: Flow<Long> =
@@ -106,35 +111,45 @@ internal class ForwardingDaemonImpl(
         val device = DeviceSelector.fromSerialNumber(serialNumber)
         val stdinInputChannel = adbSession.channelFactory.createPipedChannel()
         val byteArray = "Foo".toByteArray()
-        adbSession.deviceServices
-          .shellCommand(device, "cat")
-          .withInputChannelCollector()
-          .withStdin(stdinInputChannel)
-          .executeAsSingleOutput { result ->
-            val input = result.stdout
-            val output = stdinInputChannel.pipeSource
-            while (true) {
-              try {
-                val buffer = ByteBuffer.wrap(byteArray)
-                withTimeout(ROUND_TRIP_LATENCY_LIMIT.toMillis()) {
-                  emit(
-                    measureTimeMillis {
-                      output.writeExactly(buffer)
-                      buffer.flip()
-                      input.readExactly(buffer)
-                    }
-                  )
+        try {
+          adbSession.deviceServices
+            .shellCommand(device, "cat")
+            .withInputChannelCollector()
+            .withStdin(stdinInputChannel)
+            .executeAsSingleOutput { result ->
+              val input = result.stdout
+              val output = stdinInputChannel.pipeSource
+              while (true) {
+                try {
+                  emit(pingDevice(byteArray, input, output))
+                } catch (e: Exception) {
+                  emit(ROUND_TRIP_LATENCY_LIMIT.toMillis())
+                  continue
                 }
-              } catch (e: Exception) {
-                emit(ROUND_TRIP_LATENCY_LIMIT.toMillis())
-                continue
+                delay(LATENCY_COLLECTION_INTERVAL.toMillis())
               }
-              delay(LATENCY_COLLECTION_INTERVAL.toMillis())
             }
-          }
+        } catch (e: IOException) {
+          logger.log(Level.INFO, "Latency collector stopped", e)
+        }
       }
       .flowOn(Dispatchers.IO)
       .shareIn(scope, SharingStarted.WhileSubscribed(), 1)
+
+  private suspend fun pingDevice(
+    byteArray: ByteArray,
+    input: AdbInputChannel,
+    output: AdbOutputChannel
+  ): Long {
+    val buffer = ByteBuffer.wrap(byteArray)
+    return withTimeout(ROUND_TRIP_LATENCY_LIMIT.toMillis()) {
+      measureTimeMillis {
+        output.writeExactly(buffer)
+        buffer.flip()
+        input.readExactly(buffer)
+      }
+    }
+  }
 
   private suspend fun run() {
     streamOpener.connect(this)
@@ -150,6 +165,7 @@ internal class ForwardingDaemonImpl(
             logger.info("Device is online at port: $devicePort!")
             // Connect this "device" on the given port to the local ADB server using `adb connect`.
             adbSession.hostServices.connect(DeviceAddress(serialNumber))
+            roundTripLatencyCollector = scope.launchRoundTripLatencyCollector()
             // A mutex is added to the wrapped AdbChannel for concurrent write calling.
             localAdbChannel =
               serverSocket.accept().let { adbChannel ->
@@ -192,7 +208,8 @@ internal class ForwardingDaemonImpl(
             logger.log(Level.INFO, "Error reading from socket.", e)
           } finally {
             // We need to clean up the reverse service, so we don't leak any threads.
-            scope.launch { reverseService?.killAll() }
+            reverseService?.killAll()
+            roundTripLatencyCollector?.cancel()
             logger.info("Connection to fake device closed.")
           }
         }
@@ -209,16 +226,16 @@ internal class ForwardingDaemonImpl(
     } catch (ignored: TimeoutCancellationException) {
       throw TimeoutException("Device not started after $timeout")
     }
-    scope.launch {
-      var consecutiveConnectionLostCount = 0
-      roundTripLatencyMsFlow.collect {
-        if (it < ROUND_TRIP_LATENCY_LIMIT.toMillis()) {
-          consecutiveConnectionLostCount = 0
-        } else {
-          // Close connection if latency exceed ROUND_TRIP_LATENCY_LIMIT for more than 3 times.
-          if (++consecutiveConnectionLostCount >= 3) {
-            close()
-          }
+  }
+
+  private fun CoroutineScope.launchRoundTripLatencyCollector() = launch {
+    roundTripLatencyMsFlow.collect {
+      if (it < ROUND_TRIP_LATENCY_LIMIT.toMillis()) {
+        consecutiveConnectionLostCount = 0
+      } else {
+        // Close connection if latency exceed ROUND_TRIP_LATENCY_LIMIT for more than 3 times.
+        if (++consecutiveConnectionLostCount >= 3) {
+          close()
         }
       }
     }

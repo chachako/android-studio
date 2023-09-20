@@ -24,9 +24,12 @@ import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.android.adblib.utils.createChildScope
 import com.google.common.truth.Truth.assertThat
+import com.google.common.util.concurrent.MoreExecutors
 import java.net.InetSocketAddress
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -134,13 +137,16 @@ class ForwardingDaemonTest {
 
   @Test
   fun testLatency() = runBlockingWithTimeout {
-    val childScope = fakeAdbSession.scope.createChildScope(context = exceptionHandler)
-    forwardingDaemon =
-      ForwardingDaemonImpl(fakeStreamOpener, childScope, fakeAdbSession) { testSocket }
+    val scope = CoroutineScope(MoreExecutors.directExecutor().asCoroutineDispatcher())
+    forwardingDaemon = ForwardingDaemonImpl(fakeStreamOpener, scope, fakeAdbSession) { testSocket }
     assertThat(forwardingDaemon.devicePort).isEqualTo(-1)
     forwardingDaemon.start()
     // Check if roundTripLatencyMsFlow emits a value.
     assertThat(forwardingDaemon.roundTripLatencyMsFlow.first()).isNotNull()
+    yieldUntil { scope.children.isNotEmpty() }
+    forwardingDaemon.close()
+
+    yieldUntil { scope.children.isEmpty() }
   }
 
   @Test
