@@ -101,10 +101,10 @@ class TypographyDetectorTest : AbstractCheckTest() {
                                        ~~~~~~~~~~~~
             res/values/typography.xml:7: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
                 <string name="single">Android's</string>
-                                      ~~~~~~~~~
+                                             ~
             res/values/typography.xml:9: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
                 <string name="badquotes1">`First'</string>
-                                          ~~~~~~~
+                                                ~
             res/values/typography.xml:10: Warning: Avoid quoting with grave accents; use apostrophes or better yet directional quotes instead [TypographyQuotes]
                 <string name="badquotes2">``second''</string>
                                           ~~~~~~~~~~
@@ -363,15 +363,15 @@ class TypographyDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-            res/values/strings.xml:4: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
-                <![CDATA[
-                  ^
+            res/values/strings.xml:8: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
+                  To open this panel again later, select "What's New in Android Studio"
+                                                              ~
             0 errors, 1 warnings
             """
       )
       .expectFixDiffs(
         """
-            Fix for res/values/strings.xml line 4: Replace with ’:
+            Fix for res/values/strings.xml line 8: Replace with ’:
             @@ -8 +8
             -       To open this panel again later, select "What's New in Android Studio"
             +       To open this panel again later, select "What’s New in Android Studio"
@@ -436,10 +436,43 @@ class TypographyDetectorTest : AbstractCheckTest() {
         """
         res/values/strings.xml:2: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
             <string name="test1">Hello John's Cat</string>  <!-- error 1 -->
-                                 ~~~~~~~~~~~~~~~~
+                                           ~
         res/values/strings.xml:3: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
             <string name="test2">Hello John\'s Cat</string> <!-- error 1 -->
-                                 ~~~~~~~~~~~~~~~~~
+                                            ~
+        0 errors, 2 warnings
+        """
+      )
+  }
+
+  fun testTypographyQuotesMultilineStrings() {
+    // Regression test for
+    //    https://issuetracker.google.com/293397290
+    lint()
+      .files(
+        xml(
+          "res/values/strings.xml",
+          """
+                <resources>
+                    <string name="test1">Hello John's Cat</string>  <!-- error 1 -->
+                    <string name="test2">Hello
+
+                          John's Cat
+                    </string>  <!-- error 1 -->
+                </resources>
+                """
+        )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        res/values/strings.xml:2: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
+            <string name="test1">Hello John's Cat</string>  <!-- error 1 -->
+                                           ~
+        res/values/strings.xml:5: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
+                  John's Cat
+                      ~
         0 errors, 2 warnings
         """
       )
@@ -488,7 +521,7 @@ class TypographyDetectorTest : AbstractCheckTest() {
         """
         res/values/strings.xml:4: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
             <string name="single_control">This\'s found.</string>
-                                          ~~~~~~~~~~~~~~
+                                               ~
         res/values/strings.xml:6: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
             <string name="single_line_2">This\'s not found, because it\'s in a pair.</string>
                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

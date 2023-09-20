@@ -24,9 +24,11 @@ import com.android.SdkConstants.VALUE_TRUE
 import com.android.resources.ResourceFolderType
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Context
+import com.android.tools.lint.detector.api.DefaultPosition
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Issue.Companion.create
 import com.android.tools.lint.detector.api.LintFix
+import com.android.tools.lint.detector.api.Location
 import com.android.tools.lint.detector.api.ResourceXmlDetector
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
@@ -109,10 +111,11 @@ class TypographyDetector : ResourceXmlDetector() {
   }
 
   private fun checkText(context: XmlContext, element: Element, textNode: Node, text: String) {
+    val trimmedText = text.trimStart()
     if (checkEllipsis) {
       // Replace ... with ellipsis character?
-      val ellipsis = text.indexOf("...")
-      if (ellipsis != -1 && !text.startsWith(".", ellipsis + 3)) {
+      val ellipsis = trimmedText.indexOf("...")
+      if (ellipsis != -1 && !trimmedText.startsWith(".", ellipsis + 3)) {
         context.report(
           ELLIPSIS,
           element,
@@ -125,10 +128,10 @@ class TypographyDetector : ResourceXmlDetector() {
 
     // Dashes
     if (checkDashes) {
-      val hyphen = text.indexOf('-')
+      val hyphen = trimmedText.indexOf('-')
       if (hyphen != -1) {
         // n dash
-        val matcher = HYPHEN_RANGE_PATTERN.matcher(text)
+        val matcher = HYPHEN_RANGE_PATTERN.matcher(trimmedText)
         if (matcher.matches()) {
           // Make sure that if there is no space before digit there isn't
           // one on the left either -- since we don't want to consider
@@ -142,35 +145,39 @@ class TypographyDetector : ResourceXmlDetector() {
               element,
               context.getLocation(textNode),
               EN_DASH_MESSAGE,
-              if (isRtl(text)) null else fix().replace().text("-").with("–").build()
+              if (isRtl(trimmedText)) null else fix().replace().text("-").with("–").build()
             )
           }
         }
 
         // m dash
-        val emDash = text.indexOf("--")
+        val emDash = trimmedText.indexOf("--")
         // Don't suggest replacing -- or "--" with an m dash since these are sometimes
         // used as digit marker strings
-        if (emDash > 1 && !text.startsWith("-", emDash + 2)) {
+        if (emDash > 1 && !trimmedText.startsWith("-", emDash + 2)) {
           context.report(
             DASHES,
             element,
             context.getLocation(textNode),
             EM_DASH_MESSAGE,
-            if (isRtl(text)) null else fix().replace().text("--").with("—").build()
+            if (isRtl(trimmedText)) null else fix().replace().text("--").with("—").build()
           )
         }
       }
     }
     if (checkQuotes) {
       // Check for single quotes that can be replaced with directional quotes
-      var quoteStart = text.indexOf('\'')
+      var quoteStart = trimmedText.indexOf('\'')
+      val lineBreaks =
+        if (quoteStart > 0) {
+          trimmedText.substring(0, quoteStart).count { it == '\n' }
+        } else 0
       if (quoteStart != -1) {
-        val quoteEnd = text.indexOf('\'', quoteStart + 1)
+        val quoteEnd = trimmedText.indexOf('\'', quoteStart + 1)
         if (
           quoteEnd != -1 &&
             quoteEnd > quoteStart + 1 &&
-            (quoteEnd < text.length - 1 || quoteStart > 0) &&
+            (quoteEnd < trimmedText.length - 1 || quoteStart > 0) &&
             SINGLE_QUOTE.matcher(text).matches()
         ) {
           context.report(
@@ -180,8 +187,8 @@ class TypographyDetector : ResourceXmlDetector() {
             SINGLE_QUOTE_MESSAGE,
             fix()
               .replace()
-              .text(text.substring(quoteStart, quoteEnd + 1))
-              .with("‘${text.substring(quoteStart + 1, quoteEnd)}’")
+              .text(trimmedText.substring(quoteStart, quoteEnd + 1))
+              .with("‘${trimmedText.substring(quoteStart + 1, quoteEnd)}’")
               .build()
           )
           return
@@ -191,15 +198,42 @@ class TypographyDetector : ResourceXmlDetector() {
         if (
           quoteEnd != quoteStart + 1 &&
             quoteStart > 0 &&
-            (text[quoteStart - 1].isLetterOrDigit() ||
+            (trimmedText[quoteStart - 1].isLetterOrDigit() ||
               quoteStart > 1 &&
-                text[quoteStart - 1] == '\\' &&
-                text[quoteStart - 2].isLetterOrDigit())
+                trimmedText[quoteStart - 1] == '\\' &&
+                trimmedText[quoteStart - 2].isLetterOrDigit())
         ) {
+          val textNodeLocation = context.getLocation(textNode)
+          val textStartPosition = textNodeLocation.start ?: error("Text node has no start position")
+          val apostropheColumn =
+            if (lineBreaks > 0) {
+              quoteStart - trimmedText.substring(0, quoteStart).indexOfLast { it == '\n' } - 1
+            } else {
+              textStartPosition.column + quoteStart
+            }
+          val apostropheOffset = textStartPosition.offset + quoteStart
+          val apostropheLocation =
+            if (trimmedText.count { it == '\'' } > 1) {
+              textNodeLocation
+            } else {
+              Location.create(
+                textNodeLocation.file,
+                DefaultPosition(
+                  textStartPosition.line + lineBreaks,
+                  apostropheColumn,
+                  apostropheOffset,
+                ),
+                DefaultPosition(
+                  textStartPosition.line + lineBreaks,
+                  apostropheColumn + 1,
+                  apostropheOffset + 1
+                )
+              )
+            }
           context.report(
             QUOTES,
             element,
-            context.getLocation(textNode),
+            apostropheLocation,
             TYPOGRAPHIC_APOSTROPHE_MESSAGE,
             fix().replace().text("'").with("’").build()
           )
@@ -208,11 +242,11 @@ class TypographyDetector : ResourceXmlDetector() {
       }
 
       // Check for double quotes that can be replaced by directional double quotes
-      quoteStart = text.indexOf('"')
+      quoteStart = trimmedText.indexOf('"')
       if (quoteStart != -1) {
-        val quoteEnd = text.indexOf('"', quoteStart + 1)
+        val quoteEnd = trimmedText.indexOf('"', quoteStart + 1)
         if (quoteEnd != -1 && quoteEnd > quoteStart + 1) {
-          if (quoteEnd < text.length - 1 || quoteStart > 0) {
+          if (quoteEnd < trimmedText.length - 1 || quoteStart > 0) {
             context.report(
               QUOTES,
               element,
@@ -220,8 +254,8 @@ class TypographyDetector : ResourceXmlDetector() {
               DBL_QUOTES_MESSAGE,
               fix()
                 .replace()
-                .text(text.substring(quoteStart, quoteEnd + 1))
-                .with("“${text.substring(quoteStart + 1, quoteEnd)}”")
+                .text(trimmedText.substring(quoteStart, quoteEnd + 1))
+                .with("“${trimmedText.substring(quoteStart + 1, quoteEnd)}”")
                 .build()
             )
             return
@@ -229,23 +263,23 @@ class TypographyDetector : ResourceXmlDetector() {
         }
       }
 
-      val graveStart = text.indexOf('`')
+      val graveStart = trimmedText.indexOf('`')
       // Check for grave accent quotations
-      if (graveStart != -1 && GRAVE_QUOTATION.matcher(text).matches()) {
-        val quoteEnd = text.indexOf("'")
+      if (graveStart != -1 && GRAVE_QUOTATION.matcher(trimmedText).matches()) {
+        val quoteEnd = trimmedText.indexOf("'")
         // Are we indenting ``like this'' or `this' ? If so, complain
         val quickfix =
-          if (text[graveStart + 1] == '`') { // Double quotes
+          if (trimmedText[graveStart + 1] == '`') { // Double quotes
             fix()
               .replace()
-              .text(text.substring(graveStart, quoteEnd + 2))
-              .with("“${text.substring(graveStart + 2, quoteEnd)}”")
+              .text(trimmedText.substring(graveStart, quoteEnd + 2))
+              .with("“${trimmedText.substring(graveStart + 2, quoteEnd)}”")
               .build()
           } else { // Single quotes
             fix()
               .replace()
-              .text(text.substring(graveStart, quoteEnd + 1))
-              .with("‘${text.substring(graveStart + 1, quoteEnd)}’")
+              .text(trimmedText.substring(graveStart, quoteEnd + 1))
+              .with("‘${trimmedText.substring(graveStart + 1, quoteEnd)}’")
               .build()
           }
         context.report(
@@ -266,8 +300,8 @@ class TypographyDetector : ResourceXmlDetector() {
     }
 
     // Fraction symbols?
-    if (checkFractions && text.indexOf('/') != -1) {
-      val matcher = FRACTION_PATTERN.matcher(text)
+    if (checkFractions && trimmedText.indexOf('/') != -1) {
+      val matcher = FRACTION_PATTERN.matcher(trimmedText)
       if (matcher.matches()) {
         val top = matcher.group(1) // Numerator
         val bottom = matcher.group(2) // Denominator
@@ -317,14 +351,17 @@ class TypographyDetector : ResourceXmlDetector() {
     }
     if (checkMisc) {
       // Fix copyright symbol?
-      if (text.indexOf('(') != -1 && (text.contains("(c)") || text.contains("(C)"))) {
+      if (
+        trimmedText.indexOf('(') != -1 &&
+          (trimmedText.contains("(c)") || trimmedText.contains("(C)"))
+      ) {
         // Suggest replacing with copyright symbol?
         context.report(
           OTHER,
           element,
           context.getLocation(textNode),
           COPYRIGHT_MESSAGE,
-          fix().replace().text(if (text.contains("(c)")) "(c)" else "(C)").with("©").build()
+          fix().replace().text(if (trimmedText.contains("(c)")) "(c)" else "(C)").with("©").build()
         )
         // Replace (R) and TM as well? There are unicode characters for these but they
         // are probably not very common within Android app strings.

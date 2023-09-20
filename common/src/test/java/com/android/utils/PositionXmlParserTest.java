@@ -539,6 +539,27 @@ public class PositionXmlParserTest {
     }
 
     @Test
+    public void testCdataOnNewline() throws Exception {
+        String xml =
+          "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+          "<resources>\n" +
+          "    <string name=\"cdata_string\">\n" +
+          "        <![CDATA[<html>not<br>xml]]>\n" +
+          "    </string>\n" +
+          "</resources>";
+        File file = temporaryFolder.newFile("parsertest.xml");
+        FilesKt.writeText(file, xml, Charsets.UTF_8);
+        Document document = PositionXmlParser.parse(new FileInputStream(file));
+        assertNotNull(document);
+        Element e = document.getDocumentElement();
+        assertNotNull(e);
+        Node cdata = e.getChildNodes().item(1).getChildNodes().item(1);
+
+        assertThat(cdata.getTextContent().trim()).isEqualTo("<html>not<br>xml");
+        assertThat(cdata.getNodeType()).isEqualTo(Node.CDATA_SECTION_NODE);
+    }
+
+    @Test
     public void testCdataMixed() throws Exception {
         String xml =
                 "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
