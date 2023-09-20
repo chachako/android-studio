@@ -22,5 +22,10 @@ class PluginManagementInfo(
     /**
      * [List] of [RepositoryInfo] to download plugins from.
      */
-    val repositories: List<RepositoryInfo>
+    val repositories: List<RepositoryInfo>,
+
+    /**
+     * [List] of included builds, each included build is the path to the composite build
+     */
+    val includedBuilds: List<String>
 )

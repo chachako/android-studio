@@ -37,6 +37,19 @@ open class IssueLogger(
      *
      * @param error the error reason
      */
+    fun raiseError(location : TomlPosition, error: String) {
+        if (lenient) {
+            logger.error(null, "ERROR: $error")
+        } else {
+            throw RuntimeException(error)
+        }
+    }
+
+    /**
+     * An error condition has occurred, raise it.
+     *
+     * @param error the error reason
+     */
     fun raiseError(error: String) {
         if (lenient) {
             logger.error(null, "ERROR: $error")
@@ -46,14 +59,10 @@ open class IssueLogger(
     }
 
     fun raiseError(exception: InvalidTomlException) {
-        val message = exception.location?.let {
-            "${it.line()}:${it.column()} -> ${exception.error}"
-        } ?: exception.error
-
         if (lenient) {
-            logger.error(null, "ERROR: $message")
+            logger.error(exception, "ERROR: ${exception.message}")
         } else {
-            throw RuntimeException(message)
+            throw exception
         }
     }
 

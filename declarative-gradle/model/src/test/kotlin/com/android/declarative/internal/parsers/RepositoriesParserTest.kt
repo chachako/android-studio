@@ -16,8 +16,10 @@
 package com.android.declarative.internal.parsers
 
 import com.android.declarative.internal.IssueLogger
+import com.android.declarative.internal.model.MavenRepositoryInfo
 import com.android.declarative.internal.model.PreDefinedRepositoryInfo
 import com.android.declarative.internal.model.RepositoryType
+import com.android.declarative.internal.toml.InvalidTomlException
 import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
@@ -35,7 +37,7 @@ class RepositoriesParserTest {
     lateinit var logger: IssueLogger
 
     @Test
-    fun testSingleRepository() {
+    fun testSinglePreDefinedRepository() {
 
         val parser = PluginManagementParser(logger)
         val toml = Toml.parse(
@@ -54,7 +56,26 @@ class RepositoriesParserTest {
     }
 
     @Test
-    fun testMultipleRepositories() {
+    fun testSingleMavenRepository() {
+
+        val parser = PluginManagementParser(logger)
+        val toml = Toml.parse(
+            """
+            [[pluginManagement.repositories]]
+            url = "http://foo/bar"
+        """.trimIndent()
+        )
+        val result = parser.parseToml(toml.getTable("pluginManagement")!!)
+        Truth.assertThat(result.repositories).hasSize(1)
+        result.repositories.single().also {
+            Truth.assertThat(it.type).isEqualTo(RepositoryType.MAVEN)
+            Truth.assertThat(it).isInstanceOf(MavenRepositoryInfo::class.java)
+            Truth.assertThat((it as MavenRepositoryInfo).url).isEqualTo("http://foo/bar")
+        }
+    }
+
+    @Test
+    fun testMultiplePreDefinedRepositories() {
 
         val parser = PluginManagementParser(logger)
         val toml = Toml.parse(
@@ -80,6 +101,32 @@ class RepositoriesParserTest {
     }
 
     @Test
+    fun testMultipleMavenRepositories() {
+
+        val parser = PluginManagementParser(logger)
+        val toml = Toml.parse(
+            """
+            [[pluginManagement.repositories]]
+            url = "http://foo/bar"
+
+            [[pluginManagement.repositories]]
+            url = "http://bar/foo"
+
+            [[pluginManagement.repositories]]
+            url = "http://foobar/barfoo"
+        """.trimIndent()
+        )
+        val result = parser.parseToml(toml.getTable("pluginManagement")!!)
+        Truth.assertThat(result.repositories).hasSize(3)
+        result.repositories.forEach {
+            Truth.assertThat(it.type).isEqualTo(RepositoryType.MAVEN)
+            Truth.assertThat(it).isInstanceOf(MavenRepositoryInfo::class.java)
+        }
+        Truth.assertThat(result.repositories.map { (it as MavenRepositoryInfo).url })
+            .containsExactly("http://foo/bar", "http://bar/foo", "http://foobar/barfoo")
+    }
+
+    @Test
     fun testInvalidRepository() {
 
         val parser = PluginManagementParser(logger)
@@ -91,8 +138,8 @@ class RepositoriesParserTest {
         )
         try {
             val result = parser.parseToml(toml.getTable("pluginManagement")!!)
-        } catch (e: RuntimeException) {
-            Truth.assertThat(e.message).contains("2:1 -> Unsupported repository declaration : [invalid]")
+        } catch (e: InvalidTomlException) {
+            Truth.assertThat(e.message).contains("2:1 -> Invalid repository declaration : [invalid], `name` or `url` must be provided.")
         }
     }
 

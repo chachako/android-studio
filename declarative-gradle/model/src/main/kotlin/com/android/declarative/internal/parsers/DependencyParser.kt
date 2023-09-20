@@ -19,11 +19,14 @@ import com.android.declarative.internal.IssueLogger
 import com.android.declarative.internal.model.DependencyInfo.Alias
 import com.android.declarative.internal.model.DependencyInfo
 import com.android.declarative.internal.model.DependencyType
+import com.android.declarative.internal.model.DependencyInfo.ExtensionFunction
 import com.android.declarative.internal.model.DependencyInfo.Files
 import com.android.declarative.internal.model.DependencyInfo.Maven
 import com.android.declarative.internal.model.DependencyInfo.Notation
+import com.android.declarative.internal.toml.InvalidTomlException
 import com.android.declarative.internal.toml.safeGetString
 import org.tomlj.TomlArray
+import org.tomlj.TomlPosition
 import org.tomlj.TomlTable
 
 /**
@@ -40,80 +43,94 @@ class DependencyParser(
         val dependencies = mutableListOf<DependencyInfo>()
         tomlTable.keySet().sorted().forEach { key ->
             when(val value = tomlTable.get(key)) {
-                is TomlTable -> parseTomlTableDeclaration(
-                    depTable = value,
-                    key = key,
-                    dependencies = dependencies
+                is TomlArray -> parseTomlArrayDeclaration(
+                    dependencyArray = value,
+                    configurationName = key,
+                    dependencies,
+                    tomlTable.inputPositionOf(key)
                 )
-                is String -> when(key) {
-                    "alias" -> {
-                        println("Adding ALIAS dependency")
-                        dependencies.add(
-                            Alias(
-                                "implementation",
-                                value
-                            )
-
-                        )
-                    } else -> parseStringDeclaration(
-                            notation = value,
-                            configurationName = "implementation",
-                            dependencies = dependencies
-                        )
-                }
+                is TomlTable -> issueLogger.raiseError(
+                    InvalidTomlException(
+                        tomlTable.inputPositionOf(key),
+                        """
+                            Dependencies cannot be expressed with a Toml table, use an array instead
+                            Example:
+                                [dependencies]
+                                testImplementation = [
+                                    { notation = "libs.junit" },
+                                ]
+                        """.trimIndent())
+                )
+                else -> issueLogger.raiseError(
+                    InvalidTomlException(
+                        tomlTable.inputPositionOf(key),
+                        """
+                            You must use a Toml array to express dependencies.
+                            Example:
+                                [dependencies]
+                                testImplementation = [
+                                    { notation = "libs.junit" },
+                                ]
+                        """.trimIndent())
+                )
             }
         }
         return dependencies.toList()
     }
 
-    private fun parseTomlTableDeclaration(
-        depTable: TomlTable,
-        key: String,
-        dependencies: MutableList<DependencyInfo>
+    private fun parseTomlArrayDeclaration(
+        dependencyArray: TomlArray,
+        configurationName: String,
+        dependencies: MutableList<DependencyInfo>,
+        position: TomlPosition?,
     ) {
-        if (depTable.contains("configuration")) {
-            parseDependencyDeclaration(depTable, key, dependencies)
+        if (dependencyArray.isEmpty) {
+            issueLogger.logger.warning(
+                "Warning: ${position ?: ""} : Empty $configurationName dependencies declaration"
+            )
             return
         }
-        depTable.keySet().sorted().forEach { element ->
-            when(val value = depTable.get(element)) {
-                is TomlTable -> {
-                    if (value.contains("configuration")) {
-                        parseDependencyDeclaration(
-                            depTable = value,
-                            key = element,
-                            dependencies = dependencies
-                        )
-                    } else {
-                        parseDependencyDeclaration(
-                            depTable = value,
-                            key = element,
-                            configurationName = key,
-                            dependencies = dependencies
-                        )
-                    }
-                }
-                is String -> parseStringDeclaration(
-                    notation = value,
-                    configurationName = key,
+        for (i in 0..dependencyArray.size() - 1 ) {
+            when(val dependency = dependencyArray.get(i)) {
+                is TomlTable -> parseDependencyDeclaration(
+                    depTable = dependency,
+                    key = "",
+                    configurationName = configurationName,
                     dependencies = dependencies
                 )
+                is TomlArray -> issueLogger.raiseError(
+                    dependencyArray.inputPositionOf(i),
+                    "Incorrect Toml array dependency declaration, a dependency is declared " +
+                            "as a Toml table, for instance : { notation = 'com.foo:bar:1.2.3' }")
+                is String -> parseString(dependency, configurationName, dependencies)
+                else -> issueLogger.raiseError(
+                    dependencyArray.inputPositionOf(i),
+                    "Incorrect dependency declaration, a dependency is declared " +
+                            "as a Toml table, for instance : { notation = 'com.foo:bar:1.2.3' }")
             }
         }
     }
 
-    private fun parseDependencyDeclaration(
-        depTable: TomlTable,
-        key: String,
-        dependencies: MutableList<DependencyInfo>) {
-        // todo: figure out ClientModule
-        issueLogger.expect(
-            depTable.isString("configuration"),
-            { "`configuration` is expected to be String, got ${depTable.get("configuration")}" },
-            depTable.getString("configuration"),
-            { "`configuration` must be provided" },
-        ) { configurationName ->
-            parseDependencyDeclaration(depTable, key, configurationName, dependencies)
+    private fun parseString(
+        value: String,
+        configurationName: String,
+        dependencies: MutableList<DependencyInfo>,
+    ) {
+        when(value) {
+            "alias" -> {
+                issueLogger.logger.info("Adding ALIAS dependency : ${value} to $configurationName")
+                dependencies.add(
+                    Alias(
+                        configurationName,
+                        value
+                    )
+
+                )
+            } else -> parseStringDeclaration(
+                notation = value,
+                configurationName = configurationName,
+                dependencies = dependencies
+            )
         }
     }
 
@@ -123,7 +140,62 @@ class DependencyParser(
         configurationName: String,
         dependencies: MutableList<DependencyInfo>,
     ) {
-        if (depTable.size() <= 1) {
+        depTable.getString("project")?.let { notation ->
+            issueLogger.logger.info("Adding project dependency : $notation to $configurationName")
+            dependencies.add(
+                Notation(
+                    DependencyType.PROJECT,
+                    configurationName,
+                    notation)
+            )
+            return
+        }
+        depTable.get("files")?.let { files ->
+            val fileCollection = mutableListOf<String>()
+            when(files) {
+                is TomlArray -> {
+                    for (i in 0 until files.size()) {
+                        fileCollection.add(files.getString(i))
+                    }
+                }
+                is String -> {
+                    fileCollection.add(files)
+                }
+            }
+            issueLogger.logger.info("Adding files dependency $files to $configurationName")
+            dependencies.add(
+                Files(
+                    configurationName,
+                    fileCollection,
+                )
+            )
+            return
+        }
+        depTable.getString("notation")?.let { notation ->
+            parseStringDeclaration(notation, configurationName, dependencies)
+            return
+        }
+        depTable.getString("name")?.let { name ->
+            dependencies.add(
+                Maven(
+                    configurationName,
+                    depTable.safeGetString("group"),
+                    name,
+                    depTable.safeGetString("version"),
+                )
+            )
+            return
+        }
+        depTable.getString("extension")?.let { extension ->
+            dependencies.add(
+                ExtensionFunction(
+                    configurationName,
+                    extension,
+                    mapOf("module" to depTable.safeGetString("module")),
+                )
+            )
+        }
+        if (key.isNotEmpty() && depTable.size() <= 1) {
             // if there are no other key, we assume a project dependency, using the key as the project coordinates.
             // lib1 = { configuration = "testImplementation" }
             // will be like testImplementation { project(":lib1") }
@@ -131,50 +203,9 @@ class DependencyParser(
                 Notation(
                     DependencyType.PROJECT,
                     configurationName,
-                    ":$key")
+                    ":$key"
+                )
             )
-        } else {
-            depTable.getString("project")?.let { notation ->
-                dependencies.add(
-                    Notation(
-                        DependencyType.PROJECT,
-                        configurationName,
-                        notation)
-                )
-            }
-            depTable.get("files")?.let { files ->
-                val fileCollection = mutableListOf<String>()
-                when(files) {
-                    is TomlArray -> {
-                        for (i in 0 until files.size()) {
-                            fileCollection.add(files.getString(i))
-                        }
-                    }
-                    is String -> {
-                        fileCollection.add(files)
-                    }
-                }
-                println("adding files dependency $files to $configurationName")
-                dependencies.add(
-                    Files(
-                        configurationName,
-                        fileCollection,
-                    )
-                )
-            }
-            depTable.getString("notation")?.let { notation ->
-                parseStringDeclaration(notation, configurationName, dependencies)
-            }
-            depTable.getString("name")?.let { name ->
-                dependencies.add(
-                    Maven(
-                        configurationName,
-                        depTable.safeGetString("group"),
-                        name,
-                        depTable.safeGetString("version"),
-                    )
-                )
-            }
         }
     }
 

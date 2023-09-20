@@ -27,6 +27,7 @@ enum class DependencyType {
     LIBRARY,
     NOTATION,
     ALIAS,
+    EXTENSION_FUNCTION,
 }
 
 /**
@@ -81,9 +82,21 @@ sealed class DependencyInfo(
     class Files(
         configuration: String,
         val files: List<String>,
-
-        ) : DependencyInfo(configuration) {
+    ) : DependencyInfo(configuration) {
 
         override val type: DependencyType = DependencyType.FILES
+    }
+
+    /**
+     * An extension function dependency is a dependency defined with an extension function on the
+     * Dependencies declaration like kotlin('jvm').
+     */
+    class ExtensionFunction(
+        configuration: String,
+        val extension: String,
+        val parameters: Map<String, String>,
+    ) : DependencyInfo(configuration) {
+
+        override val type: DependencyType = DependencyType.EXTENSION_FUNCTION
     }
 }

@@ -24,7 +24,9 @@ enum class RepositoryType {
      * A pre-defined repository is known to Gradle and added by invoking a method on the
      * Gradle's RepositoryHandler.
      */
-    PRE_DEFINED
+    PRE_DEFINED,
+
+    MAVEN,
 }
 
 /**
@@ -42,4 +44,11 @@ class PreDefinedRepositoryInfo(
 ): RepositoryInfo {
 
     override val type: RepositoryType = RepositoryType.PRE_DEFINED
+}
+
+class MavenRepositoryInfo(
+    val url: String
+): RepositoryInfo {
+
+    override val type: RepositoryType = RepositoryType.MAVEN
 }

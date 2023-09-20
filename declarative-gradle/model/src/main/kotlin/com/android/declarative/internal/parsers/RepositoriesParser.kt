@@ -16,8 +16,10 @@
 package com.android.declarative.internal.parsers
 
 import com.android.declarative.internal.IssueLogger
+import com.android.declarative.internal.model.MavenRepositoryInfo
 import com.android.declarative.internal.model.PreDefinedRepositoryInfo
 import com.android.declarative.internal.model.RepositoryInfo
+import com.android.declarative.internal.model.RepositoryType
 import com.android.declarative.internal.toml.InvalidTomlException
 import com.android.declarative.internal.toml.mapTable
 import org.tomlj.TomlArray
@@ -38,19 +40,35 @@ class RepositoriesParser(
      */
     fun parseToml(repositoriesDeclaration: TomlArray): List<RepositoryInfo> =
         repositoriesDeclaration.mapTable { repository ->
-            // so far we only support pre-defined repositories
             if (repository.keySet().isNotEmpty()) {
-                if (repository.contains("name")) {
-                    return@mapTable repository.getString("name")?.let {
-                        PreDefinedRepositoryInfo(it)
-                    }
-                } else {
-                    issueLogger.raiseError(
-                        InvalidTomlException(
-                            repository.inputPositionOf(repository.keySet().first()),
-                            "Unsupported repository declaration : ${repository.dottedKeySet()}",
+                // so far, it's pretty simple, repository definition can only
+                // have a name or a url which decides the type.
+                val repositoryType =
+                    if (repository.contains("name")) {
+                        RepositoryType.PRE_DEFINED
+                    } else if (repository.contains("url")) {
+                        RepositoryType.MAVEN
+                    } else {
+                        issueLogger.raiseError(
+                            InvalidTomlException(
+                                repository.inputPositionOf(repository.keySet().first()),
+                                "Invalid repository declaration : ${repository.dottedKeySet()}, " +
+                                        "`name` or `url` must be provided.")
                         )
-                    )
+                        return@mapTable null
+                    }
+
+                when(repositoryType) {
+                    RepositoryType.PRE_DEFINED -> {
+                        return@mapTable repository.getString("name")?.let {
+                            PreDefinedRepositoryInfo(it)
+                        }
+                    }
+                    RepositoryType.MAVEN -> {
+                        return@mapTable repository.getString("url")?.let {
+                            MavenRepositoryInfo(it)
+                        }
+                    }
                 }
             }
             null

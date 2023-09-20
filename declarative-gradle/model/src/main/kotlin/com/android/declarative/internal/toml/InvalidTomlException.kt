@@ -24,5 +24,12 @@ import org.tomlj.TomlPosition
  */
 class InvalidTomlException(
     val location: TomlPosition?,
-    val error: String,
-)
+    error: String,
+): Throwable(error) {
+
+    override val message: String?
+        get() =
+            if (location != null)
+                "${location.line()}:${location.column()} -> ${super.message}"
+            else super.message
+}

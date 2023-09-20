@@ -18,6 +18,7 @@ package com.android.declarative.internal.parsers
 import com.android.declarative.internal.IssueLogger
 import com.android.declarative.internal.model.PluginManagementInfo
 import com.android.declarative.internal.model.RepositoryInfo
+import com.android.declarative.internal.toml.forEachString
 import org.tomlj.TomlTable
 
 class PluginManagementParser(
@@ -32,6 +33,16 @@ class PluginManagementParser(
             } else {
                 listOf<RepositoryInfo>()
             }
-        return PluginManagementInfo(repositories)
+        val includedBuilds =
+            if (pluginManagementDeclarations.isArray("includeBuild")) {
+                val includedBuilds = mutableListOf<String>()
+                pluginManagementDeclarations.getArray("includeBuild")?.let {
+                    it.forEachString { includedBuilds.add(it) }
+                }
+                includedBuilds
+            } else {
+                listOf()
+            }
+        return PluginManagementInfo(repositories, includedBuilds)
     }
 }
