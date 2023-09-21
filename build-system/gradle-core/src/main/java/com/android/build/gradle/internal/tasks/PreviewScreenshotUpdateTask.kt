@@ -16,23 +16,18 @@
 
 package com.android.build.gradle.internal.tasks
 
-import com.android.Version
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
-import com.android.build.gradle.internal.test.report.ReportType
-import com.android.build.gradle.internal.test.report.TestReport
 import com.android.build.gradle.internal.testing.screenshot.ImageDetails
 import com.android.build.gradle.internal.testing.screenshot.PERIOD
 import com.android.build.gradle.internal.testing.screenshot.PreviewResult
 import com.android.build.gradle.internal.testing.screenshot.ResponseProcessor
-import com.android.build.gradle.internal.testing.screenshot.saveResults
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.core.ComponentType
 import com.android.utils.FileUtils
 import org.gradle.api.GradleException
-import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.tasks.CacheableTask
@@ -43,9 +38,6 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import java.io.File
 import org.gradle.api.tasks.VerificationTask
-import java.io.PrintWriter
-import java.io.StringWriter
-import java.nio.file.StandardCopyOption
 
 /**
  * Update golden images of a variant.
@@ -53,11 +45,6 @@ import java.nio.file.StandardCopyOption
 @CacheableTask
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.TEST)
 abstract class PreviewScreenshotUpdateTask : NonIncrementalTask(), VerificationTask {
-
-    companion object {
-
-        const val previewlibCliToolConfigurationName = "_internal-screenshot-test-task-previewlib-cli"
-    }
 
     @Internal
     override lateinit var variantName: String
@@ -113,30 +100,12 @@ abstract class PreviewScreenshotUpdateTask : NonIncrementalTask(), VerificationT
 
             task.group = JavaBasePlugin.VERIFICATION_GROUP
 
-            maybeCreatePreviewlibCliToolConfiguration(task.project)
-
             task.goldenImageDir.set(goldenImageDir)
             task.goldenImageDir.disallowChanges()
 
             creationConfig.artifacts.setTaskInputToFinalProduct(
                 InternalArtifactType.SCREENSHOTS_RENDERED, task.renderTaskOutputDir
             )
-        }
-
-        private fun maybeCreatePreviewlibCliToolConfiguration(project: Project) {
-            val container = project.configurations
-            val dependencies = project.dependencies
-            if (container.findByName(previewlibCliToolConfigurationName) == null) {
-                container.create(previewlibCliToolConfigurationName).apply {
-                    isVisible = false
-                    isTransitive = true
-                    isCanBeConsumed = false
-                    description = "A configuration to resolve PreviewLib CLI tool dependencies."
-                }
-                dependencies.add(
-                    previewlibCliToolConfigurationName,
-                    "com.android.screenshot.cli:screenshot:${Version.ANDROID_TOOLS_BASE_VERSION}")
-            }
         }
     }
 }
