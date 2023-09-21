@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.tasks
 
-import com.android.Version
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
 import com.android.build.gradle.internal.scope.InternalArtifactType
@@ -55,11 +54,6 @@ import javax.imageio.ImageIO
 @CacheableTask
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.TEST)
 abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), VerificationTask {
-
-    companion object {
-
-        const val previewlibCliToolConfigurationName = "_internal-screenshot-test-task-previewlib-cli"
-    }
 
     @Internal
     override lateinit var variantName: String
@@ -196,8 +190,6 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
 
             task.group = JavaBasePlugin.VERIFICATION_GROUP
 
-            maybeCreatePreviewlibCliToolConfiguration(task.project)
-
             task.goldenImageDir.set(goldenImageDir)
             task.goldenImageDir.disallowChanges()
 
@@ -209,22 +201,6 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
             )
 
 
-        }
-
-        private fun maybeCreatePreviewlibCliToolConfiguration(project: Project) {
-            val container = project.configurations
-            val dependencies = project.dependencies
-            if (container.findByName(previewlibCliToolConfigurationName) == null) {
-                container.create(previewlibCliToolConfigurationName).apply {
-                    isVisible = false
-                    isTransitive = true
-                    isCanBeConsumed = false
-                    description = "A configuration to resolve PreviewLib CLI tool dependencies."
-                }
-                dependencies.add(
-                    previewlibCliToolConfigurationName,
-                    "com.android.screenshot.cli:screenshot:${Version.ANDROID_TOOLS_BASE_VERSION}")
-            }
         }
     }
 }
