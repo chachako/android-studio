@@ -22,7 +22,7 @@ import java.io.File
 class ImagePanelRenderer(private val isRecordGolden: Boolean): ReportRenderer<ScreenshotTestImages, SimpleHtmlWriter>() {
 
     val ALT_TEXT_PREFIX = "Error displaying image at "
-    val COLUMN_NAME_GOLDEN = "Golden Image"
+    val COLUMN_NAME_GOLDEN = "Reference Image"
     val COLUMN_NAME_ACTUAL = "Actual Image"
     val COLUMN_NAME_DIFF = "Diff Image"
 

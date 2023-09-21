@@ -119,7 +119,7 @@ abstract class PreviewScreenshotValidationTask : NonIncrementalTask(), Verificat
         if (previewResult.responseCode != 0 ) {
             if (!goldenPath.toFile().exists()) {
                 goldenPath = null
-                goldenMessage = "Golden image missing"
+                goldenMessage = "Reference image missing"
             }
 
             return previewResult.copy(

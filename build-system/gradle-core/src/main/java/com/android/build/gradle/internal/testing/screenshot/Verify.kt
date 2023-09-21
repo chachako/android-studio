@@ -35,7 +35,7 @@ class Verify(private val imageDiffer: ImageDiffer = ImageDiffer.PixelPerfect(), 
         }
         if (golden == null) return AnalysisResult.MissingGolden(actual, "MISSING GOLDEN")
         if (actual.width != golden.width || actual.height != golden.height) {
-            return AnalysisResult.SizeMismatch(actual, "Size Mismatch. Golden image size: ${golden.width}X${golden.height}. Rendered image size: ${actual.width}X${actual.height}", golden)
+            return AnalysisResult.SizeMismatch(actual, "Size Mismatch. Reference image size: ${golden.width}X${golden.height}. Rendered image size: ${actual.width}X${actual.height}", golden)
         }
         val diff = imageDiffer.diff(actual, golden)
         if (diff.highlights != null) {

@@ -73,7 +73,7 @@ class ScreenshotTestReportTest {
                 <property name="device" value="Previews" />
               </properties>
               <testcase name="useAppContext1" classname="com.example.myapplication.ExampleInstrumentedTest" time="3.272">
-              <success>Golden Images saved</success>
+              <success>Reference Images saved</success>
               <images>
               <golden path="${golden.absolutePath}"/>
               </images>
@@ -91,7 +91,7 @@ class ScreenshotTestReportTest {
                 <property name="device" value="Previews" />
               </properties>
               <testcase name="useAppContext1" classname="com.example.myapplication.ExampleInstrumentedTest" time="3.272">
-              <success>Golden Images saved</success>
+              <success>Reference Images saved</success>
               <images>
               <golden path="${golden.absolutePath}"/>
               <actual path="${actual.absolutePath}"/>
@@ -111,13 +111,13 @@ class ScreenshotTestReportTest {
               <images>
               <golden path="${golden.absolutePath}"/>
               <actual path="${actual.absolutePath}"/>
-              <diff message="Size Mismatch. Golden image: 5x5 Actual image: 4x5"/>
+              <diff message="Size Mismatch. Reference image: 5x5 Actual image: 4x5"/>
               </images>
               </testcase>
               <testcase name="useAppContext4" classname="com.example.myapplication.ExampleInstrumentedTest" time="0.234">
-              <failure>No golden Image</failure>
+              <failure>No Reference Image</failure>
               <images>
-              <golden message="Golden image does not exist"/>
+              <golden message="Reference image does not exist"/>
               <actual path="${actual.absolutePath}"/>
               <diff message="No diff"/>
               </images>
@@ -194,7 +194,7 @@ class ScreenshotTestReportTest {
         assertThat(classHtml).contains(actual.absolutePath)
         assertThat(classHtml).contains(diff.absolutePath)
         assertThat(classHtml).contains("Images match")
-        assertThat(classHtml).contains("Golden image does not exist")
+        assertThat(classHtml).contains("Reference image does not exist")
         assertThat(classHtml).contains("Size Mismatch")
         assertThat(classHtml).doesNotContain("Images don't match")
 
