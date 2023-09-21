@@ -492,7 +492,8 @@ class LintFixPerformerTest : TestCase() {
         .trimIndent()
 
     val range = Location.create(file, source, source.indexOf("/** Comment"), source.length)
-    val fix = fix().annotate("androidx.annotation.UiThread").range(range).autoFix().build()
+    val fix =
+      fix().annotate("androidx.annotation.UiThread", null, null).range(range).autoFix().build()
     check(
       file,
       source,
@@ -533,7 +534,8 @@ class LintFixPerformerTest : TestCase() {
         .trimIndent()
 
     val range = Location.create(file, source, source.indexOf("/** Comment"), source.length)
-    val fix = fix().annotate("androidx.annotation.UiThread").range(range).autoFix().build()
+    val fix =
+      fix().annotate("androidx.annotation.UiThread", null, null).range(range).autoFix().build()
     check(
       file,
       source,

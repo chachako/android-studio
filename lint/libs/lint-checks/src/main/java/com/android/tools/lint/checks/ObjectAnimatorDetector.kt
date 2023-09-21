@@ -220,7 +220,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
         return
       }
       val fix =
-        fix().annotate(KEEP_ANNOTATION.newName()).range(context.getLocation(bestMethod)).build()
+        fix().annotate(KEEP_ANNOTATION.newName(), context = context, element = bestMethod).build()
       report(
         context,
         MISSING_KEEP,

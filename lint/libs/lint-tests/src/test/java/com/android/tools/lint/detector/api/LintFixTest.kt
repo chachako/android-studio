@@ -121,7 +121,7 @@ class LintFixTest : TestCase() {
   fun testAnnotate() {
     // The actual adding of annotations is tested in (for example) SdkIntDetectorTest.
     // This is just testing some other minor methods for code coverage purposes
-    val fix = LintFix.create().annotate("SuppressWarnings", true).autoFix().build()
+    val fix = LintFix.create().annotate("SuppressWarnings", null, null, true).autoFix().build()
     assertTrue(fix.independent)
     assertTrue(fix.robot)
     // The rest of the annotation fix functionality is tested in various lint checks

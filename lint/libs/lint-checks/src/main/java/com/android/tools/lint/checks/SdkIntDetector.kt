@@ -304,7 +304,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
           val args =
             "api=$buildCode${if (lambda != -1) ", lambda=$lambda" else ""}${if (sdkId != ANDROID_SDK_ID)", extension=${getSdkConstant(context, sdkId)}" else ""}"
           val message = "This method should be annotated with `@ChecksSdkIntAtLeast($args)`"
-          val fix = createAnnotationFix(context, args)
+          val fix = createAnnotationFix(context, method, args)
           context.report(ISSUE, method, location, message, fix)
 
           if (!context.isGlobalAnalysis()) {
@@ -327,7 +327,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
               "parameter=$index${if (lambda != -1) ", lambda=$lambda" else ""}${if (sdkId != ANDROID_SDK_ID)", extension=${getSdkConstant(context, sdkId)}" else ""}"
             val message = "This method should be annotated with `@ChecksSdkIntAtLeast($args)`"
             val location = context.getNameLocation(method).withOriginalSource(method)
-            val fix = createAnnotationFix(context, args)
+            val fix = createAnnotationFix(context, method, args)
             context.report(ISSUE, method, location, message, fix)
 
             if (!context.isGlobalAnalysis()) {
@@ -344,11 +344,21 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
       }
     }
 
-    private fun createAnnotationFix(context: JavaContext, args: String): LintFix? {
+    private fun createAnnotationFix(
+      context: JavaContext,
+      element: UElement,
+      args: String
+    ): LintFix? {
       // if not on classpath (older annotation library) don't suggest annotating
       if (context.evaluator.findClass(CHECKS_SDK_INT_AT_LEAST_ANNOTATION) == null) return null
 
-      return LintFix.create().annotate("$CHECKS_SDK_INT_AT_LEAST_ANNOTATION($args)").build()
+      return LintFix.create()
+        .annotate(
+          "$CHECKS_SDK_INT_AT_LEAST_ANNOTATION($args)",
+          context = context,
+          element = element.sourcePsi
+        )
+        .build()
     }
 
     private fun getSdkConstant(context: JavaContext, sdkId: Int): String {
@@ -384,7 +394,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
           "api=$buildCode${if (sdkId != ANDROID_SDK_ID)", extension=${getSdkConstant(context, sdkId)}" else ""}"
         val message = "This field should be annotated with `ChecksSdkIntAtLeast($args)`"
         val location = context.getNameLocation(field).withOriginalSource(field)
-        val fix = createAnnotationFix(context, args)
+        val fix = createAnnotationFix(context, field, args)
         context.report(ISSUE, field, location, message, fix)
 
         if (!context.isGlobalAnalysis()) {
@@ -404,7 +414,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
         val args = "extension=${getSdkConstant(context, sdkId)}"
         val message = "This field should be annotated with `ChecksSdkIntAtLeast($args)`"
         val location = context.getNameLocation(field).withOriginalSource(field)
-        val fix = createAnnotationFix(context, args)
+        val fix = createAnnotationFix(context, field, args)
         context.report(ISSUE, field, location, message, fix)
 
         if (!context.isGlobalAnalysis()) {

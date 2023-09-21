@@ -23,6 +23,8 @@ import com.android.tools.lint.detector.api.LintFix.ReplaceString.Companion.INSER
 import com.google.common.base.Splitter
 import com.google.common.collect.Lists
 import com.google.common.collect.Maps
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiField
 import com.intellij.psi.PsiMethod
 import java.io.File
 import java.util.regex.Matcher
@@ -32,6 +34,8 @@ import org.intellij.lang.annotations.RegExp
 import org.jetbrains.annotations.Contract
 import org.jetbrains.annotations.Nls
 import org.jetbrains.annotations.NonNls
+import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtProperty
 
 /**
  * A **description** of a quickfix for a lint warning, which provides structured data for use by the
@@ -399,9 +403,25 @@ protected constructor(
      *
      * @return a fix builder
      */
+    @Deprecated("Use annotate(String, Context?, PsiElement?, Boolean = true) instead.")
     @JvmOverloads
     fun annotate(source: String, replace: Boolean = true): AnnotateBuilder {
       return AnnotateBuilder(displayName, familyName, source, replace)
+    }
+
+    /**
+     * Creates a fix with extra information about the location and context, to more accurately
+     * pinpoint where the annotation should be placed. The location can be explicitly overridden
+     * using `.range(location).
+     */
+    @JvmOverloads
+    fun annotate(
+      source: String,
+      context: Context?,
+      element: PsiElement?,
+      replace: Boolean = true,
+    ): AnnotateBuilder {
+      return AnnotateBuilder(displayName, familyName, source, replace, context, element)
     }
   }
 
@@ -411,10 +431,36 @@ protected constructor(
     @field:Nls private val displayName: String?,
     @field:Nls private var familyName: String?,
     annotation: String,
-    private val replace: Boolean
+    private val replace: Boolean,
+    private val context: Context? = null,
+    private val element: PsiElement? = null
   ) {
     private val annotation: String = if (annotation.startsWith("@")) annotation else "@$annotation"
-    private var range: Location? = null
+    private var range: Location? =
+      if (context == null || element == null) null
+      else {
+        // If a location is not explicitly specified for a quickfix, it will be widened by
+        // `LintDriver#Incident.ensureInitialized` and may contain undesirable elements,
+        // like comments. Here we specify as specific a location as possible so that
+        // annotations are placed before any code, but after comments.
+        // This problem was noticed in b/249043377.
+        val startElement =
+          when (element) {
+            is KtNamedFunction -> element.modifierList ?: element.funKeyword ?: element
+            is PsiMethod -> element.modifierList
+            is KtProperty -> element.modifierList ?: element.valOrVarKeyword
+            is PsiField -> element.modifierList ?: element.typeElement ?: element
+            else -> null
+          }
+
+        if (startElement != null)
+          context.getLocation(startElement).start?.let { start ->
+            context.getLocation(element).end?.let { end ->
+              extractOffsets(Location.create(context.file, start, end))
+            }
+          }
+        else null
+      }
     private var robot = false
     private var independent = false
 

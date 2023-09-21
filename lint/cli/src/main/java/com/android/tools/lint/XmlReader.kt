@@ -417,7 +417,7 @@ class XmlReader(
     return LintFix.create()
       .name(displayName)
       .sharedName(familyName)
-      .annotate(source!!, replace)
+      .annotate(source!!, null, null, replace)
       .autoFix(robot, independent)
       .build()
   }
