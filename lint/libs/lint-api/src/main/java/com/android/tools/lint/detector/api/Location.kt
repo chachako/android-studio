@@ -286,10 +286,10 @@ protected constructor(
   }
 
   open class ResourceItemHandle(
-    private val client: LintClient,
+    protected val client: LintClient,
     val item: ResourceItem,
-    private val nameOnly: Boolean,
-    private val valueOnly: Boolean
+    protected val nameOnly: Boolean,
+    protected val valueOnly: Boolean
   ) : Handle {
     override fun resolve(): Location {
       val parser = client.xmlParser

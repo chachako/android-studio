@@ -480,11 +480,11 @@ class StringFormatDetector
             }
             j++
           }
-          val handle: Location.Handle = client.createResourceItemHandle(item, false, true)
           if (isFormattingString) {
+            val handle: Location.Handle = client.createResourceItemHandle(item, false, true)
             mFormatStrings.computeIfAbsent(name) { ArrayList() }.add(handle to value)
           } else if (callCount > 0) {
-            checkNotFormattedHandle(context, call, name, handle)
+            checkNotFormattedHandle(context, call, name, client.createResourceItemHandle(item, false, true))
           }
         }
       }
