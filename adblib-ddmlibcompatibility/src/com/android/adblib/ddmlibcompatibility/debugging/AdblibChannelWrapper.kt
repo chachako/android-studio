@@ -17,6 +17,7 @@ package com.android.adblib.ddmlibcompatibility.debugging
 
 import com.android.adblib.AdbChannel
 import com.android.adblib.read
+import com.android.adblib.write
 import com.android.ddmlib.SimpleConnectedSocket
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer

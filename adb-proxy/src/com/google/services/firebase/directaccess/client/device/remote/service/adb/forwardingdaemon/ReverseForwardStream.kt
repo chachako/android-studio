@@ -25,6 +25,7 @@ import com.android.adblib.read
 import com.android.adblib.shellCommand
 import com.android.adblib.syncSend
 import com.android.adblib.withInputChannelCollector
+import com.android.adblib.write
 import com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon.reverse.MessageParseException
 import com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon.reverse.MessageType
 import com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon.reverse.StreamDataHeader

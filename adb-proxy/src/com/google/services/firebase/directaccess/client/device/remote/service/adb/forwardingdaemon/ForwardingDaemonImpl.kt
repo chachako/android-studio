@@ -156,11 +156,13 @@ internal class ForwardingDaemonImpl(
                 object : AdbChannel by adbChannel {
                   val writeMutex = Mutex()
 
-                  override suspend fun write(
+                  override suspend fun writeBuffer(
                     buffer: ByteBuffer,
                     timeout: Long,
                     unit: TimeUnit
-                  ): Int = writeMutex.withLock { adbChannel.write(buffer, timeout, unit) }
+                  ) {
+                    writeMutex.withLock { adbChannel.writeBuffer(buffer, timeout, unit) }
+                  }
                 }
               }
             reverseService =
