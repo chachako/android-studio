@@ -393,7 +393,7 @@ constructor(
         return EmptyRepository
       }
 
-      val projectRepository = getForProjectOnly(client, project)
+      val projectRepository = getForProjectOnly(client, project, useSerialization = true)
       if (scope == ResourceRepositoryScope.PROJECT_ONLY) {
         return projectRepository
       }
@@ -406,7 +406,7 @@ constructor(
         // list to only include leaves, not nested ones
         project.allLibraries
           .filter { !it.isExternalLibrary }
-          .map { getForProjectOnly(client, it) }
+          .map { getForProjectOnly(client, it, useSerialization = false) }
           .forEach { repositories += it }
 
         // If we're only computing local dependencies, not library and
@@ -448,14 +448,14 @@ constructor(
     private var warned = false
 
     private fun getOrCreateRepository(
-      serializedFile: File,
+      serializedFile: File?,
       client: LintClient,
       root: File?,
       project: Project?,
       factory: () -> LintResourceRepository
     ): LintResourceRepository {
       // For leaf repositories, try to load from storage
-      if (serializedFile.isFile) {
+      if (serializedFile?.isFile == true) {
         val serialized = serializedFile.readText()
         try {
           return LintResourcePersistence.deserialize(
@@ -503,22 +503,29 @@ constructor(
       val repository = factory()
 
       // Write for future usage
-      serializedFile.parentFile?.mkdirs()
-      val serialized =
-        LintResourcePersistence.serialize(repository, client.pathVariables, project?.dir)
-      serializedFile.writeText(serialized)
+      if (serializedFile != null) {
+        serializedFile.parentFile?.mkdirs()
+        val serialized =
+          LintResourcePersistence.serialize(repository, client.pathVariables, project?.dir)
+        serializedFile.writeText(serialized)
+      }
       return repository
     }
 
     /** Returns the resource repository for the given [project], *not* including dependencies. */
-    private fun getForProjectOnly(client: LintCliClient, project: Project): LintResourceRepository {
+    private fun getForProjectOnly(
+      client: LintCliClient,
+      project: Project,
+      useSerialization: Boolean
+    ): LintResourceRepository {
+      val serializedFile =
+        if (useSerialization) {
+          client.getSerializationFile(project, XmlFileType.RESOURCE_REPOSITORY)
+        } else {
+          null
+        }
       return project.getClientProperty<LintResourceRepository>(ResourceRepositoryScope.PROJECT_ONLY)
-        ?: getOrCreateRepository(
-            client.getSerializationFile(project, XmlFileType.RESOURCE_REPOSITORY),
-            client,
-            project.dir,
-            project
-          ) {
+        ?: getOrCreateRepository(serializedFile, client, project.dir, project) {
             createFromFolder(client, project, ResourceNamespace.TODO())
           }
           .also { project.putClientProperty(ResourceRepositoryScope.PROJECT_ONLY, it) }
