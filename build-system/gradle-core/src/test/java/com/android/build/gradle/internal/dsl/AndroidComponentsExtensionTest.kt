@@ -77,6 +77,22 @@ class AndroidComponentsExtensionTest {
     }
 
     @Test
+    fun testStaticPluginVersion() {
+        assertThat(AndroidPluginVersion.getCurrent()).isNotNull()
+        val extension = Mockito.mock(ApplicationExtension::class.java)
+        val variantApiOperationsRegistrar = VariantApiOperationsRegistrar<ApplicationExtension, ApplicationVariantBuilder, ApplicationVariant>(extension)
+
+        val androidComponents: ApplicationAndroidComponentsExtension = ApplicationAndroidComponentsExtensionImpl(
+            dslServices,
+            sdkComponents,
+            managedDeviceRegistry,
+            variantApiOperationsRegistrar,
+            extension
+        )
+        assertThat(androidComponents.pluginVersion).isEqualTo(AndroidPluginVersion.getCurrent())
+    }
+
+    @Test
     fun testPluginVersion() {
         val extension = Mockito.mock(ApplicationExtension::class.java)
         val variantApiOperationsRegistrar = VariantApiOperationsRegistrar<ApplicationExtension, ApplicationVariantBuilder, ApplicationVariant>(extension)

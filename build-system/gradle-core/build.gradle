@@ -24,6 +24,13 @@ configurations {
             attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category, Category.DOCUMENTATION))
         }
     }
+    versionPropertiesSource
+}
+
+task writeVersionProperties(type: com.android.tools.internal.VersionPropertiesWriter) {
+    versionPropertiesSourceInput.from(configurations.versionPropertiesSource)
+    outputFilePath = "com/android/build/api/extension/impl/version.properties"
+    outputDirectory = project.layout.buildDirectory.dir("generated/resources")
 }
 
 licenseReport {
@@ -38,7 +45,7 @@ File baseInstrumentedClasses = new File(classesDir, "baseInstrumented")
 sourceSets {
     main {
         java.srcDirs += 'src/fromGradle/java'
-        resources.srcDirs = ['src/main/resources', 'src/fromGradle/resources']
+        resources.srcDirs = ['src/main/resources', 'src/fromGradle/resources', tasks.findByName("writeVersionProperties").getOutputDirectory()]
         compileClasspath += configurations.provided
     }
 
@@ -248,6 +255,8 @@ dependencies {
     includeInJarSources(project(':base:kotlin-multiplatform-models')) {
         transitive = false
     }
+    versionPropertiesSource libs.com.android.tools.common
+
     implementation libs.flatbuffers
     implementation libs.tensorflow_lite_metadata
     provided(project(':base:build-system:shrinker')) {

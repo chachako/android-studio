@@ -405,6 +405,7 @@ com/android/tools/build/gradle
   com/android/build/api/component/impl/features/
   com/android/build/api/extension/
   com/android/build/api/extension/impl/
+  com/android/build/api/extension/impl/version.properties
   com/android/build/api/variant/
   com/android/build/api/variant/impl/
   com/android/build/gradle/

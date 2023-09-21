@@ -8,6 +8,7 @@ package com.android.build.api {
     method public com.android.build.api.AndroidPluginVersion beta(int beta);
     method public int compareTo(com.android.build.api.AndroidPluginVersion other);
     method @org.gradle.api.Incubating public com.android.build.api.AndroidPluginVersion dev();
+    method public static com.android.build.api.AndroidPluginVersion getCurrent();
     method public int getMajor();
     method public int getMicro();
     method public int getMinor();
@@ -19,6 +20,11 @@ package com.android.build.api {
     property public final int minor;
     property public final int preview;
     property public final String? previewType;
+    field public static final com.android.build.api.AndroidPluginVersion.Companion Companion;
+  }
+
+  public static final class AndroidPluginVersion.Companion {
+    method public com.android.build.api.AndroidPluginVersion getCurrent();
   }
 
 }

@@ -58,7 +58,7 @@ abstract class AndroidComponentsExtensionImpl<
     }
 
     override val pluginVersion: AndroidPluginVersion
-        get() = CURRENT_AGP_VERSION
+        get() = CurrentAndroidGradlePluginVersion.CURRENT_AGP_VERSION
 
     override fun beforeVariants(selector: VariantSelector, callback: (VariantBuilderT) -> Unit) {
         variantApiOperations.variantBuilderOperations.addOperation({

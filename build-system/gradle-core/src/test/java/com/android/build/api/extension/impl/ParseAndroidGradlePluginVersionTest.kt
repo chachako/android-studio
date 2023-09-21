@@ -17,6 +17,8 @@
 package com.android.build.api.extension.impl
 
 import com.android.build.api.AndroidPluginVersion
+import com.android.build.api.extension.impl.CurrentAndroidGradlePluginVersion.CURRENT_AGP_VERSION
+import com.android.build.api.extension.impl.CurrentAndroidGradlePluginVersion.parseAndroidGradlePluginVersion
 import com.google.common.truth.Expect
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
