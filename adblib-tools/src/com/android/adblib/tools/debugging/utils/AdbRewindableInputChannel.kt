@@ -17,6 +17,7 @@ package com.android.adblib.tools.debugging.utils
 
 import com.android.adblib.AdbInputChannel
 import com.android.adblib.ByteBufferAdbInputChannel
+import com.android.adblib.read
 import com.android.adblib.readRemaining
 import com.android.adblib.skipRemaining
 import com.android.adblib.tools.debugging.packets.copy
@@ -72,8 +73,8 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
                 // Nothing to do
             }
 
-            override suspend fun read(buffer: ByteBuffer, timeout: Long, unit: TimeUnit): Int {
-                return -1
+            override suspend fun readBuffer(buffer: ByteBuffer, timeout: Long, unit: TimeUnit) {
+                // Nothing to do
             }
 
             override fun close() {
@@ -92,8 +93,8 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
                 buffer.position(rewindPosition)
             }
 
-            override suspend fun read(buffer: ByteBuffer, timeout: Long, unit: TimeUnit): Int {
-                return input.read(buffer, timeout, unit)
+            override suspend fun readBuffer(buffer: ByteBuffer, timeout: Long, unit: TimeUnit) {
+                input.readBuffer(buffer, timeout, unit)
             }
 
             override suspend fun readExactly(buffer: ByteBuffer, timeout: Long, unit: TimeUnit) {
@@ -150,7 +151,7 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
                 }
             }
 
-            override suspend fun read(buffer: ByteBuffer, timeout: Long, unit: TimeUnit): Int {
+            override suspend fun readBuffer(buffer: ByteBuffer, timeout: Long, unit: TimeUnit) {
                 throwIfClosed()
 
                 // Read from `bufferHolder` first if available
@@ -160,7 +161,7 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
                     slice.limit(slice.position() + count)
                     buffer.put(slice)
                     bufferHolder.position(bufferHolder.position() + count)
-                    return count
+                    return
                 }
 
                 // Read from underlying channel and append data to internal buffer
@@ -183,7 +184,6 @@ internal interface AdbRewindableInputChannel : AdbInputChannel {
                     bufferHolder.put(bufferSlice)
                     assert(bufferHolder.remaining() == 0)
                 }
-                return count
             }
 
             override suspend fun toOffline(workBuffer: ResizableBuffer): AdbRewindableInputChannel {

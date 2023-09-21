@@ -220,8 +220,8 @@ class AdbRewindableInputChannelTest {
                 delegateChannel.rewind()
             }
 
-            override suspend fun read(buffer: ByteBuffer, timeout: Long, unit: TimeUnit): Int {
-                return delegateChannel.read(buffer, timeout, unit)
+            override suspend fun readBuffer(buffer: ByteBuffer, timeout: Long, unit: TimeUnit) {
+                delegateChannel.readBuffer(buffer, timeout, unit)
             }
 
             override fun close() {

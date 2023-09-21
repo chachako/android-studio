@@ -713,12 +713,12 @@ internal class SharedJdwpSessionImpl(
                 rewindableInput.rewind()
             }
 
-            override suspend fun read(buffer: ByteBuffer, timeout: Long, unit: TimeUnit): Int {
-                return scopedRead { rewindableInput.read(buffer) }
+            override suspend fun readBuffer(buffer: ByteBuffer, timeout: Long, unit: TimeUnit) {
+                return scopedRead { rewindableInput.readBuffer(buffer, timeout, unit) }
             }
 
             override suspend fun readExactly(buffer: ByteBuffer, timeout: Long, unit: TimeUnit) {
-                return scopedRead { rewindableInput.readExactly(buffer) }
+                return scopedRead { rewindableInput.readExactly(buffer, timeout, unit) }
             }
 
             suspend fun waitForPendingRead() {
