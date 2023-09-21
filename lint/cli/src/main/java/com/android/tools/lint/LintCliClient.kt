@@ -41,6 +41,7 @@ import com.android.tools.lint.checks.HardcodedValuesDetector
 import com.android.tools.lint.client.api.Configuration
 import com.android.tools.lint.client.api.GradleVisitor
 import com.android.tools.lint.client.api.IssueRegistry
+import com.android.tools.lint.client.api.IssueRegistry.Companion.LINT_ERROR
 import com.android.tools.lint.client.api.JarFileIssueRegistry
 import com.android.tools.lint.client.api.LintBaseline
 import com.android.tools.lint.client.api.LintClient
@@ -77,6 +78,7 @@ import com.android.tools.lint.model.LintModelModuleType
 import com.android.tools.lint.model.PathVariables
 import com.android.utils.CharSequences
 import com.android.utils.StdLogger
+import com.google.common.annotations.VisibleForTesting
 import com.intellij.codeInsight.ExternalAnnotationsManager
 import com.intellij.mock.MockProject
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -400,7 +402,8 @@ open class LintCliClient : LintClient {
    * @param writeEmptyBaseline whether to write a file when there are no lint issues.
    * @return [ERRNO_INTERNAL_CONTINUE] or another exit code in case of a problem
    */
-  private fun writeNewBaselineFile(stats: LintStats, file: File, writeEmptyBaseline: Boolean): Int {
+  @VisibleForTesting
+  fun writeNewBaselineFile(stats: LintStats, file: File, writeEmptyBaseline: Boolean): Int {
     if (writeEmptyBaseline || definiteIncidents.isNotEmpty()) {
       val dir = file.parentFile
       if (dir != null && !dir.isDirectory) {
@@ -409,10 +412,12 @@ open class LintCliClient : LintClient {
           return ERRNO_INVALID_ARGS
         }
       }
+      val incidentsToBaseline =
+        definiteIncidents.filter { LintBaseline.shouldBaseline(it.issue.id) }
       val reporter = Reporter.createXmlReporter(this, file, XmlFileType.BASELINE)
       reporter.pathVariables = pathVariables.filter(PathVariables::isPrivatePathVariable)
       reporter.setBaselineAttributes(this, baselineVariantName, flags.isCheckDependencies)
-      reporter.write(stats, definiteIncidents, driver.registry)
+      reporter.write(stats, incidentsToBaseline, driver.registry)
     } else {
       Files.deleteIfExists(file.toPath())
     }

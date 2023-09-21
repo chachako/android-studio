@@ -21,6 +21,7 @@ import com.android.testutils.truth.PathSubject
 import com.android.tools.lint.LintCliFlags.ERRNO_CREATED_BASELINE
 import com.android.tools.lint.LintCliFlags.ERRNO_ERRORS
 import com.android.tools.lint.LintCliFlags.ERRNO_SUCCESS
+import com.android.tools.lint.LintStats
 import com.android.tools.lint.MainTest
 import com.android.tools.lint.checks.AccessibilityDetector
 import com.android.tools.lint.checks.ApiDetector
@@ -37,6 +38,7 @@ import com.android.tools.lint.checks.ScopedStorageDetector
 import com.android.tools.lint.checks.TypoDetector
 import com.android.tools.lint.checks.infrastructure.TestFiles.bytecode
 import com.android.tools.lint.checks.infrastructure.TestFiles.image
+import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestFiles.manifest
 import com.android.tools.lint.checks.infrastructure.TestFiles.source
@@ -2436,6 +2438,81 @@ class LintBaselineTest {
         new = "PreviousDetector",
         old = "Value must be ≥ 0"
       )
+    )
+  }
+
+  @Test
+  fun testNoLintErrorsInBaseline() {
+    // Regression test for b/297095583
+    val root = temporaryFolder.newFolder().canonicalFile.absoluteFile
+    val baselineFolder = File(root, "baselines")
+    baselineFolder.mkdirs()
+    val outputBaseline = File(baselineFolder, "baseline-out.xml")
+    outputBaseline.createNewFile()
+
+    val lint = lint()
+    val client = TestLintClient()
+
+    lint
+      .files(
+        xml("res/layout/foo.xml", "<LinearLayout/>"),
+        java(
+          """
+                  package test.pkg;
+                  @SuppressWarnings("ALL") class Foo {
+                  }
+                  """
+        )
+      )
+      .allowSystemErrors(true)
+      .allowExceptions(true)
+      .issues(LintDriverCrashTest.CrashingDetector.CRASHING_ISSUE)
+      .testModes(TestMode.DEFAULT)
+      .sdkHome(TestUtils.getSdk().toFile())
+      .clientFactory {
+        client.setLintTask(lint)
+        client.flags.isUpdateBaseline = true
+        client.flags.baselineFile = outputBaseline
+        client
+      }
+      .run()
+      .check({
+        assertThat(it)
+          .contains(
+            // This LintError should not be baselined
+            "Foo.java: Error: Unexpected failure during lint analysis of Foo.java (this is a bug in lint or one of the libraries it depends on)"
+          )
+      })
+
+    val baseline = client.driver.baseline!!
+
+    // Writing to the baseline the way Lint does when invoked from the IDE,
+    // or when Lint CLI is revising an existing baseline.
+    baseline.write(outputBaseline)
+    assertEquals(
+      """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <issues>
+
+        </issues>
+      """
+        .trimIndent(),
+      readBaseline(outputBaseline).dos2unix()
+    )
+
+    // Writing to the baseline the way Lint CLI does when creating a new
+    // baseline file.
+    client.writeNewBaselineFile(LintStats(0, 0), outputBaseline, true)
+
+    assertEquals(
+      """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <issues>
+
+        </issues>
+      """
+        .trimIndent(),
+      readBaseline(outputBaseline).dos2unix()
     )
   }
 

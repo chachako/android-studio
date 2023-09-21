@@ -235,7 +235,7 @@ class LintBaseline(
     val found = findAndMark(issue, location, message, severity, null)
 
     if (writeOnClose && (!removeFixed || found)) {
-      if (entriesToWrite != null && issue.id != IssueRegistry.BASELINE.id) {
+      if (entriesToWrite != null && shouldBaseline(issue.id)) {
         val project = incident.project
         entriesToWrite!!.add(ReportedEntry(issue, project, location, message))
       }
@@ -728,6 +728,16 @@ class LintBaseline(
     @Suppress("unused") // Used from the IDE
     fun isFixedMessage(errorMessage: String, format: TextFormat): Boolean {
       return format.toText(errorMessage).contains("perhaps they have been fixed")
+    }
+
+    /**
+     * Given an issue, determines whether it should be included in a baseline. Lint errors should
+     * not be baselined - see b/297095583.
+     */
+    fun shouldBaseline(id: String): Boolean {
+      return id != IssueRegistry.LINT_ERROR.id &&
+        id != IssueRegistry.LINT_WARNING.id &&
+        id != IssueRegistry.BASELINE.id
     }
 
     fun describeBaselineFilter(errors: Int, warnings: Int, baselineDisplayPath: String): String {
