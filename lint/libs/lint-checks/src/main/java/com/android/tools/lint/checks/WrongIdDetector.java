@@ -78,6 +78,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -560,6 +561,9 @@ public class WrongIdDetector extends LayoutDetector {
     @Override
     public void visitAttribute(@NonNull XmlContext context, @NonNull Attr attribute) {
         if (context.getResourceFolderType() != ResourceFolderType.LAYOUT) {
+            return;
+        }
+        if (!Objects.equals(attribute.getNamespaceURI(), ANDROID_URI)) {
             return;
         }
         assert attribute.getName().equals(ATTR_ID) || attribute.getLocalName().equals(ATTR_ID);

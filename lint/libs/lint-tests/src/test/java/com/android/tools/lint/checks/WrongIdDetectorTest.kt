@@ -876,6 +876,38 @@ class WrongIdDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testDatabinding() {
+    // Regression test for b/291130217
+    // ID's using databinding, e.g. @{uxContent.id}, aren't incorrect
+    // and so should be skipped by WrongIdDetector.
+    lint()
+      .files(
+        xml(
+            "res/layout/layout.xml",
+            """
+                <?xml version="1.0" encoding="utf-8"?>
+                <layout xmlns:android="http://schemas.android.com/apk/res/android"
+                    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+                    <data>
+                        <variable
+                            name="uxContent"
+                            type="bug.repro.app.BoundViewModel" />
+                    </data>
+
+                    <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:id="@{uxContent.id}"/>
+                </layout>
+                """
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
+
   // Sample code
   private val mIds =
     xml(
