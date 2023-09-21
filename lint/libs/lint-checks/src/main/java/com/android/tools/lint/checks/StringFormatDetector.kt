@@ -56,7 +56,6 @@ import com.android.tools.lint.detector.api.isKotlin
 import com.android.utils.CharSequences
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.collect.ImmutableList
-import com.google.common.collect.Lists
 import com.google.common.collect.Sets
 import com.intellij.psi.CommonClassNames
 import com.intellij.psi.JavaPsiFacade
@@ -65,7 +64,6 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypes
 import com.intellij.psi.PsiVariable
-import java.util.Collections
 import java.util.EnumSet
 import java.util.Locale
 import java.util.regex.MatchResult
@@ -107,7 +105,8 @@ class StringFormatDetector
    * content. We're using a list since a format string can be defined multiple times, usually for
    * different translations.
    */
-  private var mFormatStrings: MutableMap<String, MutableList<Pair<Location.Handle, String>>>? = null
+  private var mFormatStrings: MutableMap<String, MutableList<Pair<Location.Handle, String>>> =
+    LinkedHashMap()
 
   /** Map of strings that do not contain any formatting. */
   private val mNotFormatStrings: MutableMap<String, Location.Handle> = LinkedHashMap()
@@ -116,7 +115,7 @@ class StringFormatDetector
    * Set of strings that have an unknown format such as date formatting; we should not flag these as
    * invalid when used from a String#format call
    */
-  private var mIgnoreStrings: MutableSet<String>? = null
+  private var mIgnoreStrings: MutableSet<String> = HashSet()
 
   override fun appliesTo(folderType: ResourceFolderType): Boolean {
     return folderType == ResourceFolderType.VALUES
@@ -149,6 +148,15 @@ class StringFormatDetector
     }
   }
 
+  private fun createLocationHandleForXmlDomElement(
+    context: XmlContext,
+    element: Element
+  ): Location.Handle {
+    val handle = context.createLocationHandle(element)
+    handle.clientData = element
+    return handle
+  }
+
   private fun checkTextNode(context: XmlContext, element: Element, text: String) {
     val name = element.getAttribute(SdkConstants.ATTR_NAME)
     var found = false
@@ -167,10 +175,8 @@ class StringFormatDetector
         // Also make sure this String isn't an unformatted String
         val formatted = element.getAttribute("formatted")
         if (!formatted.isEmpty() && !java.lang.Boolean.parseBoolean(formatted)) {
-          if (!mNotFormatStrings.containsKey(name)) {
-            val handle = context.createLocationHandle(element)
-            handle.clientData = element
-            mNotFormatStrings[name] = handle
+          mNotFormatStrings.computeIfAbsent(name) {
+            createLocationHandleForXmlDomElement(context, element)
           }
           return
         }
@@ -181,20 +187,15 @@ class StringFormatDetector
         // call.
         val matcher = FORMAT.matcher(text)
         if (!matcher.find(j)) {
-          if (!mNotFormatStrings.containsKey(name)) {
-            val handle = context.createLocationHandle(element)
-            handle.clientData = element
-            mNotFormatStrings[name] = handle
+          mNotFormatStrings.computeIfAbsent(name) {
+            createLocationHandleForXmlDomElement(context, element)
           }
           return
         }
         val conversion = matcher.group(6)
         val conversionClass = getConversionClass(conversion[0])
         if (conversionClass == CONVERSION_CLASS_UNKNOWN || matcher.group(5) != null) {
-          if (mIgnoreStrings == null) {
-            mIgnoreStrings = HashSet()
-          }
-          mIgnoreStrings!!.add(name)
+          mIgnoreStrings.add(name)
 
           // Don't process any other strings here; some of them could
           // accidentally look like a string, e.g. "%H" is a hash code conversion
@@ -223,58 +224,46 @@ class StringFormatDetector
       // If this is a library project not being analyzed, ignore it
       return
     }
-    if (name != null) {
-      val handle = context.createLocationHandle(element)
-      handle.clientData = element
-      if (found) {
-        // Record it for analysis when seen in Java code
-        if (mFormatStrings == null) {
-          mFormatStrings = LinkedHashMap()
-        }
-        var list = mFormatStrings!![name]
-        if (list == null) {
-          list = ArrayList()
-          mFormatStrings!![name] = list
-        }
-        list.add(handle to text)
-      } else {
-        if (!isReference(text)) {
-          mNotFormatStrings[name] = handle
-        }
+    if (found) {
+      // Record it for analysis when seen in Java code
+      mFormatStrings
+        .computeIfAbsent(name) { ArrayList() }
+        .add(createLocationHandleForXmlDomElement(context, element) to text)
+    } else {
+      if (!isReference(text)) {
+        mNotFormatStrings[name] = createLocationHandleForXmlDomElement(context, element)
       }
     }
   }
 
   override fun afterCheckRootProject(context: Context) {
-    if (mFormatStrings != null) {
-      val checkCount = context.isEnabled(ARG_COUNT)
-      val checkValid = context.isEnabled(INVALID)
-      val checkTypes = context.isEnabled(ARG_TYPES)
+    val checkCount = context.isEnabled(ARG_COUNT)
+    val checkValid = context.isEnabled(INVALID)
+    val checkTypes = context.isEnabled(ARG_TYPES)
 
-      // Ensure that all the format strings are consistent with respect to each other;
-      // e.g. they all have the same number of arguments, they all use all the
-      // arguments, and they all use the same types for all the numbered arguments
-      for (entry in mFormatStrings!!.entries) {
-        val name = entry.key
-        var list = entry.value
+    // Ensure that all the format strings are consistent with respect to each other;
+    // e.g. they all have the same number of arguments, they all use all the
+    // arguments, and they all use the same types for all the numbered arguments
+    for (entry in mFormatStrings.entries) {
+      val name = entry.key
+      var list = entry.value
 
-        // Check argument counts
-        if (checkCount) {
-          val notFormatted = mNotFormatStrings[name]
-          if (notFormatted != null) {
-            list =
-              ImmutableList.builder<Pair<Location.Handle, String>>()
-                .add(notFormatted to name)
-                .addAll(list)
-                .build()
-          }
-          checkArity(context, name, list)
+      // Check argument counts
+      if (checkCount) {
+        val notFormatted = mNotFormatStrings[name]
+        if (notFormatted != null) {
+          list =
+            ImmutableList.builder<Pair<Location.Handle, String>>()
+              .add(notFormatted to name)
+              .addAll(list)
+              .build()
         }
+        checkArity(context, name, list)
+      }
 
-        // Check argument types (and also make sure that the formatting strings are valid)
-        if (checkValid || checkTypes) {
-          checkTypes(context, checkValid, checkTypes, name, list)
-        }
+      // Check argument types (and also make sure that the formatting strings are valid)
+      if (checkValid || checkTypes) {
+        checkTypes(context, checkValid, checkTypes, name, list)
       }
     }
   }
@@ -305,7 +294,7 @@ class StringFormatDetector
 
       // Many of these also define a plain getString method:
       // android.content.res.Resources#getString(@StringRes int resId)
-      // However, while it's possible that these contain formatting strings) it's
+      // However, while it's possible that these contain formatting strings, it's
       // also possible that they're looking up strings that are not intended to be used
       // for formatting so while we may want to warn about this it's not necessarily
       // an error.
@@ -365,7 +354,7 @@ class StringFormatDetector
       return
     }
     val name = resource.name
-    if (mIgnoreStrings != null && mIgnoreStrings!!.contains(name)) {
+    if (mIgnoreStrings.contains(name)) {
       return
     }
     var passingVarArgsArray = false
@@ -431,8 +420,7 @@ class StringFormatDetector
       checkNotFormattedHandle(context, call, name, mNotFormatStrings[name])
       return
     }
-    var list = if (mFormatStrings != null) mFormatStrings!![name] else null
-    if (list == null) {
+    if (mFormatStrings[name] == null) {
       val client = context.client
       val full = context.isGlobalAnalysis()
       val project = if (full) context.mainProject else context.project
@@ -494,21 +482,15 @@ class StringFormatDetector
           }
           val handle: Location.Handle = client.createResourceItemHandle(item, false, true)
           if (isFormattingString) {
-            if (list == null) {
-              list = Lists.newArrayList()
-              if (mFormatStrings == null) {
-                mFormatStrings = LinkedHashMap()
-              }
-              mFormatStrings!![name] = list
-            }
-            list!!.add(handle to value)
+            mFormatStrings.computeIfAbsent(name) { ArrayList() }.add(handle to value)
           } else if (callCount > 0) {
             checkNotFormattedHandle(context, call, name, handle)
           }
         }
       }
     }
-    if (list != null && !list.isEmpty()) {
+    val list = mFormatStrings[name]
+    if (!list.isNullOrEmpty()) {
       list.sortWith(
         java.util.Comparator<Pair<Location.Handle, String>> {
           o1: Pair<Location.Handle, String>,
@@ -931,7 +913,7 @@ This will ensure that in other languages the right set of translations are provi
           sb.append(current)
           isEscaped = false
         } else {
-          isEscaped = current == '\\' // Next char will be escaped so we will just copy it
+          isEscaped = current == '\\' // Next char will be escaped, so we will just copy it
           when (current) {
             '"' -> isQuotedBlock = !isQuotedBlock
             // We only add single quotes when they are within a quoted block
@@ -1128,7 +1110,7 @@ This will ensure that in other languages the right set of translations are provi
     /**
      * Returns true if two String.format conversions are "incompatible" (meaning that using these
      * two for the same argument across different translations is more likely an error than
-     * intentional. Some conversions are incompatible, e.g. "d" and "s" where one is a number and
+     * intentional). Some conversions are incompatible, e.g. "d" and "s" where one is a number and
      * string, whereas others may work (e.g. float versus integer) but are probably not intentional.
      */
     private fun isIncompatible(conversion1: Char, conversion2: Char): Boolean {
@@ -1263,8 +1245,7 @@ This will ensure that in other languages the right set of translations are provi
               all.add(j)
             }
             all.removeAll(indices)
-            val sorted: List<Int> = ArrayList(all)
-            Collections.sort(sorted)
+            val sorted: List<Int> = ArrayList(all).sorted()
             val location = handle.resolve()
             val message =
               String.format(
@@ -1282,7 +1263,7 @@ This will ensure that in other languages the right set of translations are provi
 
     // See java.util.Formatter docs
     @JvmField
-    val FORMAT =
+    val FORMAT: Pattern =
       Pattern.compile( // Generic format:
         //   %[argument_index$][flags][width][.precision]conversion
         //
