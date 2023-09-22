@@ -243,6 +243,12 @@ public class VectorDrawableGeneratorTest extends TestCase {
                 "Scaling of the stroke width is approximate");
     }
 
+    public void testSvgSemiTransparentMaskNotValid() throws Exception {
+        checkSvgConversionAndContainsError(
+                "ic_semitransparent_mask",
+                "Semitransparent mask cannot be represented by a vector drawable");
+    }
+
     public void testSvgEmptyAttributes() throws Exception {
         checkSvgConversion("ic_empty_attributes");
     }
