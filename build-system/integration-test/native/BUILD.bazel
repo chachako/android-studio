@@ -64,6 +64,7 @@ DEPS = [
     "@maven//:org.codehaus.groovy.groovy-all",  # required by //tools/base/build-system:gradle-api
     "@maven//:org.jetbrains.kotlin.kotlin-stdlib",
     "@maven//:org.jetbrains.kotlin.kotlin-test",
+    "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-android",
     "@maven//:org.mockito.mockito-core",
     "@maven//:org.ow2.asm.asm",
     "@maven//:org.ow2.asm.asm-tree",
@@ -528,5 +529,6 @@ maven_repository(
         "@maven//:com.google.guava.guava_19.0",
         "@maven//:com.google.protobuf.protobuf-java-util_3.22.3",
         "@maven//:org.jetbrains.kotlin.kotlin-compiler-embeddable_1.7.10",
+        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-android_1.6.4",
     ],
 )
