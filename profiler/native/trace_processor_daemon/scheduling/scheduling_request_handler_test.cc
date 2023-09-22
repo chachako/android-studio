@@ -35,8 +35,12 @@ typedef proto::SchedulingEventsResult::SchedulingEvent SchedulingEvent;
 typedef ::perfetto::trace_processor::TraceProcessor TraceProcessor;
 typedef ::perfetto::trace_processor::Config Config;
 
-const std::string TESTDATA_PATH(
+const std::string TANK_TESTDATA_PATH(
     "tools/base/profiler/native/trace_processor_daemon/testdata/tank.trace");
+
+const std::string EMPTY_SCHED_TABLE_TESTDATA_PATH(
+    "tools/base/profiler/native/trace_processor_daemon/testdata/"
+    "empty_sched_table.trace");
 
 const long TANK_PROCESS_PID = 9796;
 const long TANK_PROCESS_UNITY_MAIN_THREAD_ID = 9834;
@@ -51,7 +55,7 @@ std::unique_ptr<TraceProcessor> LoadTrace(std::string trace_path) {
 }
 
 TEST(SchedulingRequestHandlerTest, PopulateEventsByProcessId) {
-  auto tp = LoadTrace(TESTDATA_PATH);
+  auto tp = LoadTrace(TANK_TESTDATA_PATH);
   auto handler = SchedulingRequestHandler(tp.get());
 
   SchedulingEventsParameters params_proto;
@@ -96,7 +100,7 @@ TEST(SchedulingRequestHandlerTest, PopulateEventsByProcessId) {
 }
 
 TEST(SchedulingRequestHandlerTest, PopulateEventsByThreadId) {
-  auto tp = LoadTrace(TESTDATA_PATH);
+  auto tp = LoadTrace(TANK_TESTDATA_PATH);
   auto handler = SchedulingRequestHandler(tp.get());
 
   SchedulingEventsParameters params_proto;
@@ -142,7 +146,7 @@ TEST(SchedulingRequestHandlerTest, PopulateEventsByThreadId) {
 }
 
 TEST(SchedulingRequestHandlerTest, PopulateEventsAllData) {
-  auto tp = LoadTrace(TESTDATA_PATH);
+  auto tp = LoadTrace(TANK_TESTDATA_PATH);
   auto handler = SchedulingRequestHandler(tp.get());
 
   SchedulingEventsParameters params_proto;
@@ -154,6 +158,21 @@ TEST(SchedulingRequestHandlerTest, PopulateEventsAllData) {
   // tests above.
   EXPECT_EQ(result.sched_event_size(), 592967);
   EXPECT_EQ(result.num_cores(), 8);
+}
+
+TEST(SchedulingRequestHandlerTest, EmptySchedulingTableReturnsZeroCpuCores) {
+  auto tp = LoadTrace(EMPTY_SCHED_TABLE_TESTDATA_PATH);
+  auto handler = SchedulingRequestHandler(tp.get());
+
+  SchedulingEventsParameters params_proto;
+
+  SchedulingEventsResult result;
+  handler.PopulateEvents(params_proto, &result);
+
+  // The sched table should be empty, and thus the number of cores should be set
+  // to 0.
+  EXPECT_EQ(result.sched_event_size(), 0);
+  EXPECT_EQ(result.num_cores(), 0);
 }
 
 }  // namespace

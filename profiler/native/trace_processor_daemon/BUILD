@@ -86,6 +86,7 @@ cc_test(
         "-Itools/base/profiler/native/trace_processor_daemon",
     ],
     data = [
+        "testdata/empty_sched_table.trace",
         "testdata/tank.trace",
     ],
     linkstatic = 1,

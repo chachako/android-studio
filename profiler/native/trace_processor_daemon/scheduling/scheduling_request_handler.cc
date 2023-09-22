@@ -152,12 +152,24 @@ void SchedulingRequestHandler::PopulateEvents(SchedulingEventsParameters params,
     }
   }
 
+  // The following query attempts to get the max cpu value from the scheduling
+  // table. If the scheduling table is empty, then the query result should be an
+  // empty iterator. The null check is necessary because querying for the
+  // MAX(cpu) from an empty scheduling table would yield a non-empty iterator,
+  // producing an unexpected value when read from.
+  auto it_cpu_count = tp_->ExecuteQuery(
+      "SELECT max_cpu FROM (SELECT MAX(cpu) AS max_cpu FROM sched) WHERE "
+      "max_cpu IS NOT NULL");
   // Here we query in the sched table which was the highest cpu core id
   // identified and then we add 1 to have the core count.
-  auto it_cpu_count = tp_->ExecuteQuery("SELECT MAX(cpu) FROM sched;");
   if (it_cpu_count.Next()) {
     auto max_core = it_cpu_count.Get(0).long_value;
     result->set_num_cores(max_core + 1);
+  }
+  // If there is no entries for cpu cores in the sched table, we set
+  // the number of cores to 0.
+  else {
+    result->set_num_cores(0);
   }
 
   if (result->num_cores() == 0) {
