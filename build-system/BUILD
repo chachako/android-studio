@@ -367,6 +367,7 @@ maven_repository(
         "//tools/base/utp/android-test-plugin-host-logcat-proto",
         "//tools/base/utp/android-test-plugin-host-retention-proto",
         "//tools/base/utp/android-test-plugin-result-listener-gradle-proto",
+        "//tools/base/utp/common",
         "//tools/base/zipflinger",
         "//tools/data-binding:tools.baseLibrary",
         "//tools/data-binding:tools.baseLibrarySupport",

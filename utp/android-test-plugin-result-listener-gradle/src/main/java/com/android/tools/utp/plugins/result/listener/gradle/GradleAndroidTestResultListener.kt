@@ -23,7 +23,6 @@ import com.android.tools.utp.plugins.result.listener.gradle.proto.GradleAndroidT
 import com.android.tools.utp.plugins.result.listener.gradle.proto.GradleAndroidTestResultListenerServiceGrpc
 import com.android.tools.utp.plugins.result.listener.gradle.proto.GradleAndroidTestResultListenerServiceGrpc.GradleAndroidTestResultListenerServiceStub
 import com.google.protobuf.Any
-import com.google.testing.platform.api.config.Config
 import com.google.testing.platform.api.config.Configurable
 import com.google.testing.platform.api.config.ProtoConfig
 import com.google.testing.platform.api.context.Context

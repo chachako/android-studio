@@ -120,6 +120,8 @@ public class GmavenZipTest {
                     "com/android/tools/utp/android-test-plugin-host-retention:sources",
                     "com/android/tools/utp/android-test-plugin-host-apk-installer",
                     "com/android/tools/utp/android-test-plugin-host-apk-installer:sources",
+                    "com/android/tools/utp/common",
+                    "com/android/tools/utp/common:sources",
                     "com/android/zipflinger",
                     "com/android/zipflinger:sources");
 

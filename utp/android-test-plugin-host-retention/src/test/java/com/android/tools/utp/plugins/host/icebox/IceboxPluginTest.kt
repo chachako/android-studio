@@ -17,13 +17,15 @@
 package com.android.tools.utp.plugins.host.icebox
 
 import com.android.testutils.MockitoKt.any
-import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto
 import com.android.tools.utp.plugins.host.icebox.proto.IceboxOutputProto.IceboxOutput
+import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto
 import com.google.common.truth.Truth.assertThat
 import com.google.protobuf.Any
 import com.google.testing.platform.api.context.Context
 import com.google.testing.platform.api.device.Device
 import com.google.testing.platform.api.device.DeviceController
+import com.google.testing.platform.api.event.Events
+import com.google.testing.platform.api.plugin.sendTestResultUpdate
 import com.google.testing.platform.api.plugins.PluginConfigImpl
 import com.google.testing.platform.proto.api.config.AndroidSdkProto
 import com.google.testing.platform.proto.api.config.EnvironmentProto.Environment
@@ -34,7 +36,6 @@ import com.google.testing.platform.proto.api.core.TestStatusProto.TestStatus
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
 import com.google.testing.platform.runtime.android.device.AndroidDevice
 import com.google.testing.platform.runtime.android.device.AndroidDeviceProperties
-import java.io.File
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -42,14 +43,15 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.eq
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations.initMocks
+import java.io.File
 
 /**
  * Unit tests for [IceboxPlugin]
@@ -72,6 +74,9 @@ class IceboxPluginTest {
 
     @Mock
     private lateinit var mockContext: Context
+
+    @Mock
+    private lateinit var mockEvents: Events
 
     private lateinit var iceboxPlugin: IceboxPlugin
     private lateinit var iceboxPluginConfig: IceboxPluginProto.IceboxPlugin
@@ -131,6 +136,7 @@ class IceboxPluginTest {
         iceboxPluginConfig = buildIceboxPluginConfig(false, 0, IceboxPluginProto.Compression.NONE)
         config = buildConfig(iceboxPluginConfig)
         `when`(mockContext[Context.CONFIG_KEY]).thenReturn(config)
+        `when`(mockContext[Context.EVENTS_KEY]).thenReturn(mockEvents)
         testResult = TestResult.getDefaultInstance()
         val testClass = testResult.testCase.testClass
         val testMethod = testResult.testCase.testMethod
@@ -220,11 +226,12 @@ class IceboxPluginTest {
         iceboxPlugin.configure(mockContext)
         iceboxPlugin.beforeAll(mockDeviceController)
         iceboxPlugin.beforeEach(TestCaseProto.TestCase.getDefaultInstance(), mockDeviceController)
-        val newResult = iceboxPlugin.afterEach(testResult, mockDeviceController)
+        val newResult = iceboxPlugin.afterEachWithReturn(testResult, mockDeviceController)
         // No test artifact when the instrumentation test succeeds. But it will
         // generate icebox artifact when the instrumentation test fails. See
         // onFail_stillCreatesArtifact() for the failing case.
         assertThat(newResult.outputArtifactCount).isEqualTo(0)
+        verify(mockEvents).sendTestResultUpdate(newResult)
     }
 
     @Test
@@ -232,10 +239,11 @@ class IceboxPluginTest {
         iceboxPlugin.configure(mockContext)
         iceboxPlugin.beforeAll(mockDeviceController)
         iceboxPlugin.beforeEach(TestCaseProto.TestCase.getDefaultInstance(), mockDeviceController)
-        val newResult = iceboxPlugin.afterEach(testResult, mockDeviceController)
+        val newResult = iceboxPlugin.afterEachWithReturn(testResult, mockDeviceController)
         assertThat(newResult.outputArtifactCount).isEqualTo(0)
         iceboxPlugin.afterAll(testSuiteResult, mockDeviceController)
         verify(mockIceboxCaller, times(1)).shutdownGrpc()
+        verify(mockEvents).sendTestResultUpdate(newResult)
     }
 
     @Test
@@ -247,10 +255,11 @@ class IceboxPluginTest {
             file.mkdir()
             Unit
         }
+        mockDeviceController.getDevice()
         iceboxPlugin.configure(mockContext)
         iceboxPlugin.beforeAll(mockDeviceController)
         iceboxPlugin.beforeEach(TestCaseProto.TestCase.getDefaultInstance(), mockDeviceController)
-        val newResult = iceboxPlugin.afterEach(failingTestResult, mockDeviceController)
+        val newResult = iceboxPlugin.afterEachWithReturn(failingTestResult, mockDeviceController)
         assertThat(newResult.outputArtifactCount).isEqualTo(2)
         val infoFilePath = newResult.outputArtifactList.find {
           it.label.label == "icebox.info" && it.label.namespace == "android"
@@ -258,6 +267,7 @@ class IceboxPluginTest {
         assertThat(infoFilePath).isNotNull()
         assertThat(IceboxOutput.parseFrom(File(infoFilePath).inputStream()).appPackage).isEqualTo(appPackage)
         assertThat(snapshotFile.isDirectory()).isTrue()
+        verify(mockEvents).sendTestResultUpdate(newResult)
         iceboxPlugin.afterAll(testSuiteResult, mockDeviceController)
         verify(mockIceboxCaller, times(1)).shutdownGrpc()
     }
@@ -283,10 +293,12 @@ class IceboxPluginTest {
         iceboxPlugin.configure(mockContext)
         iceboxPlugin.beforeAll(mockDeviceController)
         iceboxPlugin.beforeEach(TestCaseProto.TestCase.getDefaultInstance(), mockDeviceController)
-        val newResult = iceboxPlugin.afterEach(failingTestResult, mockDeviceController)
+        val newResult = iceboxPlugin.afterEachWithReturn(failingTestResult, mockDeviceController)
         assertThat(newResult.outputArtifactCount).isEqualTo(2)
         assertThat(snapshotFileCompressed.exists()).isTrue()
+        verify(mockEvents).sendTestResultUpdate(newResult)
         iceboxPlugin.afterAll(testSuiteResult, mockDeviceController)
         verify(mockIceboxCaller, times(1)).shutdownGrpc()
+        TestResult.newBuilder().build()
     }
 }

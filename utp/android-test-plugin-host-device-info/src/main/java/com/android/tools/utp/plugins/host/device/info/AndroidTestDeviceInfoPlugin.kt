@@ -17,14 +17,16 @@
 
 package com.android.tools.utp.plugins.host.device.info
 
+import com.android.tools.utp.plugins.common.HostPluginAdapter
 import com.android.tools.utp.plugins.host.device.info.proto.AndroidTestDeviceInfoProto.AndroidTestDeviceInfo
 import com.google.common.annotations.VisibleForTesting
 import com.google.testing.platform.api.config.Config
 import com.google.testing.platform.api.config.environment
 import com.google.testing.platform.api.context.Context
+import com.google.testing.platform.api.context.events
 import com.google.testing.platform.api.device.DeviceController
-import com.google.testing.platform.api.plugin.HostPlugin
-import com.google.testing.platform.proto.api.core.TestArtifactProto
+import com.google.testing.platform.api.plugin.sendTestResultUpdate
+import com.google.testing.platform.proto.api.core.TestArtifactProto.Artifact
 import com.google.testing.platform.proto.api.core.TestCaseProto
 import com.google.testing.platform.proto.api.core.TestResultProto.TestResult
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
@@ -38,11 +40,12 @@ const val MANAGED_DEVICE_NAME_KEY = "gradleManagedDeviceDslName"
 /**
  * A plugin to write device info in test results.
  */
-class AndroidTestDeviceInfoPlugin : HostPlugin {
+class AndroidTestDeviceInfoPlugin : HostPluginAdapter() {
     private lateinit var outputDir: File
     private lateinit var deviceMemInfoFile: File
     private lateinit var deviceCpuInfoFile: File
     private lateinit var deviceInfoFile: File
+    private lateinit var context: Context
 
     /**
      * Configures the plugin, updates the output directory.
@@ -55,6 +58,7 @@ class AndroidTestDeviceInfoPlugin : HostPlugin {
         deviceMemInfoFile = File(outputDir, "meminfo")
         deviceCpuInfoFile = File(outputDir, "cpuinfo")
         deviceInfoFile = File(outputDir, "device-info.pb")
+        this.context = context
     }
 
     /**
@@ -116,10 +120,7 @@ class AndroidTestDeviceInfoPlugin : HostPlugin {
     }
 
     /** No-op */
-    override fun beforeEach(
-            testCase: TestCaseProto.TestCase?,
-            deviceController: DeviceController
-    ) = Unit
+    override fun beforeEach(testCase: TestCaseProto.TestCase?, deviceController: DeviceController) = Unit
 
     /**
      * Updates device information artifacts in testResult. The device information was produced when
@@ -131,42 +132,35 @@ class AndroidTestDeviceInfoPlugin : HostPlugin {
      * @return a copied TestResult with extra artifact, including "device-info.pb", "meminfo" and
      *         "cpuinfo".
      */
-    override fun afterEach(
+    override fun afterEachWithReturn(
         testResult: TestResult,
         deviceController: DeviceController,
-        cancelled: Boolean
-    ): TestResult {
+        cancelled: Boolean): TestResult {
         return testResult.toBuilder().apply {
-            addOutputArtifact(
-                    TestArtifactProto.Artifact.newBuilder().apply {
-                        labelBuilder.label = "device-info"
-                        labelBuilder.namespace = "android"
-                        sourcePathBuilder.path = deviceInfoFile.getPath()
-                    }
-            )
-            addOutputArtifact(
-                    TestArtifactProto.Artifact.newBuilder().apply {
-                        labelBuilder.label = "device-info.meminfo"
-                        labelBuilder.namespace = "android"
-                        sourcePathBuilder.path = deviceMemInfoFile.getPath()
-                    }
-            )
-            addOutputArtifact(
-                    TestArtifactProto.Artifact.newBuilder().apply {
-                        labelBuilder.label = "device-info.cpuinfo"
-                        labelBuilder.namespace = "android"
-                        sourcePathBuilder.path = deviceCpuInfoFile.getPath()
-                    }
-            )
-        }.build()
+            addOutputArtifact(Artifact.newBuilder().apply {
+                labelBuilder.label = "device-info"
+                labelBuilder.namespace = "android"
+                sourcePathBuilder.path = deviceInfoFile.getPath()
+            })
+            addOutputArtifact(Artifact.newBuilder().apply {
+                labelBuilder.label = "device-info.meminfo"
+                labelBuilder.namespace = "android"
+                sourcePathBuilder.path = deviceMemInfoFile.getPath()
+            })
+            addOutputArtifact(Artifact.newBuilder().apply {
+                labelBuilder.label = "device-info.cpuinfo"
+                labelBuilder.namespace = "android"
+                sourcePathBuilder.path = deviceCpuInfoFile.getPath()
+            })
+        }.build().also{ context.events.sendTestResultUpdate(it) }
     }
 
     /** No-op */
-    override fun afterAll(
+    override fun afterAllWithReturn(
         testSuiteResult: TestSuiteResult,
         deviceController: DeviceController,
         cancelled: Boolean
-    ): TestSuiteResult = testSuiteResult
+    ) = testSuiteResult
 
     override fun canRun(): Boolean = true
 }

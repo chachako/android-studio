@@ -38,6 +38,7 @@ dependencies {
     implementation libs.grpc_stub
     implementation libs.protobuf
     implementation libs.guava
+    implementation libs.com.android.tools.utp.common
     implementation libs.com.android.tools.utp.androidTestPluginHostRetentionProto
     implementation libs.com.android.tools.emulator.proto
     implementation libs.unified_test_platform_device_provider

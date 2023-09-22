@@ -16,11 +16,8 @@
 
 package com.android.build.gradle.internal.testing.utp
 
-import com.android.build.api.dsl.TestOptions
 import com.android.build.gradle.internal.testing.CustomTestRunListener
 import com.android.build.gradle.internal.testing.utp.worker.RunUtpWorkAction
-import com.android.build.gradle.options.BooleanOption
-import com.android.build.gradle.options.ProjectOptions
 import com.android.builder.testing.api.DeviceConnector
 import com.android.prefs.AndroidLocationsSingleton
 import com.android.tools.utp.plugins.result.listener.gradle.proto.GradleAndroidTestResultListenerProto
@@ -31,7 +28,6 @@ import com.google.testing.platform.proto.api.core.ErrorDetailProto
 import com.google.testing.platform.proto.api.core.TestStatusProto.TestStatus
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto
 import com.google.testing.platform.proto.api.service.ServerConfigProto
-import org.gradle.api.logging.Logging
 import org.gradle.workers.WorkQueue
 import org.gradle.workers.WorkerExecutor
 import java.io.File

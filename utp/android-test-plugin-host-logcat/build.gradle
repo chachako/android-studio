@@ -28,6 +28,7 @@ base {
 
 dependencies {
     implementation libs.com.android.tools.common
+    implementation libs.com.android.tools.utp.common
     implementation libs.com.android.tools.utp.androidTestPluginHostLogcatProto
     implementation libs.kotlin_stdlib
     implementation libs.protobuf

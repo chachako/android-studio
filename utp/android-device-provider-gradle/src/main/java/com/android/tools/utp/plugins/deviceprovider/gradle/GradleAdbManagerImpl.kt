@@ -17,7 +17,6 @@
 package com.android.tools.utp.plugins.deviceprovider.gradle
 
 import com.google.testing.platform.lib.logging.jvm.getLogger
-import com.google.testing.platform.lib.process.execute
 import com.google.testing.platform.lib.process.inject.SubprocessComponent
 import java.util.logging.Logger
 
@@ -57,7 +56,7 @@ class GradleAdbManagerImpl(private val subprocessComponent: SubprocessComponent)
     override fun getAllSerials(): List<String> {
         val serials = mutableListOf<String>()
 
-        subprocessComponent.subprocess().execute(
+        subprocessComponent.subprocess().executeAsync(
                 listOf(adbPath, "devices"),
                 environment = System.getenv(),
                 stdoutProcessor = { line ->
@@ -68,7 +67,7 @@ class GradleAdbManagerImpl(private val subprocessComponent: SubprocessComponent)
                         serials.add(values[0])
                     }
                 }
-        )
+        ).waitFor()
 
         return serials
     }
@@ -83,7 +82,7 @@ class GradleAdbManagerImpl(private val subprocessComponent: SubprocessComponent)
     private fun isBootCompleted(deviceSerial: String): Boolean {
         var success = false
 
-        subprocessComponent.subprocess().execute(
+        subprocessComponent.subprocess().executeAsync(
             args = listOf(
                 adbPath,
                 "-s",
@@ -106,7 +105,7 @@ class GradleAdbManagerImpl(private val subprocessComponent: SubprocessComponent)
             return true
         }
 
-        subprocessComponent.subprocess().execute(
+        subprocessComponent.subprocess().executeAsync(
             args = listOf(
                 adbPath,
                 "-s",
@@ -123,7 +122,7 @@ class GradleAdbManagerImpl(private val subprocessComponent: SubprocessComponent)
                     success = true
                 }
             }
-        )
+        ).waitFor()
 
         return success
     }
@@ -131,7 +130,7 @@ class GradleAdbManagerImpl(private val subprocessComponent: SubprocessComponent)
     private fun isPackageManagerStarted(deviceSerial: String): Boolean {
         var success = false
 
-        subprocessComponent.subprocess().execute(
+        subprocessComponent.subprocess().executeAsync(
             args = listOf(
                 adbPath,
                 "-s",
@@ -148,7 +147,7 @@ class GradleAdbManagerImpl(private val subprocessComponent: SubprocessComponent)
                     success = true
                 }
             }
-        )
+        ).waitFor()
 
         return success
     }
@@ -158,7 +157,7 @@ class GradleAdbManagerImpl(private val subprocessComponent: SubprocessComponent)
      */
     override fun getId(deviceSerial: String): String? {
         var id: String? = null
-        subprocessComponent.subprocess().execute(
+        subprocessComponent.subprocess().executeAsync(
                 args = getAdbIdArgs(deviceSerial),
                 environment = System.getenv(),
                 stdoutProcessor = { line ->
@@ -167,7 +166,7 @@ class GradleAdbManagerImpl(private val subprocessComponent: SubprocessComponent)
                         id = trimmed
                     }
                 }
-        )
+        ).waitFor()
         return id
     }
 

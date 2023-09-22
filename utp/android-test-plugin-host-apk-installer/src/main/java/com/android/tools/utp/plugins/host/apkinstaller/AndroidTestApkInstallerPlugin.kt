@@ -36,7 +36,8 @@ import com.google.testing.platform.proto.api.core.TestResultProto.TestResult
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
 import com.google.testing.platform.runtime.android.controller.ext.uninstall
 import com.google.testing.platform.runtime.android.device.AndroidDeviceProperties
-import java.io.IOException
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 import java.util.logging.Logger
 
 /**
@@ -176,10 +177,10 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
             // installTimeout to null. 0 is the default value if it's not set.
             // Setting timeout to 0 means that it will immediately timeout without doing anything,
             // probably not something the user intend to do.
-            val installTimeout = installableApk
+            val installTimeoutDuration: Duration? = installableApk
                     .installOptions
                     .installApkTimeout
-                    .takeIf { it > 0 }?.toLong()
+                    .takeIf { it > 0 }?.toLong()?.let { Duration.ofSeconds(it) }
             val installCmd = getInstallCmd(installableApk, deviceApiLevel)
             logger.info("Installing ${installableApk.apkPathsList} on " +
                     "device $deviceSerial.")
@@ -191,7 +192,7 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
                     if (deviceController.execute(
                                     installCmd +
                                             installableApk.installOptions.commandLineParameterList +
-                                            apkPath, installTimeout).statusCode != 0) {
+                                            apkPath, installTimeoutDuration, ).statusCode != 0) {
                         throw UtpException(
                                 installErrorSummary,
                                 "Failed to install APK: $apkPath on device $deviceSerial.")
@@ -202,7 +203,7 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
                                 installCmd +
                                         installableApk.installOptions.commandLineParameterList +
                                         installableApk.apkPathsList,
-                                installTimeout).statusCode != 0) {
+                                installTimeoutDuration).statusCode != 0) {
                     throw UtpException(
                             installErrorSummary,
                             "Failed to install APK: ${installableApk.apkPathsList} on device " +
@@ -221,13 +222,13 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
         testResult: TestResult,
         deviceController: DeviceController,
         cancelled: Boolean
-    ): TestResult = testResult
+    ) = Unit
 
     override fun afterAll(
         testSuiteResult: TestSuiteResult,
         deviceController: DeviceController,
         cancelled: Boolean
-    ): TestSuiteResult {
+    ) {
         pluginConfig.apksToInstallList.forEach { installableApk ->
             if (installableApk.uninstallAfterTest) {
                 installableApk.apksPackageNameList.forEach { apkPackage ->
@@ -242,7 +243,6 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
                 }
             }
         }
-        return testSuiteResult
     }
 
     override fun canRun(): Boolean = true

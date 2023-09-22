@@ -35,6 +35,7 @@ import org.mockito.Mockito.nullable
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.junit.MockitoJUnit
+import java.time.Duration
 
 /**
  * Tests for [EmulatorHandleImpl]
@@ -178,7 +179,7 @@ class EmulatorHandleTest {
 
                 override fun pid(): Long = 0L
 
-                override fun waitFor(timeout: Long?) = destroy()
+                override fun waitFor(timeout: Duration?) = destroy()
             }
         }
     }

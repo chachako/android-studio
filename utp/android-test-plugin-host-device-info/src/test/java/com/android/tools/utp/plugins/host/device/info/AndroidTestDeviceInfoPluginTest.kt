@@ -24,6 +24,8 @@ import com.google.testing.platform.api.context.Context
 import com.google.testing.platform.api.device.CommandResult
 import com.google.testing.platform.api.device.Device
 import com.google.testing.platform.api.device.DeviceController
+import com.google.testing.platform.api.event.Events
+import com.google.testing.platform.api.plugin.sendTestResultUpdate
 import com.google.testing.platform.proto.api.core.TestCaseProto
 import com.google.testing.platform.proto.api.core.TestResultProto.TestResult
 import com.google.testing.platform.runtime.android.controller.ext.deviceShell
@@ -40,6 +42,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.anyList
 import org.mockito.Mockito.nullable
+import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations.initMocks
 
 /**
@@ -53,6 +56,7 @@ class AndroidTestDeviceInfoPluginTest {
     @Mock lateinit var mockDeviceController: DeviceController
     @Mock lateinit var mockConfig: ConfigBase
     @Mock lateinit var mockContext: Context
+    @Mock lateinit var mockEvents: Events
     private lateinit var environment: Environment
     private lateinit var androidTestDeviceInfoPlugin: AndroidTestDeviceInfoPlugin
     private lateinit var emptyTestResult: TestResult
@@ -90,6 +94,7 @@ class AndroidTestDeviceInfoPluginTest {
         `when`(mockDevice.serial).thenReturn(deviceName)
         `when`(mockConfig.environment).thenReturn(environment)
         `when`(mockContext[Context.CONFIG_KEY]).thenReturn(mockConfig)
+        `when`(mockContext[Context.EVENTS_KEY]).thenReturn(mockEvents)
         emptyTestResult = TestResult.newBuilder().build()
         androidTestDeviceInfoPlugin = AndroidTestDeviceInfoPlugin()
     }
@@ -99,7 +104,7 @@ class AndroidTestDeviceInfoPluginTest {
         androidTestDeviceInfoPlugin.configure(mockContext)
         androidTestDeviceInfoPlugin.beforeAll(mockDeviceController)
         androidTestDeviceInfoPlugin.beforeEach(TestCaseProto.TestCase.getDefaultInstance(), mockDeviceController)
-        val testResult = androidTestDeviceInfoPlugin.afterEach(emptyTestResult, mockDeviceController)
+        val testResult = androidTestDeviceInfoPlugin.afterEachWithReturn(emptyTestResult, mockDeviceController)
         // Check artifact labels.
         assertThat(testResult.outputArtifactList).isNotEmpty()
         var numDeviceInfoProtos = 0
@@ -123,6 +128,7 @@ class AndroidTestDeviceInfoPluginTest {
             }
         }
         assertThat(numDeviceInfoProtos).isEqualTo(1)
+        verify(mockEvents).sendTestResultUpdate(testResult)
     }
 
     @Test
@@ -140,7 +146,7 @@ class AndroidTestDeviceInfoPluginTest {
         androidTestDeviceInfoPlugin.configure(mockContext)
         androidTestDeviceInfoPlugin.beforeAll(mockDeviceController)
         androidTestDeviceInfoPlugin.beforeEach(TestCaseProto.TestCase.getDefaultInstance(), mockDeviceController)
-        val testResult = androidTestDeviceInfoPlugin.afterEach(emptyTestResult, mockDeviceController)
+        val testResult = androidTestDeviceInfoPlugin.afterEachWithReturn(emptyTestResult, mockDeviceController)
         // Check artifact labels.
         assertThat(testResult.outputArtifactList).isNotEmpty()
         var numDeviceInfoProtos = 0
@@ -164,6 +170,7 @@ class AndroidTestDeviceInfoPluginTest {
             }
         }
         assertThat(numDeviceInfoProtos).isEqualTo(1)
+        verify(mockEvents).sendTestResultUpdate(testResult)
     }
 
     @Test

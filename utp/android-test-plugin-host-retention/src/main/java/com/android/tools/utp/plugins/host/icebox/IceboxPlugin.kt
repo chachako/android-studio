@@ -16,29 +16,29 @@
 
 package com.android.tools.utp.plugins.host.icebox
 
-import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto.Compression
-import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto.IceboxPlugin as IceboxPluginConfig
+import com.android.tools.utp.plugins.common.HostPluginAdapter
 import com.android.tools.utp.plugins.host.icebox.proto.IceboxOutputProto.IceboxOutput
 import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto
+import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto.Compression
 import com.google.common.annotations.VisibleForTesting
-import com.google.testing.platform.api.config.Config
 import com.google.testing.platform.api.config.ProtoConfig
 import com.google.testing.platform.api.config.environment
 import com.google.testing.platform.api.context.Context
+import com.google.testing.platform.api.context.events
 import com.google.testing.platform.api.device.DeviceController
-import com.google.testing.platform.api.plugin.HostPlugin
+import com.google.testing.platform.api.plugin.sendTestResultUpdate
 import com.google.testing.platform.lib.logging.jvm.getLogger
 import com.google.testing.platform.proto.api.core.TestArtifactProto
 import com.google.testing.platform.proto.api.core.TestCaseProto
 import com.google.testing.platform.proto.api.core.TestResultProto.TestResult
 import com.google.testing.platform.proto.api.core.TestStatusProto.TestStatus
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
-import com.google.testing.platform.runtime.android.device.AndroidDevice
 import io.grpc.ManagedChannelBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import java.io.File
 import java.io.FileOutputStream
+import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto.IceboxPlugin as IceboxPluginConfig
 
 /**
  * Implementation of the Icebox plugin. Used to trigger Icebox commands.
@@ -57,7 +57,7 @@ class IceboxPlugin @VisibleForTesting constructor(
         private val iceboxCallerFactory:
             (ManagedChannelBuilder<*>, String, CoroutineScope) -> IceboxCaller,
         private val grpcInfoFinder: GrpcInfoFinder = GrpcInfoFinder()
-) : HostPlugin {
+) : HostPluginAdapter() {
     /** No-arg primary constructor for [AutoService] */
     constructor() : this({ mcb, token, cs -> IceboxCaller(mcb, token, cs) })
     private companion object {
@@ -69,6 +69,7 @@ class IceboxPlugin @VisibleForTesting constructor(
 
     private lateinit var iceboxCaller: IceboxCaller
     private lateinit var deviceController: DeviceController
+    private lateinit var context: Context
     private var androidStudioDdmlibPort = defaultAndroidStudioDdmlibPort
     @VisibleForTesting
     lateinit var iceboxPluginConfig: IceboxPluginConfig
@@ -97,6 +98,7 @@ class IceboxPlugin @VisibleForTesting constructor(
         }
         remainSnapshotNumber = maxSnapshotNumber
         outputDir = File(config.environment.outputDirectory)
+        this.context = context
     }
 
     // Setup Icebox connection to the emulator. Depending on the test driver behavior it should be
@@ -135,8 +137,9 @@ class IceboxPlugin @VisibleForTesting constructor(
             deviceController: DeviceController
     ) = Unit
 
+
     /** Finishes the icebox snapshot and saves it on [testResult]. */
-    override fun afterEach(
+    override fun afterEachWithReturn(
         testResult: TestResult,
         deviceController: DeviceController,
         cancelled: Boolean
@@ -147,6 +150,7 @@ class IceboxPlugin @VisibleForTesting constructor(
             iceboxCaller.shutdownGrpc()
             setupIcebox(deviceController)
         }
+        context.events.sendTestResultUpdate(res)
         return res
     }
 
@@ -216,7 +220,7 @@ class IceboxPlugin @VisibleForTesting constructor(
     }
 
     /** Shuts down the Icebox service. */
-    override fun afterAll(
+    override fun afterAllWithReturn(
         testSuiteResult: TestSuiteResult,
         deviceController: DeviceController,
         cancelled: Boolean

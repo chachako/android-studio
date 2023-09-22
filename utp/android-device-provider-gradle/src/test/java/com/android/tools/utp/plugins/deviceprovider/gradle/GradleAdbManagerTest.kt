@@ -31,6 +31,7 @@ import org.mockito.Mockito.anyList
 import org.mockito.Mockito.anyMap
 import org.mockito.Mockito.nullable
 import org.mockito.MockitoAnnotations
+import java.time.Duration
 
 /**
  * Tests for [GradleAdbManagerImpl]
@@ -193,7 +194,7 @@ class GradleAdbManagerTest {
 
                 override fun isAlive(): Boolean = isRunning
 
-                override fun waitFor(timeout: Long?) = destroy()
+                override fun waitFor(timeout: Duration?) = destroy()
             }
         }
     }

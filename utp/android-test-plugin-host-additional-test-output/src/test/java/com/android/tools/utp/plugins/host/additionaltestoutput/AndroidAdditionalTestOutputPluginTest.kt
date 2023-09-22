@@ -27,6 +27,8 @@ import com.google.testing.platform.api.context.Context
 import com.google.testing.platform.api.device.CommandResult
 import com.google.testing.platform.api.device.Device
 import com.google.testing.platform.api.device.DeviceController
+import com.google.testing.platform.api.event.Events
+import com.google.testing.platform.api.plugin.sendTestResultUpdate
 import com.google.testing.platform.proto.api.core.ExtensionProto
 import com.google.testing.platform.proto.api.core.TestArtifactProto
 import com.google.testing.platform.proto.api.core.TestResultProto
@@ -51,6 +53,7 @@ import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
+import java.time.Duration
 
 /**
  * Unit tests for [AndroidAdditionalTestOutputPlugin].
@@ -64,6 +67,8 @@ class AndroidAdditionalTestOutputPluginTest {
 
     @Mock private lateinit var mockDeviceController: DeviceController
     @Mock private lateinit var mockLogger: Logger
+    @Mock private lateinit var mockContext: Context
+    @Mock private lateinit var mockEvents: Events
 
     private lateinit var testResultAfterEach: TestResultProto.TestResult
 
@@ -71,15 +76,16 @@ class AndroidAdditionalTestOutputPluginTest {
 
     @Before
     fun setUpMocks() {
-        `when`(mockDeviceController.execute(anyList(), nullable(Long::class.java))).then {
+        `when`(mockDeviceController.execute(anyList(), nullable(Duration::class.java))).then {
             commandResult
         }
+        `when`(mockContext[Context.EVENTS_KEY]).thenReturn(mockEvents)
     }
 
     private fun installTestStorageService() {
         `when`(mockDeviceController.execute(
             eq(listOf("shell", "pm", "list", "packages", "androidx.test.services")),
-            nullable(Long::class.java))
+            nullable(Duration::class.java))
         ).thenReturn(CommandResult(0, listOf("package:androidx.test.services")))
 
         val mockDevice = mock<Device>()
@@ -104,10 +110,9 @@ class AndroidAdditionalTestOutputPluginTest {
             override val configResource: ExtensionProto.ConfigResource?
                 get() = null
         }
-        val context = mock<Context>()
-        `when`(context[Context.CONFIG_KEY]).thenReturn(protoConfig)
+        `when`(mockContext[Context.CONFIG_KEY]).thenReturn(protoConfig)
         return AndroidAdditionalTestOutputPlugin(mockLogger).apply {
-            configure(context)
+            configure(mockContext)
         }
     }
 
@@ -120,7 +125,8 @@ class AndroidAdditionalTestOutputPluginTest {
         createPlugin(config).apply {
             beforeAll(mockDeviceController)
             beforeEach(null, mockDeviceController)
-            testResultAfterEach = afterEach(testResult, mockDeviceController)
+            testResultAfterEach = afterEachWithReturn(testResult, mockDeviceController)
+            verify(mockEvents).sendTestResultUpdate(testResultAfterEach)
             afterAll(TestSuiteResultProto.TestSuiteResult.getDefaultInstance(), mockDeviceController)
         }
     }
@@ -132,27 +138,27 @@ class AndroidAdditionalTestOutputPluginTest {
 
         `when`(mockDeviceController.execute(
             eq(listOf("shell", "ls \"${deviceDir}\" | cat")),
-            nullable(Long::class.java)
+            nullable(Duration::class.java)
         )).thenReturn(CommandResult(0, listOf("output1.txt", "output2.txt", "subdir")))
 
         `when`(mockDeviceController.execute(
             eq(listOf("shell", "[[ -d \"${deviceDir}/output1.txt\" ]]")),
-            nullable(Long::class.java)
+            nullable(Duration::class.java)
         )).thenReturn(CommandResult(1, listOf()))
 
         `when`(mockDeviceController.execute(
             eq(listOf("shell", "[[ -d \"${deviceDir}/output2.txt\" ]]")),
-            nullable(Long::class.java)
+            nullable(Duration::class.java)
         )).thenReturn(CommandResult(1, listOf()))
 
         `when`(mockDeviceController.execute(
             eq(listOf("shell", "ls \"${deviceDir}/subdir\" | cat")),
-            nullable(Long::class.java)
+            nullable(Duration::class.java)
         )).thenReturn(CommandResult(0, listOf("output3.txt")))
 
         `when`(mockDeviceController.execute(
             eq(listOf("shell", "[[ -d \"${deviceDir}/subdir/output3.txt\" ]]")),
-            nullable(Long::class.java)
+            nullable(Duration::class.java)
         )).thenReturn(CommandResult(1, listOf()))
 
         runPlugin {
@@ -186,7 +192,7 @@ class AndroidAdditionalTestOutputPluginTest {
 
         `when`(mockDeviceController.execute(
             eq(listOf("shell", "ls \"${deviceDir}\" | cat")),
-            nullable(Long::class.java)
+            nullable(Duration::class.java)
         )).thenReturn(CommandResult(0, listOf("output1.txt")))
 
         `when`(mockDeviceController.pull(eq(createTestArtifact(
@@ -196,7 +202,7 @@ class AndroidAdditionalTestOutputPluginTest {
 
         `when`(mockDeviceController.execute(
             eq(listOf("shell", "[[ -d \"${deviceDir}/output1.txt\" ]]")),
-            nullable(Long::class.java)
+            nullable(Duration::class.java)
         )).thenReturn(CommandResult(1, listOf()))
 
         runPlugin {
@@ -289,17 +295,17 @@ class AndroidAdditionalTestOutputPluginTest {
 
         `when`(mockDeviceController.execute(
             eq(listOf("shell", "ls \"${deviceDir}\" | cat")),
-            nullable(Long::class.java)
+            nullable(Duration::class.java)
         )).thenReturn(CommandResult(0, listOf("output1.txt", "output2.txt")))
 
         `when`(mockDeviceController.execute(
             eq(listOf("shell", "[[ -d \"${deviceDir}/output1.txt\" ]]")),
-            nullable(Long::class.java)
+            nullable(Duration::class.java)
         )).thenReturn(CommandResult(1, listOf()))
 
         `when`(mockDeviceController.execute(
             eq(listOf("shell", "[[ -d \"${deviceDir}/output2.txt\" ]]")),
-            nullable(Long::class.java)
+            nullable(Duration::class.java)
         )).thenReturn(CommandResult(1, listOf()))
 
         runPlugin {

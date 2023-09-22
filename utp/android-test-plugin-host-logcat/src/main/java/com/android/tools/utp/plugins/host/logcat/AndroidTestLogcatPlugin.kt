@@ -15,19 +15,21 @@
  */
 package com.android.tools.utp.plugins.host.logcat
 
+import com.android.tools.utp.plugins.common.HostPluginAdapter
 import com.android.tools.utp.plugins.host.logcat.proto.AndroidTestLogcatConfigProto.AndroidTestLogcatConfig
 import com.google.testing.platform.api.config.ProtoConfig
 import com.google.testing.platform.api.config.environment
 import com.google.testing.platform.api.context.Context
+import com.google.testing.platform.api.context.events
 import com.google.testing.platform.api.device.CommandHandle
 import com.google.testing.platform.api.device.DeviceController
-import com.google.testing.platform.api.plugin.HostPlugin
+import com.google.testing.platform.api.plugin.sendIssue
+import com.google.testing.platform.api.plugin.sendTestResultUpdate
 import com.google.testing.platform.lib.logging.jvm.getLogger
 import com.google.testing.platform.proto.api.core.IssueProto
 import com.google.testing.platform.proto.api.core.TestArtifactProto
 import com.google.testing.platform.proto.api.core.TestCaseProto.TestCase
 import com.google.testing.platform.proto.api.core.TestResultProto.TestResult
-import com.google.testing.platform.proto.api.core.TestStatusProto
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
 import com.google.testing.platform.runtime.android.controller.ext.deviceShell
 import java.io.BufferedWriter
@@ -42,7 +44,7 @@ import java.util.logging.Logger
  * This plugin updates [TestSuiteResult] proto with logcat artifacts
  */
 class AndroidTestLogcatPlugin(
-    private val logger: Logger = getLogger()) : HostPlugin {
+    private val logger: Logger = getLogger()) : HostPluginAdapter() {
 
     // Empty companion object is needed to call getLogger() method
     // from the constructor's default parameter. If you remove it,
@@ -60,6 +62,7 @@ class AndroidTestLogcatPlugin(
     private lateinit var targetTestProcessName: String
     private lateinit var crashLogcatStartMatcher: Regex
     private lateinit var testPid: String
+    private lateinit var context: Context
 
     private val crashLogFinished = CountDownLatch(1)
     // Heuristic value for reading 5 lines of logcat message before deciding if there's a crash
@@ -82,6 +85,7 @@ class AndroidTestLogcatPlugin(
                 .parseFrom(config.configProto!!.value).targetTestProcessName
         crashLogcatStartMatcher = Regex(
                 ".*E\\sAndroidRuntime:\\sProcess:\\s${targetTestProcessName}.*")
+        this.context = context
     }
 
     override fun beforeAll(deviceController: DeviceController) {
@@ -94,7 +98,7 @@ class AndroidTestLogcatPlugin(
             deviceController: DeviceController
     ) {}
 
-    override fun afterEach(
+    override fun afterEachWithReturn(
         testResult: TestResult,
         deviceController: DeviceController,
         cancelled: Boolean
@@ -103,7 +107,7 @@ class AndroidTestLogcatPlugin(
         val packageName = testCase.testPackage
         val className = testCase.testClass
         val methodName = testCase.testMethod
-        val updatedTestResult = testResult.toBuilder().apply {
+        return testResult.toBuilder().apply {
             synchronized (logcatFilePaths) {
                 logcatFilePaths.forEach {
                     if (it == generateLogcatFileName("$packageName.$className", methodName)) {
@@ -117,11 +121,10 @@ class AndroidTestLogcatPlugin(
                     }
                 }
             }
-        }.build()
-        return updatedTestResult
+        }.build().also { context.events.sendTestResultUpdate(it) }
     }
 
-    override fun afterAll(
+    override fun afterAllWithReturn(
         testSuiteResult: TestSuiteResult,
         deviceController: DeviceController,
         cancelled: Boolean
@@ -133,13 +136,13 @@ class AndroidTestLogcatPlugin(
         logcatCounter.await(2, TimeUnit.SECONDS)
         if(crashHappened.get()) {
             crashLogFinished.await(2, TimeUnit.SECONDS)
-            updatedTestSuiteResult = testSuiteResult.toBuilder().apply {
-                addIssue(IssueProto.Issue.newBuilder().apply {
-                    severity = IssueProto.Issue.Severity.SEVERE
-                    message = "Logcat of last crash: \n" +
-                            crashLogcatFile.bufferedReader().use { it.readText() }
-                }.build())
+            val issue = IssueProto.Issue.newBuilder().apply {
+                severity = IssueProto.Issue.Severity.SEVERE
+                message = "Logcat of last crash: \n" +
+                        crashLogcatFile.bufferedReader().use { it.readText() }
             }.build()
+            updatedTestSuiteResult = testSuiteResult.toBuilder().apply { addIssue(issue) }.build()
+            context.events.sendIssue(issue)
         }
         stopLogcat()
         return updatedTestSuiteResult

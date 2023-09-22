@@ -17,7 +17,6 @@ package com.android.tools.utp.plugins.host.coverage
 
 import com.android.tools.utp.plugins.host.coverage.proto.AndroidTestCoverageConfigProto.AndroidTestCoverageConfig
 import com.android.tools.utp.plugins.host.coverage.proto.AndroidTestCoverageConfigProto.AndroidTestCoverageConfig.TestCoveragePathOnDeviceCase
-import com.google.testing.platform.api.config.Config
 import com.google.testing.platform.api.config.ProtoConfig
 import com.google.testing.platform.api.context.Context
 import com.google.testing.platform.api.device.CommandResult
@@ -131,13 +130,13 @@ class AndroidTestCoveragePlugin(
         testResult: TestResult,
         deviceController: DeviceController,
         cancelled: Boolean
-    ): TestResult = testResult
+    ) = Unit
 
     override fun afterAll(
         testSuiteResult: TestSuiteResult,
         deviceController: DeviceController,
         cancelled: Boolean
-    ): TestSuiteResult {
+    ) {
         try {
             if (testSuiteResult.testResultCount > 0) {
                 retrieveCoverageFiles(deviceController)
@@ -147,7 +146,6 @@ class AndroidTestCoveragePlugin(
                 "Failed to retrieve code coverage data from device."
             }
         }
-        return testSuiteResult
     }
 
     private fun retrieveCoverageFiles(deviceController: DeviceController) {

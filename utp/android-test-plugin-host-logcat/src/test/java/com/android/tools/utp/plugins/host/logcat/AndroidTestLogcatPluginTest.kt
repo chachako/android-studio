@@ -29,6 +29,9 @@ import com.google.testing.platform.api.context.Context
 import com.google.testing.platform.api.device.CommandHandle
 import com.google.testing.platform.api.device.CommandResult
 import com.google.testing.platform.api.device.DeviceController
+import com.google.testing.platform.api.event.Events
+import com.google.testing.platform.api.plugin.sendIssue
+import com.google.testing.platform.api.plugin.sendTestResultUpdate
 import com.google.testing.platform.proto.api.core.IssueProto
 import com.google.testing.platform.proto.api.core.TestResultProto.TestResult
 import com.google.testing.platform.proto.api.core.TestStatusProto
@@ -58,6 +61,7 @@ class AndroidTestLogcatPluginTest {
 
     @Mock private lateinit var mockCommandHandle: CommandHandle
     @Mock private lateinit var mockContext: Context
+    @Mock private lateinit var mockEvents: Events
     @Mock (extraInterfaces = [ConfigBase::class])
     private lateinit var mockConfig: ProtoConfig
     @Mock private lateinit var mockDeviceController: DeviceController
@@ -97,6 +101,7 @@ class AndroidTestLogcatPluginTest {
         androidTestLogcatPlugin = AndroidTestLogcatPlugin(mockLogger)
 
         `when`(mockContext[eq(Context.CONFIG_KEY)]).thenReturn(mockConfig)
+        `when`(mockContext[eq(Context.EVENTS_KEY)]).thenReturn(mockEvents)
         `when`(mockConfig.environment).thenReturn(environment)
         `when`(mockConfig.configProto).thenReturn(Any.pack(
                 AndroidTestLogcatConfig.newBuilder().apply {
@@ -137,7 +142,7 @@ class AndroidTestLogcatPluginTest {
             configure(mockContext)
             beforeAll(mockDeviceController)
             beforeEach(emptyTestResult.testCase, mockDeviceController)
-            afterEach(emptyTestResult, mockDeviceController)
+            afterEachWithReturn(emptyTestResult, mockDeviceController)
         }
 
         assertThat(testResult.outputArtifactList).isNotEmpty()
@@ -146,6 +151,7 @@ class AndroidTestLogcatPluginTest {
             assertThat(it.label.label).isEqualTo("logcat")
             assertThat(it.sourcePath.path).endsWith("logcat-.-.txt")
         }
+        verify(mockEvents).sendTestResultUpdate(testResult)
     }
 
     @Test
@@ -193,7 +199,7 @@ class AndroidTestLogcatPluginTest {
 
         androidTestLogcatPlugin.configure(mockContext)
         androidTestLogcatPlugin.beforeAll(mockDeviceController)
-        val finalTestSuiteResult =  androidTestLogcatPlugin.afterAll(
+        val finalTestSuiteResult =  androidTestLogcatPlugin.afterAllWithReturn(
             crashedTestSuiteResult, mockDeviceController)
 
         verify(mockCommandHandle).stop()
@@ -202,5 +208,6 @@ class AndroidTestLogcatPluginTest {
         assertThat(lastIssue.message).contains("Logcat of last crash:")
         assertThat(lastIssue.message).contains(
                 "... 10 more")
+        verify(mockEvents).sendIssue(lastIssue)
     }
 }

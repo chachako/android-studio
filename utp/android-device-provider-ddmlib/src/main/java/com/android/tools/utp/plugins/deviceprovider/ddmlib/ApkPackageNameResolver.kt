@@ -16,7 +16,6 @@
 
 package com.android.tools.utp.plugins.deviceprovider.ddmlib
 
-import com.google.testing.platform.lib.process.execute
 import com.google.testing.platform.lib.process.inject.SubprocessComponent
 
 /**
@@ -36,14 +35,14 @@ class ApkPackageNameResolver(
      */
     fun getPackageNameFromApk(apkPath: String): String? {
         var packageName: String? = null
-        subprocessComponent.subprocess().execute(
-            listOf(aaptPath, "dump", "badging", apkPath),
+        subprocessComponent.subprocess().executeAsync(
+            args = listOf(aaptPath, "dump", "badging", apkPath),
             stdoutProcessor = {
                 if (packageNameRegex.matches(it)) {
                     packageName = packageNameRegex.find(it)?.groupValues?.get(1)
                 }
             }
-        )
+        ).waitFor()
         return packageName
     }
 }

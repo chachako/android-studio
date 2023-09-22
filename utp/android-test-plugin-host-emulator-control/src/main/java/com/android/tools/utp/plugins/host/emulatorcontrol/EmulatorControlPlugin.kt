@@ -105,7 +105,7 @@ class EmulatorControlPlugin : HostPlugin {
         testSuiteResult: TestSuiteResult,
         deviceController: DeviceController,
         cancelled: kotlin.Boolean /* = compiled code */
-    ): TestSuiteResult {
+    ) {
         // Delete the JWK on the host if it is there..
         logger.fine("Deleting ${emulatorControlPluginConfig.jwkFile}")
         File(emulatorControlPluginConfig.jwkFile).delete()
@@ -118,15 +118,12 @@ class EmulatorControlPlugin : HostPlugin {
                 emulatorControlPluginConfig.tlsCfgPrefix + ".ca"
             )
         )
-        return testSuiteResult
 
     }
 
     override fun afterEach(
         testResult: TestResult, deviceController: DeviceController, cancelled: Boolean
-    ): TestResult {
-        return testResult
-    }
+    ) = Unit
 
     override fun canRun(): Boolean = true
 }

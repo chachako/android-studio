@@ -45,6 +45,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import java.io.File
+import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -190,7 +191,9 @@ class DdmlibAndroidDeviceControllerTest {
 
     @Test
     fun executeShellCommandFailedByTimeout() {
-        val ret = controller.execute(listOf("shell", "am", "instrument"), timeout = 0)
+        val ret =
+                controller.execute(listOf("shell", "am", "instrument"),
+                        timeout = Duration.ofSeconds(0))
         assertThat(ret.statusCode).isEqualTo(-1)
     }
 

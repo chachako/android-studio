@@ -16,6 +16,7 @@
 
 package com.android.tools.utp.plugins.host.apkinstaller
 
+import com.android.testutils.MockitoKt.any
 import com.android.testutils.MockitoKt.eq
 import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto.AndroidApkInstallerConfig
 import com.google.common.truth.Truth
@@ -58,6 +59,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
+import java.time.Duration
 import java.util.logging.Logger
 
 /**
@@ -176,7 +178,7 @@ class AndroidTestApkInstallerPluginTest {
             afterEach(TestResult.getDefaultInstance(), mockDeviceController, false)
         }
         verify(mockLogger).info("No installables found in test fixture. Nothing to install.")
-        verify(mockDeviceController, never()).execute(anyList(), anyLong())
+        verify(mockDeviceController, never()).execute(anyList(), any(Duration::class.java))
         verify(mockDeviceController, times(3)).getDevice()
     }
 
@@ -470,7 +472,7 @@ class AndroidTestApkInstallerPluginTest {
     @Test
     fun nonSplitAPKTestWithTimeout() {
         `when`(mockDeviceController.getDevice().serial).thenReturn(mockDeviceSerial)
-        `when`(mockDeviceController.execute(anyList(), anyLong())).thenReturn(CommandResult(0, listOf()))
+        `when`(mockDeviceController.execute(anyList(), any(Duration::class.java))).thenReturn(CommandResult(0, listOf()))
         createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
             addApksToInstallBuilder().apply {
                 addAllApkPaths(testApkPaths)
@@ -488,7 +490,7 @@ class AndroidTestApkInstallerPluginTest {
             verify(mockDeviceController).execute(
                     listOf("install", "-t") +
                             additionalInstallOptions +
-                            it, installTimeout.toLong())
+                            it, Duration.ofSeconds(installTimeout.toLong()))
         }
     }
 
@@ -516,7 +518,7 @@ class AndroidTestApkInstallerPluginTest {
                 "Minimum API level for installing SPLIT_APK " +
                 "feature is 21 but device $mockDeviceSerial is API level 20.").message,
                 exception.message)
-        verify(mockDeviceController, never()).execute(anyList(), anyLong())
+        verify(mockDeviceController, never()).execute(anyList(), any(Duration::class.java))
     }
 
     @Test

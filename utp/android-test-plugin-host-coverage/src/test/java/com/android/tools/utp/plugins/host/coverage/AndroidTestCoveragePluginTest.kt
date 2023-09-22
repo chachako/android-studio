@@ -51,6 +51,7 @@ import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
+import java.time.Duration
 
 /**
  * Unit tests for [AndroidTestCoveragePlugin]
@@ -73,7 +74,7 @@ class AndroidTestCoveragePluginTest {
 
     @Before
     fun setUpMocks() {
-        `when`(mockDeviceController.execute(anyList(), nullable(Long::class.java))).then {
+        `when`(mockDeviceController.execute(anyList(), nullable(Duration::class.java))).then {
             commandResult
         }
     }
@@ -81,7 +82,7 @@ class AndroidTestCoveragePluginTest {
     private fun installTestStorageService() {
         `when`(mockDeviceController.execute(
             eq(listOf("shell", "pm", "list", "packages", "androidx.test.services")),
-            nullable(Long::class.java))
+            nullable(Duration::class.java))
         ).thenReturn(CommandResult(0, listOf("package:androidx.test.services")))
 
         val mockDevice = mock<Device>()
@@ -224,7 +225,7 @@ class AndroidTestCoveragePluginTest {
             eq(listOf(
                 "shell",
                 "run-as", TESTED_APP, "ls \"${coverageDir}\" | cat")),
-            nullable(Long::class.java)
+            nullable(Duration::class.java)
         )).thenReturn(CommandResult(0, listOf("coverage1.ec", "coverage2.ec", "non_cov_file")))
 
         runAndroidTestCoveragePlugin() {
@@ -284,7 +285,7 @@ class AndroidTestCoveragePluginTest {
             eq(listOf(
                 "shell",
                 "ls \"${TEST_STORAGE_SERVICE_OUTPUT_DIR}/${coverageDir}\" | cat")),
-            nullable(Long::class.java)
+            nullable(Duration::class.java)
         )).thenReturn(CommandResult(0, listOf("coverage1.ec", "coverage2.ec", "non_cov_file")))
 
         runAndroidTestCoveragePlugin() {

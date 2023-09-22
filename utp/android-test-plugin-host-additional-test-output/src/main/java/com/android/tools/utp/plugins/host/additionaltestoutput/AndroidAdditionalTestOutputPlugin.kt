@@ -15,14 +15,15 @@
  */
 package com.android.tools.utp.plugins.host.additionaltestoutput
 
+import com.android.tools.utp.plugins.common.HostPluginAdapter
 import com.android.tools.utp.plugins.host.additionaltestoutput.proto.AndroidAdditionalTestOutputConfigProto.AndroidAdditionalTestOutputConfig
 import com.google.common.io.Files
-import com.google.testing.platform.api.config.Config
 import com.google.testing.platform.api.config.ProtoConfig
 import com.google.testing.platform.api.context.Context
+import com.google.testing.platform.api.context.events
 import com.google.testing.platform.api.device.CommandResult
 import com.google.testing.platform.api.device.DeviceController
-import com.google.testing.platform.api.plugin.HostPlugin
+import com.google.testing.platform.api.plugin.sendTestResultUpdate
 import com.google.testing.platform.lib.logging.jvm.getLogger
 import com.google.testing.platform.proto.api.core.TestArtifactProto
 import com.google.testing.platform.proto.api.core.TestCaseProto.TestCase
@@ -38,7 +39,7 @@ import java.util.logging.Logger
 /**
  * A UTP plugin that retrieves additional test outputs from a test device into a host machine.
  */
-class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()) : HostPlugin {
+class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()) : HostPluginAdapter() {
 
     companion object {
         const private val BENCHMARK_TEST_METRICS_KEY = "android.studio.display.benchmark"
@@ -61,10 +62,12 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
     }
 
     lateinit var config: AndroidAdditionalTestOutputConfig
+    private lateinit var context: Context
 
     override fun configure(context: Context) {
         val config = context[Context.CONFIG_KEY] as ProtoConfig
         this.config = AndroidAdditionalTestOutputConfig.parseFrom(config.configProto!!.value)
+        this.context = context
     }
 
     override fun beforeAll(deviceController: DeviceController) {
@@ -117,14 +120,16 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
     override fun beforeEach(testCase: TestCase?, deviceController: DeviceController) {
     }
 
-    override fun afterEach(
+    override fun afterEachWithReturn(
         testResult: TestResult,
         deviceController: DeviceController,
         cancelled: Boolean
     ): TestResult {
         val builder = testResult.toBuilder()
         addBenchmarkOutput(testResult, deviceController, builder)
-        return builder.build()
+        return builder.build().also {
+            context.events.sendTestResultUpdate(it)
+        }
     }
 
     /**
@@ -226,7 +231,7 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
         }
     }
 
-    override fun afterAll(
+    override fun afterAllWithReturn(
         testSuiteResult: TestSuiteResult,
         deviceController: DeviceController,
         cancelled: Boolean

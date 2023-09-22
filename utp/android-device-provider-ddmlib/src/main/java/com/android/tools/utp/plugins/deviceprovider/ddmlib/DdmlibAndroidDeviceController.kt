@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import java.io.File
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 import java.util.logging.Logger
 
@@ -113,11 +114,11 @@ class DdmlibAndroidDeviceController(
         return CommandResult(0, listOf())
     }
 
-    override fun execute(args: List<String>, timeout: Long?): CommandResult {
+    override fun execute(args: List<String>, timeout: Duration?): CommandResult {
         val output = mutableListOf<String>()
         val handler = executeAsync(args) { output.add(it) }
         try {
-            handler.waitFor(timeout ?: DEFAULT_ADB_TIMEOUT_SECONDS)
+            handler.waitFor(timeout ?: Duration.ofSeconds(DEFAULT_ADB_TIMEOUT_SECONDS))
         } catch (e: TimeoutCancellationException) {
             logger.warning {
                 "adb command [${args.joinToString(" ")}] failed due to timeout.\n${e.message}"
@@ -320,9 +321,9 @@ class DdmlibAndroidDeviceController(
             override fun isRunning(): Boolean = deferred.isActive
 
             @Throws(TimeoutCancellationException::class)
-            override fun waitFor(timeout: Long?): Unit = runBlocking {
+            override fun waitFor(timeout: Duration?): Unit = runBlocking {
                 if (timeout != null) {
-                    withTimeout(timeout * 1000) {
+                    withTimeout(timeout.toMillis()) {
                         deferred.await()
                     }
                 } else {
