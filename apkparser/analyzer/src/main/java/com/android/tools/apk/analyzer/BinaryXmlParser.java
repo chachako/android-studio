@@ -205,7 +205,7 @@ public class BinaryXmlParser {
             case DYNAMIC_ATTRIBUTE:
                 return "?" + resourceIdResolver.resolve(data).substring(1);
             case STRING:
-                return stringPool != null && stringPool.getStringCount() < data
+                return stringPool != null && data < stringPool.getStringCount()
                         ? stringPool.getString(data)
                         : String.format(Locale.US, "@string/0x%1$x", data);
             case DIMENSION:
