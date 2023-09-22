@@ -286,7 +286,7 @@ class LintBaseline(
           IssueRegistry.isDeletedIssueId(entry.issueId) &&
             IssueRegistry.getNewId(entry.issueId) == issueId
       ) {
-        if (isSamePathSuffix(path, entry.path)) {
+        if (isSamePathSuffix(path, entry.path) || isSameGradleCachePath(client, path, entry.path)) {
           // Remove all linked entries. We don't loop through all the locations;
           // they're allowed to vary over time, we just assume that all entries
           // for the same warning should be cleared.
@@ -666,7 +666,18 @@ class LintBaseline(
           indent(writer, 2)
           writer.write("<")
           writer.write(TAG_LOCATION)
-          val path = getDisplayPath(client, project, currentLocation.file).replace('\\', '/')
+          val path =
+            PrettyPaths.getPath(
+              currentLocation.file,
+              project,
+              client,
+              useUnixPaths = true,
+              tryPathVariables = true,
+              pathVariables = client.pathVariables,
+              preferRelativePathOverPathVariables = false,
+              allowParentRelativePaths = false,
+              preferRelativeOverAbsolute = true
+            )
           writeAttribute(writer, 3, ATTR_FILE, path)
           val line = currentLocation.line
           if (line >= 0 && !omitLineNumbers) {
@@ -748,6 +759,42 @@ class LintBaseline(
       } else {
         "$counts were filtered out because they are listed in the baseline file, $escapedPath\n"
       }
+    }
+
+    /**
+     * If a path like
+     * "$GRADLE_USER_HOME/caches/transforms-3/4366a02f2b10003dc48387e903833c2d/transformed/leakcanary-android-core-2.8.1/jars/classes.jar"
+     * makes it into the baseline, we should compare the part of the path string inside the cache
+     * instead of the whole path which can change on each test run/machine. See b/238892319
+     */
+    fun isSameGradleCachePath(client: LintClient, path1: String, path2: String): Boolean {
+      val gradleCachePath = "${"$"}GRADLE_USER_HOME/caches/"
+      val cacheRelativePaths =
+        listOf(path1, path2).map { path ->
+          // First we see if the path lies inside $GRADLE_USER_HOME/caches/
+          val pathWithPathVariables =
+            client.pathVariables.toPathStringIfMatched(path) ?: return false
+          if (!pathWithPathVariables.startsWith(gradleCachePath)) return false
+          pathWithPathVariables.removePrefix(gradleCachePath)
+        }
+
+      // Gradle cache paths have an ID somewhere in them that changes across test runs/machines
+      // Like caches/transforms-3/ID/transformed/leakcanary-android-core-2.8.1/jars/classes.jar
+      // or caches/artifacts-4/group/name/ID/jars/name-version.jar
+      // We don't want to be too tightly coupled to exactly where this ID shows up in the path,
+      // so we take the two paths and see if they differ by either zero or one directory names.
+      val chunks = cacheRelativePaths.map { it.split("/") }
+      if (chunks[0].size != chunks[1].size) return false
+
+      var diffFound = false
+      for (i in chunks[0].indices) {
+        if (chunks[0][i] != chunks[1][i]) {
+          if (diffFound) return false
+          diffFound = true
+        }
+      }
+
+      return true
     }
 
     /** Like path.endsWith(suffix), but considers \\ and / identical. */

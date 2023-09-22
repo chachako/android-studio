@@ -1616,6 +1616,73 @@ abstract class LintClient {
     return TextFormat.TEXT.convertTo(file.path, format)
   }
 
+  fun getDisplayPath(project: Project?, file: File, fullPath: Boolean): String {
+    project ?: return file.path
+    val referenceDir = project.referenceDir
+    return getDisplayPath(referenceDir, file, fullPath)
+  }
+
+  fun getDisplayPath(referenceDir: File, file: File, fullPath: Boolean): String {
+    var path = file.path
+    if (!fullPath && path.startsWith(referenceDir.path)) {
+      var chop = referenceDir.path.length
+      if (path.length > chop && path[chop] == File.separatorChar) {
+        chop++
+        path = path.substring(chop)
+        if (path.isEmpty()) {
+          path = file.name
+        }
+        return path
+      } else if (path.length == chop) {
+        return file.name
+      }
+    }
+
+    if (fullPath) {
+      path = file.absoluteFile.toPath().normalize().toString()
+    } else if (file.isAbsolute) {
+      path = getRelativePath(referenceDir, file) ?: file.path
+      if (containsEmbeddedParentRef(path)) {
+        path = getRelativePath(referenceDir.canonicalFile, file.canonicalFile) ?: file.path
+      }
+    }
+
+    return path
+  }
+
+  /**
+   * Is there an embedded parent path in the given path? Should return true for "foo/bar/../baz" and
+   * "..\\foo\\bar" but not "../../foo/bar".
+   */
+  private fun containsEmbeddedParentRef(path: String): Boolean {
+    var index = 0
+    while (index < path.length) {
+      if (isParentRef(path, index)) {
+        index += 3
+      } else {
+        while (index < path.length) {
+          val next = path.indexOf("..", index)
+          if (isParentRef(path, next)) {
+            return true
+          } else {
+            index += 2
+          }
+        }
+      }
+    }
+
+    return false
+  }
+
+  /**
+   * Is the string at the given [index] in the given [path] a parent reference, e.g. "../" or "..\"
+   * ?
+   */
+  private fun isParentRef(path: String, index: Int): Boolean {
+    return path.startsWith("..", index) &&
+      (index == path.length - 2 || path[index + 2] == '/' || path[index + 2] == '\\')
+  }
+
   /** Obsolete; here for backwards compatibility. */
   @Deprecated("Resource repositories are now always supported", replaceWith = ReplaceWith("true"))
   fun supportsProjectResources(): Boolean = true

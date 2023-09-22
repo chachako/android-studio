@@ -30,6 +30,7 @@ import com.android.tools.lint.checks.HardcodedValuesDetector
 import com.android.tools.lint.checks.IconDetector
 import com.android.tools.lint.checks.LayoutConsistencyDetector
 import com.android.tools.lint.checks.ManifestDetector
+import com.android.tools.lint.checks.NotificationPermissionDetector
 import com.android.tools.lint.checks.PxUsageDetector
 import com.android.tools.lint.checks.RangeDetector
 import com.android.tools.lint.checks.RestrictToDetector
@@ -38,6 +39,7 @@ import com.android.tools.lint.checks.ScopedStorageDetector
 import com.android.tools.lint.checks.TypoDetector
 import com.android.tools.lint.checks.infrastructure.TestFiles.bytecode
 import com.android.tools.lint.checks.infrastructure.TestFiles.image
+import com.android.tools.lint.checks.infrastructure.TestFiles.jar
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestFiles.manifest
@@ -64,6 +66,7 @@ import com.google.common.truth.Truth.assertThat
 import java.io.File
 import junit.framework.TestCase.assertEquals
 import org.intellij.lang.annotations.Language
+import org.jetbrains.kotlin.incremental.createDirectory
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
@@ -1538,6 +1541,16 @@ class LintBaselineTest {
       return
     }
     val gradleUserFile = File(dir, "mypath.txt")
+
+    val gradleHome = System.getProperty("user.home") + "/.gradle"
+    val cacheDir =
+      File(
+        "$gradleHome/caches/transforms-3/cba987654321/transformed/leakcanary-android-core-2.8.1/jars"
+      )
+    cacheDir.createDirectory()
+    val gradleCacheFile = File("${cacheDir.path}/classes.jar")
+    gradleCacheFile.createNewFile()
+
     val sdkFile = File(TestUtils.getSdk().toFile(), "platform-tools/package.xml")
     try {
       gradleUserFile.writeText("Some file in gradle user home")
@@ -1545,12 +1558,13 @@ class LintBaselineTest {
       val projects =
         lint()
           .files(
+            jar("dependency.jar"),
             manifest(
                 """
                     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                         package="test.pkg" android:versionName="1.0">
-                        <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
-                        <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
+                        <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="33" />
+                        <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="33" />
                     </manifest>
                     """
               )
@@ -1558,7 +1572,8 @@ class LintBaselineTest {
             // lint check just looks for a file named *.txt and takes its *contents* a path where it
             // reports the file
             source("src/foo/foo.txt", gradleUserFile.path),
-            source("src/foo/bar.txt", sdkFile.path),
+            source("src/foo/bar.txt", gradleCacheFile.path),
+            source("src/foo/baz.txt", sdkFile.path),
             *JarFileIssueRegistryTest.lintApiStubs,
             bytecode(
               "lint.jar",
@@ -1715,6 +1730,30 @@ class LintBaselineTest {
       assertTrue(lintJar.exists())
 
       val baseline = File(root, "baseline.xml")
+
+      // Even though the actual Gradle cache path will change on each test run/machine
+      // this baseline should still work.
+      // Here we use /caches/transforms-3/abc123456789/ in the original baseline, but during the
+      // test
+      // the issue will be reported at /caches/transforms-3/cba987654321/.
+      baseline.writeText(
+        // language=XML
+        """
+          <?xml version="1.0" encoding="UTF-8"?>
+          <issues>
+
+          <issue
+              id="MyIssueId"
+              message="My message">
+              <location
+                  file="${"$"}GRADLE_USER_HOME/caches/transforms-3/abc123456789/transformed/leakcanary-android-core-2.8.1/jars/classes.jar"/>
+          </issue>
+
+          </issues>
+        """
+          .trimIndent()
+      )
+
       val config = File(root, "config.xml")
       config.writeText("<lint checkDependencies='false'/>\n                  ")
 
@@ -1743,46 +1782,56 @@ class LintBaselineTest {
           projects[0].path
         ),
         { it.replace(root.path, "ROOT") },
-        null
+        null,
+        {
+          assertThat(it.contains("mypath.txt")).isTrue()
+          assertThat(it.contains("package.xml")).isTrue()
+          assertThat(
+              it.contains("1 errors, 2 warnings (1 warning filtered by baseline baseline.xml)")
+            )
+            .isTrue()
+        }
       )
 
       @Language("XML")
       val expected =
         """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <issues>
+          <?xml version="1.0" encoding="UTF-8"?>
+          <issues>
 
-                    <issue
-                        id="MyIssueId"
-                        message="My message">
-                        <location
-                            file="${'$'}GRADLE_USER_HOME/mypath.txt"/>
-                    </issue>
+              <issue
+                  id="MyIssueId"
+                  message="My message">
+                  <location
+                      file="${"$"}GRADLE_USER_HOME/caches/transforms-3/cba987654321/transformed/leakcanary-android-core-2.8.1/jars/classes.jar"/>
+              </issue>
 
-                    <issue
-                        id="MyIssueId"
-                        message="My message">
-                        <location
-                            file="${'$'}ANDROID_HOME/platform-tools/package.xml"/>
-                    </issue>
+              <issue
+                  id="MyIssueId"
+                  message="My message">
+                  <location
+                      file="${"$"}GRADLE_USER_HOME/mypath.txt"/>
+              </issue>
 
-                    <issue
-                        id="MultipleUsesSdk"
-                        message="There should only be a single `&lt;uses-sdk>` element in the manifest: merge these together"
-                        errorLine1="    &lt;uses-sdk android:minSdkVersion=&quot;10&quot; android:targetSdkVersion=&quot;31&quot; />"
-                        errorLine2="     ~~~~~~~~">
-                        <location
-                            file="AndroidManifest.xml"
-                            line="4"
-                            column="6"/>
-                        <location
-                            file="AndroidManifest.xml"
-                            line="3"
-                            column="6"
-                            message="Also appears here"/>
-                    </issue>
+              <issue
+                  id="MyIssueId"
+                  message="My message">
+                  <location
+                      file="${"$"}ANDROID_HOME/platform-tools/package.xml"/>
+              </issue>
 
-                </issues>
+              <issue
+                  id="MultipleUsesSdk"
+                  message="There should only be a single `&lt;uses-sdk>` element in the manifest: merge these together">
+                  <location
+                      file="AndroidManifest.xml"
+                      line="4"/>
+                  <location
+                      file="AndroidManifest.xml"
+                      line="3"/>
+              </issue>
+
+          </issues>
             """
           .trimIndent()
       assertEquals(expected, readBaseline(baseline).dos2unix())
@@ -2160,6 +2209,50 @@ class LintBaselineTest {
         """
         .trimIndent()
     assertEquals(expected, readBaseline(outputBaseline).dos2unix()) // b/209433064
+  }
+
+  @Test
+  fun testHandlePathVariablesInLocationPaths() {
+    val baselineFile = temporaryFolder.newFile("baseline.xml")
+
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), baselineFile)
+    baseline.writeOnClose = true
+
+    val gradleDir = System.getProperty("user.home") + "/.gradle/some/gradle/dir"
+    File(gradleDir).createDirectory()
+    val gradleFile = File("$gradleDir/file.txt")
+    gradleFile.createNewFile()
+
+    baseline.findAndMark(
+      NotificationPermissionDetector.ISSUE,
+      Location.create(gradleFile),
+      "My message",
+      Severity.WARNING,
+      null
+    )
+
+    baseline.close()
+
+    // The Gradle home path should be replaced with "$GRADLE_USER_HOME"
+    assertEquals(
+      // language=XML
+      """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <issues format="5" by="lint unittest">
+
+            <issue
+                id="NotificationPermission"
+                message="My message">
+                <location
+                    file="${"$"}GRADLE_USER_HOME/some/gradle/dir/file.txt"/>
+            </issue>
+
+        </issues>
+
+      """
+        .trimIndent(),
+      baselineFile.readText()
+    )
   }
 
   @Test

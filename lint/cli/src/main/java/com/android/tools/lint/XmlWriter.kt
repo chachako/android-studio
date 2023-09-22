@@ -30,6 +30,7 @@ import com.android.SdkConstants.TAG_LOCATION
 import com.android.SdkConstants.VALUE_FALSE
 import com.android.SdkConstants.VALUE_TRUE
 import com.android.tools.lint.client.api.LintDriver
+import com.android.tools.lint.client.api.PrettyPaths
 import com.android.tools.lint.detector.api.AllOfConstraint
 import com.android.tools.lint.detector.api.AnyOfConstraint
 import com.android.tools.lint.detector.api.ApiConstraint
@@ -50,7 +51,6 @@ import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.TargetSdkAtLeast
 import com.android.tools.lint.detector.api.TargetSdkLessThan
 import com.android.tools.lint.detector.api.TextFormat
-import com.android.tools.lint.detector.api.assertionsEnabled
 import com.android.tools.lint.model.PathVariables
 import com.android.utils.XmlUtils
 import com.google.common.base.Joiner
@@ -425,6 +425,25 @@ constructor(
     writer.write("/>\n")
   }
 
+  private fun getPath(file: File, project: Project?): String {
+    return PrettyPaths.getPath(
+      file,
+      project,
+      client,
+      useUnixPaths = type.unixPaths(),
+      // If we have path variables, use those
+      tryPathVariables = type.relativePaths() && type.variables(),
+      // We normally prefer path variables over ../ relative paths, but in a checkDependencies
+      // scenario it's normal for the baselines to point into sibling projects; keep the
+      // paths relocatable.
+      preferRelativePathOverPathVariables =
+        // We ignore the absolutePaths flag for baselines.
+        type == XmlFileType.BASELINE,
+      allowParentRelativePaths = type == XmlFileType.BASELINE && client.flags.isCheckDependencies,
+      preferRelativeOverAbsolute = type.relativePaths() || !client.flags.isFullPath,
+    )
+  }
+
   /**
    * Applies the quickfixes to a temporary doc and writes out the cumulative set of edits to apply
    * to the doc.
@@ -440,51 +459,6 @@ constructor(
       emitEdit(incident, fix)
     }
   }
-
-  private fun getPath(file: File, project: Project?): String {
-    var path: String? = null
-
-    // If we have path variables, use those (but if there's no match, don't use
-    // an absolute path; try to make it project relative
-    if (path == null && type.relativePaths() && type.variables() && pathVariables.any()) {
-      // For baselines, if we have a project, try to make it project relative first.
-      // We ignore the absolutePaths flag for baselines.
-      if (type == XmlFileType.BASELINE) {
-        path = client.getDisplayPath(project, file, false)
-        // We normally prefer path variables over ../ relative paths, but in a checkDependencies
-        // scenario it's normal for the baselines to point into sibling projects; keep the
-        // paths relocatable.
-        if (path.isParentDirectoryPath() && !client.flags.isCheckDependencies) {
-          path = null
-        }
-      }
-
-      if (path == null) {
-        if (assertionsEnabled()) assert(file.isAbsolute) { file.path }
-        path = pathVariables.toPathStringIfMatched(file, unix = type.unixPaths())
-
-        if (path != null && PathVariables.startsWithVariable(path, "HOME")) {
-          // Don't match $HOME if the location is inside the current project -- that just means
-          // the project is under $HOME, which is pretty likely
-          // (We do want to include HOME such that we pick up a relative location to files
-          // outside of the project, such as (say ~/.android)
-          val relativePath = client.getDisplayPath(project, file, false)
-          if (!relativePath.isParentDirectoryPath()) {
-            path = relativePath
-          }
-        }
-      }
-    }
-
-    if (path == null) {
-      val absolute = !type.relativePaths() && client.flags.isFullPath
-      path = client.getDisplayPath(project, file, absolute)
-    }
-
-    return if (type.unixPaths()) path.replace('\\', '/') else path
-  }
-
-  private fun String.isParentDirectoryPath() = startsWith("..")
 
   private fun emitEdit(incident: Incident, lintFix: LintFix) {
     indent(2)
