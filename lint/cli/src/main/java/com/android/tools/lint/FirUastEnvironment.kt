@@ -45,14 +45,16 @@ import org.jetbrains.kotlin.analysis.api.impl.base.util.LibraryUtils
 import org.jetbrains.kotlin.analysis.api.resolve.extensions.KtResolveExtensionProvider
 import org.jetbrains.kotlin.analysis.api.standalone.StandaloneAnalysisAPISession
 import org.jetbrains.kotlin.analysis.api.standalone.buildStandaloneAnalysisAPISession
+import org.jetbrains.kotlin.analysis.decompiled.light.classes.ClsJavaStubByVirtualFileCache
 import org.jetbrains.kotlin.analysis.project.structure.KtModule
 import org.jetbrains.kotlin.analysis.project.structure.builder.KtModuleBuilder
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtLibraryModule
-import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtScriptModule
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtSdkModule
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtSourceModule
 import org.jetbrains.kotlin.analysis.project.structure.impl.getPsiFilesFromPaths
 import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
+import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
+import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
@@ -63,6 +65,7 @@ import org.jetbrains.kotlin.platform.jvm.isJvm
 import org.jetbrains.kotlin.platform.konan.NativePlatforms
 import org.jetbrains.kotlin.platform.wasm.WasmPlatforms
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.scripting.compiler.plugin.ScriptingK2CompilerPluginRegistrar
 import org.jetbrains.uast.UastLanguagePlugin
 import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.FirKotlinUastLanguagePlugin
@@ -127,12 +130,21 @@ private constructor(
   }
 }
 
+@OptIn(ExperimentalCompilerApi::class)
 private fun createKotlinCompilerConfig(enableKotlinScripting: Boolean): CompilerConfiguration {
   val config = createCommonKotlinCompilerConfig()
 
   System.setProperty("psi.sleep.in.validity.check", "false")
 
-  // TODO: if [enableKotlinScripting], register FIR version of scripting compiler plugin if any
+  // Registers the scripting compiler plugin to support build.gradle.kts files.
+  if (enableKotlinScripting) {
+    // TODO: [KtCompilerPluginsProvider] is a preferred way.
+    // NB: hacky solution to pass the registrar to the registration point below.
+    config.add(
+      CompilerPluginRegistrar.COMPILER_PLUGIN_REGISTRARS,
+      ScriptingK2CompilerPluginRegistrar()
+    )
+  }
 
   return config
 }
@@ -145,12 +157,18 @@ private fun createAnalysisSession(
     buildStandaloneAnalysisAPISession(
       applicationDisposable = parentDisposable,
       projectDisposable = parentDisposable,
-      withPsiDeclarationFromBinaryModuleProvider = true
+      withPsiDeclarationFromBinaryModuleProvider = true,
+      compilerConfiguration = config.kotlinCompilerConfig,
     ) {
       CoreApplicationEnvironment.registerExtensionPoint(
         project.extensionArea,
         KtResolveExtensionProvider.EP_NAME.name,
         KtResolveExtensionProvider::class.java
+      )
+      (project as MockProject).registerKtLifetimeTokenProvider()
+      registerProjectService(
+        ClsJavaStubByVirtualFileCache::class.java,
+        ClsJavaStubByVirtualFileCache()
       )
 
       val theProject = project
@@ -265,6 +283,22 @@ private fun createAnalysisSession(
               )
             )
           val (scriptFiles, ordinaryKtFiles) = ktFiles.partition { it.isScript() }
+          // TODO: https://youtrack.jetbrains.com/issue/KT-62161
+          //   This must be [KtScriptModule], but until the above YT resolved
+          //   add this fake [KtSourceModule] to suppress errors from module lookup.
+          if (scriptFiles.isNotEmpty()) {
+            addModule(
+              buildKtSourceModule {
+                addModuleDependencies("Temporary module for scripts in " + m.name)
+                contentScope =
+                  GlobalSearchScope.filesScope(theProject, scriptFiles.map { it.virtualFile })
+                platform = mPlatform
+                project = theProject
+                moduleName = m.name
+              }
+            )
+          }
+          /*
           for (scriptFile in scriptFiles) {
             addModule(
               buildKtScriptModule {
@@ -275,6 +309,7 @@ private fun createAnalysisSession(
               }
             )
           }
+          */
 
           val ktModule = buildKtSourceModule {
             languageVersionSettings = m.kotlinLanguageLevel

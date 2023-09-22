@@ -873,7 +873,7 @@ class UastTest : TestCase() {
                     UClass (name = FooAnnotation) [public abstract annotation FooAnnotation {...}]
                         UField (name = Companion) [@null public static final var Companion: test.pkg.FooAnnotation.Companion] : PsiType:Companion
                             UAnnotation (fqName = null) [@null]
-                        UClass (name = Direction) [public static enum Direction {...}]
+                        UClass (name = Direction) [public static final enum Direction {...}]
                             UEnumConstant (name = UP) [@null UP]
                                 UAnnotation (fqName = null) [@null]
                                 USimpleNameReferenceExpression (identifier = Direction) [Direction]
@@ -1012,38 +1012,38 @@ class UastTest : TestCase() {
                 package test.pkg
 
                 public final class TestKt {
-                    public static final fun function1(@org.jetbrains.annotations.Nullable t: T) : void {
+                    public static final fun function1(t: T) : void {
                     }
-                    public static final fun function2(@org.jetbrains.annotations.Nullable t: T) : T {
+                    public static final fun function2(t: T) : T {
                         return t
                     }
-                    public static fun function3(@org.jetbrains.annotations.Nullable t: T) : void {
+                    public static fun function3(t: T) : void {
                     }
-                    public static fun function4(@org.jetbrains.annotations.Nullable t: T) : T {
+                    public static fun function4(t: T) : T {
                         return t
                     }
-                    public static fun function5(@org.jetbrains.annotations.Nullable t: T) : int {
+                    public static fun function5(t: T) : int {
                         return 42
                     }
-                    public static fun function6(@org.jetbrains.annotations.Nullable ${"$"}this${"$"}function6: T, @org.jetbrains.annotations.Nullable t: T) : T {
+                    public static fun function6(${"$"}this${"$"}function6: T, t: T) : T {
                         return t
                     }
-                    public static fun function7(@org.jetbrains.annotations.Nullable t: T) : T {
+                    public static fun function7(t: T) : T {
                         return t
                     }
-                    private static fun function8(@org.jetbrains.annotations.Nullable t: T) : T {
+                    private static fun function8(t: T) : T {
                         return t
                     }
-                    public static fun function9(@org.jetbrains.annotations.Nullable t: T) : T {
+                    public static fun function9(t: T) : T {
                         return t
                     }
-                    public static fun function10(@org.jetbrains.annotations.Nullable t: T) : T {
+                    public static fun function10(t: T) : T {
                         return t
                     }
-                    public static fun function11(@org.jetbrains.annotations.Nullable ${"$"}this${"$"}function11: T, @org.jetbrains.annotations.Nullable t: T) : T {
+                    public static fun function11(${"$"}this${"$"}function11: T, t: T) : T {
                         return t
                     }
-                    public static fun function12(@org.jetbrains.annotations.Nullable t: T) : void {
+                    public static fun function12(t: T) : void {
                     }
                 }
 
@@ -1344,13 +1344,13 @@ class UastTest : TestCase() {
 
                 public final class GraphVariables {
                     public final fun getSet() : java.util.Set<test.pkg.GraphVariable<?>> = UastEmptyExpression
-                    public fun variable(@org.jetbrains.annotations.NotNull name: java.lang.String, @org.jetbrains.annotations.NotNull graphType: java.lang.String, @org.jetbrains.annotations.Nullable value: T) : void {
+                    public fun variable(@org.jetbrains.annotations.NotNull name: java.lang.String, @org.jetbrains.annotations.NotNull graphType: java.lang.String, value: T) : void {
                         this.set.add(<init>(name, graphType, value))
                     }
                 }
 
                 public final class GraphVariable {
-                    public fun GraphVariable(@org.jetbrains.annotations.NotNull name: java.lang.String, @org.jetbrains.annotations.NotNull graphType: java.lang.String, @org.jetbrains.annotations.Nullable value: T) = UastEmptyExpression
+                    public fun GraphVariable(@org.jetbrains.annotations.NotNull name: java.lang.String, @org.jetbrains.annotations.NotNull graphType: java.lang.String, value: T) = UastEmptyExpression
                 }
 
                 """

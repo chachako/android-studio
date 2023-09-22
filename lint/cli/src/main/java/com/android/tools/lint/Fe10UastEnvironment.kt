@@ -42,9 +42,10 @@ import org.jetbrains.kotlin.analysis.api.descriptors.KtFe10AnalysisHandlerExtens
 import org.jetbrains.kotlin.analysis.api.descriptors.KtFe10AnalysisSessionProvider
 import org.jetbrains.kotlin.analysis.api.descriptors.references.ReadWriteAccessCheckerDescriptorsImpl
 import org.jetbrains.kotlin.analysis.api.impl.base.references.HLApiReferenceProviderService
-import org.jetbrains.kotlin.analysis.api.lifetime.KtDefaultLifetimeTokenProvider
-import org.jetbrains.kotlin.analysis.api.lifetime.KtReadActionConfinementDefaultLifetimeTokenProvider
 import org.jetbrains.kotlin.analysis.api.session.KtAnalysisSessionProvider
+import org.jetbrains.kotlin.analysis.decompiler.stub.file.ClsKotlinBinaryClassCache
+import org.jetbrains.kotlin.analysis.decompiler.stub.file.DummyFileAttributeService
+import org.jetbrains.kotlin.analysis.decompiler.stub.file.FileAttributeService
 import org.jetbrains.kotlin.analysis.project.structure.KtModuleScopeProvider
 import org.jetbrains.kotlin.analysis.project.structure.KtModuleScopeProviderImpl
 import org.jetbrains.kotlin.analysis.project.structure.ProjectStructureProvider
@@ -328,10 +329,7 @@ private fun configureAnalysisApiServices(
     KotlinModificationTrackerFactory::class.java,
     KotlinStaticModificationTrackerFactory::class.java
   )
-  project.registerService(
-    KtDefaultLifetimeTokenProvider::class.java,
-    KtReadActionConfinementDefaultLifetimeTokenProvider::class.java
-  )
+  project.registerKtLifetimeTokenProvider()
   project.registerService(KtModuleScopeProvider::class.java, KtModuleScopeProviderImpl())
 
   val ktFiles =
@@ -365,7 +363,7 @@ private fun configureAnalysisApiServices(
     KtAnalysisSessionProvider::class.java,
     KtFe10AnalysisSessionProvider(project)
   )
-  project.registerService(Fe10AnalysisFacade::class.java, CliFe10AnalysisFacade(project))
+  project.registerService(Fe10AnalysisFacade::class.java, CliFe10AnalysisFacade::class.java)
   // Duplicate: already registered at [KotlinCoreEnvironment]
   // project.registerService(ModuleVisibilityManager::class.java,
   // CliModuleVisibilityManagerImpl(enabled = true))
@@ -393,6 +391,12 @@ private fun configureFe10ApplicationEnvironment(appEnv: CoreApplicationEnvironme
     it.application.registerService(
       KtFe10ReferenceResolutionHelper::class.java,
       DummyKtFe10ReferenceResolutionHelper
+    )
+
+    it.application.registerService(ClsKotlinBinaryClassCache::class.java)
+    it.application.registerService(
+      FileAttributeService::class.java,
+      DummyFileAttributeService::class.java
     )
 
     // Note that this app-level service should be initialized before any other entities attempt to

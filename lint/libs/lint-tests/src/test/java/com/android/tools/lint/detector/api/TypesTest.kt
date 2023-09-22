@@ -373,7 +373,7 @@ class TypesTest : TestCase() {
     assertEquals(
       "" +
         "UFile (package = test.pkg) [package test.pkg...]\n" +
-        "    UClass (name = KotlinEnum) [public enum KotlinEnum {...}]\n" +
+        "    UClass (name = KotlinEnum) [public final enum KotlinEnum {...}]\n" +
         "        UField (name = resId) [@org.jetbrains.annotations.NotNull private final var resId: int] : PsiType:int\n" +
         "            UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]\n" +
         "        UEnumConstant (name = FOO) [@null FOO(1)]\n" +

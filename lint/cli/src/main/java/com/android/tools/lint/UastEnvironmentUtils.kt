@@ -22,6 +22,7 @@ import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.mock.MockApplication
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.diagnostic.DefaultLogger
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.ProgressManager
@@ -33,7 +34,13 @@ import com.intellij.openapi.vfs.CompactVirtualFileSet
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileSet
 import com.intellij.openapi.vfs.VirtualFileSetFactory
+import it.unimi.dsi.fastutil.ints.IntSet
+import java.nio.file.Files
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.io.path.pathString
+import org.jetbrains.kotlin.analysis.api.KtAnalysisApiInternals
+import org.jetbrains.kotlin.analysis.api.lifetime.KtLifetimeTokenProvider
+import org.jetbrains.kotlin.analysis.api.standalone.KtAlwaysAccessibleLifetimeTokenProvider
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.CompilerSystemProperties
 import org.jetbrains.kotlin.cli.common.messages.GradleStyleMessageRenderer
@@ -73,6 +80,13 @@ internal fun createCommonKotlinCompilerConfig(): CompilerConfiguration {
 
   config.put(JVMConfigurationKeys.NO_JDK, true)
 
+  // To work around any `bin/idea.properties` issues, e.g.,
+  // https://youtrack.jetbrains.com/issue/KT-56279 (IJ 223)
+  // https://youtrack.jetbrains.com/issue/KT-62039 (IJ 232)
+  val bin = Files.createTempDirectory("fake_bin")
+  bin.toFile().deleteOnExit()
+  System.setProperty(PathManager.PROPERTY_HOME_PATH, bin.pathString)
+
   return config
 }
 
@@ -99,6 +113,14 @@ internal fun configureProjectEnvironment(
   // TODO(b/283351708): Migrate to using UastFacade/UastLanguagePlugin instead,
   //  even including lint checks shipped in a binary form?!
   @Suppress("DEPRECATION") project.registerService(UastContext::class.java, UastContext(project))
+}
+
+@OptIn(KtAnalysisApiInternals::class)
+internal fun MockProject.registerKtLifetimeTokenProvider() {
+  registerService(
+    KtLifetimeTokenProvider::class.java,
+    KtAlwaysAccessibleLifetimeTokenProvider::class.java
+  )
 }
 
 // In parallel builds the Kotlin compiler will reuse the application environment
@@ -172,13 +194,13 @@ internal fun reRegisterProgressManager(application: MockApplication) {
 // implementation.
 internal object LintVirtualFileSetFactory : VirtualFileSetFactory {
   override fun createCompactVirtualFileSet(): VirtualFileSet {
-    return CompactVirtualFileSet()
+    return CompactVirtualFileSet(IntSet.of())
   }
 
   override fun createCompactVirtualFileSet(
     files: MutableCollection<out VirtualFile>
   ): VirtualFileSet {
-    return CompactVirtualFileSet().apply { addAll(files) }
+    return CompactVirtualFileSet(IntSet.of()).apply { addAll(files) }
   }
 }
 
