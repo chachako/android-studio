@@ -33,13 +33,14 @@ import com.android.build.gradle.internal.services.getBuildService
 import com.android.builder.core.BuilderConstants
 import com.android.builder.core.LibraryRequest
 import com.android.builder.core.ToolsRevisionUtils
+import com.android.builder.core.apiVersionFromString
 import com.android.builder.signing.DefaultSigningConfig
 import org.gradle.api.model.ObjectFactory
 import javax.inject.Inject
 
 internal abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLazyInitialization("lazyInit") constructor(
     private val dslServices: DslServices,
-    private val objectFactory: ObjectFactory,
+    objectFactory: ObjectFactory,
     private val compilationEnabledCallback: (KotlinMultiplatformAndroidCompilationBuilder) -> Unit,
 ): KotlinMultiplatformAndroidExtension, Lockable {
 
@@ -94,12 +95,13 @@ internal abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLaz
     override var minSdkPreview: String?
         get() = mutableMinSdk?.codename
         set(value) {
+            val apiVersion = apiVersionFromString(value)
             val min =
                 mutableMinSdk ?: MutableAndroidVersion(null, null).also {
                     mutableMinSdk = it
                 }
-            min.codename = value
-            min.api = null
+            min.codename = apiVersion?.codename
+            min.api = apiVersion?.apiLevel
         }
 
     override val testCoverage = dslServices.newInstance(JacocoOptions::class.java)

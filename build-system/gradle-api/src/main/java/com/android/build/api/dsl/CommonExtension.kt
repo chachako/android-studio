@@ -775,7 +775,7 @@ interface CommonExtension<
      */
     fun useLibrary(name: String, required: Boolean)
 
-    @Deprecated(
+    @get:Deprecated(
         message = "This API will be removed in AGP 7.0, replaced with AndroidComponents::sdkComponents")
     val sdkComponents: SdkComponents
 

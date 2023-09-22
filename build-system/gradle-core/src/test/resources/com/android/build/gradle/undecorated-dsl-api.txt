@@ -618,6 +618,7 @@ com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnDeviceImpl
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnDeviceImpl.getInstallation: com.android.build.api.dsl.Installation ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnDeviceImpl.getManagedDevices: com.android.build.api.dsl.ManagedDevices ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnDeviceImpl.getMultidex: com.android.build.api.dsl.MultiDexConfig ()
+com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnDeviceImpl.getSigning: com.android.build.api.dsl.ApkSigningConfig ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnDeviceImpl.installation: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Installation, kotlin.Unit>)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnDeviceImpl.managedDevices: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ManagedDevices, kotlin.Unit>)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidTestOnDeviceImpl.multidex: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.MultiDexConfig, kotlin.Unit>)
