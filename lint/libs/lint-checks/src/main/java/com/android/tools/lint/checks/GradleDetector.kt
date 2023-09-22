@@ -1345,7 +1345,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         newerVersion.isNewerThan(dependency)
     ) {
       val versionString = newerVersion.toString()
-      val message =
+      var message =
         if (
           dependency.group == "androidx.slidingpanelayout" && dependency.name == "slidingpanelayout"
         ) {
@@ -1357,6 +1357,19 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         } else {
           getNewerVersionAvailableMessage(dependency, versionString, null)
         }
+
+      // Add details for play-services-maps.
+      if (
+        dependency.group == "com.google.android.gms" &&
+          dependency.name == "play-services-maps" &&
+          Version.parse("18.2.0").let { version < it && newerVersion >= it }
+      ) {
+        message +=
+          ". Upgrading to at least 18.2.0 is highly recommended to take advantage of the new renderer, " +
+            "which supports customization options like map styling, 3D tiles, " +
+            "and is more reliable, with better support going forward."
+      }
+
       val fix =
         if (!isResolved) getUpdateDependencyFix(richVersionIdentifier, versionString) else null
       report(context, cookie, issue, message, fix)
