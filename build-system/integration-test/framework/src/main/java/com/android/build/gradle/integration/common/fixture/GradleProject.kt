@@ -116,11 +116,12 @@ abstract class GradleProject(
         sourceFiles[file.path] = file
     }
 
+    open fun buildFileName(): String = "build.gradle"
     /**
      * Appends the given snippet to an already existing build file
      */
     open fun appendToBuild(snippet: String): GradleProject {
-        replaceFile(getFile("build.gradle").appendContent("\n" + snippet + "\n"))
+        replaceFile(getFile(buildFileName()).appendContent("\n" + snippet + "\n"))
         return this
     }
 
