@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.nativebuild
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.apk.Aar
@@ -232,10 +231,7 @@ class KotlinMultiplatformAndroidPluginNativeTest {
             """.trimIndent()
         )
 
-        @Suppress("DEPRECATION") // publishing with kmp isn't configuration cache compatible (b/276472789)
-        project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
-            .run(":kmpFirstLib:publish")
+        project.executor().run(":kmpFirstLib:publish")
 
 
         // Assert that maven metadata and gradle module metadata files have no mention of the native

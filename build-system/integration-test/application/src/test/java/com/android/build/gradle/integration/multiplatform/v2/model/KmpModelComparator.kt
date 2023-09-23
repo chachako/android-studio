@@ -46,6 +46,7 @@ class KmpModelComparator(
         projectPath: String,
         printModelToStdout: Boolean = true
     ): Map<String, String> {
+        // dumpSourceSetDependencies task is not configuration cache compatible
         val executor = project.executor()
             .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
         executor.run("$projectPath:$modelSnapshotTask")
