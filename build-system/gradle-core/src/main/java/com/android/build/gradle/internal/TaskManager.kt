@@ -1271,11 +1271,8 @@ abstract class TaskManager(
             .artifactsAltered
             .get()
 
-        val enableDexingArtifactTransform = (creationConfig
-                .services
-                .projectOptions[BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM]
-                && supportsDesugaringViaArtifactTransform)
-                && !classesAlteredThroughVariantAPI
+        val enableDexingArtifactTransform =
+            supportsDesugaringViaArtifactTransform && !classesAlteredThroughVariantAPI
 
         return ClassesClasspathUtils(
                 creationConfig,

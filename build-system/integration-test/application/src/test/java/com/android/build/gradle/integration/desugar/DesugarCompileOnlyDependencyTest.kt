@@ -76,6 +76,7 @@ class DesugarCompileOnlyDependencyTest {
 
 }
 
+@Suppress("unused") // Used in this test
 private interface InterfaceWithDefaultMethod {
     fun myDefaultMethod() {}
 }

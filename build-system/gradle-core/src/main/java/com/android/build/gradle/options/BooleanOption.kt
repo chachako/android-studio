@@ -283,12 +283,6 @@ enum class BooleanOption(
         FeatureStage.SoftlyEnforced(VERSION_9_0)
     ),
 
-    ENABLE_DEXING_ARTIFACT_TRANSFORM(
-        "android.enableDexingArtifactTransform",
-        true,
-        FeatureStage.SoftlyEnforced(VERSION_8_3)
-    ),
-
     /**
      * Whether to do lint analysis per component (instead of analysing the main variant and the test
      * components in the same lint invocation).
@@ -643,7 +637,7 @@ enum class BooleanOption(
         true,
         FeatureStage.Enforced(
             Version.VERSION_8_2,
-            "If you want to disable dexing in artifact transforms, use ${ENABLE_DEXING_ARTIFACT_TRANSFORM.propertyName} instead."
+            "If you run into issues with dexing transforms, try setting `${USE_FULL_CLASSPATH_FOR_DEXING_TRANSFORM.propertyName} = true` instead."
         )
     ),
 
@@ -651,6 +645,15 @@ enum class BooleanOption(
         "android.enableDexingArtifactTransformForExternalLibs",
         true,
         FeatureStage.Enforced(Version.VERSION_8_2)
+    ),
+
+    ENABLE_DEXING_ARTIFACT_TRANSFORM(
+        "android.enableDexingArtifactTransform",
+        true,
+        FeatureStage.Enforced(
+            Version.VERSION_8_3,
+            "If you run into issues with dexing transforms, try setting `${USE_FULL_CLASSPATH_FOR_DEXING_TRANSFORM.propertyName} = true` instead."
+        )
     ),
 
     /* ----------------

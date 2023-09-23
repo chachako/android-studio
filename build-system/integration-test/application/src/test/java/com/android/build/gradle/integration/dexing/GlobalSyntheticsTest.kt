@@ -184,10 +184,7 @@ class GlobalSyntheticsTest(private val dexType: DexType) {
             exceptionGlobalTriggerClass
         )
 
-        // test the pipeline when artifact transform is disabled
-        executor()
-            .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM, false)
-            .run("assembleDebug")
+        executor().run("assembleDebug")
 
         val localeGlobalFromApp = InternalArtifactType.GLOBAL_SYNTHETICS_PROJECT
             .getOutputDir(app.buildDir).resolve("debug/out/com/example/app/$exceptionGlobalTriggerClass.globals")

@@ -68,11 +68,8 @@ class CustomClassTransformTest {
     @Test
     fun testCustomClassTransform() {
         val jarFile = createProfilersJar()
-        // run with ENABLE_DEXING_ARTIFACT_TRANSFORM = true to ensure it gets disabled by
-        // android.advanced.profiling.transforms=<path to jar file>
         project.executor()
             .with(StringOption.IDE_ANDROID_CUSTOM_CLASS_TRANSFORMS, jarFile.absolutePath)
-            .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM, true)
             .run("assembleDebug")
         assertProjectClassWasTransformed()
         val apk = project.getApk(GradleTestProject.ApkType.DEBUG)
@@ -85,11 +82,8 @@ class CustomClassTransformTest {
     @Test
     fun testBundle() {
         val jarFile = createProfilersJar()
-        // run with ENABLE_DEXING_ARTIFACT_TRANSFORM = true to ensure it gets disabled by
-        // android.advanced.profiling.transforms=<path to jar file>
         project.executor()
             .with(StringOption.IDE_ANDROID_CUSTOM_CLASS_TRANSFORMS, jarFile.absolutePath)
-            .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM, true)
             .run("bundleDebug")
         project.getBundle(GradleTestProject.ApkType.DEBUG).use {
             assertThat(it).containsClass("base",

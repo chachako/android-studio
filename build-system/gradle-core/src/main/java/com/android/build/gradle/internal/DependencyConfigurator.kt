@@ -829,22 +829,20 @@ class DependencyConfigurator(
         if (allComponents.isNotEmpty()) {
             val bootClasspath = project.files(bootClasspathConfig.bootClasspath)
             val services = allComponents.first().services
-            if (projectOptions[BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM]) {
-                DexingRegistration.registerTransforms(
-                    allComponents,
-                    DexingRegistration.ComponentAgnosticParameters(
-                        projectName = project.name,
-                        dependencyHandler = dependencies,
-                        bootClasspath = bootClasspath,
-                        libConfiguration = getDesugarLibConfig(services),
-                        errorFormat = SyncOptions.getErrorFormatMode(projectOptions),
-                        // Disable incremental dexing for main and androidTest components in dynamic
-                        // feature module (b/246326007)
-                        disableIncrementalDexing = allComponents.any { it.componentType.isDynamicFeature },
-                        components = allComponents
-                    )
+            DexingRegistration.registerTransforms(
+                allComponents,
+                DexingRegistration.ComponentAgnosticParameters(
+                    projectName = project.name,
+                    dependencyHandler = dependencies,
+                    bootClasspath = bootClasspath,
+                    libConfiguration = getDesugarLibConfig(services),
+                    errorFormat = SyncOptions.getErrorFormatMode(projectOptions),
+                    // Disable incremental dexing for main and androidTest components in dynamic
+                    // feature module (b/246326007)
+                    disableIncrementalDexing = allComponents.any { it.componentType.isDynamicFeature },
+                    components = allComponents
                 )
-            }
+            )
 
             val d8Version = Version.getVersionString()
 
