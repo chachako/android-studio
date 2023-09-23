@@ -1,81 +1,80 @@
 load("//tools/base/bazel:android.bzl", "dex_library")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library")
-load(":swap_test.bzl", "swap_test")
+load(":deployer_test.bzl", "deployer_test")
 
 package(default_testonly = True)
 
-swap_test(
+deployer_test(
     name = "DesugarTest",
     srcs = ["java/com/android/tools/deployer/DesugarTest.java"],
 )
 
-swap_test(
+deployer_test(
     name = "FailureTest",
     srcs = ["java/com/android/tools/deployer/FailureTest.java"],
 )
 
-swap_test(
+deployer_test(
     name = "KotlinTest",
     srcs = ["java/com/android/tools/deployer/KotlinTest.java"],
 )
 
-swap_test(
+deployer_test(
     name = "SimpleTest",
     srcs = ["java/com/android/tools/deployer/SimpleTest.java"],
 )
 
-swap_test(
+deployer_test(
     name = "RClassTest",
     srcs = ["java/com/android/tools/deployer/RClassTest.java"],
 )
 
-swap_test(
+deployer_test(
     name = "JetPackComposeTest",
     srcs = ["java/com/android/tools/deployer/JetPackComposeTest.java"],
 )
 
-swap_test(
+deployer_test(
     name = "StaticVarInitTest",
     srcs = ["java/com/android/tools/deployer/StaticVarInitTest.java"],
 )
 
-swap_test(
+deployer_test(
     name = "VirtualTest",
     srcs = ["java/com/android/tools/deployer/VirtualTest.java"],
 )
 
-swap_test(
+deployer_test(
     name = "CrashLogTest",
     srcs = ["java/com/android/tools/deployer/CrashLogTest.java"],
 )
 
-#Todo rename this to something besides swap test.
-swap_test(
+deployer_test(
     name = "LiveLiteralUpdateTest",
     srcs = ["java/com/android/tools/deployer/LiveLiteralUpdateTest.java"],
 )
 
-swap_test(
+deployer_test(
     name = "LiveEditInstrumentationTest",
     srcs = ["java/com/android/tools/deployer/LiveEditInstrumentationTest.java"],
 )
 
-swap_test(
+deployer_test(
     name = "LiveEditBasicTest",
     srcs = ["java/com/android/tools/deployer/LiveEditBasicTest.java"],
 )
 
-swap_test(
+deployer_test(
     name = "LiveEditRecomposeCrashTest",
     srcs = ["java/com/android/tools/deployer/LiveEditRecomposeCrashTest.java"],
 )
 
-swap_test(
+deployer_test(
     name = "LiveEditVersionCheckTest",
     srcs = ["java/com/android/tools/deployer/LiveEditVersionCheckTest.java"],
 )
 
-swap_test(
+deployer_test(
     name = "LiveEditAccessorTest",
     srcs = ["java/com/android/tools/deployer/LiveEditAccessorTest.java"],
 )

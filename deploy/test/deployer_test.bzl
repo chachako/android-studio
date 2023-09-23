@@ -1,6 +1,6 @@
 load("//tools/base/fakeandroid:fakeandroid.bzl", "fake_android_test")
 
-def swap_test(name, srcs):
+def deployer_test(name, srcs):
     fake_android_test(
         name = name,
         size = "medium",
