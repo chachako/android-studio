@@ -43,7 +43,7 @@ class DependenciesResolver(
         val mapOfDependencies = mutableMapOf<String, ResolvedModuleInfo>()
         System.currentTimeMillis().run {
             coroutineScope {
-                parsedDecl.forEach("includes") { projectPath ->
+                parsedDecl.forEach("include") { projectPath ->
                     launch {
                         readProjectDependencies(fileReader, projectPath)?.let {
                             synchronized(mapOfDependencies) {

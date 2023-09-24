@@ -101,7 +101,7 @@ class DependenciesResolverTest {
 
     private fun writeSettingsFile() {
         File(temporaryFolderRule.root, "settings.gradle.toml").also { settingsFile ->
-            val stringBuilder = StringBuilder("[includes]\n")
+            val stringBuilder = StringBuilder("[include]\n")
             modulesList.forEach {
                 stringBuilder.append(it).append(" = \":").append(it).append("\"\n")
             }
