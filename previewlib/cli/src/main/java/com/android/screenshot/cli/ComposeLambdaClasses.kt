@@ -27,6 +27,13 @@ import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileFilter
+import com.intellij.platform.backend.workspace.BuilderSnapshot
+import com.intellij.platform.backend.workspace.StorageReplacement
+import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.workspace.storage.EntityStorageSnapshot
+import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.VersionedEntityStorage
+import com.intellij.platform.workspace.storage.VersionedStorageChange
 import com.intellij.util.download.DownloadableFileDescription
 import com.intellij.util.download.DownloadableFileService
 import com.intellij.util.download.DownloadableFileSetDescription
@@ -35,12 +42,7 @@ import com.intellij.util.download.FileDownloader
 import com.intellij.util.download.impl.DownloadableFileDescriptionImpl
 import com.intellij.util.download.impl.DownloadableFileSetDescriptionImpl
 import com.intellij.util.download.impl.FileSetVersionsFetcherBase
-import com.intellij.workspaceModel.ide.BuilderSnapshot
-import com.intellij.workspaceModel.ide.StorageReplacement
-import com.intellij.workspaceModel.ide.WorkspaceModel
-import com.intellij.workspaceModel.storage.EntityStorageSnapshot
-import com.intellij.workspaceModel.storage.MutableEntityStorage
-import com.intellij.workspaceModel.storage.VersionedEntityStorage
+import kotlinx.coroutines.flow.Flow
 import org.jetbrains.jps.model.module.JpsModuleSourceRootType
 import java.io.File
 import java.net.URL
@@ -194,6 +196,13 @@ class WorkspaceModelI(
         TODO("Not yet implemented")
     }
 
+    override suspend fun update(description: String, updater: (MutableEntityStorage) -> Unit) {
+        TODO("Not yet implemented")
+    }
+
+    override val changesEventFlow: Flow<VersionedStorageChange>
+        get() = TODO("Not yet implemented")
+
     override val currentSnapshot: EntityStorageSnapshot
         get() = entityStorage.current.toSnapshot()
 
@@ -316,10 +325,6 @@ class ScreenshotProjectFileIndex : ProjectFileIndex {
     }
 
     override fun isInLibrarySource(fileOrDir: VirtualFile): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun isIgnored(file: VirtualFile): Boolean {
         TODO("Not yet implemented")
     }
 

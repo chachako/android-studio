@@ -35,14 +35,13 @@ import com.intellij.openapi.roots.ModuleRootManagerEx
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.roots.impl.DirectoryIndexExcludePolicy
 import com.intellij.openapi.startup.StartupManager
+import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.workspace.jps.entities.ModuleId
+import com.intellij.platform.workspace.storage.impl.VersionedEntityStorageOnStorage
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndex
-import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.ide.impl.IdeVirtualFileUrlManagerImpl
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.ModuleDependencyIndexImpl
 import com.intellij.workspaceModel.ide.legacyBridge.ModuleDependencyIndex
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
-import com.intellij.workspaceModel.storage.impl.VersionedEntityStorageOnStorage
-import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.runBlocking
 

@@ -20,17 +20,14 @@ import com.android.tools.idea.model.MergedManifestModificationTracker
 import com.android.tools.rendering.api.IdeaModuleProvider
 import com.intellij.facet.FacetManager
 import com.intellij.openapi.module.Module
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.ModuleId
+import com.intellij.platform.workspace.storage.EntitySource
+import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.impl.VersionedEntityStorageOnStorage
 import com.intellij.workspaceModel.ide.legacyBridge.ModuleBridge
-import com.intellij.workspaceModel.storage.EntitySource
-import com.intellij.workspaceModel.storage.MutableEntityStorage
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
-import com.intellij.workspaceModel.storage.bridgeEntities.addFacetEntity
-import com.intellij.workspaceModel.storage.impl.VersionedEntityStorageOnStorage
-import com.intellij.workspaceModel.storage.url.VirtualFileUrl
 import org.jetbrains.android.facet.AndroidFacet
 import org.jetbrains.android.facet.AndroidFacetConfiguration
-import org.jetbrains.android.facet.AndroidFacetType
 import org.jetbrains.android.facet.ResourceFolderManager
 import org.jetbrains.android.uipreview.ModuleClassLoaderOverlays
 import org.mockito.Mockito
@@ -57,13 +54,12 @@ class ComposeModule(
             .thenReturn(composeProject.lintProject.ideaProject) // Needed by StudioModuleClassLoaderManager
 
         // Needed by StudioModuleClassLoader
-        TODO("Incompatible with IntelliJ 2023.2") /*
         val id = ModuleId("android")
         Mockito.`when`(module.moduleEntityId).thenReturn(id) // Needed by FacetManager
         val storage = createEntityStorage(id)
         Mockito.`when`(module.entityStorage)
             .thenReturn(VersionedEntityStorageOnStorage(storage.toSnapshot()))
-        */
+
         Mockito.`when`(module.getService(ModuleClassLoaderOverlays::class.java))
             .thenReturn(ModuleClassLoaderOverlays(module))
 
@@ -102,15 +98,6 @@ class ComposeModule(
             val entity =
                 ModuleEntity.invoke(id.name, listOf(), Mockito.mock(EntitySource::class.java), null)
             storage.addEntity(entity)
-            storage.addFacetEntity(AndroidFacet.NAME,
-                                   AndroidFacetType.TYPE_ID,
-                                   null,
-                                   entity,
-                                   null,
-                                   object : EntitySource {
-                                       override val virtualFileUrl: VirtualFileUrl?
-                                           get() = super.virtualFileUrl
-                                   })
             return storage
         }
 
