@@ -19,6 +19,9 @@ package com.android.build.gradle.integration.lint
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
+import com.android.build.gradle.internal.scope.InternalArtifactType.LINT_PARTIAL_RESULTS
+import com.android.testutils.truth.PathSubject
+import com.android.utils.FileUtils
 import org.junit.Rule
 import org.junit.Test
 
@@ -88,34 +91,6 @@ class LintMissingInflatedIdTest {
                             android:text="bar"
                             android:id="@+id/text" />
                 </LinearLayout>""")
-            .withFile(
-                "src/main/java/com/example/lib/LibActivity.java",
-                // language=java
-                """package com.example.lib;
-
-                import android.app.Activity;
-                import android.os.Bundle;
-                import android.widget.TextView;
-
-                public class LibActivity extends Activity {
-
-                    @Override
-                    public void onCreate(Bundle savedInstanceState) {
-                        super.onCreate(savedInstanceState);
-                        setContentView(R.layout.lib_main);
-                        TextView tv = (TextView) findViewById(R.id.text);
-                    }
-                }""")
-            .appendToBuild(
-                // language=groovy
-                """
-                    android {
-                        lint {
-                            enable "MissingInflatedId"
-                        }
-                    }
-                """.trimIndent()
-            )
 
     @get:Rule
     val project: GradleTestProject =
@@ -132,13 +107,30 @@ class LintMissingInflatedIdTest {
     /**
      * Regression test for b/299602350.
      *
-     * Test the case of the MissingInflatedIdDetector running on an app and a library module
+     * Test the case of the MissingInflatedIdDetector running on an app with a library module
      * dependency. Previously, this would cause a LintWarning because the library module would write
-     * a resources.xml file, and then the app would try and fail to deserialize the library module's
+     * a resources.xml file, and then the app would try but fail to deserialize the library module's
      * resources.xml file.
      */
     @Test
     fun testNoLintWarningFromMissingInflatedIdDetector() {
+        // First check that running lint analysis on lib causes the lint-resources.xml file to be
+        // written
+        project.executor().run(":lib:lintAnalyzeDebug")
+        val libLintResourcesXml =
+            FileUtils.join(
+                project.getSubproject(":lib")
+                    .getIntermediateFile(LINT_PARTIAL_RESULTS.getFolderName()),
+                "debug",
+                "out",
+                "lint-resources.xml"
+            )
+        PathSubject.assertThat(libLintResourcesXml).exists()
+        // Check for the expected lib-specific path variable
+        PathSubject.assertThat(libLintResourcesXml)
+            .contains(":lib*debug*MAIN*sourceProvider*0*resDir*0")
+        // Check that :app:lintDebug runs successfully even though there's a lib-specific path
+        // variable in lib's lint-resources.xml
         project.executor().run(":app:lintDebug")
     }
 }

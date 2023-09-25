@@ -31,6 +31,7 @@ import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.file.Directory
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -256,19 +257,32 @@ class AndroidLintAnalysisTaskCacheabilityTest {
                     }
                 val lintDefiniteFileName = "lint-definite.xml"
                 val lintPartialFileName = "lint-partial.xml"
+                val lintResourcesFileName = "lint-resources.xml"
 
                 // First check that the contents of partialResultsDir1 and partialResultsDir2 are
                 // identical
                 listOf(partialResultsDir1, partialResultsDir2).forEach {
-                    assertThat(it.listFiles()?.asList())
-                        .containsExactlyElementsIn(
+                    val expectedFileList =
+                        if (moduleName != ":java-lib" && artifactType == LINT_PARTIAL_RESULTS) {
+                            listOf(
+                                File(it, lintDefiniteFileName),
+                                File(it, lintPartialFileName),
+                                File(it, lintResourcesFileName)
+                            )
+                        } else {
                             listOf(File(it, lintDefiniteFileName), File(it, lintPartialFileName))
-                        )
+                        }
+                    assertThat(it.listFiles()?.asList())
+                        .containsExactlyElementsIn(expectedFileList)
                 }
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
                     .isEqualTo(File(partialResultsDir2, lintDefiniteFileName).readText())
                 assertThat(File(partialResultsDir1, lintPartialFileName).readText())
                     .isEqualTo(File(partialResultsDir2, lintPartialFileName).readText())
+                if (moduleName != ":java-lib" && artifactType == LINT_PARTIAL_RESULTS) {
+                    assertThat(File(partialResultsDir1, lintResourcesFileName).readText())
+                        .isEqualTo(File(partialResultsDir2, lintResourcesFileName).readText())
+                }
 
                 // Then for all subsequent checks, we only need to check partialResultsDir1
                 if (moduleName == ":java-lib") {
@@ -312,6 +326,9 @@ class AndroidLintAnalysisTaskCacheabilityTest {
                                 .contains("{$moduleName*debug*UNIT_TEST*testSourceProvider*0*javaDir*0}")
                             assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
                                 .contains("{$moduleName*debug*UNIT_TEST*testSourceProvider*0*javaDir*1}")
+                        }
+                        else -> {
+                            fail("Unexpected artifactType")
                         }
                     }
                 }

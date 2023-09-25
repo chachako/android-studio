@@ -379,7 +379,8 @@ object LintResourcePersistence {
     s: String,
     pathVariables: PathVariables,
     root: File? = null,
-    project: Project? = null
+    project: Project? = null,
+    allowMissingPathVariable: Boolean = false
   ): LintResourceRepository {
     if (s.isEmpty()) {
       return LintResourceRepository.Companion.EmptyRepository
@@ -398,7 +399,7 @@ object LintResourcePersistence {
 
     while (!reader.eof() && reader.peek() != '+') {
       val path = reader.readString(',')
-      val file = pathVariables.fromPathString(path, root)
+      val file = pathVariables.fromPathString(path, root, allowMissingPathVariable)
       fileList.add(file)
     }
 

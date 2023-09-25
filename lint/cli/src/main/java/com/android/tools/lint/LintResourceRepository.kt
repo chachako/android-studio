@@ -393,7 +393,7 @@ constructor(
         return EmptyRepository
       }
 
-      val projectRepository = getForProjectOnly(client, project, useSerialization = true)
+      val projectRepository = getForProjectOnly(client, project, isModuleDependency = false)
       if (scope == ResourceRepositoryScope.PROJECT_ONLY) {
         return projectRepository
       }
@@ -406,7 +406,7 @@ constructor(
         // list to only include leaves, not nested ones
         project.allLibraries
           .filter { !it.isExternalLibrary }
-          .map { getForProjectOnly(client, it, useSerialization = false) }
+          .map { getForProjectOnly(client, it, isModuleDependency = true) }
           .forEach { repositories += it }
 
         // If we're only computing local dependencies, not library and
@@ -448,21 +448,23 @@ constructor(
     private var warned = false
 
     private fun getOrCreateRepository(
-      serializedFile: File?,
+      serializedFile: File,
       client: LintClient,
       root: File?,
       project: Project?,
-      factory: () -> LintResourceRepository
+      isModuleDependency: Boolean,
+      factory: () -> LintResourceRepository,
     ): LintResourceRepository {
       // For leaf repositories, try to load from storage
-      if (serializedFile?.isFile == true) {
+      if (serializedFile.isFile) {
         val serialized = serializedFile.readText()
         try {
           return LintResourcePersistence.deserialize(
             serialized,
             client.pathVariables,
             root,
-            project
+            project,
+            allowMissingPathVariable = isModuleDependency
           )
         } catch (e: Throwable) {
           // Some sort of problem deserializing the lint resource repository. Try to gracefully
@@ -502,8 +504,8 @@ constructor(
       // Must construct from files now and cache for future use
       val repository = factory()
 
-      // Write for future usage
-      if (serializedFile != null) {
+      // Write for future usage unless repository is for a module dependency
+      if (!isModuleDependency) {
         serializedFile.parentFile?.mkdirs()
         val serialized =
           LintResourcePersistence.serialize(repository, client.pathVariables, project?.dir)
@@ -516,16 +518,16 @@ constructor(
     private fun getForProjectOnly(
       client: LintCliClient,
       project: Project,
-      useSerialization: Boolean
+      isModuleDependency: Boolean
     ): LintResourceRepository {
-      val serializedFile =
-        if (useSerialization) {
-          client.getSerializationFile(project, XmlFileType.RESOURCE_REPOSITORY)
-        } else {
-          null
-        }
       return project.getClientProperty<LintResourceRepository>(ResourceRepositoryScope.PROJECT_ONLY)
-        ?: getOrCreateRepository(serializedFile, client, project.dir, project) {
+        ?: getOrCreateRepository(
+            client.getSerializationFile(project, XmlFileType.RESOURCE_REPOSITORY),
+            client,
+            project.dir,
+            project,
+            isModuleDependency
+          ) {
             createFromFolder(client, project, ResourceNamespace.TODO())
           }
           .also { project.putClientProperty(ResourceRepositoryScope.PROJECT_ONLY, it) }
@@ -598,7 +600,13 @@ constructor(
       cache: MutableMap<String, LintResourceRepository>
     ): LintResourceRepository {
       return cache[hash]
-        ?: getOrCreateRepository(getFrameworkResourceCacheFile(client, hash), client, null, null) {
+        ?: getOrCreateRepository(
+            getFrameworkResourceCacheFile(client, hash),
+            client,
+            root = null,
+            project = null,
+            isModuleDependency = false
+          ) {
             createFromFolder(client, sequenceOf(res), null, null, ResourceNamespace.ANDROID)
           }
           .also { cache[hash] = it }
@@ -612,7 +620,13 @@ constructor(
     ): LintResourceRepository {
       return cache[library]
         // TODO: Handle relative paths over in AAR folders under ~/.gradle/
-        ?: getOrCreateRepository(getLibraryResourceCacheFile(client, library), client, null, null) {
+        ?: getOrCreateRepository(
+            getLibraryResourceCacheFile(client, library),
+            client,
+            root = null,
+            project = null,
+            isModuleDependency = false
+          ) {
             LintLibraryRepository(client, library, ResourceNamespace.TODO())
           }
           .also { cache[library] = it }

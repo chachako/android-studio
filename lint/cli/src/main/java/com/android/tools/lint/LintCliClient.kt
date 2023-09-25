@@ -73,6 +73,7 @@ import com.android.tools.lint.detector.api.isJdkFolder
 import com.android.tools.lint.gradle.GroovyGradleVisitor
 import com.android.tools.lint.helpers.DefaultJavaEvaluator
 import com.android.tools.lint.helpers.DefaultUastParser
+import com.android.tools.lint.model.LintModelArtifactType.MAIN
 import com.android.tools.lint.model.LintModelModuleType
 import com.android.tools.lint.model.PathVariables
 import com.android.utils.CharSequences
@@ -232,7 +233,22 @@ open class LintCliClient : LintClient {
    */
   fun analyzeOnly(registry: IssueRegistry, lintRequest: LintRequest): Int {
     assert(supportsPartialAnalysis())
-    return run(registry, lintRequest, analyze = { driver.analyzeOnly() })
+    return run(
+      registry,
+      lintRequest,
+      analyze = { driver.analyzeOnly() },
+      finish = {
+        // Forcibly initialize the resource repository for each android module during analysis to
+        // ensure that it's present when analyzing downstream modules (b/301673528)
+        val project = driver.projectRoots.first()
+        val isMainArtifact =
+          project.buildVariant == null || project.buildVariant?.artifact?.type == MAIN
+        if (project.isAndroidProject && isMainArtifact) {
+          LintResourceRepository.get(this, project, ResourceRepositoryScope.PROJECT_ONLY)
+        }
+        ERRNO_INTERNAL_CONTINUE
+      }
+    )
   }
 
   /**
