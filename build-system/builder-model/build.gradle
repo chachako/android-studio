@@ -16,8 +16,11 @@ dependencies {
 }
 
 group = 'com.android.tools.build'
-archivesBaseName = 'builder-model'
 version = rootProject.ext.buildVersion
+
+base {
+    archivesName.set("builder-model")
+}
 
 project.ext.pomName = 'Android Builder Model library'
 project.ext.pomDesc = 'Model for the Builder library.'
@@ -28,9 +31,6 @@ compileJava {
 }
 
 compileKotlin {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-
     kotlinOptions {
         jvmTarget = "1.8"
     }

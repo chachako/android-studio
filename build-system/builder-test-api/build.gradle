@@ -11,8 +11,11 @@ dependencies {
 }
 
 group = 'com.android.tools.build'
-archivesBaseName = 'builder-test-api'
 version = rootProject.ext.buildVersion
+
+base {
+    archivesName.set("builder-test-api")
+}
 
 project.ext.pomName = 'Android Builder Test API library'
 project.ext.pomDesc = 'API for the Test extension point in the Builder library.'

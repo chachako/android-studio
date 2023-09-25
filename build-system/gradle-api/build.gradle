@@ -48,8 +48,11 @@ task javadocZip(type: Zip) {
 }
 
 group = 'com.android.tools.build'
-archivesBaseName = 'gradle-api'
 version = rootProject.ext.buildVersion
+
+base {
+    archivesName.set("gradle-api")
+}
 
 project.ext.pomName = 'Android Gradle API'
 project.ext.pomDesc = 'APIs to customize Android Gradle Builds'

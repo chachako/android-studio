@@ -2,7 +2,9 @@ apply plugin: 'com.android.tools.java-library'
 apply plugin: 'com.android.tools.kotlin'
 apply plugin: 'application'
 
-mainClassName = "com.android.tools.build.debug.model.Main"
+application {
+    mainClass.set("com.android.tools.build.debug.model.Main")
+}
 
 version = rootProject.ext.buildVersion
 

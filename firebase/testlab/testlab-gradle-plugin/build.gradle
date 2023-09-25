@@ -20,7 +20,11 @@ apply plugin: 'com.android.tools.publish'
 apply plugin: 'java-gradle-plugin'
 
 group = 'com.google.firebase.testlab'
-archivesBaseName = 'testlab-gradle-plugin'
+
+base {
+    archivesName.set("testlab-gradle-plugin")
+}
+
 if (findProperty("release")?.toBoolean()) {
     version = '0.0.1-alpha05'
 } else {

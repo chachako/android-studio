@@ -2,8 +2,11 @@ apply plugin: 'com.android.tools.java-library'
 apply plugin: 'sdk-java-lib'
 
 group = 'com.android.tools'
-archivesBaseName = 'screenshot2'
 version = rootProject.ext.baseVersion
+
+base {
+    archivesName.set("screenshot2")
+}
 
 dependencies {
     implementation libs.com.android.tools.ddms.ddmlib

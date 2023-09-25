@@ -32,8 +32,11 @@ task javadocZip(type: Zip) {
 }
 
 group = 'com.android.tools.build.declarative'
-archivesBaseName = 'model'
 version = rootProject.ext.buildVersion
+
+base {
+    archivesName.set("model")
+}
 
 project.ext.pomName = 'Declarative Gradle Model'
 project.ext.pomDesc = 'APIs to load and parse declarative gradle build files.'

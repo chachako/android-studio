@@ -20,8 +20,11 @@ apply plugin: 'com.android.tools.publish'
 apply plugin: 'sdk-java-lib'
 
 group = 'com.android.tools.utp'
-archivesBaseName = 'android-device-provider-ddmlib'
 version = rootProject.ext.baseVersion
+
+base {
+    archivesName.set("android-device-provider-ddmlib")
+}
 
 dependencies {
     implementation libs.com.android.tools.common

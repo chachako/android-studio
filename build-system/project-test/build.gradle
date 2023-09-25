@@ -14,14 +14,15 @@ dependencies {
 
 // this is needed by the app plugin but not used at runtime
 // (since we run this as unit tests), so the class name doesn't matter.
-mainClassName = "org.gradle.sample.Main"
+application {
+    mainClass.set("org.gradle.sample.Main")
+    applicationDistribution.from('build.xml')
+    applicationDistribution.from(file('../tests/regular')) {
+        into 'tests'
+    }
+}
 
 distZip.destinationDirectory.set(rootProject.ext.androidHostDist)
-
-applicationDistribution.from('build.xml')
-applicationDistribution.from(file('../tests/regular')) {
-    into 'tests'
-}
 
 task('dist').doLast {}
 dist.dependsOn distZip

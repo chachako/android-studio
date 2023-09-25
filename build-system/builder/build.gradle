@@ -45,8 +45,11 @@ test {
 }
 
 group = 'com.android.tools.build'
-archivesBaseName = 'builder'
 version = rootProject.ext.buildVersion
+
+base {
+    archivesName.set("builder")
+}
 
 project.ext.pomName = 'Android Builder library'
 project.ext.pomDesc = 'Library to build Android applications.'

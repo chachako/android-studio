@@ -19,8 +19,11 @@ apply plugin: 'com.android.tools.kotlin'
 apply plugin: 'com.android.tools.publish'
 
 group = 'com.android.tools.perf-logger'
-archivesBaseName = 'studio-tools-perf-logger'
 version = rootProject.ext.baseVersion
+
+base {
+    archivesName.set("studio-tools-perf-logger")
+}
 
 dependencies {
     implementation libs.com.android.tools.common

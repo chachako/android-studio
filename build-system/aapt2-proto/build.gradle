@@ -40,10 +40,13 @@ Properties aaptVersionProperties = new Properties()
 aaptVersionPropertiesFile.withReader { aaptVersionProperties.load(it) }
 
 group = 'com.android.tools.build'
-archivesBaseName = 'aapt2-proto'
 version = rootProject.ext.buildVersion + '-' + aaptVersionProperties.getProperty("aapt2Version")
 project.ext.pomName = 'AAPT2 proto'
 project.ext.pomDesc = 'Android Asset Packaging Tool 2. Protocol Buffer Files'
+
+base {
+    archivesName.set("aapt2-proto")
+}
 
 jar {
     from rootProject.file('../prebuilts/tools/common/aapt/protos/NOTICE')

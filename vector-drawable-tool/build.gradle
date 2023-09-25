@@ -1,11 +1,13 @@
 apply plugin: 'com.android.tools.java-library'
 apply plugin: 'application'
 
-mainClassName = 'com.android.ide.common.vectordrawable.VdCommandLineTool'
+application {
+    mainClass.set("com.android.ide.common.vectordrawable.VdCommandLineTool")
+}
 
-archivesBaseName = 'vd-tool'
-project.distZip.archiveBaseName.set(archivesBaseName)
-project.startScripts.applicationName = archivesBaseName
+base.archivesName.set("vd-tool")
+project.distZip.archiveBaseName.set(base.archivesName)
+project.startScripts.applicationName = base.archivesName.get()
 
 dependencies {
     implementation libs.com.android.tools.sdkCommon

@@ -20,8 +20,11 @@ apply plugin: 'com.android.tools.publish'
 apply plugin: 'sdk-java-lib'
 
 group = 'com.android.tools.utp'
-archivesBaseName = 'android-test-plugin-host-emulator-control'
 version = rootProject.ext.baseVersion
+
+base {
+    archivesName.set("android-test-plugin-host-emulator-control")
+}
 
 dependencies {
     implementation libs.com.android.tools.common
