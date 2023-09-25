@@ -200,6 +200,9 @@ public class BinaryXmlParser {
                 return data == 1 ? "@empty" : "@null";
             case DYNAMIC_REFERENCE:
             case REFERENCE:
+                if (data == 0) {
+                    return "@null";
+                }
                 return resourceIdResolver.resolve(data);
             case ATTRIBUTE:
             case DYNAMIC_ATTRIBUTE:
