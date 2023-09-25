@@ -36,7 +36,7 @@ class KmpModelComparator(
     testClass: BaseModelComparator,
     private val project: GradleTestProject,
     private val modelSnapshotTask: String,
-    private val taskOutputLocator: (String) -> File
+    private val taskOutputsLocator: (String) -> List<File>
 ): BasicComparator(testClass) {
 
     private val buildMap = project.getBuildMap()
@@ -48,7 +48,7 @@ class KmpModelComparator(
         val executor = project.executor()
         executor.run("$projectPath:$modelSnapshotTask")
 
-        val outputFolder = taskOutputLocator(projectPath)
+        val outputs = taskOutputsLocator(projectPath)
 
         val normalizer = FileNormalizerImpl(
             buildMap = buildMap,
@@ -63,7 +63,7 @@ class KmpModelComparator(
         ) {
             val normalizedString = normalizeBuildToolsVersion(
                 normaliseCompileTarget(it).toString()
-            ).toString().replace(KOTLIN_VERSION_FOR_TESTS, "{KOTLIN_VERSION}")
+            ).toString()
 
             // the normalizer doesn't cover the modules-2 files, since the path contains the library
             // itself, we just override it here.
@@ -80,8 +80,8 @@ class KmpModelComparator(
 
         val gson = GsonBuilder().setPrettyPrinting().create()
 
-        return outputFolder.listFiles()!!.associate { jsonReport ->
-            val reportName = jsonReport.name.removeSuffix(DOT_JSON)
+        return outputs.associate { jsonReport ->
+            val reportName = jsonReport.name.removeSuffix(DOT_JSON).removeSuffix(".module")
 
             val content = normalizer.normalize(
                 jsonReport.inputStream().buffered().reader().use {
@@ -89,6 +89,13 @@ class KmpModelComparator(
                 }
             ).let {
                 gson.toJson(it).normalizeAgpVersion()
+                    .replace(KOTLIN_VERSION_FOR_TESTS, "{KOTLIN_VERSION}")
+                    .replace(GradleTestProject.GRADLE_TEST_VERSION, "{GRADLE_VERSION}")
+                    .replace(Regex("\"sha512\": \".*\""), "\"sha512\": \"{DIGEST}\"")
+                    .replace(Regex("\"sha256\": \".*\""), "\"sha256\": \"{DIGEST}\"")
+                    .replace(Regex("\"sha1\": \".*\""), "\"sha1\": \"{DIGEST}\"")
+                    .replace(Regex("\"md5\": \".*\""), "\"md5\": \"{DIGEST}\"")
+                    .replace(Regex("\"size\": .*,"), "\"size\": {SIZE},")
             }.also {
                 if (printModelToStdout) {
                     generateStdoutHeader(normalizer)

@@ -31,26 +31,50 @@ class KotlinMultiplatformPublicationModelSnapshotTest: BaseModelComparator {
         .create()
 
     @Test
-    fun testModelDiffWhenLibsArePublished() {
+    fun testModelsWhenLibsArePublished() {
         project.publishLibs(
-            publishKmpFirstLib = false,
+            publishKmpFirstLib = false
         )
 
-        val comparator = KmpModelComparator(
+        val moduleFilesComparator = KmpModelComparator(
+            project = project,
+            testClass = this,
+            modelSnapshotTask = "publish",
+            taskOutputsLocator = { projectPath ->
+                val projectName = projectPath.removePrefix(":")
+                listOf(
+                    FileUtils.join(
+                        project.projectDir,
+                        "testRepo",
+                        "com",
+                        "example",
+                        projectName,
+                        "1.0",
+                        "$projectName-1.0.module"
+                    )
+                )
+            }
+        )
+
+        moduleFilesComparator.fetchAndCompareModels(
+            projects = listOf(":kmpJvmOnly", ":kmpSecondLib")
+        )
+
+        val sourceSetsComparator = KmpModelComparator(
             project = project,
             testClass = this,
             modelSnapshotTask = "dumpSourceSetDependencies",
-            taskOutputLocator = { projectPath ->
+            taskOutputsLocator = { projectPath ->
                 FileUtils.join(
                     project.getSubproject(projectPath).buildDir,
                     "ide",
                     "dependencies",
                     "json"
-                )
+                ).listFiles()!!.toList()
             }
         )
 
-        comparator.fetchAndCompareModels(
+        sourceSetsComparator.fetchAndCompareModels(
             projects = listOf(":kmpFirstLib")
         )
     }

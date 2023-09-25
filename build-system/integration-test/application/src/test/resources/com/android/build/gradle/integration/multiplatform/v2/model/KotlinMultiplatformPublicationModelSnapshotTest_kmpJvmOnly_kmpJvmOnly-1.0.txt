@@ -1,0 +1,114 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.example",
+    "module": "kmpJvmOnly",
+    "version": "1.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "{GRADLE_VERSION}"
+    }
+  },
+  "variants": [
+    {
+      "name": "metadataApiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.usage": "kotlin-metadata",
+        "org.jetbrains.kotlin.platform.type": "common"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "{KOTLIN_VERSION}"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "kmpJvmOnly-metadata-1.0.jar",
+          "url": "kmpJvmOnly-1.0.jar",
+          "size": {SIZE},
+          "sha512": "{DIGEST}",
+          "sha256": "{DIGEST}",
+          "sha1": "{DIGEST}",
+          "md5": "{DIGEST}"
+        }
+      ]
+    },
+    {
+      "name": "metadataSourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "kotlin-runtime",
+        "org.jetbrains.kotlin.platform.type": "common"
+      },
+      "files": [
+        {
+          "name": "kmpJvmOnly-kotlin-1.0-sources.jar",
+          "url": "kmpJvmOnly-1.0-sources.jar",
+          "size": {SIZE},
+          "sha512": "{DIGEST}",
+          "sha256": "{DIGEST}",
+          "sha1": "{DIGEST}",
+          "md5": "{DIGEST}"
+        }
+      ]
+    },
+    {
+      "name": "jvmApiElements-published",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "available-at": {
+        "url": "../../kmpJvmOnly-jvm/1.0/kmpJvmOnly-jvm-1.0.module",
+        "group": "com.example",
+        "module": "kmpJvmOnly-jvm",
+        "version": "1.0"
+      }
+    },
+    {
+      "name": "jvmRuntimeElements-published",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "available-at": {
+        "url": "../../kmpJvmOnly-jvm/1.0/kmpJvmOnly-jvm-1.0.module",
+        "group": "com.example",
+        "module": "kmpJvmOnly-jvm",
+        "version": "1.0"
+      }
+    },
+    {
+      "name": "jvmSourcesElements-published",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "available-at": {
+        "url": "../../kmpJvmOnly-jvm/1.0/kmpJvmOnly-jvm-1.0.module",
+        "group": "com.example",
+        "module": "kmpJvmOnly-jvm",
+        "version": "1.0"
+      }
+    }
+  ]
+}
