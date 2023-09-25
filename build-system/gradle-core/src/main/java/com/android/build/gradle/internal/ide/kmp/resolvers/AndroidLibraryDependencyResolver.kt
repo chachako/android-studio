@@ -16,20 +16,21 @@
 
 package com.android.build.gradle.internal.ide.kmp.resolvers
 
-import com.android.build.api.attributes.BuildTypeAttr
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.ide.kmp.LibraryResolver
 import com.android.build.gradle.internal.ide.proto.convert
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
-import com.android.builder.model.v2.ide.LibraryInfo
+import com.android.build.gradle.internal.utils.toImmutableMap
 import com.android.builder.model.v2.ide.LibraryType
 import com.android.kotlin.multiplatform.ide.models.serialization.androidDependencyKey
 import com.android.kotlin.multiplatform.models.DependencyInfo
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
+import org.gradle.api.attributes.AttributeContainer
+import org.gradle.api.capabilities.Capability
 import org.gradle.internal.component.local.model.OpaqueComponentArtifactIdentifier
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
-import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinBinaryAttributes
-import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinBinaryCapability
+import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinBinaryCoordinates
 import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinDependency
 import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinResolvedBinaryDependency
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
@@ -61,63 +62,77 @@ internal class AndroidLibraryDependencyResolver(
 
         val libraryDependencies = dependencies.filterIsInstance<IdeaKotlinResolvedBinaryDependency>()
 
-        artifacts.artifacts.mapNotNull { artifact ->
-            libraryResolver.getLibrary(
+        val libraries = artifacts.artifacts.mapNotNull { artifact ->
+            val coordinates = if (artifact.variant.owner is ModuleComponentIdentifier) {
+                ArtifactCoordinates(
+                    (artifact.variant.owner as ModuleComponentIdentifier),
+                    artifact.variant.capabilities,
+                    artifact.variant.attributes,
+                )
+            } else {
+                return@mapNotNull null
+            }
+            val library = libraryResolver.getLibrary(
                 artifact.variant,
                 sourceSet
             )
-        }.filter { it.type == LibraryType.ANDROID_LIBRARY }.forEach { library ->
-            val dependency = libraryDependencies.find {
-                it.coordinates?.let { coordinates ->
-                    coordinates.group == library.libraryInfo?.group &&
-                    coordinates.module == library.libraryInfo?.name &&
-                    coordinates.version == library.libraryInfo?.version &&
-                    coordinates.capabilities.equalsAndroidLibraryCapabilities(
-                        library.libraryInfo!!
-                    ) &&
-                    coordinates.attributes.equalsAndroidLibraryAttributes(
-                        library.libraryInfo!!
-                    )
-                } ?: false
+            if (library?.type == LibraryType.ANDROID_LIBRARY) {
+                coordinates to library
+            } else {
+                null
             }
+        }.toMap()
 
-            dependency?.extras?.set(
-                androidDependencyKey,
+        libraryDependencies.forEach { dependency ->
+            if (dependency.coordinates == null) {
+                return@forEach
+            }
+            val library = libraries[ArtifactCoordinates(dependency.coordinates!!)] ?: return@forEach
+
+            dependency.extras[androidDependencyKey] =
                 DependencyInfo.newBuilder()
                     .setLibrary(
                         // The key is redundant since we depend on the kotlin definition.
                         library.convert().clearKey()
                     )
                     .build()
-            )
         }
     }
 
-    private fun Set<IdeaKotlinBinaryCapability>.equalsAndroidLibraryCapabilities(
-        libraryInfo: LibraryInfo
-    ): Boolean {
-        return this.map { "${it.group}:${it.name}:${it.version}" }.toSet() ==
-                libraryInfo.capabilities.toSet()
-    }
+    data class ArtifactCoordinates(
+        private val group: String,
+        private val module: String,
+        private val version: String?,
+        private val capabilities: Set<String>,
+        private val attributes: Map<String, String>
+    ) {
 
-    private fun IdeaKotlinBinaryAttributes.equalsAndroidLibraryAttributes(
-        libraryInfo: LibraryInfo
-    ): Boolean {
-        val allLibraryAttrs = libraryInfo.attributes + libraryInfo.productFlavors.mapKeys {
-            "com.android.build.api.attributes.ProductFlavor:${it.key}"
-        } + (libraryInfo.buildType?.let {
-            mapOf(BuildTypeAttr.ATTRIBUTE.name to it)
-        } ?: emptyMap())
+        constructor(
+            kotlinCoordinates: IdeaKotlinBinaryCoordinates
+        ): this(
+            group = kotlinCoordinates.group,
+            module = kotlinCoordinates.module,
+            version = kotlinCoordinates.version,
+            capabilities = kotlinCoordinates.capabilities.map {
+                "${it.group}:${it.name}:${it.version}"
+            }.toSet(),
+            attributes = kotlinCoordinates.attributes.toImmutableMap(),
+        )
 
-        val allKeys = keys.filter { it != "artifactType" } + allLibraryAttrs.keys
-
-        // Check if the libraryInfo attributes are a subset of the kotlin attributes (b/301431703).
-        return allKeys.all { key ->
-            if (allLibraryAttrs.containsKey(key)) {
-                this[key] == allLibraryAttrs[key]
-            } else {
-                true
-            }
-        }
+        constructor(
+            identifier: ModuleComponentIdentifier,
+            capabilities: List<Capability>,
+            attributes: AttributeContainer
+        ): this(
+            group = identifier.group,
+            module = identifier.module,
+            version = identifier.version,
+            capabilities = capabilities.map {
+                "${it.group}:${it.name}:${it.version}"
+            }.toSet(),
+            attributes = attributes.keySet().associate {
+                it.name to attributes.getAttribute(it).toString()
+            },
+        )
     }
 }
