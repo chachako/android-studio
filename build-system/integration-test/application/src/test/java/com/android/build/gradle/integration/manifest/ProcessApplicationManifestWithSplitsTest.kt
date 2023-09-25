@@ -46,6 +46,7 @@ class ProcessApplicationManifestWithSplitsTest(private val abi: String, private 
         fun parameters() = listOf(
                 arrayOf("armeabi-v7a", 2001),
                 arrayOf("arm64-v8a", 3001),
+                arrayOf("arm64-v8a,armeabi-v7a", 3001),
                 arrayOf("x86", 8001),
                 arrayOf("x86_64", 9001)
         )
