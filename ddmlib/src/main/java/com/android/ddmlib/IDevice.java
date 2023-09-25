@@ -306,10 +306,10 @@ public interface IDevice extends IShellEnabledDevice, IUserDataMap {
     /** Returns whether this device supports the given hardware feature. */
     boolean supportsFeature(@NonNull HardwareFeature feature);
 
-    /**
-     * Returns a map of running services (key is service name) to [ServiceInfo] (value).
-     */
-    Map<String, ServiceInfo> services();
+    /** Returns a map of running services (key is service name) to [ServiceInfo] (value). */
+    default Map<String, ServiceInfo> services() {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Returns a mount point.
