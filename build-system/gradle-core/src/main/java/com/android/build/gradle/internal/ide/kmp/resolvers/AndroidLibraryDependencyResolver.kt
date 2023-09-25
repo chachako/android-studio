@@ -60,6 +60,12 @@ internal class AndroidLibraryDependencyResolver(
                 AndroidArtifacts.ArtifactType.CLASSES_JAR
             ) { it !is ProjectComponentIdentifier && it !is OpaqueComponentArtifactIdentifier }
 
+        val localFileArtifacts =
+            getArtifactsForComponent(
+                component,
+                AndroidArtifacts.ArtifactType.AAR_OR_JAR
+            ) { it is OpaqueComponentArtifactIdentifier }.artifacts
+
         val libraryDependencies = dependencies.filterIsInstance<IdeaKotlinResolvedBinaryDependency>()
 
         val libraries = artifacts.artifacts.mapNotNull { artifact ->
@@ -87,7 +93,16 @@ internal class AndroidLibraryDependencyResolver(
             if (dependency.coordinates == null) {
                 return@forEach
             }
-            val library = libraries[ArtifactCoordinates(dependency.coordinates!!)] ?: return@forEach
+            val library = libraries[ArtifactCoordinates(dependency.coordinates!!)] ?:
+                // Check if this is a local file dependency
+                localFileArtifacts.find { artifact ->
+                    dependency.classpath.contains(artifact.file)
+                }?.let { artifact ->
+                    libraryResolver.getLibrary(
+                        artifact.variant,
+                        sourceSet
+                    )?.takeIf { it.type == LibraryType.ANDROID_LIBRARY }
+                } ?: return@forEach
 
             dependency.extras[androidDependencyKey] =
                 DependencyInfo.newBuilder()

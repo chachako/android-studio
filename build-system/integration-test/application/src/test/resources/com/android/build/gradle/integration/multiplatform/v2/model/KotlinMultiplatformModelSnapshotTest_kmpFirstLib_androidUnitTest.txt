@@ -47,6 +47,104 @@
   {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
+      "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/libs/local.aar"
+    ],
+    "coordinates": {
+      "group": "\u003cfile\u003e",
+      "module": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local-api.jar",
+      "capabilities": [],
+      "attributes": {}
+    },
+    "extras": {
+      "kotlin.Boolean;isOpaqueFileDependencyKey": true,
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "local-api.jar (local.aar)",
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver",
+      "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
+        "library": {
+          "type": "ANDROID_LIBRARY",
+          "libraryInfo": {
+            "componentInfo": {
+              "productFlavors": {},
+              "attributes": {},
+              "capabilities": [],
+              "isTestFixtures": false
+            },
+            "group": "__local_aars__",
+            "name": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/libs/local.aar",
+            "version": "unspecified"
+          },
+          "artifact": {
+            "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/libs/local.aar"
+          },
+          "androidLibraryData": {
+            "manifest": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/AndroidManifest.xml"
+            },
+            "compileJarFiles": [
+              {
+                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/jars/classes.jar"
+              }
+            ],
+            "runtimeJarFiles": [
+              {
+                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/jars/classes.jar"
+              }
+            ],
+            "resFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/res"
+            },
+            "resStaticLibrary": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/res.apk"
+            },
+            "assetsFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/assets"
+            },
+            "jniFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/jni"
+            },
+            "aidlFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/aidl"
+            },
+            "renderscriptFolder": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/rs"
+            },
+            "proguardRules": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/proguard.txt"
+            },
+            "externalAnnotations": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/annotations.zip"
+            },
+            "publicResources": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/public.txt"
+            },
+            "symbolFile": {
+              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/R.txt"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
+      "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/libs/local.jar"
+    ],
+    "coordinates": {
+      "group": "\u003cfile\u003e",
+      "module": "kmpFirstLib/libs/local.jar",
+      "capabilities": [],
+      "attributes": {}
+    },
+    "extras": {
+      "kotlin.Boolean;isOpaqueFileDependencyKey": true,
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "local.jar (local.jar)",
+      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
+    }
+  },
+  {
+    "binaryType": "KOTLIN_COMPILE",
+    "classpath": [
       "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-test-junit/{KOTLIN_VERSION}/kotlin-test-junit-{KOTLIN_VERSION}.jar"
     ],
     "coordinates": {
@@ -260,102 +358,6 @@
       "org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinClasspath;sourcesClasspath": [
         "{LOCAL_REPO}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3-sources.jar"
       ]
-    }
-  },
-  {
-    "binaryType": "KOTLIN_COMPILE",
-    "classpath": [
-      "{GRADLE_CACHE}/{CHECKSUM}/transformed/local-api.jar"
-    ],
-    "coordinates": {
-      "group": "__local_aars__",
-      "module": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local-api.jar",
-      "version": "unspecified",
-      "capabilities": [],
-      "attributes": {}
-    },
-    "extras": {
-      "com.android.kotlin.multiplatform.models.DependencyInfo;android-dependency-model": {
-        "library": {
-          "type": "ANDROID_LIBRARY",
-          "libraryInfo": {
-            "componentInfo": {
-              "productFlavors": {},
-              "attributes": {},
-              "capabilities": [],
-              "isTestFixtures": false
-            },
-            "group": "__local_aars__",
-            "name": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/libs/local.aar",
-            "version": "unspecified"
-          },
-          "artifact": {
-            "absolutePath": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/libs/local.aar"
-          },
-          "androidLibraryData": {
-            "manifest": {
-              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/AndroidManifest.xml"
-            },
-            "compileJarFiles": [
-              {
-                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/jars/classes.jar"
-              }
-            ],
-            "runtimeJarFiles": [
-              {
-                "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/jars/classes.jar"
-              }
-            ],
-            "resFolder": {
-              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/res"
-            },
-            "resStaticLibrary": {
-              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/res.apk"
-            },
-            "assetsFolder": {
-              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/assets"
-            },
-            "jniFolder": {
-              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/jni"
-            },
-            "aidlFolder": {
-              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/aidl"
-            },
-            "renderscriptFolder": {
-              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/rs"
-            },
-            "proguardRules": {
-              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/proguard.txt"
-            },
-            "externalAnnotations": {
-              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/annotations.zip"
-            },
-            "publicResources": {
-              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/public.txt"
-            },
-            "symbolFile": {
-              "absolutePath": "{GRADLE_CACHE}/{CHECKSUM}/transformed/local/R.txt"
-            }
-          }
-        }
-      },
-      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.LocalFileDependencyResolver"
-    }
-  },
-  {
-    "binaryType": "KOTLIN_COMPILE",
-    "classpath": [
-      "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/libs/local.jar"
-    ],
-    "coordinates": {
-      "group": "__local_aars__",
-      "module": "{INCLUDED_BUILD(:kotlinMultiplatform)}/kmpFirstLib/libs/local.jar",
-      "version": "unspecified",
-      "capabilities": [],
-      "attributes": {}
-    },
-    "extras": {
-      "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "com.android.build.gradle.internal.ide.kmp.resolvers.LocalFileDependencyResolver"
     }
   },
   {

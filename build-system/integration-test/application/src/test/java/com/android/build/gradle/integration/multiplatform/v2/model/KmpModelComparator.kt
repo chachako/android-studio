@@ -25,9 +25,7 @@ import com.android.build.gradle.integration.common.fixture.model.normaliseCompil
 import com.android.build.gradle.integration.common.fixture.model.normalizeAgpVersion
 import com.android.build.gradle.integration.common.fixture.model.normalizeBuildToolsVersion
 import com.android.build.gradle.integration.multiplatform.v2.getBuildMap
-import com.android.testutils.TestUtils
 import com.android.testutils.TestUtils.KOTLIN_VERSION_FOR_TESTS
-import com.google.common.truth.Truth
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import java.io.File
@@ -73,6 +71,9 @@ class KmpModelComparator(
                 "{GRADLE_CACHE}/{MODULES_2}/{LIBRARY_COORDINATES}/{CHECKSUM}" + normalizedString.removePrefix(
                     "{GRADLE}/caches/modules-2/files-2.1/com.example/kmpSecondLib-android/1.0/"
                 ).substring(40) // remove the hash
+            } else if (normalizedString.endsWith("transformed/local-api.jar")) {
+                // kotlin gradle plugin uses relative path to represent local file coordinates
+                "{GRADLE_CACHE}/{CHECKSUM}/transformed/local-api.jar"
             } else {
                 normalizedString
             }
@@ -115,50 +116,6 @@ class KmpModelComparator(
                 runComparison(
                     name = projectPath.substringAfterLast(":") + "/" + reportName,
                     actualContent = content,
-                    goldenFile = projectPath
-                        .removePrefix(":")
-                        .replace(':', '_') + "_" + reportName
-                )
-            }
-        }
-    }
-
-    fun compareModelDeltaAfterChange(
-        projects: List<String>,
-        action: () -> Unit
-    ) {
-        val baseModels = projects.associateWith { projectPath ->
-            fetchModels(
-                projectPath, printModelToStdout = false
-            )
-        }
-        action()
-        val changedModels = projects.associateWith { projectPath ->
-            fetchModels(
-                projectPath, printModelToStdout = false
-            )
-        }
-
-        projects.forEach { projectPath ->
-            val projectBaseModels = baseModels[projectPath]!!
-            val projectChangedModels = changedModels[projectPath]!!
-
-            Truth.assertWithMessage(
-                "Expected the same sourceSets after change."
-            ).that(
-                projectBaseModels.keys
-            ).containsExactlyElementsIn(projectChangedModels.keys)
-
-            projectBaseModels.keys.forEach { reportName ->
-                val baseModel = projectBaseModels[reportName]!!
-                val changedModel = projectChangedModels[reportName]!!
-
-                runComparison(
-                    name = projectPath.substringAfterLast(":") + "/" + reportName,
-                    actualContent = TestUtils.getDiff(
-                        baseModel,
-                        changedModel
-                    ),
                     goldenFile = projectPath
                         .removePrefix(":")
                         .replace(':', '_') + "_" + reportName
