@@ -27,8 +27,6 @@ import java.util.regex.Pattern;
 
 /**
  * Provides {@link IDevice} side file listing service.
- *
- * <p>To get an instance for a known {@link IDevice}, call {@link IDevice#getFileListingService()}.
  */
 public final class FileListingService {
 

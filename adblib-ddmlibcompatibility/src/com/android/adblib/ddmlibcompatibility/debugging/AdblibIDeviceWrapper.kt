@@ -338,7 +338,7 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun getFileListingService(): FileListingService {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     override fun getScreenshot(): RawImage {
