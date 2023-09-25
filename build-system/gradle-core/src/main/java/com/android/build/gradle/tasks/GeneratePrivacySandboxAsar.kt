@@ -99,18 +99,14 @@ abstract class GeneratePrivacySandboxAsar : NonIncrementalTask() {
                     signingConfigData.keyAlias
             )
 
-            val builder =
+            val command =
                     BuildSdkAsarCommand
                             .builder()
                             .setSdkBundlePath(asb)
                             .setApkSigningCertificate(certInfo.certificate)
                             .setOverwriteOutput(true)
                             .setOutputFile(outputFile)
-
-            // TODO(b/235469089) Call directly once fixed bundle tool is released
-            val buildMethod = BuildSdkAsarCommand.Builder::class.java.getDeclaredMethod("build")
-            buildMethod.isAccessible = true
-            val command = buildMethod.invoke(builder) as BuildSdkAsarCommand
+                            .build()
 
             command.execute()
         }
