@@ -24,14 +24,12 @@ import studio.network.inspection.NetworkInspectorProtocol
 
 class NetworkInspectorRule : ExternalResource() {
 
-  lateinit var connection: FakeConnection
-  lateinit var environment: FakeEnvironment
-  lateinit var inspector: NetworkInspector
+  val connection = FakeConnection()
+  val environment = FakeEnvironment()
+  val trafficStatsProvider = FakeTrafficStatsProvider()
+  val inspector = NetworkInspector(connection, environment, trafficStatsProvider, 10)
 
   override fun before() {
-    connection = FakeConnection()
-    environment = FakeEnvironment()
-    inspector = NetworkInspectorFactory().createInspector(connection, environment)
     inspector.onReceiveCommand(
       NetworkInspectorProtocol.Command.newBuilder()
         .setStartInspectionCommand(

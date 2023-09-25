@@ -17,7 +17,6 @@
 package com.android.tools.appinspection.network
 
 import android.app.Application
-import android.net.TrafficStats
 import android.util.Log
 import androidx.inspection.ArtTooling
 import androidx.inspection.Connection
@@ -33,6 +32,7 @@ import com.squareup.okhttp.OkHttpClient
 import java.net.URL
 import java.net.URLConnection
 import java.util.List
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -49,8 +49,12 @@ private val INTERCEPT_COMMAND_RESPONSE =
     .build()
     .toByteArray()
 
-class NetworkInspector(connection: Connection, private val environment: InspectorEnvironment) :
-  Inspector(connection) {
+class NetworkInspector(
+  connection: Connection,
+  private val environment: InspectorEnvironment,
+  private val trafficStatsProvider: TrafficStatsProvider = TrafficStatsProviderImpl(),
+  private val speedDataIntervalMs: Long = POLL_INTERVAL_MS
+) : Inspector(connection) {
 
   private val scope =
     CoroutineScope(SupervisorJob() + environment.executors().primary().asCoroutineDispatcher())
@@ -136,27 +140,51 @@ class NetworkInspector(connection: Connection, private val environment: Inspecto
             )
             return@launch
           }
-      var prevRxBytes = TrafficStats.getUidRxBytes(uid)
-      var prevTxBytes = TrafficStats.getUidTxBytes(uid)
+      var prevRxBytes = trafficStatsProvider.getUidRxBytes(uid)
+      var prevTxBytes = trafficStatsProvider.getUidTxBytes(uid)
+      var prevZero = false
+
       while (true) {
-        delay(POLL_INTERVAL_MS)
-        val rxBytes = TrafficStats.getUidRxBytes(uid)
-        val txBytes = TrafficStats.getUidTxBytes(uid)
-        connection.sendEvent(
-          NetworkInspectorProtocol.Event.newBuilder()
-            .setSpeedEvent(
-              NetworkInspectorProtocol.SpeedEvent.newBuilder()
-                .setRxSpeed((rxBytes - prevRxBytes) * MULTIPLIER_FACTOR)
-                .setTxSpeed((txBytes - prevTxBytes) * MULTIPLIER_FACTOR)
-            )
-            .setTimestamp(System.nanoTime())
-            .build()
-            .toByteArray()
-        )
+        delay(speedDataIntervalMs)
+        val rxBytes = trafficStatsProvider.getUidRxBytes(uid)
+        val txBytes = trafficStatsProvider.getUidTxBytes(uid)
+        val rxDelta = rxBytes - prevRxBytes
+        val txDelta = txBytes - prevTxBytes
+        val zero = (rxDelta == 0L && txDelta == 0L)
+        val timestamp = System.nanoTime()
+
+        // There is no value in sending a constant stream of `zero` events. We just need to make
+        // sure we send the first and last `zero` event of such a sequence.
+        if (zero) {
+          if (!prevZero) {
+            // If the current event is zero but the previous one was not, we send it
+            sendSpeedEvent(timestamp, 0, 0)
+          }
+        } else {
+          // If the current event is not zero and the previous event was `zero`, send the
+          // previous `zero` before the current event.
+          if (prevZero) {
+            sendSpeedEvent(timestamp - TimeUnit.MILLISECONDS.toNanos(POLL_INTERVAL_MS), 0, 0)
+          }
+          sendSpeedEvent(timestamp, rxDelta * MULTIPLIER_FACTOR, txDelta * MULTIPLIER_FACTOR)
+        }
         prevRxBytes = rxBytes
         prevTxBytes = txBytes
+        prevZero = zero
       }
     }
+
+  private fun sendSpeedEvent(timestamp: Long, rxSpeed: Long, txSpeed: Long) {
+    connection.sendEvent(
+      NetworkInspectorProtocol.Event.newBuilder()
+        .setSpeedEvent(
+          NetworkInspectorProtocol.SpeedEvent.newBuilder().setRxSpeed(rxSpeed).setTxSpeed(txSpeed)
+        )
+        .setTimestamp(timestamp)
+        .build()
+        .toByteArray()
+    )
+  }
 
   private fun registerHooks() {
     environment
