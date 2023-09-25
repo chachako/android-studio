@@ -328,6 +328,7 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
                 )
             )
             task.desugaredMethodsFiles.disallowChanges()
+            task.useK2Uast.setDisallowChanges(variant.main.useK2Uast)
         }
     }
 
@@ -443,6 +444,7 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
                 )
             )
             task.desugaredMethodsFiles.disallowChanges()
+            task.useK2Uast.setDisallowChanges(mainVariant.useK2Uast)
         }
     }
 
@@ -486,9 +488,6 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
         }
         systemPropertyInputs.initialize(project.providers, LintMode.ANALYSIS)
         environmentVariableInputs.initialize(project.providers, LintMode.ANALYSIS)
-        useK2Uast.setDisallowChanges(
-            services.projectOptions.getProvider(BooleanOption.LINT_USE_K2_UAST)
-        )
         this.usesService(
             services.buildServiceRegistry.getLintParallelBuildService(services.projectOptions)
         )
@@ -540,6 +539,10 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
         this.lintModelDirectory
             .setDisallowChanges(
                 project.layout.buildDirectory.dir("intermediates/${this.name}/android-lint-model")
+            )
+        this.useK2Uast
+            .setDisallowChanges(
+                taskCreationServices.projectOptions.getProvider(BooleanOption.LINT_USE_K2_UAST)
             )
     }
 

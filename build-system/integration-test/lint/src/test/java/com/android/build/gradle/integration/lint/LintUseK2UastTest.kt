@@ -17,6 +17,8 @@
 package com.android.build.gradle.integration.lint
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.internal.dsl.ModulePropertyKey.OptionalBoolean
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.truth.PathSubject.assertThat
 import org.junit.Rule
@@ -31,12 +33,35 @@ class LintUseK2UastTest {
 
     private val slash = File.separator
 
+    /**
+     * Test enabling K2 UAST for all modules
+     */
     @Test
     fun testUseK2Uast() {
         project.executor()
             .with(BooleanOption.LINT_USE_K2_UAST, true)
             .run(":app:clean", ":app:lintDebug")
+        checkLintReport()
+    }
 
+    /**
+     * Test enabling K2 UAST for a single module (the app module)
+     */
+    @Test
+    fun testUseK2UastPerModule() {
+        TestFileUtils.appendToFile(
+            project.getSubproject(":app").buildFile,
+            """
+                android {
+                    experimentalProperties["${OptionalBoolean.LINT_USE_K2_UAST}"] = true
+                }
+            """.trimIndent()
+        )
+        project.executor().run(":app:clean", ":app:lintDebug")
+        checkLintReport()
+    }
+
+    private fun checkLintReport() {
         val lintReport = project.file("app/lint-report.txt")
 
         assertThat(lintReport).exists()

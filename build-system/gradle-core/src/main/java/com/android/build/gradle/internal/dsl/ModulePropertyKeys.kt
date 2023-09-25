@@ -54,7 +54,13 @@ sealed interface ModulePropertyKey<OutputT> {
     }
 
     enum class OptionalBoolean(override val key: String) : ModulePropertyKey<Boolean?> {
-        VERIFY_AAR_CLASSES(BooleanOption.VERIFY_AAR_CLASSES.propertyName)
+        VERIFY_AAR_CLASSES(BooleanOption.VERIFY_AAR_CLASSES.propertyName),
+
+        /**
+         * Whether to use K2 UAST when running lint. The corresponding global property is
+         * [BooleanOption.LINT_USE_K2_UAST].
+         */
+        LINT_USE_K2_UAST(BooleanOption.LINT_USE_K2_UAST.propertyName),
         ;
 
         override fun getValue(properties: Map<String, Any>): Boolean? {
