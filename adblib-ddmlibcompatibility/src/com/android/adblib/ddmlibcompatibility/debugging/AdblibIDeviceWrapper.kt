@@ -28,6 +28,7 @@ import com.android.adblib.availableFeatures
 import com.android.adblib.deviceInfo
 import com.android.adblib.isOffline
 import com.android.adblib.isOnline
+import com.android.adblib.rootAndWait
 import com.android.adblib.serialNumber
 import com.android.adblib.syncRecv
 import com.android.adblib.syncSend
@@ -40,6 +41,7 @@ import com.android.ddmlib.AdbHelper
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.AvdData
 import com.android.ddmlib.Client
+import com.android.ddmlib.CollectingOutputReceiver
 import com.android.ddmlib.DdmPreferences
 import com.android.ddmlib.FileListingService
 import com.android.ddmlib.IDevice
@@ -585,8 +587,10 @@ internal class AdblibIDeviceWrapper(
         throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
-    override fun root(): Boolean {
-        TODO("Not yet implemented")
+    override fun root(): Boolean = runBlockingLegacy {
+        val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+        connectedDevice.session.deviceServices.rootAndWait(deviceSelector)
+        isRoot()
     }
 
     override fun forceStop(applicationName: String?) {
@@ -598,7 +602,15 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun isRoot(): Boolean {
-        TODO("Not yet implemented")
+        val receiver = CollectingOutputReceiver()
+        executeShellCommand(
+            "echo \$USER_ID",
+            receiver,
+            QUERY_IS_ROOT_TIMEOUT_MS,
+            TimeUnit.MILLISECONDS
+        )
+        val userID = receiver.output.trim { it <= ' ' }
+        return userID == "0"
     }
 
     @Deprecated("")
@@ -802,5 +814,6 @@ internal class AdblibIDeviceWrapper(
         private const val LOG_TAG = "AdblibIDeviceWrapper"
         private const val GET_PROP_TIMEOUT_MS = 1000L
         private const val INITIAL_GET_PROP_TIMEOUT_MS = 5000L
+        private const val QUERY_IS_ROOT_TIMEOUT_MS = 1000L
     }
 }

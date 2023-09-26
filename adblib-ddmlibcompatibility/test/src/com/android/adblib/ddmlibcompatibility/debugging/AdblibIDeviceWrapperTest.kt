@@ -575,6 +575,56 @@ class AdblibIDeviceWrapperTest {
         assertEquals(0, deviceState.allPortForwarders.size)
     }
 
+    @Test
+    fun testRoot() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, deviceState) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.ONLINE
+        )
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+
+        // Assert
+        assertFalse(adblibIDeviceWrapper.isRoot)
+
+        // Act
+        adblibIDeviceWrapper.root()
+        val connectedDeviceAfterRestart =
+            waitForConnectedDevice(hostServices.session, "device1", DeviceState.DeviceStatus.ONLINE)
+        val adblibIDeviceWrapperAfterRestart =
+            AdblibIDeviceWrapper(connectedDeviceAfterRestart, bridge)
+
+        // Assert
+        assertTrue(adblibIDeviceWrapperAfterRestart.isRoot)
+    }
+
+    @Test
+    fun testIsRoot() = runBlockingWithTimeout {
+        // Prepare
+        val fakeDevice =
+            fakeAdb.fakeAdbServer.connectDevice(
+                "device1",
+                "test1",
+                "test2",
+                "model",
+                "30",
+                "x86_64",
+                mapOf(Pair(PROP_DEVICE_DENSITY, "120")),
+                DeviceState.HostConnectionType.USB,
+                isRoot = true
+            ).get()
+        fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
+        val connectedDevice = waitForConnectedDevice(
+            hostServices.session,
+            "device1",
+            DeviceState.DeviceStatus.ONLINE
+        )
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+
+
+        // Act / Assert
+        assertTrue(adblibIDeviceWrapper.isRoot)
+    }
+
     private suspend fun createConnectedDevice(
         serialNumber: String,
         deviceStatus: DeviceState.DeviceStatus = DeviceState.DeviceStatus.ONLINE,

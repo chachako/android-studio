@@ -36,8 +36,21 @@ class EchoCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHand
       shellCommandArgs: String?
     ) {
         statusWriter.writeOk()
-        shellCommandArgs?.also { shellCommandOutput.writeStdout(shellCommandArgs) }
+        shellCommandArgs?.also {
+            shellCommandOutput.writeStdout(
+                expandEnvironmentalVariables(
+                    device, shellCommandArgs
+                )
+            )
+        }
         shellCommandOutput.writeStdout("\n")
         shellCommandOutput.writeExitCode(0)
+    }
+
+    private fun expandEnvironmentalVariables(
+        device: DeviceState,
+        shellCommandArgs: String
+    ): String {
+        return shellCommandArgs.replace("\$USER_ID", if (device.isRoot) "0" else "2000")
     }
 }
