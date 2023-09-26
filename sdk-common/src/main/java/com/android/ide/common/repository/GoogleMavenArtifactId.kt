@@ -60,6 +60,10 @@ enum class GoogleMavenArtifactId(val mavenGroupId: String, val mavenArtifactId: 
   ANDROIDX_CONSTRAINT_LAYOUT("androidx.constraintlayout", "constraintlayout", false),
   ANDROIDX_CONSTRAINT_LAYOUT_COMPOSE("androidx.constraintlayout", "constraintlayout-compose", false),
   FLEXBOX_LAYOUT("com.google.android", "flexbox", false),
+  ANDROIDX_COORDINATOR_LAYOUT("androidx.coordinatorlayout", "coordinatorlayout", false),
+  ANDROIDX_VIEWPAGER("androidx.viewpager", "viewpager", false),
+  ANDROIDX_VIEWPAGER2("androidx.viewpager2", "viewpager2", false),
+  ANDROIDX_FRAGMENT("androidx.fragment", "fragment", false),
 
   // Navigation
   NAVIGATION_FRAGMENT("android.arch.navigation", "navigation-fragment", false),
