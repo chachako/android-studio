@@ -17,7 +17,6 @@
 package com.android.build.gradle.integration.multiplatform.v2.model
 
 import com.android.SdkConstants.DOT_JSON
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.FileNormalizerImpl
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.model.BaseModelComparator
@@ -46,9 +45,7 @@ class KmpModelComparator(
         projectPath: String,
         printModelToStdout: Boolean = true
     ): Map<String, String> {
-        // dumpSourceSetDependencies task is not configuration cache compatible
         val executor = project.executor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
         executor.run("$projectPath:$modelSnapshotTask")
 
         val outputFolder = taskOutputLocator(projectPath)
