@@ -156,6 +156,9 @@ enum class GoogleMavenArtifactId(val mavenGroupId: String, val mavenArtifactId: 
   override fun toString(): String = "$mavenGroupId:$mavenArtifactId"
 
   companion object {
+    @JvmStatic fun find(moduleId: String): GoogleMavenArtifactId? =
+        values().asSequence().find { it.toString() == moduleId }
+
     @JvmStatic fun find(groupId: String, artifactId: String): GoogleMavenArtifactId? =
         values().asSequence().find { it.mavenGroupId == groupId && it.mavenArtifactId == artifactId }
 
