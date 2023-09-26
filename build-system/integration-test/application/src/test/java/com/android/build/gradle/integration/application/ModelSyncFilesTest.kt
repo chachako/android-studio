@@ -19,15 +19,10 @@ package com.android.build.gradle.integration.application
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.builder.model.SyncIssue
-import com.android.builder.model.v2.ModelSyncFile
 import com.android.builder.model.v2.ide.Variant
-import com.android.ide.common.build.filebasedproperties.module.AppIdListSync
-import com.android.ide.common.build.filebasedproperties.variant.VariantProperties
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
-import java.io.FileInputStream
 
 class ModelSyncFilesTest {
 
@@ -35,122 +30,18 @@ class ModelSyncFilesTest {
     var project = GradleTestProject.builder().fromTestApp(HelloWorldApp.forPlugin("com.android.application")).create()
 
     @Test
-    fun testApplicationModel() {
-        val variantSyncFileModel = getVariantSyncModel()
-        Truth.assertThat(variantSyncFileModel.variantCase)
-            .isEqualTo(VariantProperties.VariantCase.APPLICATIONVARIANTPROPERTIES)
-        Truth.assertThat(variantSyncFileModel.applicationVariantProperties).isNotNull()
-        Truth.assertThat(variantSyncFileModel.applicationVariantProperties.applicationId)
-            .isEqualTo("com.example.helloworld")
-    }
-
-    @Test
-    fun testCustomizedApplicationIdInModel() {
-        addCustomizationToBuildFile()
-
-        val variantSyncFileModel = getVariantSyncModel(
-            expectedSyncIssueMessages = setOf(APPLICATION_ID_FROM_TASK_UNSUPPORTED)
-        )
-        Truth.assertThat(variantSyncFileModel.variantCase)
-            .isEqualTo(VariantProperties.VariantCase.APPLICATIONVARIANTPROPERTIES)
-        Truth.assertThat(variantSyncFileModel.applicationVariantProperties).isNotNull()
-        Truth.assertThat(variantSyncFileModel.applicationVariantProperties.applicationId)
-            .isEqualTo("set.from.task.debugAppIdProducerTask")
-    }
-
-    @Test
-    fun testAppIdListModel() {
-        val listOfAppIds = getListOfAppIdsModel()
-        Truth.assertThat(listOfAppIds?.appIdsList?.map {
-            it.name to it.applicationId
-        }).containsExactly(
-            "debug" to "com.example.helloworld",
-            "release" to "com.example.helloworld",
-        )
+    fun testApplicationIdNotSetByTask() {
+        val (variant, syncIssues) = getAppVariant()
+        assertThat(syncIssues.map { it.message }).isEmpty()
+        assertThat(variant.mainArtifact.applicationId).isEqualTo("com.example.helloworld")
     }
 
     @Test
     fun testAppIdListModelWithCustomizedAppId() {
         addCustomizationToBuildFile()
-        val listOfAppIds = getListOfAppIdsModel(
-            expectedSyncIssueMessages = setOf(APPLICATION_ID_FROM_TASK_UNSUPPORTED)
-        )
-        Truth.assertThat(listOfAppIds?.appIdsList?.map {
-            it.name to it.applicationId
-        }).containsExactly(
-            "debug" to "set.from.task.debugAppIdProducerTask",
-            "release" to "com.example.helloworld",
-        )
-    }
-
-    @Test
-    fun testAppIdListWithAddedFlavors() {
-        project.buildFile.appendText(
-            """
-            android {
-                flavorDimensions "version"
-                productFlavors {
-                    demo {
-                        dimension "version"
-                        applicationIdSuffix ".demo"
-                    }
-                    full {
-                        dimension "version"
-                        applicationIdSuffix ".full"
-                    }
-                }
-            }
-            """.trimIndent())
-        val listOfAppIds = getListOfAppIdsModel()
-        Truth.assertThat(listOfAppIds?.appIdsList?.map {
-            it.name to it.applicationId
-        }).containsExactly(
-            "demoDebug" to "com.example.helloworld.demo",
-            "fullDebug" to "com.example.helloworld.full",
-            "demoRelease" to "com.example.helloworld.demo",
-            "fullRelease" to "com.example.helloworld.full",
-        )
-    }
-
-    private fun getListOfAppIdsModel(expectedSyncIssueMessages: Set<String> = emptySet()): AppIdListSync? {
-        val projectModel = project.modelV2()
-                .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
-                .fetchModels()
-                .container
-                .getProject()
-        val modelSyncFiles = projectModel
-            .androidProject
-            ?.modelSyncFiles
-        val syncIssues = projectModel.issues?.syncIssues ?: emptySet()
-        assertThat(syncIssues.map { it.message }).containsExactlyElementsIn(expectedSyncIssueMessages)
-
-
-        Truth.assertThat(modelSyncFiles).hasSize(1)
-        return modelSyncFiles?.single()?.let {
-            Truth.assertThat(it.modelSyncType).isEqualTo(ModelSyncFile.ModelSyncType.APP_ID_LIST)
-            val result = project.executor().run(it.taskName)
-            Truth.assertThat(result.failedTasks).isEmpty()
-            Truth.assertThat(it.syncFile.absoluteFile.exists()).isTrue()
-            FileInputStream(it.syncFile.absoluteFile).use {
-                AppIdListSync.parseFrom(it)
-            }
-        }
-    }
-
-    private fun getVariantSyncModel(expectedSyncIssueMessages: Set<String> = emptySet()): VariantProperties {
         val (variant, syncIssues) = getAppVariant()
-        Truth.assertThat(syncIssues.map { it.message }).containsExactlyElementsIn(expectedSyncIssueMessages)
-        Truth.assertThat(variant.mainArtifact.modelSyncFiles.size).isEqualTo(1)
-        val appModelSync = variant.mainArtifact.modelSyncFiles.first()
-        return appModelSync.syncFile.let { appModelSyncFile ->
-            appModelSyncFile.delete()
-            val result = project.executor().run(appModelSync.taskName)
-            Truth.assertThat(result.failedTasks).isEmpty()
-            Truth.assertThat(appModelSyncFile.exists()).isTrue()
-            FileInputStream(appModelSyncFile).use {
-                VariantProperties.parseFrom(it)
-            }
-        }
+        assertThat(syncIssues.map { it.message }).containsExactly(APPLICATION_ID_FROM_TASK_UNSUPPORTED)
+        assertThat(variant.mainArtifact.applicationId).isEqualTo("")
     }
 
     private fun addCustomizationToBuildFile() {

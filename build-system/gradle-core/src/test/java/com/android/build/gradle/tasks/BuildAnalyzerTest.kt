@@ -25,7 +25,6 @@ import com.android.build.gradle.internal.tasks.NewIncrementalTask
 import com.android.build.gradle.internal.tasks.NonIncrementalGlobalTask
 import com.android.build.gradle.internal.tasks.NonIncrementalTask
 import com.android.build.gradle.internal.tasks.TestPreBuildTask
-import com.android.build.gradle.tasks.sync.AppIdListTask
 import com.android.buildanalyzer.common.TaskCategory
 import org.gradle.api.Task
 import com.google.common.reflect.ClassPath
@@ -52,7 +51,6 @@ class BuildAnalyzerTest {
             BuildPrivacySandboxSdkApks::class.java,
             GeneratePrivacySandboxAsar::class.java,
             GeneratePrivacySandboxSdkRuntimeConfigFile::class.java,
-            AppIdListTask::class.java
     )
 
     @Test

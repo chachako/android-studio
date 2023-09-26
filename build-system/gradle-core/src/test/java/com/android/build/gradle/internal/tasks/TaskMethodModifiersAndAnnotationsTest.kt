@@ -130,7 +130,6 @@ class TaskMethodModifiersAndAnnotationsTest {
                 "com.android.build.gradle.tasks.FusedLibraryBundleClasses",
                 "com.android.build.gradle.tasks.FusedLibraryMergeClasses",
                 "com.android.build.gradle.tasks.PrivacySandboxSdkGenerateJarStubsTask",
-                "com.android.build.gradle.tasks.sync.AppIdListTask",
         )
     }
 

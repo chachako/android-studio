@@ -41,14 +41,10 @@ import com.android.build.gradle.internal.tasks.factory.TaskProviderCallback
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.android.build.gradle.internal.tasks.featuresplit.FeatureSetMetadataWriterTask
 import com.android.build.gradle.internal.variant.ComponentInfo
-import com.android.build.gradle.internal.variant.VariantModel
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.tasks.BuildPrivacySandboxSdkApks
 import com.android.build.gradle.tasks.ExtractSupportedLocalesTask
 import com.android.build.gradle.tasks.GenerateLocaleConfigTask
-import com.android.build.gradle.tasks.sync.AppIdListTask
-import com.android.build.gradle.tasks.sync.ApplicationVariantModelTask
-import com.android.builder.core.ComponentType
 import com.android.builder.errors.IssueReporter
 import com.android.builder.internal.aapt.AaptUtils
 import org.gradle.api.Action
@@ -78,18 +74,6 @@ class ApplicationTaskManager(
     extension,
 ) {
 
-    override fun createTopLevelTasks(componentType: ComponentType, variantModel: VariantModel) {
-        super.createTopLevelTasks(componentType, variantModel)
-        taskFactory.register(
-            AppIdListTask.CreationAction(
-                globalConfig,
-                variants.associate {
-                    it.variant.name to it.variant.applicationId
-                }
-            )
-        )
-    }
-
     override fun doCreateTasksForVariant(
         variantInfo: ComponentInfo<ApplicationVariantBuilder, ApplicationCreationConfig>
     ) {
@@ -98,8 +82,6 @@ class ApplicationTaskManager(
         val variant = variantInfo.variant
 
         createBundleTask(variant)
-
-        taskFactory.register(ApplicationVariantModelTask.CreationAction(variant))
 
         // Base feature specific tasks.
         taskFactory.register(FeatureSetMetadataWriterTask.CreationAction(variant))

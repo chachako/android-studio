@@ -67,7 +67,6 @@ maven_library(
     bundled_deps = [
         "//tools/base/sdk-common/aia-manifest-jar-generator:tools.proto",
         "//tools/base/sdk-common/gradle:tools.sdk-common.gradle.lib",
-        "//tools/base/sdk-common:filebased.buildproperties",
     ],
     coordinates = "com.android.tools:sdk-common",
     description = "sdk-common library used by other Android tools libraries.",
@@ -160,13 +159,6 @@ kotlin_library(
         "//tools/base/common:tools.common",
         "@maven//:com.google.guava.guava",
     ],
-)
-
-java_proto_library(
-    name = "filebased.buildproperties",
-    srcs = glob(["src/main/proto/*.proto"]),
-    resource_strip_prefix = "tools/base/sdk-common/src/main/proto",
-    resources = glob(["src/main/proto/*.proto"]),
 )
 
 load("//tools/base/bazel:jvm_import.bzl", "jvm_import")

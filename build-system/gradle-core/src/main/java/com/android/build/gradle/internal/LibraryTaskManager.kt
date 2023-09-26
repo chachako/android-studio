@@ -69,7 +69,6 @@ import com.android.build.gradle.tasks.ProcessLibraryArtProfileTask
 import com.android.build.gradle.tasks.ProcessLibraryManifest
 import com.android.build.gradle.tasks.SourceJarTask
 import com.android.build.gradle.tasks.ZipMergingTask
-import com.android.build.gradle.tasks.sync.LibraryVariantModelTask
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Sets
 import org.gradle.api.Project
@@ -101,7 +100,6 @@ class LibraryTaskManager(
         val libraryVariant = variantInfo.variant
         val buildFeatures = libraryVariant.buildFeatures
         createAnchorTasks(libraryVariant)
-        taskFactory.register(LibraryVariantModelTask.CreationAction(libraryVariant))
 
         // Create all current streams (dependencies mostly at this point)
         createDependencyStreams(libraryVariant)

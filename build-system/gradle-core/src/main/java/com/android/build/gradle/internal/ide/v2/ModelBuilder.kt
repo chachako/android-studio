@@ -31,10 +31,8 @@ import com.android.build.api.variant.impl.HasTestFixtures
 import com.android.build.api.variant.impl.HasUnitTest
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
-import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.ConsumableCreationConfig
-import com.android.build.gradle.internal.component.DynamicFeatureCreationConfig
 import com.android.build.gradle.internal.component.LibraryCreationConfig
 import com.android.build.gradle.internal.component.TestVariantCreationConfig
 import com.android.build.gradle.internal.component.UnitTestCreationConfig
@@ -70,12 +68,9 @@ import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.ProjectOptionService
 import com.android.build.gradle.options.ProjectOptions
 import com.android.build.gradle.tasks.BuildPrivacySandboxSdkApks
-import com.android.build.gradle.tasks.sync.AbstractVariantModelTask
-import com.android.build.gradle.tasks.sync.AppIdListTask
 import com.android.builder.core.ComponentTypeImpl
 import com.android.builder.errors.IssueReporter
 import com.android.builder.model.SyncIssue
-import com.android.builder.model.v2.ModelSyncFile
 import com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags.BooleanFlag
 import com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList
 import com.android.builder.model.v2.ide.BasicArtifact
@@ -83,7 +78,6 @@ import com.android.builder.model.v2.ide.BundleInfo
 import com.android.builder.model.v2.ide.CodeShrinker
 import com.android.builder.model.v2.ide.JavaArtifact
 import com.android.builder.model.v2.ide.PrivacySandboxSdkInfo
-import com.android.builder.model.v2.ide.ProjectType
 import com.android.builder.model.v2.ide.SourceSetContainer
 import com.android.builder.model.v2.ide.TestInfo
 import com.android.builder.model.v2.ide.TestedTargetVariant
@@ -378,17 +372,6 @@ class ModelBuilder<
             createVariant(it, instantAppResultMap)
         }
 
-        val modelSyncFiles = if (variantModel.projectType == ProjectType.APPLICATION) {
-            listOf(
-                ModelSyncFileImpl(
-                    ModelSyncFile.ModelSyncType.APP_ID_LIST,
-                    AppIdListTask.getTaskName(),
-                    variantModel.globalArtifacts.get(InternalArtifactType.APP_ID_LIST_MODEL).get().asFile
-                )
-            )
-        } else {
-            listOf()
-        }
         val desugarLibConfig = if (extension.compileOptions.isCoreLibraryDesugaringEnabled)
             getDesugarLibConfigFile(project)
         else
@@ -411,7 +394,6 @@ class ModelBuilder<
 
             ),
             lintChecksJars = getLocalCustomLintChecksForModel(project, variantModel.syncIssueReporter),
-            modelSyncFiles = modelSyncFiles,
             desugarLibConfig = desugarLibConfig,
         )
     }
@@ -745,18 +727,6 @@ class ModelBuilder<
         val maxSdkVersion =
                 if (component is VariantCreationConfig) component.maxSdk else null
 
-        val modelSyncFiles = if (component is ApplicationCreationConfig || component is LibraryCreationConfig || component is TestVariantCreationConfig || component is DynamicFeatureCreationConfig) {
-            listOf(
-                ModelSyncFileImpl(
-                    ModelSyncFile.ModelSyncType.BASIC,
-                    AbstractVariantModelTask.getTaskName(component),
-                    component.artifacts.get(InternalArtifactType.VARIANT_MODEL).get().asFile
-                )
-            )
-        } else {
-            listOf()
-        }
-
         val coreLibDesugaring = (component as? ConsumableCreationConfig)?.isCoreLibraryDesugaringEnabledLintCheck
                 ?: false
         val outputsAreSigned = component.oldVariantApiLegacySupport?.variantData?.outputsAreSigned ?: false
@@ -793,7 +763,6 @@ class ModelBuilder<
                 component.artifacts.get(InternalArtifactType.APK_IDE_REDIRECT_FILE).get().asFile
             else
                 null,
-            modelSyncFiles = modelSyncFiles,
             privacySandboxSdkInfo = createPrivacySandboxSdkInfo(component),
             desugaredMethodsFiles = getDesugaredMethods(
                 component.services,
@@ -858,7 +827,6 @@ class ModelBuilder<
                 component.oldVariantApiLegacySupport!!.variantData.javaResourcesForUnitTesting,
 
             mockablePlatformJar = variantModel.mockableJarArtifact.files.singleOrNull(),
-            modelSyncFiles = listOf(),
             generatedClassPaths = generatedClassPaths
         )
     }

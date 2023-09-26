@@ -21,7 +21,6 @@ import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_V
 import com.android.SdkConstants.NDK_DEFAULT_VERSION
 import com.android.builder.core.ToolsRevisionUtils
 import com.android.builder.model.v2.CustomSourceDirectory
-import com.android.builder.model.v2.ModelSyncFile
 import com.android.builder.model.v2.dsl.BaseConfig
 import com.android.builder.model.v2.dsl.BuildType
 import com.android.builder.model.v2.dsl.ClassField
@@ -160,14 +159,6 @@ internal fun ModelSnapshotter<AndroidProject>.snapshotAndroidProject() {
         collection?.sortedBy { it.key.name }
     }
     valueList("lintChecksJars", AndroidProject::lintChecksJars) { it?.sorted() }
-    objectList(
-        name = "modelSyncFiles",
-        propertyAction = AndroidProject::modelSyncFiles,
-        nameAction = { modelSyncType.name },
-        sortAction = { collection -> collection?.sortedBy { it.modelSyncType.name } }
-    ) {
-        snapshotNativeSyncFile()
-    }
 }
 internal fun ModelSnapshotter<AndroidDsl>.snapshotAndroidDsl() {
     item("groupId", AndroidDsl::groupId)
@@ -244,10 +235,6 @@ internal fun ModelSnapshotter<NativeModule>.snapshotNativeModule() {
         if (it == NDK_DEFAULT_VERSION) "{DEFAULT_NDK_VERSION}" else it
     }
     item("externalNativeBuildFile", NativeModule::externalNativeBuildFile)
-}
-
-internal fun ModelSnapshotter<ModelSyncFile>.snapshotNativeSyncFile() {
-    item("syncFile", ModelSyncFile::syncFile)
 }
 
 private fun ModelSnapshotter<NativeVariant>.snapshotNativeVariant() {

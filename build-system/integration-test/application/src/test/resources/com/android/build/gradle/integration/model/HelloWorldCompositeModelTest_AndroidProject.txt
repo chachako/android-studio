@@ -152,5 +152,4 @@
       * "UNIFIED_TEST_PLATFORM -> true"
       * "USE_ANDROID_X -> false"
    - lintChecksJars        = []
-   - modelSyncFiles        = []
 < AndroidProject

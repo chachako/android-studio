@@ -186,11 +186,6 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
             }
         }
         createAssembleTask(variantProperties)
-        if (variantProperties.services.projectOptions.get(BooleanOption.IDE_INVOKED_FROM_IDE)) {
-            variantProperties.taskContainer.assembleTask.configure {
-                it.dependsOn(variantProperties.artifacts.get(InternalArtifactType.VARIANT_MODEL))
-            }
-        }
 
         doCreateTasksForVariant(variant)
     }

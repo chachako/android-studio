@@ -42,7 +42,6 @@ import com.android.build.gradle.options.BooleanOption;
 import com.android.build.gradle.tasks.CheckTestedAppObfuscation;
 import com.android.build.gradle.tasks.ManifestProcessorTask;
 import com.android.build.gradle.tasks.ProcessTestManifest;
-import com.android.build.gradle.tasks.sync.TestModuleVariantModelTask;
 import com.android.builder.core.ComponentType;
 import com.google.common.base.Preconditions;
 import java.util.Collection;
@@ -92,8 +91,6 @@ public class TestApplicationTaskManager
 
         Provider<Directory> testingApk =
                 testVariantProperties.getArtifacts().get(SingleArtifact.APK.INSTANCE);
-
-        taskFactory.register(new TestModuleVariantModelTask.CreationAction(testVariantProperties));
 
         FileCollection privacySandboxSdkApks =
                 testVariantProperties

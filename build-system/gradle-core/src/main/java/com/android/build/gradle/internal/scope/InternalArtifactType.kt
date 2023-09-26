@@ -588,17 +588,6 @@ InternalArtifactType<T : FileSystemLocation>(
     // It should also contain a file which writes out mappings from API level to ".dm" file
     object DEX_METADATA_DIRECTORY: InternalArtifactType<Directory>(DIRECTORY), Replaceable
 
-    // Sync dynamic properties file artifacts
-    object VARIANT_MODEL: InternalArtifactType<RegularFile>(
-        FILE,
-        fileName = "variant_model.json",
-    )
-
-    object APP_ID_LIST_MODEL: InternalArtifactType<RegularFile>(
-        FILE,
-        fileName = "app_id_list.json"
-    )
-
     object VERSION_CONTROL_INFO_FILE: InternalArtifactType<RegularFile>(
         FILE,
         fileName = VERSION_CONTROL_INFO_FILE_NAME
