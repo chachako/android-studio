@@ -124,13 +124,11 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
     // Once these have been identified, chase back to the pendingIntent declaration.
     val pendingConstruction = findPendingIntentConstruction(node) ?: return
 
-    // If the intent is a broadcast receiver, returns true, if it's a service, returns
-    // false, and if it's neither, return null:
-    val isBroadcastReceiver = isBroadcastReceiver(pendingConstruction) ?: return
+    val trampolineType = getTrampolineType(pendingConstruction) ?: return
 
-    val foundClass = checkNonActivityIntent(context, pendingConstruction, node, isBroadcastReceiver)
+    val foundClass = checkNonActivityIntent(context, pendingConstruction, node, trampolineType)
     if (!foundClass && getMethodName(node) != "addAction") {
-      reportNonActivityIntent(context, node, pendingConstruction, isBroadcastReceiver)
+      reportNonActivityIntent(context, node, pendingConstruction, trampolineType)
     }
   }
 
@@ -143,7 +141,7 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     pendingConstruction: UCallExpression,
     node: UCallExpression,
-    isBroadcastReceiver: Boolean
+    trampolineType: TrampolineType
   ): Boolean {
     // find the declaration of the intent argument
     val intentConstruction = findIntentConstruction(pendingConstruction) ?: return false
@@ -156,11 +154,14 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
     // Check the receiver class: look up its onReceive method, and if we find an
     // occurrence of startActivity() or startActivities(), flag it as an error
     // Or error?
-    return if (isBroadcastReceiver) {
-      checkBroadcastReceiver(context, nonActivityClass, node)
-    } else {
-      checkService(context, nonActivityClass, node)
-    }
+    val evaluator = context.evaluator
+    return nonActivityClass
+      .findMethodsByName(trampolineType.handlerMethodName, false)
+      // can have written its own overloads so search for the right one
+      .find { evaluator.parametersMatch(it, *trampolineType.handlerMethodArgTypes) }
+      ?.let {
+        checkReceiverOrService(context, it, node, nonActivityClass, trampolineType.className)
+      } ?: true
   }
 
   private fun findPendingIntentConstruction(node: UCallExpression): UCallExpression? {
@@ -173,13 +174,12 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
     return findPendingIntentConstruction(pendingIntentArgument, node)
   }
 
-  private fun isBroadcastReceiver(pendingConstruction: UCallExpression): Boolean? {
-    return when (getMethodName(pendingConstruction)) {
-      "getBroadcast" -> true
-      "getService" -> false
-      else -> null // not a broadcast receiver or service
+  private fun getTrampolineType(pendingConstruction: UCallExpression): TrampolineType? =
+    when (getMethodName(pendingConstruction)) {
+      "getBroadcast" -> TrampolineType.BroadcastReceiver
+      "getService" -> TrampolineType.Service
+      else -> null
     }
-  }
 
   private fun findPendingIntentConstruction(
     pendingIntentArgument: UExpression?,
@@ -213,7 +213,7 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
               node.returnExpression?.let {
                 val construction =
                   findPendingIntentConstruction(it.skipParenthesizedExprDown(), node)
-                if (construction != null && isBroadcastReceiver(construction) != null) {
+                if (construction != null && getTrampolineType(construction) != null) {
                   ref.set(construction)
                 }
               }
@@ -291,54 +291,6 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
     return resolved
   }
 
-  /**
-   * Given a broadcast receiver, check whether its `onReceive` method starts activities, and if so
-   * flag them as errors. Return true if the receiver class was found (though if it was, and we
-   * can't get the UAST for the onReceive method, return false.)
-   */
-  private fun checkBroadcastReceiver(
-    context: JavaContext,
-    broadcastClass: PsiClass,
-    setPendingIntent: UCallExpression
-  ): Boolean {
-    val methods = broadcastClass.findMethodsByName("onReceive", false)
-    // BroadcastReceiver can have written its own overloads so search for the right one
-    val evaluator = context.evaluator
-    for (member in methods) {
-      if (evaluator.parametersMatch(member, CLASS_CONTEXT, CLASS_INTENT)) {
-        return checkReceiverOrService(
-          context,
-          member,
-          setPendingIntent,
-          broadcastClass,
-          "BroadcastReceiver"
-        )
-      }
-    }
-    return true
-  }
-
-  /**
-   * Given a service, check whether its `onStartCommand` method starts activities, and if so flag
-   * them as errors. Return true if the service class was found (though if it was, and we can't get
-   * the UAST for the onStartCommand method, return false.)
-   */
-  private fun checkService(
-    context: JavaContext,
-    serviceClass: PsiClass,
-    setPendingIntent: UCallExpression
-  ): Boolean {
-    val methods = serviceClass.findMethodsByName("onStartCommand", false)
-    // The service can have written its own overloads so search for the right one
-    val evaluator = context.evaluator
-    for (member in methods) {
-      if (evaluator.parametersMatch(member, CLASS_INTENT, TYPE_INT, TYPE_INT)) {
-        return checkReceiverOrService(context, member, setPendingIntent, serviceClass, "Service")
-      }
-    }
-    return true
-  }
-
   private fun checkReceiverOrService(
     context: JavaContext,
     onReceiveMethod: PsiMethod,
@@ -386,13 +338,13 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     setPendingIntent: UCallExpression,
     pendingConstruction: UCallExpression,
-    isBroadcastReceiver: Boolean
+    trampolineType: TrampolineType
   ) {
     // It's a pending intent associated with a broadcast receiver, but we can't
     // access the receiver as source code (perhaps it's in a jar etc);
     // instead warn users that they should only be launching activities from
     // notifications, **unless** it's a notification action!
-    val className = if (isBroadcastReceiver) "BroadcastReceiver" else "Service"
+    val className = trampolineType.className
     val message =
       "Notifications should only launch a `$className` from " + "notification actions (`addAction`)"
 
@@ -406,5 +358,16 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
 
     location.secondary = secondary
     context.report(ACTIVITY, setPendingIntent, location, message)
+  }
+
+  private enum class TrampolineType(
+    val handlerMethodName: String,
+    vararg val handlerMethodArgTypes: String
+  ) {
+    BroadcastReceiver("onReceive", CLASS_CONTEXT, CLASS_INTENT),
+    Service("onStartCommand", CLASS_INTENT, TYPE_INT, TYPE_INT);
+
+    val className
+      get() = name // Variant's name should match class's name
   }
 }
