@@ -58,7 +58,8 @@ class GenericBuiltArtifactsSplitOutputMatcherTest {
             applicationId = "com.android.test",
             variantName = "debug",
             elements = builtArtifacts,
-            elementType = "File"
+            elementType = "File",
+            baselineProfiles = emptyList<BaselineProfileDetails>()
         )
 
 

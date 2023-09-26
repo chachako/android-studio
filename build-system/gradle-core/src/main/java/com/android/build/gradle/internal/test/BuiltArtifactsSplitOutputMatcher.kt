@@ -64,7 +64,8 @@ object BuiltArtifactsSplitOutputMatcher {
                     outputFile = sourceBuiltArtifact.outputFile
                 )
             },
-            elementType = builtArtifacts.elementType()
+            elementType = builtArtifacts.elementType(),
+            baselineProfiles = builtArtifacts.baselineProfiles
         )
         // now look for a matching output file
         return GenericBuiltArtifactsSplitOutputMatcher.computeBestOutput(

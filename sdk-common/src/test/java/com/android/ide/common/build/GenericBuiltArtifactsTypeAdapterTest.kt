@@ -15,6 +15,7 @@
  */
 package com.android.ide.common.build
 
+import com.android.utils.PathUtils
 import com.google.common.truth.Truth.assertThat
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
@@ -86,7 +87,8 @@ class GenericBuiltArtifactsTypeAdapterTest : TestCase() {
 
     fun testGenericBuiltArtifacts() {
         verifyRoundTrip(
-            typeAdapter = GenericBuiltArtifactsTypeAdapter,
+            typeAdapter = GenericBuiltArtifactsTypeAdapter(
+                PathUtils.createTmpDirToRemoveOnShutdown("tmp")),
             item = GenericBuiltArtifacts(
                 version = 2,
                 artifactType = GenericArtifactType("APK", "Directory"),
@@ -109,7 +111,8 @@ class GenericBuiltArtifactsTypeAdapterTest : TestCase() {
                         outputFile = "file2.apk"
                     ),
                 ),
-                elementType = "File"
+                elementType = "File",
+                baselineProfiles = emptyList<BaselineProfileDetails>()
                 ),
             //language=json
             json = """
@@ -183,7 +186,8 @@ class GenericBuiltArtifactsTypeAdapterTest : TestCase() {
                     ]
                 }
                 """.trimIndent()
-        assertThat(GenericBuiltArtifactsTypeAdapter.parseJson(json))
+        assertThat(GenericBuiltArtifactsTypeAdapter(
+            PathUtils.createTmpDirToRemoveOnShutdown("tmp")).parseJson(json))
             .named("""parseJson("${json.replace("\n", "\\n")}")""")
             .isEqualTo(GenericBuiltArtifacts(
                 version = 2,
@@ -199,7 +203,8 @@ class GenericBuiltArtifactsTypeAdapterTest : TestCase() {
                         outputFile = "app-debug.apk"
                     ),
                 ),
-                elementType = null
+                elementType = null,
+                baselineProfiles = emptyList<BaselineProfileDetails>()
             )
         )
     }

@@ -21,6 +21,7 @@ import com.android.build.api.variant.BuiltArtifacts
 import com.android.build.api.variant.FilterConfiguration
 import com.android.build.gradle.internal.fixtures.FakeGradleDirectory
 import com.android.build.gradle.internal.scope.InternalArtifactType
+import com.android.ide.common.build.BaselineProfileDetails
 import com.android.ide.common.build.GenericBuiltArtifactsLoader
 import com.android.ide.common.build.ListingFileRedirect
 import com.android.utils.NullLogger
@@ -311,6 +312,90 @@ class BuiltArtifactsImplTest {
   ],
   "elementType": "File"
 }"""
+        )
+    }
+
+    @Test
+    fun writingWithBaselineProfiles() {
+        val outputFolder = tmpFolder.newFolder("some_folder")
+        val baselineProfiles = mutableListOf<BaselineProfileDetails>()
+
+        val baselineProfileFiles1 = mutableSetOf<File>()
+        baselineProfileFiles1.add(outputFolder.resolve("1/file1.dm"))
+        baselineProfileFiles1.add(outputFolder.resolve("1/file2.dm"))
+        baselineProfiles.add(BaselineProfileDetails(28, 30, baselineProfileFiles1))
+
+        val baselineProfileFiles2 = mutableSetOf<File>()
+        baselineProfileFiles2.add(outputFolder.resolve("0/file1.dm"))
+        baselineProfiles.add(BaselineProfileDetails(31, 34, baselineProfileFiles2))
+
+        val baselineProfileFiles3 = mutableSetOf<File>()
+        baselineProfileFiles3.add(outputFolder.resolve("2/file1.dm"))
+        baselineProfiles.add(BaselineProfileDetails(35, null, baselineProfileFiles3))
+
+        BuiltArtifactsImpl(
+            artifactType = SingleArtifact.APK,
+            applicationId = "com.android.test",
+            variantName = "debug",
+            elements = listOf(
+                BuiltArtifactImpl.make(
+                    outputFile = createOutputFile(outputFolder, "file1.apk").absolutePath,
+                    versionCode = 123,
+                    versionName = "version_name"
+                )
+            ),
+            baselineProfiles = baselineProfiles
+        ).save(FakeGradleDirectory(outputFolder))
+
+        val outputJsonFile = File(outputFolder, BuiltArtifactsImpl.METADATA_FILE_NAME)
+        Truth.assertThat(outputJsonFile.exists())
+        val jsonContent = outputJsonFile.readText(Charsets.UTF_8)
+        Truth.assertThat(jsonContent).isEqualTo(
+            """
+                {
+                  "version": 3,
+                  "artifactType": {
+                    "type": "APK",
+                    "kind": "Directory"
+                  },
+                  "applicationId": "com.android.test",
+                  "variantName": "debug",
+                  "elements": [
+                    {
+                      "type": "SINGLE",
+                      "filters": [],
+                      "attributes": [],
+                      "versionCode": 123,
+                      "versionName": "version_name",
+                      "outputFile": "file1.apk"
+                    }
+                  ],
+                  "elementType": "File",
+                  "baselineProfiles": [
+                    {
+                      "minApi": 28,
+                      "maxApi": 30,
+                      "baselineProfiles": [
+                        "1/file1.dm",
+                        "1/file2.dm"
+                      ]
+                    },
+                    {
+                      "minApi": 31,
+                      "maxApi": 34,
+                      "baselineProfiles": [
+                        "0/file1.dm"
+                      ]
+                    },
+                    {
+                      "minApi": 35,
+                      "baselineProfiles": [
+                        "2/file1.dm"
+                      ]
+                    }
+                  ]
+                }
+            """.trimIndent()
         )
     }
 

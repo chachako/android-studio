@@ -44,4 +44,9 @@ interface CommonBuiltArtifacts {
      * Identifies the variant name for these [CommonBuiltArtifact]
      */
     val variantName: String
+
+    /**
+     * Returns baseline profile details for these [CommonBuiltArtifact] instances.
+     */
+    val baselineProfiles: List<BaselineProfileDetails>
 }

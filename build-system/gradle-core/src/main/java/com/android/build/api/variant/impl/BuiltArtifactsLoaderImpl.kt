@@ -72,7 +72,7 @@ class BuiltArtifactsLoaderImpl: BuiltArtifactsLoader {
             val reader = redirectedFile?.let { FileReader(it) } ?: StringReader(redirectFileContent)
             val buildOutputs = try {
                 JsonReader(reader).use {
-                    BuiltArtifactsTypeAdapter.read(it)
+                    BuiltArtifactsTypeAdapter(relativePathToUse).read(it)
                 }
             } catch (e: Exception) {
                 throw IOException("Error parsing build artifacts from ${if (redirectedFile!=null) "$redirectedFile redirected from $inputFile" else inputFile}", e)
@@ -94,8 +94,9 @@ class BuiltArtifactsLoaderImpl: BuiltArtifactsLoader {
                             variantOutputConfiguration = builtArtifact.variantOutputConfiguration,
                             attributes = builtArtifact.attributes
                         )
-                    }
-                    .toList())
+                    }.toList(),
+                baselineProfiles = buildOutputs.baselineProfiles
+            )
         }
     }
 }

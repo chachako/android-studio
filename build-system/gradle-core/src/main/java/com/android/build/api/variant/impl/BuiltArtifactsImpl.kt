@@ -21,11 +21,10 @@ import com.android.build.api.variant.BuiltArtifact
 import com.android.build.api.variant.BuiltArtifacts
 import com.android.build.api.variant.FilterConfiguration
 import com.android.build.api.variant.VariantOutputConfiguration
+import com.android.ide.common.build.BaselineProfileDetails
 import com.android.ide.common.build.CommonBuiltArtifacts
 import com.android.ide.common.build.CommonBuiltArtifactsTypeAdapter
 import com.google.gson.stream.JsonWriter
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import org.gradle.api.file.Directory
 import java.io.File
 import java.io.Serializable
@@ -40,10 +39,11 @@ class BuiltArtifactsImpl @JvmOverloads constructor(
     override val applicationId: String,
     override val variantName: String,
     override val elements: Collection<BuiltArtifactImpl>,
-    private val elementType: String? = null)
-    : CommonBuiltArtifacts, BuiltArtifacts, Serializable {
+    private val elementType: String? = null,
+    override val baselineProfiles: List<BaselineProfileDetails> = emptyList()
+): CommonBuiltArtifacts, BuiltArtifacts, Serializable {
 
-    fun elementType():String? =
+    fun elementType(): String? =
         elementType ?: initFileType(elements)
 
     companion object {
@@ -80,7 +80,7 @@ class BuiltArtifactsImpl @JvmOverloads constructor(
             JsonWriter(outputFile.bufferedWriter()).use { writer ->
                 writer.beginArray()
                 for (artifactImpl in this) {
-                    BuiltArtifactsTypeAdapter.write(writer, artifactImpl)
+                    BuiltArtifactsTypeAdapter(outputFile.parent).write(writer, artifactImpl)
                 }
                 writer.endArray()
             }
@@ -173,32 +173,44 @@ class BuiltArtifactsImpl @JvmOverloads constructor(
                                     versionName = builtArtifact.versionName,
                                     variantOutputConfiguration = builtArtifact.variantOutputConfiguration,
                                     attributes = builtArtifact.attributes
-
                             )
                         }.toList(),
-                elementType())
+                elementType(),
+                baselineProfiles
+            )
         return StringWriter().also {
             JsonWriter(it).use { jsonWriter ->
                 jsonWriter.setIndent("  ")
-                BuiltArtifactsTypeAdapter.write(jsonWriter, withRelativePaths)
+                BuiltArtifactsTypeAdapter(projectPath).write(jsonWriter, withRelativePaths)
             }
         }.toString()
     }
 }
 
-internal object BuiltArtifactsTypeAdapter : CommonBuiltArtifactsTypeAdapter<
+internal class BuiltArtifactsTypeAdapter(
+    projectPath: Path
+): CommonBuiltArtifactsTypeAdapter<
         BuiltArtifactsImpl,
         Artifact<*>,
         BuiltArtifactImpl
-        >() {
+        >(projectPath) {
 
     override val artifactTypeTypeAdapter get() = ArtifactTypeTypeAdapter
     override val elementTypeAdapter get() = BuiltArtifactTypeAdapter
     override fun getArtifactType(artifacts: BuiltArtifactsImpl) = artifacts.artifactType
     override fun getElementType(artifacts: BuiltArtifactsImpl) = artifacts.elementType()
     override fun getElements(artifacts: BuiltArtifactsImpl) = artifacts.elements
+    override fun getBaselineProfiles(artifacts: BuiltArtifactsImpl) = artifacts.baselineProfiles
 
-    override fun instantiate(version: Int, artifactType: Artifact<*>, applicationId: String, variantName: String, elements: List<BuiltArtifactImpl>, elementType: String?): BuiltArtifactsImpl =
+    override fun instantiate(
+        version: Int,
+        artifactType: Artifact<*>,
+        applicationId: String,
+        variantName: String,
+        elements: List<BuiltArtifactImpl>,
+        elementType: String?,
+        baselineProfiles: List<BaselineProfileDetails>
+    ): BuiltArtifactsImpl =
             BuiltArtifactsImpl(
                     version = version,
                     artifactType = artifactType,
@@ -206,6 +218,6 @@ internal object BuiltArtifactsTypeAdapter : CommonBuiltArtifactsTypeAdapter<
                     variantName = variantName,
                     elements = elements,
                     elementType = elementType,
+                    baselineProfiles = baselineProfiles
             )
-
 }
