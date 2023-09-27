@@ -127,15 +127,10 @@ class SyncCommandHandler : DeviceCommandHandler("sync") {
     private fun handleStatProtocol(device: DeviceState, input: InputStream, output: OutputStream) {
         val path = readRecvHeader(input)
         val fileState = device.getFile(path)
-        if (fileState == null) {
-            val reason = "File does not exist: '$path'"
-            sendSyncFail(output, reason)
-            return  // We do not throw, as we can accept another sync request
-        }
-        writeInt32(output, /* id= */ 0)
-        writeInt32(output, fileState.permission)
-        writeInt32(output, fileState.bytes.size)
-        writeInt32(output, fileState.modifiedDate)
+        writeStat(output)
+        writeInt32(output, fileState?.permission ?: 0)
+        writeInt32(output, fileState?.bytes?.size ?: 0)
+        writeInt32(output, fileState?.modifiedDate ?: 0)
     }
 
     private fun readSyncRequest(input: InputStream): String {
@@ -219,6 +214,10 @@ class SyncCommandHandler : DeviceCommandHandler("sync") {
 
     private fun writeData(stream: OutputStream) {
         stream.write("DATA".toByteArray(UTF_8))
+    }
+
+    private fun writeStat(stream: OutputStream) {
+        stream.write("STAT".toByteArray(UTF_8))
     }
 
     private fun readInt32(input: InputStream): Int {

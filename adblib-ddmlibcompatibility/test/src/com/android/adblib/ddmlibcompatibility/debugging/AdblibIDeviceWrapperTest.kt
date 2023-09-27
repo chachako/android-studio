@@ -25,6 +25,7 @@ import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Rule
@@ -450,6 +451,52 @@ class AdblibIDeviceWrapperTest {
         assertEquals(lastModifiedTimeSec, remoteFile.modifiedDate.toLong())
         assertEquals(RemoteFileMode.fromPath(localFile), RemoteFileMode.fromModeBits(remoteFile.permission))
         assertEquals(fileBytes.toString(Charsets.UTF_8), remoteFile.bytes.toString(Charsets.UTF_8))
+    }
+
+    @Test
+    fun statFile() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, deviceState) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.ONLINE
+        )
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+        val remoteFilePath = "/sdcard/foo/bar.bin"
+        val fileMode = RemoteFileMode.fromPosixPermissions(OWNER_READ)
+        val fileDate = FileTime.from(1_000_000, TimeUnit.SECONDS)
+        val bytes = "abcd12345".toByteArray()
+        deviceState.createFile(
+            DeviceFileState(
+                "/sdcard/foo/bar.bin",
+                fileMode.modeBits,
+                (fileDate.toMillis() / 1_000).toInt(),
+                bytes
+            )
+        )
+
+        // Act
+        val fileStat = adblibIDeviceWrapper.statFile(remoteFilePath)
+
+        // Assert
+        assertNotNull(fileStat)
+        assertEquals(bytes.size, fileStat!!.size)
+        assertEquals(fileMode.modeBits, fileStat!!.mode)
+        assertEquals(1_000_000, fileStat!!.lastModified.toInstant().epochSecond)
+    }
+
+    @Test
+    fun statFileForFileNotFound() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, deviceState) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.ONLINE
+        )
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+        val remoteFilePath = "/sdcard/foo/bar.bin"
+
+        // Act
+        val fileStat = adblibIDeviceWrapper.statFile(remoteFilePath)
+
+        // Assert
+        assertNull(fileStat)
     }
 
     @Test

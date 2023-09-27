@@ -1315,6 +1315,37 @@ public final class DeviceImpl implements IDevice {
     }
 
     @Override
+    public SyncService.FileStat statFile(String remote)
+            throws IOException, AdbCommandRejectedException, TimeoutException {
+        SyncService sync = null;
+        try {
+            String targetFileName = getFileName(remote);
+
+            Log.d(
+                    LOG_TAG,
+                    String.format(
+                            "Stat %1$s from device '%2$s'", targetFileName, getSerialNumber()));
+
+            sync = getSyncService();
+            if (sync != null) {
+                return sync.statFile(remote);
+            } else {
+                throw new IOException("Unable to open sync connection!");
+            }
+        } catch (TimeoutException e) {
+            Log.e(LOG_TAG, "Error during Sync: timeout.");
+            throw e;
+        } catch (IOException e) {
+            Log.e(LOG_TAG, String.format("Error during Sync: %1$s", e.getMessage()));
+            throw e;
+        } finally {
+            if (sync != null) {
+                sync.close();
+            }
+        }
+    }
+
+    @Override
     public void installPackage(String packageFilePath, boolean reinstall, String... extraArgs)
             throws InstallException {
         // Use default basic installReceiver

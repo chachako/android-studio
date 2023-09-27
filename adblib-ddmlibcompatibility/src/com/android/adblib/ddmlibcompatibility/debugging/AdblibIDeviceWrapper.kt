@@ -32,6 +32,7 @@ import com.android.adblib.rootAndWait
 import com.android.adblib.serialNumber
 import com.android.adblib.syncRecv
 import com.android.adblib.syncSend
+import com.android.adblib.syncStat
 import com.android.adblib.tools.EmulatorCommandException
 import com.android.adblib.tools.defaultAuthTokenPath
 import com.android.adblib.tools.localConsoleAddress
@@ -336,8 +337,8 @@ internal class AdblibIDeviceWrapper(
         return deviceClientManager.profileableClients.toTypedArray()
     }
 
-    override fun getSyncService(): SyncService? {
-        TODO("Not yet implemented")
+    override fun getSyncService(): SyncService = runBlockingLegacy {
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     override fun getFileListingService(): FileListingService {
@@ -461,6 +462,25 @@ internal class AdblibIDeviceWrapper(
         }
     }
 
+    override fun statFile(remote: String): SyncService.FileStat? {
+        return runBlockingLegacy {
+            val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+
+            Log.d(LOG_TAG, "Stat remote file '$remote' on device '$serialNumber'")
+
+            mapToSyncException {
+                connectedDevice.session.deviceServices.syncStat(deviceSelector, remote)
+                    ?.let {
+                        SyncService.FileStat(
+                            it.remoteFileMode.modeBits,
+                            it.size,
+                            it.lastModified.to(TimeUnit.SECONDS)
+                        )
+                    }
+            }
+        }
+    }
+
     override fun installPackage(
         packageFilePath: String,
         reinstall: Boolean,
@@ -497,13 +517,15 @@ internal class AdblibIDeviceWrapper(
         maxTimeUnits: TimeUnit?,
         vararg extraArgs: String?
     ) {
-        iDeviceSharedImpl.installPackage(packageFilePath,
-                                         reinstall,
-                                         receiver,
-                                         maxTimeout,
-                                         maxTimeToOutputResponse,
-                                         maxTimeUnits,
-                                         *extraArgs)
+        iDeviceSharedImpl.installPackage(
+            packageFilePath,
+            reinstall,
+            receiver,
+            maxTimeout,
+            maxTimeToOutputResponse,
+            maxTimeUnits,
+            *extraArgs
+        )
     }
 
     override fun installPackages(
@@ -730,7 +752,8 @@ internal class AdblibIDeviceWrapper(
             val maxTimeoutDuration =
                 if (maxTimeout > 0) Duration.ofMillis(maxTimeUnits.toMillis(maxTimeout)) else INFINITE_DURATION
             runBlockingLegacy(timeout = maxTimeoutDuration) {
-                val adbInputChannel = inputStream?.let {connectedDevice.session.channelFactory.wrapInputStream(it)}
+                val adbInputChannel =
+                    inputStream?.let { connectedDevice.session.channelFactory.wrapInputStream(it) }
                 val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
                 // TODO: Use `maxTimeToOutputResponse`
                 // TODO(b/299483329): wrap abb_exec and abb with a AbbCommand (similar to ShellCommand)

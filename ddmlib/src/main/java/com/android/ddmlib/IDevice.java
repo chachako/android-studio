@@ -659,6 +659,22 @@ public interface IDevice extends IShellEnabledDevice, IUserDataMap {
             throws IOException, AdbCommandRejectedException, TimeoutException, SyncException;
 
     /**
+     * Stat a file on the device.
+     *
+     * <p>Returns stat info about the file, or null if file is not found.
+     *
+     * @param remote the full path to the remote file
+     * @throws IOException in case of an IO exception.
+     * @throws AdbCommandRejectedException if adb rejects the command
+     * @throws TimeoutException in case of a timeout reading responses from the device
+     */
+    @Nullable
+    default SyncService.FileStat statFile(String remote)
+            throws IOException, AdbCommandRejectedException, TimeoutException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * Installs an Android application on device. This is a helper method that combines the
      * syncPackageToDevice, installRemotePackage, and removePackage steps
      *
