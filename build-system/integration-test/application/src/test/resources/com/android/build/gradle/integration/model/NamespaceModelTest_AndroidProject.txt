@@ -5,7 +5,8 @@
             - classesFolders:
                * {PROJECT}/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar{!}{ADDED}
                * {PROJECT}/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debug/processDebugResources/R.jar{!}{REMOVED}
-            - bundleInfo{REMOVED} = (null)
+            - bundleInfo{REMOVED}            = (null)
+            - privacySandboxSdkInfo{REMOVED} = (null)
          - androidTestArtifact:
             - classesFolders:
                * {PROJECT}/build/intermediates/compile_r_class_jar/debugAndroidTest/generateDebugAndroidTestRFile/R.jar{!}{ADDED}

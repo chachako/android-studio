@@ -52,6 +52,8 @@ class IncrementalBuildWithOnlyEmptySrcDirsTaskStatesTest {
                             ":app:extractDeepLinksDebug",
                             ":lib:extractDeepLinksForAarDebug",
                             ":app:generateDebugAssets",
+                            ":app:generateDebugFeatureMetadata",
+                            ":app:generateDebugPrivacySandboxSdkRuntimeConfigFile",
                             ":app:generateDebugResources",
                             ":app:generateDebugResValues",
                             ":app:javaPreCompileDebug",

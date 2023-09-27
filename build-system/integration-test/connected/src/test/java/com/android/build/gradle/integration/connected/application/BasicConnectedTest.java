@@ -53,21 +53,6 @@ public class BasicConnectedTest {
         project.execute("installDebug", "uninstallAll");
     }
 
-    @Test // Regression test for b/304312888
-    public void installWithPrivacySandboxEnabled() throws IOException {
-        // If Privacy Sandbox is enabled by default, this test can be safely removed as it is
-        // made redundant by other tests.
-        Truth.assertWithMessage("This test is only useful when "
-                        + BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName()
-                        + " is false. This test can be removed.")
-                .that(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getDefaultValue())
-                .isFalse();
-        TestFileUtils.appendToFile(
-                project.getGradlePropertiesFile(),
-                BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName() + "=true");
-        project.execute("installDebug", "uninstallAll");
-    }
-
     @Test
     public void connectedCheck() throws Exception {
         project.executor().run("connectedCheck");

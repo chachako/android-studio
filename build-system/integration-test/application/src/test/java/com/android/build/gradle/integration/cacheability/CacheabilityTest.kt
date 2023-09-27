@@ -51,6 +51,8 @@ class CacheabilityTest {
             ":app:desugar${DEBUG_RELEASE}FileDependencies",
             ":app:dexBuilder${DEBUG_RELEASE}",
             ":app:extractDeepLinks${DEBUG_RELEASE}",
+            ":app:generate${DEBUG_RELEASE}FeatureMetadata",
+            ":app:generate${DEBUG_RELEASE}PrivacySandboxSdkRuntimeConfigFile",
             ":app:generate${DEBUG_RELEASE}Resources",
             ":app:generate${DEBUG_RELEASE}ResValues",
             ":app:jacocoDebug",

@@ -56,6 +56,8 @@ class MinifyCacheabilityTest {
             ":extractDeepLinksMinified",
             ":generateMinifiedResources",
             ":generateMinifiedResValues",
+            ":generateMinifiedFeatureMetadata",
+            ":generateMinifiedPrivacySandboxSdkRuntimeConfigFile",
             ":jacocoMinified",
             ":javaPreCompileMinified",
             ":mergeMinifiedAssets",

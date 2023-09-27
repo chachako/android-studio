@@ -304,7 +304,7 @@ enum class BooleanOption(
     ),
     PRIVACY_SANDBOX_SDK_SUPPORT("android.privacysandboxsdk.enable",
             true,
-            FeatureStage.SoftlyEnforced(VERSION_8_3)),
+            FeatureStage.SoftlyEnforced(VERSION_9_0)),
 
     /* -------------------
      * DEPRECATED FEATURES
