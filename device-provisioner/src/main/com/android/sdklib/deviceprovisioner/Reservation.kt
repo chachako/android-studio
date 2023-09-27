@@ -15,6 +15,7 @@
  */
 package com.android.sdklib.deviceprovisioner
 
+import java.time.Duration
 import java.time.Instant
 
 /** Information about the current device reservation. */
@@ -29,6 +30,12 @@ data class Reservation(
    * reservation is in the COMPLETE or ERROR state, this is the time it entered that state.
    */
   val endTime: Instant?,
+
+  /**
+   * Maximum possible duration of the reservation. Current duration might be less than this duration
+   * but may not exceed this value. null if there is no maximum duration.
+   */
+  val maxDuration: Duration?
 )
 
 enum class ReservationState {
