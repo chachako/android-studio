@@ -109,6 +109,7 @@ class UtpTestRunnerTest {
                 any(),
                 nullable(Int::class.java),
                 any(),
+                any(),
                 nullable(ShardConfig::class.java),
         )).then {
             RunnerConfigProto.RunnerConfig.getDefaultInstance()
@@ -132,6 +133,7 @@ class UtpTestRunnerTest {
             mockTestResultListener,
             Level.WARNING,
             null,
+            false,
             false,
             mockUtpConfigFactory,
             { runnerConfigs, _, _, _, _ ->

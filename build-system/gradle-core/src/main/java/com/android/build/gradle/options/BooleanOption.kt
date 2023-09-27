@@ -17,7 +17,6 @@
 package com.android.build.gradle.options
 
 import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.BUILD_CONFIG_GLOBAL_PROPERTY
-import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.VERSION_8_3
 import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.VERSION_9_0
 import com.android.build.gradle.options.Version.VERSION_3_5
 import com.android.build.gradle.options.Version.VERSION_3_6
@@ -89,6 +88,16 @@ enum class BooleanOption(
 
     USE_NON_FINAL_RES_IDS("android.nonFinalResIds", true, ApiStage.Stable),
     NON_TRANSITIVE_R_CLASS("android.nonTransitiveRClass", true, ApiStage.Stable),
+
+    /**
+     * Setting this field to false indicates that in the current
+     * project, all the APKs installed during test will be uninstalled
+     * after test finishes. Setting it to true means that the AGP
+     * will leave the test APKs untouched after test.
+     *
+     * Default is false
+     */
+    ANDROID_TEST_LEAVE_APKS_INSTALLED_AFTER_RUN("android.injected.androidTest.leaveApksInstalledAfterRun", false, ApiStage.Stable),
 
     /**
      * When this option is enabled, dexing transforms will use the full classpath (if desugaring

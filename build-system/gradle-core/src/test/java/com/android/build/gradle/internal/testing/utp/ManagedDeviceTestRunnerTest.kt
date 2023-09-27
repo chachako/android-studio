@@ -123,6 +123,7 @@ class ManagedDeviceTestRunnerTest {
                 any(),
                 nullable(Int::class.java),
                 any(),
+                any(),
                 nullable(ShardConfig::class.java),)).then {
             RunnerConfigProto.RunnerConfig.getDefaultInstance()
         }
@@ -191,6 +192,7 @@ class ManagedDeviceTestRunnerTest {
                 null,
                 false,
                 Level.WARNING,
+                false,
                 false,
                 mockUtpConfigFactory,
                 { runnerConfigs, _, _, resultsDir, _ ->

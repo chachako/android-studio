@@ -196,6 +196,10 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
         @Optional
         public abstract Property<Integer> getInstallApkTimeout();
 
+        @Input
+        @Optional
+        public abstract Property<Boolean> getKeepInstalledApks();
+
         TestRunner createTestRunner(
                 WorkerExecutor workerExecutor,
                 ExecutorServiceAdapter executorServiceAdapter,
@@ -222,7 +226,8 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                     utpTestResultListener,
                     utpLoggingLevel(),
                     getInstallApkTimeout().getOrNull(),
-                    getTargetIsSplitApk().getOrElse(false));
+                    getTargetIsSplitApk().getOrElse(false),
+                    !getKeepInstalledApks().get());
         }
 
         private Level utpLoggingLevel() {
@@ -842,12 +847,12 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
             if (!projectOptions.get(BooleanOption.ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM)) {
                 LoggerWrapper.getLogger(DeviceProviderInstrumentTestTask.class)
                         .warning(
-                                "Implicitly enabling Unified Test Platform because related "
-                                        + "features are specified in gradle test options. "
-                                        + "Please add "
-                                        + "-Pandroid.experimental.androidTest."
-                                        + "useUnifiedTestPlatform=true "
-                                        + "to your gradle command to suppress this warning.");
+                                "Implicitly enabling Unified Test Platform because UTP "
+                                        + "is now the only test runner"
+                                        + "Please remove "
+                                        + "android.experimental.androidTest."
+                                        + "useUnifiedTestPlatform=false "
+                                        + "from your gradle.properties file.");
             }
             UtpDependencyUtilsKt.maybeCreateUtpConfigurations(project);
             UtpDependencyUtilsKt.resolveDependencies(
@@ -878,6 +883,12 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
             task.getTestRunnerFactory()
                     .getInstallApkTimeout()
                     .set(projectOptions.getProvider(IntegerOption.INSTALL_APK_TIMEOUT));
+
+            task.getTestRunnerFactory()
+                    .getKeepInstalledApks()
+                    .set(
+                            projectOptions.getProvider(
+                                    BooleanOption.ANDROID_TEST_LEAVE_APKS_INSTALLED_AFTER_RUN));
 
             task.getTestRunnerFactory()
                     .getTargetIsSplitApk()

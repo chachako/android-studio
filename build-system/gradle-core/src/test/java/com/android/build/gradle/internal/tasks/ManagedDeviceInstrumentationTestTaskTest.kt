@@ -261,6 +261,7 @@ class ManagedDeviceInstrumentationTestTaskTest {
         `when`(factory.installApkTimeout).thenReturn(FakeGradleProperty(0))
         `when`(factory.enableEmulatorDisplay).thenReturn(FakeGradleProperty(false))
         `when`(factory.getTargetIsSplitApk).thenReturn(FakeGradleProperty(false))
+        `when`(factory.getKeepInstalledApks).thenReturn(FakeGradleProperty(false))
 
         val testRunner = factory.createTestRunner(workerExecutor, null)
         assertThat(testRunner).isInstanceOf(ManagedDeviceTestRunner::class.java)

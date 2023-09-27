@@ -75,6 +75,7 @@ fun assertRunnerConfigProto(
     installApkTimeout: Int? = null,
     isSplitApk: Boolean = false,
     isDependencyApkSplit: Boolean = false,
+    isUninstallAfterTest: Boolean = false,
 ) {
     val deviceProviderProto = if (useGradleManagedDeviceProvider) { """
         label {
@@ -227,7 +228,7 @@ fun assertRunnerConfigProto(
     }
 
     val installApkTimeoutString = if (installApkTimeout != null) "install_apk_timeout: ${installApkTimeout}" else ""
-    val uninstallAfterTest = if (!useGradleManagedDeviceProvider) "uninstall_after_test: true" else ""
+    val uninstallAfterTest = if (isUninstallAfterTest) "uninstall_after_test: true" else ""
     val installAsSplitApk = if (isSplitApk) "install_as_split_apk: true" else ""
     val dependencyApkPath = if (isDependencyApkSplit) """
         apk_paths: "mockDependencyApkPath1"
@@ -255,6 +256,7 @@ fun assertRunnerConfigProto(
                   ${if (isDependencyApkSplit) "install_as_split_apk: true" else ""}
                   $installApkTimeoutString
                 }
+                $uninstallAfterTest
               }
               apks_to_install {
                 apk_paths: "mockAppApkPath"
@@ -275,6 +277,7 @@ fun assertRunnerConfigProto(
                   $installApkTimeoutString
                   install_as_test_service: true
                 }
+                $uninstallAfterTest
               }
               apks_to_install {
                 apk_paths: "testApk.apk"
@@ -282,6 +285,7 @@ fun assertRunnerConfigProto(
                   command_line_parameter: "-additional_install_option"
                   $installApkTimeoutString
                 }
+                $uninstallAfterTest
               }
             }
           }

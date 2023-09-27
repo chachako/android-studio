@@ -179,6 +179,7 @@ class UtpConfigFactoryTest {
             shardConfig: ShardConfig? = null,
             targetApkConfigBundle: TargetApkConfigBundle = testTargetApkConfigBundle,
             extractedSdkApks: List<List<Path>> = testExtractedSdkApks,
+            cleanTestArtifacts: Boolean = false,
     ): RunnerConfigProto.RunnerConfig {
         return UtpConfigFactory().createRunnerConfigProtoForLocalDevice(
                 mockDevice,
@@ -202,6 +203,7 @@ class UtpConfigFactoryTest {
                 mockTrustCertCollection,
                 installApkTimeout,
                 extractedSdkApks,
+                cleanTestArtifacts,
                 shardConfig,
         )
     }
@@ -214,7 +216,8 @@ class UtpConfigFactoryTest {
             emulatorGpuFlag: String = "auto-no-window",
             showEmulatorKernelLogging: Boolean = false,
             installApkTimeout: Int? = null,
-            targetApkConfigBundle: TargetApkConfigBundle = testTargetApkConfigBundle
+            targetApkConfigBundle: TargetApkConfigBundle = testTargetApkConfigBundle,
+            cleanTestArtifacts: Boolean = false,
     ): RunnerConfigProto.RunnerConfig {
         val managedDevice = UtpManagedDevice(
                 "deviceName",
@@ -245,6 +248,7 @@ class UtpConfigFactoryTest {
                 showEmulatorKernelLogging,
                 installApkTimeout,
                 testExtractedSdkApks,
+                cleanTestArtifacts,
                 shardConfig,
         )
     }
@@ -604,6 +608,30 @@ class UtpConfigFactoryTest {
         assertRunnerConfigProto(
             runnerConfigProto,
             uninstallIncompatibleApks = true,
+        )
+    }
+
+    @Test
+    fun createLocalDeviceRunnerConfigProtoToUninstallApksAfterTest() {
+        val runnerConfigProto = createForLocalDevice(
+                cleanTestArtifacts = true
+        )
+        assertRunnerConfigProto(
+                runnerConfigProto,
+                isUninstallAfterTest = true,
+        )
+    }
+
+    @Test
+    fun createManagedDeviceRunnerConfigProtoToUninstallApksAfterTest() {
+        val runnerConfigProto = createForManagedDevice(
+                cleanTestArtifacts = true
+        )
+        assertRunnerConfigProto(
+                runnerConfigProto,
+                useGradleManagedDeviceProvider = true,
+                deviceId = ":app:deviceNameDebugAndroidTest",
+                isUninstallAfterTest = true,
         )
     }
 

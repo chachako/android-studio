@@ -139,6 +139,10 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
         @get: Optional
         abstract val getTargetIsSplitApk: Property<Boolean>
 
+        @get: Input
+        @get: Optional
+        abstract val getKeepInstalledApks: Property<Boolean>
+
         fun createTestRunner(
             workerExecutor: WorkerExecutor, numShards: Int?): ManagedDeviceTestRunner {
 
@@ -162,7 +166,8 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
                 installApkTimeout.getOrNull(),
                 enableEmulatorDisplay.get(),
                 utpLoggingLevel.get(),
-                getTargetIsSplitApk.getOrElse(false)
+                getTargetIsSplitApk.getOrElse(false),
+                !getKeepInstalledApks.get(),
             )
         }
     }
@@ -452,6 +457,10 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
             task.testRunnerFactory.customManagedDevice.setDisallowChanges(
                 globalConfig.services.projectOptions[
                         BooleanOption.GRADLE_MANAGED_DEVICE_CUSTOM_DEVICE]
+            )
+
+            task.testRunnerFactory.getKeepInstalledApks.setDisallowChanges(
+                    projectOptions.get(BooleanOption.ANDROID_TEST_LEAVE_APKS_INSTALLED_AFTER_RUN)
             )
 
             task.testRunnerFactory.emulatorGpuFlag.setDisallowChanges(
