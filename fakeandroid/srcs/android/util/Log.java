@@ -29,6 +29,10 @@ public final class Log {
         return printlns(VERBOSE, tag, msg);
     }
 
+    public static int i(String tag, String msg) {
+        return printlns(VERBOSE, tag, msg);
+    }
+
     public static int w(String tag, String msg) {
         return printlns(WARN, tag, msg);
     }

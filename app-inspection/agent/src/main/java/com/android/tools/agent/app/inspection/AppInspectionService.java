@@ -19,6 +19,7 @@ package com.android.tools.agent.app.inspection;
 import static com.android.tools.agent.app.inspection.InspectorContext.CrashListener;
 import static com.android.tools.agent.app.inspection.NativeTransport.*;
 
+import android.util.Log;
 import androidx.inspection.ArtTooling;
 import androidx.inspection.ArtTooling.EntryHook;
 import androidx.inspection.ArtTooling.ExitHook;
@@ -88,8 +89,7 @@ public class AppInspectionService {
      * @param inspectorId the unique id of the inspector being launched
      * @param dexPath the path to the .dex file of the inspector
      * @param projectName the name of the studio project that is trying to launch the inspector
-     * @param libraryCoordinate represents the targeted library artifact.
-     * @param expectedLibraryClassNames names of classes expected in the targeted library artifact.
+     * @param libraryCompatibility represents the targeted library artifact.
      * @param force if true, create the inspector even if one is already running
      * @param commandId unique id of this command in the context of app inspection service
      */
@@ -141,6 +141,7 @@ public class AppInspectionService {
                         sendCreateInspectorResponseError(commandId, error);
                     } else {
                         sendCreateInspectorResponseSuccess(commandId);
+                        Log.i("studio.inspectors", "Inspector installed: " + inspectorId);
                     }
                 });
     }
