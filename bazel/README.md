@@ -207,5 +207,32 @@ tools/base/bazel/maven/maven_fetch.sh
 See the `toplevel.WORKSPACE` file for examples on how to express non-jar dependency
 types and classifiers (e.g., `linux-x86_64`).
 
+## Updating Library Versions
 
+Find the existing library in `tools/base/bazel/maven/artifacts.bzl` and update it
+to the new version.
 
+For some dependencies (those used by AGP) you'll **also** need to go and update
+`tools/buildSrc/base/dependencies.properties`.
+
+Then run `tools/base/bazel/maven/maven_fetch.sh` to download the libraries into
+prebuilts. This will update `tools/base/bazel/maven/BUILD.maven`.
+
+You'll now need to go and update any hardcoded references to the old version.
+This can include xml files in .idea/libraries and .iml files. After this, you may
+want to also run `bazel run //tools/base/bazel:iml_to_build`.
+
+For some libraries there may also be a few other things to think of:
+
+* If the download contains executables to be executed directly by the build (such
+  as the proto compiler), go and `chmod +x` the files; the script doesn't do
+  that.)
+
+* For the protobuf-java library, you'll need to go and also extract the .proto
+  files from within the dependency jar and place them in an include/ folder; see
+  the previous version of the library for an example.
+
+You may also want to delete the previous version of the library from the
+prebuilts. To do that, first remove the corresponding entries from the
+BUILD.maven script, and then run the maven_fetch.sh script again. If that brings
+the binaries back, they're needed by a transitive dependency.

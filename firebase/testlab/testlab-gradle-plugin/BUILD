@@ -53,6 +53,7 @@ maven_repository(
         "@maven//:com.google.oauth-client.google-oauth-client_1.22.0",
         "@maven//:com.google.protobuf.protobuf-java-util",
         "@maven//:com.google.testing.platform.android-device-provider-local",
+        "@maven//:org.junit.junit-bom_5.9.3",
     ],
     visibility = [
         "//tools/base/build-system/integration-test:__subpackages__",

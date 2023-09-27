@@ -54,6 +54,7 @@ maven_repository(
         "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin-api",
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core",
         "@maven//:org.jsoup.jsoup",
+        "@maven//:org.junit.junit-bom_5.9.3",
     ],
     visibility = [
         "//tools/base/build-system/integration-test:__subpackages__",
