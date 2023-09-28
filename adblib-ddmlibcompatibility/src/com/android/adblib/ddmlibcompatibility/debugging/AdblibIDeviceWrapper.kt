@@ -29,6 +29,7 @@ import com.android.adblib.deviceInfo
 import com.android.adblib.isOffline
 import com.android.adblib.isOnline
 import com.android.adblib.serialNumber
+import com.android.adblib.syncRecv
 import com.android.adblib.syncSend
 import com.android.adblib.tools.EmulatorCommandException
 import com.android.adblib.tools.defaultAuthTokenPath
@@ -440,8 +441,21 @@ internal class AdblibIDeviceWrapper(
         }
     }
 
-    override fun pullFile(remote: String?, local: String?) {
-        TODO("Not yet implemented")
+    override fun pullFile(remote: String, local: String) {
+        runBlockingLegacy {
+            val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+
+            val localFile = File(local).toPath()
+            Log.d(LOG_TAG, "Pull file from device '$serialNumber': `$remote` -> `$localFile`")
+
+            mapToSyncException {
+                connectedDevice.session.deviceServices.syncRecv(
+                    deviceSelector,
+                    remote,
+                    localFile
+                )
+            }
+        }
     }
 
     override fun installPackage(
