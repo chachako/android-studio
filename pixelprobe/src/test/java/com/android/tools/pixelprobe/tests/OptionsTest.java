@@ -19,16 +19,17 @@ package com.android.tools.pixelprobe.tests;
 import com.android.tools.pixelprobe.Image;
 import com.android.tools.pixelprobe.Layer;
 import com.android.tools.pixelprobe.decoder.Decoder;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.util.List;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class OptionsTest {
     @Test
     public void decodeLayers() throws IOException {
-        Image image = ImageUtils.loadImage("psd/layer_types.psd", new Decoder.Options().decodeLayers(false));
+        Image image =
+                PixelProbeTestUtils.loadImage(
+                        "psd/layer_types.psd", new Decoder.Options().decodeLayers(false));
 
         List<Layer> layers = image.getLayers();
         Assert.assertEquals(0, layers.size());
@@ -36,7 +37,9 @@ public class OptionsTest {
 
     @Test
     public void decodeLayerImage() throws IOException {
-        Image image = ImageUtils.loadImage("psd/layer_types.psd", new Decoder.Options().decodeLayerImageData(false));
+        Image image =
+                PixelProbeTestUtils.loadImage(
+                        "psd/layer_types.psd", new Decoder.Options().decodeLayerImageData(false));
 
         List<Layer> layers = image.getLayers();
         Assert.assertEquals(7, layers.size());
@@ -46,7 +49,9 @@ public class OptionsTest {
 
     @Test
     public void decodeLayerShape() throws IOException {
-        Image image = ImageUtils.loadImage("psd/layer_types.psd", new Decoder.Options().decodeLayerShapeData(false));
+        Image image =
+                PixelProbeTestUtils.loadImage(
+                        "psd/layer_types.psd", new Decoder.Options().decodeLayerShapeData(false));
 
         List<Layer> layers = image.getLayers();
         Assert.assertEquals(7, layers.size());
@@ -56,7 +61,9 @@ public class OptionsTest {
 
     @Test
     public void decodeLayerText() throws IOException {
-        Image image = ImageUtils.loadImage("psd/layer_types.psd", new Decoder.Options().decodeLayerTextData(false));
+        Image image =
+                PixelProbeTestUtils.loadImage(
+                        "psd/layer_types.psd", new Decoder.Options().decodeLayerTextData(false));
 
         List<Layer> layers = image.getLayers();
         Assert.assertEquals(7, layers.size());
@@ -66,8 +73,10 @@ public class OptionsTest {
 
     @Test
     public void decodeLayerEffects() throws IOException {
-        Image image = ImageUtils.loadImage("psd/layer_effect_multi_shadow.psd",
-                new Decoder.Options().decodeLayerEffects(false));
+        Image image =
+                PixelProbeTestUtils.loadImage(
+                        "psd/layer_effect_multi_shadow.psd",
+                        new Decoder.Options().decodeLayerEffects(false));
 
         List<Layer> layers = image.getLayers();
 
@@ -76,7 +85,9 @@ public class OptionsTest {
 
     @Test
     public void decodeGuides() throws IOException {
-        Image image = ImageUtils.loadImage("psd/guides.psd", new Decoder.Options().decodeGuides(false));
+        Image image =
+                PixelProbeTestUtils.loadImage(
+                        "psd/guides.psd", new Decoder.Options().decodeGuides(false));
 
         Assert.assertEquals(0, image.getGuides().size());
     }
@@ -84,7 +95,9 @@ public class OptionsTest {
 
     @Test
     public void decodeThumbnail() throws IOException {
-        Image image = ImageUtils.loadImage("psd/rgb.psd", new Decoder.Options().decodeThumbnail(false));
+        Image image =
+                PixelProbeTestUtils.loadImage(
+                        "psd/rgb.psd", new Decoder.Options().decodeThumbnail(false));
         Assert.assertNull(image.getThumbnailImage());
     }
 }

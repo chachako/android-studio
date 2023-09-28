@@ -19,19 +19,18 @@ package com.android.tools.pixelprobe.tests.psd;
 import com.android.tools.pixelprobe.Image;
 import com.android.tools.pixelprobe.Layer;
 import com.android.tools.pixelprobe.TextInfo;
-import com.android.tools.pixelprobe.tests.ImageUtils;
-import org.junit.Assert;
-import org.junit.Test;
-
+import com.android.tools.pixelprobe.tests.PixelProbeTestUtils;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.List;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class TextTest {
     @Test
     public void font() throws IOException {
-        Image image = ImageUtils.loadImage("psd/text_font.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/text_font.psd");
 
         List<Layer> layers = image.getLayers();
 
@@ -56,7 +55,7 @@ public class TextTest {
 
     @Test
     public void styleRuns() throws IOException {
-        Image image = ImageUtils.loadImage("psd/text_style_runs.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/text_style_runs.psd");
 
         List<Layer> layers = image.getLayers();
 
@@ -103,7 +102,7 @@ public class TextTest {
 
     @Test
     public void alignments() throws IOException {
-        Image image = ImageUtils.loadImage("psd/text_alignments.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/text_alignments.psd");
 
         List<Layer> layers = image.getLayers();
 
@@ -145,7 +144,7 @@ public class TextTest {
 
     @Test
     public void transform() throws IOException {
-        Image image = ImageUtils.loadImage("psd/text_transform.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/text_transform.psd");
 
         List<Layer> layers = image.getLayers();
 

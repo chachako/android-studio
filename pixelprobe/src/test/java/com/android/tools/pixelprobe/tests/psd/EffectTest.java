@@ -19,18 +19,17 @@ package com.android.tools.pixelprobe.tests.psd;
 import com.android.tools.pixelprobe.*;
 import com.android.tools.pixelprobe.Image;
 import com.android.tools.pixelprobe.effect.Shadow;
-import com.android.tools.pixelprobe.tests.ImageUtils;
-import org.junit.Assert;
-import org.junit.Test;
-
+import com.android.tools.pixelprobe.tests.PixelProbeTestUtils;
 import java.awt.*;
 import java.io.IOException;
 import java.util.List;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class EffectTest {
     @Test
     public void singleShadow() throws IOException {
-        Image image = ImageUtils.loadImage("psd/layer_effect_single_shadow.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/layer_effect_single_shadow.psd");
         List<Layer> layers = image.getLayers();
 
         Layer layer = layers.get(0);
@@ -66,7 +65,7 @@ public class EffectTest {
 
     @Test
     public void multiShadow() throws IOException {
-        Image image = ImageUtils.loadImage("psd/layer_effect_multi_shadow.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/layer_effect_multi_shadow.psd");
         List<Layer> layers = image.getLayers();
 
         Layer layer = layers.get(0);

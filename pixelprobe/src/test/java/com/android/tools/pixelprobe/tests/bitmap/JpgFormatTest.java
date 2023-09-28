@@ -18,15 +18,14 @@ package com.android.tools.pixelprobe.tests.bitmap;
 
 import com.android.tools.pixelprobe.ColorMode;
 import com.android.tools.pixelprobe.Image;
-import com.android.tools.pixelprobe.tests.ImageUtils;
+import com.android.tools.pixelprobe.tests.PixelProbeTestUtils;
 import com.android.tools.pixelprobe.util.Images;
+import java.awt.color.ColorSpace;
+import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import java.awt.color.ColorSpace;
-import java.io.IOException;
 
 public class JpgFormatTest {
     @Rule
@@ -34,7 +33,7 @@ public class JpgFormatTest {
 
     @Test
     public void jpg8() throws IOException {
-        Image image = ImageUtils.loadImage("jpg/jpg_8_srgb.jpg");
+        Image image = PixelProbeTestUtils.loadImage("jpg/jpg_8_srgb.jpg");
         Assert.assertNotNull(image.getMergedImage());
         Assert.assertEquals(ColorMode.RGB, image.getColorMode());
         Assert.assertEquals(8, image.getColorDepth());
@@ -47,7 +46,7 @@ public class JpgFormatTest {
 
     @Test
     public void jpg8AdobeRgb() throws IOException {
-        Image image = ImageUtils.loadImage("jpg/jpg_8_adobe_rgb.jpg");
+        Image image = PixelProbeTestUtils.loadImage("jpg/jpg_8_adobe_rgb.jpg");
         Assert.assertNotNull(image.getMergedImage());
         Assert.assertEquals(ColorMode.RGB, image.getColorMode());
         Assert.assertEquals(8, image.getColorDepth());
@@ -59,7 +58,7 @@ public class JpgFormatTest {
 
     @Test
     public void jpg8Cmyk() throws IOException {
-        Image image = ImageUtils.loadImage("jpg/jpg_8_cmyk.jpg");
+        Image image = PixelProbeTestUtils.loadImage("jpg/jpg_8_cmyk.jpg");
         Assert.assertNotNull(image.getMergedImage());
         Assert.assertEquals(ColorMode.CMYK, image.getColorMode());
         Assert.assertEquals(8, image.getColorDepth());
@@ -71,7 +70,7 @@ public class JpgFormatTest {
 
     @Test
     public void jpg8Gray() throws IOException {
-        Image image = ImageUtils.loadImage("jpg/jpg_8_gray.jpg");
+        Image image = PixelProbeTestUtils.loadImage("jpg/jpg_8_gray.jpg");
         Assert.assertNotNull(image.getMergedImage());
         Assert.assertEquals(ColorMode.GRAYSCALE, image.getColorMode());
         Assert.assertEquals(8, image.getColorDepth());

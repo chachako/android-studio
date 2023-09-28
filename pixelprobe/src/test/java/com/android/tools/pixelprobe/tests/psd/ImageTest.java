@@ -20,19 +20,18 @@ import com.android.tools.pixelprobe.Guide;
 import com.android.tools.pixelprobe.Image;
 import com.android.tools.pixelprobe.Layer;
 import com.android.tools.pixelprobe.decoder.Decoder;
-import com.android.tools.pixelprobe.tests.ImageUtils;
-import org.junit.Assert;
-import org.junit.Test;
-
+import com.android.tools.pixelprobe.tests.PixelProbeTestUtils;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class ImageTest {
     @Test
     public void empty() throws IOException {
-        Image image = ImageUtils.loadImage("psd/empty.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/empty.psd");
         Assert.assertNotNull(image.getMergedImage());
 
         List<Layer> layers = image.getLayers();
@@ -44,7 +43,9 @@ public class ImageTest {
 
     @Test
     public void thumbnail() throws IOException {
-        Image image = ImageUtils.loadImage("psd/rgb.psd", new Decoder.Options().decodeThumbnail(true));
+        Image image =
+                PixelProbeTestUtils.loadImage(
+                        "psd/rgb.psd", new Decoder.Options().decodeThumbnail(true));
         BufferedImage thumbnail = image.getThumbnailImage();
 
         Assert.assertNotNull(thumbnail);
@@ -58,7 +59,7 @@ public class ImageTest {
 
     @Test
     public void dimension() throws IOException {
-        Image image = ImageUtils.loadImage("psd/empty.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/empty.psd");
 
         Assert.assertEquals(256, image.getWidth());
         Assert.assertEquals(256, image.getHeight());
@@ -66,12 +67,12 @@ public class ImageTest {
 
     @Test
     public void resolution() throws IOException {
-        Image image = ImageUtils.loadImage("psd/empty.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/empty.psd");
 
         Assert.assertEquals(72.0f, image.getHorizontalResolution(), 0.001f);
         Assert.assertEquals(72.0f, image.getVerticalResolution(), 0.001f);
 
-        image = ImageUtils.loadImage("psd/empty_300dpi.psd");
+        image = PixelProbeTestUtils.loadImage("psd/empty_300dpi.psd");
 
         Assert.assertEquals(300.0f, image.getHorizontalResolution(), 0.001f);
         Assert.assertEquals(300.0f, image.getVerticalResolution(), 0.001f);
@@ -79,7 +80,7 @@ public class ImageTest {
 
     @Test
     public void guides() throws IOException {
-        Image image = ImageUtils.loadImage("psd/guides.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/guides.psd");
 
         List<Guide> guides = image.getGuides();
         Assert.assertEquals(14, guides.size());
@@ -105,7 +106,7 @@ public class ImageTest {
     @Test
     public void complex() throws IOException {
         // Load complex PSD files and see if we crash
-        ImageUtils.loadImage("psd/complex1.psd");
-        ImageUtils.loadImage("psd/complex2.psd");
+        PixelProbeTestUtils.loadImage("psd/complex1.psd");
+        PixelProbeTestUtils.loadImage("psd/complex2.psd");
     }
 }

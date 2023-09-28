@@ -13,26 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.tools.pixelprobe.tests;
 
 import com.android.tools.pixelprobe.Image;
 import com.android.tools.pixelprobe.PixelProbe;
 import com.android.tools.pixelprobe.decoder.Decoder;
-
 import java.io.IOException;
 import java.io.InputStream;
 
-public final class ImageUtils {
-    private ImageUtils() {
-    }
+public final class PixelProbeTestUtils {
+    private PixelProbeTestUtils() {}
 
     public static Image loadImage(String imageName) throws IOException {
         return loadImage(imageName, new Decoder.Options());
     }
 
     public static Image loadImage(String imageName, Decoder.Options options) throws IOException {
-        try (InputStream in = ImageUtils.class.getResourceAsStream("/" + imageName)) {
+        try (InputStream in = PixelProbeTestUtils.class.getResourceAsStream("/" + imageName)) {
             return PixelProbe.probe(in, options);
         }
     }

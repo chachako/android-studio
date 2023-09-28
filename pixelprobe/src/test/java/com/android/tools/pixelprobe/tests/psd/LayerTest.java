@@ -19,18 +19,17 @@ package com.android.tools.pixelprobe.tests.psd;
 import com.android.tools.pixelprobe.BlendMode;
 import com.android.tools.pixelprobe.Image;
 import com.android.tools.pixelprobe.Layer;
-import com.android.tools.pixelprobe.tests.ImageUtils;
-import org.junit.Assert;
-import org.junit.Test;
-
+import com.android.tools.pixelprobe.tests.PixelProbeTestUtils;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.List;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class LayerTest {
     @Test
     public void name() throws IOException {
-        Image image = ImageUtils.loadImage("psd/layer_names.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/layer_names.psd");
         List<Layer> layers = image.getLayers();
 
         // Test ASCII compatible name
@@ -41,7 +40,7 @@ public class LayerTest {
 
     @Test
     public void types() throws IOException {
-        Image image = ImageUtils.loadImage("psd/layer_types.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/layer_types.psd");
 
         List<Layer> layers = image.getLayers();
         Assert.assertEquals(7, layers.size());
@@ -57,7 +56,7 @@ public class LayerTest {
 
     @Test
     public void groups() throws IOException {
-        Image image = ImageUtils.loadImage("psd/groups.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/groups.psd");
 
         List<Layer> layers = image.getLayers();
         Assert.assertEquals(3, layers.size());
@@ -75,7 +74,7 @@ public class LayerTest {
 
     @Test
     public void visibility() throws IOException {
-        Image image = ImageUtils.loadImage("psd/visibility.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/visibility.psd");
 
         List<Layer> layers = image.getLayers();
         Assert.assertEquals(3, layers.size());
@@ -89,7 +88,7 @@ public class LayerTest {
 
     @Test
     public void blendModes() throws IOException {
-        Image image = ImageUtils.loadImage("psd/blend_modes.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/blend_modes.psd");
 
         List<Layer> layers = image.getLayers();
         BlendMode[] modes = BlendMode.values();
@@ -100,7 +99,7 @@ public class LayerTest {
 
     @Test
     public void opacity() throws IOException {
-        Image image = ImageUtils.loadImage("psd/opacity.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/opacity.psd");
 
         List<Layer> layers = image.getLayers();
         float[] opacities = { 0.25f, 0.50f, 0.75f, 1.0f };
@@ -111,7 +110,7 @@ public class LayerTest {
 
     @Test
     public void clipBase() throws IOException {
-        Image image = ImageUtils.loadImage("psd/clip_base.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/clip_base.psd");
 
         List<Layer> layers = image.getLayers();
 
@@ -122,7 +121,7 @@ public class LayerTest {
 
     @Test
     public void bounds() throws IOException {
-        Image image = ImageUtils.loadImage("psd/bounds.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/bounds.psd");
 
         List<Layer> layers = image.getLayers();
 
@@ -133,7 +132,7 @@ public class LayerTest {
 
     @Test
     public void layer16() throws IOException {
-        Image image = ImageUtils.loadImage("psd/rgb_16.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/rgb_16.psd");
 
         List<Layer> layers = image.getLayers();
         Assert.assertEquals(3, layers.size());
@@ -150,7 +149,7 @@ public class LayerTest {
 
     @Test
     public void layer32() throws IOException {
-        Image image = ImageUtils.loadImage("psd/rgb_32.psd");
+        Image image = PixelProbeTestUtils.loadImage("psd/rgb_32.psd");
 
         List<Layer> layers = image.getLayers();
         Assert.assertEquals(3, layers.size());
