@@ -34,6 +34,7 @@ import org.intellij.lang.annotations.RegExp
 import org.jetbrains.annotations.Contract
 import org.jetbrains.annotations.Nls
 import org.jetbrains.annotations.NonNls
+import org.jetbrains.kotlin.asJava.elements.KtLightElement
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtProperty
 
@@ -411,8 +412,8 @@ protected constructor(
 
     /**
      * Creates a fix with extra information about the location and context, to more accurately
-     * pinpoint where the annotation should be placed. The location can be explicitly overridden
-     * using `.range(location).
+     * pinpoint where the annotation should be placed. Sometimes we fail to correctly identify the
+     * location. In this case, the location can be explicitly specified using `.range(location)`.
      */
     @JvmOverloads
     fun annotate(
@@ -444,7 +445,7 @@ protected constructor(
         // like comments. Here we specify as specific a location as possible so that
         // annotations are placed before any code, but after comments.
         // This problem was noticed in b/249043377.
-        val startElement =
+        var anchorElement =
           when (element) {
             is KtNamedFunction -> element.modifierList ?: element.funKeyword ?: element
             is PsiMethod -> element.modifierList
@@ -453,13 +454,15 @@ protected constructor(
             else -> null
           }
 
-        if (startElement != null)
-          context.getLocation(startElement).start?.let { start ->
-            context.getLocation(element).end?.let { end ->
-              extractOffsets(Location.create(context.file, start, end))
-            }
+        if (anchorElement is KtLightElement<*, *>) {
+          anchorElement = (anchorElement as KtLightElement<*, *>).kotlinOrigin
+        }
+
+        context.getLocation(anchorElement ?: element).start?.let { start ->
+          context.getLocation(element).end?.let { end ->
+            extractOffsets(Location.create(context.file, start, end))
           }
-        else null
+        }
       }
     private var robot = false
     private var independent = false

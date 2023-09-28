@@ -134,7 +134,6 @@ public class ParcelDetector extends Detector implements SourceCodeScanner {
                 LintFix fix =
                         fix().name("Annotate with @JvmField", true)
                                 .annotate(JVM_FIELD, context, field, true)
-                                .range(context.getLocation(field))
                                 .autoFix()
                                 .build();
                 context.report(
