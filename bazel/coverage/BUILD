@@ -1011,8 +1011,7 @@ coverage_report(
         "//tools/adt/idea/android:intellij.android.core.tests_tests",
         "//tools/adt/idea/android-adb:intellij.android.adb.tests_tests",
         "//tools/adt/idea/android-common:intellij.android.common_tests",
-        #TODO(b/155257347) too flaky for coverage runs
-        #"//tools/adt/idea/android-kotlin:intellij.android.kotlin.tests_tests",
+        "//tools/adt/idea/android-kotlin:intellij.android.kotlin.tests_tests",
         "//tools/adt/idea/android-lang:intellij.android.lang.tests_tests",
         "//tools/adt/idea/android-lang-databinding:intellij.android.lang-databinding.tests_tests",
         "//tools/adt/idea/android-lint:intellij.android.lint.tests_tests",
