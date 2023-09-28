@@ -72,6 +72,11 @@ public class MavenRepository {
     private final List<RemoteRepository> repositories;
     private final ModelBuilder modelBuilder;
 
+    private static final List<String> API_MODULES =
+            ImmutableList.of(
+                    "com.android.tools.build:gradle-api",
+                    "com.android.tools.build:gradle-settings-api");
+
     private static final List<String> DEPS_WITHOUT_GRADLE_MODULE =
             ImmutableList.of(
                     "org.testng:testng:module:7.3.0",
@@ -251,10 +256,13 @@ public class MavenRepository {
                     String suffix = "." + fileExtension;
 
                     String gradleVariant = removeSuffix(removePrefix(url, prefix), suffix);
-                    // if it's the main variant, sources variant or javadoc variant, skip it
-                    if (gradleVariant.length() == 0
-                            || gradleVariant.contains("sources")
-                            || gradleVariant.contains("javadoc")) {
+                    // if it's the main variant or javadoc variant, skip it
+                    if (gradleVariant.length() == 0 || gradleVariant.contains("javadoc")) {
+                        continue;
+                    }
+                    // only download sources for our API modules eg.
+                    // 'com.android.tools.build:gradle-api:8.1.0'
+                    if (gradleVariant.contains("sources") && !isApiModule(artifact)) {
                         continue;
                     }
 
@@ -273,6 +281,11 @@ public class MavenRepository {
         } catch (Exception e) {
             // do nothing
         }
+    }
+
+    private boolean isApiModule(Artifact artifact) {
+        String coordinates = artifact.getGroupId() + ":" + artifact.getArtifactId();
+        return API_MODULES.contains(coordinates);
     }
 
     /** Creates and returns a new DefaultModelResolver instance. */
