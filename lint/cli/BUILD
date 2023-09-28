@@ -15,11 +15,6 @@ maven_library(
     ],
     coordinates = "com.android.tools.lint:lint",
     description = "Lint tools. Both a Command line tool and a library to add lint features to other tools",
-    kotlinc_opts = [
-        # Temporary workaround for b/266371431 until AGP targets 17.
-        "-jvm-target",
-        "17",
-    ],
     lint_baseline = "lint_baseline.xml",
     module_name = "lint-cli",
     notice = "NOTICE",

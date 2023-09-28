@@ -43,11 +43,6 @@ maven_library(
     ]),
     coordinates = "com.android.tools.lint:lint-model",
     description = "Lint build system model",
-    kotlinc_opts = [
-        # Temporary workaround for b/266371431 until AGP targets 17.
-        "-jvm-target",
-        "17",
-    ],
     module_name = "lint-model",
     notice = "libs/lint-model/NOTICE",
     resource_strip_prefix = "tools/base/lint/libs/lint-model",
@@ -112,11 +107,6 @@ maven_library(
     ],
     coordinates = "com.android.tools.lint:lint-api",
     description = "API to build lint checks",
-    kotlinc_opts = [
-        # Temporary workaround for b/266371431 until AGP targets 17.
-        "-jvm-target",
-        "17",
-    ],
     module_name = "lint-api",
     notice = "libs/lint-api/NOTICE",
     resource_strip_prefix = "tools/base/lint/libs/lint-api",
@@ -184,11 +174,6 @@ maven_library(
     ]),
     coordinates = "com.android.tools.lint:lint-checks",
     description = "Checks for Android Lint",
-    kotlinc_opts = [
-        # Temporary workaround for b/266371431 until AGP targets 17.
-        "-jvm-target",
-        "17",
-    ],
     lint_baseline = "libs/lint-checks/lint_baseline.xml",
     module_name = "lint-checks",
     notice = "libs/lint-checks/src/main/resources/NOTICE",
@@ -228,11 +213,6 @@ maven_library(
     ]),
     coordinates = "com.android.tools.lint:lint-gradle",
     description = "Gradle integration for Android Lint",
-    kotlinc_opts = [
-        # Temporary workaround for b/266371431 until AGP targets 17.
-        "-jvm-target",
-        "17",
-    ],
     lint_baseline = "libs/lint-gradle/lint_baseline.xml",
     module_name = "lint-gradle",
     notice = "libs/lint-gradle/NOTICE",
@@ -263,11 +243,6 @@ kotlin_test(
     jvm_flags = [
         "-Dtest.suite.jar=tests.jar",
         "-Duser.home=/tmp",
-    ],
-    kotlinc_opts = [
-        # Temporary workaround for b/266371431 until AGP targets 17.
-        "-jvm-target",
-        "17",
     ],
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
@@ -309,11 +284,6 @@ kotlin_library(
         "studio-checks/src/main/java/**/*.kt",
         "studio-checks/src/main/java/**/*.java",
     ]),
-    kotlinc_opts = [
-        # Temporary workaround for b/266371431 until AGP targets 17.
-        "-jvm-target",
-        "17",
-    ],
     lint_baseline = "studio-checks/lint_baseline.xml",
     lint_classpath = ["//tools/base/lint/cli"],
     visibility = ["//visibility:public"],
@@ -342,11 +312,6 @@ kotlin_test(
     ]),
     jvm_flags = [
         "-Dtest.suite.jar=studio-checks-tests.jar",
-    ],
-    kotlinc_opts = [
-        # Temporary workaround for b/266371431 until AGP targets 17.
-        "-jvm-target",
-        "17",
     ],
     test_class = "com.android.testutils.JarTestSuite",
     visibility = ["//visibility:public"],
