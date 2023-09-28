@@ -127,6 +127,9 @@ public class IncrementalPackager implements Closeable {
     /** Whether v4 signing is enabled. */
     private final boolean mEnableV4Signing;
 
+    /** The page size to use for page alignment. */
+    private final long mPageSize;
+
     /** Returns mApkCreator, initialized lazily. */
     @NonNull
     private ApkCreator getApkCreator() {
@@ -138,7 +141,8 @@ public class IncrementalPackager implements Closeable {
                             compressionLevel,
                             mDeterministicEntryOrder,
                             mEnableV3Signing,
-                            mEnableV4Signing);
+                            mEnableV4Signing,
+                            mPageSize);
         }
         return mApkCreator;
     }
@@ -192,6 +196,7 @@ public class IncrementalPackager implements Closeable {
      * @param deterministicEntryOrder will APK entries be ordered deterministically?
      * @param enableV3Signing is v3 signing enabled?
      * @param enableV4Signing is v4 signing enabled?
+     * @param pageSize the page size to use for page alignment
      * @param changedDexFiles the changed dex files
      * @param changedJavaResources the changed java resources
      * @param changedAssets the changed assets
@@ -212,6 +217,7 @@ public class IncrementalPackager implements Closeable {
             boolean deterministicEntryOrder,
             boolean enableV3Signing,
             boolean enableV4Signing,
+            long pageSize,
             @NonNull Map<RelativeFile, FileStatus> changedDexFiles,
             @NonNull Map<RelativeFile, FileStatus> changedJavaResources,
             @NonNull List<SerializableChange> changedAssets,
@@ -235,6 +241,7 @@ public class IncrementalPackager implements Closeable {
         mDeterministicEntryOrder = deterministicEntryOrder;
         mEnableV3Signing = enableV3Signing;
         mEnableV4Signing = enableV4Signing;
+        mPageSize = pageSize;
         mClosed = false;
         mChangedDexFiles = changedDexFiles;
         mChangedJavaResources = changedJavaResources;

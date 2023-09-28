@@ -27,6 +27,7 @@ import com.android.build.gradle.integration.common.truth.AbstractAndroidSubject;
 import com.android.build.gradle.integration.common.truth.ScannerSubject;
 import com.android.build.gradle.integration.common.truth.TruthHelper;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
+import com.android.build.gradle.internal.dsl.ModulePropertyKey;
 import com.android.testutils.TestUtils;
 import com.android.testutils.apk.Apk;
 import com.android.utils.FileUtils;
@@ -562,16 +563,83 @@ public class NativeSoPackagingTest {
     }
 
     // ---- SO ALIGNMENT ----
+    // TODO (b/310027241): validate using the relevant page size once zipalign is updated
     @Test
-    public void testSharedObjectFilesAlignment() throws Exception {
+    public void testSharedObjectFilesAlignment4k() throws Exception {
         TestFileUtils.searchAndReplace(
                 appProject.file("src/main/AndroidManifest.xml"),
                 "<application ",
                 "<application android:extractNativeLibs=\"false\" ");
-
+        ModulePropertyKey.OptionalString flag =
+                ModulePropertyKey.OptionalString.NATIVE_LIBRARY_PAGE_SIZE;
+        TestFileUtils.appendToFile(
+                appProject.getBuildFile(),
+                "\nandroid {\n"
+                        + "experimentalProperties[\""
+                        + flag.getKey()
+                        + "\"]=\"4k\"\n"
+                        + "}");
         execute("app:assembleDebug");
         checkApk(appProject, "libapp.so", "app:abcd");
         PackagingTests.checkZipAlignWithPageAlignedSoFiles(appProject.getApk("debug"));
+    }
+
+    @Test
+    public void testSharedObjectFilesAlignment16k() throws Exception {
+        TestFileUtils.searchAndReplace(
+                appProject.file("src/main/AndroidManifest.xml"),
+                "<application ",
+                "<application android:extractNativeLibs=\"false\" ");
+        // The default page size is 16k
+        execute("app:assembleDebug");
+
+        checkApk(appProject, "libapp.so", "app:abcd");
+        PackagingTests.checkZipAlignWithPageAlignedSoFiles(appProject.getApk("debug"));
+    }
+
+    @Test
+    public void testSharedObjectFilesAlignment64k() throws Exception {
+        TestFileUtils.searchAndReplace(
+                appProject.file("src/main/AndroidManifest.xml"),
+                "<application ",
+                "<application android:extractNativeLibs=\"false\" ");
+        ModulePropertyKey.OptionalString flag =
+                ModulePropertyKey.OptionalString.NATIVE_LIBRARY_PAGE_SIZE;
+        TestFileUtils.appendToFile(
+                appProject.getBuildFile(),
+                "\nandroid {\n"
+                        + "experimentalProperties[\""
+                        + flag.getKey()
+                        + "\"]=\"64k\"\n"
+                        + "}");
+        execute("app:assembleDebug");
+
+        checkApk(appProject, "libapp.so", "app:abcd");
+        PackagingTests.checkZipAlignWithPageAlignedSoFiles(appProject.getApk("debug"));
+    }
+
+    @Test
+    public void testSharedObjectFilesInvalidAlignment() throws Exception {
+        TestFileUtils.searchAndReplace(
+                appProject.file("src/main/AndroidManifest.xml"),
+                "<application ",
+                "<application android:extractNativeLibs=\"false\" ");
+        ModulePropertyKey.OptionalString flag =
+                ModulePropertyKey.OptionalString.NATIVE_LIBRARY_PAGE_SIZE;
+        TestFileUtils.appendToFile(
+                appProject.getBuildFile(),
+                "\nandroid {\n"
+                        + "experimentalProperties[\""
+                        + flag.getKey()
+                        + "\"]=\"0k\"\n"
+                        + "}");
+        TestUtils.waitForFileSystemTick();
+        GradleBuildResult result = project.executor().expectFailure().run("app:assembleDebug");
+        ScannerSubject.assertThat(result.getStderr())
+                .contains(
+                        "Invalid value for "
+                                + flag.getKey()
+                                + ". Supported values are \"4k\", \"16k\", and \"64k\".");
     }
 
     /**

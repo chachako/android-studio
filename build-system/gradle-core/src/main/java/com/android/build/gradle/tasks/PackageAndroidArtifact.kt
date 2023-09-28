@@ -27,9 +27,12 @@ import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
+import com.android.build.gradle.internal.component.NestedComponentCreationConfig
 import com.android.build.gradle.internal.component.TestComponentCreationConfig
+import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.core.Abi
 import com.android.build.gradle.internal.dependency.AndroidAttributes
+import com.android.build.gradle.internal.dsl.ModulePropertyKey.OptionalString
 import com.android.build.gradle.internal.manifest.parseManifest
 import com.android.build.gradle.internal.packaging.IncrementalPackagerBuilder
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
@@ -44,6 +47,7 @@ import com.android.build.gradle.internal.tasks.ModuleMetadata.Companion.load
 import com.android.build.gradle.internal.tasks.NewIncrementalTask
 import com.android.build.gradle.internal.tasks.SigningConfigUtils.Companion.loadSigningConfigVersions
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
+import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.internal.workeractions.DecoratedWorkParameters
 import com.android.build.gradle.internal.workeractions.WorkActionAdapter
 import com.android.build.gradle.options.BooleanOption
@@ -55,6 +59,7 @@ import com.android.builder.dexing.DexingType
 import com.android.builder.errors.EvalIssueException
 import com.android.builder.errors.IssueReporter
 import com.android.builder.files.*
+import com.android.builder.internal.packaging.ApkFlinger
 import com.android.builder.packaging.PackagingUtils
 import com.android.builder.utils.isValidZipEntryName
 import com.android.ide.common.resources.FileStatus
@@ -69,6 +74,7 @@ import com.google.common.io.ByteStreams
 import org.gradle.api.file.*
 import org.gradle.api.logging.Logging
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.SetProperty
@@ -278,6 +284,10 @@ abstract class PackageAndroidArtifact : NewIncrementalTask() {
     @get:InputFiles
     @get:Incremental
     abstract val privacySandboxRuntimeEnabledSdkTable: RegularFileProperty?
+
+    @get:Input
+    abstract val pageSize: Property<Long>
+
     override fun doTaskAction(inputChanges: InputChanges) {
         if (!inputChanges.isIncremental) {
             checkFileNameUniqueness()
@@ -416,6 +426,7 @@ abstract class PackageAndroidArtifact : NewIncrementalTask() {
             parameter.packagerMode
                     .set(
                             if (changes.isIncremental) IncrementalPackagerBuilder.BuildType.INCREMENTAL else IncrementalPackagerBuilder.BuildType.CLEAN)
+            parameter.pageSize.set(pageSize)
             outputFile
         }
     }
@@ -468,6 +479,8 @@ abstract class PackageAndroidArtifact : NewIncrementalTask() {
 
         @get:Optional
         abstract val versionControlInfoFile: Property<SerializableInputChanges>
+
+        abstract val pageSize: Property<Long>
     }
 
     abstract class IncrementalSplitterRunnable: WorkActionAdapter<SplitterParams> {
@@ -790,6 +803,7 @@ abstract class PackageAndroidArtifact : NewIncrementalTask() {
             packageAndroidArtifact.allInputFilesWithRelativePathSensitivity.disallowChanges()
             packageAndroidArtifact.allInputFilesWithNameOnlyPathSensitivity.disallowChanges()
             packageAndroidArtifact.allClasspathInputFiles.disallowChanges()
+            packageAndroidArtifact.pageSize.setDisallowChanges(getPageSize(creationConfig))
         }
 
         protected open fun finalConfigure(task: TaskT) {
@@ -1093,6 +1107,7 @@ abstract class PackageAndroidArtifact : NewIncrementalTask() {
                     .withDeterministicEntryOrder(params.deterministicEntryOrder.get())
                     .withAcceptedAbis(getAcceptedAbis(params))
                     .withJniDebuggableBuild(params.jniDebuggableBuild.get())
+                    .withPageSize(params.pageSize.get())
                     .withChangedDexFiles(changedDex)
                     .withChangedJavaResources(changedJavaResources)
                     .withChangedAssets(changedAssets)
@@ -1184,6 +1199,39 @@ abstract class PackageAndroidArtifact : NewIncrementalTask() {
                 }
             }
             return acceptedAbis
+        }
+
+        private fun getPageSize(creationConfig: ApkCreationConfig): Provider<Long> {
+            val experimentalProperties: MapProperty<String, Any>
+            val defaultPageSize = ApkFlinger.PAGE_SIZE_16K
+            experimentalProperties = when (creationConfig) {
+                is VariantCreationConfig -> {
+                    (creationConfig as VariantCreationConfig).experimentalProperties
+                }
+                is NestedComponentCreationConfig -> {
+                    (creationConfig as NestedComponentCreationConfig)
+                        .mainVariant
+                        .experimentalProperties
+                }
+                else -> {
+                    return creationConfig.services.provider { defaultPageSize }
+                }
+            }
+            return experimentalProperties.map {
+                val pageSize =
+                    OptionalString.NATIVE_LIBRARY_PAGE_SIZE.getValue(it)
+                        ?: return@map defaultPageSize
+                val lowercasePageSize = pageSize.lowercase(Locale.US)
+                when (lowercasePageSize) {
+                    "4k" -> return@map ApkFlinger.PAGE_SIZE_4K
+                    "16k" -> return@map ApkFlinger.PAGE_SIZE_16K
+                    "64k" -> return@map ApkFlinger.PAGE_SIZE_64K
+                    else -> throw java.lang.RuntimeException(
+                        "Invalid value for ${OptionalString.NATIVE_LIBRARY_PAGE_SIZE.key}. " +
+                            "Supported values are \"4k\", \"16k\", and \"64k\"."
+                    )
+                }
+            }
         }
     }
 }

@@ -87,14 +87,18 @@ sealed interface ModulePropertyKey<OutputT> {
         ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_KEY_PASSOWRD(
                 "android.privacy_sandbox.local_deployment_signing_key_password"
         ),
+
+        /**
+         * The page size used for alignment when writing uncompressed native libraries to the APK.
+         * Supported values are "4k", "16k", and "64k". The default is "16k".
+         */
+        NATIVE_LIBRARY_PAGE_SIZE("android.nativeLibraryAlignmentPageSize"),
         ;
 
         override fun getValue(properties: Map<String, Any>): String? {
             return properties[key] as String?
         }
     }
-
-
 
     enum class BooleanWithDefault(override val key: String, private val default: Boolean) : ModulePropertyKey<Boolean> {
         /**
