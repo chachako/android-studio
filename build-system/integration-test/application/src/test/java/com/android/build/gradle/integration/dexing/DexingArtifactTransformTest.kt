@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.dexing
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_VERSION
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.truth.ApkSubject.assertThat
@@ -29,10 +30,12 @@ import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.getOutputDir
 import com.android.build.gradle.internal.tasks.DexingExternalLibArtifactTransform
 import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.OptionalBooleanOption
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
 import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.truth.Truth.assertThat
+import org.apache.commons.io.FileUtils
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -45,6 +48,21 @@ class DexingArtifactTransformTest {
     val project =
         GradleTestProject.builder().fromTestApp(
             MinimalSubProject.app("com.example.test")
+        ).addGradleProperties(
+                "${OptionalBooleanOption.ENABLE_API_MODELING_AND_GLOBAL_SYNTHETICS.propertyName}=true"
+        ).withAdditionalMavenRepo(
+                MavenRepoGenerator(
+                        listOf(
+                                MavenRepoGenerator.Library(
+                                        "com.example:library:1.0",
+                                        TestInputsGenerator.jarWithEmptyClasses(listOf("com/example/MyClass"))
+                                ),
+                                MavenRepoGenerator.Library(
+                                        "com.example:library:2.0",
+                                        TestInputsGenerator.jarWithEmptyClasses(listOf("com/example/MyClass"))
+                                )
+                        )
+                )
         ).create()
 
     @Before
@@ -59,10 +77,6 @@ class DexingArtifactTransformTest {
                     }
                 }
             """.trimIndent()
-        )
-        TestFileUtils.appendToFile(
-            project.gradlePropertiesFile,
-            "android.enableApiModelingAndGlobalSynthetics=true"
         )
     }
 
@@ -245,31 +259,13 @@ class DexingArtifactTransformTest {
     @Test
     fun testNameImpactsDexingTransformOutput() {
         // Generate 2 identical libraries.
-        project.projectDir.resolve("mavenRepo").also {
-            it.mkdirs()
-            MavenRepoGenerator(
-                    listOf(
-                            MavenRepoGenerator.Library(
-                                    "com.example:library:1.0",
-                                    TestInputsGenerator.jarWithEmptyClasses(listOf("com/example/MyClass"))
-                            ),
-                            MavenRepoGenerator.Library(
-                                    "com.example:library:2.0",
-                                    TestInputsGenerator.jarWithEmptyClasses(listOf("com/example/MyClass"))
-                            )
-                    )
-            ).generate(it.toPath())
-        }
         project.buildFile.appendText(
                 """
 
-repositories {
-    maven { url 'mavenRepo' }
-}
 dependencies {
     implementation 'com.example:library:1.0'
 }
-        """.trimIndent()
+        """
         )
         project.executor().run("mergeExtDexDebug")
         val transformCacheDir = project.location.testLocation.gradleCacheDir
@@ -279,13 +275,12 @@ dependencies {
 
         project.buildFile.appendText(
                 """
-
 dependencies {
     implementation 'com.example:library:2.0'
 }
-        """.trimIndent()
+        """
         )
-        project.executor().run("mergeExtDexDebug")
+        executor().run("mergeExtDexDebug")
         assertThat(transformCacheDir.walk()
                 .filter { it.invariantSeparatorsPath.endsWith("library-2.0/library-2.0_dex/classes.dex") }
                 .single()).exists()
