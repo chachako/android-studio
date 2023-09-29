@@ -39,7 +39,24 @@ class GenerateTestConfigTest {
                     abi {
                         enable true
                         reset()
-                        include "arm64-v8a"
+                        include "x86", "x86_64", "armeabi-v7a", "arm64-v8a"
+                    }
+                }
+            }
+        """.trimIndent())
+        project.executor().run(":generateDebugUnitTestConfig")
+    }
+
+    @Test
+    fun testAbiSplitEnabledWithIncludeAndroidResourceWithSingeAbi() {
+        project.buildFile.appendText("""
+            android.testOptions.unitTests.includeAndroidResources = true
+            android {
+                splits {
+                    abi {
+                        enable true
+                        reset()
+                        include "x86"
                     }
                 }
             }
@@ -57,7 +74,7 @@ class GenerateTestConfigTest {
                     abi {
                         enable false
                         reset()
-                        include "arm64-v8a"
+                        include "x86", "x86_64", "armeabi-v7a", "arm64-v8a"
                     }
                 }
             }
