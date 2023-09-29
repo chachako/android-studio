@@ -21,7 +21,7 @@ import com.android.build.api.dsl.ProductFlavor
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.impl.MutableAndroidVersion
 import com.android.build.gradle.internal.core.dsl.TestedVariantDslInfo
-import com.android.build.gradle.internal.core.dsl.UnitTestComponentDslInfo
+import com.android.build.gradle.internal.core.dsl.HostTestComponentDslInfo
 import com.android.build.gradle.internal.dsl.DefaultConfig
 import com.android.build.gradle.internal.dsl.InternalTestedExtension
 import com.android.build.gradle.internal.services.VariantServices
@@ -49,7 +49,7 @@ internal class UnitTestComponentDslInfoImpl(
     services,
     buildDirectory,
     extension
-), UnitTestComponentDslInfo {
+), HostTestComponentDslInfo {
 
     override val namespace: Provider<String> by lazy {
         getTestComponentNamespace(extension, services)

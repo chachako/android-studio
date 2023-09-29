@@ -29,7 +29,7 @@ import com.android.build.api.variant.UnitTest
 import com.android.build.api.variant.impl.AndroidResourcesImpl
 import com.android.build.api.variant.impl.KmpVariantImpl
 import com.android.build.api.variant.impl.initializeAaptOptionsFromDsl
-import com.android.build.gradle.internal.component.UnitTestCreationConfig
+import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
 import com.android.build.gradle.internal.component.features.ManifestPlaceholdersCreationConfig
@@ -72,7 +72,7 @@ open class KmpUnitTestImpl @Inject constructor(
     global,
     androidKotlinCompilation,
     manifestFile
-), UnitTestCreationConfig, UnitTest {
+), HostTestCreationConfig, UnitTest {
 
     override fun <T> onTestedVariant(action: (VariantCreationConfig) -> T): T {
         return action.invoke(mainVariant)

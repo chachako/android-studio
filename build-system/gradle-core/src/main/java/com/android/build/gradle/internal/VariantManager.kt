@@ -55,7 +55,7 @@ import com.android.build.gradle.internal.core.dsl.MultiVariantComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.TestComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.TestFixturesComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.TestedVariantDslInfo
-import com.android.build.gradle.internal.core.dsl.UnitTestComponentDslInfo
+import com.android.build.gradle.internal.core.dsl.HostTestComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.VariantDslInfo
 import com.android.build.gradle.internal.core.dsl.impl.DslInfoBuilder
 import com.android.build.gradle.internal.core.dsl.impl.DslInfoBuilder.Companion.getBuilder
@@ -720,7 +720,7 @@ class VariantManager<
                     dslServices.projectOptions,
                     globalTaskCreationConfig.unitTestOptions.isIncludeAndroidResources
                 ),
-                variantDslInfo as UnitTestComponentDslInfo,
+                variantDslInfo as HostTestComponentDslInfo,
                 variantDependencies,
                 variantSources,
                 pathHelper,
@@ -842,14 +842,13 @@ class VariantManager<
                     }
                     val unitTestEnabled = (variantBuilder as? HasUnitTestBuilder)?.enableUnitTest ?: false
                     if (unitTestEnabled) {
-                        val unitTest = createTestComponents<UnitTestComponentDslInfo>(
+                        val unitTest = createTestComponents<HostTestComponentDslInfo>(
                             dimensionCombination,
                             buildTypeData,
                             productFlavorDataList,
                             variantInfo,
                             ComponentTypeImpl.UNIT_TEST,
                             testFixturesEnabledForVariant,
-                            androidTestBuilder = null,
                         )
                         addTestComponent(unitTest)
                         (variant as HasUnitTest).unitTest = unitTest as UnitTestImpl

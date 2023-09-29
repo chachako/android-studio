@@ -29,7 +29,7 @@ import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.NestedComponentCreationConfig
 import com.android.build.gradle.internal.component.TestComponentCreationConfig
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig
-import com.android.build.gradle.internal.component.UnitTestCreationConfig
+import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.cxx.configure.createCxxTasks
 import com.android.build.gradle.internal.dependency.AndroidXDependencySubstitution
@@ -37,7 +37,6 @@ import com.android.build.gradle.internal.dsl.DataBindingOptions
 import com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService
 import com.android.build.gradle.internal.lint.LintTaskManager
 import com.android.build.gradle.internal.profile.AnalyticsConfiguratorService
-import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.AndroidLocationsBuildService
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.CheckJetifierTask
@@ -326,7 +325,7 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
             androidTestTaskManager.createTasks(testVariant as AndroidTestCreationConfig)
         } else {
             // UNIT_TEST
-            unitTestTaskManager.createTasks(testVariant as UnitTestCreationConfig)
+            unitTestTaskManager.createTasks(testVariant as HostTestCreationConfig)
         }
     }
 

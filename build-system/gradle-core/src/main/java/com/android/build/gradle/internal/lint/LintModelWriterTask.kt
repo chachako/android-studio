@@ -24,7 +24,7 @@ import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.component.DynamicFeatureCreationConfig
 import com.android.build.gradle.internal.component.NestedComponentCreationConfig
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig
-import com.android.build.gradle.internal.component.UnitTestCreationConfig
+import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.lint.AndroidLintAnalysisTask.Companion.PARTIAL_RESULTS_DIR_NAME
 import com.android.build.gradle.internal.scope.InternalArtifactType
@@ -246,7 +246,7 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
             } else {
                 val artifactType =
                     when (creationConfig) {
-                        is UnitTestCreationConfig -> UNIT_TEST_LINT_MODEL
+                        is HostTestCreationConfig -> UNIT_TEST_LINT_MODEL
                         is AndroidTestCreationConfig -> ANDROID_TEST_LINT_MODEL
                         is TestFixturesCreationConfig -> TEST_FIXTURES_LINT_MODEL
                         else -> if (fatalOnly) {
@@ -272,7 +272,7 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
                 isMainModelForLocalReportTask && creationConfig.global.lintOptions.checkDependencies
             task.variantInputs.initialize(
                 mainVariant,
-                creationConfig as? UnitTestCreationConfig,
+                creationConfig as? HostTestCreationConfig,
                 creationConfig as? AndroidTestCreationConfig,
                 creationConfig as? TestFixturesCreationConfig,
                 creationConfig.services,
@@ -285,18 +285,19 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
                 includeMainArtifact = creationConfig is VariantCreationConfig,
                 isPerComponentLintAnalysis = true
             )
-
-            val type = when (creationConfig) {
-                is UnitTestCreationConfig -> UNIT_TEST_LINT_PARTIAL_RESULTS
-                is AndroidTestCreationConfig -> ANDROID_TEST_LINT_PARTIAL_RESULTS
-                is TestFixturesCreationConfig -> TEST_FIXTURES_LINT_PARTIAL_RESULTS
-                else -> if (fatalOnly) {
-                    LINT_VITAL_PARTIAL_RESULTS
-                } else {
-                    LINT_PARTIAL_RESULTS
-                }
-            }
-            val partialResultsDir = mainVariant.artifacts.get(type)
+            val partialResultsDir =
+                mainVariant.artifacts.get(
+                    when (creationConfig) {
+                        is HostTestCreationConfig -> UNIT_TEST_LINT_PARTIAL_RESULTS
+                        is AndroidTestCreationConfig -> ANDROID_TEST_LINT_PARTIAL_RESULTS
+                        is TestFixturesCreationConfig -> TEST_FIXTURES_LINT_PARTIAL_RESULTS
+                        else -> if (fatalOnly) {
+                            LINT_VITAL_PARTIAL_RESULTS
+                        } else {
+                            LINT_PARTIAL_RESULTS
+                        }
+                    }
+                )
             task.partialResultsDir.set(partialResultsDir)
             task.partialResultsDir.disallowChanges()
         }

@@ -31,7 +31,7 @@ import com.android.build.gradle.internal.api.TestedVariant;
 import com.android.build.gradle.internal.api.UnitTestVariantImpl;
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig;
 import com.android.build.gradle.internal.component.ComponentCreationConfig;
-import com.android.build.gradle.internal.component.UnitTestCreationConfig;
+import com.android.build.gradle.internal.component.HostTestCreationConfig;
 import com.android.build.gradle.internal.component.VariantCreationConfig;
 import com.android.build.gradle.internal.crash.ExternalApiUsageException;
 import com.android.build.gradle.internal.dsl.VariantOutputFactory;
@@ -94,7 +94,7 @@ public class ApiObjectFactory {
                 ((TestedVariant) variantApi).setTestVariant(androidTestVariant);
             }
 
-            UnitTestCreationConfig unitTestVariantProperties = null;
+            HostTestCreationConfig unitTestVariantProperties = null;
 
             if (variant instanceof HasUnitTest) {
                 unitTestVariantProperties = ((HasUnitTest) variant).getUnitTest();

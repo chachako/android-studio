@@ -8,7 +8,7 @@ import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.TestComponentCreationConfig
 import com.android.build.gradle.internal.component.TestCreationConfig
-import com.android.build.gradle.internal.component.UnitTestCreationConfig
+import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.tasks.LintModelMetadataTask
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
@@ -324,7 +324,7 @@ class LintTaskManager constructor(
                             current.testFixtures
                         )
                 }
-                is UnitTestCreationConfig -> {
+                is HostTestCreationConfig -> {
                     check(current.unitTest == null) {
                         "Component ${current.main} appears to have two conflicting unit test components ${current.unitTest} and $testComponent"
                     }

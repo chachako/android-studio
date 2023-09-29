@@ -20,7 +20,7 @@ import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.variant.FilterConfiguration
 import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl
 import com.android.build.gradle.internal.caching.DisabledCachingReason.SIMPLE_MERGING_TASK
-import com.android.build.gradle.internal.component.UnitTestCreationConfig
+import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.InternalArtifactType.PROCESSED_RES
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
@@ -152,8 +152,8 @@ abstract class PackageForUnitTest : NonIncrementalTask() {
         throw RuntimeException(sb.toString())
     }
 
-    class CreationAction(creationConfig: UnitTestCreationConfig) :
-        VariantTaskCreationAction<PackageForUnitTest, UnitTestCreationConfig>(
+    class CreationAction(creationConfig: HostTestCreationConfig) :
+        VariantTaskCreationAction<PackageForUnitTest, HostTestCreationConfig>(
             creationConfig
         ), AndroidResourcesTaskCreationAction by AndroidResourcesTaskCreationActionImpl(
             creationConfig

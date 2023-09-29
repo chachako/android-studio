@@ -28,7 +28,7 @@ import com.android.build.api.artifact.impl.ArtifactsImpl;
 import com.android.build.api.variant.ScopedArtifacts;
 import com.android.build.gradle.internal.SdkComponentsBuildService;
 import com.android.build.gradle.internal.component.ComponentCreationConfig;
-import com.android.build.gradle.internal.component.UnitTestCreationConfig;
+import com.android.build.gradle.internal.component.HostTestCreationConfig;
 import com.android.build.gradle.internal.component.VariantCreationConfig;
 import com.android.build.gradle.internal.core.dsl.features.UnitTestOptionsDslInfo;
 import com.android.build.gradle.internal.coverage.JacocoOptions;
@@ -165,9 +165,9 @@ public abstract class AndroidUnitTest extends Test implements VariantAwareTask {
     public static class CreationAction
             extends VariantTaskCreationAction<AndroidUnitTest, ComponentCreationConfig> {
 
-        @NonNull private final UnitTestCreationConfig unitTestCreationConfig;
+        @NonNull private final HostTestCreationConfig unitTestCreationConfig;
 
-        public CreationAction(@NonNull UnitTestCreationConfig unitTestCreationConfig) {
+        public CreationAction(@NonNull HostTestCreationConfig unitTestCreationConfig) {
             super(unitTestCreationConfig);
             this.unitTestCreationConfig = unitTestCreationConfig;
         }

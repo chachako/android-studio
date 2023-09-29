@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2020 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.core.dsl
+package com.android.build.gradle.internal.component
 
-/**
- * Represents the dsl info for a unit test component, initialized from the DSL object model
- * (extension, default config, build type, flavors)
- *
- * This class allows querying for the values set via the DSL model.
- *
- * Use [DslInfoBuilder] to instantiate.
- *
- * @see [com.android.build.gradle.internal.component.UnitTestCreationConfig]
- */
-interface UnitTestComponentDslInfo: TestComponentDslInfo {
+interface HostTestCreationConfig: TestComponentCreationConfig {
+
     val isUnitTestCoverageEnabled: Boolean
 }

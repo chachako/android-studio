@@ -31,7 +31,7 @@ import com.android.build.gradle.internal.core.dsl.LibraryVariantDslInfo
 import com.android.build.gradle.internal.core.dsl.TestFixturesComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.TestProjectVariantDslInfo
 import com.android.build.gradle.internal.core.dsl.TestedVariantDslInfo
-import com.android.build.gradle.internal.core.dsl.UnitTestComponentDslInfo
+import com.android.build.gradle.internal.core.dsl.HostTestComponentDslInfo
 import com.android.build.gradle.internal.dsl.ApplicationPublishingImpl
 import com.android.build.gradle.internal.dsl.DefaultConfig
 import com.android.build.gradle.internal.dsl.InternalApplicationExtension
@@ -248,7 +248,7 @@ class DslInfoBuilder<CommonExtensionT: CommonExtension<*, *, *, *, *>, DslInfoT:
         )
     }
 
-    private fun createUnitTestComponentDslInfo(): UnitTestComponentDslInfo {
+    private fun createUnitTestComponentDslInfo(): HostTestComponentDslInfo {
         return UnitTestComponentDslInfoImpl(
             componentIdentity = createComponentIdentity(),
             componentType = componentType,

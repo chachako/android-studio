@@ -45,9 +45,9 @@ import com.android.build.gradle.internal.component.AndroidTestCreationConfig;
 import com.android.build.gradle.internal.component.ApkCreationConfig;
 import com.android.build.gradle.internal.component.ComponentCreationConfig;
 import com.android.build.gradle.internal.component.ConsumableCreationConfig;
+import com.android.build.gradle.internal.component.HostTestCreationConfig;
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig;
 import com.android.build.gradle.internal.component.NestedComponentCreationConfig;
-import com.android.build.gradle.internal.component.UnitTestCreationConfig;
 import com.android.build.gradle.internal.component.VariantCreationConfig;
 import com.android.build.gradle.internal.component.legacy.ModelV1LegacySupport;
 import com.android.build.gradle.internal.core.VariantSources;
@@ -388,8 +388,8 @@ public class ModelBuilder<Extension extends BaseExtension>
         DimensionInformation unitTests =
                 DimensionInformation.createFrom(
                         variantModel.getTestComponents().stream()
-                                .filter(it -> it instanceof UnitTestCreationConfig)
-                                .map(it -> (UnitTestCreationConfig) it)
+                                .filter(it -> it instanceof HostTestCreationConfig)
+                                .map(it -> (HostTestCreationConfig) it)
                                 .collect(Collectors.toList()));
 
         DefaultConfigData<DefaultConfig> defaultConfigData = variantInputs.getDefaultConfigData();
@@ -850,7 +850,7 @@ public class ModelBuilder<Extension extends BaseExtension>
     }
 
     private JavaArtifactImpl createUnitTestsJavaArtifact(
-            @NonNull UnitTestCreationConfig component) {
+            @NonNull HostTestCreationConfig component) {
         ArtifactsImpl artifacts = component.getArtifacts();
 
         SourceProviders sourceProviders = determineSourceProviders(component);

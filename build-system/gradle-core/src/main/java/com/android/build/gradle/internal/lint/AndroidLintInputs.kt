@@ -34,7 +34,7 @@ import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.component.LibraryCreationConfig
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig
-import com.android.build.gradle.internal.component.UnitTestCreationConfig
+import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dsl.LintImpl
@@ -917,7 +917,7 @@ abstract class VariantInputs {
 
     fun initialize(
         variantCreationConfig: VariantCreationConfig,
-        unitTestCreationConfig: UnitTestCreationConfig?,
+        unitTestCreationConfig: HostTestCreationConfig?,
         androidTestCreationConfig: AndroidTestCreationConfig?,
         testFixturesCreationConfig: TestFixturesCreationConfig?,
         services: TaskCreationServices,
@@ -1950,7 +1950,7 @@ abstract class AndroidArtifactInput : ArtifactInput() {
 abstract class JavaArtifactInput : ArtifactInput() {
 
     fun initialize(
-        creationConfig: UnitTestCreationConfig,
+        creationConfig: HostTestCreationConfig,
         lintMode: LintMode,
         useModuleDependencyLintModels: Boolean,
         addBaseModuleLintModel: Boolean,

@@ -18,7 +18,7 @@ package com.android.build.gradle.internal.res
 import com.android.SdkConstants
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.gradle.internal.component.ComponentCreationConfig
-import com.android.build.gradle.internal.component.UnitTestCreationConfig
+import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope.ALL
@@ -277,8 +277,8 @@ abstract class GenerateLibraryRFileTask : ProcessAndroidResources() {
         }
     }
 
-    internal class TestRuntimeStubRClassCreationAction(creationConfig: UnitTestCreationConfig) :
-        VariantTaskCreationAction<GenerateLibraryRFileTask, UnitTestCreationConfig>(
+    internal class TestRuntimeStubRClassCreationAction(creationConfig: HostTestCreationConfig) :
+        VariantTaskCreationAction<GenerateLibraryRFileTask, HostTestCreationConfig>(
             creationConfig
         ) {
 

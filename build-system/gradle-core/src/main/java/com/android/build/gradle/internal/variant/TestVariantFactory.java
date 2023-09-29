@@ -33,15 +33,15 @@ import com.android.build.api.variant.impl.GlobalVariantBuilderConfig;
 import com.android.build.api.variant.impl.TestVariantBuilderImpl;
 import com.android.build.api.variant.impl.TestVariantImpl;
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig;
+import com.android.build.gradle.internal.component.HostTestCreationConfig;
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig;
 import com.android.build.gradle.internal.component.TestVariantCreationConfig;
-import com.android.build.gradle.internal.component.UnitTestCreationConfig;
 import com.android.build.gradle.internal.component.VariantCreationConfig;
 import com.android.build.gradle.internal.core.VariantSources;
 import com.android.build.gradle.internal.core.dsl.AndroidTestComponentDslInfo;
+import com.android.build.gradle.internal.core.dsl.HostTestComponentDslInfo;
 import com.android.build.gradle.internal.core.dsl.TestFixturesComponentDslInfo;
 import com.android.build.gradle.internal.core.dsl.TestProjectVariantDslInfo;
-import com.android.build.gradle.internal.core.dsl.UnitTestComponentDslInfo;
 import com.android.build.gradle.internal.dependency.VariantDependencies;
 import com.android.build.gradle.internal.dsl.BuildType;
 import com.android.build.gradle.internal.dsl.DefaultConfig;
@@ -197,10 +197,10 @@ public class TestVariantFactory
 
     @NonNull
     @Override
-    public UnitTestCreationConfig createUnitTest(
+    public HostTestCreationConfig createUnitTest(
             @NonNull ComponentIdentity componentIdentity,
             @NonNull BuildFeatureValues buildFeatures,
-            @NonNull UnitTestComponentDslInfo dslInfo,
+            @NonNull HostTestComponentDslInfo dslInfo,
             @NonNull VariantDependencies variantDependencies,
             @NonNull VariantSources variantSources,
             @NonNull VariantPathHelper paths,

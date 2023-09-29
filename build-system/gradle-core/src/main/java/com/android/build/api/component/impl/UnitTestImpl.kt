@@ -21,14 +21,14 @@ import com.android.build.api.component.UnitTest
 import com.android.build.api.component.impl.features.AndroidResourcesCreationConfigImpl
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ComponentIdentity
+import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.api.variant.impl.AndroidResourcesImpl
-import com.android.build.gradle.internal.component.UnitTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
 import com.android.build.gradle.internal.component.features.BuildConfigCreationConfig
 import com.android.build.gradle.internal.component.features.ManifestPlaceholdersCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
-import com.android.build.gradle.internal.core.dsl.UnitTestComponentDslInfo
+import com.android.build.gradle.internal.core.dsl.HostTestComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.impl.DEFAULT_TEST_RUNNER
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.scope.BuildFeatureValues
@@ -45,7 +45,7 @@ import javax.inject.Inject
 open class UnitTestImpl @Inject constructor(
     componentIdentity: ComponentIdentity,
     buildFeatureValues: BuildFeatureValues,
-    dslInfo: UnitTestComponentDslInfo,
+    dslInfo: HostTestComponentDslInfo,
     variantDependencies: VariantDependencies,
     variantSources: VariantSources,
     paths: VariantPathHelper,
@@ -56,7 +56,7 @@ open class UnitTestImpl @Inject constructor(
     internalServices: VariantServices,
     taskCreationServices: TaskCreationServices,
     global: GlobalTaskCreationConfig
-) : TestComponentImpl<UnitTestComponentDslInfo>(
+) : TestComponentImpl<HostTestComponentDslInfo>(
     componentIdentity,
     buildFeatureValues,
     dslInfo,
@@ -70,7 +70,7 @@ open class UnitTestImpl @Inject constructor(
     internalServices,
     taskCreationServices,
     global
-), UnitTest, UnitTestCreationConfig {
+), UnitTest, HostTestCreationConfig {
 
     // ---------------------------------------------------------------------------------------------
     // PUBLIC API

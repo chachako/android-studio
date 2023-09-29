@@ -19,7 +19,7 @@ package com.android.build.gradle.internal
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
-import com.android.build.gradle.internal.component.UnitTestCreationConfig
+import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.coverage.JacocoConfigurations
 import com.android.build.gradle.internal.coverage.JacocoReportTask
 import com.android.build.gradle.internal.lint.AndroidLintAnalysisTask
@@ -60,7 +60,7 @@ class UnitTestTaskManager(
     }
 
     /** Creates the tasks to build unit tests.  */
-    fun createTasks(unitTestCreationConfig: UnitTestCreationConfig) {
+    fun createTasks(unitTestCreationConfig: HostTestCreationConfig) {
         val taskContainer = unitTestCreationConfig.taskContainer
         val testedVariant = unitTestCreationConfig.mainVariant
         val includeAndroidResources = globalConfig.unitTestOptions
@@ -208,7 +208,7 @@ class UnitTestTaskManager(
         createRunUnitTestTask(unitTestCreationConfig)
     }
 
-    private fun createRunUnitTestTask(unitTestCreationConfig: UnitTestCreationConfig) {
+    private fun createRunUnitTestTask(unitTestCreationConfig: HostTestCreationConfig) {
         if (unitTestCreationConfig.isUnitTestCoverageEnabled) {
             project.pluginManager.apply(JacocoPlugin::class.java)
         }
