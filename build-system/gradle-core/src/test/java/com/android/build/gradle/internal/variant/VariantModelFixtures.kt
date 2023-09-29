@@ -92,6 +92,7 @@ class VariantInputModelBuilder(
             val testFixturesSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
             val androidTestSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
             val unitTestSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
+            val screenshotTestSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
 
             BuildTypeData(
                it,
@@ -99,6 +100,7 @@ class VariantInputModelBuilder(
                 testFixturesSourceSet,
                 androidTestSourceSet,
                 unitTestSourceSet,
+                screenshotTestSourceSet,
                 lazySourceSetCreation = false
             )
         }.associateBy { it.buildType.name }
@@ -108,6 +110,7 @@ class VariantInputModelBuilder(
             val testFixturesSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
             val androidTestSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
             val unitTestSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
+            val screenshotTestSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
 
             ProductFlavorData(
                 it,
@@ -115,6 +118,7 @@ class VariantInputModelBuilder(
                 testFixturesSourceSet,
                 androidTestSourceSet,
                 unitTestSourceSet,
+                screenshotTestSourceSet,
                 lazySourceSetCreation = false
             )
         }.associateBy { it.productFlavor.name }
@@ -123,6 +127,7 @@ class VariantInputModelBuilder(
         val defaultConfig = DefaultConfigData(
             defaultConfig,
             Mockito.mock(DefaultAndroidSourceSet::class.java),
+            Mockito.mock(LazyAndroidSourceSet::class.java),
             Mockito.mock(LazyAndroidSourceSet::class.java),
             Mockito.mock(LazyAndroidSourceSet::class.java),
             Mockito.mock(LazyAndroidSourceSet::class.java),

@@ -114,6 +114,22 @@ interface VariantFactory<VariantBuilderT : VariantBuilder, VariantDslInfoT: Vari
         globalConfig: GlobalTaskCreationConfig,
     ): HostTestCreationConfig
 
+    fun createScreenshotTest(
+            componentIdentity: ComponentIdentity,
+            buildFeatures: BuildFeatureValues,
+            dslInfo: HostTestComponentDslInfo,
+            variantDependencies: VariantDependencies,
+            variantSources: VariantSources,
+            paths: VariantPathHelper,
+            artifacts: ArtifactsImpl,
+            variantData: TestVariantData,
+            taskContainer: MutableTaskContainer,
+            testedVariantProperties: VariantCreationConfig,
+            variantServices: VariantServices,
+            taskCreationServices: TaskCreationServices,
+            globalConfig: GlobalTaskCreationConfig,
+    ): HostTestCreationConfig
+
     fun createAndroidTest(
         componentIdentity: ComponentIdentity,
         buildFeatures: BuildFeatureValues,

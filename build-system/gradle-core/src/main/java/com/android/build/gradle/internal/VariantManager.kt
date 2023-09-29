@@ -18,6 +18,7 @@ package com.android.build.gradle.internal
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.attributes.ProductFlavorAttr
 import com.android.build.api.component.impl.AndroidTestImpl
+import com.android.build.api.component.impl.ScreenshotTestImpl
 import com.android.build.api.component.impl.TestFixturesImpl
 import com.android.build.api.component.impl.UnitTestImpl
 import com.android.build.api.dsl.ApplicationExtension
@@ -64,6 +65,7 @@ import com.android.build.gradle.internal.crash.ExternalApiUsageException
 import com.android.build.gradle.internal.dependency.VariantDependenciesBuilder
 import com.android.build.gradle.internal.dsl.BuildType
 import com.android.build.gradle.internal.dsl.DefaultConfig
+import com.android.build.gradle.internal.dsl.ModulePropertyKey
 import com.android.build.gradle.internal.dsl.ProductFlavor
 import com.android.build.gradle.internal.dsl.SigningConfig
 import com.android.build.gradle.internal.manifest.LazyManifestParser
@@ -731,6 +733,27 @@ class VariantManager<
                 taskCreationServices,
                 globalTaskCreationConfig
             )
+            ComponentTypeImpl.SCREENSHOT_TEST -> variantFactory.createScreenshotTest(
+                variantDslInfo.componentIdentity,
+                variantFactory.createHostTestBuildFeatureValues(
+                    dslExtension.buildFeatures,
+                    dslExtension.dataBinding,
+                    dslServices.projectOptions,
+                    // TODO(karimai): is isIncludeAndroidResources applicable for Screenshot test.
+                    true
+                ),
+                variantDslInfo as HostTestComponentDslInfo,
+                variantDependencies,
+                variantSources,
+                pathHelper,
+                artifacts,
+                testVariantData,
+                taskContainer,
+                testedComponentInfo.variant,
+                variantPropertiesApiServices,
+                taskCreationServices,
+                globalTaskCreationConfig
+            )
             else -> throw IllegalStateException("Expected a test component type, but ${componentIdentity.name} has type $componentType")
         }
 
@@ -852,6 +875,22 @@ class VariantManager<
                         addTestComponent(unitTest)
                         (variant as HasHostTests).unitTest = unitTest as UnitTestImpl
                     }
+
+                    val screenshotTestEnabled =
+                        ModulePropertyKey.BooleanWithDefault.SCREENSHOT_TEST.getValue(dslExtension.experimentalProperties)
+
+                    if (screenshotTestEnabled) {
+                        val screenshotTest = createTestComponents<HostTestComponentDslInfo>(
+                            dimensionCombination,
+                            buildTypeData,
+                            productFlavorDataList,
+                            variantInfo,
+                            ComponentTypeImpl.SCREENSHOT_TEST,
+                            testFixturesEnabledForVariant,
+                        )
+                        addTestComponent(screenshotTest)
+                        (variant as HasHostTests).screenshotTest = screenshotTest as ScreenshotTestImpl
+                    }
                 }
 
                 // Now that unitTest and/or androidTest have been created and added to the main
@@ -907,6 +946,7 @@ class VariantManager<
                         .setDexBuilder(GradleBuildVariant.DexBuilderTool.D8_DEXER)
                         .setDexMerger(GradleBuildVariant.DexMergerTool.D8_MERGER)
                         .setHasUnitTest((variant as? HasHostTests)?.unitTest != null)
+                         // TODO(karimai): Add tracking for ScreenshotTests
                         .setHasAndroidTest((variant as? HasDeviceTests)?.androidTest != null)
                         .setHasTestFixtures((variant as? HasTestFixtures)?.testFixtures != null)
 

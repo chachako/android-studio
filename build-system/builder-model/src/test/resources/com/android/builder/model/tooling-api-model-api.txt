@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-f5c6871a74de2912006f02f79e2d0607508ea4a548f2bf49ef6429c6eef5c938
+086c9a1044dbc5ce3188bbd4367e9993b7f58d488391466a3aecd44a503cd7ac
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -843,11 +843,13 @@ com.android.builder.model.v2.models.ClasspathParameterConfig.values: com.android
 com.android.builder.model.v2.models.ModelBuilderParameter
 com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildAndroidTestRuntimeClasspath: boolean ()
 com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildRuntimeClasspath: boolean ()
+com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildScreenshotTestRuntimeClasspath: boolean ()
 com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildTestFixtureRuntimeClasspath: boolean ()
 com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildUnitTestRuntimeClasspath: boolean ()
 com.android.builder.model.v2.models.ModelBuilderParameter.getVariantName: java.lang.String ()
 com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildAndroidTestRuntimeClasspath: void (boolean)
 com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildRuntimeClasspath: void (boolean)
+com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildScreenshotTestRuntimeClasspath: void (boolean)
 com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildTestFixtureRuntimeClasspath: void (boolean)
 com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildUnitTestRuntimeClasspath: void (boolean)
 com.android.builder.model.v2.models.ModelBuilderParameter.setVariantName: void (java.lang.String)

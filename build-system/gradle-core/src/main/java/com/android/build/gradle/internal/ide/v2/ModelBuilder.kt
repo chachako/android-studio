@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.ide.v2
 import com.android.SdkConstants
 import com.android.Version
 import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.component.impl.ScreenshotTestImpl
 import com.android.build.api.component.impl.UnitTestImpl
 import com.android.build.api.dsl.AndroidResources
 import com.android.build.api.dsl.ApplicationExtension
@@ -264,8 +265,9 @@ class ModelBuilder<
         // used by anything.
         val variantDimensionInfo = DimensionInformation.createFrom(variants)
         val androidTests = DimensionInformation.createFrom(variantModel.testComponents.filterIsInstance<AndroidTestCreationConfig>())
-        val unitTests = DimensionInformation.createFrom(variantModel.testComponents.filterIsInstance<HostTestCreationConfig>())
+        val unitTests = DimensionInformation.createFrom(variantModel.testComponents.filterIsInstance<UnitTestImpl>())
         val testFixtures = DimensionInformation.createFrom(variants.mapNotNull { (it as? HasTestFixtures)?.testFixtures })
+        val screenshotTests = DimensionInformation.createFrom(variantModel.testComponents.filterIsInstance<ScreenshotTestImpl>())
 
         // for now grab the first buildFeatureValues as they cannot be different.
         val buildFeatures = variantModel.buildFeatures
@@ -287,6 +289,10 @@ class ModelBuilder<
                         ?.takeIf { unitTests.isNotEmpty() }
                         ?.convert(buildFeatures)
                         ?.let { this.put(ComponentTypeImpl.UNIT_TEST.artifactName, it) }
+                    defaultConfigData.getSourceSetForModel(ComponentTypeImpl.SCREENSHOT_TEST)
+                        ?.takeIf { screenshotTests.isNotEmpty() }
+                        ?.convert(buildFeatures)
+                        ?.let { this.put(ComponentTypeImpl.SCREENSHOT_TEST.artifactName, it) }
                 },
                 testFixturesSourceProvider = defaultConfigData.getSourceSetForModel(ComponentTypeImpl.TEST_FIXTURES)
                     ?.takeIf { testFixtures.isNotEmpty() }
@@ -323,6 +329,10 @@ class ModelBuilder<
                                 ?.takeIf { unitTests.buildTypes.contains(buildTypeName) }
                                 ?.convert(buildFeatures)
                                 ?.let { this.put(ComponentTypeImpl.UNIT_TEST.artifactName, it) }
+                            buildType.getSourceSetForModel(ComponentTypeImpl.SCREENSHOT_TEST)
+                                ?.takeIf { screenshotTests.buildTypes.contains(buildTypeName) }
+                                ?.convert(buildFeatures)
+                                ?.let { this.put(ComponentTypeImpl.SCREENSHOT_TEST.artifactName, it) }
                         },
                         testFixturesSourceProvider =
                         buildType.getSourceSetForModel(ComponentTypeImpl.TEST_FIXTURES)
@@ -355,6 +365,10 @@ class ModelBuilder<
                                 ?.takeIf { unitTests.flavors.contains(flavorDimensionName) }
                                 ?.convert(buildFeatures)
                                 ?.let { this.put(ComponentTypeImpl.UNIT_TEST.artifactName, it) }
+                            flavor.getSourceSetForModel(ComponentTypeImpl.SCREENSHOT_TEST)
+                                ?.takeIf { screenshotTests.flavors.contains(flavorDimensionName) }
+                                ?.convert(buildFeatures)
+                                ?.let { this.put(ComponentTypeImpl.SCREENSHOT_TEST.artifactName, it) }
                         },
                         testFixturesSourceProvider =
                         flavor.getSourceSetForModel(ComponentTypeImpl.TEST_FIXTURES)
@@ -579,6 +593,17 @@ class ModelBuilder<
                     )
                 )
             }
+            (variant as? HasHostTests)?.screenshotTest?.let {
+                hostTestArtifacts.put(
+                    it.componentType.artifactName,
+                    createDependenciesWithAdjacencyList(
+                        it,
+                        libraryService,
+                        graphEdgeCache,
+                        parameter.dontBuildScreenshotTestRuntimeClasspath
+                    )
+                )
+            }
             return VariantDependenciesAdjacencyListImpl(
                     name = variantName,
                     mainArtifact = createDependenciesWithAdjacencyList(
@@ -620,6 +645,16 @@ class ModelBuilder<
                             parameter.dontBuildUnitTestRuntimeClasspath
                         ))
             }
+            (variant as? HasHostTests)?.screenshotTest?.let {
+                hostTestArtifacts.put(
+                        it.componentType.artifactName,
+                        createDependencies(
+                                it,
+                                libraryService,
+                                parameter.dontBuildScreenshotTestRuntimeClasspath
+                        )
+                )
+            }
             return VariantDependenciesImpl(
                     name = variantName,
                     mainArtifact = createDependencies(
@@ -651,6 +686,9 @@ class ModelBuilder<
         }
         val hostTestArtifacts = mutableMapOf<String, BasicArtifact>()
         (variant as? HasHostTests)?.unitTest?.let {
+            hostTestArtifacts.put(it.componentType.artifactName, createBasicArtifact(it, features))
+        }
+        (variant as? HasHostTests)?.screenshotTest?.let {
             hostTestArtifacts.put(it.componentType.artifactName, createBasicArtifact(it, features))
         }
         return BasicVariantImpl(
@@ -690,6 +728,9 @@ class ModelBuilder<
         }
         val hostTestArtifacts = mutableMapOf<String, JavaArtifact>()
         (variant as? HasHostTests)?.unitTest?.let {
+            hostTestArtifacts.put(it.componentType.artifactName, createJavaArtifact(it))
+        }
+        (variant as? HasHostTests)?.screenshotTest?.let {
             hostTestArtifacts.put(it.componentType.artifactName, createJavaArtifact(it))
         }
         return VariantImpl(

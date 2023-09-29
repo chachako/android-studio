@@ -250,6 +250,7 @@ class ModelBuilderTest {
         override var variantName: String = "foo",
         override var dontBuildRuntimeClasspath: Boolean = false,
         override var dontBuildUnitTestRuntimeClasspath: Boolean = false,
+        override var dontBuildScreenshotTestRuntimeClasspath: Boolean = false,
         override var dontBuildAndroidTestRuntimeClasspath: Boolean = false,
         override var dontBuildTestFixtureRuntimeClasspath: Boolean = false,
     ) : ModelBuilderParameter

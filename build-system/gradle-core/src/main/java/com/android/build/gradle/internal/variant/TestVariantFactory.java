@@ -216,6 +216,25 @@ public class TestVariantFactory
 
     @NonNull
     @Override
+    public HostTestCreationConfig createScreenshotTest(
+            @NonNull ComponentIdentity componentIdentity,
+            @NonNull BuildFeatureValues buildFeatures,
+            @NonNull HostTestComponentDslInfo dslInfo,
+            @NonNull VariantDependencies variantDependencies,
+            @NonNull VariantSources variantSources,
+            @NonNull VariantPathHelper paths,
+            @NonNull ArtifactsImpl artifacts,
+            @NonNull TestVariantData variantData,
+            @NonNull MutableTaskContainer taskContainer,
+            @NonNull VariantCreationConfig testedVariant,
+            @NonNull VariantServices variantServices,
+            @NonNull TaskCreationServices taskCreationServices,
+            @NonNull GlobalTaskCreationConfig globalConfig) {
+        throw new RuntimeException("cannot instantiate screenshot-test properties in test plugin");
+    }
+
+    @NonNull
+    @Override
     public AndroidTestCreationConfig createAndroidTest(
             @NonNull ComponentIdentity componentIdentity,
             @NonNull BuildFeatureValues buildFeatures,

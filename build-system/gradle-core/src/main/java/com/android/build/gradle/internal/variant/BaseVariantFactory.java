@@ -21,6 +21,7 @@ import com.android.annotations.Nullable;
 import com.android.build.VariantOutput;
 import com.android.build.api.artifact.impl.ArtifactsImpl;
 import com.android.build.api.component.impl.AndroidTestImpl;
+import com.android.build.api.component.impl.ScreenshotTestImpl;
 import com.android.build.api.component.impl.TestFixturesImpl;
 import com.android.build.api.component.impl.UnitTestImpl;
 import com.android.build.api.dsl.CommonExtension;
@@ -137,6 +138,38 @@ public abstract class BaseVariantFactory<
                 globalConfig);
     }
 
+    @NonNull
+    @Override
+    public HostTestCreationConfig createScreenshotTest(
+            @NonNull ComponentIdentity componentIdentity,
+            @NonNull BuildFeatureValues buildFeatures,
+            @NonNull HostTestComponentDslInfo dslInfo,
+            @NonNull VariantDependencies variantDependencies,
+            @NonNull VariantSources variantSources,
+            @NonNull VariantPathHelper paths,
+            @NonNull ArtifactsImpl artifacts,
+            @NonNull TestVariantData variantData,
+            @NonNull MutableTaskContainer taskContainer,
+            @NonNull VariantCreationConfig testedVariant,
+            @NonNull VariantServices variantServices,
+            @NonNull TaskCreationServices taskCreationServices,
+            @NonNull GlobalTaskCreationConfig globalConfig) {
+        return dslServices.newInstance(
+                ScreenshotTestImpl.class,
+                componentIdentity,
+                createUnitTestBuildFeatures(buildFeatures),  // TODO
+                dslInfo,
+                variantDependencies,
+                variantSources,
+                paths,
+                artifacts,
+                variantData,
+                taskContainer,
+                testedVariant,
+                variantServices,
+                taskCreationServices,
+                globalConfig);
+    }
     @NonNull
     @Override
     public AndroidTestCreationConfig createAndroidTest(
