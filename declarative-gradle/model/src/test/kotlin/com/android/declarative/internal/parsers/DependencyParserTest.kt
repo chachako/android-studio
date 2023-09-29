@@ -16,11 +16,13 @@
 package com.android.declarative.internal.parsers
 
 import com.android.declarative.internal.IssueLogger
+import com.android.declarative.internal.model.DependencyInfo
 import com.android.declarative.internal.model.DependencyInfo.ExtensionFunction
 import com.android.declarative.internal.model.DependencyType
 import com.android.declarative.internal.model.DependencyInfo.Files
 import com.android.declarative.internal.model.DependencyInfo.Maven
 import com.android.declarative.internal.model.DependencyInfo.Notation
+import com.android.declarative.internal.model.DependencyInfo.Platform
 import com.android.declarative.internal.toml.InvalidTomlException
 import com.android.utils.ILogger
 import com.google.common.truth.Truth.*
@@ -276,6 +278,30 @@ class DependencyParserTest {
             assertThat(it).isInstanceOf(Files::class.java)
             (it as Files).also { dependencyInfo ->
                 assertThat(dependencyInfo.files).isEqualTo(listOf("some.jar", "something.else", "final.one" ))
+            }
+        }
+    }
+
+    @Test
+    fun testPlatformDependency() {
+        val parser = DependencyParser(
+            IssueLogger(lenient = true, logger = Mockito.mock(ILogger::class.java))
+        )
+        val toml = Toml.parse(
+            """
+            dependencies.implementation = [
+                { platform = "libs.firebase.bom" },
+            ]
+        """.trimIndent()
+        )
+        val result = parser.parseToml(toml.getTable("dependencies")!!)
+        assertThat(result).hasSize(1)
+        result[0].also {
+            assertThat(it.configuration).isEqualTo("implementation")
+            assertThat(it.type).isEqualTo(DependencyType.PLATFORM)
+            assertThat(it).isInstanceOf(Platform::class.java)
+            (it as Platform).also { dependencyInfo ->
+                assertThat(dependencyInfo.name).isEqualTo("libs.firebase.bom")
             }
         }
     }

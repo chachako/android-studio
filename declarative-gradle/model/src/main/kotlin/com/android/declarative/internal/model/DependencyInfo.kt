@@ -28,6 +28,7 @@ enum class DependencyType {
     NOTATION,
     ALIAS,
     EXTENSION_FUNCTION,
+    PLATFORM,
 }
 
 /**
@@ -98,5 +99,16 @@ sealed class DependencyInfo(
     ) : DependencyInfo(configuration) {
 
         override val type: DependencyType = DependencyType.EXTENSION_FUNCTION
+    }
+
+    /**
+     * A platform dependency
+     */
+    class Platform(
+        configuration: String,
+        val name: String,
+    ) : DependencyInfo(configuration) {
+
+        override val type: DependencyType = DependencyType.PLATFORM
     }
 }

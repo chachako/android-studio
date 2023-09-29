@@ -194,6 +194,25 @@ class DependencyParser(
                     mapOf("module" to depTable.safeGetString("module")),
                 )
             )
+            return
+        }
+        depTable.getString("platform")?.let { platformName ->
+            dependencies.add(
+                DependencyInfo.Platform(
+                    configurationName,
+                    platformName,
+                )
+            )
+            return
+        }
+        depTable.getString("alias")?.let { alias ->
+            dependencies.add(
+                DependencyInfo.Alias(
+                    configurationName,
+                    alias
+                )
+            )
+            return
         }
         if (key.isNotEmpty() && depTable.size() <= 1) {
             // if there are no other key, we assume a project dependency, using the key as the project coordinates.
