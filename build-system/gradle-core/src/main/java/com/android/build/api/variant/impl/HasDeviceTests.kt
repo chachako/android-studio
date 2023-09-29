@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 
 package com.android.build.api.variant.impl
 
-import com.android.build.api.component.impl.UnitTestImpl
+import com.android.build.api.component.impl.AndroidTestImpl
 
 /**
- * Internal marker interface for [VariantImpl] that potentially has associated unit tests.
+ * Internal marker interface for [VariantImpl] that potentially has associated device tests,
+ * e.g. the androidTest component.
  */
-interface HasUnitTest {
-
-    var unitTest: UnitTestImpl?
+interface HasDeviceTests {
+    var androidTest: AndroidTestImpl?
 }

@@ -34,9 +34,9 @@ import com.android.build.api.variant.impl.AndroidTestBuilderImpl
 import com.android.build.api.variant.impl.ArtifactMetadataProcessor
 import com.android.build.api.variant.impl.GlobalVariantBuilderConfig
 import com.android.build.api.variant.impl.GlobalVariantBuilderConfigImpl
-import com.android.build.api.variant.impl.HasAndroidTest
+import com.android.build.api.variant.impl.HasDeviceTests
 import com.android.build.api.variant.impl.HasTestFixtures
-import com.android.build.api.variant.impl.HasUnitTest
+import com.android.build.api.variant.impl.HasHostTests
 import com.android.build.api.variant.impl.InternalVariantBuilder
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
@@ -838,7 +838,7 @@ class VariantManager<
                             hasAndroidTestBuilder.androidTest as AndroidTestBuilderImpl,
                         )
                         addTestComponent(androidTest)
-                        (variant as HasAndroidTest).androidTest = androidTest as AndroidTestImpl
+                        (variant as HasDeviceTests).androidTest = androidTest as AndroidTestImpl
                     }
                     val unitTestEnabled = (variantBuilder as? HasUnitTestBuilder)?.enableUnitTest ?: false
                     if (unitTestEnabled) {
@@ -851,7 +851,7 @@ class VariantManager<
                             testFixturesEnabledForVariant,
                         )
                         addTestComponent(unitTest)
-                        (variant as HasUnitTest).unitTest = unitTest as UnitTestImpl
+                        (variant as HasHostTests).unitTest = unitTest as UnitTestImpl
                     }
                 }
 
@@ -907,8 +907,8 @@ class VariantManager<
                         .setVariantType(variant.componentType.analyticsVariantType)
                         .setDexBuilder(GradleBuildVariant.DexBuilderTool.D8_DEXER)
                         .setDexMerger(GradleBuildVariant.DexMergerTool.D8_MERGER)
-                        .setHasUnitTest((variant as? HasUnitTest)?.unitTest != null)
-                        .setHasAndroidTest((variant as? HasAndroidTest)?.androidTest != null)
+                        .setHasUnitTest((variant as? HasHostTests)?.unitTest != null)
+                        .setHasAndroidTest((variant as? HasDeviceTests)?.androidTest != null)
                         .setHasTestFixtures((variant as? HasTestFixtures)?.testFixtures != null)
 
                     it.testExecution = AnalyticsUtil.toProto(dslExtension.testOptions.execution.toExecutionEnum() ?: TestOptions.Execution.HOST)

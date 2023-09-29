@@ -31,8 +31,8 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.build.api.artifact.impl.ArtifactsImpl;
 import com.android.build.api.dsl.ApplicationExtension;
-import com.android.build.api.variant.impl.HasAndroidTest;
-import com.android.build.api.variant.impl.HasUnitTest;
+import com.android.build.api.variant.impl.HasDeviceTests;
+import com.android.build.api.variant.impl.HasHostTests;
 import com.android.build.api.variant.impl.TestVariantImpl;
 import com.android.build.gradle.BaseExtension;
 import com.android.build.gradle.TestAndroidConfig;
@@ -445,8 +445,8 @@ public class ModelBuilder<Extension extends BaseExtension>
             // search for the namespace value. We can take the first variant as it's shared across
             // them. For AndroidTest we take the first non-null variant as well.
             namespace = variant.getNamespace().get();
-            if (variant instanceof HasAndroidTest) {
-                AndroidTestCreationConfig test = ((HasAndroidTest) variant).getAndroidTest();
+            if (variant instanceof HasDeviceTests) {
+                AndroidTestCreationConfig test = ((HasDeviceTests) variant).getAndroidTest();
                 if (test != null) {
                     androidTestNamespace = test.getNamespace().get();
                 }
@@ -757,17 +757,17 @@ public class ModelBuilder<Extension extends BaseExtension>
         if (component instanceof VariantCreationConfig) {
             VariantCreationConfig variant = (VariantCreationConfig) component;
 
-            if (variant instanceof HasUnitTest && ((HasUnitTest) variant).getUnitTest() != null) {
+            if (variant instanceof HasHostTests && ((HasHostTests) variant).getUnitTest() != null) {
                 clonedExtraJavaArtifacts.add(
-                        createUnitTestsJavaArtifact(((HasUnitTest) variant).getUnitTest()));
+                        createUnitTestsJavaArtifact(((HasHostTests) variant).getUnitTest()));
             }
 
-            if (variant instanceof HasAndroidTest
-                    && ((HasAndroidTest) variant).getAndroidTest() != null) {
+            if (variant instanceof HasDeviceTests
+                    && ((HasDeviceTests) variant).getAndroidTest() != null) {
                 extraAndroidArtifacts.add(
                         createAndroidArtifact(
                                 ComponentTypeImpl.ANDROID_TEST.getArtifactName(),
-                                ((HasAndroidTest) variant).getAndroidTest()));
+                                ((HasDeviceTests) variant).getAndroidTest()));
             }
         }
 

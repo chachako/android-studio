@@ -76,7 +76,7 @@ open class ApplicationVariantImpl @Inject constructor(
     internalServices,
     taskCreationServices,
     globalTaskCreationConfig
-), ApplicationVariant, ApplicationCreationConfig, HasAndroidTest, HasTestFixtures {
+), ApplicationVariant, ApplicationCreationConfig, HasDeviceTests, HasTestFixtures {
 
     // ---------------------------------------------------------------------------------------------
     // PUBLIC API

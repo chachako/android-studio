@@ -78,7 +78,7 @@ open class DynamicFeatureVariantImpl @Inject constructor(
     internalServices,
     taskCreationServices,
     globalTaskCreationConfig
-), DynamicFeatureVariant, DynamicFeatureCreationConfig, HasAndroidTest, HasTestFixtures {
+), DynamicFeatureVariant, DynamicFeatureCreationConfig, HasDeviceTests, HasTestFixtures {
 
     init {
         // TODO: Should be removed once we stop implementing all build type interfaces in one class

@@ -29,9 +29,9 @@ import com.android.build.api.dsl.ProductFlavor
 import com.android.build.api.dsl.TestExtension
 import com.android.build.api.variant.ScopedArtifacts.Scope.ALL
 import com.android.build.api.variant.ScopedArtifacts.Scope.PROJECT
-import com.android.build.api.variant.impl.HasAndroidTest
+import com.android.build.api.variant.impl.HasDeviceTests
 import com.android.build.api.variant.impl.HasTestFixtures
-import com.android.build.api.variant.impl.HasUnitTest
+import com.android.build.api.variant.impl.HasHostTests
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
@@ -365,7 +365,7 @@ class ModelBuilder<
         var testFixturesNamespace: String? = null
         val variantList = variants.map {
             namespace = it.namespace.get()
-            if (androidTestNamespace == null && it is HasAndroidTest) {
+            if (androidTestNamespace == null && it is HasDeviceTests) {
                 it.androidTest?.let { androidTest ->
                     androidTestNamespace = androidTest.namespace.get()
                 }
@@ -531,7 +531,7 @@ class ModelBuilder<
                             graphEdgeCache,
                             parameter.dontBuildRuntimeClasspath
                     ),
-                    androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
+                    androidTestArtifact = (variant as? HasDeviceTests)?.androidTest?.let {
                         createDependenciesWithAdjacencyList(
                                 it,
                                 libraryService,
@@ -539,7 +539,7 @@ class ModelBuilder<
                                 parameter.dontBuildAndroidTestRuntimeClasspath
                         )
                     },
-                    unitTestArtifact = (variant as? HasUnitTest)?.unitTest?.let {
+                    unitTestArtifact = (variant as? HasHostTests)?.unitTest?.let {
                         createDependenciesWithAdjacencyList(
                                 it,
                                 libraryService,
@@ -565,14 +565,14 @@ class ModelBuilder<
                             libraryService,
                             parameter.dontBuildRuntimeClasspath
                     ),
-                    androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
+                    androidTestArtifact = (variant as? HasDeviceTests)?.androidTest?.let {
                         createDependencies(
                                 it,
                                 libraryService,
                                 parameter.dontBuildAndroidTestRuntimeClasspath
                         )
                     },
-                    unitTestArtifact = (variant as? HasUnitTest)?.unitTest?.let {
+                    unitTestArtifact = (variant as? HasHostTests)?.unitTest?.let {
                         createDependencies(
                                 it,
                                 libraryService,
@@ -598,10 +598,10 @@ class ModelBuilder<
         return BasicVariantImpl(
             name = variant.name,
             mainArtifact = createBasicArtifact(variant, features),
-            androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
+            androidTestArtifact = (variant as? HasDeviceTests)?.androidTest?.let {
                 createBasicArtifact(it, features)
             },
-            unitTestArtifact = (variant as? HasUnitTest)?.unitTest?.let {
+            unitTestArtifact = (variant as? HasHostTests)?.unitTest?.let {
                 createBasicArtifact(it, features)
             },
             testFixturesArtifact = (variant as? HasTestFixtures)?.testFixtures?.let {
@@ -634,10 +634,10 @@ class ModelBuilder<
             name = variant.name,
             displayName = variant.baseName,
             mainArtifact = createAndroidArtifact(variant),
-            androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
+            androidTestArtifact = (variant as? HasDeviceTests)?.androidTest?.let {
                 createAndroidArtifact(it)
             },
-            unitTestArtifact = (variant as? HasUnitTest)?.unitTest?.let {
+            unitTestArtifact = (variant as? HasHostTests)?.unitTest?.let {
                 createJavaArtifact(it)
             },
             testFixturesArtifact = (variant as? HasTestFixtures)?.testFixtures?.let {

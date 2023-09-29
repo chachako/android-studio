@@ -89,7 +89,7 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
     variantServices,
     taskCreationServices,
     global
-), Variant, VariantCreationConfig, HasUnitTest {
+), Variant, VariantCreationConfig, HasHostTests {
 
     override val description: String
         get() = if (componentIdentity.productFlavors.isNotEmpty()) {
@@ -242,7 +242,7 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
     override val nestedComponents: List<ComponentImpl<*>>
         get() = listOfNotNull(
             unitTest,
-            (this as? HasAndroidTest)?.androidTest,
+            (this as? HasDeviceTests)?.androidTest,
             (this as? HasTestFixtures)?.testFixtures
         )
 
@@ -250,7 +250,7 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
         get() = listOfNotNull(
             this,
             unitTest,
-            (this as? HasAndroidTest)?.androidTest,
+            (this as? HasDeviceTests)?.androidTest,
             (this as? HasTestFixtures)?.testFixtures
         )
 
@@ -263,7 +263,7 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
     }
 
     override val isAndroidTestCoverageEnabled: Boolean
-        get() = (this as? HasAndroidTest)?.androidTest?.isAndroidTestCoverageEnabled == true
+        get() = (this as? HasDeviceTests)?.androidTest?.isAndroidTestCoverageEnabled == true
 
     override val isCoreLibraryDesugaringEnabledLintCheck: Boolean
         get() = if (this is ApkCreationConfig) {

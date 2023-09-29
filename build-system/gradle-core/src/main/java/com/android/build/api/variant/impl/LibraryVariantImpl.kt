@@ -70,7 +70,7 @@ open class LibraryVariantImpl @Inject constructor(
     internalServices,
     taskCreationServices,
     globalTaskCreationConfig,
-), LibraryVariant, LibraryCreationConfig, HasAndroidTest, HasTestFixtures {
+), LibraryVariant, LibraryCreationConfig, HasDeviceTests, HasTestFixtures {
 
     // ---------------------------------------------------------------------------------------------
     // PUBLIC API
