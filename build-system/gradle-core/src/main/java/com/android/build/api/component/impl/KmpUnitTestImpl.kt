@@ -112,6 +112,9 @@ open class KmpUnitTestImpl @Inject constructor(
     override val isUnitTestCoverageEnabled: Boolean
         get() = dslInfo.isUnitTestCoverageEnabled
 
+    override val isScreenshotTestCoverageEnabled: Boolean
+        get() = false
+
     override fun <ParamT : InstrumentationParameters> transformClassesWith(
         classVisitorFactoryImplClass: Class<out AsmClassVisitorFactory<ParamT>>,
         scope: InstrumentationScope,

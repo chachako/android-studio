@@ -30,7 +30,7 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 
-internal class UnitTestComponentDslInfoImpl(
+internal class ScreenshotTestComponentDslInfoImpl(
     componentIdentity: ComponentIdentity,
     componentType: ComponentType,
     defaultConfig: DefaultConfig,
@@ -66,8 +66,8 @@ internal class UnitTestComponentDslInfoImpl(
         get() = mainVariantDslInfo.minSdkVersion
 
     override val isUnitTestCoverageEnabled: Boolean
-        get() = buildTypeObj.enableUnitTestCoverage || buildTypeObj.isTestCoverageEnabled
+        get() = false // Support can be added later if needed
 
     override val isScreenshotTestCoverageEnabled: Boolean
-        get() = false
+        get() = false  // TODO: add dsl info to BuildType for ST coverage.
 }

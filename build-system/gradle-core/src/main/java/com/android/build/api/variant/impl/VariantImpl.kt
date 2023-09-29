@@ -18,6 +18,7 @@ package com.android.build.api.variant.impl
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.attributes.ProductFlavorAttr
 import com.android.build.api.component.impl.ComponentImpl
+import com.android.build.api.component.impl.ScreenshotTestImpl
 import com.android.build.api.component.impl.UnitTestImpl
 import com.android.build.api.component.impl.features.BuildConfigCreationConfigImpl
 import com.android.build.api.component.impl.features.NativeBuildCreationConfigImpl
@@ -218,6 +219,7 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
     override fun makeResValueKey(type: String, name: String): ResValue.Key = ResValueKeyImpl(type, name)
 
     override var unitTest: UnitTestImpl? = null
+    override var screenshotTest: ScreenshotTestImpl? = null
 
     override val pseudoLocalesEnabled: Property<Boolean> by lazy {
         androidResourcesCreationConfig?.pseudoLocalesEnabled

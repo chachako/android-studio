@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.common.utils
 
 import com.android.SdkConstants.GRADLE_PATH_SEPARATOR
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2
+import com.android.builder.core.ComponentTypeImpl
 import com.google.common.collect.ImmutableList
 
 /**
@@ -32,11 +33,11 @@ fun ModelContainerV2.getGenerateSourcesCommands(projectToVariantName: (String) -
     for ((projectPath, project) in  this.rootInfoMap) {
         val variant = project.androidProject!!.getVariantByName(projectToVariantName(projectPath))
         commands.add(createCommandTask(projectPath, variant.mainArtifact.sourceGenTaskName))
-        variant.androidTestArtifact?.let {
+        variant.deviceTestArtifacts[ComponentTypeImpl.ANDROID_TEST.artifactName]?.let {
             commands.add(createCommandTask(projectPath, it.sourceGenTaskName))
         }
-        variant.unitTestArtifact?.let {
-            for (taskName in it.ideSetupTaskNames) {
+        variant.hostTestArtifacts.forEach { (_, v) ->
+            for (taskName in v.ideSetupTaskNames) {
                 commands.add(createCommandTask(projectPath, taskName))
             }
         }

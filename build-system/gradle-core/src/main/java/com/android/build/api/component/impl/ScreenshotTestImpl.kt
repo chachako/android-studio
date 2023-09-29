@@ -18,13 +18,9 @@ package com.android.build.api.component.impl
 
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.component.UnitTest
-import com.android.build.api.component.impl.features.AndroidResourcesCreationConfigImpl
-import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.gradle.internal.component.HostTestCreationConfig
-import com.android.build.api.variant.impl.AndroidResourcesImpl
 import com.android.build.gradle.internal.component.VariantCreationConfig
-import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
 import com.android.build.gradle.internal.core.dsl.HostTestComponentDslInfo
 import com.android.build.gradle.internal.dependency.VariantDependencies
@@ -37,7 +33,7 @@ import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
 import javax.inject.Inject
 
-open class UnitTestImpl @Inject constructor(
+open class ScreenshotTestImpl @Inject constructor(
     componentIdentity: ComponentIdentity,
     buildFeatureValues: BuildFeatureValues,
     dslInfo: HostTestComponentDslInfo,
@@ -67,38 +63,12 @@ open class UnitTestImpl @Inject constructor(
     global
 ), UnitTest, HostTestCreationConfig {
 
-    /**
-     * In unit tests, we don't produce an apk. However, we still need to set the target sdk version
-     * in the test manifest as robolectric depends on it.
-     */
-    override val targetSdkVersion: AndroidVersion
-        get() = global.unitTestOptions.targetSdkVersion ?: getMainTargetSdkVersion()
-
-    override val androidResourcesCreationConfig: AndroidResourcesCreationConfig? by lazy(LazyThreadSafetyMode.NONE) {
-        // in case of unit tests, we add the R jar even if android resources are
-        // disabled (includeAndroidResources) as we want to be able to compile against
-        // the values inside.
-        if (buildFeatures.androidResources || mainVariant.buildFeatures.androidResources) {
-            AndroidResourcesCreationConfigImpl(
-                    this,
-                    dslInfo,
-                    dslInfo.androidResourcesDsl!!,
-                    internalServices,
-            )
-        } else {
-            null
-        }
-    }
-
-    override val androidResources: AndroidResourcesImpl =
-            getAndroidResources(dslInfo.androidResourcesDsl!!.androidResources)
-
     // these would normally be public but not for unit-test. They are there to feed the
     // manifest but aren't actually used.
     override val isUnitTestCoverageEnabled: Boolean
-        get() = dslInfo.isUnitTestCoverageEnabled
+        get() = false
 
     override val isScreenshotTestCoverageEnabled: Boolean
-        get() = false
+        get() = dslInfo.isScreenshotTestCoverageEnabled
 
 }

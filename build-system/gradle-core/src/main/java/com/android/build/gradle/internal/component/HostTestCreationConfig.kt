@@ -19,4 +19,5 @@ package com.android.build.gradle.internal.component
 interface HostTestCreationConfig: TestComponentCreationConfig {
 
     val isUnitTestCoverageEnabled: Boolean
+    val isScreenshotTestCoverageEnabled: Boolean
 }

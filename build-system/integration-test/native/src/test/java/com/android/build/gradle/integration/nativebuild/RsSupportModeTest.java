@@ -60,6 +60,7 @@ public class RsSupportModeTest {
         boolean foundSupportJar = false;
         for (Library lib : libraries.values()) {
             File file = lib.getArtifact();
+            if (file == null) continue;
             if (SdkConstants.FN_RENDERSCRIPT_V8_JAR.equals(file.getName())) {
                 foundSupportJar = true;
                 break;
