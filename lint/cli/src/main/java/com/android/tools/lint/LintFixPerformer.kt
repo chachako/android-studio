@@ -32,6 +32,7 @@ import com.android.SdkConstants.DOT_KTS
 import com.android.SdkConstants.TOOLS_URI
 import com.android.SdkConstants.XMLNS_PREFIX
 import com.android.tools.lint.LintCliClient.Companion.printWriter
+import com.android.tools.lint.client.api.LintClient.Companion.isUnitTest
 import com.android.tools.lint.detector.api.DefaultPosition
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.LintFix
@@ -1038,8 +1039,25 @@ constructor(
 
       val replaceFixBuilder =
         LintFix.create().replace().beginning().with(replacement).shortenNames().reformat(true)
-      if (range != null) {
+      // Do we have a valid range?
+      if (
+        range != null &&
+          range.end?.offset != null &&
+          range.start?.offset != null &&
+          range.end!!.offset >= range.start!!.offset
+      ) {
         replaceFixBuilder.range(range)
+      } else {
+        // b/301598518
+        if (isUnitTest) {
+          error(
+            """
+              Invalid location $range computed for Lint fix ${fix.getDisplayName()}} during tests.
+              This can happen if the location for the fix was not correctly specified.
+            """
+              .trimIndent()
+          )
+        }
       }
       return replaceFixBuilder.build() as ReplaceString
     }
