@@ -21,9 +21,11 @@ import static com.android.utils.SdkUtils.createPathComment;
 import static com.android.utils.SdkUtils.fileNameToResourceName;
 import static com.android.utils.SdkUtils.fileToUrlString;
 import static com.android.utils.SdkUtils.globToRegexp;
+import static com.android.utils.SdkUtils.parseDecoratedFileUrlString;
 import static com.android.utils.SdkUtils.urlToFile;
 
 import com.android.SdkConstants;
+import com.android.utils.SdkUtils.FileLineColumnUrlData;
 import java.io.File;
 import java.net.URL;
 import java.util.regex.Pattern;
@@ -146,6 +148,58 @@ public class SdkUtilsTest extends TestCase {
             "    * The application cannot be translated to other languages by just\n" +
             "    adding new translations for existing string resources.\n",
             wrapped);
+    }
+
+    public void testParseDecoratedFileUrlString() {
+        FileLineColumnUrlData data = parseDecoratedFileUrlString("file://tmp/foo/bar");
+        assertEquals("file://tmp/foo/bar", data.urlString);
+        assertNull(data.line);
+        assertNull(data.column);
+
+        data = parseDecoratedFileUrlString("file://C:/tmp/foo/bar");
+        assertEquals("file://C:/tmp/foo/bar", data.urlString);
+        assertNull(data.line);
+        assertNull(data.column);
+
+        data = parseDecoratedFileUrlString("file://tmp/foo/bar:123");
+        assertEquals("file://tmp/foo/bar", data.urlString);
+        assertEquals(Integer.valueOf(123), data.line);
+        assertNull(data.column);
+
+        data = parseDecoratedFileUrlString("file://C:/tmp/foo/bar:123");
+        assertEquals("file://C:/tmp/foo/bar", data.urlString);
+        assertEquals(Integer.valueOf(123), data.line);
+        assertNull(data.column);
+
+        data = parseDecoratedFileUrlString("file://tmp/foo/bar:456:7890");
+        assertEquals("file://tmp/foo/bar", data.urlString);
+        assertEquals(Integer.valueOf(456), data.line);
+        assertEquals(Integer.valueOf(7890), data.column);
+
+        data = parseDecoratedFileUrlString("file://C:/tmp/foo/bar:456:7890");
+        assertEquals("file://C:/tmp/foo/bar", data.urlString);
+        assertEquals(Integer.valueOf(456), data.line);
+        assertEquals(Integer.valueOf(7890), data.column);
+
+        data = parseDecoratedFileUrlString("file://tmp/foo/bar:123:junk");
+        assertEquals("file://tmp/foo/bar:123:junk", data.urlString);
+        assertNull(data.line);
+        assertNull(data.column);
+
+        data = parseDecoratedFileUrlString("file://C:/tmp/foo/bar:123:junk");
+        assertEquals("file://C:/tmp/foo/bar:123:junk", data.urlString);
+        assertNull(data.line);
+        assertNull(data.column);
+
+        data = parseDecoratedFileUrlString("file://tmp/foo/bar:junk:7890");
+        assertEquals("file://tmp/foo/bar:junk", data.urlString);
+        assertEquals(Integer.valueOf(7890), data.line);
+        assertNull(data.column);
+
+        data = parseDecoratedFileUrlString("file://C:/tmp/foo/bar:junk:7890");
+        assertEquals("file://C:/tmp/foo/bar:junk", data.urlString);
+        assertEquals(Integer.valueOf(7890), data.line);
+        assertNull(data.column);
     }
 
     public void testFileToUrl() throws Exception {
