@@ -17,6 +17,7 @@
 #ifndef UTILS_NOTIFIER_H
 #define UTILS_NOTIFIER_H
 
+#include <cstdint>
 #include <string>
 
 namespace profiler {

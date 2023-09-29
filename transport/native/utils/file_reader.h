@@ -16,6 +16,7 @@
 #ifndef FILE_READER_H_
 #define FILE_READER_H_
 
+#include <cstdint>
 #include <string>
 #include <vector>
 

@@ -20,6 +20,7 @@
 #include "jni.h"
 #include "jvmti.h"
 
+#include <cstdint>
 #include <string>
 
 namespace profiler {

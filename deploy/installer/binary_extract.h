@@ -17,6 +17,7 @@
 #ifndef BINARY_EXTRACT_H_
 #define BINARY_EXTRACT_H_
 
+#include <cstdint>
 #include <string>
 #include <vector>
 

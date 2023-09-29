@@ -16,6 +16,7 @@
 #ifndef PERFD_NETWORK_NET_STATS_FILE_READER_H_
 #define PERFD_NETWORK_NET_STATS_FILE_READER_H_
 
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 
