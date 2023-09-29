@@ -894,18 +894,6 @@ internal class AnnotationHandler(
       checkContextAnnotations(context, variable, methodAnnotations, variable)
     }
 
-    // For some reason, the type references that are part of explicit type annotations in Kotlin
-    // or regular declarations in Java aren't visited by visitTypeReferenceExpression, so we
-    // will handle them here.
-    variable.typeReference?.let {
-      // Kotlin object declarations are a special case, because they become instances of a class
-      // which in turn inherits any annotations on the object. We shouldn't flag the declaration
-      // itself as a usage of the object, so we filter out that case here.
-      if (variable.sourcePsi !is KtObjectDeclaration) {
-        visitTypeReferenceExpression(context, it)
-      }
-    }
-
     // Check the initializer to see if it is an annotated element
     // (AnnotationUsageType.ASSIGNMENT_LHS)
     val initializer = variable.uastInitializer

@@ -4682,16 +4682,13 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "src/test/pkg/TestRequiresApi.java:9: Error: Call requires API level 21 (current min is 15): LollipopClass [NewApi]\n"
                         + "        LollipopClass lollipopClass = new LollipopClass();\n"
                         + "                                      ~~~~~~~~~~~~~~~~~\n"
-                        + "src/test/pkg/TestRequiresApi.java:9: Error: Class requires API level 21 (current min is 15): LollipopClass [NewApi]\n"
-                        + "        LollipopClass lollipopClass = new LollipopClass();\n"
-                        + "        ~~~~~~~~~~~~~\n"
                         + "src/test/pkg/TestRequiresApi.java:10: Error: Call requires API level 21 (current min is 15): requiresLollipop [NewApi]\n"
                         + "        lollipopClass.requiresLollipop(); // ERROR - requires 21\n"
                         + "                      ~~~~~~~~~~~~~~~~\n"
                         + "src/test/pkg/TestRequiresApi.java:28: Error: Call requires API level 22 (current min is 15): requiresLollipop [NewApi]\n"
                         + "        requiresLollipop(); // ERROR\n"
                         + "        ~~~~~~~~~~~~~~~~\n"
-                        + "5 errors, 0 warnings";
+                        + "4 errors, 0 warnings\n";
         //noinspection all // Sample code
         lint().files(
                         manifest().minSdk(15),
@@ -6974,13 +6971,11 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         SUPPORT_ANNOTATIONS_JAR)
                 .run()
                 .expect(
-                        "src/test/pkg/WorkManagerTest.java:9: Error: Call requires API level 23 (current min is 15): SystemJobScheduler [NewApi]\n"
+                        ""
+                                + "src/test/pkg/WorkManagerTest.java:9: Error: Call requires API level 23 (current min is 15): SystemJobScheduler [NewApi]\n"
                                 + "        SystemJobScheduler scheduler = new SystemJobScheduler(); // ERROR\n"
                                 + "                                       ~~~~~~~~~~~~~~~~~~~~~~\n"
-                                + "src/test/pkg/WorkManagerTest.java:9: Error: Class requires API level 23 (current min is 15): SystemJobScheduler [NewApi]\n"
-                                + "        SystemJobScheduler scheduler = new SystemJobScheduler(); // ERROR\n"
-                                + "        ~~~~~~~~~~~~~~~~~~\n"
-                                + "2 errors, 0 warnings");
+                                + "1 errors, 0 warnings");
     }
 
     public void test118555413() {
@@ -8380,9 +8375,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         "src/test/pkg/MyClass.kt:4: Error: Call requires API level 32 (current min is 1): MyClass [NewApi]\n"
                                 + "    val test = MyClass()    // ERROR 1\n"
                                 + "               ~~~~~~~~~\n"
-                                + "src/test/pkg/MyClass.kt:4: Error: Class requires API level 32 (current min is 1): MyClass [NewApi]\n"
-                                + "    val test = MyClass()    // ERROR 1\n"
-                                + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                                 + "src/test/pkg/MyClass.kt:5: Error: Call requires API level 32 (current min is 1): staticMethod1 [NewApi]\n"
                                 + "    MyClass.staticMethod1() // ERROR 2, 3\n"
                                 + "            ~~~~~~~~~~~~~\n"
@@ -8404,9 +8396,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 + "src/Test.java:5: Error: Call requires API level 32 (current min is 1): MyClass [NewApi]\n"
                                 + "        MyClass test = new MyClass();   // ERROR 8\n"
                                 + "                       ~~~~~~~~~~~\n"
-                                + "src/Test.java:5: Error: Class requires API level 32 (current min is 1): MyClass [NewApi]\n"
-                                + "        MyClass test = new MyClass();   // ERROR 8\n"
-                                + "        ~~~~~~~\n"
                                 + "src/Test.java:6: Error: Call requires API level 32 (current min is 1): staticMethod1 [NewApi]\n"
                                 + "        MyClass.staticMethod1();        // ERROR 9\n"
                                 + "                ~~~~~~~~~~~~~\n"
@@ -8419,7 +8408,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 + "src/Test.java:9: Error: Call requires API level 32 (current min is 1): instanceMethod2 [NewApi]\n"
                                 + "        test.instanceMethod2();         // ERROR 12\n"
                                 + "             ~~~~~~~~~~~~~~~\n"
-                                + "14 errors, 0 warnings");
+                                + "12 errors, 0 warnings");
     }
 
     public void testPackageInfoMinSdk() {
