@@ -16,6 +16,9 @@
 
 package com.android.build.gradle.integration.dsl
 
+import com.android.build.api.dsl.ApplicationBuildType
+import com.android.build.api.dsl.ApplicationDefaultConfig
+import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.BaselineProfile
 import com.android.build.api.dsl.DefaultConfig
 import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
@@ -34,6 +37,7 @@ import com.google.common.collect.ListMultimap
 import com.google.common.truth.Truth
 import org.gradle.api.JavaVersion
 import org.gradle.api.NamedDomainObjectCollection
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
@@ -80,6 +84,13 @@ class AllDslMethodsTest(
                 "android",
                 LibraryBuildType::class.java,
                 LibraryDefaultConfig::class.java
+            ),
+            arrayOf(
+                "com.android.application",
+                ApplicationExtension::class.java,
+                "android",
+                ApplicationBuildType::class.java,
+                ApplicationDefaultConfig::class.java
             ),
         )
     }
@@ -370,7 +381,8 @@ private class DslScriptGenerator(
         private val typesToIgnore = setOf(
             NamedDomainObjectCollection::class.java,
             ExtensionContainer::class.java,
-            CommandLineArgumentProvider::class.java
+            CommandLineArgumentProvider::class.java,
+            DirectoryProperty::class.java
         )
 
         private val methodsToIgnore = setOf(
@@ -387,6 +399,7 @@ private class DslScriptGenerator(
             "public abstract void com.android.build.api.dsl.Optimization.keepRules(kotlin.jvm.functions.Function1)",
 
             "public abstract void com.android.build.api.dsl.TestedExtension.setTestBuildType(java.lang.String)",
+            "public abstract void com.android.build.api.dsl.ApplicationVariantDimension.setSigningConfig(com.android.build.api.dsl.ApkSigningConfig)",
             "public abstract void com.android.build.api.dsl.LibraryVariantDimension.setSigningConfig(com.android.build.api.dsl.ApkSigningConfig)",
             "public abstract void com.android.build.api.dsl.BuildType.setShrinkResources(boolean)",
 
@@ -402,6 +415,14 @@ private class DslScriptGenerator(
             "public abstract void com.android.build.api.dsl.CommonExtension.externalNativeBuild(kotlin.jvm.functions.Function1)",
             "public abstract void com.android.build.api.dsl.CommonExtension.setNdkVersion(java.lang.String)",
             "public abstract void com.android.build.api.dsl.CommonExtension.setNdkPath(java.lang.String)",
+
+            "public abstract void com.android.build.api.dsl.TestOptions.setTargetSdk(java.lang.Integer)",
+            "public abstract void com.android.build.api.dsl.TestOptions.setTargetSdkPreview(java.lang.String)",
+
+            "public abstract java.util.Set com.android.build.api.dsl.ApplicationExtension.getAssetPacks()",
+            "public abstract java.util.Set com.android.build.api.dsl.ApplicationExtension.getDynamicFeatures()",
+
+            "public abstract void com.android.build.api.dsl.ApplicationAndroidResources.setGenerateLocaleConfig(boolean)",
 
             // Unnatural DSL
 
@@ -429,6 +450,7 @@ private class DslScriptGenerator(
             "public abstract java.util.List com.android.build.api.dsl.Ndk.getLdLibs()",
             "public abstract java.util.List com.android.build.api.dsl.Shaders.getGlslcArgs()",
             "public abstract java.util.Set com.android.build.api.dsl.VectorDrawables.getGeneratedDensities()",
+            "public abstract com.android.build.api.dsl.ApkSigningConfig com.android.build.api.dsl.ApplicationVariantDimension.getSigningConfig()",
             "public abstract com.android.build.api.dsl.ApkSigningConfig com.android.build.api.dsl.LibraryVariantDimension.getSigningConfig()",
         )
     }
