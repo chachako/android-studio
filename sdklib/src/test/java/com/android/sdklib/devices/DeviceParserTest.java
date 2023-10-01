@@ -31,6 +31,8 @@ import com.android.sdklib.devices.Storage.Unit;
 import com.google.common.collect.Table;
 import java.awt.Dimension;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -291,7 +293,7 @@ public class DeviceParserTest extends TestCase {
         try {
             Table<String, String, Device> devices = DeviceParser.parse(stream);
             assertEquals(
-                    "Parsing devices.xml produces the wrong number of devices", 1, devices.size());
+                    "Parsing devices.xml produces the wrong number of devices", 2, devices.size());
 
             Device device0 = devices.get("automotive_1024p_landscape", "Google");
             assertEquals(null, device0.getTagId());
@@ -303,6 +305,14 @@ public class DeviceParserTest extends TestCase {
 
             assertTrue(!device0.getDefaultHardware().hasSdCard());
 
+            Device device1 = devices.get("automotive_1080p_landscape", "Google");
+            assertEquals("android-automotive", device1.getTagId());
+            assertEquals(Collections.emptyMap(), device1.getBootProps());
+            assertEquals("Generic CPU", device1.getDefaultHardware().getCpu());
+            assertEquals(EnumSet.of(Abi.ARM64_V8A, Abi.X86_64),
+                    device1.getDefaultHardware().getSupportedAbis());
+
+            assertTrue(!device1.getDefaultHardware().hasSdCard());
         } finally {
             stream.close();
         }
