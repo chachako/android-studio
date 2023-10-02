@@ -46,7 +46,7 @@ public class LibMinifyLibDepConnectedTest {
     }
 
     // TODO(b/205264185): To re-enable
-    @Ignore
+    @Ignore("b/205264185")
     @Test
     public void connectedCheck() throws IOException, InterruptedException {
         project.executor().run("connectedCheck");

@@ -104,7 +104,7 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
 
     @Test
     @Throws(Exception::class)
-    @Ignore // Won't pass because the privacy sandbox sdk .apks file is not set up correctly.
+    @Ignore("b/303076495") // Won't pass because the privacy sandbox sdk .apks file is not set up correctly.
     fun checkDependencyApkInstallation() {
         createMainApkListingFile()
         val listingFile = createDependencyApkListingFile()

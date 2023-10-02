@@ -134,7 +134,7 @@ internal class FusedLibraryManifestMergerTaskTest {
     }
 
     @Test
-    @Ignore(IgnoredTests.BUG_23682893)
+    @Ignore("b/236828934")
     fun checkFusedLibraryManifest() {
         val fusedLib1Project = project.getSubproject("fusedLib1")
         project.execute(":fusedLib1:mergeManifest")

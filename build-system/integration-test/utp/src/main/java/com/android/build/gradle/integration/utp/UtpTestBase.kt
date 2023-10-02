@@ -394,7 +394,7 @@ abstract class UtpTestBase {
     /**
      * TODO: Enable the test once b/261739458 is fixed.
      */
-    @Ignore
+    @Ignore("b/261739458")
     @Test
     @Throws(Exception::class)
     fun androidTestWithOrchestratorAndCodeCoverageWithDynamicFeature() {
@@ -419,7 +419,7 @@ abstract class UtpTestBase {
     /**
      * TODO: Enable the test once b/261739458 is fixed.
      */
-    @Ignore
+    @Ignore("b/261739458")
     @Test
     @Throws(Exception::class)
     fun androidTestWithCodeCoverageWithDynamicFeature() {

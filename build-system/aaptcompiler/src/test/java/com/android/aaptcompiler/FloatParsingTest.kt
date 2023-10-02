@@ -231,7 +231,7 @@ class FloatParsingTest {
      * is modified significantly.
      */
     @Test
-    @Ignore
+    @Ignore("b/303076368")
     fun roundTrip() {
         var currentVal = 0x00800000
         val maxVal = 0x7f000000

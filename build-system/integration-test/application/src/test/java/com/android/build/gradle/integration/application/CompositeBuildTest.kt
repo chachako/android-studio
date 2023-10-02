@@ -96,7 +96,7 @@ class CompositeBuildTest {
         ) {  it.exists() }
     }
 
-    @Ignore("b/195109976")
+    @Ignore("b/303081523")
     @Test
     fun checkDifferentPluginVersionsCauseFailure() {
         // This is not quite correct but for now this will do

@@ -41,7 +41,7 @@ public class JdwpClientManagerFactoryTest {
   }
 
     @Test
-    @Ignore("This test creates 2 JDWP sessions to the same PID")
+    @Ignore("b/303073711")
     public void duplicateKeyReturnsSameInstance() throws Exception {
     DeviceState state = myAdb.connectAndWaitForDevice();
     ClientImpl client = FakeAdbTestRule.launchAndWaitForProcess(state, true);
@@ -59,7 +59,7 @@ public class JdwpClientManagerFactoryTest {
   }
 
     @Test
-    @Ignore("This test creates 2 JDWP sessions to the same PID")
+    @Ignore("b/303073711")
     public void terminatingConnectionRemovesItFromFactory() throws Exception {
     DeviceState state = myAdb.connectAndWaitForDevice();
     ClientImpl client = FakeAdbTestRule.launchAndWaitForProcess(state, true);

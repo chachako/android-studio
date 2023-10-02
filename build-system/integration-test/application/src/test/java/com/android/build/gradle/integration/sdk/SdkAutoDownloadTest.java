@@ -197,7 +197,7 @@ public class SdkAutoDownloadTest {
      * downloaded.
      */
     @Test
-    @Ignore("b/144346671")
+    @Ignore("b/303082325")
     public void checkCompileSdkAddonDownloading() throws Exception {
         TestFileUtils.appendToFile(
                 project.getBuildFile(),
@@ -301,7 +301,7 @@ public class SdkAutoDownloadTest {
 
     /** TODO: Test like checkPlatformToolsDownloading once b/213592468 is fixed */
     @Test
-    @Ignore("b/213592468")
+    @Ignore("b/303082325")
     public void checkCmakeMissingLicense() throws Exception {
         AssumeUtil.assumeIsLinux();
         FileUtils.delete(previewLicenseFile);
@@ -496,7 +496,7 @@ public class SdkAutoDownloadTest {
         FileUtils.delete(previewLicenseFile);
     }
 
-    @Ignore("b/144346671")
+    @Ignore("b/303082325")
     @Test
     public void checkNoLicenseError_AddonTarget() throws Exception {
         deleteLicense();
@@ -562,7 +562,7 @@ public class SdkAutoDownloadTest {
                         "build-tools;" + BUILD_TOOLS_VERSION);
     }
 
-    @Ignore("b/144346671")
+    @Ignore("b/303082325")
     @Test
     public void checkNoLicenseError_MultiplePackages() throws Exception {
         deleteLicense();

@@ -88,7 +88,7 @@ class PrivacySandboxSdkMinimalTest {
 
     // Test disabled due to https://github.com/google/ksp/issues/1050
     // that is impacting the current KSP version in prebuilts.
-    @Ignore
+    @Ignore("b/271248269")
     @Test
     fun privacySandboxWithMinimalConfigAndDependency() {
         project.execute(":minimal-app:buildPrivacySandboxSdkApksForDebug")
@@ -155,7 +155,7 @@ class PrivacySandboxSdkMinimalTest {
 
     // Test disabled due to https://github.com/google/ksp/issues/1050
     // that is impacting the current KSP version in prebuilts.
-    @Ignore
+    @Ignore("b/271248269")
     @Test
     fun testAssemble() {
         val androidLib3SrcMainSrcJava =
@@ -189,7 +189,7 @@ class PrivacySandboxSdkMinimalTest {
 
     }
 
-    @Ignore("Re-enable once we use a newer KSP version -- see bug 271248269")
+    @Ignore("b/271248269")
     @Test
     fun checkPrivacySandboxOptInRequired() {
         TestFileUtils.searchAndReplace(

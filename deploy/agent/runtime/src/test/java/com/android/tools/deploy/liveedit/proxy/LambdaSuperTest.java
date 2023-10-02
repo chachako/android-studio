@@ -62,7 +62,7 @@ public class LambdaSuperTest {
     }
 
     @Test
-    @Ignore // 263813997
+    @Ignore("b/263813997") // 263813997
     public void testSuspend() throws Exception {
         int actual = LambdasKt.testSuspend();
         Assert.assertEquals(
@@ -78,7 +78,7 @@ public class LambdaSuperTest {
     }
 
     @Test
-    @Ignore // 263813997
+    @Ignore("b/263813997") // 263813997
     public void testAsyncAwait() throws Exception {
         int actual = LambdasKt.testAsyncAwait();
         Assert.assertEquals(

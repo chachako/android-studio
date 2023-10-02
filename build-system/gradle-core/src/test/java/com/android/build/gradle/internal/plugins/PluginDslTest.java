@@ -385,8 +385,7 @@ public class PluginDslTest {
         }
     }
 
-    // Re-enable b/268114435
-    @Ignore
+    @Ignore("b/268114435")
     @Test
     public void testProguardFiles_oldDsl() throws Exception {
         Eval.me(
@@ -439,8 +438,7 @@ public class PluginDslTest {
         checkProguardFiles(expected);
     }
 
-    // Re-enable b/268114435
-    @Ignore
+    @Ignore("b/268114435")
     @Test
     public void testProguardFiles_newDsl() throws Exception {
         Eval.me(
@@ -645,7 +643,7 @@ public class PluginDslTest {
         assertThat(android.getAdbExe()).named("adb exe").isEqualTo(android.getAdbExecutable());
     }
 
-    @Ignore("https://issuetracker.google.com/192070233")
+    @Ignore("b/192070233")
     @Test
     public void testSetOlderBuildToolsVersion() {
         android.setBuildToolsVersion("19.0.0");

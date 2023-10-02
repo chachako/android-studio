@@ -17,7 +17,6 @@
 package com.android.build.gradle.integration.dependencies;
 
 import static com.android.build.gradle.integration.common.truth.ModelContainerSubject.assertThat;
-import static com.android.build.gradle.integration.common.utils.TestFileUtils.appendToFile;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
@@ -25,8 +24,6 @@ import com.android.build.gradle.integration.common.fixture.ModelContainer;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.builder.model.AndroidProject;
 import com.android.builder.model.SyncIssue;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -94,7 +91,7 @@ public class AppWithNonExistentResolutionStrategyForAarTest {
         modelContainer = null;
     }
 
-    @Ignore
+    @Ignore("b/303084088")
     @Test
     public void checkWeReceivedASyncIssue() throws Exception {
         modelContainer = project.model().ignoreSyncIssues().fetchAndroidProjects();

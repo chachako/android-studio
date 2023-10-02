@@ -67,7 +67,7 @@ class StringPoolTest {
   }
 
   @Test
-  @Ignore // TODO(@daniellabar): fix pruning and reference management.
+  @Ignore("b/303074426") // TODO(@daniellabar): fix pruning and reference management.
   fun pruneStringsWithNoReferences() {
     // TEST HERE
   }

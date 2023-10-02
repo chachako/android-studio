@@ -96,7 +96,7 @@ public class JdwpClientManagerTest {
     }
 
     @Test
-    @Ignore("This test creates 2 JDWP sessions to the same PID")
+    @Ignore("b/303072576")
     public void connectionRegistorsSelector() throws Throwable {
         myFakeAdb.before();
         Selector selector = Selector.open();
@@ -162,7 +162,7 @@ public class JdwpClientManagerTest {
     }
 
     @Test
-    @Ignore("This test creates 2 JDWP sessions to the same PID")
+    @Ignore("b/303072576")
     public void dontWriteWhenFiltered() throws Throwable {
         // Need to start a server before FakeAdb so we have the actual server instead of the
         // fallback.

@@ -92,16 +92,16 @@ public class AppWithProvidedLibTest {
     }
 
     @Test
-    @Ignore("b/68754628, b/128449813")
+    @Ignore("b/303084082")
     public void checkModelFailedToLoad() throws Exception {
         // TODO: full dependency should show us broken provided only dependency.
-        //final AndroidProject androidProject = modelContainer.getOnlyModelMap().get(":app");
-        //assertThat(androidProject).hasIssueSize(2);
-        //assertThat(androidProject).hasIssue(
+        // final AndroidProject androidProject = modelContainer.getOnlyModelMap().get(":app");
+        // assertThat(androidProject).hasIssueSize(2);
+        // assertThat(androidProject).hasIssue(
         //        SyncIssue.SEVERITY_ERROR,
         //        SyncIssue.TYPE_NON_JAR_PROVIDED_DEP,
         //        "projectWithModules:library:unspecified:debug@aar");
-        //assertThat(androidProject).hasIssue(
+        // assertThat(androidProject).hasIssue(
         //        SyncIssue.SEVERITY_ERROR,
         //        SyncIssue.TYPE_NON_JAR_PROVIDED_DEP,
         //        "projectWithModules:library:unspecified:release@aar");

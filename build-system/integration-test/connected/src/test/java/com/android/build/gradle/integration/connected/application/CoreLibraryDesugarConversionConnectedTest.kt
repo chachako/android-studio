@@ -188,7 +188,7 @@ class CoreLibraryDesugarConversionConnectedTest(minSdkVersion: Int) {
 
     // TODO(bingran) This test is temporarily disabled because of b/126429384. For more details,
     // see b/177973669.
-    @Ignore
+    @Ignore("126429384")
     @Test
     fun testFunctionWithDesugaredLibraryParamInNonMinifiedReleaseBuild() {
         // check non-minified release build (d8 with keep rules)

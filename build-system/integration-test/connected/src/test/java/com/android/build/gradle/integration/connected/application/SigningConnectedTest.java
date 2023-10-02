@@ -171,7 +171,7 @@ public class SigningConnectedTest {
      * that will report as skipped if the device is not available.
      */
     @Test
-    @Ignore("b/165341811, b/175333004")
+    @Ignore("b/303077401")
     public void shaAlgorithmChange_OnDevice() throws Exception {
 
         // Check APK with minimum SDK 21.
@@ -210,7 +210,7 @@ public class SigningConnectedTest {
      * <p>This will be ignored, rather than fail, if no api 17 device is connected.
      */
     @Test
-    @Ignore("b/165341811, b/175333004")
+    @Ignore("b/303077401")
     public void deployOnApi17() throws Exception {
         if (minSdkVersion >= DigestAlgorithm.API_SHA_256_RSA_AND_ECDSA) {
             // if min SDK is higher than the device, we cannot deploy.

@@ -107,7 +107,7 @@ public class NoSplitNdkVariantsConnectedTest {
     }
 
     @Test
-    @Ignore("b/175333004 ADB is not supported")
+    @Ignore("b/303077404 ADB is not supported")
     public void connectedAndroidTest() throws Exception {
         project.executor()
                 .run(

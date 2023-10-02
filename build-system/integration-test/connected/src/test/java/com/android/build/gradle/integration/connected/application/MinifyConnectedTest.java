@@ -44,7 +44,7 @@ public class MinifyConnectedTest {
     }
 
     // TODO(b/205264185): To re-enable
-    @Ignore
+    @Ignore("b/205264185")
     @Test
     public void connectedCheck() throws Exception {
         project.executor().run("connectedCheck");

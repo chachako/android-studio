@@ -83,7 +83,7 @@ public class ClientLifecycleIntegrationTest {
   }
 
     @Test
-    @Ignore
+    @Ignore("b/303071798")
     public void clientDefaultState() throws Exception {
     assertThat(AndroidDebugBridge.getBridge().getDevices()).isEmpty();
     DeviceState state = myFakeAdb.connectAndWaitForDevice();
@@ -97,9 +97,9 @@ public class ClientLifecycleIntegrationTest {
     assertThat(client.getClientData().getDebuggerConnectionStatus()).isAnyOf(DEFAULT, WAITING);
   }
 
-  @Test
-  @Ignore("Flaky b/155419945")
-  public void attachDebugger() throws Exception {
+    @Test
+    @Ignore("b/303071798")
+    public void attachDebugger() throws Exception {
     assertThat(AndroidDebugBridge.getBridge().getDevices()).isEmpty();
     DeviceState state = myFakeAdb.connectAndWaitForDevice();
     IDevice device = AndroidDebugBridge.getBridge().getDevices()[0];
