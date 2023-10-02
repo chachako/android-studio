@@ -17,7 +17,6 @@ package com.android.screenshot.cli
 
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.resources.configuration.FolderConfiguration
-import com.android.screenshot.cli.util.CODE_ERROR
 import com.android.screenshot.cli.util.CODE_SUCCESS
 import com.android.screenshot.cli.util.CODE_RENDER_ERROR
 import com.android.screenshot.cli.util.CODE_RUNTIME_ERROR
@@ -26,7 +25,6 @@ import com.android.tools.idea.AndroidPsiUtils
 import com.android.tools.idea.compose.preview.ComposeAdapterLightVirtualFile
 import com.android.tools.configurations.Configuration
 import com.android.tools.idea.rendering.ShowFixFactory
-import com.android.tools.idea.rendering.StudioHtmlLinkManager
 import com.android.tools.idea.rendering.StudioRenderService
 import com.android.tools.lint.model.LintModelModule
 import com.android.tools.idea.rendering.parsers.PsiXmlFile
@@ -34,11 +32,11 @@ import com.android.tools.preview.ComposePreviewElement
 import com.android.tools.preview.ComposePreviewElementInstance
 import com.android.tools.preview.ComposePreviewElementTemplate
 import com.android.tools.preview.applyTo
+import com.android.tools.rendering.HtmlLinkManager
 import com.android.tools.rendering.ModuleRenderContext
 import com.android.tools.rendering.RenderResult
 import com.intellij.mock.MockComponentManager
 import com.intellij.openapi.module.Module
-import com.intellij.openapi.module.ModuleManager
 import com.intellij.psi.xml.XmlFile
 import org.mockito.Mockito
 import java.awt.image.BufferedImage
@@ -162,7 +160,8 @@ class ScreenshotProvider(
         val task =
             service.taskBuilder(model, config,
                                 service.createLogger(composeProject.lintProject.ideaProject,
-                                                     true, ShowFixFactory, ::StudioHtmlLinkManager)
+                                                     true, ShowFixFactory
+                                ) { HtmlLinkManager.NOOP_LINK_MANAGER }
             )
                 .withRenderingMode(SessionParams.RenderingMode.SHRINK)
                 .disableDecorations()
