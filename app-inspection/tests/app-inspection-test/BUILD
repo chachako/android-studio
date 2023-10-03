@@ -16,6 +16,7 @@ transport_test(
     deps = [
         "//tools/base/app-inspection/tests/test-framework",
         "//tools/base/app-inspection/tests/test-inspector/api:test-inspector-api",
+        "//tools/base/profiler:perfetto-protos",
         "@maven//:androidx.annotation.annotation",
         "@maven//:com.google.truth.truth",
     ],
