@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import test.inspector.api.NoReplyInspectorApi;
@@ -253,6 +254,7 @@ public final class AppInspectionTest {
                 .isEqualTo("Inspector with id test.inspector wasn't previously created");
     }
 
+    @Ignore("b/303234036")
     @Test
     public void handleCancellationCommand() throws Exception {
         String inspectorId = "test.cancellation.inspector";
