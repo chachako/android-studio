@@ -83,3 +83,15 @@ fun Variant.getBundleLocation(): File {
     val element = output.elements.single()
     return File(element.outputFile)
 }
+
+fun Variant.getApkLocations(): List<File> {
+    val bundleInfo =
+        this.mainArtifact.bundleInfo
+            ?: throw RuntimeException("Variant $name does not have BundleInfo in its main artifact model")
+    val output =
+        BuiltArtifactsLoaderImpl.loadFromFile(bundleInfo.apkFromBundleTaskOutputListingFile)
+            ?: throw RuntimeException("Failed to load bundleTaskOutputListingFile at ${bundleInfo.apkFromBundleTaskOutputListingFile}")
+    // for apk there should be a one or more outputs
+    return output.elements.map { File(it.outputFile) }
+
+}

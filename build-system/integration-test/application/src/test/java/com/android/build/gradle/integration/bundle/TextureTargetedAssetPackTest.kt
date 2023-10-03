@@ -19,13 +19,8 @@ package com.android.build.gradle.integration.bundle
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
-import com.android.build.gradle.integration.common.utils.getOutputByName
-import com.android.build.gradle.integration.common.utils.getVariantByName
 import com.android.build.gradle.options.StringOption
-import com.android.builder.model.AppBundleProjectBuildOutput
-import com.android.builder.model.AppBundleVariantBuildOutput
 import com.android.testutils.apk.Zip
-import com.android.testutils.truth.PathSubject.assertThat
 import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.truth.Truth
 import org.junit.Rule
@@ -33,7 +28,6 @@ import org.junit.Test
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.test.fail
 
 class TextureTargetedAssetPackTest {
@@ -83,7 +77,7 @@ class TextureTargetedAssetPackTest {
     @Test
     fun buildDebugApksForRecentAstcDevice() {
         val apkFromBundleTaskName = project.getApkFromBundleTaskName("debug", ":app")
-        var jsonFile = getJsonFile(27, true)
+        val jsonFile = getJsonFile(27, true)
 
         project
             .executor()
@@ -91,11 +85,11 @@ class TextureTargetedAssetPackTest {
             .run("app:$apkFromBundleTaskName")
 
         // Fetch the build output model.
-        var apkFolder = getApkFolderOutput("debug").apkFolder
+        val apkFolder = project.locateApkFolderViaModel("debug", ":app")
         assertThat(apkFolder).isDirectory()
 
         // Verify the installed apks.
-        var apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
+        val apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
         Truth.assertThat(apkFileArray.toList()).named("APK List")
             .containsExactly(
                 "level1-master.apk",
@@ -120,7 +114,7 @@ class TextureTargetedAssetPackTest {
     @Test
     fun buildDebugApksForRecentEtc2Device() {
         val apkFromBundleTaskName = project.getApkFromBundleTaskName("debug", ":app")
-        var jsonFile = getJsonFile(27, false)
+        val jsonFile = getJsonFile(27, false)
 
         project
             .executor()
@@ -128,11 +122,11 @@ class TextureTargetedAssetPackTest {
             .run("app:$apkFromBundleTaskName")
 
         // Fetch the build output model.
-        var apkFolder = getApkFolderOutput("debug").apkFolder
+        val apkFolder = project.locateApkFolderViaModel("debug", ":app")
         assertThat(apkFolder).isDirectory()
 
         // Verify the installed apks.
-        var apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
+        val apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
         Truth.assertThat(apkFileArray.toList()).named("APK List")
             .containsExactly(
                 "level1-master.apk",
@@ -157,7 +151,7 @@ class TextureTargetedAssetPackTest {
     @Test
     fun buildStandaloneDebugApksForPreLDevice() {
         val apkFromBundleTaskName = project.getApkFromBundleTaskName("debug", ":app")
-        var jsonFile = getJsonFile(18, false)
+        val jsonFile = getJsonFile(18, false)
 
         project
             .executor()
@@ -165,11 +159,11 @@ class TextureTargetedAssetPackTest {
             .run("app:$apkFromBundleTaskName")
 
         // Fetch the build output model.
-        var apkFolder = getApkFolderOutput("debug").apkFolder
+        val apkFolder = project.locateApkFolderViaModel("debug", ":app")
         assertThat(apkFolder).isDirectory()
 
         // Verify the installed standalone apk.
-        var apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
+        val apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
         Truth.assertThat(apkFileArray.toList()).named("APK List")
             .containsExactly("standalone-etc2.apk")
 
@@ -181,16 +175,6 @@ class TextureTargetedAssetPackTest {
                     "/assets/textures/etc2.txt"
                 )
         }
-    }
-
-    private fun getApkFolderOutput(variantName: String): AppBundleVariantBuildOutput {
-        val outputModels = project.model()
-            .fetchContainer(AppBundleProjectBuildOutput::class.java)
-
-        val outputAppModel = outputModels.rootBuildModelMap[":app"]
-            ?: fail("Failed to get output model for :app module")
-
-        return outputAppModel.getOutputByName(variantName)
     }
 
     private fun getJsonFile(api: Int, supportsAstc: Boolean): Path {

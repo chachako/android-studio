@@ -24,11 +24,9 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject.Apk
 import com.android.build.gradle.integration.common.truth.AabSubject.Companion.assertThat
 import com.android.build.gradle.integration.common.truth.ApkSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import com.android.build.gradle.integration.common.utils.getOutputByName
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
-import com.android.builder.model.AppBundleProjectBuildOutput
 import com.android.ide.common.signing.KeystoreHelper
 import com.android.testutils.apk.Aab
 import com.android.testutils.apk.Dex
@@ -39,7 +37,6 @@ import com.android.tools.build.bundletool.commands.CheckTransparencyCommand
 import com.android.tools.build.bundletool.model.exceptions.InvalidBundleException
 import com.android.utils.FileUtils
 import com.google.common.base.Throwables
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import groovy.json.StringEscapeUtils
 import org.junit.Assert
@@ -361,7 +358,7 @@ class DynamicAppTest {
         assertThat(bundleFile).exists()
 
         Zip(bundleFile).use {
-            Truth.assertThat(it.entries.map { it.toString() }).containsExactly(*debugUnsignedContent)
+            assertThat(it.entries.map { it.toString() }).containsExactly(*debugUnsignedContent)
         }
     }
 
@@ -513,7 +510,7 @@ class DynamicAppTest {
             .run("app:$apkFromBundleTaskName")
 
         // fetch the build output model
-        var apkFolder = getApkFolderOutput("debug")
+        var apkFolder = project.locateApkFolderViaModel("debug", ":app")
         assertThat(apkFolder).isDirectory()
 
         var apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
@@ -577,11 +574,11 @@ class DynamicAppTest {
             .run("app:$apkFromBundleTaskName")
 
         // fetch the build output model
-        apkFolder = getApkFolderOutput("debug")
+        apkFolder = project.locateApkFolderViaModel("debug", ":app")
         assertThat(apkFolder).isDirectory()
 
         apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
-        Truth.assertThat(apkFileArray.toList()).named("APK List for API 18")
+        assertThat(apkFileArray.toList()).named("APK List for API 18")
             .containsExactly("standalone.apk")
 
 
@@ -591,7 +588,7 @@ class DynamicAppTest {
             .run(":app:packageDebugUniversalApk")
 
         project.getSubproject("app").getBundleUniversalApk(GradleTestProject.ApkType.DEBUG).use {
-            Truth.assertThat(it.entries.map { it.toString() })
+            assertThat(it.entries.map { it.toString() })
                 .containsAllOf("/META-INF/BNDLTOOL.RSA", "/META-INF/BNDLTOOL.SF")
         }
 
@@ -636,11 +633,11 @@ class DynamicAppTest {
             .run("app:$apkFromBundleTaskName")
 
         // fetch the build output model
-        var apkFolder = getApkFolderOutput("debug")
+        var apkFolder = project.locateApkFolderViaModel("debug", ":app")
         assertThat(apkFolder).isDirectory()
 
         var apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
-        Truth.assertThat(apkFileArray.toList()).named("APK List when extract instant is false")
+        assertThat(apkFileArray.toList()).named("APK List when extract instant is false")
             .containsExactly(
                 "base-master.apk",
                 "feature2-master.apk"
@@ -653,11 +650,11 @@ class DynamicAppTest {
             .run("app:$apkFromBundleTaskName")
 
         // fetch the build output model
-        apkFolder = getApkFolderOutput("debug")
+        apkFolder = project.locateApkFolderViaModel("debug", ":app")
         assertThat(apkFolder).isDirectory()
 
         apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
-        Truth.assertThat(apkFileArray.toList()).named("APK List when extract instant is true")
+        assertThat(apkFileArray.toList()).named("APK List when extract instant is true")
             .containsExactly(
                 "instant-base-master.apk",
                 "instant-feature2-master.apk"
@@ -701,11 +698,11 @@ class DynamicAppTest {
             .run("app:$apkFromBundleTaskName")
 
         // fetch the build output model
-        var apkFolder = getApkFolderOutput("debug")
+        var apkFolder = project.locateApkFolderViaModel("debug", ":app")
         assertThat(apkFolder).isDirectory()
 
         // fetch the build output model
-        apkFolder = getApkFolderOutput("debug")
+        apkFolder = project.locateApkFolderViaModel("debug", ":app")
         assertThat(apkFolder).isDirectory()
 
         var apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
@@ -723,11 +720,11 @@ class DynamicAppTest {
             .run("app:$apkFromBundleTaskName")
 
         // fetch the build output model
-        apkFolder = getApkFolderOutput("debug")
+        apkFolder = project.locateApkFolderViaModel("debug", ":app")
         assertThat(apkFolder).isDirectory()
 
         apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
-        Truth.assertThat(apkFileArray.toList()).named("APK List when extract instant is true")
+        assertThat(apkFileArray.toList()).named("APK List when extract instant is true")
             .containsExactly(
                 "instant-base-master.apk",
                 "instant-feature1-master.apk")
@@ -806,7 +803,7 @@ class DynamicAppTest {
         assertThat(newBundleFile).exists()
 
         // test the folder is the same as the previous one.
-        Truth.assertThat(bundleFile.parentFile).isEqualTo(newBundleFile.parentFile)
+        assertThat(bundleFile.parentFile).isEqualTo(newBundleFile.parentFile)
     }
 
     @Test
@@ -896,12 +893,12 @@ class DynamicAppTest {
         assertThat(bundleFile).exists()
         Zip(bundleFile).use {
             val entries = it.entries.map { it.toString() }
-            Truth.assertThat(entries).contains("/base/res/drawable-mdpi-v21/density.xml")
-            Truth.assertThat(entries).doesNotContain("/base/res/drawable-hdpi-v21/density.xml")
-            Truth.assertThat(entries).doesNotContain("/base/res/drawable-xxxhdpi-v21/density.xml")
-            Truth.assertThat(entries).contains("/base/res/drawable-anydpi-v21/lang.xml")
-            Truth.assertThat(entries).contains("/base/res/drawable-en-anydpi-v21/lang.xml")
-            Truth.assertThat(entries).doesNotContain("/base/res/drawable-es-anydpi-v21/lang.xml")
+            assertThat(entries).contains("/base/res/drawable-mdpi-v21/density.xml")
+            assertThat(entries).doesNotContain("/base/res/drawable-hdpi-v21/density.xml")
+            assertThat(entries).doesNotContain("/base/res/drawable-xxxhdpi-v21/density.xml")
+            assertThat(entries).contains("/base/res/drawable-anydpi-v21/lang.xml")
+            assertThat(entries).contains("/base/res/drawable-en-anydpi-v21/lang.xml")
+            assertThat(entries).doesNotContain("/base/res/drawable-es-anydpi-v21/lang.xml")
         }
     }
 
@@ -979,9 +976,9 @@ class DynamicAppTest {
 
         Zip(bundleFile).use {
             val entries = it.entries.map { it.toString() }
-            Truth.assertThat(entries).contains("/META-INF/MANIFEST.MF")
-            Truth.assertThat(entries).contains("/META-INF/${keyAlias.toUpperCase(Locale.US)}.RSA")
-            Truth.assertThat(entries).contains("/META-INF/${keyAlias.toUpperCase(Locale.US)}.SF")
+            assertThat(entries).contains("/META-INF/MANIFEST.MF")
+            assertThat(entries).contains("/META-INF/${keyAlias.toUpperCase(Locale.US)}.RSA")
+            assertThat(entries).contains("/META-INF/${keyAlias.toUpperCase(Locale.US)}.SF")
         }
 
         val result = ApkVerifier.Builder(bundleFile)
@@ -1089,15 +1086,15 @@ class DynamicAppTest {
                 .setBundlePath(bundleFile.toPath())
                 .build()
                 .checkTransparency(PrintStream(outputStream))
-            Truth.assertThat(outputStream.toString())
+            assertThat(outputStream.toString())
                 .contains("Code transparency signature is valid.")
         }
 
         Zip(bundleFile).use {
             val entries = it.entries.map { it.toString() }
-            Truth.assertThat(entries).contains("/META-INF/MANIFEST.MF")
-            Truth.assertThat(entries).contains("/META-INF/${keyAlias.toUpperCase(Locale.US)}.RSA")
-            Truth.assertThat(entries).contains("/META-INF/${keyAlias.toUpperCase(Locale.US)}.SF")
+            assertThat(entries).contains("/META-INF/MANIFEST.MF")
+            assertThat(entries).contains("/META-INF/${keyAlias.toUpperCase(Locale.US)}.RSA")
+            assertThat(entries).contains("/META-INF/${keyAlias.toUpperCase(Locale.US)}.SF")
         }
 
         val result = ApkVerifier.Builder(bundleFile)
@@ -1179,11 +1176,11 @@ class DynamicAppTest {
             .run("app:$apkFromBundleTaskName")
 
         // fetch the build output model
-        var apkFolder = getApkFolderOutput("debug")
+        var apkFolder = project.locateApkFolderViaModel("debug", ":app")
         assertThat(apkFolder).isDirectory()
 
         var apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
-        Truth.assertThat(apkFileArray.toList()).named("APK List when extract instant is true")
+        assertThat(apkFileArray.toList()).named("APK List when extract instant is true")
             .containsExactly(
                 "base-master.apk",
                 "feature1-master.apk",
@@ -1206,7 +1203,7 @@ class DynamicAppTest {
             .with(BooleanOption.ENABLE_LOCAL_TESTING, true)
             .run("app:$apkFromBundleTaskName")
 
-        var apkFolder = getApkFolderOutput("debug")
+        var apkFolder = project.locateApkFolderViaModel("debug", ":app")
         assertThat(apkFolder).isDirectory()
 
         var apkFileArray = apkFolder.list() ?: fail("No files at $apkFolder")
@@ -1242,7 +1239,7 @@ class DynamicAppTest {
                                 .APK_FROM_BUNDLE_IDE_MODEL.getFolderName(),
                         "debug",
                         "output-metadata.json")
-        var apkFolder = getApkFolderOutput("debug")
+        var apkFolder = project.locateApkFolderViaModel("debug", ":app")
         assertThat(outputMetadataFile).isFile()
 
         //make sure that metadata.json file is properly deleted
@@ -1278,16 +1275,6 @@ class DynamicAppTest {
            .expectFailure()
            .run(":app:installDebugAndroidTest")
         assertThat(result.failureMessage).isEqualTo("No connected devices!")
-    }
-
-    private fun getApkFolderOutput(variantName: String): File {
-        val outputModels = project.model()
-                .fetchContainer(AppBundleProjectBuildOutput::class.java)
-
-        val outputAppModel: AppBundleProjectBuildOutput = outputModels.rootBuildModelMap[":app"]
-                ?: fail("Failed to get output model for :app module")
-
-        return outputAppModel.getOutputByName(variantName).apkFolder
     }
 
     private fun getJsonFile(api: Int): Path {

@@ -28,6 +28,8 @@ import com.android.build.gradle.integration.common.fixture.testprojects.TestProj
 import com.android.build.gradle.integration.common.truth.AarSubject
 import com.android.build.gradle.integration.common.truth.forEachLine
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.integration.common.utils.getApkFolderOutput
+import com.android.build.gradle.integration.common.utils.getApkLocations
 import com.android.build.gradle.integration.common.utils.getBundleLocation
 import com.android.build.gradle.integration.common.utils.getVariantByName
 import com.android.build.gradle.internal.TaskManager
@@ -1342,6 +1344,15 @@ allprojects { proj ->
 
         return bundleFile
             ?: throw RuntimeException("Failed to get bundle file for $projectPath module")
+    }
+
+    fun locateApkFolderViaModel(variantName: String, projectPath: String): File {
+        val apkFiles = modelV2().fetchModels().container.getProject(projectPath).androidProject
+            ?.getVariantByName(variantName)
+            ?.getApkLocations()
+
+        return apkFiles?.getOrNull(0)?.parentFile
+            ?: throw RuntimeException("Failed to get apk folder for $projectPath module")
     }
 
     fun getApkFromBundleTaskName(variantName: String, projectPath: String): String {

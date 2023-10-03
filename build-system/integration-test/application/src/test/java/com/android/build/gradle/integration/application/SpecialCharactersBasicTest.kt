@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.application
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.google.common.truth.Truth.assertThat
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
@@ -60,14 +59,15 @@ class SpecialCharactersBasicTest(projectName: String) {
     fun testProjectsWithSpecialCharacters() {
         project.execute("clean", "assemble")
 
+        val container = project.modelV2().ignoreSyncIssues().fetchModels().container
+        val issues = container.getProject().issues!!.syncIssues
+
         // basic project overwrites buildConfigField which emits a sync warning
-        project.model().ignoreSyncIssues().fetchAndroidProjects()
-            .onlyModelSyncIssues
-            .forEach { issue ->
-                assertThat(issue.severity).isEqualTo(SyncIssue.SEVERITY_WARNING)
-                assertThat(issue.message)
-                    .containsMatch(Pattern.compile(".*value is being replaced.*"))
-            }
+        issues.forEach { issue ->
+            assertThat(issue.severity).isEqualTo(SyncIssue.SEVERITY_WARNING)
+            assertThat(issue.message)
+                .containsMatch(Pattern.compile(".*value is being replaced.*"))
+        }
     }
 
     companion object {
@@ -106,5 +106,4 @@ class SpecialCharactersBasicTest(projectName: String) {
             )
         }
     }
-
 }
