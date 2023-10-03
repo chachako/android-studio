@@ -61,22 +61,20 @@ class BrokenTestModuleSyncTest {
 
     @Test
     fun checkSync() {
-        val issues =
-                project.model().ignoreSyncIssues().fetchAndroidProjects().onlyModelSyncIssuesMap[":test"] ?:
-                        throw RuntimeException("Failed to find model for :test")
-
-        TruthHelper.assertThat(issues).hasSize(2)
-
-        val severities = issues.map(SyncIssue::severity).toSet()
-        TruthHelper.assertThat(severities).containsExactly(SyncIssue.SEVERITY_ERROR)
-
-        val types = issues.map(SyncIssue::type).toSet()
-        TruthHelper.assertThat(types).containsExactly(SyncIssue.TYPE_UNRESOLVED_DEPENDENCY)
-
-        // test messages?
-        val messages = issues.map(SyncIssue::message).toSet()
-        TruthHelper.assertThat(messages).containsExactly(
-                "Unable to resolve dependency for ':test@debug/compileClasspath': Could not resolve project :app.",
+        val modelInfo = project.modelV2().ignoreSyncIssues()
+            .fetchModels("debug").container.getProject(":test")
+        val syncIssues = modelInfo.issues!!.syncIssues.toList()
+        val unresolvedDeps = modelInfo.variantDependencies?.mainArtifact?.unresolvedDependencies
+        TruthHelper.assertThat(syncIssues).hasSize(1)
+        TruthHelper.assertThat(syncIssues[0].severity).isEqualTo(SyncIssue.SEVERITY_ERROR)
+        TruthHelper.assertThat(syncIssues[0].type).isEqualTo(SyncIssue.TYPE_UNRESOLVED_DEPENDENCY)
+        TruthHelper.assertThat(syncIssues[0].message).isEqualTo(
                 "Unable to resolve dependency for ':test@debug/testTarget': Could not resolve project :app.")
+
+        TruthHelper.assertThat(unresolvedDeps).hasSize(1)
+        TruthHelper.assertThat(unresolvedDeps?.get(0)?.name).isEqualTo("project :app")
+        TruthHelper.assertThat(unresolvedDeps?.get(0)?.cause).contains(
+            "cannot choose between the following variants of project :app:"
+        )
     }
 }
