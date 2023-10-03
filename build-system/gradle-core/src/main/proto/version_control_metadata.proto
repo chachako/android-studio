@@ -62,4 +62,6 @@ message BuildStamp {
   repeated RepositoryInfo repositories = 1;
   // Build system data.
   BuildInfo build_info = 2;
+  // Extra debug info which will help users identify issues
+  string generate_error_reason = 3;
 }
