@@ -18,13 +18,12 @@ package com.android.build.gradle.integration.dependencies
 
 import com.android.build.gradle.integration.common.fixture.ANDROIDX_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.fixture.ModelContainer
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2
 import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_VERSION
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
 import com.android.builder.errors.IssueReporter
-import com.android.builder.model.AndroidProject
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
 import com.android.utils.FileUtils
@@ -130,13 +129,13 @@ class AndroidXJetifierMatrixTest {
     }
 
     private fun expectSyncIssue(
-            model: ModelContainer<AndroidProject>,
+            model: ModelContainerV2,
             type: IssueReporter.Type,
             severity: IssueReporter.Severity,
             message: String,
             data: String? = null
     ) {
-        val syncIssues = model.onlyModelSyncIssues
+        val syncIssues = model.getProject().issues!!.syncIssues
         assertThat(syncIssues).hasSize(1)
         val syncIssue = syncIssues.single()
 
@@ -150,10 +149,13 @@ class AndroidXJetifierMatrixTest {
     fun `AndroidX=false, Jetifier=false, AndroidX dependencies present, expect sync issue`() {
         addAndroidXDependencies()
 
-        val model = project.model()
-                .with(BooleanOption.USE_ANDROID_X, false)
-                .with(BooleanOption.ENABLE_JETIFIER, false)
-                .ignoreSyncIssues().fetchAndroidProjects()
+        val model = project.modelV2()
+            .with(BooleanOption.USE_ANDROID_X, false)
+            .with(BooleanOption.ENABLE_JETIFIER, false)
+            .ignoreSyncIssues()
+            .fetchModels("debug")
+            .container
+
         expectSyncIssue(
             model,
             IssueReporter.Type.ANDROID_X_PROPERTY_NOT_ENABLED,
@@ -181,10 +183,13 @@ class AndroidXJetifierMatrixTest {
 
     @Test
     fun `AndroidX=false, Jetifier=true, expect sync issue`() {
-        val model = project.model()
-                .with(BooleanOption.USE_ANDROID_X, false)
-                .with(BooleanOption.ENABLE_JETIFIER, true)
-                .ignoreSyncIssues().fetchAndroidProjects()
+        val model = project.modelV2()
+            .with(BooleanOption.USE_ANDROID_X, false)
+            .with(BooleanOption.ENABLE_JETIFIER, true)
+            .ignoreSyncIssues()
+            .fetchModels("debug")
+            .container
+
         expectSyncIssue(
                 model,
                 type = IssueReporter.Type.ANDROID_X_PROPERTY_NOT_ENABLED,
@@ -194,5 +199,4 @@ class AndroidXJetifierMatrixTest {
                         " in your gradle.properties file."
         )
     }
-
 }
