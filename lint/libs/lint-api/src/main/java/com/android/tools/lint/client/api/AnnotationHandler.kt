@@ -67,6 +67,7 @@ import com.intellij.psi.PsiLocalVariable
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiNewExpression
+import com.intellij.psi.PsiPackage
 import com.intellij.psi.PsiParameter
 import com.intellij.psi.util.PsiTypesUtil
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
@@ -472,6 +473,13 @@ internal class AnnotationHandler(
           val method = annotated.getParentOfType<PsiMethod>(true) ?: return list
           list.addAnnotations(evaluator, method, METHOD)
           method.containingClass ?: return list
+        }
+        is PsiPackage -> {
+          // Simple name reference from package segments
+          // (e.g., `java` or `io` from `java.io.Closeable`)
+          // can be resolved to [PsiPackage].
+          // Of course no meaningful annotations would be associated.
+          return list
         }
         else -> {
           error("Unexpected $annotated")

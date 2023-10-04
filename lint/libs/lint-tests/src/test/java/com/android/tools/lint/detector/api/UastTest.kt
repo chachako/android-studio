@@ -28,6 +28,7 @@ import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
+import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiRecursiveElementVisitor
 import com.intellij.psi.PsiTypeParameter
 import junit.framework.TestCase
@@ -58,6 +59,7 @@ import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UPostfixExpression
 import org.jetbrains.uast.UPrefixExpression
 import org.jetbrains.uast.UReferenceExpression
+import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.jetbrains.uast.UastCallKind
 import org.jetbrains.uast.skipParenthesizedExprDown
 import org.jetbrains.uast.toUElement
@@ -2259,5 +2261,58 @@ class UastTest : TestCase() {
       )
     }
     assertEquals(3, count)
+  }
+
+  fun testImplicitLambdaParameterInTest() {
+    // Example from b/302708854
+    val testFiles =
+      arrayOf(
+        kotlin(
+            "src/test/pkg/sub/MyClass.kt",
+            """
+            package pkg.sub
+
+            class MyClass {
+              lateinit var manager: Manager
+                private set
+
+              init {
+                Manager().use {
+                  manager = it
+                }
+              }
+            }
+          """
+          )
+          .indented(),
+        kotlin(
+            "src/main/pkg/sub/Manager.kt",
+            """
+            package pkg.sub
+            import java.io.Closeable
+            class Manager : Closeable
+          """
+          )
+          .indented(),
+      )
+
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitSimpleNameReferenceExpression(
+            node: USimpleNameReferenceExpression
+          ): Boolean {
+            if (node.identifier != "it") return super.visitSimpleNameReferenceExpression(node)
+
+            // No source for implicit lambda parameter.
+            // Expect to be resolved to fake PsiParameter used inside ULambdaExpression
+            val resolved = node.resolve() as? PsiParameter
+            assertEquals("it", resolved?.name)
+
+            return super.visitSimpleNameReferenceExpression(node)
+          }
+        }
+      )
+    }
   }
 }

@@ -627,6 +627,16 @@ class AnnotationHandlerTest {
               x = property // ERROR4 - ASSIGNMENT_LHS, ERROR5 - FIELD_REFERENCE
               property = 2 // ERROR6 - ASSIGNMENT_RHS, ERROR7 - FIELD_REFERENCE
             }
+
+            @MyKotlinAnnotation
+            lateinit var manager: Manager
+              private set
+
+            fun g() {
+              Manager().use {
+                manager = it // ERROR7 - ASSIGNMENT_RHS, ERROR8 - FIELD_REFERENCE
+              }
+            }
           }
           """
           )
@@ -646,6 +656,15 @@ class AnnotationHandlerTest {
               field = 2; // ERROR6 - ASSIGNMENT_RHS, ERROR7 - FIELD_REFERENCE
             }
           }
+          """
+          )
+          .indented(),
+        kotlin(
+            "src/test/test/pkg/Manager.kt",
+            """
+            package test.pkg
+            import java.io.Closeable
+            class Manager : Closeable
           """
           )
           .indented(),
@@ -697,7 +716,13 @@ class AnnotationHandlerTest {
         src/test/pkg/MyClass.kt:11: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on PROPERTY_DEFAULT [_AnnotationIssue]
             property = 2 // ERROR6 - ASSIGNMENT_RHS, ERROR7 - FIELD_REFERENCE
             ~~~~~~~~
-        14 errors, 0 warnings
+        src/test/pkg/MyClass.kt:20: Error: ASSIGNMENT_RHS usage associated with @MyKotlinAnnotation on PROPERTY_DEFAULT [_AnnotationIssue]
+              manager = it // ERROR7 - ASSIGNMENT_RHS, ERROR8 - FIELD_REFERENCE
+                        ~~
+        src/test/pkg/MyClass.kt:20: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on PROPERTY_DEFAULT [_AnnotationIssue]
+              manager = it // ERROR7 - ASSIGNMENT_RHS, ERROR8 - FIELD_REFERENCE
+              ~~~~~~~
+        16 errors, 0 warnings
         """
       )
   }
