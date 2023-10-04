@@ -66,19 +66,22 @@ import java.io.File
 import java.nio.file.Path
 import java.util.IdentityHashMap
 
-class ScreenshotProjectSystem(private val project: ComposeProject) : AndroidProjectSystem,
-                                                                     AndroidProjectSystemProvider {
+class ScreenshotProjectSystem(
+    override val project: Project,
+    private val composeProject: ComposeProject
+) : AndroidProjectSystem,
+    AndroidProjectSystemProvider {
 
     override fun getSourceProvidersFactory(): SourceProvidersFactory {
         return object : SourceProvidersFactory {
             override fun createSourceProvidersFor(facet: AndroidFacet): SourceProviders {
                 return object : SourceProviders {
                     override val sources: IdeaSourceProvider
-                        get() = MockProjectSourceProvider(project.lintProject)
+                        get() = MockProjectSourceProvider(composeProject.lintProject)
                     override val unitTestSources: IdeaSourceProvider
-                        get() = MockProjectSourceProvider(project.lintProject)
+                        get() = MockProjectSourceProvider(composeProject.lintProject)
                     override val androidTestSources: IdeaSourceProvider
-                        get() = MockProjectSourceProvider(project.lintProject)
+                        get() = MockProjectSourceProvider(composeProject.lintProject)
                     override val testFixturesSources: IdeaSourceProvider
                         get() = TODO("Not yet implemented")
                     override val generatedSources: IdeaSourceProvider
@@ -90,9 +93,9 @@ class ScreenshotProjectSystem(private val project: ComposeProject) : AndroidProj
                     override val generatedTestFixturesSources: IdeaSourceProvider
                         get() = TODO("Not yet implemented")
                     override val mainIdeaSourceProvider: NamedIdeaSourceProvider
-                        get() = MockProjectSourceProvider(project.lintProject)
+                        get() = MockProjectSourceProvider(composeProject.lintProject)
                     override val currentSourceProviders: List<NamedIdeaSourceProvider>
-                        get() = listOf(MockProjectSourceProvider(project.lintProject))
+                        get() = listOf(MockProjectSourceProvider(composeProject.lintProject))
                     override val currentUnitTestSourceProviders: List<NamedIdeaSourceProvider>
                         get() = TODO("Not yet implemented")
                     override val currentAndroidTestSourceProviders: List<NamedIdeaSourceProvider>
@@ -102,7 +105,7 @@ class ScreenshotProjectSystem(private val project: ComposeProject) : AndroidProj
                     override val currentAndSomeFrequentlyUsedInactiveSourceProviders: List<NamedIdeaSourceProvider>
                         get() = TODO("Not yet implemented")
                     override val mainAndFlavorSourceProviders: List<NamedIdeaSourceProvider>
-                        get() = listOf(MockProjectSourceProvider(project.lintProject))
+                        get() = listOf(MockProjectSourceProvider(composeProject.lintProject))
 
                 }
             }
@@ -132,8 +135,8 @@ class ScreenshotProjectSystem(private val project: ComposeProject) : AndroidProj
 
     override fun getSyncManager(): ProjectSystemSyncManager = object : ProjectSystemSyncManager {
         override fun syncProject(reason: ProjectSystemSyncManager.SyncReason): ListenableFuture<ProjectSystemSyncManager.SyncResult> {
-            AppUIUtil.invokeLaterIfProjectAlive(project.lintProject.ideaProject!!) {
-                project.lintProject.ideaProject!!.messageBus.syncPublisher(PROJECT_SYSTEM_SYNC_TOPIC)
+            AppUIUtil.invokeLaterIfProjectAlive(composeProject.lintProject.ideaProject!!) {
+                composeProject.lintProject.ideaProject!!.messageBus.syncPublisher(PROJECT_SYSTEM_SYNC_TOPIC)
                     .syncEnded(
                         ProjectSystemSyncManager.SyncResult.SUCCESS
                     )
@@ -198,16 +201,16 @@ class ScreenshotProjectSystem(private val project: ComposeProject) : AndroidProj
     override fun getPsiElementFinders(): List<PsiElementFinder> {
         return listOf(
             AndroidInnerClassFinder.INSTANCE,
-            AndroidManifestClassPsiElementFinder.getInstance(project.lintProject.ideaProject!!),
+            AndroidManifestClassPsiElementFinder.getInstance(composeProject.lintProject.ideaProject!!),
             AndroidResourceClassPsiElementFinder(getLightResourceClassService())
         )
     }
 
     override fun getLightResourceClassService() =
-        ProjectLightResourceClassService.getInstance(project.lintProject.ideaProject!!)
+        ProjectLightResourceClassService.getInstance(composeProject.lintProject.ideaProject!!)
 
     override val submodules: Collection<Module>
-        get() = getSubmodules(project.lintProject.ideaProject!!, null)
+        get() = getSubmodules(composeProject.lintProject.ideaProject!!, null)
 
     override fun getClassJarProvider(): ClassJarProvider {
         return object : ClassJarProvider {

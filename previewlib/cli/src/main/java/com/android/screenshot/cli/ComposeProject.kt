@@ -81,7 +81,7 @@ class ComposeProject(val lintProject: com.android.tools.lint.detector.api.Projec
             DirectoryIndexExcludePolicy::class.java
         )
 
-        defaultProjectSystem = ScreenshotProjectSystem(this)
+        defaultProjectSystem = ScreenshotProjectSystem(ideaProject, this)
         EP_NAME.getPoint(ideaProject).registerExtension(defaultProjectSystem, ideaProject)
     }
 
