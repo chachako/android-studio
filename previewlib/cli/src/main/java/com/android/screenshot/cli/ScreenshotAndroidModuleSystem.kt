@@ -125,10 +125,6 @@ class ScreenshotAndroidModuleSystem(
         return null
     }
 
-    override fun getDependencyPath(coordinate: GradleCoordinate): Path? {
-        TODO("Not yet implemented")
-    }
-
     override fun canRegisterDependency(type: DependencyType): CapabilityStatus {
         TODO("Not yet implemented")
     }
