@@ -160,7 +160,10 @@ public class DeviceManagerTest {
                         "Pixel 6 Pro",
                         "Pixel 6a",
                         "Pixel 7",
-                        "Pixel 7 Pro");
+                        "Pixel 7 Pro",
+                        "Pixel 7a",
+                        "Pixel 8",
+                        "Pixel 8 Pro");
 
         assertThat(dm.getDevice("Nexus One", "Google").getDisplayName()).isEqualTo("Nexus One");
 
@@ -233,7 +236,10 @@ public class DeviceManagerTest {
                         "Pixel 6 Pro",
                         "Pixel 6a",
                         "Pixel 7",
-                        "Pixel 7 Pro");
+                        "Pixel 7 Pro",
+                        "Pixel 7a",
+                        "Pixel 8",
+                        "Pixel 8 Pro");
     }
 
     @Test
@@ -354,7 +360,10 @@ public class DeviceManagerTest {
                         "Pixel 6 Pro",
                         "Pixel 6a",
                         "Pixel 7",
-                        "Pixel 7 Pro");
+                        "Pixel 7 Pro",
+                        "Pixel 7a",
+                        "Pixel 8",
+                        "Pixel 8 Pro");
 
         assertThat(listDisplayNames(dm2.getDevices(DeviceManager.ALL_DEVICES)))
                 .containsExactly(
@@ -426,7 +435,10 @@ public class DeviceManagerTest {
                         "Pixel 6 Pro",
                         "Pixel 6a",
                         "Pixel 7",
-                        "Pixel 7 Pro");
+                        "Pixel 7 Pro",
+                        "Pixel 7a",
+                        "Pixel 8",
+                        "Pixel 8 Pro");
     }
 
     @Test
@@ -540,7 +552,10 @@ public class DeviceManagerTest {
                         "Pixel 6 Pro",
                         "Pixel 6a",
                         "Pixel 7",
-                        "Pixel 7 Pro");
+                        "Pixel 7 Pro",
+                        "Pixel 7a",
+                        "Pixel 8",
+                        "Pixel 8 Pro");
 
         assertThat(listDisplayNames(dm.getDevices(DeviceManager.ALL_DEVICES)))
                 .containsExactly(
@@ -612,7 +627,10 @@ public class DeviceManagerTest {
                         "Pixel 6 Pro",
                         "Pixel 6a",
                         "Pixel 7",
-                        "Pixel 7 Pro");
+                        "Pixel 7 Pro",
+                        "Pixel 7a",
+                        "Pixel 8",
+                        "Pixel 8 Pro");
     }
 
     @Test
