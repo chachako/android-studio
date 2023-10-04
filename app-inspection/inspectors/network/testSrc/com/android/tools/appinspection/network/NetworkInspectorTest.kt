@@ -29,7 +29,7 @@ import studio.network.inspection.NetworkInspectorProtocol.SpeedEvent
 
 class NetworkInspectorTest {
 
-  @get:Rule val inspectorRule = NetworkInspectorRule()
+  @get:Rule val inspectorRule = NetworkInspectorRule(autoStart = false)
 
   private val trafficStatsProvider
     get() = inspectorRule.trafficStatsProvider
@@ -37,11 +37,13 @@ class NetworkInspectorTest {
   @Test
   fun speedDataCollection() = runBlocking {
     trafficStatsProvider.setData(
+      Stat(0, 0),
       Stat(10, 10),
       Stat(20, 10),
       Stat(20, 20),
       Stat(20, 30),
     )
+    inspectorRule.start()
     delay(1000)
 
     assertThat(inspectorRule.connection.speedData.map { it.toDebugString() })
@@ -58,6 +60,7 @@ class NetworkInspectorTest {
   @Test
   fun speedDataCollection_omitsZeroEvents() = runBlocking {
     trafficStatsProvider.setData(
+      Stat(0, 0),
       Stat(10, 10),
       Stat(10, 10),
       Stat(10, 10),
@@ -75,6 +78,7 @@ class NetworkInspectorTest {
       Stat(30, 30),
       Stat(30, 30),
     )
+    inspectorRule.start()
     delay(1000)
 
     assertThat(inspectorRule.connection.speedData.map { it.toDebugString() })
@@ -95,6 +99,7 @@ class NetworkInspectorTest {
   fun failToAddOkHttp2And3Hooks_doesNotThrowException() {
     // This test simulates an app that does not depend on OkHttp and the
     // inspector can be initialized without problems.
+    inspectorRule.start()
     val environment =
       object : InspectorEnvironment {
         override fun artTooling(): ArtTooling {

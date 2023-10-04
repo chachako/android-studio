@@ -24,8 +24,8 @@ class FakeTrafficStatsProvider : TrafficStatsProvider {
   private val rxIndex = AtomicInteger(0)
   private val txIndex = AtomicInteger(0)
 
-  private val rxData = mutableListOf(0L)
-  private val txData = mutableListOf(0L)
+  private val rxData = mutableListOf<Long>()
+  private val txData = mutableListOf<Long>()
 
   fun setData(vararg data: Stat) {
     rxData.addAll(data.map { it.rxBytes })

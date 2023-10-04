@@ -22,7 +22,7 @@ import java.util.concurrent.Executor
 import org.junit.rules.ExternalResource
 import studio.network.inspection.NetworkInspectorProtocol
 
-class NetworkInspectorRule : ExternalResource() {
+class NetworkInspectorRule(val autoStart: Boolean = true) : ExternalResource() {
 
   val connection = FakeConnection()
   val environment = FakeEnvironment()
@@ -30,6 +30,12 @@ class NetworkInspectorRule : ExternalResource() {
   val inspector = NetworkInspector(connection, environment, trafficStatsProvider, 10)
 
   override fun before() {
+    if (autoStart) {
+      start()
+    }
+  }
+
+  fun start() {
     inspector.onReceiveCommand(
       NetworkInspectorProtocol.Command.newBuilder()
         .setStartInspectionCommand(
