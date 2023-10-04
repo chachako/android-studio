@@ -91,4 +91,12 @@ public class LambdaSuperTest {
         Assert.assertEquals(
                 actual, LiveEditStubs.stubI(TEST_CLASS, "testLaunchJoin", "()I", new Object[2]));
     }
+
+    @Test
+    public void testFunctionReference() throws Exception {
+        int expected = LambdasKt.testFunctionReference();
+        Assert.assertEquals(
+                expected,
+                LiveEditStubs.stubI(TEST_CLASS, "testFunctionReference", "()I", new Object[2]));
+    }
 }

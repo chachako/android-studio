@@ -71,3 +71,12 @@ fun testLaunchJoin() = runBlocking<Int> {
     job.join()
     value
 }
+
+fun referenceThis(): Int {
+  return 100
+}
+
+fun testFunctionReference(): Int {
+  val ref = ::referenceThis
+  return ref.invoke()
+}
