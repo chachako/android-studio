@@ -75,6 +75,7 @@ _git = [
     },
     {
         "name": "zlib_repo",
+        "build_file": "tools/base/bazel/external/zlib.BUILD",
         "path": "external/zlib",
     },
     {
