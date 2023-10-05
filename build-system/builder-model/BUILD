@@ -1,7 +1,6 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library")
-load("//tools/base/bazel:coverage.bzl", "coverage_java_test")
 load("//tools/base/bazel:utils.bzl", "fileset")
 load("//tools/base/common:version.bzl", "BUILD_VERSION")
 
@@ -83,11 +82,12 @@ filegroup(
         "src/main/**/*.kt",
         "src/main/resources/**",
     ]) + [
-        "build.gradle",
         "NOTICE",
+        "build.gradle",
     ],
     visibility = [
         "//tools/base/build-system:__pkg__",
         "//tools/base/firebase/testlab/testlab-gradle-plugin:__pkg__",
+        "//tools/base/preview/screenshot/preview-screenshot-gradle-plugin:__pkg__",
     ],
 )

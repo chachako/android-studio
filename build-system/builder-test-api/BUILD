@@ -63,5 +63,6 @@ filegroup(
     visibility = [
         "//tools/base/build-system:__pkg__",
         "//tools/base/firebase/testlab/testlab-gradle-plugin:__pkg__",
+        "//tools/base/preview/screenshot/preview-screenshot-gradle-plugin:__pkg__",
     ],
 )

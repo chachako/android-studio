@@ -1,4 +1,3 @@
-load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library")
 load("//tools/base/bazel:utils.bzl", "fileset")
 load("//tools/base/common:version.bzl", "BUILD_VERSION")
@@ -55,6 +54,7 @@ filegroup(
     visibility = [
         "//tools/base/build-system:__pkg__",
         "//tools/base/firebase/testlab/testlab-gradle-plugin:__pkg__",
+        "//tools/base/preview/screenshot/preview-screenshot-gradle-plugin:__pkg__",
     ],
 )
 
