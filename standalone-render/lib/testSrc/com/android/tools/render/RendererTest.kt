@@ -57,7 +57,7 @@ class RendererTest {
             </LinearLayout>
         """.trimIndent()
 
-        val request = RenderRequest(layout, {}, "img")
+        val request = RenderRequest({}, "img") { sequenceOf(layout) }
 
         val outputFolder = tmpFolder.newFolder()
         val fakeSdkFolder = tmpFolder.newFolder()
@@ -72,11 +72,11 @@ class RendererTest {
             emptyList(),
             // Layoutlib path is expected strictly with the [File.separator] at the end
             layoutlibPath.absolutePathString() + File.separator,
-            listOf(request),
+            sequenceOf(request),
             outputFolder.absolutePath
         )
 
-        val outputImageFile = File("${outputFolder.absolutePath}${File.separator}img.png")
+        val outputImageFile = File("${outputFolder.absolutePath}${File.separator}img_0.png")
         val outputImage = ImageIO.read(outputImageFile)
 
         val goldenImagePath = TestUtils.resolveWorkspacePath("$TEST_DATA_DIR/img.png")

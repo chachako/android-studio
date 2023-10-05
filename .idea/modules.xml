@@ -42,6 +42,7 @@
       <module fileurl="file://$PROJECT_DIR$/sdk-common/generate-locale-data/android.sdktools.base.sdk-common.generate-locale-data.iml" filepath="$PROJECT_DIR$/sdk-common/generate-locale-data/android.sdktools.base.sdk-common.generate-locale-data.iml" />
       <module fileurl="file://$PROJECT_DIR$/sdklib/android.sdktools.base.sdklib-base.iml" filepath="$PROJECT_DIR$/sdklib/android.sdktools.base.sdklib-base.iml" />
       <module fileurl="file://$PROJECT_DIR$/sdklib/src/integrationTest/android.sdktools.base.sdklib-base.sdklib-integration-test.iml" filepath="$PROJECT_DIR$/sdklib/src/integrationTest/android.sdktools.base.sdklib-base.sdklib-integration-test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/standalone-render/compose-cli/android.sdktools.base.standalone-render.compose-cli.iml" filepath="$PROJECT_DIR$/standalone-render/compose-cli/android.sdktools.base.standalone-render.compose-cli.iml" />
       <module fileurl="file://$PROJECT_DIR$/standalone-render/lib/android.sdktools.base.standalone-render.lib.iml" filepath="$PROJECT_DIR$/standalone-render/lib/android.sdktools.base.standalone-render.lib.iml" />
       <module fileurl="file://$PROJECT_DIR$/standalone-render/lib/android.sdktools.base.standalone-render.lib.tests.iml" filepath="$PROJECT_DIR$/standalone-render/lib/android.sdktools.base.standalone-render.lib.tests.iml" />
       <module fileurl="file://$PROJECT_DIR$/vector-drawable-tool/android.sdktools.base.vector-drawable-tool.iml" filepath="$PROJECT_DIR$/vector-drawable-tool/android.sdktools.base.vector-drawable-tool.iml" />

@@ -42,7 +42,6 @@ import com.android.tools.res.ids.apk.ApkResourceIdManager
 import com.android.tools.sdk.AndroidPlatform
 import com.android.tools.sdk.AndroidSdkData
 import com.google.common.annotations.VisibleForTesting
-import java.io.File
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
@@ -55,7 +54,7 @@ fun render(
     packageName: String,
     classPath: List<String>,
     layoutlibPath: String,
-    renderRequests: List<RenderRequest>,
+    renderRequests: Sequence<RenderRequest>,
     outputFolderPath: String,
 ) = renderImpl(
     sdkPath,
@@ -75,7 +74,7 @@ fun renderForTest(
     packageName: String,
     classPath: List<String>,
     layoutlibPath: String,
-    renderRequests: List<RenderRequest>,
+    renderRequests: Sequence<RenderRequest>,
     outputFolderPath: String,
 ) = renderImpl(
     sdkPath,
@@ -94,7 +93,7 @@ internal fun renderImpl(
     packageName: String,
     classPath: List<String>,
     layoutlibPath: String,
-    renderRequests: List<RenderRequest>,
+    renderRequests: Sequence<RenderRequest>,
     outputFolderPath: String,
     disableSecurityManager: Boolean,
 ) {
@@ -185,31 +184,35 @@ internal fun renderImpl(
 
         renderRequests.forEach { request ->
             request.configurationModifier(configuration)
-            val renderTask = RenderService { }.taskBuilder(module, configuration, logger)
-                .disableDecorations()
-                .also {
-                    if (disableSecurityManager) {
-                        it.disableSecurityManager()
+            request.xmlLayoutsProvider().forEachIndexed { i, layout ->
+                val renderTask = RenderService { }.taskBuilder(module, configuration, logger)
+                    .disableDecorations()
+                    .also {
+                        if (disableSecurityManager) {
+                            it.disableSecurityManager()
+                        }
                     }
-                }
-                .withRenderingMode(SessionParams.RenderingMode.SHRINK)
-                .build().get()
+                    .withRenderingMode(SessionParams.RenderingMode.SHRINK)
+                    .build().get()
 
-            val xmlFile =
-                RenderXmlFileSnapshot(
-                    framework.project,
-                    "layout.xml",
-                    ResourceFolderType.LAYOUT,
-                    request.xmlLayout)
+                val xmlFile =
+                    RenderXmlFileSnapshot(
+                        framework.project,
+                        "layout.xml",
+                        ResourceFolderType.LAYOUT,
+                        layout
+                    )
 
-            renderTask.setXmlFile(xmlFile)
-            val result = renderTask.render().get(100, TimeUnit.SECONDS)
-            val image = result.renderedImage.copy!!
+                renderTask.setXmlFile(xmlFile)
+                val result = renderTask.render().get(100, TimeUnit.SECONDS)
+                val image = result.renderedImage.copy!!
 
-            val imgFile = Path(outputFolderPath).resolve("${request.outputImageName}.png").toFile()
+                val imgFile =
+                    Path(outputFolderPath).resolve("${request.outputImageName}_$i.png").toFile()
 
-            imgFile.createNewFile()
-            ImageIO.write(image, "png", imgFile)
+                imgFile.createNewFile()
+                ImageIO.write(image, "png", imgFile)
+            }
         }
 
         try {
