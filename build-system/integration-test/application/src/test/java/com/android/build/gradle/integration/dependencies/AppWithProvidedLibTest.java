@@ -21,9 +21,7 @@ import static com.android.build.gradle.integration.common.truth.TruthHelper.asse
 
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.ModelContainer;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.builder.model.AndroidProject;
 import com.android.utils.FileUtils;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -32,7 +30,6 @@ import java.io.IOException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /** test for compileOnly library in app */
@@ -43,8 +40,6 @@ public class AppWithProvidedLibTest {
             builder()
                     .fromTestProject("dynamicApp")
                     .create();
-
-    static ModelContainer<AndroidProject> modelContainer;
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -71,14 +66,11 @@ public class AppWithProvidedLibTest {
         TestFileUtils.appendToFile(
                 project.getSubproject("app").getBuildFile(),
                 "\n" + "dependencies {\n" + "    compileOnly project(\":library\")\n" + "}\n");
-        modelContainer =
-                project.model().withFullDependencies().ignoreSyncIssues().fetchAndroidProjects();
     }
 
     @AfterClass
     public static void cleanUp() {
         project = null;
-        modelContainer = null;
     }
 
     @Test
@@ -89,21 +81,5 @@ public class AppWithProvidedLibTest {
                 .isEqualTo(
                         "The following Android dependencies are set to compileOnly which is not supported:\n"
                                 + "-> :library");
-    }
-
-    @Test
-    @Ignore("b/303084082")
-    public void checkModelFailedToLoad() throws Exception {
-        // TODO: full dependency should show us broken provided only dependency.
-        // final AndroidProject androidProject = modelContainer.getOnlyModelMap().get(":app");
-        // assertThat(androidProject).hasIssueSize(2);
-        // assertThat(androidProject).hasIssue(
-        //        SyncIssue.SEVERITY_ERROR,
-        //        SyncIssue.TYPE_NON_JAR_PROVIDED_DEP,
-        //        "projectWithModules:library:unspecified:debug@aar");
-        // assertThat(androidProject).hasIssue(
-        //        SyncIssue.SEVERITY_ERROR,
-        //        SyncIssue.TYPE_NON_JAR_PROVIDED_DEP,
-        //        "projectWithModules:library:unspecified:release@aar");
     }
 }
