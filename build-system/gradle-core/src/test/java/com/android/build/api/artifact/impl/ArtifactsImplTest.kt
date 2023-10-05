@@ -77,6 +77,8 @@ class ArtifactsImplTest {
         object TEST_REPLACABLE_FILE : TestSingleArtifactType<RegularFile>(FILE), Replaceable
         object TEST_REPLACABLE_DIRECTORY : TestSingleArtifactType<Directory>(DIRECTORY),
             Replaceable
+        object TEST_TRANSFORMABLE_MANY_DIRECTORY: TestSingleArtifactType<Directory>(DIRECTORY),
+                Transformable, ContainsMany
     }
 
     sealed class TestMultipleArtifactType<T : FileSystemLocation>(
@@ -1210,6 +1212,29 @@ class ArtifactsImplTest {
             .endsWith(
                 FileUtils.join("test_file", "debug", DEFAULT_FILE_NAME_OF_REGULAR_FILE_ARTIFACTS)
             )
+    }
+
+    @Test
+    fun testToTransformOnContainsManyArtifact() {
+        abstract class TransformTask: DefaultTask() {
+            @get:InputDirectory abstract val inputFolder: DirectoryProperty
+            @get:OutputDirectory abstract val outputFolder: DirectoryProperty
+        }
+
+        val transformerProvider = project.tasks.register("transformer", TransformTask::class.java)
+        try {
+            artifacts.use(transformerProvider)
+                .wiredWithDirectories(TransformTask::inputFolder, TransformTask::outputFolder)
+                .toTransform(TestSingleArtifactType.TEST_TRANSFORMABLE_MANY_DIRECTORY)
+        } catch(e: IllegalArgumentException) {
+            Truth.assertThat(e.message).isEqualTo(
+                """
+                    TEST_TRANSFORMABLE_MANY_DIRECTORY is a `com.android.build.api.artifact.ContainsMany` artifact.
+                    you cannot transform ContainsMany artifacts using the `toTransform` method,
+                    you must instead use the `OutOperationRequest.toTransformMany` method.
+                """.trimIndent()
+            )
+        }
     }
 
     abstract class AgpFileTask: DefaultTask() {
