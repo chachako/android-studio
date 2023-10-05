@@ -57,4 +57,28 @@ public class LiveEditInstrumentationTest extends LiveEditTestBase {
         Deploy.AgentLiveEditResponse response = sendUpdateRequest(request);
         Assert.assertEquals(Deploy.AgentLiveEditResponse.Status.OK, response.getStatus());
     }
+
+    @Test
+    public void testAbstractTransformSucceeds() throws Exception {
+        android.loadDex(DEX_LOCATION);
+        android.launchActivity(ACTIVITY_CLASS);
+
+        Deploy.LiveEditClass clazz =
+                Deploy.LiveEditClass.newBuilder()
+                        .setClassName("app/AbstractStubTarget")
+                        .setClassData(
+                                ByteString.copyFrom(
+                                        getClassBytes(
+                                                "app/AbstractStubTarget.class",
+                                                CompileClassLocation.JAVA_ORIGINAL_LOCATION)))
+                        .build();
+        Deploy.LiveEditRequest request =
+                Deploy.LiveEditRequest.newBuilder()
+                        .addTargetClasses(clazz)
+                        .setPackageName(PACKAGE)
+                        .build();
+
+        Deploy.AgentLiveEditResponse response = sendUpdateRequest(request);
+        Assert.assertEquals(Deploy.AgentLiveEditResponse.Status.OK, response.getStatus());
+    }
 }

@@ -72,6 +72,12 @@ void StubTransform::Apply(std::shared_ptr<ir::DexFile> dex_ir) const {
         strcmp(method->decl->name->c_str(), "<clinit>") == 0) {
       continue;
     }
+
+    // Skip methods with no code (abstract methods)
+    if (method->code == nullptr) {
+      continue;
+    }
+
     slicer::MethodInstrumenter mi(dex_ir);
 
     // Transform the IR with a fake entry hook. This adds a static invocation
