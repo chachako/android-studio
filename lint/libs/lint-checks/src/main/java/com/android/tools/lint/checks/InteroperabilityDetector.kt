@@ -298,8 +298,7 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
           if (type.isDynamic()) return
 
           // We're considering flexible types as platform types since Kotlin doesn't support union
-          // types yet.
-          // In the future this may need to be refined.
+          // types yet. In the future this may need to be refined.
           if (!type.isFlexibleRecursive()) return
           val typeString = if (type.isFlexible()) null else type.toString().replace("..", " or ")
           reportMissingExplicitType(node, typeString)
@@ -309,8 +308,14 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
             if (ktType is KtDynamicType) return
 
             if (!ktType.isFlexibleRecursive()) return
-            val typeString =
-              if (ktType is KtFlexibleType) null else ktType.toString().replace("..", " or ")
+            // NB: The return type of the declaration isn't flexible type.
+            // Rather, type arguments could be flexible, e.g., Lazy<(String..String?)>
+            // Since we don't allow context receiver (yet),
+            // we can't use [KtFlexibleTypeRenderer.AS_RANGE].
+            // By default, nullability flexible type is rendered with ! at the end,
+            // e.g., Lazy<String!>, so it's not needed to replace ".." with " or " at the moment.
+            // In the future, we may be able to configure type renderers in a more flexible fashion.
+            val typeString = if (ktType is KtFlexibleType) null else ktType.toString()
             reportMissingExplicitType(node, typeString)
           }
         }

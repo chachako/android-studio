@@ -28,6 +28,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.impl.ZipHandler
 import com.intellij.pom.java.LanguageLevel
 import java.io.File
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.cli.jvm.config.addJavaSourceRoots
 import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoots
@@ -44,7 +45,8 @@ import org.jetbrains.uast.UastFacade
 /** JVM system property to enable FIR UAST or K2 UAST, as per the new compiler name */
 const val FIR_UAST_KEY = "lint.use.fir.uast"
 
-internal fun useFirUast(): Boolean = System.getProperty(FIR_UAST_KEY, "false").toBoolean()
+@ApiStatus.Internal
+fun useFirUast(): Boolean = System.getProperty(FIR_UAST_KEY, "false").toBoolean()
 
 /**
  * This interface provides the setup and configuration needed to use VFS/PSI/UAST on the command

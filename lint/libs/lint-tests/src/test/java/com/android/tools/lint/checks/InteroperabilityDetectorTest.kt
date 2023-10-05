@@ -19,6 +19,7 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.checks.InteroperabilityDetector.Issues.KOTLIN_PROPERTY
 import com.android.tools.lint.checks.InteroperabilityDetector.Issues.PLATFORM_NULLNESS
 import com.android.tools.lint.detector.api.Detector
+import com.android.tools.lint.useFirUast
 
 class InteroperabilityDetectorTest : AbstractCheckTest() {
   override fun getDetector(): Detector {
@@ -1172,6 +1173,9 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
   fun testPlatformPropagation2() {
     // Regression test for
     // 202559682: UnknownNullness check false positives on kotlin properties
+    val lazyString =
+      if (useFirUast()) "kotlin/Lazy<kotlin/String!>" else "Lazy<(String or String?)>"
+    val answerInt = if (useFirUast()) "test/pkg/Answer<kotlin/Int!>" else "Answer<(Int or Int?)>"
     lint()
       .files(
         java(
@@ -1247,10 +1251,10 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
             src/test/pkg/test.kt:12: Warning: Should explicitly declare type here since implicit type does not specify nullness [UnknownNullness]
             var kotlinPlatformProp = MyClass.platform() // ERROR 4
                 ~~~~~~~~~~~~~~~~~~
-            src/test/pkg/test.kt:14: Warning: Should explicitly declare type here since implicit type does not specify nullness (Lazy<(String or String?)>) [UnknownNullness]
+            src/test/pkg/test.kt:14: Warning: Should explicitly declare type here since implicit type does not specify nullness ($lazyString) [UnknownNullness]
             val lazyValue by lazy { MyClass.platform() } // ERROR 5
                 ~~~~~~~~~
-            src/test/pkg/test.kt:17: Warning: Should explicitly declare type here since implicit type does not specify nullness (Answer<(Int or Int?)>) [UnknownNullness]
+            src/test/pkg/test.kt:17: Warning: Should explicitly declare type here since implicit type does not specify nullness ($answerInt) [UnknownNullness]
             val ANSWER_THROWS = Answer { 42 } // ERROR 7
                 ~~~~~~~~~~~~~
             0 errors, 6 warnings
