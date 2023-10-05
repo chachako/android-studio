@@ -126,25 +126,9 @@ class StringFormatDetector
   }
 
   override fun visitElement(context: XmlContext, element: Element) {
-    val childNodes = element.childNodes
-    if (childNodes.length > 0) {
-      if (childNodes.length == 1) {
-        val child = childNodes.item(0)
-        val type = child.nodeType
-        if (type == Node.TEXT_NODE || type == Node.CDATA_SECTION_NODE) {
-          checkTextNode(context, element, stripQuotes(child.nodeValue))
-        }
-      } else {
-        // Concatenate children and build up a plain string.
-        // This is needed to handle xliff localization documents,
-        // but this needs more work so ignore compound XML documents as
-        // string values for now:
-        val sb = StringBuilder()
-        addText(sb, element)
-        if (sb.isNotEmpty()) {
-          checkTextNode(context, element, sb.toString())
-        }
-      }
+    val text = element.textContent
+    if (text.isNotEmpty()){
+      checkTextNode(context, element, stripQuotes(text))
     }
   }
 
@@ -883,21 +867,6 @@ This will ensure that in other languages the right set of translations are provi
         .addMoreInfo(
           "https://developer.android.com/guide/topics/resources/string-resource.html#Plurals"
         )
-
-    fun addText(sb: StringBuilder, node: Node) {
-      val nodeType = node.nodeType
-      if (nodeType == Node.TEXT_NODE || nodeType == Node.CDATA_SECTION_NODE) {
-        sb.append(stripQuotes(node.nodeValue.trim { it <= ' ' }))
-      } else {
-        val childNodes = node.childNodes
-        var i = 0
-        val n = childNodes.length
-        while (i < n) {
-          addText(sb, childNodes.item(i))
-          i++
-        }
-      }
-    }
 
     /**
      * Removes all the unescaped quotes. See

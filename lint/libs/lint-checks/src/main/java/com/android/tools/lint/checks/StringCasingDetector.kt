@@ -37,7 +37,6 @@ import java.util.ArrayList
 import java.util.HashMap
 import java.util.Locale
 import org.w3c.dom.Element
-import org.w3c.dom.Node
 
 /** String duplication when case conversion is more efficient. */
 class StringCasingDetector : ResourceXmlDetector() {
@@ -85,21 +84,9 @@ class StringCasingDetector : ResourceXmlDetector() {
   }
 
   override fun visitElement(context: XmlContext, element: Element) {
-    val childNodes = element.childNodes
-    if (childNodes.length > 0) {
-      if (childNodes.length == 1) {
-        val child = childNodes.item(0)
-        val nodeType = child.nodeType
-        if (nodeType == Node.TEXT_NODE || nodeType == Node.CDATA_SECTION_NODE) {
-          checkTextNode(context, element, StringFormatDetector.stripQuotes(child.nodeValue))
-        }
-      } else {
-        val sb = StringBuilder()
-        StringFormatDetector.addText(sb, element)
-        if (sb.isNotEmpty()) {
-          checkTextNode(context, element, sb.toString())
-        }
-      }
+    val text = element.textContent
+    if (text.isNotEmpty()){
+      checkTextNode(context, element, StringFormatDetector.stripQuotes(text))
     }
   }
 
