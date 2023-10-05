@@ -58,6 +58,9 @@ import kotlinx.coroutines.withContext
  * 1. Push the reverse daemon to the device
  * 2. Start the ReverseDaemon
  * 3. Read the stdin and write to the stdout of the daemon
+ *
+ * @param sendsDaemon a flag to control whether to send the daemon and is disabled only for tests
+ * @param socketFactory a method to create a Socket connecting to a specific host and port
  */
 internal class ReverseForwardStream(
   val devicePort: String,
@@ -67,6 +70,8 @@ internal class ReverseForwardStream(
   private val adbSession: AdbSession,
   private val responseWriter: ResponseWriter,
   private val scope: CoroutineScope,
+  private val sendsDaemon: Boolean = true,
+  private val socketFactory: (String, Int) -> Socket = { host, port -> Socket(host, port) }
 ) : Stream {
   // TODO(b/247398366): use adblib sockets
   private val openSockets = mutableMapOf<Int, Socket>()
@@ -79,13 +84,15 @@ internal class ReverseForwardStream(
 
   suspend fun run() {
     val device = DeviceSelector.fromSerialNumber(deviceId)
-    withContext(Dispatchers.IO) {
-      adbSession.deviceServices.syncSend(
-        device,
-        daemonPath,
-        "/data/local/tmp/reverse_daemon.dex",
-        RemoteFileMode.DEFAULT
-      )
+    if (sendsDaemon) {
+      withContext(Dispatchers.IO) {
+        adbSession.deviceServices.syncSend(
+          device,
+          daemonPath,
+          "/data/local/tmp/reverse_daemon.dex",
+          RemoteFileMode.DEFAULT
+        )
+      }
     }
     scope.launch(Dispatchers.IO) {
       val stdinInputChannel = adbSession.channelFactory.createPipedChannel()
@@ -238,7 +245,7 @@ internal class ReverseForwardStream(
       logger.info("Opening new port (stream ${header.streamId}) at localhost:$localPort")
       val newSocket =
         withContext(Dispatchers.IO) {
-          Socket(
+          socketFactory(
             "localhost",
             Integer.parseInt(localPort.substringAfter("tcp:").substringBefore('\u0000'))
           )
