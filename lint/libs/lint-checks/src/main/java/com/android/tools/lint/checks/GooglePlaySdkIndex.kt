@@ -42,7 +42,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
       System.getenv(SDK_INDEX_SNAPSHOT_TEST_BASE_URL_ENV_VAR) ?: DEFAULT_SDK_INDEX_SNAPSHOT_BASE_URL
     const val GOOGLE_PLAY_SDK_INDEX_KEY = "sdk_index"
     const val GOOGLE_PLAY_SDK_CACHE_EXPIRY_INTERVAL_DAYS = 7L
-    const val GOOGLE_PLAY_SDK_INDEX_URL = "https://play.google.com/sdks"
+    const val GOOGLE_PLAY_SDK_INDEX_URL = "https://developer.android.com/distribute/sdk-index"
     const val VIEW_DETAILS_MESSAGE = "View details in Google Play SDK Index"
     val POLICY_TYPE_TO_TEXT =
       mapOf(
