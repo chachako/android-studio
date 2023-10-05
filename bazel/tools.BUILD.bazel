@@ -1,3 +1,6 @@
+"""
+This package provides Gradle build files for the Android Gradle Plugin.
+"""
 filegroup(
     name = "agp_gradle_build_root_build_file",
     srcs = ["build.gradle"],
