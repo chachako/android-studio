@@ -20,13 +20,11 @@ import static org.junit.Assert.assertEquals;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
-import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
+import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.build.gradle.integration.common.utils.VariantUtils;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.TestOptions.Execution;
-import com.android.builder.model.Variant;
-import java.io.IOException;
+import com.android.builder.model.v2.ide.TestInfo;
+import com.android.builder.model.v2.ide.Variant;
+import com.android.builder.model.v2.models.AndroidProject;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -39,35 +37,35 @@ public class TestOptionsExecutionTest {
 
     @Test
     public void returnsAto() throws Exception {
-        //noinspection SpellCheckingInspection
         TestFileUtils.appendToFile(
                 project.getBuildFile(),
                 "android { testOptions.execution \"android_test_orchestrator\" }");
 
-        check(Execution.ANDROID_TEST_ORCHESTRATOR);
+        check(TestInfo.Execution.ANDROID_TEST_ORCHESTRATOR);
     }
 
     @Test
     public void returnsAto_androidx() throws Exception {
-        //noinspection SpellCheckingInspection
         TestFileUtils.appendToFile(
                 project.getBuildFile(),
                 "android { testOptions.execution \"androidx_test_orchestrator\" }");
 
-        check(Execution.ANDROIDX_TEST_ORCHESTRATOR);
+        check(TestInfo.Execution.ANDROIDX_TEST_ORCHESTRATOR);
     }
 
     @Test
-    public void returnsHostByDefault() throws Exception {
-        check(Execution.HOST);
+    public void returnsHostByDefault() {
+        check(TestInfo.Execution.HOST);
     }
 
-    private void check(Execution androidTestOrchestrator) throws IOException {
-        AndroidProject model = project.model().fetchAndroidProjects().getOnlyModel();
-        Variant debugVariant = AndroidProjectUtils.getVariantByName(model, "debug");
+    private void check(TestInfo.Execution androidTestOrchestrator) {
+        AndroidProject androidProject =
+                project.modelV2().fetchModels().getContainer().getProject().getAndroidProject();
 
-        Execution execution =
-                VariantUtils.getAndroidTestArtifact(debugVariant).getTestOptions().getExecution();
+        Variant debugVariant = AndroidProjectUtilsV2.getVariantByName(androidProject, "debug");
+
+        TestInfo.Execution execution =
+                debugVariant.getAndroidTestArtifact().getTestInfo().getExecution();
 
         assertEquals(execution, androidTestOrchestrator);
     }

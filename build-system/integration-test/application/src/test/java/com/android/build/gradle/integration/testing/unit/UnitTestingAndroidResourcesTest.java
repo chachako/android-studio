@@ -26,14 +26,12 @@ import com.android.annotations.Nullable;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
+import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.build.gradle.integration.common.utils.VariantUtils;
-import com.android.builder.model.AndroidArtifact;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.JavaArtifact;
-import com.android.builder.model.SyncIssue;
-import com.android.builder.model.Variant;
+import com.android.builder.model.v2.ide.AndroidArtifact;
+import com.android.builder.model.v2.ide.JavaArtifact;
+import com.android.builder.model.v2.ide.Variant;
+import com.android.builder.model.v2.models.AndroidProject;
 import com.android.tools.build.apkzlib.utils.IOExceptionFunction;
 import com.android.utils.SdkUtils;
 import com.google.common.base.Joiner;
@@ -142,19 +140,15 @@ public class UnitTestingAndroidResourcesTest {
         runGradleTasks.run("clean");
 
         // Check that the model contains the generated file
-        AndroidProject model =
-                project.model()
-                        .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING) // Bug 184745958
-                        .fetchAndroidProjects()
-                        .getOnlyModelMap()
-                        .get(":");
-        Variant debug = AndroidProjectUtils.getVariantByName(model, "debug");
-        JavaArtifact debugUnitTest = VariantUtils.getUnitTestArtifact(debug);
+        AndroidProject androidProject =
+                project.modelV2().fetchModels().getContainer().getProject(":").getAndroidProject();
+
+        Variant debug = AndroidProjectUtilsV2.getVariantByName(androidProject, "debug");
+        JavaArtifact debugUnitTest = debug.getUnitTestArtifact();
 
         ImmutableList.Builder<String> commands = ImmutableList.builder();
 
         commands.add(":" + debug.getMainArtifact().getSourceGenTaskName());
-        assertThat(debug.getExtraJavaArtifacts()).contains(debugUnitTest);
 
         for (String taskName : debugUnitTest.getIdeSetupTaskNames()) {
             commands.add(":" + taskName);
@@ -162,7 +156,7 @@ public class UnitTestingAndroidResourcesTest {
         commands.add(debugUnitTest.getCompileTaskName());
         runGradleTasks.run(commands.build());
 
-        Path configFile = getConfigFile(debugUnitTest.getAdditionalClassesFolders());
+        Path configFile = getConfigFile(debugUnitTest.getClassesFolders());
         assertNotNull(configFile);
         Properties properties = new Properties();
         try (Reader reader = Files.newBufferedReader(configFile)) {
@@ -230,10 +224,8 @@ public class UnitTestingAndroidResourcesTest {
     private static URLClassLoader makeClassloader(
             @NonNull AndroidArtifact main, @NonNull JavaArtifact test) {
         ImmutableList.Builder<File> files = ImmutableList.builder();
-        files.add(main.getClassesFolder(), main.getJavaResourcesFolder());
-        files.addAll(main.getAdditionalClassesFolders());
-        files.add(test.getClassesFolder(), test.getJavaResourcesFolder());
-        files.addAll(test.getAdditionalClassesFolders());
+        files.addAll(main.getClassesFolders());
+        files.addAll(test.getClassesFolders());
         return new URLClassLoader(
                 files.build()
                         .stream()

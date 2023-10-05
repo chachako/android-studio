@@ -16,21 +16,22 @@
 
 package com.android.build.gradle.integration.testing.unit;
 
+import static com.android.SdkConstants.FN_R_CLASS_JAR;
+import static com.android.build.gradle.internal.scope.ArtifactTypeUtil.getOutputDir;
 import static com.android.testutils.truth.PathSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject;
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject;
-import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
+import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.build.gradle.integration.common.utils.VariantUtils;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.JavaArtifact;
-import com.android.builder.model.Variant;
+import com.android.build.gradle.internal.scope.InternalArtifactType;
+import com.android.builder.model.v2.ide.JavaArtifact;
+import com.android.builder.model.v2.ide.Variant;
+import com.android.builder.model.v2.models.AndroidProject;
 import com.android.testutils.apk.Zip;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -121,9 +122,12 @@ public class UnitTestingRClassLoadTest {
      */
     @Test
     public void checkRClassInModel() throws Exception {
-        AndroidProject model = project.model().fetchAndroidProjects().getOnlyModelMap().get(":c");
-        Variant debug = AndroidProjectUtils.getVariantByName(model, "debug");
-        JavaArtifact debugUnitTest = VariantUtils.getUnitTestArtifact(debug);
+        AndroidProject androidProject =
+                project.modelV2().fetchModels().getContainer().getProject(":c").getAndroidProject();
+
+        Variant debug = AndroidProjectUtilsV2.getVariantByName(androidProject, "debug");
+        JavaArtifact debugUnitTest = debug.getUnitTestArtifact();
+
         // Check that the IDE commands build that jar.
         ImmutableList.Builder<String> commands = ImmutableList.builder();
         commands.add(":c:" + debug.getMainArtifact().getSourceGenTaskName());
@@ -133,8 +137,16 @@ public class UnitTestingRClassLoadTest {
         commands.add(debugUnitTest.getCompileTaskName());
         project.executor().run(commands.build());
         // Check that the R jar has the expected classes
-        assertThat(debugUnitTest.getAdditionalClassesFolders()).hasSize(1);
-        File rJar = Iterables.getOnlyElement(debugUnitTest.getAdditionalClassesFolders());
+        File rJar =
+                new File(
+                        getOutputDir(
+                                InternalArtifactType.COMPILE_AND_RUNTIME_NOT_NAMESPACED_R_CLASS_JAR
+                                        .INSTANCE,
+                                project.getSubproject("c").getBuildDir()),
+                        "debugUnitTest/" + FN_R_CLASS_JAR);
+
+        assertThat(debugUnitTest.getClassesFolders()).contains(rJar);
+
         try (Zip zip = new Zip(rJar)) {
             Set<String> entryNames =
                     zip.getEntries().stream().map(Path::toString).collect(Collectors.toSet());
