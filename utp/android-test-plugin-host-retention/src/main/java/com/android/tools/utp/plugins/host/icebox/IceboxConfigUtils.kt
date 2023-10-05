@@ -102,9 +102,7 @@ private fun computeRegistrationDirectoryContainer(): Path? {
                 System.getenv("ANDROID_EMULATOR_HOME"),
                 System.getenv("ANDROID_PREFS_ROOT"),
                 System.getenv("ANDROID_SDK_HOME"),
-                (System.getenv("HOME") ?: "/") + ".android",
-                // For integration tests, we use java property.
-                System.getProperty("android.emulator.home")
+                (System.getenv("HOME") ?: "/") + ".android"
             )) {
                 if (dirstr == null) {
                     continue

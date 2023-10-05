@@ -57,7 +57,7 @@ class FailureRetentionConnectedTest {
     @Throws(IOException::class)
     fun setUp() {
         // fail fast if no response
-        project.getSubproject("app").addAdbTimeout()
+        project.addAdbTimeout()
         // run the uninstall tasks in order to (1) make sure nothing is installed at the beginning
         // of each test and (2) check the adb connection before taking the time to build anything.
         project.execute("uninstallAll")
@@ -69,7 +69,6 @@ class FailureRetentionConnectedTest {
         project.executor()
             .withArguments(
                 listOf(
-                    "-Dandroid.emulator.home=${System.getProperty("user.dir")}/.android",
                     "-Pandroid.testInstrumentationRunnerArguments.class=" +
                             "com.example.android.kotlin.ExampleInstrumentedTest#useAppContext"
                 )
@@ -87,7 +86,6 @@ class FailureRetentionConnectedTest {
             project.executor()
                 .withArguments(
                     listOf(
-                        "-Dandroid.emulator.home=${System.getProperty("user.dir")}/.android",
                         "-Pandroid.testInstrumentationRunnerArguments.class=" +
                                 "com.example.android.kotlin.ExampleInstrumentedTest"
                     )
@@ -110,7 +108,6 @@ class FailureRetentionConnectedTest {
             project.executor()
                 .withArguments(
                     listOf(
-                        "-Dandroid.emulator.home=${System.getProperty("user.dir")}/.android",
                         "-Pandroid.testInstrumentationRunnerArguments.class=" +
                                 "com.example.android.kotlin.ExampleInstrumentedTest"
                     )
@@ -176,7 +173,6 @@ class FailureRetentionConnectedTest {
             project.executor()
                 .withArguments(
                     listOf(
-                        "-Dandroid.emulator.home=${System.getProperty("user.dir")}/.android",
                         "-Pandroid.testInstrumentationRunnerArguments.class=" +
                                 "com.example.android.kotlin.UncaughtExceptionInstrumentedTest"
                     )
