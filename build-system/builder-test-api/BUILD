@@ -22,7 +22,7 @@ iml_module(
 maven_library(
     name = "tools.builder-test-api",
     srcs = glob([
-        "src/main/java/**/*.java",
+        "src/main/java/com/android/builder/testing/api/*.java",
     ]),
     coordinates = "com.android.tools.build:builder-test-api",
     notice = "NOTICE",
@@ -53,12 +53,12 @@ coverage_java_test(
 filegroup(
     name = "agp_gradle_build_files",
     srcs = glob([
-        "src/main/**/*.java",
+        "src/main/java/com/android/builder/testing/api/*.java",
         "src/main/**/*.kt",
         "src/main/resources/**",
     ]) + [
-        "build.gradle",
         "NOTICE",
+        "build.gradle",
     ],
     visibility = [
         "//tools/base/build-system:__pkg__",
