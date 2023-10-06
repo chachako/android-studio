@@ -83,7 +83,7 @@ fun RecipeExecutor.generateBasicActivity(
     isLauncher = isLauncher,
     hasNoActionBar = true,
     activityThemeName = moduleData.themesData.main.name,
-    generateActivityTitle = true)
+    generateActivityTitle = false)
   generateAppBar(
     moduleData, activityClass, packageName, contentLayoutName, layoutName, useAndroidX = useAndroidX, isMaterial3 = true
   )
