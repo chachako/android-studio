@@ -1,9 +1,9 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
+load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library")
-load("//tools/base/bazel:utils.bzl", "dir_archive", "fileset")
-load("//tools/base/common:version.bzl", "BASE_VERSION", "BUILD_VERSION")
-load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
+load("//tools/base/bazel:utils.bzl", "fileset")
+load("//tools/base/common:version.bzl", "BASE_VERSION")
 
 filegroup(
     name = "agp_gradle_build_files",
@@ -60,7 +60,17 @@ maven_library(
     name = "tools.common",
     srcs = glob([
         "src/main/java/**/*.kt",
-        "src/main/java/**/*.java",
+        "src/main/java/com/android/*.java",
+        "src/main/java/com/android/ide/common/blame/*.java",
+        "src/main/java/com/android/io/*.java",
+        "src/main/java/com/android/prefs/*.java",
+        "src/main/java/com/android/sdklib/*.java",
+        "src/main/java/com/android/support/*.java",
+        "src/main/java/com/android/tools/proguard/*.java",
+        "src/main/java/com/android/utils/*.java",
+        "src/main/java/com/android/utils/concurrency/*.java",
+        "src/main/java/com/android/xml/*.java",
+        "src/main/java/com/android/xml/sax/*.java",
     ]),
     bundled_deps = [
         "//tools/base/common/version",
@@ -89,7 +99,13 @@ kotlin_test(
     name = "tools.tests",
     srcs = glob([
         "src/test/java/**/*.kt",
-        "src/test/java/**/*.java",
+        "src/test/java/com/android/ide/common/blame/*.java",
+        "src/test/java/com/android/io/*.java",
+        "src/test/java/com/android/prefs/*.java",
+        "src/test/java/com/android/support/*.java",
+        "src/test/java/com/android/tools/proguard/*.java",
+        "src/test/java/com/android/utils/*.java",
+        "src/test/java/com/android/utils/concurrency/*.java",
     ]),
     data = [
         ":TestData",
@@ -135,7 +151,7 @@ kotlin_library(
     name = "tools.fixtures",
     srcs = glob([
         "src/testFixtures/java/**/*.kt",
-        "src/testFixtures/java/**/*.java",
+        "src/testFixtures/java/com/android/prefs/*.java",
     ]),
     resources = glob(["src/testFixtures/resources/**"]),
     visibility = ["//visibility:public"],  # contains com.android.repository.testframework
