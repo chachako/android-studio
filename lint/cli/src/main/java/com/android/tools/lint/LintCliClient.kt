@@ -1683,7 +1683,7 @@ open class LintCliClient : LintClient {
     }
   }
 
-  protected open inner class LintCliUastParser(project: Project?) :
+  protected open inner class LintCliUastParser(private val project: Project?) :
     DefaultUastParser(project, ideaProject!!) {
     override fun prepare(
       contexts: List<JavaContext>,
@@ -1698,6 +1698,40 @@ open class LintCliClient : LintClient {
           kotlinFiles.add(context.file)
         }
       }
+
+      // In unit tests, when using the FE1.0 UAST environment, Kotlin elements from dependencies (in
+      // multimodule tests) cannot be resolved unless we include the Kotlin source files from all
+      // dependencies in the call to UastEnvironment.analyzeFiles(). Thus, we add these source files
+      // to kotlinFiles. Note that we could do something like this in Fe10UastEnvironment (see
+      // addKtFilesFromSrcJars), but by doing it here, we can limit to unit tests and just the files
+      // from dependencies.
+      if (isUnitTest && uastEnvironment is Fe10UastEnvironment) {
+        fun gatherKotlinFiles(dir: File, result: MutableList<File>) {
+          val files = dir.listFiles()
+          if (files != null) {
+            for (file in files.sorted()) {
+              if (file.isFile) {
+                val path = file.path
+                if (path.endsWith(DOT_KT)) {
+                  result.add(file)
+                }
+              } else if (file.isDirectory) {
+                gatherKotlinFiles(file, result)
+              }
+            }
+          }
+        }
+
+        if (project != null) {
+          for (library in project.allLibraries) {
+            for (sourceFolder in
+              library.javaSourceFolders.asSequence() + library.generatedSourceFolders) {
+              gatherKotlinFiles(library.dir, kotlinFiles)
+            }
+          }
+        }
+      }
+
       // We unconditionally invoke UastEnvironment.analyzeFiles(), even
       // if kotlinFiles is empty -- without this, the machinery in
       // the project (such as the CliLightClassGenerationSupport and

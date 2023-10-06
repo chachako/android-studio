@@ -23,6 +23,18 @@ import com.android.tools.lint.checks.UnsafeImplicitIntentDetector
 import com.android.tools.lint.checks.infrastructure.LintDetectorTest.compiled
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
+import com.android.tools.lint.detector.api.Category
+import com.android.tools.lint.detector.api.Detector
+import com.android.tools.lint.detector.api.Implementation
+import com.android.tools.lint.detector.api.Issue
+import com.android.tools.lint.detector.api.JavaContext
+import com.android.tools.lint.detector.api.Scope
+import com.android.tools.lint.detector.api.Severity
+import com.android.tools.lint.detector.api.SourceCodeScanner
+import com.intellij.psi.JavaPsiFacade
+import com.intellij.psi.PsiMethod
+import com.intellij.psi.search.GlobalSearchScope
+import org.jetbrains.uast.UCallExpression
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -398,5 +410,122 @@ class ResolveCheckerTest {
       .issues(AlwaysShowActionDetector.ISSUE)
       .run()
       .expectClean()
+  }
+
+  @Test
+  fun testMultiModuleKotlinSourceResolve() {
+    // Regression test for b/188814760. Kotlin source files from dependencies in multimodule unit
+    // tests were not getting resolved when using Fe10UastEnvironment. This test just defines some
+    // annotations using Java and Kotlin in lib, and imports them both in app. The import of
+    // LibAnnotationKotlin used to fail.
+    val lib =
+      ProjectDescription()
+        .name("lib")
+        .type(ProjectDescription.Type.LIBRARY)
+        .files(
+          kotlin(
+              """
+          package test.pkg.lib
+
+          @Retention(AnnotationRetention.BINARY)
+          @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+          annotation class LibAnnotationKotlin
+          """
+            )
+            .indented(),
+          java(
+              """
+          package test.pkg.lib;
+
+          import java.lang.annotation.ElementType;
+          import java.lang.annotation.Retention;
+          import java.lang.annotation.RetentionPolicy;
+          import java.lang.annotation.Target;
+
+          @Retention(RetentionPolicy.CLASS)
+          @Target({ElementType.TYPE, ElementType.METHOD})
+          public @interface LibAnnotationJava {}
+          """
+            )
+            .indented(),
+          kotlin(
+              """
+        package test.pkg2.lib
+
+        import test.pkg.lib.LibAnnotationJava
+        import test.pkg.lib.LibAnnotationKotlin
+
+        @LibAnnotationJava
+        @LibAnnotationKotlin
+        class LibHello {
+          fun foo() {
+            foo()
+          }
+        }
+"""
+            )
+            .indented()
+        )
+
+    val app =
+      ProjectDescription()
+        .name("app")
+        .type(ProjectDescription.Type.APP)
+        .files(
+          kotlin(
+              """
+          package test.pkg.app
+
+          import test.pkg.lib.LibAnnotationJava
+          import test.pkg.lib.LibAnnotationKotlin // Import from Kotlin source from lib
+
+          @LibAnnotationJava
+          @LibAnnotationKotlin
+          class AppHello {
+            fun foo() {
+              foo()
+            }
+          }
+          """
+            )
+            .indented()
+        )
+        .dependsOn(lib)
+
+    lint().projects(app).issues(FindClassDetector.ISSUE).run().expectClean()
+  }
+
+  class FindClassDetector : Detector(), SourceCodeScanner {
+    override fun getApplicableMethodNames() = listOf("foo")
+
+    override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+      JavaPsiFacade.getInstance(context.project.ideaProject!!)
+        .findClass(
+          "test.pkg.lib.LibAnnotationKotlin",
+          GlobalSearchScope.allScope(context.project.ideaProject!!)
+        )!!
+
+      JavaPsiFacade.getInstance(context.project.ideaProject!!)
+        .findClass(
+          "test.pkg.lib.LibAnnotationJava",
+          GlobalSearchScope.allScope(context.project.ideaProject!!)
+        )!!
+    }
+
+    companion object {
+      val ISSUE =
+        Issue.create(
+          "_FindClassDetector",
+          "Not applicable",
+          "Not applicable",
+          Category.MESSAGES,
+          5,
+          Severity.WARNING,
+          Implementation(
+            FindClassDetector::class.java,
+            Scope.JAVA_FILE_SCOPE,
+          ),
+        )
+    }
   }
 }
