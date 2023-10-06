@@ -136,7 +136,7 @@ java_test(
     ],
     jvm_flags = ["-Dtest.suite.jar=testBenchmarkAdd.jar"],
     tags = [
-        "manual",
+        "manual",  # b/303906718
     ],
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
@@ -159,7 +159,7 @@ java_test(
     ],
     jvm_flags = ["-Dtest.suite.jar=testBenchmarkJarMerge.jar"],
     tags = [
-        "manual",
+        "manual",  # b/303906718
     ],
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
@@ -182,7 +182,7 @@ java_test(
     ],
     jvm_flags = ["-Dtest.suite.jar=testBenchmarkList.jar"],
     tags = [
-        "manual",
+        "manual",  # b/303906718
     ],
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
@@ -205,7 +205,7 @@ java_test(
     ],
     jvm_flags = ["-Dtest.suite.jar=testBenchmarkAdd.jar"],
     tags = [
-        "manual",
+        "manual",  # b/303906718
     ],
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
