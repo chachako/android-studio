@@ -21,18 +21,15 @@ import static com.android.build.gradle.integration.common.fixture.GradleTestProj
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThatApk;
 import static com.android.testutils.truth.PathSubject.assertThat;
-
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.ModelContainer;
-import com.android.build.gradle.integration.common.truth.ModelContainerSubject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.builder.model.AndroidProject;
 import com.android.builder.model.v2.ide.SyncIssue;
 import com.android.testutils.apk.Apk;
 import com.android.utils.FileUtils;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -73,17 +70,17 @@ public class MinifyLibTest {
                         + "defaultConfig.consumerProguardFiles getDefaultProguardFile('proguard-android.txt')\n"
                         + "}\n");
 
-        ModelContainer<AndroidProject> container =
-                project.model()
-                        .ignoreSyncIssues()
-                        .fetchAndroidProjects();
-        ModelContainerSubject.assertThat(container)
-                .rootBuild()
-                .project(":lib")
-                .hasSingleError(SyncIssue.TYPE_GENERIC)
-                .that()
-                .hasMessageThatContains(
-                        "proguard-android.txt should not be used as a consumer configuration file");
+        Collection<SyncIssue> syncIssues = project.modelV2()
+                .ignoreSyncIssues()
+                .fetchModels()
+                .getContainer()
+                .getProject(":lib").getIssues().getSyncIssues();
+
+        assertThat(syncIssues.size()).isEqualTo(1);
+        SyncIssue issue = syncIssues.iterator().next();
+        assertThat(issue.getType()).isEqualTo(SyncIssue.TYPE_GENERIC);
+        assertThat(issue.getSeverity()).isEqualTo(SyncIssue.SEVERITY_ERROR);
+        assertThat(issue.getMessage()).contains("proguard-android.txt should not be used as a consumer configuration file");
     }
 
     @Test

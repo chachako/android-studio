@@ -17,12 +17,7 @@
 package com.android.build.gradle.integration.application;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.ModelContainer;
-import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.Variant;
-import com.android.builder.model.level2.GraphItem;
-import com.google.common.collect.Iterables;
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.google.common.truth.Truth;
 import java.util.List;
 import org.junit.ClassRule;
@@ -38,20 +33,19 @@ public class SimpleCompositeBuildTest {
                     .create();
 
     @Test
-    public void testBuild() throws Exception {
+    public void testBuild() {
         project.execute("clean", "assembleDebug");
-        ModelContainer<AndroidProject> modelContainer = project.model().fetchAndroidProjects();
+        ModelContainerV2.ModelInfo modelInfo = project.modelV2()
+                .fetchVariantDependencies("debug")
+                .getContainer()
+                .getProject(":app");
 
-        AndroidProject appProject = modelContainer.getRootBuildModelMap().get(":app");
-
-        Variant debugVariant = AndroidProjectUtils.getVariantByName(appProject, "debug");
-
-        List<GraphItem> dependencies =
-                debugVariant.getMainArtifact().getDependencyGraphs().getCompileDependencies();
+        List<com.android.builder.model.v2.ide.GraphItem>
+                dependencies
+                = modelInfo.getVariantDependencies().getMainArtifact().getCompileDependencies();
 
         Truth.assertThat(dependencies).hasSize(1);
-
-        String libAddress = Iterables.getOnlyElement(dependencies).getArtifactAddress();
-        Truth.assertThat(libAddress).endsWith("string-utils@@:");
+        Truth.assertThat(dependencies.get(0).getKey())
+                .isEqualTo(":string-utils|:|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>17, org.gradle.libraryelements>jar, org.gradle.usage>java-api|org.sample:string-utils:1.0");
     }
 }

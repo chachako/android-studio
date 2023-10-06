@@ -17,14 +17,10 @@
 package com.android.build.gradle.integration.application;
 
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
-import static com.android.testutils.truth.PathSubject.assertThat;
-
-import com.android.annotations.NonNull;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
-import com.android.builder.model.AndroidArtifact;
-import com.android.builder.model.AndroidProject;
-import java.io.IOException;
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
+import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
+import com.android.builder.model.v2.ide.AndroidArtifact;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -39,18 +35,15 @@ public class ModelWithDataBindingTest {
     }
 
     @Test
-    public void enableV2() throws IOException {
-        AndroidArtifact debugArtifact = createArtifact();
-        assertThat(debugArtifact.getGeneratedSourceFolders()).contains(project.file(DB_CLASS_PATH));
-    }
-
-    @NonNull
-    private AndroidArtifact createArtifact() throws IOException {
-        AndroidProject model =
-                project.model()
-                        .ignoreSyncIssues()
-                        .fetchAndroidProjects()
-                        .getOnlyModel();
-        return AndroidProjectUtils.getVariantByName(model, "debug").getMainArtifact();
+    public void enableV2() {
+        ModelContainerV2.ModelInfo modelInfo = project.modelV2()
+                .ignoreSyncIssues()
+                .fetchModels()
+                .getContainer()
+                .getProject();
+        AndroidArtifact debugArtifact = AndroidProjectUtilsV2.getVariantByName(modelInfo.getAndroidProject(), "debug")
+                .getMainArtifact();
+        assertThat(debugArtifact.getGeneratedSourceFolders())
+                .contains(project.file(DB_CLASS_PATH));
     }
 }
