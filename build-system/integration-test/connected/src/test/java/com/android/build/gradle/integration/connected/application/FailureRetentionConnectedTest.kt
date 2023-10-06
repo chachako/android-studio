@@ -20,6 +20,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject.Com
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.integration.connected.utils.getEmulator
 import com.android.testutils.truth.PathSubject.assertThat
+import com.google.common.truth.Truth
 import com.google.testing.platform.proto.api.core.TestArtifactProto
 import com.google.testing.platform.proto.api.core.TestResultProto
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto
@@ -118,18 +119,25 @@ class FailureRetentionConnectedTest {
     }
 
     private fun validateSnapshotArtifact(path: String) {
-        assertThat(File(path)).exists()
-        FileInputStream(path).use { inputStream ->
-            TarArchiveInputStream(inputStream).use { tarInputStream ->
-                var hasSnapshotPb = false
-                var entry: TarArchiveEntry?
-                while (tarInputStream.nextTarEntry.also { entry = it } != null) {
-                    if (entry!!.name == "snapshot.pb") {
-                        hasSnapshotPb = true
-                        break
+        val file = File(path)
+        assertThat(file).exists()
+        if (file.isDirectory) {
+            Truth.assertWithMessage(
+                "Snapshot file $path corrupted"
+            ).that(File(file, "snapshot.pb").exists()).isTrue()
+        } else {
+            FileInputStream(path).use { inputStream ->
+                TarArchiveInputStream(inputStream).use { tarInputStream ->
+                    var hasSnapshotPb = false
+                    var entry: TarArchiveEntry?
+                    while (tarInputStream.nextTarEntry.also { entry = it } != null) {
+                        if (entry!!.name == "snapshot.pb") {
+                            hasSnapshotPb = true
+                            break
+                        }
                     }
+                    assertTrue(hasSnapshotPb, "Snapshot file $path corrupted")
                 }
-                assertTrue(hasSnapshotPb, "Snapshot file ${path} corrupted")
             }
         }
     }
