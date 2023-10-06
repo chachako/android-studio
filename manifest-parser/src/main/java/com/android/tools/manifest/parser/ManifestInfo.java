@@ -18,6 +18,7 @@ package com.android.tools.manifest.parser;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.tools.manifest.parser.components.ManifestActivityInfo;
+import com.android.tools.manifest.parser.components.ManifestReceiverInfo;
 import com.android.tools.manifest.parser.components.ManifestServiceInfo;
 import com.android.xml.AndroidManifest;
 import java.io.IOException;
@@ -28,6 +29,8 @@ import java.util.List;
 public class ManifestInfo {
 
     private final List<ManifestActivityInfo> activities;
+
+    private final List<ManifestReceiverInfo> receivers;
 
     private final List<ManifestServiceInfo> services;
 
@@ -46,6 +49,7 @@ public class ManifestInfo {
     private ManifestInfo() {
         activities = new ArrayList<>();
         services = new ArrayList<>();
+        receivers = new ArrayList<>();
         sdkLibraries = new ArrayList<>();
         applicationId = "";
         instrumentationTargetPackages = new ArrayList<>();
@@ -62,6 +66,11 @@ public class ManifestInfo {
     @NonNull
     public List<ManifestActivityInfo> activities() {
         return activities;
+    }
+
+    @NonNull
+    public List<ManifestReceiverInfo> receivers() {
+        return receivers;
     }
 
     @NonNull
@@ -131,6 +140,8 @@ public class ManifestInfo {
             if (AndroidManifest.NODE_ACTIVITY.equals(child.name()) ||
                 AndroidManifest.NODE_ACTIVITY_ALIAS.equals(child.name())) {
                 activities.add(new ManifestActivityInfo(child, applicationId));
+            } else if (AndroidManifest.NODE_RECEIVER.equals(child.name())) {
+                receivers.add(new ManifestReceiverInfo(child, applicationId));
             } else if (AndroidManifest.NODE_SERVICE.equals(child.name())) {
                 services.add(new ManifestServiceInfo(child, applicationId));
             } else if (AndroidManifest.NODE_SDK_LIBRARY.equals(child.name())) {

@@ -18,6 +18,7 @@ package com.android.tools.deployer.model;
 import com.android.annotations.NonNull;
 import com.android.tools.deployer.ZipUtils;
 import com.android.tools.manifest.parser.components.ManifestActivityInfo;
+import com.android.tools.manifest.parser.components.ManifestReceiverInfo;
 import com.android.tools.manifest.parser.components.ManifestServiceInfo;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -44,6 +45,8 @@ public class Apk implements Serializable {
 
     public final transient @NonNull List<ManifestActivityInfo> activities;
 
+    public final transient @NonNull List<ManifestReceiverInfo> receivers;
+
     public final transient @NonNull List<ManifestServiceInfo> services;
 
     public final Map<String, ApkEntry> apkEntries;
@@ -59,6 +62,7 @@ public class Apk implements Serializable {
             List<String> targetPackages,
             @NonNull List<ManifestServiceInfo> services,
             @NonNull List<ManifestActivityInfo> activities,
+            @NonNull List<ManifestReceiverInfo> receivers,
             @NonNull List<String> sdkLibraries,
             Map<String, ApkEntry> apkEntries) {
         this.name = name;
@@ -70,6 +74,7 @@ public class Apk implements Serializable {
         this.sdkLibraries = sdkLibraries;
         this.services = services;
         this.activities = activities;
+        this.receivers = receivers;
         this.apkEntries = apkEntries;
     }
 
@@ -87,6 +92,7 @@ public class Apk implements Serializable {
         private String packageName;
         private List<String> targetPackages;
         private List<ManifestServiceInfo> services;
+        private List<ManifestReceiverInfo> receivers;
         private List<ManifestActivityInfo> activities;
         private List<String> sdkLibraries;
 
@@ -138,6 +144,11 @@ public class Apk implements Serializable {
             return this;
         }
 
+        public Builder setReceivers(List<ManifestReceiverInfo> receivers) {
+            this.receivers = receivers;
+            return this;
+        }
+
         public Builder setSdkLibraries(List<String> sdkLibraries) {
             this.sdkLibraries = sdkLibraries;
             return this;
@@ -174,6 +185,7 @@ public class Apk implements Serializable {
                             targetPackages,
                             services,
                             activities,
+                            receivers,
                             sdkLibraries,
                             apkEntries.build());
             apk.apkEntries.values().forEach(entry -> entry.setApk(apk));

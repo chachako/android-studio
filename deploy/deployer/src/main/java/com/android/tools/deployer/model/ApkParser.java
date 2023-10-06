@@ -148,6 +148,7 @@ public class ApkParser {
                             .setTargetPackages(manifest.getInstrumentationTargetPackages())
                             .setActivities(manifest.activities())
                             .setServices(manifest.services())
+                            .setReceivers(manifest.receivers())
                             .setSdkLibraries(manifest.getSdkLibraries());
 
             for (ZipUtils.ZipEntry entry : zipEntries) {

@@ -20,13 +20,12 @@ import com.android.annotations.Nullable;
 import com.android.testutils.TestResources;
 import com.android.tools.manifest.parser.components.ManifestActivityInfo;
 import com.android.tools.manifest.parser.components.ManifestServiceInfo;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class ManifestInfoParserTest {
 
@@ -113,6 +112,17 @@ public class ManifestInfoParserTest {
             Assert.assertFalse(complication.isolatedProcess);
             Assert.assertTrue(complication.hasAction(
                     "android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST"));
+        }
+    }
+
+    @Test
+    public void testReceiverParsing() throws IOException {
+        URL url = TestResources.getFile("/receiverParsing/AndroidManifest.bxml").toURI().toURL();
+        Assert.assertNotNull(url);
+        try (InputStream input = url.openStream()) {
+            ManifestInfo manifest = ManifestInfo.parseBinaryFromStream(input);
+            Assert.assertEquals(1, manifest.receivers().size());
+            manifest.receivers().get(0).hasPermission("android.permission.BIND_DEVICE_ADMIN");
         }
     }
 
