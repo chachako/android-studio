@@ -86,6 +86,11 @@ _git = [
         "name": "gflags_repo",
         "path": "external/gflags",
     },
+    {
+        "name": "android_system_logging_repo",
+        "build_file": "tools/base/bazel/external/android_system_logging.BUILD",
+        "path": "external/android/system/logging",
+    },
 ]
 
 # Vendor repository mapped to git repositories.
