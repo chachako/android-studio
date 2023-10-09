@@ -18,7 +18,9 @@ package com.android.ide.common.resources
 import com.android.ide.common.util.PathString
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
+import java.awt.Color
 
 class ResourcesUtilTest {
   @Test
@@ -35,5 +37,37 @@ class ResourcesUtilTest {
   fun testToFileResourcePathString() {
     assertThat(toFileResourcePathString("apk:///foo.apk!/bar.baz"))
         .isEqualTo(PathString("apk", "/foo.apk!/bar.baz"))
+  }
+
+  @Test
+  fun testColorToString() {
+    assertEquals("#0FFF0000", colorToString(Color(0x0fff0000, true)))
+    assertEquals("#00FF00", colorToString(Color(0x00ff00)))
+    assertEquals("#00000000", colorToString(Color(0x00000000, true)))
+    assertEquals("#F0112233", colorToString(Color(0x11, 0x22, 0x33, 0xf0)))
+    assertEquals("#00FFFFFF", colorToString(Color(0xff, 0xff, 0xff, 0x00)))
+  }
+
+  @Test
+  fun testColorToStringWithAlpha() {
+    assertEquals("0x0FFF0000", colorToStringWithAlpha(Color(0x0fff0000, true)))
+    assertEquals("0xFF00FF00", colorToStringWithAlpha(Color(0x00ff00)))
+    assertEquals("0x00000000", colorToStringWithAlpha(Color(0x00000000, true)))
+    assertEquals("0xF0112233", colorToStringWithAlpha(Color(0x11, 0x22, 0x33, 0xf0)))
+    assertEquals("0x00FFFFFF", colorToStringWithAlpha(Color(0xff, 0xff, 0xff, 0x00)))
+  }
+
+  @Test
+  fun testParseColor() {
+    assertEquals(-0xff00bc, parseColor("#0f4")!!.rgb)
+    assertEquals(0x11223377, parseColor("#1237")!!.rgb)
+    assertEquals(-0xedcbaa, parseColor("#123456")!!.rgb)
+    assertEquals(0x08123456, parseColor("#08123456")!!.rgb)
+
+    // Test that spaces are correctly trimmed
+    assertEquals(-0xff00bc, parseColor("#0f4 ")!!.rgb)
+    assertEquals(0x11223377, parseColor(" #1237")!!.rgb)
+    assertEquals(-0xedcbaa, parseColor("#123456\n\n ")!!.rgb)
+    assertNull(parseColor("#123 456"))
   }
 }
