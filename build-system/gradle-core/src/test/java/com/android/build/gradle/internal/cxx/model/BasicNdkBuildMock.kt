@@ -16,8 +16,6 @@
 
 package com.android.build.gradle.internal.cxx.model
 
-import com.android.build.gradle.internal.core.Abi
-import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import com.android.utils.FileUtils
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.SetProperty
@@ -33,7 +31,6 @@ open class BasicNdkBuildMock : BasicModuleModelMock() {
         createCxxModuleModel(
             sdkComponents,
             configurationParameters,
-            FakeProviderFactory.factory,
         )
     }
     val variant by lazy { createCxxVariantModel(configurationParameters, module) }

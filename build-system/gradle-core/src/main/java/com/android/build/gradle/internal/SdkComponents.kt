@@ -16,8 +16,12 @@
 
 package com.android.build.gradle.internal
 
+import com.android.SdkConstants.CMAKE_DIR_PROPERTY
+import com.android.SdkConstants.NDK_DIR_PROPERTY
+import com.android.SdkConstants.NDK_SYMLINK_DIR
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.cxx.configure.NdkLocator
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import com.android.build.gradle.internal.cxx.stripping.SymbolStripExecutableFinder
 import com.android.build.gradle.internal.cxx.stripping.createSymbolStripExecutableFinder
 import com.android.build.gradle.internal.errors.SyncIssueReporterImpl
@@ -286,7 +290,7 @@ abstract class SdkComponentsBuildService @Inject constructor(
         ndkLocator: NdkLocator,
         objectFactory: ObjectFactory,
         providerFactory: ProviderFactory
-    ): NdkHandler(ndkLocator, providerFactory) {
+    ): NdkHandler(ndkLocator) {
 
         val ndkDirectoryProvider: Provider<Directory> =
             objectFactory.directoryProperty().fileProvider(providerFactory.provider {
@@ -313,14 +317,17 @@ abstract class SdkComponentsBuildService @Inject constructor(
 
     private fun ndkLoader(
         ndkVersion: String?,
-        ndkPath: String?
+        ndkPathFromDsl: String?,
+        ndkPathFromProperties: String?,
     ) =
         NdkLocator(
             parameters.issueReporter.get(),
             ndkVersion,
-            ndkPath,
+            ndkPathFromDsl,
+            ndkPathFromProperties,
             parameters.projectRootDir.get().asFile,
-            sdkHandler
+            sdkHandler,
+            sdkSourceSet
         )
 
 
@@ -337,18 +344,35 @@ abstract class SdkComponentsBuildService @Inject constructor(
             compileSdkVersion,
             buildToolsRevision)
 
+    private val localProperties =
+        gradleLocalProperties(parameters.projectRootDir.asFile.get(), providerFactory)
+
+    val ndkDirFromProperties: String? = localProperties.getProperty(NDK_DIR_PROPERTY)
+
+    val ndkSymlinkDirFromProperties: String? = localProperties.getProperty(NDK_SYMLINK_DIR)
+
+    val cmakeDirFromProperties: String? = localProperties.getProperty(CMAKE_DIR_PROPERTY)
+
     fun versionedNdkHandler(
         ndkVersion: String?,
-        ndkPath: String?
+        ndkPathFromDsl: String?,
     ): VersionedNdkHandler =
         VersionedNdkHandler(
-            ndkLoader(ndkVersion, ndkPath),
+            ndkLoader(
+                ndkVersion,
+                ndkPathFromDsl,
+                ndkDirFromProperties,
+            ),
             objectFactory,
             providerFactory)
 
     fun versionedNdkHandler(input: NdkHandlerInput) =
         VersionedNdkHandler(
-            ndkLoader(input.ndkVersion.orNull, input.ndkPath.orNull),
+            ndkLoader(
+                input.ndkVersion.orNull,
+                input.ndkPathFromDsl.orNull,
+                ndkDirFromProperties
+            ),
             objectFactory,
             providerFactory)
 
@@ -408,7 +432,7 @@ abstract class SdkComponentsBuildService @Inject constructor(
  * and it tries to add highest installed API when invoked from the IDE.
  */
 fun getSdkDir(projectRootDir: File, issueReporter: IssueReporter, providers: ProviderFactory): File {
-    return SdkLocator.getSdkDirectory(projectRootDir, issueReporter, providers)
+    return SdkLocator.getSdkDirectory(projectRootDir, issueReporter, SdkLocationSourceSet(projectRootDir, providers))
 }
 
 /** This can be used by tasks requiring android.jar as input with [org.gradle.api.tasks.Nested]. */
@@ -537,12 +561,12 @@ abstract class NdkHandlerInput {
 
     @get:Input
     @get:Optional
-    abstract val ndkPath: Property<String>
+    abstract val ndkPathFromDsl: Property<String>
 }
 
 fun NdkHandlerInput.initialize(creationConfig: ComponentCreationConfig) {
     ndkVersion.setDisallowChanges(creationConfig.global.ndkVersion)
-    ndkPath.setDisallowChanges(creationConfig.global.ndkPath)
+    ndkPathFromDsl.setDisallowChanges(creationConfig.global.ndkPath)
 }
 
 internal const val API_VERSIONS_FILE_NAME = "api-versions.xml"

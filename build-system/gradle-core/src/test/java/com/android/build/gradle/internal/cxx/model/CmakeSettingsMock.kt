@@ -19,7 +19,6 @@ package com.android.build.gradle.internal.cxx.model
 import com.android.build.gradle.internal.cxx.configure.CmakeProperty
 import com.android.build.gradle.internal.cxx.settings.Macro
 import com.android.build.gradle.internal.fixtures.FakeFileContents
-import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import com.android.utils.FileUtils.join
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.SetProperty
@@ -39,7 +38,6 @@ class CmakeSettingsMock : BasicModuleModelMock() {
         createCxxModuleModel(
             sdkComponents,
             configurationParameters,
-            FakeProviderFactory.factory,
         )
     }
     val variant by lazy { createCxxVariantModel(configurationParameters, module) }

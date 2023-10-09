@@ -16,13 +16,11 @@
 
 package com.android.build.gradle.internal.cxx.settings
 
-import com.android.build.gradle.internal.core.Abi
 import com.android.build.gradle.internal.cxx.model.BasicCmakeMock
 import com.android.build.gradle.internal.cxx.model.buildIsPrefabCapable
 import com.android.build.gradle.internal.cxx.model.createCxxAbiModel
 import com.android.build.gradle.internal.cxx.model.createCxxModuleModel
 import com.android.build.gradle.internal.cxx.model.createCxxVariantModel
-import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import org.junit.Test
 
 class BuiltInSettingsJsonKtTest {
@@ -33,7 +31,6 @@ class BuiltInSettingsJsonKtTest {
             val module = createCxxModuleModel(
                 it.sdkComponents,
                 it.configurationParameters,
-                FakeProviderFactory.factory,
             )
             val variant = createCxxVariantModel(
                 it.configurationParameters,

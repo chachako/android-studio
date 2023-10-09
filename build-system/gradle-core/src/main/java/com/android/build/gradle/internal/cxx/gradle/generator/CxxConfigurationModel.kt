@@ -24,7 +24,6 @@ import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.component.features.NativeBuildCreationConfig
 import com.android.build.gradle.internal.cxx.configure.CXX_DEFAULT_CONFIGURATION_SUBFOLDER
 import com.android.build.gradle.internal.cxx.configure.NativeBuildSystemVariantConfig
-import com.android.build.gradle.internal.cxx.configure.NativeLocationsBuildService
 import com.android.build.gradle.internal.cxx.configure.NinjaMetadataGenerator
 import com.android.build.gradle.internal.cxx.configure.createNativeBuildSystemVariantConfig
 import com.android.build.gradle.internal.cxx.configure.ninja
@@ -59,11 +58,9 @@ import com.android.builder.profile.ChromeTracingProfileConverter
 import com.android.sdklib.AndroidVersion
 import com.android.utils.FileUtils
 import com.android.utils.FileUtils.join
-import com.android.utils.cxx.CxxDiagnosticCode
 import com.android.utils.cxx.CxxDiagnosticCode.BUILD_OUTPUT_LEVEL_NOT_SUPPORTED
 import com.android.utils.cxx.CxxDiagnosticCode.CMAKE_IS_MISSING
 import com.android.utils.cxx.CxxDiagnosticCode.INVALID_EXTERNAL_NATIVE_BUILD_CONFIG
-import com.android.utils.cxx.CxxDiagnosticCode.NINJA_IS_MISSING
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.ProviderFactory
 import java.io.File
@@ -125,7 +122,7 @@ data class CxxConfigurationParameters(
     val minSdkVersion: AndroidVersion,
     val compileSdkVersion: String,
     val ndkVersion: String?,
-    val ndkPath: String?,
+    val ndkPathFromDsl: String?,
     val cmakeVersion: String?,
     val splitsAbiFilterSet: Set<String>,
     val intermediatesFolder: File,
@@ -190,7 +187,6 @@ data class CxxConfigurationParameters(
 fun tryCreateConfigurationParameters(
     projectOptions: ProjectOptions,
     variant: VariantCreationConfig,
-    providers: ProviderFactory,
 ): CxxConfigurationParameters? {
     val globalConfig = variant.global
     val projectInfo = variant.services.projectInfo
@@ -214,7 +210,7 @@ fun tryCreateConfigurationParameters(
      * in Android Studio
      */
     val ndkHandler = globalConfig.versionedNdkHandler
-    val ndkInstall = ndkHandler.getNdkPlatform(downloadOkay = true, providers)
+    val ndkInstall = ndkHandler.getNdkPlatform(downloadOkay = true)
 
     if (!ndkInstall.isConfigured) {
         infoln("Not creating C/C++ model because NDK could not be configured.")
@@ -294,7 +290,7 @@ fun tryCreateConfigurationParameters(
         minSdkVersion = variant.minSdk.toSharedAndroidVersion(),
         compileSdkVersion = globalConfig.compileSdkHashString,
         ndkVersion = globalConfig.ndkVersion,
-        ndkPath = globalConfig.ndkPath,
+        ndkPathFromDsl = globalConfig.ndkPath,
         cmakeVersion = globalConfig.externalNativeBuild.cmake.version,
         splitsAbiFilterSet = globalConfig.splits.abiFilters.toSet(),
         intermediatesFolder = projectInfo.getIntermediatesDir(),

@@ -21,6 +21,7 @@ import com.android.SdkConstants.FD_NDK_SIDE_BY_SIDE
 import com.android.SdkConstants.NDK_DEFAULT_VERSION
 import com.android.SdkConstants.NDK_DIR_PROPERTY
 import com.android.build.gradle.internal.SdkHandler
+import com.android.build.gradle.internal.SdkLocationSourceSet
 import com.android.build.gradle.internal.SdkLocator
 import com.android.build.gradle.internal.cxx.configure.SdkSourceProperties.Companion.SdkSourceProperty.SDK_PKG_REVISION
 import com.android.build.gradle.internal.cxx.logging.PassThroughPrefixingLoggingEnvironment
@@ -399,8 +400,11 @@ data class NdkLocator(
     private val issueReporter: IssueReporter,
     private val ndkVersionFromDsl: String?,
     private val ndkPathFromDsl: String?,
+    private val ndkPathFromProperties: String?,
     private val projectDir: File,
-    private val sdkHandler: SdkHandler) {
+    private val sdkHandler: SdkHandler,
+    private val sdkLocationSourceSet: SdkLocationSourceSet
+) {
     /**
      * There are three possible physical locations for NDK:
      *
@@ -416,13 +420,12 @@ data class NdkLocator(
      * If the user specifies android.ndkVersion in build.gradle then that version must be available
      * or it is an error. If no such version is specified then the default version is used.
      */
-    fun findNdkPath(downloadOkay: Boolean, providers: ProviderFactory): NdkLocatorRecord? {
-        val properties = gradleLocalProperties(projectDir, providers)
-        val sdkPath = SdkLocator.getSdkDirectory(projectDir, issueReporter, providers)
+    fun findNdkPath(downloadOkay: Boolean): NdkLocatorRecord? {
+        val sdkPath = SdkLocator.getSdkDirectory(projectDir, issueReporter, sdkLocationSourceSet)
         return findNdkPathImpl(
             ndkVersionFromDsl,
             ndkPathFromDsl,
-            properties.getProperty(NDK_DIR_PROPERTY),
+            ndkPathFromProperties,
             sdkPath,
             getNdkVersionedFolders(File(sdkPath, FD_NDK_SIDE_BY_SIDE)),
             ::getNdkVersionInfo,

@@ -199,10 +199,10 @@ It is recommended to use ANDROID_HOME as other methods are deprecated
     fun getSdkDirectory(
         projectRootDir: File,
         issueReporter: IssueReporter,
-        providers: ProviderFactory
+        sdkLocationSourceSet: SdkLocationSourceSet
     ): File {
         val sdkLocation =
-            getSdkLocation(SdkLocationSourceSet(projectRootDir, providers), issueReporter)
+            getSdkLocation(sdkLocationSourceSet, issueReporter)
         return if (sdkLocation.type == SdkType.MISSING) {
             // This error should have been reported earlier when SdkLocation was created, so we can
             // just return a dummy file here as it won't be used anyway.
@@ -263,7 +263,6 @@ It is recommended to use ANDROID_HOME as other methods are deprecated
         GradleLocalPropertiesFactory.resetCache()
         cachedSdkLocationKey = null
         cachedSdkLocation = null
-
     }
 }
 

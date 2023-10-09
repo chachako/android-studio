@@ -400,7 +400,6 @@ class SettingsConfigurationRewriterKtTest {
             val configurationModel1 = tryCreateConfigurationParameters(
                     Mockito.mock(ProjectOptions::class.java),
                     variantImpl,
-                    FakeProviderFactory.factory,
             )!!
             val variant1 = createCxxVariantModel(configurationModel1, module)
             val result1 = createCxxAbiModel(
@@ -412,7 +411,6 @@ class SettingsConfigurationRewriterKtTest {
             val configurationModel2 = tryCreateConfigurationParameters(
                 Mockito.mock(ProjectOptions::class.java),
                 variantImpl,
-                FakeProviderFactory.factory,
             )!!
             val variant2 = createCxxVariantModel(configurationModel2, module)
             val result2 = createCxxAbiModel(

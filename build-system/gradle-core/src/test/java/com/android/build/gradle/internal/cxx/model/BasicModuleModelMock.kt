@@ -283,7 +283,6 @@ open class BasicModuleModelMock {
         tryCreateConfigurationParameters(
             projectOptions,
             variantImpl,
-            FakeProviderFactory.factory,
         )!!
     }
 
@@ -415,6 +414,8 @@ open class BasicModuleModelMock {
         doReturn(projectOptions).`when`(taskCreationServices).projectOptions
 
         doReturn(FakeGradleProvider(FakeGradleDirectory(sdkDir))).`when`(sdkComponents).sdkDirectoryProvider
+        doReturn(null).`when`(sdkComponents).ndkSymlinkDirFromProperties
+        doReturn(null).`when`(sdkComponents).cmakeDirFromProperties
         doReturn(false).`when`(projectOptions)
             .get(BooleanOption.ENABLE_PROFILE_JSON)
         doReturn(BooleanOption.ENABLE_CMAKE_BUILD_COHABITATION.defaultValue).`when`(projectOptions)
@@ -438,7 +439,7 @@ open class BasicModuleModelMock {
         )
         doReturn(ndkHandler).`when`(globalConfig).versionedNdkHandler
         doReturn(ndkInstallStatus).`when`(ndkHandler).ndkPlatform
-        doReturn(ndkInstallStatus).`when`(ndkHandler).getNdkPlatform(true, FakeProviderFactory.factory)
+        doReturn(ndkInstallStatus).`when`(ndkHandler).getNdkPlatform(true)
         doReturn(true).`when`(variantImpl).debuggable
 
         val ndkInfo = NdkR25Info(ndkFolder)

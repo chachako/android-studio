@@ -35,7 +35,6 @@ class CreateCxxModuleModelTest {
             tryCreateConfigurationParameters(
                 it.projectOptions,
                 it.variantImpl,
-                FakeProviderFactory.factory,
             )
             ).isNull()
         }
@@ -48,7 +47,6 @@ class CreateCxxModuleModelTest {
             assertThat(createCxxModuleModel(
                 it.sdkComponents,
                 it.configurationParameters,
-                FakeProviderFactory.factory,
             )).isNotNull()
         }
     }
@@ -60,7 +58,6 @@ class CreateCxxModuleModelTest {
             assertThat(createCxxModuleModel(
                 it.sdkComponents,
                 it.configurationParameters,
-                FakeProviderFactory.factory,
             )).isNotNull()
         }
     }
@@ -74,7 +71,6 @@ class CreateCxxModuleModelTest {
                     tryCreateConfigurationParameters(
                             it.projectOptions,
                             it.variantImpl,
-                            FakeProviderFactory.factory,
                     )
                 ).isNull()
                 assertThat(logEnvironment.errors).hasSize(1)
@@ -93,12 +89,10 @@ class CreateCxxModuleModelTest {
                     tryCreateConfigurationParameters(
                             it.projectOptions,
                             it.variantImpl,
-                            FakeProviderFactory.factory,
                     )!!
                 val module = createCxxModuleModel(
                     it.sdkComponents,
                     it.configurationParameters,
-                    FakeProviderFactory.factory,
                 )
                 val finalStagingDir = module.cxxFolder
                 assertThat(logEnvironment.errors).hasSize(0)
@@ -116,12 +110,10 @@ class CreateCxxModuleModelTest {
                 val configurationParameters = tryCreateConfigurationParameters(
                         it.projectOptions,
                         it.variantImpl,
-                        FakeProviderFactory.factory,
                 )!!
                 val module = createCxxModuleModel(
                     it.sdkComponents,
                     configurationParameters,
-                    FakeProviderFactory.factory,
                 )
                 val finalStagingDir = module.cxxFolder
                 assertThat(logEnvironment.warnings).hasSize(1)

@@ -18,7 +18,6 @@ package com.android.build.gradle.internal.cxx.model
 
 import com.android.build.gradle.internal.cxx.RandomInstanceGenerator
 import com.android.build.gradle.internal.cxx.logging.PassThroughRecordingLoggingEnvironment
-import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
@@ -30,7 +29,6 @@ class CreateCxxAbiModelTest {
             val module = createCxxModuleModel(
                 it.sdkComponents,
                 it.configurationParameters,
-                FakeProviderFactory.factory,
             )
             val variant = createCxxVariantModel(
                 it.configurationParameters,
@@ -51,7 +49,6 @@ class CreateCxxAbiModelTest {
             val module = createCxxModuleModel(
                 it.sdkComponents,
                 it.configurationParameters,
-                FakeProviderFactory.factory,
             )
             val variant = createCxxVariantModel(
                 it.configurationParameters,
