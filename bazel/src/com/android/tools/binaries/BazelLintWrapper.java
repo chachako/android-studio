@@ -308,6 +308,11 @@ public class BazelLintWrapper {
                 messagesByFileAndSummary.put(file, summary, strings);
             }
             strings.add(fullMessage.toString());
+
+            // Print the formatted message so the user doesn't have to track
+            // down the XML report. b/24995811
+            System.out.println(fullMessage);
+
             explanations.putIfAbsent(summary, explanation);
             result = Result.NEW_ISSUES_FOUND;
         }
