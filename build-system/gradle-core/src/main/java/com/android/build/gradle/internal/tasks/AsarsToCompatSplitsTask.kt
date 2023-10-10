@@ -79,7 +79,6 @@ abstract class AsarsToCompatSplitsTask : NonIncrementalTask() {
 
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NAME_ONLY)
-    @get:Optional
     abstract val runtimeConfigFile: RegularFileProperty
 
     @get:InputFiles

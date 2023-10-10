@@ -43,6 +43,7 @@ import com.android.builder.dexing.DexingType
 import com.android.builder.files.NativeLibraryAbiPredicate
 import com.android.builder.packaging.JarCreator
 import com.android.builder.packaging.JarFlinger
+import com.android.bundle.RuntimeEnabledSdkConfigProto
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
@@ -205,10 +206,17 @@ abstract class PerModuleBundleTask: NonIncrementalTask() {
             addHybridFolder(jarCreator, nativeLibsFiles.files, fileFilter = abiFilter)
 
             if (privacySandboxSdkRuntimeConfigFile.isPresent) {
-                jarCreator.addFile(
-                    "runtime_enabled_sdk_config.pb",
-                    privacySandboxSdkRuntimeConfigFile.get().asFile.toPath()
-                )
+                val runtimeConfigFile = privacySandboxSdkRuntimeConfigFile.get().asFile
+                val runtimeConfigBytes = runtimeConfigFile.readBytes()
+                val privacySandboxRuntimeConfig =
+                        RuntimeEnabledSdkConfigProto.RuntimeEnabledSdkConfig
+                                .parseFrom(runtimeConfigBytes)
+                if (privacySandboxRuntimeConfig.runtimeEnabledSdkList.isNotEmpty()) {
+                    jarCreator.addFile(
+                            "runtime_enabled_sdk_config.pb",
+                            runtimeConfigFile.toPath()
+                    )
+                }
             }
         }
     }

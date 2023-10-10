@@ -38,17 +38,12 @@ abstract class GenerateRuntimeEnabledSdkTableTask : NonIncrementalTask() {
 
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NAME_ONLY)
-    @get:Optional
     abstract val runtimeConfigFile: RegularFileProperty
 
     @get:OutputFile
-    @get:Optional
     abstract val runtimeEnabledSdkTableFile: RegularFileProperty
 
     override fun doTaskAction() {
-        if (!runtimeConfigFile.isPresent) {
-            return
-        }
         writeRuntimeEnabledSdkTableFromRuntimeConfig(
                 runtimeConfigFile.get().asFile,
                 runtimeEnabledSdkTableFile
@@ -59,9 +54,6 @@ abstract class GenerateRuntimeEnabledSdkTableTask : NonIncrementalTask() {
             runtimeConfig: File, runtimeEnabledSdkTableOutput: RegularFileProperty) {
         val privacySandboxRuntimeConfig = runtimeConfig.inputStream().buffered()
                 .use { input -> RuntimeEnabledSdkConfig.parseFrom(input) }
-        if (privacySandboxRuntimeConfig.runtimeEnabledSdkList.isEmpty()) {
-            return
-        }
         runtimeEnabledSdkTableOutput.get().asFile.writeBytes(
                 generateRuntimeEnabledSdkTableBytes(privacySandboxRuntimeConfig.runtimeEnabledSdkList)
         )

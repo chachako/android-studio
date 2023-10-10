@@ -17,8 +17,12 @@
 package com.android.build.gradle.integration.connected.application;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
+import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
 import java.io.IOException;
+
+import com.android.build.gradle.options.BooleanOption;
+import com.google.common.truth.Truth;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -46,6 +50,21 @@ public class BasicConnectedTest {
     public void install() throws Exception {
         project.execute("installDebug", "uninstallAll");
         // b/37498215 - Try again.  Behavior may be different when tasks are up-to-date.
+        project.execute("installDebug", "uninstallAll");
+    }
+
+    @Test // Regression test for b/304312888
+    public void installWithPrivacySandboxEnabled() throws IOException {
+        // If Privacy Sandbox is enabled by default, this test can be safely removed as it is
+        // made redundant by other tests.
+        Truth.assertWithMessage("This test is only useful when "
+                        + BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName()
+                        + " is false. This test can be removed.")
+                .that(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getDefaultValue())
+                .isFalse();
+        TestFileUtils.appendToFile(
+                project.getGradlePropertiesFile(),
+                BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName() + "=true");
         project.execute("installDebug", "uninstallAll");
     }
 
