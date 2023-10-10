@@ -22,8 +22,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.Variant;
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
+import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
+import com.android.builder.model.v2.ide.BasicVariant;
+import com.android.builder.model.v2.ide.Variant;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
@@ -46,11 +48,12 @@ public class NdkPrebuiltsTest {
                     .setSideBySideNdkVersion(DEFAULT_NDK_SIDE_BY_SIDE_VERSION)
                     .create();
 
-    public static AndroidProject model;
+    public static ModelContainerV2.ModelInfo model;
 
     @BeforeClass
     public static void setUp() throws Exception {
-        model = project.executeAndReturnModel("clean", "assembleDebug").getOnlyModel();
+        project.execute("clean", "assembleDebug");
+        model = project.modelV2().fetchModels().getContainer().getProject();
     }
 
     @AfterClass
@@ -60,14 +63,15 @@ public class NdkPrebuiltsTest {
     }
 
     @Test
-    public void lint() throws Exception {
+    public void lint() {
         project.execute("lint");
     }
 
     @Test
-    public void checkAbiFilterInModel() throws Exception {
-        Collection<Variant> variants = model.getVariants();
-        assertEquals("Variant Count", 8, variants.size());
+    public void checkAbiFilterInModel() {
+        Collection<BasicVariant> basicVariants = model.getBasicAndroidProject().getVariants();
+        Collection<Variant> variants = model.getAndroidProject().getVariants();
+        assertEquals("Variant Count", 8, basicVariants.size());
 
         // flavor names to ABIs
         // create a temp list to make the compiler happy. generics are fun!
@@ -79,8 +83,7 @@ public class NdkPrebuiltsTest {
                         "arm", ImmutableList.of("armeabi-v7a", "armeabi"),
                         "mips", ImmutableList.of("mips"));
 
-        // loop on the variants
-        for (Variant variant : variants) {
+        for (BasicVariant variant : basicVariants) {
             String variantName = variant.getName();
 
             // get the flavor name to get the expected ABIs.
@@ -90,11 +93,14 @@ public class NdkPrebuiltsTest {
 
             List<String> expectedAbis = map.get(flavors.get(0));
 
-            Set<String> actualAbis = variant.getMainArtifact().getAbiFilters();
+            Set<String> actualAbis =
+                    AndroidProjectUtilsV2.getVariantByName(model.getAndroidProject(), variantName)
+                            .getMainArtifact()
+                            .getAbiFilters();
             assertNotNull("Null check artifact abi for " + variantName, actualAbis);
-
             assertEquals("Size check artifact abis for " + variantName,
                     expectedAbis.size(), actualAbis.size());
+
             for (String abi : expectedAbis) {
                 assertTrue("Check " + abi + " present in artifact abi for " + variantName,
                         actualAbis.contains(abi));

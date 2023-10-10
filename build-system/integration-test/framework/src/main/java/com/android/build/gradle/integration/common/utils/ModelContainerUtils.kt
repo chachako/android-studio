@@ -18,26 +18,25 @@
 package com.android.build.gradle.integration.common.utils
 
 import com.android.SdkConstants.GRADLE_PATH_SEPARATOR
-import com.android.build.gradle.integration.common.fixture.ModelContainer
-import com.android.builder.model.AndroidProject
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2
 import com.google.common.collect.ImmutableList
 
 /**
  * Returns the generates sources task list.
  *
  * @param projectToVariantName a function that returns the variant for a given project.
- *
  */
-fun ModelContainer<AndroidProject>.getGenerateSourcesCommands(projectToVariantName: (String) -> String): List<String> {
+fun ModelContainerV2.getGenerateSourcesCommands(projectToVariantName: (String) -> String): List<String> {
     val commands = ImmutableList.builder<String>()
-    for ((projectPath, project) in rootBuildModelMap) {
-        val debug = project.getVariantByName(projectToVariantName(projectPath))
-        commands.add(createCommandTask(projectPath, debug.mainArtifact.sourceGenTaskName))
-        for (artifact in debug.extraAndroidArtifacts) {
-            commands.add(createCommandTask(projectPath, artifact.sourceGenTaskName))
+
+    for ((projectPath, project) in  this.rootInfoMap) {
+        val variant = project.androidProject!!.getVariantByName(projectToVariantName(projectPath))
+        commands.add(createCommandTask(projectPath, variant.mainArtifact.sourceGenTaskName))
+        variant.androidTestArtifact?.let {
+            commands.add(createCommandTask(projectPath, it.sourceGenTaskName))
         }
-        for (artifact in debug.extraJavaArtifacts) {
-            for (taskName in artifact.ideSetupTaskNames) {
+        variant.unitTestArtifact?.let {
+            for (taskName in it.ideSetupTaskNames) {
                 commands.add(createCommandTask(projectPath, taskName))
             }
         }
@@ -47,21 +46,16 @@ fun ModelContainer<AndroidProject>.getGenerateSourcesCommands(projectToVariantNa
 
 /**
  * Returns the generates sources commands for all projects for the debug variant.
- *
- *
  * These are the commands studio will call after sync.
  *
- *
  * For example, for a project with a single app subproject these might be:
- *
- *
  *  * :app:generateDebugSources
  *  * :app:generateDebugAndroidTestSources
  *  * :app:mockableAndroidJar
  *  * :app:prepareDebugUnitTestDependencies
  *
  */
-fun ModelContainer<AndroidProject>.getDebugGenerateSourcesCommands() =
+fun ModelContainerV2.getDebugGenerateSourcesCommands() =
     getGenerateSourcesCommands { _ -> "debug" }
 
 private fun createCommandTask(projectPath: String, taskName: String) =

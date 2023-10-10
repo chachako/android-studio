@@ -23,6 +23,7 @@ import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestPr
 import com.android.build.gradle.integration.common.fixture.app.TestSourceFile
 import com.android.build.gradle.integration.common.truth.TruthHelper
 import com.android.build.gradle.integration.common.utils.getAndroidTestArtifact
+import com.android.build.gradle.integration.common.utils.getVariantByName
 import com.android.build.gradle.integration.connected.utils.getEmulator
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.builder.model.v2.models.AndroidProject
@@ -192,14 +193,14 @@ class CustomTestedApksTest {
 
     @Test
     fun connectedCheckInstalls() {
-        val appModel = project.executeAndReturnModel(":test:connectedCheck")
+        project.execute(":test:connectedCheck")
+        val androidProject = project.modelV2().fetchModels().container.getProject(":test")
+            .androidProject!!
 
-        val testVariant = appModel.onlyModelMap[":test"]?.variants?.first()
-            ?: fail("cannot get test Variant")
-        val testedTargetVariants = testVariant.testedTargetVariants
-        Truth.assertThat(testedTargetVariants.size).isEqualTo(1)
-        Truth.assertThat(testedTargetVariants.first().targetProjectPath).isEqualTo(":app")
-        Truth.assertThat(testedTargetVariants.first().targetVariant).isEqualTo("benchmark")
+        val testVariant = androidProject.variants.first()
+        val testedTargetVariants = testVariant.testedTargetVariant
+        Truth.assertThat(testedTargetVariants?.targetProjectPath).isEqualTo(":app")
+        Truth.assertThat(testedTargetVariants?.targetVariant).isEqualTo("benchmark")
 
         // check the benchmark manifest file, it should self instrument itself.
         val packagedManifestFolder =

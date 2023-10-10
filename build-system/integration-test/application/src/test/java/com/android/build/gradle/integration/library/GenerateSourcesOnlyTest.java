@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 
 package com.android.build.gradle.integration.library;
-
 
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
@@ -36,14 +35,12 @@ public class GenerateSourcesOnlyTest {
     public void checkLibraryNotBuilt() throws Exception {
         List<String> generateSources =
                 ModelContainerUtils.getDebugGenerateSourcesCommands(
-                        project.model().fetchAndroidProjects());
+                        project.modelV2().fetchModels().getContainer());
 
         GradleBuildResult result = project.executor().run(generateSources);
 
         try (Scanner stdout = result.getStdout()) {
             ScannerSubject.assertThat(stdout).doesNotContain("compileDebugJava");
-        }
-        try (Scanner stdout = result.getStdout()) {
             ScannerSubject.assertThat(stdout).doesNotContain("compileReleaseJava");
         }
     }

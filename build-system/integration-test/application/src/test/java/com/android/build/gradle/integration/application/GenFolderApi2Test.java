@@ -17,15 +17,14 @@
 package com.android.build.gradle.integration.application;
 
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
-import static com.android.testutils.truth.PathSubject.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.builder.model.AndroidArtifact;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.JavaArtifact;
-import com.android.builder.model.Variant;
+import com.android.builder.model.v2.ide.AndroidArtifact;
+import com.android.builder.model.v2.ide.JavaArtifact;
+import com.android.builder.model.v2.ide.Variant;
+import com.android.builder.model.v2.models.AndroidProject;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
@@ -40,19 +39,17 @@ public class GenFolderApi2Test {
             GradleTestProject.builder().fromTestProject("genFolderApi2").create();
 
     @Test
-    public void checkJavaFolderInModel() throws Exception {
-        AndroidProject model = project.model().fetchAndroidProjects().getOnlyModel();
-        File projectDir = project.getProjectDir();
+    public void checkJavaFolderInModel() {
+        AndroidProject androidProject =
+                project.modelV2().fetchModels().getContainer().getProject().getAndroidProject();
 
+        File projectDir = project.getProjectDir();
         File buildDir = new File(projectDir, "build");
 
-        for (Variant variant : model.getVariants()) {
-
+        for (Variant variant : androidProject.getVariants()) {
             AndroidArtifact mainInfo = variant.getMainArtifact();
             assertNotNull(
                     "Null-check on mainArtifactInfo for " + variant.getDisplayName(), mainInfo);
-
-            // Get the generated source folders.
             Collection<File> genSourceFolder = mainInfo.getGeneratedSourceFolders();
 
             // We're looking for a custom folder.
@@ -60,17 +57,14 @@ public class GenFolderApi2Test {
                     new File(buildDir, "customCode").getAbsolutePath() + File.separatorChar;
 
             assertThat(
-                            genSourceFolder
-                                    .stream()
+                            genSourceFolder.stream()
                                     .anyMatch(
                                             it ->
                                                     it.getAbsolutePath()
                                                             .startsWith(sourceFolderStart)))
                     .isTrue();
 
-            // Unit testing artifact:
-            assertThat(variant.getExtraJavaArtifacts()).hasSize(1);
-            JavaArtifact unitTestArtifact = variant.getExtraJavaArtifacts().iterator().next();
+            JavaArtifact unitTestArtifact = variant.getUnitTestArtifact();
             List<File> sortedFolders =
                     unitTestArtifact
                             .getGeneratedSourceFolders()

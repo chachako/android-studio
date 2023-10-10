@@ -69,13 +69,17 @@ class DifferentCompileSdkPerModuleTest {
 
     @Test
     fun modelTest() {
-        val model = project.executeAndReturnModel("help")
+        project.execute("help")
+        val container = project.modelV2().fetchModels().container
         Truth.assertThat(
-            model.onlyModelMap[":libA"]?.bootClasspath?.first()).contains("android-19")
+            container.getProject(":libA").basicAndroidProject?.bootClasspath?.first()?.absolutePath
+        ).contains("android-19")
         Truth.assertThat(
-            model.onlyModelMap[":libB"]?.bootClasspath?.first()).contains("android-24")
+            container.getProject(":libB").basicAndroidProject?.bootClasspath?.first()?.absolutePath
+        ).contains("android-24")
         Truth.assertThat(
-            model.onlyModelMap[":libC"]?.bootClasspath?.first()).contains("android-23")
+            container.getProject(":libC").basicAndroidProject?.bootClasspath?.first()?.absolutePath
+        ).contains("android-23")
     }
 
     private fun setupLibrary(

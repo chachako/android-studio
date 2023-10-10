@@ -24,13 +24,12 @@ import static org.junit.Assert.assertTrue;
 
 import com.android.annotations.NonNull;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.ModelContainer;
-import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
+import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
 import com.android.build.gradle.integration.common.utils.ModelContainerUtils;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.builder.model.AndroidArtifact;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.Variant;
+import com.android.builder.model.v2.ide.AndroidArtifact;
+import com.android.builder.model.v2.ide.Variant;
 import com.android.testutils.apk.Apk;
 import com.android.utils.FileUtils;
 import com.google.common.collect.MoreCollectors;
@@ -59,27 +58,28 @@ public class GenFolderApiTest {
     public static GradleTestProject project =
             GradleTestProject.builder().fromTestProject("genFolderApi").create();
 
-    private static AndroidProject model;
-
     private static List<String> ideSetupTasks;
+
+    private static ModelContainerV2 container;
 
     @BeforeClass
     public static void setUp() throws Exception {
         project.executor()
                 .withArgument("-P" + "inject_enable_generate_values_res=true")
                 .run("assembleDebug");
-        ModelContainer<AndroidProject> modelContainer =
-                project.model()
+        container =
+                project.modelV2()
                         .withArgument("-P" + "inject_enable_generate_values_res=true")
-                        .fetchAndroidProjects();
-        ideSetupTasks = ModelContainerUtils.getDebugGenerateSourcesCommands(modelContainer);
-        model = modelContainer.getOnlyModel();
+                        .fetchModels()
+                        .getContainer();
+
+        ideSetupTasks = ModelContainerUtils.getDebugGenerateSourcesCommands(container);
     }
 
     @AfterClass
     public static void cleanUp() {
         project = null;
-        model = null;
+        container = null;
     }
 
     @Test
@@ -111,29 +111,25 @@ public class GenFolderApiTest {
                 .withArgument("-P" + "inject_enable_generate_values_res=true")
                 .run(ideSetupTasks);
 
-        AndroidArtifact debugArtifact =
-                AndroidProjectUtils.getDebugVariant(model).getMainArtifact();
+        AndroidArtifact mainArtifact =
+                AndroidProjectUtilsV2.getVariantByName(
+                                container.getProject().getAndroidProject(), "debug")
+                        .getMainArtifact();
 
         File customCode =
-                debugArtifact
-                        .getGeneratedSourceFolders()
-                        .stream()
+                mainArtifact.getGeneratedSourceFolders().stream()
                         .filter(it -> it.getAbsolutePath().startsWith(getSourceFolderStart()))
                         .collect(MoreCollectors.onlyElement());
         assertThat(customCode).isDirectory();
 
         File customResources =
-                debugArtifact
-                        .getGeneratedResourceFolders()
-                        .stream()
+                mainArtifact.getGeneratedResourceFolders().stream()
                         .filter(it -> it.getAbsolutePath().startsWith(getCustomResPath()))
                         .collect(MoreCollectors.onlyElement());
         assertThat(customResources).isDirectory();
 
         File customResources2 =
-                debugArtifact
-                        .getGeneratedResourceFolders()
-                        .stream()
+                mainArtifact.getGeneratedResourceFolders().stream()
                         .filter(it -> it.getAbsolutePath().startsWith(getCustomRes2Path()))
                         .collect(MoreCollectors.onlyElement());
         assertThat(customResources2).isDirectory();
@@ -165,15 +161,13 @@ public class GenFolderApiTest {
     }
 
     @Test
-    public void checkJavaFolderInModel() throws Exception {
-
-        for (Variant variant : model.getVariants()) {
+    public void checkJavaFolderInModel() {
+        for (Variant variant : container.getProject().getAndroidProject().getVariants()) {
 
             AndroidArtifact mainInfo = variant.getMainArtifact();
             assertNotNull(
                     "Null-check on mainArtifactInfo for " + variant.getDisplayName(), mainInfo);
 
-            // get the generated source folders.
             Collection<File> genSourceFolder = mainInfo.getGeneratedSourceFolders();
 
             // We're looking for a custom folder
@@ -190,22 +184,13 @@ public class GenFolderApiTest {
         }
     }
 
-    @NonNull
-    private String getSourceFolderStart() {
-        return FileUtils.join(project.getProjectDir().getAbsolutePath(), "build", "customCode")
-                + File.separatorChar;
-    }
-
     @Test
-    public void checkResFolderInModel() throws Exception {
-
-        for (Variant variant : model.getVariants()) {
-
-            AndroidArtifact mainInfo = variant.getMainArtifact();
+    public void checkResFolderInModel() {
+        for (Variant variant : container.getProject().getAndroidProject().getVariants()) {
+            com.android.builder.model.v2.ide.AndroidArtifact mainInfo = variant.getMainArtifact();
             assertNotNull(
                     "Null-check on mainArtifactInfo for " + variant.getDisplayName(), mainInfo);
 
-            // get the generated res folders.
             List<String> genResFolders =
                     mainInfo.getGeneratedResourceFolders()
                             .stream()
@@ -221,6 +206,14 @@ public class GenFolderApiTest {
         }
     }
 
+    @Test
+    public void backwardsCompatible() throws Exception {
+        // ATTENTION Author and Reviewers - please make sure required changes to the build file
+        // are backwards compatible before updating this test.
+        assertThat(TestFileUtils.sha1NormalizedLineEndings(project.file("build.gradle")))
+                .isEqualTo("384acd749b7c400845fb96eace7b0def85cade2e");
+    }
+
     @NonNull
     private String getCustomResPath() {
         return FileUtils.join(project.getProjectDir().getAbsolutePath(), "build", "customRes")
@@ -233,11 +226,9 @@ public class GenFolderApiTest {
                 + File.separatorChar;
     }
 
-    @Test
-    public void backwardsCompatible() throws Exception {
-        // ATTENTION Author and Reviewers - please make sure required changes to the build file
-        // are backwards compatible before updating this test.
-        assertThat(TestFileUtils.sha1NormalizedLineEndings(project.file("build.gradle")))
-                .isEqualTo("384acd749b7c400845fb96eace7b0def85cade2e");
+    @NonNull
+    private String getSourceFolderStart() {
+        return FileUtils.join(project.getProjectDir().getAbsolutePath(), "build", "customCode")
+                + File.separatorChar;
     }
 }
