@@ -39,6 +39,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=$BAZEL_GOOGLE_APPLICATION_CREDENTIALS
         --build_event_binary_file="${dist_dir}/bazel-${build_number}.bes" \
         --test_tag_filters=-no_mac,-no_test_mac,-ui_test,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate \
         --tool_tag=${script_name} \
+        --remote_upload_local_results \
         --worker_quit_after_build \
         --define=meta_android_build_number=${build_number} \
         --profile=${dist_dir}/profile-${build_number}.json.gz \
