@@ -27,7 +27,7 @@ import org.junit.rules.ExternalResource;
  * <pre>
  *   public class MyTest {
  *    {@literal @}Rule
- *     public TestRule myFlagRule = new SetFlagRule&lt;&gt;(StudioFlags.MY_FLAG, true);
+ *     public TestRule myFlagRule = new FlagRule&lt;&gt;(StudioFlags.MY_FLAG, true);
  *   }
  * </pre>
  */
