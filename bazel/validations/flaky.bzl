@@ -7,7 +7,6 @@ the allowlisted targets below can set "flaky" to true.
 APPROVED_FLAKY_TESTS = [
     "//tools/base/build-system/integration-test/application:tests__GradlePluginMemoryLeakTest",  # b/153972155
     "//tools/base/build-system/integration-test/connected:UtpConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:FailureRetentionConnectedTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:TestWithSameDepAsAppConnectedTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:TestingSupportLibraryConnectedTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:LibraryAndroidTestWithViewTest",  # b/148626301

@@ -34,6 +34,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.gradle.tooling.BuildException
 import org.junit.Before
 import org.junit.ClassRule
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
@@ -82,6 +83,7 @@ class FailureRetentionConnectedTest {
 
     @Test
     @Throws(Exception::class)
+    @Ignore("b/188572060") // Test fails because the proto result file sometimes doesn't include the snapshots
     fun connectedAndroidTestWithFailures() {
         assertFailsWith<BuildException> {
             project.executor()
@@ -98,6 +100,7 @@ class FailureRetentionConnectedTest {
 
     @Test
     @Throws(Exception::class)
+    @Ignore("b/188572060") // Test fails because the proto result file sometimes doesn't include the snapshots
     fun connectedAndroidTestWithOrchestratorAndFailures() {
         TestFileUtils.appendToFile(
             project.getSubproject("app").buildFile,
@@ -176,6 +179,7 @@ class FailureRetentionConnectedTest {
 
     @Test
     @Throws(Exception::class)
+    @Ignore("b/188572060") // Test fails because the proto result file sometimes doesn't include the snapshots
     fun connectedAndroidTestWithUncaughtExceptions() {
         assertFailsWith<BuildException> {
             project.executor()
