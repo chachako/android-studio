@@ -38,7 +38,18 @@ class PackageManager : Service {
         const val SERVICE_NAME = "package"
     }
 
+    private var sessionIDCounter = 1234L
+    fun getNextSessionID() = sessionIDCounter++
+
+    // Map of sessionID to Session
+    val sessions : MutableMap<String, PackageManagerSession> = mutableMapOf()
+
     override fun process(args: List<String>, shellCommandOutput: ShellCommandOutput) {
+        processLocked(args, shellCommandOutput)
+    }
+
+    @Synchronized
+    fun processLocked(args: List<String>, shellCommandOutput: ShellCommandOutput) {
         val cmd = args[0]
 
         return when {
@@ -70,10 +81,12 @@ class PackageManager : Service {
                     shellCommandOutput.writeStderr("Error: (requested to fail via flag))")
                     shellCommandOutput.writeExitCode(1)
                     return
-                } else {
-                    shellCommandOutput.writeStdout("Success: created install session [1234]")
-                    shellCommandOutput.writeExitCode(0)
                 }
+
+                val sessionID = getNextSessionID().toString()
+                sessions[sessionID] = PackageManagerSession(sessionID)
+                shellCommandOutput.writeStdout("Success: created install session [$sessionID]")
+                shellCommandOutput.writeExitCode(0)
             }
 
             cmd.startsWith("install-write") -> {
@@ -90,11 +103,19 @@ class PackageManager : Service {
                 }
             }
             cmd.startsWith("install-abandon") -> {
+                val sessionID = args[1]
+                sessions.remove(sessionID)
+
+                if (!sessions.containsKey(sessionID)) {
+                    failUnknownSession(shellCommandOutput, sessionID)
+                    return
+                }
+
                 shellCommandOutput.writeStdout("Success\n")
                 shellCommandOutput.writeExitCode(0)
             }
             cmd.startsWith("install") -> {
-                commit(args.drop(1), shellCommandOutput)
+                install(args.drop(1), shellCommandOutput)
             }
 
             else -> {
@@ -104,8 +125,35 @@ class PackageManager : Service {
         }
     }
 
+    private fun failUnknownSession(shellCommandOutput: ShellCommandOutput, sessionID: String) {
+        shellCommandOutput.writeStdout("java.lang.SecurityException: Caller has no access to session $sessionID")
+        shellCommandOutput.writeExitCode(1)
+    }
+
+    private fun install(slice: List<String>, shellCommandOutput: ShellCommandOutput) {
+        shellCommandOutput.writeStdout("Success\n")
+        shellCommandOutput.writeExitCode(0)
+    }
+
     private fun commit(slice: List<String>, shellCommandOutput: ShellCommandOutput) {
         val sessionID = slice[0]
+
+        if (!sessions.containsKey(sessionID)) {
+            failUnknownSession(shellCommandOutput, sessionID)
+            return
+        }
+
+        val session = sessions[sessionID]!!
+        sessions.remove(sessionID)
+
+        // Check if we have had duplicate filename. They should all be unique, otherwise pm will have
+        // trouble verifying certificates
+        if (session.splits.groupingBy { it }.eachCount().filter { it.value > 1 }.isNotEmpty()) {
+            shellCommandOutput.writeStdout("Error: The application could not be installed: INSTALL_PARSE_FAILED_NO_CERTIFICATES")
+            shellCommandOutput.writeExitCode(1)
+            return
+        }
+
         if (sessionID == "FAIL_ME") {
             shellCommandOutput.writeStderr("Error (requested a FAIL_ME session)\n")
             shellCommandOutput.writeExitCode(1)
@@ -118,13 +166,14 @@ class PackageManager : Service {
     private fun installWrite(args: String, shellCommandOutput: ShellCommandOutput) {
         val parameters = args.split(" ")
         if (parameters.isEmpty()) {
-            shellCommandOutput.writeStderr("Malformed install-write request")
+            shellCommandOutput.writeStderr("Not install-write parameters after split($args,' ')")
             shellCommandOutput.writeExitCode(1)
             return
         }
 
+        val sessionID : String
         if (parameters.last() != "-") {
-            val sessionID = parameters[1]
+            sessionID = parameters[1]
             if (BAD_SESSIONS.containsKey(sessionID)) {
                 BAD_SESSIONS.get(sessionID)?.let { shellCommandOutput.writeStderr(it) }
                 shellCommandOutput.writeExitCode(1)
@@ -137,14 +186,16 @@ class PackageManager : Service {
             return
         }
 
+
         // This is a streamed install
         val sizeIndex = parameters.indexOf("-S") + 1
-        if (sizeIndex == 0) {
-            shellCommandOutput.writeStderr("Malformed install-write request")
-            shellCommandOutput.writeExitCode(1)
+        sessionID = parameters[sizeIndex + 1]
+        if (!sessions.containsKey(sessionID)) {
+            failUnknownSession(shellCommandOutput, sessionID)
             return
         }
 
+        val splitName = parameters[sizeIndex + 2]
         val expectedBytesLength = parameters[sizeIndex].toInt()
         val buffer = ByteArray(1024)
         var totalBytesRead = 0
@@ -156,6 +207,8 @@ class PackageManager : Service {
             }
             totalBytesRead += numRead
         }
+
+        sessions[sessionID]!!.addSplit(splitName)
 
         shellCommandOutput.writeStdout("Success: streamed $totalBytesRead bytes\n")
         shellCommandOutput.writeExitCode(0)

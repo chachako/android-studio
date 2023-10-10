@@ -188,4 +188,45 @@ class TestInstall : TestInstallBase() {
         Assert.assertEquals("package\u0000install-create", fakeDevice.abbLogs[0])
         Assert.assertEquals("package\u0000install-commit\u00001234", fakeDevice.abbLogs[1])
     }
+
+    // Upload base and splits. Check that all names used for install-write were distinct.
+    @Test
+    fun testSplits() {
+        val fakeDevice = addFakeDevice(fakeAdb, 30)
+        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
+
+        val apk1 = Files.createTempFile("base.apk", null)
+        val apk2 = Files.createTempFile("split1.apk", null)
+        val apk3 = Files.createTempFile("split2.apk", null)
+        val apks = listOf(apk1, apk2, apk3)
+        runBlocking {
+                deviceServices.install(deviceSelector, apks, emptyList())
+        }
+        Assert.assertEquals(5, fakeDevice.abbLogs.size)
+        Assert.assertEquals("package\u0000install-create", fakeDevice.abbLogs[0])
+        Assert.assertTrue("", fakeDevice.abbLogs[1].startsWith("package\u0000install-write"))
+        Assert.assertTrue("", fakeDevice.abbLogs[2].startsWith("package\u0000install-write"))
+        Assert.assertTrue("", fakeDevice.abbLogs[3].startsWith("package\u0000install-write"))
+        Assert.assertEquals("package\u0000install-commit\u00001234", fakeDevice.abbLogs[4])
+    }
+
+    // Upload base and splits. Check that all names used for install-write were distinct.
+    @Test
+    fun testDuplicateSplits() {
+        val fakeDevice = addFakeDevice(fakeAdb, 30)
+        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
+
+        val apk1 = Files.createTempFile("base.apk", null)
+        val apk2 = Files.createTempFile("split1.apk", null)
+        val apks = listOf(apk1, apk2, apk2)
+        runBlocking {
+            deviceServices.install(deviceSelector, apks, emptyList())
+        }
+        Assert.assertEquals(5, fakeDevice.abbLogs.size)
+        Assert.assertEquals("package\u0000install-create", fakeDevice.abbLogs[0])
+        Assert.assertTrue("", fakeDevice.abbLogs[1].startsWith("package\u0000install-write"))
+        Assert.assertTrue("", fakeDevice.abbLogs[2].startsWith("package\u0000install-write"))
+        Assert.assertTrue("", fakeDevice.abbLogs[3].startsWith("package\u0000install-write"))
+        Assert.assertEquals("package\u0000install-commit\u00001234", fakeDevice.abbLogs[4])
+    }
 }
