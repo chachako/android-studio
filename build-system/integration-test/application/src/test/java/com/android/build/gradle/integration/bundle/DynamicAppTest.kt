@@ -598,7 +598,6 @@ class DynamicAppTest {
         assertThat(result.didWorkTasks).isEmpty()
     }
 
-
     @Test
     fun `test extracting instant APKs from bundle`() {
         val apkFromBundleTaskName = project.getApkFromBundleTaskName("debug", ":app")
@@ -624,7 +623,14 @@ class DynamicAppTest {
         TestFileUtils.searchAndReplace(
             File(project.getSubproject(":feature2").mainSrcDir.parent, "AndroidManifest.xml"),
             "dist:onDemand=\"true\"",
-            "dist:onDemand=\"false\" dist:instant=\"true\""
+            "dist:instant=\"true\""
+        )
+
+        TestFileUtils.searchAndReplace(
+            File(project.getSubproject(":feature2").mainSrcDir.parent, "AndroidManifest.xml"),
+            "<dist:fusing dist:include=\"true\" />",
+            "<dist:fusing dist:include=\"true\" /> <dist:delivery> <dist:install-time>"
+            + " <dist:removable dist:value=\"true\"/> </dist:install-time> </dist:delivery>",
         )
 
         project

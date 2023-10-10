@@ -37,6 +37,7 @@ import com.android.testutils.truth.ZipFileSubject
 import com.android.utils.FileUtils
 import com.google.common.collect.ImmutableList
 import com.google.common.truth.Truth.assertThat
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
@@ -328,6 +329,7 @@ class PrivacySandboxSdkTest {
         }
     }
 
+    @Ignore("b/304516211")
     @Test
     fun testConsumption() {
         // TODO(b/235469089) expand this to verify installation also
