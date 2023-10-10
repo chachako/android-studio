@@ -113,7 +113,7 @@ sealed interface ModulePropertyKey<OutputT> {
          * If false - R8 will not attempt to optimize startup dex
          * If true - R8 will optimize first dex for optimal startup performance.
          */
-        R8_DEX_STARTUP_OPTIMIZATION("android.experimental.r8.dex-startup-optimization", false)
+        R8_DEX_STARTUP_OPTIMIZATION("android.experimental.r8.dex-startup-optimization", true)
         ;
 
         override fun getValue(properties: Map<String, Any>): Boolean {

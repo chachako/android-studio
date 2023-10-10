@@ -532,23 +532,21 @@ abstract class R8Task @Inject constructor(
         val inputBaselineProfileForStartupOptimization = if (enableDexStartupOptimization.get()) {
             val sources = baselineProfilesSources.orNull
             if (sources.isNullOrEmpty()) {
-                throw RuntimeException("""
-                    Dex optimization based on startup profile has been turned on with flag
-                    ${ModulePropertyKey.BooleanWithDefault.R8_DEX_STARTUP_OPTIMIZATION.key} but there are no source folders.
-                    This should not happen, please file a bug.
-                """.trimIndent())
+                getLogger().debug(
+                    "Dex optimization based on startup profile is enabled, " +
+                    "but there are no source folders.")
+                null
+            } else {
+                if (!sources.first().asFile.exists()) {
+                    getLogger().debug(
+                        "Dex optimization based on startup profile is enabled, but there are no " +
+                        "input baseline profiles found in the baselineProfiles sources. " +
+                        "You should add ${sources.first().asFile.absolutePath}, for instance.")
+                    null
+                } else {
+                    sources.first().asFile
+                }
             }
-            sources.firstOrNull {
-                it.asFile.exists()
-            }
-                ?: throw RuntimeException(
-            """
-                Dex optimization based on startup profile has been turned on with flag
-                ${ModulePropertyKey.BooleanWithDefault.R8_DEX_STARTUP_OPTIMIZATION.key} but there are no input
-                baseline profile found in the baselineProfiles sources.
-                You should add ${sources.first().asFile.absolutePath} for instance.
-            """.trimIndent()
-                )
         } else null
 
         val workerAction = { it: R8Runnable.Params ->

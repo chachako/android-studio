@@ -318,13 +318,12 @@ fun runR8(
         }
     }
     if (enableMinimalStartupOptimization) {
-        check(inputProfileForDexStartupOptimization != null) {
-            """
-        'android.experimental.r8.dex-startup-optimization' flag has been turned on but there are no
-        baseline profile source file in this project. Remove the flag or add a source file.
-        """.trimIndent()
+        if (inputProfileForDexStartupOptimization == null) {
+            logger.info("'android.experimental.r8.dex-startup-optimization' " +
+                "is enabled but there are no baseline profile source files in this project.")
+        } else {
+            wireMinimalStartupOptimization(r8CommandBuilder, inputProfileForDexStartupOptimization)
         }
-        wireMinimalStartupOptimization(r8CommandBuilder, inputProfileForDexStartupOptimization)
     }
 
     // Enable workarounds for missing library APIs in R8 (see b/231547906).

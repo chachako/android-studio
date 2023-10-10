@@ -17,8 +17,10 @@
 package com.android.build.gradle.integration.application
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.integration.common.fixture.LoggingLevel
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
+import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.internal.dsl.ModulePropertyKey
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
@@ -129,18 +131,16 @@ class StartupProfileDexOptimizationTest(
 
     @Test
     fun testStartupProfile() {
-        // if feature is turned on but no startup baseline profile is provided, it's a failure.
-        val expectFailure = startupProfileDexOptimization && !includeStartupProfile
-        val buildResult = project.executor().let {
-            if (expectFailure) it.expectFailure()
-            it.run("assembleRelease")
-        }
-        if (expectFailure) {
-            // the build should have failed with a proper message to the user.
-            assertThat(buildResult.failedTasks).contains(":app:minifyReleaseWithR8")
-            assertThat(buildResult.failureMessage).contains(
-                ModulePropertyKey.BooleanWithDefault.R8_DEX_STARTUP_OPTIMIZATION.key
-            )
+        // if feature is turned on but no startup baseline profile is provided, debug log should
+        // be present
+        val expectLog = startupProfileDexOptimization && !includeStartupProfile
+        val buildResult =
+            project.executor().withLoggingLevel(LoggingLevel.DEBUG).run("assembleRelease")
+        if (expectLog) {
+            assertThat(buildResult.didWorkTasks).contains(":app:minifyReleaseWithR8")
+            ScannerSubject.assertThat(buildResult.stdout).contains(
+                "Dex optimization based on startup profile is enabled, but there are no input " +
+                "baseline profiles found in the baselineProfiles sources.")
             return
         }
         // every thing else should succeed.
