@@ -803,18 +803,19 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     @JvmField
     val VALIDATION =
       Issue.create(
-        id = "AppLinkUrlError",
-        briefDescription = "URL not supported by app for Firebase App Indexing",
-        explanation =
-          """
-                Ensure the URL is supported by your app, to get installs and traffic to your app from \
-                Google Search.""",
-        category = Category.USABILITY,
-        priority = 5,
-        moreInfo = "https://g.co/AppIndexing/AndroidStudio",
-        severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
-      )
+          id = "AppLinkUrlError",
+          briefDescription = "URI invalid",
+          explanation =
+            """
+                Ensure your intent filter has the documented elements for deep links, web links, or Android \
+                App Links.""",
+          category = Category.CORRECTNESS,
+          priority = 5,
+          moreInfo = "https://developer.android.com/training/app-links",
+          severity = Severity.ERROR,
+          implementation = IMPLEMENTATION
+        )
+        .addMoreInfo("https://g.co/AppIndexing/AndroidStudio")
 
     /**
      * Only used for compatibility issue lookup (the driver suppression check takes an issue, not an
