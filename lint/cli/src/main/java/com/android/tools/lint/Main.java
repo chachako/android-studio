@@ -37,6 +37,8 @@ import com.android.annotations.Nullable;
 import com.android.tools.lint.checks.ApiLookup;
 import com.android.tools.lint.checks.BuiltinIssueRegistry;
 import com.android.tools.lint.checks.DesugaredMethodLookup;
+import com.android.tools.lint.checks.optional.AospIssueRegistry;
+import com.android.tools.lint.client.api.CompositeIssueRegistry;
 import com.android.tools.lint.client.api.Configuration;
 import com.android.tools.lint.client.api.ConfigurationHierarchy;
 import com.android.tools.lint.client.api.IssueRegistry;
@@ -102,6 +104,7 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import kotlin.io.FilesKt;
 import kotlin.text.StringsKt;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.config.ApiVersion;
 import org.jetbrains.kotlin.config.LanguageVersion;
 import org.jetbrains.kotlin.config.LanguageVersionSettings;
@@ -262,7 +265,6 @@ public class Main {
         // When debugging build-system invocations, the below is helpful; leaving
         // here for a while:
         // logArguments(args, new File("lint-invocation.txt"));
-
 
         ArgumentState argumentState = new ArgumentState();
         String clientName = getClientId(args);
@@ -659,12 +661,52 @@ public class Main {
 
         private ProjectMetadata metadata;
 
+        @NotNull
+        @Override
+        public IssueRegistry addCustomLintRules(
+                @NonNull IssueRegistry registry,
+                @Nullable LintDriver driver,
+                boolean warnDeprecated) {
+            IssueRegistry additionalRegistries =
+                    super.addCustomLintRules(registry, driver, warnDeprecated);
+
+            // Automatically include AOSP issues on Android platforms
+            if (metadata != null) {
+                EnumSet<Platform> platforms = metadata.getPlatforms();
+                List<IssueRegistry> registries = flags.getAdditionalRegistries();
+                if (platforms != null
+                        && platforms.contains(Platform.ANDROID)
+                        && (registries == null
+                                || registries.stream()
+                                        .noneMatch(r -> r instanceof AospIssueRegistry))) {
+
+                    if (additionalRegistries instanceof CompositeIssueRegistry) {
+                        List<IssueRegistry> merged =
+                                new ArrayList<>(
+                                        ((CompositeIssueRegistry) additionalRegistries)
+                                                .getRegistries());
+                        merged.add(new AospIssueRegistry());
+                        return new CompositeIssueRegistry(merged);
+                    } else {
+                        return new CompositeIssueRegistry(
+                                Arrays.asList(additionalRegistries, new AospIssueRegistry()));
+                    }
+                }
+            }
+
+            return additionalRegistries;
+        }
+
+        private void getRegistries() {}
+
         @Override
         protected void configureLintRequest(@NonNull LintRequest request) {
             super.configureLintRequest(request);
             File descriptor = flags.getProjectDescriptorOverride();
             if (descriptor != null) {
                 metadata = ProjectInitializerKt.computeMetadata(this, descriptor);
+                // Recompute global issue registry since it's possibly affected
+                globalIssueRegistry = null;
 
                 String clientName = metadata.getClientName();
                 if (clientName != null) {
@@ -1385,6 +1427,8 @@ public class Main {
                     lintRuleJarsOverride.add(getInArgumentPath(path));
                 }
                 flags.setLintRuleJarsOverride(lintRuleJarsOverride);
+            } else if (arg.equals("--include-aosp-issues")) {
+                flags.addAdditionalRegistries(new AospIssueRegistry());
             } else if (arg.equals(ARG_SDK_HOME)) {
                 if (index == args.length - 1) {
                     System.err.println("Missing SDK home directory");
@@ -1568,7 +1612,7 @@ public class Main {
         if (files.isEmpty()
                 && modules.isEmpty()
                 // Let AGP run lint with no modules (e.g., for a KMP library with no jvm targets)
-                && argumentState.clientName != "AGP"
+                && !"AGP".equals(argumentState.clientName)
                 && flags.getProjectDescriptorOverride() == null) {
             System.err.println("No files to analyze.");
             return ERRNO_INVALID_ARGS;
@@ -1752,15 +1796,14 @@ public class Main {
 
     private int run(LintCliClient client, LintRequest lintRequest, ArgumentState argumentState) {
         try {
-            // Not using globalIssueRegistry; LintClient will do its own registry merging
-            // also including project rules.
+            IssueRegistry registry = getGlobalRegistry(client);
             switch (argumentState.mode) {
                 case GLOBAL:
-                    return client.run(new BuiltinIssueRegistry(), lintRequest);
+                    return client.run(registry, lintRequest);
                 case ANALYSIS_ONLY:
-                    return client.analyzeOnly(new BuiltinIssueRegistry(), lintRequest);
+                    return client.analyzeOnly(registry, lintRequest);
                 case MERGE:
-                    return client.mergeOnly(new BuiltinIssueRegistry(), lintRequest);
+                    return client.mergeOnly(registry, lintRequest);
                 default:
                     throw new IllegalStateException("Unexpected value: " + argumentState.mode);
             }

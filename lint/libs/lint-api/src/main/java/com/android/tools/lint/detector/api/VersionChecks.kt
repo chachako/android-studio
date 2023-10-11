@@ -55,7 +55,6 @@ import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
-import org.jetbrains.uast.UExpressionList
 import org.jetbrains.uast.UField
 import org.jetbrains.uast.UFile
 import org.jetbrains.uast.UIfExpression
@@ -73,9 +72,7 @@ import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.jetbrains.uast.USwitchClauseExpression
 import org.jetbrains.uast.USwitchClauseExpressionWithBody
 import org.jetbrains.uast.USwitchExpression
-import org.jetbrains.uast.UThrowExpression
 import org.jetbrains.uast.UUnaryExpression
-import org.jetbrains.uast.UYieldExpression
 import org.jetbrains.uast.UastBinaryOperator
 import org.jetbrains.uast.UastFacade
 import org.jetbrains.uast.UastPrefixOperator
@@ -766,56 +763,6 @@ class VersionChecks(
       }
       return version
     }
-  }
-
-  private fun isUnconditionalReturn(statement: UExpression): Boolean {
-    @Suppress("UnstableApiUsage") // UYieldExpression not yet stable
-    if (statement is UBlockExpression) {
-      statement.expressions.lastOrNull()?.let {
-        return isUnconditionalReturn(it)
-      }
-    } else if (statement is UExpressionList) {
-      statement.expressions.lastOrNull()?.let {
-        return isUnconditionalReturn(it)
-      }
-    } else if (statement is UYieldExpression) {
-      // (Kotlin when statements will sometimes be represented using yields in the UAST
-      // representation)
-      val yieldExpression = statement.expression
-      if (yieldExpression != null) {
-        return isUnconditionalReturn(yieldExpression)
-      }
-    } else if (statement is UParenthesizedExpression) {
-      return isUnconditionalReturn(statement.expression)
-    } else if (statement is UIfExpression) {
-      val thenExpression = statement.thenExpression
-      val elseExpression = statement.elseExpression
-      if (thenExpression != null && elseExpression != null) {
-        return isUnconditionalReturn(thenExpression) && isUnconditionalReturn(elseExpression)
-      }
-      return false
-    } else if (statement is USwitchExpression) {
-      for (case in statement.body.expressions) {
-        if (case is USwitchClauseExpressionWithBody) {
-          if (!isUnconditionalReturn(case.body)) {
-            return false
-          }
-        }
-      }
-      return true
-    }
-
-    if (statement is UReturnExpression || statement is UThrowExpression) {
-      return true
-    } else if (statement is UCallExpression) {
-      val methodName = getMethodName(statement)
-      // Look for Kotlin runtime library methods that unconditionally exit
-      if ("error" == methodName || "TODO" == methodName) {
-        return true
-      }
-    }
-
-    return false
   }
 
   private fun getVersionCheckConditional(
@@ -1568,7 +1515,7 @@ class VersionChecks(
       if (thenBranch != null) {
         if (constraint?.not()?.isAtLeast(api) == true) {
           // See if the body does an immediate return
-          if (isUnconditionalReturn(thenBranch)) {
+          if (thenBranch.isUnconditionalReturn()) {
             found = true
             done = true
           }
@@ -1576,7 +1523,7 @@ class VersionChecks(
       }
       if (elseBranch != null) {
         if (constraint?.isAtLeast(api) == true) {
-          if (isUnconditionalReturn(elseBranch)) {
+          if (elseBranch.isUnconditionalReturn()) {
             found = true
             done = true
           }
@@ -1668,7 +1615,7 @@ class VersionChecks(
     }
 
     private fun fallsThrough(body: UExpression): Boolean {
-      return !isUnconditionalReturn(body)
+      return !body.isUnconditionalReturn()
     }
 
     fun found(): Boolean {

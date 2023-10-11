@@ -38,6 +38,7 @@ import com.android.tools.lint.LintCliFlags.ERRNO_INVALID_ARGS
 import com.android.tools.lint.LintCliFlags.ERRNO_SUCCESS
 import com.android.tools.lint.LintStats.Companion.create
 import com.android.tools.lint.checks.HardcodedValuesDetector
+import com.android.tools.lint.client.api.CompositeIssueRegistry
 import com.android.tools.lint.client.api.Configuration
 import com.android.tools.lint.client.api.GradleVisitor
 import com.android.tools.lint.client.api.IssueRegistry
@@ -225,6 +226,25 @@ open class LintCliClient : LintClient {
       analyze = { driver.analyze() },
       finish = { performReporting() }
     )
+  }
+
+  override fun addCustomLintRules(
+    registry: IssueRegistry,
+    driver: LintDriver?,
+    warnDeprecated: Boolean
+  ): IssueRegistry {
+    val custom = super.addCustomLintRules(registry, driver, warnDeprecated)
+
+    val additionalRegistries = flags.additionalRegistries
+    return if (additionalRegistries != null) {
+      if (custom is CompositeIssueRegistry) {
+        CompositeIssueRegistry(custom.registries + additionalRegistries)
+      } else {
+        CompositeIssueRegistry(additionalRegistries + custom)
+      }
+    } else {
+      custom
+    }
   }
 
   /**

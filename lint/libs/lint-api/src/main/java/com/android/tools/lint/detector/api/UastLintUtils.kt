@@ -71,10 +71,15 @@ import org.jetbrains.uast.UPrefixExpression
 import org.jetbrains.uast.UQualifiedReferenceExpression
 import org.jetbrains.uast.UReferenceExpression
 import org.jetbrains.uast.UResolvable
+import org.jetbrains.uast.UReturnExpression
 import org.jetbrains.uast.USimpleNameReferenceExpression
+import org.jetbrains.uast.USwitchClauseExpressionWithBody
+import org.jetbrains.uast.USwitchExpression
+import org.jetbrains.uast.UThrowExpression
 import org.jetbrains.uast.UTypeReferenceExpression
 import org.jetbrains.uast.UUnaryExpression
 import org.jetbrains.uast.UVariable
+import org.jetbrains.uast.UYieldExpression
 import org.jetbrains.uast.UastFacade
 import org.jetbrains.uast.UastPrefixOperator
 import org.jetbrains.uast.getContainingUMethod
@@ -865,4 +870,59 @@ private fun UFile.acceptMultiFileClass(visitor: UastVisitor) {
   }
 
   visitor.afterVisitFile(this)
+}
+
+/**
+ * Does this expression have an unconditional return? This means that all possible branches contains
+ * a return or exception throw or yield.
+ */
+fun UExpression.isUnconditionalReturn(): Boolean {
+  val statement = this
+  @Suppress("UnstableApiUsage") // UYieldExpression not yet stable
+  if (statement is UBlockExpression) {
+    statement.expressions.lastOrNull()?.let {
+      return it.isUnconditionalReturn()
+    }
+  } else if (statement is UExpressionList) {
+    statement.expressions.lastOrNull()?.let {
+      return it.isUnconditionalReturn()
+    }
+  } else if (statement is UYieldExpression) {
+    // (Kotlin when statements will sometimes be represented using yields in the UAST
+    // representation)
+    val yieldExpression = statement.expression
+    if (yieldExpression != null) {
+      return yieldExpression.isUnconditionalReturn()
+    }
+  } else if (statement is UParenthesizedExpression) {
+    return statement.expression.isUnconditionalReturn()
+  } else if (statement is UIfExpression) {
+    val thenExpression = statement.thenExpression
+    val elseExpression = statement.elseExpression
+    if (thenExpression != null && elseExpression != null) {
+      return thenExpression.isUnconditionalReturn() && elseExpression.isUnconditionalReturn()
+    }
+    return false
+  } else if (statement is USwitchExpression) {
+    for (case in statement.body.expressions) {
+      if (case is USwitchClauseExpressionWithBody) {
+        if (!case.body.isUnconditionalReturn()) {
+          return false
+        }
+      }
+    }
+    return true
+  }
+
+  if (statement is UReturnExpression || statement is UThrowExpression) {
+    return true
+  } else if (statement is UCallExpression) {
+    val methodName = getMethodName(statement)
+    // Look for Kotlin runtime library methods that unconditionally exit
+    if ("error" == methodName || "TODO" == methodName) {
+      return true
+    }
+  }
+
+  return false
 }

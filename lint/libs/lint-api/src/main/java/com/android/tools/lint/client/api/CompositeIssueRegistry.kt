@@ -19,7 +19,7 @@ import com.android.tools.lint.detector.api.CURRENT_API
 import com.android.tools.lint.detector.api.Issue
 
 /** Registry which merges many issue registries into one, and presents a unified list of issues. */
-open class CompositeIssueRegistry(private val registries: List<IssueRegistry>) : IssueRegistry() {
+open class CompositeIssueRegistry(val registries: List<IssueRegistry>) : IssueRegistry() {
   private var mergedIssues: List<Issue>? = null
 
   override val issues: List<Issue>

@@ -2806,6 +2806,7 @@ com/android/tools/lint/lint-checks
   com/android/tools/
   com/android/tools/lint/
   com/android/tools/lint/checks/
+  com/android/tools/lint/checks/optional/
   com/android/tools/lint/checks/plurals/
   plural-examples.txt
   private-apis.txt

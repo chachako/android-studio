@@ -20,6 +20,7 @@ import static com.android.SdkConstants.VALUE_TRUE;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.tools.lint.client.api.IssueRegistry;
 import com.android.tools.lint.client.api.LintClient;
 import com.android.tools.lint.detector.api.Category;
 import com.android.tools.lint.detector.api.Issue;
@@ -64,6 +65,7 @@ public class LintCliFlags {
     private List<File> libraries;
     private List<File> resources;
     private List<File> lintRuleJars;
+    private List<IssueRegistry> additionalRegistries;
     private String compileSdkVersion;
     private File baselineFile;
     private File outputBaselineFile;
@@ -521,6 +523,20 @@ public class LintCliFlags {
     /** Sets the optional <b>manual override</b> of lint rule jars. Normally null. */
     public void setLintRuleJarsOverride(@Nullable List<File> lintRuleJars) {
         this.lintRuleJars = lintRuleJars;
+    }
+
+    /** Additional issue registries to include */
+    @Nullable
+    public List<IssueRegistry> getAdditionalRegistries() {
+        return additionalRegistries;
+    }
+
+    /** Additional issue registries to include */
+    public void addAdditionalRegistries(@NonNull IssueRegistry registry) {
+        if (this.additionalRegistries == null) {
+            this.additionalRegistries = new ArrayList<>();
+        }
+        this.additionalRegistries.add(registry);
     }
 
     /**
