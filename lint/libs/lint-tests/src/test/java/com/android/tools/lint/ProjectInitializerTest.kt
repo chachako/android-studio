@@ -2777,6 +2777,7 @@ class ProjectInitializerTest {
     val descriptor =
       """
         <project>
+          <sdk dir='${TestUtils.getSdk()}'/>
           <root dir="$root" />
 
           <module name="androidApp" android="true" library="false" compile-sdk-version='18'>
@@ -2810,19 +2811,25 @@ class ProjectInitializerTest {
 
     MainTest.checkDriver(
       """
-        src/main/AndroidManifest.xml:1: Warning: Should set android:versionCode to specify the application version [MissingVersion]
-        <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-         ~~~~~~~~
-        src/main/AndroidManifest.xml:1: Warning: Should set android:versionName to specify the application version [MissingVersion]
-        <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-         ~~~~~~~~
-        src/main/AndroidManifest.xml:5: Warning: Should explicitly set android:icon, there is no default [MissingApplicationIcon]
-            <application
-             ~~~~~~~~~~~
-        src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion to at least 17 when enabling RTL support [RtlEnabled]
-                android:supportsRtl="true"
-                                     ~~~~
-        0 errors, 4 warnings
+        src/main/res/values/styles.xml:2: Error: android:Theme.Material.NoActionBar requires API level 21 (current min is 1) [NewApi]
+    <style name="AppTheme" parent="android:Theme.Material.NoActionBar"/>
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/main/AndroidManifest.xml:6: Warning: Attribute allowBackup is only used in API level 4 and higher (current min is 1) [UnusedAttribute]
+        android:allowBackup="false"
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/main/AndroidManifest.xml:1: Warning: Should set android:versionCode to specify the application version [MissingVersion]
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+ ~~~~~~~~
+src/main/AndroidManifest.xml:1: Warning: Should set android:versionName to specify the application version [MissingVersion]
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+ ~~~~~~~~
+src/main/AndroidManifest.xml:5: Warning: Should explicitly set android:icon, there is no default [MissingApplicationIcon]
+    <application
+     ~~~~~~~~~~~
+src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion to at least 17 when enabling RTL support [RtlEnabled]
+        android:supportsRtl="true"
+                             ~~~~
+1 errors, 5 warnings
       """,
       "",
       ERRNO_SUCCESS,
