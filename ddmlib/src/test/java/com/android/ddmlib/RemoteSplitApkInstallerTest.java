@@ -206,7 +206,8 @@ public class RemoteSplitApkInstallerTest extends TestSuite {
         IDevice device = connectDevice(24);
         RemoteSplitApkInstaller installer =
                 RemoteSplitApkInstaller.create(device, remoteApkPaths, false, installOptions);
-        installer.installCommit("12345", timeout, timeUnit);
+        installer.createMultiInstallSession("-r -d", timeout, timeUnit);
+        installer.installCommit("1234", timeout, timeUnit);
     }
 
     @Test
