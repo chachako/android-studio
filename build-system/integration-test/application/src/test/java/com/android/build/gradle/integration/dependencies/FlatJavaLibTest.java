@@ -24,14 +24,11 @@ import static com.android.build.gradle.integration.common.utils.TestFileUtils.ap
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainer;
 import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
-import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.builder.model.AndroidProject;
 import com.android.builder.model.Dependencies;
 import com.android.builder.model.JavaLibrary;
 import com.android.builder.model.Variant;
-import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
-import com.google.common.io.Files;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import org.junit.AfterClass;
@@ -40,10 +37,9 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 /**
- * test for flattened java lib dependency in the module.
- *
- * This verifies that duplicated external java libraries are de-duped in the model when querying
- * the model with a level < AndroidProject.MODEL_LEVEL_2_DEP_GRAPH
+ * Test for flattened java lib dependency in the module. This verifies that duplicated external java
+ * libraries are de-duped in the model when querying the model with a level <
+ * AndroidProject.MODEL_LEVEL_2_DEP_GRAPH
  */
 public class FlatJavaLibTest {
 

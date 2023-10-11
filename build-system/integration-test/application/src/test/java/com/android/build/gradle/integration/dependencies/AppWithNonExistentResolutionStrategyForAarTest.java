@@ -16,18 +16,15 @@
 
 package com.android.build.gradle.integration.dependencies;
 
-import static com.android.build.gradle.integration.common.truth.ModelContainerSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.ModelContainer;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.SyncIssue;
+import com.android.builder.model.v2.ide.UnresolvedDependency;
+import java.util.List;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /** test for flavored dependency on a different package. */
@@ -38,44 +35,42 @@ public class AppWithNonExistentResolutionStrategyForAarTest {
             .fromTestProject("projectWithModules")
             .create();
 
-    static ModelContainer<AndroidProject> modelContainer;
-
     @BeforeClass
     public static void setUp() throws Exception {
         project.setIncludedProjects("app", "library");
 
-        TestFileUtils.appendToFile(project.getSubproject("app").getBuildFile(),
-                "\n" +
-                "\n" +
-                "dependencies {\n" +
-                "    debugCompile project(\":library\")\n" +
-                "    releaseCompile project(\":library\")\n" +
-                "}\n" +
-                "\n" +
-                "configurations {\n" +
-                "  debugCompileClasspath\n" +
-                "  debugRuntimeClasspath\n" +
-                "}\n" +
-                "\n" +
-                "configurations.debugCompileClasspath {\n" +
-                "  resolutionStrategy {\n" +
-                "    eachDependency { DependencyResolveDetails details ->\n" +
-                "      if (details.requested.name == \"jdeferred-android-aar\") {\n" +
-                "        details.useVersion \"-1.-1.-1\"\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n" +
-                "configurations.debugRuntimeClasspath {\n" +
-                "  resolutionStrategy {\n" +
-                "    eachDependency { DependencyResolveDetails details ->\n" +
-                "      if (details.requested.name == \"jdeferred-android-aar\") {\n" +
-                "        details.useVersion \"-1.-1.-1\"\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n" +
-                "\n");
+        TestFileUtils.appendToFile(
+                project.getSubproject("app").getBuildFile(),
+                "\n"
+                        + "\n"
+                        + "dependencies {\n"
+                        + "    compileOnly project(\":library\")\n"
+                        + "}\n"
+                        + "\n"
+                        + "configurations {\n"
+                        + "  debugCompileClasspath\n"
+                        + "  debugRuntimeClasspath\n"
+                        + "}\n"
+                        + "\n"
+                        + "configurations.debugCompileClasspath {\n"
+                        + "  resolutionStrategy {\n"
+                        + "    eachDependency { DependencyResolveDetails details ->\n"
+                        + "      if (details.requested.name == \"jdeferred-android-aar\") {\n"
+                        + "        details.useVersion \"-1.-1.-1\"\n"
+                        + "      }\n"
+                        + "    }\n"
+                        + "  }\n"
+                        + "}\n"
+                        + "configurations.debugRuntimeClasspath {\n"
+                        + "  resolutionStrategy {\n"
+                        + "    eachDependency { DependencyResolveDetails details ->\n"
+                        + "      if (details.requested.name == \"jdeferred-android-aar\") {\n"
+                        + "        details.useVersion \"-1.-1.-1\"\n"
+                        + "      }\n"
+                        + "    }\n"
+                        + "  }\n"
+                        + "}\n"
+                        + "\n");
 
         TestFileUtils.appendToFile(
                 project.getSubproject("library").getBuildFile(),
@@ -88,19 +83,22 @@ public class AppWithNonExistentResolutionStrategyForAarTest {
     @AfterClass
     public static void cleanUp() {
         project = null;
-        modelContainer = null;
     }
 
-    @Ignore("b/303084088")
     @Test
-    public void checkWeReceivedASyncIssue() throws Exception {
-        modelContainer = project.model().ignoreSyncIssues().fetchAndroidProjects();
-        SyncIssue issue =
-                assertThat(modelContainer)
-                        .rootBuild()
-                        .project(":app")
-                        .hasSingleIssue(
-                                SyncIssue.SEVERITY_ERROR, SyncIssue.TYPE_UNRESOLVED_DEPENDENCY);
-        assertThat(issue.getMessage()).contains("org.jdeferred:jdeferred-android-aar:-1.-1.-1");
+    public void checkUnresolvedDepInTheModel() {
+        List<UnresolvedDependency> unresolvedDependencies =
+                project.modelV2()
+                        .ignoreSyncIssues()
+                        .fetchVariantDependencies("debug")
+                        .getContainer()
+                        .getProject(":app")
+                        .getVariantDependencies()
+                        .getMainArtifact()
+                        .getUnresolvedDependencies();
+
+        assertThat(unresolvedDependencies.size()).isEqualTo(1);
+        assertThat(unresolvedDependencies.get(0).getName())
+                .isEqualTo("org.jdeferred:jdeferred-android-aar:-1.-1.-1");
     }
 }
