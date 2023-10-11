@@ -159,7 +159,7 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
             entry.key == BENCHMARK_PATH_TEST_METRICS_KEY
         }?.value ?: ""
 
-        addBenchmarkMessage(benchmarkMessageWithoutPrefix, builder)
+        addBenchmarkMessage(benchmarkMessageWithoutPrefix, builder, testResult)
         addBenchmarkFiles(benchmarkMessageWithoutPrefix, benchmarkOutputDir, deviceController,
                           builder)
     }
@@ -213,12 +213,13 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
         }
     }
 
-    private fun addBenchmarkMessage(benchmarkMessage: String, builder: TestResult.Builder) {
+    private fun addBenchmarkMessage(benchmarkMessage: String, builder: TestResult.Builder, testResult: TestResult) {
         if (benchmarkMessage.isBlank()) {
             return
         }
+        val fileNameSuffix = "${testResult.testCase.testPackage}.${testResult.testCase.testClass}.${testResult.testCase.testMethod}"
         val benchmarkMessageOutputFile = File(config.additionalOutputDirectoryOnHost,
-                                              "additionaltestoutput.benchmark.message.txt")
+                                              "additionaltestoutput.benchmark.message_${fileNameSuffix}.txt")
         Files.asCharSink(benchmarkMessageOutputFile, Charsets.UTF_8).write(benchmarkMessage)
         builder.addOutputArtifactBuilder().apply {
             labelBuilder.apply {

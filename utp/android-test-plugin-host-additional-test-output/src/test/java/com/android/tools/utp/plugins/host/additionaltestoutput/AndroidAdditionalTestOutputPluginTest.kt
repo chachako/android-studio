@@ -222,7 +222,7 @@ class AndroidAdditionalTestOutputPluginTest {
     }
 
     @Test
-    fun bechmarkResultFilesShouldBeCopiedAfterEachTest() {
+    fun benchmarkResultFilesShouldBeCopiedAfterEachTest() {
         val hostDir = tempDirs.newFolder().absolutePath
         val deviceDir = "/onDevice/outputDir/"
 
@@ -244,6 +244,9 @@ class AndroidAdditionalTestOutputPluginTest {
             "/sdcard/Android/media/com.example.macrobenchmark/additional_test_output"
 
         val testResultWithBenchmark = TestResultProto.TestResult.newBuilder().apply {
+            testCaseBuilder.testClass = "TestClass"
+            testCaseBuilder.testMethod = "testMethod"
+            testCaseBuilder.testPackage = "test.package"
             addDetailsBuilder().apply {
                 key = "android.studio.v2display.benchmark"
                 value = benchmarkMessage
@@ -273,7 +276,7 @@ class AndroidAdditionalTestOutputPluginTest {
         assertThat(testResultAfterEach.getOutputArtifact(0).label.label)
             .isEqualTo("additionaltestoutput.benchmark.message")
         assertThat(testResultAfterEach.getOutputArtifact(0).sourcePath.path)
-            .isEqualTo("${hostDir}${File.separator}additionaltestoutput.benchmark.message.txt")
+            .isEqualTo("${hostDir}${File.separator}additionaltestoutput.benchmark.message_test.package.TestClass.testMethod.txt")
         assertThat(testResultAfterEach.getOutputArtifact(1).label.namespace).isEqualTo("android")
         assertThat(testResultAfterEach.getOutputArtifact(1).label.label)
             .isEqualTo("additionaltestoutput.benchmark.trace")
