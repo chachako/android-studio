@@ -34,12 +34,15 @@ import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.internal.workeractions.DecoratedWorkParameters
 import com.android.build.gradle.internal.workeractions.WorkActionAdapter
 import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.StringOption
 import com.android.buildanalyzer.common.TaskCategory
+import com.android.bundle.Devices
 import com.android.manifmerger.ManifestMerger2
 import com.android.manifmerger.MergingReport
 import com.android.manifmerger.XmlDocument
 import com.android.utils.FileUtils
 import com.android.utils.PositionXmlParser
+import com.google.protobuf.util.JsonFormat
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
@@ -48,18 +51,19 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.workers.WorkerExecutor
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
+import java.nio.file.Files
 import javax.inject.Inject
 
 @CacheableTask
@@ -81,6 +85,12 @@ abstract class ProcessPackagedManifestTask @Inject constructor(
     @get:InputFiles
     abstract val privacySandboxSdkManifestSnippets: ConfigurableFileCollection
 
+    @get:InputFile
+    @get:Optional
+    // Injected from Studio, contents only necessary.
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val deviceConfig: RegularFileProperty
+
     @get:Internal
     abstract val transformationRequest: Property<ArtifactTransformationRequest<ProcessPackagedManifestTask>>
 
@@ -93,7 +103,13 @@ abstract class ProcessPackagedManifestTask @Inject constructor(
     }
 
     override fun doTaskAction() {
-
+        val deviceSpecBuilder: Devices.DeviceSpec.Builder = Devices.DeviceSpec.newBuilder()
+        if (deviceConfig.isPresent) {
+            Files.newBufferedReader(deviceConfig.get().asFile.toPath(), Charsets.UTF_8).use {
+                JsonFormat.parser().merge(it, deviceSpecBuilder)
+            }
+        }
+        val sdkRuntime = deviceSpecBuilder.build().sdkRuntime.supported
         transformationRequest.get().submit(this,
             workersProperty.get().noIsolation(),
             WorkItem::class.java)
@@ -101,6 +117,7 @@ abstract class ProcessPackagedManifestTask @Inject constructor(
 
                 parameters.inputXmlFile.set(File(builtArtifact.outputFile))
                 parameters.privacySandboxSdkManifestSnippets.set(privacySandboxSdkManifestSnippets)
+                parameters.supportsSdkRuntime.set(sdkRuntime)
                 parameters.outputXmlFile.set(
                     File(directory.asFile,
                         FileUtils.join(
@@ -114,6 +131,7 @@ abstract class ProcessPackagedManifestTask @Inject constructor(
     interface WorkItemParameters: DecoratedWorkParameters {
         val inputXmlFile: RegularFileProperty
         val outputXmlFile: RegularFileProperty
+        val supportsSdkRuntime: Property<Boolean>
         val privacySandboxSdkManifestSnippets: ListProperty<File>
     }
 
@@ -128,7 +146,8 @@ abstract class ProcessPackagedManifestTask @Inject constructor(
             val outputFile = workItemParameters.outputXmlFile.get().asFile
             outputFile.parentFile.mkdirs()
 
-            val xmlDocument = if (manifestSnippets.isNotEmpty()) {
+            val xmlDocument = if (manifestSnippets.isNotEmpty()
+                    && workItemParameters.supportsSdkRuntime.get()) {
                 mergeManifests(
                     mainManifest = inputFile,
                     manifestOverlays = emptyList(),
@@ -205,6 +224,13 @@ abstract class ProcessPackagedManifestTask @Inject constructor(
             } else {
                 task.privacySandboxSdkManifestSnippets.disallowChanges()
             }
+
+            val devicePath =
+                    creationConfig.services.projectOptions.get(StringOption.IDE_APK_SELECT_CONFIG)
+            if (devicePath != null) {
+                task.deviceConfig.set(File(devicePath))
+            }
+            task.deviceConfig.disallowChanges()
         }
     }
 }

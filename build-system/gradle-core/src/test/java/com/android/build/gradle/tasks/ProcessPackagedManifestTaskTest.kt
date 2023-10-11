@@ -38,12 +38,22 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
 import java.io.File
 import java.io.IOException
 
-class ProcessPackagedManifestTaskTest {
+@RunWith(Parameterized::class)
+class ProcessPackagedManifestTaskTest(var supportsSdkRuntime: Boolean) {
+
+    companion object {
+
+        @JvmStatic
+        @Parameterized.Parameters
+        fun supportsSdkRuntime() = listOf(true, false)
+    }
 
     @Rule
     @JvmField
@@ -115,6 +125,7 @@ class ProcessPackagedManifestTaskTest {
         workItemParameters.inputXmlFile.set(inputXmlFile)
         val outputFolder = temporaryFolder.newFolder("target_folder")
         workItemParameters.outputXmlFile.set(File(outputFolder, SdkConstants.ANDROID_MANIFEST_XML))
+        workItemParameters.supportsSdkRuntime.set(supportsSdkRuntime)
         workItemParameters.analyticsService.set(FakeNoOpAnalyticsService())
         workItemParameters.taskPath.set("taskPath")
         workItemParameters.workerKey.set("workerKey")
@@ -229,6 +240,7 @@ class ProcessPackagedManifestTaskTest {
         workItemParameters.taskPath.set("taskPath")
         workItemParameters.workerKey.set("workerKey")
         workItemParameters.privacySandboxSdkManifestSnippets.set(listOf(snippetFile))
+        workItemParameters.supportsSdkRuntime.set(supportsSdkRuntime)
 
         project.objects.newInstance(
             ProcessPackagedManifestTask.WorkItem::class.java,
@@ -240,11 +252,15 @@ class ProcessPackagedManifestTaskTest {
                 package="com.example.app"
                 android:versionCode="11" >
 
-                <application android:name="android.support.multidex.MultiDexApplication" >
+                <application android:name="android.support.multidex.MultiDexApplication" >${
+            if (supportsSdkRuntime) {
+                """
                     <uses-sdk-library
                         android:name="$packageName"
                         android:certDigest="$certDigest"
-                        android:versionMajor="$version" />
+                        android:versionMajor="$version" />"""
+            } else ""
+        }
                 </application>
 
             </manifest>
@@ -315,6 +331,7 @@ class ProcessPackagedManifestTaskTest {
         workItemParameters.taskPath.set("taskPath")
         workItemParameters.workerKey.set("workerKey")
         workItemParameters.privacySandboxSdkManifestSnippets.set(listOf(snippetFile1, snippetFile2))
+        workItemParameters.supportsSdkRuntime.set(supportsSdkRuntime)
 
         project.objects.newInstance(
             ProcessPackagedManifestTask.WorkItem::class.java,
@@ -328,7 +345,9 @@ class ProcessPackagedManifestTaskTest {
                 package="com.example.app"
                 android:versionCode="11" >
 
-                <application android:name="android.support.multidex.MultiDexApplication" >
+                <application android:name="android.support.multidex.MultiDexApplication" >${
+                if (supportsSdkRuntime) {
+                    """
                     <uses-sdk-library
                         android:name="$packageName1"
                         android:certDigest="$certDigest1"
@@ -336,7 +355,9 @@ class ProcessPackagedManifestTaskTest {
                     <uses-sdk-library
                         android:name="$packageName2"
                         android:certDigest="$certDigest2"
-                        android:versionMajor="$version2" />
+                        android:versionMajor="$version2" />"""
+                } else ""
+            }
                 </application>
 
             </manifest>
