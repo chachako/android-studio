@@ -140,7 +140,7 @@ interface Variant : Component, HasAndroidResources {
      *  androidComponents.onVariants(selector().withName("debug")) {
      *      // will return unitTests, androidTests, testFixtures for the debug variant (if enabled).
      *      nestedComponents.forEach { component ->
-     *          component.transformClassesWith(NestedComponentsClassVisitorFactory::class.java,
+     *          component.instrumentation.transformClassesWith(NestedComponentsClassVisitorFactory::class.java,
      *                                         InstrumentationScope.Project) {}
      *      }
      *  }

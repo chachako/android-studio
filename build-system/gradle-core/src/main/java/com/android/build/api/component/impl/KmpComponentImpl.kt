@@ -22,6 +22,7 @@ import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.component.impl.features.InstrumentationCreationConfigImpl
 import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.variant.AndroidVersion
+import com.android.build.api.variant.Component
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.Instrumentation
 import com.android.build.api.variant.InternalSources
@@ -82,7 +83,7 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
     override val global: GlobalTaskCreationConfig,
     final override val androidKotlinCompilation: KotlinMultiplatformAndroidCompilation,
     manifestFile: File
-): KmpComponentCreationConfig, ComponentIdentity by dslInfo.componentIdentity {
+): Component, KmpComponentCreationConfig, ComponentIdentity by dslInfo.componentIdentity {
 
     final override val withJava: Boolean
         get() = dslInfo.withJava
@@ -114,11 +115,11 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
         )
     }
 
-    val instrumentation: Instrumentation
+    override val instrumentation: Instrumentation
         get() = instrumentationCreationConfig.instrumentation
-    val compileConfiguration: Configuration
+    override val compileConfiguration: Configuration
         get() = variantDependencies.compileClasspath
-    val runtimeConfiguration: Configuration
+    override val runtimeConfiguration: Configuration
         get() = variantDependencies.runtimeClasspath
 
     // DSL delegates
@@ -218,7 +219,7 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
                     " the kotlin specific options.")
         }
 
-    val annotationProcessorConfiguration: Configuration
+    override val annotationProcessorConfiguration: Configuration
         get() = throw IllegalAccessException("The kotlin multiplatform android plugin doesn't" +
                 " configure annotation processors. To configure annotation processors, use" +
                 " the kapt options.")
