@@ -6,7 +6,7 @@ maven_library(
     name = "android-test-plugin-host-emulator-control",
     srcs = glob([
         "src/main/java/**/*.kt",
-        "src/main/java/**/*.java",
+        "src/main/java/com/android/tools/utp/plugins/host/emulatorcontrol/*java",
     ]),
     coordinates = "com.android.tools.utp:android-test-plugin-host-emulator-control:" + BASE_VERSION,
     resource_strip_prefix = "tools/base/utp/android-test-plugin-host-emulator-control/src/main/resources/",
@@ -34,7 +34,7 @@ kotlin_test(
     name = "tests",
     srcs = glob([
         "src/test/java/**/*.kt",
-        "src/test/java/**/*.java",
+        "src/test/java/com/android/tools/utp/plugins/host/emulatorcontrol/*java",
     ]),
     jvm_flags = ["-Dtest.suite.jar=tests.jar"],
     resources = glob(["src/test/resources/**"]),
@@ -61,7 +61,7 @@ kotlin_test(
 filegroup(
     name = "agp_gradle_build_files",
     srcs = glob([
-        "src/main/**/*.java",
+        "src/main/java/com/android/tools/utp/plugins/host/emulatorcontrol/*java",
         "src/main/**/*.kt",
         "src/main/resources/**",
     ]) + [
