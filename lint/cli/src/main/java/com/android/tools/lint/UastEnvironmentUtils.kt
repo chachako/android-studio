@@ -39,6 +39,7 @@ import java.nio.file.Files
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.io.path.pathString
 import org.jetbrains.kotlin.analysis.api.KtAnalysisApiInternals
+import org.jetbrains.kotlin.analysis.api.lifetime.KtDefaultLifetimeTokenProvider
 import org.jetbrains.kotlin.analysis.api.lifetime.KtLifetimeTokenProvider
 import org.jetbrains.kotlin.analysis.api.standalone.KtAlwaysAccessibleLifetimeTokenProvider
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
@@ -117,6 +118,9 @@ internal fun configureProjectEnvironment(
 
 @OptIn(KtAnalysisApiInternals::class)
 internal fun MockProject.registerKtLifetimeTokenProvider() {
+  // TODO: remove this after a couple release cycles
+  //  to make sure Lint clients, including androidx runtime, catch up.
+  @Suppress("DEPRECATION") registerService(KtDefaultLifetimeTokenProvider::class.java)
   registerService(
     KtLifetimeTokenProvider::class.java,
     KtAlwaysAccessibleLifetimeTokenProvider::class.java
