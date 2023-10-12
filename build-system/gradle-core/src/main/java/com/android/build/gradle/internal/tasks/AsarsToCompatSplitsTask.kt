@@ -23,7 +23,7 @@ import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.Aapt2Input
 import com.android.build.gradle.internal.services.getAapt2Executable
-import com.android.build.gradle.internal.signing.SigningConfigData
+import com.android.build.gradle.internal.signing.SigningConfigDataProvider
 import com.android.build.gradle.internal.tasks.Workers.withThreads
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
@@ -33,7 +33,6 @@ import com.android.bundle.RuntimeEnabledSdkConfigProto
 import com.android.bundle.RuntimeEnabledSdkConfigProto.SdkSplitPropertiesInheritedFromApp
 import com.android.bundle.SdkMetadataOuterClass.SdkMetadata
 import com.android.ide.common.workers.ExecutorServiceAdapter
-import com.android.ide.common.workers.WorkerExecutorFacade
 import com.android.tools.build.bundletool.androidtools.Aapt2Command
 import com.android.tools.build.bundletool.commands.BuildSdkApksForAppCommand
 import com.google.common.util.concurrent.MoreExecutors
@@ -56,7 +55,6 @@ import org.gradle.api.tasks.TaskProvider
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.concurrent.ForkJoinPool
 import java.util.zip.ZipFile
 import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.pathString
@@ -90,7 +88,7 @@ abstract class AsarsToCompatSplitsTask : NonIncrementalTask() {
 
     @get:Nested
     @get:Optional
-    abstract val signingConfigData: Property<SigningConfigData>
+    abstract val signingConfigDataProvider: Property<SigningConfigDataProvider>
 
     @get:Nested
     abstract val aapt2: Aapt2Input
@@ -144,8 +142,8 @@ abstract class AsarsToCompatSplitsTask : NonIncrementalTask() {
                     .setExecutorService(MoreExecutors.listeningDecorator(workerFacade.executor))
                     .setOutputFile(apks)
                     .apply {
-                        if (signingConfigData.isPresent) {
-                            setSigningConfiguration(createSigningConfig(signingConfigData.get()))
+                        signingConfigDataProvider.orNull?.resolve()?.let {
+                            setSigningConfiguration(createSigningConfig(it))
                         }
                     }
                     .build()
@@ -203,13 +201,9 @@ abstract class AsarsToCompatSplitsTask : NonIncrementalTask() {
                     )
             )
             if (creationConfig is ApkCreationConfig) {
-                creationConfig.signingConfigImpl?.let {
-                    task.signingConfigData.setDisallowChanges(
-                            creationConfig.services.provider {
-                                SigningConfigData.fromSigningConfig(it)
-                            }
-                    )
-                }
+                task.signingConfigDataProvider.setDisallowChanges(
+                        SigningConfigDataProvider.create(creationConfig)
+                )
             }
             task.runtimeConfigFile.set(
                     creationConfig.artifacts.get(
