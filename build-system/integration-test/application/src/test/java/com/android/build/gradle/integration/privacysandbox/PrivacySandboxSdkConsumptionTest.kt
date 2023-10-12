@@ -290,46 +290,7 @@ class PrivacySandboxSdkConsumptionTest {
         Apk(extractedSdkApks.single { it.name == "comexampleprivacysandboxsdk-master.apk" }).use {
             val manifestContent = ApkSubject.getManifestContent(it.file)
             assertThat(manifestContent).containsAtLeastElementsIn(
-                    listOf(
-                            "N: android=http://schemas.android.com/apk/res/android (line=2)",
-                            "  E: manifest (line=2)",
-                            "    A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=4",
-                            "    A: http://schemas.android.com/apk/res/android:isFeatureSplit(0x0101055b)=true",
-                            "    A: package=\"com.example.privacysandboxsdk.consumer\" (Raw: \"com.example.privacysandboxsdk.consumer\")",
-                            "    A: split=\"comexampleprivacysandboxsdk\" (Raw: \"comexampleprivacysandboxsdk\")",
-                            "      E: uses-permission (line=9)",
-                            "        A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"android.permission.INTERNET\" (Raw: \"android.permission.INTERNET\")",
-                            "      E: application (line=11)",
-                            "        A: http://schemas.android.com/apk/res/android:hasCode(0x0101000c)=false",
-                            "        A: http://schemas.android.com/apk/res/android:appComponentFactory(0x0101057a)=\"androidx.core.app.CoreComponentFactory\" (Raw: \"androidx.core.app.CoreComponentFactory\")",
-                            "      E: uses-sdk (line=0)",
-                            "        A: http://schemas.android.com/apk/res/android:minSdkVersion(0x0101020c)=23",
-                            "      E: http://schemas.android.com/apk/distribution:module (line=0)",
-                            "          E: http://schemas.android.com/apk/distribution:delivery (line=0)",
-                            "              E: http://schemas.android.com/apk/distribution:install-time (line=0)",
-                            "                  E: http://schemas.android.com/apk/distribution:removable (line=0)",
-                            "                    A: http://schemas.android.com/apk/distribution:value(0x01010024)=true",
-                            "          E: http://schemas.android.com/apk/distribution:fusing (line=0)",
-                            "            A: http://schemas.android.com/apk/distribution:include=true"
-                    )
-            )
-
-            val entries = it.entries.map { it.toString() }
-            // Not an exhaustive list of expected entries.
-            assertThat(entries).containsAtLeast(
-                    "/AndroidManifest.xml",
-                    "/assets/asset_from_sdkImplA.txt",
-                    "/assets/RuntimeEnabledSdk-com.example.privacysandboxsdk/CompatSdkConfig.xml",
-                    "/META-INF/MANIFEST.MF",
-                    "/META-INF/BNDLTOOL.RSA",
-                    "/META-INF/BNDLTOOL.SF",
-                    "/resources.arsc"
-            )
-        }
-
-        Apk(extractedSdkApks.single { it.name == "example-app-debug-injected-privacy-sandbox-compat.apk" }).use {
-            val manifestContent = ApkSubject.getManifestContent(it.file)
-            assertThat(manifestContent).named("Manifest content of %s", it.file).containsAtLeast(
+                listOf(
                     "N: android=http://schemas.android.com/apk/res/android (line=2)",
                     "  E: manifest (line=2)",
                     "    A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=4",
@@ -339,19 +300,67 @@ class PrivacySandboxSdkConsumptionTest {
                     "    A: package=\"com.example.privacysandboxsdk.consumer\" (Raw: \"com.example.privacysandboxsdk.consumer\")",
                     "    A: platformBuildVersionCode=34",
                     "    A: platformBuildVersionName=14",
-                    "    A: split=\"exampleappdebuginjectedprivacysandboxcompat\" (Raw: \"exampleappdebuginjectedprivacysandboxcompat\")",
-                    "      E: application (line=9)",
+                    "    A: split=\"comexampleprivacysandboxsdk\" (Raw: \"comexampleprivacysandboxsdk\")",
+                    "      E: uses-permission (line=9)",
+                    "        A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"android.permission.INTERNET\" (Raw: \"android.permission.INTERNET\")",
+                    "      E: uses-permission (line=15)",
+                    "        A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"com.example.privacysandboxsdk.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION\" (Raw: \"com.example.privacysandboxsdk.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION\")",
+                    "      E: application (line=17)",
                     "        A: http://schemas.android.com/apk/res/android:hasCode(0x0101000c)=false",
+                    "        A: http://schemas.android.com/apk/res/android:appComponentFactory(0x0101057a)=\"androidx.core.app.CoreComponentFactory\" (Raw: \"androidx.core.app.CoreComponentFactory\")",
+                    "          E: meta-data (line=0)",
+                    "            A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"shadow.bundletool.com.android.vending.sdk.patch.version.comexampleprivacysandboxsdk\" (Raw: \"shadow.bundletool.com.android.vending.sdk.patch.version.comexampleprivacysandboxsdk\")",
+                    "            A: http://schemas.android.com/apk/res/android:value(0x01010024)=3",
+                    "      E: uses-sdk (line=0)",
+                    "        A: http://schemas.android.com/apk/res/android:minSdkVersion(0x0101020c)=23",
+                    "      E: http://schemas.android.com/apk/distribution:module (line=0)",
+                    "          E: http://schemas.android.com/apk/distribution:delivery (line=0)",
+                    "              E: http://schemas.android.com/apk/distribution:install-time (line=0)",
+                    "                  E: http://schemas.android.com/apk/distribution:removable (line=0)",
+                    "                    A: http://schemas.android.com/apk/distribution:value(0x01010024)=true",
+                    "          E: http://schemas.android.com/apk/distribution:fusing (line=0)",
+                    "            A: http://schemas.android.com/apk/distribution:include=true"
+                )
+            )
+
+            val entries = it.entries.map { it.toString() }
+            // Not an exhaustive list of expected entries.
+            assertThat(entries).containsAtLeast(
+                "/AndroidManifest.xml",
+                "/assets/asset_from_sdkImplA.txt",
+                "/assets/RuntimeEnabledSdk-com.example.privacysandboxsdk/CompatSdkConfig.xml",
+                "/META-INF/MANIFEST.MF",
+                "/META-INF/BNDLTOOL.RSA",
+                "/META-INF/BNDLTOOL.SF",
+                "/resources.arsc"
+            )
+        }
+
+        Apk(extractedSdkApks.single { it.name == "example-app-debug-injected-privacy-sandbox-compat.apk" }).use {
+            val manifestContent = ApkSubject.getManifestContent(it.file)
+            assertThat(manifestContent).named("Manifest content of %s", it.file).containsAtLeast(
+                "N: android=http://schemas.android.com/apk/res/android (line=2)",
+                "  E: manifest (line=2)",
+                "    A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=4",
+                "    A: http://schemas.android.com/apk/res/android:isFeatureSplit(0x0101055b)=true",
+                "    A: http://schemas.android.com/apk/res/android:compileSdkVersion(0x01010572)=34",
+                "    A: http://schemas.android.com/apk/res/android:compileSdkVersionCodename(0x01010573)=\"14\" (Raw: \"14\")",
+                "    A: package=\"com.example.privacysandboxsdk.consumer\" (Raw: \"com.example.privacysandboxsdk.consumer\")",
+                "    A: platformBuildVersionCode=34",
+                "    A: platformBuildVersionName=14",
+                "    A: split=\"exampleappdebuginjectedprivacysandboxcompat\" (Raw: \"exampleappdebuginjectedprivacysandboxcompat\")",
+                "      E: application (line=9)",
+                "        A: http://schemas.android.com/apk/res/android:hasCode(0x0101000c)=false",
             )
 
             val entries = it.entries.map(Path::toString)
             assertThat(entries).named("entries of %s", it.file).containsExactly(
-                    "/AndroidManifest.xml",
-                    "/META-INF/CERT.RSA",
-                    "/META-INF/CERT.SF",
-                    "/META-INF/MANIFEST.MF",
-                    RUNTIME_ENABLED_SDK_TABLE_ASSET_FOR_COMPAT,
-                    "/resources.arsc"
+                "/AndroidManifest.xml",
+                "/META-INF/CERT.RSA",
+                "/META-INF/CERT.SF",
+                "/META-INF/MANIFEST.MF",
+                RUNTIME_ENABLED_SDK_TABLE_ASSET_FOR_COMPAT,
+                "/resources.arsc"
             )
         }
     }
@@ -359,14 +368,14 @@ class PrivacySandboxSdkConsumptionTest {
     @Test
     fun testPublicationAndConsumptionCanBeToggledSeparately() {
         val buildFailsPublicationNotEnabled = executor()
-                .with(BooleanOption.PRIVACY_SANDBOX_SDK_PLUGIN_SUPPORT, false)
-                .with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, false)
-                .expectFailure()
-                .run(":privacy-sandbox-sdk:assemble")
+            .with(BooleanOption.PRIVACY_SANDBOX_SDK_PLUGIN_SUPPORT, false)
+            .with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, false)
+            .expectFailure()
+            .run(":privacy-sandbox-sdk:assemble")
         buildFailsPublicationNotEnabled.stderr.use {
             val expectedContents = listOf(
-                    "> Failed to apply plugin 'com.android.internal.privacy-sandbox-sdk'.",
-                    "> Privacy Sandbox SDK Plugin support must be explicitly enabled."
+                "> Failed to apply plugin 'com.android.internal.privacy-sandbox-sdk'.",
+                "> Privacy Sandbox SDK Plugin support must be explicitly enabled."
             )
             expectedContents.forEach { line ->
                 ScannerSubject.assertThat(it).contains(line)
@@ -374,21 +383,21 @@ class PrivacySandboxSdkConsumptionTest {
         }
 
         executor()
-                .with(BooleanOption.PRIVACY_SANDBOX_SDK_PLUGIN_SUPPORT, true)
-                .with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, false)
-                .run(":privacy-sandbox-sdk:assemble")
+            .with(BooleanOption.PRIVACY_SANDBOX_SDK_PLUGIN_SUPPORT, true)
+            .with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, false)
+            .run(":privacy-sandbox-sdk:assemble")
         val sdkProject = project.getSubproject(":privacy-sandbox-sdk")
         assertThat(
-                sdkProject.getOutputFile("asb", "single", "privacy-sandbox-sdk.asb").exists()
+            sdkProject.getOutputFile("asb", "single", "privacy-sandbox-sdk.asb").exists()
         ).isTrue()
 
         val buildFailsConsumptionNotEnabled = executor()
-                .with(BooleanOption.PRIVACY_SANDBOX_SDK_PLUGIN_SUPPORT, true)
-                .with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, false)
-                .expectFailure()
-                .run(":example-app:assemble")
+            .with(BooleanOption.PRIVACY_SANDBOX_SDK_PLUGIN_SUPPORT, true)
+            .with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, false)
+            .expectFailure()
+            .run(":example-app:assemble")
         assertThat(buildFailsConsumptionNotEnabled.failureMessage).isEqualTo(
-                """2 issues were found when checking AAR metadata:
+            """2 issues were found when checking AAR metadata:
 
   1.  Dependency :privacy-sandbox-sdk is an Android Privacy Sandbox SDK library, and needs
       Privacy Sandbox support to be enabled in projects that depend on it.
@@ -417,18 +426,20 @@ class PrivacySandboxSdkConsumptionTest {
 
     private fun declarePrivacySandboxSdkServiceOnSdkA() {
         //Add service to sdk-impl-a
-        val pkg = FileUtils.join(project.getSubproject("sdk-impl-a").mainSrcDir,
-                "com",
-                "example",
-                "sdkImplA")
+        val pkg = FileUtils.join(
+            project.getSubproject("sdk-impl-a").mainSrcDir,
+            "com",
+            "example",
+            "sdkImplA"
+        )
         val mySdkFile = File(pkg, "MySdk.kt")
         mySdkFile.writeText(
-                "package com.example.sdkImplA\n" +
-                        "import androidx.privacysandbox.tools.PrivacySandboxService\n" +
-                        "   @PrivacySandboxService\n" +
-                        "   public interface MySdk {\n" +
-                        "       suspend fun foo(bar: Int): String\n" +
-                        "   }\n"
+            "package com.example.sdkImplA\n" +
+                    "import androidx.privacysandbox.tools.PrivacySandboxService\n" +
+                    "   @PrivacySandboxService\n" +
+                    "   public interface MySdk {\n" +
+                    "       suspend fun foo(bar: Int): String\n" +
+                    "   }\n"
         )
     }
 
@@ -438,11 +449,13 @@ class PrivacySandboxSdkConsumptionTest {
         private const val SDK_IMPL_A_CLASS = "Lcom/example/sdkImplA/Example;"
         private const val USES_SDK_LIBRARY_MANIFEST_ELEMENT = "uses-sdk-library"
         private const val MY_PRIVACY_SANDBOX_SDK_MANIFEST_PACKAGE =
-                "=\"com.example.privacysandboxsdk\""
+            "=\"com.example.privacysandboxsdk\""
         private const val INTERNET_PERMISSION =
-                "A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"android.permission.INTERNET\" (Raw: \"android.permission.INTERNET\")"
+            "A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"android.permission.INTERNET\" (Raw: \"android.permission.INTERNET\")"
         private const val FOREGROUND_SERVICE = "FOREGROUND_SERVICE"
-        private const val INJECTED_PRIVACY_SANDBOX_COMPAT_SUFFIX = "-injected-privacy-sandbox-compat.apk"
-        private const val RUNTIME_ENABLED_SDK_TABLE_ASSET_FOR_COMPAT = "/assets/RuntimeEnabledSdkTable.xml"
+        private const val INJECTED_PRIVACY_SANDBOX_COMPAT_SUFFIX =
+            "-injected-privacy-sandbox-compat.apk"
+        private const val RUNTIME_ENABLED_SDK_TABLE_ASSET_FOR_COMPAT =
+            "/assets/RuntimeEnabledSdkTable.xml"
     }
 }

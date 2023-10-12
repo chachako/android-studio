@@ -154,19 +154,58 @@ class PrivacySandboxSdkTest {
                 "${SdkConstants.FD_LOGS}/manifest-merger-mergeManifest-report.txt")
         assertThat(asbManifest).hasContents(
                 """
-            <?xml version="1.0" encoding="utf-8"?>
-            <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-                package="com.example.privacysandboxsdk" >
+                <?xml version="1.0" encoding="utf-8"?>
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.privacysandboxsdk" >
 
-                <uses-sdk
-                    android:minSdkVersion="23"
-                    android:targetSdkVersion="34" />
+                    <uses-sdk
+                        android:minSdkVersion="23"
+                        android:targetSdkVersion="34" />
 
-                <uses-permission android:name="android.permission.INTERNET" />
+                    <uses-permission android:name="android.permission.INTERNET" />
 
-                <application android:appComponentFactory="androidx.core.app.CoreComponentFactory" />
+                    <permission
+                        android:name="com.example.privacysandboxsdk.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+                        android:protectionLevel="signature" />
 
-            </manifest>
+                    <uses-permission android:name="com.example.privacysandboxsdk.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+
+                    <application android:appComponentFactory="androidx.core.app.CoreComponentFactory" >
+                        <activity
+                            android:name="androidx.privacysandbox.sdkruntime.client.activity.SdkActivity"
+                            android:exported="true" />
+
+                        <provider
+                            android:name="androidx.startup.InitializationProvider"
+                            android:authorities="com.example.privacysandboxsdk.androidx-startup"
+                            android:exported="false" >
+                            <meta-data
+                                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+                                android:value="androidx.startup" />
+                        </provider>
+
+                        <receiver
+                            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+                            android:directBootAware="false"
+                            android:enabled="true"
+                            android:exported="true"
+                            android:permission="android.permission.DUMP" >
+                            <intent-filter>
+                                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+                            </intent-filter>
+                            <intent-filter>
+                                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+                            </intent-filter>
+                            <intent-filter>
+                                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+                            </intent-filter>
+                            <intent-filter>
+                                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+                            </intent-filter>
+                        </receiver>
+                    </application>
+
+                </manifest>
         """.trimIndent())
         assertThat(asbManifestBlameReport.exists()).isTrue()
         assertThat(asbFile.exists()).isTrue()
