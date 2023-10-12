@@ -4,7 +4,7 @@ gradle_integration_test(
     name = "sdk_tests",
     # Note: this test is slightly unusual in testing the auto download, hence the hardcoded file
     # references. This is not necessarily the pattern to follow in other tests.
-    srcs = glob(["**/*.java"]),
+    srcs = glob(["*.java"]),
     data = [
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/3534162-studio.sdk-patcher.zip",
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/addon2-3.xml",
@@ -12,6 +12,7 @@ gradle_integration_test(
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/build-tools_r34-linux.zip",
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/cmake-3.22.1-linux.zip",
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/google_apis-24_r1.zip",
+        "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/platform-24_r02.zip",
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/platform-31_r01.zip",
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/platform-tools_r34.0.3-linux.zip",
         "//prebuilts/studio/sdk/remote:dl.google.com/android/repository/repository2-3.xml",

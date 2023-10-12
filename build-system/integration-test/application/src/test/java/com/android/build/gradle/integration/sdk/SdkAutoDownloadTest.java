@@ -54,7 +54,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.Assume;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -140,6 +139,19 @@ public class SdkAutoDownloadTest {
                                 + "Pkg.Desc=Android SDK Tools\n")
                         .getBytes(StandardCharsets.UTF_8));
 
+        Path remoteSdk = TestUtils.getRemoteSdk();
+        Path addOnsListFile = remoteSdk.resolve("addons_list-5.xml");
+        Files.write(
+                addOnsListFile,
+                ("<?xml version=\"1.0\" ?>\n"
+                                + "<common:site-list xmlns:common=\"http://schemas.android.com/repository/android/sites-common/1\" xmlns:sdk=\"http://schemas.android.com/sdk/android/addons-list/5\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"
+                                + "\t<site xsi:type=\"sdk:addonSiteType\">\n"
+                                + "\t\t<displayName>Google Inc.</displayName>\n"
+                                + "\t\t<url>addon2-3.xml</url>\n"
+                                + "\t</site>\n"
+                                + "</common:site-list>")
+                        .getBytes(StandardCharsets.UTF_8));
+
         TestFileUtils.appendToFile(
                 project.getBuildFile(), "android.defaultConfig.minSdkVersion = 30");
         TestFileUtils.appendToFile(
@@ -197,7 +209,6 @@ public class SdkAutoDownloadTest {
      * downloaded.
      */
     @Test
-    @Ignore("b/303082325")
     public void checkCompileSdkAddonDownloading() throws Exception {
         TestFileUtils.appendToFile(
                 project.getBuildFile(),
@@ -210,7 +221,7 @@ public class SdkAutoDownloadTest {
 
         getExecutor().run("assembleDebug");
 
-        File platformBase = getPlatformFolder();
+        File platformBase = FileUtils.join(mSdkHome, SdkConstants.FD_PLATFORMS, "android-24");
         assertThat(platformBase).isDirectory();
 
         File addonTarget =
@@ -299,41 +310,6 @@ public class SdkAutoDownloadTest {
         assertThat(ndkDirectory).isDirectory();
     }
 
-    /** TODO: Test like checkPlatformToolsDownloading once b/213592468 is fixed */
-    @Test
-    @Ignore("b/303082325")
-    public void checkCmakeMissingLicense() throws Exception {
-        AssumeUtil.assumeIsLinux();
-        FileUtils.delete(previewLicenseFile);
-        deleteLicense();
-
-        TestFileUtils.appendToFile(
-                project.getBuildFile(),
-                System.lineSeparator()
-                        + "android.compileSdkVersion "
-                        + PLATFORM_VERSION
-                        + System.lineSeparator()
-                        + "android.buildToolsVersion \""
-                        + BUILD_TOOLS_VERSION
-                        + "\""
-                        + System.lineSeparator()
-                        + "android.externalNativeBuild.cmake.path \"CMakeLists.txt\""
-                        + System.lineSeparator()
-                        + "android.externalNativeBuild.cmake.version \""
-                        + CMAKE_VERSION
-                        + "\"");
-
-        Files.write(project.file("CMakeLists.txt").toPath(),
-                cmakeLists.getBytes(StandardCharsets.UTF_8));
-
-        GradleBuildResult result = getExecutor().expectFailure().run("assembleDebug");
-
-        assertThat(Throwables.getRootCause(result.getException()).getMessage())
-                .contains(
-                        "Failed to install the following Android SDK packages as some licences have not been accepted");
-        assertThat(Throwables.getRootCause(result.getException()).getMessage()).contains("CMake");
-    }
-
     @Test
     public void checkNdkDownloading() throws Exception {
         AssumeUtil.assumeIsLinux();
@@ -381,8 +357,8 @@ public class SdkAutoDownloadTest {
     @Test
     public void checkNdkMissingLicense() throws Exception {
         AssumeUtil.assumeIsLinux();
-        FileUtils.delete(previewLicenseFile);
         deleteLicense();
+        deletePreviewLicense();
 
         TestFileUtils.appendToFile(
                 project.getBuildFile(),
@@ -496,7 +472,6 @@ public class SdkAutoDownloadTest {
         FileUtils.delete(previewLicenseFile);
     }
 
-    @Ignore("b/303082325")
     @Test
     public void checkNoLicenseError_AddonTarget() throws Exception {
         deleteLicense();
@@ -562,7 +537,6 @@ public class SdkAutoDownloadTest {
                         "build-tools;" + BUILD_TOOLS_VERSION);
     }
 
-    @Ignore("b/303082325")
     @Test
     public void checkNoLicenseError_MultiplePackages() throws Exception {
         deleteLicense();
@@ -584,7 +558,7 @@ public class SdkAutoDownloadTest {
         assertThat(Throwables.getRootCause(result.getException()).getMessage())
                 .contains("Build-Tools " + ToolsRevisionUtils.MIN_BUILD_TOOLS_REV.toShortString());
         assertThat(Throwables.getRootCause(result.getException()).getMessage())
-                .contains("Android SDK Platform 23");
+                .contains("Android SDK Platform 24");
         assertThat(Throwables.getRootCause(result.getException()).getMessage())
                 .contains("Google APIs");
     }

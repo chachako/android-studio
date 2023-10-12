@@ -6,6 +6,7 @@ build-tools;34.0.0-rc3
 build-tools;33.0.1
 build-tools;30.0.3
 platforms;android-31
+platforms;android-24
 cmake;3.22.1
 add-ons;addon-google_apis-google-24
 patcher;v4
