@@ -216,6 +216,7 @@ DATA = [
     "androidx.activity:activity-ktx:1.4.0",
     "androidx.activity:activity-ktx:1.6.0",  # Still needed from navigation-fragment-ktx:2.5.3
     "androidx.activity:activity-ktx:1.7.0",
+    "androidx.activity:activity-ktx:1.8.0",
     "androidx.annotation:annotation:1.2.0",
     "androidx.annotation:annotation:1.2.0-beta01",
     "androidx.annotation:annotation:1.6.0",

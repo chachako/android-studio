@@ -87,7 +87,7 @@ fun RecipeExecutor.generateManifest(
 
 fun RecipeExecutor.generateSimpleLayout(
   moduleData: ModuleTemplateData, activityClass: String, simpleLayoutName: String,
-  openLayout: Boolean = true, includeCppSupport: Boolean = false
+  containerId: String?, openLayout: Boolean = true, includeCppSupport: Boolean = false
 ) {
   val projectData = moduleData.projectTemplateData
   val appCompatVersion = moduleData.apis.appCompatVersion
@@ -98,7 +98,7 @@ fun RecipeExecutor.generateSimpleLayout(
 
   // TODO(qumeric): check if we sometimes need to pass appBarLayoutName
   val simpleLayout = simpleLayoutXml(
-    moduleData.isNewModule, includeCppSupport, projectData.androidXSupport, moduleData.packageName, activityClass, null
+    moduleData.isNewModule, includeCppSupport, projectData.androidXSupport, moduleData.packageName, activityClass, null, containerId
   )
 
   val layoutFile = resOut.resolve("layout/$simpleLayoutName.xml")

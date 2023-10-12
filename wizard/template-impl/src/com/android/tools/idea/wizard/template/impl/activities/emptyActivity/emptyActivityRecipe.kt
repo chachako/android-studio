@@ -40,6 +40,7 @@ fun RecipeExecutor.generateEmptyActivity(
 
   addDependency("com.android.support:appcompat-v7:${moduleData.apis.appCompatVersion}.+")
   addMaterial3Dependency()
+  addDependency("androidx.activity:activity:1.8.0")
 
   generateManifest(
     moduleData, activityClass, packageName, isLauncher, false,
@@ -49,7 +50,7 @@ fun RecipeExecutor.generateEmptyActivity(
   addAllKotlinDependencies(moduleData)
 
   if (generateLayout) {
-    generateSimpleLayout(moduleData, activityClass, layoutName)
+    generateSimpleLayout(moduleData, activityClass, layoutName, containerId = "main")
   }
 
   val simpleActivity = when (projectData.language) {

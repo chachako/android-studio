@@ -24,9 +24,15 @@ fun simpleLayoutXml(
   useAndroidX: Boolean,
   packageName: String,
   activityClass: String,
-  appBarLayoutName: String?
+  appBarLayoutName: String?,
+  containerId: String?
 ): String {
   val layout = getMaterialComponentName("android.support.constraint.ConstraintLayout", useAndroidX)
+
+  val containerIdBlock = renderIf(containerId != null) {
+      """android:id="@+id/$containerId""""
+  }
+
   val appBarLayoutNameBlock = renderIf(appBarLayoutName != null) {
     """
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
@@ -56,6 +62,7 @@ fun simpleLayoutXml(
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    $containerIdBlock
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     $appBarLayoutNameBlock
