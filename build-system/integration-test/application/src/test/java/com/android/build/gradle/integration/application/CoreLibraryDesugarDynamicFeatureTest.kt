@@ -120,6 +120,16 @@ class CoreLibraryDesugarDynamicFeatureTest {
         assertThat(appApk.allDexes.size).isAtLeast(2)
     }
 
+    //regression test for b/304082728
+    @Test
+    fun minifyAndroidTestSmokeTest() {
+        app.buildFile.appendText("""
+
+            android.buildTypes.debug.minifyEnabled = true
+        """.trimIndent())
+        project.executor().run(":app:packageDebugAndroidTest")
+    }
+
     @Test
     fun testKeepRuleFromDynamicFeatureExternalLib() {
         feature.buildFile.appendText("""
