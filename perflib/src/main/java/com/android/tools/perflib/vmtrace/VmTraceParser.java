@@ -81,10 +81,23 @@ public class VmTraceParser {
         }
     }
 
+    /**
+     * Reads a given number of bytes from the input stream and converts the result to an integer
+     * represented in little-endian order.
+     */
+    private static int doReadNumberLE(int numBytes, DataInputStream mInputStream)
+            throws IOException {
+        int leNumber = 0;
+        for (int i = 0; i < numBytes; i++) {
+            leNumber += mInputStream.readUnsignedByte() << (i * 8);
+        }
+        return leNumber;
+    }
+
     private static boolean verifyStreamingTrace(File mTraceFile) throws IOException {
         final DataInputStream mInputStream = new DataInputStream(new FileInputStream(mTraceFile));
         // Read the magic number and validate it
-        int magic = StreamingTraceParser.doReadNumberLE(4, mInputStream);
+        int magic = doReadNumberLE(4, mInputStream);
         validateMagic(magic);
         return true;
     }
@@ -590,19 +603,6 @@ public class VmTraceParser {
 
         private int readNumberLE(int numBytes) throws IOException {
             return doReadNumberLE(numBytes, mInputStream);
-        }
-
-        /**
-         * Reads a given number of bytes from the input stream and converts the result to an integer
-         * represented in little-endian order.
-         */
-        private static int doReadNumberLE(int numBytes, DataInputStream mInputStream)
-                throws IOException {
-            int leNumber = 0;
-            for (int i = 0; i < numBytes; i++) {
-                leNumber += mInputStream.readUnsignedByte() << (i * 8);
-            }
-            return leNumber;
         }
 
         /**
