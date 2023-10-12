@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <androidx.benchmark>
-  <androidx.benchmark.gradle.plugin versions="1.1.1,1.2.0-alpha12"/>
+  <androidx.benchmark.gradle.plugin versions="1.1.1,1.2.0-rc02"/>
   <benchmark versions="1.0.0-alpha03"/>
-  <benchmark-baseline-profile-gradle-plugin versions="1.2.0-alpha12"/>
-  <benchmark-common versions="1.1.1,1.2.0-alpha12"/>
-  <benchmark-gradle-plugin versions="1.1.1,1.2.0-alpha12"/>
-  <benchmark-junit4 versions="1.1.1,1.2.0-alpha12"/>
-  <benchmark-macro versions="1.1.1,1.2.0-alpha12"/>
-  <benchmark-macro-junit4 versions="1.1.1,1.2.0-alpha12"/>
+  <benchmark-baseline-profile-gradle-plugin versions="1.2.0-rc02"/>
+  <benchmark-common versions="1.1.1,1.2.0-rc02"/>
+  <benchmark-gradle-plugin versions="1.1.1,1.2.0-rc02"/>
+  <benchmark-junit4 versions="1.1.1,1.2.0-rc02"/>
+  <benchmark-macro versions="1.1.1,1.2.0-rc02"/>
+  <benchmark-macro-junit4 versions="1.1.1,1.2.0-rc02"/>
 </androidx.benchmark>
 
