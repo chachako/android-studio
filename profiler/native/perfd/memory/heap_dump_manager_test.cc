@@ -30,9 +30,9 @@ using ::testing::Return;
 
 namespace profiler {
 
-class MockAcitivtyManager final : public ActivityManager {
+class MockActivityManager final : public ActivityManager {
  public:
-  explicit MockAcitivtyManager()
+  explicit MockActivityManager()
       : ActivityManager(
             std::unique_ptr<BashCommandRunner>(new BashCommandRunner("blah"))) {
   }
@@ -57,7 +57,7 @@ TEST(HeapDumpManager, DumpOnODevice) {
   file_cache.AddChunk(file_name, "");
   file_cache.Complete(file_name);
 
-  MockAcitivtyManager activity_manager;
+  MockActivityManager activity_manager;
   EXPECT_CALL(activity_manager, TriggerHeapDump(_, _, _))
       .WillRepeatedly(Return(true));
   HeapDumpManager dump(&file_cache, &activity_manager);

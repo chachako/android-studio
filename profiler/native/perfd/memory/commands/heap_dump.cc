@@ -17,6 +17,7 @@
 
 #include <climits>
 
+#include "perfd/sessions/sessions_manager.h"
 #include "proto/memory.pb.h"
 
 using grpc::Status;
@@ -42,10 +43,15 @@ Status HeapDump::ExecuteOn(Daemon* daemon) {
   dump_info->set_start_time(start_timestamp);
   dump_info->set_end_time(LLONG_MAX);  // LLONG_MAX for ongoing heap dump.
 
+  int64_t session_id = command().session_id();
+  SessionsManager* sessions_manager = sessions_manager_;
+  bool is_task_based_ux_enabled = is_task_based_ux_enabled_;
+
   bool dump_started = heap_dumper_->TriggerHeapDump(
       command().pid(), start_timestamp,
       // Use the start_event to construct the end_event
-      [daemon, start_event](bool dump_success) {
+      [daemon, start_event, session_id, sessions_manager,
+       is_task_based_ux_enabled](bool dump_success) {
         int64_t end_timestamp = daemon->clock()->GetCurrentTime();
         Event end_event;
         end_event.CopyFrom(start_event);
@@ -56,6 +62,11 @@ Status HeapDump::ExecuteOn(Daemon* daemon) {
         dump_info->set_end_time(end_timestamp);
         dump_info->set_success(dump_success);
         daemon->buffer()->Add(end_event);
+        // In the Task-Based UX, when the heap dump is complete, as indicated by
+        // the end event, we want to also end the session wrapping such capture.
+        if (is_task_based_ux_enabled) {
+          sessions_manager->EndSession(daemon, session_id);
+        }
       });
 
   Event status_event;

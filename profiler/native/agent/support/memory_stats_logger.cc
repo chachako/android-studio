@@ -34,6 +34,7 @@ using profiler::proto::AgentService;
 using profiler::proto::AllocationEventsRequest;
 using profiler::proto::AllocationSamplingRateEventRequest;
 using profiler::proto::AllocStatsRequest;
+using profiler::proto::Command;
 using profiler::proto::EmptyMemoryReply;
 using profiler::proto::EmptyResponse;
 using profiler::proto::Event;
@@ -41,6 +42,7 @@ using profiler::proto::GcStatsRequest;
 using profiler::proto::InternalMemoryService;
 using profiler::proto::JNIRefEventsRequest;
 using profiler::proto::MemoryData;
+using profiler::proto::SendCommandRequest;
 using profiler::proto::SendEventRequest;
 using profiler::proto::TrackStatus;
 
@@ -179,6 +181,31 @@ void EnqueueAllocationInfoEvents(const proto::Command& command,
 
           EmptyResponse response;
           return stub.SendEvent(&ctx, request, &response);
+        }});
+  }
+
+  // If a STOP_ALLOC_TRACKING command is issued, in the Task-Based UX world,
+  // this means we not only want to stop the allocation tracking, but also
+  // the session that wraps this recording, regardless of the value of
+  // command_success.
+  // If the session is 0, this indicates that its value was not set and thus
+  // we do not have a valid session to end. Only when we have a valid session
+  // to end do we issue an END_SESSION command.
+  bool is_task_based_ux_enabled =
+      Agent::Instance().agent_config().common().profiler_task_based_ux();
+  if (!is_start_command && command.session_id() != 0 &&
+      is_task_based_ux_enabled) {
+    Agent::Instance().SubmitAgentTasks(
+        {[command, request_timestamp](AgentService::Stub& stub,
+                                      ClientContext& ctx) {
+          SendCommandRequest request;
+          auto* stop_session_command = request.mutable_command();
+          stop_session_command->set_type(Command::END_SESSION);
+          stop_session_command->set_stream_id(command.stream_id());
+          auto* stop_session = stop_session_command->mutable_end_session();
+          stop_session->set_session_id(command.session_id());
+          EmptyResponse response;
+          return stub.SendCommand(&ctx, request, &response);
         }});
   }
 }

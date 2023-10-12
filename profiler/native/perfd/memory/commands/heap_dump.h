@@ -22,14 +22,23 @@
 
 namespace profiler {
 
+class SessionsManager;
+
 class HeapDump : public CommandT<HeapDump> {
  public:
-  HeapDump(const proto::Command& command, HeapDumpManager* heap_dumper)
-      : CommandT(command), heap_dumper_(heap_dumper) {}
+  HeapDump(const proto::Command& command, HeapDumpManager* heap_dumper,
+           SessionsManager* sessions_manager, bool is_task_based_ux_enabled)
+      : CommandT(command),
+        heap_dumper_(heap_dumper),
+        sessions_manager_(sessions_manager),
+        is_task_based_ux_enabled_(is_task_based_ux_enabled) {}
 
   static Command* Create(const proto::Command& command,
-                         HeapDumpManager* heap_dumper) {
-    return new HeapDump(command, heap_dumper);
+                         HeapDumpManager* heap_dumper,
+                         SessionsManager* sessions_manager,
+                         bool is_task_based_ux_enabled) {
+    return new HeapDump(command, heap_dumper, sessions_manager,
+                        is_task_based_ux_enabled);
   }
 
   // Request a heap dump and generates events to be added back to the Daemon's
@@ -45,6 +54,8 @@ class HeapDump : public CommandT<HeapDump> {
 
  private:
   HeapDumpManager* heap_dumper_;
+  SessionsManager* sessions_manager_;
+  bool is_task_based_ux_enabled_;
 };
 
 }  // namespace profiler

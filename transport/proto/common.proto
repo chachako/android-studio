@@ -477,4 +477,6 @@ message CommonConfig {
   bool profiler_custom_event_visualization = 6;
   // equivalent to StudioFlags.KEYBOARD_EVENT
   bool profiler_keyboard_event = 7;
+  // equivalent ot StudioFlags.PROFILER_TASK_BASED_UX
+  bool profiler_task_based_ux = 8;
 }

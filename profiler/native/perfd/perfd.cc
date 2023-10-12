@@ -102,14 +102,23 @@ int Perfd::Initialize(Daemon* daemon) {
         return StartTrace::Create(command, &trace_manager,
                                   SessionsManager::Instance());
       });
+
+  bool is_task_based_ux_enabled =
+      daemon_config.common().profiler_task_based_ux();
   daemon->RegisterCommandHandler(
-      proto::Command::STOP_TRACE, [](proto::Command command) {
-        return StopTrace::Create(command, &trace_manager);
+      proto::Command::STOP_TRACE,
+      [is_task_based_ux_enabled](proto::Command command) {
+        return StopTrace::Create(command, &trace_manager,
+                                 SessionsManager::Instance(),
+                                 is_task_based_ux_enabled);
       });
 
   daemon->RegisterCommandHandler(
-      proto::Command::HEAP_DUMP, [](proto::Command command) {
-        return HeapDump::Create(command, &heap_dumper);
+      proto::Command::HEAP_DUMP,
+      [is_task_based_ux_enabled](proto::Command command) {
+        return HeapDump::Create(command, &heap_dumper,
+                                SessionsManager::Instance(),
+                                is_task_based_ux_enabled);
       });
 
   return 0;

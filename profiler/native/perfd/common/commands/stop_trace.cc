@@ -18,6 +18,7 @@
 #include <sstream>
 #include "perfd/common/capture_info.h"
 #include "perfd/common/utils/trace_command_utils.h"
+#include "perfd/sessions/sessions_manager.h"
 #include "proto/cpu.pb.h"
 #include "utils/fs/disk_file_system.h"
 #include "utils/process_manager.h"
@@ -37,7 +38,8 @@ constexpr char kCacheLocation[] = "cache/complete/";
 // Helper function to stop the tracing. This function works in the async
 // environment because it doesn't require a |profiler::StopTrace| object.
 void Stop(Daemon* daemon, const profiler::proto::Command command_data,
-          TraceManager* trace_manager) {
+          TraceManager* trace_manager, SessionsManager* sessions_manager,
+          bool is_task_based_ux_enabled) {
   auto& stop_command = command_data.stop_trace();
   auto profiler_type = stop_command.profiler_type();
   const std::string& app_name = stop_command.configuration().app_name();
@@ -61,6 +63,12 @@ void Stop(Daemon* daemon, const profiler::proto::Command command_data,
     // this method after sending the TRACE_STATUS event to prevent calling
     // StopCapture with erroneous preconditions.
     daemon->buffer()->Add(status_event);
+
+    // In the Task-Based UX, if stopping the trace fails, we want to also end
+    // the session wrapping such capture.
+    if (is_task_based_ux_enabled) {
+      sessions_manager->EndSession(daemon, command_data.session_id());
+    }
     return;
   }
 
@@ -132,6 +140,13 @@ void Stop(Daemon* daemon, const profiler::proto::Command command_data,
         ->CopyFrom(status);
     daemon->buffer()->Add(trace_event);
   }
+
+  // In the Task-Based UX, when the trace is complete, as indicated by he
+  // CPU_TRACE or MEMORY_TRACE event, we want to also end the session wrapping
+  // such capture.
+  if (is_task_based_ux_enabled) {
+    sessions_manager->EndSession(daemon, command_data.session_id());
+  }
 }
 
 }  // namespace
@@ -146,9 +161,13 @@ Status StopTrace::ExecuteOn(Daemon* daemon) {
   // the thread is executing, |this| object may be recycled.
   profiler::proto::Command command_data = command();
   TraceManager* trace_manager = trace_manager_;
-  std::thread worker([daemon, command_data, trace_manager]() {
+  SessionsManager* sessions_manager = sessions_manager_;
+  bool is_task_based_ux_enabled = is_task_based_ux_enabled_;
+  std::thread worker([daemon, command_data, trace_manager, sessions_manager,
+                      is_task_based_ux_enabled]() {
     SetThreadName("Studio:StopTrace");
-    Stop(daemon, command_data, trace_manager);
+    Stop(daemon, command_data, trace_manager, sessions_manager,
+         is_task_based_ux_enabled);
   });
   worker.detach();
   return Status::OK;
