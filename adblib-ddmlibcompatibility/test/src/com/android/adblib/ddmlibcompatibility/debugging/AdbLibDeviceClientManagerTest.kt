@@ -671,6 +671,8 @@ class AdbLibDeviceClientManagerTest {
         }
         val client = deviceClientManager.getClientWrapper(10)
 
+        // Delay by 500ms to deal with flakiness (see b/300060011)
+        delay(500)
         client.executeGarbageCollector()
         client.awaitLegacyOperations()
 
