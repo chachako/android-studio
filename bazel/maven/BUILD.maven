@@ -12262,26 +12262,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.activity.activity_1.8.0-alpha05",
-    pom = "repository/androidx/activity/activity/1.8.0-alpha05/activity-1.8.0-alpha05.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/activity/activity/1.8.0-alpha05",
-    deps = [
-        "androidx.annotation.annotation_1.1.0",
-        "androidx.collection.collection_1.0.0",
-        "androidx.core.core_1.8.0",
-        "androidx.lifecycle.lifecycle-runtime_2.6.1",
-        "androidx.lifecycle.lifecycle-viewmodel_2.6.1",
-        "androidx.lifecycle.lifecycle-viewmodel-savedstate_2.6.1",
-        "androidx.profileinstaller.profileinstaller_1.3.0",
-        "androidx.savedstate.savedstate_1.2.1",
-        "androidx.tracing.tracing_1.0.0",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "androidx.activity.activity_1.8.0-alpha06",
     pom = "repository/androidx/activity/activity/1.8.0-alpha06/activity-1.8.0-alpha06.pom",
     repo_root_path = "repository",
@@ -22166,22 +22146,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.privacysandbox.sdkruntime.sdkruntime-client_1.0.0-alpha06",
-    pom = "repository/androidx/privacysandbox/sdkruntime/sdkruntime-client/1.0.0-alpha06/sdkruntime-client-1.0.0-alpha06.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/sdkruntime/sdkruntime-client/1.0.0-alpha06",
-    deps = [
-        "androidx.activity.activity_1.8.0-alpha05",
-        "androidx.core.core_1.12.0-alpha05",
-        "androidx.core.core-ktx_1.12.0-alpha05",
-        "androidx.privacysandbox.sdkruntime.sdkruntime-core_1.0.0-alpha06",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
-        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.6.4",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "androidx.privacysandbox.sdkruntime.sdkruntime-client_1.0.0-alpha08",
     pom = "repository/androidx/privacysandbox/sdkruntime/sdkruntime-client/1.0.0-alpha08/sdkruntime-client-1.0.0-alpha08.pom",
     repo_root_path = "repository",
@@ -22198,21 +22162,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.privacysandbox.sdkruntime.sdkruntime-client_1.0.0-alpha03",
-    pom = "repository/androidx/privacysandbox/sdkruntime/sdkruntime-client/1.0.0-alpha03/sdkruntime-client-1.0.0-alpha03.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/sdkruntime/sdkruntime-client/1.0.0-alpha03",
-    deps = [
-        "androidx.core.core_1.8.0",
-        "androidx.core.core-ktx_1.8.0",
-        "androidx.privacysandbox.sdkruntime.sdkruntime-core_1.0.0-alpha03",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.10",
-        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.6.4",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "androidx.privacysandbox.sdkruntime.sdkruntime-client_1.0.0-alpha13",
     pom = "repository/androidx/privacysandbox/sdkruntime/sdkruntime-client/1.0.0-alpha13/sdkruntime-client-1.0.0-alpha13.pom",
     repo_root_path = "repository",
@@ -22224,33 +22173,6 @@ maven_artifact(
         "androidx.privacysandbox.sdkruntime.sdkruntime-core_1.0.0-alpha13",
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
         "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.7.3",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "androidx.privacysandbox.sdkruntime.sdkruntime-core_1.0.0-alpha03",
-    pom = "repository/androidx/privacysandbox/sdkruntime/sdkruntime-core/1.0.0-alpha03/sdkruntime-core-1.0.0-alpha03.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/sdkruntime/sdkruntime-core/1.0.0-alpha03",
-    deps = [
-        "androidx.annotation.annotation_1.6.0",
-        "androidx.core.core_1.8.0",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.10",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "androidx.privacysandbox.sdkruntime.sdkruntime-core_1.0.0-alpha06",
-    pom = "repository/androidx/privacysandbox/sdkruntime/sdkruntime-core/1.0.0-alpha06/sdkruntime-core-1.0.0-alpha06.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/sdkruntime/sdkruntime-core/1.0.0-alpha06",
-    deps = [
-        "androidx.activity.activity_1.8.0-alpha05",
-        "androidx.annotation.annotation_1.6.0",
-        "androidx.core.core_1.12.0-alpha05",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
     ],
     visibility = ["//visibility:public"],
 )
@@ -22285,36 +22207,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.privacysandbox.tools.tools-apicompiler_1.0.0-alpha03",
-    pom = "repository/androidx/privacysandbox/tools/tools-apicompiler/1.0.0-alpha03/tools-apicompiler-1.0.0-alpha03.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/tools/tools-apicompiler/1.0.0-alpha03",
-    deps = [
-        "androidx.privacysandbox.tools.tools_1.0.0-alpha03",
-        "androidx.privacysandbox.tools.tools-core_1.0.0-alpha03",
-        "com.google.devtools.ksp.symbol-processing-api_1.8.10-1.0.9",
-        "com.squareup.kotlinpoet_1.12.0",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.10",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "androidx.privacysandbox.tools.tools-apicompiler_1.0.0-alpha05",
-    pom = "repository/androidx/privacysandbox/tools/tools-apicompiler/1.0.0-alpha05/tools-apicompiler-1.0.0-alpha05.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/tools/tools-apicompiler/1.0.0-alpha05",
-    deps = [
-        "androidx.privacysandbox.tools.tools_1.0.0-alpha05",
-        "androidx.privacysandbox.tools.tools-core_1.0.0-alpha05",
-        "com.google.devtools.ksp.symbol-processing-api_1.9.0-1.0.11",
-        "com.squareup.kotlinpoet_1.14.2",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "androidx.privacysandbox.tools.tools-apicompiler_1.0.0-alpha08",
     pom = "repository/androidx/privacysandbox/tools/tools-apicompiler/1.0.0-alpha08/tools-apicompiler-1.0.0-alpha08.pom",
     repo_root_path = "repository",
@@ -22330,40 +22222,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.privacysandbox.tools.tools-apigenerator_1.0.0-alpha03",
-    pom = "repository/androidx/privacysandbox/tools/tools-apigenerator/1.0.0-alpha03/tools-apigenerator-1.0.0-alpha03.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/tools/tools-apigenerator/1.0.0-alpha03",
-    deps = [
-        "androidx.privacysandbox.tools.tools_1.0.0-alpha03",
-        "androidx.privacysandbox.tools.tools-core_1.0.0-alpha03",
-        "com.squareup.kotlinpoet_1.12.0",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.10",
-        "org.jetbrains.kotlinx.kotlinx-metadata-jvm_0.6.0",
-        "org.ow2.asm.asm_9.3",
-        "org.ow2.asm.asm-commons_9.3",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "androidx.privacysandbox.tools.tools-apigenerator_1.0.0-alpha05",
-    pom = "repository/androidx/privacysandbox/tools/tools-apigenerator/1.0.0-alpha05/tools-apigenerator-1.0.0-alpha05.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/tools/tools-apigenerator/1.0.0-alpha05",
-    deps = [
-        "androidx.privacysandbox.tools.tools_1.0.0-alpha05",
-        "androidx.privacysandbox.tools.tools-core_1.0.0-alpha05",
-        "com.squareup.kotlinpoet_1.14.2",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
-        "org.jetbrains.kotlinx.kotlinx-metadata-jvm_0.6.2",
-        "org.ow2.asm.asm_9.3",
-        "org.ow2.asm.asm-commons_9.3",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "androidx.privacysandbox.tools.tools-apigenerator_1.0.0-alpha08",
     pom = "repository/androidx/privacysandbox/tools/tools-apigenerator/1.0.0-alpha08/tools-apigenerator-1.0.0-alpha08.pom",
     repo_root_path = "repository",
@@ -22374,38 +22232,6 @@ maven_artifact(
         "com.squareup.kotlinpoet_1.14.2",
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
         "org.jetbrains.kotlinx.kotlinx-metadata-jvm_0.9.0",
-        "org.ow2.asm.asm_9.3",
-        "org.ow2.asm.asm-commons_9.3",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "androidx.privacysandbox.tools.tools-apipackager_1.0.0-alpha03",
-    pom = "repository/androidx/privacysandbox/tools/tools-apipackager/1.0.0-alpha03/tools-apipackager-1.0.0-alpha03.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/tools/tools-apipackager/1.0.0-alpha03",
-    deps = [
-        "androidx.privacysandbox.tools.tools_1.0.0-alpha03",
-        "androidx.privacysandbox.tools.tools-core_1.0.0-alpha03",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.10",
-        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.10",
-        "org.ow2.asm.asm_9.3",
-        "org.ow2.asm.asm-commons_9.3",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "androidx.privacysandbox.tools.tools-apipackager_1.0.0-alpha05",
-    pom = "repository/androidx/privacysandbox/tools/tools-apipackager/1.0.0-alpha05/tools-apipackager-1.0.0-alpha05.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/tools/tools-apipackager/1.0.0-alpha05",
-    deps = [
-        "androidx.privacysandbox.tools.tools_1.0.0-alpha05",
-        "androidx.privacysandbox.tools.tools-core_1.0.0-alpha05",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
-        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.22",
         "org.ow2.asm.asm_9.3",
         "org.ow2.asm.asm-commons_9.3",
     ],
@@ -22429,50 +22255,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.privacysandbox.tools.tools-core_1.0.0-alpha03",
-    pom = "repository/androidx/privacysandbox/tools/tools-core/1.0.0-alpha03/tools-core-1.0.0-alpha03.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/tools/tools-core/1.0.0-alpha03",
-    deps = [
-        "androidx.privacysandbox.tools.tools_1.0.0-alpha03",
-        "com.google.protobuf.protobuf-javalite_3.21.8",
-        "com.squareup.kotlinpoet_1.12.0",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.10",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "androidx.privacysandbox.tools.tools-core_1.0.0-alpha04",
-    pom = "repository/androidx/privacysandbox/tools/tools-core/1.0.0-alpha04/tools-core-1.0.0-alpha04.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/tools/tools-core/1.0.0-alpha04",
-    deps = [
-        "androidx.privacysandbox.tools.tools_1.0.0-alpha04",
-        "com.google.guava.guava_31.1-android",
-        "com.google.protobuf.protobuf-javalite_3.21.8",
-        "com.squareup.kotlinpoet_1.12.0",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "androidx.privacysandbox.tools.tools-core_1.0.0-alpha05",
-    pom = "repository/androidx/privacysandbox/tools/tools-core/1.0.0-alpha05/tools-core-1.0.0-alpha05.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/tools/tools-core/1.0.0-alpha05",
-    deps = [
-        "androidx.privacysandbox.tools.tools_1.0.0-alpha05",
-        "com.google.guava.guava_31.1-android",
-        "com.google.protobuf.protobuf-javalite_3.21.8",
-        "com.squareup.kotlinpoet_1.14.2",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "androidx.privacysandbox.tools.tools-core_1.0.0-alpha08",
     pom = "repository/androidx/privacysandbox/tools/tools-core/1.0.0-alpha08/tools-core-1.0.0-alpha08.pom",
     repo_root_path = "repository",
@@ -22488,80 +22270,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.privacysandbox.tools.tools_1.0.0-alpha03",
-    pom = "repository/androidx/privacysandbox/tools/tools/1.0.0-alpha03/tools-1.0.0-alpha03.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/tools/tools/1.0.0-alpha03",
-    deps = [
-        "androidx.annotation.annotation_1.3.0",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.10",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "androidx.privacysandbox.tools.tools_1.0.0-alpha04",
-    pom = "repository/androidx/privacysandbox/tools/tools/1.0.0-alpha04/tools-1.0.0-alpha04.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/tools/tools/1.0.0-alpha04",
-    deps = [
-        "androidx.annotation.annotation_1.3.0",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "androidx.privacysandbox.tools.tools_1.0.0-alpha05",
-    pom = "repository/androidx/privacysandbox/tools/tools/1.0.0-alpha05/tools-1.0.0-alpha05.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/tools/tools/1.0.0-alpha05",
-    deps = [
-        "androidx.annotation.annotation_1.3.0",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "androidx.privacysandbox.tools.tools_1.0.0-alpha08",
     pom = "repository/androidx/privacysandbox/tools/tools/1.0.0-alpha08/tools-1.0.0-alpha08.pom",
     repo_root_path = "repository",
     repo_path = "androidx/privacysandbox/tools/tools/1.0.0-alpha08",
     deps = [
         "androidx.annotation.annotation_1.3.0",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "androidx.privacysandbox.ui.ui-client_1.0.0-alpha04",
-    pom = "repository/androidx/privacysandbox/ui/ui-client/1.0.0-alpha04/ui-client-1.0.0-alpha04.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/ui/ui-client/1.0.0-alpha04",
-    deps = [
-        "androidx.annotation.annotation_1.1.0",
-        "androidx.core.core_1.7.0",
-        "androidx.lifecycle.lifecycle-common_2.2.0",
-        "androidx.privacysandbox.sdkruntime.sdkruntime-client_1.0.0-alpha06",
-        "androidx.privacysandbox.ui.ui-core_1.0.0-alpha04",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "androidx.privacysandbox.ui.ui-client_1.0.0-alpha05",
-    pom = "repository/androidx/privacysandbox/ui/ui-client/1.0.0-alpha05/ui-client-1.0.0-alpha05.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/ui/ui-client/1.0.0-alpha05",
-    deps = [
-        "androidx.annotation.annotation_1.1.0",
-        "androidx.core.core_1.12.0-alpha05",
-        "androidx.lifecycle.lifecycle-common_2.2.0",
-        "androidx.privacysandbox.sdkruntime.sdkruntime-client_1.0.0-alpha08",
-        "androidx.privacysandbox.ui.ui-core_1.0.0-alpha05",
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
     ],
     visibility = ["//visibility:public"],
@@ -22584,30 +22298,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.privacysandbox.ui.ui-core_1.0.0-alpha04",
-    pom = "repository/androidx/privacysandbox/ui/ui-core/1.0.0-alpha04/ui-core-1.0.0-alpha04.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/ui/ui-core/1.0.0-alpha04",
-    deps = [
-        "androidx.annotation.annotation_1.1.0",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "androidx.privacysandbox.ui.ui-core_1.0.0-alpha05",
-    pom = "repository/androidx/privacysandbox/ui/ui-core/1.0.0-alpha05/ui-core-1.0.0-alpha05.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/ui/ui-core/1.0.0-alpha05",
-    deps = [
-        "androidx.annotation.annotation_1.1.0",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "androidx.privacysandbox.ui.ui-core_1.0.0-alpha07",
     pom = "repository/androidx/privacysandbox/ui/ui-core/1.0.0-alpha07/ui-core-1.0.0-alpha07.pom",
     repo_root_path = "repository",
@@ -22615,21 +22305,6 @@ maven_artifact(
     deps = [
         "androidx.annotation.annotation_1.1.0",
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "androidx.privacysandbox.ui.ui-provider_1.0.0-alpha05",
-    pom = "repository/androidx/privacysandbox/ui/ui-provider/1.0.0-alpha05/ui-provider-1.0.0-alpha05.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/privacysandbox/ui/ui-provider/1.0.0-alpha05",
-    deps = [
-        "androidx.annotation.annotation_1.1.0",
-        "androidx.core.core_1.12.0-alpha05",
-        "androidx.privacysandbox.ui.ui-core_1.0.0-alpha05",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
-        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.7.1",
     ],
     visibility = ["//visibility:public"],
 )
@@ -43496,15 +43171,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.google.protobuf.protobuf-javalite_3.21.8",
-    pom = "repository/com/google/protobuf/protobuf-javalite/3.21.8/protobuf-javalite-3.21.8.pom",
-    repo_root_path = "repository",
-    repo_path = "com/google/protobuf/protobuf-javalite/3.21.8",
-    parent = "com.google.protobuf.protobuf-parent_3.21.8",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "com.google.protobuf.protobuf-lite_3.0.1",
     pom = "repository/com/google/protobuf/protobuf-lite/3.0.1/protobuf-lite-3.0.1.pom",
     repo_root_path = "repository",
@@ -55573,28 +55239,6 @@ maven_artifact(
     repo_path = "org/jetbrains/kotlinx/kotlinx-metadata-jvm/0.3.0",
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib_1.5.0",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "org.jetbrains.kotlinx.kotlinx-metadata-jvm_0.6.0",
-    pom = "repository/org/jetbrains/kotlinx/kotlinx-metadata-jvm/0.6.0/kotlinx-metadata-jvm-0.6.0.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlinx/kotlinx-metadata-jvm/0.6.0",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.0",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "org.jetbrains.kotlinx.kotlinx-metadata-jvm_0.6.2",
-    pom = "repository/org/jetbrains/kotlinx/kotlinx-metadata-jvm/0.6.2/kotlinx-metadata-jvm-0.6.2.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlinx/kotlinx-metadata-jvm/0.6.2",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.20",
     ],
     visibility = ["//visibility:public"],
 )
