@@ -37,7 +37,6 @@ TEST_DEPS = [
     "@maven//:org.codehaus.groovy.groovy-all",  # required by //tools/base/build-system:gradle-api
     "@maven//:org.jetbrains.dokka.dokka-core",
     "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
-    "@maven//:org.jetbrains.kotlin.kotlin-test",
     "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm",
     "@maven//:org.mockito.mockito-core",
     "@maven//:org.ow2.asm.asm",
@@ -296,13 +295,15 @@ single_gradle_integration_test_per_source(
     deps = TEST_DEPS,
 )
 
+JAVA_COMPILE_TESTS = [
+    "src/test/java/com/android/build/gradle/integration/application/Java11CompileTest.kt",
+    "src/test/java/com/android/build/gradle/integration/application/JavaCompileWithToolChainTest.kt",
+]
+
 gradle_integration_test(
     name = "java-compile-tests",
     srcs = glob(
-        [
-            "src/test/java/com/android/build/gradle/integration/application/Java11CompileTest.kt",
-            "src/test/java/com/android/build/gradle/integration/application/JavaCompileWithToolChainTest.kt",
-        ],
+        include = JAVA_COMPILE_TESTS,
     ),
     data = TEST_DATA + [
         "//prebuilts/studio/jdk:jdk_1_8",
@@ -321,12 +322,14 @@ gradle_integration_test(
     deps = TEST_DEPS,
 )
 
+AGP_VERSION_CONSISTENCY_TESTS = [
+    "src/test/java/com/android/build/gradle/integration/application/AgpVersionConsistencyTest.kt",
+]
+
 gradle_integration_test(
     name = "agp-version-consistency-tests",
     srcs = glob(
-        [
-            "src/test/java/com/android/build/gradle/integration/application/AgpVersionConsistencyTest.kt",
-        ],
+        include = AGP_VERSION_CONSISTENCY_TESTS,
     ),
     data = TEST_DATA,
     maven_repo_zips = [
@@ -340,13 +343,15 @@ gradle_integration_test(
     deps = TEST_DEPS,
 )
 
+COMPOSE_TESTS = [
+    "src/test/java/com/android/build/gradle/integration/application/ComposeHelloWorldTest.kt",
+    "src/test/java/com/android/build/gradle/integration/multiplatform/KotlinMultiplatformComposeTest.kt",
+]
+
 gradle_integration_test(
     name = "compose-tests",
     srcs = glob(
-        [
-            "src/test/java/com/android/build/gradle/integration/application/ComposeHelloWorldTest.kt",
-            "src/test/java/com/android/build/gradle/integration/multiplatform/KotlinMultiplatformComposeTest.kt",
-        ],
+        include = COMPOSE_TESTS,
     ),
     data = TEST_DATA,
     maven_repo_zips = [
@@ -724,7 +729,7 @@ maven_repository(
         "@maven//:org.jdeferred.jdeferred-android-aar_1.2.2",
         "@maven//:org.jdeferred.jdeferred-android-aar_1.2.3",
         "@maven//:org.jetbrains.dokka.javadoc-plugin_1.4.32",
-        "@maven//:org.jetbrains.kotlin.kotlin-test-junit",
+        "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.9.20-Beta",
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-android_1.0.1",
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core-common_1.3.6",
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core_1.6.3",

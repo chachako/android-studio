@@ -1,3 +1,5 @@
+load("//tools/base/bazel:maven.bzl", "maven_repository")
+
 [
     filegroup(
         name = project_name,
@@ -31,8 +33,6 @@ filegroup(
     srcs = ["//prebuilts/studio/sdk:platforms/android-34_build_only"],
     visibility = [":__subpackages__"],
 )
-
-load("//tools/base/bazel:maven.bzl", "maven_repository")
 
 maven_repository(
     name = "support_library_latest",
@@ -91,12 +91,14 @@ KGP_LATEST = [
     "@maven//:org.jetbrains.kotlin.android.org.jetbrains.kotlin.android.gradle.plugin_1.9.20-Beta",
     "@maven//:org.jetbrains.kotlin.jvm.org.jetbrains.kotlin.jvm.gradle.plugin_1.9.20-Beta",
     "@maven//:org.jetbrains.kotlin.kotlin-android-extensions-runtime_1.9.20-Beta",
+    "@maven//:org.jetbrains.kotlin.kotlin-android-extensions-runtime_1.9.20-RC",
     "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin-api_1.9.20-Beta",
     "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin_1.9.20-Beta",
     "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.20-Beta",
     "@maven//:org.jetbrains.kotlin.kotlin-script-runtime_1.9.20-Beta",
     "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20-Beta",
     "@maven//:org.jetbrains.kotlin.kotlin-annotation-processing-gradle_1.9.20-Beta",
+    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-common_1.9.20-Beta",
 ]
 
 # Kotlin Gradle plugin dependencies

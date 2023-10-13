@@ -1,5 +1,5 @@
-load("//tools/base/build-system/integration-test:integration-test.bzl", "gradle_integration_test", "single_gradle_integration_test_per_source")
 load("//tools/base/bazel:maven.bzl", "maven_repository")
+load("//tools/base/build-system/integration-test:integration-test.bzl", "gradle_integration_test")
 
 #keep sorted
 DATA = [
@@ -141,6 +141,6 @@ maven_repository(
         "@maven//:com.google.guava.guava_19.0",
         "@maven//:com.google.protobuf.protobuf-java-util_3.21.8",
         "@maven//:com.google.truth.truth_0.44",
-        "@maven//:org.jetbrains.kotlin.kotlin-test-junit",
+        "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.9.20-Beta",
     ],
 )
