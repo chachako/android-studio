@@ -32,6 +32,7 @@ import com.android.tools.render.configuration.StandaloneConfigurationStateManage
 import com.android.tools.render.environment.StandaloneEnvironmentContext
 import com.android.tools.render.framework.StandaloneFramework
 import com.android.tools.rendering.RenderLogger
+import com.android.tools.rendering.RenderResult
 import com.android.tools.rendering.RenderService
 import com.android.tools.rendering.classloading.ModuleClassLoaderManager
 import com.android.tools.rendering.parsers.RenderXmlFileSnapshot
@@ -44,8 +45,6 @@ import com.android.tools.sdk.AndroidSdkData
 import com.google.common.annotations.VisibleForTesting
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
-import javax.imageio.ImageIO
-import kotlin.io.path.Path
 
 /** The main entry point to invoke rendering. */
 fun render(
@@ -55,7 +54,7 @@ fun render(
     classPath: List<String>,
     layoutlibPath: String,
     renderRequests: Sequence<RenderRequest>,
-    outputFolderPath: String,
+    onRenderResult: (RenderRequest, Int, RenderResult) -> Unit,
 ) = renderImpl(
     sdkPath,
     resourceApkPath,
@@ -63,7 +62,7 @@ fun render(
     classPath,
     layoutlibPath,
     renderRequests,
-    outputFolderPath,
+    onRenderResult,
     false
 )
 
@@ -75,7 +74,7 @@ fun renderForTest(
     classPath: List<String>,
     layoutlibPath: String,
     renderRequests: Sequence<RenderRequest>,
-    outputFolderPath: String,
+    onRenderResult: (RenderRequest, Int, RenderResult) -> Unit,
 ) = renderImpl(
     sdkPath,
     resourceApkPath,
@@ -83,7 +82,7 @@ fun renderForTest(
     classPath,
     layoutlibPath,
     renderRequests,
-    outputFolderPath,
+    onRenderResult,
     true
 )
 
@@ -94,7 +93,7 @@ internal fun renderImpl(
     classPath: List<String>,
     layoutlibPath: String,
     renderRequests: Sequence<RenderRequest>,
-    outputFolderPath: String,
+    onRenderResult: (RenderRequest, Int, RenderResult) -> Unit,
     disableSecurityManager: Boolean,
 ) {
     // Warmup TimeZone.getDefault so that it works inside rendering not triggering security
@@ -205,13 +204,7 @@ internal fun renderImpl(
 
                 renderTask.setXmlFile(xmlFile)
                 val result = renderTask.render().get(100, TimeUnit.SECONDS)
-                val image = result.renderedImage.copy!!
-
-                val imgFile =
-                    Path(outputFolderPath).resolve("${request.outputImageName}_$i.png").toFile()
-
-                imgFile.createNewFile()
-                ImageIO.write(image, "png", imgFile)
+                onRenderResult(request, i, result)
             }
         }
 

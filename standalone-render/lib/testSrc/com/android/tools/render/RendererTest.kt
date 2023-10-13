@@ -18,10 +18,13 @@ package com.android.tools.render
 
 import com.android.testutils.TestUtils
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 import kotlin.io.path.absolutePathString
@@ -57,14 +60,14 @@ class RendererTest {
             </LinearLayout>
         """.trimIndent()
 
-        val request = RenderRequest({}, "img") { sequenceOf(layout) }
+        val request = RenderRequest({}) { sequenceOf(layout) }
 
-        val outputFolder = tmpFolder.newFolder()
         val fakeSdkFolder = tmpFolder.newFolder()
         prepareFakeSdkFolder(fakeSdkFolder)
 
         val layoutlibPath = TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib")
 
+        var outputImage: BufferedImage? = null
         renderForTest(
             fakeSdkFolder.absolutePath,
             null,
@@ -73,22 +76,23 @@ class RendererTest {
             // Layoutlib path is expected strictly with the [File.separator] at the end
             layoutlibPath.absolutePathString() + File.separator,
             sequenceOf(request),
-            outputFolder.absolutePath
-        )
+        ) { _, _, result ->
+            assertNull("A single RenderResult is expected", outputImage)
+            outputImage = result.renderedImage.copy
+        }
 
-        val outputImageFile = File("${outputFolder.absolutePath}${File.separator}img_0.png")
-        val outputImage = ImageIO.read(outputImageFile)
+        assertNotNull(outputImage)
 
         val goldenImagePath = TestUtils.resolveWorkspacePath("$TEST_DATA_DIR/img.png")
         val goldenImage = ImageIO.read(goldenImagePath.toFile())
 
-        assertEquals(goldenImage.width, outputImage.width)
-        assertEquals(goldenImage.height, outputImage.height)
+        assertEquals(goldenImage.width, outputImage!!.width)
+        assertEquals(goldenImage.height, outputImage!!.height)
         var lInfDiff = 0
         (0 until goldenImage.height).forEach {  j ->
             (0 until goldenImage.width).forEach { i ->
                 val goldenCol = goldenImage.getRGB(i, j)
-                val imgCol = outputImage.getRGB(i, j)
+                val imgCol = outputImage!!.getRGB(i, j)
                 lInfDiff = max(lInfDiff, abs((goldenCol and 0xFF) - (imgCol and 0xFF)))
                 lInfDiff = max(lInfDiff, abs(((goldenCol shl 8) and 0xFF) - ((imgCol shl 8) and 0xFF)))
                 lInfDiff = max(lInfDiff, abs(((goldenCol shl 16) and 0xFF) - ((imgCol shl 16) and 0xFF)))

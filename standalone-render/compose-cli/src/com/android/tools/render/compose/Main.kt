@@ -20,6 +20,8 @@ import com.android.tools.preview.applyTo
 import com.android.tools.preview.resolve
 import com.android.tools.render.RenderRequest
 import com.android.tools.render.render
+import javax.imageio.ImageIO
+import kotlin.io.path.Path
 
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
@@ -29,13 +31,13 @@ fun main(args: Array<String>) {
 
     val composeRendering = readComposeRenderingJson(args[0])
 
-    val renderRequests = composeRendering.screenshots.mapNotNull { screenshot ->
+    val requestToImageName = composeRendering.screenshots.mapNotNull { screenshot ->
         screenshot.toPreviewElement()?.let { previewElement ->
-            RenderRequest(previewElement::applyTo, screenshot.imageName) {
+            RenderRequest(previewElement::applyTo) {
                 previewElement.resolve().map { it.toPreviewXml().buildString() }
-            }
+            } to screenshot.imageName
         }
-    }.asSequence()
+    }.toMap()
 
     render(
         composeRendering.sdkPath,
@@ -43,7 +45,14 @@ fun main(args: Array<String>) {
         composeRendering.packageName,
         composeRendering.classPath,
         composeRendering.layoutlibPath,
-        renderRequests,
-        composeRendering.outputFolder,
-    )
+        requestToImageName.keys.asSequence(),
+    ) { request, i, result  ->
+        val image = result.renderedImage.copy!!
+
+        val imgFile =
+            Path(composeRendering.outputFolder).resolve("${requestToImageName[request]}_$i.png").toFile()
+
+        imgFile.createNewFile()
+        ImageIO.write(image, "png", imgFile)
+    }
 }

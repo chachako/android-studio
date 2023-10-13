@@ -21,12 +21,10 @@ import com.android.tools.configurations.Configuration
 /**
  * Data required to perform rendering by the standalone rendering library:
  * @param configurationModifier - a way to apply custom [Configuration] for rendering.
- * @param outputImageName - a name (without extension) of the output image file.
  * @param xmlLayoutsProvider - a provider for the xml layouts to render. Generating layouts might
  * require rendering environment, therefore we allow their creation to be postponed.
  */
 class RenderRequest(
     val configurationModifier: Configuration.() -> Unit,
-    val outputImageName: String,
     val xmlLayoutsProvider: () -> Sequence<String>,
 )
