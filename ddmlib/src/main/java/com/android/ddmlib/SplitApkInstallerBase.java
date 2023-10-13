@@ -129,12 +129,6 @@ public abstract class SplitApkInstallerBase {
         return sessionId;
     }
 
-    protected static final CharMatcher UNSAFE_PM_INSTALL_SESSION_SPLIT_NAME_CHARS =
-            CharMatcher.inRange('a', 'z')
-                    .or(CharMatcher.inRange('A', 'Z'))
-                    .or(CharMatcher.anyOf("_-."))
-                    .negate();
-
     protected void installCommit(@NonNull String sessionId, long timeout, @NonNull TimeUnit unit)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException, InstallException {

@@ -73,7 +73,7 @@ public class SplitApkInstaller extends SplitApkInstallerBase {
 
             long uploadStartNs = System.nanoTime();
             while (allUploadSucceeded && index < mApks.size()) {
-                allUploadSucceeded = uploadApk(sessionId, mApks.get(index), index++, timeout, unit);
+                allUploadSucceeded = uploadApk(sessionId, mApks.get(index++), timeout, unit);
             }
 
             // if all files were upload successfully, commit otherwise abandon the installation.
@@ -98,7 +98,6 @@ public class SplitApkInstaller extends SplitApkInstallerBase {
     protected boolean uploadApk(
             @NonNull String sessionId,
             @NonNull File fileToUpload,
-            int uniqueId,
             long timeout,
             @NonNull TimeUnit unit) {
         Log.i(
@@ -116,16 +115,12 @@ public class SplitApkInstaller extends SplitApkInstallerBase {
             return false;
         }
 
-        String baseName =
-                UNSAFE_PM_INSTALL_SESSION_SPLIT_NAME_CHARS.replaceFrom(fileToUpload.getName(), '_');
-
         String command =
                 String.format(
-                        getPrefix() + " install-write -S %d %s %d_%s -",
+                        getPrefix() + " install-write -S %d %s %s -",
                         fileToUpload.length(),
                         sessionId,
-                        uniqueId,
-                        baseName);
+                        fileToUpload.getName());
 
         Log.d(LOG_TAG, String.format("Executing : %1$s", command));
         InputStream inputStream = null;

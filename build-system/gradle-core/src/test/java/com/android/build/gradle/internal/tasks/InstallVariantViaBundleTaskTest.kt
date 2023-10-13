@@ -182,7 +182,7 @@ class InstallVariantViaBundleTaskTest(private val sdkVersion: AndroidVersion) {
 
         if (deviceConnector.supportsPrivacySandbox) {
             assert(deviceState.abbLogs.filter {
-                it.startsWith("package\u0000install-write") && it.contains("sdk_-extracted") }.size == 1)
+                it.startsWith("package\u0000install-write") && it.contains("sdk1-extracted") }.size == 1)
         } else {
             assert(deviceState.pmLogs.filter {
                 it.startsWith("install -r -t") && it.contains("extract-apk") }.size == 1)
@@ -216,9 +216,9 @@ class InstallVariantViaBundleTaskTest(private val sdkVersion: AndroidVersion) {
 
         if (deviceConnector.supportsPrivacySandbox) {
             assert(deviceState.abbLogs.filter {
-                it.startsWith("package\u0000install-write") && it.contains("0_sdk_-extracted") }.size == 2)
+                it.startsWith("package\u0000install-write") && it.contains("sdk1-extracted") }.size == 2)
             assert(deviceState.abbLogs.filter {
-                it.startsWith("package\u0000install-write") && it.contains("1_sdk_-extracted") }.size == 2)
+                it.startsWith("package\u0000install-write") && it.contains("sdk2-extracted") }.size == 2)
         } else {
             assert(deviceState.pmLogs.filter {
                 it.startsWith("install -r -t") && it.contains("extract-apk") }.size == 1)
