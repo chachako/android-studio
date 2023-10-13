@@ -20,7 +20,6 @@ import com.android.adblib.tools.INSTALL_APK_STAGING
 import com.android.adblib.tools.InstallException
 import com.android.adblib.tools.PMAbb
 import com.android.adblib.tools.PMDriver
-import com.android.adblib.tools.PMDriver.Companion.cleanFilename
 import com.android.adblib.tools.install
 import com.android.fakeadbserver.services.PackageManager
 import kotlinx.coroutines.flow.first
@@ -76,23 +75,6 @@ class TestInstall : TestInstallBase() {
                 Assert.assertEquals("", PackageManager.SESSION_TEST_ONLY_CODE, e.errorCode)
             }
         }
-    }
-
-    @Test
-    fun testFilenameCleaner() {
-        val withSpace = "who does that.apk"
-        var expected = "who_does_that.apk"
-        var actual = cleanFilename(withSpace)
-        Assert.assertEquals("Bad escape of '$withSpace'", expected, actual)
-
-        val weirdName = "this'is\"a!bizar(name_.ap)k"
-        expected = "this_is_a_bizar_name_.ap_k"
-        actual = cleanFilename(weirdName)
-        Assert.assertEquals("Bad escape for $weirdName", expected, actual)
-
-        val validName = "A_file_Name-.apk"
-        actual = cleanFilename(validName)
-        Assert.assertEquals("Bad escape for $validName", validName, actual)
     }
 
     // Use API = 20, when streaming and multi-apk was not supported.
@@ -210,7 +192,7 @@ class TestInstall : TestInstallBase() {
         Assert.assertEquals("package\u0000install-commit\u00001234", fakeDevice.abbLogs[4])
     }
 
-    // Upload base and splits. Check that all names used for install-write were distinct.
+    // Upload base and splits. Check that duplicate names are failing.
     @Test
     fun testDuplicateSplits() {
         val fakeDevice = addFakeDevice(fakeAdb, 30)
@@ -219,14 +201,13 @@ class TestInstall : TestInstallBase() {
         val apk1 = Files.createTempFile("base.apk", null)
         val apk2 = Files.createTempFile("split1.apk", null)
         val apks = listOf(apk1, apk2, apk2)
-        runBlocking {
-            deviceServices.install(deviceSelector, apks, emptyList())
+
+        try {
+            runBlocking {
+                deviceServices.install(deviceSelector, apks, emptyList())
+                Assert.fail("PM did not detect duplicate names")
+            }
+        } catch (e: InstallException) {
         }
-        Assert.assertEquals(5, fakeDevice.abbLogs.size)
-        Assert.assertEquals("package\u0000install-create", fakeDevice.abbLogs[0])
-        Assert.assertTrue("", fakeDevice.abbLogs[1].startsWith("package\u0000install-write"))
-        Assert.assertTrue("", fakeDevice.abbLogs[2].startsWith("package\u0000install-write"))
-        Assert.assertTrue("", fakeDevice.abbLogs[3].startsWith("package\u0000install-write"))
-        Assert.assertEquals("package\u0000install-commit\u00001234", fakeDevice.abbLogs[4])
     }
 }

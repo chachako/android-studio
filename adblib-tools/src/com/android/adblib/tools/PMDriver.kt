@@ -111,19 +111,12 @@ internal class PMDriver(private val service : AdbDeviceServices, private val dev
         val sessionID = parseSessionID(flow.first())
 
         try {
-
-            // Since we clean filename from "bad" characters and replace then with '_', we incure
-            // the risk of name collision. To make sure this does not happen, we prefix an unique
-            // id
-            var id = 0
-
             // 2/ Write all apks
             apks.forEach { apk ->
                 val size = Files.size(apk)
                 // Make sure we have a filename that won't mess with our command
-                val filename = cleanFilename(apk.fileName.toString())
                 service.session.channelFactory.openFile(apk).use {
-                    val flow = pm.streamApk(device, sessionID, it, "${id++}_$filename", size)
+                    val flow = pm.streamApk(device, sessionID, it, "${apk.fileName}", size)
                     parseInstallResult(flow.first())
                 }
             }
@@ -141,6 +134,7 @@ internal class PMDriver(private val service : AdbDeviceServices, private val dev
     }
 
     companion object {
+
         // Parse output from package manager when issuing a request "install-create". A valid answer is
         // as follows:
         // "Success: created install session [1731367907]"
@@ -161,13 +155,5 @@ internal class PMDriver(private val service : AdbDeviceServices, private val dev
                 throw InstallException(res)
             }
         }
-
-
-
-
-        // Replace everything not in A-Z, a-z, 0-9, '_', '-', or '.' to '_'
-        private val fileNameCleaner = "[^A-Za-z0-9\\-_\\.-]".toRegex()
-        internal fun cleanFilename(filename : String) : String =
-            fileNameCleaner.replace(filename, "_")
     }
 }
