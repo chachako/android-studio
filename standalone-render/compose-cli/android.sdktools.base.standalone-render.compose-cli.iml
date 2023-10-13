@@ -8,9 +8,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="kotlin-stdlib-jdk8" level="project" />
-    <orderEntry type="module" module-name="android.sdktools.base.multipreview-asm" />
     <orderEntry type="library" name="gson" level="project" />
-    <orderEntry type="library" name="asm-tools" level="project" />
     <orderEntry type="module" module-name="android.sdktools.base.standalone-render.lib" />
     <orderEntry type="module" module-name="android.sdktools.base.preview-elements" />
     <orderEntry type="module" module-name="android.sdktools.base.rendering" />
