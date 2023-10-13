@@ -15,7 +15,7 @@
  */
 package com.android.tools.perflib.heap
 
-class RootObj @JvmOverloads constructor(
+open class RootObj @JvmOverloads constructor(
     val rootType: RootType,
     id: Long = 0,
     val thread: Int = 0,
@@ -41,7 +41,7 @@ class RootObj @JvmOverloads constructor(
 
     override fun toString() = String.format("%s@0x%08x", rootType.getName(), id)
 
-    val referredInstance: Instance? get() = when (rootType) {
+    open val referredInstance: Instance? get() = when (rootType) {
         RootType.SYSTEM_CLASS -> heap!!.mSnapshot.findClass(id)
         else -> heap!!.mSnapshot.findInstance(id)
     }

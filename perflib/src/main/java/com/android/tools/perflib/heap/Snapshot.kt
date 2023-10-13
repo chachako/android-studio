@@ -214,12 +214,14 @@ class Snapshot @VisibleForTesting constructor(val buffer: DataBuffer) : Capture(
     fun findAllDescendantClasses(className: String): List<ClassObj> =
         findClasses(className).flatMap { it.descendantClasses }
 
-    fun computeRetainedSizes() {
+    // Returns the dominator result if this is the first time it's computed, or `null` if already
+    fun computeRetainedSizes() : LinkEvalDominators.Result<Instance>? {
         if (!areRetainedSizesComputed) {
-            prepareComputeRetainedSizes()
-            doComputeRetainedSizes()
             areRetainedSizesComputed = true
+            prepareComputeRetainedSizes()
+            return doComputeRetainedSizes()
         }
+        return null
     }
 
     private fun prepareComputeRetainedSizes() {
@@ -237,17 +239,19 @@ class Snapshot @VisibleForTesting constructor(val buffer: DataBuffer) : Capture(
         }
     }
 
-    private fun doComputeRetainedSizes() {
-        val (instances, immDom) = LinkEvalDominators.computeDominators(
+    private fun doComputeRetainedSizes() : LinkEvalDominators.Result<Instance> {
+        val result = LinkEvalDominators.computeDominators(
             gcRoots.mapNotNullTo(mutableSetOf(), RootObj::referredInstance),
             { it.hardForwardReferences.asStream() },
         )
+        val (instances, immDom) = result
 
         // We only update the retained sizes of objects in the dominator tree (i.e. reachable).
         // It's important to traverse in reverse topological order
         for (i in instances.indices.reversed()) {
             immDom[i]?.addRetainedSizes(instances[i]!!)
         }
+        return result
     }
 
     private inline fun forEachReachableInstance(crossinline visit: (Instance) -> Unit) =

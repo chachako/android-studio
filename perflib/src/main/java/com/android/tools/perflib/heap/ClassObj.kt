@@ -113,7 +113,7 @@ open class ClassObj(
     @VisibleForTesting
     fun getStaticField(type: Type, name: String): Any? = staticFieldValues[Field(type, name)]
 
-    val superClassObj: ClassObj? get() = heap!!.mSnapshot.findClass(superClassId)
+    open val superClassObj: ClassObj? get() = heap!!.mSnapshot.findClass(superClassId)
     val classLoader: Instance? get() = heap!!.mSnapshot.findInstance(classLoaderId)
     val instancesList: List<Instance> get() = heapData.keys().flatMap(::getHeapInstances)
 
