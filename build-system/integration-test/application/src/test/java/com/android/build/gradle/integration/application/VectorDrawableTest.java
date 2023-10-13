@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,12 @@ import static com.google.common.truth.Truth.assertThat;
 import com.android.annotations.NonNull;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
+import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
 import com.android.build.gradle.integration.common.utils.AssumeBuildToolsUtil;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.internal.scope.ArtifactTypeUtil;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.VectorDrawablesOptions;
+import com.android.builder.model.v2.ide.VectorDrawablesOptions;
+import com.android.builder.model.v2.models.AndroidDsl;
 import com.android.testutils.TestUtils;
 import com.android.testutils.apk.Apk;
 import com.android.utils.FileUtils;
@@ -46,7 +46,6 @@ import org.junit.Test;
 
 /**
  * Tests for the PNG generation feature.
- *
  * The "v4" is added by resource merger to all dpi qualifiers, to make it clear dpi qualifiers are
  * supported since API 4.
  */
@@ -481,7 +480,6 @@ public class VectorDrawableTest {
     }
 
     @Test
-    @SuppressWarnings("ConstantConditions") // If getVariant returns null, the test just fails.
     public void model() throws Exception {
         TestFileUtils.appendToFile(
                 project.getBuildFile(),
@@ -494,36 +492,28 @@ public class VectorDrawableTest {
                         + "  }\n"
                         + "}\n");
 
-        AndroidProject model = project.model().fetchAndroidProjects().getOnlyModel();
+        AndroidDsl dslModel =
+                project.modelV2().fetchModels().getContainer().getProject().getAndroidDsl();
 
         VectorDrawablesOptions defaultConfigOptions =
-                model.getDefaultConfig().getProductFlavor().getVectorDrawables();
-
+                dslModel.getDefaultConfig().getVectorDrawables();
         assertThat(defaultConfigOptions.getUseSupportLibrary()).isFalse();
         assertThat(defaultConfigOptions.getGeneratedDensities()).containsExactly("hdpi", "xhdpi");
 
-        VectorDrawablesOptions pngsDebug =
-                AndroidProjectUtils.getVariantByName(model, "pngsDebug")
-                        .getMergedFlavor()
-                        .getVectorDrawables();
+        VectorDrawablesOptions pngsFlavor =
+                AndroidProjectUtilsV2.getProductFlavor(dslModel, "pngs").getVectorDrawables();
+        assertThat(pngsFlavor.getUseSupportLibrary()).isNull();
+        assertThat(pngsFlavor.getGeneratedDensities()).isNull();
 
-        assertThat(pngsDebug.getUseSupportLibrary()).isFalse();
-        assertThat(pngsDebug.getGeneratedDensities()).containsExactly("hdpi", "xhdpi");
+        VectorDrawablesOptions vectorsFlavor =
+                AndroidProjectUtilsV2.getProductFlavor(dslModel, "vectors").getVectorDrawables();
+        assertThat(vectorsFlavor.getUseSupportLibrary()).isTrue();
+        assertThat(vectorsFlavor.getGeneratedDensities()).isNull();
 
-        VectorDrawablesOptions vectorsDebug =
-                AndroidProjectUtils.getVariantByName(model, "vectorsDebug")
-                        .getMergedFlavor()
-                        .getVectorDrawables();
-
-        assertThat(vectorsDebug.getUseSupportLibrary()).isTrue();
-
-        VectorDrawablesOptions hdpiOnlyDebug =
-                AndroidProjectUtils.getVariantByName(model, "hdpiOnlyDebug")
-                        .getMergedFlavor()
-                        .getVectorDrawables();
-
-        assertThat(hdpiOnlyDebug.getUseSupportLibrary()).isFalse();
-        assertThat(hdpiOnlyDebug.getGeneratedDensities()).containsExactly("hdpi");
+        VectorDrawablesOptions hdpiOnlyFlavor =
+                AndroidProjectUtilsV2.getProductFlavor(dslModel, "hdpiOnly").getVectorDrawables();
+        assertThat(hdpiOnlyFlavor.getUseSupportLibrary()).isNull();
+        assertThat(hdpiOnlyFlavor.getGeneratedDensities()).containsExactly("hdpi");
     }
 
     @Test
@@ -614,5 +604,4 @@ public class VectorDrawableTest {
         assertThat(apk).doesNotContainResource("drawable-nodpi-v4/heart.xml");
         assertThat(apk).doesNotContainResource("drawable-xhdpi-v21/heart.xml");
     }
-
 }
