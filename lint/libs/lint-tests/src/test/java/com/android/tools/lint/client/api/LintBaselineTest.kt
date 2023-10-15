@@ -29,8 +29,10 @@ import com.android.tools.lint.checks.BuiltinIssueRegistry
 import com.android.tools.lint.checks.HardcodedValuesDetector
 import com.android.tools.lint.checks.IconDetector
 import com.android.tools.lint.checks.LayoutConsistencyDetector
+import com.android.tools.lint.checks.LocaleFolderDetector
 import com.android.tools.lint.checks.ManifestDetector
 import com.android.tools.lint.checks.NotificationPermissionDetector
+import com.android.tools.lint.checks.OverrideConcreteDetector
 import com.android.tools.lint.checks.PxUsageDetector
 import com.android.tools.lint.checks.RangeDetector
 import com.android.tools.lint.checks.RestrictToDetector
@@ -63,7 +65,6 @@ import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Severity
 import com.android.utils.XmlUtils
 import com.google.common.truth.Truth.assertThat
-import java.io.File
 import junit.framework.TestCase.assertEquals
 import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlin.incremental.createDirectory
@@ -74,6 +75,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.io.File
 
 class LintBaselineTest {
   @get:Rule var temporaryFolder = TemporaryFolder()
@@ -364,6 +366,34 @@ class LintBaselineTest {
         IconDetector.ICON_MISSING_FOLDER,
         "Missing density variation folders in `res`: drawable-hdpi, drawable-xhdpi, drawable-xxhdpi",
         "Missing density variation folders in `/some/full/path/to/app/res`: drawable-hdpi, drawable-xhdpi, drawable-xxhdpi"
+      )
+    )
+  }
+
+  @Test
+  fun tolerateMinSdkVersionChanges() {
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
+    assertTrue(
+      baseline.sameMessage(
+        IconDetector.WEBP_UNSUPPORTED,
+        "WebP requires Android 4.0 (API 15); current minSdkVersion is 9",
+        "WebP requires Android 4.0 (API 15); current minSdkVersion is 10"
+      )
+    )
+
+    assertTrue(
+      baseline.sameMessage(
+        OverrideConcreteDetector.ISSUE,
+        "Must override android.service.notification.NotificationListenerService.onNotificationPosted(android.service.notification.StatusBarNotification): Method was abstract until 21, and your minSdkVersion is 9",
+        "Must override android.service.notification.NotificationListenerService.onNotificationPosted(android.service.notification.StatusBarNotification): Method was abstract until 21, and your minSdkVersion is 10"
+      )
+    )
+
+    assertTrue(
+      baseline.sameMessage(
+        LocaleFolderDetector.GET_LOCALES,
+        "The app will crash on platforms older than v21 (minSdkVersion is 9) because AssetManager#getLocales is called and it contains one or more v21-style (3-letter or BCP47 locale) folders: values-b+kok+IN, values-fil",
+        "The app will crash on platforms older than v21 (minSdkVersion is 10) because AssetManager#getLocales is called and it contains one or more v21-style (3-letter or BCP47 locale) folders: values-b+kok+IN, values-fil"
       )
     )
   }

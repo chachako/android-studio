@@ -366,6 +366,10 @@ class LintBaseline(
             s.tokenPrecededBy("version ", i)
         }
       }
+      "WebpUnsupported",
+      "OverrideAbstract",
+      "GetLocales" ->
+        stringsEquivalent(old, new) { s, i -> s.tokenPrecededBy("minSdkVersion is ", i) }
       "RestrictedApi" -> {
         val index1 = old.indexOf('(')
         val index2 = new.indexOf('(')
