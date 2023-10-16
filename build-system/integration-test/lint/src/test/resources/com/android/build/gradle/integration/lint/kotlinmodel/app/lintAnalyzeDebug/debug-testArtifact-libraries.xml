@@ -13,6 +13,10 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
+      name="org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}@jar"
+      jars="${mavenRepo}/org/jetbrains/kotlin/kotlin-stdlib/${kotlinVersion}/kotlin-stdlib-${kotlinVersion}.jar"
+      resolved="org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"/>
+  <library
       name="com.android.support:appcompat-v7:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/appcompat-v7-28.0.0/jars/classes.jar"
       resolved="com.android.support:appcompat-v7:28.0.0"
@@ -366,10 +370,6 @@
       name="com.android.support:support-annotations:28.0.0@jar"
       jars="${mavenRepo}/com/android/support/support-annotations/28.0.0/support-annotations-28.0.0.jar"
       resolved="com.android.support:support-annotations:28.0.0"/>
-  <library
-      name="org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}@jar"
-      jars="${mavenRepo}/org/jetbrains/kotlin/kotlin-stdlib/${kotlinVersion}/kotlin-stdlib-${kotlinVersion}.jar"
-      resolved="org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"/>
   <library
       name="org.jetbrains:annotations:13.0@jar"
       jars="${mavenRepo}/org/jetbrains/annotations/13.0/annotations-13.0.jar"
