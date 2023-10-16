@@ -375,31 +375,49 @@ class UtpConfigFactory {
             )
 
             if (emulatorControlConfig.enabled) {
-                // Looks like emulator access is on the menu.
-                val cfg = createTokenConfig(
-                    emulatorControlConfig.allowedEndpoints,
-                    emulatorControlConfig.secondsValid,
-                    "gradle-utp-emulator-control",
-                    grpcInfo
-                )
+                if (grpcInfo != null) {
+                    // We are configuring a running emulator
+                    val cfg = createTokenConfig(
+                        emulatorControlConfig.allowedEndpoints,
+                        emulatorControlConfig.secondsValid,
+                        "gradle-utp-emulator-control",
+                        grpcInfo
+                    )
 
-                if (cfg != INVALID_JWT_CONFIG) {
-                    additionalTestParams["grpc.port"] = grpcInfo?.port.toString()
-                    additionalTestParams["grpc.token"] = cfg.token
+                    if (cfg != INVALID_JWT_CONFIG) {
+                        // Note cfg != INVALID -> grpcInfo != null
+                        additionalTestParams["grpc.port"] = grpcInfo!!.port.toString()
+                        additionalTestParams["grpc.token"] = cfg.token
+                        addHostPlugin(
+                            createEmulatorControlPlugin(
+                                grpcInfo?.port,
+                                cfg.token,
+                                cfg.jwkPath,
+                                emulatorControlConfig.secondsValid,
+                                emulatorControlConfig.allowedEndpoints,
+                                utpDependencies,
+                                emulatorControlConfig
+                            )
+                        )
+                    } else {
+                        logger.warn(
+                            "Control of the emulator is not supported for emulators without " +
+                                    "security features enabled. Please upgrade to a " +
+                                    "later version of the emulator."
+                        )
+                    }
+                } else {
+                    // We are doing late stage configuration with managed devices.
                     addHostPlugin(
                         createEmulatorControlPlugin(
-                            grpcInfo?.port,
-                            cfg.token,
-                            cfg.jwkPath,
+                            0,
+                            "",
+                            "",
+                            emulatorControlConfig.secondsValid,
+                            emulatorControlConfig.allowedEndpoints,
                             utpDependencies,
                             emulatorControlConfig
                         )
-                    )
-                } else {
-                    logger.warn(
-                        "Control of the emulator is not supported for emulators without " +
-                                "security features enabled. Please upgrade to a " +
-                                "later version of the emulator."
                     )
                 }
             }
@@ -481,6 +499,8 @@ class UtpConfigFactory {
         grpcPort: Int?,
         jwtToken: String,
         jwkPath: String,
+        validTimeInSeconds: Int,
+        allowed: Set<String>,
         utpDependencies: UtpDependencies,
         emulatorControlConfig: EmulatorControlConfig
     ): ExtensionProto.Extension {
@@ -490,6 +510,8 @@ class UtpConfigFactory {
             emulatorGrpcPort = grpcPort ?: 0
             token = jwtToken
             jwkFile = jwkPath
+            secondsValid = validTimeInSeconds
+            addAllAllowedEndpoints(allowed)
             emulatorClientPrivateKeyFilePath = ""
             emulatorClientCaFilePath = ""
             trustedCollectionRootPath = ""

@@ -2169,10 +2169,10 @@ maven_import(
 )
 
 maven_artifact(
-    name = "com.google.testing.platform.android-driver-instrumentation_0.0.8-alpha07",
-    pom = "repository/com/google/testing/platform/android-driver-instrumentation/0.0.8-alpha07/android-driver-instrumentation-0.0.8-alpha07.pom",
+    name = "com.google.testing.platform.android-driver-instrumentation_0.0.9-alpha01",
+    pom = "repository/com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha01/android-driver-instrumentation-0.0.9-alpha01.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/testing/platform/android-driver-instrumentation/0.0.8-alpha07",
+    repo_path = "com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha01",
     visibility = ["//visibility:public"],
 )
 
@@ -2180,12 +2180,12 @@ maven_import(
     name = "com.google.testing.platform.android-driver-instrumentation",
     classifiers = [],
     jars = [
-        "repository/com/google/testing/platform/android-driver-instrumentation/0.0.8-alpha07/android-driver-instrumentation-0.0.8-alpha07.jar"
+        "repository/com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha01/android-driver-instrumentation-0.0.9-alpha01.jar"
     ],
     original_deps = [],
-    pom = "repository/com/google/testing/platform/android-driver-instrumentation/0.0.8-alpha07/android-driver-instrumentation-0.0.8-alpha07.pom",
+    pom = "repository/com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha01/android-driver-instrumentation-0.0.9-alpha01.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/testing/platform/android-driver-instrumentation/0.0.8-alpha07",
+    repo_path = "com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha01",
     visibility = ["//visibility:public"],
 )
 
@@ -41576,14 +41576,6 @@ maven_artifact(
     pom = "repository/com/google/testing/platform/android-device-provider-local/0.0.8-alpha07/android-device-provider-local-0.0.8-alpha07.pom",
     repo_root_path = "repository",
     repo_path = "com/google/testing/platform/android-device-provider-local/0.0.8-alpha07",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "com.google.testing.platform.android-driver-instrumentation_0.0.9-alpha01",
-    pom = "repository/com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha01/android-driver-instrumentation-0.0.9-alpha01.pom",
-    repo_root_path = "repository",
-    repo_path = "com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha01",
     visibility = ["//visibility:public"],
 )
 

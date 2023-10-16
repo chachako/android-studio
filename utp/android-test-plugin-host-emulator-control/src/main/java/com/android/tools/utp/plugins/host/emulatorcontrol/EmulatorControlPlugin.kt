@@ -19,9 +19,12 @@ package com.android.tools.utp.plugins.host.emulatorcontrol
 import com.google.common.annotations.VisibleForTesting
 import com.google.testing.platform.api.config.ProtoConfig
 import com.google.testing.platform.api.context.Context
+import com.google.testing.platform.api.context.events
 import com.google.testing.platform.api.device.DeviceController
+import com.google.testing.platform.api.event.send
 import com.google.testing.platform.api.plugin.HostPlugin
 import com.google.testing.platform.lib.logging.jvm.getLogger
+import com.google.testing.platform.plugin.android.proto.instrumentationTestOptionsProvided
 import com.google.testing.platform.proto.api.core.TestArtifactProto
 import com.google.testing.platform.proto.api.core.TestCaseProto.TestCase
 import com.google.testing.platform.proto.api.core.TestResultProto.TestResult
@@ -32,10 +35,12 @@ import com.android.tools.utp.plugins.host.emulatorcontrol.proto.EmulatorControlP
 
 /**
  * The EmulatorAccessPlugin configures the gRPC access point such that it can become
- * accessible from within the emulator.
+ * accessible from the running instrumentation tests.
  *
- * This is done by writing a configuration file in a well known location that can be
- * used to properly configure a gRPC endpoint.
+ * This is done by providing a set of well known parameters that can be used by
+ * the instrumentation tests to safely access the gRPC endpoint of the emulator.
+ *
+ * The plugin will make certificate files (if any) available in a well known location.
  */
 class EmulatorControlPlugin : HostPlugin {
 
@@ -45,15 +50,19 @@ class EmulatorControlPlugin : HostPlugin {
         val logger = getLogger()
     }
 
-    private lateinit var deviceController: DeviceController
-
     @VisibleForTesting
     lateinit var emulatorControlPluginConfig: EmulatorControlPluginConfig
 
+    private var jwtConfig: JwtConfig = INVALID_JWT_CONFIG
+    private lateinit var context: Context
+
     override fun configure(context: Context) {
+        this.context = context
         val config = context[Context.CONFIG_KEY] as ProtoConfig
         emulatorControlPluginConfig =
-            EmulatorControlPluginConfig.parseFrom((config as ProtoConfig).configProto!!.value)
+            EmulatorControlPluginConfig.parseFrom(config.configProto!!.value)
+        jwtConfig =
+            JwtConfig(emulatorControlPluginConfig.token, emulatorControlPluginConfig.jwkFile)
     }
 
     private fun pushSourceIfExists(
@@ -74,14 +83,49 @@ class EmulatorControlPlugin : HostPlugin {
 
         // The emulator is allowed to delete expired jwk files. We make sure to update the
         // modified timestamp to prevent the emulator from expiring the key
-        if (!File(emulatorControlPluginConfig.jwkFile).setLastModified(System.currentTimeMillis())) {
+        if (!File(jwtConfig.jwkPath).setLastModified(System.currentTimeMillis())) {
             logger.warning(
-                "Unable to update timestamp of ${emulatorControlPluginConfig.jwkFile}, the emulator might delete the key!"
+                "Unable to update timestamp of ${jwtConfig.jwkPath}" +
+                        ", the emulator might delete the key!"
             )
         }
     }
 
     override fun beforeAll(deviceController: DeviceController) {
+
+        // Let's check to see if we have a configured device
+        if (emulatorControlPluginConfig.token.isNullOrEmpty()) {
+            // We need to configure the device
+            val grpcInfo = getGrpcInfo(deviceController)
+            jwtConfig = createTokenConfig(
+                emulatorControlPluginConfig.allowedEndpointsList.toSet(),
+                emulatorControlPluginConfig.secondsValid,
+                "gradle-utp-emulator-control",
+                grpcInfo
+            )
+
+            if (jwtConfig == INVALID_JWT_CONFIG) {
+                logger.warning(
+                    "Control of the emulator is not supported for emulators without " +
+                            "security features enabled. Please upgrade to a " +
+                            "later version of the emulator."
+                )
+            } else {
+                // Now we will fire an event to make these options available
+                // to the device runner:
+                this.context.events.send(
+                    instrumentationTestOptionsProvided {
+                        testOptions.putAll(
+                            mapOf(
+                                "grpc.port" to grpcInfo.port.toString(),
+                                "grpc.token" to jwtConfig.token
+                            )
+                        )
+                    }
+                )
+            }
+        }
+
         // Push all the keyfiles if they exist.
         pushSourceIfExists(
             emulatorControlPluginConfig.emulatorClientCaFilePath,
@@ -98,17 +142,16 @@ class EmulatorControlPlugin : HostPlugin {
             emulatorControlPluginConfig.tlsCfgPrefix + ".ca",
             deviceController
         )
-
     }
 
     override fun afterAll(
         testSuiteResult: TestSuiteResult,
         deviceController: DeviceController,
-        cancelled: kotlin.Boolean /* = compiled code */
+        cancelled: Boolean /* = compiled code */
     ) {
         // Delete the JWK on the host if it is there..
-        logger.fine("Deleting ${emulatorControlPluginConfig.jwkFile}")
-        File(emulatorControlPluginConfig.jwkFile).delete()
+        logger.fine("Deleting ${jwtConfig.jwkPath}")
+        File(jwtConfig.jwkPath).delete()
 
         // Clean up tls configuration files
         deviceController.delete(
@@ -126,4 +169,26 @@ class EmulatorControlPlugin : HostPlugin {
     ) = Unit
 
     override fun canRun(): Boolean = true
+
+    /**
+     * Returns the gRPC info for the attached device.
+     *
+     * First attempts to find the gRPC info from the provided configuration proto.
+     * If not specified, attempts to determine the gRPC info from the device serial.
+     *
+     * @param deviceController The device controller to use.
+     * @return The gRPC info for the attached device.
+     */
+    private fun getGrpcInfo(deviceController: DeviceController): EmulatorGrpcInfo {
+        if (emulatorControlPluginConfig.emulatorGrpcPort != 0) {
+            return EmulatorGrpcInfo(
+                emulatorControlPluginConfig.emulatorGrpcPort,
+                emulatorControlPluginConfig.token,
+                "",
+                "",
+                ""
+            )
+        }
+        return findGrpcInfo(deviceController.getDevice().serial)
+    }
 }

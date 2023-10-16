@@ -22,6 +22,8 @@ maven_library(
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core",
         "@maven//:com.google.code.gson.gson",
         "@maven//:com.google.protobuf.protobuf-java",
+        "@maven//:com.google.testing.platform.android-driver-instrumentation",
+        "@maven//:com.google.crypto.tink.tink",
         "//tools/base/utp/android-test-plugin-host-emulator-control-proto",
         # Don't change dependency order or the test fails. Those plugins bundle kotlinx
         # coroutine jar which may be different version.

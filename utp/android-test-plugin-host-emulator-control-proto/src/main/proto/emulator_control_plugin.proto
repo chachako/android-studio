@@ -33,4 +33,10 @@ message EmulatorControlPlugin {
 
     // Location where the generated jwk was written.
     string jwk_file = 7;
+
+    // How long a token should be valid
+    int32 seconds_valid = 8;
+
+    // Set of endpoints that are valid
+    repeated string allowed_endpoints = 9;
 }

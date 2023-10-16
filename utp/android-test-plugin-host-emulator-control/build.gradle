@@ -37,6 +37,8 @@ dependencies {
     implementation libs.com.android.tools.utp.androidTestPluginHostEmulatorControlProto
     implementation libs.com.android.tools.emulator.proto
     implementation libs.unified_test_platform_device_provider
+    implementation libs.tink
+    implementation libs.unified_test_platform_android_driver_instrumentation
     compileOnly libs.unified_test_platform_launcher
 
     testImplementation libs.com.android.tools.testutils

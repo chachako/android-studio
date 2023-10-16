@@ -844,6 +844,8 @@ com.android.tools.utp:android-test-plugin-host-emulator-control
     com.android.tools.utp:android-test-plugin-host-emulator-control-proto (runtime)
     com.android.tools.emulator:proto (runtime)
     com.google.testing.platform:android-device-provider-local (runtime)
+    com.google.crypto.tink:tink (runtime)
+    com.google.testing.platform:android-driver-instrumentation (runtime)
 
 com.android.tools.utp:android-test-plugin-host-emulator-control-proto
   pomName=com.android.tools.utp.android-test-plugin-host-emulator-control-proto

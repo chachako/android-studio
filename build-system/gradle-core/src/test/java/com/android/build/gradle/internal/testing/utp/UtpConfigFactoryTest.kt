@@ -346,6 +346,33 @@ class UtpConfigFactoryTest {
                 emulator_grpc_port: 1234
                 token: "${token}"
                 jwk_file: "${jwkfile}"
+                seconds_valid: 100
+            """
+        )
+    }
+
+    @Test
+    fun createRunnerConfigProtoWithEmulatorAccessForManagedDevice() {
+        val aud = setOf(*arrayOf("a", "b"))
+        `when`(mockemulatorControlConfig.enabled).thenReturn(true)
+        `when`(mockemulatorControlConfig.secondsValid).thenReturn(100)
+        `when`(mockemulatorControlConfig.allowedEndpoints).thenReturn(aud)
+        assertThat(mockemulatorControlConfig.enabled).isTrue()
+
+        val runnerConfigProto = createForManagedDevice()
+
+        // Next we extract the token and jkwfile as those
+        // are dynamically created.
+        val printed = printProto(runnerConfigProto)
+
+        assertRunnerConfigProto(
+            runnerConfigProto,
+            deviceId = ":app:deviceNameDebugAndroidTest",
+            useGradleManagedDeviceProvider = true,
+            emulatorControlConfig = """
+                seconds_valid: 100
+                allowed_endpoints: "a"
+                allowed_endpoints: "b"
             """
         )
     }
