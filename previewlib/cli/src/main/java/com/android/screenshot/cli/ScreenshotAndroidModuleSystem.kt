@@ -24,6 +24,7 @@ import com.android.projectmodel.RecursiveResourceFolder
 import com.android.projectmodel.ResourceFolder
 import com.android.tools.idea.projectsystem.AndroidModuleSystem
 import com.android.tools.idea.projectsystem.CapabilityStatus
+import com.android.tools.idea.projectsystem.ClassContent
 import com.android.tools.idea.projectsystem.ClassFileFinder
 import com.android.tools.idea.projectsystem.DependencyScopeType
 import com.android.tools.idea.projectsystem.DependencyType
@@ -33,16 +34,12 @@ import com.android.tools.idea.projectsystem.NamedModuleTemplate
 import com.android.tools.idea.projectsystem.ScopeType
 import com.android.tools.idea.util.toVirtualFile
 import com.intellij.openapi.module.Module
-import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.containers.map2Array
 import org.apache.commons.io.FileUtils
-import org.jetbrains.kotlin.fir.resolve.dfa.isNotEmpty
-import org.jetbrains.kotlin.fir.resolve.dfa.stackOf
 import java.io.File
-import java.nio.file.Path
+import java.util.zip.ZipFile
 
 // TODO: Replace this with the dependencies object.
 typealias DepsMap = () -> List<String>
@@ -59,51 +56,56 @@ class ScreenshotAndroidModuleSystem(
     override val module: Module
         get() = composeModule.module
 
-    val filesMap = mutableMapOf<String, MutableList<VirtualFile>>()
+    val filesMap = mutableMapOf<String, MutableList<ClassContent>>()
     override val moduleClassFileFinder: ClassFileFinder
         get() = object : ClassFileFinder {
-            override fun findClassFile(fqcn: String): VirtualFile? {
+            override fun findClassFile(fqcn: String): ClassContent? {
                 if (filesMap.isEmpty()) {
-                    try {
-                        val stack = stackOf<Pair<VirtualFile, String>>()
-                        deps().map { dep ->
-                            val file = try {
-                                val outputRoot = StandardFileSystems.local().findFileByPath(dep)
-                                VirtualFileManager.getInstance().getFileSystem(
-                                    StandardFileSystems.JAR_PROTOCOL
-                                )
-                                    .findFileByPath(outputRoot!!.path + "!/")!!
-                            } catch (ex: Throwable) {
-                                null
-                            }
-                            if (file != null)
-                                file.children.forEach { stack.push(Pair(it, "!/")) }
-                            else{
-                                val dir = VirtualFileManager.getInstance().getFileSystem(
-                                    StandardFileSystems.FILE_PROTOCOL
-                                )
-                                    .findFileByPath(dep)!!
-                                dir.children.forEach { stack.push(Pair(it, dep)) }
-                            }
-                        }
-                        while(stack.isNotEmpty) {
-                            val pair = stack.pop()
-                            val child = pair.first
-                            if (child.isDirectory) {
-                                child.children.forEach { stack.push(Pair(it, pair.second)) }
-                            } else {
-                                val name = child.path.substring(child.path.indexOf(pair.second)+pair.second.length).replace("/",".").replace(".class","")
-                                filesMap.computeIfAbsent(name) {mutableListOf()}.add(child)
-                            }
-                        }
-
-                    } catch (ex: Throwable) {
-                        ex.printStackTrace()
-                    }
+                    initFilesMap()
                 }
                 return filesMap[fqcn]?.get(0)
             }
 
+            private fun getClassNameFromRelativePath(path: String): String {
+                return path.replace("/", ".").substring(0, path.length - ".class".length)
+            }
+
+            private fun initFilesMap() {
+                try {
+                    deps().map { dep ->
+                        val depFile = File(dep)
+                        if (depFile.isDirectory) {
+                            depFile.walkTopDown().filter {
+                                it.isFile && it.extension.equals(".class", ignoreCase = true)
+                            }.forEach { classFile ->
+                                val relativePath = classFile.relativeTo(depFile).toString()
+                                val className = getClassNameFromRelativePath(relativePath)
+                                filesMap.computeIfAbsent(className) { mutableListOf() }
+                                    .add(ClassContent.loadFromFile(classFile))
+                            }
+                        } else if (depFile.isFile && depFile.extension.equals(
+                                ".jar", ignoreCase = true
+                            )
+                        ) {
+                            ZipFile(dep).use { jar ->
+                                val entries = jar.entries()
+                                while (entries.hasMoreElements()) {
+                                    val entry = entries.nextElement()
+
+                                    if (entry.name.endsWith(".class", ignoreCase = true)) {
+                                        val className = getClassNameFromRelativePath(entry.name)
+                                        val content = jar.getInputStream(entry).readAllBytes()
+                                        filesMap.computeIfAbsent(className) { mutableListOf() }
+                                            .add(ClassContent.fromJarEntryContent(depFile, content))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (ex: Throwable) {
+                    ex.printStackTrace()
+                }
+            }
         }
 
     override fun getModuleTemplates(targetDirectory: VirtualFile?): List<NamedModuleTemplate> {
@@ -170,7 +172,9 @@ class ScreenshotAndroidModuleSystem(
                             return composeProject.lintProject.`package`
                         }
                         if (manifestFile != null) {
-                            return AndroidManifestPackageNameUtils.getPackageNameFromManifestFile(manifestFile!!)
+                            return AndroidManifestPackageNameUtils.getPackageNameFromManifestFile(
+                                manifestFile!!
+                            )
                         }
                         return null
                     }
@@ -241,15 +245,14 @@ class ScreenshotAndroidModuleSystem(
     override fun getMergedManifestContributors(): MergedManifestContributors {
         var main: VirtualFile? = null
         var libraryManifest = mutableListOf<VirtualFile>()
-        for(file in composeProject.lintProject.manifestFiles) {
+        for (file in composeProject.lintProject.manifestFiles) {
             if (main == null) {
                 main = file.toVirtualFile()
-            }
-            else {
+            } else {
                 libraryManifest.add(file.toVirtualFile()!!)
             }
         }
-        return MergedManifestContributors(main, listOf(), libraryManifest, listOf(),listOf())
+        return MergedManifestContributors(main, listOf(), libraryManifest, listOf(), listOf())
     }
 
 }
