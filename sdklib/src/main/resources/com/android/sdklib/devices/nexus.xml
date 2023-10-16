@@ -1297,7 +1297,7 @@
         </d:state>
     </d:device>
 
-    <d:device>
+    <d:device deprecated="true">
         <d:name>Pixel C</d:name>
         <d:id>pixel_c</d:id>
         <d:manufacturer>Google</d:manufacturer>
