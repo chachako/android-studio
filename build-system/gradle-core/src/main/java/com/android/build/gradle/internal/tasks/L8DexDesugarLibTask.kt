@@ -182,7 +182,7 @@ abstract class L8DexDesugarLibTask : NonIncrementalTask() {
                 // For feature dex, it is produced by d8/r8 in feature module and published to
                 // application(not for androidTest component). The reason why we don't use
                 //  consumesFeatureJars is because that API is only for minified build.
-                if (creationConfig is ApplicationCreationConfig &&
+                if (!creationConfig.componentType.isForTesting &&
                     creationConfig.global.hasDynamicFeatures) {
                     task.dexFiles.from(
                         creationConfig.variantDependencies.getArtifactFileCollection(
