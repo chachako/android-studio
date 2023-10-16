@@ -39,7 +39,7 @@ maven_repository(
         "//tools/base/utp/android-test-plugin-host-logcat-proto",
         "//tools/base/utp/android-test-plugin-host-retention-proto",
         "//tools/base/utp/android-test-plugin-result-listener-gradle-proto",
-        "//tools/base/utp/common",
+        "//tools/base/utp/utp-common",
         "@maven//:com.google.protobuf.protobuf-gradle-plugin",
         "@maven//:com.google.testing.compile.compile-testing",
         "@maven//:com.google.testing.platform.android-device-provider-local",

@@ -23,7 +23,7 @@ maven_library(
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core",
         "@maven//:com.google.code.gson.gson",
         "@maven//:com.google.protobuf.protobuf-java",
-        "//tools/base/utp/common",
+        "//tools/base/utp/utp-common",
         "//tools/base/utp/android-test-plugin-host-retention-proto",
         # Don't change dependency order or the test fails. Those plugins bundle kotlinx
         # coroutine jar which may be different version.

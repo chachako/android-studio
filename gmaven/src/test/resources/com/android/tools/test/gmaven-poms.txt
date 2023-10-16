@@ -768,7 +768,7 @@ com.android.tools.utp:android-test-plugin-host-additional-test-output
   description=A UTP plugin to copy additional test output to host machine
   dependencies:
     com.android.tools:common (runtime)
-    com.android.tools.utp:common (runtime)
+    com.android.tools.utp:utp-common (runtime)
     com.android.tools.utp:android-test-plugin-host-additional-test-output-proto (runtime)
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
     com.google.protobuf:protobuf-java (runtime)
@@ -820,7 +820,7 @@ com.android.tools.utp:android-test-plugin-host-device-info
     com.android.tools:common (runtime)
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
     com.google.protobuf:protobuf-java (runtime)
-    com.android.tools.utp:common (runtime)
+    com.android.tools.utp:utp-common (runtime)
     com.android.tools.utp:android-test-plugin-host-device-info-proto (runtime)
     com.google.testing.platform:android-device-provider-local (runtime)
 
@@ -857,7 +857,7 @@ com.android.tools.utp:android-test-plugin-host-logcat
   description=A UTP plugin to export logcat information
   dependencies:
     com.android.tools:common (runtime)
-    com.android.tools.utp:common (runtime)
+    com.android.tools.utp:utp-common (runtime)
     com.android.tools.utp:android-test-plugin-host-logcat-proto (runtime)
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
     com.google.protobuf:protobuf-java (runtime)
@@ -884,7 +884,7 @@ com.android.tools.utp:android-test-plugin-host-retention
     io.grpc:grpc-stub (runtime)
     com.google.protobuf:protobuf-java (runtime)
     com.google.guava:guava (runtime)
-    com.android.tools.utp:common (runtime)
+    com.android.tools.utp:utp-common (runtime)
     com.android.tools.utp:android-test-plugin-host-retention-proto (runtime)
     com.android.tools.emulator:proto (runtime)
     com.google.testing.platform:android-device-provider-local (runtime)
@@ -927,8 +927,8 @@ com.android.tools.utp:android-test-plugin-result-listener-gradle-proto
     javax.annotation:javax.annotation-api (runtime)
     com.google.protobuf:protobuf-java (runtime)
 
-com.android.tools.utp:common
-  pomName=com.android.tools.utp.common
+com.android.tools.utp:utp-common
+  pomName=com.android.tools.utp.utp-common
   description=
   dependencies:
     com.android.tools:common (runtime)

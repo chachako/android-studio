@@ -15,7 +15,7 @@ maven_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/common:tools.common",
-        "//tools/base/utp/common",
+        "//tools/base/utp/utp-common",
         "//tools/base/utp/android-test-plugin-host-device-info-proto",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
         "@maven//:com.google.protobuf.protobuf-java",

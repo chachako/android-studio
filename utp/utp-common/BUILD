@@ -3,12 +3,12 @@ load("//tools/base/bazel:maven.bzl", "maven_library")
 load("//tools/base/common:version.bzl", "BASE_VERSION")
 
 maven_library(
-    name = "common",
+    name = "utp-common",
     srcs = glob([
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
     ]),
-    coordinates = "com.android.tools.utp:common",
+    coordinates = "com.android.tools.utp:utp-common",
     version = BASE_VERSION,
     visibility = ["//visibility:public"],
     deps = [
@@ -31,7 +31,7 @@ kotlin_test(
         # should be loaded first.
         "@maven//:com.google.testing.platform.launcher",
         # Test dependencies.
-        ":common",
+        ":utp-common",
         "//tools/base/common:tools.common",
         "//tools/base/sdk-common:tools.sdk-common",
         "//tools/base/sdklib:tools.sdklib",

@@ -3951,7 +3951,7 @@ com/android/tools/utp/android-test-plugin-result-listener-gradle-proto
   gradle_android_test_result_listener.proto
   gradle_android_test_result_listener_config.proto
 
-com/android/tools/utp/common
+com/android/tools/utp/utp-common
   META-INF/
   META-INF/MANIFEST.MF
   META-INF/unnamed.kotlin_module
