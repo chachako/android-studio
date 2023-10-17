@@ -105,10 +105,13 @@ class RestrictToDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
+            src/Code.kt:4: Warning: This declaration implicitly references COLOR, which should only be accessed from tests or within private scope [VisibleForTests]
+                                    ProductionCode.COLOR.values().map { it.name to it.ordinal } // Not allowed
+                                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~
             src/Code.kt:4: Warning: This method should only be accessed from tests or within private scope [VisibleForTests]
                                     ProductionCode.COLOR.values().map { it.name to it.ordinal } // Not allowed
                                                          ~~~~~~
-            0 errors, 1 warnings
+            0 errors, 2 warnings
             """
       )
   }
@@ -2502,10 +2505,13 @@ class RestrictToDetectorTest : AbstractCheckTest() {
             src/pkg/Code.kt:6: Warning: This class should only be accessed from tests or within private scope [VisibleForTests]
                                   val x = clazz as? InternalClass
                                                     ~~~~~~~~~~~~~
+            src/pkg/Code.kt:6: Warning: This declaration implicitly references InternalClass, which should only be accessed from tests or within private scope [VisibleForTests]
+                                  val x = clazz as? InternalClass
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             src/pkg/CodeJava.java:5: Warning: This class should only be accessed from tests or within private scope [VisibleForTests]
                 int x = (InternalClass) clazz;
                          ~~~~~~~~~~~~~
-            0 errors, 2 warnings
+            0 errors, 3 warnings
             """
       )
   }

@@ -343,9 +343,13 @@ class AnnotationHandlerTest {
                 abstract class C {
                   abstract val api: Api
                   abstract val list: List<Api>
-                  fun doSomething(api: Api): Api
+                  fun get(): Api = Api()
+                  fun f() = get() // Implicit type reference
+                  val x = get() // Implicit type reference
+                  abstract fun doSomething(api: Api): Api
                   fun doSomethingLists(list: List<Api>): List<Api> {
                     val x: Api? = null
+                    val y = get() // Implicit type reference
                   }
                 }
                 """
@@ -428,36 +432,60 @@ class AnnotationHandlerTest {
           abstract val list: List<Api>
                                   ~~~
         src/test/usage/C.kt:6: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
-          fun doSomething(api: Api): Api
-                               ~~~
-        src/test/usage/C.kt:6: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
-          fun doSomething(api: Api): Api
-                                     ~~~
+          fun get(): Api = Api()
+                     ~~~
         src/test/usage/C.kt:6: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
-          fun doSomething(api: Api): Api
-                               ~~~
-        src/test/usage/C.kt:6: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
-          fun doSomething(api: Api): Api
-                                     ~~~
-        src/test/usage/C.kt:7: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+          fun get(): Api = Api()
+                     ~~~
+        src/test/usage/C.kt:6: Error: METHOD_CALL usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+          fun get(): Api = Api()
+                           ~~~~~
+        src/test/usage/C.kt:6: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+          fun get(): Api = Api()
+                           ~~~~~
+        src/test/usage/C.kt:8: Error: CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+          val x = get() // Implicit type reference
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/usage/C.kt:8: Error: CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+          val x = get() // Implicit type reference
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/usage/C.kt:9: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+          abstract fun doSomething(api: Api): Api
+                                        ~~~
+        src/test/usage/C.kt:9: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+          abstract fun doSomething(api: Api): Api
+                                              ~~~
+        src/test/usage/C.kt:9: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+          abstract fun doSomething(api: Api): Api
+                                        ~~~
+        src/test/usage/C.kt:9: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+          abstract fun doSomething(api: Api): Api
+                                              ~~~
+        src/test/usage/C.kt:10: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
           fun doSomethingLists(list: List<Api>): List<Api> {
                                           ~~~
-        src/test/usage/C.kt:7: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/C.kt:10: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
           fun doSomethingLists(list: List<Api>): List<Api> {
                                                       ~~~
-        src/test/usage/C.kt:7: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/C.kt:10: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
           fun doSomethingLists(list: List<Api>): List<Api> {
                                           ~~~
-        src/test/usage/C.kt:7: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/C.kt:10: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
           fun doSomethingLists(list: List<Api>): List<Api> {
                                                       ~~~
-        src/test/usage/C.kt:8: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/C.kt:11: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
             val x: Api? = null
                    ~~~~
-        src/test/usage/C.kt:8: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+        src/test/usage/C.kt:11: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
             val x: Api? = null
                    ~~~~
-        28 errors, 0 warnings
+        src/test/usage/C.kt:12: Error: CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            val y = get() // Implicit type reference
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/usage/C.kt:12: Error: CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+            val y = get() // Implicit type reference
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        36 errors, 0 warnings
             """
       )
   }

@@ -41,6 +41,7 @@ import com.android.tools.lint.detector.api.AnnotationUsageType.ASSIGNMENT_RHS
 import com.android.tools.lint.detector.api.AnnotationUsageType.BINARY
 import com.android.tools.lint.detector.api.AnnotationUsageType.CLASS_REFERENCE
 import com.android.tools.lint.detector.api.AnnotationUsageType.CLASS_REFERENCE_AS_DECLARATION_TYPE
+import com.android.tools.lint.detector.api.AnnotationUsageType.CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE
 import com.android.tools.lint.detector.api.AnnotationUsageType.DEFINITION
 import com.android.tools.lint.detector.api.AnnotationUsageType.EQUALITY
 import com.android.tools.lint.detector.api.AnnotationUsageType.EXTENDS
@@ -73,7 +74,9 @@ import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiNewExpression
 import com.intellij.psi.PsiPackage
 import com.intellij.psi.PsiParameter
+import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypeElement
+import com.intellij.psi.PsiTypeVisitor
 import com.intellij.psi.util.PsiTypesUtil
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import org.jetbrains.kotlin.asJava.elements.KtLightMember
@@ -610,18 +613,18 @@ internal class AnnotationHandler(
     }
   }
 
-  // Visit the declared type of a declaration or parameter
+  // Visit the type of a declaration or parameter
   private fun visitDeclarationTypeReference(
     context: JavaContext,
     reference: UTypeReferenceExpression
   ) {
+    val psi = reference.sourcePsi ?: return
     // In the code
     //    val x = List<T>
     // there is no UElement corresponding to "T" in the UAST tree, but there is
     // in the PSI tree. So to make sure that "T" is visited we send a visitor
     // through the PSI tree to look for types and turn them back into UElements
     // that can be passed on to the annotation checker.
-    val psi = reference.sourcePsi ?: return
     fun handlePsiTypeElement(psi: PsiElement) {
       val uElement = psi.toUElement()
       if (uElement is UTypeReferenceExpression) {
@@ -656,14 +659,39 @@ internal class AnnotationHandler(
     psi.accept(psiVisitor)
   }
 
+  private fun visitImplicitTypeReference(context: JavaContext, type: PsiType, location: UElement) {
+    type.accept(
+      object : PsiTypeVisitor<Unit>() {
+        override fun visitType(type: PsiType) {
+          val cls = context.evaluator.getTypeClass(type) ?: return
+          val annotations = getMemberAnnotations(context, cls)
+          checkAnnotations(
+            context,
+            location,
+            CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE,
+            cls,
+            annotations
+          )
+        }
+      }
+    )
+  }
+
   // TODO: visitField too such that we can enforce initializer consistency with
   // declared constraints!
 
   fun visitMethod(context: JavaContext, method: UMethod) {
     val evaluator = context.evaluator
 
-    if (method.returnTypeReference != null) {
+    // Same as with variables, if there is no return type reference then the typing
+    // must be implicit.
+    if (method.returnTypeReference?.sourcePsi != null) {
       visitDeclarationTypeReference(context, method.returnTypeReference!!)
+    } else if (method.sourcePsi?.isPhysical != true) {
+      val returnType = method.returnType
+      if (returnType != null) {
+        visitImplicitTypeReference(context, returnType, method)
+      }
     }
 
     val methodAnnotations = getRelevantAnnotations(evaluator, method as UAnnotated, METHOD)
@@ -970,7 +998,12 @@ internal class AnnotationHandler(
     // declaration itself as being a class reference to the class (annotated with A), so we
     // skip object declarations here.
     if (typeReference != null && variable.sourcePsi !is KtObjectDeclaration) {
-      visitDeclarationTypeReference(context, typeReference)
+      if (typeReference.sourcePsi != null) {
+        visitDeclarationTypeReference(context, typeReference)
+      } else {
+        // If the reference has no PSI representation, then it must be an implicit typing
+        visitImplicitTypeReference(context, typeReference.type, variable)
+      }
     }
 
     // Check the initializer to see if it is an annotated element

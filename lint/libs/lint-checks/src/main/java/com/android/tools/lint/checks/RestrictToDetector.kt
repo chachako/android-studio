@@ -23,6 +23,7 @@ import com.android.tools.lint.detector.api.AnnotationUsageInfo
 import com.android.tools.lint.detector.api.AnnotationUsageType
 import com.android.tools.lint.detector.api.AnnotationUsageType.ASSIGNMENT_LHS
 import com.android.tools.lint.detector.api.AnnotationUsageType.ASSIGNMENT_RHS
+import com.android.tools.lint.detector.api.AnnotationUsageType.CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Issue
@@ -172,7 +173,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
 
       if (visibility == VISIBILITY_PRIVATE) {
         if (!isTestContext(context, node)) {
-          reportVisibilityError(context, node, annotation, "private")
+          reportVisibilityError(context, node, annotation, usageInfo, "private")
         }
         return
       }
@@ -188,7 +189,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       }
       if (visibility == VISIBILITY_PACKAGE_PRIVATE) {
         if (!isTestContext(context, node)) {
-          reportVisibilityError(context, node, annotation, "package private")
+          reportVisibilityError(context, node, annotation, usageInfo, "package private")
         }
         return
       }
@@ -206,7 +207,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       }
 
       if (!isTestContext(context, node)) {
-        reportVisibilityError(context, node, annotation, "protected")
+        reportVisibilityError(context, node, annotation, usageInfo, "protected")
       }
     }
   }
@@ -215,6 +216,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     context: JavaContext,
     node: UElement,
     annotation: UAnnotation,
+    usageInfo: AnnotationUsageInfo,
     desc: String
   ) {
     val type =
@@ -222,7 +224,15 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         is UTypeReferenceExpression -> "class"
         else -> "method"
       }
-    val message = "This $type should only be accessed from tests or within $desc scope"
+    val message =
+      when (usageInfo.type) {
+        CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE -> {
+          val typeText = (usageInfo.referenced as? PsiClass)?.name
+          "This declaration implicitly references ${typeText?.plus(",") ?: "a type"} " +
+            "which should only be accessed from tests or within $desc scope"
+        }
+        else -> "This $type should only be accessed from tests or within $desc scope"
+      }
     val location: Location =
       if (node is UCallExpression) {
         context.getCallLocation(node, false, false)

@@ -58,10 +58,20 @@ enum class AnnotationUsageType {
   CLASS_REFERENCE,
 
   /**
-   * A class reference where the class was annotated and the class reference is the type of a
-   * declaration (a variable, field, or method declaration, or function parameter).
+   * A class reference where the class was annotated and the class reference is in the type of an
+   * explicitly typed declaration (a variable, field, or method declaration, or function parameter).
+   * For example, if the class C is annotated, then the reference to C will be visited in the
+   * declarations "val x: C" or "C x;"
    */
   CLASS_REFERENCE_AS_DECLARATION_TYPE,
+
+  /**
+   * A class reference where the class was annotated and the class reference is the type of an
+   * implicitly typed declaration (a variable, field, or method declaration, or function parameter).
+   * For example, if the Int class is annotated, then a reference to Int will be visited in the
+   * declaration "val x = 1".
+   */
+  CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE,
 
   /** An argument to an annotation where the annotation parameter has been annotated. */
   ANNOTATION_REFERENCE,
