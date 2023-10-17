@@ -22,6 +22,7 @@ import com.android.tools.render.RenderRequest
 import com.android.tools.render.render
 import javax.imageio.ImageIO
 import kotlin.io.path.Path
+import java.io.File
 
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
@@ -29,7 +30,7 @@ fun main(args: Array<String>) {
         return
     }
 
-    val composeRendering = readComposeRenderingJson(args[0])
+    val composeRendering = readComposeRenderingJson(File(args[0]).reader())
 
     val requestToImageName = composeRendering.screenshots.mapNotNull { screenshot ->
         screenshot.toPreviewElement()?.let { previewElement ->

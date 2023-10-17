@@ -17,7 +17,9 @@
 package com.android.tools.render.compose
 
 import com.google.gson.stream.JsonReader
-import java.io.File
+import com.google.gson.stream.JsonWriter
+import java.io.Reader
+import java.io.Writer
 
 private const val SDK_PATH = "sdkPath"
 private const val LAYOUTLIB_PATH = "layoutlibPath"
@@ -31,10 +33,8 @@ private const val METHOD_PARAMS = "methodParams"
 private const val IMAGE_NAME = "imageName"
 private const val PREVIEW_PARAMS = "previewParams"
 
-/** Reads Json file containing serialized [ComposeRendering]. */
-fun readComposeRenderingJson(jsonFileName: String): ComposeRendering {
-    val inputFile = File(jsonFileName)
-
+/** Reads JSON text from [jsonReader] containing serialized [ComposeRendering]. */
+fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
     var sdkPath: String? = null
     var layoutlibPath: String? = null
     var outputFolder: String? = null
@@ -42,7 +42,7 @@ fun readComposeRenderingJson(jsonFileName: String): ComposeRendering {
     var packageName: String? = null
     var resourceApkPath: String? = null
     val screenshots = mutableListOf<ComposeScreenshot>()
-    JsonReader(inputFile.reader()).use {  reader ->
+    JsonReader(jsonReader).use {  reader ->
         reader.beginObject()
         while (reader.hasNext()) {
             when (val fieldName = reader.nextName()) {
@@ -125,4 +125,54 @@ private fun readComposeScreenshot(reader: JsonReader): ComposeScreenshot {
         previewParams,
         imageName ?: throw IllegalArgumentException("Output image name is missing")
     )
+}
+
+/** Serializes [composeRendering] to [jsonWriter] in JSON format. */
+fun writeComposeRenderingToJson(
+    composeRendering: ComposeRendering,
+    jsonWriter: Writer,
+) {
+    JsonWriter(jsonWriter).use { writer ->
+        writer.setIndent("  ")
+        writer.beginObject()
+        writer.name(SDK_PATH).value(composeRendering.sdkPath)
+        writer.name(LAYOUTLIB_PATH).value(composeRendering.layoutlibPath)
+        writer.name(OUTPUT_FOLDER).value(composeRendering.outputFolder)
+        writer.name(CLASS_PATH)
+        writer.beginArray()
+        composeRendering.classPath.forEach { writer.value(it) }
+        writer.endArray()
+        writer.name(PACKAGE_NAME).value(composeRendering.packageName)
+        writer.name(RESOURCE_APK_PATH).value(composeRendering.resourceApkPath)
+        writer.name(SCREENSHOTS)
+        writer.beginArray()
+        composeRendering.screenshots.forEach {
+            writeComposeScreenshotToJson(it, writer)
+        }
+        writer.endArray()
+        writer.endObject()
+    }
+}
+
+private fun writeComposeScreenshotToJson(screenshot: ComposeScreenshot, writer: JsonWriter) {
+    writer.beginObject()
+    writer.name(METHOD_FQN).value(screenshot.methodFQN)
+    writer.name(METHOD_PARAMS)
+    writer.beginArray()
+    screenshot.methodParams.forEach { param ->
+        writer.beginObject()
+        param.forEach {
+            writer.name(it.key).value(it.value)
+        }
+        writer.endObject()
+    }
+    writer.endArray()
+    writer.name(PREVIEW_PARAMS)
+    writer.beginObject()
+    screenshot.previewParams.forEach {
+        writer.name(it.key).value(it.value)
+    }
+    writer.endObject()
+    writer.name(IMAGE_NAME).value(screenshot.imageName)
+    writer.endObject()
 }
