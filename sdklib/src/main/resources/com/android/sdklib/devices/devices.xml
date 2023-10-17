@@ -192,7 +192,8 @@
             <d:nav-state>nonav</d:nav-state>
         </d:state>
     </d:device>
-    <d:device>
+
+    <d:device deprecated="true">
         <d:name>7.6" Fold-in with outer display</d:name>
         <d:id>7.6in Foldable</d:id>
         <d:manufacturer>Generic</d:manufacturer>
