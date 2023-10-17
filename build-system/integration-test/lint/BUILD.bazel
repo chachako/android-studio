@@ -25,12 +25,6 @@ DEPS = [
     "//tools/base/sdk-common:tools.sdk-common",
     "//tools/base/sdklib:tools.sdklib",
     "//tools/base/testutils:tools.testutils",
-    "@maven//:com.google.guava.guava",
-    "@maven//:com.google.truth.extensions.truth-java8-extension",
-    "@maven//:com.google.truth.truth",
-    "@maven//:commons-io.commons-io",
-    "@maven//:org.jetbrains.kotlin.kotlin-stdlib",
-    "@maven//:org.jetbrains.kotlin.kotlin-test",
 ]
 
 MAVEN_REPO_ZIPS = [

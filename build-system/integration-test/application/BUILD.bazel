@@ -27,17 +27,9 @@ TEST_DEPS = [
     "//tools/base/testutils:tools.testutils",
     "//tools/base/zipflinger",
     "@maven//:com.android.tools.smali.smali-dexlib2",
-    "@maven//:com.google.guava.guava",
-    "@maven//:com.google.protobuf.protobuf-java",
-    "@maven//:com.google.protobuf.protobuf-java-util",
-    "@maven//:com.google.truth.extensions.truth-java8-extension",
-    "@maven//:com.google.truth.truth",
-    "@maven//:commons-io.commons-io",  # TODO: remove?
     "@maven//:org.apache.commons.commons-compress",
     "@maven//:org.codehaus.groovy.groovy-all",  # required by //tools/base/build-system:gradle-api
     "@maven//:org.jetbrains.dokka.dokka-core",
-    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
-    "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm",
     "@maven//:org.mockito.mockito-core",
     "@maven//:org.ow2.asm.asm",
     "@maven//:org.ow2.asm.asm-tree",
