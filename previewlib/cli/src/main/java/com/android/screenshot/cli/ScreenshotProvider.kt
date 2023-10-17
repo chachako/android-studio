@@ -152,7 +152,6 @@ class ScreenshotProvider(
             "singlePreviewElement.xml",
             previewElement.toPreviewXml()
                 .toolsAttribute("paintBounds", "false")
-                .toolsAttribute("findDesignInfoProviders", "false")
                 .buildString()
         ) { previewElement.previewElementDefinitionPsi?.virtualFile }
 
