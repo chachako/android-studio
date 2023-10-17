@@ -94,12 +94,12 @@ internal fun renderImpl(
     layoutlibPath: String,
     renderRequests: Sequence<RenderRequest>,
     onRenderResult: (RenderRequest, Int, RenderResult) -> Unit,
-    disableSecurityManager: Boolean,
+    isForTest: Boolean,
 ) {
     // Warmup TimeZone.getDefault so that it works inside rendering not triggering security
     TimeZone.getDefault()
 
-    StandaloneFramework().use { framework ->
+    StandaloneFramework(!isForTest).use { framework ->
         framework.registerService(FrameworkResourceRepositoryManager::class.java, FrameworkResourceRepositoryManager())
         framework.registerService(DownloadableFontCacheService::class.java, StandaloneFontCacheService(sdkPath))
 
@@ -124,7 +124,8 @@ internal fun renderImpl(
         val androidTarget = StandaloneAndroidTarget(androidVersion)
         val androidModuleInfo = StandaloneModuleInfo(packageName, androidVersion)
 
-        val androidSdkData = AndroidSdkData.getSdkData(sdkPath)!!
+        val androidSdkData = AndroidSdkData.getSdkData(sdkPath) ?: throw InvalidSdkException(sdkPath)
+
         val androidPlatform = AndroidPlatform(androidSdkData, androidTarget)
 
         val resourceRepositoryManager = StandaloneResourceRepositoryManager(resourcesRepo)
@@ -184,27 +185,40 @@ internal fun renderImpl(
         renderRequests.forEach { request ->
             request.configurationModifier(configuration)
             request.xmlLayoutsProvider().forEachIndexed { i, layout ->
-                val renderTask = RenderService { }.taskBuilder(module, configuration, logger)
-                    .disableDecorations()
-                    .also {
-                        if (disableSecurityManager) {
-                            it.disableSecurityManager()
+                val result = try {
+                    val renderTask = RenderService { }.taskBuilder(module, configuration, logger)
+                        .disableDecorations()
+                        .also {
+                            if (isForTest) {
+                                it.disableSecurityManager()
+                            }
                         }
-                    }
-                    .withRenderingMode(SessionParams.RenderingMode.SHRINK)
-                    .build().get()
+                        .withRenderingMode(SessionParams.RenderingMode.SHRINK)
+                        .build().get()
 
-                val xmlFile =
-                    RenderXmlFileSnapshot(
-                        framework.project,
-                        "layout.xml",
-                        ResourceFolderType.LAYOUT,
-                        layout
+                    val xmlFile =
+                        RenderXmlFileSnapshot(
+                            framework.project,
+                            "layout.xml",
+                            ResourceFolderType.LAYOUT,
+                            layout
+                        )
+
+                    renderTask.setXmlFile(xmlFile)
+                    renderTask.render().get(100, TimeUnit.SECONDS)
+                } catch (t: Throwable) {
+                    RenderResult.createRenderTaskErrorResult(
+                        module,
+                        { throw UnsupportedOperationException() },
+                        t,
+                        logger
                     )
-
-                renderTask.setXmlFile(xmlFile)
-                val result = renderTask.render().get(100, TimeUnit.SECONDS)
-                onRenderResult(request, i, result)
+                }
+                try {
+                    onRenderResult(request, i, result)
+                } catch (t: Throwable) {
+                    t.printStackTrace()
+                }
             }
         }
 

@@ -29,6 +29,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.util.concurrency.AppExecutorUtil
 import java.io.Closeable
+import java.util.concurrent.TimeUnit
 
 /**
  * IJ Framework wrapper, providing root [Disposable], [Project] and a way to register services and
@@ -46,15 +47,19 @@ internal interface IJFramework : Closeable {
 }
 
 /** [IJFramework] implementation for the standalone rendering. */
-internal class StandaloneFramework : IJFramework {
+internal class StandaloneFramework(stopExecutor: Boolean) : IJFramework {
     override val disposable = Disposer.newDisposable()
     private val app = MockApplication(disposable)
 
     init {
         ApplicationManager.setApplication(app, disposable)
         PluginManagerCore.setPluginSet(PluginSetBuilder(emptySet()).createPluginSet())
-        Disposer.register(disposable) {
-            AppExecutorUtil.shutdownApplicationScheduledExecutorService()
+        if (stopExecutor) {
+            Disposer.register(disposable) {
+                // Make sure the queue is empty
+                AppExecutorUtil.getAppScheduledExecutorService().submit { }.get(60, TimeUnit.SECONDS)
+                AppExecutorUtil.shutdownApplicationScheduledExecutorService()
+            }
         }
     }
 

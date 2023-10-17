@@ -12,5 +12,9 @@
     <orderEntry type="module" module-name="android.sdktools.base.standalone-render.lib" scope="TEST" />
     <orderEntry type="module" module-name="android.sdktools.testutils" scope="TEST" />
     <orderEntry type="module" module-name="android.sdktools.base.rendering" scope="TEST" />
+    <orderEntry type="module" module-name="android.sdktools.base.layoutlib-api-base" scope="TEST" />
+    <orderEntry type="library" scope="TEST" name="intellij-core" level="project" />
+    <orderEntry type="module" module-name="android.sdktools.base.sdklib-base" scope="TEST" />
+    <orderEntry type="module" module-name="android.sdktools.base.render-resources" scope="TEST" />
   </component>
 </module>

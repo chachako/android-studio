@@ -20,6 +20,7 @@ import com.android.testutils.TestUtils
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -30,6 +31,15 @@ import javax.imageio.ImageIO
 import kotlin.io.path.absolutePathString
 import kotlin.math.abs
 import kotlin.math.max
+import com.android.ide.common.rendering.api.Result
+import com.android.tools.rendering.RenderResult
+import com.android.tools.rendering.RenderService
+import com.android.tools.sdk.EmbeddedRenderTarget
+import com.intellij.util.concurrency.AppExecutorUtil
+import org.junit.AfterClass
+import org.junit.Before
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
 
 private const val TEST_DATA_DIR = "tools/base/standalone-render/lib/testData/rendered_images"
 // This is to respect the different rounding on different platforms.
@@ -38,6 +48,23 @@ private const val THRESHOLD = 1
 class RendererTest {
     @JvmField @Rule
     val tmpFolder = TemporaryFolder()
+
+    companion object {
+        @AfterClass
+        @JvmStatic
+        fun stopExecutor() {
+            // Make sure the queue is empty
+            AppExecutorUtil.getAppScheduledExecutorService().submit { }.get(60, TimeUnit.SECONDS)
+            AppExecutorUtil.shutdownApplicationScheduledExecutorService()
+        }
+    }
+
+    @Before
+    fun setUp() {
+        EmbeddedRenderTarget.resetRenderTarget()
+        RenderService.initializeRenderExecutor()
+    }
+
     @Test
     fun testSimpleLayoutRendering() {
         // language=xml
@@ -62,8 +89,7 @@ class RendererTest {
 
         val request = RenderRequest({}) { sequenceOf(layout) }
 
-        val fakeSdkFolder = tmpFolder.newFolder()
-        prepareFakeSdkFolder(fakeSdkFolder)
+        val fakeSdkFolder = prepareFakeSdkFolder()
 
         val layoutlibPath = TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib")
 
@@ -73,8 +99,7 @@ class RendererTest {
             null,
             "",
             emptyList(),
-            // Layoutlib path is expected strictly with the [File.separator] at the end
-            layoutlibPath.absolutePathString() + File.separator,
+            layoutlibPath.absolutePathString(),
             sequenceOf(request),
         ) { _, _, result ->
             assertNull("A single RenderResult is expected", outputImage)
@@ -101,8 +126,86 @@ class RendererTest {
         assertTrue("The L-infinity image diff is $lInfDiff, higher than the threshold $THRESHOLD", lInfDiff <= THRESHOLD)
     }
 
-    private fun prepareFakeSdkFolder(fakeSdkFolder: File) {
+    @Test
+    fun testIncorrectSdkPath() {
+        assertThrows(InvalidSdkException::class.java) {
+            renderForTest(
+                "/path/does/not/exist",
+                null,
+                "",
+                emptyList(),
+                "",
+                sequenceOf(),
+            ) { _, _, _ -> }
+        }
+    }
+
+    @Test
+    fun testIncorrectLayoutlibPath() {
+        val fakeSdk = prepareFakeSdkFolder()
+        val renderResults = mutableListOf<RenderResult>()
+        renderForTest(
+            fakeSdk.absolutePath,
+            null,
+            "",
+            emptyList(),
+            "",
+            sequenceOf(RenderRequest({}) { sequenceOf("") }),
+        ) { _, _, result ->
+            renderResults.add(result)
+        }
+
+        assertEquals(1, renderResults.size)
+        val renderResult = renderResults[0]
+        assertEquals(Result.Status.ERROR_RENDER_TASK, renderResult.renderResult.status)
+        assertTrue(renderResult.renderResult.exception is ExecutionException)
+    }
+
+    @Test
+    fun testMissingResource() {
+        // language=xml
+        val layout = """
+            <?xml version="1.0" encoding="utf-8"?>
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="top"
+                    android:text="@string/hello" />
+            </LinearLayout>
+        """.trimIndent()
+
+        val fakeSdk = prepareFakeSdkFolder()
+
+        val layoutlibPath = TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib")
+
+        val renderResults = mutableListOf<RenderResult>()
+        renderForTest(
+            fakeSdk.absolutePath,
+            null,
+            "",
+            emptyList(),
+            layoutlibPath.absolutePathString(),
+            sequenceOf(RenderRequest({}) { sequenceOf(layout) }),
+        ) { _, _, result ->
+            renderResults.add(result)
+        }
+
+        assertEquals(1, renderResults.size)
+        val renderResult = renderResults[0]
+        assertEquals(Result.Status.SUCCESS, renderResult.renderResult.status)
+        val messages = renderResult.logger.messages
+        assertEquals(1, messages.size)
+        assertEquals("Couldn't resolve resource @string/hello", messages[0].html)
+    }
+
+    private fun prepareFakeSdkFolder(): File {
+        val fakeSdkFolder = tmpFolder.newFolder()
         val platforms = fakeSdkFolder.resolve("platforms")
         platforms.mkdirs()
+        return fakeSdkFolder
     }
 }
