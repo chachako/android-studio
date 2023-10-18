@@ -133,6 +133,8 @@ maven_repository(
 maven_repository(
     name = "ksp_gradle_plugin",
     artifacts = [
+        "@maven//:com.google.devtools.ksp.symbol-processing_1.7.10-1.0.6",
+        "@maven//:com.google.devtools.ksp.com.google.devtools.ksp.gradle.plugin_1.7.10-1.0.6",
         "@maven//:com.google.devtools.ksp.symbol-processing-gradle-plugin_1.7.10-1.0.6",
     ],
     visibility = ["//visibility:public"],
