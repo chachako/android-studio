@@ -57,6 +57,9 @@ function copy_bazel_artifacts() {(
   cp -a ${bin_dir}/tools/vendor/google/asfp/studio/asfp_build_manifest.textproto ${artifacts_dir}/asfp_build_manifest.textproto
   cp -a ${bin_dir}/tools/vendor/google/asfp/studio/asfp-linux-deb.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/vendor/google/asfp/studio/asfp.deb ${artifacts_dir}
+  cp -a ${bin_dir}/tools/vendor/google/aswb/aswb.linux.zip ${artifacts_dir}
+  cp -a ${bin_dir}/tools/vendor/google/aswb/aswb.mac.zip ${artifacts_dir}
+  cp -a ${bin_dir}/tools/vendor/google/aswb/aswb.mac_arm.zip ${artifacts_dir}
 
   cp -a ${bin_dir}/tools/base/dynamic-layout-inspector/skia/skiaparser.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/base/sdklib/commandlinetools_*.zip ${artifacts_dir}
@@ -163,6 +166,7 @@ function run_bazel_test() {
     -- \
     //tools/adt/idea/studio:android-studio \
     //tools/adt/idea/studio:updater_deploy.jar \
+    //tools/vendor/google/aswb:aswb \
     //tools/adt/idea/updater-ui:sdk-patcher.zip \
     //tools/adt/idea/native/installer:android-studio-bundle-data \
     //tools/base/profiler/native/trace_processor_daemon \
