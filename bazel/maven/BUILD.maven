@@ -40280,17 +40280,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.google.devtools.ksp.com.google.devtools.ksp.gradle.plugin_1.9.20-Beta-1.0.13",
-    pom = "repository/com/google/devtools/ksp/com.google.devtools.ksp.gradle.plugin/1.9.20-Beta-1.0.13/com.google.devtools.ksp.gradle.plugin-1.9.20-Beta-1.0.13.pom",
-    repo_root_path = "repository",
-    repo_path = "com/google/devtools/ksp/com.google.devtools.ksp.gradle.plugin/1.9.20-Beta-1.0.13",
-    deps = [
-        "com.google.devtools.ksp.symbol-processing-gradle-plugin_1.9.20-Beta-1.0.13",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "com.google.devtools.ksp.symbol-processing-api_1.5.30-1.0.0",
     pom = "repository/com/google/devtools/ksp/symbol-processing-api/1.5.30-1.0.0/symbol-processing-api-1.5.30-1.0.0.pom",
     repo_root_path = "repository",
@@ -40341,17 +40330,6 @@ maven_artifact(
     repo_path = "com/google/devtools/ksp/symbol-processing-api/1.9.0-1.0.11",
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib_1.9.0",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "com.google.devtools.ksp.symbol-processing-api_1.9.20-Beta-1.0.13",
-    pom = "repository/com/google/devtools/ksp/symbol-processing-api/1.9.20-Beta-1.0.13/symbol-processing-api-1.9.20-Beta-1.0.13.pom",
-    repo_root_path = "repository",
-    repo_path = "com/google/devtools/ksp/symbol-processing-api/1.9.20-Beta-1.0.13",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib_1.9.20-Beta",
     ],
     visibility = ["//visibility:public"],
 )
@@ -40409,17 +40387,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.google.devtools.ksp.symbol-processing-gradle-plugin_1.9.20-Beta-1.0.13",
-    pom = "repository/com/google/devtools/ksp/symbol-processing-gradle-plugin/1.9.20-Beta-1.0.13/symbol-processing-gradle-plugin-1.9.20-Beta-1.0.13.pom",
-    repo_root_path = "repository",
-    repo_path = "com/google/devtools/ksp/symbol-processing-gradle-plugin/1.9.20-Beta-1.0.13",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.0",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "com.google.devtools.ksp.symbol-processing_1.7.10-1.0.6",
     pom = "repository/com/google/devtools/ksp/symbol-processing/1.7.10-1.0.6/symbol-processing-1.7.10-1.0.6.pom",
     repo_root_path = "repository",
@@ -40454,18 +40421,6 @@ maven_artifact(
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
         "org.jetbrains.kotlin.kotlin-compiler-embeddable_1.8.21",
         "com.google.devtools.ksp.symbol-processing-api_1.8.21-1.0.11",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "com.google.devtools.ksp.symbol-processing_1.9.20-Beta-1.0.13",
-    pom = "repository/com/google/devtools/ksp/symbol-processing/1.9.20-Beta-1.0.13/symbol-processing-1.9.20-Beta-1.0.13.pom",
-    repo_root_path = "repository",
-    repo_path = "com/google/devtools/ksp/symbol-processing/1.9.20-Beta-1.0.13",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib_1.9.20-Beta",
-        "com.google.devtools.ksp.symbol-processing-api_1.9.20-Beta-1.0.13",
     ],
     visibility = ["//visibility:public"],
 )
@@ -45108,12 +45063,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.kotlin.android.org.jetbrains.kotlin.android.gradle.plugin_1.9.20-Beta",
-    pom = "repository/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/1.9.20-Beta/org.jetbrains.kotlin.android.gradle.plugin-1.9.20-Beta.pom",
+    name = "org.jetbrains.kotlin.android.org.jetbrains.kotlin.android.gradle.plugin_1.9.20-RC",
+    pom = "repository/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/1.9.20-RC/org.jetbrains.kotlin.android.gradle.plugin-1.9.20-RC.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/1.9.20-Beta",
+    repo_path = "org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/1.9.20-RC",
     deps = [
-        "org.jetbrains.kotlin.kotlin-gradle-plugin_1.9.20-Beta",
+        "org.jetbrains.kotlin.kotlin-gradle-plugin_1.9.20-RC",
     ],
     visibility = ["//visibility:public"],
 )
@@ -45207,23 +45162,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.kotlin.kapt.org.jetbrains.kotlin.kapt.gradle.plugin_1.9.0",
-    pom = "repository/org/jetbrains/kotlin/kapt/org.jetbrains.kotlin.kapt.gradle.plugin/1.9.0/org.jetbrains.kotlin.kapt.gradle.plugin-1.9.0.pom",
+    name = "org.jetbrains.kotlin.kapt.org.jetbrains.kotlin.kapt.gradle.plugin_1.9.20-RC",
+    pom = "repository/org/jetbrains/kotlin/kapt/org.jetbrains.kotlin.kapt.gradle.plugin/1.9.20-RC/org.jetbrains.kotlin.kapt.gradle.plugin-1.9.20-RC.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/kapt/org.jetbrains.kotlin.kapt.gradle.plugin/1.9.0",
+    repo_path = "org/jetbrains/kotlin/kapt/org.jetbrains.kotlin.kapt.gradle.plugin/1.9.20-RC",
     deps = [
-        "org.jetbrains.kotlin.kotlin-gradle-plugin_1.9.0",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "org.jetbrains.kotlin.kapt.org.jetbrains.kotlin.kapt.gradle.plugin_1.9.20-Beta",
-    pom = "repository/org/jetbrains/kotlin/kapt/org.jetbrains.kotlin.kapt.gradle.plugin/1.9.20-Beta/org.jetbrains.kotlin.kapt.gradle.plugin-1.9.20-Beta.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/kapt/org.jetbrains.kotlin.kapt.gradle.plugin/1.9.20-Beta",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-gradle-plugin_1.9.20-Beta",
+        "org.jetbrains.kotlin.kotlin-gradle-plugin_1.9.20-RC",
     ],
     visibility = ["//visibility:public"],
 )
@@ -45780,10 +45724,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.kotlin.kotlin-annotation-processing-gradle_1.9.20-Beta",
-    pom = "repository/org/jetbrains/kotlin/kotlin-annotation-processing-gradle/1.9.20-Beta/kotlin-annotation-processing-gradle-1.9.20-Beta.pom",
+    name = "org.jetbrains.kotlin.kotlin-annotation-processing-gradle_1.9.20-RC",
+    pom = "repository/org/jetbrains/kotlin/kotlin-annotation-processing-gradle/1.9.20-RC/kotlin-annotation-processing-gradle-1.9.20-RC.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/kotlin-annotation-processing-gradle/1.9.20-Beta",
+    repo_path = "org/jetbrains/kotlin/kotlin-annotation-processing-gradle/1.9.20-RC",
     visibility = ["//visibility:public"],
 )
 

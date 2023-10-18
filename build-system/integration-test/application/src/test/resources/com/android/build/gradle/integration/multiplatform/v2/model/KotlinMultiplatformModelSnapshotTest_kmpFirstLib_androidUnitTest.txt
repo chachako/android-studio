@@ -154,12 +154,12 @@
       "capabilities": [
         {
           "group": "org.jetbrains.kotlin",
-          "name": "kotlin-test-framework-impl",
+          "name": "kotlin-test-junit",
           "version": "{KOTLIN_VERSION}"
         },
         {
           "group": "org.jetbrains.kotlin",
-          "name": "kotlin-test-junit",
+          "name": "kotlin-test-framework-impl",
           "version": "{KOTLIN_VERSION}"
         }
       ],

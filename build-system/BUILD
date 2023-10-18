@@ -218,14 +218,14 @@ java_import(
 # Latest Kotlin Gradle plugin dependencies
 # DO NOT MIX different versions in this list
 KGP_LATEST = [
-    "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin_1.9.20-Beta",
-    "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin-api_1.9.20-Beta",
-    "@maven//:org.jetbrains.kotlin.kotlin-android-extensions-runtime_1.9.20-Beta",
-    "@maven//:org.jetbrains.kotlin.kotlin-annotation-processing-gradle_1.9.20-Beta",
-    "@maven//:org.jetbrains.kotlin.kotlin-script-runtime_1.9.20-Beta",
-    "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.20-Beta",
-    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.9.20-Beta",
-    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20-Beta",
+    "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin_1.9.20-RC",
+    "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin-api_1.9.20-RC",
+    "@maven//:org.jetbrains.kotlin.kotlin-android-extensions-runtime_1.9.20-RC",
+    "@maven//:org.jetbrains.kotlin.kotlin-annotation-processing-gradle_1.9.20-RC",
+    "@maven//:org.jetbrains.kotlin.kotlin-script-runtime_1.9.20-RC",
+    "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.20-RC",
+    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.9.20-RC",
+    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20-RC",
 ]
 
 # Kotlin Gradle plugin dependencies for projects using Compose (these are typically used when the
@@ -433,7 +433,7 @@ maven_repository(
     # keep sorted
     artifacts = [
         "//tools/base/testutils:tools.testutils",
-        "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.9.20-Beta",
+        "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.9.20-RC",
     ],
 )
 
