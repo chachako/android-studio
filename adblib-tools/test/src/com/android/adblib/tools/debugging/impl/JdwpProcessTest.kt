@@ -673,6 +673,11 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
             val delegateSession = connectedJdwpProcess.device.session.createDelegateSession()
             delegateSession.awaitDelegateProcess(connectedJdwpProcess)
         }
+        setHostPropertyValue(
+            connectedJdwpProcess.device.session.host,
+            AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT,
+            Duration.ofSeconds(1)
+        )
 
         // Act
         val allSessionsSeen = CompletableDeferred<Unit>()
@@ -694,6 +699,12 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
                 }.joinAll()
             }
         }.joinAll()
+
+        // `awaitDelegateProcess` above triggers process tracking which in turn triggers process
+        // property collection. As a result `activationCountStateFlow` is incremented
+        // by the `JdwpProcessPropertiesCollector`. Wait for properties collector to be done so that
+        // `activationCountStateFlow` is decremented.
+        yieldUntil { connectedJdwpProcess.properties.completed }
 
         // Assert
         assertEquals(0, connectedJdwpProcess.jdwpSessionActivationCount.value)
