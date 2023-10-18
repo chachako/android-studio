@@ -18467,6 +18467,24 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.fragment.fragment-ktx_1.5.6",
+    pom = "repository/androidx/fragment/fragment-ktx/1.5.6/fragment-ktx-1.5.6.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/fragment/fragment-ktx/1.5.6",
+    deps = [
+        "androidx.activity.activity-ktx_1.5.1",
+        "androidx.collection.collection-ktx_1.1.0",
+        "androidx.core.core-ktx_1.2.0",
+        "androidx.fragment.fragment_1.5.6",
+        "androidx.lifecycle.lifecycle-livedata-core-ktx_2.5.1",
+        "androidx.lifecycle.lifecycle-viewmodel-ktx_2.5.1",
+        "androidx.savedstate.savedstate-ktx_1.2.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.6.21",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.fragment.fragment_1.0.0",
     pom = "repository/androidx/fragment/fragment/1.0.0/fragment-1.0.0.pom",
     repo_root_path = "repository",
@@ -18649,6 +18667,28 @@ maven_artifact(
     pom = "repository/androidx/fragment/fragment/1.5.4/fragment-1.5.4.pom",
     repo_root_path = "repository",
     repo_path = "androidx/fragment/fragment/1.5.4",
+    deps = [
+        "androidx.activity.activity_1.5.1",
+        "androidx.annotation.annotation_1.1.0",
+        "androidx.annotation.annotation-experimental_1.0.0",
+        "androidx.collection.collection_1.1.0",
+        "androidx.core.core-ktx_1.2.0",
+        "androidx.lifecycle.lifecycle-livedata-core_2.5.1",
+        "androidx.lifecycle.lifecycle-viewmodel_2.5.1",
+        "androidx.lifecycle.lifecycle-viewmodel-savedstate_2.5.1",
+        "androidx.loader.loader_1.0.0",
+        "androidx.savedstate.savedstate_1.2.0",
+        "androidx.viewpager.viewpager_1.0.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.6.21",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.fragment.fragment_1.5.6",
+    pom = "repository/androidx/fragment/fragment/1.5.6/fragment-1.5.6.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/fragment/fragment/1.5.6",
     deps = [
         "androidx.activity.activity_1.5.1",
         "androidx.annotation.annotation_1.1.0",
