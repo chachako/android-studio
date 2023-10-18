@@ -70,7 +70,6 @@
       <module fileurl="file://$PROJECT_DIR$/pixelprobe/android.sdktools.pixelprobe.iml" filepath="$PROJECT_DIR$/pixelprobe/android.sdktools.pixelprobe.iml" />
       <module fileurl="file://$PROJECT_DIR$/repository/android.sdktools.repository-base.iml" filepath="$PROJECT_DIR$/repository/android.sdktools.repository-base.iml" />
       <module fileurl="file://$PROJECT_DIR$/resource-repository/android.sdktools.resource-repository-base.iml" filepath="$PROJECT_DIR$/resource-repository/android.sdktools.resource-repository-base.iml" />
-      <module fileurl="file://$PROJECT_DIR$/previewlib/cli/android.sdktools.screenshot.cli.iml" filepath="$PROJECT_DIR$/previewlib/cli/android.sdktools.screenshot.cli.iml" />
       <module fileurl="file://$PROJECT_DIR$/sdk-common/gradle/android.sdktools.sdk-common.gradle.iml" filepath="$PROJECT_DIR$/sdk-common/gradle/android.sdktools.sdk-common.gradle.iml" />
       <module fileurl="file://$PROJECT_DIR$/signflinger/android.sdktools.signflinger.iml" filepath="$PROJECT_DIR$/signflinger/android.sdktools.signflinger.iml" />
       <module fileurl="file://$PROJECT_DIR$/signflinger/tools/android.sdktools.signflinger_tools.iml" filepath="$PROJECT_DIR$/signflinger/tools/android.sdktools.signflinger_tools.iml" />
