@@ -33,6 +33,48 @@ maven_repository(
     include_transitive_deps = False,
 )
 
+genrule(
+    name = "maven_artifact_list",
+    srcs = [":gmaven"],
+    outs = ["maven_artifacts.txt"],
+    cmd = " ".join([
+        "zip -sf $(SRCS)",
+        # filter out everything but the pom files,
+        # leaving $GROUP/$ARTIFACT/$VERSION/$FILENAME.
+        "| grep .*pom$$",
+        # remove the last two path segments, $VERSION/$FILENAME.
+        "| sed -E 's/(.*)\\/[^/]+\\/[^/]+$$/\\1/'",
+        # replace the last '/' with a ':' to format as $GROUP:$ARTIFACT
+        "| sed -E 's/(.*)\\/([A-Za-z_-]+)/\\1:\\2/'",
+        "| sort",
+        "> $@",
+    ]),
+)
+
+sh_binary(
+    name = "update-allowlist",
+    srcs = ["update_allowlist.sh"],
+    args = ["$(execpath //tools/base/gmaven:maven_artifact_list)"],
+    data = ["//tools/base/gmaven:maven_artifact_list"],
+)
+
+sh_test(
+    name = "allowed-artifacts-test",
+    srcs = ["test_allowlist.sh"],
+    args = [
+        "$(location :artifacts_allowlist.txt)",
+        "$(location :maven_artifact_list)",
+    ],
+    data = [
+        ":artifacts_allowlist.txt",
+        ":maven_artifact_list",
+    ],
+    tags = [
+        "no_test_mac",
+        "no_test_windows",
+    ],
+)
+
 # A subset of the artifacts that can be built without our vendor
 # repositories.
 filegroup(
