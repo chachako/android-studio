@@ -176,6 +176,93 @@ class ContextTest : AbstractCheckTest() {
       .expectClean()
   }
 
+  // TODO(b/293581088): UAST of Kotlin strings (PSI: KtStringTemplateExpression) with 1 child is
+  //  somewhat broken until "kotlin.uast.force.uinjectionhost" defaults to true.
+  fun ignoreTestLocationOfKotlinString() {
+    val tripleQuotes = "\"\"\""
+    lint()
+      .files(
+        kotlin(
+            """
+                package com.example
+
+                class MyClass {
+                  fun foo(arg1: String) {
+
+                  }
+
+                  fun bar() {
+                    val a = 5
+
+                    foo(arg1 = "hello")
+                    foo(arg1 = "hello" + " world")
+                    foo(arg1 = "")
+                    foo(arg1 = "＄{a}")
+                    foo(arg1 = "＄{a} ")
+                    foo(arg1 = ${tripleQuotes}hello${tripleQuotes})
+                  }
+                }
+                """
+          )
+          .indented(),
+      )
+      .issues(ReportsArgumentDetector.ISSUE)
+      .run()
+      .expect(
+        """
+          src/com/example/MyClass.kt:11: Warning: Argument to foo [_UReportsArgumentIssue]
+              foo(arg1 = "hello")
+                         ~~~~~~~
+          src/com/example/MyClass.kt:12: Warning: Argument to foo [_UReportsArgumentIssue]
+              foo(arg1 = "hello" + " world")
+                         ~~~~~~~~~~~~~~~~~~
+          src/com/example/MyClass.kt:13: Warning: Argument to foo [_UReportsArgumentIssue]
+              foo(arg1 = "")
+                         ~~
+          src/com/example/MyClass.kt:14: Warning: Argument to foo [_UReportsArgumentIssue]
+              foo(arg1 = "＄{a}")
+                         ~~~~~~
+          src/com/example/MyClass.kt:15: Warning: Argument to foo [_UReportsArgumentIssue]
+              foo(arg1 = "＄{a} ")
+                         ~~~~~~~
+          src/com/example/MyClass.kt:16: Warning: Argument to foo [_UReportsArgumentIssue]
+              foo(arg1 = ${tripleQuotes}hello${tripleQuotes})
+                         ~~~~~~~~~~~
+          0 errors, 6 warnings
+          """
+      )
+  }
+
+  class ReportsArgumentDetector : Detector(), SourceCodeScanner {
+
+    override fun getApplicableMethodNames() = listOf("foo")
+
+    override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+      val arg = node.getArgumentForParameter(0)
+      context.report(
+        Incident(
+          ISSUE,
+          "Argument to foo",
+          context.getLocation(node.getArgumentForParameter(0)),
+          arg,
+        )
+      )
+    }
+
+    companion object {
+      val ISSUE =
+        Issue.create(
+          "_UReportsArgumentIssue",
+          "Not applicable",
+          "Not applicable",
+          Category.MESSAGES,
+          5,
+          Severity.WARNING,
+          Implementation(ReportsArgumentDetector::class.java, Scope.JAVA_FILE_SCOPE),
+        )
+    }
+  }
+
   fun testSuppressKotlinViaGradleContext() {
     // The ReportsUElementFromGradleContextDetector stores the call to foo() (a UElement) in a field
     // and then reports a Gradle element, but passes the UElement as the scope (so that the user
