@@ -27,6 +27,7 @@ import com.android.build.gradle.tasks.AnalyzeDependenciesTask.VariantDependencie
 import com.android.build.gradle.tasks.ClassFinder
 import com.android.build.gradle.tasks.DependencyUsageFinder
 import com.android.build.gradle.tasks.ResourcesFinder
+import com.android.build.gradle.tasks.extractBuildId
 import com.android.builder.dexing.getSortedRelativePathsInJar
 import com.android.ide.common.resources.usage.getResourcesFromExplodedAarToFile
 import com.android.testutils.TestInputsGenerator
@@ -67,22 +68,6 @@ class AnalyzeDependenciesTaskUtilsTest {
             "com/android/build/gradle/internal/transforms/testdata/CarbonForm.class")
         assertThat(publicClasses).containsExactly(
             "com/android/build/gradle/internal/transforms/testdata/Animal.class")
-    }
-
-    @Test
-    fun testDependenciesHolder() {
-        val dependency1 = FakeDependency("com/library", "Dependency", "1")
-        val dependency2 = FakeDependency("com/example", "AnotherDependency", "2")
-
-        val all = listOf<Dependency>(dependency1, dependency2)
-        val api = listOf<Dependency>(dependency1)
-        val dependenciesHolder = VariantDependenciesHolder(all, api)
-
-        assertThat(dependenciesHolder.buildDependencyId(dependency1))
-                .isEqualTo("com/library:Dependency:1")
-        assertThat(dependenciesHolder.all)
-                .containsExactly("com/library:Dependency:1", "com/example:AnotherDependency:2")
-        assertThat(dependenciesHolder.api).containsExactly("com/library:Dependency:1")
     }
 
     @Test
@@ -309,14 +294,15 @@ class AnalyzeDependenciesTaskUtilsTest {
         TestInputsGenerator.pathWithClasses(jarB, ImmutableList.of<Class<*>>(class2))
         TestInputsGenerator.pathWithClasses(jarC, ImmutableList.of<Class<*>>(class3, class4))
 
+        val id1 = extractBuildId(dependency1)!!
+        val id2 = extractBuildId(dependency2)!!
+        val id3 = extractBuildId(dependency3)!!
         // Add dep1 and dep2 as direct dependencies of test project. Dep1 is transitive
-        val all = listOf<Dependency>(dependency2, dependency3)
-        val api = listOf<Dependency>()
+        val all = setOf<String>(id2, id3)
+        val api = emptySet<String>()
         val variantDependencies = VariantDependenciesHolder(all, api)
 
-        val id1 = variantDependencies.buildDependencyId(dependency1)!!
-        val id2 = variantDependencies.buildDependencyId(dependency2)!!
-        val id3 = variantDependencies.buildDependencyId(dependency3)!!
+
 
         val dependency1Sources = tmp.newFolder("dependencySources-aar1")
         val dependency2Sources = tmp.newFolder("dependencySources-aar2")
@@ -380,8 +366,12 @@ class AnalyzeDependenciesTaskUtilsTest {
         val dependency2 = FakeDependency("com/example", "AnotherDependency", "2")
         val dependency3 = FakeDependency("com/test", "NewDependency", "3")
 
-        val all = listOf<Dependency>(dependency1, dependency3)
-        val api = listOf<Dependency>()
+        val id1 = extractBuildId(dependency1)!!
+        val id2 = extractBuildId(dependency2)!!
+        val id3 = extractBuildId(dependency3)!!
+
+        val all = setOf(id1, id3)
+        val api = emptySet<String>()
         val variantDependencies = VariantDependenciesHolder(all, api)
 
         val jarA = tmp.root.toPath().resolve("A.jar")
@@ -392,10 +382,6 @@ class AnalyzeDependenciesTaskUtilsTest {
         TestInputsGenerator.pathWithClasses(jarA, ImmutableList.of<Class<*>>(class1))
         TestInputsGenerator.pathWithClasses(jarB, ImmutableList.of<Class<*>>(class2))
         TestInputsGenerator.pathWithClasses(jarC, ImmutableList.of<Class<*>>(class3))
-
-        val id1 = variantDependencies.buildDependencyId(dependency1)!!
-        val id2 = variantDependencies.buildDependencyId(dependency2)!!
-        val id3 = variantDependencies.buildDependencyId(dependency3)!!
 
         val dependency1Sources = tmp.newFolder("dependencySources-aar1")
         val dependency2Sources = tmp.newFolder("dependencySources-aar2")
