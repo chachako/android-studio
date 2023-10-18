@@ -103,6 +103,10 @@ java_binary(
 java_test(
     name = "modify_jar_manifest_test",
     srcs = ["testSrc/com/android/tools/binaries/ModifyJarManifestTest.java"],
+    tags = [
+        "ci:studio-mac",
+        "cpu:1",
+    ],
     test_class = "com.android.tools.binaries.ModifyJarManifestTest",
     deps = [
         ":modify_jar_manifest",

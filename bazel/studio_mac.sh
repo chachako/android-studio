@@ -37,7 +37,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=$BAZEL_GOOGLE_APPLICATION_CREDENTIALS
         --host_platform=//tools/base/bazel/platforms:macpro10.13 \
         --build_tag_filters=-no_mac \
         --build_event_binary_file="${dist_dir}/bazel-${build_number}.bes" \
-        --test_tag_filters=-no_mac,-no_test_mac,-ui_test,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate \
+        --test_tag_filters="ci:studio-mac" \
         --tool_tag=${script_name} \
         --remote_upload_local_results \
         --worker_quit_after_build \
@@ -46,11 +46,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=$BAZEL_GOOGLE_APPLICATION_CREDENTIALS
         "${conditional_flags[@]}" \
         -- \
         //tools/... \
-        //tools/base/profiler/native/trace_processor_daemon \
-        -//tools/base/build-system/integration-test/... \
-        -//tools/adt/idea/android-lang:intellij.android.lang.tests_tests \
-        -//tools/adt/idea/profilers-ui:intellij.android.profilers.ui_tests \
-        -//tools/base/build-system/builder:tests.test
+        //tools/base/profiler/native/trace_processor_daemon
 
 readonly bazel_status=$?
 
