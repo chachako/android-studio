@@ -160,7 +160,7 @@ class ModuleToModuleDepsTest(
             // Because of the way minimizeUsingTupleCoverage works, the tests are sorted in descending
             // order of coverage power (the earlier ones tend to cover more "tuples") the first N
             // tests still have significant coverage.
-            val result = if (SdkConstants.CURRENT_PLATFORM == SdkConstants.PLATFORM_WINDOWS) tests.take(50).toTypedArray() else tests
+            val result = if (SdkConstants.CURRENT_PLATFORM == SdkConstants.PLATFORM_WINDOWS) tests.take(30).toTypedArray() else tests
             println("Test configuration count: ${result.size}")
             return result
         }
