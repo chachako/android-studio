@@ -4092,4 +4092,73 @@ class CleanupDetectorTest : AbstractCheckTest() {
             """
       )
   }
+
+  fun test301833844() {
+    lint()
+      .files(
+        kotlin(
+            """
+            @file:Suppress("unused", "MemberVisibilityCanBePrivate")
+
+            package test.pkg
+
+            import android.database.Cursor
+            import android.database.sqlite.SQLiteDatabase
+            import android.database.sqlite.SQLiteOpenHelper
+
+            private const val TABLE_NAME = "TABLE_NAME"
+            private const val COLUMN_NAME = "COLUMN_NAME"
+            private const val COLUMN_VALUE = "COLUMN_VALUE"
+            object AccountID {
+                const val ACCOUNT_UUID_PREFIX = "ACCOUNT_UUID_PREFIX"
+                const val TBL_PROPERTIES = "TBL_PROPERTIES"
+                const val ACCOUNT_UUID = "ACCOUNT_UUID"
+            }
+            class RecycleTest(private val openHelper: SQLiteOpenHelper) {
+                private val properties = mutableMapOf<String,Any>()
+                lateinit var mDB: SQLiteDatabase
+
+                fun getProperty(name: String): Any? {
+                    var value: Any? = properties[name]
+                    if (value == null) {
+                        var cursor: Cursor? = null
+                        val columns: Array<String> = arrayOf(COLUMN_VALUE)
+
+                        synchronized(openHelper as Any) {
+                            mDB = openHelper.readableDatabase
+                            if (name.startsWith(AccountID.ACCOUNT_UUID_PREFIX)) {
+                                val idx: Int = name.indexOf(".")
+                                if (idx == -1) {
+                                    value = name // just return the accountUuid
+                                } else {
+                                    val args: Array<String> = arrayOf(name.substring(0, idx), name.substring(idx + 1))
+                                    cursor = mDB.query(AccountID.TBL_PROPERTIES, columns,
+                                        AccountID.ACCOUNT_UUID + "=? AND " + COLUMN_NAME + "=?",
+                                        args, null, null, null, "1")
+                                }
+                            } else {
+                                cursor = mDB.query(TABLE_NAME, columns,
+                                    "＄COLUMN_NAME=?", arrayOf(name), null, null, null, "1")
+                            }
+
+                            if (cursor != null) {
+                                try {
+                                    if ((cursor!!.count == 1) && cursor!!.moveToFirst()) value = cursor!!.getString(0)
+                                } finally {
+                                    cursor!!.close()
+                                }
+                            }
+                        }
+                        if (value == null) value = System.getProperty(name)
+                    }
+                    return value
+                }
+            }
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }

@@ -546,6 +546,11 @@ abstract class DataFlowAnalyzer(
       val element = node.operand
       if (instances.contains(element)) {
         track(node, element)
+      } else if (element is UReferenceExpression) {
+        val resolved = element.resolve()
+        if (references.contains(resolved)) {
+          track(node, element)
+        }
       }
     }
 

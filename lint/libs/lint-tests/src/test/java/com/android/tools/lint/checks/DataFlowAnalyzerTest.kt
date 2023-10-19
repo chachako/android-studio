@@ -814,6 +814,34 @@ class DataFlowAnalyzerTest : TestCase() {
       .expectClean()
   }
 
+  fun testDoubleBang() {
+    lint()
+      .files(
+        kotlin(
+            """
+            @file:Suppress("unused")
+
+            package test.pkg
+
+            import android.content.Context
+            import android.widget.Toast
+
+            fun doubleBang(context: Context, backup: Toast?) {
+                val toast: Toast? = Toast.makeText(context, "message", Toast.LENGTH_LONG)
+                try {
+                } finally {
+                    toast!!.show()
+                }
+            }
+            """
+          )
+          .indented()
+      )
+      .issues(ToastDetector.ISSUE)
+      .run()
+      .expectClean()
+  }
+
   fun testArgumentCalls() {
     // Make sure we visit the registerReceiver call exactly once
     val parsed =
