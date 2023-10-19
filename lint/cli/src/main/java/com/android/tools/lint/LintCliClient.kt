@@ -427,7 +427,7 @@ open class LintCliClient : LintClient {
   }
 
   /**
-   * Writes a new baseline file.
+   * Writes a baseline file.
    *
    * In the case when [writeEmptyBaseline] is false and there are no incidents, does not write a new
    * baseline file and deletes any existing baseline file.
@@ -439,12 +439,21 @@ open class LintCliClient : LintClient {
    */
   @VisibleForTesting
   fun writeBaselineFile(stats: LintStats, file: File, writeEmptyBaseline: Boolean): Int {
-    val incidents =
-      (driver.baseline?.entriesToWrite?.map { it.incident } ?: definiteIncidents).filter {
-        LintBaseline.shouldBaseline(it.issue.id)
-      }
+    val entries =
+      // If writing to an existing baseline
+      driver.baseline?.entriesToWrite
+        ?:
+        // If creating a new baseline
+        definiteIncidents.map { LintBaseline.ReportedEntry(it) }
 
-    if (writeEmptyBaseline || incidents.isNotEmpty()) {
+    // Sort the entries and check if they belong in baselines
+    val incidentsToWrite =
+      entries
+        .sorted()
+        .filter { LintBaseline.shouldBaseline(it.incident.issue.id) }
+        .map { it.incident }
+
+    if (writeEmptyBaseline || incidentsToWrite.isNotEmpty()) {
       val dir = file.parentFile
       if (dir != null && !dir.isDirectory) {
         if (!dir.mkdirs()) {
@@ -455,7 +464,7 @@ open class LintCliClient : LintClient {
       val reporter = Reporter.createXmlReporter(this, file, XmlFileType.BASELINE)
       reporter.pathVariables = pathVariables.filter(PathVariables::isPrivatePathVariable)
       reporter.setBaselineAttributes(this, baselineVariantName, flags.isCheckDependencies)
-      reporter.write(stats, incidents, driver.registry)
+      reporter.write(stats, incidentsToWrite, driver.registry)
     } else {
       Files.deleteIfExists(file.toPath())
     }

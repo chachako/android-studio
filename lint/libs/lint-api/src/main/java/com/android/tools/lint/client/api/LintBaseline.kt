@@ -559,7 +559,7 @@ class LintBaseline(
    * example the [Location.source] field (but also fields in subclasses of [Location] and
    * [Position]) can reference large data structures like PSI.
    */
-  private class LightLocation(location: Location) {
+  class LightLocation(location: Location) {
     val file: File = location.file
     val line: Int = location.start?.line ?: -1
     val column: Int = location.start?.column ?: -1
@@ -571,11 +571,11 @@ class LintBaseline(
    * write a baseline file (since we need to sort them before writing out the result file, to ensure
    * stable files.)
    */
-  inner class ReportedEntry(val incident: Incident) : Comparable<ReportedEntry> {
-    private val issue: Issue = incident.issue
-    private val project: Project? = incident.project
-    private val location: LightLocation = LightLocation(incident.location)
-    private val message: String = incident.message
+  class ReportedEntry(val incident: Incident) : Comparable<ReportedEntry> {
+    val issue: Issue = incident.issue
+    val project: Project? = incident.project
+    val location: LightLocation = LightLocation(incident.location)
+    val message: String = incident.message
 
     override fun compareTo(other: ReportedEntry): Int {
       // Sort by category, then by priority, then by id,
@@ -644,62 +644,62 @@ class LintBaseline(
 
       return 0
     }
+  }
 
-    /** Given the report of an issue, add it to the baseline being built in the XML writer. */
-    fun write(writer: Writer, client: LintClient) {
-      try {
-        writer.write("\n")
-        indent(writer, 1)
+  /** Given the report of an issue, add it to the baseline being built in the XML writer. */
+  private fun ReportedEntry.write(writer: Writer, client: LintClient) {
+    try {
+      writer.write("\n")
+      indent(writer, 1)
+      writer.write("<")
+      writer.write(TAG_ISSUE)
+      writeAttribute(writer, 2, ATTR_ID, issue.id)
+
+      writeAttribute(writer, 2, ATTR_MESSAGE, message)
+
+      writer.write(">\n")
+      var currentLocation: LightLocation? = location
+      while (currentLocation != null) {
+        //
+        //
+        //
+        // IMPORTANT: Keep this format compatible with the XML report format
+        //            encoded by the XmlReporter! That way XML reports and baseline
+        //            files can be mix & matched. (Compatible=subset.)
+        //
+        //
+        indent(writer, 2)
         writer.write("<")
-        writer.write(TAG_ISSUE)
-        writeAttribute(writer, 2, ATTR_ID, issue.id)
-
-        writeAttribute(writer, 2, ATTR_MESSAGE, message)
-
-        writer.write(">\n")
-        var currentLocation: LightLocation? = location
-        while (currentLocation != null) {
-          //
-          //
-          //
-          // IMPORTANT: Keep this format compatible with the XML report format
-          //            encoded by the XmlReporter! That way XML reports and baseline
-          //            files can be mix & matched. (Compatible=subset.)
-          //
-          //
-          indent(writer, 2)
-          writer.write("<")
-          writer.write(TAG_LOCATION)
-          val path =
-            PrettyPaths.getPath(
-              currentLocation.file,
-              project,
-              client,
-              useUnixPaths = true,
-              tryPathVariables = true,
-              pathVariables = client.pathVariables,
-              preferRelativePathOverPathVariables = false,
-              allowParentRelativePaths = false,
-              preferRelativeOverAbsolute = true
-            )
-          writeAttribute(writer, 3, ATTR_FILE, path)
-          val line = currentLocation.line
-          if (line >= 0 && !omitLineNumbers) {
-            // +1: Line numbers internally are 0-based, report should be
-            // 1-based.
-            writeAttribute(writer, 3, ATTR_LINE, (line + 1).toString())
-          }
-
-          writer.write("/>\n")
-          currentLocation = currentLocation.secondary
+        writer.write(TAG_LOCATION)
+        val path =
+          PrettyPaths.getPath(
+            currentLocation.file,
+            project,
+            client,
+            useUnixPaths = true,
+            tryPathVariables = true,
+            pathVariables = client.pathVariables,
+            preferRelativePathOverPathVariables = false,
+            allowParentRelativePaths = false,
+            preferRelativeOverAbsolute = true
+          )
+        writeAttribute(writer, 3, ATTR_FILE, path)
+        val line = currentLocation.line
+        if (line >= 0 && !omitLineNumbers) {
+          // +1: Line numbers internally are 0-based, report should be
+          // 1-based.
+          writeAttribute(writer, 3, ATTR_LINE, (line + 1).toString())
         }
-        indent(writer, 1)
-        writer.write("</")
-        writer.write(TAG_ISSUE)
-        writer.write(">\n")
-      } catch (ioe: IOException) {
-        client.log(ioe, null)
+
+        writer.write("/>\n")
+        currentLocation = currentLocation.secondary
       }
+      indent(writer, 1)
+      writer.write("</")
+      writer.write(TAG_ISSUE)
+      writer.write(">\n")
+    } catch (ioe: IOException) {
+      client.log(ioe, null)
     }
   }
 
