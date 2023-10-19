@@ -1291,6 +1291,8 @@ public final class SdkConstants {
     public static final String ATTR_PATH = "path";
     public static final String ATTR_PATH_PREFIX = "pathPrefix";
     public static final String ATTR_PATH_PATTERN = "pathPattern";
+    public static final String ATTR_PATH_SUFFIX = "pathSuffix";
+    public static final String ATTR_PATH_ADVANCED_PATTERN = "pathAdvancedPattern";
     public static final String ATTR_ALLOW_BACKUP = "allowBackup";
     public static final String ATTR_DEBUGGABLE = "debuggable";
     public static final String ATTR_READ_PERMISSION = "readPermission";
@@ -1322,6 +1324,8 @@ public final class SdkConstants {
     public static final String ATTR_TASK_AFFINITY = "taskAffinity";
     public static final String ATTR_EXCLUDE_FROM_RECENTS = "excludeFromRecents";
     public static final String ATTR_NO_HISTORY = "noHistory";
+    public static final String ATTR_PRIORITY = "priority";
+    public static final String ATTR_ORDER = "order";
 
     // Attributes: Resources
     public static final String ATTR_ATTR = "attr";
