@@ -28,8 +28,8 @@ iml_module(
 maven_library(
     name = "tools.manifest-merger",
     srcs = glob([
-        "manifest-merger/src/main/java/**/*.kt",
-        "manifest-merger/src/main/java/**/*.java",
+        "manifest-merger/src/main/java/com/android/manifmerger/*.java",
+        "manifest-merger/src/main/java/com/android/manifmerger/*.kt",
     ]),
     coordinates = "com.android.tools.build:manifest-merger",
     notice = "manifest-merger/NOTICE",
@@ -48,11 +48,13 @@ maven_library(
 
 kotlin_test(
     name = "tools.manifest-merger_tests",
-    # TODO: Why are the xml files not under resources?
     srcs = glob([
-        "manifest-merger/src/test/java/**/*.kt",
-        "manifest-merger/src/test/java/**/*.java",
+        "manifest-merger/src/test/java/com/android/manifmerger/*.java",
+        "manifest-merger/src/test/java/com/android/manifmerger/testutils/*.kt",
+        "manifest-merger/src/test/java/com/android/manifmerger/unit/*.kt",
+        "manifest-merger/src/test/java/com/android/manifmerger/*.kt",
     ]),
+    # TODO: Why are the xml files not under resources?
     jvm_flags = ["-Dtest.suite.jar=tools.manifest-merger_tests.jar"],
     resources = glob(
         include = ["manifest-merger/src/test/java/**"],
@@ -272,12 +274,8 @@ maven_repository(
 filegroup(
     name = "agp_gradle_build_files",
     srcs = glob([
-        "src/main/**/*.java",
-        "src/main/**/*.kt",
-        "src/main/resources/**",
-        "manifest-merger/src/main/**/*.java",
-        "manifest-merger/src/main/**/*.kt",
-        "manifest-merger/src/main/resources/**",
+        "manifest-merger/src/main/java/com/android/manifmerger/*.java",
+        "manifest-merger/src/main/java/com/android/manifmerger/*.kt",
     ]) + [
         "docs/build.gradle",
         "manifest-merger/NOTICE",
