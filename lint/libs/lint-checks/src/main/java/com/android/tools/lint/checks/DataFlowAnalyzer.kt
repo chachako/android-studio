@@ -35,9 +35,12 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiPrimitiveType
 import com.intellij.psi.PsiVariable
+import org.jetbrains.kotlin.asJava.unwrapped
 import org.jetbrains.kotlin.psi.KtCallableReferenceExpression
 import org.jetbrains.kotlin.psi.KtConstructor
+import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtSecondaryConstructor
+import org.jetbrains.kotlin.psi.psiUtil.isExtensionDeclaration
 import org.jetbrains.uast.UArrayAccessExpression
 import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UBinaryExpressionWithType
@@ -337,6 +340,18 @@ abstract class DataFlowAnalyzer(
           as? ULambdaExpression
       if (lambda != null) {
         handleLambdaSuffix(lambda, node)
+      }
+
+      val resolved = node.resolve()
+      if (resolved != null) {
+        val unwrapped = resolved.unwrapped
+        if (unwrapped is KtNamedFunction) {
+          if (unwrapped.isExtensionDeclaration()) {
+            // The value is really escaping into an extension function.
+            // (TODO: Consider flowing into the method and looking?)
+            argument(node, receiver ?: node)
+          }
+        }
       }
     }
     return super.visitCallExpression(node)

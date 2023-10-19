@@ -2238,20 +2238,21 @@ class CleanupDetectorTest : AbstractCheckTest() {
       .files(
         kotlin(
             """
-                package test.pkg;
+                package test.pkg
 
-                import android.content.ContentResolver;
-                import android.database.Cursor;
-                import android.net.Uri;
+                import android.content.ContentResolver
+                import android.database.Cursor
+                import android.net.Uri
 
                 fun test(resolver: ContentResolver, uri: Uri, projection: Array<String>) {
-                    resolver.query(uri, projection, null, null, null).use { cursor -> // OK
+                    resolver.query(uri, projection, null, null, null).use { cursor -> // OK 1
                         cursor.moveToNext()
                     }
-
-                    resolver.query(uri, projection, null, null, null).use() // ERROR
-
-                    resolver.query(uri, projection, null, null, null).use(1) // ERROR
+                    // The below are okay; they're not the right signature for the built-in use method,
+                    // but as extension functions the tracked instance flows into it (as the "this" argument)
+                    // and it's possible that it handles closing on its own.
+                    resolver.query(uri, projection, null, null, null).use() // OK 2
+                    resolver.query(uri, projection, null, null, null).use(1) // OK 3
                 }
 
                 // These use() functions don't have a matching signature
@@ -2265,17 +2266,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
           .indented()
       )
       .run()
-      .expect(
-        """
-            src/test/pkg/test.kt:12: Warning: This Cursor should be freed up after use with #close() [Recycle]
-                resolver.query(uri, projection, null, null, null).use() // ERROR
-                         ~~~~~
-            src/test/pkg/test.kt:14: Warning: This Cursor should be freed up after use with #close() [Recycle]
-                resolver.query(uri, projection, null, null, null).use(1) // ERROR
-                         ~~~~~
-            0 errors, 2 warnings
-            """
-      )
+      .expectClean()
   }
 
   fun test117794883() {
@@ -4153,6 +4144,107 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                     return value
                 }
+            }
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun test306123911_example1() {
+    lint()
+      .files(
+        kotlin(
+            """
+            @file:Suppress("unused", "UnusedReceiverParameter", "UNUSED_PARAMETER")
+
+            package test.pkg
+
+            import android.animation.Animator
+            import android.animation.AnimatorSet
+
+            fun test(
+                animators: List<Animator>,
+                onStart: (() -> Unit)?,
+                onEnd: ((Boolean) -> Unit)
+            ) {
+                val chainSet = AnimatorSet().apply { playSequentially(animators) }
+                chainSet.start(onStart, onEnd)
+            }
+
+
+            private fun Animator.start(
+                onStart: (() -> Unit)? = null,
+                onEnd: ((Boolean) -> Unit)? = null
+            ): Animator = TODO()
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun test306123911_example2() {
+    lint()
+      .files(
+        kotlin(
+            """
+            @file:Suppress("unused")
+
+            package test.pkg
+
+            import android.content.Context
+            import android.content.res.TypedArray
+            import android.util.TypedValue
+
+            fun <R> TypedArray.withRecycle(block: TypedArray.() -> R): R =
+                try {
+                    block()
+                } finally {
+                    recycle()
+                }
+
+            fun Context.obtainStyleFromAttr(attrRes: Int): Int =
+                obtainStyledAttributes(TypedValue().data, intArrayOf(attrRes)).withRecycle {
+                    getResourceId(
+                        0,
+                        0
+                    )
+                }
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun test306123911_example7() {
+    lint()
+      .files(
+        kotlin(
+            """
+            @file:Suppress("unused")
+
+            package test.pkg
+
+            import android.animation.ObjectAnimator
+            import android.annotation.TargetApi
+            import android.os.Build
+            import android.view.View
+
+            @TargetApi(Build.VERSION_CODES.P)
+            private fun startEnterAnimation(root: View, id: Int) {
+                val shelf = root.requireViewById<View>(id)
+                ObjectAnimator.ofFloat(shelf, "translationY", shelf.height.toFloat(), 0f)
+                    .startWithDefaultConfig()
+            }
+
+            private fun ObjectAnimator.startWithDefaultConfig() {
+                start()
             }
             """
           )
