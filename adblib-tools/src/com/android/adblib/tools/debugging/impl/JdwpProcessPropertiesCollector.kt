@@ -255,14 +255,14 @@ internal class JdwpProcessPropertiesCollector(
 
         // `HELO` packet is a reply to the `HELO` command we sent to the VM
         if (jdwpPacket.isReply && jdwpPacket.id == commands.heloCommand.id) {
-            collectState.heloReplyReceived = true
             processHeloReply(collectState, jdwpPacket, workBuffer)
+            collectState.heloReplyReceived = true
         }
 
         // `FEAT` packet is a reply to the `FEAT` command we sent to the VM
         if (jdwpPacket.isReply && jdwpPacket.id == commands.featCommand.id) {
-            collectState.featReplyReceived = true
             processFeatReply(collectState, jdwpPacket, workBuffer)
+            collectState.featReplyReceived = true
         }
 
         // `WAIT`, `APNM`, and `STAG` are DDMS chunks embedded in a JDWP command packet sent from
@@ -274,8 +274,8 @@ internal class JdwpProcessPropertiesCollector(
             jdwpPacket.ddmsChunks().collect { chunk ->
                 when (chunk.type) {
                     DdmsChunkType.WAIT -> {
-                        collectState.waitReceived = true
                         processWaitCommand(collectState, chunk.clone(), workBuffer)
+                        collectState.waitReceived = true
                     }
 
                     DdmsChunkType.APNM -> {
@@ -525,7 +525,7 @@ internal class JdwpProcessPropertiesCollector(
         val featCommand: JdwpPacketView,
     )
 
-    class CollectState(val propertiesFlow: AtomicStateFlow<JdwpProcessProperties>) {
+    private class CollectState(val propertiesFlow: AtomicStateFlow<JdwpProcessProperties>) {
 
         var heloReplyReceived = false
         var featReplyReceived = false
