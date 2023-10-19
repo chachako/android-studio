@@ -369,6 +369,47 @@ class CmakeBasicProjectTest(
         project.buildResult.assertConfigurationCacheHit()
     }
 
+    @Test
+    fun `bug 262077903 tolerate deleted intermediate CMakeLists`() {
+        Assume.assumeTrue(mode == Mode.CMake)  // This is a CMake-only test
+        val destinationRoot = project.buildFile.parentFile
+
+        // Step 1 -- configure a CMake project that refers to a nested CMakeLists.txt
+        val cmakeLists = destinationRoot.resolve("CMakeLists.txt")
+        val cmakeListsOriginalContent = cmakeLists.readText()
+        cmakeLists.writeText(
+            """
+            cmake_minimum_required(VERSION 3.4.1)
+            project(Test)
+            add_subdirectory(nested-a)
+            """.trimIndent()
+        )
+        val nestedACMakeLists = destinationRoot.resolve("nested-a/CMakeLists.txt")
+        nestedACMakeLists.parentFile.mkdirs()
+        nestedACMakeLists.writeText(
+            """
+            cmake_minimum_required(VERSION 3.4.1)
+            project(NestedA)
+            add_library(native-lib SHARED nested-a.cpp)
+            """.trimIndent()
+        )
+        val nestedAcpp = nestedACMakeLists.resolveSibling("nested-a.cpp")
+        nestedAcpp.writeText(
+            """
+            void f() { }
+            """.trimIndent()
+        )
+        project.execute("configureCMakeDebug[armeabi-v7a]")
+
+        // Step 2 -- Change to root CMakeLists.txt so that it no longer refers to the nested CMakeLists.txt
+        // Also, delete the nested CMakeLists.txt.
+        // Before the bug fix, the following configureCMakeDebug would issue an error like:
+        // [CXX1409] ...\android_gradle_build.json debug|armeabi-v7a : expected buildFiles file 'nested-a\CMakeLists.txt' to exist
+        cmakeLists.writeText(cmakeListsOriginalContent)
+        nestedACMakeLists.delete()
+        project.execute("configureCMakeDebug[armeabi-v7a]")
+    }
+
     // Regression test for b/179062268
     @Test
     fun `check clean task and extract proguard files task run together`() {
