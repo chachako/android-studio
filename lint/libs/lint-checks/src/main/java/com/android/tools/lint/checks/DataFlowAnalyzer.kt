@@ -109,7 +109,12 @@ abstract class DataFlowAnalyzer(
   /** The instance being tracked is being stored into an array. */
   open fun array(array: UArrayAccessExpression) {}
 
-  /** The instance being tracked is being passed in a method call. */
+  /**
+   * The instance being tracked is being passed in a method call, where [call] is the method call
+   * node, and the [reference] is the argument to the call which is passing the tracked instance.
+   * (In some cases, it can also be a [UCallableReferenceExpression] where the method reference is
+   * invoked in this call and the reference has captured one of the tracked instances.)
+   */
   open fun argument(call: UCallExpression, reference: UElement) {}
 
   /** Whether there were one or more resolve failures */
@@ -342,6 +347,17 @@ abstract class DataFlowAnalyzer(
           as? ULambdaExpression
       if (lambda != null) {
         handleLambdaSuffix(lambda, node)
+      }
+
+      if (isScopingIt(node)) {
+        val arguments = node.valueArguments
+        if (arguments.size == 1) {
+          val arg = arguments[0]
+          if (arg is UCallableReferenceExpression && arg.qualifierExpression == null) {
+            // target.let(::method) -> here target is being passed as a parameter to the method
+            argument(node, receiver ?: arg)
+          }
+        }
       }
 
       val resolved = node.resolve()

@@ -4266,6 +4266,50 @@ class CleanupDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
+  fun test306123911_example4() {
+    lint()
+      .files(
+        kotlin(
+            """
+            @file:Suppress("unused")
+
+            package test.pkg
+
+            import android.annotation.TargetApi
+            import android.content.Context
+            import android.database.Cursor
+            import android.net.Uri
+            import android.os.Build.VERSION_CODES
+            import android.os.Bundle
+
+            class MetadataCursorFactory(private val context: Context) {
+                @TargetApi(VERSION_CODES.O)
+                fun ofList(
+                    contentUri: Uri,
+                ): MetadataCursor? {
+                    val projection = emptyArray<String>()
+                    return context.contentResolver.query(contentUri, projection, Bundle(), null)
+                            ?.let(::MetadataCursor)
+                }
+
+                fun ofListWithLambda(
+                    contentUri: Uri,
+                ): MetadataCursor? {
+                    val projection = emptyArray<String>()
+                    return context.contentResolver.query(contentUri, projection, Bundle(), null)
+                        ?.let { MetadataCursor(it) }
+                }
+            }
+
+            data class MetadataCursor(private val cursor: Cursor) : Cursor by cursor
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
+
   fun test306123911_example7() {
     lint()
       .files(
