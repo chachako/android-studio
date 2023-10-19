@@ -17,7 +17,10 @@
 package com.android.tools.lint.checks
 
 import com.android.tools.lint.checks.infrastructure.TestMode
+import com.android.tools.lint.client.api.LintBaseline
 import com.android.tools.lint.detector.api.Detector
+import java.io.File
+import org.junit.Assert.assertTrue
 import org.junit.ComparisonFailure
 
 class TypedefDetectorTest : AbstractCheckTest() {
@@ -2216,5 +2219,38 @@ class TypedefDetectorTest : AbstractCheckTest() {
       )
       .run()
       .expectClean()
+  }
+
+  fun testTolerateConstantChangesInBaselines() {
+    // The set of constants typically evolve over time; try to tolerate these changes.
+    // The common scenario is that new constants are matched, so allow skipping extra
+    // constants in the new message
+    // (This might be a good one to move over to TypedefDetector!
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
+    assertTrue(
+      baseline.sameMessage(
+        TypedefDetector.TYPE_DEF,
+        "Must be one of: IntDefTest.STYLE_NORMAL, IntDefTest.NEW_CONSTANT, IntDefTest.NEW_CONSTANT_2, IntDefTest.STYLE_NO_TITLE, IntDefTest.STYLE_NO_FRAME, IntDefTest.STYLE_NO_INPUT",
+        "Must be one of: IntDefTest.STYLE_NORMAL, IntDefTest.STYLE_NO_TITLE, IntDefTest.STYLE_NO_FRAME, IntDefTest.STYLE_NO_INPUT"
+      )
+    )
+
+    // Don't match unrelated items (this is the case if the new constants is not a super set of the
+    // old ones
+    assertFalse(
+      baseline.sameMessage(
+        TypedefDetector.TYPE_DEF,
+        "Must be one of: IntDefTest.STYLE_NO_TITLE, IntDefTest.STYLE_NO_FRAME, IntDefTest.STYLE_NO_INPUT",
+        "Must be one of: IntDefTest.STYLE_NORMAL, IntDefTest.STYLE_NO_TITLE, IntDefTest.STYLE_NO_FRAME, IntDefTest.STYLE_NO_INPUT",
+      )
+    )
+
+    assertFalse(
+      baseline.sameMessage(
+        TypedefDetector.TYPE_DEF,
+        "Flag not allowed here",
+        "Must be one of: IntDefTest.STYLE_NORMAL, IntDefTest.STYLE_NO_TITLE, IntDefTest.STYLE_NO_FRAME, IntDefTest.STYLE_NO_INPUT",
+      )
+    )
   }
 }

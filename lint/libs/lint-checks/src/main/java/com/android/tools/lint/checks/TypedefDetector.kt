@@ -754,6 +754,46 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     return sb.toString()
   }
 
+  /**
+   * Match messages from this detector in the baseline. Over time, the set of constants included by
+   * a typedef can change, and these are included in the error message. That makes the baseline
+   * messages stop matching in the baselines.
+   *
+   * To deal with this we don't want to just ignore the constant list; instead, we'll match them as
+   * long as the new message contains all the constants in the old message plus some extra ones.
+   * This generally works because typedefs tend to add constant, not remove them. We can live with
+   * the occasional mismatched baseline messages if an API ever does this since it's rare.
+   */
+  override fun sameMessage(issue: Issue, new: String, old: String): Boolean {
+    // Make sure the prefix up to ':' matches (e.g. we won't match a change from "Must be one of" to
+    // "Must be one or more of", or match with a non-constant-list message like "Flag not allowed
+    // here")
+    val oldListStart = old.indexOf(": ")
+    val newListStart = new.indexOf(": ")
+    if (oldListStart != newListStart || !new.regionMatches(0, old, 0, newListStart)) {
+      return false
+    }
+
+    val oldList = old.substring(oldListStart + 2).split(", ")
+    val newList = new.substring(oldListStart + 2).split(", ")
+
+    var j = 0
+    for (element in oldList) {
+      val oldConstant = element.trim()
+      if (j == newList.size) {
+        return false
+      }
+      while (j < newList.size) {
+        val newConstant = newList[j++].trim()
+        if (oldConstant == newConstant) {
+          break
+        }
+      }
+    }
+
+    return true
+  }
+
   companion object {
     private val IMPLEMENTATION = Implementation(TypedefDetector::class.java, Scope.JAVA_FILE_SCOPE)
 

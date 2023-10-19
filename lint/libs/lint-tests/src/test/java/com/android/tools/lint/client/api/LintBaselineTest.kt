@@ -26,6 +26,7 @@ import com.android.tools.lint.MainTest
 import com.android.tools.lint.checks.AccessibilityDetector
 import com.android.tools.lint.checks.ApiDetector
 import com.android.tools.lint.checks.BuiltinIssueRegistry
+import com.android.tools.lint.checks.FontDetector
 import com.android.tools.lint.checks.HardcodedValuesDetector
 import com.android.tools.lint.checks.IconDetector
 import com.android.tools.lint.checks.LayoutConsistencyDetector
@@ -65,6 +66,7 @@ import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Severity
 import com.android.utils.XmlUtils
 import com.google.common.truth.Truth.assertThat
+import java.io.File
 import junit.framework.TestCase.assertEquals
 import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlin.incremental.createDirectory
@@ -75,7 +77,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.io.File
 
 class LintBaselineTest {
   @get:Rule var temporaryFolder = TemporaryFolder()
@@ -394,6 +395,14 @@ class LintBaselineTest {
         LocaleFolderDetector.GET_LOCALES,
         "The app will crash on platforms older than v21 (minSdkVersion is 9) because AssetManager#getLocales is called and it contains one or more v21-style (3-letter or BCP47 locale) folders: values-b+kok+IN, values-fil",
         "The app will crash on platforms older than v21 (minSdkVersion is 10) because AssetManager#getLocales is called and it contains one or more v21-style (3-letter or BCP47 locale) folders: values-b+kok+IN, values-fil"
+      )
+    )
+
+    assertTrue(
+      baseline.sameMessage(
+        FontDetector.FONT_VALIDATION,
+        "For minSdkVersion=27 only app: attributes should be used",
+        "For minSdkVersion=100 only app: attributes should be used"
       )
     )
   }

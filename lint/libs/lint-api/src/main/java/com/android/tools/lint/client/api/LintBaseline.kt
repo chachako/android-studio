@@ -370,6 +370,8 @@ class LintBaseline(
       "OverrideAbstract",
       "GetLocales" ->
         stringsEquivalent(old, new) { s, i -> s.tokenPrecededBy("minSdkVersion is ", i) }
+      "FontValidation" ->
+        stringsEquivalent(old, new) { s, i -> s.tokenPrecededBy("minSdkVersion", i, '=') }
       "RestrictedApi" -> {
         val index1 = old.indexOf('(')
         val index2 = new.indexOf('(')
@@ -997,13 +999,14 @@ class LintBaseline(
       }
     }
 
-    fun String.tokenPrecededBy(prev: String, offset: Int): Boolean {
+    fun String.tokenPrecededBy(prev: String, offset: Int, separator: Char = ' '): Boolean {
       if (offset < 0 || offset >= this.length) {
         throw IndexOutOfBoundsException("index: $offset, size: ${this.length}")
       }
       var i = offset
       // Move back to the start of the current token at offset.
-      while (i > 0 && !this[i].isWhitespace() && !this[i - 1].isWhitespace()) {
+      // For backwards compatibility also handle trailing whitespace in [prev].
+      while (i > 0 && this[i] != separator && this[i - 1] != ' ') {
         i--
       }
       i -= prev.length
