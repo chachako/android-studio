@@ -50,6 +50,7 @@ import org.jetbrains.uast.UCallableReferenceExpression
 import org.jetbrains.uast.UDeclarationsExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
+import org.jetbrains.uast.UExpressionList
 import org.jetbrains.uast.UField
 import org.jetbrains.uast.UIfExpression
 import org.jetbrains.uast.ULabeledExpression
@@ -73,6 +74,7 @@ import org.jetbrains.uast.UYieldExpression
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.getQualifiedParentOrThis
 import org.jetbrains.uast.kotlin.KotlinPostfixOperators
+import org.jetbrains.uast.kotlin.kinds.KotlinSpecialExpressionKinds
 import org.jetbrains.uast.skipParenthesizedExprDown
 import org.jetbrains.uast.skipParenthesizedExprUp
 import org.jetbrains.uast.toUElement
@@ -375,6 +377,22 @@ abstract class DataFlowAnalyzer(
     }
 
     super.afterVisitCallExpression(node)
+  }
+
+  override fun afterVisitExpressionList(node: UExpressionList) {
+    @Suppress("UnstableApiUsage")
+    if (node.kind == KotlinSpecialExpressionKinds.ELVIS) {
+      for (expression in node.expressions) {
+        if (instances.contains(expression)) {
+          track(node, expression)
+        } else if (
+          expression is UReferenceExpression && references.contains(expression.resolve())
+        ) {
+          track(node, expression)
+        }
+      }
+    }
+    super.afterVisitExpressionList(node)
   }
 
   override fun visitCallableReferenceExpression(node: UCallableReferenceExpression): Boolean {

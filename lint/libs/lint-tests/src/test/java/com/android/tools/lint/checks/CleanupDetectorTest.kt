@@ -4222,6 +4222,50 @@ class CleanupDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
+  fun test306123911_example3() {
+    lint()
+      .files(
+        kotlin(
+            """
+            @file:Suppress("unused")
+
+            package test.pkg
+
+            import android.content.Context
+            import android.net.Uri
+            import java.io.InputStream
+            import java.net.URL
+
+            fun test(context: Context, xitsUrl: URL?, xitsSourceUri: Uri) {
+                // Load from network or content resolver.
+                loadFont {
+                    xitsUrl?.openStream()
+                        ?: context.contentResolver.openInputStream(xitsSourceUri)
+                        ?: throw IllegalArgumentException("Can't read URI")
+                }
+            }
+
+            private fun loadFont(
+                inputStreamProvider: () -> InputStream?
+            ) {
+                try {
+                    // Load the font and save it to cache.
+                    inputStreamProvider().use {
+                        //readFromInputStream(it)
+                        // Do something
+                    }
+                } catch (tr: Throwable) {
+                    // Failed to get the file from network.
+                }
+            }
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
+
   fun test306123911_example7() {
     lint()
       .files(

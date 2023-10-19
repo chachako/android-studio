@@ -814,6 +814,42 @@ class DataFlowAnalyzerTest : TestCase() {
       .expectClean()
   }
 
+  fun testElvis() {
+    lint()
+      .files(
+        kotlin(
+            """
+            @file:Suppress("unused")
+
+            package test.pkg
+
+            import android.content.Context
+            import android.widget.Toast
+
+            fun elvis(context: Context, backup: Toast?) {
+                val toast = backup ?: Toast.makeText(context, "message", Toast.LENGTH_LONG)
+                toast.show()
+            }
+
+            fun elvis2(context: Context, backup: Toast?) {
+                val newToast = Toast.makeText(context, "message", Toast.LENGTH_LONG)
+                val toast = backup ?: newToast
+                toast.show()
+            }
+
+            fun ifElse(context: Context, backup: Toast?) {
+                val toast = if (backup != null) backup else Toast.makeText(context, "message", Toast.LENGTH_LONG)
+                toast.show()
+            }
+            """
+          )
+          .indented()
+      )
+      .issues(ToastDetector.ISSUE)
+      .run()
+      .expectClean()
+  }
+
   fun testDoubleBang() {
     lint()
       .files(
