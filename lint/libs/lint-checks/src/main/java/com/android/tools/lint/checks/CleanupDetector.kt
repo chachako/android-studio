@@ -224,7 +224,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
           evaluator.extendsClass(containingClass, CONTENT_RESOLVER_CLS, false) ||
             evaluator.extendsClass(containingClass, CONTENT_PROVIDER_CLIENT_CLS, false)
         ) {
-          checkRecycled(context, node, ASSET_FILE_DESCRIPTOR_CLS, CLOSE)
+          checkRecycled(context, node, ASSET_FILE_DESCRIPTOR_CLS, CLOSE, CLOSE_WITH_ERROR)
         }
       OPEN_FILE,
       OPEN_FILE_DESCRIPTOR ->
@@ -236,11 +236,11 @@ class CleanupDetector : Detector(), SourceCodeScanner {
         }
       OPEN_INPUT_STREAM ->
         if (evaluator.extendsClass(containingClass, CONTENT_RESOLVER_CLS, false)) {
-          checkRecycled(context, node, INPUT_STREAM_CLS, CLOSE)
+          checkRecycled(context, node, CLOSEABLE_CLS, CLOSE)
         }
       OPEN_OUTPUT_STREAM ->
         if (evaluator.extendsClass(containingClass, CONTENT_RESOLVER_CLS, false)) {
-          checkRecycled(context, node, OUTPUT_STREAM_CLS, CLOSE)
+          checkRecycled(context, node, CLOSEABLE_CLS, CLOSE)
         }
       OF_INT,
       OF_ARGB,
@@ -250,11 +250,9 @@ class CleanupDetector : Detector(), SourceCodeScanner {
         val returnType = method.returnType
         if (returnType is PsiClassType) {
           when (val type = returnType.canonicalText) {
-            "android.animation.AnimatorSet",
-            "android.animation.ValueAnimator",
-            "android.animation.ObjectAnimator" -> {
-              checkRecycled(context, node, type, START)
-            }
+            ANIMATOR_SET_CLS -> checkRecycled(context, node, type, START)
+            VALUE_ANIMATOR_CLS,
+            OBJECT_ANIMATOR_CLS -> checkRecycled(context, node, VALUE_ANIMATOR_CLS, START)
           }
         }
       }
@@ -264,7 +262,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
   private fun checkRecycled(
     context: JavaContext,
     node: UCallExpression,
-    recycleType: String,
+    originalRecycleType: String,
     vararg recycleNames: String
   ) {
     // If it's an AutoCloseable in a try-with-resources clause, don't flag it: these will be
@@ -279,6 +277,8 @@ class CleanupDetector : Detector(), SourceCodeScanner {
     }
 
     val method = node.getParentOfType(UMethod::class.java) ?: return
+
+    val recycleTypes: MutableList<String> = mutableListOf(originalRecycleType)
 
     val visitor =
       object : TargetMethodDataFlowAnalyzer(setOf(node), emptyList()) {
@@ -309,18 +309,25 @@ class CleanupDetector : Detector(), SourceCodeScanner {
             }
           }
 
-          if (method != null) {
-            val containingClass = method.containingClass
-            val targetName = containingClass?.qualifiedName ?: return true
-            if (targetName == recycleType) {
-              return true
-            }
-            val recycleClass = context.evaluator.findClass(recycleType) ?: return true
-            return context.evaluator.extendsClass(recycleClass, targetName, false)
-          } else {
+          if (method == null) {
             // Unresolved method call -- assume it's okay
             return true
           }
+
+          val containingClass = method.containingClass
+          val targetName = containingClass?.qualifiedName ?: return true
+          for (recycleType in recycleTypes) {
+            if (targetName == recycleType) {
+              return true
+            }
+          }
+          for (recycleType in recycleTypes) {
+            if (context.evaluator.extendsClass(containingClass, recycleType)) {
+              return true
+            }
+          }
+
+          return false
         }
 
         override fun visitTryExpression(node: UTryExpression): Boolean {
@@ -346,7 +353,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
 
         override fun argument(call: UCallExpression, reference: UElement) {
           // Special case
-          if (recycleType == SURFACE_TEXTURE_CLS && call.isConstructorCall()) {
+          if (recycleTypes.contains(SURFACE_TEXTURE_CLS) && call.isConstructorCall()) {
             val resolved = call.resolve()
             if (resolved != null && context.evaluator.isMemberInClass(resolved, SURFACE_CLS)) {
               return
@@ -356,9 +363,21 @@ class CleanupDetector : Detector(), SourceCodeScanner {
           // Special case: MotionEvent.obtain(MotionEvent): passing in an
           // event here does not recycle the event, and we also know it
           // doesn't escape
-          if (OBTAIN == getMethodName(call)) {
+          val methodName = getMethodName(call) ?: ""
+          if (methodName == OBTAIN) {
             val resolved = call.resolve()
             if (context.evaluator.isMemberInClass(resolved, MOTION_EVENT_CLS)) {
+              return
+            }
+          } else if (
+            methodName == "source" ||
+              methodName == "sink" ||
+              methodName == "buffer" ||
+              // hashingSink, hashingSource, cipherSink, etc.
+              methodName.endsWith("Source") ||
+              methodName.endsWith("Sink")
+          ) {
+            if (call.resolve()?.containingClass?.qualifiedName == "okio.Okio") {
               return
             }
           }
@@ -368,34 +387,42 @@ class CleanupDetector : Detector(), SourceCodeScanner {
 
         private fun UCallExpression.name(): String? = methodName ?: methodIdentifier?.name
 
+        private fun addRecycleType(type: String): Boolean {
+          if (!recycleTypes.contains(type)) {
+            recycleTypes.add(type)
+          }
+          return true
+        }
+
         override fun returnsSelf(call: UCallExpression): Boolean {
           val returnsSelf = super.returnsSelf(call)
           if (returnsSelf) {
             return true
           }
-          when (recycleType) {
+          when (originalRecycleType) {
             ASSET_FILE_DESCRIPTOR_CLS -> {
               return when (call.name()) {
-                "getParcelFileDescriptor",
-                "createInputStream",
-                "createOutputStream",
-                "getFileDescriptor" -> true
+                "getParcelFileDescriptor" -> addRecycleType(PARCEL_FILE_DESCRIPTOR_CLS)
+                "createInputStream" -> addRecycleType(FILE_INPUT_STREAM_CLS)
+                "createOutputStream" -> addRecycleType(FILE_OUTPUT_STREAM_CLS)
+                "getFileDescriptor" -> addRecycleType(FILE_DESCRIPTOR_CLS)
                 else -> false
               }
             }
             PARCEL_FILE_DESCRIPTOR_CLS -> {
               return when (call.name()) {
-                "getFileDescriptor",
+                "getFileDescriptor" -> addRecycleType(FILE_DESCRIPTOR_CLS)
                 "detachFd" -> true
                 else -> false
               }
             }
-            INPUT_STREAM_CLS,
-            OUTPUT_STREAM_CLS -> {
+            CLOSEABLE_CLS -> {
               val callName = call.name() ?: return false
               // For okio, treat input streams as sources and output streams as sinks
               // such that calling stream.source().use { } treats the stream as used.
               if (callName == "source" || callName == "sink") {
+                // We don't need to add recycle types here because these okio.Okio
+                // interfaces also implement Closeable.
                 return call.resolve()?.containingClass?.qualifiedName == "okio.Okio"
               }
             }
@@ -409,18 +436,14 @@ class CleanupDetector : Detector(), SourceCodeScanner {
       return
     }
 
-    val className = recycleType.substring(recycleType.lastIndexOf('.') + 1)
+    val className =
+      node.returnType?.canonicalText?.substringAfterLast(".")
+        ?: originalRecycleType.substringAfterLast(".")
     val message =
       when (val recycleName = recycleNames.first()) {
-        RECYCLE -> {
-          "This `$className` should be recycled after use with `#recycle()`"
-        }
-        START -> {
-          "This animation should be started with `#start()`"
-        }
-        else -> {
-          "This `$className` should be freed up after use with `#$recycleName()`"
-        }
+        RECYCLE -> "This `$className` should be recycled after use with `#recycle()`"
+        START -> "This animation should be started with `#start()`"
+        else -> "This `$className` should be freed up after use with `#$recycleName()`"
       }
 
     var locationNode: UElement? = node.methodIdentifier
@@ -799,8 +822,10 @@ class CleanupDetector : Detector(), SourceCodeScanner {
     private const val ANDROID_CONTENT_SHARED_PREFERENCES_EDITOR =
       "android.content.SharedPreferences.Editor"
     private const val ASSET_FILE_DESCRIPTOR_CLS = "android.content.res.AssetFileDescriptor"
-    private const val INPUT_STREAM_CLS = "java.io.InputStream"
-    private const val OUTPUT_STREAM_CLS = "java.io.OutputStream"
+    private const val CLOSEABLE_CLS = "java.io.Closeable"
+    private const val FILE_INPUT_STREAM_CLS = "java.io.FileInputStream"
+    private const val FILE_OUTPUT_STREAM_CLS = "java.io.FileOutputStream"
+    private const val FILE_DESCRIPTOR_CLS = "java.io.FileDescriptor"
     private const val PARCEL_FILE_DESCRIPTOR_CLS = "android.os.ParcelFileDescriptor"
 
     /** Returns the variable the expression is assigned to, if any. */

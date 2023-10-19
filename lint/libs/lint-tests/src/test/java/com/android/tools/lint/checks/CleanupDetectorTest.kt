@@ -2578,6 +2578,11 @@ class CleanupDetectorTest : AbstractCheckTest() {
                         fadeAnim = ofFloat(v, "alpha", 1.0f, 0f)
                         fadeAnim.start()
                     }
+
+                    fun setViewVisibility4(v: View) {
+                        val fadeAnim = ObjectAnimator.ofFloat(v, "alpha", 1.0f, 0f)
+                        fadeAnim.start()
+                    }
                 }
                 """
           )
@@ -3404,74 +3409,139 @@ class CleanupDetectorTest : AbstractCheckTest() {
       .files(
         kotlin(
             """
-                package test.pkg
+            package test.pkg
 
-                import android.content.ContentResolver
-                import android.net.Uri
-                import okio.buffer
-                import okio.source
-                import java.io.FileNotFoundException
+            import android.content.ContentResolver
+            import android.net.Uri
+            import okio.buffer
+            import okio.source
+            import java.io.FileNotFoundException
 
-                fun testInput(contentResolver: ContentResolver, uri: Uri) {
-                    val inputStream = contentResolver.openInputStream(uri) ?: throw FileNotFoundException()
-                    inputStream.source().buffer().use { input -> }
-                }
-                """
+            // Make sure we also have a true *positive* test; after we started
+            // correctly handling extension methods the value escapes via
+            // inputStream.source() so we'd no longer flag okio calls
+            // without close/use either!
+            fun testError(contentResolver: ContentResolver, uri: Uri) {
+                val inputStream = contentResolver.openInputStream(uri)  // ERROR: not closed!
+                    ?: throw FileNotFoundException()
+                inputStream.source().buffer()
+            }
+            """
           )
           .indented(),
         kotlin(
             """
-                package test.pkg
+            package test.pkg
 
-                import android.content.ContentResolver
-                import android.net.Uri
-                import okio.buffer
-                import okio.sink
-                import java.io.FileNotFoundException
+            import android.content.ContentResolver
+            import android.net.Uri
+            import okio.buffer
+            import okio.source
+            import java.io.FileNotFoundException
 
-                fun testOutput(contentResolver: ContentResolver, uri: Uri) {
-                    val outputStream = contentResolver.openOutputStream(uri) ?: throw FileNotFoundException()
-                    outputStream.sink().buffer().use { output ->
-                    }
-                }
-                """
+            fun testInput(contentResolver: ContentResolver, uri: Uri) {
+                val inputStream = contentResolver.openInputStream(uri) ?: throw FileNotFoundException() // OK 1
+                inputStream.source().buffer().use { input -> }
+            }
+            """
           )
           .indented(),
         kotlin(
             """
-                // Okio stubs
-                @file:JvmName("Okio")
-                package okio
+            package test.pkg
 
-                import java.io.Closeable
-                import java.io.InputStream
-                import java.io.OutputStream
+            import android.content.ContentResolver
+            import android.net.Uri
+            import okio.buffer
+            import okio.sink
+            import java.io.FileNotFoundException
 
-                interface Source : Closeable {
-                    override fun close() { }
+            fun testOutput(contentResolver: ContentResolver, uri: Uri) {
+                val outputStream = contentResolver.openOutputStream(uri) ?: throw FileNotFoundException() // OK 2
+                outputStream.sink().buffer().use { output ->
                 }
-                interface BufferedSource : Source
-                class RealBufferedSource(source: Source) : BufferedSource
-                private open class InputStreamSource(input: InputStream) : Source
-                private open class OutputStreamSource(output: OutputStream) : Sink
+            }
 
-                interface Sink : Closeable {
-                    override fun close() { }
-                }
-                interface BufferedSink : Sink
-                class RealBufferedSink(sink: Sink) : BufferedSink
+            fun testOutput2(contentResolver: ContentResolver, uri: Uri) {
+                val outputStream = contentResolver.openOutputStream(uri) ?: throw FileNotFoundException() // OK 3
+                outputStream.sink().close()
+            }
+            """
+          )
+          .indented(),
+        kotlin(
+            """
+            package test.pkg
 
-                fun InputStream.source(): Source = InputStreamSource(this)
-                fun OutputStream.sink(): Sink = OutputStreamSource(this)
+            import android.content.ContentResolver
+            import android.net.Uri
+            import okio.buffer
+            import okio.sink
+            import okio.source
+            import java.io.FileNotFoundException
 
-                fun Source.buffer(): BufferedSource = RealBufferedSource(this)
-                fun Sink.buffer(): BufferedSink = RealBufferedSink(this)
-                """
+            fun testOutput(contentResolver: ContentResolver, uri: Uri) {
+                val outputStream = contentResolver.openOutputStream(uri) ?: throw FileNotFoundException() // OK 4
+                val sink = outputStream.sink()
+                sink.close()
+            }
+
+            fun testOutput2(contentResolver: ContentResolver, uri: Uri) {
+                val outputStream = contentResolver.openOutputStream(uri) ?: throw FileNotFoundException() // OK 5
+                val buffer = outputStream.sink().buffer()
+                buffer.close()
+            }
+
+            fun test(contentResolver: ContentResolver, uri: Uri) {
+                val inputStream = contentResolver.openInputStream(uri) ?: throw FileNotFoundException() // OK 6
+                val buffer = inputStream.source().buffer()
+                buffer.close()
+            }
+            """
+          )
+          .indented(),
+        kotlin(
+            """
+              // Okio stubs
+              @file:JvmName("Okio")
+              package okio
+
+              import java.io.Closeable
+              import java.io.InputStream
+              import java.io.OutputStream
+
+              interface Source : Closeable {
+                  override fun close() { }
+              }
+              interface BufferedSource : Source
+              class RealBufferedSource(source: Source) : BufferedSource
+              private open class InputStreamSource(input: InputStream) : Source
+              private open class OutputStreamSource(output: OutputStream) : Sink
+
+              interface Sink : Closeable {
+                  override fun close() { }
+              }
+              interface BufferedSink : Sink
+              class RealBufferedSink(sink: Sink) : BufferedSink
+
+              fun InputStream.source(): Source = InputStreamSource(this)
+              fun OutputStream.sink(): Sink = OutputStreamSource(this)
+
+              fun Source.buffer(): BufferedSource = RealBufferedSource(this)
+              fun Sink.buffer(): BufferedSink = RealBufferedSink(this)
+              """
           )
           .indented()
       )
       .run()
-      .expectClean()
+      .expect(
+        """
+        src/test/pkg/test.kt:14: Warning: This InputStream should be freed up after use with #close() [Recycle]
+            val inputStream = contentResolver.openInputStream(uri)  // ERROR: not closed!
+                                              ~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
   }
 
   fun test254222461() {
@@ -4302,6 +4372,122 @@ class CleanupDetectorTest : AbstractCheckTest() {
             }
 
             data class MetadataCursor(private val cursor: Cursor) : Cursor by cursor
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun test306123911_example5() {
+    lint()
+      .files(
+        java(
+            """
+            package test.pkg;
+
+            import android.content.Context;
+            import android.net.Uri;
+
+            import java.io.FileOutputStream;
+
+            /** @noinspection resource*/
+            public class RecycleJavaTest {
+                public static boolean saveBytesToUri(Context context, byte[] data, Uri outputUri) {
+                    if (data == null || outputUri == null) {
+                        return false;
+                    }
+                    try {
+                        FileOutputStream outputStream =
+                                context
+                                        .getContentResolver()
+                                        .openAssetFileDescriptor(outputUri, "rw")
+                                        .createOutputStream();
+                        outputStream.write(data, 0, data.length);
+                        outputStream.flush();
+                        outputStream.close();
+                    } catch (Exception e) {
+                        return false;
+                    }
+                    return true;
+                }
+            }
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun test306123911_example6() {
+    lint()
+      .files(
+        java(
+            """
+            package test.pkg;
+
+            import android.app.Activity;
+            import android.net.Uri;
+            import android.os.ParcelFileDescriptor;
+
+            import java.io.FileNotFoundException;
+            import java.io.IOException;
+
+            /** @noinspection resource*/
+            public class RecycleJavaTest extends Activity {
+                public void test(Uri reportFile) {
+                    ParcelFileDescriptor parcelFileDescriptor = null;
+                    if (reportFile != null) {
+                        try {
+                            parcelFileDescriptor =
+                                    getContentResolver().openAssetFileDescriptor(reportFile, "w").getParcelFileDescriptor();
+                        } catch (FileNotFoundException | NullPointerException ignored) {
+                        }
+                    }
+
+                    int reportFd = parcelFileDescriptor != null ? parcelFileDescriptor.getFd() : -1;
+
+                    if (parcelFileDescriptor != null) {
+                        try {
+                            parcelFileDescriptor.close();
+                        } catch (IOException ignored) {
+                        }
+                    }
+                }
+            }
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun test306123911_example6b() {
+    lint()
+      .files(
+        java(
+            """
+            package test.pkg;
+
+            import android.content.Context;
+            import android.content.res.AssetFileDescriptor;
+            import android.net.Uri;
+            import android.os.ParcelFileDescriptor;
+
+            import java.io.IOException;
+
+            public class Test  {
+                public void test(Context context, Uri outputUri) throws IOException {
+                    AssetFileDescriptor afd = context
+                            .getContentResolver()
+                            .openAssetFileDescriptor(outputUri, "rw");
+                    ParcelFileDescriptor pdf = afd.getParcelFileDescriptor();
+                    pdf.closeWithError("message");
+                }
+            }
             """
           )
           .indented()
