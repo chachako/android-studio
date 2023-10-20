@@ -16,7 +16,9 @@
 package com.android.tools.lint.checks
 
 import com.android.tools.lint.checks.infrastructure.TestMode
+import com.android.tools.lint.client.api.LintBaseline
 import com.android.tools.lint.detector.api.Detector
+import java.io.File
 
 class WrongCommentTypeDetectorTest : AbstractCheckTest() {
   override fun getDetector(): Detector {
@@ -52,10 +54,10 @@ class WrongCommentTypeDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-        src/ParentClass.kt:2: Warning: This block comment looks like it was intended to be a javadoc comment [WrongCommentType]
+        src/ParentClass.kt:2: Warning: This block comment looks like it was intended to be a KDoc comment [WrongCommentType]
          * @see tags point to KDoc
            ~~~~~~~~~~~~~~~~~~~~~~~
-        src/Test.java:2: Warning: This block comment looks like it was intended to be a KDoc comment [WrongCommentType]
+        src/Test.java:2: Warning: This block comment looks like it was intended to be a javadoc comment [WrongCommentType]
             /* @since 1.5 */ String text;
                ~~~~~~~~~~
         0 errors, 2 warnings
@@ -97,10 +99,10 @@ class WrongCommentTypeDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-        src/ParentClass.kt:1: Warning: This block comment looks like it was intended to be a javadoc comment [WrongCommentType]
+        src/ParentClass.kt:1: Warning: This block comment looks like it was intended to be a KDoc comment [WrongCommentType]
         /* This is a [link](http://wwww.google.com) */
                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        src/Test.java:1: Warning: This block comment looks like it was intended to be a KDoc comment [WrongCommentType]
+        src/Test.java:1: Warning: This block comment looks like it was intended to be a javadoc comment [WrongCommentType]
         /* This is a {@link ParentClass} */
                      ~~~~~~~~~~~~~~~~~~~
         0 errors, 2 warnings
@@ -140,7 +142,7 @@ class WrongCommentTypeDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-        src/test.kt:4: Warning: This block comment looks like it was intended to be a javadoc comment [WrongCommentType]
+        src/test.kt:4: Warning: This block comment looks like it was intended to be a KDoc comment [WrongCommentType]
         * @sample DefaultPreview
           ~~~~~~~~~~~~~~~~~~~~~~
         0 errors, 1 warnings
@@ -195,13 +197,13 @@ class WrongCommentTypeDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-        src/Test.kt:2: Warning: This block comment looks like it was intended to be a javadoc comment [WrongCommentType]
+        src/Test.kt:2: Warning: This block comment looks like it was intended to be a KDoc comment [WrongCommentType]
             /* @param Comment **/
                ~~~~~~~~~~~~~~
-        src/Test.kt:5: Warning: This block comment looks like it was intended to be a javadoc comment [WrongCommentType]
+        src/Test.kt:5: Warning: This block comment looks like it was intended to be a KDoc comment [WrongCommentType]
            /* @property Comment **/
               ~~~~~~~~~~~~~~~~~
-        src/Test.kt:8: Warning: This block comment looks like it was intended to be a javadoc comment [WrongCommentType]
+        src/Test.kt:8: Warning: This block comment looks like it was intended to be a KDoc comment [WrongCommentType]
             /* @see Comment **/
                ~~~~~~~~~~~~
         0 errors, 3 warnings
@@ -268,5 +270,24 @@ class WrongCommentTypeDetectorTest : AbstractCheckTest() {
       )
       .run()
       .expectClean()
+  }
+
+  fun testTolerateBaselineChanges() {
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
+    assertTrue(
+      baseline.sameMessage(
+        WrongCommentTypeDetector.ISSUE,
+        "This block comment looks like it was intended to be a KDoc comment",
+        "This block comment looks like it was intended to be a javadoc comment"
+      )
+    )
+
+    assertTrue(
+      baseline.sameMessage(
+        WrongCommentTypeDetector.ISSUE,
+        "This block comment looks like it was intended to be a javadoc comment",
+        "This block comment looks like it was intended to be a KDoc comment"
+      )
+    )
   }
 }

@@ -67,6 +67,18 @@ class WrongCommentTypeDetector : Detector(), SourceCodeScanner {
           """
           This check flags any block comments which look like they had been intended to \
           be KDoc or javadoc comments instead.
+
+          If you really want to use Javadoc-like constructs in a block comment, \
+          there's a convention you can use: include `(non-Javadoc)` somewhere in \
+          the comment, e.g.
+          ```
+            /* (non-Javadoc)
+             * @see org.xml.sax.helpers.DefaultHandler#setDocumentLocator(org.xml.sax.Locator)
+             */
+            @Override
+            public void setDocumentLocator(Locator locator) {
+          ```
+          (see https://stackoverflow.com/questions/5172841/non-javadoc-meaning)
           """,
         category = Category.CORRECTNESS,
         priority = 9,
@@ -164,7 +176,7 @@ class WrongCommentTypeDetector : Detector(), SourceCodeScanner {
           return
         }
         val tag = getFirstTag(comment, text) ?: return
-        val commentType = if (isKotlin(element.getLanguage())) "javadoc" else "KDoc"
+        val commentType = if (isKotlin(element.getLanguage())) "KDoc" else "javadoc"
         val tagText = tag.text.substringBefore("\n")
         val delta = text.indexOf(tagText)
         val location =
@@ -277,6 +289,10 @@ class WrongCommentTypeDetector : Detector(), SourceCodeScanner {
         checkComment(node)
       }
     }
+
+  override fun sameMessage(issue: Issue, new: String, old: String): Boolean {
+    return true
+  }
 }
 
 // See org.jetbrains.kotlin.idea.kdoc.KDocElementFactory
