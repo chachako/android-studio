@@ -1,28 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="5" by="lint 4.2.0-dev">
+<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        return String.format(NS_DEVICES_URI_BASE + &quot;%d&quot;, version);                   //$NON-NLS-1$"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="dvlib/src/main/java/com/android/dvlib/DeviceSchema.java"
-            line="243"/>
+            line="264"
+            column="16"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        String filename = String.format(&quot;%1$s-%2$d.xsd&quot;, rootElement, version);      //$NON-NLS-1$"
+        errorLine2="                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="dvlib/src/main/java/com/android/dvlib/DeviceSchema.java"
-            line="257"/>
+            line="278"
+            column="27"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                writer.println(String.format(&quot;Devices XSD version %1$d is out of valid range 1..%2$d&quot;,"
+        errorLine2="                               ^">
         <location
             file="dvlib/src/main/java/com/android/dvlib/DeviceSchema.java"
-            line="291"/>
+            line="312"
+            column="32"/>
     </issue>
 
 </issues>

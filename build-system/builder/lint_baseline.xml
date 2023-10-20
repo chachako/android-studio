@@ -1,108 +1,147 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="5" by="lint 7.4.0-dev">
+<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val fileStatusMap by lazy {"
+        errorLine2="                                 ~~~~">
         <location
             file="src/main/java/com/android/builder/files/IncrementalChanges.kt"
-            line="50"/>
+            line="50"
+            column="34"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    val entries: Map&lt;String, DirectoryEntry> by lazy { readZipEntries() }"
+        errorLine2="                                                ~~~~">
         <location
             file="src/main/java/com/android/builder/files/ZipCentralDirectory.kt"
-            line="45"/>
+            line="45"
+            column="49"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val directoryBuffer: ByteBuffer by lazy { initBuffer() }"
+        errorLine2="                                               ~~~~">
         <location
             file="src/main/java/com/android/builder/files/ZipCentralDirectory.kt"
-            line="47"/>
+            line="47"
+            column="48"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="        lazy { ZipOutputStream(BufferedOutputStream(outputJar.toFile().outputStream())) }"
+        errorLine2="        ~~~~">
         <location
             file="src/main/java/com/android/builder/dexing/r8Tool.kt"
-            line="434"/>
+            line="535"
+            column="9"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="                &amp;&amp; Objects.equals(jarsRootFolder, that.jarsRootFolder);"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/builder/dependency/level2/AndroidDependency.java"
-            line="205"/>
+            line="205"
+            column="20"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="        if (storeFile != that.storeFile) {"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/builder/signing/DefaultSigningConfig.kt"
-            line="113"/>
+            line="113"
+            column="13"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="        return Objects.equals(artifactFile, that.artifactFile) &amp;&amp;"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/builder/dependency/level2/Dependency.java"
-            line="120"/>
+            line="120"
+            column="16"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="        return Objects.equals(extractedFolder, that.extractedFolder)"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/builder/dependency/level2/ExtractedDependency.java"
-            line="135"/>
+            line="135"
+            column="16"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="                        !dir.equals(directory);"
+        errorLine2="                         ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/builder/merge/MergeOutputWriters.java"
-            line="119"/>
+            line="119"
+            column="26"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="                !base.equals(file), &quot;Base must not equal file. Given: %s&quot;, base.getAbsolutePath());"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/builder/files/RelativeFile.java"
-            line="64"/>
+            line="64"
+            column="18"/>
     </issue>
 
     <issue
         id="CommonForkJoinPool"
-        message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`.">
+        message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`."
+        errorLine1="    private val forkJoinPool = ForkJoinPool.commonPool()"
+        errorLine2="                                            ~~~~~~~~~~">
         <location
             file="src/main/java/com/android/builder/internal/packaging/AabFlinger.kt"
-            line="73"/>
+            line="73"
+            column="45"/>
     </issue>
 
     <issue
         id="CommonForkJoinPool"
-        message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`.">
+        message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`."
+        errorLine1="    private val forkJoinPool = ForkJoinPool.commonPool()"
+        errorLine2="                                            ~~~~~~~~~~">
         <location
             file="src/main/java/com/android/builder/internal/packaging/ApkFlinger.kt"
-            line="79"/>
+            line="80"
+            column="45"/>
     </issue>
 
     <issue
         id="CommonForkJoinPool"
-        message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`.">
+        message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`."
+        errorLine1="                    GenerateMainDexList.run(command.build(), ForkJoinPool.commonPool()));"
+        errorLine2="                                                                          ~~~~~~~~~~">
         <location
             file="src/main/java/com/android/builder/multidex/D8MainDexList.java"
-            line="101"/>
+            line="101"
+            column="75"/>
     </issue>
 
 </issues>

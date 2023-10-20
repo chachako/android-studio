@@ -1,52 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="5" by="lint 4.2.0-dev">
+<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="      return String.format(&quot;StringPoolSpan{%s, start=%d, stop=%d}&quot;,"
+        errorLine2="             ^">
         <location
             file="binary-resources/src/main/java/com/google/devrel/gmscore/tools/apk/arsc/StringPoolChunk.java"
-            line="414"/>
+            line="414"
+            column="14"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="    return String.format(&quot;XmlCdataChunk{line=%d, comment=%s, value=%s}&quot;,"
+        errorLine2="           ^">
         <location
             file="binary-resources/src/main/java/com/google/devrel/gmscore/tools/apk/arsc/XmlCdataChunk.java"
-            line="71"/>
+            line="70"
+            column="12"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="    return String.format(&quot;XmlEndElementChunk{line=%d, comment=%s, namespace=%s, name=%s}&quot;,"
+        errorLine2="           ^">
         <location
             file="binary-resources/src/main/java/com/google/devrel/gmscore/tools/apk/arsc/XmlEndElementChunk.java"
-            line="73"/>
+            line="72"
+            column="12"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="    return String.format(&quot;XmlNamespaceChunk{line=%d, comment=%s, prefix=%s, uri=%s}&quot;,"
+        errorLine2="           ^">
         <location
             file="binary-resources/src/main/java/com/google/devrel/gmscore/tools/apk/arsc/XmlNamespaceChunk.java"
-            line="68"/>
+            line="67"
+            column="12"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="    return String.format(&quot;XmlNodeChunk{line=%d, comment=%s}&quot;, getLineNumber(), getComment());"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="binary-resources/src/main/java/com/google/devrel/gmscore/tools/apk/arsc/XmlNodeChunk.java"
-            line="95"/>
+            line="94"
+            column="12"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="    return String.format("
+        errorLine2="           ^">
         <location
             file="binary-resources/src/main/java/com/google/devrel/gmscore/tools/apk/arsc/XmlStartElementChunk.java"
-            line="142"/>
+            line="140"
+            column="12"/>
     </issue>
 
 </issues>

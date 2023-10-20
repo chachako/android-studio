@@ -1,68 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="5" by="lint 7.4.0-dev">
+<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="            return String.format("
+        errorLine2="                   ^">
         <location
             file="src/main/java/com/android/tools/perflib/heap/memoryanalyzer/DuplicatedBitmapAnalyzerTask.java"
-            line="150"/>
+            line="150"
+            column="20"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="            return String.format(&quot;%d instances: \&quot;%s\&quot;&quot;, mOffender.getOffenders().size(),"
+        errorLine2="                   ^">
         <location
             file="src/main/java/com/android/tools/perflib/heap/memoryanalyzer/DuplicatedStringsAnalyzerTask.java"
-            line="92"/>
+            line="92"
+            column="20"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                name = String.format(&quot;%1$s-%2$d&quot;, name, id);"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/perflib/vmtrace/VmTraceData.java"
-            line="78"/>
+            line="78"
+            column="24"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                mThreads.put(threadId, String.format(&quot;Thread id: %1$d&quot;, threadId));"
+        errorLine2="                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/perflib/vmtrace/VmTraceData.java"
-            line="286"/>
+            line="286"
+            column="40"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                    String.format("
+        errorLine2="                    ^">
         <location
             file="src/main/java/com/android/tools/perflib/vmtrace/VmTraceParser.java"
-            line="347"/>
+            line="390"
+            column="21"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                    String.format("
+        errorLine2="                    ^">
         <location
             file="src/main/java/com/android/tools/perflib/vmtrace/VmTraceParser.java"
-            line="386"/>
+            line="429"
+            column="21"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                        String.format("
+        errorLine2="                        ^">
         <location
             file="src/main/java/com/android/tools/perflib/vmtrace/VmTraceParser.java"
-            line="540"/>
+            line="583"
+            column="25"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    val successors: List&lt;Node&lt;T>> by lazy { next(content).map(wrap).toList() }"
+        errorLine2="                                     ~~~~">
         <location
             file="src/main/java/com/android/tools/perflib/heap/analysis/LinkEvalDominators.kt"
-            line="163"/>
+            line="163"
+            column="38"/>
     </issue>
 
 </issues>

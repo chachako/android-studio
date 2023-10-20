@@ -1,36 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="5" by="lint 4.2.0-dev">
+<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="            sb.append(String.format(&quot;%d - %d px&quot;,"
+        errorLine2="                      ^">
         <location
             file="src/main/java/com/android/draw9patch/ui/ImageViewer.java"
-            line="594"/>
+            line="597"
+            column="23"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="            sb.append(String.format(&quot;%d - %d px&quot;,"
+        errorLine2="                      ^">
         <location
             file="src/main/java/com/android/draw9patch/ui/ImageViewer.java"
-            line="607"/>
+            line="610"
+            column="23"/>
     </issue>
 
     <issue
         id="SwingWorker"
-        message="Do not use `javax.swing.SwingWorker`, use `com.intellij.util.concurrency.SwingWorker` instead. See `go/do-not-freeze`.">
+        message="Do not use `javax.swing.SwingWorker`, use `com.intellij.util.concurrency.SwingWorker` instead. See `go/do-not-freeze`."
+        errorLine1="    private class SaveTask extends SwingWorker&lt;Boolean, Void> {"
+        errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/draw9patch/ui/MainFrame.java"
-            line="142"/>
+            line="142"
+            column="36"/>
     </issue>
 
     <issue
         id="SwingWorker"
-        message="Do not use `javax.swing.SwingWorker`, use `com.intellij.util.concurrency.SwingWorker` instead. See `go/do-not-freeze`.">
+        message="Do not use `javax.swing.SwingWorker`, use `com.intellij.util.concurrency.SwingWorker` instead. See `go/do-not-freeze`."
+        errorLine1="    private class OpenTask extends SwingWorker&lt;BufferedImage, Void> {"
+        errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/draw9patch/ui/MainFrame.java"
-            line="160"/>
+            line="160"
+            column="36"/>
     </issue>
 
 </issues>

@@ -1,20 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="5" by="lint 7.4.0-dev">
+<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="                                    .map(c -> &quot;&apos;&quot; + c.name().toLowerCase() + &quot;&apos;&quot;)"
+        errorLine2="                                                             ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/utils/HelpfulEnumConverter.java"
-            line="49"/>
+            line="49"
+            column="62"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="                return file1.getCanonicalFile().equals(file2.getCanonicalFile());"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/utils/FileUtils.java"
-            line="608"/>
+            line="608"
+            column="24"/>
     </issue>
 
 </issues>

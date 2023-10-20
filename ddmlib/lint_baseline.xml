@@ -1,1220 +1,1676 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="5" by="lint 7.1.0-dev">
+<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        String reqStr = String.format(&quot;jdwp:%1$d&quot;, pid); //$NON-NLS-1$"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/AdbHelper.java"
-            line="276"/>
+            line="273"
+            column="25"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="            return String.format(&quot;/data/user/%d/%s&quot;, getUserId(), packageName);"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/ClientData.java"
-            line="879"/>
+            line="903"
+            column="20"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                    String.format("
+        errorLine2="                    ^">
         <location
             file="src/main/java/com/android/ddmlib/internal/Debugger.java"
-            line="304"/>
+            line="313"
+            column="21"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                Log.w(&quot;ddms&quot;, String.format(&quot;Buffer has reached maximum size of %d&quot;, MAX_BUF_SIZE));"
+        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/Debugger.java"
-            line="314"/>
+            line="323"
+            column="31"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="            Log.v(&quot;ddms&quot;, String.format(&quot;Read %d bytes from %s&quot;, count, this));"
+        errorLine2="                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/Debugger.java"
-            line="328"/>
+            line="337"
+            column="27"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                String.format(&quot;tcp:%d&quot;, localPort), //$NON-NLS-1$"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/DeviceImpl.java"
-            line="770"/>
+            line="947"
+            column="17"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                String.format(&quot;tcp:%d&quot;, remotePort)); //$NON-NLS-1$"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/DeviceImpl.java"
-            line="771"/>
+            line="948"
+            column="17"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                String.format(&quot;tcp:%d&quot;, localPort), //$NON-NLS-1$"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/DeviceImpl.java"
-            line="781"/>
+            line="958"
+            column="17"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                String.format(&quot;tcp:%d&quot;, localPort)); // $NON-NLS-1$"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/DeviceImpl.java"
-            line="791"/>
+            line="968"
+            column="17"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="            Log.e(&quot;EventLogParser&quot;, String.format(&quot;unknown tag number: %1$d&quot;, tagValue));"
+        errorLine2="                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/log/EventLogParser.java"
-            line="270"/>
+            line="270"
+            column="37"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                    String.format(&quot;Unknown binary event type %1$d&quot;, type));  //$NON-NLS-1$"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/log/EventLogParser.java"
-            line="456"/>
+            line="456"
+            column="21"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                    sb.append(String.format(&quot;%1$d %2$s&quot;, key, tagName)); //$NON-NLS-1$"
+        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/log/EventLogParser.java"
-            line="553"/>
+            line="553"
+            column="31"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                    line = String.format(&quot;%1$d %2$s\n&quot;, key, tagName); //$NON-NLS-1$"
+        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/log/EventLogParser.java"
-            line="573"/>
+            line="573"
+            column="28"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                String.format("
+        errorLine2="                ^">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHello.java"
-            line="104"/>
+            line="104"
+            column="17"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                    String.format("
+        errorLine2="                    ^">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleThread.java"
-            line="258"/>
+            line="258"
+            column="21"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                    String.format("
+        errorLine2="                    ^">
         <location
             file="src/main/java/com/android/ddmlib/testrunner/InstrumentationResultParser.java"
-            line="655"/>
+            line="661"
+            column="21"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                        String.format("
+        errorLine2="                        ^">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/JdwpPacket.java"
-            line="340"/>
+            line="347"
+            column="25"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                        String.format("
+        errorLine2="                        ^">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/JdwpPacket.java"
-            line="346"/>
+            line="353"
+            column="25"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                    buffer.append(String.format(&quot;\t%1$08x\t%2$s --- %3$s --- %4$s:%5$d\n&quot;, addr,"
+        errorLine2="                                  ^">
         <location
             file="src/main/java/com/android/ddmlib/NativeAllocationInfo.java"
-            line="250"/>
+            line="250"
+            column="35"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        return String.format(&quot;\t%1$08x\t%2$s --- %3$s --- %4$s:%5$d&quot;,"
+        errorLine2="               ^">
         <location
             file="src/main/java/com/android/ddmlib/NativeStackCallInfo.java"
-            line="114"/>
+            line="114"
+            column="16"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                    String.format("
+        errorLine2="                    ^">
         <location
             file="src/main/java/com/android/ddmlib/testrunner/RemoteAndroidTestRunner.java"
-            line="376"/>
+            line="376"
+            column="21"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="            String option = String.format(&quot;-S %d&quot;, totalFileSize);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/SplitApkInstaller.java"
-            line="64"/>
+            line="64"
+            column="29"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        builder.append(String.format(&quot;Total tests %d, &quot;, getNumTests()));"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/testrunner/TestRunResult.java"
-            line="299"/>
+            line="299"
+            column="24"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                builder.append(String.format(&quot;%s %d, &quot;, status.toString().toLowerCase(), count));"
+        errorLine2="                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/testrunner/TestRunResult.java"
-            line="305"/>
+            line="305"
+            column="32"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="                builder.append(String.format(&quot;%s %d, &quot;, status.toString().toLowerCase(), count));"
+        errorLine2="                                                                          ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/testrunner/TestRunResult.java"
-            line="305"/>
+            line="305"
+            column="75"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        Log.setLevel(sLogLevel);"
+        errorLine2="            ~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/DdmPreferences.java"
-            line="129"/>
+            line="136"
+            column="13"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="            mDeviceListMonitorTask = new DeviceListMonitorTask(mServer, new DeviceListUpdateListener());"
+        errorLine2="                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/DeviceMonitor.java"
-            line="88"/>
+            line="107"
+            column="38"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="            mDeviceListMonitorTask.stop();"
+        errorLine2="                                   ~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/DeviceMonitor.java"
-            line="120"/>
+            line="144"
+            column="36"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        return mDeviceListMonitorTask != null &amp;&amp; mDeviceListMonitorTask.isMonitoring();"
+        errorLine2="                                                                        ~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/DeviceMonitor.java"
-            line="130"/>
+            line="174"
+            column="73"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="                : mDeviceListMonitorTask.getConnectionAttemptCount();"
+        errorLine2="                                         ~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/DeviceMonitor.java"
-            line="136"/>
+            line="180"
+            column="42"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        return mDeviceListMonitorTask == null ? 0 : mDeviceListMonitorTask.getRestartAttemptCount();"
+        errorLine2="                                                                           ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/DeviceMonitor.java"
-            line="140"/>
+            line="184"
+            column="76"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        return mDeviceListMonitorTask != null &amp;&amp; mDeviceListMonitorTask.hasInitialDeviceList();"
+        errorLine2="                                                                        ~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/DeviceMonitor.java"
-            line="144"/>
+            line="188"
+            column="73"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(4);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleExit.java"
-            line="54"/>
+            line="54"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleExit.java"
-            line="55"/>
+            line="55"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleExit.java"
-            line="56"/>
+            line="56"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_EXIT, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleExit.java"
-            line="60"/>
+            line="60"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(1);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="145"/>
+            line="145"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="146"/>
+            line="146"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="147"/>
+            line="147"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_HPIF, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="151"/>
+            line="151"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(2);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="194"/>
+            line="194"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="195"/>
+            line="195"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="196"/>
+            line="196"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_HPSG, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="201"/>
+            line="201"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(0);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="208"/>
+            line="208"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="209"/>
+            line="209"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="210"/>
+            line="210"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_HPGC, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="214"/>
+            line="214"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(4 + fileName.length() * 2);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="228"/>
+            line="228"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="229"/>
+            line="229"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="230"/>
+            line="230"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_HPDU, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="235"/>
+            line="235"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(0);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="254"/>
+            line="254"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="255"/>
+            line="255"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="256"/>
+            line="256"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_HPDS, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="258"/>
+            line="258"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(1);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="315"/>
+            line="315"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="316"/>
+            line="316"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="317"/>
+            line="317"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_REAE, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="321"/>
+            line="321"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(0);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="328"/>
+            line="328"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="329"/>
+            line="329"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="330"/>
+            line="330"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_REAQ, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="334"/>
+            line="334"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(0);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="341"/>
+            line="341"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="342"/>
+            line="342"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="343"/>
+            line="343"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_REAL, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHeap.java"
-            line="347"/>
+            line="347"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(4);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHello.java"
-            line="197"/>
+            line="197"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHello.java"
-            line="198"/>
+            line="198"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHello.java"
-            line="199"/>
+            line="199"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_HELO, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHello.java"
-            line="203"/>
+            line="203"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(0);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHello.java"
-            line="227"/>
+            line="227"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHello.java"
-            line="228"/>
+            line="228"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHello.java"
-            line="229"/>
+            line="229"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_FEAT, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleHello.java"
-            line="233"/>
+            line="233"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(0);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleNativeHeap.java"
-            line="140"/>
+            line="140"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleNativeHeap.java"
-            line="141"/>
+            line="141"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleNativeHeap.java"
-            line="142"/>
+            line="142"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_NHGT, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleNativeHeap.java"
-            line="146"/>
+            line="146"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        rawBuf = allocBuffer(2);"
+        errorLine2="                 ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleNativeHeap.java"
-            line="150"/>
+            line="150"
+            column="18"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        packet = new JdwpPacket(rawBuf);"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleNativeHeap.java"
-            line="151"/>
+            line="151"
+            column="18"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        buf = getChunkDataBuf(rawBuf);"
+        errorLine2="              ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleNativeHeap.java"
-            line="152"/>
+            line="152"
+            column="15"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_NHSG, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleNativeHeap.java"
-            line="157"/>
+            line="157"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(3 * 4 + fileName.length() * 2);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="96"/>
+            line="96"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="97"/>
+            line="97"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="98"/>
+            line="98"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_MPRS, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="105"/>
+            line="105"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(0);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="128"/>
+            line="128"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="129"/>
+            line="129"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="130"/>
+            line="130"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_MPRE, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="134"/>
+            line="134"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(2 * 4);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="178"/>
+            line="178"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="179"/>
+            line="179"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="180"/>
+            line="180"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_MPSS, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="185"/>
+            line="185"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(3 * 4);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="211"/>
+            line="211"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="212"/>
+            line="212"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="213"/>
+            line="213"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_SPSS, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="219"/>
+            line="219"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(0);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="237"/>
+            line="237"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="238"/>
+            line="238"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="239"/>
+            line="239"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_MPSE, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="243"/>
+            line="243"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(0);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="250"/>
+            line="250"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="251"/>
+            line="251"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="252"/>
+            line="252"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_SPSE, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="256"/>
+            line="256"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(0);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="279"/>
+            line="279"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="280"/>
+            line="280"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="281"/>
+            line="281"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_MPRQ, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleProfiling.java"
-            line="285"/>
+            line="285"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(1);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleThread.java"
-            line="268"/>
+            line="268"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleThread.java"
-            line="269"/>
+            line="269"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleThread.java"
-            line="270"/>
+            line="270"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_THEN, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleThread.java"
-            line="278"/>
+            line="278"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(4);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleThread.java"
-            line="296"/>
+            line="296"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleThread.java"
-            line="297"/>
+            line="297"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleThread.java"
-            line="298"/>
+            line="298"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_STKL, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleThread.java"
-            line="302"/>
+            line="302"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer rawBuf = allocBuffer(0);"
+        errorLine2="                            ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleThread.java"
-            line="364"/>
+            line="364"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(rawBuf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleThread.java"
-            line="365"/>
+            line="365"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = getChunkDataBuf(rawBuf);"
+        errorLine2="                         ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleThread.java"
-            line="366"/>
+            line="366"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, CHUNK_THST, buf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleThread.java"
-            line="370"/>
+            line="370"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = allocBuffer(8);"
+        errorLine2="                         ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="81"/>
+            line="81"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(buf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="82"/>
+            line="82"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer chunkBuf = getChunkDataBuf(buf);"
+        errorLine2="                              ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="83"/>
+            line="83"
+            column="31"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, DebugViewDumpHandler.CHUNK_VULW, chunkBuf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="85"/>
+            line="85"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="                allocBuffer("
+        errorLine2="                ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="98"/>
+            line="102"
+            column="17"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(buf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="105"/>
+            line="109"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer chunkBuf = getChunkDataBuf(buf);"
+        errorLine2="                              ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="106"/>
+            line="110"
+            column="31"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, DebugViewDumpHandler.CHUNK_VURT, chunkBuf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="115"/>
+            line="119"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = allocBuffer(bufLen);"
+        errorLine2="                         ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="126"/>
+            line="131"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(buf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="127"/>
+            line="132"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer chunkBuf = getChunkDataBuf(buf);"
+        errorLine2="                              ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="128"/>
+            line="133"
+            column="31"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, DebugViewDumpHandler.CHUNK_VURT, chunkBuf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="134"/>
+            line="139"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = allocBuffer(bufLen);"
+        errorLine2="                         ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="154"/>
+            line="159"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(buf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="155"/>
+            line="160"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer chunkBuf = getChunkDataBuf(buf);"
+        errorLine2="                              ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="156"/>
+            line="161"
+            column="31"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, DebugViewDumpHandler.CHUNK_VUOP, chunkBuf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="169"/>
+            line="174"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="                allocBuffer("
+        errorLine2="                ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="216"/>
+            line="222"
+            column="17"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(buf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="220"/>
+            line="226"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer chunkBuf = getChunkDataBuf(buf);"
+        errorLine2="                              ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="221"/>
+            line="227"
+            column="31"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, DebugViewDumpHandler.CHUNK_VURT, chunkBuf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="227"/>
+            line="233"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = allocBuffer(4);"
+        errorLine2="                         ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="328"/>
+            line="330"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(buf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="329"/>
+            line="331"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer chunkBuf = getChunkDataBuf(buf);"
+        errorLine2="                              ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="331"/>
+            line="333"
+            column="31"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, DebugViewDumpHandler.CHUNK_VUGL, chunkBuf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="333"/>
+            line="335"
+            column="9"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer buf = allocBuffer(4);"
+        errorLine2="                         ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="339"/>
+            line="341"
+            column="26"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        JdwpPacket packet = new JdwpPacket(buf);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="340"/>
+            line="342"
+            column="29"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        ByteBuffer chunkBuf = getChunkDataBuf(buf);"
+        errorLine2="                              ~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="342"/>
+            line="344"
+            column="31"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        finishChunkPacket(packet, DebugViewDumpHandler.CHUNK_VUGL, chunkBuf.position());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/ddmlib/internal/jdwp/chunkhandler/HandleViewDebug.java"
-            line="344"/>
+            line="346"
+            column="9"/>
     </issue>
 
 </issues>

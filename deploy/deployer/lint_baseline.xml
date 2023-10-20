@@ -1,52 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="5" by="lint 7.1.0-dev">
+<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                String line = String.format(&quot;[%d] &apos;%s&apos;\n&quot;, i, apkPath);"
+        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/deployer/ApkInstaller.java"
-            line="219"/>
+            line="221"
+            column="31"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `toUpperCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        message="Implicitly using the default locale is a common source of bugs: Use `toUpperCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="            commands.add(Command.valueOf(arg.toUpperCase()));"
+        errorLine2="                                             ~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/deployer/DeployRunnerParameters.java"
-            line="66"/>
+            line="89"
+            column="46"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                String.format("
+        errorLine2="                ^">
         <location
             file="src/main/java/com/android/tools/deployer/SqlApkFileDatabase.java"
-            line="293"/>
+            line="293"
+            column="17"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                        .map(e -> String.format(&quot;(%d, \&quot;%s\&quot;, %d)&quot;, dexId, e.name, e.checksum))"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/deployer/SqlApkFileDatabase.java"
-            line="311"/>
+            line="311"
+            column="35"/>
     </issue>
 
     <issue
         id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                        .map(e -> String.format(&quot;(%d, \&quot;%s\&quot;)&quot;, e, archiveChecksum))"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/deployer/SqlApkFileDatabase.java"
-            line="326"/>
+            line="326"
+            column="35"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="                files.add(new ApkEntry(result.getString(&quot;name&quot;), result.getLong(&quot;checksum&quot;), apk));"
+        errorLine2="                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/deployer/SqlApkFileDatabase.java"
-            line="397"/>
+            line="397"
+            column="27"/>
     </issue>
 
 </issues>

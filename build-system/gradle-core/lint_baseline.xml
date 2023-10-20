@@ -1,1308 +1,1797 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="5" by="lint 8.2.0-dev">
+<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
 
     <issue
         id="CheckResult"
-        message="The result of `directExecutor` is not used">
+        message="The result of `directExecutor` is not used"
+        errorLine1="            MoreExecutors.directExecutor();"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ClasspathVerifier.java"
-            line="26"/>
+            line="26"
+            column="13"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val instrumentationRunnerArguments: Map&lt;String, String> by lazy {"
+        errorLine2="                                                                        ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/test/AbstractTestDataImpl.kt"
-            line="100"/>
+            line="106"
+            column="73"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val generatesApk: GeneratesApk by lazy {"
+        errorLine2="                                              ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledAndroidTest.kt"
-            line="134"/>
+            line="134"
+            column="47"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    val userVisibleSigningConfig: AnalyticsEnabledSigningConfig by lazy {"
+        errorLine2="                                                                   ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledApplicationVariant.kt"
-            line="65"/>
+            line="65"
+            column="68"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val generatesApk: GeneratesApk by lazy {"
+        errorLine2="                                              ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledApplicationVariant.kt"
-            line="114"/>
+            line="114"
+            column="47"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val userVisibleBundleConfig: BundleConfig by lazy {"
+        errorLine2="                                                         ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledApplicationVariant.kt"
-            line="131"/>
+            line="131"
+            column="58"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val userVisibleCodeTransparency: CodeTransparency by lazy {"
+        errorLine2="                                                                 ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledBundleConfig.kt"
-            line="34"/>
+            line="34"
+            column="66"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val generatesApk: GeneratesApk by lazy {"
+        errorLine2="                                              ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledDynamicFeatureVariant.kt"
-            line="73"/>
+            line="73"
+            column="47"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val userVisibleApkPackaging: ApkPackaging by lazy {"
+        errorLine2="                                                         ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledGeneratesApk.kt"
-            line="68"/>
+            line="68"
+            column="58"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val userVisibleRenderscript: Renderscript by lazy {"
+        errorLine2="                                                         ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledLibraryVariant.kt"
-            line="71"/>
+            line="71"
+            column="58"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val userVisibleAarMetadata: AarMetadata by lazy {"
+        errorLine2="                                                       ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledLibraryVariant.kt"
-            line="88"/>
+            line="88"
+            column="56"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val userVisibleAarMetadata: AarMetadata by lazy {"
+        errorLine2="                                                       ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledTestFixtures.kt"
-            line="37"/>
+            line="37"
+            column="56"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val generatesApk: GeneratesApk by lazy {"
+        errorLine2="                                              ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledTestVariant.kt"
-            line="91"/>
+            line="99"
+            column="47"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val userVisiblePackaging: Packaging by lazy {"
+        errorLine2="                                                   ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledVariant.kt"
-            line="71"/>
+            line="71"
+            column="52"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val optionService: ProjectOptionService by lazy {"
+        errorLine2="                                                       ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/AndroidPluginBaseServices.kt"
-            line="61"/>
+            line="63"
+            column="56"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    protected val syncIssueReporter: SyncIssueReporterImpl by lazy {"
+        errorLine2="                                                              ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/AndroidPluginBaseServices.kt"
-            line="67"/>
+            line="69"
+            column="63"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    protected val projectServices: ProjectServices by lazy {"
+        errorLine2="                                                      ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/AndroidPluginBaseServices.kt"
-            line="80"/>
+            line="82"
+            column="55"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    protected val configuratorService: AnalyticsConfiguratorService by lazy {"
+        errorLine2="                                                                       ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/AndroidPluginBaseServices.kt"
-            line="103"/>
+            line="108"
+            column="72"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val androidResources: AndroidResources by lazy {"
+        errorLine2="                                                       ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/features/AndroidResourcesCreationConfigImpl.kt"
-            line="50"/>
+            line="50"
+            column="56"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val pseudoLocalesEnabled: Property&lt;Boolean> by lazy {"
+        errorLine2="                                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/features/AndroidResourcesCreationConfigImpl.kt"
-            line="53"/>
+            line="53"
+            column="61"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val namespace: Provider&lt;String> by lazy {"
+        errorLine2="                                                ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/AndroidTestComponentDslInfoImpl.kt"
-            line="64"/>
+            line="64"
+            column="49"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val instrumentedTestDelegate by lazy {"
+        errorLine2="                                            ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/AndroidTestComponentDslInfoImpl.kt"
-            line="106"/>
+            line="106"
+            column="45"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val dexingDslInfo: DexingDslInfo by lazy {"
+        errorLine2="                                                 ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/AndroidTestComponentDslInfoImpl.kt"
-            line="117"/>
+            line="117"
+            column="50"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val androidResources: AndroidResources by lazy {"
+        errorLine2="                                                       ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/AndroidTestImpl.kt"
-            line="127"/>
+            line="127"
+            column="56"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val packaging: ApkPackaging by lazy {"
+        errorLine2="                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/AndroidTestImpl.kt"
-            line="135"/>
+            line="135"
+            column="45"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val instrumentationRunner: Property&lt;String> by lazy {"
+        errorLine2="                                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/AndroidTestImpl.kt"
-            line="143"/>
+            line="143"
+            column="61"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val dependenciesInfo: DependenciesInfoBuilder by lazy {"
+        errorLine2="                                                              ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantBuilderImpl.kt"
-            line="55"/>
+            line="55"
+            column="63"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val signingConfig: SigningConfig? by lazy {"
+        errorLine2="                                                  ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/ApplicationVariantDslInfoImpl.kt"
-            line="109"/>
+            line="109"
+            column="51"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val dexingDslInfo: DexingDslInfo by lazy {"
+        errorLine2="                                                 ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/ApplicationVariantDslInfoImpl.kt"
-            line="175"/>
+            line="175"
+            column="50"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val dependenciesInfo: DependenciesInfo by lazy {"
+        errorLine2="                                                       ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantImpl.kt"
-            line="90"/>
+            line="90"
+            column="56"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val androidResources: AndroidResources by lazy {"
+        errorLine2="                                                       ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantImpl.kt"
-            line="97"/>
+            line="97"
+            column="56"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val signingConfig: SigningConfigImpl by lazy {"
+        errorLine2="                                                     ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantImpl.kt"
-            line="105"/>
+            line="105"
+            column="54"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val packaging: ApkPackaging by lazy {"
+        errorLine2="                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantImpl.kt"
-            line="114"/>
+            line="114"
+            column="45"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="        val pathWithoutExtension by lazy {"
+        errorLine2="                                    ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/instrumentation/AsmInstrumentationManager.kt"
-            line="116"/>
+            line="116"
+            column="37"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val buildOutputs by lazy {"
+        errorLine2="                                ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="174"/>
+            line="174"
+            column="33"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val extensionData by lazy {"
+        errorLine2="                                 ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="182"/>
+            line="182"
+            column="34"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val variantApiOperations by lazy {"
+        errorLine2="                                        ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="197"/>
+            line="197"
+            column="41"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val globalConfig by lazy {"
+        errorLine2="                                ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="207"/>
+            line="207"
+            column="33"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    val variantManager: VariantManager&lt;AndroidT, VariantBuilderT, VariantDslInfoT, CreationConfigT> by lazy {"
+        errorLine2="                                                                                                       ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="229"/>
+            line="229"
+            column="104"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    val variantInputModel: LegacyVariantInputManager by lazy {"
+        errorLine2="                                                        ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="248"/>
+            line="248"
+            column="57"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val sdkComponentsBuildService by lazy {"
+        errorLine2="                                             ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="262"/>
+            line="262"
+            column="46"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    protected val dslServices: DslServicesImpl by lazy {"
+        errorLine2="                                                  ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="269"/>
+            line="269"
+            column="51"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val taskManagerConfig: TaskManagerConfig by lazy {"
+        errorLine2="                                                        ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="279"/>
+            line="279"
+            column="57"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    protected val versionedSdkLoaderService: VersionedSdkLoaderService by lazy {"
+        errorLine2="                                                                          ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="283"/>
+            line="283"
+            column="75"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val variantFactory: VariantFactory&lt;VariantBuilderT, VariantDslInfoT, CreationConfigT> by lazy {"
+        errorLine2="                                                                                                     ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="304"/>
+            line="304"
+            column="102"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val fullBootClasspath: FileCollection by lazy {"
+        errorLine2="                                                      ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/factory/BootClasspathConfigImpl.kt"
-            line="62"/>
+            line="62"
+            column="55"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val fullyQualifiedBuildConfigClassName: String by lazy {"
+        errorLine2="                                                              ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/generators/BuildConfigByteCodeGenerator.kt"
-            line="37"/>
+            line="37"
+            column="63"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val buildConfigFields: MapProperty&lt;String, BuildConfigField&lt;out Serializable>> by lazy {"
+        errorLine2="                                                                                               ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/features/BuildConfigCreationConfigImpl.kt"
-            line="38"/>
+            line="38"
+            column="96"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val sdkComponents: SdkComponents by lazy {"
+        errorLine2="                                                 ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dsl/CommonExtensionImpl.kt"
-            line="72"/>
+            line="72"
+            column="50"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    val mergedFlavor: MergedFlavor by lazy {"
+        errorLine2="                                      ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/ComponentDslInfoImpl.kt"
-            line="63"/>
+            line="63"
+            column="39"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val androidResourcesDsl: AndroidResourcesDslInfo by lazy {"
+        errorLine2="                                                                 ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/ComponentDslInfoImpl.kt"
-            line="92"/>
+            line="92"
+            column="66"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val compileClasspath: FileCollection by lazy {"
+        errorLine2="                                                     ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="146"/>
+            line="146"
+            column="54"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val providedOnlyClasspath: FileCollection by lazy {"
+        errorLine2="                                                          ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="201"/>
+            line="201"
+            column="59"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val oldVariantApiLegacySupport: OldVariantApiLegacySupport? by lazy {"
+        errorLine2="                                                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="226"/>
+            line="226"
+            column="77"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val assetsCreationConfig: AssetsCreationConfig by lazy {"
+        errorLine2="                                                               ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="236"/>
+            line="236"
+            column="64"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val instrumentationCreationConfig: InstrumentationCreationConfig by lazy {"
+        errorLine2="                                                                                 ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="267"/>
+            line="267"
+            column="82"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="val ENABLE_CHECK_CONFIG_TIME_CONSTRUCTION by lazy { System.getenv().containsKey(&quot;TEST_WORKSPACE&quot;) }"
+        errorLine2="                                             ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/cxx/gradle/generator/CxxConfigurationModel.kt"
-            line="80"/>
+            line="78"
+            column="46"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="                val attributions by lazy {"
+        errorLine2="                                    ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/cxx/build/CxxRegularBuilder.kt"
-            line="348"/>
+            line="348"
+            column="37"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val dexingDslInfo: DexingDslInfo by lazy {"
+        errorLine2="                                                 ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/DynamicFeatureVariantDslInfoImpl.kt"
-            line="72"/>
+            line="72"
+            column="50"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val androidResources: AndroidResources by lazy {"
+        errorLine2="                                                       ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/DynamicFeatureVariantImpl.kt"
-            line="111"/>
+            line="111"
+            column="56"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val packaging: ApkPackaging by lazy {"
+        errorLine2="                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/DynamicFeatureVariantImpl.kt"
-            line="115"/>
+            line="115"
+            column="45"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private var excluded: Lazy&lt;Set&lt;String>> = lazy { initExcluded() }"
+        errorLine2="                                              ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/FilteringSpec.kt"
-            line="45"/>
+            line="45"
+            column="47"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private var filteredFileCollection: Lazy&lt;FileCollection> = lazy { initFilteredFileCollection() }"
+        errorLine2="                                                               ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/FilteringSpec.kt"
-            line="48"/>
+            line="48"
+            column="64"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private var filteredArtifacts = lazy { initFilteredArtifacts() }"
+        errorLine2="                                    ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/FilteringSpec.kt"
-            line="52"/>
+            line="52"
+            column="37"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="        excluded = lazy { initExcluded() }"
+        errorLine2="                   ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/FilteringSpec.kt"
-            line="87"/>
+            line="87"
+            column="20"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="        filteredFileCollection = lazy { initFilteredFileCollection() }"
+        errorLine2="                                 ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/FilteringSpec.kt"
-            line="88"/>
+            line="88"
+            column="34"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="        filteredArtifacts = lazy { initFilteredArtifacts() }"
+        errorLine2="                            ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/FilteringSpec.kt"
-            line="89"/>
+            line="89"
+            column="29"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="        val variantDependencies by lazy {"
+        errorLine2="                                   ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/dependencies/FullDependencyGraphBuilder.kt"
-            line="191"/>
+            line="191"
+            column="36"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val extension: FusedLibraryExtension by lazy {"
+        errorLine2="                                                     ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/fusedlibrary/FusedLibraryVariantScopeImpl.kt"
-            line="37"/>
+            line="37"
+            column="54"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="        val deprecatedGeneratedResOutputDir by lazy {"
+        errorLine2="                                               ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/tasks/GenerateResValues.kt"
-            line="98"/>
+            line="98"
+            column="48"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val buildToolsRevision: Revision by lazy {"
+        errorLine2="                                                 ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/factory/GlobalTaskCreationConfigImpl.kt"
-            line="103"/>
+            line="103"
+            column="50"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val testOptionExecutionEnum: com.android.builder.model.TestOptions.Execution? by lazy {"
+        errorLine2="                                                                                              ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/factory/GlobalTaskCreationConfigImpl.kt"
-            line="193"/>
+            line="193"
+            column="95"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val localCustomLintChecks: FileCollection by lazy {"
+        errorLine2="                                                          ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/factory/GlobalTaskCreationConfigImpl.kt"
-            line="239"/>
+            line="239"
+            column="59"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val versionedNdkHandler: SdkComponentsBuildService.VersionedNdkHandler by lazy {"
+        errorLine2="                                                                                       ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/factory/GlobalTaskCreationConfigImpl.kt"
-            line="246"/>
+            line="246"
+            column="88"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val instrumentation: InstrumentationImpl by lazy {"
+        errorLine2="                                                         ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/features/InstrumentationCreationConfigImpl.kt"
-            line="41"/>
+            line="41"
+            column="58"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="        private val jetifierProcessor: Processor by lazy {"
+        errorLine2="                                                    ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/JetifyTransform.kt"
-            line="56"/>
+            line="56"
+            column="53"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val instrumentationRunner: Property&lt;String> by lazy {"
+        errorLine2="                                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/KmpAndroidTestImpl.kt"
-            line="115"/>
+            line="115"
+            column="61"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val dexingCreationConfig: DexingCreationConfig by lazy {"
+        errorLine2="                                                               ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/KmpAndroidTestImpl.kt"
-            line="163"/>
+            line="163"
+            column="64"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val signingConfigImpl: SigningConfigImpl? by lazy {"
+        errorLine2="                                                          ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/KmpAndroidTestImpl.kt"
-            line="174"/>
+            line="175"
+            column="59"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val packaging: ApkPackaging by lazy {"
+        errorLine2="                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/KmpAndroidTestImpl.kt"
-            line="204"/>
+            line="205"
+            column="45"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val buildConfigFields: MapProperty&lt;String, out BuildConfigField&lt;out Serializable>> by lazy {"
+        errorLine2="                                                                                                   ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/KmpAndroidTestImpl.kt"
-            line="212"/>
+            line="213"
+            column="100"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val applicationId: Property&lt;String> by lazy {"
+        errorLine2="                                                    ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/KmpComponentDslInfoImpl.kt"
-            line="37"/>
+            line="37"
+            column="53"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val compileSdkHashString: String by lazy {"
+        errorLine2="                                                 ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/factory/KmpGlobalTaskCreationConfigImpl.kt"
-            line="85"/>
+            line="85"
+            column="50"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val buildToolsRevision: Revision by lazy {"
+        errorLine2="                                                 ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/factory/KmpGlobalTaskCreationConfigImpl.kt"
-            line="88"/>
+            line="88"
+            column="50"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val testOptionExecutionEnum: com.android.builder.model.TestOptions.Execution? by lazy {"
+        errorLine2="                                                                                              ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/factory/KmpGlobalTaskCreationConfigImpl.kt"
-            line="148"/>
+            line="150"
+            column="95"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="        override val postProcessingOptions: PostProcessingOptions by lazy {"
+        errorLine2="                                                                     ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/KmpVariantDslInfoImpl.kt"
-            line="150"/>
+            line="143"
+            column="70"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val dslServices by lazy {"
+        errorLine2="                               ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/KotlinMultiplatformAndroidPlugin.kt"
-            line="141"/>
+            line="119"
+            column="32"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    val customPermissions by lazy { getCustomPermissions(manifestClassData.manifestFile) }"
+        errorLine2="                             ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/generators/ManifestClassGenerator.kt"
-            line="46"/>
+            line="46"
+            column="30"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val placeholders: MapProperty&lt;String, String> by lazy {"
+        errorLine2="                                                              ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/features/ManifestPlaceholdersCreationConfigImpl.kt"
-            line="27"/>
+            line="27"
+            column="63"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val mergingLog: MergingLog by lazy {"
+        errorLine2="                                          ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/databinding/MergingFileLookup.kt"
-            line="36"/>
+            line="36"
+            column="43"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val scopes: List&lt;ComponentCreationConfig> by lazy {"
+        errorLine2="                                                         ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/v2/NativeModelBuilder.kt"
-            line="74"/>
+            line="74"
+            column="58"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val configurationModels by lazy {"
+        errorLine2="                                       ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/v2/NativeModelBuilder.kt"
-            line="78"/>
+            line="78"
+            column="40"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    val supportedAbis : List&lt;String> by lazy {"
+        errorLine2="                                        ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ndk/NdkPlatform.kt"
-            line="45"/>
+            line="45"
+            column="41"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    val defaultAbis : List&lt;String> by lazy {"
+        errorLine2="                                      ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ndk/NdkPlatform.kt"
-            line="53"/>
+            line="53"
+            column="39"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val variantScope: PrivacySandboxSdkVariantScope by lazy {"
+        errorLine2="                                                               ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/PrivacySandboxSdkPlugin.kt"
-            line="98"/>
+            line="97"
+            column="64"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val extension: PrivacySandboxSdkExtension by lazy {"
+        errorLine2="                                                          ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/privaysandboxsdk/PrivacySandboxSdkVariantScopeImpl.kt"
-            line="63"/>
+            line="63"
+            column="59"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private var fileToIds = lazy { this.getFileToIds() }"
+        errorLine2="                            ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/ProvidedClasspath.kt"
-            line="52"/>
+            line="52"
+            column="29"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private var excludes = lazy { this.getExcludes() }"
+        errorLine2="                           ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/ProvidedClasspath.kt"
-            line="54"/>
+            line="54"
+            column="28"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="        fileToIds = lazy { this.getFileToIds() }"
+        errorLine2="                    ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/ProvidedClasspath.kt"
-            line="91"/>
+            line="91"
+            column="21"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="        excludes = lazy { this.getExcludes() }"
+        errorLine2="                   ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/ProvidedClasspath.kt"
-            line="92"/>
+            line="92"
+            column="20"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val resValues: MapProperty&lt;ResValue.Key, ResValue> by lazy {"
+        errorLine2="                                                                   ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/features/ResValuesCreationConfigImpl.kt"
-            line="29"/>
+            line="29"
+            column="68"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val sdkSourceSet: SdkLocationSourceSet by lazy {"
+        errorLine2="                                                      ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/SdkComponents.kt"
-            line="93"/>
+            line="91"
+            column="55"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val ndkDirectory: Provider&lt;Directory> by lazy {"
+        errorLine2="                                                      ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dsl/SdkComponentsImpl.kt"
-            line="41"/>
+            line="41"
+            column="55"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val components: DirectLoadComponents? by lazy {"
+        errorLine2="                                                     ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/SdkDirectLoadingStrategy.kt"
-            line="70"/>
+            line="70"
+            column="54"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="        var artifactResults: Lazy&lt;MutableSet&lt;ResolvedArtifactResult>> = lazy { initArtifactResult() }"
+        errorLine2="                                                                        ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/SubtractingArtifactCollection.kt"
-            line="77"/>
+            line="77"
+            column="73"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="        private var removedFiles: Lazy&lt;Set&lt;File>> = lazy { initRemovedFiles() }"
+        errorLine2="                                                    ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/SubtractingArtifactCollection.kt"
-            line="80"/>
+            line="80"
+            column="53"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="        var fileCollection = lazy { initFileCollection() }"
+        errorLine2="                             ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/SubtractingArtifactCollection.kt"
-            line="83"/>
+            line="83"
+            column="30"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="            artifactResults = lazy { initArtifactResult() }"
+        errorLine2="                              ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/SubtractingArtifactCollection.kt"
-            line="127"/>
+            line="127"
+            column="31"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="            removedFiles = lazy { initRemovedFiles() }"
+        errorLine2="                           ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/SubtractingArtifactCollection.kt"
-            line="128"/>
+            line="128"
+            column="28"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="            fileCollection = lazy { initFileCollection() }"
+        errorLine2="                             ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/SubtractingArtifactCollection.kt"
-            line="129"/>
+            line="129"
+            column="30"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val signingConfig: SigningConfig? by lazy {"
+        errorLine2="                                                  ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/TestProjectVariantDslInfoImpl.kt"
-            line="80"/>
+            line="80"
+            column="51"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val instrumentedTestDelegate by lazy {"
+        errorLine2="                                            ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/TestProjectVariantDslInfoImpl.kt"
-            line="93"/>
+            line="93"
+            column="45"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val dexingDslInfo: DexingDslInfo by lazy {"
+        errorLine2="                                                 ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/TestProjectVariantDslInfoImpl.kt"
-            line="117"/>
+            line="117"
+            column="50"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val androidResources: AndroidResources by lazy {"
+        errorLine2="                                                       ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/TestVariantImpl.kt"
-            line="84"/>
+            line="85"
+            column="56"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val testedApplicationId: Provider&lt;String> by lazy {"
+        errorLine2="                                                          ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/TestVariantImpl.kt"
-            line="90"/>
+            line="91"
+            column="59"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val instrumentationRunner: Property&lt;String> by lazy {"
+        errorLine2="                                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/TestVariantImpl.kt"
-            line="100"/>
+            line="101"
+            column="61"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val packaging: ApkPackaging by lazy {"
+        errorLine2="                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/TestVariantImpl.kt"
-            line="116"/>
+            line="117"
+            column="45"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val namespace: Provider&lt;String> by lazy {"
+        errorLine2="                                                ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/UnitTestComponentDslInfoImpl.kt"
-            line="54"/>
+            line="54"
+            column="49"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val registeredExtensionDelegate= lazy {"
+        errorLine2="                                             ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/VariantBuilderImpl.kt"
-            line="137"/>
+            line="137"
+            column="46"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val applicationId: Property&lt;String> by lazy {"
+        errorLine2="                                                    ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/VariantDslInfoImpl.kt"
-            line="88"/>
+            line="87"
+            column="53"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    override val packaging: Packaging by lazy {"
+        errorLine2="                                         ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/VariantImpl.kt"
-            line="139"/>
+            line="139"
+            column="42"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val externalExtensions: Map&lt;Class&lt;*>, Any>? by lazy {"
+        errorLine2="                                                           ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/VariantImpl.kt"
-            line="205"/>
+            line="205"
+            column="60"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    val dirName: String by lazy {"
+        errorLine2="                           ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/variant/VariantPathHelper.kt"
-            line="144"/>
+            line="146"
+            column="28"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    val directorySegments: Collection&lt;String?> by lazy {"
+        errorLine2="                                                  ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/variant/VariantPathHelper.kt"
-            line="178"/>
+            line="180"
+            column="51"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    val baseName: String by lazy {"
+        errorLine2="                            ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/variant/VariantPathHelper.kt"
-            line="219"/>
+            line="221"
+            column="29"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="            by lazy { generatedDir(&quot;source&quot;, &quot;buildConfig&quot;, dirName) }"
+        errorLine2="               ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/variant/VariantPathHelper.kt"
-            line="271"/>
+            line="273"
+            column="16"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="            by lazy {"
+        errorLine2="               ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/variant/VariantPathHelper.kt"
-            line="274"/>
+            line="276"
+            column="16"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="            by lazy { reportsDir(&quot;coverage&quot;, dirName) }"
+        errorLine2="               ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/variant/VariantPathHelper.kt"
-            line="282"/>
+            line="284"
+            column="16"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="            by lazy { outputDir(&quot;apk&quot;) }"
+        errorLine2="               ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/variant/VariantPathHelper.kt"
-            line="310"/>
+            line="328"
+            column="16"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="    private val deploymentApkLocation: Provider&lt;Directory> by lazy {"
+        errorLine2="                                                              ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/variant/VariantPathHelper.kt"
-            line="320"/>
+            line="338"
+            column="63"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="            by lazy { outputDir(BuilderConstants.EXT_LIB_ARCHIVE) }"
+        errorLine2="               ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/variant/VariantPathHelper.kt"
-            line="325"/>
+            line="343"
+            column="16"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="        val taskRecord by lazy {"
+        errorLine2="                          ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/Workers.kt"
-            line="87"/>
+            line="87"
+            column="27"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
+        message="Avoid `by lazy` for simple lazy initialization"
+        errorLine1="        private val taskRecord by lazy {"
+        errorLine2="                                  ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/Workers.kt"
-            line="150"/>
+            line="150"
+            column="35"/>
     </issue>
 
     <issue
         id="NoNioFilesCopy"
-        message="Do not use `java.nio.file.Files.copy(Path, Path)`. Instead, use `FileUtils.copyFile(Path, Path)` or Kotlin&apos;s `File#copyTo(File)`">
+        message="Do not use `java.nio.file.Files.copy(Path, Path)`. Instead, use `FileUtils.copyFile(Path, Path)` or Kotlin&apos;s `File#copyTo(File)`"
+        errorLine1="            Files.copy(inputFile, renamedInputFile)"
+        errorLine2="                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/AsarToApksTransform.kt"
-            line="75"/>
+            line="75"
+            column="19"/>
     </issue>
 
     <issue
         id="NoOp"
-        message="This reference is unused: FD_OUTPUT">
+        message="This reference is unused: FD_OUTPUT"
+        errorLine1="            SdkConstants.FD_OUTPUT"
+        errorLine2="                         ~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/tasks/FusedLibraryManifestMergerTask.kt"
-            line="179"/>
+            line="179"
+            column="26"/>
     </issue>
 
     <issue
         id="NoOp"
-        message="This reference is unused: FD_OUTPUT">
+        message="This reference is unused: FD_OUTPUT"
+        errorLine1="            SdkConstants.FD_OUTPUT"
+        errorLine2="                         ~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/tasks/PrivacySandboxSdkManifestMergerTask.kt"
-            line="148"/>
+            line="148"
+            column="26"/>
     </issue>
 
     <issue
         id="ProjectExecOperations"
-        message="Avoid using `org.gradle.api.Project.exec` as it is incompatible with Gradle instant execution.">
+        message="Avoid using `org.gradle.api.Project.exec` as it is incompatible with Gradle instant execution."
+        errorLine1="            project.exec(action)"
+        errorLine2="                    ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/v2/NativeModelBuilder.kt"
-            line="66"/>
+            line="66"
+            column="21"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        Instant before = TaskProfilingRecord.Companion.getClock().instant();"
+        errorLine2="                                                       ~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/Blocks.java"
-            line="50"/>
+            line="50"
+            column="56"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        Instant after = TaskProfilingRecord.Companion.getClock().instant();"
+        errorLine2="                                                      ~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/Blocks.java"
-            line="52"/>
+            line="52"
+            column="55"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="            ).withName(FeatureSetMetadata.OUTPUT_FILE_NAME).on(InternalArtifactType.FEATURE_SET_METADATA)"
+        errorLine2="                                          ~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/featuresplit/FeatureSetMetadataWriterTask.kt"
-            line="131"/>
+            line="131"
+            column="43"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="                            parameters.packageId.isPresent &amp;&amp; parameters.packageId.get() &lt; FeatureSetMetadata.BASE_ID"
+        errorLine2="                                                                                                              ~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/res/LinkApplicationAndroidResourcesTask.kt"
-            line="897"/>
+            line="897"
+            column="111"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        startTime = TaskProfilingRecord.clock.instant()"
+        errorLine2="                                        ~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/profile/WorkerProfilingRecord.kt"
-            line="56"/>
+            line="56"
+            column="41"/>
     </issue>
 
     <issue
         id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope">
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        endTime = TaskProfilingRecord.clock.instant()"
+        errorLine2="                                      ~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/profile/WorkerProfilingRecord.kt"
-            line="63"/>
+            line="63"
+            column="39"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="            if (request.inputFile == request.originalInputFile) {"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/res/Aapt2ErrorUtils.kt"
-            line="73"/>
+            line="73"
+            column="17"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="                &amp;&amp; Objects.equals(artifact, that.artifact)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/level2/AndroidLibraryImpl.java"
-            line="217"/>
+            line="217"
+            column="20"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="                &amp;&amp; Objects.equals(folder, that.folder)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/level2/AndroidLibraryImpl.java"
-            line="218"/>
+            line="218"
+            column="20"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="                &amp;&amp; Objects.equals(classesFolder, that.classesFolder)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/BaseArtifactImpl.java"
-            line="174"/>
+            line="174"
+            column="20"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="                &amp;&amp; Objects.equals(javaResourcesFolder, that.javaResourcesFolder)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/BaseArtifactImpl.java"
-            line="176"/>
+            line="176"
+            column="20"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="                &amp;&amp; Objects.equals(mMultiDexKeepFile, that.mMultiDexKeepFile)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/BaseConfigImpl.java"
-            line="181"/>
+            line="181"
+            column="20"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="                &amp;&amp; Objects.equals(mMultiDexKeepProguard, that.mMultiDexKeepProguard)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/BaseConfigImpl.java"
-            line="182"/>
+            line="182"
+            column="20"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="                &amp;&amp; Objects.equals(buildFolder, that.buildFolder)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/DefaultAndroidProject.java"
-            line="431"/>
+            line="431"
+            column="20"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="                Objects.equals(infoFile, that.infoFile);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/InstantRunImpl.java"
-            line="68"/>
+            line="68"
+            column="17"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="        return Objects.equals(jarFile, that.jarFile) &amp;&amp;"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/JavaLibraryImpl.java"
-            line="79"/>
+            line="79"
+            column="16"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="                Objects.equals(artifactFile, that.artifactFile);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/level2/JavaLibraryImpl.java"
-            line="202"/>
+            line="202"
+            column="17"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="        check(result.librariesMap[inputFile] == outputFile)"
+        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/JetifyTransform.kt"
-            line="178"/>
+            line="178"
+            column="15"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="                Objects.equals(storeFile, that.storeFile) &amp;&amp;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/SigningConfigImpl.java"
-            line="151"/>
+            line="151"
+            column="17"/>
     </issue>
 
     <issue
         id="FileComparisons"
-        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="                &amp;&amp; Objects.equals(manifestFile, that.manifestFile)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/SourceProviderImpl.java"
-            line="211"/>
+            line="211"
+            column="20"/>
     </issue>
 
     <issue
         id="CommonForkJoinPool"
-        message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`.">
+        message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`."
+        errorLine1="                    .setExecutorService(MoreExecutors.listeningDecorator(ForkJoinPool.commonPool()))"
+        errorLine2="                                                                                      ~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/AsarToApksTransform.kt"
-            line="80"/>
+            line="80"
+            column="87"/>
     </issue>
 
     <issue
         id="CommonForkJoinPool"
-        message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`.">
+        message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`."
+        errorLine1="                .setExecutorService(MoreExecutors.listeningDecorator(ForkJoinPool.commonPool()))"
+        errorLine2="                                                                                  ~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/BundleToApkTask.kt"
-            line="121"/>
+            line="121"
+            column="83"/>
     </issue>
 
     <issue
         id="CommonForkJoinPool"
-        message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`.">
+        message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`."
+        errorLine1="                .setExecutorService(MoreExecutors.listeningDecorator(ForkJoinPool.commonPool()))"
+        errorLine2="                                                                                  ~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/BundleToStandaloneApkTask.kt"
-            line="126"/>
+            line="126"
+            column="83"/>
     </issue>
 
     <issue
         id="CommonForkJoinPool"
-        message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`.">
+        message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`."
+        errorLine1="    private val defaultExecutorService: ExecutorService = ForkJoinPool.commonPool()"
+        errorLine2="                                                                       ~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/Workers.kt"
-            line="42"/>
+            line="42"
+            column="72"/>
     </issue>
 
     <issue
         id="NewForkJoinPool"
-        message="Avoid using new ForkJoinPool instances when possible. Prefer using the IntelliJ application pool via `com.intellij.openapi.application.Application#executeOnPooledThread`, or for the Android Gradle Plugin use `com.android.build.gradle.internal.tasks.Workers`. See `go/do-not-freeze`.">
+        message="Avoid using new ForkJoinPool instances when possible. Prefer using the IntelliJ application pool via `com.intellij.openapi.application.Application#executeOnPooledThread`, or for the Android Gradle Plugin use `com.android.build.gradle.internal.tasks.Workers`. See `go/do-not-freeze`."
+        errorLine1="    val aapt2ThreadPool: ForkJoinPool = ForkJoinPool(parameters.aapt2ThreadPoolSize.get())"
+        errorLine2="                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/services/Aapt2ThreadPoolBuildService.kt"
-            line="35"/>
+            line="35"
+            column="41"/>
     </issue>
 
     <issue
         id="NewForkJoinPool"
-        message="Avoid using new ForkJoinPool instances when possible. Prefer using the IntelliJ application pool via `com.intellij.openapi.application.Application#executeOnPooledThread`, or for the Android Gradle Plugin use `com.android.build.gradle.internal.tasks.Workers`. See `go/do-not-freeze`.">
+        message="Avoid using new ForkJoinPool instances when possible. Prefer using the IntelliJ application pool via `com.intellij.openapi.application.Application#executeOnPooledThread`, or for the Android Gradle Plugin use `com.android.build.gradle.internal.tasks.Workers`. See `go/do-not-freeze`."
+        errorLine1="            ForkJoinPool()"
+        errorLine2="            ~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/DexMergingTask.kt"
-            line="830"/>
+            line="828"
+            column="13"/>
     </issue>
 
 </issues>
