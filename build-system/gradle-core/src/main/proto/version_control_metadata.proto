@@ -30,38 +30,43 @@ message RepositoryInfo {
     WORKTREE_STATUS_DIRTY = 2;
   }
   // VC system used by the app.
-  VersionControlSystem system = 1;
+  optional VersionControlSystem system = 1;
   // The local repository path starts with the “$PROJECT_DIR” or “$ABOVE_PROJECT_DIR” placeholder.
-  string local_root_path = 2;
+  optional string local_root_path = 2;
   // The revision identifier, e.g. the SHA1 git commit id
-  string revision = 3;
+  optional string revision = 3;
   // Status of the working tree this app was built from.
-  WorktreeStatus worktree_status = 4;
+  optional WorktreeStatus worktree_status = 4;
 }
 
 // Describes the general build info from the building process.
 message BuildInfo {
   // ID of the build job which created this bundle.
-  string job_id = 1;
+  optional string job_id = 1;
   // URL to the build job which created this bundle. Does not need to be public,
   // and probably will not be.
-  string job_url = 2;
+  optional string job_url = 2;
   // ID for the specific build, e.g. a UUID.
-  string build_id = 3;
+  optional string build_id = 3;
   // Build label: an arbitrary string set by the build system. May be used to
   // embed a release label.
-  string label = 4;
+  optional string label = 4;
   // Time at which the build was started.
-  google.protobuf.Timestamp build_timestamp = 5;
+  optional google.protobuf.Timestamp build_timestamp = 5;
 }
 
 // Describes the version control system used by the app and extra build info from the
 // building process.
 message BuildStamp {
+  enum GenerateErrorReason {
+    UNSPECIFIED = 0;
+    NO_SUPPORTED_VCS_FOUND = 1;
+    NO_VALID_GIT_FOUND = 2;
+  }
   // Info for all the VCS repositories included in the app.
   repeated RepositoryInfo repositories = 1;
   // Build system data.
-  BuildInfo build_info = 2;
+  optional BuildInfo build_info = 2;
   // Extra debug info which will help users identify issues
-  string generate_error_reason = 3;
+  optional GenerateErrorReason generate_error_reason = 3;
 }
