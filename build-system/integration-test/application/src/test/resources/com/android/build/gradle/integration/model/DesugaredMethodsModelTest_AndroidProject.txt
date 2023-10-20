@@ -41,9 +41,9 @@
             - codeShrinker                  = (null)
             - privacySandboxSdkInfo:
                - task                    = "buildPrivacySandboxSdkApksForDebug"
-               - outputListingFile       = {PROJECT}/build/intermediates/extracted_apks_from_privacy_sandbox_sdks_ide_model/debug/ide_model.json{!}
+               - outputListingFile       = {PROJECT}/build/intermediates/extracted_apks_from_privacy_sandbox_sdks_ide_model/debug/buildPrivacySandboxSdkApksForDebug/ide_model.json{!}
                - taskLegacy              = "extractApksFromSdkSplitsForDebug"
-               - outputListingLegacyFile = {PROJECT}/build/intermediates/apk_from_sdks_ide_model/debug/output-metadata.json{!}
+               - outputListingLegacyFile = {PROJECT}/build/intermediates/apk_from_sdks_ide_model/debug/extractApksFromSdkSplitsForDebug/output-metadata.json{!}
          < mainArtifact
          > androidTestArtifact:
             - compileTaskName               = "compileDebugAndroidTestSources"
