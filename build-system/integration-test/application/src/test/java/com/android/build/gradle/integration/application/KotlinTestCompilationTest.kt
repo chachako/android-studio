@@ -121,4 +121,30 @@ class KotlinTestCompilationTest {
             }
         project.executor().run("library:assembleDebugAndroidTest", "library:compileDebugUnitTestJavaWithJavac")
     }
+
+    /**
+     * Regression test for b/269585156.
+     *
+     * The fasterxml dependency cannot parse the file successfully. With the fix, adding it to the
+     * classpath here should not trigger any exception.
+     */
+    @Test
+    fun testXmlParserResourceCompilation() {
+        project.buildFile.writeText(
+            """
+                apply from: "../commonHeader.gradle"
+
+                buildscript {
+                    apply from: "../commonHeader.gradle"  // for ${'$'}kotlinVersion
+                    apply from: "../commonBuildScript.gradle"
+
+                    dependencies {
+                        classpath "com.fasterxml:aalto-xml:1.3.0"
+                        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${'$'}{libs.versions.kotlinVersion.get()}"
+                    }
+                }
+            """.trimIndent()
+        )
+        project.executor().run("asDeb")
+    }
 }

@@ -35,6 +35,7 @@ ARTIFACTS = [
     "com.google.code.gson:gson:2.8.6",
     "com.google.crypto.tink:tink:1.3.0-rc2",
     "com.google.crypto.tink:tink:1.7.0",
+    "com.fasterxml:aalto-xml:1.3.0",
     "com.fasterxml.jackson.core:jackson-annotations:2.11.1",
     "com.fasterxml.jackson.core:jackson-core:2.11.1",
     "com.fasterxml.jackson.core:jackson-databind:2.11.1",
