@@ -264,4 +264,10 @@ class GlobalTaskCreationConfigImpl(
 
     override val aarOrJarTypeToConsume: AarOrJarTypeToConsume
         get() = getAarOrJarTypeToConsume(services.projectOptions, namespacedAndroidResources)
+
+    override val avoidTaskRegistration: Boolean = services.projectOptions.run {
+        get(BooleanOption.IDE_AVOID_TASK_REGISTRATION) &&
+                (get(BooleanOption.IDE_BUILD_MODEL_ONLY) || get(BooleanOption.IDE_BUILD_MODEL_ONLY_V2)
+                        )
+    }
 }

@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.application;
 import static com.android.SdkConstants.FN_R_CLASS_JAR;
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
 import static com.android.build.gradle.internal.scope.InternalArtifactType.COMPILE_AND_RUNTIME_NOT_NAMESPACED_R_CLASS_JAR;
+import static org.junit.Assert.fail;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
@@ -199,5 +200,36 @@ public class ModelTest {
         assertThat(flags.getFlagValue(BooleanFlag.APPLICATION_R_CLASS_CONSTANT_IDS.name())).isFalse();
         assertThat(flags.getFlagValue(BooleanFlag.TEST_R_CLASS_CONSTANT_IDS.name())).isFalse();
         assertThat(flags.getFlagValue(BooleanFlag.TRANSITIVE_R_CLASS.name())).isFalse();
+    }
+
+    @Test
+    public void checkLintTaskRegistrationAvoidance() throws Exception {
+        TestFileUtils.appendToFile(
+                project.getBuildFile(),
+                "\n"
+                        + "project.gradle.projectsEvaluated {\n"
+                        + "   if (tasks.names.contains('lintDebug'))\n"
+                        + "     throw new RuntimeException('lintDebug should not be registered')"
+                        + "}\n");
+
+        AndroidProject androidProject =
+                project.modelV2()
+                        .with(BooleanOption.IDE_AVOID_TASK_REGISTRATION, true)
+                        .fetchModels()
+                        .getContainer()
+                        .getProject()
+                        .getAndroidProject();
+
+        assertThat(androidProject).isNotNull();
+
+        try {
+            project.modelV2().with(BooleanOption.IDE_AVOID_TASK_REGISTRATION, false).fetchModels();
+            fail("Project configuration should throw as Lint tasks are registered.");
+        } catch (Throwable error) {
+            assertThat(error)
+                    .hasCauseThat()
+                    .hasMessageThat()
+                    .contains("lintDebug should not be registered");
+        }
     }
 }

@@ -28,6 +28,7 @@ import com.android.build.gradle.options.Version.VERSION_7_2
 import com.android.build.gradle.options.Version.VERSION_7_3
 import com.android.build.gradle.options.Version.VERSION_BEFORE_4_0
 import com.android.builder.model.AndroidProject
+import com.android.builder.model.AndroidProject.PROPERTY_AVOID_TASK_REGISTRATION
 import com.android.builder.model.AndroidProject.PROPERTY_BUILD_MODEL_ONLY
 import com.android.builder.model.PROPERTY_BUILD_MODEL_V2_ONLY
 import com.android.builder.model.PROPERTY_BUILD_WITH_STABLE_IDS
@@ -56,6 +57,7 @@ enum class BooleanOption(
     @Deprecated("Use IDE_BUILD_MODEL_ONLY_V2")
     IDE_BUILD_MODEL_FEATURE_FULL_DEPENDENCIES(AndroidProject.PROPERTY_BUILD_MODEL_FEATURE_FULL_DEPENDENCIES, false, ApiStage.Stable),
     IDE_REFRESH_EXTERNAL_NATIVE_MODEL(PROPERTY_REFRESH_EXTERNAL_NATIVE_MODEL, false, ApiStage.Stable),
+    IDE_AVOID_TASK_REGISTRATION(PROPERTY_AVOID_TASK_REGISTRATION, false, ApiStage.Stable),
     //IDE_GENERATE_SOURCES_ONLY(AndroidProject.PROPERTY_GENERATE_SOURCES_ONLY, false, ApiStage.Stable),
 
     // tell bundletool to only extract instant APKs.

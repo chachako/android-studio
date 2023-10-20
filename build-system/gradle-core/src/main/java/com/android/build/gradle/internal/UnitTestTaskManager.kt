@@ -30,6 +30,7 @@ import com.android.build.gradle.internal.tasks.JacocoTask
 import com.android.build.gradle.internal.tasks.PackageForUnitTest
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.dependsOn
+import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.BooleanOption.LINT_ANALYSIS_PER_COMPONENT
 import com.android.build.gradle.tasks.GenerateTestConfig
 import com.android.build.gradle.tasks.factory.AndroidUnitTest
@@ -183,8 +184,10 @@ class UnitTestTaskManager(
         }
         maybeCreateTransformClassesWithAsmTask(unitTestCreationConfig)
 
-        if (unitTestCreationConfig.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)
-            && globalConfig.lintOptions.ignoreTestSources.not()) {
+        if (globalConfig.avoidTaskRegistration.not()
+            && unitTestCreationConfig.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)
+            && globalConfig.lintOptions.ignoreTestSources.not()
+        ) {
             taskFactory.register(
                 AndroidLintAnalysisTask.PerComponentCreationAction(
                     unitTestCreationConfig,
