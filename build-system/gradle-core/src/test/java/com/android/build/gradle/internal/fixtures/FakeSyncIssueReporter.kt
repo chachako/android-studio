@@ -42,6 +42,9 @@ class FakeSyncIssueReporter(
     val errors = mutableListOf<String>()
     val warnings = mutableListOf<String>()
 
+    // we are in IDE mode for all tests recording sync issues.
+    override fun isInStandardEvaluationMode(): Boolean = false
+
     override fun reportIssue(type: Type,
         severity: Severity,
         exception: EvalIssueException

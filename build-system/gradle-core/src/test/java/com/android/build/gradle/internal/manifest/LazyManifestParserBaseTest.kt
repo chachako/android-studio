@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.manifest
 
+import com.android.build.gradle.internal.fixtures.FakeGradleProvider
 import com.android.build.gradle.internal.services.createProjectServices
 import com.android.builder.model.SyncIssue
 import com.android.testutils.AbstractBuildGivenBuildExpectTest
@@ -70,7 +71,7 @@ internal abstract class LazyManifestParserBaseTest :
             manifestFile = manifestFileProperty,
             manifestFileRequired = given.manifestFileIsRequired,
             projectServices = projectServices,
-            manifestParsingAllowed = BooleanSupplier{ !given.earlyManifestParsingCheck }
+            manifestParsingAllowed = FakeGradleProvider(!given.earlyManifestParsingCheck)
         )
 
         return Result(

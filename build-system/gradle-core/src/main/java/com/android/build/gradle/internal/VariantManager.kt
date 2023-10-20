@@ -105,7 +105,6 @@ import org.gradle.api.Project
 import org.gradle.api.attributes.Attribute
 import java.io.File
 import java.util.Locale
-import java.util.function.BooleanSupplier
 import java.util.stream.Collectors
 
 /** Class to create, manage variants.  */
@@ -265,8 +264,9 @@ class VariantManager<
                 buildTypeData.sourceSet,
                 signingOverride,
                 getLazyManifestParser(
-                        defaultConfigSourceProvider.manifestFile,
-                        componentType.requiresManifest) { canParseManifest() },
+                    defaultConfigSourceProvider.manifestFile,
+                    componentType.requiresManifest,
+                ),
                 variantPropertiesApiServices,
                 dslExtension,
                 project.layout.buildDirectory,
@@ -448,7 +448,8 @@ class VariantManager<
             signingOverride,
             getLazyManifestParser(
                 testFixturesSourceSet.manifestFile,
-                testFixturesComponentType.requiresManifest) { canParseManifest() },
+                testFixturesComponentType.requiresManifest
+            ),
             variantPropertiesApiServices,
             extension = dslExtension,
             buildDirectory = project.layout.buildDirectory,
@@ -584,8 +585,9 @@ class VariantManager<
                 buildTypeData.getTestSourceSet(componentType),
                 signingOverride,
                 getLazyManifestParser(
-                        testSourceSet.manifestFile,
-                        componentType.requiresManifest) { canParseManifest() },
+                    testSourceSet.manifestFile,
+                    componentType.requiresManifest
+                ),
                 variantPropertiesApiServices,
                 extension = dslExtension,
                 buildDirectory = project.layout.buildDirectory,
@@ -951,26 +953,28 @@ class VariantManager<
     }
 
     private fun getLazyManifestParser(
-            file: File,
-            isManifestFileRequired: Boolean,
-            isInExecutionPhase: BooleanSupplier): LazyManifestParser {
+        file: File,
+        isManifestFileRequired: Boolean
+    ): LazyManifestParser {
         return lazyManifestParserMap.computeIfAbsent(
                 file
         ) { f: File? ->
             LazyManifestParser(
-                    projectServices.objectFactory.fileProperty().fileValue(f),
-                    isManifestFileRequired,
-                    projectServices,
-                    isInExecutionPhase)
+                projectServices.objectFactory.fileProperty().fileValue(f),
+                isManifestFileRequired,
+                canParseManifest,
+                projectServices,
+            )
         }
     }
 
-    private fun canParseManifest(): Boolean {
-        return hasCreatedTasks || !dslServices.projectOptions[BooleanOption.DISABLE_EARLY_MANIFEST_PARSING]
+    private val canParseManifest = projectServices.objectFactory.property(Boolean::class.java).also {
+        it.set(!dslServices.projectOptions[BooleanOption.DISABLE_EARLY_MANIFEST_PARSING])
     }
 
     fun setHasCreatedTasks(hasCreatedTasks: Boolean) {
         this.hasCreatedTasks = hasCreatedTasks
+        canParseManifest.set(true)
     }
 
     fun lockVariantProperties() {

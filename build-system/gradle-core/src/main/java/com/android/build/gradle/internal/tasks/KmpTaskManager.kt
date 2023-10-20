@@ -63,6 +63,7 @@ class KmpTaskManager(
 
     private val lintTaskManager = LintTaskManager(globalConfig, taskFactory, project)
 
+    val canParseManifest = project.objects.property(Boolean::class.java)
     var hasCreatedTasks = false
 
     fun createTasks(
@@ -92,6 +93,7 @@ class KmpTaskManager(
 
         variant.publishBuildArtifacts()
 
+        canParseManifest.set(true)
         hasCreatedTasks = true
     }
 

@@ -551,15 +551,15 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
 
         val manifestLocation = getAndroidManifestDefaultLocation(kotlinCompilation)
 
+        taskManager.canParseManifest.set(
+            !dslServices.projectOptions[BooleanOption.DISABLE_EARLY_MANIFEST_PARSING]
+        )
         val manifestParser = LazyManifestParser(
             manifestFile = projectServices.objectFactory.fileProperty().fileValue(manifestLocation),
             manifestFileRequired = true,
-            projectServices = projectServices
-        ) {
-            taskManager.hasCreatedTasks || !projectServices.projectOptions.get(
-                BooleanOption.DISABLE_EARLY_MANIFEST_PARSING
-            )
-        }
+            taskManager.canParseManifest,
+            projectServices = projectServices,
+        )
 
         val dslInfo = KmpAndroidTestDslInfoImpl(
             androidExtension,

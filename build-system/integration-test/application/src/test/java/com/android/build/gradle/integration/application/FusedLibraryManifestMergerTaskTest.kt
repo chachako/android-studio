@@ -145,7 +145,12 @@ internal class FusedLibraryManifestMergerTaskTest {
                 "AndroidManifest.xml"
         )
         val parsedManifestFile =
-                parseManifest(mergedManifestFile, true, { true }, manifestIssueDataReporter)
+                parseManifest(
+                    manifestFileContent = mergedManifestFile.readText(),
+                    manifestFilePath = mergedManifestFile.absolutePath,
+                    manifestFileRequired = true,
+                    issueReporter = manifestIssueDataReporter
+                )
 
         assertThat(parsedManifestFile.packageName).isEqualTo("com.example.fusedLib1")
         assertThat(parsedManifestFile.minSdkVersion?.apiLevel).isEqualTo(19)
@@ -207,7 +212,12 @@ internal class FusedLibraryManifestMergerTaskTest {
                 project.getSubproject("app")
                         .getIntermediateFile("merged_manifest", "debug", "processDebugMainManifest", "AndroidManifest.xml")
         val parsedManifest =
-                parseManifest(mergedManifest, true, { true }, manifestIssueDataReporter)
+                parseManifest(
+                    manifestFileContent = mergedManifest.readText(),
+                    manifestFilePath = mergedManifest.absolutePath,
+                    manifestFileRequired = true,
+                    issueReporter = manifestIssueDataReporter
+                )
         assertThat(parsedManifest.minSdkVersion?.apiLevel).isEqualTo(19)
         assertThat(parsedManifest.packageName).isEqualTo("com.example.app")
         assertThat(parsedManifest.targetSdkVersion?.apiLevel).isEqualTo(19)

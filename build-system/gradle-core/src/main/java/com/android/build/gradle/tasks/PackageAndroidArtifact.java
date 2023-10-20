@@ -116,7 +116,9 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 import javax.inject.Inject;
 import kotlin.Pair;
+import kotlin.io.FilesKt;
 import kotlin.jvm.functions.Function3;
+import kotlin.text.Charsets;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
@@ -827,9 +829,11 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
         // In execution phase, so can parse the manifest.
         ManifestData manifestData =
                 ManifestDataKt.parseManifest(
-                        new File(manifestForSplit.getOutputFile()),
+                        FilesKt.readText(
+                                new File(manifestForSplit.getOutputFile()), Charsets.UTF_8),
+                        manifestForSplit.getOutputFile(),
                         true,
-                        () -> true,
+                        null,
                         MANIFEST_DATA_ISSUE_REPORTER);
 
         NativeLibrariesPackagingMode nativeLibsPackagingMode =
