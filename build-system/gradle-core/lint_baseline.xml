@@ -13,6 +13,17 @@
     </issue>
 
     <issue
+        id="CheckResult"
+        message="The result of `intern` is not used"
+        errorLine1="                        it.intern(symbol)"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/build/gradle/internal/services/SymbolTableBuildService.kt"
+            line="97"
+            column="25"/>
+    </issue>
+
+    <issue
         id="AvoidByLazy"
         message="Avoid `by lazy` for simple lazy initialization"
         errorLine1="    override val instrumentationRunnerArguments: Map&lt;String, String> by lazy {"

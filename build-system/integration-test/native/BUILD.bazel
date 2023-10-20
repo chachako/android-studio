@@ -1,4 +1,4 @@
-load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_repository")
 load("//tools/base/build-system/integration-test:integration-test.bzl", "single_gradle_integration_test")
 
@@ -19,10 +19,6 @@ CMAKE = [
     "//prebuilts/studio/sdk:cmake",
 ]
 
-NDK_LEGACY = [
-    "//prebuilts/studio/sdk:ndk-bundle",
-]
-
 NDK = [
     "//prebuilts/studio/sdk:ndk",
 ]
@@ -38,8 +34,6 @@ DOLPHIN = [
 ABSEIL = [
     "//prebuilts/studio/buildbenchmarks/abseil-cpp.731689ff:abseil-cpp.731689ff",
 ]
-
-ANDROID_23 = ["//prebuilts/studio/sdk:platforms/android-23_build_only"]
 
 #keep sorted
 DEPS = [
@@ -88,10 +82,6 @@ MAVEN_REPOS = [
     "//tools/base/build-system/integration-test:prefab_repo",
     "//tools/base/build-system/integration-test:support_library_latest",
     "//tools/base/build-system/integration-test/native:prebuilts",
-]
-
-WINDOWS_DISABLED_TAG = [
-    "no_test_windows",  # b/73306170
 ]
 
 single_gradle_integration_test(
@@ -536,7 +526,7 @@ maven_repository(
         "@maven//:com.android.support.constraint.constraint-layout_1.0.2",
         "@maven//:com.android.support.multidex_1.0.2",
         "@maven//:com.google.guava.guava_19.0",
-        "@maven//:com.google.protobuf.protobuf-java-util_3.21.8",
+        "@maven//:com.google.protobuf.protobuf-java-util_3.22.3",
         "@maven//:org.jetbrains.kotlin.kotlin-compiler-embeddable_1.7.10",
     ],
 )

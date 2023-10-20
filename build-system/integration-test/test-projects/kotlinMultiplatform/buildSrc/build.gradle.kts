@@ -7,7 +7,7 @@ dependencies {
   implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlinVersion.get()}")
   implementation("com.android.tools.build:gradle:${libs.versions.buildVersion.get()}")
   implementation("com.google.code.gson:gson:2.8.6")
-  implementation("com.google.protobuf:protobuf-java-util:3.21.8")
+  implementation("com.google.protobuf:protobuf-java-util:3.22.3")
   implementation(gradleApi())
 }
 

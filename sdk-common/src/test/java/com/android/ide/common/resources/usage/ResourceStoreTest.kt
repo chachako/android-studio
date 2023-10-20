@@ -98,7 +98,7 @@ class ResourceStoreTest {
         store1.merge(store2)
         store1.merge(store3)
         val merged = ResourceStore.serialize(store1)
-        assertThat(merged).isEqualTo("dimen[dim(E)],layout[activity_main(U,7f070000),included(E)],string[app_name2(E),app_name(DP),hello_world(E,7f030000)];1^2^5;layout/included,string/*;dimen/d*,string/s*;")
+        assertThat(merged).isEqualTo("dimen[dim(E)],layout[activity_main(U,7f070000),included(E)],string[app_name(DP),hello_world(E,7f030000),app_name2(E)];1^2^4;layout/included,string/*;dimen/d*,string/s*;")
         // Additional merges should be no-ops: flags, locations etc should be skipped if already there
         store1.merge(store3)
         store1.merge(store2)

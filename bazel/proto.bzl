@@ -1,7 +1,7 @@
+load(":android.bzl", "select_android")
 load(":functions.bzl", "label_workspace_path", "workspace_path")
 load(":maven.bzl", "maven_library")
 load(":utils.bzl", "java_jarjar")
-load(":android.bzl", "select_android")
 
 # Enum-like values to determine the language the gen_proto rule will compile
 # the .proto files to.
@@ -10,8 +10,12 @@ proto_languages = struct(
     JAVA = 1,
 )
 
-PROTOC_VERSION = "3.19.6"
-PROTOC_GRPC_VERSION = "1.45.1"
+# This version of protoc is the one currently used in the studio-sdk.jar
+# It will be used to pin the version of protoc used to generate protofiles for analytics and utp
+# Please do not remove or change it unless the version in the platform has changed
+INTELLIJ_PLATFORM_PROTO_VERSION = "3.19.6"
+PROTOC_VERSION = "3.22.3"
+PROTOC_GRPC_VERSION = "1.57.0"
 
 ProtoPackageInfo = provider(fields = ["proto_src", "proto_path"])
 
@@ -161,6 +165,7 @@ def java_proto_library(
       protoc_version: The protoc version to use.
       protoc_grpc_version: A version of the grpc protoc plugin to use.
       proto_java_runtime_library: A label of java_library to be loaded at runtime.
+      **kwargs: other arguments accepted by bazel rule `java_library` are passed untouched.
     """
 
     # Targets that require grpc support should specify the version of protoc-gen-grpc-java plugin.
@@ -225,6 +230,7 @@ def android_java_proto_library(
       java_deps: Any additional java libraries to be packaged into the library.
       proto_deps: Any protos depended upon by the protos in this library (via `import`)
       visibility: Visibility of the rule.
+      **kwargs: other arguments accepted by bazel rule `java_proto_library` are passed untouched.
     """
     internal_name = "_" + name + "_internal"
     java_proto_library(
