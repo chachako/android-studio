@@ -1,1 +1,1 @@
-per-file artifacts_allowlist.txt = xav@google.com
+per-file artifacts_allowlist.txt = file:platform/tools/base:/owners/studio_leads_OWNERS
