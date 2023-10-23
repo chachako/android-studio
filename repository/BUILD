@@ -116,7 +116,7 @@ xsd_to_java(
     package = "com.android.repository.impl.generated.v1",
     src_location = "tools/base/repository/src/main/java",
     xsd = "src/main/resources/xsd/repo-common-01.xsd",
-    deps = [":tools.repository"],
+    deps = [":tools.repository.lib"],
 )
 
 xsd_to_java(
@@ -127,7 +127,7 @@ xsd_to_java(
     package = "com.android.repository.impl.generated.v2",
     src_location = "tools/base/repository/src/main/java",
     xsd = "src/main/resources/xsd/repo-common-02.xsd",
-    deps = [":tools.repository"],
+    deps = [":tools.repository.lib"],
 )
 
 xsd_to_java(
@@ -139,7 +139,7 @@ xsd_to_java(
     package = "com.android.repository.impl.generated.generic.v2",
     src_location = "tools/base/repository/src/main/java",
     xsd = "src/main/resources/xsd/generic-02.xsd",
-    deps = [":tools.repository"],
+    deps = [":tools.repository.lib"],
 )
 
 xsd_to_java(
@@ -149,7 +149,7 @@ xsd_to_java(
     package = "com.android.repository.impl.sources.generated.v1",
     src_location = "tools/base/repository/src/main/java",
     xsd = "src/main/resources/xsd/sources/repo-sites-common-1.xsd",
-    deps = [":tools.repository"],
+    deps = [":tools.repository.lib"],
 )
 
 java_binary(

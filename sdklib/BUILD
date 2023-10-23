@@ -235,8 +235,8 @@ xsd_to_java(
     src_location = "tools/base/sdklib/src/main/java",
     xsd = "src/main/resources/xsd/sdk-common-02.xsd",
     deps = [
-        ":tools.sdklib",
-        "//tools/base/repository:tools.repository",
+        ":tools.sdklib.lib",
+        "//tools/base/repository:tools.repository.lib",
     ],
 )
 
@@ -252,8 +252,8 @@ xsd_to_java(
     src_location = "tools/base/sdklib/src/main/java",
     xsd = "src/main/resources/xsd/sdk-repository-02.xsd",
     deps = [
-        ":tools.sdklib",
-        "//tools/base/repository:tools.repository",
+        ":tools.sdklib.lib",
+        "//tools/base/repository:tools.repository.lib",
     ],
 )
 
@@ -268,8 +268,8 @@ xsd_to_java(
     src_location = "tools/base/sdklib/src/main/java",
     xsd = "src/main/resources/xsd/sdk-addon-02.xsd",
     deps = [
-        ":tools.sdklib",
-        "//tools/base/repository:tools.repository",
+        ":tools.sdklib.lib",
+        "//tools/base/repository:tools.repository.lib",
     ],
 )
 
@@ -284,8 +284,8 @@ xsd_to_java(
     src_location = "tools/base/sdklib/src/main/java",
     xsd = "src/main/resources/xsd/sdk-sys-img-02.xsd",
     deps = [
-        ":tools.sdklib",
-        "//tools/base/repository:tools.repository",
+        ":tools.sdklib.lib",
+        "//tools/base/repository:tools.repository.lib",
     ],
 )
 
@@ -297,8 +297,8 @@ xsd_to_java(
     src_location = "tools/base/sdklib/src/main/java",
     xsd = "src/main/resources/xsd/sources/sdk-sites-list-4.xsd",
     deps = [
-        ":tools.sdklib",
-        "//tools/base/repository:tools.repository",
+        ":tools.sdklib.lib",
+        "//tools/base/repository:tools.repository.lib",
     ],
 )
 
@@ -312,8 +312,8 @@ xsd_to_java(
     src_location = "tools/base/sdklib/src/main/java",
     xsd = "src/main/resources/xsd/sdk-common-03.xsd",
     deps = [
-        ":tools.sdklib",
-        "//tools/base/repository:tools.repository",
+        ":tools.sdklib.lib",
+        "//tools/base/repository:tools.repository.lib",
     ],
 )
 
@@ -329,8 +329,8 @@ xsd_to_java(
     src_location = "tools/base/sdklib/src/main/java",
     xsd = "src/main/resources/xsd/sdk-repository-03.xsd",
     deps = [
-        ":tools.sdklib",
-        "//tools/base/repository:tools.repository",
+        ":tools.sdklib.lib",
+        "//tools/base/repository:tools.repository.lib",
     ],
 )
 
@@ -345,8 +345,8 @@ xsd_to_java(
     src_location = "tools/base/sdklib/src/main/java",
     xsd = "src/main/resources/xsd/sdk-addon-03.xsd",
     deps = [
-        ":tools.sdklib",
-        "//tools/base/repository:tools.repository",
+        ":tools.sdklib.lib",
+        "//tools/base/repository:tools.repository.lib",
     ],
 )
 
@@ -361,8 +361,8 @@ xsd_to_java(
     src_location = "tools/base/sdklib/src/main/java",
     xsd = "src/main/resources/xsd/sdk-sys-img-03.xsd",
     deps = [
-        ":tools.sdklib",
-        "//tools/base/repository:tools.repository",
+        ":tools.sdklib.lib",
+        "//tools/base/repository:tools.repository.lib",
     ],
 )
 
@@ -374,7 +374,7 @@ xsd_to_java(
     src_location = "tools/base/sdklib/src/main/java",
     xsd = "src/main/resources/xsd/sources/sdk-sites-list-5.xsd",
     deps = [
-        ":tools.sdklib",
-        "//tools/base/repository:tools.repository",
+        ":tools.sdklib.lib",
+        "//tools/base/repository:tools.repository.lib",
     ],
 )

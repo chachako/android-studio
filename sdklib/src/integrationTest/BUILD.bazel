@@ -11,6 +11,7 @@ kotlin_test(
     ],
     jvm_flags = ["-Dtest.suite.jar=integration-test.jar"],
     test_class = "com.android.testutils.JarTestSuite",
+    visibility = ["//tools/base/sdklib:__pkg__"],
     deps = [
         "//tools/base/annotations",
         "//tools/base/testutils:tools.testutils",
