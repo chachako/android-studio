@@ -77,6 +77,18 @@ class BodyRemovalTestMode :
     root.acceptSourceFile(
       object : EditVisitor() {
         override fun visitIfExpression(node: UIfExpression): Boolean {
+          checkIfExpression(node)
+          return super.visitIfExpression(node)
+        }
+
+        private fun checkIfExpression(node: UIfExpression) {
+          // If an expression is used as a default value of constructor property,
+          // the source psi can appear as the corresponding property's initializer
+          // as well as the default value of the value parameter in the constructor.
+          val sourcePsi = node.sourcePsi ?: return
+          if (!seen.add(sourcePsi)) {
+            return
+          }
           if (!node.isTernary && !node.isElvisIf()) {
             toggleBraces(node.thenExpression)
             val elseExpression = node.elseExpression?.skipParenthesizedExprDown()
@@ -84,7 +96,6 @@ class BodyRemovalTestMode :
               toggleBraces(node.elseExpression)
             }
           }
-          return super.visitIfExpression(node)
         }
 
         private fun toggleBraces(node: UExpression?) {
