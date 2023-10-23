@@ -153,6 +153,7 @@ class UtpConfigFactory {
                     shardConfig,
                     uninstallApksAfterTest,
                     extractedSdkApks,
+                    reinstallIncompatibleApksBeforeTest = false,
                 )
             )
             singleDeviceExecutor = createSingleDeviceExecutor(device.serialNumber, shardConfig)
@@ -235,7 +236,7 @@ class UtpConfigFactory {
                         findAdditionalTestOutputDirectoryOnManagedDevice(device, testData)
                     },
                     coverageOutputDir, installApkTimeout, shardConfig, uninstallApksAfterTest,
-                    extractedSdkApks,
+                    extractedSdkApks, reinstallIncompatibleApksBeforeTest = true,
                 )
             )
             singleDeviceExecutor = createSingleDeviceExecutor(device.id, shardConfig)
@@ -360,6 +361,7 @@ class UtpConfigFactory {
         shardConfig: ShardConfig?,
         uninstallApksAfterTest: Boolean,
         extractedSdkApks: List<List<Path>>,
+        reinstallIncompatibleApksBeforeTest: Boolean,
     ): FixtureProto.TestFixture {
         return FixtureProto.TestFixture.newBuilder().apply {
             var additionalTestParams: MutableMap<String, String> = mutableMapOf()
@@ -444,6 +446,7 @@ class UtpConfigFactory {
                     testData,
                     uninstallApksAfterTest,
                     utpDependencies,
+                    reinstallIncompatibleApksBeforeTest,
                 )
             )
             // This line is required since AndroidTestPlugin sends event message to context after
@@ -734,6 +737,7 @@ class UtpConfigFactory {
         testData: StaticTestData,
         uninstallApksAfterTest: Boolean,
         utpDependencies: UtpDependencies,
+        reinstallIncompatibleApksBeforeTest: Boolean,
     ): ExtensionProto.Extension {
         return ANDROID_TEST_PLUGIN_APK_INSTALLER.toExtensionProto(
             utpDependencies, AndroidApkInstallerConfig::newBuilder
@@ -751,6 +755,7 @@ class UtpConfigFactory {
                             )
                         }.build()
                         uninstallAfterTest = uninstallApksAfterTest
+                        forceReinstallBeforeTest = reinstallIncompatibleApksBeforeTest
                     }.build()
                 }
             }
@@ -770,6 +775,7 @@ class UtpConfigFactory {
                             testData.applicationId
                         )
                     )
+                    forceReinstallBeforeTest = reinstallIncompatibleApksBeforeTest
                 }.build()
             }
 
@@ -782,6 +788,7 @@ class UtpConfigFactory {
                         installAsTestService = true
                     }.build()
                     uninstallAfterTest = uninstallApksAfterTest
+                    forceReinstallBeforeTest = reinstallIncompatibleApksBeforeTest
                 }.build()
             }
 
@@ -793,6 +800,7 @@ class UtpConfigFactory {
                         if (installApkTimeout != null) setInstallApkTimeout(installApkTimeout)
                     }.build()
                     uninstallAfterTest = uninstallApksAfterTest
+                    forceReinstallBeforeTest = reinstallIncompatibleApksBeforeTest
                 }.build()
             }
         }

@@ -53,6 +53,9 @@ message InstallableApk {
 
     // Package name of APKs installed during test
     repeated string apks_package_name = 4;
+
+    // If true, the incompatible APKs will be reinstalled before installing test APKs
+    bool force_reinstall_before_test = 5;
 }
 
 message AndroidApkInstallerConfig {

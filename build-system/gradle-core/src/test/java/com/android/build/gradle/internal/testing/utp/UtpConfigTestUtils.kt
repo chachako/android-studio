@@ -236,6 +236,7 @@ fun assertRunnerConfigProto(
     """ else """
         apk_paths: "mockDependencyApkPath"
     """
+    val forceReinstallBeforeTest = if(useGradleManagedDeviceProvider) "force_reinstall_before_test: true" else ""
 
     val testApkInstallerConfigProto = """
         host_plugin {
@@ -257,6 +258,7 @@ fun assertRunnerConfigProto(
                   $installApkTimeoutString
                 }
                 $uninstallAfterTest
+                $forceReinstallBeforeTest
               }
               apks_to_install {
                 apk_paths: "mockAppApkPath"
@@ -269,6 +271,7 @@ fun assertRunnerConfigProto(
                 $uninstallAfterTest
                 apks_package_name: "com.example.application"
                 apks_package_name: "com.example.application.test"
+                $forceReinstallBeforeTest
               }
               apks_to_install {
                 apk_paths: "mockHelperApkPath"
@@ -278,6 +281,7 @@ fun assertRunnerConfigProto(
                   install_as_test_service: true
                 }
                 $uninstallAfterTest
+                $forceReinstallBeforeTest
               }
               apks_to_install {
                 apk_paths: "testApk.apk"
@@ -286,6 +290,7 @@ fun assertRunnerConfigProto(
                   $installApkTimeoutString
                 }
                 $uninstallAfterTest
+                $forceReinstallBeforeTest
               }
             }
           }

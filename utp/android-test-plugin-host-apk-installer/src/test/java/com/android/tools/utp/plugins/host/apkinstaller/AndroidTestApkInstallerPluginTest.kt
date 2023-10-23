@@ -49,7 +49,6 @@ import org.junit.runners.JUnit4
 import org.mockito.Answers
 import org.mockito.Mock
 import org.mockito.Mockito.anyList
-import org.mockito.Mockito.anyLong
 import org.mockito.Mockito.inOrder
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
@@ -200,7 +199,7 @@ class AndroidTestApkInstallerPluginTest {
         val inOrder = inOrder(mockDeviceController, mockLogger)
         inOrder.verify(mockDeviceController, times(4)).getDevice()
         testArtifactsPath.forEach {
-            inOrder.verify(mockLogger).info("Installing APK: $it on device $mockDeviceSerial.")
+            inOrder.verify(mockLogger).info("Installing installable artifact: $it on device $mockDeviceSerial.")
             inOrder.verify(mockDeviceController).execute(listOf("install", "-t", it))
         }
         inOrder.verify(mockDeviceController).execute(
@@ -212,8 +211,9 @@ class AndroidTestApkInstallerPluginTest {
 
     @Test
     fun splitAPKInstallFail() {
+        val adbInstallFailOutput = listOf("ADB install failed")
         `when`(mockDeviceController.getDevice().serial).thenReturn(mockDeviceSerial)
-        `when`(mockDeviceController.execute(anyList(), eq(null))).thenReturn(CommandResult(1, listOf()))
+        `when`(mockDeviceController.execute(anyList(), eq(null))).thenReturn(CommandResult(1, adbInstallFailOutput))
         val exception = assertThrows(UtpException::class.java) {
             createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
                 addApksToInstallBuilder().apply {
@@ -234,7 +234,8 @@ class AndroidTestApkInstallerPluginTest {
                         additionalInstallOptions +
                         testApkPaths), eq(null))
         assertEquals(UtpException(installErrorSummary,
-                "Failed to install APK: $testApkPaths on device $mockDeviceSerial.").message,
+            "Failed to install APK: $testApkPaths on device $mockDeviceSerial.\n${adbInstallFailOutput}"
+        ).message,
                 exception.message)
     }
 
@@ -380,7 +381,7 @@ class AndroidTestApkInstallerPluginTest {
         }
         val testArtifactPath1 = testArtifactsPath[0]
         verify(mockDeviceController, times(4)).getDevice()
-        verify(mockLogger).info("Installing APK: $testArtifactPath1 on device $mockDeviceSerial.")
+        verify(mockLogger).info("Installing installable artifact: $testArtifactPath1 on device $mockDeviceSerial.")
         verify(mockDeviceController).execute(listOf("install", "-t", testArtifactPath1))
         assertEquals(UtpException(installErrorSummary,
                 "Failed to install APK: $testArtifactPath1 on device " +
@@ -413,9 +414,36 @@ class AndroidTestApkInstallerPluginTest {
     }
 
     @Test
-    fun nonSplitAPKFailTest() {
+    fun nonSplitAPKWithForceReinstallTest() {
         `when`(mockDeviceController.getDevice().serial).thenReturn(mockDeviceSerial)
-        `when`(mockDeviceController.execute(anyList(), eq(null))).thenReturn(CommandResult(1, listOf()))
+        `when`(mockDeviceController.execute(anyList(), eq(null))).thenReturn(CommandResult(0, listOf()))
+        createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
+            addApksToInstallBuilder().apply {
+                addAllApkPaths(testApkPaths)
+                installOptionsBuilder.apply {
+                    addAllCommandLineParameter(additionalInstallOptions)
+                    forceReinstallBeforeTest = true
+                }.build()
+            }.build()
+        }.build()).apply {
+            beforeAll(mockDeviceController)
+        }
+
+        verify(mockLogger).info("Installing $testApkPaths on device $mockDeviceSerial.")
+        verify(mockDeviceController, times(4)).getDevice()
+        testApkPaths.forEach {
+            verify(mockDeviceController).execute(
+                listOf("install", "-t", "-r", "-d") +
+                        additionalInstallOptions +
+                        it, null)
+        }
+    }
+
+    @Test
+    fun nonSplitAPKFailTest() {
+        val adbInstallFailOutput = listOf("ADB install failed")
+        `when`(mockDeviceController.getDevice().serial).thenReturn(mockDeviceSerial)
+        `when`(mockDeviceController.execute(anyList(), eq(null))).thenReturn(CommandResult(1, adbInstallFailOutput))
         val exception = assertThrows(UtpException::class.java) {
             createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
                 addApksToInstallBuilder().apply {
@@ -437,7 +465,7 @@ class AndroidTestApkInstallerPluginTest {
                         testApkPaths.first(), null)
         assertEquals(UtpException(installErrorSummary,
                 "Failed to install APK: ${testApkPaths.first()} on " +
-                    "device $mockDeviceSerial.").message,
+                    "device $mockDeviceSerial.\n${adbInstallFailOutput}").message,
                 exception.message)
     }
 
@@ -450,7 +478,7 @@ class AndroidTestApkInstallerPluginTest {
             beforeAll(mockDeviceController)
         }
         verify(mockDeviceController, times(4)).getDevice()
-        verify(mockLogger).info("Installing APK: $apkPath on device $mockDeviceSerial.")
+        verify(mockLogger).info("Installing installable artifact: $apkPath on device $mockDeviceSerial.")
         verify(mockDeviceController).execute(
                 listOf("install", "-t") + apkPath, null)
         verify(mockLogger).warning("Installable APK has empty path.")
@@ -544,9 +572,10 @@ class AndroidTestApkInstallerPluginTest {
     }
     @Test
     fun uninstallFailTest() {
+        val uninstallFailOutput = listOf("test")
         `when`(mockDeviceController.getDevice().serial).thenReturn(mockDeviceSerial)
         apkPackageNames.forEach {
-            `when`(mockDeviceController.uninstall(it)).thenReturn(CommandResult(1, listOf("test")))
+            `when`(mockDeviceController.uninstall(it)).thenReturn(CommandResult(1, uninstallFailOutput))
         }
         createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
             addApksToInstallBuilder().apply {
@@ -561,7 +590,7 @@ class AndroidTestApkInstallerPluginTest {
             verify(mockLogger).info("Uninstalling $it for " +
                     "device $mockDeviceSerial.")
             verify(mockLogger).warning("Device $mockDeviceSerial " +
-                    "failed to uninstall test APK $it.")
+                    "failed to uninstall test APK $it.\n${uninstallFailOutput}")
         }
     }
 

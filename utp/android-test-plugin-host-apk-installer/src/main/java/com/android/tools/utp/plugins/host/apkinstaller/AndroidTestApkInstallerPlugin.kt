@@ -34,6 +34,7 @@ import com.google.testing.platform.proto.api.core.TestArtifactProto.Artifact
 import com.google.testing.platform.proto.api.core.TestCaseProto
 import com.google.testing.platform.proto.api.core.TestResultProto.TestResult
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
+import com.google.testing.platform.proto.api.core.testResult
 import com.google.testing.platform.runtime.android.controller.ext.uninstall
 import com.google.testing.platform.runtime.android.device.AndroidDeviceProperties
 import java.time.Duration
@@ -108,7 +109,10 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
     /**
      * Returns corresponding installation command based on installable APK configuration.
      */
-    private fun getInstallCmd(installableApk: InstallableApk?, deviceApiLevel: Int): List<String> {
+    private fun getInstallCmd(
+        installableApk: InstallableApk?,
+        deviceApiLevel: Int,
+        forceReinstall: Boolean = false): List<String> {
         var installCmd: MutableList<String> = BASE_INSTALL_CMD.toMutableList()
         if (installableApk != null && installableApk.installOptions.installAsSplitApk) {
             installCmd = SPLIT_APK_INSTALL_CMD.toMutableList()
@@ -120,6 +124,7 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
             if (deviceApiLevel >= 30) installCmd.add("--force-queryable")
         }
         if (userId != null) installCmd.addAll(listOfNotNull("--user", userId))
+        if (forceReinstall) installCmd.addAll(listOf("-r", "-d"))
         return installCmd
     }
 
@@ -131,6 +136,12 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
             logger.info("No installables found in test fixture. Nothing to install.")
         }
     }
+
+    private fun apkInstallErrorMessage(
+        apkPath: String, deviceSerial: String, additionalOutput: List<String>
+    ): String =
+        "Failed to install APK: $apkPath on device $deviceSerial." + if (additionalOutput.isEmpty()) ""
+        else "\n$additionalOutput"
 
     /**
      * Installs all test APKs before tests run
@@ -150,13 +161,18 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
                 logger.warning("Installable APK has empty path.")
                 return@forEach
             }
-            logger.info("Installing APK: $apkPath on device $deviceSerial.")
-            if (deviceController.execute(
-                            installablesInstallCmd + listOf(apkPath)).statusCode != 0) {
-                throw UtpException(
+            logger.info("Installing installable artifact: $apkPath on device $deviceSerial.")
+            deviceController.execute(installablesInstallCmd + listOf(apkPath)).let { result ->
+                if (result.statusCode != 0) {
+                    throw UtpException(
                         installErrorSummary,
-                        "Failed to install APK: ${artifact.sourcePath.path} on device " +
-                                "$deviceSerial.")
+                        apkInstallErrorMessage(
+                            artifact.sourcePath.path,
+                            deviceSerial,
+                            result.output
+                        )
+                    )
+                }
             }
         }
 
@@ -181,7 +197,12 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
                     .installOptions
                     .installApkTimeout
                     .takeIf { it > 0 }?.toLong()?.let { Duration.ofSeconds(it) }
-            val installCmd = getInstallCmd(installableApk, deviceApiLevel)
+            val installCmd =
+                getInstallCmd(
+                    installableApk,
+                    deviceApiLevel,
+                    installableApk.forceReinstallBeforeTest
+                )
             logger.info("Installing ${installableApk.apkPathsList} on " +
                     "device $deviceSerial.")
             // Perform sequential install when multiple APK is presented and that they are not
@@ -189,25 +210,34 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
             if (!installableApk.installOptions.installAsSplitApk &&
                     installableApk.apkPathsCount > 1) {
                 installableApk.apkPathsList.forEach { apkPath ->
-                    if (deviceController.execute(
+                    deviceController.execute(
                                     installCmd +
                                             installableApk.installOptions.commandLineParameterList +
-                                            apkPath, installTimeoutDuration, ).statusCode != 0) {
-                        throw UtpException(
+                                            apkPath, installTimeoutDuration, ).let { result ->
+                        if(result.statusCode != 0) {
+                            throw UtpException(
                                 installErrorSummary,
-                                "Failed to install APK: $apkPath on device $deviceSerial.")
+                                apkInstallErrorMessage(apkPath, deviceSerial, result.output)
+                            )
+                        }
                     }
                 }
             } else {
-                if (deviceController.execute(
+                deviceController.execute(
                                 installCmd +
                                         installableApk.installOptions.commandLineParameterList +
                                         installableApk.apkPathsList,
-                                installTimeoutDuration).statusCode != 0) {
-                    throw UtpException(
+                                        installTimeoutDuration).let { result ->
+                    if (result.statusCode != 0) {
+                        throw UtpException(
                             installErrorSummary,
-                            "Failed to install APK: ${installableApk.apkPathsList} on device " +
-                                    "$deviceSerial.")
+                            apkInstallErrorMessage(
+                                installableApk.apkPathsList.toString(),
+                                deviceSerial,
+                                result.output
+                            )
+                        )
+                    }
                 }
             }
         }
@@ -234,11 +264,12 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
                 installableApk.apksPackageNameList.forEach { apkPackage ->
                     logger.info("Uninstalling $apkPackage for " +
                             "device ${deviceController.getDevice().serial}.")
-                    val uninstallResult = deviceController.uninstall(apkPackage)
-                    // Status code 0 signifies success
-                    if (uninstallResult.statusCode != 0) {
-                        logger.warning("Device ${deviceController.getDevice().serial} " +
-                                "failed to uninstall test APK $apkPackage.")
+                    deviceController.uninstall(apkPackage).let { result ->
+                        // Status code 0 signifies success
+                        if (result.statusCode != 0) {
+                            logger.warning("Device ${deviceController.getDevice().serial} " +
+                                    "failed to uninstall test APK $apkPackage.\n${result.output}")
+                        }
                     }
                 }
             }
