@@ -55,8 +55,8 @@ public class JdwpProxyServerTest {
         assertThat(proxy2.IsRunningAsServer()).isFalse();
 
         // Cleanup
+        // Note that there is no need to call `stop` on `proxy2` since it's not running as a server.
         proxy1.stop();
-        proxy2.stop();
     }
 
     @Test
