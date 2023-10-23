@@ -147,6 +147,28 @@
     <issue
         id="VisibleForTests"
         message="This class should only be accessed from tests or within private scope"
+        errorLine1="    private final AbstractAaptOutputParser[] parsers;"
+        errorLine2="                  ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/ide/common/blame/parser/aapt/Aapt2OutputParser.java"
+            line="31"
+            column="19"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This class should only be accessed from tests or within private scope"
+        errorLine1="    private static final AbstractAaptOutputParser[] PARSERS = {"
+        errorLine2="                         ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/ide/common/blame/parser/aapt/AaptOutputParser.java"
+            line="31"
+            column="26"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This class should only be accessed from tests or within private scope"
         errorLine1="class BadXmlBlockParser extends AbstractAaptOutputParser {"
         errorLine2="                                ~~~~~~~~~~~~~~~~~~~~~~~~">
         <location

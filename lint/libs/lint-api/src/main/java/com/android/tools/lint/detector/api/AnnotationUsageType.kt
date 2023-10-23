@@ -57,6 +57,12 @@ enum class AnnotationUsageType {
    */
   CLASS_REFERENCE,
 
+  /**
+   * A class reference where the class was annotated and the class reference is the type of a
+   * declaration (a variable, field, or method declaration, or function parameter).
+   */
+  CLASS_REFERENCE_AS_DECLARATION_TYPE,
+
   /** An argument to an annotation where the annotation parameter has been annotated. */
   ANNOTATION_REFERENCE,
 

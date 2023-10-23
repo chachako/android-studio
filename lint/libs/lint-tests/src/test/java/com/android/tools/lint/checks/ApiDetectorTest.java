@@ -8411,6 +8411,41 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 + "12 errors, 0 warnings");
     }
 
+    public void testTypesOfDeclarationsOk() {
+        // It's safe to use restricted types as the types of fields, methods, etc.
+        lint().files(
+                        kotlin(
+                                        ""
+                                                + "package test.pkg\n"
+                                                + "\n"
+                                                + "abstract class C {\n"
+                                                + "    abstract fun test(param: MyClass): MyClass\n"
+                                                + "    abstract val test: MyClass\n"
+                                                + "    val x: MyClass? = null\n"
+                                                + "}"
+                                                + "@androidx.annotation.RequiresApi(32)\n"
+                                                + "class MyClass {\n"
+                                                + "}\n")
+                                .indented(),
+                        java(""
+                                        + "import androidx.annotation.RequiresApi;\n"
+                                        + "\n"
+                                        + "public class Test {\n"
+                                        + "    MyClass field;"
+                                        + "    public MyClass test(MyClass param) {\n"
+                                        + "        return null;\n"
+                                        + "    }\n"
+                                        + "\n"
+                                        + "    @RequiresApi(32)\n"
+                                        + "    public static class MyClass {\n"
+                                        + "    }\n"
+                                        + "}\n")
+                                .indented(),
+                        SUPPORT_ANNOTATIONS_JAR)
+                .run()
+                .expectClean();
+    }
+
     public void testPackageInfoMinSdk() {
         // Regression test for b/228443895
         lint().files(

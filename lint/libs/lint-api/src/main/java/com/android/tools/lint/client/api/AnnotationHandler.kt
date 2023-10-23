@@ -40,6 +40,7 @@ import com.android.tools.lint.detector.api.AnnotationUsageType.ASSIGNMENT_LHS
 import com.android.tools.lint.detector.api.AnnotationUsageType.ASSIGNMENT_RHS
 import com.android.tools.lint.detector.api.AnnotationUsageType.BINARY
 import com.android.tools.lint.detector.api.AnnotationUsageType.CLASS_REFERENCE
+import com.android.tools.lint.detector.api.AnnotationUsageType.CLASS_REFERENCE_AS_DECLARATION_TYPE
 import com.android.tools.lint.detector.api.AnnotationUsageType.DEFINITION
 import com.android.tools.lint.detector.api.AnnotationUsageType.EQUALITY
 import com.android.tools.lint.detector.api.AnnotationUsageType.EXTENDS
@@ -59,9 +60,12 @@ import com.android.tools.lint.detector.api.hasImplicitDefaultConstructor
 import com.android.tools.lint.detector.api.isKotlin
 import com.android.tools.lint.detector.api.resolveOperator
 import com.google.common.collect.Multimap
+import com.intellij.lang.java.JavaLanguage
+import com.intellij.psi.JavaRecursiveElementVisitor
 import com.intellij.psi.PsiAnonymousClass
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiLocalVariable
 import com.intellij.psi.PsiMethod
@@ -69,12 +73,14 @@ import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiNewExpression
 import com.intellij.psi.PsiPackage
 import com.intellij.psi.PsiParameter
+import com.intellij.psi.PsiTypeElement
 import com.intellij.psi.util.PsiTypesUtil
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import org.jetbrains.kotlin.asJava.elements.KtLightMember
 import org.jetbrains.kotlin.asJava.elements.KtLightParameter
 import org.jetbrains.kotlin.asJava.unwrapped
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
+import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.psi.KtConstructorDelegationCall
 import org.jetbrains.kotlin.psi.KtDeclaration
@@ -83,6 +89,8 @@ import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtSuperTypeCallEntry
+import org.jetbrains.kotlin.psi.KtTreeVisitor
+import org.jetbrains.kotlin.psi.KtTypeReference
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 import org.jetbrains.uast.UAnnotated
 import org.jetbrains.uast.UAnnotation
@@ -602,11 +610,62 @@ internal class AnnotationHandler(
     }
   }
 
+  // Visit the declared type of a declaration or parameter
+  private fun visitDeclarationTypeReference(
+    context: JavaContext,
+    reference: UTypeReferenceExpression
+  ) {
+    // In the code
+    //    val x = List<T>
+    // there is no UElement corresponding to "T" in the UAST tree, but there is
+    // in the PSI tree. So to make sure that "T" is visited we send a visitor
+    // through the PSI tree to look for types and turn them back into UElements
+    // that can be passed on to the annotation checker.
+    val psi = reference.sourcePsi ?: return
+    fun handlePsiTypeElement(psi: PsiElement) {
+      val uElement = psi.toUElement()
+      if (uElement is UTypeReferenceExpression) {
+        val cls = context.evaluator.getTypeClass(uElement.type)
+        if (cls != null) {
+          val annotations = getMemberAnnotations(context, cls)
+          checkAnnotations(context, uElement, CLASS_REFERENCE_AS_DECLARATION_TYPE, cls, annotations)
+        }
+      }
+    }
+    val psiVisitor: PsiElementVisitor =
+      when (reference.lang) {
+        is KotlinLanguage -> {
+          object : KtTreeVisitor<Void>() {
+            override fun visitTypeReference(typeReference: KtTypeReference, data: Void?): Void? {
+              handlePsiTypeElement(typeReference)
+              return super.visitTypeReference(typeReference, data)
+            }
+          }
+        }
+        is JavaLanguage -> {
+          object : JavaRecursiveElementVisitor() {
+            override fun visitTypeElement(type: PsiTypeElement) {
+              handlePsiTypeElement(type)
+              super.visitTypeElement(type)
+            }
+          }
+        }
+        else -> return
+      }
+
+    psi.accept(psiVisitor)
+  }
+
   // TODO: visitField too such that we can enforce initializer consistency with
   // declared constraints!
 
   fun visitMethod(context: JavaContext, method: UMethod) {
     val evaluator = context.evaluator
+
+    if (method.returnTypeReference != null) {
+      visitDeclarationTypeReference(context, method.returnTypeReference!!)
+    }
+
     val methodAnnotations = getRelevantAnnotations(evaluator, method as UAnnotated, METHOD)
     if (methodAnnotations.isNotEmpty()) {
       // Check return values
@@ -900,6 +959,18 @@ internal class AnnotationHandler(
     val methodAnnotations = getRelevantAnnotations(evaluator, variable as UAnnotated, VARIABLE)
     if (methodAnnotations.isNotEmpty()) {
       checkContextAnnotations(context, variable, methodAnnotations, variable)
+    }
+
+    // Handle type annotations--the explicitly specified types of declarations--separately
+    // like the T's in "val x: T" and "T t;"
+    val typeReference = variable.typeReference
+    // The sourcePsi of the UVariable can be a Kotlin object declaration.
+    // A Kotlin object declaration annotated with A is a class-like declaration, and the class
+    // will be treated as though annotated with A. We don't want to flag the type of the object
+    // declaration itself as being a class reference to the class (annotated with A), so we
+    // skip object declarations here.
+    if (typeReference != null && variable.sourcePsi !is KtObjectDeclaration) {
+      visitDeclarationTypeReference(context, typeReference)
     }
 
     // Check the initializer to see if it is an annotated element

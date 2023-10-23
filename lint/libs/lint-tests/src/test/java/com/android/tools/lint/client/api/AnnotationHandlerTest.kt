@@ -22,6 +22,7 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.bytecode
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestLintTask
+import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.AnnotationInfo
 import com.android.tools.lint.detector.api.AnnotationOrigin
 import com.android.tools.lint.detector.api.AnnotationUsageInfo
@@ -259,6 +260,18 @@ class AnnotationHandlerTest {
       .run()
       .expect(
         """
+            src/test/api/Api.java:8: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+                public Api next = null;
+                       ~~~
+            src/test/api/Api.java:8: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+                public Api next = null;
+                       ~~~
+            src/test/usage/Usage.java:5: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+                public void test(Api api) {
+                                 ~~~
+            src/test/usage/Usage.java:5: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+                public void test(Api api) {
+                                 ~~~
             src/test/usage/Usage.java:6: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
                     use(api.field);      // ERROR 1A and 1B
                             ~~~~~
@@ -277,6 +290,12 @@ class AnnotationHandlerTest {
             src/test/usage/Usage.java:7: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
                     use(api.next.field); // ERROR 2A, 2B on next, 3A, 3B on field
                                  ~~~~~
+            src/test/usage/test.kt:4: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            fun test(api: Api) {
+                          ~~~
+            src/test/usage/test.kt:4: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+            fun test(api: Api) {
+                          ~~~
             src/test/usage/test.kt:5: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
                 use(api.field)       // ERROR 4A and 4B
                         ~~~~~
@@ -295,7 +314,150 @@ class AnnotationHandlerTest {
             src/test/usage/test.kt:6: Error: FIELD_REFERENCE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
                 use(api.next.field)  // ERROR 5A, 5B on next, 6A, 6B on field
                              ~~~~~
-            12 errors, 0 warnings
+            18 errors, 0 warnings
+            """
+      )
+  }
+
+  @Test
+  fun testDeclarationTypes() {
+    // Regression test for b/228961124
+    lint()
+      .files(
+        java(
+            """
+                package test.api;
+                import pkg.java.MyJavaAnnotation;
+                import pkg.kotlin.MyKotlinAnnotation;
+
+                @MyJavaAnnotation
+                @MyKotlinAnnotation
+                public class Api { }
+                """
+          )
+          .indented(),
+        kotlin(
+            """
+                package test.usage
+                import test.api.Api
+                abstract class C {
+                  abstract val api: Api
+                  abstract val list: List<Api>
+                  fun doSomething(api: Api): Api
+                  fun doSomethingLists(list: List<Api>): List<Api> {
+                    val x: Api? = null
+                  }
+                }
+                """
+          )
+          .indented(),
+        java(
+            """
+                package test.usage;
+                import test.api.Api;
+                public class C {
+                    Api api;
+                    List<Api> api;
+                    private Api use(Api api) { }
+                    public List<Api> useList(List<Api> list) {
+                        Api x = null;
+                    }
+                }
+                """
+          )
+          .indented(),
+        javaAnnotation,
+        kotlinAnnotation
+      )
+      .skipTestModes(TestMode.TYPE_ALIAS)
+      .run()
+      .expect(
+        """
+        src/test/usage/C.java:4: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            Api api;
+            ~~~
+        src/test/usage/C.java:4: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+            Api api;
+            ~~~
+        src/test/usage/C.java:5: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            List<Api> api;
+                 ~~~
+        src/test/usage/C.java:5: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+            List<Api> api;
+                 ~~~
+        src/test/usage/C.java:6: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            private Api use(Api api) { }
+                    ~~~
+        src/test/usage/C.java:6: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            private Api use(Api api) { }
+                            ~~~
+        src/test/usage/C.java:6: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+            private Api use(Api api) { }
+                    ~~~
+        src/test/usage/C.java:6: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+            private Api use(Api api) { }
+                            ~~~
+        src/test/usage/C.java:7: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            public List<Api> useList(List<Api> list) {
+                        ~~~
+        src/test/usage/C.java:7: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            public List<Api> useList(List<Api> list) {
+                                          ~~~
+        src/test/usage/C.java:7: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+            public List<Api> useList(List<Api> list) {
+                        ~~~
+        src/test/usage/C.java:7: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+            public List<Api> useList(List<Api> list) {
+                                          ~~~
+        src/test/usage/C.java:8: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+                Api x = null;
+                ~~~
+        src/test/usage/C.java:8: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+                Api x = null;
+                ~~~
+        src/test/usage/C.kt:4: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+          abstract val api: Api
+                            ~~~
+        src/test/usage/C.kt:4: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+          abstract val api: Api
+                            ~~~
+        src/test/usage/C.kt:5: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+          abstract val list: List<Api>
+                                  ~~~
+        src/test/usage/C.kt:5: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+          abstract val list: List<Api>
+                                  ~~~
+        src/test/usage/C.kt:6: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+          fun doSomething(api: Api): Api
+                               ~~~
+        src/test/usage/C.kt:6: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+          fun doSomething(api: Api): Api
+                                     ~~~
+        src/test/usage/C.kt:6: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+          fun doSomething(api: Api): Api
+                               ~~~
+        src/test/usage/C.kt:6: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+          fun doSomething(api: Api): Api
+                                     ~~~
+        src/test/usage/C.kt:7: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+          fun doSomethingLists(list: List<Api>): List<Api> {
+                                          ~~~
+        src/test/usage/C.kt:7: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+          fun doSomethingLists(list: List<Api>): List<Api> {
+                                                      ~~~
+        src/test/usage/C.kt:7: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+          fun doSomethingLists(list: List<Api>): List<Api> {
+                                          ~~~
+        src/test/usage/C.kt:7: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+          fun doSomethingLists(list: List<Api>): List<Api> {
+                                                      ~~~
+        src/test/usage/C.kt:8: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            val x: Api? = null
+                   ~~~~
+        src/test/usage/C.kt:8: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on CLASS [_AnnotationIssue]
+            val x: Api? = null
+                   ~~~~
+        28 errors, 0 warnings
             """
       )
   }
@@ -441,6 +603,12 @@ class AnnotationHandlerTest {
       .run()
       .expect(
         """
+            src/test/usage/JavaUsage.java:9: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
+                public void test(InnerApi innerApi) {
+                                 ~~~~~~~~
+            src/test/usage/JavaUsage.java:9: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
+                public void test(InnerApi innerApi) {
+                                 ~~~~~~~~
             src/test/usage/JavaUsage.java:10: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
                     use(InnerApi.CONSTANT); // ERROR 1A and 1B
                                  ~~~~~~~~
@@ -465,6 +633,12 @@ class AnnotationHandlerTest {
             src/test/usage/JavaUsage.java:13: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
                     use(method());          // ERROR 4A and 4B
                         ~~~~~~~~
+            src/test/usage/KotlinUsage.kt:9: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
+                fun test(innerApi: InnerApi?) {
+                                   ~~~~~~~~~
+            src/test/usage/KotlinUsage.kt:9: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
+                fun test(innerApi: InnerApi?) {
+                                   ~~~~~~~~~
             src/test/usage/KotlinUsage.kt:10: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
                     use(InnerApi.CONSTANT)     // ERROR 5A and 5B
                                  ~~~~~~~~
@@ -489,7 +663,7 @@ class AnnotationHandlerTest {
             src/test/usage/KotlinUsage.kt:13: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on OUTER_CLASS [_AnnotationIssue]
                     use(method())              // ERROR 8A and 8B
                         ~~~~~~~~
-            16 errors, 0 warnings
+            20 errors, 0 warnings
             """
       )
   }
@@ -598,13 +772,19 @@ class AnnotationHandlerTest {
       .run()
       .expect(
         """
+            src/test/usage/JavaUsage.java:5: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+                private void use(Api api) { }
+                                 ~~~
             src/test/usage/JavaUsage.java:7: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
                     use((Api) o); // ERROR
                          ~~~
+            src/test/usage/test.kt:4: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+            private fun use(api: Api) {}
+                                 ~~~
             src/test/usage/test.kt:6: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
                 use(o as Api)  // ERROR2
                          ~~~
-            2 errors, 0 warnings
+            4 errors, 0 warnings
         """
       )
   }
@@ -811,7 +991,7 @@ class AnnotationHandlerTest {
   }
 
   @Test
-  fun testKotlinObjectUsage() {
+  fun testKotlinObjects() {
     // Regression test for b/282811891
     lint()
       .files(
@@ -822,6 +1002,11 @@ class AnnotationHandlerTest {
 
                 @MyKotlinAnnotation
                 object Obj
+
+                class C {
+                  @MyKotlinAnnotation
+                  companion object
+                }
                 """
           )
           .indented(),
@@ -964,11 +1149,15 @@ class AnnotationHandlerTest {
       .run()
       .expect(
         """
+            src/test/usage/Usage.java:5: Error: CLASS_REFERENCE_AS_DECLARATION_TYPE usage associated with @MyJavaAnnotation on PACKAGE [_AnnotationIssue]
+                public void test(Api api) {
+                                 ~~~
             src/test/usage/Usage.java:6: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on PACKAGE [_AnnotationIssue]
                     use(api.field);
                             ~~~~~
             libs/packageinfoclass.jar!/test/api/package-info.class: Error: Incident reported on package annotation [_AnnotationIssue]
-            2 errors, 0 warnings
+            libs/packageinfoclass.jar!/test/api/package-info.class: Error: Incident reported on package annotation [_AnnotationIssue]
+            4 errors, 0 warnings
             """
       )
   }

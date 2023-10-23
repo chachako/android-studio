@@ -796,10 +796,16 @@ class RestrictToDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
+            src/test/pkg/test.kt:3: Warning: This class should only be accessed from tests or within private scope [VisibleForTests]
+            fun test(testRoot: TestRoot, other: TestRoot) {
+                               ~~~~~~~~
+            src/test/pkg/test.kt:3: Warning: This class should only be accessed from tests or within private scope [VisibleForTests]
+            fun test(testRoot: TestRoot, other: TestRoot) {
+                                                ~~~~~~~~
             src/test/pkg/test.kt:10: Warning: This method should only be accessed from tests or within private scope [VisibleForTests]
                 if (testRoot == other) {
                              ~~
-            0 errors, 1 warnings
+            0 errors, 3 warnings
             """
       )
   }
@@ -1339,10 +1345,13 @@ class RestrictToDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
+            src/test/pkg/Outer.java:8: Error: Inner can only be accessed from tests [RestrictedApi]
+                                private Inner innerInstance;
+                                        ~~~~~
             src/test/pkg/Outer.java:18: Error: Inner.method can only be called from tests [RestrictedApi]
                                     innerInstance.method();
                                                   ~~~~~~
-            1 errors, 0 warnings
+            2 errors, 0 warnings
             """
       )
   }
