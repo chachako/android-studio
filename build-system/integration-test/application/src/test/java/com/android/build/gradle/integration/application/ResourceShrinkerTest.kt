@@ -21,7 +21,6 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType.Companion.DEBUG
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType.Companion.RELEASE
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.builder
-import com.android.build.shrinker.DummyContent.TINY_9PNG
 import com.android.build.shrinker.DummyContent.TINY_PNG
 import com.android.build.shrinker.DummyContent.TINY_PROTO_CONVERTED_TO_BINARY_XML
 import com.android.build.shrinker.DummyContent.TINY_PROTO_XML
@@ -59,7 +58,7 @@ class ResourceShrinkerTest {
         val debugApk = project.getApk(DEBUG)
         val releaseApk = project.getApk(RELEASE)
         // Check that unused resources are replaced in shrunk apk.
-        val replacedFiles = listOf(
+        val removedFiles = listOf(
                 "res/drawable-hdpi-v4/notification_bg_normal.9.png",
                 "res/drawable-hdpi-v4/notification_bg_low_pressed.9.png",
                 "res/drawable-hdpi-v4/notification_bg_low_normal.9.png",
@@ -131,26 +130,31 @@ class ResourceShrinkerTest {
                 .isEqualTo(numberOfDebugApkEntries)
         assertThat(debugResourcePaths).containsAtLeastElementsIn(debugMetaFiles)
         assertThat(releaseResourcePaths.size)
-                .isEqualTo(numberOfDebugApkEntries - debugMetaFiles.size)
-        assertThat(diffFiles(project.getOriginalResources(), project.getShrunkResources()))
-                .containsExactlyElementsIn(replacedFiles)
+                .isEqualTo(numberOfDebugApkEntries -
+                                   (debugMetaFiles.size + removedFiles.size))
+
+        assertThat(getZipPaths(project.getOriginalResources()))
+            .containsAtLeastElementsIn(removedFiles)
+        assertThat(getZipPaths(project.getShrunkResources())).containsNoneIn(removedFiles)
+
         // Check that unused resources are removed in project with web views and all web view
         // resources are marked as used.
-        assertThat(
-                diffFiles(
-                        project.getSubproject("webview").getOriginalResources(),
-                        project.getSubproject("webview").getShrunkResources()
-                )
-        ).containsExactly(
+        assertThat(getZipPaths(project.getOriginalResources()))
+            .containsAtLeastElementsIn(removedFiles)
+        assertThat(getZipPaths(project.getShrunkResources())).containsNoneIn(removedFiles)
+
+        onlyInOriginal(
+            project.getSubproject("webview"), arrayOf(
                 "res/raw/unused_icon.png",
                 "res/raw/unused_index.html",
                 "res/xml/my_xml.xml"
+            )
         )
         // Check that replaced files has proper dummy content.
         assertThat(project.getSubproject("webview").getApk(RELEASE).file.toFile()) {
-            it.containsFileWithContent("res/0t.png", TINY_PNG)
-            it.containsFileWithContent("res/VT.html", "")
-            it.containsFileWithContent("res/jd.xml", TINY_PROTO_CONVERTED_TO_BINARY_XML)
+            it.doesNotContain("res/0t.png")
+            it.doesNotContain("res/VT.html")
+            it.doesNotContain("res/jd.xml")
         }
         // Check that zip entities have proper methods.
         assertThat(getZipPathsWithMethod(
@@ -158,10 +162,7 @@ class ResourceShrinkerTest {
                 .containsExactly(
                         "  stored  resources.arsc",
                         "deflated  AndroidManifest.xml",
-                        "deflated  res/xml/my_xml.xml",
                         "deflated  res/raw/unknown",
-                        "  stored  res/raw/unused_icon.png",
-                        "  stored  res/raw/unused_index.html",
                         "deflated  res/drawable/used1.xml",
                         "  stored  res/raw/used_icon.png",
                         "  stored  res/raw/used_icon2.png",
@@ -177,35 +178,46 @@ class ResourceShrinkerTest {
                 )
         // Check that unused resources are removed from all split APKs
         for (split in listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")) {
-            assertThat(
-                    diffFiles(
-                            project.getSubproject("abisplits").getOriginalResources(split),
-                            project.getSubproject("abisplits").getShrunkResources(split)
-                    )
-            ).containsExactly("res/layout/unused.xml")
-
-            assertThat(project.getSubproject("abisplits").getShrunkBinaryResources(split)) {
-                it.containsFileWithContent(
-                        "res/layout/unused.xml",
-                        TINY_PROTO_CONVERTED_TO_BINARY_XML
-                )
-            }
+            onlyInOriginal(project.getSubproject("abisplits"),
+                           arrayOf("res/layout/unused.xml"),
+                           split)
         }
         // Check that unused resources that are referenced with Resources.getIdentifier are removed
         // in case shrinker mode is set to 'strict'.
-        assertThat(
-                diffFiles(
-                        project.getSubproject("keep").getOriginalResources(),
-                        project.getSubproject("keep").getShrunkResources()
-                )
-        ).containsExactly(
-                "res/raw/keep.xml",
-                "res/layout/unused1.xml",
-                "res/layout/unused2.xml"
+        onlyInOriginal(project.getSubproject("keep"),
+                       arrayOf(
+                           "res/raw/keep.xml",
+                           "res/layout/unused1.xml",
+                           "res/layout/unused2.xml")
         )
         // Ensure that report file is created and near mapping file
         assertThat(project.file("build/outputs/mapping/release/mapping.txt")).exists()
         assertThat(project.file("build/outputs/mapping/release/resources.txt")).exists()
+    }
+
+    private fun onlyInOriginal(
+        project: GradleTestProject,
+        removed: Array<String>,
+        splitName: String? = null
+    ) {
+        var originalResources = project.getOriginalResources(splitName)
+        var shrunkResources = project.getShrunkResources(splitName)
+        onlyInOriginal(originalResources, shrunkResources, removed)
+    }
+
+    private fun onlyInOriginal(
+        originalResources: File,
+        shrunkResources: File,
+        removed: Array<String>,
+    ) {
+        assertThat(getZipPaths(originalResources))
+            .containsAtLeastElementsIn(
+                removed
+            )
+        assertThat(getZipPaths(shrunkResources))
+            .containsNoneIn(
+                removed
+            )
     }
 
     @Test
@@ -219,7 +231,6 @@ class ResourceShrinkerTest {
                 "resources.arsc",
                 "AndroidManifest.xml",
                 "res/0g.js",
-                "res/0t.png",
                 "res/1B.png",
                 "res/95.html",
                 "res/Fr.xml",
@@ -230,10 +241,8 @@ class ResourceShrinkerTest {
                 "res/_S.xml",
                 "res/g0.xml",
                 "res/jL.html",
-                "res/jd.xml",
                 "res/mZ.html",
                 "res/vy.png",
-                "res/VT.html",
                 "META-INF/com/android/build/gradle/app-metadata.properties"
         )
 
@@ -250,11 +259,9 @@ class ResourceShrinkerTest {
                 )
 
         assertThat(getZipEntriesWithContent(releaseApk, TINY_PROTO_CONVERTED_TO_BINARY_XML))
-                .hasSize(1)
-        assertThat(getZipEntriesWithContent(releaseApk, ByteArray(0))).hasSize(1)
-        assertThat(getZipEntriesWithContent(releaseApk, TINY_PNG)).hasSize(1)
-        assertThat(getZipEntriesWithContent(releaseApk, TINY_PROTO_CONVERTED_TO_BINARY_XML))
-                .doesNotContain("res/xml/my_xml.xml")
+                .hasSize(0)
+        assertThat(getZipEntriesWithContent(releaseApk, ByteArray(0))).hasSize(0)
+        assertThat(getZipEntriesWithContent(releaseApk, TINY_PNG)).hasSize(0)
     }
 
     @Test
@@ -330,50 +337,43 @@ class ResourceShrinkerTest {
                 "res/menu/unused12.xml",
                 "res/raw/keep.xml"
         )
-        assertThat(diffFiles(project.getOriginalBundle(), project.getShrunkBundle()))
-                .containsExactlyElementsIn(replacedFiles.map { "base/$it" })
 
-        // Check that unused resources are replaced in release APK and leave as is in debug one.
-        assertThat(
-                diffFiles(
-                        project.getBundleUniversalApk(DEBUG).file.toFile(),
-                        project.getBundleUniversalApk(RELEASE).file.toFile(),
-                        setOf("META-INF/BNDLTOOL.RSA",
-                                "META-INF/BNDLTOOL.SF",
-                                "META-INF/MANIFEST.MF")
-                )
-        ).containsExactly("classes.dex", "AndroidManifest.xml", *replacedFiles.toTypedArray())
+
+        onlyInOriginal(project.getOriginalBundle(), project.getShrunkBundle(),
+                       replacedFiles.map{"base/$it"}.toTypedArray())
+
+        // Check that unused resources are removed in release APK and leave as is in debug one.
+        onlyInOriginal(
+            project.getBundleUniversalApk(DEBUG).file.toFile(),
+            project.getBundleUniversalApk(RELEASE).file.toFile(),
+            arrayOf(
+                "META-INF/BNDLTOOL.RSA",
+                "META-INF/BNDLTOOL.SF",
+                "META-INF/MANIFEST.MF"
+            )
+        )
 
         // Check that unused resources are removed in project with web views and all web view
         // resources are marked as used.
-        assertThat(
-                diffFiles(
-                        project.getSubproject("webview").getOriginalBundle(),
-                        project.getSubproject("webview").getShrunkBundle()
-                )
-        ).containsExactly(
-                "base/res/raw/unused_icon.png",
-                "base/res/raw/unused_index.html",
-                "base/res/xml/my_xml.xml"
+        onlyInOriginal(
+            project.getSubproject("webview").getOriginalBundle(),
+            project.getSubproject("webview").getShrunkBundle(),
+            arrayOf("base/res/raw/unused_icon.png",
+                    "base/res/raw/unused_index.html",
+                    "base/res/xml/my_xml.xml"
+            )
         )
-        // Check that replaced files has proper dummy content.
-        assertThat(project.getSubproject("webview").getShrunkBundle()) {
-            it.containsFileWithContent("base/res/raw/unused_icon.png", TINY_PNG)
-            it.containsFileWithContent("base/res/raw/unused_index.html", "")
-            it.containsFileWithContent("base/res/xml/my_xml.xml", TINY_PROTO_XML)
-        }
 
         // Check that unused resources that are referenced with Resources.getIdentifier are removed
         // in case shrinker mode is set to 'strict'.
-        assertThat(
-                diffFiles(
-                        project.getSubproject("keep").getOriginalBundle(),
-                        project.getSubproject("keep").getShrunkBundle()
-                )
-        ).containsExactly(
+        onlyInOriginal(
+            project.getSubproject("keep").getOriginalBundle(),
+            project.getSubproject("keep").getShrunkBundle(),
+            arrayOf(
                 "base/res/raw/keep.xml",
                 "base/res/layout/unused1.xml",
                 "base/res/layout/unused2.xml"
+            )
         )
     }
 
@@ -385,37 +385,37 @@ class ResourceShrinkerTest {
         val originalBundle =
                 projectWithDynamicFeatureModules.getSubproject("base").getOriginalBundle()
         val shrunkBundle = projectWithDynamicFeatureModules.getSubproject("base").getShrunkBundle()
-        assertThat(diffFiles(originalBundle, shrunkBundle)).containsExactly(
-                "feature/res/drawable/feat_unused.png",
-                "feature/res/drawable/discard_from_feature_1.xml",
-                "feature/res/layout/feat_unused_layout.xml",
-                "feature/res/raw/feat_keep.xml",
-                "feature/res/raw/webpage.html",
-                "base/res/drawable/discard_from_feature_2.xml",
-                "base/res/drawable/force_remove.xml",
-                "base/res/drawable/unused5.9.png",
-                "base/res/drawable/unused9.xml",
-                "base/res/drawable/unused10.xml",
-                "base/res/drawable/unused11.xml",
-                "base/res/layout/unused1.xml",
-                "base/res/layout/unused2.xml",
-                "base/res/layout/unused13.xml",
-                "base/res/layout/unused14.xml",
-                "base/res/menu/unused12.xml",
-                "base/res/raw/keep.xml"
-        )
+        onlyInOriginal(originalBundle, shrunkBundle,             arrayOf(
+            "feature/res/drawable/feat_unused.png",
+            "feature/res/drawable/discard_from_feature_1.xml",
+            "feature/res/layout/feat_unused_layout.xml",
+            "feature/res/raw/feat_keep.xml",
+            "feature/res/raw/webpage.html",
+            "base/res/drawable/discard_from_feature_2.xml",
+            "base/res/drawable/force_remove.xml",
+            "base/res/drawable/unused5.9.png",
+            "base/res/drawable/unused9.xml",
+            "base/res/drawable/unused10.xml",
+            "base/res/drawable/unused11.xml",
+            "base/res/layout/unused1.xml",
+            "base/res/layout/unused2.xml",
+            "base/res/layout/unused13.xml",
+            "base/res/layout/unused14.xml",
+            "base/res/menu/unused12.xml",
+            "base/res/raw/keep.xml"
+        ))
 
         // Check that replaced files release bundle have proper dummy content.
         val releaseBundle = projectWithDynamicFeatureModules.getSubproject("base")
                 .getOutputFile("bundle", "release", "base-release.aab")
 
         assertThat(releaseBundle) {
-            it.containsFileWithContent("feature/res/drawable/feat_unused.png", TINY_PNG)
-            it.containsFileWithContent("feature/res/layout/feat_unused_layout.xml", TINY_PROTO_XML)
-            it.containsFileWithContent("feature/res/raw/webpage.html", "")
-            it.containsFileWithContent("base/res/layout/unused1.xml", TINY_PROTO_XML)
-            it.containsFileWithContent("base/res/raw/keep.xml", TINY_PROTO_XML)
-            it.containsFileWithContent("base/res/drawable/unused5.9.png", TINY_9PNG)
+            it.doesNotContain("feature/res/drawable/feat_unused.png")
+            it.doesNotContain("feature/res/layout/feat_unused_layout.xml")
+            it.doesNotContain("feature/res/raw/webpage.html")
+            it.doesNotContain("base/res/layout/unused1.xml")
+            it.doesNotContain("base/res/raw/keep.xml")
+            it.doesNotContain("base/res/drawable/unused5.9.png")
         }
 
         // Ensure that report file is created and near mapping file
@@ -437,8 +437,8 @@ class ResourceShrinkerTest {
         // Check that zip entities have proper methods.
         val shrunkResources =
             projectWithDynamicFeatureModules.getSubproject("base").getShrunkBinaryResources()
-        assertThat(getZipEntriesWithContent(shrunkResources, TINY_PROTO_CONVERTED_TO_BINARY_XML))
-            .containsExactly(
+        assertThat(getZipPaths(shrunkResources)).containsNoneIn(
+            arrayOf(
                 "res/drawable/discard_from_feature_2.xml",
                 "res/drawable/force_remove.xml",
                 "res/drawable/from_raw_feat.xml",
@@ -453,6 +453,7 @@ class ResourceShrinkerTest {
                 "res/layout/used_from_feature_2.xml",
                 "res/menu/unused12.xml",
             )
+        )
     }
 
     @Test
