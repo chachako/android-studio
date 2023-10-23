@@ -721,6 +721,9 @@ allprojects { proj ->
         return FileUtils.join(projectDir, "src", "main", language)
     }
 
+    val mainTestDir: File
+        get() = FileUtils.join(projectDir, "src", "test")
+
     /** Return the path to the default Java main resources dir.  */
     val mainJavaResDir: File
         get() = FileUtils.join(projectDir, "src", "main", "resources")
