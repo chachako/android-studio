@@ -32,7 +32,17 @@ gradlePlugin {
     }
 }
 
-dependencies {}
+dependencies {
+    compileOnly project(':base:gradle-api')
+    implementation libs.gson
+    testImplementation libs.junit
+    testImplementation libs.truth
+    testImplementation libs.truth_java8_extension
+    testImplementation libs.kotlin_test
+    testImplementation libs.mockito_core
+    implementation libs.com.android.tools.common
+    testImplementation project(':base:gradle-api')
+}
 
 sourceSets {
     main.resources.srcDir 'src/main/java'

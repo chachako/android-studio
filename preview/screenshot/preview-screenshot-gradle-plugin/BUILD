@@ -1,12 +1,23 @@
-load("//tools/base/bazel:gradle.bzl", "gradle_build")
+load("//tools/base/bazel:gradle.bzl", "gradle_build", "gradle_test")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library")
+load("//tools/base/bazel:maven.bzl", "maven_repository")
 load("//tools/base/build-system:hybrid_build.bzl", "GRADLE_PROPERTIES")
 
 filegroup(
     name = "agp_gradle_build_files",
     srcs = glob([
-        "src/main/*.java",
-        "src/main/*.kt",
+        "src/main/**/*.kt",
+    ]) + [
+        "build.gradle",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "agp_gradle_test_files",
+    srcs = glob([
+        "src/test/**/*.kt",
+        "src/test/resources/**",
     ]) + [
         "build.gradle",
     ],
@@ -24,6 +35,15 @@ PREVIEW_SCREENSHOT_GRADLE_PLUGIN_SOURCE_FILES = [
     "//tools/buildSrc:agp_gradle_build_files",
     "//tools/buildSrc/base:agp_gradle_build_files",
 ]
+
+maven_repository(
+    name = "maven_test_dependencies",
+    # keep sorted
+    artifacts = [
+        "//tools/base/testutils:tools.testutils",
+        "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.7.10",
+    ],
+)
 
 gradle_build(
     name = "preview-screenshot-gradle-plugin",
@@ -43,11 +63,35 @@ gradle_build(
     ],
 )
 
+gradle_test(
+    name = "preview-screenshot-gradle-plugin_test",
+    build_file = "//tools:agp_gradle_build_root_build_file",
+    data = [
+        ":agp_gradle_test_files",
+        "//prebuilts/studio/jdk:jdk11",
+    ] + PREVIEW_SCREENSHOT_GRADLE_PLUGIN_SOURCE_FILES,
+    gradle_properties = GRADLE_PROPERTIES,
+    repos = [
+        ":maven_test_dependencies",
+        "//tools/base:agp_artifacts",
+        "//tools/base:agp_dependencies",
+    ],
+    tasks = [":base:preview:screenshot:preview-screenshot-gradle-plugin:test"],
+    test_output_dir = "build/base/preview/screenshot/preview-screenshot-gradle-plugin/build/test-results/test",
+    visibility = ["//visibility:public"],
+)
+
 kotlin_library(
     name = "lib",
     srcs = glob([
-        "src/main/java/*.kt",
-        "src/main/java/*.java",
+        "src/main/java/**/*.kt",
     ]),
-    deps = [],
+    deps = [
+        "//tools/base/build-system:gradle-api",
+        "//tools/base/build-system/gradle-core",
+        "//tools/base/common:tools.common",
+        "//tools/base/sdk-common:tools.sdk-common",
+        "//tools/base/sdklib:tools.sdklib",
+        "//tools/base/testutils:tools.testutils",
+    ],
 )
