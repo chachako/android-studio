@@ -194,6 +194,7 @@ ARTIFACTS = [
 ]
 
 DATA = [
+    # Class JARs
     "android.arch.core:common:1.1.1",
     "android.arch.core:runtime:1.1.1",
     "android.arch.lifecycle:common:1.0.3",
@@ -797,6 +798,22 @@ DATA = [
     "org.jetbrains.kotlin:kotlin-stdlib-common:1.9.20-Beta",
     "org.jetbrains.kotlin:kotlin-test:1.9.20-Beta",
     "org.jetbrains.kotlin:kotlin-test-junit:1.9.20-Beta",
+] + [
+    # Source JARs
+    "org.jetbrains.compose.animation:animation-core-desktop:jar:sources:1.5.2",
+    "org.jetbrains.compose.animation:animation-desktop:jar:sources:1.5.2",
+    "org.jetbrains.compose.compiler:compiler-hosted:jar:sources:1.4.5",
+    "org.jetbrains.compose.foundation:foundation-desktop:jar:sources:1.5.2",
+    "org.jetbrains.compose.foundation:foundation-layout-desktop:jar:sources:1.5.2",
+    "org.jetbrains.compose.runtime:runtime-desktop:jar:sources:1.5.2",
+    "org.jetbrains.compose.runtime:runtime-saveable-desktop:jar:sources:1.5.2",
+    "org.jetbrains.compose.ui:ui-desktop:jar:sources:1.5.2",
+    "org.jetbrains.compose.ui:ui-geometry-desktop:jar:sources:1.5.2",
+    "org.jetbrains.compose.ui:ui-graphics-desktop:jar:sources:1.5.2",
+    "org.jetbrains.compose.ui:ui-test-junit4-desktop:jar:sources:1.5.2",
+    "org.jetbrains.compose.ui:ui-text-desktop:jar:sources:1.5.2",
+    "org.jetbrains.compose.ui:ui-unit-desktop:jar:sources:1.5.2",
+    "org.jetbrains.compose.ui:ui-util-desktop:jar:sources:1.5.2",
 ]
 
 REMOTE_REPOS = {
