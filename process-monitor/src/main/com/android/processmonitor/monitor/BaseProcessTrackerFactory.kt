@@ -21,6 +21,8 @@ import com.android.processmonitor.agenttracker.AgentProcessTracker
 import com.android.processmonitor.agenttracker.AgentProcessTrackerConfig
 import com.android.processmonitor.common.ProcessTracker
 
+private const val AGENT_MIN_SDK = 21
+
 /**
  * A [ProcessTrackerFactory] creates a tracker that is optionally merged with an [AgentProcessTracker]
  */
@@ -48,8 +50,12 @@ internal abstract class BaseProcessTrackerFactory<T>(
     abstract fun getDeviceSerialNumber(device: T): String
 
     private suspend fun createAgentProcessTracker(device: T): ProcessTracker? {
+        if (agentConfig == null) {
+            return null
+        }
+        val sdk = getDeviceApiLevel(device)
         // The agent is a native executable, and we don't have the ability build it for API<21
-        if (getDeviceApiLevel(device) < 21 || agentConfig == null) {
+        if (sdk < AGENT_MIN_SDK || !agentConfig.shouldUseAgentForSdk(sdk)) {
             return null
         }
         val serialNumber = getDeviceSerialNumber(device)

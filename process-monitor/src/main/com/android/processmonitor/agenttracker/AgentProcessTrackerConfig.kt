@@ -18,4 +18,8 @@ package com.android.processmonitor.agenttracker
 import java.nio.file.Path
 
 /** Configuration of a  [AgentProcessTracker] */
-class AgentProcessTrackerConfig(val sourcePath: Path, val pollingIntervalMillis: Int)
+class AgentProcessTrackerConfig(
+    val sourcePath: Path,
+    val pollingIntervalMillis: Int,
+    val shouldUseAgentForSdk: (Int) -> Boolean,
+    )

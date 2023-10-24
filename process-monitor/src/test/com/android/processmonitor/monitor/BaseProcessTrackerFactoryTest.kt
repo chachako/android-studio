@@ -33,7 +33,8 @@ class BaseProcessTrackerFactoryTest {
 
     @Test
     fun withAgentConfig_usesAgentProcessTracker(): Unit = runBlocking {
-        val factory = TestBaseProcessTrackerFactory(AgentProcessTrackerConfig(Path.of("agent"), 1))
+        val factory =
+            TestBaseProcessTrackerFactory(AgentProcessTrackerConfig(Path.of("agent"), 1) { true })
         val device = TestDevice("device1", 30, "x86")
 
         val tracker = factory.createProcessTracker(device) as? MergedProcessTracker
@@ -44,6 +45,17 @@ class BaseProcessTrackerFactoryTest {
             )
         assertThat(tracker?.trackers?.first { it is SafeProcessTracker }.toString())
             .isEqualTo("SafeProcessTracker(AgentProcessTracker)")
+    }
+
+    @Test
+    fun withAgentConfig_doesNotUseAgentProcessTracker(): Unit = runBlocking {
+        val factory =
+            TestBaseProcessTrackerFactory(AgentProcessTrackerConfig(Path.of("agent"), 1) { false })
+        val device = TestDevice("device1", 30, "x86")
+
+        val tracker = factory.createProcessTracker(device)
+
+        assertThat(tracker).isInstanceOf(FakeProcessTracker::class.java)
     }
 
     @Test
