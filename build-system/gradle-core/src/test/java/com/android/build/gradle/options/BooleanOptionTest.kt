@@ -62,6 +62,7 @@ class BooleanOptionTest {
             BooleanOption.INCLUDE_DEPENDENCY_INFO_IN_APKS,
             BooleanOption.ENABLE_LEGACY_API,
             BooleanOption.FULL_R8,
+            BooleanOption.PRINT_LINT_STACK_TRACE
         )
 
         val violatingOptions = BooleanOption.values().filter {
