@@ -200,6 +200,7 @@ public class TestProjects {
         try {
             addFakeService(project);
             loadGradleProperties(project, gradleProperties);
+            addPrebuiltMavenRepository(project);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -247,5 +248,17 @@ public class TestProjects {
                 .getServices()
                 .get(GradlePropertiesController.class)
                 .loadGradlePropertiesFrom(project.getProjectDir(), false);
+    }
+
+    /**
+     * Avoid breaking with detached configurations which are inputs to artifact transforms (e.g.
+     * ExtractCompileSdkShimTransform)
+     */
+    private static void addPrebuiltMavenRepository(Project project) {
+        project.getRepositories()
+                .maven(
+                        mavenArtifactRepository -> {
+                            mavenArtifactRepository.setUrl(TestUtils.getPrebuiltOfflineMavenRepo());
+                        });
     }
 }
