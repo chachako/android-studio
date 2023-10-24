@@ -141,7 +141,7 @@ private constructor(
       UastEnvironment.Configuration.mergeRoots(modules, bootClassPaths).let { (sources, classPaths)
         ->
         val allKlibPaths =
-          modules.flatMap { it.klibs.map(File::getAbsolutePath) } +
+          modules.flatMap { it.klibs.keys.map(File::getAbsolutePath) } +
             kotlinCompilerConfig.getKlibPaths()
         for (p in allKlibPaths) {
           klibs.computeIfAbsent(p, ::kotlinLibrary)

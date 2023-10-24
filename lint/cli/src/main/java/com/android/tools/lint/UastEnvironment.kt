@@ -21,6 +21,7 @@ import com.android.SdkConstants.EXT_JAR
 import com.android.tools.lint.UastEnvironment.Companion.disposeApplicationEnvironment
 import com.android.tools.lint.UastEnvironment.Module.Variant.Companion.toModuleVariant
 import com.android.tools.lint.detector.api.Project
+import com.android.tools.lint.detector.api.Project.DependencyKind
 import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
@@ -313,7 +314,7 @@ interface UastEnvironment {
     val allRoots: Sequence<File>
       get() = sourceRoots.asSequence() + classpathRoots.asSequence()
 
-    val klibs: List<File>
+    val klibs: Map<File, DependencyKind>
       get() = project.klibs
 
     val name

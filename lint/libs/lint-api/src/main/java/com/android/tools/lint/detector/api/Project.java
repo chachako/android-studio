@@ -89,6 +89,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -142,7 +143,7 @@ public class Project {
     protected List<File> javaClassFolders;
     protected List<File> nonProvidedJavaLibraries;
     protected List<File> javaLibraries;
-    protected List<File> klibs;
+    protected Map<File, DependencyKind> klibs;
     protected List<File> testSourceFolders;
     protected List<File> instrumentationTestSourceFolders;
     protected List<File> unitTestSourceFolders;
@@ -608,9 +609,12 @@ public class Project {
 
     /** Returns the list of klibs that this project depends on. */
     @NonNull
-    public List<File> getKlibs() {
+    public Map<File, DependencyKind> getKlibs() {
         if (klibs == null) {
-            klibs = client.getKlibs(this);
+            klibs = new LinkedHashMap<>();
+            for (var klib : client.getKlibs(this)) {
+              klibs.put(klib, /* TODO ok? */ DependencyKind.Regular);
+            }
         }
         return klibs;
     }

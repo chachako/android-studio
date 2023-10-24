@@ -32,15 +32,6 @@ import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 import com.intellij.util.io.URLUtil
-import java.io.File
-import java.io.IOException
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.attribute.BasicFileAttributes
-import kotlin.concurrent.withLock
 import org.jetbrains.kotlin.analysis.api.impl.base.util.LibraryUtils
 import org.jetbrains.kotlin.analysis.api.resolve.extensions.KtResolveExtensionProvider
 import org.jetbrains.kotlin.analysis.api.standalone.StandaloneAnalysisAPISession
@@ -71,6 +62,15 @@ import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.FirKotlinUastLanguagePlugin
 import org.jetbrains.uast.kotlin.FirKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.internal.FirCliKotlinUastResolveProviderService
+import java.io.File
+import java.io.IOException
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
+import kotlin.concurrent.withLock
 
 /**
  * This class is FIR (or K2) version of [UastEnvironment]
@@ -259,17 +259,27 @@ private fun createAnalysisSession(
               )
             }
 
-            val moduleKlibPaths = m.klibs.map(File::toPath)
-            val allKlibPaths = (moduleKlibPaths + configKlibPaths).distinct()
-            if (allKlibPaths.isNotEmpty()) {
-              addRegularDependency(
-                buildKtLibraryModule {
-                  platform = mPlatform
-                  project = theProject
-                  contentScope = ProjectScope.getLibrariesScope(theProject)
-                  binaryRoots = allKlibPaths
-                  libraryName = "Klibs for $moduleName"
-                }
+
+            val (moduleKlibPathsRegular, moduleKlibPathsDependsOn) = m.klibs.keys
+              .partition { m.klibs[it] == Project.DependencyKind.Regular }
+
+            fun buildKlibModule(klibs : Collection<Path>, name : String) = buildKtLibraryModule {
+              platform = mPlatform
+              project = theProject
+              contentScope = ProjectScope.getLibrariesScope(theProject)
+              binaryRoots = klibs
+              libraryName = name
+            }
+
+            val klibRegularDeps = (moduleKlibPathsRegular.map(File::toPath) + configKlibPaths).distinct()
+            if (klibRegularDeps.isNotEmpty()) {
+              addRegularDependency(buildKlibModule(klibRegularDeps, "Regular klibs for $moduleName"))
+            }
+
+            if (moduleKlibPathsDependsOn.isNotEmpty()) {
+              addDependsOnDependency(buildKlibModule(
+                moduleKlibPathsDependsOn.map(File::toPath),
+                "dependsOn klibs for $moduleName")
               )
             }
           }

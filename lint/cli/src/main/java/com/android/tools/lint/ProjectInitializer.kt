@@ -191,7 +191,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
   private val globalClasspath = mutableListOf<File>()
 
   /** list of global klibs to add to all modules */
-  private val globalKlibs = mutableListOf<File>()
+  private val globalKlibs = mutableMapOf<File, DependencyKind>()
 
   /** map from module instance to names of modules it depends on, along with dependency kinds */
   private val dependencies: Multimap<ManualProject, Pair<String, DependencyKind>> =
@@ -294,7 +294,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
           globalClasspath.add(getFile(child, this.root))
         }
         TAG_KLIB -> {
-          globalKlibs.add(getFile(child, this.root))
+          globalKlibs[getFile(child, this.root)] = getDependencyKind(child)
         }
         TAG_LINT_CHECKS -> {
           globalLintChecks.add(getFile(child, this.root))
@@ -385,7 +385,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
     if (globalKlibs.isNotEmpty()) {
       for (module in sortedModules) {
         if (module.klibs.isEmpty()) {
-          module.klibs.addAll(globalKlibs)
+          module.klibs += globalKlibs
         }
       }
     }
@@ -635,7 +635,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
           jar?.let { dependencies.put(module, jar to DependencyKind.Regular) }
         }
         TAG_KLIB -> {
-          module.klibs.add(getFile(child, dir))
+          module.klibs[getFile(child, dir)] = getDependencyKind(child)
         }
         TAG_BASELINE -> {
           baseline = getFile(child, dir)
@@ -651,21 +651,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
           if (target.isEmpty()) {
             reportError("Invalid module dependency in ${module.name}", child)
           }
-          val kind =
-            when (val kindText = child.getAttribute(ATTR_KIND)) {
-              "dependsOn" -> DependencyKind.DependsOn
-              "regular",
-              "" -> DependencyKind.Regular
-              else ->
-                DependencyKind.Regular.also {
-                  client.log(
-                    Severity.WARNING,
-                    null,
-                    "Unexpected dependency kind '$kindText' parsed as 'regular'"
-                  )
-                }
-            }
-          dependencies.put(module, target to kind)
+          dependencies.put(module, target to getDependencyKind(child))
         }
         TAG_AIDL,
         TAG_PROGUARD -> {
@@ -945,6 +931,20 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
     }
     return sourceRoots
   }
+
+  private fun getDependencyKind(node : Element) : DependencyKind =
+    when (val kindText = node.getAttribute(ATTR_KIND)) {
+      "dependsOn" -> DependencyKind.DependsOn
+      "regular",
+      "" -> DependencyKind.Regular
+      else -> DependencyKind.Regular.also {
+        client.log(
+          Severity.WARNING,
+          null,
+          "Unexpected dependency kind '$kindText' parsed as 'regular'"
+        )
+      }
+    }
 
   /**
    * Given an element that is expected to have a "file" attribute (or "dir" or "jar"), produces a
