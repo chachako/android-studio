@@ -1325,7 +1325,6 @@ package com.android.build.api.dsl {
   }
 
   @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidTestOnJvm {
-    method @org.gradle.api.Incubating public void all(kotlin.jvm.functions.Function1<? super org.gradle.api.tasks.testing.Test,kotlin.Unit> configAction);
     method @org.gradle.api.Incubating public boolean getEnableCoverage();
     method @org.gradle.api.Incubating public boolean isIncludeAndroidResources();
     method @org.gradle.api.Incubating public boolean isReturnDefaultValues();
