@@ -103,12 +103,6 @@ internal fun renderImpl(
         framework.registerService(FrameworkResourceRepositoryManager::class.java, FrameworkResourceRepositoryManager())
         framework.registerService(DownloadableFontCacheService::class.java, StandaloneFontCacheService(sdkPath))
 
-        framework.registerExtensionPoint(
-            LayoutLibraryLoader.LayoutLibraryProvider.EP_NAME,
-            LayoutLibraryLoader.LayoutLibraryProvider::class.java,
-            LayoutlibProvider()
-        )
-
         val resourceIdManager = ApkResourceIdManager()
         resourceApkPath?.let {
             resourceIdManager.loadApkResources(it)
