@@ -170,11 +170,13 @@ public class BazelLintWrapper {
         Result result = checkOutput(outputXml, newBaseline);
         switch (result) {
             case PASS:
-                return;
+                System.exit(0);
+                break;
             case BASELINE_CONTAINS_FIXED_ISSUES:
                 if (update) {
                     System.out.print("Lint baseline updated.");
-                    return;
+                    System.exit(0);
+                    break;
                 }
                 System.out.print("Lint baseline contains issues that are now fixed. See ");
                 System.out.println(relativize(testXml));
