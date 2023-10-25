@@ -24,81 +24,81 @@ public class FieldAccessTest {
     public void testIntFields() throws Exception {
         byte[] classInput = buildClass(FieldTestTarget.class);
         Object result =
-                new MethodBodyEvaluator(classInput, "testIntFields", "()I")
+                new MethodBodyEvaluator(classInput, "getIntFields", "()I")
                         .evalStatic(new Object[0]);
-        Assert.assertEquals(FieldTestTarget.testIntFields(), result);
+        Assert.assertEquals(FieldTestTarget.getIntFields(), result);
     }
 
     @org.junit.Test
     public void testByteFields() throws Exception {
         byte[] classInput = buildClass(FieldTestTarget.class);
         Object result =
-                new MethodBodyEvaluator(classInput, "testByteFields", "()I")
+                new MethodBodyEvaluator(classInput, "getByteFields", "()I")
                         .evalStatic(new Object[0]);
-        Assert.assertEquals(FieldTestTarget.testByteFields(), result);
+        Assert.assertEquals(FieldTestTarget.getByteFields(), result);
     }
 
     @org.junit.Test
     public void testShortFields() throws Exception {
         byte[] classInput = buildClass(FieldTestTarget.class);
         Object result =
-                new MethodBodyEvaluator(classInput, "testShortFields", "()I")
+                new MethodBodyEvaluator(classInput, "getShortFields", "()I")
                         .evalStatic(new Object[0]);
-        Assert.assertEquals(FieldTestTarget.testShortFields(), result);
+        Assert.assertEquals(FieldTestTarget.getShortFields(), result);
     }
 
     @org.junit.Test
     public void testLongFields() throws Exception {
         byte[] classInput = buildClass(FieldTestTarget.class);
         Object result =
-                new MethodBodyEvaluator(classInput, "testLongFields", "()J")
+                new MethodBodyEvaluator(classInput, "getLongFields", "()J")
                         .evalStatic(new Object[0]);
-        Assert.assertEquals(FieldTestTarget.testLongFields(), result);
+        Assert.assertEquals(FieldTestTarget.getLongFields(), result);
     }
 
     @org.junit.Test
     public void testFloatFields() throws Exception {
         byte[] classInput = buildClass(FieldTestTarget.class);
         Object result =
-                new MethodBodyEvaluator(classInput, "testFloatFields", "()F")
+                new MethodBodyEvaluator(classInput, "getFloatFields", "()F")
                         .evalStatic(new Object[0]);
-        Assert.assertEquals(FieldTestTarget.testFloatFields(), result);
+        Assert.assertEquals(FieldTestTarget.getFloatFields(), result);
     }
 
     @org.junit.Test
     public void testDoubleFields() throws Exception {
         byte[] classInput = buildClass(FieldTestTarget.class);
         Object result =
-                new MethodBodyEvaluator(classInput, "testDoubleFields", "()D")
+                new MethodBodyEvaluator(classInput, "getDoubleFields", "()D")
                         .evalStatic(new Object[0]);
-        Assert.assertEquals(FieldTestTarget.testDoubleFields(), result);
+        Assert.assertEquals(FieldTestTarget.getDoubleFields(), result);
     }
 
     @org.junit.Test
     public void testBooleanFields() throws Exception {
         byte[] classInput = buildClass(FieldTestTarget.class);
         Object result =
-                new MethodBodyEvaluator(classInput, "testBooleanFields", "()Z")
+                new MethodBodyEvaluator(classInput, "getBooleanFields", "()Z")
                         .evalStatic(new Object[0]);
-        Assert.assertEquals(FieldTestTarget.testBooleanFields(), result);
+        Assert.assertEquals(FieldTestTarget.getBooleanFields(), result);
     }
 
     @org.junit.Test
     public void testCharFields() throws Exception {
         byte[] classInput = buildClass(FieldTestTarget.class);
         Object result =
-                new MethodBodyEvaluator(classInput, "testCharFields", "()Ljava/lang/String;")
+                new MethodBodyEvaluator(classInput, "getCharFields", "()Ljava/lang/String;")
                         .evalStatic(new Object[0]);
-        Assert.assertEquals(FieldTestTarget.testCharFields(), result);
+        Assert.assertEquals(FieldTestTarget.getCharFields(), result);
     }
 
     @org.junit.Test
     public void testObjectFields() throws Exception {
         byte[] classInput = buildClass(FieldTestTarget.class);
         Object result =
-                new MethodBodyEvaluator(classInput, "testObjectFields", "()Ljava/lang/String;")
+                new MethodBodyEvaluator(classInput, "getObjectFields", "()Ljava/lang/String;")
                         .evalStatic(new Object[0]);
-        Assert.assertEquals(FieldTestTarget.testObjectFields(), result);
+        Assert.assertEquals(FieldTestTarget.getObjectFields(), result);
     }
 
     @org.junit.Test

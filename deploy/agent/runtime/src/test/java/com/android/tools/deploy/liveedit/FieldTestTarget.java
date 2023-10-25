@@ -68,7 +68,7 @@ class FieldTestTarget {
         privateStaticIntField = 444;
     }
 
-    public static int testIntFields() {
+    public static int getIntFields() {
         FieldTestTarget instance = new FieldTestTarget();
         instance.setIntFields();
         setStaticIntFields();
@@ -90,7 +90,7 @@ class FieldTestTarget {
         privateStaticByteField = 4;
     }
 
-    public static int testByteFields() {
+    public static int getByteFields() {
         FieldTestTarget instance = new FieldTestTarget();
         instance.setByteFields();
         setStaticByteFields();
@@ -112,7 +112,7 @@ class FieldTestTarget {
         privateStaticShortField = 4;
     }
 
-    public static int testShortFields() {
+    public static int getShortFields() {
         FieldTestTarget instance = new FieldTestTarget();
         instance.setShortFields();
         setStaticShortFields();
@@ -134,7 +134,7 @@ class FieldTestTarget {
         privateStaticLongField = 40000000L;
     }
 
-    public static long testLongFields() {
+    public static long getLongFields() {
         FieldTestTarget instance = new FieldTestTarget();
         instance.setLongFields();
         setStaticLongFields();
@@ -156,7 +156,7 @@ class FieldTestTarget {
         privateStaticFloatField = 4.2f;
     }
 
-    public static float testFloatFields() {
+    public static float getFloatFields() {
         FieldTestTarget instance = new FieldTestTarget();
         instance.setFloatFields();
         setStaticFloatFields();
@@ -178,7 +178,7 @@ class FieldTestTarget {
         privateStaticDoubleField = 4124.1;
     }
 
-    public static double testDoubleFields() {
+    public static double getDoubleFields() {
         FieldTestTarget instance = new FieldTestTarget();
         instance.setDoubleFields();
         setStaticDoubleFields();
@@ -200,7 +200,7 @@ class FieldTestTarget {
         privateStaticBooleanField = true;
     }
 
-    public static boolean testBooleanFields() {
+    public static boolean getBooleanFields() {
         FieldTestTarget instance = new FieldTestTarget();
         instance.setBooleanFields();
         setStaticBooleanFields();
@@ -222,7 +222,7 @@ class FieldTestTarget {
         privateStaticCharField = 'd';
     }
 
-    public static String testCharFields() {
+    public static String getCharFields() {
         FieldTestTarget instance = new FieldTestTarget();
         instance.setCharFields();
         setStaticCharFields();
@@ -245,7 +245,7 @@ class FieldTestTarget {
         privateStaticObjectField = "bar";
     }
 
-    public static String testObjectFields() {
+    public static String getObjectFields() {
         FieldTestTarget instance = new FieldTestTarget();
         instance.setObjectFields();
         setStaticObjectFields();
