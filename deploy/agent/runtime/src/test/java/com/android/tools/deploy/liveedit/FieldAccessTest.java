@@ -17,6 +17,7 @@ package com.android.tools.deploy.liveedit;
 
 import static com.android.tools.deploy.liveedit.Utils.buildClass;
 
+import java.io.IOException;
 import org.junit.Assert;
 
 public class FieldAccessTest {
@@ -130,5 +131,83 @@ public class FieldAccessTest {
                 "Accessed parent field",
                 child.accessParentProtectedField(protectedFieldValue),
                 i.intValue());
+    }
+
+    @org.junit.Test
+    public void testAccessProtectedParentWithoutSuper() throws Exception {
+        byte[] classInput = buildClass(Child.class);
+        Child child = new Child(0);
+        int protectedFieldValue = 5;
+        Object result =
+                new MethodBodyEvaluator(
+                                classInput, "accessParentProtectedFieldWithoutSuper", "(I)I")
+                        .eval(child, Child.class.getTypeName(), new Object[] {protectedFieldValue});
+        Integer i = (Integer) result;
+
+        Assert.assertEquals(
+                "Accessed parent field",
+                child.accessParentProtectedFieldWithoutSuper(protectedFieldValue),
+                i.intValue());
+    }
+
+    @org.junit.Test
+    public void testGetParentStatic() throws Exception {
+        byte[] classInput = buildClass(FieldTestTarget.class);
+        Object result =
+                new MethodBodyEvaluator(classInput, "getInheritedStatic", "()Ljava/lang/String;")
+                        .evalStatic(new Object[0]);
+        Assert.assertEquals(FieldTestTarget.getInheritedStatic(), result);
+    }
+
+    @org.junit.Test
+    public void testParentViaChildStatic() throws IOException {
+        byte[] classInput = buildClass(FieldTestTarget.class);
+        Object result =
+                new MethodBodyEvaluator(
+                                classInput, "getParentViaChildStatic", "()Ljava/lang/String;")
+                        .evalStatic(new Object[0]);
+        Assert.assertEquals(FieldTestTarget.getParentViaChildStatic(), result);
+    }
+
+    @org.junit.Test
+    public void testParentViaParentStatic() throws IOException {
+        byte[] classInput = buildClass(FieldTestTarget.class);
+        Object result =
+                new MethodBodyEvaluator(
+                                classInput, "getParentViaParentStatic", "()Ljava/lang/String;")
+                        .evalStatic(new Object[0]);
+        Assert.assertEquals(FieldTestTarget.getParentViaParentStatic(), result);
+    }
+
+    @org.junit.Test
+    public void testChildViaChildStatic() throws IOException {
+        byte[] classInput = buildClass(FieldTestTarget.class);
+        Object result =
+                new MethodBodyEvaluator(
+                                classInput, "getChildViaChildStatic", "()Ljava/lang/String;")
+                        .evalStatic(new Object[0]);
+        Assert.assertEquals(FieldTestTarget.getChildViaChildStatic(), result);
+    }
+
+    @org.junit.Test
+    public void testFieldFromInterface() throws IOException {
+        byte[] classInput = buildClass(FieldTestTarget.class);
+        Object result =
+                new MethodBodyEvaluator(
+                                classInput, "getInterfaceInheritedField", "()Ljava/lang/Object;")
+                        .evalStatic(new Object[0]);
+        Assert.assertEquals(FieldTestTarget.getInterfaceInheritedField(), result);
+    }
+
+    @org.junit.Test
+    public void testFieldFromInterfaceAncestor() throws IOException {
+        byte[] classInput = buildClass(FieldTestTarget.class);
+        Object result =
+                new MethodBodyEvaluator(
+                                classInput,
+                                "getInterfaceAncestorInheritedField",
+                                "()Ljava/lang/Object;")
+                        .evalStatic(new Object[0]);
+        Assert.assertEquals(FieldTestTarget.getInterfaceAncestorInheritedField(), result);
     }
 }

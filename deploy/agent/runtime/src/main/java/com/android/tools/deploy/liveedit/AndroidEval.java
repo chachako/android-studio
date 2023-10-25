@@ -16,6 +16,7 @@
 package com.android.tools.deploy.liveedit;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.deploy.asm.Type;
 import com.android.tools.deploy.interpreter.DoubleValue;
 import com.android.tools.deploy.interpreter.Eval;
@@ -34,6 +35,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -98,7 +100,7 @@ class AndroidEval implements Eval {
         String type = description.getDesc();
         try {
             String ownerClass = description.getOwnerInternalName();
-            Field field = forName(ownerClass).getDeclaredField(name);
+            Field field = findField(forName(ownerClass), name);
             field.setAccessible(true);
             return makeValue(field.get(owner), Type.getType(type));
         } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException e) {
@@ -113,7 +115,8 @@ class AndroidEval implements Eval {
         String name = description.getName();
         String type = description.getDesc();
         try {
-            Field field = forName(owner).getDeclaredField(name);
+
+            Field field = findField(forName(owner), name);
             field.setAccessible(true);
             return makeValue(field.get(owner), Type.getType(type));
         } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException e) {
@@ -432,7 +435,7 @@ class AndroidEval implements Eval {
         String ownerClass = description.getOwnerInternalName().replace('/', '.');
         String name = description.getName();
         try {
-            Field field = forName(ownerClass).getDeclaredField(name);
+            Field field = findField(forName(ownerClass), name);
             field.setAccessible(true);
             Type expectedType = Type.getType(description.getDesc());
             field.set(owner.obj(), value.obj(expectedType));
@@ -447,7 +450,7 @@ class AndroidEval implements Eval {
         String name = description.getName();
         try {
             Class<?> ownerClass = forName(ownerClassName);
-            Field field = ownerClass.getDeclaredField(name);
+            Field field = findField(ownerClass, name);
             field.setAccessible(true);
             Type expectedType = Type.getType(description.getDesc());
             field.set(ownerClass, value.obj(expectedType));
@@ -493,6 +496,85 @@ class AndroidEval implements Eval {
 
     Class<?> forName(String className) throws ClassNotFoundException {
         return Class.forName(className.replace('/', '.'), true, classloader);
+    }
+
+    private boolean isVisible(@NonNull Field f, boolean allowPrivate) {
+        if (allowPrivate) {
+            return true;
+        }
+        return !Modifier.isPrivate(f.getModifiers());
+    }
+
+    @Nullable
+    private Field searchField(@NonNull Class clazz, @NonNull String name) {
+        return searchField(clazz, name, true);
+    }
+
+    @Nullable
+    private Field searchField(@NonNull Class clazz, @NonNull String name, boolean allowPrivate) {
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field f : fields) {
+            if (f.getName().equals(name) && isVisible(f, allowPrivate)) {
+                return f;
+            }
+        }
+        return null;
+    }
+
+    // Recursively find all interfaces in the inheritance chain of the inheritance chain.
+    // Because there can be cases where an interface is implemented twice (once directly and
+    // then indirectly, the list may contain duplicates). e.g.: iZ is implemented by both cX
+    // and cY, and cY implements iZ and extends cX.
+    @NonNull
+    private List<Class> findAllInterfaces(@NonNull Class interfazz) {
+        List<Class> result = new ArrayList<>();
+        Class[] interfaces = interfazz.getInterfaces();
+
+        for (Class i : interfaces) {
+            result.addAll(findAllInterfaces(i));
+        }
+        result.addAll(Arrays.asList(interfazz.getInterfaces()));
+        return result;
+    }
+
+    // Neither getFields not getDeclaredFields do what we want.
+    // - getFields returns all PUBLIC field of the current class (including hierarchy)
+    // - getDeclaredFields returns public/protected/final of the current Class (no hierarchy
+    // lookup).
+    //
+    // We want to find public/protected fields (+private for starting class), while walking the
+    // whole hierarchy up to Object.
+    private Field findField(Class clazz, String name) throws NoSuchFieldException {
+        String className = clazz.getCanonicalName();
+        Field field;
+
+        // Only true for the first iteration in the loop (the lookup start class).
+        boolean allowPrivate = true;
+
+        while (clazz != null) {
+
+            // First try to lookup the current class
+            field = searchField(clazz, name, allowPrivate);
+            if (field != null) {
+                return field;
+            }
+
+            // Check if it is in an interface or its ancestor interfaces
+            List<Class> interfaces = findAllInterfaces(clazz);
+            for (Class interfazz : interfaces) {
+                field = searchField(interfazz, name);
+                if (field != null) {
+                    return field;
+                }
+            }
+
+            // We are recursing. From here we don't allow private field to be found.
+            // This was only allowed in the start class
+            allowPrivate = false;
+
+            clazz = clazz.getSuperclass();
+        }
+        throw new NoSuchFieldException("Can't find '" + name + "' in class '" + className + "'");
     }
 
     public Class<?> typeToClass(Type type) throws ClassNotFoundException {

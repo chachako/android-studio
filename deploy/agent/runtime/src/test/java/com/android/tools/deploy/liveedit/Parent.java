@@ -17,6 +17,10 @@ package com.android.tools.deploy.liveedit;
 
 public class Parent {
 
+    protected static String staticField = "StaticParent";
+
+    protected static String inheritedField = "StaticParentInherited";
+
     protected int id = 0xFAB;
     protected int protectedField;
 

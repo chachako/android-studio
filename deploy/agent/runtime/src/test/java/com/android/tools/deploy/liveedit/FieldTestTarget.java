@@ -15,7 +15,7 @@
  */
 package com.android.tools.deploy.liveedit;
 
-class FieldTestTarget {
+class FieldTestTarget implements FieldInterface {
     public static int publicStaticIntField = 0;
     public static byte publicStaticByteField = 0;
     public static short publicStaticShortField = 0;
@@ -61,6 +61,26 @@ class FieldTestTarget {
     private void setIntFields() {
         publicIntField = 111;
         privateIntField = 222;
+    }
+
+    public static String getInheritedStatic() {
+        Child c = new Child(0);
+        return c.inheritedField + Child.inheritedField + Parent.inheritedField;
+    }
+
+    public static String getParentViaChildStatic() {
+        Parent p = new Child(0);
+        return p.staticField;
+    }
+
+    public static String getParentViaParentStatic() {
+        Parent p = new Parent(0);
+        return p.staticField;
+    }
+
+    public static String getChildViaChildStatic() {
+        Child c = new Child(0);
+        return c.staticField;
     }
 
     private static void setStaticIntFields() {
@@ -264,5 +284,13 @@ class FieldTestTarget {
         FieldTestTarget t = new FieldTestTarget();
         boolean b = true;
         t.publicBooleanField = b;
+    }
+
+    public static Object getInterfaceInheritedField() {
+        return interfaceinheritedField;
+    }
+
+    public static Object getInterfaceAncestorInheritedField() {
+        return interfaceAncestorinheritedField;
     }
 }

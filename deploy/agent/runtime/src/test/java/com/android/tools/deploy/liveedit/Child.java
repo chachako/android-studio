@@ -16,6 +16,9 @@
 package com.android.tools.deploy.liveedit;
 
 public class Child extends Parent {
+
+    public static String staticField = "Child";
+
     public Child(int value) {
         super(value);
         id = 0xBAF;
@@ -36,5 +39,10 @@ public class Child extends Parent {
     int accessParentProtectedField(int v) {
         super.protectedField = v;
         return super.protectedField;
+    }
+
+    int accessParentProtectedFieldWithoutSuper(int v) {
+        protectedField = v;
+        return protectedField;
     }
 }
