@@ -17,7 +17,6 @@
 package com.android.tools.render.compose
 
 import com.android.tools.preview.applyTo
-import com.android.tools.preview.resolve
 import com.android.tools.render.RenderRequest
 import com.android.tools.render.render
 import javax.imageio.ImageIO
