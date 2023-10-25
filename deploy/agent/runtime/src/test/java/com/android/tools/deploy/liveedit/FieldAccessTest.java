@@ -115,4 +115,20 @@ public class FieldAccessTest {
                 new MethodBodyEvaluator(classInput, "setStaticBoolean", "()V")
                         .evalStatic(new Object[0]);
     }
+
+    @org.junit.Test
+    public void testAccessProtectedParent() throws Exception {
+        byte[] classInput = buildClass(Child.class);
+        Child child = new Child(0);
+        int protectedFieldValue = 5;
+        Object result =
+                new MethodBodyEvaluator(classInput, "accessParentProtectedField", "(I)I")
+                        .eval(child, Child.class.getTypeName(), new Object[] {protectedFieldValue});
+        Integer i = (Integer) result;
+
+        Assert.assertEquals(
+                "Accessed parent field",
+                child.accessParentProtectedField(protectedFieldValue),
+                i.intValue());
+    }
 }
