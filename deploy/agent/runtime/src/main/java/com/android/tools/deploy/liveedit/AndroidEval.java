@@ -572,6 +572,17 @@ class AndroidEval implements Eval {
         return msg.toString();
     }
 
+    // Neither Class.getMethods nor Class.getAllDeclaredMethods can do what we need.
+    // We want to search all inherited methods (including from interfaces), whether
+    // they are public, protected, or private.
+    // * Class.getMethods returns everything inherited (including interfaces ) for the given Class
+    // but
+    // only what is public.
+    // * Class.getDeclaredMethods returns private/public/protected for the given Class.
+    //
+    // This is a mix of both which recursively walks the inheritance chain and interfaces to capture
+    // all methods
+    // regardless of their visibility.
     private List<Method> getAllDeclaredMethods(String className) throws ClassNotFoundException {
         List<Method> methods = new ArrayList<>();
 
