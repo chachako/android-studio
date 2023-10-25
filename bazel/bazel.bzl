@@ -1,3 +1,5 @@
+"""This module implements the iml_module rule."""
+
 load(":coverage.bzl", "coverage_baseline", "coverage_java_test")
 load(":functions.bzl", "create_option_file", "label_workspace_path")
 load(":kotlin.bzl", "kotlin_compile")
@@ -32,15 +34,23 @@ def _get_label_and_tags(label):
         return label, []
     rfind = label.rfind("[")
     if rfind == -1:
+        # buildifier: disable=print
         print("Malformed tagged label: " + label)
         return label, []
     return label[:rfind], [tag.strip() for tag in label[rfind + 1:-1].split(",")]
 
-# Returns the paths of the given files relative to any of the roots. Were
-# files is a list of File objects, and roots is a list strings represnting
-# paths of directories relative to the package
-# If a file is not found to be inside any of the given roots, it is ignored.
 def relative_paths(ctx, files, roots):
+    """Returns paths of the given files relative to the roots.
+
+    If a file is not found to be inside the roots, it is ignored.
+
+    Args:
+        ctx: The Bazel context.
+        files: A list of files
+        roots: A list of strings representing directory paths relative to the package.
+    Returns:
+        The updated relative paths.
+    """
     package_prefixes = ctx.attr.package_prefixes
     translated_package_prefixes = {root: prefix.replace(".", "/") for (root, prefix) in package_prefixes.items()}
 
@@ -56,10 +66,19 @@ def relative_paths(ctx, files, roots):
     return paths
 
 def resources_impl(ctx, name, roots, resources, resources_jar):
+    """Creates a resource zip archive.
+
+    Args:
+        ctx: The bazel context.
+        name: A name used for the argument file, "${name}.res.lst".
+        roots: See relative_paths() function.
+        resources: See 'files' in relative_paths() function.
+        resources_jar: The output file.
+    """
     zipper_args = ["c", resources_jar.path]
     zipper_files = "".join([k + "=" + v.path + "\n" for k, v in relative_paths(ctx, resources, roots)])
     zipper_list = create_option_file(ctx, name + ".res.lst", zipper_files)
-    zipper_args += ["@" + zipper_list.path]
+    zipper_args.append("@" + zipper_list.path)
     ctx.actions.run(
         inputs = resources + [zipper_list],
         outputs = [resources_jar],
@@ -117,7 +136,7 @@ def _iml_module_jar_impl(
     # Kotlin
     kotlin_providers = []
     if kotlin_srcs:
-        kotlin_providers += [kotlin_compile(
+        kotlin_providers.append(kotlin_compile(
             ctx = ctx,
             name = module_name,
             srcs = java_srcs + kotlin_srcs,
@@ -128,15 +147,15 @@ def _iml_module_jar_impl(
             java_runtime = kt_java_runtime,
             kotlinc_opts = kotlinc_opts,
             transitive_classpath = False,  # Matches JPS.
-        )]
-        jars += [kotlin_jar]
-        ijars += [kotlin_ijar]
+        ))
+        jars.append(kotlin_jar)
+        ijars.append(kotlin_ijar)
 
     # Resources.
     if resources:
         resources_jar = ctx.actions.declare_file(name + ".res.jar")
         resources_impl(ctx, name, roots, resources, resources_jar)
-        jars += [resources_jar]
+        jars.append(resources_jar)
     if res_zips:
         jars += res_zips
 
@@ -196,7 +215,7 @@ def _iml_module_jar_impl(
                 execution_requirements = {"supports-multiplex-workers": "1"},
             )
 
-        jars += [java_jar]
+        jars.append(java_jar)
 
     if form_srcs and not java_srcs:
         fail("Forms only supported with java sources")
@@ -245,13 +264,13 @@ def _iml_module_impl(ctx):
         if ImlModuleInfo in this_dep:
             form_deps += this_dep[ImlModuleInfo].forms
         if JavaInfo in this_dep:
-            java_deps += [this_dep[JavaInfo]]
+            java_deps.append(this_dep[JavaInfo])
     module_deps = []
     plugin_deps = []
     external_deps = []
     for dep in ctx.attr.deps:
         if ImlModuleInfo in dep:
-            module_deps += [dep]
+            module_deps.append(dep)
             if ctx.attr.jvm_target:
                 if not dep[ImlModuleInfo].jvm_target or int(dep[ImlModuleInfo].jvm_target) > int(ctx.attr.jvm_target):
                     fail("The module %s has a jvm_target of \"%s\", but depends on module %s with target \"%s\"" % (
@@ -261,21 +280,21 @@ def _iml_module_impl(ctx):
                         dep[ImlModuleInfo].jvm_target,
                     ))
         elif hasattr(dep, "plugin_info"):
-            plugin_deps += [dep]
+            plugin_deps.append(dep)
         elif hasattr(dep, "platform_info"):
             pass
         else:
-            external_deps += [dep]
+            external_deps.append(dep)
 
     # Test dependencies (superset of prod).
     test_java_deps = []
     test_form_deps = []
     for this_dep in ctx.attr.test_deps:
         if JavaInfo in this_dep:
-            test_java_deps += [this_dep[JavaInfo]]
+            test_java_deps.append(this_dep[JavaInfo])
         if ImlModuleInfo in this_dep:
             test_form_deps += this_dep[ImlModuleInfo].test_forms
-            test_java_deps += [this_dep[ImlModuleInfo].test_provider]
+            test_java_deps.append(this_dep[ImlModuleInfo].test_provider)
 
     # Runtime dependencies.
     java_runtime_deps = [dep[JavaInfo] for dep in ctx.attr.runtime_deps]
@@ -285,9 +304,9 @@ def _iml_module_impl(ctx):
     test_exports = []
     for export in ctx.attr.exports:
         if JavaInfo in export:
-            exports += [export[JavaInfo]]
+            exports.append(export[JavaInfo])
         if ImlModuleInfo in export:
-            test_exports += [export[ImlModuleInfo].test_provider]
+            test_exports.append(export[ImlModuleInfo].test_provider)
 
     # Runfiles.
     # Note: the runfiles for test-only deps should technically not be in
@@ -424,27 +443,27 @@ _iml_module_ = rule(
         ),
         "_zipper": attr.label(
             default = Label("@bazel_tools//tools/zip:zipper"),
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         "_singlejar": attr.label(
             default = Label("@bazel_tools//tools/jdk:singlejar"),
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         "_kotlinc": attr.label(
             default = Label("//tools/base/bazel:kotlinc"),
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         "_compose_plugin": attr.label(
             default = Label("//prebuilts/tools/common/m2:compose-compiler-hosted"),
-            cfg = "host",
+            cfg = "exec",
             allow_single_file = [".jar"],
         ),
         "_jvm_abi_gen": attr.label(
             default = Label("//prebuilts/tools/common/m2:jvm-abi-gen-plugin"),
-            cfg = "host",
+            cfg = "exec",
             allow_single_file = [".jar"],
         ),
         "_kotlin": attr.label(
@@ -453,7 +472,7 @@ _iml_module_ = rule(
         ),
         "_formc": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             default = Label("//tools/base/bazel:formc"),
             allow_files = True,
         ),
@@ -480,71 +499,13 @@ _iml_test_module_ = rule(
     implementation = _iml_test_module_impl,
 )
 
-# Macro implementation of an iml_module "rule".
-# This rule corresponds to the building artifacts needed to build an IntelliJ module.
-# Instantiating this rule looks similar to an .iml definition:
-#
-# iml_module(
-#     # The name of the module used to generate the rules
-#     name = "module_name",
-#     # A list of directories containing the sources (.iml use directories as oposed to files)
-#     srcs = ["src/main/java"],
-#     # The directories with the test sources.
-#     test_srcs = ["src/test/java"],
-#     # The directories with the production resources
-#     resources = ["src/main/resources"]
-#     # A dict indicating test targets to create, each one running a subset of tests
-#     # designated by `test_filter` which matches a package name or FQCN. If a test
-#     # target does not define a `test_filter`, it will run the set of tests that
-#     # excludes all the other filters. If a test target defines a `test_filter` which
-#     # is a subset of another test filter, the test target will exclude those tests.
-#     # For example:
-#     #  `{"A": {"test_filter": "x.y"}, "B": {"test_filter": "x.y.z"}}`
-#     # Split test target A will automatically exclude "x.y.z".
-#     # Targets may specify the following common attributes: `data`, `shard_count`, and
-#     # `tags`. For definitions of these attributes, see
-#     # https://docs.bazel.build/versions/master/be/common-definitions.html
-#     split_test_targets = {},
-#     # Designates the test target with the common Flaky attribute.
-#     # Tests marked Flaky will be attempted a total of 3 times, until a passing
-#     # run is achieved or fail.
-#     test_flaky = True,
-#     # Specifies the number of parallel shards to run the test.
-#     # See https://docs.bazel.build/versions/master/be/common-definitions.html#test.shard_count.
-#     # Mutually exclusive with test_target_shards.
-#     test_shard_count = 1,
-#     # The directories with the test resources
-#     test_resources = ["src/test/resources"],
-#     # A tag enhanced list of dependency tags. These dependencies can contain a
-#     # list of tags after the label. The supported tags are:
-#     #     module: It treats the dependency as a module dependency, making
-#     #             production and test sources depend on each other correctly.
-#     #     test:   This dependency is included and available for test sources only.
-#     deps = [
-#         "//path/to/module:name[module]",
-#         "//path/to/libs:junit-4.12[test]",
-#         "//a/module/only/needed/in/tests:name[module, test]",
-#         "//a/standard/java/dependency:dep",
-#     ],
-# )
-#
-# This macro generates the following rules visible to the user:
-#
-# "module_name": A Java library compiled from the production sources
-# "module_name_testlib": A Java library compiled from the test sources
-# "module_name_tests": A java test rule that runs the tests found in "libmodule_name_testlib.jar",
-#   or a test_suite containing all split_test_targets.
-# "module_name_tests__split-name": A java test rule running a split subset of tests if using
-#   split_test_targets.
 def iml_module(
         name,
         srcs = [],
         package_prefixes = {},
-        project = "",
         test_srcs = [],
         exclude = [],
         resources = [],
-        manifests = [],
         res_zips = [],
         test_resources = [],
         deps = [],
@@ -552,7 +513,6 @@ def iml_module(
         test_friends = [],
         visibility = [],
         exports = [],
-        plugins = [],
         jvm_target = None,
         javacopts = [],
         javacopts_from_jps = [],
@@ -567,23 +527,82 @@ def iml_module(
         tags = None,
         test_tags = None,
         test_agents = [],
-        back_target = 0,
         iml_files = None,
         data = [],
         test_main_class = None,
         lint_baseline = None,
         lint_timeout = None,
-        back_deps = [],
         exec_properties = {},
         kotlin_use_compose = False,
         generate_k2_tests = False):
+    """A macro corresponding to an IntelliJ module.
+
+    Generates the following targets:
+    * "${NAME}": A java library target from srcs.
+    * "${NAME}_testlib": A java library from test_srcs.
+    * "${NAME}_tests": A java test to run tests from the _testlib target.
+    * "${NAME}_tests__${split-test}": If using split_test_targets (optional).
+
+    Instantiating this rule looks similar to an .iml definition.
+
+    Args:
+        name: The name of the module used to generate rules.
+        srcs: A list of directories containing the sources (.iml use directories as oposed to files)
+        package_prefixes: placeholder
+        test_srcs: The directories with the test sources.
+        exclude: glob() exclude for excluding srcs, test_srcs, resources, and test_resources.
+        resources: The directories with the production resources.
+        res_zips: Resource zip achives.
+        test_resources: The directories with the test resources.
+        deps: A tag enhanced list of dependency tags. These dependencies can contain a
+              list of tags after the label, e.g., //target[module, test]. Supported tags:
+                * module: It treats the dependency as a module dependency, making
+                          production and test sources depend on each other correctly.
+                * test:   This dependency is included and available for test sources only.
+        runtime_deps: Runtime dependencies.
+        test_friends: Kotlin test friends.
+        visibility: Visibility for all generated targets.
+        exports: See java_* rules.
+        jvm_target: Determines the java toolchain selected.
+        javacopts: See java_* rules.
+        javacopts_from_jps: See java_* rules.
+        enable_tests: If true, creates the test target.
+        test_data: Test runtime dependencies.
+        test_flaky: See https://bazel.build/reference/be/common-definitions#test.flaky.
+        test_jvm_flags: JVM flags passed to the test process.
+        test_timeout: See https://bazel.build/reference/be/common-definitions#test.timeout.
+        test_class: See https://bazel.build/reference/be/java#java_test_args.
+        test_shard_count: Number of shards to use for testing.
+        split_test_targets: A dict indicating split test targets to create.
+                            Each split target runs a subset of tests matching a package name or FQCN.
+                            If a test target does not define a `test_filter`, it will run the set of tests that
+                            excludes all the other filters. If a test target defines a `test_filter` which
+                            is a subset of another test filter, the test target will exclude those tests.
+                            For example:
+                            `{"A": {"test_filter": "x.y"}, "B": {"test_filter": "x.y.z"}}`
+                            Split test target A will automatically exclude "x.y.z".
+                            Targets may specify the following common attributes: `data`, `shard_count`, and
+                            `tags`. For definitions of these attributes, see
+                            https://docs.bazel.build/versions/master/be/common-definitions.html
+        tags: Tags applied to ${NAME} target.
+        test_tags: Tags applied to the test target.
+        test_agents: Adds a testing agent to the java test process.
+        iml_files: See impl.
+        data: Production runtime dependencies.
+        test_main_class: See See https://bazel.build/reference/be/java#java_test_args.
+        lint_baseline: See impl.
+        lint_timeout: See impl.
+        exec_properties: See https://bazel.build/reference/be/common-definitions#common.exec_properties
+        kotlin_use_compose: See impl.
+        generate_k2_tests: Creates an additional test target to use the kotlin k2 plugin.
+    """
     prod_deps = []
     test_deps = []
     for dep in deps:
         label, label_tags = _get_label_and_tags(dep)
         if "test" not in label_tags:
-            prod_deps += [label]
-        test_deps += [label]
+            prod_deps.append(label)
+        test_deps.append(label)
 
     srcs = split_srcs(srcs, resources, exclude)
     split_test_srcs = split_srcs(test_srcs, test_resources, exclude)
@@ -654,7 +673,7 @@ def iml_module(
 
         lint_tags = tags if tags else []
         if "no_windows" not in lint_tags:
-            lint_tags += ["no_windows"]
+            lint_tags.append("no_windows")
 
         lint_test(
             name = name + "_lint_test",
@@ -846,6 +865,7 @@ def _gen_tests(
         test_shard_count: Shard count for the generated test. Only valid for single tests.
         test_tags: optional list of tags to include for test targets.
         test_data: optional list of data to include for test targets.
+        **kwargs: Additional arguments passed to java_test().
     """
 
     if split_test_targets and test_flaky:
@@ -894,6 +914,9 @@ def _gen_split_tests(
         test_tags: optional list of tags to include for test targets.
         test_data: optional list of data to include for test targets.
         timeout: optional timeout that applies to this split test only (overriding target level).
+        exec_properties: See https://bazel.build/reference/be/common-definitions#common-attributes
+        jvm_flags: Extra flags passed to java_test().
+        **kwargs: Extra arguments passed to java_test().
     """
 
     # create a _tests__all target for local development with all test sources
@@ -951,7 +974,9 @@ def _get_unique_split_data(split_test_targets):
     data = []
     for split_name in split_test_targets:
         split_data = split_test_targets[split_name].get("data", default = [])
-        [data.append(d) for d in split_data if d not in data]
+        for d in split_data:
+            if d not in data:
+                data.append(d)
     return data
 
 def _gen_split_test_jvm_flags(split_name, split_test_targets):
@@ -964,7 +989,6 @@ def _gen_split_test_jvm_flags(split_name, split_test_targets):
         The test jvm_flags with test_filter and test_exclude_filter defined
         based on the test_filter given to each split_test_target.
     """
-    args = []
     jvm_flags = []
     split_target = split_test_targets[split_name]
     test_filter = split_target.get("test_filter")
@@ -1037,6 +1061,15 @@ def _gen_split_test_excludes(split_name, split_test_targets):
     return excludes
 
 def split_srcs(src_dirs, res_dirs, exclude):
+    """Returns a struct splitting java, kotlin, and other source files.
+
+    Args:
+        src_dirs: A list of directories containing sources.
+        res_dirs: A list of directories containing resources.
+        exclude: A list of excludes passed to glob() for src_dirs and res_dirs.
+    Returns:
+        A struct representing groups of source files.
+    """
     roots = src_dirs + res_dirs
     exts = ["java", "kt", "groovy", "DS_Store", "form", "flex"]
     excludes = []
