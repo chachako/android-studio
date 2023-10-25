@@ -79,9 +79,11 @@ class UtpTestUtilsTest {
     private lateinit var mockUtpTestResultListenerServerRunner: UtpTestResultListenerServerRunner
 
     lateinit var utpResultDir: File
+    lateinit var jvmExecutable: File
 
     @Before
     fun setupMocks() {
+        jvmExecutable = temporaryFolderRule.newFile()
         `when`(mockWorkerExecutor.noIsolation()).thenReturn(mockWorkQueue)
     }
 
@@ -92,6 +94,7 @@ class UtpTestUtilsTest {
         val utpOutputDir = temporaryFolderRule.newFolder()
         utpResultDir = temporaryFolderRule.newFolder()
         val config = UtpRunnerConfig(
+            jvmExecutable,
             "deviceName",
             "deviceId",
             utpOutputDir,

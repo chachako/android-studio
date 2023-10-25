@@ -78,10 +78,13 @@ class UtpTestRunnerTest {
     private lateinit var mockUtpTestResultListenerServerMetadata: UtpTestResultListenerServerMetadata
 
     private lateinit var resultsDirectory: File
+    private lateinit var jvmExecutable: File
     private lateinit var capturedRunnerConfigs: List<UtpRunnerConfig>
 
     @Before
     fun setupMocks() {
+        jvmExecutable = temporaryFolderRule.newFile()
+
         `when`(mockDevice.serialNumber).thenReturn("mockDeviceSerialNumber")
         `when`(mockDevice.apiLevel).thenReturn(28)
         `when`(mockDevice.name).thenReturn("mockDeviceName")
@@ -124,6 +127,7 @@ class UtpTestRunnerTest {
             mockProcessExecutor,
             mockWorkerExecutor,
             mockExecutorServiceAdapter,
+            jvmExecutable,
             mockUtpDependencies,
             mockVersionedSdkLoader,
             mockemulatorControlConfig,

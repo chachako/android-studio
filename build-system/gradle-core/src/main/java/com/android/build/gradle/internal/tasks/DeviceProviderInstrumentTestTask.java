@@ -97,12 +97,14 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.gradle.api.GradleException;
 import org.gradle.api.InvalidUserDataException;
+import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.ArtifactCollection;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFile;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.JavaBasePlugin;
@@ -135,6 +137,13 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
             file -> SdkConstants.EXT_ANDROID_PACKAGE.equals(Files.getFileExtension(file.getName()));
 
     public abstract static class TestRunnerFactory {
+
+        /** Java runtime environment to run UTP in */
+        @Internal
+        public abstract RegularFileProperty getJvmExecutable();
+
+        @Input
+        public abstract Property<JavaVersion> getJavaVersion();
 
         @Internal
         public abstract Property<Boolean> getIsUtpLoggingEnabled();
@@ -213,6 +222,7 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                     new GradleProcessExecutor(getExecOperations()::exec),
                     workerExecutor,
                     executorServiceAdapter,
+                    getJvmExecutable().get().getAsFile(),
                     getUtpDependencies(),
                     getSdkBuildService()
                             .get()
@@ -839,6 +849,13 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
             task.getTestRunnerFactory()
                     .getExecutionEnum()
                     .set(this.creationConfig.getGlobal().getTestOptionExecutionEnum());
+
+            task.getTestRunnerFactory()
+                    .getJvmExecutable()
+                    .set(new File(System.getProperty("java.home"), "bin/java"));
+
+            task.getTestRunnerFactory().getJavaVersion().set(JavaVersion.current());
+
             if (connectedCheckTargetSerials != null) {
                 task.getTestRunnerFactory()
                         .getConnectedCheckDeviceSerials()

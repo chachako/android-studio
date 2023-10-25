@@ -21,51 +21,71 @@ import com.android.build.gradle.internal.testing.utp.UtpDependency
 import com.android.ide.common.process.BaseProcessOutputHandler
 import com.android.ide.common.process.ProcessInfoBuilder
 import com.android.ide.common.process.ProcessOutput
+import com.android.utils.GrabProcessOutput
+import com.google.common.annotations.VisibleForTesting
 import javax.inject.Inject
 import org.gradle.api.logging.Logging
 import org.gradle.process.ExecOperations
 import org.gradle.workers.WorkAction
+import java.lang.ProcessBuilder
 
 /**
  * A work action that runs UTP in an external java process.
  */
-abstract class RunUtpWorkAction : WorkAction<RunUtpWorkParameters> {
+abstract class RunUtpWorkAction @Inject constructor(
+): WorkAction<RunUtpWorkParameters> {
 
     private val logger = Logging.getLogger(RunUtpWorkAction::class.java)
 
-    @get:Inject
-    abstract val execOperations: ExecOperations
+    @VisibleForTesting
+    fun processFactory(): (List<String>) -> ProcessBuilder = { ProcessBuilder(it) }
 
     override fun execute() {
-        val javaProcessExecutor = GradleJavaProcessExecutor {
-            execOperations.javaexec(it)
-        }
-        val javaProcessInfo = ProcessInfoBuilder().apply {
-            setClasspath(parameters.launcherJar.asFile.get().absolutePath)
-            setMain(UtpDependency.LAUNCHER.mainClass)
-            addArgs(parameters.coreJar.asFile.get().absolutePath)
-            addArgs("--proto_config=${parameters.runnerConfig.asFile.get().absolutePath}")
-            addArgs("--proto_server_config=${parameters.serverConfig.asFile.get().absolutePath}")
-            addJvmArg("-Djava.util.logging.config.file=${
-                parameters.loggingProperties.asFile.get().absolutePath}")
-        }.createJavaProcess()
 
-        val processOutputHandler = object: BaseProcessOutputHandler() {
-            override fun handleOutput(processOutput: ProcessOutput) {
-                processOutput as BaseProcessOutput
-                val stdout = processOutput.standardOutputAsString
-                if (stdout.isNotBlank()) {
-                    logger.info(stdout)
-                }
-                val stderr = processOutput.errorOutputAsString
-                if (stderr.isNotBlank()) {
-                    logger.info(stderr)
-                }
-            }
-        }
+        val processBuilder = processFactory().invoke(
+            listOfNotNull(
+                "${parameters.jvm.asFile.get().absolutePath}",
+                "-Djava.awt.headless=true",
+                "-Djava.util.logging.config.file=${
+                    parameters.loggingProperties.asFile.get().absolutePath}",
+                "-Dfile.encoding=UTF-8",
+                "-cp",
+                parameters.launcherJar.asFile.get().absolutePath,
+                UtpDependency.LAUNCHER.mainClass,
+                parameters.coreJar.asFile.get().absolutePath,
+                "--proto_config=${parameters.runnerConfig.asFile.get().absolutePath}",
+                "--proto_server_config=${parameters.serverConfig.asFile.get().absolutePath}"
+            )
+        )
+        val process = processBuilder.start()
 
-        javaProcessExecutor.execute(javaProcessInfo, processOutputHandler).apply {
-            rethrowFailure()
+        // Shutdown hook to close the process if gradle is closed/cancelled.
+        val shutdownHook = Thread(process::destroyForcibly)
+
+        try {
+            Runtime.getRuntime().addShutdownHook(shutdownHook)
+
+            GrabProcessOutput.grabProcessOutput(
+                process,
+                GrabProcessOutput.Wait.ASYNC,
+                object : GrabProcessOutput.IProcessOutput {
+                    override fun out(line: String?) {
+                        if (!line.isNullOrBlank()) {
+                            logger.info(line)
+                        }
+                    }
+
+                    override fun err(line: String?) {
+                        if (!line.isNullOrBlank()) {
+                            logger.info(line)
+                        }
+                    }
+                }
+            )
+
+            process.waitFor()
+        } finally {
+            Runtime.getRuntime().removeShutdownHook(shutdownHook)
         }
     }
 }

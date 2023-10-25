@@ -37,6 +37,7 @@ class UtpTestRunner @JvmOverloads constructor(
         processExecutor: ProcessExecutor,
         private val workerExecutor: WorkerExecutor,
         executor: ExecutorServiceAdapter,
+        private val utpJvmExecutable: File,
         private val utpDependencies: UtpDependencies,
         private val versionedSdkLoader: SdkComponentsBuildService.VersionedSdkLoader,
         private val emulatorControlConfig: EmulatorControlConfig,
@@ -113,6 +114,7 @@ class UtpTestRunner @JvmOverloads constructor(
                 )
             }
             UtpRunnerConfig(
+                utpJvmExecutable,
                 deviceConnector.name,
                 deviceConnector.serialNumber,
                 utpOutputDir,

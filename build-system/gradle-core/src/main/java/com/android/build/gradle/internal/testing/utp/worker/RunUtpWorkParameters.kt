@@ -23,6 +23,9 @@ import org.gradle.workers.WorkParameters
  * Parameters of [RunUtpWorkAction].
  */
 interface RunUtpWorkParameters : WorkParameters {
+    // Java executable to run JAVA commands
+    val jvm: RegularFileProperty
+
     // A UTP launcher jar file to run.
     val launcherJar: RegularFileProperty
 

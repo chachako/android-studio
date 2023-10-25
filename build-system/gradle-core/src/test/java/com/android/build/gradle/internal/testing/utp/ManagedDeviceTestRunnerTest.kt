@@ -90,6 +90,7 @@ class ManagedDeviceTestRunnerTest {
     private lateinit var avdFolder: File
     private lateinit var emulatorFile: File
     private lateinit var outputDirectory: File
+    private lateinit var jvmExecutable: File
 
     private lateinit var capturedRunnerConfigs: List<UtpRunnerConfig>
     private var utpInvocationCount: Int = 0
@@ -99,6 +100,8 @@ class ManagedDeviceTestRunnerTest {
     @Before
     fun setupMocks() {
         Environment.initialize()
+
+        jvmExecutable = temporaryFolderRule.newFile()
 
         `when`(mockTestData.minSdkVersion).thenReturn(AndroidVersionImpl(28))
         `when`(mockTestData.testedApkFinder).thenReturn { listOf(mockAppApk) }
@@ -181,6 +184,7 @@ class ManagedDeviceTestRunnerTest {
             val runner = ManagedDeviceTestRunner(
                 mockWorkerExecutor,
                 mockUtpDependencies,
+                jvmExecutable,
                 mockVersionedSdkLoader,
                 mockemulatorControlConfig,
                 mockRetentionConfig,

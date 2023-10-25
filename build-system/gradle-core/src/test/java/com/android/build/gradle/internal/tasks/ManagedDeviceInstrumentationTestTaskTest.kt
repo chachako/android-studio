@@ -50,6 +50,8 @@ import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFile
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.internal.TaskOutputsInternal
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.ListProperty
@@ -78,6 +80,7 @@ import java.util.logging.Level
 class ManagedDeviceInstrumentationTestTaskTest {
     private lateinit var mockVersionedSdkLoader: VersionedSdkLoader
 
+    private lateinit var utpJvm: File
     private lateinit var emulatorFile: File
     private lateinit var avdFolder: File
     private lateinit var resultsFolder: File
@@ -94,6 +97,8 @@ class ManagedDeviceInstrumentationTestTaskTest {
     lateinit var coverageDirectory: Directory
     @Mock
     lateinit var reportsDirectory: Directory
+    @Mock
+    lateinit var utpJvmFile: RegularFile
 
     @get:Rule
     val mockitoRule = MockitoJUnit.rule()
@@ -151,6 +156,8 @@ class ManagedDeviceInstrumentationTestTaskTest {
         `when`(emulatorDirectory.asFile).thenReturn(emulatorFile)
         `when`(avdService.emulatorDirectory).thenReturn(FakeGradleProvider(emulatorDirectory))
 
+        utpJvm = temporaryFolderRule.newFile("java")
+
         avdFolder = temporaryFolderRule.newFolder("gradle/avd")
         `when`(avdDirectory.asFile).thenReturn(avdFolder)
         `when`(avdService.avdFolder).thenReturn(FakeGradleProvider(avdDirectory))
@@ -184,6 +191,11 @@ class ManagedDeviceInstrumentationTestTaskTest {
         `when`(property.get()).thenReturn(directory)
         return property
     }
+
+    private fun mockFileProperty(file: RegularFile): RegularFileProperty =
+        mock(RegularFileProperty::class.java).apply {
+            `when`(get()).thenReturn(file)
+        }
 
     private fun basicTaskSetup(): ManagedDeviceInstrumentationTestTask {
 
@@ -262,6 +274,8 @@ class ManagedDeviceInstrumentationTestTaskTest {
         `when`(factory.enableEmulatorDisplay).thenReturn(FakeGradleProperty(false))
         `when`(factory.getTargetIsSplitApk).thenReturn(FakeGradleProperty(false))
         `when`(factory.getKeepInstalledApks).thenReturn(FakeGradleProperty(false))
+        doReturn(mockFileProperty(utpJvmFile)).`when`(factory).jvmExecutable
+        doReturn(utpJvm).`when`(utpJvmFile).asFile
 
         val testRunner = factory.createTestRunner(workerExecutor, null)
         assertThat(testRunner).isInstanceOf(ManagedDeviceTestRunner::class.java)

@@ -18,6 +18,8 @@ package com.android.build.gradle.internal.testing.utp.worker
 
 import com.android.build.gradle.internal.testing.utp.UtpDependency
 import com.android.testutils.MockitoKt.any
+import com.android.testutils.MockitoKt.mock
+import com.google.common.truth.Truth.assertThat
 import java.io.File
 import org.gradle.api.Action
 import org.gradle.process.ExecOperations
@@ -31,30 +33,29 @@ import org.mockito.Mock
 import org.mockito.Mockito.CALLS_REAL_METHODS
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.doReturn
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
+import org.mockito.Mockito.withSettings
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
-import org.mockito.quality.Strictness
 
 /**
  * Unit tests for [RunUtpWorkAction].
  */
 class RunUtpWorkActionTest {
     @get:Rule
-    var mockitoJUnitRule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
+    var mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private lateinit var mockExecOperations: ExecOperations
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private lateinit var mockRunUtpWorkParameters: RunUtpWorkParameters
+
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private lateinit var mockJavaExecSpec: JavaExecSpec
-    @Mock
-    private lateinit var mockExecResult: ExecResult
+    private lateinit var mockProcessBuilder: ProcessBuilder
+
+    private var argList: List<String>? = null
 
     @Before
     fun setupMocks() {
+        `when`(mockRunUtpWorkParameters.jvm.asFile.get().absolutePath)
+            .thenReturn("java")
         `when`(mockRunUtpWorkParameters.launcherJar.asFile.get().absolutePath)
             .thenReturn("launcherJar")
         `when`(mockRunUtpWorkParameters.coreJar.asFile.get().absolutePath)
@@ -65,30 +66,34 @@ class RunUtpWorkActionTest {
             .thenReturn("serverConfig")
         `when`(mockRunUtpWorkParameters.loggingProperties.asFile.get().absolutePath)
             .thenReturn("loggingProperties")
-        `when`(mockExecOperations.javaexec(any())).then {
-            it.getArgument<Action<JavaExecSpec>>(0).execute(mockJavaExecSpec)
-            mockExecResult
-        }
     }
 
-    private fun createRunUtpWorkAction(): RunUtpWorkAction {
-        val action = mock(RunUtpWorkAction::class.java, CALLS_REAL_METHODS)
-        doReturn(mockExecOperations).`when`(action).execOperations
-        doReturn(mockRunUtpWorkParameters).`when`(action).parameters
-        return action
-    }
+    private fun createRunUtpWorkAction(): RunUtpWorkAction =
+         mock<RunUtpWorkAction>(withSettings().defaultAnswer(CALLS_REAL_METHODS)).also {
+            `when`(it.processFactory()).thenReturn { args ->
+                argList = args
+                mockProcessBuilder
+            }
+            `when`(it.parameters).thenReturn(mockRunUtpWorkParameters)
+        }
 
     @Test
     fun execute() {
         createRunUtpWorkAction().execute()
 
-        verify(mockJavaExecSpec).classpath(File("launcherJar"))
-        verify(mockJavaExecSpec.mainClass).set(UtpDependency.LAUNCHER.mainClass)
-        verify(mockJavaExecSpec).args(listOf(
-            "coreJar", "--proto_config=runnerConfig", "--proto_server_config=serverConfig"))
-        verify(mockJavaExecSpec).jvmArgs(listOf(
-            "-Djava.util.logging.config.file=loggingProperties"))
-
-        verify(mockExecResult).rethrowFailure()
+        assertThat(argList).isEqualTo(
+            listOf(
+                "java",
+                "-Djava.awt.headless=true",
+                "-Djava.util.logging.config.file=loggingProperties",
+                "-Dfile.encoding=UTF-8",
+                "-cp",
+                "launcherJar",
+                UtpDependency.LAUNCHER.mainClass,
+                "coreJar",
+                "--proto_config=runnerConfig",
+                "--proto_server_config=serverConfig"
+            )
+        )
     }
 }
