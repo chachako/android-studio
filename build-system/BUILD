@@ -412,7 +412,6 @@ maven_repository(
         "@maven//:org.junit.junit-bom_5.9.3",
         "@maven//:org.mockito.mockito-core",
         "@maven//:org.tensorflow.tensorflow-lite-metadata",
-        "@maven//:xerces.xercesImpl",
     ],
     visibility = ["//visibility:public"],
 )

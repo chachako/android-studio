@@ -250,7 +250,6 @@ com.android.tools:sdk-common
     org.jetbrains.intellij.deps:trove4j (runtime)
     org.jetbrains.kotlin:kotlin-reflect (runtime)
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
-    xerces:xercesImpl (runtime)
 
 com.android.tools:sdklib
   pomName=com.android.tools.sdklib

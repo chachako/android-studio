@@ -189,7 +189,6 @@ ARTIFACTS = [
     "org.xerial:sqlite-jdbc:3.21.0.1",
     "org.xerial:sqlite-jdbc:3.34.0",
     "org.xerial:sqlite-jdbc:3.43.0.0",
-    "xerces:xercesImpl:2.12.2",
     "org.tomlj:tomlj:1.1.0",
 ]
 

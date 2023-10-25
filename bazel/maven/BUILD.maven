@@ -10457,57 +10457,6 @@ maven_import(
 )
 
 maven_artifact(
-    name = "xerces.xercesImpl_2.12.2",
-    pom = "repository/xerces/xercesImpl/2.12.2/xercesImpl-2.12.2.pom",
-    repo_root_path = "repository",
-    repo_path = "xerces/xercesImpl/2.12.2",
-    deps = [
-        "xml-apis.xml-apis_1.4.01",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_import(
-    name = "xerces.xercesImpl",
-    classifiers = [],
-    jars = [
-        "repository/xerces/xercesImpl/2.12.2/xercesImpl-2.12.2.jar"
-    ],
-    exports = [
-        "xml-apis.xml-apis",
-    ],
-    original_deps = [
-        "xml-apis.xml-apis_1.4.01",
-    ],
-    pom = "repository/xerces/xercesImpl/2.12.2/xercesImpl-2.12.2.pom",
-    repo_root_path = "repository",
-    repo_path = "xerces/xercesImpl/2.12.2",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "xml-apis.xml-apis_1.4.01",
-    pom = "repository/xml-apis/xml-apis/1.4.01/xml-apis-1.4.01.pom",
-    repo_root_path = "repository",
-    repo_path = "xml-apis/xml-apis/1.4.01",
-    visibility = ["//visibility:public"],
-)
-
-maven_import(
-    name = "xml-apis.xml-apis",
-    classifiers = [],
-    jars = [
-        "repository/xml-apis/xml-apis/1.4.01/xml-apis-1.4.01.jar"
-    ],
-    original_deps = [],
-    pom = "repository/xml-apis/xml-apis/1.4.01/xml-apis-1.4.01.pom",
-    repo_root_path = "repository",
-    repo_path = "xml-apis/xml-apis/1.4.01",
-    srcjar = "repository/xml-apis/xml-apis/1.4.01/xml-apis-1.4.01-sources.jar",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "android.arch.core.common_1.0.0",
     pom = "repository/android/arch/core/common/1.0.0/common-1.0.0.pom",
     repo_root_path = "repository",
@@ -53034,6 +52983,14 @@ maven_artifact(
     pom = "repository/xerces/xmlParserAPIs/2.6.2/xmlParserAPIs-2.6.2.pom",
     repo_root_path = "repository",
     repo_path = "xerces/xmlParserAPIs/2.6.2",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "xml-apis.xml-apis_1.4.01",
+    pom = "repository/xml-apis/xml-apis/1.4.01/xml-apis-1.4.01.pom",
+    repo_root_path = "repository",
+    repo_path = "xml-apis/xml-apis/1.4.01",
     visibility = ["//visibility:public"],
 )
 

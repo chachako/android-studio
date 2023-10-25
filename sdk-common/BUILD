@@ -1,7 +1,7 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
+load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library")
-load("//tools/base/bazel:proto.bzl", "java_proto_library")
 load("//tools/base/bazel:utils.bzl", "fileset")
 load("//tools/base/common:version.bzl", "BASE_VERSION")
 
@@ -60,10 +60,7 @@ fileset(
 
 maven_library(
     name = "tools.sdk-common",
-    srcs = glob([
-        "src/main/java/**/*.kt",
-        "src/main/java/**/*.java",
-    ]),
+    srcs = glob(["src/main/java/**"]),
     bundled_deps = [
         "//tools/base/sdk-common/aia-manifest-jar-generator:tools.proto",
         "//tools/base/sdk-common/gradle:tools.sdk-common.gradle.lib",
@@ -94,7 +91,6 @@ maven_library(
         "@maven//:org.jetbrains.intellij.deps.trove4j",
         "@maven//:org.jetbrains.kotlin.kotlin-reflect",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
-        "@maven//:xerces.xercesImpl",
     ],
 )
 
@@ -107,10 +103,8 @@ java_binary(
 kotlin_test(
     name = "tools.tests",
     srcs = glob([
-        "src/test/java/**/*.kt",
-        "src/test/java/**/*.java",
-        "gradle/src/test/java/**/*.kt",
-        "gradle/src/test/java/**/*.java",
+        "src/test/java/**",
+        "gradle/src/test/java/**",
     ]),
     data = ["//prebuilts/studio/sdk:platform-tools"],
     friends = [":tools.sdk-common"],
@@ -160,8 +154,6 @@ kotlin_library(
         "@maven//:com.google.guava.guava",
     ],
 )
-
-load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
 
 # managed by go/iml_to_build
 jvm_import(
