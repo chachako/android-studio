@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-7552e5bb645f93a98ec7fc4a21b6e9edaf0e50bf193055143f9d31d999d5df23
+79913faf096e1a9bd37bdd6b6378de86b4d4b78e21aec3c9d7862a8e85fdb7c5
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -774,6 +774,7 @@ com.android.builder.model.v2.ide.Variant.getDesugaredMethods: java.util.List<jav
 com.android.builder.model.v2.ide.Variant.getDisplayName: java.lang.String ()
 com.android.builder.model.v2.ide.Variant.getMainArtifact: com.android.builder.model.v2.ide.AndroidArtifact ()
 com.android.builder.model.v2.ide.Variant.getName: java.lang.String ()
+com.android.builder.model.v2.ide.Variant.getRunTestInSeparateProcess: boolean ()
 com.android.builder.model.v2.ide.Variant.getTestFixturesArtifact: com.android.builder.model.v2.ide.AndroidArtifact ()
 com.android.builder.model.v2.ide.Variant.getTestedTargetVariant: com.android.builder.model.v2.ide.TestedTargetVariant ()
 com.android.builder.model.v2.ide.Variant.getUnitTestArtifact: com.android.builder.model.v2.ide.JavaArtifact ()

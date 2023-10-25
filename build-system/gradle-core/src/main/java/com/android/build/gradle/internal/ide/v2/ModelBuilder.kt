@@ -38,6 +38,7 @@ import com.android.build.gradle.internal.component.TestVariantCreationConfig
 import com.android.build.gradle.internal.component.UnitTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.dsl.CommonExtensionImpl
+import com.android.build.gradle.internal.dsl.ModulePropertyKey
 import com.android.build.gradle.internal.errors.SyncIssueReporterImpl.GlobalSyncIssueService
 import com.android.build.gradle.internal.ide.DependencyFailureHandler
 import com.android.build.gradle.internal.ide.ModelBuilder
@@ -637,6 +638,8 @@ class ModelBuilder<
                 createAndroidArtifact(it)
             },
             testedTargetVariant = getTestTargetVariant(variant),
+            runTestInSeparateProcess = ModulePropertyKey.BooleanWithDefault.SELF_INSTRUMENTING.getValue(
+                    variant.experimentalProperties.get()),
             isInstantAppCompatible = inspectManifestForInstantTag(variant, instantAppResultMap),
             desugaredMethods = getDesugaredMethods(
                 variant.services,
