@@ -46,6 +46,8 @@ import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiParameterList
 import com.intellij.psi.PsiVariable
 import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.asJava.unwrapped
+import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.uast.UAnnotated
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UAnonymousClass
@@ -1181,7 +1183,7 @@ class VersionChecks(
           return validFromInferredAnnotation
         }
         val modifierList = field.modifierList
-        if (modifierList != null && modifierList.hasExplicitModifier(PsiModifier.STATIC)) {
+        if (modifierList != null && modifierList.hasExplicitModifier(PsiModifier.FINAL)) {
           val initializer = UastFacade.getInitializerBody(field)?.skipParenthesizedExprDown()
           if (initializer != null) {
             val constraint = getVersionCheckConstraint(element = initializer, depth = depth + 1)
@@ -1215,8 +1217,27 @@ class VersionChecks(
         val call = element.selector as UCallExpression
         return getValidVersionCall(call, depth + 1)
       } else if (resolved is PsiMethod) {
-        // Method call via Kotlin property syntax
-        return getValidVersionCall(call = element, method = resolved, depth = depth + 1)
+        // Reference to a Kotlin property?
+        val field = (resolved.unwrapped as? KtProperty)?.toUElement() as? UField
+        if (field != null && field.isFinal) {
+          val javaPsi = field.javaPsi as? PsiModifierListOwner
+          if (javaPsi != null) {
+            val validFromAnnotation = getValidFromAnnotation(javaPsi)
+            if (validFromAnnotation != null) {
+              return validFromAnnotation
+            }
+            val validFromInferredAnnotation = getValidFromInferredAnnotation(javaPsi)
+            if (validFromInferredAnnotation != null) {
+              return validFromInferredAnnotation
+            }
+          }
+          return field.uastInitializer?.skipParenthesizedExprDown()?.let {
+            getVersionCheckConstraint(it, depth = depth + 1)
+          }
+        } else {
+          // Method call via Kotlin property syntax
+          return getValidVersionCall(call = element, method = resolved, depth = depth + 1)
+        }
       } else if (resolved == null && element is UQualifiedReferenceExpression) {
         val selector = element.selector
         if (selector is UCallExpression) {

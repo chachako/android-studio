@@ -2486,7 +2486,7 @@ class VersionChecksTest : AbstractCheckTest() {
       )
   }
 
-  fun testKotlinWhenStatement3() {
+  fun testSdkIntCheckVariable() {
     // Regression test for https://issuetracker.google.com/262376528
     lint()
       .files(
@@ -2523,6 +2523,100 @@ class VersionChecksTest : AbstractCheckTest() {
       )
       .run()
       .expectClean()
+  }
+
+  fun testSdkIntCheckFields() {
+    // Regression test for b/303549797
+    lint()
+      .files(
+        kotlin(
+            """
+                package test.pkg
+
+                import android.content.Context
+                import android.os.Build
+                import androidx.annotation.RequiresApi
+
+                val dynamicColorVal = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                var dynamicColorVar = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
+                fun check(
+                    darkTheme: Boolean,
+                    context: Context
+                ) {
+                    // Safe
+                    if (dynamicColorVal && darkTheme) dynamicDarkColorScheme(context)
+                    if (dynamicColorVal && !darkTheme) dynamicLightColorScheme(context)
+
+                    // Unsafe
+                    if (dynamicColorVar && darkTheme) dynamicDarkColorScheme(context)
+                    if (dynamicColorVar && !darkTheme) dynamicLightColorScheme(context)
+                }
+
+                class ColorScheme
+                @RequiresApi(Build.VERSION_CODES.S)
+                fun dynamicDarkColorScheme(context: Context): ColorScheme = TODO()
+
+                @RequiresApi(Build.VERSION_CODES.S)
+                fun dynamicLightColorScheme(context: Context): ColorScheme = TODO()
+                """
+          )
+          .indented(),
+        java(
+            """
+            package test.pkg;
+
+            import android.content.Context;
+            import android.os.Build;
+            import androidx.annotation.RequiresApi;
+
+            class C {
+                final boolean dynamicColorFinal = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
+                boolean dynamicColorNotFinal = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
+
+                void check(
+                    boolean darkTheme,
+                    boolean context
+                ) {
+                    // Safe
+                    if (dynamicColorFinal && darkTheme) { dynamicDarkColorScheme(context); }
+                    if (dynamicColorFinal && !darkTheme) { dynamicLightColorScheme(context); }
+
+                    // Unsafe
+                    if (dynamicColorNotFinal && darkTheme) { dynamicDarkColorScheme(context); }
+                    if (dynamicColorNotFinal && !darkTheme) { dynamicLightColorScheme(context); }
+                }
+
+                class ColorScheme { }
+                @RequiresApi(Build.VERSION_CODES.S)
+                ColorScheme dynamicDarkColorScheme(Context context) { TODO(); }
+
+                @RequiresApi(Build.VERSION_CODES.S)
+                ColorScheme dynamicLightColorScheme(Context context) { TODO(); }
+            }
+          """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
+          src/test/pkg/C.java:20: Error: Call requires API level 31 (current min is 1): dynamicDarkColorScheme [NewApi]
+                  if (dynamicColorNotFinal && darkTheme) { dynamicDarkColorScheme(context); }
+                                                           ~~~~~~~~~~~~~~~~~~~~~~
+          src/test/pkg/C.java:21: Error: Call requires API level 31 (current min is 1): dynamicLightColorScheme [NewApi]
+                  if (dynamicColorNotFinal && !darkTheme) { dynamicLightColorScheme(context); }
+                                                            ~~~~~~~~~~~~~~~~~~~~~~~
+          src/test/pkg/ColorScheme.kt:19: Error: Call requires API level 31 (current min is 1): dynamicDarkColorScheme [NewApi]
+              if (dynamicColorVar && darkTheme) dynamicDarkColorScheme(context)
+                                                ~~~~~~~~~~~~~~~~~~~~~~
+          src/test/pkg/ColorScheme.kt:20: Error: Call requires API level 31 (current min is 1): dynamicLightColorScheme [NewApi]
+              if (dynamicColorVar && !darkTheme) dynamicLightColorScheme(context)
+                                                 ~~~~~~~~~~~~~~~~~~~~~~~
+          4 errors, 0 warnings
+        """
+      )
   }
 
   fun testIfElse() {
