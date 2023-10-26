@@ -17,13 +17,13 @@ package com.android.build.gradle.integration.dependencies
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.builder
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
-import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
 import com.android.build.gradle.integration.common.truth.TruthHelper
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.AssumeUtil
-import com.android.utils.FileUtils.toSystemDependentPath
+import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
+import java.util.Scanner
 
 class NestedResourceFoldersTest {
     @get:Rule
@@ -45,11 +45,22 @@ class NestedResourceFoldersTest {
                 }
                 """
         )
-        val result = project.executor().run("clean", "mergeDebugResources")
+        val result = project.executor().run("clean", "mergeDebugResources", "packageDebugResources")
+
         TruthHelper.assertThat(result.exception).isNull()
-        assertThat(result.stdout).contains("Nested resource detected in task mergeDebugResources: ${toSystemDependentPath("src/main/res/layout/people")} is in ${toSystemDependentPath("src/main/res/layout")}")
-        assertThat(result.stdout).contains("Nested resource detected in task mergeDebugResources: ${toSystemDependentPath("src/main/res/layout/parks")} is in ${toSystemDependentPath("src/main/res/layout")}")
-        assertThat(result.stdout).contains("Nested resource detected in task mergeDebugResources: ${toSystemDependentPath("src/main/res/layout")} is in ${toSystemDependentPath("src/main/res")}")
+        Truth.assertThat(result.stdout.findAll("Nested resources detected.").count()).isEqualTo(1)
+        findMultilineText(result.stdout,
+        """
+        + src/main/res/layout
+        -- src/main/res/layout/people
+        -- src/main/res/layout/parks
+
+        + src/main/res
+        -- src/main/res/layout/people
+        -- src/main/res/layout/parks
+        -- src/main/res/layout
+        """.trimIndent()
+        )
     }
 
     @Test
@@ -66,7 +77,11 @@ class NestedResourceFoldersTest {
         )
         val result = project.executor().run("clean", "mergeDebugResources")
         TruthHelper.assertThat(result.exception).isNull()
-        assertThat(result.stdout).contains("Nested resource detected in task mergeDebugResources: ${toSystemDependentPath("src/main/res/special/two")} is in ${toSystemDependentPath("src/main/res/special")}")
+        findMultilineText(result.stdout,
+            """
+        + src/main/res/special
+        -- src/main/res/special/two
+        """.trimIndent())
     }
 
     @Test
@@ -85,7 +100,18 @@ class NestedResourceFoldersTest {
         )
         val result = project.executor().run("clean", "mergeDebugResources")
         TruthHelper.assertThat(result.exception).isNull()
-        assertThat(result.stdout).contains("Nested resource detected in task mergeDebugResources: /temp/internal is in /temp")
+        findMultilineText(result.stdout,
+            """
+        + /temp
+        -- /temp/internal
+        """.trimIndent())
+    }
+
+    private fun findMultilineText(s: Scanner, str: String) {
+        val buffer = StringBuilder()
+        while (s.hasNextLine())
+            buffer.append(s.nextLine().replace("\\","/") + "\n")
+        TruthHelper.assertThat(buffer.toString()).contains(str)
     }
 
 }

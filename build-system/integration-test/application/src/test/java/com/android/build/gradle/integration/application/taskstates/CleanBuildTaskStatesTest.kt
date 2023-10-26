@@ -48,6 +48,7 @@ class CleanBuildTaskStatesTest {
                 ":app:desugarDebugFileDependencies",
                 ":app:dexBuilderDebug",
                 ":app:extractDeepLinksDebug",
+                ":app:generateDebugResources",
                 ":app:generateDebugResValues",
                 ":app:javaPreCompileDebug",
                 ":app:javaPreCompileDebugUnitTest",
@@ -87,7 +88,6 @@ class CleanBuildTaskStatesTest {
             SKIPPED to setOf(
                 ":app:assembleDebug",
                 ":app:compileDebugShaders",
-                ":app:generateDebugResources",
                 ":app:mergeDebugNativeDebugMetadata",
                 ":app:mergeDebugNativeLibs",
                 ":app:processDebugJavaRes",

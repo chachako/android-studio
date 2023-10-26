@@ -183,6 +183,8 @@ InternalArtifactType<T : FileSystemLocation>(
         "res/pngs",
     ), Replaceable
 
+    object NESTED_RESOURCES_VALIDATION_REPORT: InternalArtifactType<RegularFile>(FILE)
+
     // File containing map between a source set identifier and an absolute resource sourceset path
     // for generating absolute paths in resource linking error messages.
     object SOURCE_SET_PATH_MAP: InternalArtifactType<RegularFile>(FILE), Replaceable

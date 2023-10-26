@@ -51,6 +51,7 @@ class CacheabilityTest {
             ":app:desugar${DEBUG_RELEASE}FileDependencies",
             ":app:dexBuilder${DEBUG_RELEASE}",
             ":app:extractDeepLinks${DEBUG_RELEASE}",
+            ":app:generate${DEBUG_RELEASE}Resources",
             ":app:generate${DEBUG_RELEASE}ResValues",
             ":app:jacocoDebug",
             ":app:javaPreCompile${DEBUG_RELEASE}",
@@ -105,7 +106,6 @@ class CacheabilityTest {
         UP_TO_DATE to setOf(
             ":app:clean",
             ":app:generate${DEBUG_RELEASE}Assets",
-            ":app:generate${DEBUG_RELEASE}Resources",
             ":app:preBuild",
             ":app:pre${DEBUG_RELEASE}Build",
             ":app:pre${DEBUG_RELEASE}UnitTestBuild",

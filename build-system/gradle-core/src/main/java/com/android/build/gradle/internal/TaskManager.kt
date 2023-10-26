@@ -87,6 +87,7 @@ import com.android.build.gradle.internal.tasks.ExtractProguardFiles
 import com.android.build.gradle.internal.tasks.FeatureDexMergeTask
 import com.android.build.gradle.internal.tasks.FeatureGlobalSyntheticsMergeTask
 import com.android.build.gradle.internal.tasks.GenerateLibraryProguardRulesTask
+import com.android.build.gradle.internal.tasks.ValidateResourcesTask
 import com.android.build.gradle.internal.tasks.GlobalSyntheticsMergeTask
 import com.android.build.gradle.internal.tasks.InstallVariantTask
 import com.android.build.gradle.internal.tasks.JacocoTask
@@ -1778,11 +1779,9 @@ abstract class TaskManager(
                 task.dependsOn(it)
             }
         }
-        // and resGenTask
         creationConfig
-                .taskContainer
-                .resourceGenTask = taskFactory.register(
-                creationConfig.computeTaskName("generate", "Resources"))
+            .taskContainer
+            .resourceGenTask = taskFactory.register(ValidateResourcesTask.CreateAction(creationConfig))
         creationConfig
                 .taskContainer
                 .assetGenTask =

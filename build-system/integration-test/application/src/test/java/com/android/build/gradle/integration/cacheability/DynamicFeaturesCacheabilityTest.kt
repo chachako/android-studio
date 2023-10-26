@@ -50,18 +50,15 @@ class DynamicFeaturesCacheabilityTest {
                 UP_TO_DATE to setOf(
                     ":app:clean",
                     ":app:generateDebugAssets",
-                    ":app:generateDebugResources",
                     ":app:preBuild",
 
                     ":feature1:clean",
                     ":feature1:generateDebugAssets",
-                    ":feature1:generateDebugResources",
                     ":feature1:preBuild",
                     ":feature1:preDebugBuild",
 
                     ":feature2:clean",
                     ":feature2:generateDebugAssets",
-                    ":feature2:generateDebugResources",
                     ":feature2:preBuild",
                     ":feature2:preDebugBuild"
                 ),
@@ -73,6 +70,7 @@ class DynamicFeaturesCacheabilityTest {
                     ":app:dexBuilderDebug",
                     ":app:extractDeepLinksDebug",
                     ":app:generateDebugFeatureMetadata",
+                    ":app:generateDebugResources",
                     ":app:generateDebugResValues",
                     ":app:javaPreCompileDebug",
                     ":app:lintAnalyzeDebug",
@@ -93,6 +91,7 @@ class DynamicFeaturesCacheabilityTest {
                     ":feature1:desugarDebugFileDependencies",
                     ":feature1:dexBuilderDebug",
                     ":feature1:extractDeepLinksDebug",
+                    ":feature1:generateDebugResources",
                     ":feature1:generateDebugResValues",
                     ":feature1:javaPreCompileDebug",
                     ":feature1:lintAnalyzeDebug",
@@ -116,6 +115,7 @@ class DynamicFeaturesCacheabilityTest {
                     ":feature2:desugarDebugFileDependencies",
                     ":feature2:dexBuilderDebug",
                     ":feature2:extractDeepLinksDebug",
+                    ":feature2:generateDebugResources",
                     ":feature2:generateDebugResValues",
                     ":feature2:javaPreCompileDebug",
                     ":feature2:lintAnalyzeDebug",

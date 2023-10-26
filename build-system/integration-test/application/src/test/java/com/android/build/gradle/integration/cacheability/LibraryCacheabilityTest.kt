@@ -50,7 +50,6 @@ class LibraryCacheabilityTest {
                     ":app:clean",
                     ":lib:clean",
                     ":lib:generateReleaseAssets",
-                    ":lib:generateReleaseResources",
                     ":lib:preBuild",
                     ":lib:preReleaseBuild"
                 ),
@@ -58,6 +57,7 @@ class LibraryCacheabilityTest {
                     ":lib:compileReleaseJavaWithJavac",
                     ":lib:extractDeepLinksForAarRelease",
                     ":lib:extractReleaseAnnotations",
+                    ":lib:generateReleaseResources",
                     ":lib:generateReleaseResValues",
                     ":lib:generateReleaseRFile",
                     ":lib:javaPreCompileRelease",

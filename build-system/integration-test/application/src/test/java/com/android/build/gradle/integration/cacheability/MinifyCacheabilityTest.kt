@@ -47,7 +47,6 @@ class MinifyCacheabilityTest {
         UP_TO_DATE to setOf(
             ":clean",
             ":generateMinifiedAssets",
-            ":generateMinifiedResources",
             ":preBuild",
             ":preMinifiedBuild",
         ),
@@ -55,6 +54,7 @@ class MinifyCacheabilityTest {
             ":compileMinifiedJavaWithJavac",
             ":compressMinifiedAssets",
             ":extractDeepLinksMinified",
+            ":generateMinifiedResources",
             ":generateMinifiedResValues",
             ":jacocoMinified",
             ":javaPreCompileMinified",
