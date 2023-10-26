@@ -410,9 +410,9 @@ class UtpConfigFactory {
                     // We are doing late stage configuration with managed devices.
                     addHostPlugin(
                         createEmulatorControlPlugin(
-                            0,
-                            "",
-                            "",
+                            /* grpcPort= */ 0,
+                            /* jwtToken= */ "",
+                            /* jwkPath= */ "",
                             emulatorControlConfig.secondsValid,
                             emulatorControlConfig.allowedEndpoints,
                             utpDependencies,

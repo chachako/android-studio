@@ -360,11 +360,6 @@ class UtpConfigFactoryTest {
         assertThat(mockemulatorControlConfig.enabled).isTrue()
 
         val runnerConfigProto = createForManagedDevice()
-
-        // Next we extract the token and jkwfile as those
-        // are dynamically created.
-        val printed = printProto(runnerConfigProto)
-
         assertRunnerConfigProto(
             runnerConfigProto,
             deviceId = ":app:deviceNameDebugAndroidTest",
