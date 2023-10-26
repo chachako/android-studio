@@ -421,16 +421,14 @@ class UastTest : TestCase() {
           }
 
           override fun visitPrefixExpression(node: UPrefixExpression): Boolean {
-            // TODO(kotlin-uast-cleanup): FIR UAST will have a correct `getExpressionType`
-            val t = node.getExpressionType() ?: node.resolveOperator()?.returnType
+            val t = node.getExpressionType()
             assertEquals("java.lang.Object", t?.canonicalText)
 
             return super.visitPrefixExpression(node)
           }
 
           override fun visitPostfixExpression(node: UPostfixExpression): Boolean {
-            // TODO(kotlin-uast-cleanup): FIR UAST will have a correct `getExpressionType`
-            val t = node.getExpressionType() ?: node.resolveOperator()?.returnType
+            val t = node.getExpressionType()
             assertEquals("test.OtherDependency", t?.canonicalText)
 
             return super.visitPostfixExpression(node)
