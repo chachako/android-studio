@@ -407,7 +407,8 @@ public final class DeviceMonitor implements ClientTracker {
                                 DeviceMonitor.this,
                                 deviceClientManagerProvider,
                                 entry.getKey(),
-                                entry.getValue()));
+                                entry.getValue(),
+                                getServer().getiDeviceUsageTracker()));
             }
             // now merge the new devices with the old ones.
             updateDevices(l);

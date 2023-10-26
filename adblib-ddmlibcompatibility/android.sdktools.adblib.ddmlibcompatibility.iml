@@ -13,5 +13,7 @@
     <orderEntry type="module" module-name="android.sdktools.adblib" />
     <orderEntry type="module" module-name="android.sdktools.adblib.tools" />
     <orderEntry type="module" module-name="android.sdktools.ddmlib" />
+    <orderEntry type="module" module-name="analytics-tracker" />
+    <orderEntry type="library" name="studio-analytics-proto" level="project" />
   </component>
 </module>

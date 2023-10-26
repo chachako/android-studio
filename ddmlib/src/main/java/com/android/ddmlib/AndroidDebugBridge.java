@@ -118,6 +118,7 @@ public class AndroidDebugBridge {
     private static boolean sClientSupport;
     private static ClientManager sClientManager;
     private static IDeviceManagerFactory sIDeviceManagerFactory;
+    private static IDeviceUsageTracker iDeviceUsageTracker;
     private static Map<String, String> sAdbEnvVars; // env vars to set while launching adb
 
     /** Full path to adb. */
@@ -291,6 +292,7 @@ public class AndroidDebugBridge {
         Preconditions.checkState(!sInitialized, "AndroidDebugBridge.init() has already been called.");
         sInitialized = true;
         sIDeviceManagerFactory = options.iDeviceManagerFactory;
+        iDeviceUsageTracker = options.iDeviceUsageTracker;
         sClientSupport = options.clientSupport;
         sClientManager = options.clientManager;
         if (sClientManager != null) {
@@ -887,6 +889,11 @@ public class AndroidDebugBridge {
             return mDeviceMonitor.getRestartAttemptCount();
         }
         return -1;
+    }
+
+    @Nullable
+    public IDeviceUsageTracker getiDeviceUsageTracker() {
+        return iDeviceUsageTracker;
     }
 
     /**

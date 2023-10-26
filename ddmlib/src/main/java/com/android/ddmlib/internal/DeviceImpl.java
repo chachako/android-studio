@@ -33,6 +33,7 @@ import com.android.ddmlib.DdmPreferences;
 import com.android.ddmlib.FileListingService;
 import com.android.ddmlib.IDevice;
 import com.android.ddmlib.IDeviceSharedImpl;
+import com.android.ddmlib.IDeviceUsageTracker;
 import com.android.ddmlib.IShellOutputReceiver;
 import com.android.ddmlib.InstallException;
 import com.android.ddmlib.InstallMetrics;
@@ -113,6 +114,8 @@ public final class DeviceImpl implements IDevice {
     private final ClientTracker mClientTracer;
 
     @Nullable private final Function<IDevice, DeviceClientManager> mDeviceClientManagerProvider;
+
+    @Nullable private final IDeviceUsageTracker mIDeviceUsageTracker;
 
     @NonNull private final UserDataMapImpl mUserDataMap = new UserDataMapImpl();
 
@@ -989,7 +992,7 @@ public final class DeviceImpl implements IDevice {
 
     // @VisibleForTesting
     public DeviceImpl(ClientTracker clientTracer, String serialNumber, DeviceState deviceState) {
-        this(clientTracer, null, serialNumber, deviceState);
+        this(clientTracer, null, serialNumber, deviceState, null);
     }
 
     // @VisibleForTesting
@@ -997,11 +1000,13 @@ public final class DeviceImpl implements IDevice {
             ClientTracker clientTracer,
             Function<IDevice, DeviceClientManager> deviceClientManagerProvider,
             String serialNumber,
-            DeviceState deviceState) {
+            DeviceState deviceState,
+            IDeviceUsageTracker iDeviceUsageTracker) {
         mClientTracer = clientTracer;
         mDeviceClientManagerProvider = deviceClientManagerProvider;
         mSerialNumber = serialNumber;
         mState = deviceState;
+        mIDeviceUsageTracker = iDeviceUsageTracker;
     }
 
     public ClientTracker getClientTracker() {
@@ -1644,5 +1649,11 @@ public final class DeviceImpl implements IDevice {
 
     public <T> @Nullable T removeUserData(@NonNull Key<T> key) {
         return mUserDataMap.removeUserData(key);
+    }
+
+    private void maybeLogUsage(IDeviceUsageTracker.Method method, boolean isException) {
+        if (mIDeviceUsageTracker != null) {
+            mIDeviceUsageTracker.logUsage(method, isException);
+        }
     }
 }

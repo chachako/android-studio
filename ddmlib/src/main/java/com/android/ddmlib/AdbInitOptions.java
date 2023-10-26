@@ -61,6 +61,8 @@ public class AdbInitOptions {
 
     public final IDeviceManagerFactory iDeviceManagerFactory;
 
+    public final IDeviceUsageTracker iDeviceUsageTracker;
+
     /**
      * Enable user managed ADB mode where ddmlib will not start, restart, or terminate the ADB
      * server.
@@ -108,7 +110,8 @@ public class AdbInitOptions {
             ImmutableMap<String, String> adbEnvVars,
             boolean useJdwpService,
             boolean useDdmlibCommandService,
-            int maxJdwpPacketSize) {
+            int maxJdwpPacketSize,
+            IDeviceUsageTracker iDeviceUsageTracker) {
         this.iDeviceManagerFactory = iDeviceManagerFactory;
         this.clientSupport = clientSupport;
         this.clientManager = clientManager;
@@ -118,6 +121,7 @@ public class AdbInitOptions {
         this.useJdwpProxyService = useJdwpService;
         this.useDdmlibCommandService = useDdmlibCommandService;
         this.maxJdwpPacketSize = maxJdwpPacketSize;
+        this.iDeviceUsageTracker = iDeviceUsageTracker;
     }
 
     /**
@@ -132,6 +136,7 @@ public class AdbInitOptions {
      */
     public static class Builder {
         private IDeviceManagerFactory myIDeviceManagerFactory;
+        private IDeviceUsageTracker iDeviceUsageTracker;
         boolean clientSupport = false;
         private ClientManager clientManager;
         boolean userManagedAdbMode = false;
@@ -145,6 +150,12 @@ public class AdbInitOptions {
         /** See {@link AdbInitOptions#iDeviceManagerFactory}. */
         public Builder setIDeviceManagerFactory(IDeviceManagerFactory iDeviceManagerFactory) {
             this.myIDeviceManagerFactory = iDeviceManagerFactory;
+            return this;
+        }
+
+        /** See {@link AdbInitOptions#iDeviceUsageTracker}. */
+        public Builder setIDeviceUsageTracker(IDeviceUsageTracker iDeviceUsageTracker) {
+            this.iDeviceUsageTracker = iDeviceUsageTracker;
             return this;
         }
 
@@ -217,7 +228,8 @@ public class AdbInitOptions {
                     envVarBuilder.build(),
                     useJdwpProxyService,
                     useDdmlibCommandService,
-                    jdwpMaxPacketSize);
+                    jdwpMaxPacketSize,
+                    iDeviceUsageTracker);
         }
 
     }
