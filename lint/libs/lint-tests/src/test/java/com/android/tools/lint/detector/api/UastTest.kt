@@ -22,9 +22,11 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.dos2unix
 import com.android.tools.lint.helpers.DefaultJavaEvaluator
+import com.android.tools.lint.useFirUast
 import com.intellij.codeInsight.AnnotationTargetUtil
 import com.intellij.openapi.util.Disposer
 import com.intellij.pom.java.LanguageLevel
+import com.intellij.psi.PsiAnnotation.TargetType
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
@@ -308,9 +310,13 @@ class UastTest : TestCase() {
             if (node.qualifiedName == "test.MyNullable" && node.javaPsi != null) {
               val targets = AnnotationTargetUtil.getTargetsForLocation(node.javaPsi?.owner)
               val applicable = AnnotationTargetUtil.findAnnotationTarget(node.javaPsi!!, *targets)
-              // TODO: should be applicable!
-              //   https://youtrack.jetbrains.com/issue/KTIJ-24597
-              assertNull(applicable)
+              // https://youtrack.jetbrains.com/issue/KTIJ-24597
+              // annotation target found for K2 only
+              if (useFirUast()) {
+                assertEquals(TargetType.METHOD, applicable)
+              } else {
+                assertNull(applicable)
+              }
             }
 
             return super.visitAnnotation(node)
