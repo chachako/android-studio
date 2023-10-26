@@ -209,6 +209,15 @@ interface RecipeExecutor {
    * @param toModule path to base feature module dir
    */
   fun addDynamicFeature(name: String, toModule: File)
+
+  /**
+   * Gets the Java version used by the Gradle JVM as a String for build.gradle files, for example
+   * JavaVersion.VERSION_17
+   *
+   * @param defaultVersion the default version to return if the JVM can't be found
+   * @return the Java version
+   */
+  fun getJavaVersion(defaultVersion: String = "JavaVersion.VERSION_17"): String
 }
 
 enum class SourceSetType {
