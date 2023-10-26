@@ -1249,7 +1249,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         }
       }
 
-      checkCast(expression, operandType, castType)
+      checkCast(expression, operandType, castType, implicit = false)
     }
 
     private fun checkClassReference(node: UElement, classType: PsiClassType): Boolean {
@@ -1282,14 +1282,19 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       return false
     }
 
-    private fun checkCast(node: UElement, classType: PsiClassType, interfaceType: PsiClassType) {
+    private fun checkCast(
+      node: UElement,
+      classType: PsiClassType,
+      interfaceType: PsiClassType,
+      implicit: Boolean = true,
+    ) {
       if (classType == interfaceType) {
         return
       }
       val evaluator = context.evaluator
       val classTypeInternal = evaluator.getQualifiedName(classType)
       val interfaceTypeInternal = evaluator.getQualifiedName(interfaceType)
-      checkCast(node, classTypeInternal, interfaceTypeInternal, implicit = false)
+      checkCast(node, classTypeInternal, interfaceTypeInternal, implicit)
     }
 
     private fun checkCast(
@@ -1396,7 +1401,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         location,
         message,
         apiLevelFix(api, minSdk),
-        classType,
+        owner = classType,
         requires = api,
         min = minSdk,
       )
@@ -1674,7 +1679,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       ) {
         return
       }
-      checkCast(argument, argumentType, parameterType)
+      checkCast(argument, argumentType, parameterType, implicit = true)
     }
 
     private fun visitCall(
@@ -2168,7 +2173,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         return
       }
 
-      checkCast(initializer, initializerType, interfaceType)
+      checkCast(initializer, initializerType, interfaceType, implicit = false)
     }
 
     override fun visitArrayAccessExpression(node: UArrayAccessExpression) {
@@ -2209,7 +2214,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
           return
         }
 
-        checkCast(rExpression, rhsType, interfaceType)
+        checkCast(rExpression, rhsType, interfaceType, implicit = true)
       }
     }
 

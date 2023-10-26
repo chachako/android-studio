@@ -693,6 +693,14 @@ class LintBaselineTest {
           "`<vector>` requires API level 21 (current min is 1) or building with Android Gradle plugin 1.4.0 or higher",
       )
     )
+
+    assertFalse(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        "Cast from `Cursor` to `Closeable` requires API level 16 (current min is 14)",
+        "Implicit cast from `Cursor` to `Closeable` requires API level 16 (current min is 14)",
+      )
+    )
   }
 
   @Test
