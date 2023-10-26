@@ -1380,6 +1380,8 @@ public final class SdkConstants {
     public static final String ATTR_FOREGROUND = "foreground";
     public static final String ATTR_BACKGROUND = "background";
     public static final String ATTR_ORIENTATION = "orientation";
+    public static final String ATTR_SCREEN_ORIENTATION = "screenOrientation";
+    public static final String ATTR_RESIZEABLE_ACTIVITY = "resizeableActivity";
     public static final String ATTR_BARRIER_DIRECTION = "barrierDirection";
     public static final String ATTR_BARRIER_ALLOWS_GONE_WIDGETS = "barrierAllowsGoneWidgets";
     public static final String ATTR_LAYOUT_OPTIMIZATION_LEVEL = "layout_optimizationLevel";
@@ -1898,6 +1900,8 @@ public final class SdkConstants {
     public static final String ATTR_CARD_USE_COMPAT_PADDING = "cardUseCompatPadding";
     public static final String ATTR_ENTRIES = "entries";
     public static final String ATTR_MIN_WIDTH = "minWidth";
+    public static final String ATTR_MIN_ASPECT_RATIO = "minAspectRatio";
+    public static final String ATTR_MAX_ASPECT_RATIO = "maxAspectRatio";
     public static final String ATTR_MAX_WIDTH = "maxWidth";
     public static final String ATTR_DROPDOWN_HEIGHT = "dropDownHeight";
     public static final String ATTR_DROPDOWN_WIDTH = "dropDownWidth";
