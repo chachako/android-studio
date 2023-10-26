@@ -2,6 +2,7 @@ load("//tools/base/bazel:bazel.bzl", "iml_module")
 load("//tools/base/bazel:gradle.bzl", "gradle_build", "gradle_test")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library", "maven_repository")
+load("//tools/base/build-system/integration-test:common-dependencies.bzl", "KGP_LATEST")
 load("//tools/base/common:version.bzl", "BASE_VERSION", "BUILD_VERSION")
 load("hybrid_build.bzl", "GRADLE_PROPERTIES")
 
@@ -214,19 +215,6 @@ java_import(
     jars = [":gradle-api.jar"],
     visibility = ["//visibility:public"],
 )
-
-# Latest Kotlin Gradle plugin dependencies
-# DO NOT MIX different versions in this list
-KGP_LATEST = [
-    "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin_1.9.20-RC",
-    "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin-api_1.9.20-RC",
-    "@maven//:org.jetbrains.kotlin.kotlin-android-extensions-runtime_1.9.20-RC",
-    "@maven//:org.jetbrains.kotlin.kotlin-annotation-processing-gradle_1.9.20-RC",
-    "@maven//:org.jetbrains.kotlin.kotlin-script-runtime_1.9.20-RC",
-    "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.20-RC",
-    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.9.20-RC",
-    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20-RC",
-]
 
 # Kotlin Gradle plugin dependencies for projects using Compose (these are typically used when the
 # projects can't be upgraded to the latest version of the Kotlin Gradle plugin as there isn't a
