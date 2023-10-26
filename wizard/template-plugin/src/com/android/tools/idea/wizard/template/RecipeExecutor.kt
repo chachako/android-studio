@@ -100,7 +100,7 @@ interface RecipeExecutor {
    */
   fun addDependency(
     mavenCoordinate: String,
-    configuration: String = "compile",
+    configuration: String = "implementation",
     minRev: String? = null,
     moduleDir: File? = null,
     toBase: Boolean = false
