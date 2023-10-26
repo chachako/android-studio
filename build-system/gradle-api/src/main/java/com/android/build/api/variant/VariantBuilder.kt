@@ -21,6 +21,19 @@ package com.android.build.api.variant
 /**
  * Variant object that contains properties that must be set during configuration time as it
  * changes the build flow for the variant.
+ *
+ * It is the object passed to the [AndroidComponentsExtension.beforeVariants] method, like this:
+ *
+ * ```kotlin
+ * androidComponents {
+ *   beforeVariants(selector().all()) { variant: VariantBuilder ->
+ *   }
+ * }
+ * ```
+ *
+ * Note that depending on the actual implementation of [AndroidComponentsExtension], the object
+ * received may be a subtype. For instance [ApplicationAndroidComponentsExtension.beforeVariants]
+ * will pass [ApplicationVariantBuilder] to the lambda.
  */
 interface VariantBuilder: ComponentBuilder {
 

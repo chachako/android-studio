@@ -20,7 +20,7 @@ package com.android.build.api.dsl
 /**
  * Packaging options for native library (.so) files in the Android DSL
  *
- * ```
+ * ```kotlin
  * android {
  *     packaging {
  *         jniLibs {

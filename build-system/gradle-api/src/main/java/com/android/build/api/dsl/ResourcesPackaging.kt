@@ -19,7 +19,7 @@ package com.android.build.api.dsl
 /**
  * Packaging options for java resource files in the Android DSL
  *
- * ```
+ * ```kotlin
  * android {
  *     packaging {
  *         resources {

@@ -26,6 +26,19 @@ import java.io.Serializable
 
 /**
  * Parent interface for all types of variants.
+ *
+ * It is the object passed to the [AndroidComponentsExtension.onVariants] method, like this:
+ *
+ * ```kotlin
+ * androidComponents {
+ *   onVariants(selector().all()) { variant: Variant ->
+ *   }
+ * }
+ * ```
+ *
+ * Note that depending on the actual implementation of [AndroidComponentsExtension], the object
+ * received may be of a child type. For instance [ApplicationAndroidComponentsExtension.onVariants]
+ * will pass [ApplicationVariant] to the lambda.
  */
 interface Variant : Component, HasAndroidResources {
 

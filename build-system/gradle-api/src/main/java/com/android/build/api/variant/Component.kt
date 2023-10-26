@@ -26,6 +26,15 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Provider
 
+/**
+ * A Component that is modeled and built by the plugin.
+ *
+ * Components can be APKs, AARs, test APKs, unit tests, test fixtures, ...
+ *
+ * This is the root interface for all components. From there, there is a first fork, via
+ * [Variant] which are production build output (APKs, AARs), and [TestComponent] that are test
+ * components. [TestFixtures] is another separate component. See these types for more information.
+ */
 interface Component: ComponentIdentity {
 
     /**

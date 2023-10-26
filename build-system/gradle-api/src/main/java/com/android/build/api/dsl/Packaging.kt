@@ -19,7 +19,7 @@ package com.android.build.api.dsl
 /**
  * Packaging option entry point for the Android DSL.
  *
- * ```
+ * ```kotlin
  * android {
  *     packaging {
  *     }
@@ -114,7 +114,7 @@ interface Packaging {
     /**
      * Method to configure the packaging options for dex files via a lambda
      *
-     * ```
+     * ```kotlin
      * android {
      *     packaging {
      *         dex {
@@ -132,7 +132,7 @@ interface Packaging {
     /**
      * Method to configure the packaging options for JNI library files via a lambda
      *
-     * ```
+     * ```kotlin
      * android {
      *     packaging {
      *         jniLibs {
@@ -150,7 +150,7 @@ interface Packaging {
     /**
      * Method to configure the packaging options for Java resources via a lambda
      *
-     * ```
+     * ```kotlin
      * android {
      *     packaging {
      *         resources {

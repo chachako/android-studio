@@ -19,5 +19,8 @@ package com.android.build.api.variant
 import org.gradle.api.Incubating
 import org.gradle.api.provider.Provider
 
+/**
+ * A test fixture component
+ */
 @Incubating
 interface TestFixtures: GeneratesAar, HasAndroidResources, Component

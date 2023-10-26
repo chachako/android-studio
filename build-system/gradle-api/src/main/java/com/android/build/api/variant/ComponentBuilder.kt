@@ -17,8 +17,17 @@
 package com.android.build.api.variant
 
 /**
- * Component object that contains properties that must be set during configuration time as it
- * changes the build flow for the variant.
+ * Component object that contains properties that must be set during configuration time as they
+ * change the build flow for the variant.
+ *
+ * This is the root type for all objects that can be manipulated by
+ * [AndroidComponentsExtension.beforeVariants]
+ *
+ * This type is here to mirror the [Component]/[Variant] hierarchy, which also includes
+ * [TestComponent] (which is not a [Variant]). In this hierarchy however, there isn't a
+ * `TestComponentBuilder` and therefore all objects of this type are also [VariantBuilder]
+ *
+ * See [VariantBuilder] for more information.
  */
 interface ComponentBuilder: ComponentIdentity {
 
