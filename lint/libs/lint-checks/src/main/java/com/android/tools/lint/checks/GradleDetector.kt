@@ -421,6 +421,17 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       }
       if (version <= 0) {
         checkIntegerAsString(context, value, statementCookie, valueCookie)
+      } else if (version < HIGHEST_KNOWN_STABLE_API) {
+        val message =
+          "A newer version of `compileSdkVersion` than $version is available: $HIGHEST_KNOWN_STABLE_API"
+        val fix =
+          fix()
+            .name("Set compileSdkVersion to $HIGHEST_KNOWN_STABLE_API")
+            .replace()
+            .text(version.toString())
+            .with(HIGHEST_KNOWN_STABLE_API.toString())
+            .build()
+        report(context, statementCookie, DEPENDENCY, message, fix)
       }
     } else if (parent == "plugins") {
       val plugin =

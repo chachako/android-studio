@@ -22,6 +22,7 @@ import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.GoogleMavenRepository.Companion.MAVEN_GOOGLE_CACHE_DIR_KEY
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.IAndroidTarget
+import com.android.sdklib.SdkVersionInfo.HIGHEST_KNOWN_STABLE_API
 import com.android.sdklib.SdkVersionInfo.LOWEST_ACTIVE_API
 import com.android.testutils.MockitoKt.whenever
 import com.android.testutils.TestUtils
@@ -100,7 +101,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         "apply plugin: 'android'\n" +
         "\n" +
         "android {\n" +
-        "    compileSdkVersion 19\n" +
+        "    compileSdkVersion $HIGHEST_KNOWN_STABLE_API\n" +
         "    buildToolsVersion \"19.0.0\"\n" +
         "\n" +
         "    defaultConfig {\n" +
@@ -1775,7 +1776,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             "apply plugin: 'com.android.application'\n" +
             "\n" +
             "android {\n" +
-            "    compileSdkVersion 30\n" +
+            "    compileSdkVersion $HIGHEST_KNOWN_STABLE_API\n" +
             "}\n" +
             "\n" +
             "dependencies {\n" +
@@ -1877,7 +1878,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             "apply plugin: 'com.android.application'\n" +
             "\n" +
             "android {\n" +
-            "    compileSdkVersion 30\n" +
+            "    compileSdkVersion $HIGHEST_KNOWN_STABLE_API\n" +
             "}\n" +
             "\n" +
             "dependencies {\n" +
@@ -2528,7 +2529,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             "apply plugin: 'com.android.application'\n" +
             "\n" +
             "android {\n" +
-            "    compileSdkVersion 25\n" +
+            "    compileSdkVersion $HIGHEST_KNOWN_STABLE_API\n" +
             "    buildToolsVersion \"21.1.2\"\n" +
             "}\n" +
             "\n" +
@@ -2550,7 +2551,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             "apply plugin: 'com.android.application'\n" +
             "\n" +
             "android {\n" +
-            "    compileSdkVersion 21\n" +
+            "    compileSdkVersion $HIGHEST_KNOWN_STABLE_API\n" +
             "    buildToolsVersion \"21.1.2\"\n" +
             "    defaultConfig {\n" +
             "       minSdkVersion 15\n" +
@@ -2664,7 +2665,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             "apply plugin: 'com.android.application'\n" +
             "\n" +
             "android {\n" +
-            "    compileSdkVersion 21\n" +
+            "    compileSdkVersion $HIGHEST_KNOWN_STABLE_API\n" +
             "    buildToolsVersion \"21.1.2\"\n" +
             "}\n" +
             "\n" +
@@ -2687,7 +2688,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             "apply plugin: 'com.android.application'\n" +
             "\n" +
             "android {\n" +
-            "    compileSdkVersion 21\n" +
+            "    compileSdkVersion $HIGHEST_KNOWN_STABLE_API\n" +
             "    buildToolsVersion \"21.1.2\"\n" +
             "}\n" +
             "\n" +
@@ -2710,7 +2711,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             "apply plugin: 'com.android.application'\n" +
             "\n" +
             "android {\n" +
-            "    compileSdkVersion 19\n" +
+            "    compileSdkVersion $HIGHEST_KNOWN_STABLE_API\n" +
             "\n" +
             "    defaultConfig {\n" +
             "        minSdkVersion 15\n" +
@@ -2737,7 +2738,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             "apply plugin: 'com.android.application'\n" +
             "\n" +
             "android {\n" +
-            "    compileSdkVersion 21\n" +
+            "    compileSdkVersion $HIGHEST_KNOWN_STABLE_API\n" +
             "\n" +
             "    defaultConfig {\n" +
             "        minSdkVersion 15\n" +
@@ -2771,7 +2772,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             "apply plugin: 'com.android.application'\n" +
             "\n" +
             "android {\n" +
-            "    compileSdkVersion 19\n" +
+            "    compileSdkVersion $HIGHEST_KNOWN_STABLE_API\n" +
             "\n" +
             "    defaultConfig {\n" +
             "        minSdkVersion 15\n" +
@@ -3533,7 +3534,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             "apply plugin: 'com.android.application'\n" +
             "\n" +
             "android {\n" +
-            "    compileSdkVersion 21\n" +
+            "    compileSdkVersion $HIGHEST_KNOWN_STABLE_API\n" +
             "}\n" +
             "\n" +
             "final GPS_VERSION = '5.0.77'\n" +
@@ -4334,7 +4335,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             "}\n" +
             "\n" +
             "android {\n" +
-            "    compileSdkVersion(23)\n" +
+            "    compileSdkVersion($HIGHEST_KNOWN_STABLE_API)\n" +
             "\n" +
             "    defaultConfig {\n" +
             "        minSdkVersion(7)\n" +
@@ -6828,6 +6829,40 @@ class GradleDetectorTest : AbstractCheckTest() {
         @@ -9 +9
         -         android:targetSdkVersion="$MINIMUM_TARGET_SDK_VERSION" />
         +         android:targetSdkVersion="$expectedTarget" />
+        """
+      )
+  }
+
+  fun testNewerCompileSdkVersionAvailable() {
+    lint()
+      .files(
+        gradle(
+          "" +
+            "apply plugin: 'com.android.application'\n" +
+            "\n" +
+            "android {\n" +
+            "    compileSdkVersion 28\n" +
+            "    compileSdkVersion 1000 // OK\n" +
+            "    compileSdkPreview = \"android-S\" // OK\n" +
+            "}\n"
+        )
+      )
+      .issues(DEPENDENCY)
+      .run()
+      .expect(
+        """
+        build.gradle:4: Warning: A newer version of compileSdkVersion than 28 is available: $HIGHEST_KNOWN_STABLE_API [GradleDependency]
+            compileSdkVersion 28
+            ~~~~~~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
+      .expectFixDiffs(
+        """
+        Fix for build.gradle line 4: Set compileSdkVersion to $HIGHEST_KNOWN_STABLE_API:
+        @@ -4 +4
+        -     compileSdkVersion 28
+        +     compileSdkVersion $HIGHEST_KNOWN_STABLE_API
         """
       )
   }
