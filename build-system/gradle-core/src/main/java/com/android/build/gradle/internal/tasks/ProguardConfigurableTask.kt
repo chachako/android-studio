@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.artifact.impl.InternalScopedArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.api.variant.ScopedArtifacts.Scope
 import com.android.build.gradle.ProguardFiles
@@ -265,8 +266,13 @@ abstract class ProguardConfigurableTask(
 
             classes = creationConfig.services.fileCollection().also {
                 it.from(
-                    creationConfig.artifacts.forScope(Scope.PROJECT)
-                        .getFinalArtifacts(ScopedArtifact.CLASSES)
+                    if (componentType.isApk) {
+                        creationConfig.artifacts.forScope(Scope.PROJECT)
+                            .getFinalArtifacts(InternalScopedArtifact.FINAL_TRANSFORMED_CLASSES)
+                    } else {
+                        creationConfig.artifacts.forScope(Scope.PROJECT)
+                            .getFinalArtifacts(ScopedArtifact.CLASSES)
+                    }
                 )
                 externalInputScopes.forEach { scope ->
                     it.from(
