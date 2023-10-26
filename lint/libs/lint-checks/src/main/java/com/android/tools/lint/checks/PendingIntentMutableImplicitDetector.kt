@@ -35,20 +35,28 @@ import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.findLastAssignment
 import com.android.tools.lint.detector.api.isKotlin
+import com.android.tools.lint.detector.api.isScopingFunction
+import com.android.tools.lint.detector.api.isScopingIt
+import com.android.tools.lint.detector.api.isScopingThis
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiVariable
 import com.intellij.util.containers.headTail
 import org.jetbrains.uast.UArrayAccessExpression
 import org.jetbrains.uast.UBinaryExpression
+import org.jetbrains.uast.UBlockExpression
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
+import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.ULiteralExpression
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UQualifiedReferenceExpression
+import org.jetbrains.uast.UReturnExpression
 import org.jetbrains.uast.USimpleNameReferenceExpression
+import org.jetbrains.uast.UThisExpression
 import org.jetbrains.uast.UastBinaryOperator.Companion.ASSIGN
 import org.jetbrains.uast.UastCallKind.Companion.CONSTRUCTOR_CALL
+import org.jetbrains.uast.UastCallKind.Companion.METHOD_CALL
 import org.jetbrains.uast.UastCallKind.Companion.NESTED_ARRAY_INITIALIZER
 import org.jetbrains.uast.UastCallKind.Companion.NEW_ARRAY_WITH_INITIALIZER
 import org.jetbrains.uast.getParentOfType
@@ -162,12 +170,19 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
     )
 
     /**
-     * An intent is implicit if both its component and package are null, hence this class carries
-     * that information for further analysis of intent's implicitness before its use in the
-     * PendingIntent method.
+     * An intent is implicit if it didn't escape, and both its component and package are null, hence
+     * this class carries that information for further analysis of intent's implicitness before its
+     * use in the PendingIntent method.
      */
-    private data class IntentType(var hasComponent: Boolean, var hasPackage: Boolean) {
-      fun isImplicit(): Boolean = !hasComponent && !hasPackage
+    private data class IntentType(
+      var hasComponent: Boolean,
+      var hasPackage: Boolean,
+      var isEscaped: Boolean = false
+    ) {
+      // If an intent is implicit, then it doesn't have a component and a package.
+      constructor(isImplicit: Boolean) : this(hasComponent = !isImplicit, hasPackage = !isImplicit)
+
+      fun isImplicit(): Boolean = !isEscaped && !hasComponent && !hasPackage
     }
 
     private fun isNewMutableNonExemptedPendingIntent(flags: Int): Boolean {
@@ -190,7 +205,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
         is UCallExpression -> getIntentTypeForCall(intent, intentInfo)
         is UQualifiedReferenceExpression -> getIntentTypeForQualified(intent, intentInfo)
         is USimpleNameReferenceExpression -> getIntentTypeForSimpleName(intent, intentInfo)
-        else -> IntentType(hasComponent = true, hasPackage = true)
+        else -> IntentType(isImplicit = false)
       }
 
     /**
@@ -211,7 +226,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
           if (
             INTENT_EXPLICIT_CONSTRUCTOR_ARGS.any { constructorArgs ->
               intentInfo.javaEvaluator.methodMatches(
-                intent.resolve() ?: return IntentType(hasComponent = true, hasPackage = true),
+                intent.resolve() ?: return IntentType(isImplicit = false),
                 CLASS_INTENT,
                 allowInherit = false,
                 *constructorArgs
@@ -220,21 +235,25 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
           ) {
             IntentType(hasComponent = true, hasPackage = false)
           } else {
-            IntentType(hasComponent = false, hasPackage = false)
+            IntentType(isImplicit = true)
           }
         }
         NESTED_ARRAY_INITIALIZER,
         NEW_ARRAY_WITH_INITIALIZER -> {
-          if (
-            intent.valueArguments.any { getIntentTypeForExpression(it, intentInfo).isImplicit() }
-          ) {
-            IntentType(hasComponent = false, hasPackage = false)
-          } else {
-            IntentType(hasComponent = true, hasPackage = true)
-          }
+          IntentType(
+            isImplicit =
+              intent.valueArguments.any { getIntentTypeForExpression(it, intentInfo).isImplicit() }
+          )
         }
         // TODO(b/272014836): Handle listOf(), arrayOf() for PendingIntent.getActivities()
-        else -> IntentType(hasComponent = true, hasPackage = true)
+        METHOD_CALL -> {
+          if (isWithScopeCall(intent)) {
+            getIntentTypeForWithScopeCall(intent, intentInfo)
+          } else {
+            IntentType(isImplicit = false)
+          }
+        }
+        else -> IntentType(isImplicit = false)
       }
     }
 
@@ -267,7 +286,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
       intentInfo: IntentExpressionInfo
     ): IntentType {
       var qualifiedChain = intent.getQualifiedChain()
-      if (qualifiedChain.isEmpty()) return IntentType(hasComponent = true, hasPackage = true)
+      if (qualifiedChain.isEmpty()) return IntentType(isImplicit = false)
       if (
         isKotlin(intent.lang) &&
           qualifiedChain.size >= 3 &&
@@ -279,14 +298,18 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
         qualifiedChain = qualifiedChain.drop(2)
       }
       val (intentObject, calls) = qualifiedChain.headTail()
-      val intentType = getIntentTypeForExpression(intentObject, intentInfo)
-      // TODO(b/274913202): Support Intent().apply { this.setPackage("test.pkg") } - calls inside
-      // apply are part of a lambda
+      var intentType = getIntentTypeForExpression(intentObject, intentInfo)
       for (c in calls) {
-        val call = c as? UCallExpression
-        if (isEscapeCall(call, intentInfo))
-          return IntentType(hasComponent = true, hasPackage = true)
-        setIntentTypeAfterCallInPlace(intentType, call)
+        // break early if the intent escaped
+        if (intentType.isEscaped) break
+
+        val call = c as? UCallExpression ?: continue
+        if (isSelectorScopeCall(call)) {
+          intentType =
+            getIntentTypeForSelectorScopeCall(intent, intentObject, intentType, call, intentInfo)
+        } else {
+          setIntentTypeAfterCallInPlace(intentType, call, intentInfo)
+        }
       }
       return intentType
     }
@@ -332,23 +355,26 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
     ): IntentType {
       val (assign, assignParentUMethod) =
         findLastAssignmentAndItsParentUMethod(intent, intentInfo.call)
-          ?: return IntentType(hasComponent = true, hasPackage = true)
+          ?: return IntentType(isImplicit = false)
       val intentParentUMethod =
-        intent.getParentOfType(UMethod::class.java)
-          ?: return IntentType(hasComponent = true, hasPackage = true)
+        intent.getParentOfType(UMethod::class.java) ?: return IntentType(isImplicit = false)
       if (assignParentUMethod != intentParentUMethod) {
-        return IntentType(hasComponent = true, hasPackage = true) // only consider local assigns
+        return IntentType(isImplicit = false) // only consider local assigns
       }
       var intentArraySize = 0
-      var assignIntentType = IntentType(hasComponent = true, hasPackage = true)
+      var assignIntentType = IntentType(isImplicit = false)
       if (assign is UCallExpression && assign.isNewArrayWithDimensions()) {
         if (assign.valueArguments.size > 1) {
-          return IntentType(hasComponent = true, hasPackage = true) // only consider 1d arrays
+          return IntentType(isImplicit = false) // only consider 1d arrays
         }
         intentArraySize = assign.valueArguments[0].evaluate() as? Int ?: 0
       } else {
         assignIntentType = getIntentTypeForExpression(assign, intentInfo)
       }
+
+      // return early if the intent assignment escaped
+      if (assignIntentType.isEscaped) return assignIntentType
+
       val analyzer =
         IntentSimpleNameAnalyzer(assign, intent, intentInfo, intentArraySize, assignIntentType)
       intentParentUMethod.accept(analyzer)
@@ -370,21 +396,143 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
      * - For `setComponent(arg1, arg2)` and `setPackage(arg1)`, the intent has a component and a
      *   package if arg1 is not null respectively.
      * - For any `setClass` and `setClassName`, the intent has a component.
+     * - If the intent hasn't escaped, then we need to check if the current call is an escape call.
      */
-    private fun setIntentTypeAfterCallInPlace(intentType: IntentType, call: UCallExpression?) {
-      when (call?.methodName) {
+    private fun setIntentTypeAfterCallInPlace(
+      intentType: IntentType,
+      call: UCallExpression,
+      intentInfo: IntentExpressionInfo
+    ) {
+      when (call.methodName) {
         METHOD_INTENT_SET_COMPONENT -> intentType.hasComponent = !call.isFirstArgNull()
         METHOD_INTENT_SET_PACKAGE -> intentType.hasPackage = !call.isFirstArgNull()
         METHOD_INTENT_SET_CLASS,
         METHOD_INTENT_SET_CLASS_NAME -> intentType.hasComponent = true
+      }
+      if (!intentType.isEscaped) {
+        intentType.isEscaped = isEscapeCall(call, intentInfo)
       }
     }
 
     private fun UCallExpression?.isFirstArgNull(): Boolean =
       (this?.valueArguments?.getOrNull(0) as? ULiteralExpression)?.isNull ?: false
 
-    private fun isEscapeCall(call: UCallExpression?, intentInfo: IntentExpressionInfo): Boolean =
-      !intentInfo.javaEvaluator.isMemberInClass(call?.resolve(), CLASS_INTENT)
+    private fun isIntentMethodCall(
+      call: UCallExpression?,
+      intentInfo: IntentExpressionInfo
+    ): Boolean = intentInfo.javaEvaluator.isMemberInClass(call?.resolve(), CLASS_INTENT)
+
+    private fun isEscapeCall(call: UCallExpression, intentInfo: IntentExpressionInfo): Boolean =
+      !isIntentMethodCall(call, intentInfo) && !isSelectorScopeCall(call) && !isWithScopeCall(call)
+
+    private fun isWithScopeCall(call: UCallExpression): Boolean =
+      call.methodName == "with" && isScopingFunction(call)
+
+    // Only considers lambdas with function calls that resolve to Intent methods because with()
+    // returns the lambda result
+    private fun getIntentTypeForWithScopeCall(
+      intent: UCallExpression,
+      intentInfo: IntentExpressionInfo
+    ): IntentType {
+      val intentObject =
+        intent.getArgumentForParameter(0)?.skipParenthesizedExprDown()
+          ?: return IntentType(isImplicit = false)
+      val lambdaExp = intent.getArgumentForParameter(1) ?: return IntentType(isImplicit = false)
+      if (!areAllLambdaExpressionsIntentMethodCalls(intent, lambdaExp, intentInfo))
+        return IntentType(isImplicit = false)
+      val intentObjectType = getIntentTypeForExpression(intentObject, intentInfo)
+      return getIntentTypeForLambda(intentObject, intentObjectType, lambdaExp, intentInfo, intent)
+    }
+
+    private fun isSelectorScopeCall(call: UCallExpression): Boolean =
+      isApplyAlsoScopeCall(call) || isLetRunScopeCall(call)
+
+    private fun isApplyAlsoScopeCall(call: UCallExpression): Boolean =
+      listOf("apply", "also").any { it == call.methodName } && isScopingFunction(call)
+
+    private fun isLetRunScopeCall(call: UCallExpression): Boolean =
+      listOf("let", "run").any { it == call.methodName } && isScopingFunction(call)
+
+    // For let and run, considers lambdas with function calls that resolve to Intent methods because
+    // they return the lambda result
+    private fun getIntentTypeForSelectorScopeCall(
+      intent: UQualifiedReferenceExpression,
+      intentObject: UExpression,
+      intentType: IntentType,
+      call: UCallExpression,
+      intentInfo: IntentExpressionInfo
+    ): IntentType {
+      val lambdaExp = call.valueArguments.getOrNull(0) ?: return IntentType(isImplicit = false)
+      if (
+        isLetRunScopeCall(call) &&
+          !areAllLambdaExpressionsIntentMethodCalls(call, lambdaExp, intentInfo)
+      ) {
+        return IntentType(isImplicit = false)
+      }
+      return getIntentTypeForLambda(intentObject, intentType, lambdaExp, intentInfo, intent)
+    }
+
+    private fun getIntentTypeForLambda(
+      intentObject: UExpression,
+      intentObjectType: IntentType,
+      lambdaExp: UExpression,
+      intentInfo: IntentExpressionInfo,
+      intent: UExpression
+    ): IntentType {
+      val analyzer =
+        IntentDataFlowAnalyzer(
+          startExp = intentObject,
+          endExp = lambdaExp,
+          initialIntentType = intentObjectType,
+          intentInfo = intentInfo,
+        )
+      intent.getParentOfType(UMethod::class.java)?.accept(analyzer)
+      return analyzer.getIntentTypeAfterGivenAssignment()
+    }
+
+    private fun areAllLambdaExpressionsIntentMethodCalls(
+      call: UCallExpression,
+      lambdaExp: UExpression?,
+      intentInfo: IntentExpressionInfo
+    ): Boolean {
+      val expressions = getLambdaExpressionsOrNull(lambdaExp) ?: return false
+      for (exp in expressions) {
+        val realExp = getRealExpressionOrNull(exp) ?: return false
+        val containsOnlyIntentMethodCalls =
+          when (realExp) {
+            is UCallExpression -> isIntentMethodCall(realExp, intentInfo)
+            is UQualifiedReferenceExpression ->
+              containsQualifiedIntentMethodCalls(call, realExp, intentInfo)
+            else -> false
+          }
+        if (!containsOnlyIntentMethodCalls) return false
+      }
+      return true
+    }
+
+    private fun getLambdaExpressionsOrNull(lambdaExp: UExpression?): List<UExpression>? =
+      ((lambdaExp as? ULambdaExpression)?.body as? UBlockExpression)?.expressions
+
+    private fun getRealExpressionOrNull(exp: UExpression): UExpression? {
+      val realExp = if (exp is UReturnExpression) exp.returnExpression else exp
+      return realExp?.skipParenthesizedExprDown()
+    }
+
+    private fun isReferencingContextObject(call: UCallExpression, exp: UExpression): Boolean =
+      (isScopingIt(call) && (exp as? USimpleNameReferenceExpression)?.identifier == "it") ||
+        (isScopingThis(call) && exp is UThisExpression)
+
+    private fun containsQualifiedIntentMethodCalls(
+      call: UCallExpression,
+      exp: UQualifiedReferenceExpression,
+      intentInfo: IntentExpressionInfo
+    ): Boolean {
+      val chain = exp.getQualifiedChain()
+      if (chain.isEmpty()) return false
+      val (head, tail) = chain.headTail()
+      return isReferencingContextObject(call, head) &&
+        tail.all { isIntentMethodCall(it as? UCallExpression, intentInfo) }
+    }
 
     /**
      * Helper class for analyzing the data flow of an intent variable to determine if it's implicit.
@@ -397,50 +545,23 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
      *   implicit if any of its elements are implicit. The default value for unassigned indices is
      *   false, meaning the array won't be flagged if some values aren't assigned.
      *
-     * How to use the analyzer:
-     * 1. Start the analysis by calling the analyzer on a method where the intent variable is
-     *    assigned and used.
-     * 2. Retrieve the final result by calling the [getIntentTypeAfterGivenAssignment] method.
-     *
-     * How the analyzer works:
-     * - First, it needs to reach the last assignment of the intent variable and set
-     *   `isAssignReached` to true.
-     * - After the last assignment is reached, the analyzer tracks intent properties: intentType,
-     *   and isEscaped.
-     * - If the intent reference calls an external method or is used by an external method, then at
-     *   that point the analyzer can't consider the intent implicit, so `isEscaped` is set to true.
-     * - The analysis is finished when it reaches `intentFinalReference`.
+     * For single intent's implementation details, refer to [IntentDataFlowAnalyzer]'s
+     * documentation.
      */
     private data class IntentSimpleNameAnalyzer(
       val lastAssignment: UExpression,
       val intentFinalReference: USimpleNameReferenceExpression,
-      val intentInfo: IntentExpressionInfo,
+      val initialIntentInfo: IntentExpressionInfo,
       val intentArraySize: Int,
       val assignIntentType: IntentType
-    ) : DataFlowAnalyzer(setOf(intentFinalReference)) {
+    ) :
+      IntentDataFlowAnalyzer(
+        startExp = lastAssignment,
+        endExp = initialIntentInfo.intentArgument,
+        initialIntentType = assignIntentType,
+        intentInfo = initialIntentInfo,
+      ) {
       private val intentArrayValuesIsImplicit: BooleanArray = BooleanArray(intentArraySize)
-      private var isIntentLocationReached: Boolean = false
-      private var isAssignReached: Boolean = false
-      private val intentType: IntentType = assignIntentType
-      private var isEscaped: Boolean = false
-
-      override fun afterVisitExpression(node: UExpression) {
-        if (node == lastAssignment) isAssignReached = true
-        if (node == intentInfo.intentArgument) isIntentLocationReached = true
-        if (!isIntentLocationReached) super.afterVisitExpression(node)
-      }
-
-      /**
-       * - Marks if the analyzer reached the location where the intent was used originally, i.e.
-       *   PendingIntent method
-       * - If the intent location wasn't reached yet, then adds the expression to the tracking list
-       */
-      override fun visitSimpleNameReferenceExpression(
-        node: USimpleNameReferenceExpression
-      ): Boolean {
-        if (isIntentAnalyzable() && node.identifier == intentFinalReference.identifier) track(node)
-        return super.visitSimpleNameReferenceExpression(node)
-      }
 
       /**
        * Considers assignments of array values and stores their isImplicit value inside
@@ -460,47 +581,77 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
         return super.visitArrayAccessExpression(node)
       }
 
-      override fun receiver(call: UCallExpression) {
-        if (!isIntentAnalyzable()) return
-        setIntentTypeAfterCallInPlace(intentType, call)
-        isEscaped = isEscapeCall(call, intentInfo)
-      }
-
-      override fun argument(call: UCallExpression, reference: UElement) {
-        if (
-          call == intentInfo.intentArgument.skipParenthesizedExprDown() ||
-            reference == intentInfo.intentArgument ||
-            call.isNewArrayWithInitializer() ||
-            call.isArrayInitializer() ||
-            isPendingIntentGetMethod(call)
-        )
-          return
-        isEscaped = true
-      }
-
-      fun getIntentTypeAfterGivenAssignment(): IntentType {
-        if (isEscaped) return IntentType(hasComponent = true, hasPackage = true)
+      override fun getIntentTypeAfterGivenAssignment(): IntentType {
         if (intentArraySize == 0) return intentType
-        return if (intentArrayValuesIsImplicit.any { it }) {
-          IntentType(hasComponent = false, hasPackage = false)
-        } else {
-          IntentType(hasComponent = true, hasPackage = true)
-        }
+        return IntentType(isImplicit = intentArrayValuesIsImplicit.any { it })
       }
-
-      private fun isPendingIntentGetMethod(call: UCallExpression): Boolean {
-        return intentInfo.javaEvaluator.isMemberInClass(call.resolve(), PendingIntentUtils.CLASS) &&
-          PendingIntentUtils.GET_METHOD_NAMES.contains(call.methodName)
-      }
-
-      private fun isIntentAnalyzable(): Boolean =
-        isAssignReached && !isEscaped && !isIntentLocationReached
 
       private fun isMemberOfIntentArray(node: UArrayAccessExpression): Boolean =
         (node.receiver as? USimpleNameReferenceExpression)?.identifier ==
           intentFinalReference.identifier
     }
 
+    /**
+     * Helper class for analyzing the data flow of a single intent to determine if it's implicit.
+     *
+     * An intent is implicit if after the `startExp` but before `endExp`, it wasn't made explicit in
+     * its component and package, nor escape calls were called on the variable.
+     *
+     * How to use the analyzer:
+     * 1. Start the analysis by calling the analyzer on a method where the intent variable is
+     *    assigned and used.
+     * 2. Retrieve the final result by calling the [getIntentTypeAfterGivenAssignment] method.
+     *
+     * How the analyzer works:
+     * - It starts the analysis from the `startExp` expression.
+     * - Then, the analyzer tracks the intentType properties.
+     * - If the intent reference calls an external method or is used by an external method, then at
+     *   that point the analyzer can't consider the intent implicit, so `intentType.isEscaped` is
+     *   set to true.
+     * - The analysis is finished when it reaches `endExp`.
+     */
+    private open class IntentDataFlowAnalyzer(
+      val startExp: UExpression,
+      val endExp: UExpression,
+      val initialIntentType: IntentType,
+      val intentInfo: IntentExpressionInfo
+    ) : DataFlowAnalyzer(setOf(startExp)) {
+      var intentType: IntentType = initialIntentType
+      var isEndReached: Boolean = false
+
+      override fun afterVisitExpression(node: UExpression) {
+        if (node == endExp) isEndReached = true
+        if (!isEndReached) super.afterVisitExpression(node)
+      }
+
+      fun isIntentAnalyzable(): Boolean = !intentType.isEscaped && !isEndReached
+
+      override fun receiver(call: UCallExpression) {
+        if (!isIntentAnalyzable()) return
+        setIntentTypeAfterCallInPlace(intentType, call, intentInfo)
+      }
+
+      override fun argument(call: UCallExpression, reference: UElement) {
+        if (!isIntentAnalyzable()) return
+        if (!isIgnoredArgument(call, reference)) intentType.isEscaped = true
+      }
+
+      open fun getIntentTypeAfterGivenAssignment(): IntentType = intentType
+
+      private fun isPendingIntentGetMethod(call: UCallExpression): Boolean =
+        intentInfo.javaEvaluator.isMemberInClass(call.resolve(), PendingIntentUtils.CLASS) &&
+          PendingIntentUtils.GET_METHOD_NAMES.contains(call.methodName)
+
+      private fun isIgnoredArgument(call: UCallExpression, reference: UElement): Boolean =
+        call == intentInfo.intentArgument.skipParenthesizedExprDown() ||
+          reference == intentInfo.intentArgument ||
+          call.isNewArrayWithInitializer() ||
+          call.isArrayInitializer() ||
+          isPendingIntentGetMethod(call) ||
+          isWithScopeCall(call)
+    }
+
+    /** Lint fixes related code */
     private fun buildImmutableFixOrNull(
       context: JavaContext,
       flagsArgument: UExpression
