@@ -217,6 +217,8 @@ class UnitTestTaskManager(
             unitTestCreationConfig,
             getJacocoVersion(unitTestCreationConfig)
         ))
+
+        unitTestCreationConfig.runTestTaskConfigurationActions(runTestsTask)
         taskFactory.configure(globalConfig.taskNames.test) { test: Task ->
             test.dependsOn(runTestsTask)
         }

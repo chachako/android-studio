@@ -31,6 +31,8 @@ import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
+import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.tasks.testing.Test
 import javax.inject.Inject
 
 open class ScreenshotTestImpl @Inject constructor(
@@ -71,4 +73,11 @@ open class ScreenshotTestImpl @Inject constructor(
     override val isScreenshotTestCoverageEnabled: Boolean
         get() = dslInfo.isScreenshotTestCoverageEnabled
 
+    override fun configureTestTask(action: (Test) -> Unit) {
+        throw RuntimeException("Screenshot testing variants do not have a Test task")
+    }
+
+    override fun runTestTaskConfigurationActions(testTask: TaskProvider<out Test>) {
+        // nothing to do until we have a Test task.
+    }
 }

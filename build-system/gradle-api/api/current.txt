@@ -3027,6 +3027,7 @@ package com.android.build.api.variant {
   }
 
   public interface UnitTest extends com.android.build.api.variant.TestComponent {
+    method @org.gradle.api.Incubating public void configureTestTask(kotlin.jvm.functions.Function1<? super org.gradle.api.tasks.testing.Test,kotlin.Unit> action);
   }
 
   public interface Variant extends com.android.build.api.variant.Component com.android.build.api.variant.HasAndroidResources {
