@@ -150,16 +150,13 @@ class GradleDetectorTest : AbstractCheckTest() {
   fun testBasic() {
     val expected =
       "" +
-        "build.gradle:25: Error: This support library should not use a different version (13) than the compileSdkVersion (19) [GradleCompatible]\n" +
-        "    compile 'com.android.support:appcompat-v7:13.0.0'\n" +
-        "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
         "build.gradle:1: Warning: 'android' is deprecated; use 'com.android.application' instead [GradleDeprecated]\n" +
         "apply plugin: 'android'\n" +
         "~~~~~~~~~~~~~~~~~~~~~~~\n" +
         "build.gradle:24: Warning: A newer version of com.google.guava:guava than 11.0.2 is available: 21.0 [GradleDependency]\n" +
         "    freeCompile 'com.google.guava:guava:11.0.2'\n" +
         "                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "build.gradle:25: Warning: A newer version of com.android.support:appcompat-v7 than 13.0.0 is available: 19.1.0 [GradleDependency]\n" +
+        "build.gradle:25: Warning: A newer version of com.android.support:appcompat-v7 than 13.0.0 is available: 25.3.1 [GradleDependency]\n" +
         "    compile 'com.android.support:appcompat-v7:13.0.0'\n" +
         "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
         "build.gradle:26: Warning: A newer version of com.google.android.support:wearable than 1.2.0 is available: 1.3.0 [GradleDependency]\n" +
@@ -174,7 +171,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         "build.gradle:23: Warning: Avoid using + in version numbers; can lead to unpredictable and unrepeatable builds (com.android.support:appcompat-v7:+) [GradleDynamicVersion]\n" +
         "    compile 'com.android.support:appcompat-v7:+'\n" +
         "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "1 errors, 7 warnings\n"
+        "0 errors, 7 warnings\n"
 
     lint()
       .files(mDependencies)
@@ -184,10 +181,6 @@ class GradleDetectorTest : AbstractCheckTest() {
       .expect(expected)
       .expectFixDiffs(
         "" +
-          "Fix for build.gradle line 25: Replace with 19.1.0:\n" +
-          "@@ -25 +25\n" +
-          "-     compile 'com.android.support:appcompat-v7:13.0.0'\n" +
-          "+     compile 'com.android.support:appcompat-v7:19.1.0'\n" +
           "Autofix for build.gradle line 1: Replace with com.android.application:\n" +
           "@@ -1 +1\n" +
           "- apply plugin: 'android'\n" +
@@ -196,10 +189,10 @@ class GradleDetectorTest : AbstractCheckTest() {
           "@@ -24 +24\n" +
           "-     freeCompile 'com.google.guava:guava:11.0.2'\n" +
           "+     freeCompile 'com.google.guava:guava:21.0'\n" +
-          "Fix for build.gradle line 25: Change to 19.1.0:\n" +
+          "Fix for build.gradle line 25: Change to 25.3.1:\n" +
           "@@ -25 +25\n" +
           "-     compile 'com.android.support:appcompat-v7:13.0.0'\n" +
-          "+     compile 'com.android.support:appcompat-v7:19.1.0'\n" +
+          "+     compile 'com.android.support:appcompat-v7:25.3.1'\n" +
           "Fix for build.gradle line 26: Change to 1.3.0:\n" +
           "@@ -26 +26\n" +
           "-     compile 'com.google.android.support:wearable:1.2.0'\n" +
@@ -2106,90 +2099,6 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
   }
 
-  fun testQvsAndroidX() {
-    // Regression test for 128648458: Lint Warning to update appCompat in Q
-    val expected =
-      "" +
-        "build.gradle:13: Error: Version 28 (intended for Android Pie and below) is the last version of the legacy support library, so we recommend that you migrate to AndroidX libraries when using Android Q and moving forward. The IDE can help with this: Refactor > Migrate to AndroidX... [GradleCompatible]\n" +
-        "    implementation 'com.android.support:appcompat-v7:28.0.0' \n" +
-        "                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "1 errors, 0 warnings"
-
-    lint()
-      .files(
-        gradle(
-          "" +
-            "apply plugin: 'com.android.application'\n" +
-            "\n" +
-            "android {\n" +
-            "     compileSdkVersion 'android-Q'\n" +
-            "\n" +
-            "    defaultConfig {\n" +
-            "        minSdkVersion 19\n" +
-            "        targetSdkVersion 'Q'\n" +
-            "    }\n" +
-            "}\n" +
-            "\n" +
-            "dependencies {\n" +
-            "    implementation 'com.android.support:appcompat-v7:28.0.0' \n" +
-            "}\n"
-        )
-      )
-      .issues(COMPATIBILITY)
-      .run()
-      .expect(expected)
-  }
-
-  fun testCompatibility() {
-    val expected =
-      "" +
-        "build.gradle:4: Error: The compileSdkVersion (18) should not be lower than the targetSdkVersion (19) [GradleCompatible]\n" +
-        "    compileSdkVersion 18\n" +
-        "    ~~~~~~~~~~~~~~~~~~~~\n" +
-        "1 errors, 0 warnings\n"
-
-    lint()
-      .files(
-        gradle(
-          "" +
-            "apply plugin: 'com.android.application'\n" +
-            "\n" +
-            "android {\n" +
-            "    compileSdkVersion 18\n" +
-            "    buildToolsVersion \"19.0.0\"\n" +
-            "\n" +
-            "    defaultConfig {\n" +
-            "        minSdkVersion 7\n" +
-            "        targetSdkVersion 19\n" +
-            "        versionCode 1\n" +
-            "        versionName \"1.0\"\n" +
-            "    }\n" +
-            "}\n" +
-            "\n" +
-            "dependencies {\n" +
-            "    compile 'com.android.support:support-v4:18.0.0'\n" +
-            "    compile 'com.android.support.test:espresso:0.2'\n" +
-            "    compile 'com.android.support:multidex:1.0.1'\n" +
-            "    compile 'com.android.support:multidex-instrumentation:1.0.1'\n" +
-            "\n" +
-            "    // Suppressed:\n" +
-            "    //noinspection GradleCompatible\n" +
-            "    compile 'com.android.support:support-v4:18.0.0'\n" +
-            "}\n"
-        )
-      )
-      .issues(COMPATIBILITY)
-      .run()
-      .expect(expected)
-      .expectFixDiffs(
-        "" +
-          "Fix for build.gradle line 4: Set compileSdkVersion to 19:\n" +
-          "@@ -4 +4\n" +
-          "-     compileSdkVersion 18\n" +
-          "+     compileSdkVersion 19\n"
-      )
-  }
-
   fun testMinSdkVersion() {
     val expected =
       ("" +
@@ -2500,7 +2409,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         "build.gradle:24: Warning: A newer version of com.google.guava:guava than 11.0.2 is available: 21.0 [GradleDependency]\n" +
         "    freeCompile 'com.google.guava:guava:11.0.2'\n" +
         "                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "build.gradle:25: Warning: A newer version of com.android.support:appcompat-v7 than 13.0.0 is available: 19.1.0 [GradleDependency]\n" +
+        "build.gradle:25: Warning: A newer version of com.android.support:appcompat-v7 than 13.0.0 is available: 25.3.1 [GradleDependency]\n" +
         "    compile 'com.android.support:appcompat-v7:13.0.0'\n" +
         "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
         "build.gradle:26: Warning: A newer version of com.google.android.support:wearable than 1.2.0 is available: 1.3.0 [GradleDependency]\n" +
@@ -2607,7 +2516,7 @@ class GradleDetectorTest : AbstractCheckTest() {
   fun testLongHandDependencies() {
     val expected =
       "" +
-        "build.gradle:9: Warning: A newer version of com.android.support:support-v4 than 19.0 is available: 21.0.2 [GradleDependency]\n" +
+        "build.gradle:9: Warning: A newer version of com.android.support:support-v4 than 19.0 is available: 25.3.1 [GradleDependency]\n" +
         "    compile group: 'com.android.support', name: 'support-v4', version: '19.0'\n" +
         "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
         "0 errors, 1 warnings\n"
@@ -2619,7 +2528,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             "apply plugin: 'com.android.application'\n" +
             "\n" +
             "android {\n" +
-            "    compileSdkVersion 21\n" +
+            "    compileSdkVersion 25\n" +
             "    buildToolsVersion \"21.1.2\"\n" +
             "}\n" +
             "\n" +
@@ -2815,35 +2724,6 @@ class GradleDetectorTest : AbstractCheckTest() {
         )
       )
       .issues(DEPENDENCY)
-      .run()
-      .expectClean()
-  }
-
-  fun testNoWarningFromUnknownSupportLibrary() {
-
-    lint()
-      .files(
-        gradle(
-          "" +
-            "apply plugin: 'com.android.application'\n" +
-            "\n" +
-            "android {\n" +
-            "    compileSdkVersion 21\n" +
-            "\n" +
-            "    defaultConfig {\n" +
-            "        minSdkVersion 15\n" +
-            "        targetSdkVersion 17\n" +
-            "    }\n" +
-            "}\n" +
-            "\n" +
-            "dependencies {\n" +
-            "    compile 'com.google.android.gms:play-services-appindexing:9.8.0'\n" +
-            "    compile 'com.android.support:appcompat-v7:25.0.0'\n" +
-            "}\n"
-        )
-      )
-      .issues(DEPENDENCY)
-      .sdkHome(sdkDirWithoutSupportLib)
       .run()
       .expectClean()
   }
@@ -3702,35 +3582,6 @@ class GradleDetectorTest : AbstractCheckTest() {
       .expect(expected)
   }
 
-  fun testSupportLibraryConsistency() {
-    val expected =
-      "" +
-        "build.gradle:4: Error: All com.android.support libraries must use the exact same version specification (mixing versions can lead to runtime crashes). Found versions 25.0-SNAPSHOT, 24.2, 24.1. Examples include com.android.support:preference-v7:25.0-SNAPSHOT and com.android.support:animated-vector-drawable:24.2 [GradleCompatible]\n" +
-        "    compile \"com.android.support:appcompat-v7:24.2\"\n" +
-        "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "1 errors, 0 warnings\n"
-    lint()
-      .files(
-        gradle(
-          "" +
-            "apply plugin: 'android'\n" +
-            "dependencies {\n" +
-            "    compile \"com.android.support:multidex:1.0.1\"\n" +
-            "    compile \"com.android.support:appcompat-v7:24.2\"\n" +
-            "    compile \"com.android.support:support-v13:24.1\"\n" +
-            "    compile \"com.android.support:preference-v7:25.0-SNAPSHOT\"\n" +
-            "    compile \"com.android.support:cardview-v7:24.2\"\n" +
-            "    compile \"com.android.support:support-annotations:25.0.0\"\n" +
-            "    compile \"com.android.support:renderscript:25.0.2\"\n" +
-            "}\n"
-        )
-      )
-      .issues(COMPATIBILITY)
-      .incremental()
-      .run()
-      .expect(expected)
-  }
-
   // TODO(b/158677029): Uncomment and fix when either made to work without the dependency
   //                    hierarchy or when the hiearchy is available.
   fun /*test*/ SupportLibraryConsistencyWithDataBinding() {
@@ -3863,39 +3714,6 @@ class GradleDetectorTest : AbstractCheckTest() {
       .expect(expected)
   }
 
-  fun testSupportLibraryConsistencyNonIncremental() {
-    val expected =
-      "" +
-        "" +
-        "build.gradle:6: Error: All com.android.support libraries must use the exact same version specification (mixing versions can lead to runtime crashes). Found versions 25.0-SNAPSHOT, 24.2, 24.1. Examples include com.android.support:preference-v7:25.0-SNAPSHOT and com.android.support:animated-vector-drawable:24.2 [GradleCompatible]\n" +
-        "    compile \"com.android.support:preference-v7:25.0-SNAPSHOT\"\n" +
-        "             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "    build.gradle:4: <No location-specific message>\n" +
-        "    compile \"com.android.support:appcompat-v7:24.2\"\n" +
-        "             ~~~~~~~~~~~~~~~~~~~\n" +
-        "1 errors, 0 warnings\n"
-    lint()
-      .files(
-        gradle("../lib/build.gradle", "" + "buildscript {\n" + "}"),
-        gradle(
-          "" +
-            "apply plugin: 'android'\n" +
-            "\n" +
-            "dependencies {\n" +
-            "    compile \"com.android.support:appcompat-v7:24.2\"\n" +
-            "    compile \"com.android.support:support-v13:24.1\"\n" +
-            "    compile \"com.android.support:preference-v7:25.0-SNAPSHOT\"\n" +
-            "    compile \"com.android.support:cardview-v7:24.2\"\n" +
-            "    compile \"com.android.support:multidex:1.0.1\"\n" +
-            "    compile \"com.android.support:support-annotations:25.0.0\"\n" +
-            "}\n"
-        )
-      )
-      .issues(COMPATIBILITY)
-      .run()
-      .expect(expected)
-  }
-
   fun testSupportLibraryNotFatal() {
     // In fatal-only issue mode should not be reporting these
     lint()
@@ -3918,43 +3736,6 @@ class GradleDetectorTest : AbstractCheckTest() {
       .vital(true)
       .run()
       .expectClean()
-  }
-
-  fun testPlayServiceConsistencyNonIncremental() {
-    val expected =
-      "" +
-        "build.gradle:5: Error: All gms/firebase libraries must use the exact same version specification (mixing versions can lead to runtime crashes). Found versions 7.5.0, 7.3.0. Examples include com.google.android.gms:play-services-wearable:7.5.0 and com.google.android.gms:play-services-location:7.3.0 [GradleCompatible]\n" +
-        "    compile 'com.google.android.gms:play-services-wearable:7.5.0'\n" +
-        "             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "    build.gradle:4: <No location-specific message>\n" +
-        "    compile 'com.google.android.gms:play-services-location:7.3.0'\n" +
-        "             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "1 errors, 0 warnings"
-
-    lint()
-      .files(
-        gradle(
-          "" +
-            "apply plugin: 'android-library'\n" +
-            "\n" +
-            "dependencies {\n" +
-            "    compile 'com.google.android.gms:play-services-location:7.3.0'\n" +
-            "}\n"
-        ),
-        gradle(
-          "../app/build.gradle",
-          "" +
-            "apply plugin: 'android'\n" +
-            "\n" +
-            "dependencies {\n" +
-            "    compile 'com.google.android.gms:play-services-location:7.3.0'\n" +
-            "    compile 'com.google.android.gms:play-services-wearable:7.5.0'\n" +
-            "}\n"
-        )
-      )
-      .issues(COMPATIBILITY)
-      .run()
-      .expect(expected)
   }
 
   fun testPlayServiceInconsistentVersionsVersion14() {
@@ -4223,38 +4004,6 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
   }
 
-  fun testBadBuildTools() {
-    // Warn about build tools 23.0.0 which is known to be a bad version
-    val expected =
-      "" +
-        "build.gradle:7: Error: Build Tools 23.0.0 should not be used; it has some known serious bugs. Use version 23.0.3 instead. [GradleCompatible]\n" +
-        "    buildToolsVersion \"23.0.0\"\n" +
-        "    ~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "1 errors, 0 warnings\n"
-
-    lint()
-      .files(
-        gradle(
-          "" +
-            "apply plugin: 'com.android.application'\n" +
-            "\n" +
-            "android {\n" +
-            "    compileSdkVersion 18\n" +
-            "    buildToolsVersion \"19.0.0\"\n" + // OK
-            "    buildToolsVersion \"22.1.0\"\n" + // OK
-            "    buildToolsVersion \"23.0.0\"\n" + // ERROR
-            "    buildToolsVersion \"23.0.1\"\n" + // OK
-            "    buildToolsVersion \"23.1.0\"\n" + // OK
-            "    buildToolsVersion \"24.0.0\"\n" + // OK
-            "    buildToolsVersion \"23.0.+\"\n" + // OK
-            "}"
-        )
-      )
-      .issues(COMPATIBILITY)
-      .run()
-      .expect(expected)
-  }
-
   fun testGetNamedDependency() {
     TestCase.assertEquals(
       "com.android.support:support-v4:21.0.+",
@@ -4373,51 +4122,6 @@ class GradleDetectorTest : AbstractCheckTest() {
       .expect(expected)
   }
 
-  fun testORequirements() {
-    val expected =
-      "" +
-        "build.gradle:13: Error: Version must be at least 10.2.1 when targeting O [GradleCompatible]\n" +
-        "    compile 'com.google.android.gms:play-services-gcm:10.2.0'\n" +
-        "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "build.gradle:14: Error: Version must be at least 10.2.1 when targeting O [GradleCompatible]\n" +
-        "    compile 'com.google.firebase:firebase-messaging:10.2.0'\n" +
-        "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "build.gradle:15: Error: Version must be at least 0.6.0 when targeting O [GradleCompatible]\n" +
-        "    compile 'com.google.firebase:firebase-jobdispatcher:0.5.0'\n" +
-        "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "build.gradle:16: Error: Version must be at least 0.6.0 when targeting O [GradleCompatible]\n" +
-        "    compile 'com.google.firebase:firebase-jobdispatcher-with-gcm-dep:0.5.0'\n" +
-        "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "4 errors, 0 warnings\n"
-    lint()
-      .files(
-        gradle(
-          "" +
-            "apply plugin: 'com.android.application'\n" +
-            "\n" +
-            "android {\n" +
-            "    compileSdkVersion \"android-O\"\n" +
-            "\n" +
-            "    defaultConfig {\n" +
-            "        minSdkVersion 15\n" +
-            "        targetSdkVersion \"O\"\n" +
-            "    }\n" +
-            "}\n" +
-            "\n" +
-            "dependencies {\n" +
-            "    compile 'com.google.android.gms:play-services-gcm:10.2.0'\n" +
-            "    compile 'com.google.firebase:firebase-messaging:10.2.0'\n" +
-            "    compile 'com.google.firebase:firebase-jobdispatcher:0.5.0'\n" +
-            "    compile 'com.google.firebase:firebase-jobdispatcher-with-gcm-dep:0.5.0'\n" +
-            "}\n"
-        )
-      )
-      .issues(COMPATIBILITY)
-      .incremental()
-      .run()
-      .expect(expected)
-  }
-
   fun testORequirementsNotApplicable() {
     // targetSdkVersion < O: No check
     lint()
@@ -4478,159 +4182,6 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
       .issues(COMPATIBILITY)
       .incremental()
-      .run()
-      .expectClean()
-  }
-
-  fun testOR2RequiresAppCompat26Beta1() {
-    // Both versions older than 26 beta: No problem
-
-    lint()
-      .files(
-        gradle(
-          "" +
-            "apply plugin: 'com.android.application'\n" +
-            "\n" +
-            "android {\n" +
-            "    compileSdkVersion 25\n" +
-            "\n" +
-            "    defaultConfig {\n" +
-            "        minSdkVersion 15\n" +
-            "        targetSdkVersion 25\n" +
-            "    }\n" +
-            "}\n" +
-            "\n" +
-            "dependencies {\n" +
-            "    compile 'com.android.support:appcompat-v7:25.0.0-rc1'\n" +
-            "}\n"
-        )
-      )
-      .issues(COMPATIBILITY)
-      .clientFactory(getClientWithMockPlatformTarget(AndroidVersion("25"), 1))
-      .run()
-      .expectClean()
-
-    // Both versions newer than 26 beta: No problem
-
-    lint()
-      .files(
-        gradle(
-          "" +
-            "apply plugin: 'com.android.application'\n" +
-            "\n" +
-            "android {\n" +
-            "    compileSdkVersion \"android-O\"\n" +
-            "\n" +
-            "    defaultConfig {\n" +
-            "        minSdkVersion 15\n" +
-            "        targetSdkVersion \"O\"\n" +
-            "    }\n" +
-            "}\n" +
-            "\n" +
-            "dependencies {\n" +
-            "    compile 'com.android.support:appcompat-v7:26.0.0-beta1'\n" +
-            "}\n"
-        )
-      )
-      .issues(COMPATIBILITY)
-      .clientFactory(getClientWithMockPlatformTarget(AndroidVersion("26"), 2))
-      .run()
-      .expectClean()
-
-    // SDK >= O, support library < 26 beta: problem
-
-    lint()
-      .files(
-        gradle(
-          "" +
-            "apply plugin: 'com.android.application'\n" +
-            "\n" +
-            "android {\n" +
-            "    compileSdkVersion \"android-O\"\n" +
-            "\n" +
-            "    defaultConfig {\n" +
-            "        minSdkVersion 15\n" +
-            "        targetSdkVersion \"O\"\n" +
-            "    }\n" +
-            "}\n" +
-            "\n" +
-            "dependencies {\n" +
-            "    compile 'com.android.support:appcompat-v7:26.0.0-alpha1'\n" +
-            "}\n"
-        )
-      )
-      .issues(COMPATIBILITY)
-      .clientFactory(getClientWithMockPlatformTarget(AndroidVersion("O"), 2))
-      .run()
-      .expect(
-        "" +
-          "build.gradle:13: Error: When using a compileSdkVersion android-O revision 2 or higher, the support library version should be 26.0.0-beta1 or higher (was 26.0.0-alpha1) [GradleCompatible]\n" +
-          "    compile 'com.android.support:appcompat-v7:26.0.0-alpha1'\n" +
-          "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-          "1 errors, 0 warnings\n"
-      )
-
-    // SDK < O, support library >= 26 beta: problem
-
-    lint()
-      .files(
-        gradle(
-          "" +
-            "apply plugin: 'com.android.application'\n" +
-            "\n" +
-            "android {\n" +
-            "    compileSdkVersion 'android-O'\n" +
-            "\n" +
-            "    defaultConfig {\n" +
-            "        minSdkVersion 15\n" +
-            "    }\n" +
-            "}\n" +
-            "\n" +
-            "dependencies {\n" +
-            "    compile 'com.android.support:appcompat-v7:26.0.0-beta1'\n" +
-            "}\n"
-        )
-      )
-      .issues(COMPATIBILITY)
-      .clientFactory(getClientWithMockPlatformTarget(AndroidVersion("O"), 1))
-      .run()
-      .expect(
-        "" +
-          "build.gradle:12: Error: When using a compileSdkVersion older than android-O revision 2, the support library version must be 26.0.0-alpha1 or lower (was 26.0.0-beta1) [GradleCompatible]\n" +
-          "    compile 'com.android.support:appcompat-v7:26.0.0-beta1'\n" +
-          "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-          "1 errors, 0 warnings\n"
-      )
-
-    // Using SDK 26 final with 26.0.0-beta2 // ok
-
-    lint()
-      .files(
-        gradle(
-          "" +
-            "apply plugin: 'com.android.application'\n" +
-            "\n" +
-            "android {\n" +
-            "    compileSdkVersion 'android-O'\n" +
-            "\n" +
-            "    defaultConfig {\n" +
-            "        minSdkVersion 15\n" +
-            "    }\n" +
-            "}\n" +
-            "\n" +
-            "dependencies {\n" +
-            "    compile 'com.android.support:appcompat-v7:26.0.0-beta2'\n" +
-            "}\n"
-        )
-      )
-      .issues(COMPATIBILITY)
-      .clientFactory(
-        getClientWithMockPlatformTarget(
-          // Using apiLevel implies version.isPreview is false
-          AndroidVersion("26"),
-          1
-        )
-      )
       .run()
       .expectClean()
   }
@@ -4803,7 +4354,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             "}\n" +
             "\n" +
             "dependencies {\n" +
-            "    compile(\"com.android.support:appcompat-v7:23.4.0\")\n" +
+            "    compile(\"com.android.support:appcompat-v7:25.3.1\")\n" +
             "    compile(\"com.android.support.constraint:constraint-layout:1.0.0-alpha8\")\n" +
             "    compile(kotlin(\"stdlib\", \"1.1.51\"))\n" +
             "}\n" +
@@ -5399,50 +4950,6 @@ class GradleDetectorTest : AbstractCheckTest() {
                                                ~~~~~~~~
                 5 errors, 8 warnings
                 """
-      )
-  }
-
-  fun testAndroidxMixedDependencies() {
-    val expected =
-      """
-            build.gradle:10: Error: Dependencies using groupId com.android.support and androidx.* can not be combined but found TEST_VERSION1 and TEST_VERSION2 incompatible dependencies [GradleCompatible]
-                compile 'com.android.support:recyclerview-v7:28.0.0'
-                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                build.gradle:11: <No location-specific message>
-                compile 'androidx.appcompat:appcompat:1.0.0'
-                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            1 errors, 0 warnings
-            """
-
-    lint()
-      .files(
-        gradle("../lib/build.gradle", "" + "buildscript {\n" + "}"),
-        gradle(
-          "" +
-            "buildscript {\n" +
-            "    repositories {\n" +
-            "        jcenter()\n" +
-            "    }\n" +
-            "    dependencies {\n" +
-            "        classpath 'com.android.tools.build:gradle:3.5.0-alpha10'\n" +
-            "    }\n" +
-            "}\n" +
-            "dependencies {\n" +
-            "    compile 'com.android.support:recyclerview-v7:28.0.0'\n" +
-            "    compile 'androidx.appcompat:appcompat:1.0.0'\n" +
-            "}\n"
-        )
-      )
-      .issues(COMPATIBILITY)
-      .run()
-      .expect(
-        expected,
-        transformer = {
-          it.replace(
-            Regex("found .* and .* incompatible"),
-            "found TEST_VERSION1 and TEST_VERSION2 incompatible"
-          )
-        }
       )
   }
 

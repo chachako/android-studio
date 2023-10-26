@@ -16,14 +16,11 @@
 package com.android.tools.lint.checks
 
 import com.android.SdkConstants
-import com.android.SdkConstants.ANDROIDX_PKG_PREFIX
 import com.android.SdkConstants.ANDROID_URI
 import com.android.SdkConstants.ATTR_TARGET_SDK_VERSION
-import com.android.SdkConstants.FD_BUILD_TOOLS
 import com.android.SdkConstants.GRADLE_PLUGIN_MINIMUM_VERSION
 import com.android.SdkConstants.GRADLE_PLUGIN_RECOMMENDED_VERSION
 import com.android.SdkConstants.PLATFORM_WINDOWS
-import com.android.SdkConstants.SUPPORT_LIB_GROUP_ID
 import com.android.SdkConstants.currentPlatform
 import com.android.ide.common.gradle.Component
 import com.android.ide.common.gradle.Dependency
@@ -32,11 +29,11 @@ import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.AgpVersion
 import com.android.ide.common.repository.GoogleMavenRepository
 import com.android.ide.common.repository.GoogleMavenRepository.Companion.MAVEN_GOOGLE_CACHE_DIR_KEY
-import com.android.ide.common.repository.GradleCoordinate
 import com.android.ide.common.repository.MavenRepositories
 import com.android.io.CancellableFileIo
 import com.android.sdklib.AndroidTargetHash
 import com.android.sdklib.SdkVersionInfo
+import com.android.sdklib.SdkVersionInfo.HIGHEST_KNOWN_STABLE_API
 import com.android.sdklib.SdkVersionInfo.LOWEST_ACTIVE_API
 import com.android.tools.lint.checks.GooglePlaySdkIndex.Companion.GOOGLE_PLAY_SDK_INDEX_KEY
 import com.android.tools.lint.checks.GooglePlaySdkIndex.Companion.GOOGLE_PLAY_SDK_INDEX_URL
@@ -99,18 +96,8 @@ import kotlin.text.Charsets.UTF_8
 import org.w3c.dom.Attr
 import org.w3c.dom.Element
 
-private val Dependency.majorVersion: Int
-  get() =
-    version?.lowerBound?.major
-      ?: if (version == RichVersion.parse("+")) GradleCoordinate.PLUS_REV_VALUE else Int.MIN_VALUE
-
 /** Checks Gradle files for potential errors. */
 open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
-
-  private var minSdkVersion: Int = 0
-  private var compileSdkVersion: Int = 0
-  private var compileSdkVersionCookie: Any? = null
-  private var targetSdkVersion: Int = 0
 
   protected open val gradleUserHome: File
     get() {
@@ -134,13 +121,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
    * declaration.
    */
   private var mCheckedGms: Boolean = false
-
-  /**
-   * If incrementally editing a single build.gradle file, tracks whether we've already transitively
-   * checked support library versions such that we don't flag the same error on every single
-   * dependency declaration.
-   */
-  private var mCheckedSupportLibs: Boolean = false
 
   /**
    * If incrementally editing a single build.gradle file, tracks whether we've already transitively
@@ -349,28 +329,25 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           }
         }
         if (version > 0) {
-          targetSdkVersion = version
           if (LintClient.isStudio) {
             //noinspection FileComparisons
             if (lastTargetSdkVersion == -1 || lastTargetSdkVersionFile != context.file) {
               lastTargetSdkVersion = version
               lastTargetSdkVersionFile = context.file
-            } else if (targetSdkVersion > lastTargetSdkVersion) {
+            } else if (version > lastTargetSdkVersion) {
               val message =
-                "It looks like you just edited the `targetSdkVersion` from $lastTargetSdkVersion to $targetSdkVersion in the editor. " +
+                "It looks like you just edited the `targetSdkVersion` from $lastTargetSdkVersion to $version in the editor. " +
                   "Be sure to consult the documentation on the behaviors that change as result of this. " +
                   "The Android SDK Upgrade Assistant can help with safely migrating."
               report(context, statementCookie, EDITED_TARGET_SDK_VERSION, message)
             }
           }
-          checkTargetCompatibility(context)
         } else {
           checkIntegerAsString(context, value, statementCookie, valueCookie)
         }
       } else if (property == "minSdkVersion" || property == "minSdk") {
         val version = getSdkVersion(value, valueCookie)
         if (version > 0) {
-          minSdkVersion = version
           checkMinSdkVersion(context, version, statementCookie)
         } else {
           checkIntegerAsString(context, value, statementCookie, valueCookie)
@@ -442,40 +419,8 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       } else {
         version = getIntLiteralValue(value, -1)
       }
-      if (version > 0) {
-        compileSdkVersion = version
-        compileSdkVersionCookie = statementCookie
-        checkTargetCompatibility(context)
-      } else {
+      if (version <= 0) {
         checkIntegerAsString(context, value, statementCookie, valueCookie)
-      }
-    } else if (property == "buildToolsVersion" && parent == "android") {
-      val versionString = getStringLiteralValue(value, valueCookie)
-      if (versionString != null) {
-        val version = Version.parse(versionString)
-        var recommended = version.major?.let { getLatestBuildTools(context.client, it) }
-
-        // 23.0.0 shipped with a serious bugs which affects program correctness
-        // (such as https://code.google.com/p/android/issues/detail?id=183180)
-        // Make developers aware of this and suggest upgrading
-        if (
-          version.major == 23 &&
-            version.minor == 0 &&
-            version.micro == 0 &&
-            context.isEnabled(COMPATIBILITY)
-        ) {
-          // This specific version is actually a preview version which should
-          // not be used (https://code.google.com/p/android/issues/detail?id=75292)
-          if (recommended?.major?.let { it < 23 } != false) {
-            // First planned release to fix this
-            recommended = Version.parse("23.0.3")
-          }
-          val message =
-            "Build Tools `23.0.0` should not be used; " +
-              "it has some known serious bugs. Use version `$recommended` " +
-              "instead."
-          reportFatalCompatibilityIssue(context, statementCookie, message)
-        }
       }
     } else if (parent == "plugins") {
       val plugin =
@@ -989,25 +934,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     }
   }
 
-  private fun checkTargetCompatibility(context: GradleContext) {
-    if (compileSdkVersion > 0 && targetSdkVersion > 0 && targetSdkVersion > compileSdkVersion) {
-      val message =
-        "The compileSdkVersion (" +
-          compileSdkVersion +
-          ") should not be lower than the targetSdkVersion (" +
-          targetSdkVersion +
-          ")"
-      val fix =
-        fix()
-          .name("Set compileSdkVersion to $targetSdkVersion")
-          .replace()
-          .text(compileSdkVersion.toString())
-          .with(targetSdkVersion.toString())
-          .build()
-      reportNonFatalCompatibilityIssue(context, compileSdkVersionCookie!!, message, fix)
-    }
-  }
-
   // Important: This is called without the PSI read lock, since it may make network requests.
   // Any interaction with PSI or issue reporting should be wrapped in a read action.
   private fun checkDependency(
@@ -1335,10 +1261,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     // If it's available in maven.google.com, fetch latest available version.
     newerVersion = newerVersion maxOrNull getGoogleMavenRepoVersion(context, dependency, filter)
 
-    if (groupId == SUPPORT_LIB_GROUP_ID || groupId == "com.android.support.test") {
-      checkSupportLibraries(context, dependency, version, newerVersion, cookie)
-    }
-
     if (
       newerVersion != null &&
         version > Version.prefixInfimum("0") &&
@@ -1386,19 +1308,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     artifactId: String,
     version: Version
   ): Predicate<Version>? {
-    // Logic here has to match checkSupportLibraries method to avoid creating contradictory
-    // warnings.
-    if (isSupportLibraryDependentOnCompileSdk(groupId, artifactId)) {
-      if (compileSdkVersion >= 18) {
-        return Predicate { version ->
-          version > Version.prefixInfimum("$compileSdkVersion") &&
-            version < Version.prefixInfimum("${compileSdkVersion + 1}")
-        }
-      } else if (targetSdkVersion > 0) {
-        return Predicate { version -> version > Version.prefixInfimum("$targetSdkVersion") }
-      }
-    }
-
     if (
       (groupId == "com.android.tools.build" || ALL_PLUGIN_IDS.contains(groupId)) &&
         LintClient.isStudio
@@ -1481,20 +1390,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     } else null
   }
 
-  private fun ensureTargetCompatibleWithO(
-    context: Context,
-    version: Version,
-    cookie: Any,
-    major: Int,
-    minor: Int,
-    micro: Int
-  ) {
-    if (version < Version.prefixInfimum("$major.$minor.$micro")) {
-      val message = "Version must be at least $major.$minor.$micro when targeting O"
-      reportFatalCompatibilityIssue(context, cookie, message)
-    }
-  }
-
   // Important: This is called without the PSI read lock, since it may make network requests.
   // Any interaction with PSI or issue reporting should be wrapped in a read action.
   private fun checkGradlePluginDependency(
@@ -1522,108 +1417,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       return true
     }
     return false
-  }
-
-  private fun checkSupportLibraries(
-    context: Context,
-    dependency: Dependency,
-    version: Version,
-    newerVersion: Version?,
-    cookie: Any
-  ) {
-    val groupId = dependency.group ?: return
-    val artifactId = dependency.name
-
-    // For artifacts that follow the platform numbering scheme, check that it matches the SDK
-    // versions used.
-    if (isSupportLibraryDependentOnCompileSdk(groupId, artifactId)) {
-      if (
-        compileSdkVersion >= 18 &&
-          dependency.majorVersion != compileSdkVersion &&
-          dependency.majorVersion != GradleCoordinate.PLUS_REV_VALUE &&
-          context.isEnabled(COMPATIBILITY)
-      ) {
-        if (compileSdkVersion >= 29 && dependency.majorVersion < 29) {
-          reportNonFatalCompatibilityIssue(
-            context,
-            cookie,
-            "Version 28 (intended for Android Pie and below) is the last " +
-              "version of the legacy support library, so we recommend that " +
-              "you migrate to AndroidX libraries when using Android Q and " +
-              "moving forward. The IDE can help with this: " +
-              "Refactor > Migrate to AndroidX..."
-          )
-          return
-        }
-
-        var fix: LintFix? = null
-        val richVersionIdentifier = dependency.version?.toIdentifier()
-        if (newerVersion != null && richVersionIdentifier != null) {
-          fix =
-            fix()
-              .name("Replace with $newerVersion")
-              .replace()
-              .text(richVersionIdentifier)
-              .with(newerVersion.toString())
-              .build()
-        }
-        val message =
-          "This support library should not use a different version (" +
-            dependency.majorVersion +
-            ") than the `compileSdkVersion` (" +
-            compileSdkVersion +
-            ")"
-        reportNonFatalCompatibilityIssue(context, cookie, message, fix)
-      }
-    }
-
-    if (
-      !mCheckedSupportLibs &&
-        !artifactId.startsWith("multidex") &&
-        !artifactId.startsWith("renderscript") &&
-        artifactId != "support-annotations"
-    ) {
-      mCheckedSupportLibs = true
-      if (!context.scope.contains(Scope.ALL_RESOURCE_FILES) && context.isGlobalAnalysis()) {
-        // Incremental editing: try flagging them in this file!
-        checkConsistentSupportLibraries(context, cookie)
-      }
-    }
-
-    if ("appcompat-v7" == artifactId) {
-      val supportLib26Beta = version >= Version.parse("26.0.0.beta.1")
-      var compile26Beta = compileSdkVersion >= 26
-      // It's not actually compileSdkVersion 26, it's using O revision 2 or higher
-      if (compileSdkVersion == 26) {
-        val buildTarget = context.project.buildTarget
-        if (buildTarget != null && buildTarget.version.isPreview) {
-          compile26Beta = buildTarget.revision != 1
-        }
-      }
-
-      if (
-        supportLib26Beta &&
-          !compile26Beta &&
-          // We already flag problems when these aren't matching.
-          compileSdkVersion == version.major
-      ) {
-        reportNonFatalCompatibilityIssue(
-          context,
-          cookie,
-          "When using a `compileSdkVersion` older than android-O revision 2, " +
-            "the support library version must be 26.0.0-alpha1 or lower " +
-            "(was $version)"
-        )
-      } else if (!supportLib26Beta && compile26Beta) {
-        reportNonFatalCompatibilityIssue(
-          context,
-          cookie,
-          "When using a `compileSdkVersion` android-O revision 2 " +
-            "or higher, the support library version should be 26.0.0-beta1 " +
-            "or higher (was $version)"
-        )
-      }
-    }
   }
 
   private fun checkPlayServices(
@@ -1685,23 +1478,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       report(context, cookie, DEPRECATED, message, fix)
     }
 
-    if (targetSdkVersion >= 26) {
-      // When targeting O the following libraries must be using at least version 10.2.1
-      // (or 0.6.0 of the jobdispatcher API)
-      // com.google.android.gms:play-services-gcm:V
-      // com.google.firebase:firebase-messaging:V
-      if (GMS_GROUP_ID == groupId && "play-services-gcm" == artifactId) {
-        ensureTargetCompatibleWithO(context, version, cookie, 10, 2, 1)
-      } else if (FIREBASE_GROUP_ID == groupId && "firebase-messaging" == artifactId) {
-        ensureTargetCompatibleWithO(context, version, cookie, 10, 2, 1)
-      } else if (
-        "firebase-jobdispatcher" == artifactId ||
-          "firebase-jobdispatcher-with-gcm-dep" == artifactId
-      ) {
-        ensureTargetCompatibleWithO(context, version, cookie, 0, 6, 0)
-      }
-    }
-
     if (GMS_GROUP_ID == groupId || FIREBASE_GROUP_ID == groupId) {
       if (!mCheckedGms) {
         mCheckedGms = true
@@ -1723,53 +1499,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           // Incremental editing: try flagging them in this file!
           checkConsistentWearableLibraries(context, cookie, statementCookie)
         }
-      }
-    }
-  }
-
-  private fun LintModelMavenName.isSupportLibArtifact() =
-    isSupportLibraryDependentOnCompileSdk(groupId, artifactId)
-
-  /**
-   * Returns if the given group id belongs to an AndroidX artifact. This usually means that it
-   * starts with "androidx." but there is an special case for the navigation artifact which does
-   * start with "androidx." but links to non-androidx classes.
-   */
-  private fun LintModelMavenName.isAndroidxArtifact() =
-    groupId.startsWith(ANDROIDX_PKG_PREFIX) && groupId != "androidx.navigation"
-
-  private fun checkConsistentSupportLibraries(context: Context, cookie: Any?) {
-    checkConsistentLibraries(context, cookie, SUPPORT_LIB_GROUP_ID, null)
-
-    val androidLibraries =
-      getAllLibraries(context.project).filterIsInstance<LintModelExternalLibrary>()
-    var usesOldSupportLib: LintModelMavenName? = null
-    var usesAndroidX: LintModelMavenName? = null
-    for (library in androidLibraries) {
-      val coordinates = library.resolvedCoordinates
-      if (usesOldSupportLib == null && coordinates.isSupportLibArtifact()) {
-        usesOldSupportLib = coordinates
-      }
-      if (usesAndroidX == null && coordinates.isAndroidxArtifact()) {
-        usesAndroidX = coordinates
-      }
-
-      if (usesOldSupportLib != null && usesAndroidX != null) {
-        break
-      }
-    }
-
-    if (usesOldSupportLib != null && usesAndroidX != null) {
-      val message =
-        "Dependencies using groupId " +
-          "`$SUPPORT_LIB_GROUP_ID` and `$ANDROIDX_PKG_PREFIX*` " +
-          "can not be combined but " +
-          "found `$usesOldSupportLib` and `$usesAndroidX` incompatible dependencies"
-      if (cookie != null) {
-        reportNonFatalCompatibilityIssue(context, cookie, message)
-      } else {
-        val location = getDependencyLocation(context, usesOldSupportLib, usesAndroidX)
-        reportNonFatalCompatibilityIssue(context, location, message)
       }
     }
   }
@@ -1937,7 +1666,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       val example1 = c1.groupId + ":" + c1.artifactId + ":" + c1.version
       val example2 = c2.groupId + ":" + c2.artifactId + ":" + c2.version
       val groupDesc = if (GMS_GROUP_ID == groupId) "gms/firebase" else groupId
-      var message =
+      val message =
         "All " +
           groupDesc +
           " libraries must use the exact same " +
@@ -1950,39 +1679,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           "` and `" +
           example2 +
           "`"
-
-      // Create an improved error message for a confusing scenario where you use
-      // data binding and end up with conflicting versions:
-      // https://code.google.com/p/android/issues/detail?id=229664
-      val allItems =
-        project.buildVariant?.mainArtifact?.dependencies?.compileDependencies?.getAllGraphItems()
-          ?: emptyList()
-      for (library in allItems) {
-        if (library.artifactName == "com.android.databinding:library") {
-          for (dep in library.dependencies) {
-            if (
-              dep.artifactName == "com.android.support:support-v4" &&
-                sortedVersions[0] !=
-                  (dep.findLibrary() as? LintModelExternalLibrary)?.resolvedCoordinates?.version
-            ) {
-              message +=
-                ". Note that this project is using data binding " +
-                  "(com.android.databinding:library:" +
-                  (library.findLibrary() as? LintModelExternalLibrary)
-                    ?.resolvedCoordinates
-                    ?.version +
-                  ") which pulls in com.android.support:support-v4:" +
-                  (dep.findLibrary() as? LintModelExternalLibrary)?.resolvedCoordinates?.version +
-                  ". You can try to work around this " +
-                  "by adding an explicit dependency on " +
-                  "com.android.support:support-v4:" +
-                  sortedVersions[0]
-              break
-            }
-          }
-          break
-        }
-      }
 
       if (cookie != null) {
         reportNonFatalCompatibilityIssue(context, cookie, message)
@@ -2013,7 +1709,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
 
   private fun checkLibraryConsistency(context: Context) {
     checkConsistentPlayServices(context, null)
-    checkConsistentSupportLibraries(context, null)
     checkConsistentWearableLibraries(context, null, null)
   }
 
@@ -2552,17 +2247,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       }
     }
     return message.toString()
-  }
-
-  /**
-   * Checks if the library with the given `groupId` and `artifactId` has to match compileSdkVersion.
-   */
-  private fun isSupportLibraryDependentOnCompileSdk(groupId: String, artifactId: String): Boolean {
-    return (SUPPORT_LIB_GROUP_ID == groupId &&
-      !artifactId.startsWith("multidex") &&
-      !artifactId.startsWith("renderscript") &&
-      // Support annotation libraries work with any compileSdkVersion
-      artifactId != "support-annotations")
   }
 
   private fun findFirst(coordinates: Collection<LintModelMavenName>): LintModelMavenName {
@@ -3923,64 +3607,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       }
 
       return null
-    }
-
-    private var majorBuildTools: Int = 0
-    private var latestBuildTools: Version? = null
-
-    /**
-     * Returns the latest build tools installed for the given major version. We just cache this
-     * once; we don't need to be accurate in the sense that if the user opens the SDK manager and
-     * installs a more recent version, we capture this in the same IDE session.
-     *
-     * @param client the associated client
-     * @param major the major version of build tools to look up (e.g. typically 18, 19, ...)
-     * @return the corresponding highest known revision
-     */
-    private fun getLatestBuildTools(client: LintClient, major: Int): Version? {
-      if (major != majorBuildTools) {
-        majorBuildTools = major
-
-        val revisions = ArrayList<Version>()
-        when (major) {
-          27 -> revisions.add(Version.parse("27.0.3"))
-          26 -> revisions.add(Version.parse("26.0.3"))
-          25 -> revisions.add(Version.parse("25.0.3"))
-          24 -> revisions.add(Version.parse("24.0.3"))
-          23 -> revisions.add(Version.parse("23.0.3"))
-          22 -> revisions.add(Version.parse("22.0.1"))
-          21 -> revisions.add(Version.parse("21.1.2"))
-          20 -> revisions.add(Version.parse("20.0"))
-          19 -> revisions.add(Version.parse("19.1"))
-          18 -> revisions.add(Version.parse("18.1.1"))
-        }
-
-        // The above versions can go stale.
-        // Check if a more recent one is installed. (The above are still useful for
-        // people who haven't updated with the SDK manager recently.)
-        val sdkHome = client.getSdkHome()
-        if (sdkHome != null) {
-          val dirs = File(sdkHome, FD_BUILD_TOOLS).listFiles()
-          if (dirs != null) {
-            for (dir in dirs) {
-              val name = dir.name
-              if (!dir.isDirectory || !Character.isDigit(name[0])) {
-                continue
-              }
-              val v = Version.parse(name)
-              if (v.major == major) {
-                revisions.add(v)
-              }
-            }
-          }
-        }
-
-        if (revisions.isNotEmpty()) {
-          latestBuildTools = Collections.max(revisions)
-        }
-      }
-
-      return latestBuildTools
     }
 
     private fun suggestApiConfigurationUse(project: Project, configuration: String): Boolean {
