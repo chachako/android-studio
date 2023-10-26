@@ -7,6 +7,7 @@ KGP_LATEST = [
     "@maven//:org.jetbrains.kotlin.android.org.jetbrains.kotlin.android.gradle.plugin_1.9.20-RC",
     "@maven//:org.jetbrains.kotlin.jvm.org.jetbrains.kotlin.jvm.gradle.plugin_1.9.20-RC",
     "@maven//:org.jetbrains.kotlin.kotlin-android-extensions-runtime_1.9.20-RC",
+    "@maven//:org.jetbrains.kotlin.kotlin-compiler_1.9.20-RC",
     "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin-api_1.9.20-RC",
     "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin_1.9.20-RC",
     "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.20-RC",
