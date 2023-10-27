@@ -237,7 +237,7 @@ public class TestVariantFactory
     @Override
     public void preVariantCallback(
             @NonNull Project project,
-            @NonNull CommonExtension<?, ?, ?, ?, ?> dslExtension,
+            @NonNull CommonExtension<?, ?, ?, ?, ?, ?> dslExtension,
             @NonNull
                     VariantInputModel<DefaultConfig, BuildType, ProductFlavor, SigningConfig>
                             model) {

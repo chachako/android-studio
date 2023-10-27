@@ -331,7 +331,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
         private val testLabExtension: TestLabGradlePluginExtension =
                 project.extensions.getByType(TestLabGradlePluginExtension::class.java)
-        private val androidExtension: CommonExtension<*, *, *, *, *> =
+        private val androidExtension: CommonExtension<*, *, *, *, *, *> =
                 project.extensions.getByType(CommonExtension::class.java)
         private val providerFactory: ProviderFactory = project.providers
         private val configurationContainer: ConfigurationContainer = project.configurations

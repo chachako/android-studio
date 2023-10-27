@@ -215,4 +215,46 @@ class InstallProfilesPerDeviceApiConnectedTest {
             builtArtifacts?.baselineProfiles?.lastOrNull()?.baselineProfiles?.firstOrNull()
         Truth.assertThat(baselineProfileFile).isEqualTo(renamedBaselineProfile)
     }
+
+    @Test
+    fun validateOptOut() {
+        val oldBaselineProfileFileContent =
+            """
+                HSPLcom/google/Foo;->mainMethod(II)I
+                HSPLcom/google/Foo;->mainMethod-name-with-hyphens(II)I
+            """.trimIndent()
+        FileUtils.createFile(
+            project.file("src/main/baseline-prof.txt"),
+            oldBaselineProfileFileContent
+        )
+        project.execute("assembleRelease")
+        val dexMetadataProperties = FileUtils.join(
+            project.buildDir,
+            SdkConstants.FD_INTERMEDIATES,
+            InternalArtifactType.DEX_METADATA_DIRECTORY.getFolderName(),
+            "release",
+            "compileReleaseArtProfile",
+            SdkConstants.FN_DEX_METADATA_PROP
+        )
+        Truth.assertThat(dexMetadataProperties.exists()).isTrue()
+
+        TestFileUtils.appendToFile(project.buildFile,
+            """
+                android.installation {
+                    enableBaselineProfile true
+                }
+            """.trimIndent()
+        )
+        project.execute("clean")
+        project.execute("assembleRelease")
+        Truth.assertThat(dexMetadataProperties.exists()).isTrue()
+
+        TestFileUtils.searchAndReplace(project.buildFile,
+            "enableBaselineProfile true",
+            "enableBaselineProfile false"
+        )
+        project.execute("clean")
+        project.execute("assembleRelease")
+        Truth.assertThat(dexMetadataProperties.exists()).isFalse()
+    }
 }

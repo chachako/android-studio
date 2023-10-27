@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.SdkConstants
 import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.dsl.ApplicationInstallation
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.dsl.ModulePropertyKey
@@ -214,9 +215,13 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
                 CompileArtProfileTask::binaryArtProfileMetadata
             ).on(InternalArtifactType.BINARY_ART_PROFILE_METADATA)
 
-            // Only include the dex metadata files for release builds since these are used along
-            // with the APKs for installation on devices
-            if (!creationConfig.debuggable) {
+            // Only include the dex metadata (.dm) files for release builds since these are used
+            // along with the APKs for installation on devices
+            // Additionally, do not generate the .dm files if opt-out is specified in the DSL
+            if (!creationConfig.debuggable &&
+                creationConfig.global.installationOptions is ApplicationInstallation &&
+                (creationConfig.global.installationOptions as ApplicationInstallation)
+                    .enableBaselineProfile) {
                 creationConfig.artifacts.setInitialProvider(
                     taskProvider,
                     CompileArtProfileTask::dexMetadataDirectory

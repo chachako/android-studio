@@ -50,7 +50,7 @@ class RegistrationActionTest {
     lateinit var androidManagedDevices: ManagedDevices
 
     @Mock
-    lateinit var androidExtension: CommonExtension<*, *, *, *, *>
+    lateinit var androidExtension: CommonExtension<*, *, *, *, *, *>
 
     @Mock
     lateinit var mockAndroidTestOptions: TestOptions

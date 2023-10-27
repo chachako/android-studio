@@ -50,7 +50,7 @@ internal class AndroidTestComponentDslInfoImpl(
     buildDirectory: DirectoryProperty,
     override val mainVariantDslInfo: TestedVariantDslInfo,
     private val signingConfigOverride: SigningConfig?,
-    extension: InternalTestedExtension<*, *, *, *, *>
+    extension: InternalTestedExtension<*, *, *, *, *, *>
 ) : ConsumableComponentDslInfoImpl(
     componentIdentity,
     componentType,

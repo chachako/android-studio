@@ -26,7 +26,7 @@ import com.android.builder.errors.IssueReporter
 import org.gradle.api.provider.Provider
 
 internal fun TestComponentDslInfo.getTestComponentNamespace(
-    extension: InternalTestedExtension<*, *, *, *, *>,
+    extension: InternalTestedExtension<*, *, *, *, *, *>,
     services: VariantServices
 ): Provider<String> {
     return extension.testNamespace?.let {

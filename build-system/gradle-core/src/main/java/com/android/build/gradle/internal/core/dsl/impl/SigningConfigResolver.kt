@@ -36,7 +36,7 @@ class SigningConfigResolver(
             buildType: BuildType,
             mergedFlavor: MergedFlavor,
             signingConfigOverride: SigningConfig?,
-            extension: CommonExtension<*, *, *, *, *>,
+            extension: CommonExtension<*, *, *, *, *, *>,
             services: BaseServices
         ):SigningConfigResolver {
             val dslSigningConfig = (buildType as? ApplicationBuildType)?.signingConfig

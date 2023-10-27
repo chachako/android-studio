@@ -22,6 +22,7 @@ import com.android.build.api.dsl.ApplicationBuildFeatures;
 import com.android.build.api.dsl.ApplicationBuildType;
 import com.android.build.api.dsl.ApplicationDefaultConfig;
 import com.android.build.api.dsl.ApplicationExtension;
+import com.android.build.api.dsl.ApplicationInstallation;
 import com.android.build.api.dsl.ApplicationProductFlavor;
 import com.android.build.api.dsl.SdkComponents;
 import com.android.build.api.extension.impl.ApplicationAndroidComponentsExtensionImpl;
@@ -74,6 +75,7 @@ public class AppPlugin
                 ApplicationDefaultConfig,
                 ApplicationProductFlavor,
                 ApplicationAndroidResources,
+                ApplicationInstallation,
                 com.android.build.api.dsl.ApplicationExtension,
                 ApplicationAndroidComponentsExtension,
                 ApplicationVariantBuilder,
@@ -100,6 +102,7 @@ public class AppPlugin
                     ApplicationDefaultConfig,
                     ApplicationProductFlavor,
                     ApplicationAndroidResources,
+                    ApplicationInstallation,
                     ApplicationExtension>
             createExtension(
                     @NonNull DslServices dslServices,

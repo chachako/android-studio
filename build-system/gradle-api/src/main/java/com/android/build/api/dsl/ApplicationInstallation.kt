@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,22 +18,13 @@ package com.android.build.api.dsl
 
 import org.gradle.api.Incubating
 
-/**
- * Local installation options for the adb tool.
- */
-interface Installation {
-    /** The time out used for all adb operations. */
-    var timeOutInMs: Int
-
+interface ApplicationInstallation: Installation {
     /** The list of FULL_APK installation options. */
     @get:Incubating
-    val installOptions: MutableList<String>
+    override val installOptions: MutableList<String>
 
-    /** Sets the list of FULL_APK installation options */
-    @Deprecated("To be removed in AGP 9.0")
-    fun installOptions(option: String)
-
-    /** Sets the list of FULL_APK installation options */
-    @Deprecated("To be removed in AGP 9.0")
-    fun installOptions(vararg options: String)
+    /** Whether to generate per-SDK level baseline profiles to install with an APK. */
+    @get:Incubating
+    @set:Incubating
+    var enableBaselineProfile: Boolean
 }

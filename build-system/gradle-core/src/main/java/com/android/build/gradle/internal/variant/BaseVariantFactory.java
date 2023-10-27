@@ -193,7 +193,7 @@ public abstract class BaseVariantFactory<
     @Override
     public void preVariantCallback(
             @NonNull Project project,
-            @NonNull CommonExtension<?, ?, ?, ?, ?> dslExtension,
+            @NonNull CommonExtension<?, ?, ?, ?, ?, ?> dslExtension,
             @NonNull
                     VariantInputModel<DefaultConfig, BuildType, ProductFlavor, SigningConfig>
                             model) {

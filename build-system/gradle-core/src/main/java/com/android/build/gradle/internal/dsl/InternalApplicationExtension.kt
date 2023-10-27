@@ -21,9 +21,9 @@ import com.android.build.api.dsl.ApplicationBuildFeatures
 import com.android.build.api.dsl.ApplicationBuildType
 import com.android.build.api.dsl.ApplicationDefaultConfig
 import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.ApplicationInstallation
 import com.android.build.api.dsl.ApplicationProductFlavor
 import com.android.build.api.dsl.ApplicationPublishing
-import com.android.build.api.dsl.Bundle
 import com.android.build.api.dsl.DependenciesInfo
 import org.gradle.api.Action
 
@@ -35,7 +35,8 @@ interface InternalApplicationExtension :
                 ApplicationBuildType,
                 ApplicationDefaultConfig,
                 ApplicationProductFlavor,
-                ApplicationAndroidResources> {
+                ApplicationAndroidResources,
+                ApplicationInstallation> {
     override val dynamicFeatures: MutableSet<String>
     fun setDynamicFeatures(dynamicFeatures: Set<String>)
     override val assetPacks: MutableSet<String>

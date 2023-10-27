@@ -39,7 +39,7 @@ internal class UnitTestComponentDslInfoImpl(
     services: VariantServices,
     buildDirectory: DirectoryProperty,
     mainVariantDslInfo: TestedVariantDslInfo,
-    extension: InternalTestedExtension<*, *, *, *, *>
+    extension: InternalTestedExtension<*, *, *, *, *, *>
 ) : HostTestComponentDslInfoImpl(
     componentIdentity,
     componentType,

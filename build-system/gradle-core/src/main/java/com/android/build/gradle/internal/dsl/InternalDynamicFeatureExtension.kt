@@ -21,6 +21,7 @@ import com.android.build.api.dsl.DynamicFeatureBuildFeatures
 import com.android.build.api.dsl.DynamicFeatureBuildType
 import com.android.build.api.dsl.DynamicFeatureDefaultConfig
 import com.android.build.api.dsl.DynamicFeatureExtension
+import com.android.build.api.dsl.DynamicFeatureInstallation
 import com.android.build.api.dsl.DynamicFeatureProductFlavor
 
 /** See [InternalCommonExtension] */
@@ -31,4 +32,5 @@ interface InternalDynamicFeatureExtension :
             DynamicFeatureBuildType,
             DynamicFeatureDefaultConfig,
             DynamicFeatureProductFlavor,
-            DynamicFeatureAndroidResources>
+            DynamicFeatureAndroidResources,
+            DynamicFeatureInstallation>

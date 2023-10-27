@@ -17,7 +17,6 @@
 package com.android.build.gradle.internal.core.dsl.info
 
 import com.android.build.api.variant.ComponentIdentity
-import com.android.build.gradle.internal.VariantManager
 import com.android.build.gradle.internal.core.dsl.AndroidTestComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.ApplicationVariantDslInfo
 import com.android.build.gradle.internal.core.dsl.ComponentDslInfo
@@ -661,7 +660,7 @@ class VariantDslInfoTest2(
     override fun instantiateResult() = ResultData()
 
     private fun configureExtension(
-        extension: InternalTestedExtension<*, *, *, *, *>,
+        extension: InternalTestedExtension<*, *, *, *, *, *>,
         given: GivenData
     ) {
         Mockito.`when`(extension.namespace).thenReturn(given.namespace)
@@ -690,7 +689,7 @@ class VariantDslInfoTest2(
             else -> {
                 throw RuntimeException("Unexpected type")
             }
-        } as InternalTestedExtension<*, *, *, *, *>
+        } as InternalTestedExtension<*, *, *, *, *, *>
 
         val mainVariant = when (given.mainComponentType) {
             ComponentTypeImpl.BASE_APK -> {

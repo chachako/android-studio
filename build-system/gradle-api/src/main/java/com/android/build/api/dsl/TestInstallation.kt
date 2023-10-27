@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.plugins
-
-import org.gradle.api.Project
+package com.android.build.api.dsl
 
 /**
- * extension to call afterEvaluate on a plugin directly. This also works around the
- * package visibility of createAndroidTasks for testing.
+ * DSL object for configuring installation options for Test plugins.
+ *
+ * This is accessed via [TestExtension.installation]
  */
-fun BasePlugin<*, *, *, *, *, *, *, *, *, *, *, *>.runAfterEvaluate(
-    project: Project,
-    force: Boolean = false
-) {
-    this.createAndroidTasks(project)
+interface TestInstallation : Installation {
 }

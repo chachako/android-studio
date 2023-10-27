@@ -29,7 +29,8 @@ interface DynamicFeatureExtension :
             DynamicFeatureBuildType,
             DynamicFeatureDefaultConfig,
             DynamicFeatureProductFlavor,
-            DynamicFeatureAndroidResources>,
+            DynamicFeatureAndroidResources,
+            DynamicFeatureInstallation>,
     ApkExtension,
     TestedExtension {
 }

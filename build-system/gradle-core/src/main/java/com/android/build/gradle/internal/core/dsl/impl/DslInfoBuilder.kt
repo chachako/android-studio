@@ -60,7 +60,7 @@ import org.gradle.api.file.DirectoryProperty
  *
  * Use [getBuilder] as an entry point.
  */
-class DslInfoBuilder<CommonExtensionT: CommonExtension<*, *, *, *, *>, DslInfoT: ComponentDslInfo> private constructor(
+class DslInfoBuilder<CommonExtensionT: CommonExtension<*, *, *, *, *, *>, DslInfoT: ComponentDslInfo> private constructor(
     private val dimensionCombination: DimensionCombination,
     val componentType: ComponentType,
     private val defaultConfig: DefaultConfig,
@@ -79,7 +79,7 @@ class DslInfoBuilder<CommonExtensionT: CommonExtension<*, *, *, *, *>, DslInfoT:
          * Returns a new builder
          */
         @JvmStatic
-        fun <CommonExtensionT: CommonExtension<*, *, *, *, *>, DslInfoT: ComponentDslInfo> getBuilder(
+        fun <CommonExtensionT: CommonExtension<*, *, *, *, *, *>, DslInfoT: ComponentDslInfo> getBuilder(
             dimensionCombination: DimensionCombination,
             componentType: ComponentType,
             defaultConfig: DefaultConfig,
@@ -258,7 +258,7 @@ class DslInfoBuilder<CommonExtensionT: CommonExtension<*, *, *, *, *>, DslInfoT:
             services = variantServices,
             buildDirectory = buildDirectory,
             mainVariantDslInfo = productionVariant!!,
-            extension = extension as InternalTestedExtension<*, *, *, *, *>
+            extension = extension as InternalTestedExtension<*, *, *, *, *, *>
         )
     }
 
@@ -274,7 +274,7 @@ class DslInfoBuilder<CommonExtensionT: CommonExtension<*, *, *, *, *>, DslInfoT:
             buildDirectory = buildDirectory,
             mainVariantDslInfo = productionVariant!!,
             signingConfigOverride = signingConfigOverride,
-            extension = extension as InternalTestedExtension<*, *, *, *, *>
+            extension = extension as InternalTestedExtension<*, *, *, *, *, *>
         )
     }
 

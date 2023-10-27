@@ -128,12 +128,14 @@ abstract class BasePlugin<
                 DefaultConfigT: com.android.build.api.dsl.DefaultConfig,
                 ProductFlavorT: com.android.build.api.dsl.ProductFlavor,
                 AndroidResourcesT: com.android.build.api.dsl.AndroidResources,
+                InstallationT: com.android.build.api.dsl.Installation,
                 AndroidT: CommonExtension<
                         BuildFeaturesT,
                         BuildTypeT,
                         DefaultConfigT,
                         ProductFlavorT,
-                        AndroidResourcesT>,
+                        AndroidResourcesT,
+                        InstallationT>,
                 AndroidComponentsT:
                         AndroidComponentsExtension<
                                 in AndroidT,
@@ -158,12 +160,14 @@ abstract class BasePlugin<
             DefaultConfigT: com.android.build.api.dsl.DefaultConfig,
             ProductFlavorT: com.android.build.api.dsl.ProductFlavor,
             AndroidResourcesT: com.android.build.api.dsl.AndroidResources,
+            InstallationT: com.android.build.api.dsl.Installation,
             AndroidT: CommonExtension<
                     out BuildFeaturesT,
                     out BuildTypeT,
                     out DefaultConfigT,
                     out ProductFlavorT,
-                    out AndroidResourcesT>>(
+                    out AndroidResourcesT,
+                    out InstallationT>>(
         val oldExtension: BaseExtension,
         val newExtension: AndroidT,
         val bootClasspathConfig: BootClasspathConfigImpl,
@@ -200,7 +204,7 @@ abstract class BasePlugin<
     }
 
     val managedDeviceRegistry: ManagedDeviceRegistry by lazy(LazyThreadSafetyMode.NONE) {
-        ManagedDeviceRegistry(AndroidTestOptionsDslInfoImpl((newExtension as CommonExtensionImpl<*, *, *, *, *>)))
+        ManagedDeviceRegistry(AndroidTestOptionsDslInfoImpl((newExtension as CommonExtensionImpl<*, *, *, *, *, *>)))
     }
 
     private val globalConfig by lazy {
@@ -209,7 +213,7 @@ abstract class BasePlugin<
             GlobalTaskCreationConfigImpl(
                 project,
                 extension,
-                (newExtension as CommonExtensionImpl<*, *, *, *, *>),
+                (newExtension as CommonExtensionImpl<*, *, *, *, *, *>),
                 dslServices,
                 versionedSdkLoaderService,
                 bootClasspathConfig,
@@ -315,7 +319,7 @@ abstract class BasePlugin<
         buildOutputs: NamedDomainObjectContainer<com.android.build.gradle.api.BaseVariantOutput>,
         extraModelInfo: ExtraModelInfo,
         versionedSdkLoaderService: VersionedSdkLoaderService
-    ): ExtensionData<BuildFeaturesT, BuildTypeT, DefaultConfigT, ProductFlavorT, AndroidResourcesT, AndroidT>
+    ): ExtensionData<BuildFeaturesT, BuildTypeT, DefaultConfigT, ProductFlavorT, AndroidResourcesT, InstallationT, AndroidT>
 
     protected abstract fun createComponentExtension(
         dslServices: DslServices,
@@ -529,7 +533,7 @@ abstract class BasePlugin<
         project: Project,
         registry: ToolingModelBuilderRegistry,
         variantInputModel: VariantInputModel<DefaultConfig, BuildType, ProductFlavor, SigningConfig>,
-        extensionData: ExtensionData<BuildFeaturesT, BuildTypeT, DefaultConfigT, ProductFlavorT, AndroidResourcesT, AndroidT>,
+        extensionData: ExtensionData<BuildFeaturesT, BuildTypeT, DefaultConfigT, ProductFlavorT, AndroidResourcesT, InstallationT, AndroidT>,
         extraModelInfo: ExtraModelInfo,
         globalConfig: GlobalTaskCreationConfig
     ) {

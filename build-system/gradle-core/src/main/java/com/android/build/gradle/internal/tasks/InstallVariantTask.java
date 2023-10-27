@@ -69,7 +69,6 @@ import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
-import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.LogLevel;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.tasks.Input;
@@ -274,7 +273,7 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
             Properties properties = new Properties();
             properties.load(inputStream);
             String dmPath;
-            if (device.getApiLevel() > ArtProfileKt.HIGHEST_DM_API_RANGE_START) {
+            if (device.getApiLevel() > ArtProfileKt.SDK_LEVEL_FOR_V0_1_5_S) {
                 dmPath = properties.getProperty(String.valueOf(Integer.MAX_VALUE));
             } else {
                 dmPath = properties.getProperty(String.valueOf(device.getApiLevel()));
