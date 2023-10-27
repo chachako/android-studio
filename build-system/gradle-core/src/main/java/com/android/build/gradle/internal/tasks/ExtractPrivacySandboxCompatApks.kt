@@ -139,16 +139,22 @@ abstract class ExtractPrivacySandboxCompatApks: NonIncrementalTask() {
             }
         }
 
-        // Generate a split for packaging assets required for Privacy Sandbox compatibility with
-        // unsupported platforms.
-        val compatSplitApk = writeCompatApkSplit(
-                FileUtils.join(outputDir.get().asFile,
-                        "splits",
-                        "${applicationId.get().replace(".", "")}-injected-privacy-sandbox-compat.apk")
-                        .toPath(),
-                temporaryDir,
-                runtimeEnabledSdkTableFile.get().asFile)
-        elements.add(BuiltArtifactImpl.make(outputFile = compatSplitApk.toAbsolutePath().toString()))
+        if (privacySandboxSplitCompatApks.files.isNotEmpty()) {
+            // Generate a split for packaging assets required for Privacy Sandbox compatibility with
+            // unsupported platforms.
+            val compatSplitApk = writeCompatApkSplit(
+                    FileUtils.join(outputDir.get().asFile,
+                            "splits",
+                            "${
+                                applicationId.get()
+                                        .replace(".", "")
+                            }-injected-privacy-sandbox-compat.apk")
+                            .toPath(),
+                    temporaryDir,
+                    runtimeEnabledSdkTableFile.get().asFile)
+            elements.add(BuiltArtifactImpl.make(outputFile = compatSplitApk.toAbsolutePath()
+                    .toString()))
+        }
 
         writeMetadata(elements)
     }
