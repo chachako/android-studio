@@ -17,14 +17,10 @@
 package com.android.build.api.variant
 
 /**
- * Application specific variant object that contains properties that will determine the variant's
- * build flow.
+ * Model for application components that only contains configuration-time properties that impacts
+ * the build flow.
  *
- * For example, an application variant may have minification on or off, or have a different
- * minSdkVersion from the other variants.
- *
- * All these properties must be resolved during configuration time as [org.gradle.api.Task]
- * representing the variant build flows must be created.
+ * See [ComponentBuilder] and [VariantBuilder] for more information.
  */
 interface ApplicationVariantBuilder : VariantBuilder,
     HasAndroidTestBuilder,
@@ -32,8 +28,11 @@ interface ApplicationVariantBuilder : VariantBuilder,
     HasTestFixturesBuilder,
     GeneratesApkBuilder,
     CanMinifyCodeBuilder,
-    CanMinifyAndroidResourcesBuilder{
+    CanMinifyAndroidResourcesBuilder {
 
+    /**
+     * Whether the variant is debuggable.
+     */
     val debuggable: Boolean
 
     /** Specify whether to include SDK dependency information in APKs and Bundles. */

@@ -17,24 +17,24 @@
 package com.android.build.api.variant
 
 /**
- * Cross-cutting interface for components builders that produce APK files.
+ * Configuration-time properties [ComponentBuilder] that produce APKs.
  */
 interface GeneratesApkBuilder {
     /**
-     * Gets or sets the target SDK Version for this variant as an integer API level.
+     * Sets the target SDK Version for this variant as an integer API level.
      * Setting this will override previous calls of [targetSdk] and [targetSdkPreview] setters.
      * Only one of [targetSdk] and [targetSdkPreview] should be set.
      *
-     * The value may be null if set via [targetSdkPreview].
+     * It is not safe to read this value. Use [GeneratesApk.targetSdk] instead.
      */
     var targetSdk: Int?
 
     /**
-     * Gets or sets the target SDK Version for this variant as an integer API level.
+     * Sets the target SDK Version for this variant as an integer API level.
      * Setting this will override previous calls of [targetSdk] and [targetSdkPreview] setters.
      * Only one of [targetSdk] and [targetSdkPreview] should be set.
      *
-     * The value may be null if set via [targetSdk].
+     * It is not safe to read this value. Use [GeneratesApk.targetSdk] instead.
      */
     var targetSdkPreview: String?
 }

@@ -21,7 +21,12 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 
 /**
- * [Variant] for test-only modules.
+ * Model for test components that only contains build-time properties.
+ *
+ * This is for components associated with the `com.android.test` plugin. This is not for
+ * test components associated with variants. For these see [TestComponent].
+ *
+ * See [Component] and [Variant] for more information.
  */
 interface TestVariant: GeneratesTestApk, Variant {
     /**
