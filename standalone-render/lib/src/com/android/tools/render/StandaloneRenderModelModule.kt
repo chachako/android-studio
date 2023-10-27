@@ -19,6 +19,8 @@ package com.android.tools.render
 import com.android.tools.module.AndroidModuleInfo
 import com.android.tools.module.ModuleDependencies
 import com.android.tools.module.ModuleKey
+import com.android.tools.rendering.ModuleRenderContext
+import com.android.tools.rendering.RenderTask
 import com.android.tools.rendering.api.EnvironmentContext
 import com.android.tools.rendering.api.RenderModelManifest
 import com.android.tools.rendering.api.RenderModelModule
@@ -29,8 +31,11 @@ import com.android.tools.res.ids.ResourceIdManager
 import com.android.tools.sdk.AndroidPlatform
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiFile
 import java.io.FileInputStream
 import java.io.InputStream
+import java.lang.ref.WeakReference
+import java.util.function.Supplier
 
 /** [RenderModelModule] for standalone rendering. */
 internal class StandaloneRenderModelModule(
@@ -56,6 +61,15 @@ internal class StandaloneRenderModelModule(
     override val manifest: RenderModelManifest? = null
     override val isDisposed: Boolean = false
     override val name: String = "Fake Module"
+    private val renderContext = object : ModuleRenderContext {
+        override val fileProvider: Supplier<PsiFile?> = Supplier { null }
+        override val isDisposed: Boolean = false
+        override val module: Module
+            get() = throw UnsupportedOperationException("Should not be called in standalone rendering")
+    }
+    override fun createModuleRenderContext(weakRenderTask: WeakReference<RenderTask>): ModuleRenderContext {
+        return renderContext
+    }
 
     override fun dispose() { }
 
