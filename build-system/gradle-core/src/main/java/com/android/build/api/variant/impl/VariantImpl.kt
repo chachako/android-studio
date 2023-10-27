@@ -20,7 +20,6 @@ import com.android.build.api.attributes.ProductFlavorAttr
 import com.android.build.api.component.impl.ComponentImpl
 import com.android.build.api.component.impl.UnitTestImpl
 import com.android.build.api.component.impl.features.BuildConfigCreationConfigImpl
-import com.android.build.api.component.impl.features.ManifestPlaceholdersCreationConfigImpl
 import com.android.build.api.component.impl.features.NativeBuildCreationConfigImpl
 import com.android.build.api.component.impl.features.OptimizationCreationConfigImpl
 import com.android.build.api.component.impl.features.RenderscriptCreationConfigImpl
@@ -36,7 +35,6 @@ import com.android.build.api.variant.Packaging
 import com.android.build.api.variant.ResValue
 import com.android.build.api.variant.Variant
 import com.android.build.gradle.internal.DependencyConfigurator
-import com.android.build.gradle.internal.VariantManager
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.component.features.BuildConfigCreationConfig
@@ -47,9 +45,7 @@ import com.android.build.gradle.internal.component.features.OptimizationCreation
 import com.android.build.gradle.internal.component.features.RenderscriptCreationConfig
 import com.android.build.gradle.internal.component.features.ShadersCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
-import com.android.build.gradle.internal.core.dsl.ConsumableComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.VariantDslInfo
-import com.android.build.gradle.internal.core.dsl.features.ManifestPlaceholdersDslInfo
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.scope.BuildFeatureValues
 import com.android.build.gradle.internal.scope.MutableTaskContainer

@@ -48,7 +48,7 @@ import org.gradle.api.provider.Provider
  * ```
  *
  * Because links between [org.gradle.api.provider.Property] objects are lazy, they are ordering-safe
- * and any plugins can set new values or link them into their own class in any order.
+ * and any plugins can set new values or link them into their own tasks in any order.
  *
  * However, calling [org.gradle.api.provider.Property.get] during configuration on these properties
  * is not safe as the values could be linked to task output (that requires the task to run).
