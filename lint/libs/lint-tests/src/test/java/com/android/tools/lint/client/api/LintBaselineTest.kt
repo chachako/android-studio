@@ -1861,13 +1861,18 @@ class LintBaselineTest {
 
               <issue
                   id="MultipleUsesSdk"
-                  message="There should only be a single `&lt;uses-sdk>` element in the manifest: merge these together">
+                  message="There should only be a single `&lt;uses-sdk>` element in the manifest: merge these together"
+                  errorLine1="    &lt;uses-sdk android:minSdkVersion=&quot;10&quot; android:targetSdkVersion=&quot;33&quot; />"
+                  errorLine2="     ~~~~~~~~">
                   <location
                       file="AndroidManifest.xml"
-                      line="4"/>
+                      line="4"
+                      column="6"/>
                   <location
                       file="AndroidManifest.xml"
-                      line="3"/>
+                      line="3"
+                      column="6"
+                      message="Also appears here"/>
               </issue>
 
           </issues>
