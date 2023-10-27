@@ -128,6 +128,7 @@ maven_repository(
         "@maven//:com.android.support.constraint.constraint-layout_1.0.2",
         "@maven//:com.android.support.test.espresso.espresso-core_3.0.1",
         "@maven//:com.android.support.test.runner_1.0.1",
+        "@maven//:org.jetbrains.kotlin.kotlin-compiler-embeddable_1.7.10",
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-android_1.4.1",
     ],
     visibility = ["__subpackages__"],

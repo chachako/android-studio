@@ -136,5 +136,6 @@ maven_repository(
         "@maven//:com.google.protobuf.protobuf-java-util_3.21.8",
         "@maven//:com.google.truth.truth_0.44",
         "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.9.20-RC",
+        "@maven//:org.jetbrains.kotlin.kotlin-compiler-embeddable_1.7.10"
     ],
 )
