@@ -217,7 +217,14 @@ interface RepairDeviceAction : DeviceAction {
 }
 
 /**
- * Indicates a failure in performing a device action.
+ * Indicates a failure in performing a device action, with a user-relevant cause.
+ *
+ * This is intended for the same types of errors that checked exceptions are used for in Java:
+ * unpreventable errors due to external conditions (lack of resources, I/O errors, etc.)
+ *
+ * It should *not* be used to wrap programming errors (NullPointerException,
+ * IllegalArgumentException, etc.): these are generally not user-relevant and should be allowed to
+ * propagate to the Studio error handler.
  *
  * @param message a user-visible statement of what went wrong
  * @param cause the underlying exception; not displayed to user
@@ -227,7 +234,11 @@ open class DeviceActionException(message: String, cause: Throwable? = null) :
 
 /**
  * Indicates that the device action was called when it is not enabled. This may be unavoidable due
- * to race conditions; callers should recover gracefully.
+ * to race conditions; callers should recover gracefully. Callers should strongly consider supplying
+ * a more natural error message.
  */
-class DeviceActionDisabledException(action: DeviceAction) :
-  Exception("The \"${action.presentation.value.label}\" action is unavailable.")
+class DeviceActionDisabledException(message: String) : DeviceActionException(message) {
+  constructor(
+    action: DeviceAction
+  ) : this("The \"${action.presentation.value.label}\" action is unavailable.")
+}
