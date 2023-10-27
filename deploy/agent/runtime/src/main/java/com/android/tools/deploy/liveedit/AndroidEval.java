@@ -521,7 +521,7 @@ class AndroidEval implements Eval {
         return null;
     }
 
-    // Recursively find all interfaces in the inheritance chain of the inheritance chain.
+    // Recursively find all interfaces in the inheritance chain of the interface.
     // Because there can be cases where an interface is implemented twice (once directly and
     // then indirectly, the list may contain duplicates). e.g.: iZ is implemented by both cX
     // and cY, and cY implements iZ and extends cX.
