@@ -98,8 +98,9 @@ public final class GradleTaskExecutor extends BaseGradleExecutor<GradleTaskExecu
             args.add("--stacktrace");
         }
 
-        File tmpStdOut = File.createTempFile("stdout", "log");
-        File tmpStdErr = File.createTempFile("stderr", "log");
+        File testOutputDir = TestUtils.getTestOutputDir().toFile();
+        File tmpStdOut = File.createTempFile("stdout", "log", testOutputDir);
+        File tmpStdErr = File.createTempFile("stderr", "log", testOutputDir);
 
         BuildLauncher launcher =
                 projectConnection.newBuild().forTasks(Iterables.toArray(tasksList, String.class));
