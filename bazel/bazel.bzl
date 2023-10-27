@@ -136,6 +136,7 @@ def _iml_module_jar_impl(
     # Kotlin
     kotlin_providers = []
     if kotlin_srcs:
+        kotlinc_opts.append("-Xcontext-receivers")  # Needed to use the Kotlin K2 analysis API (b/308454624).
         kotlin_providers.append(kotlin_compile(
             ctx = ctx,
             name = module_name,
