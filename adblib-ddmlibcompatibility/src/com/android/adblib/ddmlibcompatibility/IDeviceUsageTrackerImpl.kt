@@ -22,7 +22,10 @@ import com.android.tools.analytics.UsageTracker
 import com.google.wireless.android.sdk.stats.AndroidStudioEvent
 import com.google.wireless.android.sdk.stats.IDeviceUsageEvent
 
-class IDeviceUsageTrackerImpl(session: AdbSession) : IDeviceUsageTracker {
+class IDeviceUsageTrackerImpl private constructor(
+    session: AdbSession,
+    private val sourceType: IDeviceUsageEvent.SourceType
+) : IDeviceUsageTracker {
 
     private val logger = adbLogger(session)
 
@@ -40,9 +43,23 @@ class IDeviceUsageTrackerImpl(session: AdbSession) : IDeviceUsageTracker {
                 .setIDeviceUsageEvent(
                     IDeviceUsageEvent.newBuilder()
                         .setMethod(usageEventMethod)
-                        .setSourceType(IDeviceUsageEvent.SourceType.DEVICE_IMPL)
+                        .setSourceType(sourceType)
                         .setIsException(isException)
                 )
         )
+    }
+
+    companion object {
+
+        fun forDeviceImpl(session: AdbSession): IDeviceUsageTracker {
+            return IDeviceUsageTrackerImpl(session, IDeviceUsageEvent.SourceType.DEVICE_IMPL)
+        }
+
+        fun forAdblibIDeviceWrapper(session: AdbSession): IDeviceUsageTracker {
+            return IDeviceUsageTrackerImpl(
+                session,
+                IDeviceUsageEvent.SourceType.ADBLIB_I_DEVICE_WRAPPER
+            )
+        }
     }
 }

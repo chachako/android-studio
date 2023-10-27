@@ -25,6 +25,7 @@ import com.android.adblib.RemoteFileMode
 import com.android.adblib.SocketSpec
 import com.android.adblib.adbLogger
 import com.android.adblib.availableFeatures
+import com.android.adblib.ddmlibcompatibility.IDeviceUsageTrackerImpl
 import com.android.adblib.deviceInfo
 import com.android.adblib.isOffline
 import com.android.adblib.isOnline
@@ -50,6 +51,7 @@ import com.android.ddmlib.IDevice.DeviceState
 import com.android.ddmlib.IDevice.RE_EMULATOR_SN
 import com.android.ddmlib.IDeviceSharedImpl
 import com.android.ddmlib.IDeviceSharedImpl.INSTALL_TIMEOUT_MINUTES
+import com.android.ddmlib.IDeviceUsageTracker
 import com.android.ddmlib.IShellOutputReceiver
 import com.android.ddmlib.InstallMetrics
 import com.android.ddmlib.InstallReceiver
@@ -94,6 +96,9 @@ internal class AdblibIDeviceWrapper(
 
     private val logger = adbLogger(connectedDevice.session)
 
+    private val iDeviceUsageTracker =
+        IDeviceUsageTrackerImpl.forAdblibIDeviceWrapper(connectedDevice.session)
+
     // TODO(b/294559068): Create our own implementation of PropertyFetcher before we can get rid of ddmlib
     private val propertyFetcher = PropertyFetcher(this)
 
@@ -115,23 +120,27 @@ internal class AdblibIDeviceWrapper(
         receiver: IShellOutputReceiver,
         maxTimeToOutputResponse: Int
     ) {
-        // This matches the behavior of `DeviceImpl`
-        executeRemoteCommand(
-            command,
-            receiver,
-            maxTimeToOutputResponse.toLong(),
-            TimeUnit.MILLISECONDS
-        )
+        logUsage(IDeviceUsageTracker.Method.EXECUTE_SHELL_COMMAND_2) {
+            // This matches the behavior of `DeviceImpl`
+            executeRemoteCommand(
+                command,
+                receiver,
+                maxTimeToOutputResponse.toLong(),
+                TimeUnit.MILLISECONDS
+            )
+        }
     }
 
     override fun executeShellCommand(command: String, receiver: IShellOutputReceiver) {
-        // This matches the behavior of `DeviceImpl`
-        executeRemoteCommand(
-            command,
-            receiver,
-            DdmPreferences.getTimeOut().toLong(),
-            TimeUnit.MILLISECONDS
-        )
+        logUsage(IDeviceUsageTracker.Method.EXECUTE_SHELL_COMMAND_1) {
+            // This matches the behavior of `DeviceImpl`
+            executeRemoteCommand(
+                command,
+                receiver,
+                DdmPreferences.getTimeOut().toLong(),
+                TimeUnit.MILLISECONDS
+            )
+        }
     }
 
     override fun executeShellCommand(
@@ -141,16 +150,18 @@ internal class AdblibIDeviceWrapper(
         maxTimeUnits: TimeUnit,
         `is`: InputStream?
     ) {
-        // Note that `AdbHelper.AdbService.EXEC` is passed down to match the behavior of `DeviceImpl`
-        executeRemoteCommand(
-            AdbHelper.AdbService.EXEC,
-            command,
-            receiver,
-            0L,
-            maxTimeToOutputResponse,
-            maxTimeUnits,
-            `is`
-        )
+        logUsage(IDeviceUsageTracker.Method.EXECUTE_SHELL_COMMAND_4) {
+            // Note that `AdbHelper.AdbService.EXEC` is passed down to match the behavior of `DeviceImpl`
+            executeRemoteCommand(
+                AdbHelper.AdbService.EXEC,
+                command,
+                receiver,
+                0L,
+                maxTimeToOutputResponse,
+                maxTimeUnits,
+                `is`
+            )
+        }
     }
 
     override fun executeShellCommand(
@@ -159,14 +170,16 @@ internal class AdblibIDeviceWrapper(
         maxTimeToOutputResponse: Long,
         maxTimeUnits: TimeUnit
     ) {
-        // This matches the behavior of `DeviceImpl`
-        executeRemoteCommand(
-            command,
-            receiver,
-            0L,
-            maxTimeToOutputResponse,
-            maxTimeUnits
-        )
+        logUsage(IDeviceUsageTracker.Method.EXECUTE_SHELL_COMMAND_3) {
+            // This matches the behavior of `DeviceImpl`
+            executeRemoteCommand(
+                command,
+                receiver,
+                0L,
+                maxTimeToOutputResponse,
+                maxTimeUnits
+            )
+        }
     }
 
     override fun executeShellCommand(
@@ -176,37 +189,44 @@ internal class AdblibIDeviceWrapper(
         maxTimeToOutputResponse: Long,
         maxTimeUnits: TimeUnit
     ) {
-        // This matches the behavior of `DeviceImpl`
-        executeRemoteCommand(
-            command,
-            receiver,
-            maxTimeout,
-            maxTimeToOutputResponse,
-            maxTimeUnits
-        )
+        logUsage(IDeviceUsageTracker.Method.EXECUTE_SHELL_COMMAND_5) {
+            // This matches the behavior of `DeviceImpl`
+            executeRemoteCommand(
+                command,
+                receiver,
+                maxTimeout,
+                maxTimeToOutputResponse,
+                maxTimeUnits
+            )
+        }
     }
 
     override fun getSystemProperty(name: String): ListenableFuture<String> {
+        // NOTE: Calling `logUsage` here would log too many events, so let's not log these events
         return propertyFetcher.getProperty(name)
     }
 
     override fun getSerialNumber(): String {
+        // NOTE: Calling `logUsage` here would log too many events, so let's not log these events
         return connectedDevice.serialNumber
     }
 
     @Deprecated("")
-    override fun getAvdName(): String? {
-        return if (mAvdData.isCompleted) mAvdData.getCompleted()?.name else null
-    }
+    override fun getAvdName(): String? =
+        logUsage(IDeviceUsageTracker.Method.GET_AVD_NAME) {
+            if (mAvdData.isCompleted) mAvdData.getCompleted()?.name else null
+        }
 
     @Deprecated("")
-    override fun getAvdPath(): String? {
-        return if (mAvdData.isCompleted) mAvdData.getCompleted()?.path else null
-    }
+    override fun getAvdPath(): String? =
+        logUsage(IDeviceUsageTracker.Method.GET_AVD_PATH) {
+            if (mAvdData.isCompleted) mAvdData.getCompleted()?.path else null
+        }
 
-    override fun getAvdData(): ListenableFuture<AvdData?> {
-        return mAvdData.asListenableFuture()
-    }
+    override fun getAvdData(): ListenableFuture<AvdData?> =
+        logUsage(IDeviceUsageTracker.Method.GET_AVD_DATA) {
+            mAvdData.asListenableFuture()
+        }
 
     private suspend fun createAvdData(): AvdData? {
         if (!isEmulator) {
@@ -231,40 +251,45 @@ internal class AdblibIDeviceWrapper(
         }
     }
 
-    override fun getState(): DeviceState? {
-        return DeviceState.getState(connectedDevice.deviceInfo.deviceState.state)
-    }
-
-    @Deprecated("")
-    override fun getProperties(): MutableMap<String, String> {
-        return Collections.unmodifiableMap(propertyFetcher.properties)
-    }
-
-    @Deprecated("")
-    override fun getPropertyCount(): Int {
-        return propertyFetcher.properties.size
-    }
-
-    override fun getProperty(name: String): String? {
-        val timeout =
-            if (propertyFetcher.properties.isEmpty()) INITIAL_GET_PROP_TIMEOUT_MS else GET_PROP_TIMEOUT_MS
-
-        val future = propertyFetcher.getProperty(name)
-        try {
-            return future.get(timeout, TimeUnit.MILLISECONDS)
-        } catch (e: InterruptedException) {
-            // ignore
-        } catch (e: ExecutionException) {
-            // ignore
-        } catch (e: TimeoutException) {
-            // ignore
+    override fun getState(): DeviceState? =
+        logUsage(IDeviceUsageTracker.Method.GET_STATE) {
+            DeviceState.getState(connectedDevice.deviceInfo.deviceState.state)
         }
-        return null
-    }
 
-    override fun arePropertiesSet(): Boolean {
-        return propertyFetcher.arePropertiesSet()
-    }
+    @Deprecated("")
+    override fun getProperties(): MutableMap<String, String> =
+        logUsage(IDeviceUsageTracker.Method.GET_PROPERTIES) {
+            Collections.unmodifiableMap(propertyFetcher.properties)
+        }
+
+    @Deprecated("")
+    override fun getPropertyCount(): Int =
+        logUsage(IDeviceUsageTracker.Method.GET_PROPERTY_COUNT) {
+            propertyFetcher.properties.size
+        }
+
+    override fun getProperty(name: String): String? =
+        logUsage(IDeviceUsageTracker.Method.GET_PROPERTY) {
+            val timeout =
+                if (propertyFetcher.properties.isEmpty()) INITIAL_GET_PROP_TIMEOUT_MS else GET_PROP_TIMEOUT_MS
+
+            val future = propertyFetcher.getProperty(name)
+            try {
+                return@logUsage future.get(timeout, TimeUnit.MILLISECONDS)
+            } catch (e: InterruptedException) {
+                // ignore
+            } catch (e: ExecutionException) {
+                // ignore
+            } catch (e: TimeoutException) {
+                // ignore
+            }
+            null
+        }
+
+    override fun arePropertiesSet(): Boolean =
+        logUsage(IDeviceUsageTracker.Method.ARE_PROPERTIES_SET) {
+            propertyFetcher.arePropertiesSet()
+        }
 
     @Deprecated("")
     override fun getPropertySync(name: String?): String {
@@ -277,6 +302,7 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun supportsFeature(feature: IDevice.Feature): Boolean {
+        // NOTE: Calling `logUsage` here would log too many events, so let's not log these events
         val availableFeatures: List<String> =
             runBlockingLegacy {
                 connectedDevice.session.hostServices.availableFeatures(
@@ -289,13 +315,15 @@ internal class AdblibIDeviceWrapper(
         return iDeviceSharedImpl.supportsFeature(feature, availableFeatures.toSet())
     }
 
-    override fun supportsFeature(feature: IDevice.HardwareFeature): Boolean {
-        return iDeviceSharedImpl.supportsFeature(feature)
-    }
+    override fun supportsFeature(feature: IDevice.HardwareFeature): Boolean =
+        logUsage(IDeviceUsageTracker.Method.SUPPORTS_FEATURE_1) {
+            iDeviceSharedImpl.supportsFeature(feature)
+        }
 
-    override fun services(): MutableMap<String, ServiceInfo> {
-        return iDeviceSharedImpl.services()
-    }
+    override fun services(): MutableMap<String, ServiceInfo> =
+        logUsage(IDeviceUsageTracker.Method.SERVICES) {
+            iDeviceSharedImpl.services()
+        }
 
     override fun getMountPoint(name: String): String? {
         throw UnsupportedOperationException("This method is not used in Android Studio")
@@ -305,9 +333,10 @@ internal class AdblibIDeviceWrapper(
         return serialNumber
     }
 
-    override fun isOnline(): Boolean {
-        return connectedDevice.isOnline
-    }
+    override fun isOnline(): Boolean =
+        logUsage(IDeviceUsageTracker.Method.IS_ONLINE) {
+            connectedDevice.isOnline
+        }
 
     override fun isEmulator(): Boolean {
         return serialNumber.matches(RE_EMULATOR_SN.toRegex())
@@ -370,14 +399,16 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun createForward(localPort: Int, remotePort: Int) {
-        runBlockingLegacy {
-            val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
-            connectedDevice.session.hostServices.forward(
-                deviceSelector,
-                SocketSpec.Tcp(localPort),
-                SocketSpec.Tcp(remotePort),
-                rebind = true
-            )
+        logUsage(IDeviceUsageTracker.Method.CREATE_FORWARD_1) {
+            runBlockingLegacy {
+                val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+                connectedDevice.session.hostServices.forward(
+                    deviceSelector,
+                    SocketSpec.Tcp(localPort),
+                    SocketSpec.Tcp(remotePort),
+                    rebind = true
+                )
+            }
         }
     }
 
@@ -386,37 +417,41 @@ internal class AdblibIDeviceWrapper(
         remoteSocketName: String,
         namespace: IDevice.DeviceUnixSocketNamespace
     ) {
-        runBlockingLegacy {
-            val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
-            val remoteSocketSpec = when (namespace) {
-                IDevice.DeviceUnixSocketNamespace.ABSTRACT -> SocketSpec.LocalAbstract(
-                    remoteSocketName
-                )
+        logUsage(IDeviceUsageTracker.Method.CREATE_FORWARD_2) {
+            runBlockingLegacy {
+                val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+                val remoteSocketSpec = when (namespace) {
+                    IDevice.DeviceUnixSocketNamespace.ABSTRACT -> SocketSpec.LocalAbstract(
+                        remoteSocketName
+                    )
 
-                IDevice.DeviceUnixSocketNamespace.RESERVED -> SocketSpec.LocalReserved(
-                    remoteSocketName
-                )
+                    IDevice.DeviceUnixSocketNamespace.RESERVED -> SocketSpec.LocalReserved(
+                        remoteSocketName
+                    )
 
-                IDevice.DeviceUnixSocketNamespace.FILESYSTEM -> SocketSpec.LocalFileSystem(
-                    remoteSocketName
+                    IDevice.DeviceUnixSocketNamespace.FILESYSTEM -> SocketSpec.LocalFileSystem(
+                        remoteSocketName
+                    )
+                }
+                connectedDevice.session.hostServices.forward(
+                    deviceSelector,
+                    SocketSpec.Tcp(localPort),
+                    remoteSocketSpec,
+                    rebind = true
                 )
             }
-            connectedDevice.session.hostServices.forward(
-                deviceSelector,
-                SocketSpec.Tcp(localPort),
-                remoteSocketSpec,
-                rebind = true
-            )
         }
     }
 
     override fun removeForward(localPort: Int) {
-        runBlockingLegacy {
-            val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
-            connectedDevice.session.hostServices.killForward(
-                deviceSelector,
-                SocketSpec.Tcp(localPort)
-            )
+        logUsage(IDeviceUsageTracker.Method.REMOVE_FORWARD) {
+            runBlockingLegacy {
+                val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+                connectedDevice.session.hostServices.killForward(
+                    deviceSelector,
+                    SocketSpec.Tcp(localPort)
+                )
+            }
         }
     }
 
@@ -426,42 +461,47 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun pushFile(local: String, remote: String) {
-        runBlockingLegacy {
-            val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+        logUsage(IDeviceUsageTracker.Method.PUSH_FILE) {
+            runBlockingLegacy {
+                val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
 
-            val localFile = File(local).toPath()
-            val localFileDate = Files.getLastModifiedTime(localFile)
-            Log.d(LOG_TAG, "Uploading $localFile onto device '$serialNumber'")
+                val localFile = File(local).toPath()
+                val localFileDate = Files.getLastModifiedTime(localFile)
+                Log.d(LOG_TAG, "Uploading $localFile onto device '$serialNumber'")
 
-            mapToSyncException {
-                connectedDevice.session.deviceServices.syncSend(
-                    deviceSelector,
-                    localFile,
-                    remote,
-                    RemoteFileMode.fromPath(localFile) ?: RemoteFileMode.DEFAULT,
-                    localFileDate
-                )
+                mapToSyncException {
+                    connectedDevice.session.deviceServices.syncSend(
+                        deviceSelector,
+                        localFile,
+                        remote,
+                        RemoteFileMode.fromPath(localFile) ?: RemoteFileMode.DEFAULT,
+                        localFileDate
+                    )
+                }
             }
         }
     }
 
     override fun pullFile(remote: String, local: String) {
-        runBlockingLegacy {
-            val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+        logUsage(IDeviceUsageTracker.Method.PULL_FILE) {
+            runBlockingLegacy {
+                val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
 
-            val localFile = File(local).toPath()
-            Log.d(LOG_TAG, "Pull file from device '$serialNumber': `$remote` -> `$localFile`")
+                val localFile = File(local).toPath()
+                Log.d(LOG_TAG, "Pull file from device '$serialNumber': `$remote` -> `$localFile`")
 
-            mapToSyncException {
-                connectedDevice.session.deviceServices.syncRecv(
-                    deviceSelector,
-                    remote,
-                    localFile
-                )
+                mapToSyncException {
+                    connectedDevice.session.deviceServices.syncRecv(
+                        deviceSelector,
+                        remote,
+                        localFile
+                    )
+                }
             }
         }
     }
 
+    // TODO: logUsage STAT_FILE
     override fun statFile(remote: String): SyncService.FileStat? {
         return runBlockingLegacy {
             val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
@@ -486,8 +526,10 @@ internal class AdblibIDeviceWrapper(
         reinstall: Boolean,
         vararg extraArgs: String?
     ) {
-        // Use default basic installReceiver
-        installPackage(packageFilePath, reinstall, InstallReceiver(), *extraArgs)
+        logUsage(IDeviceUsageTracker.Method.INSTALL_PACKAGE_1) {
+            // Use default basic installReceiver
+            installPackage(packageFilePath, reinstall, InstallReceiver(), *extraArgs)
+        }
     }
 
     override fun installPackage(
@@ -496,16 +538,18 @@ internal class AdblibIDeviceWrapper(
         receiver: InstallReceiver,
         vararg extraArgs: String?
     ) {
-        // Use default values for some timeouts.
-        installPackage(
-            packageFilePath,
-            reinstall,
-            receiver,
-            0L,
-            INSTALL_TIMEOUT_MINUTES,
-            TimeUnit.MINUTES,
-            *extraArgs
-        )
+        logUsage(IDeviceUsageTracker.Method.INSTALL_PACKAGE_2) {
+            // Use default values for some timeouts.
+            installPackage(
+                packageFilePath,
+                reinstall,
+                receiver,
+                0L,
+                INSTALL_TIMEOUT_MINUTES,
+                TimeUnit.MINUTES,
+                *extraArgs
+            )
+        }
     }
 
     override fun installPackage(
@@ -517,15 +561,17 @@ internal class AdblibIDeviceWrapper(
         maxTimeUnits: TimeUnit?,
         vararg extraArgs: String?
     ) {
-        iDeviceSharedImpl.installPackage(
-            packageFilePath,
-            reinstall,
-            receiver,
-            maxTimeout,
-            maxTimeToOutputResponse,
-            maxTimeUnits,
-            *extraArgs
-        )
+        logUsage(IDeviceUsageTracker.Method.INSTALL_PACKAGE_3) {
+            iDeviceSharedImpl.installPackage(
+                packageFilePath,
+                reinstall,
+                receiver,
+                maxTimeout,
+                maxTimeToOutputResponse,
+                maxTimeUnits,
+                *extraArgs
+            )
+        }
     }
 
     override fun installPackages(
@@ -535,26 +581,37 @@ internal class AdblibIDeviceWrapper(
         timeout: Long,
         timeoutUnit: TimeUnit
     ) {
-        iDeviceSharedImpl.installPackages(apks, reinstall, installOptions, timeout, timeoutUnit)
+        logUsage(IDeviceUsageTracker.Method.INSTALL_PACKAGES_2) {
+            iDeviceSharedImpl.installPackages(apks, reinstall, installOptions, timeout, timeoutUnit)
+        }
     }
 
     override fun installPackages(
         apks: MutableList<File>, reinstall: Boolean, installOptions: MutableList<String>
     ) {
-        // Use the default single apk installer timeout.
-        installPackages(apks, reinstall, installOptions, INSTALL_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+        logUsage(IDeviceUsageTracker.Method.INSTALL_PACKAGES_1) {
+            // Use the default single apk installer timeout.
+            installPackages(
+                apks,
+                reinstall,
+                installOptions,
+                INSTALL_TIMEOUT_MINUTES,
+                TimeUnit.MINUTES
+            )
+        }
     }
 
     override fun getLastInstallMetrics(): InstallMetrics? {
         return iDeviceSharedImpl.lastInstallMetrics
     }
 
-    override fun syncPackageToDevice(localFilePath: String): String {
-        val packageFileName = File(localFilePath).getName()
-        val remoteFilePath = "/data/local/tmp/$packageFileName"
-        pushFile(localFilePath, remoteFilePath)
-        return remoteFilePath
-    }
+    override fun syncPackageToDevice(localFilePath: String): String =
+        logUsage(IDeviceUsageTracker.Method.SYNC_PACKAGE_TO_DEVICE) {
+            val packageFileName = File(localFilePath).getName()
+            val remoteFilePath = "/data/local/tmp/$packageFileName"
+            pushFile(localFilePath, remoteFilePath)
+            remoteFilePath
+        }
 
     override fun installRemotePackage(
         remoteFilePath: String?,
@@ -582,58 +639,72 @@ internal class AdblibIDeviceWrapper(
         maxTimeUnits: TimeUnit,
         vararg extraArgs: String?
     ) {
-        iDeviceSharedImpl.installRemotePackage(
-            remoteFilePath,
-            reinstall,
-            receiver,
-            maxTimeout,
-            maxTimeToOutputResponse,
-            maxTimeUnits,
-            *extraArgs
-        )
+        logUsage(IDeviceUsageTracker.Method.INSTALL_REMOTE_PACKAGE) {
+            iDeviceSharedImpl.installRemotePackage(
+                remoteFilePath,
+                reinstall,
+                receiver,
+                maxTimeout,
+                maxTimeToOutputResponse,
+                maxTimeUnits,
+                *extraArgs
+            )
+        }
     }
 
     override fun removeRemotePackage(remoteFilePath: String?) {
-        iDeviceSharedImpl.removeRemotePackage(remoteFilePath)
+        logUsage(IDeviceUsageTracker.Method.REMOVE_REMOTE_PACKAGE) {
+            iDeviceSharedImpl.removeRemotePackage(remoteFilePath)
+        }
     }
 
-    override fun uninstallPackage(packageName: String): String {
-        return uninstallApp(packageName)
-    }
+    override fun uninstallPackage(packageName: String): String =
+        logUsage(IDeviceUsageTracker.Method.UNINSTALL_PACKAGE) {
+            uninstallApp(packageName)
+        }
 
-    override fun uninstallApp(applicationID: String, vararg extraArgs: String): String {
-        return iDeviceSharedImpl.uninstallApp(applicationID, *extraArgs)
-    }
+    override fun uninstallApp(applicationID: String, vararg extraArgs: String): String =
+        logUsage(IDeviceUsageTracker.Method.UNINSTALL_APP) {
+            iDeviceSharedImpl.uninstallApp(applicationID, *extraArgs)
+        }
 
     override fun reboot(into: String?) {
         throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
-    override fun root(): Boolean = runBlockingLegacy {
-        val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
-        connectedDevice.session.deviceServices.rootAndWait(deviceSelector)
-        isRoot()
-    }
+    override fun root(): Boolean =
+        logUsage(IDeviceUsageTracker.Method.ROOT) {
+            runBlockingLegacy {
+                val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+                connectedDevice.session.deviceServices.rootAndWait(deviceSelector)
+                isRoot()
+            }
+        }
 
     override fun forceStop(applicationName: String?) {
-        iDeviceSharedImpl.forceStop(applicationName)
+        logUsage(IDeviceUsageTracker.Method.FORCE_STOP) {
+            iDeviceSharedImpl.forceStop(applicationName)
+        }
     }
 
     override fun kill(applicationName: String?) {
-        iDeviceSharedImpl.kill(applicationName)
+        logUsage(IDeviceUsageTracker.Method.KILL) {
+            iDeviceSharedImpl.kill(applicationName)
+        }
     }
 
-    override fun isRoot(): Boolean {
-        val receiver = CollectingOutputReceiver()
-        executeShellCommand(
-            "echo \$USER_ID",
-            receiver,
-            QUERY_IS_ROOT_TIMEOUT_MS,
-            TimeUnit.MILLISECONDS
-        )
-        val userID = receiver.output.trim { it <= ' ' }
-        return userID == "0"
-    }
+    override fun isRoot(): Boolean =
+        logUsage(IDeviceUsageTracker.Method.IS_ROOT) {
+            val receiver = CollectingOutputReceiver()
+            executeShellCommand(
+                "echo \$USER_ID",
+                receiver,
+                QUERY_IS_ROOT_TIMEOUT_MS,
+                TimeUnit.MILLISECONDS
+            )
+            val userID = receiver.output.trim { it <= ' ' }
+            userID == "0"
+        }
 
     @Deprecated("")
     override fun getBatteryLevel(): Int {
@@ -653,13 +724,15 @@ internal class AdblibIDeviceWrapper(
         throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
-    override fun getAbis(): MutableList<String> {
-        return iDeviceSharedImpl.abis
-    }
+    override fun getAbis(): MutableList<String> =
+        logUsage(IDeviceUsageTracker.Method.GET_ABIS) {
+            iDeviceSharedImpl.abis
+        }
 
-    override fun getDensity(): Int {
-        return iDeviceSharedImpl.density
-    }
+    override fun getDensity(): Int =
+        logUsage(IDeviceUsageTracker.Method.GET_DENSITY) {
+            iDeviceSharedImpl.density
+        }
 
     override fun getLanguage(): String? {
         throw UnsupportedOperationException("This method is not used in Android Studio")
@@ -669,9 +742,10 @@ internal class AdblibIDeviceWrapper(
         throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
-    override fun getVersion(): AndroidVersion {
-        return iDeviceSharedImpl.version
-    }
+    override fun getVersion(): AndroidVersion =
+        logUsage(IDeviceUsageTracker.Method.GET_VERSION) {
+            iDeviceSharedImpl.version
+        }
 
     override fun executeRemoteCommand(
         command: String,
@@ -680,16 +754,18 @@ internal class AdblibIDeviceWrapper(
         maxTimeToOutputResponse: Long,
         maxTimeUnits: TimeUnit
     ) {
-        // Note that `AdbHelper.AdbService.SHELL` is passed down to match the behavior of `DeviceImpl`
-        executeRemoteCommand(
-            AdbHelper.AdbService.SHELL,
-            command,
-            rcvr,
-            maxTimeout,
-            maxTimeToOutputResponse,
-            maxTimeUnits,
-            null /* inputStream */
-        )
+        logUsage(IDeviceUsageTracker.Method.EXECUTE_REMOTE_COMMAND_2) {
+            // Note that `AdbHelper.AdbService.SHELL` is passed down to match the behavior of `DeviceImpl`
+            executeRemoteCommand(
+                AdbHelper.AdbService.SHELL,
+                command,
+                rcvr,
+                maxTimeout,
+                maxTimeToOutputResponse,
+                maxTimeUnits,
+                null /* inputStream */
+            )
+        }
     }
 
     override fun executeRemoteCommand(
@@ -698,15 +774,17 @@ internal class AdblibIDeviceWrapper(
         maxTimeToOutputResponse: Long,
         maxTimeUnits: TimeUnit
     ) {
-        // Note that `AdbHelper.AdbService.SHELL` is passed down to match the behavior of `DeviceImpl`
-        executeRemoteCommand(
-            AdbHelper.AdbService.SHELL,
-            command,
-            rcvr,
-            maxTimeToOutputResponse,
-            maxTimeUnits,
-            null /* inputStream */
-        )
+        logUsage(IDeviceUsageTracker.Method.EXECUTE_REMOTE_COMMAND_1) {
+            // Note that `AdbHelper.AdbService.SHELL` is passed down to match the behavior of `DeviceImpl`
+            executeRemoteCommand(
+                AdbHelper.AdbService.SHELL,
+                command,
+                rcvr,
+                maxTimeToOutputResponse,
+                maxTimeUnits,
+                null /* inputStream */
+            )
+        }
     }
 
     override fun executeRemoteCommand(
@@ -717,15 +795,17 @@ internal class AdblibIDeviceWrapper(
         maxTimeUnits: TimeUnit,
         `is`: InputStream?
     ) {
-        executeRemoteCommand(
-            adbService,
-            command,
-            rcvr,
-            0L,
-            maxTimeToOutputResponse,
-            maxTimeUnits,
-            `is`
-        )
+        logUsage(IDeviceUsageTracker.Method.EXECUTE_REMOTE_COMMAND_3) {
+            executeRemoteCommand(
+                adbService,
+                command,
+                rcvr,
+                0L,
+                maxTimeToOutputResponse,
+                maxTimeUnits,
+                `is`
+            )
+        }
     }
 
     override fun executeRemoteCommand(
@@ -737,40 +817,43 @@ internal class AdblibIDeviceWrapper(
         maxTimeUnits: TimeUnit,
         inputStream: InputStream?
     ) {
-        if (adbService != AdbHelper.AdbService.ABB_EXEC) {
-            executeShellCommand(
-                adbService,
-                connectedDevice,
-                command,
-                receiver,
-                maxTimeout,
-                maxTimeToOutputResponse,
-                maxTimeUnits,
-                inputStream
-            )
-        } else {
-            val maxTimeoutDuration =
-                if (maxTimeout > 0) Duration.ofMillis(maxTimeUnits.toMillis(maxTimeout)) else INFINITE_DURATION
-            runBlockingLegacy(timeout = maxTimeoutDuration) {
-                val adbInputChannel =
-                    inputStream?.let { connectedDevice.session.channelFactory.wrapInputStream(it) }
-                val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
-                // TODO: Use `maxTimeToOutputResponse`
-                // TODO(b/299483329): wrap abb_exec and abb with a AbbCommand (similar to ShellCommand)
-                val abbExecFlow = connectedDevice.session.deviceServices.abb_exec(
-                    deviceSelector,
-                    command.split(" "),
-                    ShellCollectorToIShellOutputReceiver(
-                        receiver
-                    ),
-                    adbInputChannel,
-                    // TODO(b/298475728): Revisit this when we are closer to having a working implementation of `IDevice`
-                    // If `shutdownOutput` is true then we get a "java.lang.SecurityException: Files still open" exception
-                    // when executing a "package install-commit" command after the "package install-write" command
-                    // since the package manager doesn't handle shutdown correctly.
-                    shutdownOutput = false
+        logUsage(IDeviceUsageTracker.Method.EXECUTE_REMOTE_COMMAND_4) {
+            if (adbService != AdbHelper.AdbService.ABB_EXEC) {
+                executeShellCommand(
+                    adbService,
+                    connectedDevice,
+                    command,
+                    receiver,
+                    maxTimeout,
+                    maxTimeToOutputResponse,
+                    maxTimeUnits,
+                    inputStream
                 )
-                abbExecFlow.first()
+            } else {
+                val maxTimeoutDuration =
+                    if (maxTimeout > 0) Duration.ofMillis(maxTimeUnits.toMillis(maxTimeout)) else INFINITE_DURATION
+                runBlockingLegacy(timeout = maxTimeoutDuration) {
+                    val adbInputChannel =
+                        inputStream?.let { connectedDevice.session.channelFactory.wrapInputStream(it) }
+                    val deviceSelector =
+                        DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+                    // TODO: Use `maxTimeToOutputResponse`
+                    // TODO(b/299483329): wrap abb_exec and abb with a AbbCommand (similar to ShellCommand)
+                    val abbExecFlow = connectedDevice.session.deviceServices.abb_exec(
+                        deviceSelector,
+                        command.split(" "),
+                        ShellCollectorToIShellOutputReceiver(
+                            receiver
+                        ),
+                        adbInputChannel,
+                        // TODO(b/298475728): Revisit this when we are closer to having a working implementation of `IDevice`
+                        // If `shutdownOutput` is true then we get a "java.lang.SecurityException: Files still open" exception
+                        // when executing a "package install-commit" command after the "package install-write" command
+                        // since the package manager doesn't handle shutdown correctly.
+                        shutdownOutput = false
+                    )
+                    abbExecFlow.first()
+                }
             }
         }
     }
@@ -782,18 +865,32 @@ internal class AdblibIDeviceWrapper(
     override fun rawExec2(
         executable: String,
         parameters: Array<out String>
-    ): SimpleConnectedSocket = runBlockingLegacy {
-        val command = StringBuilder(executable)
-        for (parameter in parameters) {
-            command.append(" ")
-            command.append(parameter)
+    ): SimpleConnectedSocket = logUsage(IDeviceUsageTracker.Method.RAW_EXEC2) {
+        runBlockingLegacy {
+            val command = StringBuilder(executable)
+            for (parameter in parameters) {
+                command.append(" ")
+                command.append(parameter)
+            }
+            val channel = connectedDevice.session.deviceServices.rawExec(
+                DeviceSelector.fromSerialNumber(
+                    serialNumber
+                ), command.toString()
+            )
+            AdblibChannelWrapper(channel)
         }
-        val channel = connectedDevice.session.deviceServices.rawExec(
-            DeviceSelector.fromSerialNumber(
-                serialNumber
-            ), command.toString()
-        )
-        AdblibChannelWrapper(channel)
+    }
+
+    /**
+     * Executes a block and logs its success of failure status using the Android Studio UsageTracker
+     */
+    private inline fun <R> logUsage(method: IDeviceUsageTracker.Method, block: () -> R): R {
+        return try {
+            block().also { iDeviceUsageTracker.logUsage(method, false) }
+        } catch (t: Throwable) {
+            iDeviceUsageTracker.logUsage(method, true)
+            throw t
+        }
     }
 
     /**
@@ -801,7 +898,7 @@ internal class AdblibIDeviceWrapper(
      *
      * @throws TimeoutException if [block] take more than [timeout] to execute
      */
-    internal fun <R> runBlockingLegacy(
+    private fun <R> runBlockingLegacy(
         timeout: Duration = Duration.ofMillis(DdmPreferences.getTimeOut().toLong()),
         block: suspend CoroutineScope.() -> R
     ): R {
