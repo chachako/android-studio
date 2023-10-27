@@ -116,7 +116,7 @@ abstract class ProducerTask extends DefaultTask {
       FileWriter writer = new FileWriter(outputFile)
       writer.write("task " + getName() + " was here !")
       writer.close()
-      return new BuiltArtifactImpl(
+      return BuiltArtifactImpl.make(
         outputFile.getAbsolutePath(),
         123,
         "123",

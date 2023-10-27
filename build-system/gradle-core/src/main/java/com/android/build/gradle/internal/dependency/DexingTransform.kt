@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.dependency
 
-import com.android.build.api.variant.impl.getFeatureLevel
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
@@ -424,7 +423,7 @@ object DexingRegistration {
     ) {
 
         constructor(creationConfig: ApkCreationConfig) : this(
-            minSdkVersion = creationConfig.dexingCreationConfig.minSdkVersionForDexing.getFeatureLevel(),
+            minSdkVersion = creationConfig.dexingCreationConfig.minSdkVersionForDexing,
             debuggable = creationConfig.debuggable,
             enableCoreLibraryDesugaring = creationConfig.dexingCreationConfig.isCoreLibraryDesugaringEnabled,
             enableGlobalSynthetics = creationConfig.enableGlobalSynthetics,
@@ -445,7 +444,7 @@ object DexingRegistration {
 
             private fun needsClasspath(creationConfig: ApkCreationConfig): Boolean =
                 needsDesugaring(creationConfig) &&
-                        creationConfig.dexingCreationConfig.minSdkVersionForDexing.getFeatureLevel() < 24
+                        creationConfig.dexingCreationConfig.minSdkVersionForDexing < 24
 
             private fun useFullClasspath(creationConfig: ApkCreationConfig): Boolean =
                 needsClasspath(creationConfig) &&

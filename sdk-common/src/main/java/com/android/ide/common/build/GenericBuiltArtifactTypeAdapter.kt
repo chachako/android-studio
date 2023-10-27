@@ -149,6 +149,7 @@ internal object GenericBuiltArtifactTypeAdapter: CommonBuiltArtifactTypeAdapter<
             out.endObject()
         }
         out.endArray()
+        value.minSdkVersionForDexing?.let { out.name("minSdkVersionForDexing").value(it) }
     }
 
     @Throws(IOException::class)
@@ -156,12 +157,14 @@ internal object GenericBuiltArtifactTypeAdapter: CommonBuiltArtifactTypeAdapter<
         var outputType: String? = null
         val filters = ImmutableList.Builder<GenericFilterConfiguration>()
         val attributes = mutableMapOf<String, String>()
+        var minSdkVersionForDexing: Int? = null
         return super.read(reader,
             { attributeName: String ->
                 when(attributeName) {
                     "type" -> outputType = reader.nextString()
                     "filters" -> readFilters(reader, filters)
                     "attributes" -> readAttributes(reader, attributes)
+                    "minSdkVersionForDexing" -> minSdkVersionForDexing = reader.nextInt()
                     // any other attribute we do not know about is AGP implementation details
                     // we do not care about. it has to be a String though.
                     else -> reader.nextString()
@@ -176,7 +179,8 @@ internal object GenericBuiltArtifactTypeAdapter: CommonBuiltArtifactTypeAdapter<
                     outputFile = outputFile,
                     versionCode = versionCode,
                     versionName = versionName,
-                    attributes = attributes
+                    attributes = attributes,
+                    minSdkVersionForDexing = minSdkVersionForDexing
                 )
             })
     }

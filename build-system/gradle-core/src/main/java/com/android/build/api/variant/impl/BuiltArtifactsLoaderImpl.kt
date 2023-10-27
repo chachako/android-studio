@@ -85,15 +85,8 @@ class BuiltArtifactsLoaderImpl: BuiltArtifactsLoader {
                 variantName = buildOutputs.variantName,
                 elements = buildOutputs.elements
                     .asSequence()
-                    .map { builtArtifact ->
-                        BuiltArtifactImpl.make(
-                            outputFile = relativePathToUse.resolve(
-                                Paths.get(builtArtifact.outputFile)).normalize().toString(),
-                            versionCode = builtArtifact.versionCode,
-                            versionName = builtArtifact.versionName,
-                            variantOutputConfiguration = builtArtifact.variantOutputConfiguration,
-                            attributes = builtArtifact.attributes
-                        )
+                    .map {
+                        it.newOutput(relativePathToUse.resolve(Paths.get(it.outputFile)).normalize())
                     }.toList(),
                 baselineProfiles = buildOutputs.baselineProfiles
             )

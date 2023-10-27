@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.tasks
 
-import com.android.build.api.variant.impl.getFeatureLevel
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
@@ -161,14 +160,14 @@ abstract class L8DexDesugarLibTask : NonIncrementalTask() {
             super.configure(task)
             task.libConfiguration.set(getDesugarLibConfig(creationConfig.services))
             task.desugarLibJar.from(getDesugarLibJarFromMaven(creationConfig.services))
-            task.minSdkVersion.set(dexingCreationConfig.minSdkVersionForDexing.getFeatureLevel())
+            task.minSdkVersion.set(dexingCreationConfig.minSdkVersionForDexing)
             task.debuggable.set(creationConfig.debuggable)
             task.fullBootClasspath.from(creationConfig.global.fullBootClasspath)
 
             if (dexingCreationConfig.needsShrinkDesugarLibrary) {
                 task.desugaredDesugarLibJar.from(getDesugaredDesugarLib(
                     creationConfig.services,
-                    dexingCreationConfig.minSdkVersionForDexing.getFeatureLevel(),
+                    dexingCreationConfig.minSdkVersionForDexing,
                     task.fullBootClasspath),
                 )
                 // desugar library is shrunk to reduce apk but not obfuscated or optimized

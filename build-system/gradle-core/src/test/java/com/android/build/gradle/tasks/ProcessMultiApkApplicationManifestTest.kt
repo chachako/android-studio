@@ -75,7 +75,8 @@ class ProcessMultiApkApplicationManifestTest {
             VariantOutputConfigurationImpl(false, listOf()),
             "base_name",
             "main_full_name",
-            FakeGradleProperty(value = "output_file_name")
+            FakeGradleProperty(value = "output_file_name"),
+            minSdkVersionForDexing = 24
         )
         val creationConfig = Mockito.mock(ApplicationCreationConfig::class.java)
         Mockito.`when`(creationConfig.outputs).thenReturn(VariantOutputList(listOf(mainOutput)))
@@ -105,6 +106,7 @@ class ProcessMultiApkApplicationManifestTest {
         assertThat(singleOutput.variantOutputConfiguration.outputType).isEqualTo(
             VariantOutputConfiguration.OutputType.SINGLE
         )
+        assertThat(singleOutput.minSdkVersionForDexing).isEqualTo(24)
     }
 
     @Test
@@ -163,6 +165,7 @@ class ProcessMultiApkApplicationManifestTest {
                 )
                 assertThat(manifestContent).contains("android:versionCode=\"12\"")
             }
+            assertThat(it.minSdkVersionForDexing).isEqualTo(24)
         }
     }
 
@@ -283,7 +286,8 @@ class ProcessMultiApkApplicationManifestTest {
             VariantOutputConfigurationImpl(false, if (filter != null) listOf(filter) else listOf()),
             "base_name",
             "main_full_name",
-            FakeGradleProperty(value = "some_output_file")
+            FakeGradleProperty(value = "some_output_file"),
+            minSdkVersionForDexing = 24
         )
 
     private fun createVariantOutputForFilter(filterType: FilterConfiguration.FilterType, identifier: String) =

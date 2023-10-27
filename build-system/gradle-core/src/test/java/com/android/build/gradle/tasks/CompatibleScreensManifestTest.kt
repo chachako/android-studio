@@ -119,16 +119,7 @@ class CompatibleScreensManifestTest {
         val configAction = CompatibleScreensManifest.CreationAction(
                 appVariant, setOf("xxhpi", "xxxhdpi")
         )
-        val variantOutputList = VariantOutputList(
-            listOf(
-                VariantOutputImpl(
-                    FakeGradleProperty(value = 0),
-                    FakeGradleProperty(value =""),
-                    FakeGradleProperty(value =true),
-                    Mockito.mock(VariantOutputConfigurationImpl::class.java),
-                    "base_name",
-                    "main_full_name",
-                    FakeGradleProperty(value = "output_file_name"))))
+        val variantOutputList = VariantOutputList(listOf(fakeVariantOutput()))
         `when`(appVariant.outputs).thenReturn(variantOutputList)
 
         configAction.configure(task)
@@ -144,16 +135,7 @@ class CompatibleScreensManifestTest {
 
     @Test
     fun testNoSplit() {
-
-        task.variantOutputs.add(
-            VariantOutputImpl(FakeGradleProperty(5),
-            FakeGradleProperty("version_name"),
-            FakeGradleProperty(true),
-            VariantOutputConfigurationImpl(false, listOf()),
-                "base_name",
-                "main_full_name",
-                FakeGradleProperty(value = "output_file_name")))
-
+        task.variantOutputs.add(fakeVariantOutput())
         task.variantName = "variant"
         task.minSdkVersion.set("22" )
         task.screenSizes.set(setOf("mdpi", "xhdpi"))
@@ -169,18 +151,7 @@ class CompatibleScreensManifestTest {
     @Test
     @Throws(IOException::class)
     fun testSingleSplitWithMinSdkVersion() {
-
-        task.variantOutputs.add(
-            VariantOutputImpl(FakeGradleProperty(5),
-                FakeGradleProperty("version_name"),
-                FakeGradleProperty(true),
-                VariantOutputConfigurationImpl(false,
-                    listOf(FilterConfigurationImpl(FilterConfiguration.FilterType.DENSITY, "xhdpi"))),
-                "base_name",
-
-                "split_full_name",
-                FakeGradleProperty(value = "output_file_name")))
-
+        task.variantOutputs.add(fakeVariantOutput(withSplits = true))
         task.variantName = "variant"
         task.minSdkVersion.set("22")
         task.screenSizes.set(setOf("xhdpi"))
@@ -203,17 +174,7 @@ class CompatibleScreensManifestTest {
     @Test
     @Throws(IOException::class)
     fun testSingleSplitWithoutMinSdkVersion() {
-
-        task.variantOutputs.add(
-            VariantOutputImpl(FakeGradleProperty(5),
-                FakeGradleProperty("version_name"),
-                FakeGradleProperty(true),
-                VariantOutputConfigurationImpl(false,
-                    listOf(FilterConfigurationImpl(FilterConfiguration.FilterType.DENSITY, "xhdpi"))),
-                "base_name",
-                "split_full_name",
-                FakeGradleProperty(value = "output_file_name")))
-
+        task.variantOutputs.add(fakeVariantOutput(withSplits = true))
         task.variantName = "variant"
         task.minSdkVersion.set(task.project.provider { null })
         task.screenSizes.set(setOf("xhdpi"))
@@ -234,28 +195,15 @@ class CompatibleScreensManifestTest {
     @Test
     @Throws(IOException::class)
     fun testMultipleSplitsWithMinSdkVersion() {
-
+        task.variantOutputs.add(fakeVariantOutput(withSplits = true))
         task.variantOutputs.add(
-            VariantOutputImpl(FakeGradleProperty(5),
-                FakeGradleProperty("version_name"),
-                FakeGradleProperty(true),
-                VariantOutputConfigurationImpl(false,
-                    listOf(FilterConfigurationImpl(FilterConfiguration.FilterType.DENSITY, "xhdpi"))),
-                "base_name",
-                "split_full_name",
-                FakeGradleProperty(value = "output_file_name")))
-
-        task.variantOutputs.add(
-            VariantOutputImpl(FakeGradleProperty(5),
-                FakeGradleProperty("version_name"),
-                FakeGradleProperty(true),
-                VariantOutputConfigurationImpl(false,
-                    listOf(FilterConfigurationImpl(FilterConfiguration.FilterType.DENSITY, "xxhdpi"))),
-                "base_name",
-
-                "split_full_name",
-                FakeGradleProperty(value = "output_file_name")))
-
+            fakeVariantOutput(withSplits = true).copy(
+                variantOutputConfiguration = VariantOutputConfigurationImpl(
+                    false,
+                    listOf(FilterConfigurationImpl(FilterConfiguration.FilterType.DENSITY, "xxhdpi"))
+                )
+            )
+        )
 
         task.variantName = "variant"
         task.minSdkVersion.set("23")
@@ -283,6 +231,23 @@ class CompatibleScreensManifestTest {
         assertThat(xml)
             .contains("<screen android:screenSize=\"xxhdpi\" android:screenDensity=\"480\" />")
     }
+
+    private fun fakeVariantOutput(withSplits: Boolean = false): VariantOutputImpl =
+        VariantOutputImpl(
+            versionCode = FakeGradleProperty(1),
+            versionName = FakeGradleProperty("version_name"),
+            enabled = FakeGradleProperty(true),
+            variantOutputConfiguration = VariantOutputConfigurationImpl(
+                isUniversal = false,
+                filters = if (withSplits) {
+                    listOf(FilterConfigurationImpl(FilterConfiguration.FilterType.DENSITY, "xhdpi"))
+                } else emptyList()
+            ),
+            baseName = "base_name",
+            fullName = "full_name",
+            outputFileName = FakeGradleProperty("output_file_name"),
+            minSdkVersionForDexing = 24
+        )
 
     companion object {
         private fun findManifest(taskOutputDir: File, splitName: String): File {

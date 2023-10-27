@@ -166,13 +166,8 @@ class BuiltArtifactsImpl @JvmOverloads constructor(
                 elements
                         .asSequence()
                         .map { builtArtifact ->
-                            BuiltArtifactImpl.make(
-                                    outputFile = projectPath.relativize(
-                                            Paths.get(builtArtifact.outputFile)).toString(),
-                                    versionCode = builtArtifact.versionCode,
-                                    versionName = builtArtifact.versionName,
-                                    variantOutputConfiguration = builtArtifact.variantOutputConfiguration,
-                                    attributes = builtArtifact.attributes
+                            builtArtifact.newOutput(
+                                projectPath.relativize(Paths.get(builtArtifact.outputFile))
                             )
                         }.toList(),
                 elementType(),

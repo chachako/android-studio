@@ -46,7 +46,12 @@ data class VariantOutputImpl(
     @get:Input
     val fullName: String,
     @get:Input
-    val outputFileName: Property<String>
+    val outputFileName: Property<String>,
+
+    @get:Input
+    @get:Optional
+    val minSdkVersionForDexing: Int?
+
 ) : VariantOutput, VariantOutputConfiguration {
 
     @get:Internal
@@ -64,14 +69,28 @@ data class VariantOutputImpl(
         @get:Input
         val fullName: String,
         @get:Input
-        val outputFileName: String): Serializable
+        val outputFileName: String,
+        @get:Input
+        val minSdkVersionForDexing: Int?
+    ) : Serializable {
+
+        fun toBuiltArtifact(outputFile: File): BuiltArtifactImpl =
+            BuiltArtifactImpl.make(
+                outputFile = outputFile.absolutePath,
+                versionCode = versionCode,
+                versionName = versionName,
+                variantOutputConfiguration = variantOutputConfiguration,
+                minSdkVersionForDexing = minSdkVersionForDexing
+            )
+    }
 
     fun toBuiltArtifact(outputFile: File): BuiltArtifactImpl =
         BuiltArtifactImpl.make(
             outputFile = outputFile.absolutePath,
             versionCode = versionCode.orNull,
             versionName = versionName.orNull,
-            variantOutputConfiguration = variantOutputConfiguration
+            variantOutputConfiguration = variantOutputConfiguration,
+            minSdkVersionForDexing = minSdkVersionForDexing
         )
 
     fun toSerializedForm() = SerializedForm(
@@ -80,7 +99,9 @@ data class VariantOutputImpl(
         variantOutputConfiguration = variantOutputConfiguration as VariantOutputConfigurationImpl,
         fullName = fullName,
         baseName = baseName,
-        outputFileName = outputFileName.get())
+        outputFileName = outputFileName.get(),
+        minSdkVersionForDexing = minSdkVersionForDexing
+    )
 
     fun getFilter(filterType: FilterConfiguration.FilterType): FilterConfiguration? =
         filters.firstOrNull { it.filterType == filterType }

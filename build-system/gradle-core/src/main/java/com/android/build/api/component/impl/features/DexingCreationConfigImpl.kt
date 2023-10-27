@@ -17,15 +17,12 @@
 package com.android.build.api.component.impl.features
 
 import com.android.build.api.artifact.MultipleArtifact
-import com.android.build.api.variant.AndroidVersion
-import com.android.build.api.variant.impl.AndroidVersionImpl
 import com.android.build.api.variant.impl.getFeatureLevel
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.DynamicFeatureCreationConfig
 import com.android.build.gradle.internal.component.features.DexingCreationConfig
 import com.android.build.gradle.internal.core.dsl.features.DexingDslInfo
-import com.android.build.gradle.internal.core.dsl.impl.computeMergedOptions
 import com.android.build.gradle.internal.scope.Java8LangSupport
 import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.VariantServices
@@ -33,7 +30,6 @@ import com.android.build.gradle.options.BooleanOption
 import com.android.builder.dexing.DexingType
 import com.android.builder.errors.IssueReporter
 import java.io.File
-import kotlin.math.max
 
 class DexingCreationConfigImpl(
     private val component: ApkCreationConfig,
@@ -178,15 +174,15 @@ class DexingCreationConfigImpl(
      *
      * This has no relation with targetSdkVersion from build.gradle/manifest.
      */
-    override val minSdkVersionForDexing: AndroidVersion
+    override val minSdkVersionForDexing: Int
         get() {
-            val targetDeployApiFromIDE = component.global.targetDeployApiFromIDE ?: 1
+            var minSdkVersion = component.minSdk.getFeatureLevel()
 
-            val minForDexing = if (targetDeployApiFromIDE >= com.android.sdklib.AndroidVersion.VersionCodes.N) {
-                max(24, component.minSdk.getFeatureLevel())
-            } else {
-                component.minSdk.getFeatureLevel()
+            val deviceApiLevel = component.global.targetDeployApiFromIDE
+            if (minSdkVersion < 24 && deviceApiLevel != null && deviceApiLevel >= 24) {
+                minSdkVersion = 24
             }
-            return AndroidVersionImpl(minForDexing)
+
+            return minSdkVersion
         }
 }

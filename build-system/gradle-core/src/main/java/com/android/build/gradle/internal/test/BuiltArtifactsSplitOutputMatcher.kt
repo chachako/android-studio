@@ -50,20 +50,7 @@ object BuiltArtifactsSplitOutputMatcher {
             ),
             applicationId = builtArtifacts.applicationId,
             variantName = builtArtifacts.variantName,
-            elements = builtArtifacts.elements.map { sourceBuiltArtifact ->
-                GenericBuiltArtifact(
-                    outputType = sourceBuiltArtifact.outputType.toString(),
-                    filters = sourceBuiltArtifact.filters.map { filterConfiguration ->
-                        GenericFilterConfiguration(
-                            filterConfiguration.filterType.toString(),
-                            filterConfiguration.identifier
-                        )
-                    },
-                    versionCode = sourceBuiltArtifact.versionCode,
-                    versionName = sourceBuiltArtifact.versionName,
-                    outputFile = sourceBuiltArtifact.outputFile
-                )
-            },
+            elements = builtArtifacts.elements.map { it.toGenericBuiltArtifact() },
             elementType = builtArtifacts.elementType(),
             baselineProfiles = builtArtifacts.baselineProfiles
         )

@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.component.features
 
-import com.android.build.api.variant.AndroidVersion
 import com.android.build.gradle.internal.scope.Java8LangSupport
 import com.android.builder.dexing.DexingType
 import java.io.File
@@ -30,10 +29,16 @@ import java.io.File
  * [com.android.build.gradle.internal.component.ApkCreationConfig.dexingCreationConfig].
  */
 interface DexingCreationConfig {
+
     /**
-     * Returns the minimum SDK version for which is used for dexing this variant.
+     * The minimum API level that the output `.dex` files support.
+     *
+     * Note that this value may be different from the minSdkVersion specified in the DSL/manifest.
+     * For example, if the IDE is deploying to a device (i.e., the API level of the device is known)
+     * and if a few more conditions are met, AGP may use a higher minSdkVersion for dexing to
+     * improve build performance.
      */
-    val minSdkVersionForDexing: AndroidVersion
+    val minSdkVersionForDexing: Int
 
     val isMultiDexEnabled: Boolean
 

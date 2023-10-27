@@ -18,11 +18,9 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.SdkConstants
 import com.android.build.api.artifact.MultipleArtifact
-import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.api.transform.TransformException
-import com.android.build.api.variant.impl.getFeatureLevel
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.crash.PluginCrashReporter
@@ -288,7 +286,7 @@ abstract class DexMergingTask : NewIncrementalTask() {
             // Shared parameters
             task.sharedParams.dexingType.setDisallowChanges(dexingType)
             task.sharedParams.minSdkVersion.setDisallowChanges(
-                dexingCreationConfig.minSdkVersionForDexing.getFeatureLevel()
+                dexingCreationConfig.minSdkVersionForDexing
             )
             task.sharedParams.debuggable.setDisallowChanges(creationConfig.debuggable)
             task.sharedParams.errorFormatMode.setDisallowChanges(
@@ -464,11 +462,8 @@ abstract class DexMergingTask : NewIncrementalTask() {
                         return customNumberOfBuckets
                     }
 
-                    // Deploy API is either the minSdkVersion or if deploying from the IDE, the API level of
-                    // the device we're deploying too.
-                    val targetDeployApi = dexingCreationConfig.minSdkVersionForDexing.getFeatureLevel()
                     // We can be in native multidex mode while using 20- value for dexing
-                    val overrideMinSdkVersion = max(21, targetDeployApi)
+                    val overrideMinSdkVersion = max(21, dexingCreationConfig.minSdkVersionForDexing)
                     getNumberOfBuckets(minSdkVersion = overrideMinSdkVersion)
                 }
             }

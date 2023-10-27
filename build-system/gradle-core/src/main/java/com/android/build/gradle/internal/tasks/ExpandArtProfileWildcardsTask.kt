@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.tasks
 
-import com.android.build.api.variant.impl.getFeatureLevel
 import com.android.build.gradle.internal.api.BaselineProfiles
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
@@ -198,7 +197,7 @@ abstract class ExpandArtProfileWildcardsTask: NonIncrementalTask() {
             task.desugaredDesugarLibJar.fromDisallowChanges(
                 getDesugaredDesugarLib(
                     creationConfig.services,
-                    dexingCreationConfig.minSdkVersionForDexing.getFeatureLevel(),
+                    dexingCreationConfig.minSdkVersionForDexing,
                     task.fullBootClasspath)
             )
 

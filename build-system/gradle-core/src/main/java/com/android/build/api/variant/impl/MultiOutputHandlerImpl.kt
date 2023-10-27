@@ -197,7 +197,8 @@ private class SerializableSingleOutputHandler(
         variantOutputConfiguration = VariantOutputConfigurationImpl(),
         baseName = "",
         fullName = "",
-        outputFileName = ""
+        outputFileName = "",
+        minSdkVersionForDexing = null
     )
 
     override val mainVersionCode = null

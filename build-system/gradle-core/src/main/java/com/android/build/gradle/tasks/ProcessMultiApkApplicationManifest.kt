@@ -96,14 +96,7 @@ abstract class ProcessMultiApkApplicationManifest: ManifestProcessorTask() {
             val mergedManifestOutputFile =
                 processVariantOutput(compatibleScreenManifestForSplit?.outputFile, variantOutput)
 
-            multiApkManifestOutputs.add(
-                BuiltArtifactImpl.make(
-                    outputFile = mergedManifestOutputFile.absolutePath,
-                    versionCode = variantOutput.versionCode,
-                    versionName = variantOutput.versionName,
-                    variantOutputConfiguration = variantOutput.variantOutputConfiguration
-                )
-            )
+            multiApkManifestOutputs.add(variantOutput.toBuiltArtifact(mergedManifestOutputFile))
         }
         BuiltArtifactsImpl(
             artifactType = InternalArtifactType.MERGED_MANIFESTS,

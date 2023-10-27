@@ -358,7 +358,7 @@ abstract class R8Task @Inject constructor(
             setBootClasspathForCodeShrinker(task)
             if (creationConfig is ApkCreationConfig) {
                 task.minSdkVersion.set(
-                    creationConfig.dexingCreationConfig.minSdkVersionForDexing.apiLevel
+                    creationConfig.dexingCreationConfig.minSdkVersionForDexing
                 )
             } else {
                 task.minSdkVersion.set(creationConfig.minSdk.apiLevel)

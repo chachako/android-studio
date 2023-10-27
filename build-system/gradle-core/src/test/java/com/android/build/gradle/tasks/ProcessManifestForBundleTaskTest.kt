@@ -70,7 +70,8 @@ class ProcessManifestForBundleTaskTest {
             VariantOutputConfigurationImpl(),
             "base_name",
             "split_full_name",
-            FakeGradleProperty(value = "output_file_name")
+            FakeGradleProperty(value = "output_file_name"),
+            minSdkVersionForDexing = 24
         )
         Mockito.`when`(creationConfig.outputs).thenReturn(VariantOutputList(listOf(mainSplit)))
         task.outputsHandler.set(MultiOutputHandler.create(creationConfig))
