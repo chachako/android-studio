@@ -102,10 +102,6 @@ public abstract class FakePackage implements RepoPackage {
             mArchive.setCompleteUrl(url);
         }
 
-        public void setPatchInfo(String url, Revision src) {
-            mArchive.setPatchInfo(url, src);
-        }
-
         @Override
         @Nullable
         public Archive getArchive() {
@@ -150,17 +146,10 @@ public abstract class FakePackage implements RepoPackage {
         private static class FakeArchive extends Archive {
 
             private String mCompleteUrl;
-            private String mPatchUrl;
-            private Revision mPatchSrc;
             private CompleteType mComplete;
 
             public void setCompleteUrl(String url) {
                 mCompleteUrl = url;
-            }
-
-            public void setPatchInfo(String url, Revision src) {
-                mPatchUrl = url;
-                mPatchSrc = src;
             }
 
             @NonNull
@@ -173,20 +162,6 @@ public abstract class FakePackage implements RepoPackage {
                 }
                 if (mComplete != null) {
                     return mComplete;
-                }
-                return null;
-            }
-
-            @Nullable
-            @Override
-            protected PatchesType getPatches() {
-                if (mPatchUrl != null) {
-                    PatchType patch = createFactory().createPatchType();
-                    patch.setBasedOn(createFactory().createRevisionType(mPatchSrc));
-                    patch.setUrl(mPatchUrl);
-                    PatchesType result = createFactory().createPatchesType();
-                    result.getPatch().add(patch);
-                    return result;
                 }
                 return null;
             }

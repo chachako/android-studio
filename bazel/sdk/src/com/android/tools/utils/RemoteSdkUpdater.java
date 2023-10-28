@@ -218,14 +218,6 @@ public final class RemoteSdkUpdater {
                     public void setForceHttp(boolean force) {}
 
                     @Override
-                    public boolean getDisableSdkPatches() {
-                        return true;
-                    }
-
-                    @Override
-                    public void setDisableSdkPatches(boolean disable) {}
-
-                    @Override
                     public Channel getChannel() {
                         return Channel.create(3);
                     }

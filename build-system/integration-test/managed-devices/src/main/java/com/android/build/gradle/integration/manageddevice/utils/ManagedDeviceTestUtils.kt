@@ -18,8 +18,6 @@ private val systemImageZip = File(System.getProperty("sdk.repo.sysimage.android2
 
 private val emulatorZip = File(System.getProperty("sdk.repo.emulator.zip"))
 
-private val sdkPatcherZip = File(System.getProperty("sdk.repo.sdkpatcher.zip"))
-
 private val buildToolsZip = File(System.getProperty("sdk.repo.buildtools.zip"))
 
 private val platform33Zip = File(System.getProperty("sdk.repo.platform.zip"))
@@ -190,25 +188,6 @@ private fun setupTopLevelRepository(repositoryDir: File) {
                         </archive>
                     </archives>
                 </remotePackage>
-                <remotePackage path="patcher;v4">
-                    <type-details xsi:type="generic:genericDetailsType"/>
-                    <revision>
-                        <major>1</major>
-                    </revision>
-                    <display-name>SDK Patch Applier v4</display-name>
-                    <uses-license ref="android-sdk-license"/>
-                    <channelRef ref="channel-0"/>
-                    <archives>
-                        <archive>
-                            <!--Built on: Wed Apr 29 10:04:35 2020.-->
-                            <complete>
-                                <size>1827327</size>
-                                <checksum type="sha1">046699c5e2716ae11d77e0bad814f7f33fab261e</checksum>
-                                <url>3534162-studio.sdk-patcher.zip</url>
-                            </complete>
-                        </archive>
-                    </archives>
-                </remotePackage>
                 <remotePackage obsolete="true" path="tools">
                     <type-details xsi:type="generic:genericDetailsType"/>
                     <revision>
@@ -219,7 +198,6 @@ private fun setupTopLevelRepository(repositoryDir: File) {
                     <display-name>Android SDK Tools</display-name>
                     <uses-license ref="android-sdk-license"/>
                     <dependencies>
-                        <dependency path="patcher;v4"/>
                         <dependency path="emulator"/>
                         <dependency path="platform-tools">
                             <min-revision>
@@ -271,9 +249,6 @@ private fun setupTopLevelRepository(repositoryDir: File) {
                     </revision>
                     <display-name>Android Emulator</display-name>
                     <uses-license ref="android-sdk-license"/>
-                    <dependencies>
-                        <dependency path="patcher;v4"/>
-                    </dependencies>
                     <channelRef ref="channel-0"/>
                     <archives>
                         <archive>
@@ -302,7 +277,6 @@ private fun setupTopLevelRepository(repositoryDir: File) {
         repositoryV2Xml.toPath(), repositoryV2XmlContents.toByteArray(StandardCharsets.UTF_8))
 
     FileUtils.copyFileToDirectory(emulatorZip, repositoryDir)
-    FileUtils.copyFileToDirectory(sdkPatcherZip, repositoryDir)
     FileUtils.copyFileToDirectory(buildToolsZip, repositoryDir)
     FileUtils.copyFileToDirectory(platform33Zip, repositoryDir)
     FileUtils.copyFileToDirectory(platformToolsZip, repositoryDir)

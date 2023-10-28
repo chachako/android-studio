@@ -48,7 +48,6 @@ function copy_bazel_artifacts() {(
   cp -a ${bin_dir}/tools/adt/idea/studio/android-studio_build_manifest.textproto ${artifacts_dir}/android-studio_build_manifest.textproto
   cp -a ${bin_dir}/tools/adt/idea/studio/android-studio_update_message.html ${artifacts_dir}/android-studio_update_message.html
   cp -a ${bin_dir}/tools/adt/idea/studio/updater_deploy.jar ${artifacts_dir}/android-studio-updater.jar
-  cp -a ${bin_dir}/tools/adt/idea/updater-ui/sdk-patcher.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/adt/idea/native/installer/android-studio-bundle-data.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/vendor/google/adrt/android-studio-cros-skeleton.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/vendor/google/adrt/android-studio-nsis-prebuilt.zip ${artifacts_dir}
@@ -167,7 +166,6 @@ function run_bazel_test() {
     //tools/adt/idea/studio:android-studio \
     //tools/adt/idea/studio:updater_deploy.jar \
     //tools/vendor/google/aswb:aswb \
-    //tools/adt/idea/updater-ui:sdk-patcher.zip \
     //tools/adt/idea/native/installer:android-studio-bundle-data \
     //tools/base/profiler/native/trace_processor_daemon \
     //tools/base/deploy/deployer:deployer.runner_deploy.jar \

@@ -193,14 +193,6 @@ http_file(
 
 # Not for use in Presubmit
 http_file(
-    name = "sdk_patcher_zip",
-    downloaded_file_path = "3534162-studio.sdk-patcher.zip",
-    sha256 = "18f9b8f27ea656e06b05d8f14d881df8e19803c9221c0be3e801632bcef18bed",
-    urls = ["https://dl.google.com/android/repository/3534162-studio.sdk-patcher.zip"],
-)
-
-# Not for use in Presubmit
-http_file(
     name = "build_tools_zip",
     downloaded_file_path = "build-tools_r30.0.3-linux.zip",
     sha256 = "24593500aa95d2f99fb4f10658aae7e65cb519be6cd33fa164f15f27f3c4a2d6",

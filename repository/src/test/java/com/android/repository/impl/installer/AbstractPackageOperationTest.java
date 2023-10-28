@@ -40,7 +40,6 @@ import org.junit.Test;
 
 /**
  * Tests for AbstractPackageOperation.
- * Note that some functionality is covered by {@code PatchInstallerFactoryTest}.
  */
 
 public class AbstractPackageOperationTest {

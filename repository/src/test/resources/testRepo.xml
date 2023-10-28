@@ -48,26 +48,6 @@
                     <url>http://example.com/arch2</url>
                 </complete>
                 <host-os>windows</host-os>
-                <patches>
-                    <patch>
-                        <based-on>
-                            <major>1</major>
-                            <minor>3</minor>
-                            <micro>2</micro>
-                        </based-on>
-                        <size>987</size>
-                        <checksum>234564398579acf678b32ea98b988f1ab326dc65</checksum>
-                        <url>http://example.com/patch</url>
-                    </patch>
-                    <patch>
-                        <based-on>
-                            <major>2</major>
-                        </based-on>
-                        <size>123</size>
-                        <checksum>2350927340957820498572350293847502934875</checksum>
-                        <url>http://example.com/patch2</url>
-                    </patch>
-                </patches>
             </archive>
             <archive>
                 <complete>

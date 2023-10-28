@@ -92,12 +92,6 @@ public class RemoteRepoLoaderImplTest extends TestCase {
         Archive a2 = archiveIter.next();
         assertEquals(1234, a2.getComplete().getSize());
         assertEquals("aarch64", a2.getHostArch());
-        Archive a3 = archiveIter.next();
-        Iterator<Archive.PatchType> patchIter = a3.getAllPatches().iterator();
-        Archive.PatchType patch = patchIter.next();
-        assertEquals(new Revision(1, 3, 2), patch.getBasedOn().toRevision());
-        patch = patchIter.next();
-        assertEquals(new Revision(2), patch.getBasedOn().toRevision());
     }
 
     public void testChannels() throws Exception {

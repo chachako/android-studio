@@ -98,10 +98,6 @@ public class UnmarshalTest extends TestCase {
         Archive archive = archives.get(1);
         assertEquals("x64", archive.getHostArch());
         assertEquals("windows", archive.getHostOs());
-        Archive.PatchType patch = archive.getAllPatches().get(0);
-        assertEquals(new Revision(1), patch.getBasedOn().toRevision());
-        assertEquals(4321, patch.getSize());
-        assertEquals("something", patch.getUrl());
         Archive.CompleteType complete = archive.getComplete();
         assertEquals(65536, complete.getSize());
         Checksum checksum = complete.getTypedChecksum();
@@ -180,10 +176,6 @@ public class UnmarshalTest extends TestCase {
         Archive archive = archives.get(1);
         assertEquals("x64", archive.getHostArch());
         assertEquals("windows", archive.getHostOs());
-        Archive.PatchType patch = archive.getAllPatches().get(0);
-        assertEquals(new Revision(1), patch.getBasedOn().toRevision());
-        assertEquals(4321, patch.getSize());
-        assertEquals("something", patch.getUrl());
         Archive.CompleteType complete = archive.getComplete();
         assertEquals(65536, complete.getSize());
         Checksum checksum = complete.getTypedChecksum();
@@ -247,10 +239,6 @@ public class UnmarshalTest extends TestCase {
         Archive archive = archives.get(1);
         assertEquals("x64", archive.getHostArch());
         assertEquals("windows", archive.getHostOs());
-        Archive.PatchType patch = archive.getAllPatches().get(0);
-        assertEquals(new Revision(1), patch.getBasedOn().toRevision());
-        assertEquals(4321, patch.getSize());
-        assertEquals("something", patch.getUrl());
         Archive.CompleteType complete = archive.getComplete();
         assertEquals(65536, complete.getSize());
         Checksum checksum = complete.getTypedChecksum();
@@ -284,7 +272,6 @@ public class UnmarshalTest extends TestCase {
     public void testLeniency() throws Exception {
         AndroidSdkHandler handler = getAndroidSdkHandler();
         FakeProgressIndicator progress = new FakeProgressIndicator();
-        RepoManager mgr = handler.getSdkManager(progress);
         Repository repo =
                 (Repository)
                         SchemaModuleUtil.unmarshal(
@@ -330,7 +317,6 @@ public class UnmarshalTest extends TestCase {
     public void testNamespaceFallback() throws Exception {
         AndroidSdkHandler handler = getAndroidSdkHandler();
         FakeProgressIndicator progress = new FakeProgressIndicator();
-        RepoManager mgr = handler.getSdkManager(progress);
         Repository repo =
                 (Repository)
                         SchemaModuleUtil.unmarshal(
