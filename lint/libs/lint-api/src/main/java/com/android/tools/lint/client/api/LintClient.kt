@@ -601,16 +601,9 @@ abstract class LintClient {
   private fun getFileFromEnvVar(name: String): File? {
     val home = System.getenv(name) ?: return null
     val file = File(home)
-    if (!file.isDirectory) {
-      val message = "`\$$name` points to non-existent directory $file"
-      report(
-        client = this,
-        issue = IssueRegistry.LINT_ERROR,
-        message = message,
-        location = Location.create(file),
-        file = file
-      )
-      return null
+
+    if (!file.isDirectory && isUnitTest) {
+      error("`\$$name` points to non-existent directory $file")
     }
 
     return file
