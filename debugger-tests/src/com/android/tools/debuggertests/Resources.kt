@@ -15,12 +15,12 @@
  */
 package com.android.tools.debuggertests
 
-import com.intellij.util.io.isFile
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.exists
+import kotlin.io.path.isRegularFile
 import kotlin.io.path.pathString
 import kotlin.io.path.reader
 import kotlin.io.path.writer
@@ -99,7 +99,7 @@ private fun Path.toClassName() =
     .removeSuffix(".kt")
 
 private fun Path.isTestFile(): Boolean {
-  if (!isFile()) {
+  if (!isRegularFile()) {
     return false
   }
   return reader().readLines().find { it.contains("fun start() {") } != null
