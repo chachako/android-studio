@@ -669,7 +669,6 @@ coverage_report(
         "//tools/adt/idea/android:intellij.android.core.tests_tests",
         "//tools/adt/idea/android-test-retention:intellij.android.testRetention.tests_tests",
         "//tools/base/build-system/gradle-core:tests.test",
-        "//tools/base/build-system/integration-test/connected:FailureRetentionConnectedTest",
         "//tools/base/utp/android-test-plugin-host-retention:tests.test",
     ],
 )
@@ -1164,7 +1163,6 @@ coverage_report(
         "//tools/base/build-system/integration-test/application/src/test/java/com/android/build/gradle/integration/gradlecompat:GradleVersionCheckTest",
         "//tools/base/build-system/integration-test/application/src/test/java/com/android/build/gradle/integration/sdk:sdk_tests",
         "//tools/base/build-system/integration-test/application/src/test/java/com/android/build/gradle/integration/testing/unit:tests",
-        "//tools/base/build-system/integration-test/connected:FailureRetentionConnectedTest",
         "//tools/base/build-system/integration-test/connected:UtpConnectedTest",
         "//tools/base/build-system/integration-test/databinding:tests",
         "//tools/base/build-system/integration-test/framework:framework_tests.test",
