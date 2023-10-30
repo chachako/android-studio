@@ -242,10 +242,7 @@ class DeviceProvisionerTest {
 
       // Disconnect completely.
       setDevices()
-      channel.receiveUntilPassing { handles ->
-        assertThat(handles).hasSize(1)
-        assertThat(handles[0].state).isInstanceOf(Disconnected::class.java)
-      }
+      channel.receiveUntilPassing { handles -> assertThat(handles).isEmpty() }
     }
   }
 
@@ -287,11 +284,8 @@ class DeviceProvisionerTest {
       setDevices()
 
       channel.receiveUntilPassing { handles ->
-        assertThat(handles).hasSize(1)
-
-        val handle = handles[0]
-        assertThat(handle).isSameAs(originalHandle)
-        assertThat(handle.state).isInstanceOf(Disconnected::class.java)
+        assertThat(originalHandle.state.connectedDevice).isNull()
+        assertThat(handles).isEmpty()
       }
 
       setDevices(SerialNumbers.PHYSICAL1_USB)
@@ -300,7 +294,8 @@ class DeviceProvisionerTest {
         assertThat(handles).hasSize(1)
 
         val handle = handles[0]
-        assertThat(handle).isSameAs(originalHandle)
+        assertThat(handle.id).isEqualTo(originalHandle.id)
+        assertThat(handle).isNotSameAs(originalHandle)
         assertThat(handle.state).isInstanceOf(Connected::class.java)
       }
     }
