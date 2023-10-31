@@ -114,6 +114,18 @@ internal class AdblibIDeviceWrapper(
         return iDeviceSharedImpl.name
     }
 
+    override fun executeShellCommand(command: String, receiver: IShellOutputReceiver) {
+        logUsage(IDeviceUsageTracker.Method.EXECUTE_SHELL_COMMAND_1) {
+            // This matches the behavior of `DeviceImpl`
+            executeRemoteCommand(
+                command,
+                receiver,
+                DdmPreferences.getTimeOut().toLong(),
+                TimeUnit.MILLISECONDS
+            )
+        }
+    }
+
     @Deprecated("")
     override fun executeShellCommand(
         command: String,
@@ -131,14 +143,20 @@ internal class AdblibIDeviceWrapper(
         }
     }
 
-    override fun executeShellCommand(command: String, receiver: IShellOutputReceiver) {
-        logUsage(IDeviceUsageTracker.Method.EXECUTE_SHELL_COMMAND_1) {
+    override fun executeShellCommand(
+        command: String,
+        receiver: IShellOutputReceiver,
+        maxTimeToOutputResponse: Long,
+        maxTimeUnits: TimeUnit
+    ) {
+        logUsage(IDeviceUsageTracker.Method.EXECUTE_SHELL_COMMAND_3) {
             // This matches the behavior of `DeviceImpl`
             executeRemoteCommand(
                 command,
                 receiver,
-                DdmPreferences.getTimeOut().toLong(),
-                TimeUnit.MILLISECONDS
+                0L,
+                maxTimeToOutputResponse,
+                maxTimeUnits
             )
         }
     }
@@ -160,24 +178,6 @@ internal class AdblibIDeviceWrapper(
                 maxTimeToOutputResponse,
                 maxTimeUnits,
                 `is`
-            )
-        }
-    }
-
-    override fun executeShellCommand(
-        command: String,
-        receiver: IShellOutputReceiver,
-        maxTimeToOutputResponse: Long,
-        maxTimeUnits: TimeUnit
-    ) {
-        logUsage(IDeviceUsageTracker.Method.EXECUTE_SHELL_COMMAND_3) {
-            // This matches the behavior of `DeviceImpl`
-            executeRemoteCommand(
-                command,
-                receiver,
-                0L,
-                maxTimeToOutputResponse,
-                maxTimeUnits
             )
         }
     }
@@ -293,12 +293,12 @@ internal class AdblibIDeviceWrapper(
 
     @Deprecated("")
     override fun getPropertySync(name: String?): String {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     @Deprecated("")
     override fun getPropertyCacheOrSync(name: String?): String {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun supportsFeature(feature: IDevice.Feature): Boolean {
@@ -326,7 +326,7 @@ internal class AdblibIDeviceWrapper(
         }
 
     override fun getMountPoint(name: String): String? {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun toString(): String {
@@ -351,7 +351,7 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun hasClients(): Boolean {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun getClients(): Array<Client> {
@@ -367,19 +367,19 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun getSyncService(): SyncService = runBlockingLegacy {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun getFileListingService(): FileListingService {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun getScreenshot(): RawImage {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun getScreenshot(timeout: Long, unit: TimeUnit?): RawImage {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun startScreenRecorder(
@@ -387,15 +387,15 @@ internal class AdblibIDeviceWrapper(
         options: ScreenRecorderOptions,
         receiver: IShellOutputReceiver
     ) {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun runEventLogService(receiver: LogReceiver?) {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun runLogService(logname: String?, receiver: LogReceiver?) {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun createForward(localPort: Int, remotePort: Int) {
@@ -501,25 +501,25 @@ internal class AdblibIDeviceWrapper(
         }
     }
 
-    // TODO: logUsage STAT_FILE
-    override fun statFile(remote: String): SyncService.FileStat? {
-        return runBlockingLegacy {
-            val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+    override fun statFile(remote: String): SyncService.FileStat? =
+        logUsage(IDeviceUsageTracker.Method.STAT_FILE) {
+            runBlockingLegacy {
+                val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
 
-            Log.d(LOG_TAG, "Stat remote file '$remote' on device '$serialNumber'")
+                Log.d(LOG_TAG, "Stat remote file '$remote' on device '$serialNumber'")
 
-            mapToSyncException {
-                connectedDevice.session.deviceServices.syncStat(deviceSelector, remote)
-                    ?.let {
-                        SyncService.FileStat(
-                            it.remoteFileMode.modeBits,
-                            it.size,
-                            it.lastModified.to(TimeUnit.SECONDS)
-                        )
-                    }
+                mapToSyncException {
+                    connectedDevice.session.deviceServices.syncStat(deviceSelector, remote)
+                        ?.let {
+                            SyncService.FileStat(
+                                it.remoteFileMode.modeBits,
+                                it.size,
+                                it.lastModified.to(TimeUnit.SECONDS)
+                            )
+                        }
+                }
             }
         }
-    }
 
     override fun installPackage(
         packageFilePath: String,
@@ -575,18 +575,6 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun installPackages(
-        apks: MutableList<File>,
-        reinstall: Boolean,
-        installOptions: MutableList<String>,
-        timeout: Long,
-        timeoutUnit: TimeUnit
-    ) {
-        logUsage(IDeviceUsageTracker.Method.INSTALL_PACKAGES_2) {
-            iDeviceSharedImpl.installPackages(apks, reinstall, installOptions, timeout, timeoutUnit)
-        }
-    }
-
-    override fun installPackages(
         apks: MutableList<File>, reinstall: Boolean, installOptions: MutableList<String>
     ) {
         logUsage(IDeviceUsageTracker.Method.INSTALL_PACKAGES_1) {
@@ -598,6 +586,18 @@ internal class AdblibIDeviceWrapper(
                 INSTALL_TIMEOUT_MINUTES,
                 TimeUnit.MINUTES
             )
+        }
+    }
+
+    override fun installPackages(
+        apks: MutableList<File>,
+        reinstall: Boolean,
+        installOptions: MutableList<String>,
+        timeout: Long,
+        timeoutUnit: TimeUnit
+    ) {
+        logUsage(IDeviceUsageTracker.Method.INSTALL_PACKAGES_2) {
+            iDeviceSharedImpl.installPackages(apks, reinstall, installOptions, timeout, timeoutUnit)
         }
     }
 
@@ -618,7 +618,7 @@ internal class AdblibIDeviceWrapper(
         reinstall: Boolean,
         vararg extraArgs: String?
     ) {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun installRemotePackage(
@@ -627,7 +627,7 @@ internal class AdblibIDeviceWrapper(
         receiver: InstallReceiver?,
         vararg extraArgs: String?
     ) {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun installRemotePackage(
@@ -669,7 +669,7 @@ internal class AdblibIDeviceWrapper(
         }
 
     override fun reboot(into: String?) {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun root(): Boolean =
@@ -708,20 +708,20 @@ internal class AdblibIDeviceWrapper(
 
     @Deprecated("")
     override fun getBatteryLevel(): Int {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     @Deprecated("")
     override fun getBatteryLevel(freshnessMs: Long): Int {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun getBattery(): Future<Int> {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun getBattery(freshnessTime: Long, timeUnit: TimeUnit): Future<Int> {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun getAbis(): MutableList<String> =
@@ -735,17 +735,36 @@ internal class AdblibIDeviceWrapper(
         }
 
     override fun getLanguage(): String? {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun getRegion(): String? {
-        throw UnsupportedOperationException("This method is not used in Android Studio")
+        unsupportedMethod()
     }
 
     override fun getVersion(): AndroidVersion =
         logUsage(IDeviceUsageTracker.Method.GET_VERSION) {
             iDeviceSharedImpl.version
         }
+
+    override fun executeRemoteCommand(
+        command: String,
+        rcvr: IShellOutputReceiver,
+        maxTimeToOutputResponse: Long,
+        maxTimeUnits: TimeUnit
+    ) {
+        logUsage(IDeviceUsageTracker.Method.EXECUTE_REMOTE_COMMAND_1) {
+            // Note that `AdbHelper.AdbService.SHELL` is passed down to match the behavior of `DeviceImpl`
+            executeRemoteCommand(
+                AdbHelper.AdbService.SHELL,
+                command,
+                rcvr,
+                maxTimeToOutputResponse,
+                maxTimeUnits,
+                null /* inputStream */
+            )
+        }
+    }
 
     override fun executeRemoteCommand(
         command: String,
@@ -761,25 +780,6 @@ internal class AdblibIDeviceWrapper(
                 command,
                 rcvr,
                 maxTimeout,
-                maxTimeToOutputResponse,
-                maxTimeUnits,
-                null /* inputStream */
-            )
-        }
-    }
-
-    override fun executeRemoteCommand(
-        command: String,
-        rcvr: IShellOutputReceiver,
-        maxTimeToOutputResponse: Long,
-        maxTimeUnits: TimeUnit
-    ) {
-        logUsage(IDeviceUsageTracker.Method.EXECUTE_REMOTE_COMMAND_1) {
-            // Note that `AdbHelper.AdbService.SHELL` is passed down to match the behavior of `DeviceImpl`
-            executeRemoteCommand(
-                AdbHelper.AdbService.SHELL,
-                command,
-                rcvr,
                 maxTimeToOutputResponse,
                 maxTimeUnits,
                 null /* inputStream */
@@ -859,7 +859,7 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun rawExec(executable: String, parameters: Array<out String>): SocketChannel {
-        throw UnsupportedOperationException("This method is not used in Android Studio outside ddmlib")
+        unsupportedMethod()
     }
 
     override fun rawExec2(
@@ -891,6 +891,11 @@ internal class AdblibIDeviceWrapper(
             iDeviceUsageTracker.logUsage(method, true)
             throw t
         }
+    }
+
+    private fun unsupportedMethod(): Nothing {
+        iDeviceUsageTracker.logUsage(IDeviceUsageTracker.Method.UNSUPPORTED_METHOD, false)
+        throw UnsupportedOperationException("This method is not used in Android Studio")
     }
 
     /**

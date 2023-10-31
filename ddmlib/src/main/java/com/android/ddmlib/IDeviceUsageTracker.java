@@ -79,6 +79,8 @@ public interface IDeviceUsageTracker {
         EXECUTE_REMOTE_COMMAND_3,
         EXECUTE_REMOTE_COMMAND_4,
         RAW_EXEC2,
+        STAT_FILE,
+        UNSUPPORTED_METHOD,
     }
 
     void logUsage(Method method, boolean isException);
