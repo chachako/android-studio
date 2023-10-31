@@ -24,12 +24,14 @@ import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.TestedExtension
 import com.android.build.api.extension.impl.VariantApiOperationsRegistrar
+import com.android.build.api.variant.AndroidTestBuilder
 import com.android.build.api.variant.HasAndroidTestBuilder
 import com.android.build.api.variant.HasTestFixturesBuilder
 import com.android.build.api.variant.HasUnitTestBuilder
 import com.android.build.api.variant.Variant
 import com.android.build.api.variant.VariantBuilder
 import com.android.build.api.variant.VariantExtensionConfig
+import com.android.build.api.variant.impl.AndroidTestBuilderImpl
 import com.android.build.api.variant.impl.ArtifactMetadataProcessor
 import com.android.build.api.variant.impl.GlobalVariantBuilderConfig
 import com.android.build.api.variant.impl.GlobalVariantBuilderConfigImpl
@@ -568,6 +570,7 @@ class VariantManager<
         testedComponentInfo: VariantComponentInfo<VariantBuilderT, VariantDslInfoT, VariantT>,
         componentType: ComponentType,
         testFixturesEnabled: Boolean,
+        androidTestBuilder: AndroidTestBuilderImpl? = null,
     ): TestComponentCreationConfig {
 
         // handle test variant
@@ -682,7 +685,7 @@ class VariantManager<
         )
 
         // this is ANDROID_TEST
-        val testComponent = if (componentType.isApk) {
+        val testComponent = if (androidTestBuilder != null) {
             val androidTest = variantFactory.createAndroidTest(
                 variantDslInfo.componentIdentity,
                 variantFactory.createAndroidTestBuildFeatureValues(
@@ -700,7 +703,8 @@ class VariantManager<
                 testedComponentInfo.variant,
                 variantPropertiesApiServices,
                 taskCreationServices,
-                globalTaskCreationConfig
+                globalTaskCreationConfig,
+                androidTestBuilder,
             )
             androidTest
         } else {
@@ -818,8 +822,9 @@ class VariantManager<
                 }
 
                 if (variantFactory.componentType.hasTestComponents) {
-                    val androidTestEnabled = (variantBuilder as? HasAndroidTestBuilder)?.enableAndroidTest ?: false
+                    val androidTestEnabled = (variantBuilder as? HasAndroidTestBuilder)?.androidTest?.enable ?: false
                     if (androidTestEnabled && buildTypeData == testBuildTypeData) {
+                        val hasAndroidTestBuilder = variantBuilder as HasAndroidTestBuilder
                         val androidTest = createTestComponents<AndroidTestComponentDslInfo>(
                                 dimensionCombination,
                                 buildTypeData,
@@ -827,6 +832,7 @@ class VariantManager<
                                 variantInfo,
                                 ComponentTypeImpl.ANDROID_TEST,
                                 testFixturesEnabledForVariant,
+                            hasAndroidTestBuilder.androidTest as AndroidTestBuilderImpl,
                         )
                         addTestComponent(androidTest)
                         (variant as HasAndroidTest).androidTest = androidTest as AndroidTestImpl
@@ -834,12 +840,13 @@ class VariantManager<
                     val unitTestEnabled = (variantBuilder as? HasUnitTestBuilder)?.enableUnitTest ?: false
                     if (unitTestEnabled) {
                         val unitTest = createTestComponents<UnitTestComponentDslInfo>(
-                                dimensionCombination,
-                                buildTypeData,
-                                productFlavorDataList,
-                                variantInfo,
-                                ComponentTypeImpl.UNIT_TEST,
-                                testFixturesEnabledForVariant,
+                            dimensionCombination,
+                            buildTypeData,
+                            productFlavorDataList,
+                            variantInfo,
+                            ComponentTypeImpl.UNIT_TEST,
+                            testFixturesEnabledForVariant,
+                            androidTestBuilder = null,
                         )
                         addTestComponent(unitTest)
                         (variant as HasUnitTest).unitTest = unitTest as UnitTestImpl
@@ -905,11 +912,11 @@ class VariantManager<
                     it.testExecution = AnalyticsUtil.toProto(dslExtension.testOptions.execution.toExecutionEnum() ?: TestOptions.Execution.HOST)
 
                     if (variant is ApkCreationConfig) {
-                        it.useLegacyMultidex = variant.dexingCreationConfig.dexingType.isLegacyMultiDexMode()
-                        it.coreLibraryDesugaringEnabled = variant.dexingCreationConfig.isCoreLibraryDesugaringEnabled
-                        it.useMultidex = variant.dexingCreationConfig.isMultiDexEnabled
+                        it.useLegacyMultidex = variant.dexing.dexingType.isLegacyMultiDexMode()
+                        it.coreLibraryDesugaringEnabled = variant.dexing.isCoreLibraryDesugaringEnabled
+                        it.useMultidex = variant.dexing.isMultiDexEnabled
 
-                        val supportType = variant.dexingCreationConfig.java8LangSupportType
+                        val supportType = variant.dexing.java8LangSupportType
                         if (supportType != Java8LangSupport.INVALID
                             && supportType != Java8LangSupport.UNUSED) {
                             variantAnalytics.java8LangSupport = AnalyticsUtil.toProto(supportType)
@@ -1002,7 +1009,7 @@ class VariantManager<
     companion object {
         fun finalizeAllComponents(components: List<ComponentCreationConfig>) {
             components.forEach { component ->
-                component.artifacts.finalizeAndLock()
+                component.finalizeAndLock()
                 ArtifactMetadataProcessor.wireAllFinalizedBy(component)
             }
         }

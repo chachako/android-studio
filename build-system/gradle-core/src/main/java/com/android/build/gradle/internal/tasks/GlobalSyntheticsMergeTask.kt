@@ -90,7 +90,7 @@ abstract class GlobalSyntheticsMergeTask : NonIncrementalTask() {
             task.sharedParams.apply {
                 dexingType.setDisallowChanges(DexingType.NATIVE_MULTIDEX)
                 minSdkVersion.setDisallowChanges(
-                    creationConfig.dexingCreationConfig.minSdkVersionForDexing)
+                    creationConfig.dexing.minSdkVersionForDexing)
                 debuggable.setDisallowChanges(creationConfig.debuggable)
                 errorFormatMode.setDisallowChanges(SyncOptions.ErrorFormatMode.HUMAN_READABLE)
             }

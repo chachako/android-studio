@@ -21,6 +21,7 @@ import com.android.build.api.variant.AndroidResources
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.GeneratesApk
 import com.android.build.api.variant.ApkPackaging
+import com.android.build.api.variant.Dexing
 import com.android.build.api.variant.Renderscript
 import com.android.build.api.variant.TestVariant
 import com.android.tools.build.gradle.internal.profile.VariantPropertiesMethodType
@@ -115,4 +116,6 @@ open class AnalyticsEnabledTestVariant @Inject constructor(
 
     override val targetSdk: AndroidVersion
         get() = generatesApk.targetSdk
+    override val dexing: Dexing
+        get() = generatesApk.dexing
 }

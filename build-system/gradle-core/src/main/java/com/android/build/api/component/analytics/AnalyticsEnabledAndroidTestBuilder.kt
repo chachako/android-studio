@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,31 +16,28 @@
 
 package com.android.build.api.component.analytics
 
+import com.android.build.api.variant.AndroidTestBuilder
 import com.android.build.api.variant.PropertyAccessNotAllowedException
-import com.android.build.api.variant.TestVariantBuilder
 import com.android.tools.build.gradle.internal.profile.VariantMethodType
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
-import javax.inject.Inject
 
-/**
- * Shim object for [AnalyticsEnabledVariantBuilder] that records all mutating accesses to the analytics.
- */
-open class AnalyticsEnabledTestVariantBuilder @Inject constructor(
-        override val delegate: TestVariantBuilder,
-        stats: GradleBuildVariant.Builder
-) : AnalyticsEnabledVariantBuilder(delegate, stats),
-    TestVariantBuilder{
-    override var isMinifyEnabled: Boolean
-        get() = delegate.isMinifyEnabled
+open class AnalyticsEnabledAndroidTestBuilder(
+        val delegate: AndroidTestBuilder,
+        val stats: GradleBuildVariant.Builder,
+): AndroidTestBuilder {
+
+    override var enable: Boolean
+        get() = delegate.enable
         set(value) {
-            stats.variantApiAccessBuilder.addVariantAccessBuilder().type = VariantMethodType.CODE_MINIFICATION_VALUE_VALUE
-            delegate.isMinifyEnabled = value
+            stats.variantApiAccessBuilder.addVariantAccessBuilder().type =
+                    VariantMethodType.ANDROID_TEST_ENABLED_VALUE
+            delegate.enable = value
         }
-
     override var enableMultiDex: Boolean?
-        get() = throw PropertyAccessNotAllowedException("enableMultiDex", "TestVariantBuilder")
+        get() =  throw PropertyAccessNotAllowedException("enableMultiDex", "AndroidTestBuilder")
         set(value) {
-            stats.variantApiAccessBuilder.addVariantAccessBuilder().type = VariantMethodType.ENABLE_MULTI_DEX_VALUE
+            stats.variantApiAccessBuilder.addVariantAccessBuilder().type =
+                    VariantMethodType.ENABLE_MULTI_DEX_VALUE
             delegate.enableMultiDex = value
         }
 }

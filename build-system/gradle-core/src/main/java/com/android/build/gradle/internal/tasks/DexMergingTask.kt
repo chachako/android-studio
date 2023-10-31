@@ -157,7 +157,7 @@ abstract class DexMergingTask : NewIncrementalTask() {
             @get:Optional
             @get:InputFile
             @get:PathSensitive(PathSensitivity.NONE)
-            abstract val userMultidexKeepFile: Property<File>
+            abstract val userMultidexKeepFile: RegularFileProperty
 
             @get:Optional
             @get:Classpath
@@ -302,9 +302,9 @@ abstract class DexMergingTask : NewIncrementalTask() {
                     creationConfig.artifacts.getAll(MultipleArtifact.MULTIDEX_KEEP_PROGUARD)
                 )
 
-                dexingCreationConfig.multiDexKeepFile?.let {
-                    task.sharedParams.mainDexListConfig.userMultidexKeepFile.setDisallowChanges(it)
-                }
+                task.sharedParams.mainDexListConfig.userMultidexKeepFile.setDisallowChanges(
+                    dexingCreationConfig.multiDexKeepFile
+                )
 
                 task.sharedParams.mainDexListConfig.platformMultidexProguardRules
                     .setDisallowChanges(getPlatformRules())
@@ -333,7 +333,7 @@ abstract class DexMergingTask : NewIncrementalTask() {
                 )
             }
             if (creationConfig.enableGlobalSynthetics
-                && creationConfig.dexingCreationConfig.dexingType != NATIVE_MULTIDEX) {
+                && dexingType != NATIVE_MULTIDEX) {
                 task.globalSynthetics.from(
                     getGlobalSyntheticsInput(
                         creationConfig,
@@ -887,7 +887,7 @@ abstract class DexMergingWorkAction : ProfileAwareWorkAction<DexMergingWorkActio
                 outputDir.toPath(),
                 proguardRules,
                 sharedParams.mainDexListConfig.platformMultidexProguardRules.orNull,
-                sharedParams.mainDexListConfig.userMultidexKeepFile.orNull?.toPath(),
+                sharedParams.mainDexListConfig.userMultidexKeepFile.orNull?.asFile?.toPath(),
                 sharedParams.mainDexListConfig.libraryClasses.map { it.toPath() },
                 mainDexListOutput
             )

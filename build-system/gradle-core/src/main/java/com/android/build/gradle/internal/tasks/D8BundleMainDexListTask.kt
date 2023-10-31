@@ -74,7 +74,7 @@ abstract class D8BundleMainDexListTask : NonIncrementalTask() {
     @get:Optional
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
-    abstract val userMultidexKeepFile: Property<File>
+    abstract val userMultidexKeepFile: RegularFileProperty
 
     @get:Classpath
     abstract val bootClasspath: ConfigurableFileCollection
@@ -115,7 +115,7 @@ abstract class D8BundleMainDexListTask : NonIncrementalTask() {
             abstract val programDexFiles: ConfigurableFileCollection
             abstract val libraryClasses: ConfigurableFileCollection
             abstract val bootClasspath: ConfigurableFileCollection
-            abstract val userMultidexKeepFile: Property<File>
+            abstract val userMultidexKeepFile: RegularFileProperty
             abstract val output: RegularFileProperty
             abstract val errorFormat: Property<SyncOptions.ErrorFormatMode>
         }
@@ -142,7 +142,7 @@ abstract class D8BundleMainDexListTask : NonIncrementalTask() {
             )
 
             parameters.userMultidexKeepFile.orNull?.let {
-                mainDexClasses.addAll(it.readLines())
+                mainDexClasses.addAll(it.asFile.readLines())
             }
 
             parameters.output.asFile.get().writeText(

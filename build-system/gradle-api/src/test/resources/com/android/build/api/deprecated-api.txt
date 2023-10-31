@@ -293,6 +293,10 @@ Deprecated from AGP 8.3.0
   * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation.getKotlinOptions: org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions ()
   * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation.kotlinOptions: void (kotlin.jvm.functions.Function1<? super org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions, kotlin.Unit>)
   * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation.kotlinOptions: void (org.gradle.api.Action<org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions>)
+  * com.android.build.api.variant.AndroidTestBuilder.getEnableMultiDex: java.lang.Boolean ()
+  * com.android.build.api.variant.GeneratesApkBuilder.getEnableMultiDex: java.lang.Boolean ()
+  * com.android.build.api.variant.HasAndroidTestBuilder.getEnableAndroidTest: boolean ()
+  * com.android.build.api.variant.HasAndroidTestBuilder.setEnableAndroidTest: void (boolean)
 Deprecated from AGP 7.4.0
   * com.android.build.api.dsl.LibraryBaseFlavor.getTargetSdk: java.lang.Integer ()
   * com.android.build.api.dsl.LibraryBaseFlavor.getTargetSdkPreview: java.lang.String ()

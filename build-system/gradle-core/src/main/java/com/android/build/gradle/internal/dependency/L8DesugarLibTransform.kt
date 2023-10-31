@@ -110,7 +110,7 @@ object L8DesugarLibTransformRegistration {
         val minSdkVersion: Int
     ) {
         constructor(creationConfig: ApkCreationConfig) : this(
-            minSdkVersion = creationConfig.dexingCreationConfig.minSdkVersionForDexing,
+            minSdkVersion = creationConfig.dexing.minSdkVersionForDexing,
         )
 
         fun getAttributes() = AndroidAttributes(

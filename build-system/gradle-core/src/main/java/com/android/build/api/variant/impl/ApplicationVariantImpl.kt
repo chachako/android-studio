@@ -19,7 +19,7 @@ import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.component.analytics.AnalyticsEnabledApplicationVariant
 import com.android.build.api.component.impl.AndroidTestImpl
 import com.android.build.api.component.impl.TestFixturesImpl
-import com.android.build.api.component.impl.features.DexingCreationConfigImpl
+import com.android.build.api.component.impl.features.DexingImpl
 import com.android.build.api.component.impl.getAndroidResources
 import com.android.build.api.component.impl.isTestApk
 import com.android.build.api.variant.AndroidResources
@@ -146,17 +146,24 @@ open class ApplicationVariantImpl @Inject constructor(
     override val targetSdkOverride: AndroidVersion?
         get() = variantBuilder.mutableTargetSdk?.sanitize()
 
+
+    override val dexing: DexingCreationConfig by lazy(LazyThreadSafetyMode.NONE) {
+        DexingImpl(
+            this,
+            variantBuilder._enableMultiDex,
+            dslInfo.dexingDslInfo.multiDexKeepProguard,
+            dslInfo.dexingDslInfo.multiDexKeepFile,
+            internalServices,
+        )
+    }
+
     // ---------------------------------------------------------------------------------------------
     // INTERNAL API
     // ---------------------------------------------------------------------------------------------
 
-    override val dexingCreationConfig: DexingCreationConfig by lazy(LazyThreadSafetyMode.NONE) {
-        DexingCreationConfigImpl(
-            this,
-            dslInfo.dexingDslInfo,
-            internalServices,
-            taskCreationServices,
-        )
+    override fun finalizeAndLock() {
+        super.finalizeAndLock()
+        dexing.finalizeAndLock()
     }
 
     override val testOnlyApk: Boolean
@@ -217,8 +224,8 @@ open class ApplicationVariantImpl @Inject constructor(
                     String::class.java,
                     internalServices.projectInfo.getProjectBaseName().map {
                         paths.getOutputFileName(it, variantOutputConfiguration.baseName(this))
-                    }
-                )
+                    },
+                ),
             )
         )
     }

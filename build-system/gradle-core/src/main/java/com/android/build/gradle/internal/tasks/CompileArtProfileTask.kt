@@ -240,7 +240,7 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
                     }
                 )
             )
-            if (creationConfig.dexingCreationConfig.shouldPackageDesugarLibDex) {
+            if (creationConfig.dexing.shouldPackageDesugarLibDex) {
                 task.l8ArtProfile.setDisallowChanges(
                     creationConfig.artifacts.get(InternalArtifactType.L8_ART_PROFILE)
                 )

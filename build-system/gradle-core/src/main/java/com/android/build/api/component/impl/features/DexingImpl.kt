@@ -22,46 +22,51 @@ import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.DynamicFeatureCreationConfig
 import com.android.build.gradle.internal.component.features.DexingCreationConfig
-import com.android.build.gradle.internal.core.dsl.features.DexingDslInfo
 import com.android.build.gradle.internal.scope.Java8LangSupport
-import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.options.BooleanOption
 import com.android.builder.dexing.DexingType
 import com.android.builder.errors.IssueReporter
+import org.gradle.api.file.RegularFileProperty
 import java.io.File
 
-class DexingCreationConfigImpl(
+class DexingImpl(
     private val component: ApkCreationConfig,
-    private val dslInfo: DexingDslInfo,
+    multiDexEnabled: Boolean?,
+    multiDexProguardFile: File?,
+    multiDexKeepFile: File?,
     private val internalServices: VariantServices,
-    private val taskCreationServices: TaskCreationServices,
 ): DexingCreationConfig {
 
-    init {
 
-        dslInfo.multiDexKeepProguard?.let {
-            // register the file in the global scope for the project as several variants might
-            // be registering the same file. This would create a Gradle validation error as multiple
-            // tasks would be producing the same file.
-            val item = internalServices.projectInfo.projectDirectory.file(it.absolutePath)
-            component.global.globalArtifacts
-                .addStaticProvider(
-                    component.artifacts
-                        .getArtifactContainer(MultipleArtifact.MULTIDEX_KEEP_PROGUARD),
-                    MultipleArtifact.MULTIDEX_KEEP_PROGUARD,
-                    item = item
-                )
+    override fun finalizeAndLock() {
+        if (multiDexKeepProguard.isPresent) {
+            component.artifacts
+                .getArtifactContainer(MultipleArtifact.MULTIDEX_KEEP_PROGUARD)
+                .addInitialProvider(multiDexKeepProguard)
         }
     }
 
-    override val multiDexKeepFile: File?
-        get() = dslInfo.multiDexKeepFile
-
-    override val isMultiDexEnabled: Boolean
-        get() {
-            return dslInfo.isMultiDexEnabled ?: (component.minSdk.getFeatureLevel() >= 21)
+    override val multiDexKeepProguard: RegularFileProperty =
+        internalServices.regularFileProperty().also { regularFileProperty ->
+            multiDexProguardFile?.let {
+                regularFileProperty.set(
+                    internalServices.projectInfo.projectDirectory.file(it.absolutePath)
+                )
+            }
         }
+
+    override val multiDexKeepFile: RegularFileProperty =
+        internalServices.regularFileProperty().also { regularFileProperty ->
+            multiDexKeepFile?.let {
+                regularFileProperty.set(
+                    internalServices.projectInfo.projectDirectory.file(it.absolutePath)
+                )
+            }
+        }
+
+    override val isMultiDexEnabled: Boolean =
+        multiDexEnabled ?: (component.minSdk.getFeatureLevel() >= 21)
 
     override val needsMainDexListForBundle: Boolean
         get() = component.componentType.isBaseModule

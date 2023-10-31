@@ -41,7 +41,7 @@
         errorLine2="                                              ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledAndroidTest.kt"
-            line="134"
+            line="138"
             column="47"/>
     </issue>
 
@@ -52,7 +52,7 @@
         errorLine2="                                                                   ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledApplicationVariant.kt"
-            line="65"
+            line="66"
             column="68"/>
     </issue>
 
@@ -63,7 +63,7 @@
         errorLine2="                                              ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledApplicationVariant.kt"
-            line="114"
+            line="115"
             column="47"/>
     </issue>
 
@@ -74,7 +74,7 @@
         errorLine2="                                                         ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledApplicationVariant.kt"
-            line="131"
+            line="132"
             column="58"/>
     </issue>
 
@@ -96,7 +96,7 @@
         errorLine2="                                              ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledDynamicFeatureVariant.kt"
-            line="73"
+            line="77"
             column="47"/>
     </issue>
 
@@ -107,7 +107,7 @@
         errorLine2="                                                         ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledGeneratesApk.kt"
-            line="68"
+            line="69"
             column="58"/>
     </issue>
 
@@ -151,7 +151,7 @@
         errorLine2="                                              ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledTestVariant.kt"
-            line="99"
+            line="100"
             column="47"/>
     </issue>
 
@@ -162,7 +162,7 @@
         errorLine2="                                                   ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledVariant.kt"
-            line="71"
+            line="70"
             column="52"/>
     </issue>
 
@@ -305,7 +305,7 @@
         errorLine2="                                                              ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantBuilderImpl.kt"
-            line="55"
+            line="56"
             column="63"/>
     </issue>
 
@@ -338,7 +338,7 @@
         errorLine2="                                                       ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantImpl.kt"
-            line="90"
+            line="91"
             column="56"/>
     </issue>
 
@@ -349,7 +349,7 @@
         errorLine2="                                                       ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantImpl.kt"
-            line="97"
+            line="98"
             column="56"/>
     </issue>
 
@@ -360,7 +360,7 @@
         errorLine2="                                                     ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantImpl.kt"
-            line="105"
+            line="106"
             column="54"/>
     </issue>
 
@@ -371,7 +371,7 @@
         errorLine2="                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantImpl.kt"
-            line="114"
+            line="115"
             column="45"/>
     </issue>
 
@@ -580,7 +580,7 @@
         errorLine2="                                                     ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="146"
+            line="142"
             column="54"/>
     </issue>
 
@@ -591,7 +591,7 @@
         errorLine2="                                                          ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="201"
+            line="199"
             column="59"/>
     </issue>
 
@@ -602,7 +602,7 @@
         errorLine2="                                                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="226"
+            line="224"
             column="77"/>
     </issue>
 
@@ -613,7 +613,7 @@
         errorLine2="                                                               ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="236"
+            line="234"
             column="64"/>
     </issue>
 
@@ -624,7 +624,7 @@
         errorLine2="                                                                                 ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="267"
+            line="265"
             column="82"/>
     </issue>
 
@@ -862,22 +862,11 @@
     <issue
         id="AvoidByLazy"
         message="Avoid `by lazy` for simple lazy initialization"
-        errorLine1="    override val dexingCreationConfig: DexingCreationConfig by lazy {"
-        errorLine2="                                                               ~~~~">
-        <location
-            file="src/main/java/com/android/build/api/component/impl/KmpAndroidTestImpl.kt"
-            line="163"
-            column="64"/>
-    </issue>
-
-    <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization"
         errorLine1="    override val signingConfigImpl: SigningConfigImpl? by lazy {"
         errorLine2="                                                          ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/KmpAndroidTestImpl.kt"
-            line="175"
+            line="177"
             column="59"/>
     </issue>
 
@@ -888,7 +877,7 @@
         errorLine2="                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/KmpAndroidTestImpl.kt"
-            line="205"
+            line="211"
             column="45"/>
     </issue>
 
@@ -899,7 +888,7 @@
         errorLine2="                                                                                                   ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/KmpAndroidTestImpl.kt"
-            line="213"
+            line="219"
             column="100"/>
     </issue>
 

@@ -101,7 +101,7 @@ abstract class R8Task @Inject constructor(
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
     @get:Optional
-    abstract val multiDexKeepFile: Property<File>
+    abstract val multiDexKeepFile: RegularFileProperty
 
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
@@ -296,14 +296,14 @@ abstract class R8Task @Inject constructor(
 
             if (creationConfig is ApkCreationConfig) {
                 when {
-                    creationConfig.dexingCreationConfig.needsMainDexListForBundle -> {
+                    creationConfig.dexing.needsMainDexListForBundle -> {
                         creationConfig.artifacts.setInitialProvider(
                             taskProvider,
                             R8Task::mainDexListOutput
                         ).withName("mainDexList.txt")
                             .on(InternalArtifactType.MAIN_DEX_LIST_FOR_BUNDLE)
                     }
-                    creationConfig.dexingCreationConfig.dexingType.needsMainDexList -> {
+                    creationConfig.dexing.dexingType.needsMainDexList -> {
                         creationConfig.artifacts.setInitialProvider(
                             taskProvider,
                             R8Task::mainDexListOutput
@@ -352,13 +352,13 @@ abstract class R8Task @Inject constructor(
 
             task.enableDesugaring.setDisallowChanges(
                 creationConfig is ApkCreationConfig &&
-                        creationConfig.dexingCreationConfig.java8LangSupportType == Java8LangSupport.R8
+                        creationConfig.dexing.java8LangSupportType == Java8LangSupport.R8
             )
 
             setBootClasspathForCodeShrinker(task)
             if (creationConfig is ApkCreationConfig) {
                 task.minSdkVersion.set(
-                    creationConfig.dexingCreationConfig.minSdkVersionForDexing
+                    creationConfig.dexing.minSdkVersionForDexing
                 )
             } else {
                 task.minSdkVersion.set(creationConfig.minSdk.apiLevel)
@@ -372,7 +372,7 @@ abstract class R8Task @Inject constructor(
             task.errorFormatMode.set(SyncOptions.getErrorFormatMode(creationConfig.services.projectOptions))
             task.legacyMultiDexEnabled.setDisallowChanges(
                 creationConfig is ApkCreationConfig &&
-                        creationConfig.dexingCreationConfig.dexingType == DexingType.LEGACY_MULTIDEX
+                        creationConfig.dexing.dexingType == DexingType.LEGACY_MULTIDEX
             )
             task.useFullR8.setDisallowChanges(creationConfig.services.projectOptions[BooleanOption.FULL_R8])
 
@@ -389,7 +389,7 @@ abstract class R8Task @Inject constructor(
                         artifacts.getAll(MultipleArtifact.MULTIDEX_KEEP_PROGUARD)
                 )
 
-                if (creationConfig.dexingCreationConfig.dexingType.needsMainDexList &&
+                if (creationConfig.dexing.dexingType.needsMainDexList &&
                     !creationConfig.global.namespacedAndroidResources) {
                     task.mainDexRulesFiles.from(
                         artifacts.get(
@@ -398,7 +398,7 @@ abstract class R8Task @Inject constructor(
                     )
                 }
                 task.multiDexKeepFile.setDisallowChanges(
-                    creationConfig.dexingCreationConfig.multiDexKeepFile
+                    creationConfig.dexing.multiDexKeepFile
                 )
 
                 if ((creationConfig as? ApplicationCreationConfig)?.consumesFeatureJars == true) {
@@ -421,7 +421,7 @@ abstract class R8Task @Inject constructor(
                         )
                     )
                 }
-                if (creationConfig.dexingCreationConfig.isCoreLibraryDesugaringEnabled) {
+                if (creationConfig.dexing.isCoreLibraryDesugaringEnabled) {
                     task.coreLibDesugarConfig.set(getDesugarLibConfig(creationConfig.services))
                 }
             }
@@ -562,7 +562,7 @@ abstract class R8Task @Inject constructor(
             it.mainDexListFiles.from(
                 mutableListOf<File>().also {
                     if (multiDexKeepFile.isPresent) {
-                        it.add(multiDexKeepFile.get())
+                        it.add(multiDexKeepFile.get().asFile)
                     }
                 })
             it.mainDexRulesFiles.from(

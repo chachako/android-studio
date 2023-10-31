@@ -423,9 +423,9 @@ object DexingRegistration {
     ) {
 
         constructor(creationConfig: ApkCreationConfig) : this(
-            minSdkVersion = creationConfig.dexingCreationConfig.minSdkVersionForDexing,
+            minSdkVersion = creationConfig.dexing.minSdkVersionForDexing,
             debuggable = creationConfig.debuggable,
-            enableCoreLibraryDesugaring = creationConfig.dexingCreationConfig.isCoreLibraryDesugaringEnabled,
+            enableCoreLibraryDesugaring = creationConfig.dexing.isCoreLibraryDesugaringEnabled,
             enableGlobalSynthetics = creationConfig.enableGlobalSynthetics,
             enableApiModeling = creationConfig.enableApiModeling,
             dependenciesClassesAreInstrumented = creationConfig.instrumentationCreationConfig?.dependenciesClassesAreInstrumented == true,
@@ -440,11 +440,11 @@ object DexingRegistration {
         companion object {
 
             private fun needsDesugaring(creationConfig: ApkCreationConfig): Boolean =
-                creationConfig.dexingCreationConfig.java8LangSupportType == Java8LangSupport.D8
+                creationConfig.dexing.java8LangSupportType == Java8LangSupport.D8
 
             private fun needsClasspath(creationConfig: ApkCreationConfig): Boolean =
                 needsDesugaring(creationConfig) &&
-                        creationConfig.dexingCreationConfig.minSdkVersionForDexing < 24
+                        creationConfig.dexing.minSdkVersionForDexing < 24
 
             private fun useFullClasspath(creationConfig: ApkCreationConfig): Boolean =
                 needsClasspath(creationConfig) &&

@@ -267,7 +267,7 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
 
     override val isCoreLibraryDesugaringEnabledLintCheck: Boolean
         get() = if (this is ApkCreationConfig) {
-            dexingCreationConfig.isCoreLibraryDesugaringEnabled
+            dexing.isCoreLibraryDesugaringEnabled
         } else {
             // We don't dex library variants, but we still need to check if core library desugaring
             // for lint checks.

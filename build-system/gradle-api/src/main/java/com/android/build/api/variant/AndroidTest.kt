@@ -30,7 +30,7 @@ import java.io.Serializable
  * [HasAndroidTest.androidTest]. It is also part of [Variant.nestedComponents].
  *
  * The presence of this component in a variant is controlled by
- * [HasAndroidTestBuilder.enableAndroidTest] which is accessible on subtypes of [VariantBuilder]
+ * [HasAndroidTestBuilder.androidTest.enable] which is accessible on subtypes of [VariantBuilder]
  * that implement [HasAndroidTestBuilder]
  */
 interface AndroidTest : GeneratesTestApk, TestComponent, HasAndroidResources {

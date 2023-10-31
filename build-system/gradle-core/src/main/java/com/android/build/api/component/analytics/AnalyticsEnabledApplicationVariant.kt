@@ -24,6 +24,7 @@ import com.android.build.api.variant.ApkPackaging
 import com.android.build.api.variant.ApplicationVariant
 import com.android.build.api.variant.BundleConfig
 import com.android.build.api.variant.DependenciesInfo
+import com.android.build.api.variant.Dexing
 import com.android.build.api.variant.Renderscript
 import com.android.build.api.variant.SigningConfig
 import com.android.build.api.variant.TestFixtures
@@ -163,4 +164,7 @@ open class AnalyticsEnabledApplicationVariant @Inject constructor(
                     VariantPropertiesMethodType.TARGET_SDK_VERSION_VALUE
             return delegate.targetSdk
         }
+
+    override val dexing: Dexing
+        get() = generatesApk.dexing
 }

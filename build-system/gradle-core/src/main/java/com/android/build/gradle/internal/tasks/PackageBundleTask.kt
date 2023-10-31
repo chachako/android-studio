@@ -605,7 +605,7 @@ abstract class PackageBundleTask : NonIncrementalTask() {
             )
             task.compressNativeLibs.disallowChanges()
 
-            if (creationConfig.dexingCreationConfig.needsMainDexListForBundle) {
+            if (creationConfig.dexing.needsMainDexListForBundle) {
                 creationConfig.artifacts.setTaskInputToFinalProduct(
                     InternalArtifactType.MAIN_DEX_LIST_FOR_BUNDLE,
                     task.mainDexList

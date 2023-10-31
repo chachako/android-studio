@@ -2389,6 +2389,15 @@ package com.android.build.api.variant {
     property public abstract com.android.build.api.variant.SigningConfig? signingConfig;
   }
 
+  @org.gradle.api.Incubating public interface AndroidTestBuilder {
+    method public boolean getEnable();
+    method @Deprecated @org.gradle.api.Incubating public Boolean? getEnableMultiDex();
+    method public void setEnable(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setEnableMultiDex(Boolean?);
+    property public abstract boolean enable;
+    property @Deprecated @org.gradle.api.Incubating public abstract Boolean? enableMultiDex;
+  }
+
   public interface AndroidVersion {
     method @org.gradle.api.tasks.Input public int getApiLevel();
     method @org.gradle.api.tasks.Input @org.gradle.api.tasks.Optional public String? getCodename();
@@ -2588,6 +2597,15 @@ package com.android.build.api.variant {
     property public abstract org.gradle.api.provider.Property<java.lang.Boolean> useLegacyPackaging;
   }
 
+  @org.gradle.api.Incubating public interface Dexing {
+    method public org.gradle.api.file.RegularFileProperty getMultiDexKeepFile();
+    method public org.gradle.api.file.RegularFileProperty getMultiDexKeepProguard();
+    method public boolean isMultiDexEnabled();
+    property public abstract boolean isMultiDexEnabled;
+    property public abstract org.gradle.api.file.RegularFileProperty multiDexKeepFile;
+    property public abstract org.gradle.api.file.RegularFileProperty multiDexKeepProguard;
+  }
+
   @org.gradle.api.Incubating public final class DslExtension {
     method public Class<?>? getBuildTypeExtensionType();
     method public String getDslName();
@@ -2660,12 +2678,14 @@ package com.android.build.api.variant {
   public interface GeneratesApk {
     method public com.android.build.api.variant.AndroidResources getAndroidResources();
     method public org.gradle.api.provider.Provider<java.lang.String> getApplicationId();
+    method @org.gradle.api.Incubating public com.android.build.api.variant.Dexing getDexing();
     method public com.android.build.api.variant.ApkPackaging getPackaging();
     method public com.android.build.api.variant.Renderscript? getRenderscript();
     method public com.android.build.api.variant.AndroidVersion getTargetSdk();
     method @Deprecated public com.android.build.api.variant.AndroidVersion getTargetSdkVersion();
     property public abstract com.android.build.api.variant.AndroidResources androidResources;
     property public abstract org.gradle.api.provider.Provider<java.lang.String> applicationId;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.variant.Dexing dexing;
     property public abstract com.android.build.api.variant.ApkPackaging packaging;
     property public abstract com.android.build.api.variant.Renderscript? renderscript;
     property public abstract com.android.build.api.variant.AndroidVersion targetSdk;
@@ -2673,10 +2693,13 @@ package com.android.build.api.variant {
   }
 
   public interface GeneratesApkBuilder {
+    method @Deprecated @org.gradle.api.Incubating public Boolean? getEnableMultiDex();
     method public Integer? getTargetSdk();
     method public String? getTargetSdkPreview();
+    method @Deprecated @org.gradle.api.Incubating public void setEnableMultiDex(Boolean?);
     method public void setTargetSdk(Integer?);
     method public void setTargetSdkPreview(String?);
+    property @Deprecated @org.gradle.api.Incubating public abstract Boolean? enableMultiDex;
     property public abstract Integer? targetSdk;
     property public abstract String? targetSdkPreview;
   }
@@ -2708,12 +2731,14 @@ package com.android.build.api.variant {
   }
 
   public interface HasAndroidTestBuilder {
+    method @org.gradle.api.Incubating public com.android.build.api.variant.AndroidTestBuilder getAndroidTest();
     method @Deprecated public boolean getAndroidTestEnabled();
-    method public boolean getEnableAndroidTest();
+    method @Deprecated public boolean getEnableAndroidTest();
     method @Deprecated public void setAndroidTestEnabled(boolean);
-    method public void setEnableAndroidTest(boolean);
+    method @Deprecated public void setEnableAndroidTest(boolean);
+    property @org.gradle.api.Incubating public abstract com.android.build.api.variant.AndroidTestBuilder androidTest;
     property @Deprecated public abstract boolean androidTestEnabled;
-    property public abstract boolean enableAndroidTest;
+    property @Deprecated public abstract boolean enableAndroidTest;
   }
 
   @org.gradle.api.Incubating public interface HasTestFixtures {
@@ -2816,6 +2841,14 @@ package com.android.build.api.variant {
     method public com.android.build.api.variant.ResourcesPackaging getResources();
     property public abstract com.android.build.api.variant.JniLibsPackaging jniLibs;
     property public abstract com.android.build.api.variant.ResourcesPackaging resources;
+  }
+
+  @org.gradle.api.Incubating public final class PropertyAccessNotAllowedException extends java.lang.RuntimeException {
+    ctor public PropertyAccessNotAllowedException(String propertyName, String location);
+    method public String getLocation();
+    method public String getPropertyName();
+    property public final String location;
+    property public final String propertyName;
   }
 
   public interface Renderscript {

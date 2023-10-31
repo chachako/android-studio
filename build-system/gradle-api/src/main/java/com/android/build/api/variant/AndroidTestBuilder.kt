@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,27 +18,14 @@ package com.android.build.api.variant
 
 import org.gradle.api.Incubating
 
-/**
- * Configuration-time properties [ComponentBuilder] that produce APKs.
- */
-interface GeneratesApkBuilder {
-    /**
-     * Sets the target SDK Version for this variant as an integer API level.
-     * Setting this will override previous calls of [targetSdk] and [targetSdkPreview] setters.
-     * Only one of [targetSdk] and [targetSdkPreview] should be set.
-     *
-     * It is not safe to read this value. Use [GeneratesApk.targetSdk] instead.
-     */
-    var targetSdk: Int?
+@Incubating
+interface AndroidTestBuilder {
 
     /**
-     * Sets the target SDK Version for this variant as an integer API level.
-     * Setting this will override previous calls of [targetSdk] and [targetSdkPreview] setters.
-     * Only one of [targetSdk] and [targetSdkPreview] should be set.
-     *
-     * It is not safe to read this value. Use [GeneratesApk.targetSdk] instead.
+     * Set to `true` if the variant's has any android tests, false otherwise.
+     * Value is [Boolean#True] by default.
      */
-    var targetSdkPreview: String?
+    var enable: Boolean
 
     /**
      * Sets whether multi-dex is enabled for this variant.

@@ -50,4 +50,23 @@ class DynamicAppMultidexTest {
                     "'multiDexEnabled true|false' from your build.gradle file."
         )
     }
+
+    @Test
+    fun testSettingMultiDexThroughVariantAPI() {
+        project.getSubproject("feature1").buildFile.appendText(
+                """
+                androidComponents {
+                    beforeVariants(selector().withBuildType("debug"), { debugVariantBuilder ->
+                        debugVariantBuilder.enableMultiDex = true
+                    })
+                    onVariants(selector().withBuildType("debug"), { debugVariant ->
+                        if (!debugVariant.dexing.isMultiDexEnabled) {
+                            throw new RuntimeException("Dexing is not enabled as expected !")
+                        }
+                    })
+                }
+                """.trimIndent()
+        )
+        project.execute("assembleDebug")
+    }
 }

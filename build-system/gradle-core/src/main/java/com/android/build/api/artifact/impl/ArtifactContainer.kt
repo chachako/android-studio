@@ -240,6 +240,11 @@ internal class MultipleArtifactContainer<T: FileSystemLocation>(
         initialTaskProviders.add(taskProvider)
     }
 
+    fun addInitialProvider(item: Provider<T>) {
+        needInitialProducer().set(false)
+        agpProducers.add(item)
+    }
+
     /**
      * Copies initial and transformation providers from 'source'
      */

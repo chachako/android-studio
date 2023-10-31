@@ -346,13 +346,13 @@ abstract class PerModuleBundleTask: NonIncrementalTask() {
                     artifacts.getAll(InternalMultipleArtifactType.DEX)
                 }
             )
-            if (creationConfig.dexingCreationConfig.shouldPackageDesugarLibDex) {
+            if (creationConfig.dexing.shouldPackageDesugarLibDex) {
                 task.dexFiles.from(
                     artifacts.get(InternalArtifactType.DESUGAR_LIB_DEX)
                 )
             }
             if (creationConfig.enableGlobalSynthetics
-                && creationConfig.dexingCreationConfig.dexingType == DexingType.NATIVE_MULTIDEX
+                && creationConfig.dexing.dexingType == DexingType.NATIVE_MULTIDEX
                 && !creationConfig.optimizationCreationConfig.minifiedEnabled) {
                 task.dexFiles.from(
                     artifacts.get(InternalArtifactType.GLOBAL_SYNTHETICS_DEX)

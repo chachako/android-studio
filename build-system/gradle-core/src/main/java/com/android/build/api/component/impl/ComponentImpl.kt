@@ -323,4 +323,8 @@ abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
         return global.compileOptions.sourceCompatibility.isCompatibleWith(JavaVersion.VERSION_14) &&
                 global.compileOptions.targetCompatibility.isCompatibleWith(JavaVersion.VERSION_14)
     }
+
+    override fun finalizeAndLock() {
+        artifacts.finalizeAndLock()
+    }
 }

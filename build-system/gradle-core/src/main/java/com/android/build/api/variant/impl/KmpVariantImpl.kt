@@ -180,4 +180,7 @@ open class KmpVariantImpl @Inject constructor(
     override val renderscriptCreationConfig: RenderscriptCreationConfig? = null
     override val shadersCreationConfig: ShadersCreationConfig? = null
     override val nativeBuildCreationConfig: NativeBuildCreationConfig? = null
+
+    override fun finalizeAndLock() {
+    }
 }

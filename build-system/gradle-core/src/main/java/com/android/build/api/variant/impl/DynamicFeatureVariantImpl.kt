@@ -20,7 +20,7 @@ import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.component.analytics.AnalyticsEnabledDynamicFeatureVariant
 import com.android.build.api.component.impl.AndroidTestImpl
 import com.android.build.api.component.impl.TestFixturesImpl
-import com.android.build.api.component.impl.features.DexingCreationConfigImpl
+import com.android.build.api.component.impl.features.DexingImpl
 import com.android.build.api.component.impl.features.OptimizationCreationConfigImpl
 import com.android.build.api.component.impl.getAndroidResources
 import com.android.build.api.component.impl.isTestApk
@@ -128,18 +128,20 @@ open class DynamicFeatureVariantImpl @Inject constructor(
         renderscriptCreationConfig?.renderscript
     }
 
+    override val dexing: DexingCreationConfig by lazy(LazyThreadSafetyMode.NONE) {
+        DexingImpl(
+            this,
+            variantBuilder._enableMultiDex,
+            dslInfo.dexingDslInfo.multiDexKeepProguard,
+            dslInfo.dexingDslInfo.multiDexKeepFile,
+            internalServices,
+        )
+    }
+
     // ---------------------------------------------------------------------------------------------
     // INTERNAL API
     // ---------------------------------------------------------------------------------------------
 
-    override val dexingCreationConfig: DexingCreationConfig by lazy(LazyThreadSafetyMode.NONE) {
-        DexingCreationConfigImpl(
-            this,
-            dslInfo.dexingDslInfo,
-            internalServices,
-            taskCreationServices,
-        )
-    }
     override val targetSdk: AndroidVersion  by lazy(LazyThreadSafetyMode.NONE) {
         variantBuilder.targetSdkVersion
     }
@@ -295,4 +297,9 @@ open class DynamicFeatureVariantImpl @Inject constructor(
 
     override val enableGlobalSynthetics: Boolean
         get() = isGlobalSyntheticsEnabled()
+
+    override fun finalizeAndLock() {
+        super.finalizeAndLock()
+        dexing.finalizeAndLock()
+    }
 }

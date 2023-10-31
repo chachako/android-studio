@@ -161,7 +161,7 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
         val componentType = variant.componentType
         val variantDependencies = variant.variantDependencies
         if (variant is ApkCreationConfig &&
-            variant.dexingCreationConfig.dexingType.isLegacyMultiDexMode()) {
+            variant.dexing.dexingType.isLegacyMultiDexMode()) {
             val multiDexDependency =
                 if (variant
                         .services
@@ -308,7 +308,7 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
 
         }
         if (testVariant.componentType.isApk) { // ANDROID_TEST
-            if ((testVariant as ApkCreationConfig).dexingCreationConfig.dexingType.isLegacyMultiDexMode()) {
+            if ((testVariant as ApkCreationConfig).dexing.dexingType.isLegacyMultiDexMode()) {
                 val multiDexInstrumentationDep = if (testVariant
                         .services
                         .projectOptions[BooleanOption.USE_ANDROID_X])

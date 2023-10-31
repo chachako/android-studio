@@ -460,6 +460,37 @@ class ArtifactsImpl(
             container.addInitialProvider(taskProvider, mappedValue)
         }
     }
+
+    /**
+     * add a static file/directory to this [ArtifactContainer]
+     *
+     * @param item the static file/directory to add.
+     */
+    internal fun <T: FileSystemLocation> addStaticProvider(
+        container: MultipleArtifactContainer<T>,
+        type: Artifact<T>,
+        item: Provider<T>,
+    ) {
+        // if no one is producing T yet, create an empty Task, register its output to be T
+        // and register it to the providers for this artifact type.
+        synchronized(staticProviders) {
+            val taskProvider = staticProviders.getOrPut(type) {
+                // register a unique task by combining the artifact type name and the variant name
+                var taskName = "prepare$identifier${type.name()}StaticFile"
+                taskContainer.register(taskName)
+            }
+            // whether the task just go registered or not, we need to add the new static file or
+            // directory to its output.
+            taskProvider.configure { task ->
+                task.outputs.file(item)
+            }
+
+            val mappedValue = taskProvider.flatMap { _ ->
+                item
+            }
+            container.addInitialProvider(taskProvider, item)
+        }
+    }
 }
 
 /**

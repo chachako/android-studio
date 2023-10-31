@@ -155,7 +155,7 @@ abstract class PackageApplication : PackageAndroidArtifact() {
                 creationConfig.artifacts.get(InternalArtifactType.DEX_METADATA_DIRECTORY)
             )
             task.minSdkVersionForDexing.setDisallowChanges(
-                creationConfig.dexingCreationConfig.minSdkVersionForDexing
+                creationConfig.dexing.minSdkVersionForDexing
             )
         }
 

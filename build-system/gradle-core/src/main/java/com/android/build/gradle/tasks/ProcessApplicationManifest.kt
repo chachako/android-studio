@@ -571,7 +571,7 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
                 }
             }
             val projectOptions = creationConfig.services.projectOptions
-            if (creationConfig.dexingCreationConfig.dexingType === DexingType.LEGACY_MULTIDEX) {
+            if (creationConfig.dexing.dexingType === DexingType.LEGACY_MULTIDEX) {
                 features.add(
                     if (projectOptions[BooleanOption.USE_ANDROID_X]) {
                         Invoker.Feature.ADD_ANDROIDX_MULTIDEX_APPLICATION_IF_NO_NAME

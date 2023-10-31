@@ -22,6 +22,7 @@ import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.GeneratesApk
 import com.android.build.api.variant.BuildConfigField
 import com.android.build.api.variant.ApkPackaging
+import com.android.build.api.variant.Dexing
 import com.android.build.api.variant.Renderscript
 import com.android.build.api.variant.ResValue
 import com.android.build.api.variant.SigningConfig
@@ -130,6 +131,9 @@ open class AnalyticsEnabledAndroidTest @Inject constructor(
                 VariantPropertiesMethodType.PROGUARD_FILES_VALUE
             return delegate.proguardFiles
         }
+
+    override val dexing: Dexing
+        get() = generatesApk.dexing
 
     private val generatesApk: GeneratesApk by lazy {
         AnalyticsEnabledGeneratesApk(

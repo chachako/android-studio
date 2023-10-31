@@ -16,9 +16,9 @@
 
 package com.android.build.gradle.internal.component.features
 
+import com.android.build.api.variant.Dexing
 import com.android.build.gradle.internal.scope.Java8LangSupport
 import com.android.builder.dexing.DexingType
-import java.io.File
 
 /**
  * Creation config for components that runs D8, usually these are components that generates APKs.
@@ -26,10 +26,11 @@ import java.io.File
  * To use this in a task that requires dexing support, use
  * [com.android.build.gradle.internal.tasks.factory.features.DexingTaskCreationAction].
  * Otherwise, access the property on the component
- * [com.android.build.gradle.internal.component.ApkCreationConfig.dexingCreationConfig].
+ * [com.android.build.gradle.internal.component.ApkCreationConfig.dexing].
  */
-interface DexingCreationConfig {
+interface DexingCreationConfig: Dexing {
 
+    fun finalizeAndLock()
     /**
      * The minimum API level that the output `.dex` files support.
      *
@@ -39,8 +40,6 @@ interface DexingCreationConfig {
      * improve build performance.
      */
     val minSdkVersionForDexing: Int
-
-    val isMultiDexEnabled: Boolean
 
     val isCoreLibraryDesugaringEnabled: Boolean
 
@@ -52,8 +51,6 @@ interface DexingCreationConfig {
 
     /** If this variant should package desugar_lib DEX in the final APK. */
     val shouldPackageDesugarLibDex: Boolean
-
-    val multiDexKeepFile: File?
 
     /**
      * Returns if we need to shrink desugar lib when desugaring Core Library.

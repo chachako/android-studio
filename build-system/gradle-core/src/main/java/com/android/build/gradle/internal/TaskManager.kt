@@ -355,7 +355,7 @@ abstract class TaskManager(
         // The main dex list calculation for the bundle also needs the feature classes for reference
         // only
         if ((creationConfig as? ApplicationCreationConfig)?.consumesFeatureJars == true ||
-            (creationConfig as? ApkCreationConfig)?.dexingCreationConfig?.needsMainDexListForBundle == true) {
+            (creationConfig as? ApkCreationConfig)?.dexing?.needsMainDexListForBundle == true) {
             creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.FEATURES)
                 .setInitialContent(
                     ScopedArtifact.CLASSES,
@@ -639,7 +639,7 @@ abstract class TaskManager(
         val useAaptToGenerateLegacyMultidexMainDexProguardRules =
                 (creationConfig is ApkCreationConfig
                         && creationConfig
-                        .dexingCreationConfig
+                        .dexing
                         .dexingType
                         .needsMainDexList)
         if (globalConfig.namespacedAndroidResources) {
@@ -1191,13 +1191,13 @@ abstract class TaskManager(
         }
 
         // Code Dexing (MonoDex, Legacy Multidex or Native Multidex)
-        if (creationConfig.dexingCreationConfig.needsMainDexListForBundle) {
+        if (creationConfig.dexing.needsMainDexListForBundle) {
             taskFactory.register(D8BundleMainDexListTask.CreationAction(creationConfig))
         }
         if (creationConfig.componentType.isDynamicFeature) {
             taskFactory.register(FeatureDexMergeTask.CreationAction(creationConfig))
         }
-        createDexTasks(creationConfig, creationConfig.dexingCreationConfig.dexingType)
+        createDexTasks(creationConfig, creationConfig.dexing.dexingType)
     }
 
     /**
@@ -1224,7 +1224,7 @@ abstract class TaskManager(
         // to be included multiple times and will cause the build to fail because of same types
         // being defined multiple times in the final dex.
         val separateFileDependenciesDexingTask =
-            (creationConfig.dexingCreationConfig.java8LangSupportType == Java8LangSupport.D8
+            (creationConfig.dexing.java8LangSupportType == Java8LangSupport.D8
                     && classpathUtils.enableDexingArtifactTransform)
 
         maybeCreateDesugarLibTask(creationConfig)
@@ -1261,7 +1261,7 @@ abstract class TaskManager(
     }
 
     protected fun getClassPathUtils(creationConfig: ApkCreationConfig): ClassesClasspathUtils {
-        val java8LangSupport = creationConfig.dexingCreationConfig.java8LangSupportType
+        val java8LangSupport = creationConfig.dexing.java8LangSupportType
         val supportsDesugaringViaArtifactTransform =
                 (java8LangSupport == Java8LangSupport.UNUSED
                         || java8LangSupport == Java8LangSupport.D8)
@@ -1870,11 +1870,11 @@ abstract class TaskManager(
     }
 
     private fun maybeCreateDesugarLibTask(apkCreationConfig: ApkCreationConfig) {
-        if (apkCreationConfig.dexingCreationConfig.shouldPackageDesugarLibDex) {
+        if (apkCreationConfig.dexing.shouldPackageDesugarLibDex) {
             // The expansion of wildcards using the desugared lib jar should only run when
             // needsShrinkDesugarLibrary is true, and this conditional should match the generation
             // of desugared lib jar in [L8DexDesugarLibTask]
-            if (apkCreationConfig.dexingCreationConfig.needsShrinkDesugarLibrary) {
+            if (apkCreationConfig.dexing.needsShrinkDesugarLibrary) {
                 taskFactory.register(
                     ExpandArtProfileWildcardsTask.ExpandL8ArtProfileCreationAction(apkCreationConfig)
                 )

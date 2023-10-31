@@ -204,7 +204,7 @@ abstract class CheckAarMetadataTask : NonIncrementalTask() {
             task.agpVersion.setDisallowChanges(Version.ANDROID_GRADLE_PLUGIN_VERSION)
             val coreLibraryDesugaringEnabled =
                 if (creationConfig is AndroidTestCreationConfig) {
-                    creationConfig.dexingCreationConfig.isCoreLibraryDesugaringEnabled
+                    creationConfig.dexing.isCoreLibraryDesugaringEnabled
                 } else {
                     creationConfig.global.compileOptions.isCoreLibraryDesugaringEnabled
                 }

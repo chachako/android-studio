@@ -105,6 +105,8 @@ interface ComponentCreationConfig : ComponentIdentity {
     // INTERNAL HELPERS
     // ---------------------------------------------------------------------------------------------
 
+    fun finalizeAndLock()
+
     /**
      * Get the compile classpath for compiling sources in this component
      */

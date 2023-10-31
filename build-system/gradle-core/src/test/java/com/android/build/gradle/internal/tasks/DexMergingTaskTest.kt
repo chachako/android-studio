@@ -361,7 +361,7 @@ class DexMergingTaskTest {
                                     override val mainDexListConfig: MainDexListConfig
                                         get() = object : MainDexListConfig() {
                                             override val userMultidexKeepFile =
-                                                    FakeGradleProperty(userMultidexKeepFile)
+                                                FakeObjectFactory.factory.fileProperty().fileValue(userMultidexKeepFile)
                                             override val aaptGeneratedRules =
                                                     FakeObjectFactory.factory.fileProperty()
                                             override val userMultidexProguardRules =

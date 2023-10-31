@@ -159,8 +159,8 @@ class D8BundleMainDexListTaskTest {
                         TestUtils.resolvePlatformPath("android.jar", TestUtils.TestType.AGP)
                             .toFile()
                     )
-                override val userMultidexKeepFile: Property<File>
-                    get() = FakeGradleProperty(userMultidexKeepFile)
+                override val userMultidexKeepFile: RegularFileProperty
+                    get() = FakeObjectFactory.factory.fileProperty().fileValue(userMultidexKeepFile)
                 override val output: RegularFileProperty
                     get() = FakeObjectFactory.factory.fileProperty().fileValue(output)
                 override val errorFormat: Property<SyncOptions.ErrorFormatMode>

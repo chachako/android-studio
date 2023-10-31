@@ -859,7 +859,7 @@ abstract class PackageAndroidArtifact : NewIncrementalTask() {
 
             private fun getDesugarLibDexIfExists(
                     creationConfig: ApkCreationConfig): FileCollection {
-                return if (!creationConfig.dexingCreationConfig.shouldPackageDesugarLibDex) {
+                return if (!creationConfig.dexing.shouldPackageDesugarLibDex) {
                     creationConfig.services.fileCollection()
                 } else creationConfig
                         .services
@@ -877,8 +877,8 @@ abstract class PackageAndroidArtifact : NewIncrementalTask() {
                 //   3. In mono dex and legacy multidex where global synthetics are already merged into
                 //      dex files in dex merging tasks
                 return if (!creationConfig.enableGlobalSynthetics
-                        || (creationConfig.dexingCreationConfig.dexingType
-                                !== DexingType.NATIVE_MULTIDEX) || creationConfig.optimizationCreationConfig.minifiedEnabled) {
+                        || (creationConfig.dexing.dexingType != DexingType.NATIVE_MULTIDEX)
+                        || creationConfig.optimizationCreationConfig.minifiedEnabled) {
                     creationConfig.services.fileCollection()
                 } else creationConfig
                         .services

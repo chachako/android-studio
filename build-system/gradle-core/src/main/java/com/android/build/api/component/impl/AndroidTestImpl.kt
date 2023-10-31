@@ -19,7 +19,7 @@ package com.android.build.api.component.impl
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.component.impl.features.AndroidResourcesCreationConfigImpl
 import com.android.build.api.component.impl.features.BuildConfigCreationConfigImpl
-import com.android.build.api.component.impl.features.DexingCreationConfigImpl
+import com.android.build.api.component.impl.features.DexingImpl
 import com.android.build.api.component.impl.features.OptimizationCreationConfigImpl
 import com.android.build.api.component.impl.features.RenderscriptCreationConfigImpl
 import com.android.build.api.component.impl.features.ShadersCreationConfigImpl
@@ -32,6 +32,7 @@ import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.Renderscript
 import com.android.build.api.variant.ResValue
 import com.android.build.api.variant.SigningConfig
+import com.android.build.api.variant.impl.AndroidTestBuilderImpl
 import com.android.build.api.variant.impl.ApkPackagingImpl
 import com.android.build.api.variant.impl.ResValueKeyImpl
 import com.android.build.api.variant.impl.SigningConfigImpl
@@ -80,6 +81,7 @@ open class AndroidTestImpl @Inject constructor(
     variantServices: VariantServices,
     taskCreationServices: TaskCreationServices,
     global: GlobalTaskCreationConfig,
+    androidTestBuilder: AndroidTestBuilderImpl,
 ) : TestComponentImpl<AndroidTestComponentDslInfo>(
     componentIdentity,
     buildFeatureValues,
@@ -143,7 +145,7 @@ open class AndroidTestImpl @Inject constructor(
     override val instrumentationRunner: Property<String> by lazy {
         internalServices.propertyOf(
             String::class.java,
-            dslInfo.getInstrumentationRunner(dexingCreationConfig.dexingType)
+            dslInfo.getInstrumentationRunner(dexing.dexingType)
         )
     }
 
@@ -209,6 +211,15 @@ open class AndroidTestImpl @Inject constructor(
     override val manifestPlaceholders: MapProperty<String, String>
         get() = manifestPlaceholdersCreationConfig.placeholders
 
+    override val dexing: DexingCreationConfig by lazy(LazyThreadSafetyMode.NONE) {
+        DexingImpl(
+            this,
+            androidTestBuilder._enableMultiDex,
+            dslInfo.dexingDslInfo.multiDexKeepProguard,
+            dslInfo.dexingDslInfo.multiDexKeepFile,
+            internalServices,
+        )
+    }
 
     // ---------------------------------------------------------------------------------------------
     // INTERNAL API
@@ -254,17 +265,8 @@ open class AndroidTestImpl @Inject constructor(
         }
     }
 
-    override val dexingCreationConfig: DexingCreationConfig by lazy(LazyThreadSafetyMode.NONE) {
-        DexingCreationConfigImpl(
-            this,
-            dslInfo.dexingDslInfo,
-            internalServices,
-            taskCreationServices,
-        )
-    }
-
     override val isCoreLibraryDesugaringEnabledLintCheck: Boolean
-        get() = dexingCreationConfig.isCoreLibraryDesugaringEnabled
+        get() = dexing.isCoreLibraryDesugaringEnabled
 
     override val shadersCreationConfig: ShadersCreationConfig by lazy(LazyThreadSafetyMode.NONE) {
         ShadersCreationConfigImpl(
@@ -331,5 +333,10 @@ open class AndroidTestImpl @Inject constructor(
 
     override val enableGlobalSynthetics: Boolean
         get() = isGlobalSyntheticsEnabled()
+
+    override fun finalizeAndLock() {
+        super.finalizeAndLock()
+        dexing.finalizeAndLock()
+    }
 }
 

@@ -16,9 +16,12 @@
 package com.android.build.api.variant.impl
 
 import com.android.build.api.component.analytics.AnalyticsEnabledApplicationVariantBuilder
+import com.android.build.api.dsl.ApplicationBuildType
+import com.android.build.api.variant.AndroidTestBuilder
 import com.android.build.api.variant.ApplicationVariantBuilder
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.DependenciesInfoBuilder
+import com.android.build.api.variant.PropertyAccessNotAllowedException
 import com.android.build.api.variant.VariantBuilder
 import com.android.build.gradle.internal.core.dsl.ApplicationVariantDslInfo
 import com.android.build.gradle.internal.services.ProjectServices
@@ -42,13 +45,16 @@ open class ApplicationVariantBuilderImpl @Inject constructor(
         get() = (dslInfo as ApplicationVariantDslInfo).isDebuggable
 
     override var androidTestEnabled: Boolean
-        get() = enableAndroidTest
+        get() = androidTest.enable
         set(value) {
-            enableAndroidTest = value
+            androidTest.enable = value
         }
 
-    override var enableAndroidTest: Boolean = true
-
+    override var enableAndroidTest: Boolean
+        get() = androidTest.enable
+        set(value) {
+            androidTest.enable = value
+        }
     override var enableTestFixtures: Boolean = dslInfo.testFixtures?.enable ?: false
 
     // only instantiate this if this is needed. This allows non-built variant to not do too much work.
@@ -83,4 +89,14 @@ open class ApplicationVariantBuilderImpl @Inject constructor(
         dslInfo.optimizationDslInfo.postProcessingOptions.resourcesShrinkingEnabled()
         set(value) = setMinificationIfPossible("shrinkResources", value){ field = it }
 
+    internal var _enableMultiDex = dslInfo.dexingDslInfo.isMultiDexEnabled
+    override var enableMultiDex: Boolean?
+        get() {
+            throw PropertyAccessNotAllowedException("enableMultiDex", "ApplicationVariantBuilder")
+        }
+        set(value) {
+            _enableMultiDex = value
+        }
+
+    override val androidTest: AndroidTestBuilder = AndroidTestBuilderImpl(_enableMultiDex)
 }

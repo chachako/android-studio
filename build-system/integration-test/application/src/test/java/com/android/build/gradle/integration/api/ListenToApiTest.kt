@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.api
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.google.common.truth.Truth
+import junit.framework.TestCase.fail
 import org.junit.Rule
 import org.junit.Test
 import java.nio.file.Files
@@ -131,6 +132,9 @@ class ListenToApiTest {
         project.buildFile.appendText(
             """
                 android {
+                    defaultConfig {
+                        multiDexKeepProguard file('default-rules')
+                    }
                     buildTypes {
                         release {
                             minifyEnabled true
@@ -179,6 +183,12 @@ class ListenToApiTest {
         Truth.assertThat(project.buildResult.didWorkTasks.contains(":releaseVerifyProguardFiles")).isTrue()
         Truth.assertThat(project.buildResult.stdout.findAll(
             "Got a File at"
+        ).count()).isEqualTo(1)
+
+        project.execute(":debugVerifyProguardFiles")
+        Truth.assertThat(project.buildResult.didWorkTasks.contains(":debugVerifyProguardFiles")).isTrue()
+        Truth.assertThat(project.buildResult.stdout.findAll(
+            "default-rules"
         ).count()).isEqualTo(1)
     }
 

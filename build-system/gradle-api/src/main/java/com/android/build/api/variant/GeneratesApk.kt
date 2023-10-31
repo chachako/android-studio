@@ -16,6 +16,7 @@
 
 package com.android.build.api.variant
 
+import org.gradle.api.Incubating
 import org.gradle.api.provider.Provider
 
 /**
@@ -52,5 +53,11 @@ interface GeneratesApk {
 
     @Deprecated(message = "Replaced with targetSdk, will be removed in 9.0", replaceWith = ReplaceWith("targetSdk"))
     val targetSdkVersion: AndroidVersion
+
+    /**
+     * Variant's specific dexing options
+     */
+    @get:Incubating
+    val dexing: Dexing
 
 }

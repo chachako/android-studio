@@ -140,4 +140,7 @@ open class KmpUnitTestImpl @Inject constructor(
     override fun setAsmFramesComputationMode(mode: FramesComputationMode) {
         instrumentation.setAsmFramesComputationMode(mode)
     }
+
+    override fun finalizeAndLock() {
+    }
 }
