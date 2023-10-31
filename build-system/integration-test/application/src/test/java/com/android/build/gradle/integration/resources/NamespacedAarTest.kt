@@ -20,8 +20,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import com.android.build.gradle.integration.common.utils.getDebugVariant
-import com.android.builder.model.AndroidProject
+import com.android.builder.model.v2.ide.SyncIssue
 import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -130,30 +129,20 @@ class NamespacedAarTest {
     fun checkBuilds() {
         project.executor()
             .run(":publishedLib:assembleRelease")
+
         project.executor()
             .run(":lib:assembleDebug", ":app:assembleDebug")
 
-        run {
-            // Check model level 3
-            val models =
-                project.model().level(AndroidProject.MODEL_LEVEL_3_VARIANT_OUTPUT_POST_BUILD).ignoreSyncIssues(1)
-                    .fetchAndroidProjects().onlyModelMap
-            val libraries = models[":lib"]!!.getDebugVariant().mainArtifact.dependencies.libraries
-            assertThat(libraries).hasSize(1)
-            val lib = libraries.single()
-            assertThat(lib.resStaticLibrary).exists()
-        }
+        val variantDeps = project.modelV2().ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
+            .fetchVariantDependencies("debug")
+            .container.getProject(":lib")
+            .variantDependencies!!
 
-        run {
-            // Check model level 4
-            val models =
-                project.model().level(AndroidProject.MODEL_LEVEL_LATEST).ignoreSyncIssues(1).fetchAndroidProjects()
-            val libraries =
-                models.onlyModelMap[":lib"]!!.getDebugVariant().mainArtifact.dependencyGraphs.compileDependencies
-            assertThat(libraries).hasSize(1)
-            val lib = models.globalLibraryMap.libraries[libraries.single().artifactAddress]!!
-            assertThat(lib.resStaticLibrary).exists()
-        }
+        val compileDependencies = variantDeps.mainArtifact.compileDependencies
+        assertThat(compileDependencies).hasSize(1)
+
+        val publishedLibData = variantDeps.libraries[compileDependencies.first().key]?.androidLibraryData
+        assertThat(publishedLibData?.resStaticLibrary).exists()
 
         val subproject = project.getSubproject("publishedLib")
         subproject.withAar("release") {
@@ -170,7 +159,6 @@ class NamespacedAarTest {
             val manifest = androidManifestContentsAsString
             assertThat(manifest).contains("@string/my_version_name")
             assertThat(manifest).doesNotContain("@com.example.publishedLib:string/my_version_name")
-            // TODO: use the full namespaced manifest when creating res.apk and test its contents.
         }
 
         subproject.assertThatAar("release") {

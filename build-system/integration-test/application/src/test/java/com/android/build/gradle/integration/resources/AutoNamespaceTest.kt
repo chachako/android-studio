@@ -18,9 +18,8 @@ package com.android.build.gradle.integration.resources
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.ApkSubject.assertThat
-import com.android.build.gradle.integration.common.utils.getDebugVariant
 import com.android.build.gradle.options.BooleanOption
-import com.android.builder.model.AndroidProject
+import com.android.builder.model.v2.ide.LibraryType
 import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
@@ -39,19 +38,18 @@ class AutoNamespaceTest {
 
     @Test
     fun checkNamespacedApp() {
+        val variantDeps = project.modelV2()
+            .with(BooleanOption.CONVERT_NON_NAMESPACED_DEPENDENCIES, true)
+            .fetchVariantDependencies("debug")
+            .container.getProject()
+            .variantDependencies!!
 
-        // Check model level 3
-        val modelContainer =
-            project.model().level(AndroidProject.MODEL_LEVEL_3_VARIANT_OUTPUT_POST_BUILD)
-                .with(BooleanOption.CONVERT_NON_NAMESPACED_DEPENDENCIES, true)
-                .fetchAndroidProjects()
-        val model = modelContainer.onlyModel
-
-        val libraries = model.getDebugVariant().mainArtifact.dependencies.libraries
+        val libraries = variantDeps.libraries
         assertThat(libraries).isNotEmpty()
-        libraries.forEach { lib ->
-            assertThat(lib.resStaticLibrary).exists()
-        }
+
+        libraries
+            .filter { lib -> lib.value.type == LibraryType.ANDROID_LIBRARY }
+            .forEach { lib -> assertThat(lib.value.androidLibraryData?.resStaticLibrary).exists() }
 
         project.executor().run("assembleDebug")
 
