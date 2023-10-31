@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.application
 
 import com.android.SdkConstants
+import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.builder
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
@@ -666,5 +667,27 @@ class LocaleConfigGenerationTest {
             lib1Locales = listOf(),
             lib2Locales = listOf()
         ).execute("assembleDebug")
+    }
+
+    @Test
+    fun `Test default locale for API level`() {
+        buildDsl(generateLocaleConfig = true)
+        project.withLocales(
+            appLocales = listOf(DEFAULT),
+            lib1Locales = listOf(),
+            lib2Locales = listOf()
+        ).execute("assembleDebug")
+        val localeConfig = project.getSubproject("app").file(
+            "$localeConfigPath/debug/xml/$LOCALE_CONFIG_FILE_NAME.xml")
+        Truth.assertThat(localeConfig.readText()).contains("android:defaultLocale=\"en-US\"")
+
+        // In API level before 35, the default locale should not be present in the locale config
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("app").buildFile,
+            "compileSdkVersion " + DEFAULT_COMPILE_SDK_VERSION,
+            "compileSdkVersion 34"
+        )
+        project.execute("assembleDebug")
+        Truth.assertThat(localeConfig.readText()).doesNotContain("android:defaultLocale")
     }
 }

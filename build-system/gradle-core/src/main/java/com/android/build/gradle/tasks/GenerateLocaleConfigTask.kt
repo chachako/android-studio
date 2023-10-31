@@ -32,6 +32,7 @@ import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.NonIncrementalTask
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
+import com.android.build.gradle.internal.utils.parseTargetHash
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.internal.utils.toImmutableSet
 import com.android.buildanalyzer.common.TaskCategory
@@ -112,6 +113,10 @@ abstract class GenerateLocaleConfigTask : NonIncrementalTask() {
     @get:Internal
     abstract val compiledResOutput: DirectoryProperty
 
+    @get:Input
+    @get:Optional
+    abstract val compileSdk: Property<Int>
+
     // These properties are only used with res configs as well, but they cannot be optional because
     // they use `Nested` And `Inject`
     @get:Inject
@@ -136,6 +141,7 @@ abstract class GenerateLocaleConfigTask : NonIncrementalTask() {
             it.compiledResOutput.set(compiledResOutput)
             it.tempProjectDir.set(tempProjectDir)
             it.androidJarInput.set(androidJarInput)
+            it.compileSdk.set(compileSdk)
         }
     }
 
@@ -151,6 +157,7 @@ abstract class GenerateLocaleConfigTask : NonIncrementalTask() {
         abstract val compiledResOutput: DirectoryProperty
         abstract val tempProjectDir: DirectoryProperty
         abstract val androidJarInput: Property<AndroidJarInput>
+        abstract val compileSdk: Property<Int>
     }
 
     abstract class GenerateLocaleWorkAction: ProfileAwareWorkAction<GenerateLocaleWorkParameters>() {
@@ -205,7 +212,13 @@ abstract class GenerateLocaleConfigTask : NonIncrementalTask() {
                 File(localeConfigFolder, "xml${File.separator}$LOCALE_CONFIG_FILE_NAME.xml")
             localeConfigFile.parentFile.mkdirs()
 
-            writeLocaleConfig(output = localeConfigFile, finalLocales)
+            // Starting with API 35, add the default locale in the config
+            val compileSdk = parameters.compileSdk.orNull
+            if (compileSdk != null && compileSdk >= 35) {
+                writeLocaleConfig(output = localeConfigFile, finalLocales, appLocales.defaultLocale)
+            } else {
+                writeLocaleConfig(output = localeConfigFile, finalLocales)
+            }
         }
 
         // Create temp res files from the project and dependencies and compiles with AAPT2 to
@@ -335,6 +348,10 @@ abstract class GenerateLocaleConfigTask : NonIncrementalTask() {
 
             creationConfig.services.initializeAapt2Input(task.aapt2, task)
             task.androidJarInput.initialize(task, creationConfig)
+
+            task.compileSdk.setDisallowChanges(
+                parseTargetHash(creationConfig.global.compileSdkHashString).apiLevel
+            )
 
             val resConfigs = creationConfig.androidResourcesCreationConfig?.resourceConfigurations
             if (!resConfigs.isNullOrEmpty()) {
