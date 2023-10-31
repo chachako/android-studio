@@ -314,12 +314,10 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
               )
             }
             is TargetSdkCheckResult.NoIssue -> {
-              val message = targetSdkCheckResult.message
-
               val highest = context.client.highestKnownApiLevel
               val label = "Update targetSdkVersion to $highest"
               val fix = fix().name(label).replace().text(value).with(highest.toString()).build()
-              report(context, statementCookie, TARGET_NEWER, message, fix)
+              report(context, statementCookie, TARGET_NEWER, targetSdkCheckResult.message, fix)
             }
           }
         }
