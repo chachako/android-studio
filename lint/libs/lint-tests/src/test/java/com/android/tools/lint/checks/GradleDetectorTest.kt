@@ -1247,9 +1247,9 @@ class GradleDetectorTest : AbstractCheckTest() {
                 gradle/libs.versions.toml:
                 @@ -2 +2
                   [versions]
-                + support-v4 = "19.0"
+                + supportV4 = "19.0"
                   [libraries]
-                + support-v4 = { module = "com.android.support:support-v4", version.ref = "support-v4" }
+                + support-v4 = { module = "com.android.support:support-v4", version.ref = "supportV4" }
                   [bundles]
                 """
       )

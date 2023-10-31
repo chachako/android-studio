@@ -109,13 +109,13 @@ class VersionCatalogNamingUtilTest {
     @Test
     fun testPickVersionName() {
         versionName("foo", "com.google:foo:1.0")
-        versionName("foo-bar", "com.google:foo-bar:1.0", "appcompat")
+        versionName("fooBar", "com.google:foo-bar:1.0", "appcompat")
         versionName("fooVersion", "com.google:foo:1.0", "barVersion")
-        versionName("foo-bar", "com.google:foo-bar:1.0")
+        versionName("fooBar", "com.google:foo-bar:1.0")
         versionName("google-foo-bar", "com.google:foo-bar:1.0", "FOO-BAR", "appcompat")
         // If we have camel case in version variables, use that here too
         versionName("fooBar", "com.google:foo-bar:1.0", "appCompat")
-        versionName("google-fooBar", "com.google:foo-bar:1.0", "Foo-Bar", "fooBar")
+        versionName("fooBarVersion", "com.google:foo-bar:1.0", "Foo-Bar", "fooBar")
         versionName(
             "fooBarVersion",
             "com.google:foo-bar:1.0",
@@ -124,49 +124,49 @@ class VersionCatalogNamingUtilTest {
             "appCompatVersion"
         )
         versionName(
-            "google-fooBar",
+            "googleFooBar",
             "com.google:foo-bar:1.0",
             "Foo-Bar",
             "fooBar",
             "fooBarVersion"
         )
         versionName(
-            "com-google-fooBar",
+            "googleFooBarVersion",
             "com.google:foo-bar:1.0",
             "Foo-Bar",
             "fooBar",
             "fooBarVersion",
-            "google-fooBar"
+            "googleFooBar"
         )
         versionName(
-            "com-google-fooBar",
+            "comGoogleFooBar",
             "com.google:foo-bar:1.0",
             "Foo-Bar",
             "fooBar",
             "fooBarVersion",
-            "google-fooBar",
-            "google-fooBarVersion"
+            "googleFooBar",
+            "googleFooBarVersion"
         )
         versionName(
-            "com-google-fooBar2",
+            "comGoogleFooBar2",
             "com.google:foo-bar:1.0",
             "Foo-Bar",
             "fooBar",
             "fooBarVersion",
-            "google-fooBar",
-            "google-fooBarVersion",
-            "com-google-fooBar"
+            "googleFooBar",
+            "googleFooBarVersion",
+            "comGoogleFooBar",
         )
         versionName(
-            "com-google-fooBar3",
+            "comGoogleFooBar3",
             "com.google:foo-bar:1.0",
             "Foo-Bar",
             "fooBar",
             "fooBarVersion",
-            "google-fooBar",
-            "google-fooBarVersion",
-            "com-google-fooBar",
-            "com-google-fooBar2"
+            "googleFooBar",
+            "googleFooBarVersion",
+            "comGoogleFooBar",
+            "comGoogleFooBar2"
         )
 
         versionName("google-foo-bar", "com.google:foo-bar:1.0", "foo-bar")

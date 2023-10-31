@@ -83,7 +83,7 @@ class TomlUtilitiesTest {
   fun testPickVersionName() {
     // the majority of basic tests located on another level at CatalogNamingUtilTest
     versionName("foo", "com.google:foo:1.0")
-    versionName("foo-bar", "com.google:foo-bar:1.0", "appcompat")
+    versionName("fooBar", "com.google:foo-bar:1.0", "appcompat")
     versionName("google-foo-bar", "com.google:foo-bar:1.0", "FOO-BAR", "appcompat")
     versionName("google-foo-bar", "com.google:foo-bar:1.0", "foo-bar")
 
