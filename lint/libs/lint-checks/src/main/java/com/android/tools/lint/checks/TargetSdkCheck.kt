@@ -55,28 +55,21 @@ sealed interface TargetSdkCheckResult {
 
   data class Expired(
     override val requiredVersion: Int,
-    override val message: String = expiredMessage(requiredVersion)
+    override val message: String =
+      "Google Play requires that apps target API level $requiredVersion or higher."
   ) : TargetSdkCheckResult
 
   data class Expiring(
     override val requiredVersion: Int,
-    override val message: String = expiringMessage(requiredVersion)
+    override val message: String =
+      "Google Play will soon require that apps target API " +
+        "level $requiredVersion or higher. This will be required for new apps and updates " +
+        "starting on August 31, $MINIMUM_TARGET_SDK_VERSION_YEAR."
   ) : TargetSdkCheckResult
 
   object NoIssue : TargetSdkCheckResult {
     override val requiredVersion = -1
     override val message = null
-  }
-
-  companion object {
-
-    private fun expiredMessage(required: Int) =
-      "Google Play requires that apps target API level $required or higher."
-
-    private fun expiringMessage(minimumTargetSdkVersion: Int) =
-      "Google Play will soon require that apps target API " +
-        "level $minimumTargetSdkVersion or higher. This will be required for new apps and updates " +
-        "starting on August 31, $MINIMUM_TARGET_SDK_VERSION_YEAR."
   }
 }
 
