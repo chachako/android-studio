@@ -51,7 +51,7 @@ object TargetSdkRequirements {
 
 sealed interface TargetSdkCheckResult {
   val requiredVersion: Int
-  val message: String?
+  val message: String
 
   data class Expired(
     override val requiredVersion: Int,
