@@ -40,6 +40,9 @@ public class DataBindingIntegrationTestAppsTest {
                         .fromDataBindingIntegrationTest(projectName, useAndroidX)
                         .addGradleProperties(
                                 BooleanOption.USE_ANDROID_X.getPropertyName() + "=" + useAndroidX)
+                        .addGradleProperties(
+                                BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName() + "=false"
+                        )
                         .withDependencyChecker(!"KotlinTestApp".equals(projectName));
         if (SdkVersionInfo.HIGHEST_KNOWN_STABLE_API < 28 && useAndroidX) {
             builder.withCompileSdkVersion("28");

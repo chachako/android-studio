@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.testing.unit;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
+import com.android.build.gradle.options.BooleanOption;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -26,6 +27,7 @@ public class UnitTestingComplexProjectTest {
     public GradleTestProject project =
             GradleTestProject.builder()
                     .fromTestProject("unitTestingComplexProject")
+                    .addGradleProperties(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName() + "=false")
                     .create();
 
     @Test

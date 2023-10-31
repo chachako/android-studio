@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.connected.application
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.connected.utils.getEmulator
+import com.android.build.gradle.options.BooleanOption
 import org.junit.Before
 import org.junit.ClassRule
 import org.junit.Rule
@@ -33,7 +34,11 @@ class ComposeHelloWorldConnectedTest {
 
     @JvmField
     @Rule
-    val project = GradleTestProject.builder().fromTestProject("composeHelloWorld").create()
+    val project = GradleTestProject.builder()
+            .fromTestProject("composeHelloWorld")
+            .addGradleProperties(
+                    "${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=false")
+            .create()
 
     @Before
     fun setUp() {

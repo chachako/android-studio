@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.connected.library;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
+import com.android.build.gradle.options.BooleanOption;
 import com.android.utils.FileUtils;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
@@ -44,6 +45,8 @@ public class JarsInLibrariesConnectedTest {
     public GradleTestProject project =
             GradleTestProject.builder()
                     .fromTestProject("assets")
+                    .addGradleProperties(
+                            BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName() + "=false")
                     .create();
 
     @ClassRule public static final ExternalResource EMULATOR = EmulatorUtils.getEmulator();

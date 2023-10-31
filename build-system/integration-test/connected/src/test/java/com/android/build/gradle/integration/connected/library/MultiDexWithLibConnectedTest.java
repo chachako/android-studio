@@ -19,6 +19,8 @@ package com.android.build.gradle.integration.connected.library;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
 import java.io.IOException;
+
+import com.android.build.gradle.options.BooleanOption;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -31,6 +33,8 @@ public class MultiDexWithLibConnectedTest {
             GradleTestProject.builder()
                     .fromTestProject("multiDexWithLib")
                     .withHeap("2048M")
+                    .addGradleProperties(
+                            BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName() + "=false")
                     .create();
 
     @ClassRule public static final ExternalResource EMULATOR = EmulatorUtils.getEmulator();

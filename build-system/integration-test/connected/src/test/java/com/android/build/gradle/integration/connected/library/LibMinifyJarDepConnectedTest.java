@@ -19,6 +19,8 @@ package com.android.build.gradle.integration.connected.library;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
 import java.io.IOException;
+
+import com.android.build.gradle.options.BooleanOption;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -33,6 +35,8 @@ public class LibMinifyJarDepConnectedTest {
     public GradleTestProject project =
             GradleTestProject.builder()
                     .fromTestProject("libMinifyJarDep")
+                    .addGradleProperties(
+                            BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName() + "=false")
                     .create();
 
     @Before

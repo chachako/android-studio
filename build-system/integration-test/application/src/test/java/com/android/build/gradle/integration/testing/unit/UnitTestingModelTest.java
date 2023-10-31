@@ -24,6 +24,7 @@ import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.internal.scope.ArtifactTypeUtil;
 import com.android.build.gradle.internal.scope.InternalArtifactType;
+import com.android.build.gradle.options.BooleanOption;
 import com.android.builder.model.v2.ide.JavaArtifact;
 import com.android.builder.model.v2.ide.SourceProvider;
 import com.android.builder.model.v2.ide.SourceSetContainer;
@@ -43,7 +44,9 @@ public class UnitTestingModelTest {
 
     @Rule
     public GradleTestProject project =
-            GradleTestProject.builder().fromTestProject("unitTestingComplexProject").create();
+            GradleTestProject.builder().fromTestProject("unitTestingComplexProject")
+                    .addGradleProperties(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName() + "=false")
+                    .create();
 
     @Test
     public void unitTestingArtifactsAreIncludedInTheModel() throws Exception {
@@ -51,6 +54,7 @@ public class UnitTestingModelTest {
         project.executor().run("test");
 
         ModelContainerV2.ModelInfo model = project.modelV2()
+                .ignoreSyncIssues()
                 .fetchModels()
                 .getContainer()
                 .getProject(":app", ":");
@@ -143,7 +147,11 @@ public class UnitTestingModelTest {
                         + "    productFlavors { paid; free }\n"
                         + "}");
         ModelContainerV2.ModelInfo model =
-                project.modelV2().fetchModels().getContainer().getProject(":app", ":");
+                project.modelV2()
+                        .ignoreSyncIssues()
+                        .fetchModels()
+                        .getContainer()
+                        .getProject(":app", ":");
 
         assertThat(model.getAndroidDsl().getProductFlavors()).hasSize(2);
 

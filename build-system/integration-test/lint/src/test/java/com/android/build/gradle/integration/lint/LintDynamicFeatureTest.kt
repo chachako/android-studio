@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
@@ -57,6 +58,8 @@ class LintDynamicFeatureTest {
                     .dependency("api", app, lib2)
                     .build()
             )
+            .addGradleProperties(
+                    "${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=false")
             .create()
 
     @Test

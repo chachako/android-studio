@@ -24,6 +24,7 @@ import static com.google.common.truth.Truth.assertThat;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
+import com.android.build.gradle.options.BooleanOption;
 import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.nio.file.Files;
@@ -52,6 +53,8 @@ public class LintDependencyModelTest {
     public final GradleTestProject project =
             GradleTestProject.builder()
                     .fromTestProject("lintDeps")
+                    .addGradleProperties(
+                            BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName() + "=false")
                     .create();
 
     @Test
