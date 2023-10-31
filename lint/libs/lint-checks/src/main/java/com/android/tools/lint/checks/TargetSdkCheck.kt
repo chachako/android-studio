@@ -93,13 +93,13 @@ fun checkTargetSdk(context: Context, nowCalendar: Calendar, version: Int): Targe
   val sdkEnforceDate =
     Calendar.getInstance().apply { set(MINIMUM_TARGET_SDK_VERSION_YEAR, Calendar.AUGUST, 31) }
 
-  return if (version < minimumTargetSdkVersion) {
-    when {
-      // Doesn't meet this year requirement after deadline (August 31 for 2023)
-      nowCalendar.after(sdkEnforceDate) -> Expired(minimumTargetSdkVersion)
-      // If you're not meeting the previous year's requirement, also enforce with error severity
-      version < previousMinimumTargetSdkVersion -> Expired(previousMinimumTargetSdkVersion)
-      else -> Expiring(minimumTargetSdkVersion)
-    }
-  } else NoIssue
+  return when {
+    // If the version is at least the minimum then there's no issue
+    version >= minimumTargetSdkVersion -> NoIssue
+    // Doesn't meet this year requirement after deadline (August 31 for 2023)
+    nowCalendar.after(sdkEnforceDate) -> Expired(minimumTargetSdkVersion)
+    // If you're not meeting the previous year's requirement, also enforce with error severity
+    version < previousMinimumTargetSdkVersion -> Expired(previousMinimumTargetSdkVersion)
+    else -> Expiring(minimumTargetSdkVersion)
+  }
 }
