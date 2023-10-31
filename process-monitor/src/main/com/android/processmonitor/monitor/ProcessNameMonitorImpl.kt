@@ -104,7 +104,7 @@ class ProcessNameMonitorImpl<T> @TestOnly internal constructor(
 
     private suspend fun addDevice(device: T) {
         val serialNumber = deviceTracker.getDeviceSerialNumber(device)
-        logger.info { "Adding $serialNumber" }
+        logger.debug { "Adding $serialNumber" }
         val processTracker =
             SharedProcessTracker(scope, processTrackerFactory.createProcessTracker(device))
         val logger = logger.withPrefix("PerDeviceMonitor: $serialNumber: ")
@@ -115,7 +115,7 @@ class ProcessNameMonitorImpl<T> @TestOnly internal constructor(
     }
 
     private fun removeDevice(serialNumber: String) {
-        logger.info { ("Removing $serialNumber") }
+        logger.debug { ("Removing $serialNumber") }
         val clientMonitor = devices.remove(serialNumber)
         clientMonitor?.close()
     }
