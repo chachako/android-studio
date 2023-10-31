@@ -175,7 +175,8 @@ class ArtifactsImpl(
     fun calculateOutputPath(type: Single<*>, task: Task): File {
         with(getArtifactContainer(type)) {
             return when {
-                type.category == INTERMEDIATES -> generateIntermediatePath(type, task, false)
+                type.category == INTERMEDIATES && namingContext?.getOutputLocation() == null ->
+                    generateIntermediatePath(type, task, false)
                 //  this switching is for non-intermediate artifacts is safe as the final artifact
                 //  ends up in a completely separate directory structure
                 getFinalProvider() == null || task.name == getFinalProvider()?.name -> generateDefaultPath(type)

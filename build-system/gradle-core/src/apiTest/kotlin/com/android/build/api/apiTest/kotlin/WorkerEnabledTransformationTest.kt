@@ -79,7 +79,7 @@ class WorkerEnabledTransformationTest: VariantApiBaseTest(TestType.Script) {
             val task = task(":app:copydebugApks")
             assertNotNull(task)
             Truth.assertThat(task.outcome).isEqualTo(TaskOutcome.SUCCESS)
-            val outFolder = File(testProjectDir.root, "${testName.methodName}/app/build/intermediates/apk/copydebugApks")
+            val outFolder = File(testProjectDir.root, "${testName.methodName}/app/build/intermediates/apk/debug/packageDebug/")
             Truth.assertThat(outFolder.listFiles()?.asList()?.map { it.name }).containsExactly(
                 "app-debug.apk", BuiltArtifactsImpl.METADATA_FILE_NAME
             )
