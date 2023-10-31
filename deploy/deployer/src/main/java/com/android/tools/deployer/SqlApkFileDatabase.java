@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,6 +45,7 @@ public class SqlApkFileDatabase {
     private static final String SQLITE_JDBC_TEMP_DIR_PROPERTY = "org.sqlite.tmpdir";
 
     public static final int DEFAULT_MAX_DEXFILE_ENTRIES = 200;
+    public static final int SQLITE_MAX_LENGTH = 1_000_000;
 
     // Purely a value-based check. No plans to make the cache database forward / backward compatible.
     //  IE: All tables will be dropped if version number on the file does not match this number.
@@ -303,17 +305,42 @@ public class SqlApkFileDatabase {
     }
 
     private void addClasses(int dexId, Collection<DexClass> classes) throws SQLException {
-        if (classes.isEmpty()) {
+        addClasses(dexId, classes.iterator());
+    }
+
+    private void addClasses(int dexId, Iterator<DexClass> classes) throws SQLException {
+        // Base Case: Nothing to do.
+        if (!classes.hasNext()) {
             return;
         }
-        String values =
-                classes.stream()
-                        .map(e -> String.format("(%d, \"%s\", %d)", dexId, e.name, e.checksum))
-                        .collect(Collectors.joining(","));
-        String insert =
-                String.format("INSERT INTO classes (dexfileId, name, checksum) VALUES %s;", values);
-        int updated = executeUpdate(insert);
-        assert updated == classes.size();
+
+        // (Tail) Recursive Case: Insert roughly as much as we can under the SQL query limit
+        //                        and then recurse for the rest of the classes.
+        int numClassesInserted = 0;
+        StringBuilder insert =
+                new StringBuilder("INSERT INTO classes (dexfileId, name, checksum) VALUES ");
+        while (classes.hasNext()) {
+            DexClass next = classes.next();
+            if (numClassesInserted > 0) {
+                insert.append(",");
+            }
+            insert.append(String.format("(%d, \"%s\", %d)", dexId, next.name, next.checksum));
+            numClassesInserted++;
+
+            // Since we can't 'peak' the next element in the iterator, we are going to assume
+            // that we don't have enough room to add another class to the current INSERT statement
+            // if we have less than 10000 characters left. While not optimal, most DEX file should
+            // fit in one INSERT and on rare occasions two INSERTs.
+            if (insert.length() > (SQLITE_MAX_LENGTH - 10000)) {
+                break;
+            }
+        }
+
+        insert.append(";");
+        int updated = executeUpdate(insert.toString());
+        assert updated == numClassesInserted;
+
+        addClasses(dexId, classes);
     }
 
     private void addDexFiles(String archiveChecksum, List<Integer> files) throws SQLException {

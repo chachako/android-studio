@@ -23,6 +23,7 @@ import com.android.tools.deployer.model.DexClass;
 import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.junit.Assert;
@@ -220,5 +221,30 @@ public class ApkEntryDatabaseTest {
         assertDexClassEquals("ABCD", "01.dex", 1234, "A.1", 0xA1, dump.get(1));
 
         Assert.assertTrue(db.hasDuplicates());
+    }
+
+    @Test
+    public void testSQLQueryLimit() throws Exception {
+        SqlApkFileDatabase db = createTestDb("1.0", 10);
+
+        // We are testing the case where the insert query hits the limit by making each class
+        // adds around 10 characters to the query.
+        int size = SqlApkFileDatabase.SQLITE_MAX_LENGTH / 10;
+        ApkEntry apkEntry = new ApkEntry("01.dex", 1234, apk);
+        List<DexClass> input = new LinkedList<DexClass>();
+        for (int i = 0; i < size; i++) {
+            input.add(new DexClass("AAAAAAAAAA." + i, i, null, apkEntry));
+        }
+        db.addClasses(input);
+
+        List<DexClass> classes = db.getClasses(apkEntry);
+        Assert.assertEquals(size, classes.size());
+
+        for (int i = 0; i < size; i++) {
+            DexClass clazz = classes.get(i);
+            Assert.assertEquals("AAAAAAAAAA." + clazz.checksum, clazz.name);
+            Assert.assertNull(clazz.code);
+            Assert.assertEquals(apkEntry, clazz.dex);
+        }
     }
 }
