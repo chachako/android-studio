@@ -91,17 +91,16 @@ fun checkTargetSdk(context: Context, nowCalendar: Calendar, version: Int): Targe
     if (isWearProject) PREVIOUS_WEAR_MINIMUM_TARGET_SDK_VERSION
     else PREVIOUS_MINIMUM_TARGET_SDK_VERSION
 
-  if (version < minimumTargetSdkVersion) {
+  return if (version < minimumTargetSdkVersion) {
     val sdkEnforceDate =
       Calendar.getInstance().apply { set(MINIMUM_TARGET_SDK_VERSION_YEAR, Calendar.AUGUST, 31) }
 
-    return when {
+    when {
       // Doesn't meet this year requirement after deadline (August 31 for 2023)
       nowCalendar.after(sdkEnforceDate) -> Expired(minimumTargetSdkVersion)
       // If you're not meeting the previous year's requirement, also enforce with error severity
       version < previousMinimumTargetSdkVersion -> Expired(previousMinimumTargetSdkVersion)
       else -> Expiring(minimumTargetSdkVersion)
     }
-  }
-  return NoIssue
+  } else NoIssue
 }
