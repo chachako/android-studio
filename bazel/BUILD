@@ -349,6 +349,7 @@ java_jarjar(
         "@maven//:io.netty.netty-handler-proxy",
         "@maven//:io.netty.netty-resolver",
         "@maven//:io.netty.netty-transport",
+        "@maven//:io.netty.netty-transport-native-unix-common",
         "@maven//:io.opencensus.opencensus-api",
         "@maven//:io.opencensus.opencensus-contrib-grpc-metrics",
         "@maven//:io.perfmark.perfmark-api",
