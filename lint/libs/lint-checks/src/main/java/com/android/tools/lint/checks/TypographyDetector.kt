@@ -402,13 +402,14 @@ class TypographyDetector : ResourceXmlDetector() {
     val QUOTES =
       create(
         id = "TypographyQuotes",
-        briefDescription = "Straight quotes can be replaced with curvy quotes",
+        briefDescription =
+          "Straight quotes can be replaced with curvy quotes, and apostrophes with typographic apostrophes.",
         explanation =
           """
                         Straight single quotes and double quotes, when used as a pair, can be replaced by \
-                        "curvy quotes" (or directional quotes). This can make the text more readable. Note that you \
-                        should never use grave accents and apostrophes to quote, `like this'. (Also note that you \
-                        should not use curvy quotes for code fragments.)
+                        "curvy quotes" (or directional quotes). Use the right single quotation mark for \
+                        apostrophes. Never use generic quotes ", ' or free-standing accents `, ´ for \
+                        quotation marks, apostrophes, or primes. This can make the text more readable.
                         """,
         category = Category.TYPOGRAPHY,
         priority = 5,
