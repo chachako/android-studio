@@ -2319,4 +2319,99 @@ class UastTest : TestCase() {
       )
     }
   }
+
+  fun testResolveToInlineInLibrary() {
+    val testFiles =
+      arrayOf(
+        bytecode(
+          "libs/lib1.jar",
+          kotlin(
+            "src/test/Mocking.kt",
+            """
+                    package test
+
+                    inline fun <reified T : Any> mock(): T = TODO()
+
+                    object Mock {
+                      inline fun <reified T : Any> mock(): T = TODO()
+                    }
+                    """,
+          ),
+          0x9c8bcf60,
+          """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijg4uViEOL0rXTOSSwu9i7hEuRiKUkt
+                LgEK5SdnZ+ale5coMWgxAAD10MNROgAAAA==
+                """,
+          """
+                test/Mock.class:
+                H4sIAAAAAAAA/2VRS08TURT+7u1rOi22IEIpPqFqi8oAcSWVBAHDmFIT25AQ
+                VrftUG87nTEzt43Lrvgh/gPigkQSbXDnjzKemVZ8sDnv853znfPj55evAJ5j
+                jSGpLF8ZB26zmwBjyHbEQBi2cNrG20bHaqoEIgzxsnSk2mKIFEuHacQQ1xFF
+                giGq3kufIVW5QtmkYI80w2yxVPkfjbKL5fqL6/GtYqlep2y+6ypbOkbVVWbv
+                g231LEdZrT3Pc70EbjDsFv/qrSlPOu1NszJp6gx6hqR6zxG2sWudiL6tdlzH
+                V16/qVzvQHhdy9scM8jqyGCa+Bdk4aQw3piZDFq5aYdkdfCAoWZWa/Xt6s5e
+                GvPQkxTMMSxXXK9tdCzV8IR0fEM4jquEkjQr2Lzat23iMv17rwNLiZZQgmK8
+                N4jQ6VkgkoEAjaXR/KMMPHoIb60TzdEwrfMc13l2NNS5FtW+n/LcaLjB19ir
+                hMYvP8V5lr/JZyN5vh9d0rXRMBvNsRVK71+eamE6FmBtsHBCnUEPvkPnWu0q
+                esK7vqNkzzKdgfRlw7a2/zCgB+64LYshU5GOVe33GpZXF1TDMFNxm8I+FJ4M
+                /EkwWZNtR6i+R7Zec/te03otg8TCZMjhtRFYpztGQ/ILwVlJl8iLk86TjlA2
+                Fnor5BkBAdKxlXNoZ2RwPJkUB/IpyfS4AEmCQnYaKYrwsHmbopz0VKR8gcwR
+                i7JzzHz7B4TeHILMkcWp9SZmQ7ipMRyehdVT0HDraqf5EBRIXYAfnWPuMxbO
+                wgDHaiiLtDbwksoXaYPbx4iYuGPirol7uE8mHphYwvIxmI8CHh4j7kP38cgP
+                jJSPxz7SvwCvcXQwpwMAAA==
+                """,
+          """
+                test/MockingKt.class:
+                H4sIAAAAAAAA/2VSXWsTQRQ9d5PmY5u2aa3apH7WCIkPbiuCYEpBWqWLSQUT
+                ApKnSTINk+zOyuxs8DFP/hD/hKCgoY/+KPFujCD6MHfOvefcw53L/Pj55RuA
+                p3hI2LQytl47Gk6VHr+2eRChPBEz4QVCj703g4kccjVDyIYsIuzWG61/+SZh
+                /7j7/P/6Sb3R7TJbnUY2UNq7iKwfvg9kKLWVo5fGRCaPAiF3rLSyJ4Sz+l8m
+                HWt4qKbfWnVPZqGnuNFoEXhn8lIkgT2NdGxNMrSRaQszlabZ6JXgYt1FESVC
+                saZql7Xfo5NP2P5j1pZWjIQVPJ0TzjK8D0pDMQ1g7TQFDpMfVIoOGY2OCN5i
+                7rpOwXGdMqPFvFrlu+qc04FbWMzLtEePnEPn/Opj4epTziln0rYnbNel1NVd
+                Lfrx1PJCT6ORJGy1lJYXSTiQpisGAVd2WtFQBD1hVJqvisWOGmthE8PY7USJ
+                GcpXKiUqbxNtVSh7KlasfKF1ZIVVvBccwUEWyweVK1hDjvO7nD1jzPNgI9P8
+                iuI7ytJnbHxP34t7HHNMpo33GZeWeB2b2OLsYKnJ83mwRHdQW9rxn2HL7T4y
+                PnZ8XPOxi+s+buCmjz1U+qAYVez3kY2xFuNWjNsxcr8Ai+me74gCAAA=
+                """
+        ),
+        kotlin(
+          """
+                import test.Mock
+                import test.mock as tMock
+
+                class MyClass
+
+                fun test(): Boolean {
+                  val instance1 = Mock.mock<MyClass>()
+                  val instance2 = tMock<MyClass>()
+                  return instance1 == instance2
+                }
+                """
+        )
+      )
+
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          var first: Boolean = true
+
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val resolved = node.resolve()
+            assertNotNull(resolved)
+            assertEquals("mock", resolved!!.name)
+            if (first) {
+              assertEquals("Mock", resolved.containingClass?.name)
+              first = false
+            } else {
+              assertEquals("MockingKt", resolved.containingClass?.name)
+            }
+
+            return super.visitCallExpression(node)
+          }
+        }
+      )
+    }
+  }
 }
