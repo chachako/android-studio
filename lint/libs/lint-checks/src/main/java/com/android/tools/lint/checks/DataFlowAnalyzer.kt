@@ -525,6 +525,14 @@ abstract class DataFlowAnalyzer(
               // the closest one
               checkBinding(callReceiver, node.resolve(), instances)
             }
+            // check for "this" used as an argument
+            for (arg in node.valueArguments) {
+              val thisArg = arg.skipParenthesizedExprDown() as? UThisExpression ?: continue
+              val typeClass = (thisArg.getExpressionType() as? PsiClassType)?.resolve()
+              if (isMatchingType(typeClass)) {
+                instances.add(arg)
+              }
+            }
             return super.visitCallExpression(node)
           }
 

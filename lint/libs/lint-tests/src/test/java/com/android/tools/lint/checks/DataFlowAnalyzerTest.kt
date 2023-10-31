@@ -953,6 +953,65 @@ class DataFlowAnalyzerTest : TestCase() {
     Disposer.dispose(parsed.second)
   }
 
+  fun testArgumentViaApply() {
+    val parsed =
+      LintUtilsTest.parse(
+        kotlin(
+            """
+                package com.pkg
+
+                class Intent {
+                  fun intentFun() {
+
+                  }
+                }
+
+                class Hello {
+                    fun hello() {
+                      val intent = Intent()
+                      intent.apply { foo(this) }.apply { bar(this) }
+                    }
+
+                    fun foo(intent: Intent) {
+
+                    }
+
+                    fun Intent.bar(intent: Intent) {
+
+                    }
+                }
+                """,
+          )
+          .indented()
+      )
+
+    val target = findMethodCall(parsed, "Intent")
+
+    val argumentCalls = mutableListOf<String>()
+    val argumentReferences = mutableListOf<String>()
+    val receivers = mutableListOf<String>()
+
+    val method = target.getParentOfType(UMethod::class.java)
+    method?.accept(
+      object : DataFlowAnalyzer(listOf(target)) {
+        override fun argument(call: UCallExpression, reference: UElement) {
+          assertTrue(argumentCalls.add(call.methodName ?: ""))
+          assertTrue(argumentReferences.add(reference.asRenderString()))
+        }
+
+        override fun receiver(call: UCallExpression) {
+          assertTrue(receivers.add(call.methodName ?: ""))
+        }
+      }
+    )
+
+    assertEquals("foo, bar, bar", argumentCalls.joinToString { it })
+    assertEquals("this, bar(this), this", argumentReferences.joinToString { it })
+    assertEquals("apply, apply, bar", receivers.joinToString { it })
+
+    Disposer.dispose(parsed.second)
+  }
+
   private fun lint() = TestLintTask.lint().sdkHome(TestUtils.getSdk().toFile())
 
   private val rClass: TestFile = rClass("test.pkg", "@string/app_name")
