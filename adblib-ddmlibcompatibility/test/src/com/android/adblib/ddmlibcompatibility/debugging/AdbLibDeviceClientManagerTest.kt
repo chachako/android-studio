@@ -229,6 +229,11 @@ class AdbLibDeviceClientManagerTest {
             }
 
             override fun deviceChanged(device: IDevice, changeMask: Int) {
+                // We are interested in keeping track of Client/ProfileableClient changes and not
+                // changes like `IDevice.CHANGE_STATE` which is triggered from `startOnlineDeviceTracking`
+                if (changeMask != IDevice.CHANGE_CLIENT_LIST && changeMask != IDevice.CHANGE_PROFILEABLE_CLIENT_LIST) {
+                    return
+                }
                 synchronized(lock) {
                     totalCalls++
                     concurrentCalls++
