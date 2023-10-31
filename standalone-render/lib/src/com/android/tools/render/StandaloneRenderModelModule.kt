@@ -24,6 +24,7 @@ import com.android.tools.rendering.RenderTask
 import com.android.tools.rendering.api.EnvironmentContext
 import com.android.tools.rendering.api.RenderModelManifest
 import com.android.tools.rendering.api.RenderModelModule
+import com.android.tools.rendering.classloading.loaders.CachingClassLoaderLoader
 import com.android.tools.res.AssetFileOpener
 import com.android.tools.res.AssetRepositoryBase
 import com.android.tools.res.ResourceRepositoryManager
@@ -66,6 +67,12 @@ internal class StandaloneRenderModelModule(
         override val isDisposed: Boolean = false
         override val module: Module
             get() = throw UnsupportedOperationException("Should not be called in standalone rendering")
+
+        override fun createClassLoaderLoader(): CachingClassLoaderLoader {
+            return object : CachingClassLoaderLoader {
+                override fun loadClass(fqcn: String): ByteArray? = null
+            }
+        }
     }
     override fun createModuleRenderContext(weakRenderTask: WeakReference<RenderTask>): ModuleRenderContext {
         return renderContext
