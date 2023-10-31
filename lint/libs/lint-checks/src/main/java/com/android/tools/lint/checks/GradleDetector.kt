@@ -228,9 +228,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
               TARGET_NEWER,
               element,
               location,
-              "Not targeting the latest versions of Android; compatibility " +
-                "modes apply. Consider testing and updating this version. " +
-                "Consult the `android.os.Build.VERSION_CODES` javadoc for details.",
+              targetSdkCheckResult.message,
               targetSdkLintFix(highest)
             )
           }
@@ -316,11 +314,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
               )
             }
             is TargetSdkCheckResult.NoIssue -> {
-              val message =
-                "Not targeting the latest versions of Android; compatibility " +
-                  "modes apply. Consider testing and updating this version. " +
-                  "Consult the android.os.Build.VERSION_CODES javadoc for " +
-                  "details."
+              val message = targetSdkCheckResult.message
 
               val highest = context.client.highestKnownApiLevel
               val label = "Update targetSdkVersion to $highest"

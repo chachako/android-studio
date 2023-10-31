@@ -69,7 +69,10 @@ sealed interface TargetSdkCheckResult {
 
   object NoIssue : TargetSdkCheckResult {
     override val requiredVersion = -1
-    override val message = null
+    override val message: String =
+      "Not targeting the latest versions of Android; compatibility " +
+        "modes apply. Consider testing and updating this version. " +
+        "Consult the `android.os.Build.VERSION_CODES` javadoc for details."
   }
 }
 
