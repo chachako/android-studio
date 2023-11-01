@@ -533,34 +533,6 @@ public final class DeviceImpl implements IDevice {
     }
 
     @Override
-    public void executeBinderCommand(
-            String[] parameters,
-            IShellOutputReceiver receiver,
-            long maxTimeToOutputResponse,
-            TimeUnit maxTimeUnits,
-            @Nullable InputStream is)
-            throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
-                    IOException {
-        if (supportsFeature(Feature.ABB_EXEC)) {
-            executeRemoteCommand(
-                    AdbHelper.AdbService.ABB_EXEC,
-                    String.join("\u0000", parameters),
-                    receiver,
-                    0L,
-                    maxTimeToOutputResponse,
-                    maxTimeUnits,
-                    is);
-        } else {
-            executeShellCommand(
-                    "cmd " + String.join(" ", parameters),
-                    receiver,
-                    maxTimeToOutputResponse,
-                    maxTimeUnits,
-                    is);
-        }
-    }
-
-    @Override
     public void executeShellCommand(
             String command, IShellOutputReceiver receiver, int maxTimeToOutputResponse)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,

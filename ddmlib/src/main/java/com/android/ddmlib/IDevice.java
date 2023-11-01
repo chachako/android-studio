@@ -496,7 +496,23 @@ public interface IDevice extends IShellEnabledDevice, IUserDataMap {
             @Nullable InputStream is)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
-        throw new UnsupportedOperationException();
+        if (supportsFeature(Feature.ABB_EXEC)) {
+            executeRemoteCommand(
+                    AdbHelper.AdbService.ABB_EXEC,
+                    String.join("\u0000", parameters),
+                    receiver,
+                    0L,
+                    maxTimeToOutputResponse,
+                    maxTimeUnits,
+                    is);
+        } else {
+            executeShellCommand(
+                    "cmd " + String.join(" ", parameters),
+                    receiver,
+                    maxTimeToOutputResponse,
+                    maxTimeUnits,
+                    is);
+        }
     }
 
     /**
