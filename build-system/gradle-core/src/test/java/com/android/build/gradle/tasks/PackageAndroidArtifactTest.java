@@ -118,8 +118,7 @@ public class PackageAndroidArtifactTest {
                                 -1,
                                 "version_name",
                                 new VariantOutputConfigurationImpl(false, ImmutableList.of()),
-                                Collections.emptyMap(),
-                                24),
+                                Collections.emptyMap()),
                         BuiltArtifactImpl.make(
                                 "/tmp/file_xxhdpi.out",
                                 -1,
@@ -130,8 +129,7 @@ public class PackageAndroidArtifactTest {
                                                 new FilterConfigurationImpl(
                                                         FilterConfiguration.FilterType.DENSITY,
                                                         "xxhdpi"))),
-                                Collections.emptyMap(),
-                                24),
+                                Collections.emptyMap()),
                         BuiltArtifactImpl.make(
                                 "/tmp/filefr.out",
                                 -1,
@@ -142,8 +140,7 @@ public class PackageAndroidArtifactTest {
                                                 new FilterConfigurationImpl(
                                                         FilterConfiguration.FilterType.LANGUAGE,
                                                         "fr"))),
-                                Collections.emptyMap(),
-                                24),
+                                Collections.emptyMap()),
                         BuiltArtifactImpl.make(
                                 "/tmp/fileen.out",
                                 -1,
@@ -154,8 +151,7 @@ public class PackageAndroidArtifactTest {
                                                 new FilterConfigurationImpl(
                                                         FilterConfiguration.FilterType.LANGUAGE,
                                                         "en"))),
-                                Collections.emptyMap(),
-                                24));
+                                Collections.emptyMap()));
         PackageAndroidArtifact.checkFileNameUniqueness(
                 new BuiltArtifactsImpl(
                         BuiltArtifacts.METADATA_FILE_VERSION,
@@ -179,8 +175,7 @@ public class PackageAndroidArtifactTest {
                                                 new FilterConfigurationImpl(
                                                         FilterConfiguration.FilterType.LANGUAGE,
                                                         "fr"))),
-                                Collections.emptyMap(),
-                                24),
+                                Collections.emptyMap()),
                         BuiltArtifactImpl.make(
                                 "/tmp/file.out",
                                 -1,
@@ -191,8 +186,7 @@ public class PackageAndroidArtifactTest {
                                                 new FilterConfigurationImpl(
                                                         FilterConfiguration.FilterType.LANGUAGE,
                                                         "en"))),
-                                Collections.emptyMap(),
-                                24));
+                                Collections.emptyMap()));
 
         try {
             PackageAndroidArtifact.checkFileNameUniqueness(

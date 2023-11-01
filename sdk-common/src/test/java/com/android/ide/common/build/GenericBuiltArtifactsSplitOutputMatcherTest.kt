@@ -20,7 +20,6 @@ import com.google.common.collect.Sets
 import junit.framework.TestCase
 import org.junit.Test
 import java.io.File
-import java.util.ArrayList
 
 /**
  * Tests for [GenericBuiltArtifactsSplitOutputMatcher]
@@ -59,7 +58,8 @@ class GenericBuiltArtifactsSplitOutputMatcherTest {
             variantName = "debug",
             elements = builtArtifacts,
             elementType = "File",
-            baselineProfiles = emptyList<BaselineProfileDetails>()
+            baselineProfiles = emptyList<BaselineProfileDetails>(),
+            minSdkVersionForDexing = 24
         )
 
 

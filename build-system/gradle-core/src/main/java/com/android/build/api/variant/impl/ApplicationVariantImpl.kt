@@ -217,9 +217,8 @@ open class ApplicationVariantImpl @Inject constructor(
                     String::class.java,
                     internalServices.projectInfo.getProjectBaseName().map {
                         paths.getOutputFileName(it, variantOutputConfiguration.baseName(this))
-                    },
-                ),
-                dexingCreationConfig.minSdkVersionForDexing
+                    }
+                )
             )
         )
     }

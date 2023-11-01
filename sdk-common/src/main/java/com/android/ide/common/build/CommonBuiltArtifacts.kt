@@ -49,4 +49,15 @@ interface CommonBuiltArtifacts {
      * Returns baseline profile details for these [CommonBuiltArtifact] instances.
      */
     val baselineProfiles: List<BaselineProfileDetails>
+
+    /**
+     * The minimum API level that the output `.dex` files support (or null if it is unknown/not
+     * applicable to the current artifact type).
+     *
+     * Note that this value may be different from the minSdkVersion specified in the DSL/manifest.
+     * For example, if the IDE is deploying to a device (i.e., the API level of the device is known)
+     * and if a few more conditions are met, AGP may use a higher minSdkVersion for dexing to
+     * improve build performance.
+     */
+    val minSdkVersionForDexing: Int?
 }

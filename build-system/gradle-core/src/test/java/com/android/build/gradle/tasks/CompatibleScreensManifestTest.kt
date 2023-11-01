@@ -46,7 +46,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import java.io.File
@@ -246,7 +245,6 @@ class CompatibleScreensManifestTest {
             baseName = "base_name",
             fullName = "full_name",
             outputFileName = FakeGradleProperty("output_file_name"),
-            minSdkVersionForDexing = 24
         )
 
     companion object {

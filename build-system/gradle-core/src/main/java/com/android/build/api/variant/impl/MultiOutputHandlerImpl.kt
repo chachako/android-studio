@@ -198,7 +198,6 @@ private class SerializableSingleOutputHandler(
         baseName = "",
         fullName = "",
         outputFileName = "",
-        minSdkVersionForDexing = null
     )
 
     override val mainVersionCode = null

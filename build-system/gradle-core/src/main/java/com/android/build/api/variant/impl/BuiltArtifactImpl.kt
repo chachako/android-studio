@@ -42,7 +42,6 @@ data class BuiltArtifactImpl private constructor(
     override val versionName: String?,
     val variantOutputConfiguration: VariantOutputConfiguration = VariantOutputConfigurationImpl(),
     val attributes: Map<String, String> = mapOf(),
-    val minSdkVersionForDexing: Int?
 ) : BuiltArtifact, CommonBuiltArtifact, Serializable, VariantOutputConfiguration by variantOutputConfiguration {
 
     fun newOutput(newOutputFile: Path): BuiltArtifactImpl =
@@ -63,7 +62,6 @@ data class BuiltArtifactImpl private constructor(
         versionCode = versionCode,
         versionName = versionName,
         outputFile = outputFile,
-        minSdkVersionForDexing = minSdkVersionForDexing
     )
 
     companion object {
@@ -76,14 +74,12 @@ data class BuiltArtifactImpl private constructor(
             versionName: String? = null,
             variantOutputConfiguration: VariantOutputConfiguration = VariantOutputConfigurationImpl(),
             attributes: Map<String, String> = mapOf(),
-            minSdkVersionForDexing: Int? = null
         )
                     = BuiltArtifactImpl(FileUtils.toSystemIndependentPath(outputFile),
                 versionCode,
                 versionName,
                 variantOutputConfiguration,
                 attributes,
-                minSdkVersionForDexing
         )
 
     }
@@ -109,7 +105,6 @@ internal object BuiltArtifactTypeAdapter: CommonBuiltArtifactTypeAdapter<BuiltAr
             out.endObject()
         }
         out.endArray()
-        value.minSdkVersionForDexing?.let { out.name("minSdkVersionForDexing").value(it) }
     }
 
     @Throws(IOException::class)
@@ -140,7 +135,6 @@ internal object BuiltArtifactTypeAdapter: CommonBuiltArtifactTypeAdapter<BuiltAr
                         filters = filters.build()
                     ),
                     attributes = attributes,
-                    minSdkVersionForDexing = minSdkVersionForDexing,
                 )
             })
     }

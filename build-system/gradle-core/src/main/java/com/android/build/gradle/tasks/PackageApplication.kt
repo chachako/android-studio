@@ -22,6 +22,7 @@ import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.variant.impl.BuiltArtifactImpl
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.gradle.internal.component.ApkCreationConfig
+import com.android.build.gradle.internal.component.features.DexingCreationConfig
 import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.InternalArtifactType.APK_IDE_MODEL
@@ -34,7 +35,9 @@ import com.android.utils.FileUtils
 import com.google.wireless.android.sdk.stats.GradleBuildProjectMetrics
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
@@ -62,6 +65,13 @@ abstract class PackageApplication : PackageAndroidArtifact() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     @get:InputFiles
     abstract val dexMetadataDirectory: DirectoryProperty
+
+    /**
+     * Minimum SDK version for dexing, which may be different from [minSdkVersion] (see
+     * [DexingCreationConfig.getMinSdkVersionForDexing]).
+     */
+    @get:Input
+    abstract val minSdkVersionForDexing: Property<Int>
 
     // ----- CreationAction -----
     /**
@@ -139,10 +149,13 @@ abstract class PackageApplication : PackageAndroidArtifact() {
                 .on(APK_IDE_MODEL)
         }
 
-        override fun configure(packageAndroidArtifact: PackageApplication) {
-            super.configure(packageAndroidArtifact)
-            packageAndroidArtifact.dexMetadataDirectory.setDisallowChanges(
+        override fun configure(task: PackageApplication) {
+            super.configure(task)
+            task.dexMetadataDirectory.setDisallowChanges(
                 creationConfig.artifacts.get(InternalArtifactType.DEX_METADATA_DIRECTORY)
+            )
+            task.minSdkVersionForDexing.setDisallowChanges(
+                creationConfig.dexingCreationConfig.minSdkVersionForDexing
             )
         }
 
@@ -158,24 +171,19 @@ abstract class PackageApplication : PackageAndroidArtifact() {
     companion object {
 
         private fun customizeBuiltArtifacts(task: PackageApplication, input: BuiltArtifactsImpl): BuiltArtifactsImpl {
-            return if (task.dexMetadataDirectory.isPresent) {
-                val baselineProfileData = baselineProfileDataForJson(
-                    input.elements,
-                    task.dexMetadataDirectory.get().asFile,
-                    task.outputDirectory.get().asFile,
-                )
-                BuiltArtifactsImpl(
-                    input.version,
-                    input.artifactType,
-                    input.applicationId,
-                    input.variantName,
-                    input.elements,
-                    input.elementType(),
-                    baselineProfileData
-                )
-            } else {
-                input
-            }
+            check(input.baselineProfiles.isEmpty())
+            check(input.minSdkVersionForDexing == null)
+
+            return input.copy(
+                baselineProfiles = if (task.dexMetadataDirectory.isPresent) {
+                    baselineProfileDataForJson(
+                        input.elements,
+                        task.dexMetadataDirectory.get().asFile,
+                        task.outputDirectory.get().asFile,
+                    )
+                } else emptyList(),
+                minSdkVersionForDexing = task.minSdkVersionForDexing.get() // See b/284201412
+            )
         }
 
         private fun baselineProfileDataForJson(

@@ -102,7 +102,7 @@ abstract class ProcessMultiApkApplicationManifest: ManifestProcessorTask() {
             artifactType = InternalArtifactType.MERGED_MANIFESTS,
             applicationId = applicationId.get(),
             variantName = variantName,
-            elements = multiApkManifestOutputs.toList()
+            elements = multiApkManifestOutputs,
         ).save(multiApkManifestOutputDirectory.get())
     }
 

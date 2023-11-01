@@ -66,7 +66,6 @@ class GenericBuiltArtifactsTypeAdapterTest : TestCase() {
                 outputType = "SINGLE",
                 filters = listOf(),
                 attributes = mapOf(),
-                minSdkVersionForDexing = 24,
                 versionCode = 1,
                 versionName = "1",
                 outputFile = "app-debug.apk"
@@ -77,7 +76,6 @@ class GenericBuiltArtifactsTypeAdapterTest : TestCase() {
                     "type": "SINGLE",
                     "filters": [],
                     "attributes": [],
-                    "minSdkVersionForDexing": 24,
                     "versionCode": 1,
                     "versionName": "1",
                     "outputFile": "app-debug.apk"
@@ -100,7 +98,6 @@ class GenericBuiltArtifactsTypeAdapterTest : TestCase() {
                     GenericBuiltArtifact(
                         outputType = "ONE_OF_MANY",
                         filters = listOf(GenericFilterConfiguration("DENSITY", "xhdpi")),
-                        minSdkVersionForDexing = 24,
                         versionCode = 123,
                         versionName = "version_name",
                         outputFile = "file1.apk"
@@ -109,14 +106,14 @@ class GenericBuiltArtifactsTypeAdapterTest : TestCase() {
                         outputType = "ONE_OF_MANY",
                         filters = listOf(GenericFilterConfiguration("DENSITY", "xhcdpi")),
                         attributes = mapOf("DeliveryType" to "install-time"),
-                        minSdkVersionForDexing = 24,
                         versionCode = 123,
                         versionName = "version_name",
                         outputFile = "file2.apk"
                     ),
                 ),
                 elementType = "File",
-                baselineProfiles = emptyList<BaselineProfileDetails>()
+                baselineProfiles = emptyList<BaselineProfileDetails>(),
+                minSdkVersionForDexing = 24
                 ),
             //language=json
             json = """
@@ -138,7 +135,6 @@ class GenericBuiltArtifactsTypeAdapterTest : TestCase() {
                                 }
                             ],
                             "attributes": [],
-                            "minSdkVersionForDexing": 24,
                             "versionCode": 123,
                             "versionName": "version_name",
                             "outputFile": "file1.apk"
@@ -157,13 +153,13 @@ class GenericBuiltArtifactsTypeAdapterTest : TestCase() {
                                     "value": "install-time"
                                 }
                             ],
-                            "minSdkVersionForDexing": 24,
                             "versionCode": 123,
                             "versionName": "version_name",
                             "outputFile": "file2.apk"
                         }
                     ],
-                    "elementType": "File"
+                    "elementType": "File",
+                    "minSdkVersionForDexing": 24
                 }
                 """.trimIndent()
         )
@@ -210,7 +206,8 @@ class GenericBuiltArtifactsTypeAdapterTest : TestCase() {
                     ),
                 ),
                 elementType = null,
-                baselineProfiles = emptyList<BaselineProfileDetails>()
+                baselineProfiles = emptyList<BaselineProfileDetails>(),
+                minSdkVersionForDexing = null
             )
         )
     }

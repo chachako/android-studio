@@ -78,17 +78,10 @@ class BuiltArtifactsLoaderImpl: BuiltArtifactsLoader {
                 throw IOException("Error parsing build artifacts from ${if (redirectedFile!=null) "$redirectedFile redirected from $inputFile" else inputFile}", e)
             }
             // resolve the file path to the current project location.
-            return BuiltArtifactsImpl(
-                artifactType = buildOutputs.artifactType,
-                version = buildOutputs.version,
-                applicationId = buildOutputs.applicationId,
-                variantName = buildOutputs.variantName,
-                elements = buildOutputs.elements
-                    .asSequence()
-                    .map {
-                        it.newOutput(relativePathToUse.resolve(Paths.get(it.outputFile)).normalize())
-                    }.toList(),
-                baselineProfiles = buildOutputs.baselineProfiles
+            return buildOutputs.copy(
+                elements = buildOutputs.elements.map {
+                    it.newOutput(relativePathToUse.resolve(Paths.get(it.outputFile)).normalize())
+                }
             )
         }
     }

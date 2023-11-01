@@ -30,7 +30,6 @@ import com.android.build.api.variant.impl.baseName
 import com.android.build.api.variant.impl.fullName
 import com.android.build.gradle.api.AnnotationProcessorOptions
 import com.android.build.gradle.api.JavaCompileOptions
-import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.DynamicFeatureCreationConfig
@@ -186,8 +185,7 @@ class OldVariantApiLegacySupportImpl(
                 variantOutputConfiguration = VariantOutputConfigurationImpl(),
                 versionCodeProperty = versionCodeProperty,
                 versionNameProperty = versionNameProperty,
-                outputFileName = (component as? LibraryCreationConfig)?.aarOutputFileName,
-                minSdkVersionForDexing = (component as? ApkCreationConfig)?.let { it.dexingCreationConfig.minSdkVersionForDexing }
+                outputFileName = (component as? LibraryCreationConfig)?.aarOutputFileName
             ), component.paths.targetFilterConfigurations)
     }
 
@@ -195,8 +193,7 @@ class OldVariantApiLegacySupportImpl(
         variantOutputConfiguration: VariantOutputConfiguration,
         versionCodeProperty: Property<Int?>,
         versionNameProperty: Property<String?>,
-        outputFileName: Property<String>?,
-        minSdkVersionForDexing: Int?,
+        outputFileName: Property<String>?
     ): List<VariantOutputImpl> {
         return listOf(
             VariantOutputImpl(
@@ -214,9 +211,8 @@ class OldVariantApiLegacySupportImpl(
                             it,
                             variantOutputConfiguration.baseName(component)
                         )
-                    },
-                ),
-                minSdkVersionForDexing
+                    }
+                )
             )
         )
     }
