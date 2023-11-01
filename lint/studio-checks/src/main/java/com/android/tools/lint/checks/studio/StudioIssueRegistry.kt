@@ -69,6 +69,7 @@ class StudioIssueRegistry : IssueRegistry() {
       AdbDeviceServicesCommandDetector.ISSUE,
       ByLazyDetector.ISSUE,
       CheckResultDetector.CHECK_RESULT,
+      ContextReceiverDetector.ISSUE,
       ExternalAnnotationsDetector.ISSUE,
       FileComparisonDetector.ISSUE,
       ForbiddenStudioCallDetector.ADD_TO_STDLIB_USAGE,
