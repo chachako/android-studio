@@ -19,8 +19,6 @@ package com.android.build.gradle.integration.model
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.setUpHelloWorld
-import com.android.build.gradle.integration.common.utils.getAndroidTestArtifact
-import com.android.builder.model.AndroidProject
 import com.android.builder.model.v2.ide.GraphItem
 import com.android.builder.model.v2.ide.Library
 import com.android.builder.model.v2.ide.LibraryType
@@ -90,44 +88,6 @@ class ProvidedModelTest {
             "com.android.support.constraint:constraint-layout-solver:1.0.2",
             "com.google.guava:guava:19.0"
         )
-    }
-
-    @Test
-    fun `test v1 isProvided`() {
-        val result = project
-            .model()
-            .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
-            .level(AndroidProject.MODEL_LEVEL_3_VARIANT_OUTPUT_POST_BUILD)
-            .fetchAndroidProjects()
-
-        val model = result.modelMaps[result.rootBuildId]?.get(":app")
-            ?: throw RuntimeException("Cannot find model for :app")
-
-        val debug = model.variants.single { it.name == "debug" }
-        val dependencies = debug.mainArtifact.dependencies
-
-        Truth.assertThat(dependencies.libraries).isNotEmpty()
-        Truth.assertThat(dependencies.libraries.filter { it.isProvided }).isEmpty()
-
-        val androidTestDeps = debug.getAndroidTestArtifact().dependencies
-        Truth.assertThat(androidTestDeps.libraries).isNotEmpty()
-
-        // Test the Android Libraries
-        val providedAndroidLibs = androidTestDeps.libraries.filter { it.isProvided }.map {
-            val coord = it.resolvedCoordinates
-            "${coord.groupId}:${coord.artifactId}:${coord.version}"
-        }
-        Truth.assertThat(providedAndroidLibs).containsExactlyElementsIn(
-                // slight discrepancy between models, behavior wise it should be OK
-                listOf("artifacts::app:unspecified") +
-                providedAndroidLibraries )
-
-        // Test the Java Libraries
-        val providedJavaLibs = androidTestDeps.javaLibraries.filter { it.isProvided }.map {
-            val coord = it.resolvedCoordinates
-            "${coord.groupId}:${coord.artifactId}:${coord.version}"
-        }
-        Truth.assertThat(providedJavaLibs).containsExactlyElementsIn(providedJavaLibraries)
     }
 
     @Test

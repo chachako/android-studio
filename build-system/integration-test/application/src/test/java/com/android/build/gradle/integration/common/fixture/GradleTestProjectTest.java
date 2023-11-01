@@ -42,11 +42,7 @@ public class GradleTestProjectTest {
         HelloWorldApp helloWorldApp = HelloWorldApp.forPlugin("com.android.application");
         GradleTestProject project = GradleTestProject.builder().fromTestApp(helloWorldApp).create();
 
-        run(
-                project,
-                () -> {
-                    project.execute("help");
-                });
+        run(project, () -> project.execute("help"));
     }
 
     @IgnoreWithCondition(reason = "b/184293759", condition = OnWindows.class)
@@ -86,11 +82,7 @@ public class GradleTestProjectTest {
         ByteArrayOutputStream capture = new ByteArrayOutputStream();
         System.setErr(new PrintStream(capture));
         try {
-            run(
-                    project,
-                    () -> {
-                        project.executor().run("help2");
-                    });
+            run(project, () -> project.executor().run("help2"));
             fail("Expected task not to be found");
         } catch (BuildException e) {
             assertThat(capture.toString()).contains("Task 'help2' not found");
@@ -109,11 +101,7 @@ public class GradleTestProjectTest {
         ByteArrayOutputStream capture = new ByteArrayOutputStream();
         System.setErr(new PrintStream(capture));
         try {
-            run(
-                    project,
-                    () -> {
-                        project.model().fetchAndroidProjects();
-                    });
+            run(project, () -> project.modelV2().fetchModels());
             fail("Expected model get to fail");
         } catch (GradleConnectionException e) {
             assertThat(capture.toString())
