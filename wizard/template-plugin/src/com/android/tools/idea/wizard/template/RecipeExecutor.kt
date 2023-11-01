@@ -82,12 +82,6 @@ interface RecipeExecutor {
   fun addClasspathDependency(mavenCoordinate: String, minRev: String? = null, forceAdding: Boolean = false)
 
   /**
-   * Determines if a module/project already have a dependency.
-   * @param moduleDir determines a module to check. The current module will be used if it is null.
-   */
-  fun hasDependency(mavenCoordinate: String, moduleDir: File? = null): Boolean
-
-  /**
    * Records a library dependency
    * Old [configuration]s such as "compile" will be converted to new ones ("implementation") in later stages if Gradle supports it.
    *
