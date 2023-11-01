@@ -1,6 +1,6 @@
-load("//tools/base/bazel:repositories.bzl", "setup_external_repositories", "vendor_repository")
-load("//tools/base/bazel:emulator.bzl", "setup_external_sdk")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+load("//tools/base/bazel:emulator.bzl", "setup_external_sdk")
+load("//tools/base/bazel:repositories.bzl", "setup_external_repositories", "vendor_repository")
 
 setup_external_repositories()
 
@@ -15,6 +15,7 @@ register_toolchains(
     "//prebuilts/studio/jdk/jdk17:java8_compile_toolchain_definition",
     "//prebuilts/studio/jdk/jdk17:java11_compile_toolchain_definition",
     "//prebuilts/studio/jdk/jdk17:java17_compile_toolchain_definition",
+    "//prebuilts/studio/jdk/jbr-next:jetbrains_java_runtime_toolchain",
 )
 
 new_local_repository(

@@ -51,6 +51,12 @@ build --jvmopt='--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED'
 build --jvmopt='--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED'
 build --jvmopt='--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED'
 
+# JetBrainsRuntime version to bundle into Android Studio
+# and java runtime for running tests
+build:jbr-next --//prebuilts/studio/jdk:jdk_bundle_version=next
+build:jbr-next --java_runtime_version=jbr-next
+test:jbr-next --jvmopt='-Dembedded.jdk.path=prebuilts/studio/jdk/jbr-next'
+
 # Local runs require longer timeouts.
 test:local --test_timeout=120,600,1800,7200
 
