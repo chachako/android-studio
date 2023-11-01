@@ -48,7 +48,6 @@ import com.android.tools.lint.detector.api.XmlScanner
 import com.android.tools.lint.detector.api.findSelector
 import com.android.tools.lint.detector.api.isReturningContext
 import com.android.tools.lint.detector.api.isReturningLambdaResult
-import com.android.tools.lint.detector.api.isScopingThis
 import com.android.utils.iterator
 import com.android.utils.subtag
 import com.intellij.psi.PsiMethod
@@ -561,31 +560,6 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
         actionExpr as? UCallExpression
       } else {
         null
-      }
-    }
-
-    /**
-     * Handles kotlin scoping function with "this" object reference, like run, with. If "this" is
-     * tracked, get into the lambda function and keep track of "this".
-     */
-    override fun receiver(call: UCallExpression) {
-      if (resolveCallDepth > MAX_CALL_DEPTH) return
-      if (isScopingThis(call)) {
-        for (lambda in call.valueArguments) {
-          if (lambda !is ULambdaExpression) break
-          val tracked = getThisExpression(lambda.body) ?: break
-          val visitor =
-            IntentLaunchChecker(
-              initial = setOf(tracked),
-              context = context,
-              location = location,
-              resolveCallDepth = resolveCallDepth + 1
-            )
-          lambda.body.accept(visitor)
-          if (visitor.launched) {
-            reportIncident(context, visitor)
-          }
-        }
       }
     }
 
