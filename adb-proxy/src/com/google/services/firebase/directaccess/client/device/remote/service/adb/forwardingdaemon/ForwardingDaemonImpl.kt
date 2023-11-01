@@ -235,6 +235,7 @@ internal class ForwardingDaemonImpl(
       } else {
         // Close connection if latency exceed ROUND_TRIP_LATENCY_LIMIT for more than 3 times.
         if (++consecutiveConnectionLostCount >= 3) {
+          logger.log(Level.WARNING, "Device disconnected due to high latency.")
           close()
         }
       }
