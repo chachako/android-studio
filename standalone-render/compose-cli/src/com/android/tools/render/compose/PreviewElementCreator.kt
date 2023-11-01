@@ -23,7 +23,7 @@ import com.android.tools.preview.ParametrizedComposePreviewElementTemplate
 import com.android.tools.preview.PreviewParameter
 import com.android.tools.preview.SingleComposePreviewElementInstance
 import com.android.tools.preview.previewAnnotationToPreviewElement
-import com.android.tools.rendering.ModuleRenderContext
+import com.android.tools.render.StandaloneRenderContext
 import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPsiElementPointer
 
@@ -43,9 +43,7 @@ private fun parameterizedElementConstructor(
     parameters: Collection<PreviewParameter>
 ): ComposePreviewElement {
     return ParametrizedComposePreviewElementTemplate(basePreviewElement, parameters) {
-        ModuleRenderContext.forFile(
-            { throw UnsupportedOperationException("Should not be called in the standalone rendering") }
-        ) { null }
+        StandaloneRenderContext()
     }
 }
 
