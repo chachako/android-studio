@@ -245,8 +245,6 @@ public class IDeviceSharedImpl {
 
     @NonNull
     public Map<String, ServiceInfo> services() {
-
-        CountDownLatch latch = new CountDownLatch(1);
         ServiceReceiver receiver = new ServiceReceiver();
         try {
             iDevice.executeShellCommand("service list", receiver);
@@ -254,16 +252,6 @@ public class IDeviceSharedImpl {
             Log.e(LOG_TAG, new RuntimeException("Error obtaining services: ", e));
             return new HashMap<>();
         }
-
-        try {
-            latch.await(LS_TIMEOUT_SEC, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Log.e(
-                    LOG_TAG,
-                    new RuntimeException("Error obtaining services caused by interruption ", e));
-            return new HashMap<>();
-        }
-
         return receiver.getRunningServices();
     }
 
