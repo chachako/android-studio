@@ -656,7 +656,8 @@ DATA = [
     "org.jetbrains.dokka:dokka-base:1.4.32",
     "org.jetbrains.dokka:javadoc-plugin:1.4.32",
     "org.jetbrains.kotlin.kapt:org.jetbrains.kotlin.kapt.gradle.plugin:1.9.20-RC",
-    "org.jetbrains.jewel:jewel-ide-laf-bridge:0.7.2",
+    "org.jetbrains.jewel:jewel-ide-laf-bridge:0.8.1-ij-232",
+    "org.jetbrains.jewel:jewel-int-ui-standalone:0.8.1",
     "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:1.7.0",  # Remove it later (b/243935746)
     "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:1.7.10",
     "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:1.7.20",
