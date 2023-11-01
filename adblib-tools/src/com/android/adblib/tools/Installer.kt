@@ -41,7 +41,7 @@ suspend fun AdbDeviceServices.install(
     device: DeviceSelector,
     apks : List<Path>,
     options : List<String> = listOf(),
-    timeout : Duration = Duration.ofSeconds(120),
+    timeout : Duration = Duration.ofMinutes(5),
 ) {
     withContext(session.host.ioDispatcher) { // Make sure we NEVER run on EDT
         session.host.timeProvider.withErrorTimeout(timeout) {
