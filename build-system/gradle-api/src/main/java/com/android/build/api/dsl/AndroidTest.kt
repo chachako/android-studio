@@ -20,6 +20,17 @@ import org.gradle.api.Incubating
 
 /**
  * DSL object on library build type for configurations of the android test component.
+ *
+ * android {
+ *     buildTypes {
+ *         debug {
+ *             androidTest {
+ *                 enableMinification = ...
+ *             }
+ *         }
+ *     }
+ * }
+ *
  */
 @Incubating
 interface AndroidTest {
