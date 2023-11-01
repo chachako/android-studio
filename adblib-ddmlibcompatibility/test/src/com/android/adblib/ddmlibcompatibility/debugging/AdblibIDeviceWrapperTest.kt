@@ -15,6 +15,7 @@ import com.android.ddmlib.AdbHelper
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.IDevice.PROP_DEVICE_DENSITY
+import com.android.ddmlib.IUserDataMap
 import com.android.ddmlib.SyncException
 import com.android.fakeadbserver.DeviceFileState
 import com.android.fakeadbserver.DeviceState
@@ -487,7 +488,7 @@ class AdblibIDeviceWrapperTest {
     @Test
     fun statFileForFileNotFound() = runBlockingWithTimeout {
         // Prepare
-        val (connectedDevice, deviceState) = createConnectedDevice(
+        val (connectedDevice, _) = createConnectedDevice(
             "device1", DeviceState.DeviceStatus.ONLINE
         )
         val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
@@ -667,7 +668,7 @@ class AdblibIDeviceWrapperTest {
     @Test
     fun testRoot() = runBlockingWithTimeout {
         // Prepare
-        val (connectedDevice, deviceState) = createConnectedDevice(
+        val (connectedDevice, _) = createConnectedDevice(
             "device1", DeviceState.DeviceStatus.ONLINE
         )
         val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
@@ -714,6 +715,76 @@ class AdblibIDeviceWrapperTest {
         assertTrue(adblibIDeviceWrapper.isRoot)
     }
 
+    @Test
+    fun testComputeUserDataIfPresent() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, _) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.ONLINE
+        )
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+        val key = IUserDataMap.Key<MyUserDataClass>()
+
+        // Act
+        val value =
+            adblibIDeviceWrapper.computeUserDataIfAbsent(key) { myKey -> MyUserDataClass(myKey) }
+
+        // Assert
+        assertNotNull(value)
+        assertEquals(key, value.key)
+    }
+
+    @Test
+    fun testGetUserDataOrNullReturnsValueIfPresent() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, _) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.ONLINE
+        )
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+        val key = IUserDataMap.Key<MyUserDataClass>()
+        adblibIDeviceWrapper.computeUserDataIfAbsent(key) { myKey -> MyUserDataClass(myKey) }
+
+        // Act
+        val value = adblibIDeviceWrapper.getUserDataOrNull(key)
+
+        // Assert
+        assertNotNull(value)
+        assertEquals(key, value!!.key)
+    }
+
+    @Test
+    fun testGetUserDataOrNullReturnsNullIfNotPresent() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, _) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.ONLINE
+        )
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+        val key = IUserDataMap.Key<MyUserDataClass>()
+
+        // Act
+        val value = adblibIDeviceWrapper.getUserDataOrNull(key)
+
+        // Assert
+        assertNull(value)
+    }
+
+    @Test
+    fun testRemoveUserData() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, _) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.ONLINE
+        )
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+        val key = IUserDataMap.Key<MyUserDataClass>()
+        val value = adblibIDeviceWrapper.computeUserDataIfAbsent(key) { myKey -> MyUserDataClass(myKey) }
+
+        // Act
+        val removedValue = adblibIDeviceWrapper.removeUserData(key)
+
+        // Assert
+        assertNotNull(removedValue)
+        assertEquals(value, removedValue)
+    }
+
     private suspend fun createConnectedDevice(
         serialNumber: String,
         deviceStatus: DeviceState.DeviceStatus = DeviceState.DeviceStatus.ONLINE,
@@ -742,4 +813,6 @@ class AdblibIDeviceWrapperTest {
             }
         }.first()
     }
+
+    private class MyUserDataClass(val key: IUserDataMap.Key<MyUserDataClass>)
 }

@@ -21,7 +21,7 @@ import com.android.ddmlib.IUserDataMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
-class UserDataMapImpl implements IUserDataMap {
+public class UserDataMapImpl implements IUserDataMap {
     @NonNull
     private final ConcurrentHashMap<Object, Object> mUserDataBag = new ConcurrentHashMap<>();
 

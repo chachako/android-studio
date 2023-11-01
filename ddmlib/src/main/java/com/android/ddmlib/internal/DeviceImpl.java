@@ -1782,6 +1782,7 @@ public final class DeviceImpl implements IDevice {
         return getProperty(IDevice.PROP_DEVICE_REGION);
     }
 
+    @Override
     public <T> @NonNull T computeUserDataIfAbsent(
             @NonNull Key<T> key, @NonNull Function<Key<T>, T> mappingFunction) {
         return mUserDataMap.computeUserDataIfAbsent(key, mappingFunction);
@@ -1792,6 +1793,7 @@ public final class DeviceImpl implements IDevice {
         return mUserDataMap.getUserDataOrNull(key);
     }
 
+    @Override
     public <T> @Nullable T removeUserData(@NonNull Key<T> key) {
         return mUserDataMap.removeUserData(key);
     }
