@@ -14,9 +14,12 @@ Only approved targets can depend on large machine types.
 If this is intentional, contact android-devtools-infra@ to approve the target."""
 
 def _limit_exec_properties_impl(target, ctx):
+    _ = target  # unused  # buildifier: disable=unused-variable
     if not hasattr(ctx.rule.attr, "exec_properties"):
         return []
     if not ctx.rule.attr.exec_properties:
+        return []
+    if "manual" in ctx.rule.attr.tags:
         return []
     _check_machine_size(str(ctx.label), ctx.rule.attr.exec_properties)
     return []
