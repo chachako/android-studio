@@ -3258,10 +3258,10 @@ maven_import(
     ],
     exports = [
         "io.grpc.grpc-api",
-        "com.google.code.gson.gson",
         "io.perfmark.perfmark-api",
     ],
     deps = [
+        "com.google.code.gson.gson",
         "com.google.android.annotations",
         "org.codehaus.mojo.animal-sniffer-annotations",
         "com.google.errorprone.error_prone_annotations",

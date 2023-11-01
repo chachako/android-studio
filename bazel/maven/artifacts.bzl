@@ -32,7 +32,7 @@ ARTIFACTS = [
     "com.google.apis:google-api-services-cloudresourcemanager:v3-rev20230416-2.0.0",
     "com.google.http-client:google-http-client-jackson2:1.22.0",
     "com.google.code.findbugs:jsr305:3.0.2",
-    "com.google.code.gson:gson:2.8.6",
+    "com.google.code.gson:gson:2.10.1",
     "com.google.crypto.tink:tink:1.3.0-rc2",
     "com.google.crypto.tink:tink:1.7.0",
     "com.fasterxml:aalto-xml:1.3.0",
