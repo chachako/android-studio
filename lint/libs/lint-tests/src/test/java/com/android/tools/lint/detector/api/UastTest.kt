@@ -516,6 +516,243 @@ class UastTest : TestCase() {
     }
   }
 
+  fun testPropertiesInCompanionObject_fromBytecode() {
+    // Regression test from b/301453029
+    val testFiles =
+      arrayOf(
+        bytecode(
+          "libs/lib1.jar",
+          kotlin(
+              """
+              package some
+
+              interface Flag<T>
+
+              class Dependency {
+                  companion object {
+                      @JvmField val JVM_FIELD_FLAG: Flag<*> = TODO()
+                      @JvmStatic val JVM_STATIC_FLAG: Flag<*> = TODO()
+                      val VAL_FLAG: Flag<*> = TODO()
+                      var varFlag: Flag<*> = TODO()
+                  }
+              }
+
+              class OtherDependency {
+                  companion object Named {
+                      @JvmField val JVM_FIELD_FLAG: Flag<*> = TODO()
+                      @JvmStatic val JVM_STATIC_FLAG: Flag<*> = TODO()
+                      val VAL_FLAG: Flag<*> = TODO()
+                      var varFlag: Flag<*> = TODO()
+                  }
+              }
+
+              object DependencyObject {
+                  val VAL_FLAG: Flag<*> = TODO()
+                  var varFlag: Flag<*> = TODO()
+              }
+
+              val DEPENDENCY_TOP_LEVEL_VAL_FLAG: Flag<*> = TODO()
+            """
+            )
+            .indented(),
+          0xc7b66f2d,
+          """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijgEuNiKc7PTRVic8tJTPcuEWILSS0u
+                8S5RYtBiAAD0O465MAAAAA==
+                """,
+          """
+                some/Dependency＄Companion.class:
+                H4sIAAAAAAAA/5VVTVMbRxB9sxLSahFikYHw4YA/lFiAjYA4iRMIGAtjCy8k
+                hSgVVRyoYZnghdUutbNSJTdOzv/IJddwCpVDiuKYH5VKz2oBIUiVo8N89Hv9
+                eqa7Z/X3P3/+BeA51hmGpV8XpRVxLLx94dk/F8p+/Zh7ju+lwRjMQ97kJZd7
+                B6Xv9w6FHaaRYEgtOJ4TLjIkihO1LLqQMpBEmiEZvnckw6j1n6rzDPkDEa7V
+                1nerW8tblfLuqrX8hqGnONFyWnX5AZHM9v3C5CKZHlt+cFA6FOFewB1Plrjn
+                +SEPSVSWNvxwo+G6xOrtCJ1GL8N9bttCysLtyAX7OIs+ZA2YyDOM3cFoi8Mw
+                aB35oet4pcNmvbTWrFcVYlPcbvKsLVvxdQauA14ao0iftCINMRgK4oG6HkN/
+                G71li9ijLfZ9Yss2dq7YlqqJGkNf8WaulC29QC7PlhZ1PKRrtR3a8UIReNwt
+                VbwwoDw6tkzjMR3Zfi/soziRP/CA1wURGZ4Urc4mmG+zVJWIOkYWn+FzAwU8
+                ub6PvHmfCYyr+0xStm4Ue7Zo3XXAFfEjb7hhmRIfBg079IN1HhyJgIIZ0FS/
+                3SvY1+BuPUIZpv+fGuXv0mFdhHyfh5xsWr2ZoEfC1JBRAxjYEdl/ctRuhlb7
+                swy/nZ/0G9qQZmjm+Ymh6Vproxv6xYfE0PnJnDbDXqV17eLXlGZqm/1mYiSV
+                1/TETPJFavvil6SyG+cnmw/MrltAjoB8Uk+Z2khST5v65oCZuSQRrBNMgEHA
+                mNl9CWxffMjFvgRmTf1RUu8xc+q4c0xdIqf6e7Xy2lqJe7X31mPUrxs53bzs
+                uszVGyarMk0fhfTiy/6+IA3L8cRGo74ngi2+55Ilb/k2d6n6jtrHxkzVOfB4
+                2AhoPbrZ8EKnLipe05EOwcvt78ygFxwIm4dinz5SMbV2B7HQKXPVujdo2Yrn
+                iaDscimFkq/6jcAWq44rMEu9lFQFRppW9DGjJJVpV1IVp7lr8g/op7TQsEJj
+                KjKm8JrGbIuADAya+9BNlkTkPB07J89w7/cOX73NNxn7rkacHryJWTnAzKCf
+                1i29HrR+7DSa3kZjJSYPRMEH7wo+3Bk883HBSW/kLr1PO/WMj9Ybw3ist0So
+                RnP3VP7RGYpTZ5i6md9ULDvYosWyavUQTwlvBXiANVU0FqeLUSGexbVTsxbX
+                bvo0erzXel1Xel1U5BnCEngXXUU5mVjGMKwowqsoxdtknyXu3A4SFXxRwfMK
+                vsRXtMTXFbzANztgEt9ifof+fehTjQWJlMR3Ek8lFiX6JbolshJLEoMSLyVG
+                JMYkxv8F0/QddIkHAAA=
+                """,
+          """
+                some/Dependency.class:
+                H4sIAAAAAAAA/51UW28TRxT+Zu3YzmaJTUhoHMKlxG0dCtkkpTdsAsaJ6aJN
+                KjWRJZQHNFlP3U32Eu2OrfYtv6W/gFKpSEVqoz7yoxBn1gs2ufQBS56Zc853
+                vjPnMvv6zd//ALiLHxiKcegLc10ciqAjAue3PBhDaZ/3uenxoGv+uLcvHJlH
+                hiFXdwNXrjFkqottA2PI6cgiz5CVv7gxw0X7BFeNYaor5JP25rPtncaO1XzW
+                shuPGS5UFwfQlse7BCqNyvVba6RasMOoa+4LuRdxN4hNHgSh5NIN6bwVyq2e
+                5xFqvBn6hzwgLcOVk9Er7401A0WUxqHhIkP5XFgelwxMwNAxjRmGee44Io4r
+                pzOoOIdUuFNpTYwkZWAWZRVxjmFmSNRu2EOGwjvJwNUB+BrD9AiYR4orweb7
+                A8HApwPozSE0/hA6WR25x2KbfOuEuPOAGleoO17aw5WqfRBKksz9vm+6gRRR
+                wD2qy8+858km1VlGPUeG0SaPDkRUG3S8qmqzyDCX+lIrLP/QE74ggs5GFIVR
+                Hl8yrFft4Qhty8gNujXrYwLe0XEbS5SUqnbL2rDX02JPnpyYmVH6J32/5Qqv
+                U1NTmeo3heQdLjnpNL+foQfA1DKuFjCwA9L/6ippmU6dFYbK8ZGha7OarpWO
+                j3StoM0eH93IrGrL7B7LPBr77/ecVtIUdpUphry6zNKBpFn8qRdI1xdW0Hdj
+                d88TjeH40tRuu92Ay14k6Ok0ww5tRdsNxFbP3xPRDic8PRw7dLhHfXWVnCoN
+                KwhE1PR4HAsi0rfDXuSIlqts5TRm+1RErNC8ZCmvMZTVQ6CrPiQpR/sk7WUs
+                019Dg84aYZVNp9Mq7co+p0b5hP2d75ya3HNsuhrVc2z0lVHfD1ofkWSq8qv7
+                3XqJwh8JvJmC1aXXaTXS8zjRqivTM0Umcb6UWIjyBab+wuXniTCIeWE0ZqmM
+                TxIa5TSfOmVf4MrzpP0jAQk5fxby+lnIG2chF85CVvDZqXz/xML/5/s55QoU
+                8MX7Yi2RVv0uv8L0U/YSxDH1CrefsiwJ5r8fBJ6gQmewkTSDvhcUp0h8rSTi
+                Azym/VvSf0WMd3eRsfC1hW8s0n1HR3xv4R5qu2Ax6ri/i2wMPcZajFyM4ltZ
+                loBxQwYAAA==
+                """,
+          """
+                some/DependencyObject.class:
+                H4sIAAAAAAAA/41UTW/bRhB9S9EkRSk25fhTad02SRPZbkzH/a5Vp4odFwIU
+                NbADI4EPwZraKrQoMiBXQnvzKT+kv6BtDi4aoDXSW39U0VmRTiTFBcoDd+fN
+                zJu3s0P+/c/vfwD4BHcZZpOoK9wd8UyELRF6P353dCw8aYIxOMe8z92Ah233
+                HM0xGFU/9OUWQ66yfFDEBAwbOkwGXT71E4b5xoWMmwyFtpAHtcaT3UbtW4ZL
+                leU0cjfgbfI6w3Z1ZYuga40obrvHQh7F3A8Tl4dhJLn0I9o3I9nsBQFFWW84
+                C0OMRUzByUNDicFWlXmscAazn+6KmEkDZikgGQqYrAzRLB8wlCqjyhRmVinl
+                1p0tC2WGpU4kAz90j/td1w+liEMeuPVQxqTa9xIT71CjvafC62SyH/CYdwUF
+                MtysNMb7vDmE7CsSJaOIJbxn4128T0euesHgFmyST6236s39h7Xm9r0irsNW
+                Z/qQoZyJopL17rNAdAUpa92L4yg2cZNhp/J2mXrjopPsiO95L5Db1HcZ9zwZ
+                xfd53BHxZjoAyzYqWKG+jd9f6ZztvpC8xSUnTOv2czR7TL3y6gUG1iH8B19Z
+                67Rr3Wbwz05mbG1BszXn7MTWLC01LMP667m2cHayoa2zu6alvfrJ0Bxtb9bJ
+                lY1pzcqt64RY9tlJWbcmHGNvyTHPHY9ePZ8k52TqtBzjqm7lHVsV3GBKhqmU
+                r3Ukw5W9Xij9rqiHfT/xjwJRezN5DPl9vx1y2YsFDf121KJlquGHotnrHon4
+                Iad4hulG5PGAZspXdgZeH+d9PQcjBez9qBd7YtdXOYtZzsFbSnCbLlqnpuWw
+                qO6djvAVWQatk7SW1QdAEZu01/DRiM9Ws/8fvglCJgZWlSxX3Y9CV05h/TII
+                /zoLBuaxRe9iGoA80QIlFAjJDZLXsmT9V0z/PJa7MJSrZ7mpnEsjckq4fBHf
+                3Djf4v/mm6faKd8d8mq0Flanr/yGD1ZfYG70iEZGO5eGZbRqV6b+sazAIhFB
+                fYdpBQtXX7fvFvVFPbMvoT0+xbUXuPESlcdMZ6dY/XMw/ee1bJKl4ZsB45eo
+                0dogVBGsHSJXh1vHep3ufIO2+LhOv+9PD8ESfIbPD1FI6B+GLxIYCaYSOIlC
+                iglmElxOMJ9g4V8LzDpB9QUAAA==
+                """,
+          """
+                some/Flag.class:
+                H4sIAAAAAAAA/2VQS0/CQBicb0EKxUfxWU9ejQeLxJMaEy8kTTAmQrxwWmBt
+                Fso2YbfEY3+XB9OzP8r4FRMPuoeZb2Yns4/Pr/cPANcICS2bLVXUT2XigQjn
+                d6ObwVyuZZRKk0RPk7mautv7/xYh+Ot5qBM6g0XmUm2iR+XkTDrJSbFc1/g8
+                qqBVAQi0YP9NV6rL0+yKcFYWvi9C4TOLoCyar2FZXNSbZRFQT3RFFesR2oPf
+                K3M3jaiq8yp5uXD8oKFOjHT5ShH8YZavpqqvUxanz7lxeqletNWTVD0Ykznp
+                dGZsg5uxhZ9VwxGjYD7e8CFONn9FaHDGG6MWoxmjFcNHm0dsx9jB7hhksYeA
+                9y06FvsWB98ARADnaAEAAA==
+                """,
+          """
+                some/FlagKt.class:
+                H4sIAAAAAAAA/4VRXU8TQRQ9s1va7ZaPgqK0iCD40frggjHxAUJCaGs2LoUI
+                aUJ4aKbt2Gy7H2Z2tvGR3+IvML6YaKLER3+U8U6tgvLgJDNz77nnnJmb+/3H
+                py8AnqHKUEjiUDiNgPdfqhwYQ3HAR9wJeNR3DjsD0SXUZFjrC1WrH9WbtXpz
+                /7R9cnjU9uqtutdu7Xnthrf3gmGmUvX+mG2T0dV85/EuQRteLPvOQKiO5H6U
+                ODyKYsWVH1PcjFUzDQJirfznocKVZ6aRh52HgQKDtdMN/MhXuwxmpdpiKA9j
+                RYi2dsM3gQhFpESvLmUsc5hjyO5M6LWKd9n1sZJ+1N92vYl6MAodn4Qy4oFT
+                E695Gqh9+rGSaVfF8oDLoZDb1dY05rFgo4gbDLP/dj7/2+1AKN7jihNmhCOT
+                xsD0kdcHGNhQBwYV3/o62qSot8VQuTi3bdrGkmEblrG+WLw4L2cXDMvcZN/e
+                ZS2qlTOWUTQ1/ylDTj/9ZKgY8sd+P+IqlYJh+VUaKT8UbjTyE78TiL3LATBk
+                9uMekeY8PxLNNOwIecKJw2Afx6nsioavk9LEo3XNAVs0h8y4jbIeC2Ubuhks
+                4j7dWcKtcV7CFGUmHlB2h1C9Mh8w/X6sfTjh6tovfe4vvYUZzFKs1RvkpFfh
+                M4qnLMM+4ubXayYGHo1t1lGh+zmht0h2+wymiyUXJZe+u+wSccXFXayegSVY
+                w70zZBLkE9gJphJkfwJs1hl+NQMAAA==
+                """,
+          """
+                some/OtherDependency＄Named.class:
+                H4sIAAAAAAAA/5VVS1MbRxD+ZvVaFiEW8QhgB/xQYgE2AuIkTiAQDMYRWXAK
+                USqqOFDDMoGF1cq1M1IlN07O/8gl13AKlUOK4pgflUrPajEClCpHh3n09/XX
+                M909q7//+fMvAM+xwTAq6zVReqOORLgq3orgQATuz4VNXhMHGTAG+5g3ecnn
+                wWHpzf6xcFUGCYb0ghd4apEhUZyoZpFC2kISGYakOvIkw33nv2XnGfKHQq1X
+                N/Yq28vb5ZW9NWf5NUNPcaLltebzQyLZ7fuFyUUyPXbq4WHpWKj9kHuBLPEg
+                qCuuvDqtN+tqs+H7xBroFDuDXjoWd10hZeFu+IL7Nos+ZC3YyDOMdWC0BWMY
+                ck7qyveC0nGzVlpv1ioacSl4N3lWl534ToPXAa+MUaSPWpGGGSwN8VDfkU7e
+                Rm/ZIva9Fvs+sWUbO1dsy9dElaGveDNh2pZZIJdnS4smHtK12g7tBUqEAfdL
+                5UCFlEzPlRk8piO7R8I9ibP5Aw+pZERkeFJ0brfCfJulokX0MbL4BJ9aKODJ
+                9X3kzftMYFzfZ5KydaPis0Wn0wFXxY+84asVSrwKG66qhxs8PBEhBbNg6K7r
+                L7jX4F4tQhmm/58a5e/KYUMofsAVJ5tRayborTA9dOkBDOyE7D95ejdDq4NZ
+                ht8uTgcsY9iwDPvi1DJMo7UxLfPyXWL44nTOmGEvM6Zx+WvasI2tATsxms4b
+                ZmIm+SK9c/lLUtuti9OtB3bqDpAjIJ8007YxmjQztrk1aHddkQg2CSbAImDM
+                7r4Cdi7f5WJfArO2+Shp9tg5fdw5pi+R0/29Vn7lrMa92nvnRZrXjZxpXnVd
+                KnrEZNHb6RNFb36lfiDI3/ECsdmo7Ytwm+/7ZMk7dZf7VHlP72NjV8U7DLhq
+                hLS+t9UIlFcT5aDpSY/g5fY3ZtHrDYXLlQ43ElOrHYiF2zLv2/YGLVsOAhGu
+                +FxKoeUr9UboijXPF5ilPkrq4iJDK/qcUYJWaFfS1aY5NfkHzDNaGFilMR0Z
+                e/GKxmyLgC5YNPehmyyJyHk6dk6eo//3W759bb7J2Hct4vTgdczKAXYXBmjd
+                0utB68fOoum7aCzH5MFIdKhT8JHbwfMfFpz0RjvpfXxbr/+D9cYwHustEWrQ
+                3D2Vf3SO4tQ5pm7mNx3LDrVosaxePcRTwlsBHmBdF43F6aL2xLO4dno24tpN
+                n0UP91ov9V4vRUWeISyB72lnRU42ljECJ4rwMkrxDtlniTu3i0QZn5XxvIzP
+                8QUt8WUZL/DVLpjE15jfRa+kzzQWJNIS30g8lViU9J+EbomsxJLEkMS3kv54
+                MSYx/i/sb3NVjAcAAA==
+                """,
+          """
+                some/OtherDependency.class:
+                H4sIAAAAAAAA/51UW08bRxT+Zm1ss2ywQ4BiQtskuI3JhQWa3mKXxLFxutFC
+                pIIsRTxEw3rqLOwF7Y6t9o3f0l+QplIjNVKL+tgfVfXM2tROMHmIJc/MOeeb
+                71xn//n3jz8B3MP3DLNx6AvzqXwhooY4FkFbBM7PWTCGwiHvcdPjQcd8enAo
+                HJlFiiFTdQNXbjKkyistAxPI6Egjy5CWL9yYYd4eR1hhmOkI+aS1/Xx3r7Zn
+                1Z837dpjhkvllT6+6fEOgQqjcvXWJqmW7TDqmIdCHkTcDWKTB0EouXRDOu+E
+                cqfreYSa2OG+aDMsjXVfSqwVA3kUJqHhMsPixbgsrhiYgqFjFnNEyR1HxHHp
+                fPwl55ghfy6pqZGUDCygqFwuMswNiVo1e8iQO5MMfNwHf0J9GQHzSHEl2Gyv
+                Lxi43ofeGELjt6HT5ZE4Vlp0t0qIuw+od7mq4w3auF62j0JJknnY8003kCIK
+                uGc2xI+868k6VVlGXUeG0TaPjkRU6Te9rGqzQlUc3KVGWP6xJ3xBBO2tKAqj
+                LG4zNMr2cIp2ZeQGnYr1IQ7v6riDVUpKVbtpbdmNQbGn352XuVH6Jz2/6Qqv
+                TfrLZ/ptIXmbS046ze+l6CEwtUyqBQzsiPQ/uUpao1N7naF0emLo2oKma4XT
+                E13LaQunJ9dSG9oau89Sjyb+/iWjFTSF3WCKIauCWT2SDFd/6AbS9YUV9NzY
+                PfBEbTi8DJO7bifgshsJej31sE1b3nYDsdP1D0S0xwlPz8YOHe5RX10lD5SG
+                FQQiqns8jgUR6bthN3JE01W24sBn65xHrNO8pCmvCRTVS6BQH5KUoX2a9iLW
+                6K+hRmeNsMqm02mDdmVfVKP8jv3s7qKa3AtsuhrVC2z0oVGfEFofkWSq8qv4
+                br1G7tcEXh+AVQgNWo0+AJNEq0KmZ4pUcvlKYiHKV5j5HfMvE6Hv89Koz0IR
+                HyU06tLS4FL6Fa6+TNo/4pCQS+OQn45DXhuHXB6HLOGzc/n+huX35/s55Qrk
+                cPP/Yq2SVv3m32D2GXsN4ph5gzvPWJoE86+3HE9Rs1PYSppB3wvykye+ZuLx
+                AR7T/jXpvyDGe/tIWfjSwlcW6b6hI761cB+VfbAYVXy3j3QMPcZmjEyM/H+K
+                owqASwYAAA==
+                """
+        ),
+        kotlin(
+          """
+            package some
+
+            private fun consumeFlag(p: Flag<*>) {
+              println(p)
+            }
+
+            fun test() {
+              // TODO(b/301453029): not resolved
+              // consumeFlag(Dependency.JVM_FIELD_FLAG)
+              consumeFlag(Dependency.JVM_STATIC_FLAG)
+              consumeFlag(Dependency.VAL_FLAG)
+              consumeFlag(Dependency.varFlag)
+              // TODO(b/301453029): not resolved
+              // consumeFlag(OtherDependency.JVM_FIELD_FLAG)
+              consumeFlag(OtherDependency.JVM_STATIC_FLAG)
+              consumeFlag(OtherDependency.VAL_FLAG)
+              consumeFlag(OtherDependency.varFlag)
+              consumeFlag(DependencyObject.VAL_FLAG)
+              consumeFlag(DependencyObject.varFlag)
+              consumeFlag(DEPENDENCY_TOP_LEVEL_VAL_FLAG)
+            }
+          """
+        )
+      )
+
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val arg = node.valueArguments.singleOrNull()
+            val selector = arg?.findSelector() as? USimpleNameReferenceExpression
+            val resolved = selector?.resolve()
+            assertNotNull(resolved)
+            // TODO(b/301453029): but, should be resolved to PsiField
+
+            return super.visitCallExpression(node)
+          }
+        }
+      )
+    }
+  }
+
   fun test126439418() {
     // Regression test for https://issuetracker.google.com/126439418 /
     //  https://youtrack.jetbrains.com/issue/KT-35801
