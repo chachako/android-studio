@@ -80,6 +80,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /** A Device. It can be a physical device or an emulator. */
 public final class DeviceImpl implements IDevice {
@@ -289,7 +290,7 @@ public final class DeviceImpl implements IDevice {
     @NonNull
     @Override
     public Map<String, ServiceInfo> services() {
-        return iDeviceSharedImpl.services();
+        return logCall(IDeviceUsageTracker.Method.SERVICES, () -> iDeviceSharedImpl.services());
     }
 
     // The full list of features can be obtained from /etc/permissions/features*
@@ -297,13 +298,16 @@ public final class DeviceImpl implements IDevice {
     // reading the build characteristics property.
     @Override
     public boolean supportsFeature(@NonNull HardwareFeature feature) {
-        return iDeviceSharedImpl.supportsFeature(feature);
+        return logCall(
+                IDeviceUsageTracker.Method.SUPPORTS_FEATURE_1,
+                () -> iDeviceSharedImpl.supportsFeature(feature));
     }
 
     @NonNull
     @Override
     public AndroidVersion getVersion() {
-        return iDeviceSharedImpl.getVersion();
+        return logCall(
+                IDeviceUsageTracker.Method.GET_VERSION, () -> iDeviceSharedImpl.getVersion());
     }
 
     @Nullable
@@ -475,11 +479,14 @@ public final class DeviceImpl implements IDevice {
     public void executeShellCommand(String command, IShellOutputReceiver receiver)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
-        executeRemoteCommand(
-                command,
-                receiver,
-                DdmPreferences.getTimeOut(),
-                TimeUnit.MILLISECONDS);
+        logRun1(
+                IDeviceUsageTracker.Method.EXECUTE_SHELL_COMMAND_1,
+                () ->
+                        executeRemoteCommand(
+                                command,
+                                receiver,
+                                DdmPreferences.getTimeOut(),
+                                TimeUnit.MILLISECONDS));
     }
 
     @Override
@@ -491,14 +498,17 @@ public final class DeviceImpl implements IDevice {
             @Nullable InputStream is)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
-        executeRemoteCommand(
-                AdbHelper.AdbService.EXEC,
-                command,
-                receiver,
-                0L,
-                maxTimeToOutputResponse,
-                maxTimeUnits,
-                is);
+        logRun1(
+                IDeviceUsageTracker.Method.EXECUTE_SHELL_COMMAND_4,
+                () ->
+                        executeRemoteCommand(
+                                AdbHelper.AdbService.EXEC,
+                                command,
+                                receiver,
+                                0L,
+                                maxTimeToOutputResponse,
+                                maxTimeUnits,
+                                is));
     }
 
     @Override
@@ -534,11 +544,11 @@ public final class DeviceImpl implements IDevice {
             String command, IShellOutputReceiver receiver, int maxTimeToOutputResponse)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
-        executeRemoteCommand(
-                command,
-                receiver,
-                maxTimeToOutputResponse,
-                TimeUnit.MILLISECONDS);
+        logRun1(
+                IDeviceUsageTracker.Method.EXECUTE_SHELL_COMMAND_2,
+                () ->
+                        executeRemoteCommand(
+                                command, receiver, maxTimeToOutputResponse, TimeUnit.MILLISECONDS));
     }
 
     @Override
@@ -549,12 +559,11 @@ public final class DeviceImpl implements IDevice {
             TimeUnit maxTimeUnits)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
-        executeRemoteCommand(
-                command,
-                receiver,
-                0L,
-                maxTimeToOutputResponse,
-                maxTimeUnits);
+        logRun1(
+                IDeviceUsageTracker.Method.EXECUTE_SHELL_COMMAND_3,
+                () ->
+                        executeRemoteCommand(
+                                command, receiver, 0L, maxTimeToOutputResponse, maxTimeUnits));
     }
 
     @Override
@@ -566,12 +575,15 @@ public final class DeviceImpl implements IDevice {
             TimeUnit maxTimeUnits)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
-        executeRemoteCommand(
-                command,
-                receiver,
-                maxTimeout,
-                maxTimeToOutputResponse,
-                maxTimeUnits);
+        logRun1(
+                IDeviceUsageTracker.Method.EXECUTE_SHELL_COMMAND_5,
+                () ->
+                        executeRemoteCommand(
+                                command,
+                                receiver,
+                                maxTimeout,
+                                maxTimeToOutputResponse,
+                                maxTimeUnits));
     }
 
     /**
@@ -608,14 +620,17 @@ public final class DeviceImpl implements IDevice {
             TimeUnit maxTimeUnits)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
-        executeRemoteCommand(
-                AdbHelper.AdbService.SHELL,
-                command,
-                rcvr,
-                maxTimeout,
-                maxTimeToOutputResponse,
-                maxTimeUnits,
-                null /* inputStream */);
+        logRun1(
+                IDeviceUsageTracker.Method.EXECUTE_REMOTE_COMMAND_2,
+                () ->
+                        executeRemoteCommand(
+                                AdbHelper.AdbService.SHELL,
+                                command,
+                                rcvr,
+                                maxTimeout,
+                                maxTimeToOutputResponse,
+                                maxTimeUnits,
+                                null /* inputStream */));
     }
 
     /**
@@ -648,13 +663,16 @@ public final class DeviceImpl implements IDevice {
             TimeUnit maxTimeUnits)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
-        executeRemoteCommand(
-                AdbHelper.AdbService.SHELL,
-                command,
-                rcvr,
-                maxTimeToOutputResponse,
-                maxTimeUnits,
-                null /* inputStream */);
+        logRun1(
+                IDeviceUsageTracker.Method.EXECUTE_REMOTE_COMMAND_1,
+                () ->
+                        executeRemoteCommand(
+                                AdbHelper.AdbService.SHELL,
+                                command,
+                                rcvr,
+                                maxTimeToOutputResponse,
+                                maxTimeUnits,
+                                null /* inputStream */));
     }
 
     /**
@@ -693,43 +711,41 @@ public final class DeviceImpl implements IDevice {
             @Nullable InputStream is)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
-        executeRemoteCommand(
-                adbService,
-                command,
-                rcvr,
-                0L,
-                maxTimeToOutputResponse,
-                maxTimeUnits,
-                is);
+        logRun1(
+                IDeviceUsageTracker.Method.EXECUTE_REMOTE_COMMAND_3,
+                () ->
+                        executeRemoteCommand(
+                                adbService,
+                                command,
+                                rcvr,
+                                0L,
+                                maxTimeToOutputResponse,
+                                maxTimeUnits,
+                                is));
     }
 
     /**
      * Executes a remote command on the device and retrieve the output. The output is handed to
-     * <var>rcvr</var> as it arrives. The command is execute by the remote service identified by
-     * the adbService parameter.
+     * <var>rcvr</var> as it arrives. The command is execute by the remote service identified by the
+     * adbService parameter.
      *
-     * @param adbService              the {@link AdbHelper.AdbService} to use to run the command.
-     * @param command                 the shell command to execute
-     * @param rcvr                    the {@link IShellOutputReceiver} that will receives the output
-     *                                of the shell command
-     * @param maxTimeout              max timeout for the full command to execute. A value of 0
-     *                                means no timeout.
+     * @param adbService the {@link AdbHelper.AdbService} to use to run the command.
+     * @param command the shell command to execute
+     * @param rcvr the {@link IShellOutputReceiver} that will receives the output of the shell
+     *     command
+     * @param maxTimeout max timeout for the full command to execute. A value of 0 means no timeout.
      * @param maxTimeToOutputResponse max time between command output. If more time passes between
-     *                                command output, the method will throw
-     *                                {@link ShellCommandUnresponsiveException}. A value of 0 means
-     *                                the method will wait forever for command output and never
-     *                                throw.
-     * @param maxTimeUnits            Units for non-zero {@code maxTimeout} and
-     *                                {@code maxTimeToOutputResponse} values.
-     * @param is                      a optional {@link InputStream} to be streamed up after
-     *                                invoking the command and before retrieving the response.
-     * @throws TimeoutException                  in case of timeout on the connection when sending
-     *                                           the command.
-     * @throws AdbCommandRejectedException       if adb rejects the command
+     *     command output, the method will throw {@link ShellCommandUnresponsiveException}. A value
+     *     of 0 means the method will wait forever for command output and never throw.
+     * @param maxTimeUnits Units for non-zero {@code maxTimeout} and {@code maxTimeToOutputResponse}
+     *     values.
+     * @param is a optional {@link InputStream} to be streamed up after invoking the command and
+     *     before retrieving the response.
+     * @throws TimeoutException in case of timeout on the connection when sending the command.
+     * @throws AdbCommandRejectedException if adb rejects the command
      * @throws ShellCommandUnresponsiveException in case the shell command doesn't send any output
-     *                                           for a period longer than
-     *                                           <var>maxTimeToOutputResponse</var>.
-     * @throws IOException                       in case of I/O error on the connection.
+     *     for a period longer than <var>maxTimeToOutputResponse</var>.
+     * @throws IOException in case of I/O error on the connection.
      * @see DdmPreferences#getTimeOut()
      */
     @Slow
@@ -744,158 +760,180 @@ public final class DeviceImpl implements IDevice {
             @Nullable InputStream is)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
-        long maxTimeToOutputMs = 0;
-        if (maxTimeToOutputResponse > 0) {
-            if (maxTimeUnits == null) {
-                throw new NullPointerException("Time unit must not be null for non-zero max.");
-            }
-            maxTimeToOutputMs = maxTimeUnits.toMillis(maxTimeToOutputResponse);
-        }
-        long maxTimeoutMs = 0L;
-        if (maxTimeout > 0L) {
-            if (maxTimeUnits == null) {
-                throw new NullPointerException("Time unit must not be null for non-zero max.");
-            }
-            maxTimeoutMs = maxTimeUnits.toMillis(maxTimeout);
-        }
+        logRun1(
+                IDeviceUsageTracker.Method.EXECUTE_REMOTE_COMMAND_4,
+                () -> {
+                    long maxTimeToOutputMs = 0;
+                    if (maxTimeToOutputResponse > 0) {
+                        if (maxTimeUnits == null) {
+                            throw new NullPointerException(
+                                    "Time unit must not be null for non-zero max.");
+                        }
+                        maxTimeToOutputMs = maxTimeUnits.toMillis(maxTimeToOutputResponse);
+                    }
+                    long maxTimeoutMs = 0L;
+                    if (maxTimeout > 0L) {
+                        if (maxTimeUnits == null) {
+                            throw new NullPointerException(
+                                    "Time unit must not be null for non-zero max.");
+                        }
+                        maxTimeoutMs = maxTimeUnits.toMillis(maxTimeout);
+                    }
 
-        Log.v("ddms", "execute: running " + command);
+                    Log.v("ddms", "execute: running " + command);
 
-        SocketChannel adbChan = null;
-        try {
-            long startTime = System.currentTimeMillis();
-            adbChan = SocketChannel.open(AndroidDebugBridge.getSocketAddress());
-            adbChan.configureBlocking(false);
+                    SocketChannel adbChan = null;
+                    try {
+                        long startTime = System.currentTimeMillis();
+                        adbChan = SocketChannel.open(AndroidDebugBridge.getSocketAddress());
+                        adbChan.configureBlocking(false);
 
-            // if the device is not -1, then we first tell adb we're looking to
-            // talk to a specific device
-            AdbHelper.setDevice(adbChan, this);
+                        // if the device is not -1, then we first tell adb we're looking to
+                        // talk to a specific device
+                        AdbHelper.setDevice(adbChan, this);
 
-            byte[] request = AdbHelper.formAdbRequest(adbService, command);
-            AdbHelper.write(adbChan, request);
+                        byte[] request = AdbHelper.formAdbRequest(adbService, command);
+                        AdbHelper.write(adbChan, request);
 
-            long timeOutForResp =
-                    maxTimeToOutputMs > 0 ? maxTimeToOutputMs : DdmPreferences.getTimeOut();
-            AdbHelper.AdbResponse resp = AdbHelper.readAdbResponse(adbChan, false, timeOutForResp);
+                        long timeOutForResp =
+                                maxTimeToOutputMs > 0
+                                        ? maxTimeToOutputMs
+                                        : DdmPreferences.getTimeOut();
+                        AdbHelper.AdbResponse resp =
+                                AdbHelper.readAdbResponse(adbChan, false, timeOutForResp);
 
-            if (!resp.okay) {
-                Log.e("ddms", "ADB rejected shell command (" + command + "): " + resp.message);
-                throw new AdbCommandRejectedException(resp.message);
-            }
+                        if (!resp.okay) {
+                            Log.e(
+                                    "ddms",
+                                    "ADB rejected shell command ("
+                                            + command
+                                            + "): "
+                                            + resp.message);
+                            throw new AdbCommandRejectedException(resp.message);
+                        }
 
-            byte[] data = new byte[16384];
+                        byte[] data = new byte[16384];
 
-            // stream the input file if present.
-            if (is != null) {
-                int read;
-                while ((read = is.read(data)) != -1) {
-                    ByteBuffer buf = ByteBuffer.wrap(data, 0, read);
-                    int writtenTotal = 0;
-                    long lastResponsive = System.currentTimeMillis();
-                    while (buf.hasRemaining()) {
-                        int written = adbChan.write(buf);
+                        // stream the input file if present.
+                        if (is != null) {
+                            int read;
+                            while ((read = is.read(data)) != -1) {
+                                ByteBuffer buf = ByteBuffer.wrap(data, 0, read);
+                                int writtenTotal = 0;
+                                long lastResponsive = System.currentTimeMillis();
+                                while (buf.hasRemaining()) {
+                                    int written = adbChan.write(buf);
 
-                        if (written == 0) {
-                            // If device takes too long to respond to a write command, throw timeout
+                                    if (written == 0) {
+                                        // If device takes too long to respond to a write command,
+                                        // throw timeout
+                                        // exception.
+                                        if (maxTimeToOutputMs > 0
+                                                && System.currentTimeMillis() - lastResponsive
+                                                        > maxTimeToOutputMs) {
+                                            throw new TimeoutException(
+                                                    String.format(
+                                                            "executeRemoteCommand write timed out after %sms",
+                                                            maxTimeToOutputMs));
+                                        }
+                                    } else {
+                                        lastResponsive = System.currentTimeMillis();
+                                    }
+
+                                    // If the overall timeout exists and is exceeded, we throw
+                                    // timeout
+                                    // exception.
+                                    if (maxTimeoutMs > 0
+                                            && System.currentTimeMillis() - startTime
+                                                    > maxTimeoutMs) {
+                                        throw new TimeoutException(
+                                                String.format(
+                                                        "executeRemoteCommand timed out after %sms",
+                                                        maxTimeoutMs));
+                                    }
+
+                                    writtenTotal += written;
+                                }
+                                if (writtenTotal != read) {
+                                    Log.e(
+                                            "ddms",
+                                            "ADB write inconsistency, wrote "
+                                                    + writtenTotal
+                                                    + "expected "
+                                                    + read);
+                                    throw new AdbCommandRejectedException("write failed");
+                                }
+                            }
+                        }
+
+                        ByteBuffer buf = ByteBuffer.wrap(data);
+                        buf.clear();
+                        long timeToResponseCount = 0;
+                        while (true) {
+                            int count;
+
+                            if (rcvr != null && rcvr.isCancelled()) {
+                                Log.v("ddms", "execute: cancelled");
+                                break;
+                            }
+
+                            count = adbChan.read(buf);
+                            if (count < 0) {
+                                // we're at the end, we flush the output
+                                rcvr.flush();
+                                Log.v(
+                                        "ddms",
+                                        "execute '"
+                                                + command
+                                                + "' on '"
+                                                + this
+                                                + "' : EOF hit. Read: "
+                                                + count);
+                                break;
+                            } else if (count == 0) {
+                                try {
+                                    int wait = WAIT_TIME * 5;
+                                    timeToResponseCount += wait;
+                                    if (maxTimeToOutputMs > 0
+                                            && timeToResponseCount > maxTimeToOutputMs) {
+                                        throw new ShellCommandUnresponsiveException();
+                                    }
+                                    Thread.sleep(wait);
+                                } catch (InterruptedException e) {
+                                    Thread.currentThread().interrupt();
+                                    // Throw a timeout exception in place of interrupted exception
+                                    // to avoid API
+                                    // changes.
+                                    throw new TimeoutException(
+                                            "executeRemoteCommand interrupted with immediate timeout via interruption.");
+                                }
+                            } else {
+                                // reset timeout
+                                timeToResponseCount = 0;
+
+                                // send data to receiver if present
+                                if (rcvr != null) {
+                                    rcvr.addOutput(buf.array(), buf.arrayOffset(), buf.position());
+                                }
+                                buf.rewind();
+                            }
+                            // if the overall timeout exists and is exceeded, we throw timeout
                             // exception.
-                            if (maxTimeToOutputMs > 0
-                                    && System.currentTimeMillis() - lastResponsive
-                                            > maxTimeToOutputMs) {
+                            if (maxTimeoutMs > 0
+                                    && System.currentTimeMillis() - startTime > maxTimeoutMs) {
                                 throw new TimeoutException(
                                         String.format(
-                                                "executeRemoteCommand write timed out after %sms",
-                                                maxTimeToOutputMs));
+                                                "executeRemoteCommand timed out after %sms",
+                                                maxTimeoutMs));
                             }
-                        } else {
-                            lastResponsive = System.currentTimeMillis();
                         }
-
-                        // If the overall timeout exists and is exceeded, we throw timeout
-                        // exception.
-                        if (maxTimeoutMs > 0
-                                && System.currentTimeMillis() - startTime > maxTimeoutMs) {
-                            throw new TimeoutException(
-                                    String.format(
-                                            "executeRemoteCommand timed out after %sms",
-                                            maxTimeoutMs));
+                    } finally {
+                        if (adbChan != null) {
+                            adbChan.close();
                         }
-
-                        writtenTotal += written;
+                        Log.v("ddms", "execute: returning");
                     }
-                    if (writtenTotal != read) {
-                        Log.e(
-                                "ddms",
-                                "ADB write inconsistency, wrote "
-                                        + writtenTotal
-                                        + "expected "
-                                        + read);
-                        throw new AdbCommandRejectedException("write failed");
-                    }
-                }
-            }
-
-            ByteBuffer buf = ByteBuffer.wrap(data);
-            buf.clear();
-            long timeToResponseCount = 0;
-            while (true) {
-                int count;
-
-                if (rcvr != null && rcvr.isCancelled()) {
-                    Log.v("ddms", "execute: cancelled");
-                    break;
-                }
-
-                count = adbChan.read(buf);
-                if (count < 0) {
-                    // we're at the end, we flush the output
-                    rcvr.flush();
-                    Log.v(
-                            "ddms",
-                            "execute '"
-                                    + command
-                                    + "' on '"
-                                    + this
-                                    + "' : EOF hit. Read: "
-                                    + count);
-                    break;
-                } else if (count == 0) {
-                    try {
-                        int wait = WAIT_TIME * 5;
-                        timeToResponseCount += wait;
-                        if (maxTimeToOutputMs > 0 && timeToResponseCount > maxTimeToOutputMs) {
-                            throw new ShellCommandUnresponsiveException();
-                        }
-                        Thread.sleep(wait);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        // Throw a timeout exception in place of interrupted exception to avoid API
-                        // changes.
-                        throw new TimeoutException(
-                                "executeRemoteCommand interrupted with immediate timeout via interruption.");
-                    }
-                } else {
-                    // reset timeout
-                    timeToResponseCount = 0;
-
-                    // send data to receiver if present
-                    if (rcvr != null) {
-                        rcvr.addOutput(buf.array(), buf.arrayOffset(), buf.position());
-                    }
-                    buf.rewind();
-                }
-                // if the overall timeout exists and is exceeded, we throw timeout exception.
-                if (maxTimeoutMs > 0 && System.currentTimeMillis() - startTime > maxTimeoutMs) {
-                    throw new TimeoutException(
-                            String.format(
-                                    "executeRemoteCommand timed out after %sms", maxTimeoutMs));
-                }
-            }
-        } finally {
-            if (adbChan != null) {
-                adbChan.close();
-            }
-            Log.v("ddms", "execute: returning");
-        }
+                });
     }
 
     @Override
@@ -908,7 +946,9 @@ public final class DeviceImpl implements IDevice {
     @Override
     public SimpleConnectedSocket rawExec2(String executable, String[] parameters)
             throws AdbCommandRejectedException, TimeoutException, IOException {
-        return SocketChannelWithTimeouts.wrap(rawExec(executable, parameters));
+        return logCall4(
+                IDeviceUsageTracker.Method.RAW_EXEC2,
+                () -> SocketChannelWithTimeouts.wrap(rawExec(executable, parameters)));
     }
 
     @Override
@@ -944,31 +984,45 @@ public final class DeviceImpl implements IDevice {
     @Override
     public void createForward(int localPort, int remotePort)
             throws TimeoutException, AdbCommandRejectedException, IOException {
-        AdbHelper.createForward(
-                AndroidDebugBridge.getSocketAddress(),
-                this,
-                String.format("tcp:%d", localPort), //$NON-NLS-1$
-                String.format("tcp:%d", remotePort)); //$NON-NLS-1$
+        logRun2(
+                IDeviceUsageTracker.Method.CREATE_FORWARD_1,
+                () ->
+                        AdbHelper.createForward(
+                                AndroidDebugBridge.getSocketAddress(),
+                                this,
+                                String.format("tcp:%d", localPort), // $NON-NLS-1$
+                                String.format("tcp:%d", remotePort)) // $NON-NLS-1$
+                );
     }
 
     @Override
     public void createForward(
             int localPort, String remoteSocketName, DeviceUnixSocketNamespace namespace)
             throws TimeoutException, AdbCommandRejectedException, IOException {
-        AdbHelper.createForward(
-                AndroidDebugBridge.getSocketAddress(),
-                this,
-                String.format("tcp:%d", localPort), //$NON-NLS-1$
-                String.format("%s:%s", namespace.getType(), remoteSocketName)); //$NON-NLS-1$
+        logRun2(
+                IDeviceUsageTracker.Method.CREATE_FORWARD_2,
+                () ->
+                        AdbHelper.createForward(
+                                AndroidDebugBridge.getSocketAddress(),
+                                this,
+                                String.format("tcp:%d", localPort), // $NON-NLS-1$
+                                String.format(
+                                        "%s:%s",
+                                        namespace.getType(), remoteSocketName)) // $NON-NLS-1$
+                );
     }
 
     @Override
     public void removeForward(int localPort)
             throws TimeoutException, AdbCommandRejectedException, IOException {
-        AdbHelper.removeForward(
-                AndroidDebugBridge.getSocketAddress(),
-                this,
-                String.format("tcp:%d", localPort)); // $NON-NLS-1$
+        logRun2(
+                IDeviceUsageTracker.Method.REMOVE_FORWARD,
+                () ->
+                        AdbHelper.removeForward(
+                                AndroidDebugBridge.getSocketAddress(),
+                                this,
+                                String.format("tcp:%d", localPort)) // $NON-NLS-1$
+                );
     }
 
     @Override
@@ -1087,12 +1141,14 @@ public final class DeviceImpl implements IDevice {
 
     @Override
     public void forceStop(String applicationName) {
-        iDeviceSharedImpl.forceStop(applicationName);
+        logRun(
+                IDeviceUsageTracker.Method.FORCE_STOP,
+                () -> iDeviceSharedImpl.forceStop(applicationName));
     }
 
     @Override
     public void kill(String applicationName) {
-        iDeviceSharedImpl.kill(applicationName);
+        logRun(IDeviceUsageTracker.Method.KILL, () -> iDeviceSharedImpl.kill(applicationName));
     }
 
     void addClient(ClientImpl client) {
@@ -1261,100 +1317,120 @@ public final class DeviceImpl implements IDevice {
     @Override
     public void pushFile(@NonNull String local, @NonNull String remote)
             throws IOException, AdbCommandRejectedException, TimeoutException, SyncException {
-        String targetFileName = getFileName(local);
-        Log.d(
-                targetFileName,
-                String.format(
-                        "Uploading %1$s onto device '%2$s'", targetFileName, getSerialNumber()));
+        logRun4(
+                IDeviceUsageTracker.Method.PUSH_FILE,
+                () -> {
+                    String targetFileName = getFileName(local);
+                    Log.d(
+                            targetFileName,
+                            String.format(
+                                    "Uploading %1$s onto device '%2$s'",
+                                    targetFileName, getSerialNumber()));
 
-        try (SyncService sync = getSyncService()) {
-            if (sync == null) {
-                throw new IOException("Unable to open sync connection");
-            }
-            String message = String.format("Uploading file onto device '%1$s'", getSerialNumber());
-            Log.d(LOG_TAG, message);
-            sync.pushFile(local, remote, SyncService.getNullProgressMonitor());
-        } catch (TimeoutException e) {
-            Log.e(LOG_TAG, "Error during Sync: timeout.");
-            throw e;
-        } catch (SyncException | IOException e) {
-            Log.e(LOG_TAG, String.format("Error during Sync: %1$s", e.getMessage()));
-            throw e;
-        }
+                    try (SyncService sync = getSyncService()) {
+                        if (sync == null) {
+                            throw new IOException("Unable to open sync connection");
+                        }
+                        String message =
+                                String.format(
+                                        "Uploading file onto device '%1$s'", getSerialNumber());
+                        Log.d(LOG_TAG, message);
+                        sync.pushFile(local, remote, SyncService.getNullProgressMonitor());
+                    } catch (TimeoutException e) {
+                        Log.e(LOG_TAG, "Error during Sync: timeout.");
+                        throw e;
+                    } catch (SyncException | IOException e) {
+                        Log.e(LOG_TAG, String.format("Error during Sync: %1$s", e.getMessage()));
+                        throw e;
+                    }
+                });
     }
 
     @Override
     public void pullFile(String remote, String local)
             throws IOException, AdbCommandRejectedException, TimeoutException, SyncException {
-        SyncService sync = null;
-        try {
-            String targetFileName = getFileName(remote);
+        logRun4(
+                IDeviceUsageTracker.Method.PULL_FILE,
+                () -> {
+                    SyncService sync = null;
+                    try {
+                        String targetFileName = getFileName(remote);
 
-            Log.d(
-                    targetFileName,
-                    String.format(
-                            "Downloading %1$s from device '%2$s'",
-                            targetFileName, getSerialNumber()));
+                        Log.d(
+                                targetFileName,
+                                String.format(
+                                        "Downloading %1$s from device '%2$s'",
+                                        targetFileName, getSerialNumber()));
 
-            sync = getSyncService();
-            if (sync != null) {
-                String message =
-                        String.format("Downloading file from device '%1$s'", getSerialNumber());
-                Log.d(LOG_TAG, message);
-                sync.pullFile(remote, local, SyncService.getNullProgressMonitor());
-            } else {
-                throw new IOException("Unable to open sync connection!");
-            }
-        } catch (TimeoutException e) {
-            Log.e(LOG_TAG, "Error during Sync: timeout.");
-            throw e;
+                        sync = getSyncService();
+                        if (sync != null) {
+                            String message =
+                                    String.format(
+                                            "Downloading file from device '%1$s'",
+                                            getSerialNumber());
+                            Log.d(LOG_TAG, message);
+                            sync.pullFile(remote, local, SyncService.getNullProgressMonitor());
+                        } else {
+                            throw new IOException("Unable to open sync connection!");
+                        }
+                    } catch (TimeoutException e) {
+                        Log.e(LOG_TAG, "Error during Sync: timeout.");
+                        throw e;
 
-        } catch (SyncException | IOException e) {
-            Log.e(LOG_TAG, String.format("Error during Sync: %1$s", e.getMessage()));
-            throw e;
-        } finally {
-            if (sync != null) {
-                sync.close();
-            }
-        }
+                    } catch (SyncException | IOException e) {
+                        Log.e(LOG_TAG, String.format("Error during Sync: %1$s", e.getMessage()));
+                        throw e;
+                    } finally {
+                        if (sync != null) {
+                            sync.close();
+                        }
+                    }
+                });
     }
 
     @Override
     public SyncService.FileStat statFile(String remote)
             throws IOException, AdbCommandRejectedException, TimeoutException {
-        SyncService sync = null;
-        try {
-            String targetFileName = getFileName(remote);
+        return logCall4(
+                IDeviceUsageTracker.Method.STAT_FILE,
+                () -> {
+                    SyncService sync = null;
+                    try {
+                        String targetFileName = getFileName(remote);
 
-            Log.d(
-                    LOG_TAG,
-                    String.format(
-                            "Stat %1$s from device '%2$s'", targetFileName, getSerialNumber()));
+                        Log.d(
+                                LOG_TAG,
+                                String.format(
+                                        "Stat %1$s from device '%2$s'",
+                                        targetFileName, getSerialNumber()));
 
-            sync = getSyncService();
-            if (sync != null) {
-                return sync.statFile(remote);
-            } else {
-                throw new IOException("Unable to open sync connection!");
-            }
-        } catch (TimeoutException e) {
-            Log.e(LOG_TAG, "Error during Sync: timeout.");
-            throw e;
-        } catch (IOException e) {
-            Log.e(LOG_TAG, String.format("Error during Sync: %1$s", e.getMessage()));
-            throw e;
-        } finally {
-            if (sync != null) {
-                sync.close();
-            }
-        }
+                        sync = getSyncService();
+                        if (sync != null) {
+                            return sync.statFile(remote);
+                        } else {
+                            throw new IOException("Unable to open sync connection!");
+                        }
+                    } catch (TimeoutException e) {
+                        Log.e(LOG_TAG, "Error during Sync: timeout.");
+                        throw e;
+                    } catch (IOException e) {
+                        Log.e(LOG_TAG, String.format("Error during Sync: %1$s", e.getMessage()));
+                        throw e;
+                    } finally {
+                        if (sync != null) {
+                            sync.close();
+                        }
+                    }
+                });
     }
 
     @Override
     public void installPackage(String packageFilePath, boolean reinstall, String... extraArgs)
             throws InstallException {
         // Use default basic installReceiver
-        installPackage(packageFilePath, reinstall, new InstallReceiver(), extraArgs);
+        logRun3(
+                IDeviceUsageTracker.Method.INSTALL_PACKAGE_1,
+                () -> installPackage(packageFilePath, reinstall, new InstallReceiver(), extraArgs));
     }
 
     @Override
@@ -1364,15 +1440,18 @@ public final class DeviceImpl implements IDevice {
             InstallReceiver receiver,
             String... extraArgs)
             throws InstallException {
-        // Use default values for some timeouts.
-        installPackage(
-                packageFilePath,
-                reinstall,
-                receiver,
-                0L,
-                INSTALL_TIMEOUT_MINUTES,
-                TimeUnit.MINUTES,
-                extraArgs);
+        logRun3(
+                IDeviceUsageTracker.Method.INSTALL_PACKAGE_2,
+                () ->
+                        // Use default values for some timeouts.
+                        installPackage(
+                                packageFilePath,
+                                reinstall,
+                                receiver,
+                                0L,
+                                INSTALL_TIMEOUT_MINUTES,
+                                TimeUnit.MINUTES,
+                                extraArgs));
     }
 
     @Override
@@ -1385,13 +1464,17 @@ public final class DeviceImpl implements IDevice {
             TimeUnit maxTimeUnits,
             String... extraArgs)
             throws InstallException {
-        iDeviceSharedImpl.installPackage(packageFilePath,
-                                         reinstall,
-                                         receiver,
-                                         maxTimeout,
-                                         maxTimeToOutputResponse,
-                                         maxTimeUnits,
-                                         extraArgs);
+        logRun3(
+                IDeviceUsageTracker.Method.INSTALL_PACKAGE_3,
+                () ->
+                        iDeviceSharedImpl.installPackage(
+                                packageFilePath,
+                                reinstall,
+                                receiver,
+                                maxTimeout,
+                                maxTimeToOutputResponse,
+                                maxTimeUnits,
+                                extraArgs));
     }
 
     @Override
@@ -1402,15 +1485,27 @@ public final class DeviceImpl implements IDevice {
             long timeout,
             @NonNull TimeUnit timeoutUnit)
             throws InstallException {
-        iDeviceSharedImpl.installPackages(apks, reinstall, installOptions, timeout, timeoutUnit);
+        logRun3(
+                IDeviceUsageTracker.Method.INSTALL_PACKAGES_2,
+                () ->
+                        iDeviceSharedImpl.installPackages(
+                                apks, reinstall, installOptions, timeout, timeoutUnit));
     }
 
     @Override
     public void installPackages(
             @NonNull List<File> apks, boolean reinstall, @NonNull List<String> installOptions)
             throws InstallException {
-        // Use the default single apk installer timeout.
-        installPackages(apks, reinstall, installOptions, INSTALL_TIMEOUT_MINUTES, TimeUnit.MINUTES);
+        logRun3(
+                IDeviceUsageTracker.Method.INSTALL_PACKAGES_1,
+                () ->
+                        // Use the default single apk installer timeout.
+                        installPackages(
+                                apks,
+                                reinstall,
+                                installOptions,
+                                INSTALL_TIMEOUT_MINUTES,
+                                TimeUnit.MINUTES));
     }
 
     @Override
@@ -1450,39 +1545,47 @@ public final class DeviceImpl implements IDevice {
     @Override
     public String syncPackageToDevice(String localFilePath)
             throws IOException, AdbCommandRejectedException, TimeoutException, SyncException {
-        SyncService sync = null;
-        try {
-            String packageFileName = getFileName(localFilePath);
-            String remoteFilePath = String.format("/data/local/tmp/%1$s", packageFileName);
+        return logCall3(
+                IDeviceUsageTracker.Method.SYNC_PACKAGE_TO_DEVICE,
+                () -> {
+                    SyncService sync = null;
+                    try {
+                        String packageFileName = getFileName(localFilePath);
+                        String remoteFilePath =
+                                String.format("/data/local/tmp/%1$s", packageFileName);
 
-            Log.d(
-                    packageFileName,
-                    String.format(
-                            "Uploading %1$s onto device '%2$s'",
-                            packageFileName, getSerialNumber()));
+                        Log.d(
+                                packageFileName,
+                                String.format(
+                                        "Uploading %1$s onto device '%2$s'",
+                                        packageFileName, getSerialNumber()));
 
-            sync = getSyncService();
-            if (sync != null) {
-                String message =
-                        String.format("Uploading file onto device '%1$s'", getSerialNumber());
-                Log.d(LOG_TAG, message);
-                sync.pushFile(localFilePath, remoteFilePath, SyncService.getNullProgressMonitor());
-            } else {
-                throw new IOException("Unable to open sync connection!");
-            }
-            return remoteFilePath;
-        } catch (TimeoutException e) {
-            Log.e(LOG_TAG, "Error during Sync: timeout.");
-            throw e;
-
-        } catch (SyncException | IOException e) {
-            Log.e(LOG_TAG, String.format("Error during Sync: %1$s", e.getMessage()));
-            throw e;
-        } finally {
-            if (sync != null) {
-                sync.close();
-            }
-        }
+                        sync = getSyncService();
+                        if (sync != null) {
+                            String message =
+                                    String.format(
+                                            "Uploading file onto device '%1$s'", getSerialNumber());
+                            Log.d(LOG_TAG, message);
+                            sync.pushFile(
+                                    localFilePath,
+                                    remoteFilePath,
+                                    SyncService.getNullProgressMonitor());
+                        } else {
+                            throw new IOException("Unable to open sync connection!");
+                        }
+                        return remoteFilePath;
+                    } catch (TimeoutException e) {
+                        Log.e(LOG_TAG, "Error during Sync: timeout.");
+                        throw e;
+                    } catch (SyncException | IOException e) {
+                        Log.e(LOG_TAG, String.format("Error during Sync: %1$s", e.getMessage()));
+                        throw e;
+                    } finally {
+                        if (sync != null) {
+                            sync.close();
+                        }
+                    }
+                });
     }
 
     /**
@@ -1528,29 +1631,38 @@ public final class DeviceImpl implements IDevice {
             TimeUnit maxTimeUnits,
             String... extraArgs)
             throws InstallException {
-        iDeviceSharedImpl.installRemotePackage(
-                remoteFilePath,
-                reinstall,
-                receiver,
-                maxTimeout,
-                maxTimeToOutputResponse,
-                maxTimeUnits,
-                extraArgs);
+        logRun3(
+                IDeviceUsageTracker.Method.INSTALL_REMOTE_PACKAGE,
+                () ->
+                        iDeviceSharedImpl.installRemotePackage(
+                                remoteFilePath,
+                                reinstall,
+                                receiver,
+                                maxTimeout,
+                                maxTimeToOutputResponse,
+                                maxTimeUnits,
+                                extraArgs));
     }
 
     @Override
     public void removeRemotePackage(String remoteFilePath) throws InstallException {
-        iDeviceSharedImpl.removeRemotePackage(remoteFilePath);
+        logRun3(
+                IDeviceUsageTracker.Method.REMOVE_REMOTE_PACKAGE,
+                () -> iDeviceSharedImpl.removeRemotePackage(remoteFilePath));
     }
 
     @Override
     public String uninstallPackage(String packageName) throws InstallException {
-        return uninstallApp(packageName, new String[] {});
+        return logCall2(
+                IDeviceUsageTracker.Method.UNINSTALL_PACKAGE,
+                () -> uninstallApp(packageName, new String[] {}));
     }
 
     @Override
     public String uninstallApp(String applicationID, String... extraArgs) throws InstallException {
-        return iDeviceSharedImpl.uninstallApp(applicationID, extraArgs);
+        return logCall2(
+                IDeviceUsageTracker.Method.UNINSTALL_APP,
+                () -> iDeviceSharedImpl.uninstallApp(applicationID, extraArgs));
     }
 
     /*
@@ -1567,25 +1679,36 @@ public final class DeviceImpl implements IDevice {
     public boolean root()
             throws TimeoutException, AdbCommandRejectedException, IOException,
                     ShellCommandUnresponsiveException {
-        if (!mIsRoot) {
-            AdbHelper.root(AndroidDebugBridge.getSocketAddress(), this);
-        }
-        return isRoot();
+        return logCall1(
+                IDeviceUsageTracker.Method.ROOT,
+                () -> {
+                    if (!mIsRoot) {
+                        AdbHelper.root(AndroidDebugBridge.getSocketAddress(), this);
+                    }
+                    return isRoot();
+                });
     }
 
     @Override
     public boolean isRoot()
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
                     IOException {
-        if (mIsRoot) {
-            return true;
-        }
-        CollectingOutputReceiver receiver = new CollectingOutputReceiver();
-        executeShellCommand(
-                "echo $USER_ID", receiver, QUERY_IS_ROOT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        String userID = receiver.getOutput().trim();
-        mIsRoot = userID.equals("0");
-        return mIsRoot;
+        return logCall1(
+                IDeviceUsageTracker.Method.IS_ROOT,
+                () -> {
+                    if (mIsRoot) {
+                        return true;
+                    }
+                    CollectingOutputReceiver receiver = new CollectingOutputReceiver();
+                    executeShellCommand(
+                            "echo $USER_ID",
+                            receiver,
+                            QUERY_IS_ROOT_TIMEOUT_MS,
+                            TimeUnit.MILLISECONDS);
+                    String userID = receiver.getOutput().trim();
+                    mIsRoot = userID.equals("0");
+                    return mIsRoot;
+                });
     }
 
     @Override
@@ -1619,12 +1742,13 @@ public final class DeviceImpl implements IDevice {
     @NonNull
     @Override
     public List<String> getAbis() {
-        return iDeviceSharedImpl.getAbis();
+        return logCall(IDeviceUsageTracker.Method.GET_ABIS, () -> iDeviceSharedImpl.getAbis());
     }
 
     @Override
     public int getDensity() {
-        return iDeviceSharedImpl.getDensity();
+        return logCall(
+                IDeviceUsageTracker.Method.GET_DENSITY, () -> iDeviceSharedImpl.getDensity());
     }
 
     @Override
@@ -1649,6 +1773,170 @@ public final class DeviceImpl implements IDevice {
 
     public <T> @Nullable T removeUserData(@NonNull Key<T> key) {
         return mUserDataMap.removeUserData(key);
+    }
+
+    private void logRun(IDeviceUsageTracker.Method method, Runnable block) {
+        try {
+            block.run();
+            maybeLogUsage(method, false);
+        } catch (Throwable t) {
+            maybeLogUsage(method, true);
+            throw t;
+        }
+    }
+
+    @FunctionalInterface
+    private interface ThrowingRunnable1 {
+        void run()
+                throws TimeoutException, AdbCommandRejectedException,
+                        ShellCommandUnresponsiveException, IOException;
+    }
+
+    private void logRun1(IDeviceUsageTracker.Method method, ThrowingRunnable1 block)
+            throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
+                    IOException {
+        try {
+            block.run();
+            maybeLogUsage(method, false);
+        } catch (Throwable t) {
+            maybeLogUsage(method, true);
+            throw t;
+        }
+    }
+
+    @FunctionalInterface
+    private interface ThrowingRunnable2 {
+        void run() throws TimeoutException, AdbCommandRejectedException, IOException;
+    }
+
+    private void logRun2(IDeviceUsageTracker.Method method, ThrowingRunnable2 block)
+            throws TimeoutException, AdbCommandRejectedException, IOException {
+        try {
+            block.run();
+            maybeLogUsage(method, false);
+        } catch (Throwable t) {
+            maybeLogUsage(method, true);
+            throw t;
+        }
+    }
+
+    @FunctionalInterface
+    private interface ThrowingRunnable3 {
+        void run() throws InstallException;
+    }
+
+    private void logRun3(IDeviceUsageTracker.Method method, ThrowingRunnable3 block)
+            throws InstallException {
+        try {
+            block.run();
+            maybeLogUsage(method, false);
+        } catch (Throwable t) {
+            maybeLogUsage(method, true);
+            throw t;
+        }
+    }
+
+    @FunctionalInterface
+    private interface ThrowingRunnable4 {
+        void run() throws IOException, AdbCommandRejectedException, TimeoutException, SyncException;
+    }
+
+    private void logRun4(IDeviceUsageTracker.Method method, ThrowingRunnable4 block)
+            throws IOException, AdbCommandRejectedException, TimeoutException, SyncException {
+        try {
+            block.run();
+            maybeLogUsage(method, false);
+        } catch (Throwable t) {
+            maybeLogUsage(method, true);
+            throw t;
+        }
+    }
+
+    private <R> R logCall(IDeviceUsageTracker.Method method, Supplier<R> block) {
+        R result;
+        try {
+            result = block.get();
+            maybeLogUsage(method, false);
+            return result;
+        } catch (Throwable t) {
+            maybeLogUsage(method, true);
+            throw t;
+        }
+    }
+
+    @FunctionalInterface
+    private interface ThrowingSupplier1<T> {
+        T get()
+                throws TimeoutException, AdbCommandRejectedException,
+                        ShellCommandUnresponsiveException, IOException;
+    }
+
+    private <R> R logCall1(IDeviceUsageTracker.Method method, ThrowingSupplier1<R> block)
+            throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
+                    IOException {
+        R result;
+        try {
+            result = block.get();
+            maybeLogUsage(method, false);
+            return result;
+        } catch (Throwable t) {
+            maybeLogUsage(method, true);
+            throw t;
+        }
+    }
+
+    @FunctionalInterface
+    private interface ThrowingSupplier2<T> {
+        T get() throws InstallException;
+    }
+
+    private <R> R logCall2(IDeviceUsageTracker.Method method, ThrowingSupplier2<R> block)
+            throws InstallException {
+        R result;
+        try {
+            result = block.get();
+            maybeLogUsage(method, false);
+            return result;
+        } catch (Throwable t) {
+            maybeLogUsage(method, true);
+            throw t;
+        }
+    }
+
+    @FunctionalInterface
+    private interface ThrowingSupplier3<T> {
+        T get() throws IOException, AdbCommandRejectedException, TimeoutException, SyncException;
+    }
+
+    private <R> R logCall3(IDeviceUsageTracker.Method method, ThrowingSupplier3<R> block)
+            throws IOException, AdbCommandRejectedException, TimeoutException, SyncException {
+        R result;
+        try {
+            result = block.get();
+            maybeLogUsage(method, false);
+            return result;
+        } catch (Throwable t) {
+            maybeLogUsage(method, true);
+            throw t;
+        }
+    }
+
+    @FunctionalInterface
+    private interface ThrowingSupplier4<T> {
+        T get() throws IOException, AdbCommandRejectedException, TimeoutException;
+    }
+
+    private <R> R logCall4(IDeviceUsageTracker.Method method, ThrowingSupplier4<R> block)
+            throws IOException, AdbCommandRejectedException, TimeoutException {
+        R result;
+        try {
+            result = block.get();
+            maybeLogUsage(method, false);
+            return result;
+        } catch (Throwable t) {
+            maybeLogUsage(method, true);
+            throw t;
+        }
     }
 
     private void maybeLogUsage(IDeviceUsageTracker.Method method, boolean isException) {
