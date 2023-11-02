@@ -203,14 +203,14 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           targetSdkVersion
         )
       val location = context.getLocation(attribute)
-      when (targetSdkCheckResult) {
+      when (val tsdk = targetSdkCheckResult) {
         is TargetSdkCheckResult.Expired -> {
           context.report(
             EXPIRED_TARGET_SDK_VERSION,
             element,
             location,
-            targetSdkCheckResult.message,
-            targetSdkLintFix(targetSdkCheckResult.requiredVersion)
+            tsdk.message,
+            targetSdkLintFix(tsdk.requiredVersion)
           )
         }
         is TargetSdkCheckResult.Expiring -> {
@@ -218,19 +218,13 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
             EXPIRING_TARGET_SDK_VERSION,
             element,
             location,
-            targetSdkCheckResult.message,
-            targetSdkLintFix(targetSdkCheckResult.requiredVersion)
+            tsdk.message,
+            targetSdkLintFix(tsdk.requiredVersion)
           )
         }
         is TargetSdkCheckResult.NoIssue -> {
           if (context.isEnabled(TARGET_NEWER) && targetSdkVersion < highest) {
-            context.report(
-              TARGET_NEWER,
-              element,
-              location,
-              targetSdkCheckResult.message,
-              targetSdkLintFix(highest)
-            )
+            context.report(TARGET_NEWER, element, location, tsdk.message, targetSdkLintFix(highest))
           }
         }
       }
@@ -287,7 +281,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         if (version > 0 && version < context.client.highestKnownApiLevel) {
           val targetSdkCheckResult =
             checkTargetSdk(context, calendar ?: Calendar.getInstance(), version)
-          when (targetSdkCheckResult) {
+          when (val tsdk = targetSdkCheckResult) {
             is TargetSdkCheckResult.Expired -> {
               // Don't report if already suppressed with EXPIRING
               val alreadySuppressed =
@@ -295,29 +289,17 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
                   context.isSuppressedWithComment(statementCookie, EXPIRED_TARGET_SDK_VERSION)
 
               if (!alreadySuppressed) {
-                report(
-                  context,
-                  statementCookie,
-                  EXPIRED_TARGET_SDK_VERSION,
-                  targetSdkCheckResult.message,
-                  null
-                )
+                report(context, statementCookie, EXPIRED_TARGET_SDK_VERSION, tsdk.message, null)
               }
             }
             is TargetSdkCheckResult.Expiring -> {
-              report(
-                context,
-                statementCookie,
-                EXPIRING_TARGET_SDK_VERSION,
-                targetSdkCheckResult.message,
-                null
-              )
+              report(context, statementCookie, EXPIRING_TARGET_SDK_VERSION, tsdk.message, null)
             }
             is TargetSdkCheckResult.NoIssue -> {
               val highest = context.client.highestKnownApiLevel
               val label = "Update targetSdkVersion to $highest"
               val fix = fix().name(label).replace().text(value).with(highest.toString()).build()
-              report(context, statementCookie, TARGET_NEWER, targetSdkCheckResult.message, fix)
+              report(context, statementCookie, TARGET_NEWER, tsdk.message, fix)
             }
           }
         }
