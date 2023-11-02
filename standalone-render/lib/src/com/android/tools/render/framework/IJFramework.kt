@@ -42,8 +42,6 @@ internal interface IJFramework : Closeable {
     val project: Project
 
     fun <T : Any> registerService(serviceInterface: Class<T>, serviceImplementation: T)
-
-    fun <T : Any> registerExtensionPoint(epName: ExtensionPointName<T>, className: Class<T>, implClass: T)
 }
 
 /** [IJFramework] implementation for the standalone rendering. */
@@ -67,11 +65,6 @@ internal class StandaloneFramework(stopExecutor: Boolean) : IJFramework {
 
     override fun <T : Any> registerService(serviceInterface: Class<T>, serviceImplementation: T) {
         app.registerService(serviceInterface, serviceImplementation)
-    }
-
-    override fun <T : Any> registerExtensionPoint(epName: ExtensionPointName<T>, className: Class<T>, implClass: T) {
-        Extensions.getRootArea().registerExtensionPoint(epName.name, className.name, ExtensionPoint.Kind.INTERFACE)
-        Extensions.getRootArea().getExtensionPoint(epName).registerExtension(implClass, disposable)
     }
 
     override fun close() {
