@@ -823,6 +823,9 @@ DATA = [
     "org.jetbrains.compose.ui:ui-text-desktop:jar:sources:1.5.2",
     "org.jetbrains.compose.ui:ui-unit-desktop:jar:sources:1.5.2",
     "org.jetbrains.compose.ui:ui-util-desktop:jar:sources:1.5.2",
+    "org.jetbrains.jewel:jewel-foundation:jar:sources:0.8.1",
+    "org.jetbrains.jewel:jewel-ide-laf-bridge-platform-specific:jar:sources:0.8.1-ij-232",
+    "org.jetbrains.jewel:jewel-ui:jar:sources:0.8.1",
 ]
 
 REMOTE_REPOS = {
