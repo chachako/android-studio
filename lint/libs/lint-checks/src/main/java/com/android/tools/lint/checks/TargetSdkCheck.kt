@@ -15,6 +15,9 @@
  */
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.checks.TargetSdkCheckResult.Expired
+import com.android.tools.lint.checks.TargetSdkCheckResult.Expiring
+import com.android.tools.lint.checks.TargetSdkCheckResult.NoIssue
 import com.android.tools.lint.checks.TargetSdkRequirements.MINIMUM_TARGET_SDK_VERSION
 import com.android.tools.lint.checks.TargetSdkRequirements.MINIMUM_TARGET_SDK_VERSION_YEAR
 import com.android.tools.lint.checks.TargetSdkRequirements.MINIMUM_WEAR_TARGET_SDK_VERSION
@@ -95,14 +98,14 @@ fun checkTargetSdk(context: Context, nowCalendar: Calendar, version: Int): Targe
     return when {
       nowCalendar.after(sdkEnforceDate) -> {
         // Doesn't meet this year requirement after deadline (August 31 for 2023)
-        TargetSdkCheckResult.Expired(minimumTargetSdkVersion)
+        Expired(minimumTargetSdkVersion)
       }
       version < previousMinimumTargetSdkVersion -> {
         // If you're not meeting the previous year's requirement, also enforce with error severity
-        TargetSdkCheckResult.Expired(previousMinimumTargetSdkVersion)
+        Expired(previousMinimumTargetSdkVersion)
       }
-      else -> TargetSdkCheckResult.Expiring(minimumTargetSdkVersion)
+      else -> Expiring(minimumTargetSdkVersion)
     }
   }
-  return TargetSdkCheckResult.NoIssue
+  return NoIssue
 }
