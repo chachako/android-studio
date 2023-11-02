@@ -216,15 +216,15 @@ class CommunicationDeviceDetector : Detector(), SourceCodeScanner {
       // that your detector handles.
     }
   }
-}
 
-fun PsiElement.getFqName(): String? =
-  when (val element = namedUnwrappedElement) {
-    is PsiMember ->
-      element.getName()?.let { name ->
-        val prefix = element.containingClass?.qualifiedName
-        (if (prefix != null) "$prefix.$name" else name)
-      }
-    is KtNamedDeclaration -> element.fqName.toString()
-    else -> null
-  }
+  private fun PsiElement.getFqName(): String? =
+    when (val element = namedUnwrappedElement) {
+      is PsiMember ->
+        element.getName()?.let { name ->
+          val prefix = element.containingClass?.qualifiedName
+          (if (prefix != null) "$prefix.$name" else name)
+        }
+      is KtNamedDeclaration -> element.fqName.toString()
+      else -> null
+    }
+}
