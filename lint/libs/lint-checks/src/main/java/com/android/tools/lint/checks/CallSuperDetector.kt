@@ -173,16 +173,23 @@ class CallSuperDetector : Detector(), SourceCodeScanner {
 
     var anySuperCallCount: Int = 0
 
+    private val targetMethodName = targetMethod.name
+    private val targetSuperClassName = targetMethod.containingClass?.qualifiedName
+
     override fun visitSuperExpression(node: USuperExpression): Boolean {
       val containingClass = node.getContainingUClass()?.sourcePsi
       if (childClass == null || containingClass?.isEquivalentTo(childClass) != false) {
         anySuperCallCount++
         val parent = skipParenthesizedExprUp(node.uastParent)
         if (parent is UReferenceExpression) {
-          val resolved = parent.resolve()
+          val resolved = parent.resolve() as? PsiMethod
+          val resolvedMethodName = resolved?.name
+          val resolvedClassName = resolved?.containingClass?.qualifiedName
           if (
-            resolved == null || // Avoid false positives for type resolution problems
-              targetMethod.isEquivalentTo(resolved)
+            resolved == null ||
+              resolvedMethodName == null ||
+              resolvedClassName == null || // Avoid false positives for type resolution problems
+              resolvedMethodName == targetMethodName && resolvedClassName == targetSuperClassName
           ) {
             superCalls.add(node)
           }
