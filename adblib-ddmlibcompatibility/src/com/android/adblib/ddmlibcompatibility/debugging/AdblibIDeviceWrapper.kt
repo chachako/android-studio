@@ -404,8 +404,8 @@ internal class AdblibIDeviceWrapper(
                 val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
                 connectedDevice.session.hostServices.forward(
                     deviceSelector,
-                    SocketSpec.Tcp(localPort),
-                    SocketSpec.Tcp(remotePort),
+                    local = SocketSpec.Tcp(localPort),
+                    remote = SocketSpec.Tcp(remotePort),
                     rebind = true
                 )
             }
@@ -435,7 +435,7 @@ internal class AdblibIDeviceWrapper(
                 }
                 connectedDevice.session.hostServices.forward(
                     deviceSelector,
-                    SocketSpec.Tcp(localPort),
+                    local = SocketSpec.Tcp(localPort),
                     remoteSocketSpec,
                     rebind = true
                 )
@@ -449,9 +449,31 @@ internal class AdblibIDeviceWrapper(
                 val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
                 connectedDevice.session.hostServices.killForward(
                     deviceSelector,
-                    SocketSpec.Tcp(localPort)
+                    local = SocketSpec.Tcp(localPort)
                 )
             }
+        }
+    }
+
+    override fun createReverse(remotePort: Int, localPort: Int) {
+        runBlockingLegacy {
+            val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+            connectedDevice.session.deviceServices.reverseForward(
+                deviceSelector,
+                remote = SocketSpec.Tcp(remotePort),
+                local = SocketSpec.Tcp(localPort),
+                rebind = true
+            )
+        }
+    }
+
+    override fun removeReverse(remotePort: Int) {
+        runBlockingLegacy {
+            val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+            connectedDevice.session.deviceServices.reverseKillForward(
+                deviceSelector,
+                remote = SocketSpec.Tcp(remotePort)
+            )
         }
     }
 

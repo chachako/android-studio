@@ -56,6 +56,7 @@ class AdblibIDeviceWrapperTest {
     val temporaryFolder = TemporaryFolder()
 
     private val fakeAdb get() = fakeAdbRule.fakeAdb
+    private val deviceServices get() = fakeAdbRule.adbSession.deviceServices
     private val hostServices get() = fakeAdbRule.adbSession.hostServices
     private val bridge = AndroidDebugBridge.createBridge() ?: error("Couldn't create a bridge")
 
@@ -620,6 +621,47 @@ class AdblibIDeviceWrapperTest {
 
         // Assert
         assertEquals(0, deviceState.allPortForwarders.size)
+    }
+
+    @Test
+    fun testReverseForward() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, deviceState) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.ONLINE
+        )
+        assertEquals(0, deviceState.allPortForwarders.size)
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+
+        // Act
+        adblibIDeviceWrapper.createReverse(1000, 2000)
+
+        // Assert
+        assertEquals(1, deviceState.allReversePortForwarders.size)
+        val reversePortForwarder = deviceState.allReversePortForwarders.values.asList()[0]
+        assertEquals(1000, reversePortForwarder?.source?.port)
+        assertEquals(2000, reversePortForwarder?.destination?.port)
+    }
+
+    @Test
+    fun testKillReverseForward() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, deviceState) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.ONLINE
+        )
+        val port =
+            deviceServices.reverseForward(
+                DeviceSelector.any(),
+                SocketSpec.Tcp(0),
+                SocketSpec.Tcp(2000)
+            ) ?: throw Exception("`forward` command should have returned a port")
+        assertEquals(1, deviceState.allReversePortForwarders.size)
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+
+        // Act
+        adblibIDeviceWrapper.removeReverse(Integer.valueOf(port))
+
+        // Assert
+        assertEquals(0, deviceState.allReversePortForwarders.size)
     }
 
     @Test
