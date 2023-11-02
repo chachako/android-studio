@@ -211,7 +211,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
             element,
             location,
             tsdk.message,
-            targetSdkLintFix(tsdk.requiredVersion)
+            targetSdkLintFix(targetSdkVersion, tsdk.requiredVersion)
           )
         }
         is TargetSdkCheckResult.Expiring -> {
@@ -220,12 +220,18 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
             element,
             location,
             tsdk.message,
-            targetSdkLintFix(tsdk.requiredVersion)
+            targetSdkLintFix(targetSdkVersion, tsdk.requiredVersion)
           )
         }
         is TargetSdkCheckResult.NoIssue -> {
           if (context.isEnabled(TARGET_NEWER) && targetSdkVersion < highest) {
-            context.report(TARGET_NEWER, element, location, tsdk.message, targetSdkLintFix(highest))
+            context.report(
+              TARGET_NEWER,
+              element,
+              location,
+              tsdk.message,
+              targetSdkLintFix(targetSdkVersion, highest)
+            )
           }
         }
       }
@@ -234,11 +240,15 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     }
   }
 
-  private fun targetSdkLintFix(target: Int) =
-    fix()
-      .name("Update targetSdkVersion to $target")
-      .set(ANDROID_URI, ATTR_TARGET_SDK_VERSION, target.toString())
-      .build()
+  private fun targetSdkLintFix(current: Int, target: Int) =
+    if (LintClient.isStudio) {
+      fix().data("currentTargetSdkVersion", current)
+    } else {
+      fix()
+        .name("Update targetSdkVersion to $target")
+        .set(ANDROID_URI, ATTR_TARGET_SDK_VERSION, target.toString())
+        .build()
+    }
 
   // ---- Implements GradleScanner ----
 
@@ -288,16 +298,33 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
                   context.isSuppressedWithComment(statementCookie, EXPIRED_TARGET_SDK_VERSION)
 
               if (!alreadySuppressed) {
-                report(context, statementCookie, EXPIRED_TARGET_SDK_VERSION, tsdk.message, null)
+                report(
+                  context,
+                  statementCookie,
+                  EXPIRED_TARGET_SDK_VERSION,
+                  tsdk.message,
+                  fix().data("currentTargetSdkVersion", version).takeIf { LintClient.isStudio },
+                )
               }
             }
             is TargetSdkCheckResult.Expiring -> {
-              report(context, statementCookie, EXPIRING_TARGET_SDK_VERSION, tsdk.message, null)
+              report(
+                context,
+                statementCookie,
+                EXPIRING_TARGET_SDK_VERSION,
+                tsdk.message,
+                fix().data("currentTargetSdkVersion", version).takeIf { LintClient.isStudio },
+              )
             }
             is TargetSdkCheckResult.NoIssue -> {
               val highest = context.client.highestKnownApiLevel
               val label = "Update targetSdkVersion to $highest"
-              val fix = fix().name(label).replace().text(value).with(highest.toString()).build()
+              val fix =
+                if (LintClient.isStudio) {
+                  fix().data("currentTargetSdkVersion", version)
+                } else {
+                  fix().name(label).replace().text(value).with(highest.toString()).build()
+                }
               report(context, statementCookie, TARGET_NEWER, tsdk.message, fix)
             }
           }
@@ -313,7 +340,13 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
                 "It looks like you just edited the `targetSdkVersion` from $lastTargetSdkVersion to $version in the editor. " +
                   "Be sure to consult the documentation on the behaviors that change as result of this. " +
                   "The Android SDK Upgrade Assistant can help with safely migrating."
-              report(context, statementCookie, EDITED_TARGET_SDK_VERSION, message)
+              report(
+                context,
+                statementCookie,
+                EDITED_TARGET_SDK_VERSION,
+                message,
+                fix().data("currentTargetSdkVersion", version)
+              )
             }
           }
         } else {
