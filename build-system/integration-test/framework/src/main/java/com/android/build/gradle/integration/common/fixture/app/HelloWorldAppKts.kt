@@ -77,6 +77,7 @@ class HelloWorldAppKts private constructor(val namespace: String) : KotlinHelloW
               androidTestImplementation("com.android.support.test:runner:${"$"}{libs.versions.testSupportLibVersion.get()}")
               androidTestImplementation("com.android.support.test:rules:${"$"}{libs.versions.testSupportLibVersion.get()}")
             }
+
         """.trimIndent()
         )
         addFile(buildFile)
