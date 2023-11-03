@@ -23,10 +23,10 @@ import com.android.adblib.DeviceState
 import com.android.adblib.testing.FakeAdbSession
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.ISystemImage
+import com.android.sdklib.SystemImageTags
 import com.android.sdklib.internal.avd.AvdInfo
 import com.android.sdklib.internal.avd.AvdManager
 import com.android.sdklib.repository.IdDisplay
-import com.android.sdklib.repository.targets.SystemImage
 import java.nio.file.Path
 
 class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
@@ -50,7 +50,7 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
     androidVersion: AndroidVersion = LocalEmulatorProvisionerPluginTest.API_LEVEL,
     hasPlayStore: Boolean = true,
     avdStatus: AvdInfo.AvdStatus = AvdInfo.AvdStatus.OK,
-    tag: IdDisplay = SystemImage.DEFAULT_TAG,
+    tag: IdDisplay = SystemImageTags.DEFAULT_TAG,
   ): AvdInfo {
     val basePath = avdRoot.resolve("avd_$index")
     return AvdInfo(

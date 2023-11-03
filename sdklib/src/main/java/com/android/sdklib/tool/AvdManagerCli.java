@@ -34,6 +34,7 @@ import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.ISystemImage;
 import com.android.sdklib.OptionalLibrary;
 import com.android.sdklib.PathFileWrapper;
+import com.android.sdklib.SystemImageTags;
 import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.devices.Storage;
@@ -738,7 +739,7 @@ class AvdManagerCli extends CommandLineParser {
                 avdFolder = AvdInfo.getDefaultAvdFolder(avdManager, avdName, false);
             }
 
-            IdDisplay tag = SystemImage.DEFAULT_TAG;
+            IdDisplay tag = SystemImageTags.DEFAULT_TAG;
             String abiType = getParamAbi();
             String cmdTag = getParamTag();
             if (cmdTag == null) {

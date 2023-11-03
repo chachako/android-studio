@@ -29,6 +29,11 @@ import com.android.adblib.utils.createChildScope
 import com.android.annotations.concurrency.GuardedBy
 import com.android.prefs.AndroidLocationsSingleton
 import com.android.sdklib.SdkVersionInfo
+import com.android.sdklib.SystemImageTags.ANDROID_TV_TAG
+import com.android.sdklib.SystemImageTags.AUTOMOTIVE_PLAY_STORE_TAG
+import com.android.sdklib.SystemImageTags.AUTOMOTIVE_TAG
+import com.android.sdklib.SystemImageTags.GOOGLE_TV_TAG
+import com.android.sdklib.SystemImageTags.WEAR_TAG
 import com.android.sdklib.deviceprovisioner.DeviceState.Connected
 import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import com.android.sdklib.devices.Abi
@@ -36,11 +41,6 @@ import com.android.sdklib.internal.avd.AvdInfo
 import com.android.sdklib.internal.avd.AvdInfo.AvdStatus
 import com.android.sdklib.internal.avd.HardwareProperties
 import com.android.sdklib.repository.IdDisplay
-import com.android.sdklib.repository.targets.SystemImage.ANDROID_TV_TAG
-import com.android.sdklib.repository.targets.SystemImage.AUTOMOTIVE_PLAY_STORE_TAG
-import com.android.sdklib.repository.targets.SystemImage.AUTOMOTIVE_TAG
-import com.android.sdklib.repository.targets.SystemImage.GOOGLE_TV_TAG
-import com.android.sdklib.repository.targets.SystemImage.WEAR_TAG
 import com.intellij.icons.AllIcons
 import java.io.IOException
 import java.nio.file.Path

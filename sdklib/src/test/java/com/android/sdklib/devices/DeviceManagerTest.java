@@ -23,6 +23,7 @@ import com.android.repository.testframework.FakePackage;
 import com.android.repository.testframework.FakeProgressIndicator;
 import com.android.resources.Navigation;
 import com.android.resources.ScreenRound;
+import com.android.sdklib.SystemImageTags;
 import com.android.sdklib.TempSdkManager;
 import com.android.sdklib.devices.Device.Builder;
 import com.android.sdklib.devices.DeviceManager.DeviceFilter;
@@ -452,7 +453,7 @@ public class DeviceManagerTest {
         DetailsTypes.AddonDetailsType details = AndroidSdkHandler.getAddonModule()
                 .createLatestFactory().createAddonDetailsType();
         details.setApiLevel(22);
-        details.setVendor(SystemImage.DEFAULT_TAG);
+        details.setVendor(SystemImageTags.DEFAULT_TAG);
         p.setTypeDetails((TypeDetails) details);
         SystemImage imageWithDevice =
                 new SystemImage(
@@ -728,7 +729,7 @@ public class DeviceManagerTest {
         DetailsTypes.AddonDetailsType details22 = AndroidSdkHandler.getAddonModule()
                 .createLatestFactory().createAddonDetailsType();
         details22.setApiLevel(22);
-        details22.setVendor(SystemImage.DEFAULT_TAG);
+        details22.setVendor(SystemImageTags.DEFAULT_TAG);
         p.setTypeDetails((TypeDetails) details22);
         SystemImage imageWithDevice22 =
                 new SystemImage(
@@ -743,7 +744,7 @@ public class DeviceManagerTest {
         DetailsTypes.AddonDetailsType details25 = AndroidSdkHandler.getAddonModule()
           .createLatestFactory().createAddonDetailsType();
         details25.setApiLevel(25);
-        details25.setVendor(SystemImage.DEFAULT_TAG);
+        details25.setVendor(SystemImageTags.DEFAULT_TAG);
         p.setTypeDetails((TypeDetails) details25);
         SystemImage imageWithDevice25 =
                 new SystemImage(

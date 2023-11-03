@@ -20,13 +20,13 @@ import com.android.adblib.testing.FakeAdbSession
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.android.sdklib.AndroidVersion
+import com.android.sdklib.SystemImageTags
 import com.android.sdklib.deviceprovisioner.DeviceState.Connected
 import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import com.android.sdklib.devices.Abi
 import com.android.sdklib.internal.avd.AvdInfo
 import com.android.sdklib.internal.avd.AvdInfo.AvdStatus
 import com.android.sdklib.internal.avd.AvdManager
-import com.android.sdklib.repository.targets.SystemImage
 import com.google.common.truth.Truth.assertThat
 import com.google.wireless.android.sdk.stats.DeviceInfo
 import com.google.wireless.android.sdk.stats.DeviceInfo.ApplicationBinaryInterface
@@ -260,7 +260,7 @@ class LocalEmulatorProvisionerPluginTest {
 
   @Test
   fun tvDeviceType() = runBlockingWithTimeout {
-    avdManager.createAvd(avdManager.makeAvdInfo(1, tag = SystemImage.GOOGLE_TV_TAG))
+    avdManager.createAvd(avdManager.makeAvdInfo(1, tag = SystemImageTags.GOOGLE_TV_TAG))
 
     yieldUntil { provisioner.devices.value.size == 1 }
 
@@ -274,7 +274,7 @@ class LocalEmulatorProvisionerPluginTest {
 
   @Test
   fun editDevice() = runBlockingWithTimeout {
-    avdManager.createAvd(avdManager.makeAvdInfo(1, tag = SystemImage.GOOGLE_TV_TAG))
+    avdManager.createAvd(avdManager.makeAvdInfo(1, tag = SystemImageTags.GOOGLE_TV_TAG))
 
     val channel = Channel<DeviceState>()
 
