@@ -29,7 +29,7 @@ import com.android.repository.impl.meta.TypeDetails;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.OptionalLibrary;
 import com.android.sdklib.repository.IdDisplay;
-import java.util.ArrayList;
+import java.util.AbstractList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -290,7 +290,7 @@ public final class DetailsTypes {
         default List<IdDisplay> getTags() {
             // Implementation for v1
 
-            return new ArrayList<IdDisplay>() {
+            return new AbstractList<IdDisplay>() {
                 @Override
                 public int size() {
                     return DEFAULT_TAG.equals(getTag()) ? 0 : 1;
@@ -302,9 +302,23 @@ public final class DetailsTypes {
                 }
 
                 @Override
-                public boolean add(@Nullable IdDisplay idDisplay) {
-                    setTag(idDisplay);
-                    return true;
+                public void add(int index, IdDisplay element) {
+                    if (index == 0 && size() == 0) {
+                        setTag(element);
+                    } else {
+                        throw new IllegalArgumentException("Only one element can be added");
+                    }
+                }
+
+                @Override
+                public IdDisplay set(int index, IdDisplay element) {
+                    if (index == 0 && size() == 1) {
+                        IdDisplay oldValue = getTag();
+                        setTag(element);
+                        return oldValue;
+                    } else {
+                        throw new IndexOutOfBoundsException();
+                    }
                 }
 
                 @Override
