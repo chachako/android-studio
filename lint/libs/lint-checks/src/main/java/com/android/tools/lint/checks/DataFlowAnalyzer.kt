@@ -36,6 +36,7 @@ import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiPrimitiveType
 import com.intellij.psi.PsiVariable
 import org.jetbrains.kotlin.asJava.unwrapped
+import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.psi.KtCallableReferenceExpression
 import org.jetbrains.kotlin.psi.KtConstructor
 import org.jetbrains.kotlin.psi.KtNamedFunction
@@ -254,6 +255,16 @@ abstract class DataFlowAnalyzer(
   protected val received: MutableSet<UElement> = LinkedHashSet()
   protected val types: MutableSet<PsiClass> = LinkedHashSet()
 
+  /**
+   * Lambda expressions passed to scope functions (like X.apply { ... }), where the receiver (X) of
+   * the scope function is tracked. The "this" expressions within the lambda that reference the
+   * receiver resolve (via UAST's resolve() function) to the lambda expression. We store the lambda
+   * expressions so that when we later visit the "this" expressions, we can mark them as tracked. We
+   * don't want to add the lambda expression to [instances] because otherwise we will call
+   * [argument] for the "apply(lambda)" call.
+   */
+  private val trackedLambdaScopes: MutableSet<ULambdaExpression> = LinkedHashSet()
+
   init {
     if (references.isEmpty()) {
       references.addAll(initialReferences)
@@ -433,6 +444,43 @@ abstract class DataFlowAnalyzer(
     return super.visitCallableReferenceExpression(node)
   }
 
+  private fun handleThisExpressionIfWithinScope(node: UThisExpression) {
+    // We must handle "this" expressions within scope function lambdas. See also:
+    // handleLambdaSuffix.
+
+    // Scope functions are only present in Kotlin code.
+    if (node.lang != KotlinLanguage.INSTANCE) return
+
+    // We only care about "this" expressions within lambda expressions.
+    if (node.getParentOfType<ULambdaExpression>() == null) return
+
+    // Try to resolve the "this" expression to a parent lambda expression, using UAST.
+
+    // TODO(b/308627646): UAST bug: node.resolve() only works if the "this" expression has a label
+    //  (e.g. this@apply or this@ClassName). But the first PSI child is a KtNameReferenceExpression,
+    //  which can be converted to a USimpleNameReferenceExpression
+    //  (KotlinUSimpleReferenceExpression); resolve always seems to work for this element, for both
+    //  labelled and unlabelled "this" expressions.
+    val referenceExpression =
+      node.sourcePsi
+        ?.children
+        ?.firstOrNull()
+        ?.toUElement(USimpleNameReferenceExpression::class.java) ?: return
+    val lambdaExpression =
+      referenceExpression.resolve()?.toUElement() as? ULambdaExpression ?: return
+
+    // If we previously added the lambda to trackedLambdaScopes (see handleLambdaSuffix) then we
+    // know the receiver is tracked, so the "this" expression also needs to be tracked.
+    if (trackedLambdaScopes.contains(lambdaExpression)) {
+      track(node)
+    }
+  }
+
+  override fun afterVisitThisExpression(node: UThisExpression) {
+    handleThisExpressionIfWithinScope(node)
+    super.afterVisitThisExpression(node)
+  }
+
   private fun handleLambdaSuffix(lambda: ULambdaExpression, node: UCallExpression) {
     if (isScopingIt(node)) {
       // If we have X.let { Y }, and X is a tracked instance, we should now
@@ -444,6 +492,28 @@ abstract class DataFlowAnalyzer(
         addVariableReference(lambdaVar)
       }
     } else if (isScopingThis(node)) {
+      // We have something like X.apply { ... }, where X is tracked, so X can be referenced via
+      // "this" within the lambda body. To handle explicit labelled and unlabelled "this"
+      // expressions, such as in:
+      //
+      // ```
+      // X.apply {
+      //   // Explicit "this" is always the innermost scope.
+      //   this.someFun()
+      //   otherFun(this)
+      //   // Labelled "this" could refer to an outer scope.
+      //   this@SomeClass.someFun()
+      //   otherFun(this@apply)
+      // }
+      // ```
+      //
+      // we add the ULambdaExpression to trackedLambdaScopes, so that our main visitor can visit
+      // "this" expressions, resolve them, and mark them as tracked if they resolve to one of
+      // trackedLambdaScopes.
+      trackedLambdaScopes.add(lambda)
+
+      // Cases where X is implicitly the receiver are handled below via a one-off UAST visitor.
+
       /*
       We have a lambda, where the tracked instance is "this", e.g.
           target.apply {
@@ -489,21 +559,18 @@ abstract class DataFlowAnalyzer(
 
       lambda.body.accept(
         object : AbstractUastVisitor() {
-          private fun checkBinding(
-            node: UElement,
-            resolved: PsiElement?,
-            target: MutableSet<UElement>
-          ) {
-            val member = resolved as? PsiMember ?: return
+          private fun checkBinding(node: UElement) {
+            val member = node.tryResolve() as? PsiMember ?: return
             val containingClass = member.containingClass
             if (isMatchingType(containingClass)) {
-              target.add(node)
+              received.add(node)
+              return
             }
 
             if (member is PsiMethod) {
               getTypeOfExtensionMethod(member)?.resolve()?.let { extensionClass ->
                 if (isMatchingType(extensionClass)) {
-                  target.add(node)
+                  received.add(node)
                 }
               }
             }
@@ -512,26 +579,14 @@ abstract class DataFlowAnalyzer(
           override fun visitSimpleNameReferenceExpression(
             node: USimpleNameReferenceExpression
           ): Boolean {
-            checkBinding(node, node.resolve(), received)
+            checkBinding(node)
             return super.visitSimpleNameReferenceExpression(node)
           }
 
           override fun visitCallExpression(node: UCallExpression): Boolean {
             val callReceiver = node.receiver?.skipParenthesizedExprDown()
             if (callReceiver == null) {
-              checkBinding(node, node.resolve(), received)
-            } else if (callReceiver is UThisExpression) {
-              // "this" could still reference an outer this scope, not just
-              // the closest one
-              checkBinding(callReceiver, node.resolve(), instances)
-            }
-            // check for "this" used as an argument
-            for (arg in node.valueArguments) {
-              val thisArg = arg.skipParenthesizedExprDown() as? UThisExpression ?: continue
-              val typeClass = (thisArg.getExpressionType() as? PsiClassType)?.resolve()
-              if (isMatchingType(typeClass)) {
-                instances.add(arg)
-              }
+              checkBinding(node)
             }
             return super.visitCallExpression(node)
           }
