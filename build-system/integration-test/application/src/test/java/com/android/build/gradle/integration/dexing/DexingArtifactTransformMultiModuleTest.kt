@@ -21,8 +21,8 @@ import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThatApk
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import com.android.build.gradle.internal.scope.InternalArtifactType
-import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.internal.scope.InternalArtifactType.SUB_PROJECT_DEX_ARCHIVE
+import com.android.build.gradle.internal.scope.getOutputDir
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -73,6 +73,12 @@ class DexingArtifactTransformMultiModuleTest {
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use {
             assertThatApk(it).containsClass("Lcom/Data;")
         }
+
+        // Also check that dexing of subprojects is not done by a task (regression test for b/309101832)
+        val subprojectDexOutputs = SUB_PROJECT_DEX_ARCHIVE
+            .getOutputDir(project.getSubproject("app").buildDir)
+            .walk().filter { it.isFile }.toList()
+        assertThat(subprojectDexOutputs).isEmpty()
     }
 
     @Test

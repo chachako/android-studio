@@ -23,6 +23,7 @@ import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.getOutputDir
 import com.android.build.gradle.options.IntegerOption
+import com.android.builder.dexing.globalSyntheticsFileExtension
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.apk.AndroidArchive
 import com.google.common.io.Resources
@@ -189,9 +190,9 @@ class GlobalSyntheticsTest(private val dexType: DexType) {
             .getOutputDir(app.buildDir).resolve("debug/dexBuilderDebug/out/com/example/app/$exceptionGlobalTriggerClass.globals")
         Truth.assertThat(localeGlobalFromApp.exists()).isTrue()
 
-        val localeGlobalFromLib = InternalArtifactType.GLOBAL_SYNTHETICS_SUBPROJECT
-            .getOutputDir(app.buildDir).resolve("debug/dexBuilderDebug/out")
-        Truth.assertThat(localeGlobalFromLib.listFiles()).hasLength(1)
+        val localeGlobalFromLib = lib.buildDir.resolve(".transforms").walk()
+            .filter { it.path.endsWith(globalSyntheticsFileExtension) }.toList()
+        Truth.assertThat(localeGlobalFromLib).hasSize(1)
 
         checkPackagedGlobal(exceptionGlobalDex)
     }
