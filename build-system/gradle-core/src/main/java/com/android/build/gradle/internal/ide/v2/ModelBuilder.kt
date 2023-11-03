@@ -34,6 +34,7 @@ import com.android.build.api.variant.impl.HasTestFixtures
 import com.android.build.api.variant.impl.HasUnitTest
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
+import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.component.LibraryCreationConfig
@@ -64,6 +65,7 @@ import com.android.build.gradle.internal.tasks.AnchorTaskNames
 import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask
 import com.android.build.gradle.internal.tasks.ExportConsumerProguardFilesTask.Companion.checkProguardFiles
 import com.android.build.gradle.internal.tasks.ExtractPrivacySandboxCompatApks
+import com.android.build.gradle.internal.tasks.GenerateAdditionalApkSplitForDeploymentViaApk
 import com.android.build.gradle.internal.utils.getDesugarLibConfigFile
 import com.android.build.gradle.internal.utils.getDesugaredMethods
 import com.android.build.gradle.internal.utils.toImmutableSet
@@ -658,16 +660,24 @@ class ModelBuilder<
         if (!component.services.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT]) {
             return null
         }
+        if (component !is ApplicationCreationConfig) {
+            return null
+        }
         val extractedApksFromPrivacySandboxIdeModel =
                 component.artifacts.get(InternalArtifactType.EXTRACTED_APKS_FROM_PRIVACY_SANDBOX_SDKs_IDE_MODEL).orNull?.asFile
                         ?: return null
         val legacyExtractedApksForPrivacySandboxIdeModel =
                 component.artifacts.get(InternalArtifactType.APK_FROM_SDKS_IDE_MODEL).orNull?.asFile
                         ?: return null
+        val additionalApkSplitFile =
+                component.artifacts.get(InternalArtifactType.USES_SDK_LIBRARY_SPLIT_FOR_LOCAL_DEPLOYMENT).orNull?.asFile
+                        ?:return null
 
         return PrivacySandboxSdkInfoImpl(
                 task = BuildPrivacySandboxSdkApks.CreationAction.getTaskName(component),
                 outputListingFile = extractedApksFromPrivacySandboxIdeModel,
+                additionalApkSplitTask =  GenerateAdditionalApkSplitForDeploymentViaApk.CreationAction.computeTaskName(component),
+                additionalApkSplitFile = additionalApkSplitFile,
                 taskLegacy = ExtractPrivacySandboxCompatApks.CreationAction.getTaskName(component),
                 outputListingLegacyFile = legacyExtractedApksForPrivacySandboxIdeModel
         )

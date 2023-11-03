@@ -32,6 +32,12 @@ interface PrivacySandboxSdkInfo: AndroidModel {
     /** The location that the privacy sandbox SDKs will be extracted */
     val outputListingFile: File
 
+    /** The task to invoke to generate the additional split with the uses-sdk manifest entry for deployment via APK */
+    val additionalApkSplitTask: String
+
+    /** Location of the additional split for deployment via APK */
+    val additionalApkSplitFile: File
+
     /** The task to invoke to build the privacy sandbox SDK for devices that do not support Privacy Sandbox */
     val taskLegacy: String
 

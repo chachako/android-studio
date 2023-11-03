@@ -325,6 +325,8 @@ class ApplicationTaskManager(
                         variant.artifacts,
                         InternalArtifactType.PRIVACY_SANDBOX_SDK_R_PACKAGE_JAR
                     )
+                taskFactory.register(GenerateAdditionalApkSplitForDeploymentViaApk.CreationAction(variant))
+                taskFactory.register(ExtractPrivacySandboxCompatApks.CreationAction(variant))
             }
 
             taskFactory.register(BundleIdeModelProducerTask.CreationAction(variant))
@@ -339,7 +341,7 @@ class ApplicationTaskManager(
             taskFactory.register(BundleToApkTask.CreationAction(variant))
             taskFactory.register(BundleToStandaloneApkTask.CreationAction(variant))
             taskFactory.register(ExtractApksTask.CreationAction(variant))
-            taskFactory.register(ExtractPrivacySandboxCompatApks.CreationAction(variant))
+
             taskFactory.register(
                 ListingFileRedirectTask.CreationAction(
                     variant,
@@ -375,7 +377,7 @@ class ApplicationTaskManager(
 
     override fun createInstallTask(creationConfig: ApkCreationConfig) {
         if ( globalConfig.services.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT] && !creationConfig.componentType.isForTesting) {
-            taskFactory.register(BuildPrivacySandboxSdkApks.CreationAction(creationConfig))
+            taskFactory.register(BuildPrivacySandboxSdkApks.CreationAction(creationConfig as ApplicationCreationConfig))
         }
         if (!globalConfig.hasDynamicFeatures ||
             creationConfig is AndroidTestCreationConfig

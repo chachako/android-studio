@@ -600,10 +600,6 @@ public class AndroidArtifacts {
         ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR(
                 TYPE_ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR),
 
-        // The artifact-transform derived manifest snippet from a privacy sandbox SDK
-        ANDROID_PRIVACY_SANDBOX_SDK_USES_SDK_LIBRARY_MANIFEST_SNIPPET(
-                TYPE_ANDROID_PRIVACY_SANDBOX_USES_SDK_LIBRARY_MANIFEST_SNIPPET),
-
         // The file describing the supported locales in the module
         SUPPORTED_LOCALE_LIST(TYPE_SUPPORTED_LOCALE_LIST),
 

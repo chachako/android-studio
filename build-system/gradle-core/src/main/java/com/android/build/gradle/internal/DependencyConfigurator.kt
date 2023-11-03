@@ -75,7 +75,6 @@ import com.android.build.gradle.internal.services.AndroidLocationsBuildService
 import com.android.build.gradle.internal.services.ProjectServices
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.AsarToApksTransform
-import com.android.build.gradle.internal.tasks.AsarToManifestSnippetTransform
 import com.android.build.gradle.internal.tasks.AsarTransform
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfig
 import com.android.build.gradle.internal.utils.ATTR_ENABLE_CORE_LIBRARY_DESUGARING
@@ -478,13 +477,6 @@ class DependencyConfigurator(
                         ArtifactsImpl(project,
                                 "global").get(InternalArtifactType.VALIDATE_SIGNING_CONFIG)
                 )
-            }
-            registerTransform(
-                    AsarToManifestSnippetTransform::class.java,
-                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,
-                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_USES_SDK_LIBRARY_MANIFEST_SNIPPET
-            ) {
-                it.signingConfigData.set(defaultDebugSigning)
             }
             for (from in AsarTransform.supportedAsarTransformTypes) {
                 registerTransform(

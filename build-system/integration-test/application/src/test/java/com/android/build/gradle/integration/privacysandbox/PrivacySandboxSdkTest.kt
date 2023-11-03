@@ -25,6 +25,8 @@ import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
+import com.android.builder.model.v2.ide.SyncIssue
+import com.android.ide.common.build.GenericBuiltArtifactsLoader
 import com.android.ide.common.signing.KeystoreHelper
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
@@ -35,9 +37,9 @@ import com.android.testutils.generateAarWithContent
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.testutils.truth.ZipFileSubject
 import com.android.utils.FileUtils
+import com.android.utils.StdLogger
 import com.google.common.collect.ImmutableList
 import com.google.common.truth.Truth.assertThat
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
@@ -200,6 +202,12 @@ class PrivacySandboxSdkTest {
             .withPerTestPrefsRoot(true)
             .with(BooleanOption.ENABLE_PROFILE_JSON, true) // Regression test for b/237278679
 
+    private fun modelV2() = project.modelV2()
+            .withFailOnWarning(false) // kgp uses deprecated api WrapUtil
+            .withPerTestPrefsRoot(true)
+            .with(BooleanOption.ENABLE_PROFILE_JSON, true) // Regression test for b/237278679
+            .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
+
     @Test
     fun testDexing() {
         val dexLocation = project.getSubproject(":privacy-sandbox-sdk")
@@ -331,9 +339,8 @@ class PrivacySandboxSdkTest {
         }
     }
 
-    @Ignore("b/304516211")
     @Test
-    fun testConsumption() {
+    fun testConsumptionViaBundle() {
         // TODO(b/235469089) expand this to verify installation also
 
         //Add service to android-lib1
@@ -372,7 +379,7 @@ class PrivacySandboxSdkTest {
         // Check building the bundle to deploy to TiramisuPrivacySandbox
         val apkSelectConfig = project.file("apkSelectConfig.json")
         apkSelectConfig.writeText(
-                """{"sdk_version":32,"codename":"TiramisuPrivacySandbox","screen_density":420,"supported_abis":["x86_64","arm64-v8a"],"supported_locales":["en"]}""")
+                """{"sdk_version":34,"sdk_runtime":{"supported":"true"},"screen_density":420,"supported_abis":["x86_64","arm64-v8a"],"supported_locales":["en"]}""")
 
         executor()
                 .with(StringOption.IDE_APK_SELECT_CONFIG, apkSelectConfig.absolutePath)
@@ -435,32 +442,64 @@ class PrivacySandboxSdkTest {
         Apk(baseMaster3Apk).use {
             assertThat(it).doesNotExist()
         }
+    }
 
-        executor()
-                .with(StringOption.IDE_APK_SELECT_CONFIG, apkSelectConfig.absolutePath)
-                .run(":example-app:assembleDebug")
+    @Test
+    fun testConsumptionViaApk() {
+        val model = modelV2().fetchModels().container.getProject(":example-app")
+        val exampleAppDebug = model.androidProject!!.variants.single { it.name == "debug" }
+        val privacySandboxSdkInfo = exampleAppDebug.mainArtifact.privacySandboxSdkInfo !!
+
+        executor().with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, false)
+                .run(exampleAppDebug.mainArtifact.assembleTaskName, privacySandboxSdkInfo.task, privacySandboxSdkInfo.taskLegacy, privacySandboxSdkInfo.additionalApkSplitTask)
         Apk(project.getSubproject(":example-app")
                 .getApk(GradleTestProject.ApkType.DEBUG).file).use {
             assertThat(it).exists()
-            val manifestContent = ApkSubject.getManifestContent(it.file)
-            assertThat(manifestContent).containsAtLeastElementsIn(
-                    listOf(
-                            "          E: uses-sdk-library (line=22)",
-                            "            A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"com.example.privacysandboxsdk\" (Raw: \"com.example.privacysandboxsdk\")",
-                            "            A: http://schemas.android.com/apk/res/android:certDigest(0x01010548)=\"$certDigest\" (Raw: \"$certDigest\")",
-                            "            A: http://schemas.android.com/apk/res/android:versionMajor(0x01010577)=10002"
-                    )
-            )
-
+            val manifestContent = ApkSubject.getManifestContent(it.file).joinToString("\n")
             // This asset must only be packaged in non-sandbox capable devices, otherwise it may
             // cause runtime exceptions on supported privacy sandbox platforms.
             assertThat(it.entries.map { it.toString() })
-                    .doesNotContain("/assets/RuntimeEnabledSdkTable.xml")
+                    .doesNotContain(RUNTIME_ENABLED_SDK_TABLE_ASSET_FOR_COMPAT)
 
-            val manifestContentString = manifestContent.joinToString("\n")
-            assertThat(manifestContentString).contains(INTERNET_PERMISSION)
-            assertThat(manifestContentString).doesNotContain(FOREGROUND_SERVICE)
+            assertThat(manifestContent).contains(INTERNET_PERMISSION)
+            assertThat(manifestContent).doesNotContain(FOREGROUND_SERVICE)
+            assertThat(manifestContent).doesNotContain(USES_SDK_LIBRARY_MANIFEST_ELEMENT)
         }
+        Apk(privacySandboxSdkInfo.additionalApkSplitFile).use {
+            assertThat(it).exists()
+            val manifestContent = ApkSubject.getManifestContent(it.file).joinToString("\n", postfix = "\n")
+            val certDigest = certDigestPattern.find(manifestContent)?.value ?: error("")
+            assertThat(manifestContent).contains(
+                    "          E: uses-sdk-library (line=10)\n" +
+                    "            A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"com.example.privacysandboxsdk\" (Raw: \"com.example.privacysandboxsdk\")\n" +
+                    "            A: http://schemas.android.com/apk/res/android:certDigest(0x01010548)=\"$certDigest\" (Raw: \"$certDigest\")\n" +
+                    "            A: http://schemas.android.com/apk/res/android:versionMajor(0x01010577)=10002\n"
+            )
+            assertThat(it).doesNotContain(RUNTIME_ENABLED_SDK_TABLE_ASSET_FOR_COMPAT)
+        }
+
+        val sdkApks =
+                GenericBuiltArtifactsLoader.loadListFromFile(privacySandboxSdkInfo.outputListingFile,
+                        StdLogger(StdLogger.Level.INFO))
+        Apk(File(sdkApks.single().elements.single().outputFile)).use {
+            assertThat(it).exists()
+            assertThat(it).containsClass(ANDROID_LIB1_CLASS)
+            assertThat(it).doesNotContain(RUNTIME_ENABLED_SDK_TABLE_ASSET_FOR_COMPAT)
+        }
+
+        val compatSplits =
+                GenericBuiltArtifactsLoader.loadFromFile(privacySandboxSdkInfo.outputListingLegacyFile,
+                        StdLogger(StdLogger.Level.INFO))!!
+
+        assertThat(compatSplits.elements).named("compat splits elements").hasSize(2)
+        Apk(File(compatSplits.elements.single { it.outputFile.endsWith(
+                INJECTED_PRIVACY_SANDBOX_COMPAT_SUFFIX) }.outputFile)).use {
+            assertThat(it).exists()
+            assertThat(it).contains(RUNTIME_ENABLED_SDK_TABLE_ASSET_FOR_COMPAT)
+            val manifestContent = ApkSubject.getManifestContent(it.file).joinToString("\n", postfix = "\n")
+            assertThat(manifestContent).doesNotContain(USES_SDK_LIBRARY_MANIFEST_ELEMENT)
+        }
+
     }
 
     @Test
@@ -605,7 +644,7 @@ class PrivacySandboxSdkTest {
                     "/META-INF/CERT.RSA",
                     "/META-INF/CERT.SF",
                     "/META-INF/MANIFEST.MF",
-                    "/assets/RuntimeEnabledSdkTable.xml",
+                    RUNTIME_ENABLED_SDK_TABLE_ASSET_FOR_COMPAT,
                     "/resources.arsc"
             )
         }
@@ -621,5 +660,7 @@ class PrivacySandboxSdkTest {
         private const val INTERNET_PERMISSION =
                 "A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"android.permission.INTERNET\" (Raw: \"android.permission.INTERNET\")"
         private const val FOREGROUND_SERVICE = "FOREGROUND_SERVICE"
+        private const val INJECTED_PRIVACY_SANDBOX_COMPAT_SUFFIX = "-injected-privacy-sandbox-compat.apk"
+        private const val RUNTIME_ENABLED_SDK_TABLE_ASSET_FOR_COMPAT = "/assets/RuntimeEnabledSdkTable.xml"
     }
 }

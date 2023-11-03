@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-820756b8e0c15a18c4552fa4de7cb1fe3b362bb104608d6d3c1e9029ef5dcb36
+55c74b8b23a68eb49c28f054a6ec4151f24c7c5181da43429b5ae3a03e27e292
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -722,6 +722,8 @@ com.android.builder.model.v2.ide.LintOptions.getWarningsAsErrors: boolean ()
 com.android.builder.model.v2.ide.LintOptions.getXmlOutput: java.io.File ()
 com.android.builder.model.v2.ide.LintOptions.getXmlReport: boolean ()
 com.android.builder.model.v2.ide.PrivacySandboxSdkInfo implements com.android.builder.model.v2.AndroidModel
+com.android.builder.model.v2.ide.PrivacySandboxSdkInfo.getAdditionalApkSplitFile: java.io.File ()
+com.android.builder.model.v2.ide.PrivacySandboxSdkInfo.getAdditionalApkSplitTask: java.lang.String ()
 com.android.builder.model.v2.ide.PrivacySandboxSdkInfo.getOutputListingFile: java.io.File ()
 com.android.builder.model.v2.ide.PrivacySandboxSdkInfo.getOutputListingLegacyFile: java.io.File ()
 com.android.builder.model.v2.ide.PrivacySandboxSdkInfo.getTask: java.lang.String ()

@@ -484,6 +484,8 @@ private fun ModelSnapshotter<AndroidArtifact>.snapshotAndroidArtifact() {
     dataObject("privacySandboxSdkInfo", AndroidArtifact::privacySandboxSdkInfo) {
         item("task", PrivacySandboxSdkInfo::task)
         item("outputListingFile", PrivacySandboxSdkInfo::outputListingFile)
+        item("additionalApkSplitTask", PrivacySandboxSdkInfo::additionalApkSplitTask)
+        item("additionalApkSplitFile", PrivacySandboxSdkInfo::additionalApkSplitFile)
         item("taskLegacy", PrivacySandboxSdkInfo::taskLegacy)
         item("outputListingLegacyFile", PrivacySandboxSdkInfo::outputListingLegacyFile)
     }
