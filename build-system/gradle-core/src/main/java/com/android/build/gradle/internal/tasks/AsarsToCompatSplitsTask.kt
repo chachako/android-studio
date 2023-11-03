@@ -78,6 +78,7 @@ abstract class AsarsToCompatSplitsTask : NonIncrementalTask() {
     abstract val minSdk: Property<Int>
 
     @get:InputFile
+    @get:Optional
     @get:PathSensitive(PathSensitivity.NAME_ONLY)
     abstract val runtimeConfigFile: RegularFileProperty
 
@@ -106,7 +107,8 @@ abstract class AsarsToCompatSplitsTask : NonIncrementalTask() {
         get() = withThreads(path, analyticsService.get())
 
     override fun doTaskAction() {
-        val runtimeConfigs = getRuntimeEnabledConfigMap(runtimeConfigFile.get().asFile)
+        val runtimeConfigs = if (runtimeConfigFile.isPresent)
+            getRuntimeEnabledConfigMap(runtimeConfigFile.get().asFile) else emptyMap()
 
         BuildPrivacySandboxSdkApks.forEachInputFile(
                 inputFiles = sdkArchives.files.map { it.toPath() },
