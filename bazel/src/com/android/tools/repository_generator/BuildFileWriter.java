@@ -263,37 +263,31 @@ public class BuildFileWriter {
 
         if (pieces.length == 3) {
             String version = pieces[2];
-            return new HashMap<String, String>() {
-                {
-                    put("group", group);
-                    put("artifact", artifact);
-                    put("version", version);
-                }
-            };
+            HashMap<String, String> result = new HashMap<>();
+            result.put("group", group);
+            result.put("artifact", artifact);
+            result.put("version", version);
+            return result;
         } else if (pieces.length == 4) {
             String packaging = pieces[2];
             String version = pieces[3];
-            return new HashMap<String, String>() {
-                {
-                    put("group", group);
-                    put("artifact", artifact);
-                    put("packaging", packaging);
-                    put("version", version);
-                }
-            };
+            HashMap<String, String> result = new HashMap<>();
+            result.put("group", group);
+            result.put("artifact", artifact);
+            result.put("packaging", packaging);
+            result.put("version", version);
+            return result;
         } else if (pieces.length == 5) {
             String packaging = pieces[2];
             String classifier = pieces[3];
             String version = pieces[4];
-            return new HashMap<String, String>() {
-                {
-                    put("group", group);
-                    put("artifact", artifact);
-                    put("packaging", packaging);
-                    put("classifier", classifier);
-                    put("version", version);
-                }
-            };
+            HashMap<String, String> result = new HashMap<>();
+            result.put("group", group);
+            result.put("artifact", artifact);
+            result.put("packaging", packaging);
+            result.put("classifier", classifier);
+            result.put("version", version);
+            return result;
         } else {
             throw new RuntimeException("Could not parse maven coordinate: " + coord);
         }

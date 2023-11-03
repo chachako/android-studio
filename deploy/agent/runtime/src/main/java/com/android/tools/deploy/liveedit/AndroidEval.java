@@ -51,19 +51,19 @@ class AndroidEval implements Eval {
     // This table *must* match what is in
     // tools/base/deploy/agent/native/interpreter/jni_interpreter.cc
     private static final int NO_UNBOXING = 0;
-    private static Map<Type, Integer> classToInst =
-            new HashMap<Type, Integer>() {
-                {
-                    put(Type.BOOLEAN_TYPE, 1 << 0);
-                    put(Type.BYTE_TYPE, 1 << 1);
-                    put(Type.CHAR_TYPE, 1 << 2);
-                    put(Type.SHORT_TYPE, 1 << 3);
-                    put(Type.INT_TYPE, 1 << 4);
-                    put(Type.LONG_TYPE, 1 << 5);
-                    put(Type.FLOAT_TYPE, 1 << 6);
-                    put(Type.DOUBLE_TYPE, 1 << 7);
-                }
-            };
+    private static final Map<Type, Integer> classToInst;
+    static {
+        Map<Type, Integer> classToInstBuilder = new HashMap<>();
+        classToInstBuilder.put(Type.BOOLEAN_TYPE, 1 << 0);
+        classToInstBuilder.put(Type.BYTE_TYPE, 1 << 1);
+        classToInstBuilder.put(Type.CHAR_TYPE, 1 << 2);
+        classToInstBuilder.put(Type.SHORT_TYPE, 1 << 3);
+        classToInstBuilder.put(Type.INT_TYPE, 1 << 4);
+        classToInstBuilder.put(Type.LONG_TYPE, 1 << 5);
+        classToInstBuilder.put(Type.FLOAT_TYPE, 1 << 6);
+        classToInstBuilder.put(Type.DOUBLE_TYPE, 1 << 7);
+        classToInst = classToInstBuilder;
+    }
 
     private final ClassLoader classloader;
 

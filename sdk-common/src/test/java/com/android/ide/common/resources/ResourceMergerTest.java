@@ -678,7 +678,7 @@ public class ResourceMergerTest extends BaseTestCase {
 
         // Check existence of a values resource.
         String stringKey = "string/basic_string";
-        assertNotNull(merger.getDataMap().get(stringKey));
+        assertTrue(merger.getDataMap().containsKey(stringKey));
         assertFalse(merger.getDataMap().get(stringKey).isEmpty());
         ResourceFile resourceFile = merger.getDataMap().get(stringKey).get(0).getSourceFile();
         assertNotNull(resourceFile);
@@ -708,7 +708,7 @@ public class ResourceMergerTest extends BaseTestCase {
                         folderWithTimestamps, true /*incrementalState*/, null));
 
         // omitted
-        assertNotNull(loadedWithTimestamps.getDataMap().get(stringKey));
+        assertFalse(loadedWithTimestamps.getDataMap().containsKey(stringKey));
         assertTrue(loadedWithTimestamps.getDataMap().get(stringKey).isEmpty());
 
         ResourceMerger loadedWithoutTimestamps = new ResourceMerger(0);
@@ -717,7 +717,7 @@ public class ResourceMergerTest extends BaseTestCase {
                         folderWithoutTimestamps, true /*incrementalState*/, null));
 
         // not omitted
-        assertNotNull(loadedWithoutTimestamps.getDataMap().get(stringKey));
+        assertTrue(loadedWithoutTimestamps.getDataMap().containsKey(stringKey));
         assertFalse(loadedWithoutTimestamps.getDataMap().get(stringKey).isEmpty());
         resourceFile = loadedWithoutTimestamps.getDataMap().get(stringKey).get(0).getSourceFile();
         assertNotNull(resourceFile);
@@ -734,7 +734,7 @@ public class ResourceMergerTest extends BaseTestCase {
         merger.writeBlobToWithTimestamps(folder, getConsumer());
 
         String stringKey = "string/basic_string";
-        assertNotNull(merger.getDataMap().get(stringKey));
+        assertTrue(merger.getDataMap().containsKey(stringKey));
         assertFalse(merger.getDataMap().get(stringKey).isEmpty());
         ResourceFile resourceFile = merger.getDataMap().get(stringKey).get(0).getSourceFile();
         assertNotNull(resourceFile);
@@ -747,8 +747,9 @@ public class ResourceMergerTest extends BaseTestCase {
         ResourceMerger loadedMerger = new ResourceMerger(0);
         assertTrue(loadedMerger.loadFromBlob(folder, true /*incrementalState*/, null));
 
-        assertNotNull(loadedMerger.getDataMap().get(stringKey));
+        assertFalse(loadedMerger.getDataMap().containsKey(stringKey));
         assertTrue(loadedMerger.getDataMap().get(stringKey).isEmpty());
+
     }
 
     /**

@@ -29,6 +29,7 @@ import org.junit.Test;
 public class PomGeneratorTest {
 
     @Test
+    @SuppressWarnings("DoubleBraceInitialization")
     public void testGenerator() throws Exception {
         PomGenerator generator = new PomGenerator();
 
