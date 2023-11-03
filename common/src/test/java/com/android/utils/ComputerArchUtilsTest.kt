@@ -42,6 +42,7 @@ class ComputerArchUtilsTest {
         assertEquals(CpuArchitecture.X86, architectureFromString("i686"))
         assertEquals(CpuArchitecture.X86, architectureFromString("x86"))
         assertEquals(CpuArchitecture.ARM, architectureFromString("aarch64"))
+        assertEquals(CpuArchitecture.ARM, architectureFromString("arm64"))
         assertEquals(CpuArchitecture.UNKNOWN, architectureFromString("x96"))
         assertEquals(CpuArchitecture.UNKNOWN, architectureFromString("i6869"))
     }
