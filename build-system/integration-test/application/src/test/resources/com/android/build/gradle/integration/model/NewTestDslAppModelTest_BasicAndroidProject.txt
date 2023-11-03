@@ -1,0 +1,30 @@
+> BasicAndroidProject:
+   - defaultConfig:
+      - androidTestSourceProvider{REMOVED} = (null)
+      - unitTestSourceProvider{REMOVED}    = (null)
+   - buildTypes:
+      - debug:
+         - androidTestSourceProvider{REMOVED} = (null)
+         - unitTestSourceProvider{REMOVED}    = (null)
+      - release:
+         - unitTestSourceProvider{REMOVED} = (null)
+   - productFlavors:
+      - free:
+         - androidTestSourceProvider{REMOVED} = (null)
+         - unitTestSourceProvider{REMOVED}    = (null)
+      - paid:
+         - androidTestSourceProvider{REMOVED} = (null)
+         - unitTestSourceProvider{REMOVED}    = (null)
+   > variants:
+      - freeDebug:
+         - androidTestArtifact{REMOVED} = (null)
+         - unitTestArtifact{REMOVED}    = (null)
+      - freeRelease:
+         - unitTestArtifact{REMOVED} = (null)
+      - paidDebug:
+         - androidTestArtifact{REMOVED} = (null)
+         - unitTestArtifact{REMOVED}    = (null)
+      - paidRelease:
+         - unitTestArtifact{REMOVED} = (null)
+   < variants
+< BasicAndroidProject

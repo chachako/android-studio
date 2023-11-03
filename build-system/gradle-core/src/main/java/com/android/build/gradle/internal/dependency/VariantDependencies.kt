@@ -20,7 +20,6 @@ import com.android.Version
 import com.android.build.api.attributes.AgpVersionAttr
 import com.android.build.api.attributes.BuildTypeAttr
 import com.android.build.api.attributes.ProductFlavorAttr
-import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
@@ -392,19 +391,7 @@ class VariantDependencies internal constructor(
     }
 
     companion object {
-
-        const val CONFIG_NAME_COMPILE = "compile"
-        const val CONFIG_NAME_PUBLISH = "publish"
-        const val CONFIG_NAME_APK = "apk"
-        const val CONFIG_NAME_PROVIDED = "provided"
-        const val CONFIG_NAME_WEAR_APP = "wearApp"
         const val CONFIG_NAME_ANDROID_APIS = "androidApis"
-        const val CONFIG_NAME_ANNOTATION_PROCESSOR = "annotationProcessor"
-        const val CONFIG_NAME_API = "api"
-        const val CONFIG_NAME_COMPILE_ONLY = "compileOnly"
-        const val CONFIG_NAME_IMPLEMENTATION = "implementation"
-        const val CONFIG_NAME_RUNTIME_ONLY = "runtimeOnly"
-        const val CONFIG_NAME_APPLICATION = "application"
         const val CONFIG_NAME_LINTCHECKS = "lintChecks"
         const val CONFIG_NAME_LINTPUBLISH = "lintPublish"
         const val CONFIG_NAME_TESTED_APKS = "testedApks"

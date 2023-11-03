@@ -96,6 +96,50 @@ class ApplicationIdInAppModelTest: ReferenceModelComparator(
     }
 }
 
+class NewTestDslAppModelTest: ReferenceModelComparator(
+    referenceConfig = {
+        rootProject {
+            plugins.add(PluginType.ANDROID_APP)
+            android {
+                setUpHelloWorld()
+
+                productFlavors {
+                    named("free") {
+                        dimension = "cost"
+                    }
+                    named("paid") {
+                        dimension = "cost"
+                    }
+                }
+            }
+        }
+    },
+    deltaConfig = {
+        gradleProperties {
+            set(BooleanOption.ENABLE_NEW_TEST_DSL, true)
+        }
+    },
+    syncOptions = {
+        ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
+    }
+) {
+
+    @Test
+    fun `test BasicAndroidProject model`() {
+        compareBasicAndroidProjectWith(goldenFileSuffix = "BasicAndroidProject")
+    }
+
+    @Test
+    fun `test AndroidProject model`() {
+        compareAndroidProjectWith(goldenFileSuffix = "AndroidProject")
+    }
+
+    @Test
+    fun `test AndroidDsl model`() {
+        ensureAndroidDslDeltaIsEmpty()
+    }
+}
+
 class EnabledAidlInAppModelTest: ReferenceModelComparator(
     referenceConfig = {
         rootProject {

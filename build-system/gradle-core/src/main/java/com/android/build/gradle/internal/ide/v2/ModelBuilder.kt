@@ -268,13 +268,13 @@ class ModelBuilder<
         val defaultConfig = if (variantDimensionInfo.isNotEmpty()) {
             SourceSetContainerImpl(
                 sourceProvider = defaultConfigData.sourceSet.convert(buildFeatures),
-                androidTestSourceProvider = defaultConfigData.getTestSourceSet(ComponentTypeImpl.ANDROID_TEST)
+                androidTestSourceProvider = defaultConfigData.getSourceSetForModel(ComponentTypeImpl.ANDROID_TEST)
                     ?.takeIf { androidTests.isNotEmpty() }
                     ?.convert(buildFeatures),
-                unitTestSourceProvider = defaultConfigData.getTestSourceSet(ComponentTypeImpl.UNIT_TEST)
+                unitTestSourceProvider = defaultConfigData.getSourceSetForModel(ComponentTypeImpl.UNIT_TEST)
                     ?.takeIf { unitTests.isNotEmpty() }
                     ?.convert(buildFeatures),
-                testFixturesSourceProvider = defaultConfigData.testFixturesSourceSet
+                testFixturesSourceProvider = defaultConfigData.getSourceSetForModel(ComponentTypeImpl.TEST_FIXTURES)
                     ?.takeIf { testFixtures.isNotEmpty() }
                     ?.convert(buildFeatures)
             )
@@ -296,13 +296,13 @@ class ModelBuilder<
                 buildTypes.add(
                     SourceSetContainerImpl(
                         sourceProvider = buildType.sourceSet.convert(buildFeatures, mixinVariantSources),
-                        androidTestSourceProvider = buildType.getTestSourceSet(ComponentTypeImpl.ANDROID_TEST)
+                        androidTestSourceProvider = buildType.getSourceSetForModel(ComponentTypeImpl.ANDROID_TEST)
                             ?.takeIf { androidTests.buildTypes.contains(buildTypeName) }
                             ?.convert(buildFeatures),
-                        unitTestSourceProvider = buildType.getTestSourceSet(ComponentTypeImpl.UNIT_TEST)
+                        unitTestSourceProvider = buildType.getSourceSetForModel(ComponentTypeImpl.UNIT_TEST)
                             ?.takeIf { unitTests.buildTypes.contains(buildTypeName) }
                             ?.convert(buildFeatures),
-                        testFixturesSourceProvider = buildType.testFixturesSourceSet
+                        testFixturesSourceProvider = buildType.getSourceSetForModel(ComponentTypeImpl.TEST_FIXTURES)
                             ?.takeIf { testFixtures.buildTypes.contains(buildTypeName) }
                             ?.convert(buildFeatures)
                     )
@@ -319,13 +319,13 @@ class ModelBuilder<
                 productFlavors.add(
                     SourceSetContainerImpl(
                         sourceProvider = flavor.sourceSet.convert(buildFeatures),
-                        androidTestSourceProvider = flavor.getTestSourceSet(ComponentTypeImpl.ANDROID_TEST)
+                        androidTestSourceProvider = flavor.getSourceSetForModel(ComponentTypeImpl.ANDROID_TEST)
                             ?.takeIf { androidTests.flavors.contains(flavorDimensionName) }
                             ?.convert(buildFeatures),
-                        unitTestSourceProvider = flavor.getTestSourceSet(ComponentTypeImpl.UNIT_TEST)
+                        unitTestSourceProvider = flavor.getSourceSetForModel(ComponentTypeImpl.UNIT_TEST)
                             ?.takeIf { unitTests.flavors.contains(flavorDimensionName) }
                             ?.convert(buildFeatures),
-                        testFixturesSourceProvider = flavor.testFixturesSourceSet
+                        testFixturesSourceProvider = flavor.getSourceSetForModel(ComponentTypeImpl.TEST_FIXTURES)
                             ?.takeIf { testFixtures.flavors.contains(flavorDimensionName) }
                             ?.convert(buildFeatures)
                     )

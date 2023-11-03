@@ -1306,7 +1306,7 @@
         errorLine2="                                             ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/VariantBuilderImpl.kt"
-            line="137"
+            line="139"
             column="46"/>
     </issue>
 

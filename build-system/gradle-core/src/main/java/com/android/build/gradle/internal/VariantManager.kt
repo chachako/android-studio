@@ -24,7 +24,6 @@ import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.TestedExtension
 import com.android.build.api.extension.impl.VariantApiOperationsRegistrar
-import com.android.build.api.variant.AndroidTestBuilder
 import com.android.build.api.variant.HasAndroidTestBuilder
 import com.android.build.api.variant.HasTestFixturesBuilder
 import com.android.build.api.variant.HasUnitTestBuilder
@@ -409,7 +408,7 @@ class VariantManager<
                     .sourceSetManager
                     .setUpSourceSet(
                             computeSourceSetName(dslInfoBuilder.name, componentType),
-                            componentType.isTestComponent) as DefaultAndroidSourceSet
+                            componentType.isTestComponent).get()
             addExtraSourceSets(variantSourceSet)
             dslInfoBuilder.variantSourceProvider = variantSourceSet
         }
@@ -419,7 +418,7 @@ class VariantManager<
                     .setUpSourceSet(
                             computeSourceSetName(dslInfoBuilder.flavorName,
                                                     componentType),
-                            componentType.isTestComponent) as DefaultAndroidSourceSet
+                            componentType.isTestComponent).get()
             addExtraSourceSets(multiFlavorSourceSet)
             dslInfoBuilder.multiFlavorSourceProvider = multiFlavorSourceSet
         }
@@ -439,14 +438,16 @@ class VariantManager<
         mainComponentInfo: VariantComponentInfo<VariantBuilderT, VariantDslInfoT, VariantT>
     ): TestFixturesCreationConfig {
         val testFixturesComponentType = ComponentTypeImpl.TEST_FIXTURES
-        val testFixturesSourceSet = variantInputModel.defaultConfigData.testFixturesSourceSet!!
+        val testFixturesSourceSet = variantInputModel.defaultConfigData.getSourceSet(
+            ComponentTypeImpl.TEST_FIXTURES
+        )!!
         val variantDslInfoBuilder = getBuilder<CommonExtensionT, TestFixturesComponentDslInfo>(
             dimensionCombination,
             testFixturesComponentType,
             variantInputModel.defaultConfigData.defaultConfig,
             testFixturesSourceSet,
             buildTypeData.buildType,
-            buildTypeData.testFixturesSourceSet,
+            buildTypeData.getSourceSet(ComponentTypeImpl.TEST_FIXTURES),
             signingOverride,
             getLazyManifestParser(
                 testFixturesSourceSet.manifestFile,
@@ -470,7 +471,7 @@ class VariantManager<
             productFlavors[productFlavor.name]?.let {
                 variantDslInfoBuilder.addProductFlavor(
                     it.productFlavor,
-                    it.testFixturesSourceSet!!
+                    it.getSourceSet(ComponentTypeImpl.TEST_FIXTURES)!!
                 )
             }
         }
@@ -497,7 +498,7 @@ class VariantManager<
         }
 
         // 2. the build type.
-        val buildTypeConfigurationProvider = buildTypeData.testFixturesSourceSet
+        val buildTypeConfigurationProvider = buildTypeData.getSourceSet(ComponentTypeImpl.TEST_FIXTURES)
         buildTypeConfigurationProvider?.let {
             testFixturesVariantSourceSets.add(it)
         }
@@ -510,12 +511,14 @@ class VariantManager<
         // 4. the flavors.
         for (productFlavor in productFlavorList) {
             variantInputModel.productFlavors[productFlavor.name]?.let {
-                testFixturesVariantSourceSets.add(it.testFixturesSourceSet)
+                testFixturesVariantSourceSets.add(it.getSourceSet(ComponentTypeImpl.TEST_FIXTURES))
             }
         }
 
         // now add the default config
-        testFixturesVariantSourceSets.add(variantInputModel.defaultConfigData.testFixturesSourceSet)
+        testFixturesVariantSourceSets.add(
+            variantInputModel.defaultConfigData.getSourceSet(ComponentTypeImpl.TEST_FIXTURES)
+        )
 
         // If the variant being tested is a library variant, VariantDependencies must be
         // computed after the tasks for the tested variant is created.  Therefore, the
@@ -578,14 +581,14 @@ class VariantManager<
         // to return @Nullable and the constructor is @NonNull on this parameter,
         // but it's never the case on defaultConfigData
         // The constructor does a runtime check on the instances so we should be safe.
-        val testSourceSet = variantInputModel.defaultConfigData.getTestSourceSet(componentType)
+        val testSourceSet = variantInputModel.defaultConfigData.getSourceSet(componentType)
         val variantDslInfoBuilder = getBuilder<CommonExtensionT, TestDslInfoT> (
                 dimensionCombination,
                 componentType,
                 variantInputModel.defaultConfigData.defaultConfig,
                 testSourceSet!!,
                 buildTypeData.buildType,
-                buildTypeData.getTestSourceSet(componentType),
+                buildTypeData.getSourceSet(componentType),
                 signingOverride,
                 getLazyManifestParser(
                     testSourceSet.manifestFile,
@@ -608,7 +611,7 @@ class VariantManager<
             productFlavors[productFlavor.name]?.let {
             variantDslInfoBuilder.addProductFlavor(
                     it.productFlavor,
-                    it.getTestSourceSet(componentType)!!)
+                    it.getSourceSet(componentType)!!)
             }
         }
         val variantDslInfo = variantDslInfoBuilder.createDslInfo()
@@ -632,7 +635,7 @@ class VariantManager<
         }
 
         // 2. the build type.
-        val buildTypeConfigurationProvider = buildTypeData.getTestSourceSet(componentType)
+        val buildTypeConfigurationProvider = buildTypeData.getSourceSet(componentType)
         buildTypeConfigurationProvider?.let {
             testVariantSourceSets.add(it)
         }
@@ -645,13 +648,13 @@ class VariantManager<
         // 4. the flavors.
         for (productFlavor in productFlavorList) {
             variantInputModel.productFlavors[productFlavor.name]?.let {
-                testVariantSourceSets.add(it.getTestSourceSet(componentType))
+                testVariantSourceSets.add(it.getSourceSet(componentType))
             }
         }
 
         // now add the default config
         testVariantSourceSets.add(
-                variantInputModel.defaultConfigData.getTestSourceSet(componentType))
+                variantInputModel.defaultConfigData.getSourceSet(componentType))
 
         // If the variant being tested is a library variant, VariantDependencies must be
         // computed after the tasks for the tested variant is created.  Therefore, the

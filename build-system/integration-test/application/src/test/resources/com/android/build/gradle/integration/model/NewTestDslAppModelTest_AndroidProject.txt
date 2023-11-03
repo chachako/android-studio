@@ -1,0 +1,15 @@
+> AndroidProject:
+   - androidTestNamespace = (null)
+   > variants:
+      - freeDebug:
+         - androidTestArtifact{REMOVED} = (null)
+         - unitTestArtifact{REMOVED}    = (null)
+      - freeRelease:
+         - unitTestArtifact{REMOVED} = (null)
+      - paidDebug:
+         - androidTestArtifact{REMOVED} = (null)
+         - unitTestArtifact{REMOVED}    = (null)
+      - paidRelease:
+         - unitTestArtifact{REMOVED} = (null)
+   < variants
+< AndroidProject

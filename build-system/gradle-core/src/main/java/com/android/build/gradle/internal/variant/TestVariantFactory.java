@@ -16,7 +16,7 @@
 
 package com.android.build.gradle.internal.variant;
 
-import static com.android.build.gradle.internal.dependency.VariantDependencies.CONFIG_NAME_COMPILE_ONLY;
+import static com.android.build.gradle.internal.api.AndroidSourceSetName.CONFIG_NAME_COMPILE_ONLY;
 import static com.android.build.gradle.internal.dependency.VariantDependencies.CONFIG_NAME_TESTED_APKS;
 
 import com.android.annotations.NonNull;

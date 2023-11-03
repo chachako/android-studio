@@ -20,6 +20,7 @@ import com.android.build.gradle.internal.BuildTypeData
 import com.android.build.gradle.internal.DefaultConfigData
 import com.android.build.gradle.internal.ProductFlavorData
 import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
+import com.android.build.gradle.internal.api.LazyAndroidSourceSet
 import com.android.build.gradle.internal.dependency.SourceSetManager
 import com.android.build.gradle.internal.dsl.BuildType
 import com.android.build.gradle.internal.dsl.DefaultConfig
@@ -88,29 +89,44 @@ class VariantInputModelBuilder(
     fun toModel() : TestVariantInputModel {
         val buildTypes = buildTypes.values.map {
             val mainSourceSet = Mockito.mock(DefaultAndroidSourceSet::class.java)
-            val testFixturesSourceSet = Mockito.mock(DefaultAndroidSourceSet::class.java)
-            val androidTestSourceSet = Mockito.mock(DefaultAndroidSourceSet::class.java)
-            val unitTestSourceSet = Mockito.mock(DefaultAndroidSourceSet::class.java)
+            val testFixturesSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
+            val androidTestSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
+            val unitTestSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
 
-            BuildTypeData(it, mainSourceSet, testFixturesSourceSet, androidTestSourceSet, unitTestSourceSet)
+            BuildTypeData(
+               it,
+                mainSourceSet,
+                testFixturesSourceSet,
+                androidTestSourceSet,
+                unitTestSourceSet,
+                lazySourceSetCreation = false
+            )
         }.associateBy { it.buildType.name }
 
         val flavors = productFlavors.values.map {
             val mainSourceSet = Mockito.mock(DefaultAndroidSourceSet::class.java)
-            val testFixturesSourceSet = Mockito.mock(DefaultAndroidSourceSet::class.java)
-            val androidTestSourceSet = Mockito.mock(DefaultAndroidSourceSet::class.java)
-            val unitTestSourceSet = Mockito.mock(DefaultAndroidSourceSet::class.java)
+            val testFixturesSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
+            val androidTestSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
+            val unitTestSourceSet = Mockito.mock(LazyAndroidSourceSet::class.java)
 
-            ProductFlavorData(it, mainSourceSet, testFixturesSourceSet, androidTestSourceSet, unitTestSourceSet)
+            ProductFlavorData(
+                it,
+                mainSourceSet,
+                testFixturesSourceSet,
+                androidTestSourceSet,
+                unitTestSourceSet,
+                lazySourceSetCreation = false
+            )
         }.associateBy { it.productFlavor.name }
 
         // the default Config
         val defaultConfig = DefaultConfigData(
             defaultConfig,
             Mockito.mock(DefaultAndroidSourceSet::class.java),
-            Mockito.mock(DefaultAndroidSourceSet::class.java),
-            Mockito.mock(DefaultAndroidSourceSet::class.java),
-            Mockito.mock(DefaultAndroidSourceSet::class.java)
+            Mockito.mock(LazyAndroidSourceSet::class.java),
+            Mockito.mock(LazyAndroidSourceSet::class.java),
+            Mockito.mock(LazyAndroidSourceSet::class.java),
+            lazySourceSetCreation = false
         )
 
         // compute the implicit dimension list

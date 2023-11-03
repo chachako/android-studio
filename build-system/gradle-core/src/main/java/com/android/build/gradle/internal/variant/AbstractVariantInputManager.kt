@@ -17,12 +17,13 @@ package com.android.build.gradle.internal.variant
 
 import com.android.build.gradle.internal.BuildTypeData
 import com.android.build.gradle.internal.ProductFlavorData
-import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
+import com.android.build.gradle.internal.api.LazyAndroidSourceSet
 import com.android.build.gradle.internal.dependency.SourceSetManager
 import com.android.build.gradle.internal.dsl.BuildType
 import com.android.build.gradle.internal.dsl.SigningConfig
 import com.android.build.gradle.internal.plugins.DslContainerProvider
 import com.android.build.gradle.internal.services.DslServices
+import com.android.build.gradle.options.BooleanOption
 import com.android.builder.core.BuilderConstants
 import com.android.builder.core.ComponentType
 import com.android.builder.core.ComponentTypeImpl
@@ -98,7 +99,7 @@ abstract class AbstractVariantInputManager<
                 computeSourceSetName(
                     buildType.name, ComponentTypeImpl.ANDROID_TEST
                 )
-            ) as DefaultAndroidSourceSet
+            )
         } else null
 
         val unitTestSourceSet = if (componentType.hasTestComponents) {
@@ -106,7 +107,7 @@ abstract class AbstractVariantInputManager<
                 computeSourceSetName(
                     buildType.name, ComponentTypeImpl.UNIT_TEST
                 )
-            ) as DefaultAndroidSourceSet
+            )
         } else null
 
         val testFixturesSourceSet =
@@ -115,15 +116,16 @@ abstract class AbstractVariantInputManager<
                     computeSourceSetName(
                         buildType.name, ComponentTypeImpl.TEST_FIXTURES
                     )
-                ) as DefaultAndroidSourceSet
+                )
             } else null
 
         buildTypes[name] = BuildTypeData(
             buildType = buildType,
-            sourceSet = sourceSetManager.setUpSourceSet(buildType.name) as DefaultAndroidSourceSet,
+            sourceSet = sourceSetManager.setUpSourceSet(buildType.name).get(),
             testFixturesSourceSet = testFixturesSourceSet,
             androidTestSourceSet = androidTestSourceSet,
-            unitTestSourceSet = unitTestSourceSet
+            unitTestSourceSet = unitTestSourceSet,
+            lazySourceSetCreation = dslServices.projectOptions[BooleanOption.ENABLE_NEW_TEST_DSL]
         )
     }
 
@@ -140,35 +142,35 @@ abstract class AbstractVariantInputManager<
         if (buildTypes.containsKey(name)) {
             throw RuntimeException("ProductFlavor names cannot collide with BuildType names")
         }
-        val mainSourceSet =
-            sourceSetManager.setUpSourceSet(productFlavor.name) as DefaultAndroidSourceSet
-        var testFixturesSourceSet: DefaultAndroidSourceSet? = null
-        var androidTestSourceSet: DefaultAndroidSourceSet? = null
-        var unitTestSourceSet: DefaultAndroidSourceSet? = null
+        val mainSourceSet = sourceSetManager.setUpSourceSet(productFlavor.name)
+        var testFixturesSourceSet: LazyAndroidSourceSet? = null
+        var androidTestSourceSet: LazyAndroidSourceSet? = null
+        var unitTestSourceSet: LazyAndroidSourceSet? = null
         if (componentType.hasTestComponents) {
             androidTestSourceSet = sourceSetManager.setUpTestSourceSet(
                 computeSourceSetName(
                     productFlavor.name, ComponentTypeImpl.ANDROID_TEST
                 )
-            ) as DefaultAndroidSourceSet
+            )
             unitTestSourceSet = sourceSetManager.setUpTestSourceSet(
                 computeSourceSetName(
                     productFlavor.name, ComponentTypeImpl.UNIT_TEST
                 )
-            ) as DefaultAndroidSourceSet
+            )
             testFixturesSourceSet = sourceSetManager.setUpSourceSet(
                 computeSourceSetName(
                     productFlavor.name, ComponentTypeImpl.TEST_FIXTURES
                 )
-            ) as DefaultAndroidSourceSet
+            )
         }
         val productFlavorData =
             ProductFlavorData(
                 productFlavor = productFlavor,
-                sourceSet = mainSourceSet,
+                sourceSet = mainSourceSet.get(),
                 testFixturesSourceSet = testFixturesSourceSet,
                 androidTestSourceSet = androidTestSourceSet,
-                unitTestSourceSet = unitTestSourceSet
+                unitTestSourceSet = unitTestSourceSet,
+                lazySourceSetCreation = dslServices.projectOptions[BooleanOption.ENABLE_NEW_TEST_DSL]
             )
         productFlavors[productFlavor.name] = productFlavorData
     }
