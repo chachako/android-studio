@@ -5562,48 +5562,48 @@ maven_import(
 )
 
 maven_artifact(
-    name = "net.bytebuddy.byte-buddy-agent_1.12.14",
-    pom = "repository/net/bytebuddy/byte-buddy-agent/1.12.14/byte-buddy-agent-1.12.14.pom",
+    name = "net.bytebuddy.byte-buddy-agent_1.14.8",
+    pom = "repository/net/bytebuddy/byte-buddy-agent/1.14.8/byte-buddy-agent-1.14.8.pom",
     repo_root_path = "repository",
-    repo_path = "net/bytebuddy/byte-buddy-agent/1.12.14",
-    parent = "net.bytebuddy.byte-buddy-parent_1.12.14",
+    repo_path = "net/bytebuddy/byte-buddy-agent/1.14.8",
+    parent = "net.bytebuddy.byte-buddy-parent_1.14.8",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "net.bytebuddy.byte-buddy-agent",
     classifiers = [],
-    parent = "net.bytebuddy.byte-buddy-parent_1.12.14",
+    parent = "net.bytebuddy.byte-buddy-parent_1.14.8",
     jars = [
-        "repository/net/bytebuddy/byte-buddy-agent/1.12.14/byte-buddy-agent-1.12.14.jar"
+        "repository/net/bytebuddy/byte-buddy-agent/1.14.8/byte-buddy-agent-1.14.8.jar"
     ],
     original_deps = [],
-    pom = "repository/net/bytebuddy/byte-buddy-agent/1.12.14/byte-buddy-agent-1.12.14.pom",
+    pom = "repository/net/bytebuddy/byte-buddy-agent/1.14.8/byte-buddy-agent-1.14.8.pom",
     repo_root_path = "repository",
-    repo_path = "net/bytebuddy/byte-buddy-agent/1.12.14",
+    repo_path = "net/bytebuddy/byte-buddy-agent/1.14.8",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "net.bytebuddy.byte-buddy_1.12.14",
-    pom = "repository/net/bytebuddy/byte-buddy/1.12.14/byte-buddy-1.12.14.pom",
+    name = "net.bytebuddy.byte-buddy_1.14.8",
+    pom = "repository/net/bytebuddy/byte-buddy/1.14.8/byte-buddy-1.14.8.pom",
     repo_root_path = "repository",
-    repo_path = "net/bytebuddy/byte-buddy/1.12.14",
-    parent = "net.bytebuddy.byte-buddy-parent_1.12.14",
+    repo_path = "net/bytebuddy/byte-buddy/1.14.8",
+    parent = "net.bytebuddy.byte-buddy-parent_1.14.8",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "net.bytebuddy.byte-buddy",
     classifiers = [],
-    parent = "net.bytebuddy.byte-buddy-parent_1.12.14",
+    parent = "net.bytebuddy.byte-buddy-parent_1.14.8",
     jars = [
-        "repository/net/bytebuddy/byte-buddy/1.12.14/byte-buddy-1.12.14.jar"
+        "repository/net/bytebuddy/byte-buddy/1.14.8/byte-buddy-1.14.8.jar"
     ],
     original_deps = [],
-    pom = "repository/net/bytebuddy/byte-buddy/1.12.14/byte-buddy-1.12.14.pom",
+    pom = "repository/net/bytebuddy/byte-buddy/1.14.8/byte-buddy-1.14.8.pom",
     repo_root_path = "repository",
-    repo_path = "net/bytebuddy/byte-buddy/1.12.14",
+    repo_path = "net/bytebuddy/byte-buddy/1.14.8",
     visibility = ["//visibility:public"],
 )
 
@@ -9993,14 +9993,14 @@ maven_import(
 )
 
 maven_artifact(
-    name = "org.mockito.mockito-core_4.8.0",
-    pom = "repository/org/mockito/mockito-core/4.8.0/mockito-core-4.8.0.pom",
+    name = "org.mockito.mockito-core_5.6.0",
+    pom = "repository/org/mockito/mockito-core/5.6.0/mockito-core-5.6.0.pom",
     repo_root_path = "repository",
-    repo_path = "org/mockito/mockito-core/4.8.0",
+    repo_path = "org/mockito/mockito-core/5.6.0",
     deps = [
-        "net.bytebuddy.byte-buddy_1.12.14",
-        "net.bytebuddy.byte-buddy-agent_1.12.14",
-        "org.objenesis.objenesis_3.2",
+        "net.bytebuddy.byte-buddy_1.14.8",
+        "net.bytebuddy.byte-buddy-agent_1.14.8",
+        "org.objenesis.objenesis_3.3",
     ],
     visibility = ["//visibility:public"],
 )
@@ -10009,7 +10009,7 @@ maven_import(
     name = "org.mockito.mockito-core",
     classifiers = [],
     jars = [
-        "repository/org/mockito/mockito-core/4.8.0/mockito-core-4.8.0.jar"
+        "repository/org/mockito/mockito-core/5.6.0/mockito-core-5.6.0.jar"
     ],
     exports = [
         "net.bytebuddy.byte-buddy",
@@ -10019,42 +10019,13 @@ maven_import(
         "org.objenesis.objenesis",
     ],
     original_deps = [
-        "net.bytebuddy.byte-buddy_1.12.14",
-        "net.bytebuddy.byte-buddy-agent_1.12.14",
-        "org.objenesis.objenesis_3.2",
+        "net.bytebuddy.byte-buddy_1.14.8",
+        "net.bytebuddy.byte-buddy-agent_1.14.8",
+        "org.objenesis.objenesis_3.3",
     ],
-    pom = "repository/org/mockito/mockito-core/4.8.0/mockito-core-4.8.0.pom",
+    pom = "repository/org/mockito/mockito-core/5.6.0/mockito-core-5.6.0.pom",
     repo_root_path = "repository",
-    repo_path = "org/mockito/mockito-core/4.8.0",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "org.mockito.mockito-inline_4.8.0",
-    pom = "repository/org/mockito/mockito-inline/4.8.0/mockito-inline-4.8.0.pom",
-    repo_root_path = "repository",
-    repo_path = "org/mockito/mockito-inline/4.8.0",
-    deps = [
-        "org.mockito.mockito-core_4.8.0",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_import(
-    name = "org.mockito.mockito-inline",
-    classifiers = [],
-    jars = [
-        "repository/org/mockito/mockito-inline/4.8.0/mockito-inline-4.8.0.jar"
-    ],
-    exports = [
-        "org.mockito.mockito-core",
-    ],
-    original_deps = [
-        "org.mockito.mockito-core_4.8.0",
-    ],
-    pom = "repository/org/mockito/mockito-inline/4.8.0/mockito-inline-4.8.0.pom",
-    repo_root_path = "repository",
-    repo_path = "org/mockito/mockito-inline/4.8.0",
+    repo_path = "org/mockito/mockito-core/5.6.0",
     visibility = ["//visibility:public"],
 )
 
@@ -10139,26 +10110,25 @@ maven_import(
 )
 
 maven_artifact(
-    name = "org.objenesis.objenesis_3.2",
-    pom = "repository/org/objenesis/objenesis/3.2/objenesis-3.2.pom",
+    name = "org.objenesis.objenesis_3.3",
+    pom = "repository/org/objenesis/objenesis/3.3/objenesis-3.3.pom",
     repo_root_path = "repository",
-    repo_path = "org/objenesis/objenesis/3.2",
-    parent = "org.objenesis.objenesis-parent_3.2",
+    repo_path = "org/objenesis/objenesis/3.3",
+    parent = "org.objenesis.objenesis-parent_3.3",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "org.objenesis.objenesis",
     classifiers = [],
-    parent = "org.objenesis.objenesis-parent_3.2",
+    parent = "org.objenesis.objenesis-parent_3.3",
     jars = [
-        "repository/org/objenesis/objenesis/3.2/objenesis-3.2.jar"
+        "repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar"
     ],
     original_deps = [],
-    pom = "repository/org/objenesis/objenesis/3.2/objenesis-3.2.pom",
+    pom = "repository/org/objenesis/objenesis/3.3/objenesis-3.3.pom",
     repo_root_path = "repository",
-    repo_path = "org/objenesis/objenesis/3.2",
-    srcjar = "repository/org/objenesis/objenesis/3.2/objenesis-3.2-sources.jar",
+    repo_path = "org/objenesis/objenesis/3.3",
     visibility = ["//visibility:public"],
 )
 
@@ -54919,10 +54889,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "net.bytebuddy.byte-buddy-parent_1.12.14",
-    pom = "repository/net/bytebuddy/byte-buddy-parent/1.12.14/byte-buddy-parent-1.12.14.pom",
+    name = "net.bytebuddy.byte-buddy-parent_1.14.8",
+    pom = "repository/net/bytebuddy/byte-buddy-parent/1.14.8/byte-buddy-parent-1.14.8.pom",
     repo_root_path = "repository",
-    repo_path = "net/bytebuddy/byte-buddy-parent/1.12.14",
+    repo_path = "net/bytebuddy/byte-buddy-parent/1.14.8",
 )
 
 maven_artifact(
@@ -55786,10 +55756,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.objenesis.objenesis-parent_3.2",
-    pom = "repository/org/objenesis/objenesis-parent/3.2/objenesis-parent-3.2.pom",
+    name = "org.objenesis.objenesis-parent_3.3",
+    pom = "repository/org/objenesis/objenesis-parent/3.3/objenesis-parent-3.3.pom",
     repo_root_path = "repository",
-    repo_path = "org/objenesis/objenesis-parent/3.2",
+    repo_path = "org/objenesis/objenesis-parent/3.3",
 )
 
 maven_artifact(

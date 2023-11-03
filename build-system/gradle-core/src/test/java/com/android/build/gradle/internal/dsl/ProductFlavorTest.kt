@@ -59,7 +59,6 @@ class ProductFlavorTest {
                         "getInternalDimensionDefault\$gradle_core",
                         "getTargetSdkPreview",
                         "getAarMetadata",
-                        "getApplicationId",
                         "getNdkConfig",
                         "getNdk",
                         "getShaders",

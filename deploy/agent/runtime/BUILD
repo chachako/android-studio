@@ -110,7 +110,6 @@ coverage_java_test(
         "//tools/base/deploy/proto:deploy_java_proto",
         "//tools/base/testutils:tools.testutils",
         "@maven//:junit.junit",
-        "@maven//:org.mockito.mockito-inline",
     ],
 )
 

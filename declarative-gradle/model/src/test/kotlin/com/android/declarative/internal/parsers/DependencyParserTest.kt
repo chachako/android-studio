@@ -128,7 +128,7 @@ class DependencyParserTest {
             """
             [dependencies]
             implementation = [
-                { notation = "org.mockito:mockito-core:4.8.0" },
+                { notation = "org.mockito:mockito-core:5.6.0" },
                 { notation = "org.junit:junit:5.1.0" },
             ]
         """.trimIndent()
@@ -140,7 +140,7 @@ class DependencyParserTest {
             assertThat(it.type).isEqualTo(DependencyType.NOTATION)
             assertThat(it).isInstanceOf(Notation::class.java)
             (it as Notation).also { dependencyInfo ->
-                assertThat(dependencyInfo.notation).isEqualTo("org.mockito:mockito-core:4.8.0")
+                assertThat(dependencyInfo.notation).isEqualTo("org.mockito:mockito-core:5.6.0")
             }
         }
         result[1].also {
@@ -207,7 +207,7 @@ class DependencyParserTest {
             """
             [dependencies]
             implementation = [
-                { group = "org.mockito", name = "mockito-core", version = "4.8.0" },
+                { group = "org.mockito", name = "mockito-core", version = "5.6.0" },
             ]
         """.trimIndent()
         )
@@ -220,7 +220,7 @@ class DependencyParserTest {
             (it as Maven).also { dependencyInfo ->
                 assertThat(dependencyInfo.group).isEqualTo("org.mockito")
                 assertThat(dependencyInfo.name).isEqualTo("mockito-core")
-                assertThat(dependencyInfo.version).isEqualTo("4.8.0")
+                assertThat(dependencyInfo.version).isEqualTo("5.6.0")
             }
         }
     }
