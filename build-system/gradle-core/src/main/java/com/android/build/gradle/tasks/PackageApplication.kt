@@ -40,11 +40,12 @@ import java.nio.file.Files
 @DisableCachingByDefault
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.APK_PACKAGING)
 abstract class PackageApplication : PackageAndroidArtifact() {
-    private lateinit var transformationRequest: ArtifactTransformationRequest<PackageApplication>
+    private lateinit var _transformationRequest: ArtifactTransformationRequest<PackageApplication>
 
     @Internal
-    override fun getTransformationRequest(): ArtifactTransformationRequest<PackageApplication> {
-        return transformationRequest
+    override fun getTransformationRequest(): ArtifactTransformationRequest<PackageAndroidArtifact> {
+        @Suppress("UNCHECKED_CAST")
+        return _transformationRequest as ArtifactTransformationRequest<PackageAndroidArtifact>
     }
     // ----- CreationAction -----
     /**
@@ -82,8 +83,8 @@ abstract class PackageApplication : PackageAndroidArtifact() {
                 ?.useResourceShrinker == true
             val operationRequest = creationConfig.artifacts.use(taskProvider)
                     .wiredWithDirectories(
-                            PackageAndroidArtifact::getResourceFiles,
-                            PackageApplication::getOutputDirectory)
+                            PackageAndroidArtifact::resourceFiles,
+                            PackageApplication::outputDirectory)
 
             transformationRequest = when {
                 useOptimizedResources -> operationRequest.toTransformMany(
@@ -102,11 +103,11 @@ abstract class PackageApplication : PackageAndroidArtifact() {
 
             // in case configure is called before handleProvider, we need to save the request.
             transformationRequest?.let {
-                task?.let { t -> t.transformationRequest = it }
+                task?.let { t -> t._transformationRequest = it }
             }
             creationConfig
                 .artifacts
-                .setInitialProvider(taskProvider, PackageApplication::getIdeModelOutputFile)
+                .setInitialProvider(taskProvider, PackageApplication::ideModelOutputFile)
                 .atLocation(outputDirectory)
                 .withName(BuiltArtifactsImpl.METADATA_FILE_NAME)
                 .on(APK_IDE_MODEL)
@@ -116,7 +117,7 @@ abstract class PackageApplication : PackageAndroidArtifact() {
             super.finalConfigure(task)
             this.task = task
             transformationRequest?.let {
-                task.transformationRequest = it
+                task._transformationRequest = it
             }
         }
 
