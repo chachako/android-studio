@@ -49,7 +49,6 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.cancel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -246,6 +245,17 @@ internal class ForwardingDaemonImpl(
     if (started.get() && !stopped.getAndSet(true)) {
       try {
         scope.cancel()
+        // Wait until stream commands get cancelled.
+        runBlocking {
+          try {
+            withTimeout(FAST_TASK_TIME_LIMIT.toMillis()) { adbCommandHandler.join() }
+          } catch (_: TimeoutCancellationException) {
+            logger.log(
+              Level.WARNING,
+              "Command handler not cancelled after ${FAST_TASK_TIME_LIMIT.seconds}s."
+            )
+          }
+        }
         streams.values.forEach { runAndLogExceptionsOnClosing { it.sendClose() } }
         runAndLogExceptionsOnClosing { streamOpener.close() }
         onStateChanged(DeviceState.OFFLINE)

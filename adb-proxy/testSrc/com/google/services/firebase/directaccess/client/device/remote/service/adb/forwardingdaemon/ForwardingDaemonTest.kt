@@ -25,7 +25,9 @@ import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.android.adblib.utils.createChildScope
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors
+import java.io.IOException
 import java.net.InetSocketAddress
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -177,6 +179,43 @@ class ForwardingDaemonTest {
     forwardingDaemon.close()
     // Device should still be connected.
     assertThat(isAdbDeviceConnected()).isTrue()
+  }
+
+  @Test
+  fun testStreamConcurrencySupport() = runBlockingWithTimeout {
+    val childScope = fakeAdbSession.scope.createChildScope(context = exceptionHandler)
+    forwardingDaemon =
+      ForwardingDaemonImpl(fakeStreamOpener, childScope, fakeAdbSession) { testSocket }
+    assertThat(forwardingDaemon.devicePort).isEqualTo(-1)
+    forwardingDaemon.start()
+    assertThat(forwardingDaemon.devicePort).isEqualTo(testSocket.localAddress()?.port)
+    yieldUntil { isAdbDeviceConnected() }
+    var streamId = 1
+    // Make sure the stream list if big enough to iterate.
+    val streamCount = 2000
+    val countDownLatch = CountDownLatch(streamCount)
+    childScope.launch {
+      fakeAdbSession.channelFactory.connectSocket(testSocket.localAddress()!!).use { channel ->
+        inputList.forEach { channel.writeExactly(it) }
+        // CNXN response
+        channel.assertCommand(CNXN)
+        // OPEN response
+        channel.assertCommand(OKAY, 1, 1)
+        // WRTE response
+        channel.assertCommand(OKAY, 1, 1)
+        while (true) {
+          try {
+            channel.writeExactly(createByteBuffer(OPEN, ++streamId))
+            countDownLatch.countDown()
+            channel.assertCommand(OKAY, streamId, streamId)
+          } catch (_: IOException) {
+            break
+          }
+        }
+      }
+    }
+    countDownLatch.await()
+    forwardingDaemon.close()
   }
 
   @Test

@@ -23,6 +23,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 
 internal val ROUND_TRIP_LATENCY_LIMIT: Duration = Duration.ofSeconds(5)
+internal val FAST_TASK_TIME_LIMIT: Duration = Duration.ofSeconds(1)
 val LATENCY_COLLECTION_INTERVAL: Duration = Duration.ofSeconds(10)
 
 /**
