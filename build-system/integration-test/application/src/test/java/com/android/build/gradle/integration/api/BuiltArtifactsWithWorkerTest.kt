@@ -178,11 +178,12 @@ abstract class ConsumerTask extends BaseTask {
       replacementRequest.submit(
                 this,
                 workerExecutor.noIsolation(),
-                WorkItem.class
-            ) { BuiltArtifact builtArtifact, Directory outputLocation, MyWorkItemParameters parameters ->
-            parameters.outputFile.set(outputLocation.file(new File(builtArtifact.outputFile).name).getAsFile())
-            return parameters.outputFile.get().getAsFile()
-            }
+                WorkItem.class,
+                { BuiltArtifact builtArtifact, Directory outputLocation, MyWorkItemParameters parameters ->
+                    parameters.outputFile.set(outputLocation.file(new File(builtArtifact.outputFile).name).getAsFile())
+                    return parameters.outputFile.get().getAsFile()
+                }
+      )
     }
 }
 

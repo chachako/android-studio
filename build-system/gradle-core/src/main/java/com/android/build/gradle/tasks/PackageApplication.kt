@@ -15,21 +15,31 @@
  */
 package com.android.build.gradle.tasks
 
+import com.android.SdkConstants
 import com.android.build.api.artifact.Artifact
 import com.android.build.api.artifact.ArtifactTransformationRequest
 import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.variant.impl.BuiltArtifactImpl
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.InternalArtifactType.APK_IDE_MODEL
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
+import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
 import com.android.buildanalyzer.common.TaskCategory
+import com.android.ide.common.build.BaselineProfileDetails
+import com.android.utils.FileUtils
 import com.google.wireless.android.sdk.stats.GradleBuildProjectMetrics
 import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.work.DisableCachingByDefault
 import java.io.File
@@ -47,6 +57,12 @@ abstract class PackageApplication : PackageAndroidArtifact() {
         @Suppress("UNCHECKED_CAST")
         return _transformationRequest as ArtifactTransformationRequest<PackageAndroidArtifact>
     }
+
+    @get:Optional
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:InputFiles
+    abstract val dexMetadataDirectory: DirectoryProperty
+
     // ----- CreationAction -----
     /**
      * Configures the task to perform the "standard" packaging, including all files that should end
@@ -62,6 +78,7 @@ abstract class PackageApplication : PackageAndroidArtifact() {
         manifests,
         manifestType
     ) {
+
         private var transformationRequest: ArtifactTransformationRequest<PackageApplication>? = null
         private var task: PackageApplication? = null
         override val name: String
@@ -82,23 +99,32 @@ abstract class PackageApplication : PackageAndroidArtifact() {
                 .androidResourcesCreationConfig
                 ?.useResourceShrinker == true
             val operationRequest = creationConfig.artifacts.use(taskProvider)
-                    .wiredWithDirectories(
-                            PackageAndroidArtifact::resourceFiles,
-                            PackageApplication::outputDirectory)
+                .wiredWithDirectories(
+                    PackageAndroidArtifact::resourceFiles,
+                    PackageApplication::outputDirectory
+                )
 
             transformationRequest = when {
                 useOptimizedResources -> operationRequest.toTransformMany(
-                        InternalArtifactType.OPTIMIZED_PROCESSED_RES,
-                        SingleArtifact.APK,
-                        outputDirectory.absolutePath)
+                    InternalArtifactType.OPTIMIZED_PROCESSED_RES,
+                    SingleArtifact.APK,
+                    outputDirectory.absolutePath,
+                    ::customizeBuiltArtifacts
+                )
+
                 useResourcesShrinker -> operationRequest.toTransformMany(
-                        InternalArtifactType.SHRUNK_PROCESSED_RES,
-                        SingleArtifact.APK,
-                        outputDirectory.absolutePath)
+                    InternalArtifactType.SHRUNK_PROCESSED_RES,
+                    SingleArtifact.APK,
+                    outputDirectory.absolutePath,
+                    ::customizeBuiltArtifacts
+                )
+
                 else -> operationRequest.toTransformMany(
-                        InternalArtifactType.PROCESSED_RES,
-                        SingleArtifact.APK,
-                        outputDirectory.absolutePath)
+                    InternalArtifactType.PROCESSED_RES,
+                    SingleArtifact.APK,
+                    outputDirectory.absolutePath,
+                    ::customizeBuiltArtifacts
+                )
             }
 
             // in case configure is called before handleProvider, we need to save the request.
@@ -113,6 +139,13 @@ abstract class PackageApplication : PackageAndroidArtifact() {
                 .on(APK_IDE_MODEL)
         }
 
+        override fun configure(packageAndroidArtifact: PackageApplication) {
+            super.configure(packageAndroidArtifact)
+            packageAndroidArtifact.dexMetadataDirectory.setDisallowChanges(
+                creationConfig.artifacts.get(InternalArtifactType.DEX_METADATA_DIRECTORY)
+            )
+        }
+
         override fun finalConfigure(task: PackageApplication) {
             super.finalConfigure(task)
             this.task = task
@@ -120,10 +153,81 @@ abstract class PackageApplication : PackageAndroidArtifact() {
                 task._transformationRequest = it
             }
         }
-
     }
 
     companion object {
+
+        private fun customizeBuiltArtifacts(task: PackageApplication, input: BuiltArtifactsImpl): BuiltArtifactsImpl {
+            return if (task.dexMetadataDirectory.isPresent) {
+                val baselineProfileData = baselineProfileDataForJson(
+                    input.elements,
+                    task.dexMetadataDirectory.get().asFile,
+                    task.outputDirectory.get().asFile,
+                )
+                BuiltArtifactsImpl(
+                    input.version,
+                    input.artifactType,
+                    input.applicationId,
+                    input.variantName,
+                    input.elements,
+                    input.elementType(),
+                    baselineProfileData
+                )
+            } else {
+                input
+            }
+        }
+
+        private fun baselineProfileDataForJson(
+
+            mappedElements: Collection<BuiltArtifactImpl>,
+            inputDexMetadataDirectory: File,
+            apkDirectory: File
+        ): List<BaselineProfileDetails> {
+            if (!inputDexMetadataDirectory.exists() || !apkDirectory.exists()) {
+                return emptyList()
+            }
+            val dexMetadataProperties =
+                File(inputDexMetadataDirectory, SdkConstants.FN_DEX_METADATA_PROP)
+            if (!dexMetadataProperties.exists()) return emptyList()
+
+            val apkNames = mappedElements.map {
+                File(it.outputFile).nameWithoutExtension
+            }
+            val baselineProfilesMapping = mutableMapOf<String, MutableList<String>>()
+            dexMetadataProperties.readLines().forEach {
+                val entry = it.split("=")
+                baselineProfilesMapping.getOrPut(entry[1]) { mutableListOf() }.add(entry[0])
+            }
+            val baselineProfileData = mutableListOf<BaselineProfileDetails>()
+            baselineProfilesMapping.forEach { entry ->
+                val minApi = entry.value.minByOrNull { it }?.toInt()
+                val maxApi = entry.value.maxByOrNull { it }?.toInt()
+                val baselineProfiles = mutableSetOf<File>()
+                val dmFile = inputDexMetadataDirectory.resolve(entry.key)
+                val fileIndex = dmFile.parentFile.name
+                apkNames.forEach {
+                    val renamedDmFile = FileUtils.join(
+                        apkDirectory, "baselineProfiles", fileIndex, "$it.dm")
+                    renamedDmFile.parentFile.mkdirs()
+                    FileUtils.copyFile(dmFile, renamedDmFile)
+                    baselineProfiles.add(renamedDmFile)
+                }
+                if (minApi == maxApi) {
+                    // in the case that there is only one api, don't set a limit on the maxApi
+                    baselineProfileData.add(
+                        BaselineProfileDetails(minApi!!, null, baselineProfiles)
+                    )
+                } else {
+                    baselineProfileData.add(
+                        BaselineProfileDetails(minApi!!, maxApi, baselineProfiles)
+                    )
+                }
+            }
+            baselineProfileData.sortBy { it.minApi }
+            return baselineProfileData
+        }
+
         @JvmStatic
         fun recordMetrics(
             projectPath: String?,

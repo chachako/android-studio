@@ -72,7 +72,6 @@ import org.gradle.api.logging.LogLevel;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
-import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.PathSensitive;
@@ -128,8 +127,7 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                             getInstallOptions(),
                             getTimeOutInMs(),
                             getLogger(),
-                            getDexMetadataDirectory(),
-                            getTmpDir().get().getAsFile());
+                            getDexMetadataDirectory());
                     return null;
                 });
     }
@@ -146,8 +144,7 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
             @NonNull Collection<String> installOptions,
             int timeOutInMs,
             @NonNull Logger logger,
-            @NonNull DirectoryProperty dexMetadataDirectory,
-            @NonNull File tmpDir)
+            @NonNull DirectoryProperty dexMetadataDirectory)
             throws DeviceException, IOException {
         ILogger iLogger = new LoggerWrapper(logger);
         int successfulInstallCount = 0;
@@ -218,7 +215,7 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                                     deviceConfigProvider, builtArtifacts, supportedAbis));
                 }
 
-                addDexMetadataFiles(dexMetadataDirectory, device, apkFiles, tmpDir, logger);
+                addDexMetadataFiles(dexMetadataDirectory, apkDirectory, device, apkFiles, logger);
 
                 if (apkFiles.isEmpty()) {
                     logger.lifecycle(
@@ -264,15 +261,14 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
      */
     private static void addDexMetadataFiles(
             DirectoryProperty dexMetadataDirectory,
+            Directory apkDirectory,
             DeviceConnector device,
             List<File> apkFiles,
-            File tmpDir,
             Logger logger)
             throws IOException {
         Directory dmDir = dexMetadataDirectory.getOrNull();
         if (dmDir != null && dmDir.file(SdkConstants.FN_DEX_METADATA_PROP).getAsFile().exists()) {
-            File dexMetadataProperties =
-                    dexMetadataDirectory.get().file(SdkConstants.FN_DEX_METADATA_PROP).getAsFile();
+            File dexMetadataProperties = dmDir.file(SdkConstants.FN_DEX_METADATA_PROP).getAsFile();
             InputStream inputStream = new FileInputStream(dexMetadataProperties);
             Properties properties = new Properties();
             properties.load(inputStream);
@@ -285,20 +281,27 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
             }
 
             if (!apkFiles.isEmpty()) {
-                Path fullDmPath = dexMetadataDirectory.get().getAsFile().toPath().resolve(dmPath);
-                // Copy the .dm files to the temp directory with the same names as the APKs
-                // being installed. This is necessary for the .dm files to associated with the
-                // corresponding APK. Note: this is fine because the size of the file is small, but
-                // if it becomes larger, a soft link can/should be used
+                String fileIndex = new File(dmPath).getParentFile().getName();
                 int numApks = apkFiles.size();
-                FileUtils.mkdirs(tmpDir);
                 for (int i = 0; i < numApks; i++) {
                     String apkFileName = apkFiles.get(i).getName();
                     if (apkFileName.endsWith(".apk")) {
                         String apkName = Files.getNameWithoutExtension(apkFileName);
-                        File copiedDm = FileUtils.join(tmpDir, apkName + ".dm");
-                        FileUtils.copyFile(fullDmPath.toFile(), copiedDm);
-                        apkFiles.add(copiedDm);
+                        File renamedBaselineProfile =
+                                FileUtils.join(
+                                        apkDirectory.getAsFile(),
+                                        "baselineProfiles",
+                                        fileIndex,
+                                        apkName + ".dm");
+                        if (!renamedBaselineProfile.exists()) {
+                            logger.log(
+                                    LogLevel.INFO,
+                                    "Baseline Profile at "
+                                            + renamedBaselineProfile.getAbsolutePath()
+                                            + " was not found.");
+                            return;
+                        }
+                        apkFiles.add(renamedBaselineProfile);
                     }
                 }
             }
@@ -345,9 +348,6 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
 
     @Nested
     public abstract BuildToolsExecutableInput getBuildTools();
-
-    @Internal
-    public abstract DirectoryProperty getTmpDir();
 
     public static class CreationAction
             extends VariantTaskCreationAction<InstallVariantTask, ApkCreationConfig> {
@@ -424,14 +424,6 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                                     .getArtifacts()
                                     .get(InternalArtifactType.DEX_METADATA_DIRECTORY.INSTANCE));
             task.getDexMetadataDirectory().disallowChanges();
-
-            task.getTmpDir()
-                    .set(
-                            creationConfig
-                                    .getPaths()
-                                    .intermediatesDir(
-                                            "tmp", "installVariant", creationConfig.getDirName()));
-            task.getTmpDir().disallowChanges();
         }
 
         @Override

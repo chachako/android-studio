@@ -16,8 +16,8 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
-import com.android.build.gradle.internal.fixtures.FakeGradleDirectoryProperty
 import com.android.build.gradle.internal.fixtures.FakeGradleDirectory
+import com.android.build.gradle.internal.fixtures.FakeGradleDirectoryProperty
 import com.android.builder.testing.api.DeviceConnector
 import com.android.builder.testing.api.DeviceProvider
 import com.android.ddmlib.AndroidDebugBridge
@@ -27,7 +27,6 @@ import com.android.fakeadbserver.services.PackageManager
 import com.android.sdklib.AndroidVersion
 import com.android.utils.StdLogger
 import com.google.common.collect.ImmutableList
-import com.google.common.collect.ImmutableMap
 import com.google.common.collect.ImmutableSet
 import org.gradle.api.logging.Logger
 import org.junit.Before
@@ -120,8 +119,7 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
             ImmutableList.of(),
             4000,
             logger,
-            FakeGradleDirectoryProperty(null),
-            temporaryFolder.root
+            FakeGradleDirectoryProperty(null)
         )
         Mockito.verify(logger, times(3)).quiet("Installed on {} {}.", 1, "device")
         Mockito.verify(deviceConnector, Mockito.atLeastOnce()).name
@@ -165,8 +163,7 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
                 ImmutableList.of(),
                 4000,
                 logger,
-                FakeGradleDirectoryProperty(null),
-                temporaryFolder.root
+                FakeGradleDirectoryProperty(null)
         )
         assert(deviceState.pmLogs.any {
             it.startsWith("install -r -t") && it.contains("main.apk")

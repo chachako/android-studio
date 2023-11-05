@@ -202,10 +202,27 @@ class InAndOutDirectoryOperationRequestImpl<TaskT: Task>(
         )
     }
 
+    /**
+     * Initiates a transform request of a single [Directory] artifact type that can
+     * contain more than one artifact. The transformed artifact will be registered under a different
+     * type.
+     *
+     * @param sourceType The [Artifact] type of the artifact to transform.
+     * @param targetType Desired type for the transformed [Artifact]
+     * @param atLocation relative location within the project's build folder to place the
+     * transformed [Directory] at.
+     * @param builtArtifactsCustomizer optional lambda to post-process the [BuiltArtifactsImpl]
+     * before it is saved in the target directory along with the transformed [Artifact]s
+     * @return [ArtifactTransformationRequest] that will allow processing of individual artifacts
+     * located in the input directory.
+     *
+     * Both source and target artifact types must be [Artifact.Single], and [Artifact.ContainsMany].
+     */
     internal fun <ArtifactTypeT, ArtifactTypeU> toTransformMany(
         sourceType: ArtifactTypeT,
         targetType: ArtifactTypeU,
-        atLocation: String? = null
+        atLocation: String? = null,
+        builtArtifactsCustomizer: ((TaskT, BuiltArtifactsImpl) -> BuiltArtifactsImpl)? = null,
     ): ArtifactTransformationRequestImpl<TaskT>
             where
             ArtifactTypeT : Single<Directory>,
@@ -219,14 +236,15 @@ class InAndOutDirectoryOperationRequestImpl<TaskT: Task>(
         }
         initialProvider.on(targetType)
 
-        return initializeTransform(sourceType, targetType, from, into)
+        return initializeTransform(sourceType, targetType, from, into, builtArtifactsCustomizer)
     }
 
     private fun <ArtifactTypeT, ArtifactTypeU> initializeTransform(
         sourceType: ArtifactTypeT,
         targetType: ArtifactTypeU,
         inputLocation: (TaskT) -> DirectoryProperty,
-        outputLocation: (TaskT) -> DirectoryProperty
+        outputLocation: (TaskT) -> DirectoryProperty,
+        builtArtifactsCustomizer: ((TaskT, BuiltArtifactsImpl) -> BuiltArtifactsImpl)?
     ): ArtifactTransformationRequestImpl<TaskT>
             where ArtifactTypeT : Single<Directory>,
                   ArtifactTypeT : Artifact.ContainsMany,
@@ -243,7 +261,8 @@ class InAndOutDirectoryOperationRequestImpl<TaskT: Task>(
             inputLocation,
             inputProvider,
             outputLocation,
-            builtArtifactsReference
+            builtArtifactsReference,
+            builtArtifactsCustomizer
         )
 
         return ArtifactTransformationRequestImpl(
@@ -281,7 +300,8 @@ class InAndOutDirectoryOperationRequestImpl<TaskT: Task>(
             inputLocation: (T) -> FileSystemLocationProperty<Directory>,
             inputProvider: Provider<Directory>,
             buildMetadataFileLocation: (T) -> FileSystemLocationProperty<Directory>,
-            builtArtifactsReference: AtomicReference<BuiltArtifactsImpl>
+            builtArtifactsReference: AtomicReference<BuiltArtifactsImpl>,
+            builtArtifactsCustomizer: ((T , BuiltArtifactsImpl) -> BuiltArtifactsImpl)? = null,
         ) where ArtifactTypeT : Single<Directory>,
                 ArtifactTypeT : Artifact.ContainsMany,
                 ArtifactTypeU : Single<Directory>,
@@ -299,7 +319,12 @@ class InAndOutDirectoryOperationRequestImpl<TaskT: Task>(
                                     "ArtifactTransformationRequest.submit in the task action?"
                         )
                     } else {
-                        builtArtifactsReference.get().save(buildMetadataFileLocation(task).get())
+                        val builtArtifacts =
+                            builtArtifactsCustomizer?.let {
+                                it(task, builtArtifactsReference.get())
+                            } ?: builtArtifactsReference.get()
+
+                        builtArtifacts.save(buildMetadataFileLocation(task).get())
                     }
                 }
             }

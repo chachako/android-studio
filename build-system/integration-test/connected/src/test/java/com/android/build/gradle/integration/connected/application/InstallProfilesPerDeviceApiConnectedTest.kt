@@ -17,12 +17,15 @@
 package com.android.build.gradle.integration.connected.application
 
 import com.android.SdkConstants
+import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.integration.connected.utils.getEmulator
 import com.android.build.gradle.internal.scope.InternalArtifactType
+import com.android.ide.common.build.GenericBuiltArtifactsLoader
 import com.android.utils.FileUtils
+import com.android.utils.NullLogger
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
@@ -46,6 +49,7 @@ class InstallProfilesPerDeviceApiConnectedTest {
                 android {
                     defaultConfig {
                         minSdkVersion = 28
+                        targetSdkVersion = 28
                     }
 
                     signingConfigs {
@@ -115,6 +119,34 @@ class InstallProfilesPerDeviceApiConnectedTest {
 
         ScannerSubject.assertThat(project.buildResult.stdout)
             .contains("Installing APK 'basic-release.apk, basic-release.dm'")
+
+        // Validate that renamed baseline profile file is present
+        val renamedBaselineProfile = FileUtils.join(
+            project.buildDir,
+            SdkConstants.FD_OUTPUTS,
+            SdkConstants.EXT_ANDROID_PACKAGE,
+            "release",
+            "baselineProfiles",
+            "0",
+            "basic-release.dm"
+        )
+        Truth.assertThat(renamedBaselineProfile.exists()).isTrue()
+
+        // Validate that baseline profile is in app metadata file
+        val appMetadataJson = FileUtils.join(
+            project.buildDir,
+            SdkConstants.FD_OUTPUTS,
+            SdkConstants.EXT_ANDROID_PACKAGE,
+            "release",
+            BuiltArtifactsImpl.METADATA_FILE_NAME
+        )
+        Truth.assertThat(appMetadataJson.readText()).contains("baselineProfiles")
+        Truth.assertThat(appMetadataJson.readText()).contains("basic-release.dm")
+
+        val builtArtifacts = GenericBuiltArtifactsLoader.loadFromFile(appMetadataJson, NullLogger())
+        val baselineProfileFile =
+            builtArtifacts?.baselineProfiles?.lastOrNull()?.baselineProfiles?.firstOrNull()
+        Truth.assertThat(baselineProfileFile).isEqualTo(renamedBaselineProfile)
     }
 
     @Test
@@ -157,5 +189,34 @@ class InstallProfilesPerDeviceApiConnectedTest {
 
         ScannerSubject.assertThat(project.buildResult.stdout)
             .contains("Installing APK 'basic-x86_64-release.apk, basic-x86_64-release.dm'")
+
+        // Validate that renamed baseline profile file is present
+        val renamedBaselineProfile = FileUtils.join(
+            project.buildDir,
+            SdkConstants.FD_OUTPUTS,
+            SdkConstants.EXT_ANDROID_PACKAGE,
+            "release",
+            "baselineProfiles",
+            "0",
+            "basic-x86_64-release.dm"
+        )
+        Truth.assertThat(renamedBaselineProfile.exists()).isTrue()
+
+        // Validate that baseline profile is in app metadata file
+        val appMetadataJson = FileUtils.join(
+            project.buildDir,
+            SdkConstants.FD_OUTPUTS,
+            SdkConstants.EXT_ANDROID_PACKAGE,
+            "release",
+            BuiltArtifactsImpl.METADATA_FILE_NAME
+        )
+        Truth.assertThat(appMetadataJson.readText()).contains("baselineProfiles")
+        Truth.assertThat(appMetadataJson.readText()).contains("basic-x86-release.dm")
+        Truth.assertThat(appMetadataJson.readText()).contains("basic-x86_64-release.dm")
+
+        val builtArtifacts = GenericBuiltArtifactsLoader.loadFromFile(appMetadataJson, NullLogger())
+        val baselineProfileFile =
+            builtArtifacts?.baselineProfiles?.lastOrNull()?.baselineProfiles?.firstOrNull()
+        Truth.assertThat(baselineProfileFile).isEqualTo(renamedBaselineProfile)
     }
 }

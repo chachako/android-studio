@@ -605,7 +605,7 @@ InternalArtifactType<T : FileSystemLocation>(
     )
     // Directory containing the dex metadata files to be installed as baseline profiles on devices
     // It should also contain a file which writes out mappings from API level to ".dm" file
-    object DEX_METADATA_DIRECTORY: InternalArtifactType<Directory>(DIRECTORY), Replaceable
+    object DEX_METADATA_DIRECTORY: InternalArtifactType<Directory>(DIRECTORY)
 
     object VERSION_CONTROL_INFO_FILE: InternalArtifactType<RegularFile>(
         FILE,
