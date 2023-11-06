@@ -22,6 +22,7 @@ import androidx.inspection.ArtTooling
 import androidx.inspection.Connection
 import androidx.inspection.Inspector
 import androidx.inspection.InspectorEnvironment
+import com.android.tools.appinspection.network.grpc.GrpcInterceptor
 import com.android.tools.appinspection.network.httpurl.wrapURLConnection
 import com.android.tools.appinspection.network.okhttp.OkHttp2Interceptor
 import com.android.tools.appinspection.network.okhttp.OkHttp3Interceptor
@@ -31,6 +32,7 @@ import com.android.tools.appinspection.network.utils.Logger
 import com.android.tools.appinspection.network.utils.LoggerImpl
 import com.squareup.okhttp.Interceptor
 import com.squareup.okhttp.OkHttpClient
+import io.grpc.ManagedChannelBuilder
 import java.net.URL
 import java.net.URLConnection
 import java.util.concurrent.TimeUnit
@@ -49,6 +51,12 @@ private val INTERCEPT_COMMAND_RESPONSE =
     .apply { interceptResponse = NetworkInspectorProtocol.InterceptResponse.getDefaultInstance() }
     .build()
     .toByteArray()
+
+private const val GRPC_FOR_ADDRESS_METHOD =
+  "forAddress(Ljava/lang/String;I)Lio/grpc/ManagedChannelBuilder;"
+
+private const val GRPC_FOR_TARGET_METHOD =
+  "forTarget(Ljava/lang/String;)Lio/grpc/ManagedChannelBuilder;"
 
 internal class NetworkInspector(
   connection: Connection,
@@ -180,7 +188,7 @@ internal class NetworkInspector(
   }
 
   @VisibleForTesting
-  fun registerHooks() {
+  internal fun registerHooks() {
     environment
       .artTooling()
       .registerExitHook(
@@ -190,7 +198,7 @@ internal class NetworkInspector(
           wrapURLConnection(urlConnection, trackerService, interceptionService)
         }
       )
-    logger.debugHidden("Instrumented URLConnection")
+    logger.debugHidden("Instrumented ${URL::class.qualifiedName}")
 
     var okHttpInstrumented = false
     try {
@@ -218,7 +226,7 @@ internal class NetworkInspector(
             list
           }
         )
-      logger.debugHidden("Instrumented com.squareup.okhttp.OkHttpClient")
+      logger.debugHidden("Instrumented ${OkHttpClient::class.qualifiedName}")
       okHttpInstrumented = true
     } catch (e: NoClassDefFoundError) {
       // Ignore. App may not depend on OkHttp.
@@ -237,7 +245,7 @@ internal class NetworkInspector(
             interceptors
           }
         )
-      logger.debugHidden("Instrumented okhttp3.OkHttpClient")
+      logger.debugHidden("Instrumented ${okhttp3.OkHttpClient::class.qualifiedName}")
       okHttpInstrumented = true
     } catch (e: NoClassDefFoundError) {
       // Ignore. App may not depend on OkHttp.
@@ -246,6 +254,27 @@ internal class NetworkInspector(
       // Only log if both OkHttp 2 and 3 were not detected
       logger.debug(
         "Did not instrument OkHttpClient. App does not use OKHttp or class is omitted by app reduce"
+      )
+    }
+
+    try {
+      val grpcInterceptor = GrpcInterceptor()
+      listOf(GRPC_FOR_ADDRESS_METHOD, GRPC_FOR_TARGET_METHOD).forEach { method ->
+        environment
+          .artTooling()
+          .registerExitHook(
+            ManagedChannelBuilder::class.java,
+            method,
+            ArtTooling.ExitHook<ManagedChannelBuilder<*>> { channelBuilder ->
+              channelBuilder.intercept(grpcInterceptor)
+              channelBuilder
+            }
+          )
+      }
+      logger.debugHidden("Instrumented ${ManagedChannelBuilder::class.qualifiedName}")
+    } catch (e: NoClassDefFoundError) {
+      logger.debug(
+        "Did not instrument 'ManagedChannelBuilder'. App does not use gRPC or class is omitted by app reduce"
       )
     }
   }

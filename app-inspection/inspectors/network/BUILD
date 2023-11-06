@@ -1,9 +1,9 @@
-package(default_visibility = ["//visibility:public"])
-
 load("//tools/adt/idea/studio:studio.bzl", "studio_data")
 load("//tools/base/app-inspection:app_inspection.bzl", "app_inspection_jar")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:proto.bzl", "android_java_proto_library")
+
+package(default_visibility = ["//visibility:public"])
 
 android_java_proto_library(
     name = "network_inspector_java_proto",
@@ -34,6 +34,7 @@ app_inspection_jar(
         ":network_inspector_java_proto",
         "//prebuilts/studio/sdk:platforms/latest_jar",
         "//prebuilts/tools/common/m2:androidx.inspection.inspection.1.0.0",
+        "//prebuilts/tools/common/m2:io.grpc.grpc-api.1.57.0",
         "//tools/base/app-inspection/inspectors/common:app-inspection.inspectors.common",
         "//tools/base/bazel:studio-proto",
         "@maven//:androidx.annotation.annotation",

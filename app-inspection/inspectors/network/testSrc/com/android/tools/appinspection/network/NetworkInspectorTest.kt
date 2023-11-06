@@ -106,9 +106,10 @@ internal class NetworkInspectorTest {
 
     assertThat(logger.messages)
       .containsExactly(
-        "DEBUG: studio.inspectors: Instrumented URLConnection",
+        "DEBUG: studio.inspectors: Instrumented java.net.URL",
         "DEBUG: studio.inspectors: Instrumented com.squareup.okhttp.OkHttpClient",
         "DEBUG: studio.inspectors: Instrumented okhttp3.OkHttpClient",
+        "DEBUG: studio.inspectors: Instrumented io.grpc.ManagedChannelBuilder",
       )
   }
 
@@ -119,9 +120,8 @@ internal class NetworkInspectorTest {
 
     networkInspector.registerHooks()
 
-    assertThat(logger.messages)
+    assertThat(logger.messages.filter { !it.contains("studio.inspectors") })
       .containsExactly(
-        "DEBUG: studio.inspectors: Instrumented URLConnection",
         "DEBUG: Network Inspector: Did not instrument OkHttpClient. App does not use OKHttp or class is omitted by app reduce",
       )
   }
@@ -144,6 +144,19 @@ internal class NetworkInspectorTest {
     networkInspector.registerHooks()
 
     assertThat(logger.messages.filter { !it.contains("studio.inspectors") }).isEmpty()
+  }
+
+  @Test
+  fun failToAddGrpcHooks_doesNotThrowException() {
+    val environment = TestInspectorEnvironment("ManagedChannelBuilder")
+    val networkInspector = NetworkInspector(FakeConnection(), environment, logger = logger)
+
+    networkInspector.registerHooks()
+
+    assertThat(logger.messages.filter { !it.contains("studio.inspectors") })
+      .containsExactly(
+        "DEBUG: Network Inspector: Did not instrument 'ManagedChannelBuilder'. App does not use gRPC or class is omitted by app reduce",
+      )
   }
 
   private inner class TestInspectorEnvironment(private val rejectClassName: String) :

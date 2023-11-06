@@ -21,5 +21,13 @@
     <orderEntry type="library" scope="TEST" name="JUnit4" level="project" />
     <orderEntry type="library" scope="TEST" name="truth" level="project" />
     <orderEntry type="library" scope="TEST" name="Guava" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../../../../prebuilts/tools/common/m2/repository/io/grpc/grpc-api/1.57.0/grpc-api-1.57.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+      </library>
+    </orderEntry>
   </component>
 </module>
