@@ -30,7 +30,7 @@ private const val URL_PARAMS = "activity=http"
 private val FAKE_URL = URL("https://www.google.com?$URL_PARAMS")
 private const val EXPECTED_RESPONSE = "HTTP/1.0 200 OK"
 
-class HttpUrlTest {
+internal class HttpUrlTest {
 
   @get:Rule val inspectorRule = NetworkInspectorRule()
 

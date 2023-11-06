@@ -17,7 +17,7 @@
 package com.android.tools.appinspection.network
 
 import android.app.Application
-import android.util.Log
+import androidx.annotation.VisibleForTesting
 import androidx.inspection.ArtTooling
 import androidx.inspection.Connection
 import androidx.inspection.Inspector
@@ -27,6 +27,8 @@ import com.android.tools.appinspection.network.okhttp.OkHttp2Interceptor
 import com.android.tools.appinspection.network.okhttp.OkHttp3Interceptor
 import com.android.tools.appinspection.network.rules.InterceptionRuleImpl
 import com.android.tools.appinspection.network.rules.InterceptionRuleServiceImpl
+import com.android.tools.appinspection.network.utils.Logger
+import com.android.tools.appinspection.network.utils.LoggerImpl
 import com.squareup.okhttp.Interceptor
 import com.squareup.okhttp.OkHttpClient
 import java.net.URL
@@ -48,11 +50,12 @@ private val INTERCEPT_COMMAND_RESPONSE =
     .build()
     .toByteArray()
 
-class NetworkInspector(
+internal class NetworkInspector(
   connection: Connection,
   private val environment: InspectorEnvironment,
   private val trafficStatsProvider: TrafficStatsProvider = TrafficStatsProviderImpl(),
-  private val speedDataIntervalMs: Long = POLL_INTERVAL_MS
+  private val speedDataIntervalMs: Long = POLL_INTERVAL_MS,
+  private val logger: Logger = LoggerImpl(),
 ) : Inspector(connection) {
 
   private val scope =
@@ -125,8 +128,7 @@ class NetworkInspector(
           runCatching { it.applicationInfo?.uid }.getOrNull()
         }
       if (uid == null) {
-        Log.e(
-          this::class.java.name,
+        logger.error(
           "Failed to find application instance. Collection of network speed is not available."
         )
         return@launch
@@ -177,7 +179,8 @@ class NetworkInspector(
     )
   }
 
-  private fun registerHooks() {
+  @VisibleForTesting
+  fun registerHooks() {
     environment
       .artTooling()
       .registerExitHook(
@@ -187,7 +190,9 @@ class NetworkInspector(
           wrapURLConnection(urlConnection, trackerService, interceptionService)
         }
       )
+    logger.debugHidden("Instrumented URLConnection")
 
+    var okHttpInstrumented = false
     try {
       /*
        * Modifies a list of okhttp2 Interceptor in place, adding our own
@@ -213,6 +218,8 @@ class NetworkInspector(
             list
           }
         )
+      logger.debugHidden("Instrumented com.squareup.okhttp.OkHttpClient")
+      okHttpInstrumented = true
     } catch (e: NoClassDefFoundError) {
       // Ignore. App may not depend on OkHttp.
     }
@@ -230,8 +237,16 @@ class NetworkInspector(
             interceptors
           }
         )
+      logger.debugHidden("Instrumented okhttp3.OkHttpClient")
+      okHttpInstrumented = true
     } catch (e: NoClassDefFoundError) {
       // Ignore. App may not depend on OkHttp.
+    }
+    if (!okHttpInstrumented) {
+      // Only log if both OkHttp 2 and 3 were not detected
+      logger.debug(
+        "Did not instrument OkHttpClient. App does not use OKHttp or class is omitted by app reduce"
+      )
     }
   }
 

@@ -36,7 +36,7 @@ private const val URL_PARAMS = "activity=OkHttp3Test"
 private val FAKE_URL = URL("https://www.google.com?$URL_PARAMS")
 private const val EXPECTED_RESPONSE_CODE = "response-status-code = 200"
 
-class OkHttp3Test {
+internal class OkHttp3Test {
 
   @get:Rule val inspectorRule = NetworkInspectorRule()
 

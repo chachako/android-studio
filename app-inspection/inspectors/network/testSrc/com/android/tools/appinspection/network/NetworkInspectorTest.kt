@@ -27,12 +27,15 @@ import org.junit.Rule
 import org.junit.Test
 import studio.network.inspection.NetworkInspectorProtocol.SpeedEvent
 
-class NetworkInspectorTest {
+internal class NetworkInspectorTest {
 
   @get:Rule val inspectorRule = NetworkInspectorRule(autoStart = false)
 
   private val trafficStatsProvider
     get() = inspectorRule.trafficStatsProvider
+
+  private val logger
+    get() = inspectorRule.logger
 
   @Test
   fun speedDataCollection() = runBlocking {
@@ -96,37 +99,77 @@ class NetworkInspectorTest {
   }
 
   @Test
-  fun failToAddOkHttp2And3Hooks_doesNotThrowException() {
-    // This test simulates an app that does not depend on OkHttp and the
-    // inspector can be initialized without problems.
-    inspectorRule.start()
-    val environment =
-      object : InspectorEnvironment {
-        override fun artTooling(): ArtTooling {
-          return object : ArtTooling by inspectorRule.environment.artTooling() {
-            override fun <T : Any?> registerExitHook(
-              originClass: Class<*>,
-              originMethod: String,
-              exitHook: ArtTooling.ExitHook<T>
-            ) {
-              if (originClass.name.endsWith("OkHttpClient")) {
-                throw NoClassDefFoundError()
-              } else {
-                inspectorRule.environment
-                  .artTooling()
-                  .registerExitHook(originClass, originMethod, exitHook)
-              }
-            }
+  fun registerHooks_logs() {
+    val networkInspector = NetworkInspector(FakeConnection(), FakeEnvironment(), logger = logger)
+
+    networkInspector.registerHooks()
+
+    assertThat(logger.messages)
+      .containsExactly(
+        "DEBUG: studio.inspectors: Instrumented URLConnection",
+        "DEBUG: studio.inspectors: Instrumented com.squareup.okhttp.OkHttpClient",
+        "DEBUG: studio.inspectors: Instrumented okhttp3.OkHttpClient",
+      )
+  }
+
+  @Test
+  fun registerHooks_failToAddOkHttp2And3Hooks_doesNotThrowException() {
+    val environment = TestInspectorEnvironment("OkHttpClient")
+    val networkInspector = NetworkInspector(FakeConnection(), environment, logger = logger)
+
+    networkInspector.registerHooks()
+
+    assertThat(logger.messages)
+      .containsExactly(
+        "DEBUG: studio.inspectors: Instrumented URLConnection",
+        "DEBUG: Network Inspector: Did not instrument OkHttpClient. App does not use OKHttp or class is omitted by app reduce",
+      )
+  }
+
+  @Test
+  fun registerHooks_failToAddOkHttp2_doesNotThrowExceptionDoesNotLogFailure() {
+    val environment = TestInspectorEnvironment("com.squareup.okhttp.OkHttpClient")
+    val networkInspector = NetworkInspector(FakeConnection(), environment, logger = logger)
+
+    networkInspector.registerHooks()
+
+    assertThat(logger.messages.filter { !it.contains("studio.inspectors") }).isEmpty()
+  }
+
+  @Test
+  fun registerHooks_failToAddOkHttp3_doesNotThrowExceptionDoesNotLogFailure() {
+    val environment = TestInspectorEnvironment("okhttp3.OkHttpClient")
+    val networkInspector = NetworkInspector(FakeConnection(), environment, logger = logger)
+
+    networkInspector.registerHooks()
+
+    assertThat(logger.messages.filter { !it.contains("studio.inspectors") }).isEmpty()
+  }
+
+  private inner class TestInspectorEnvironment(private val rejectClassName: String) :
+    InspectorEnvironment {
+
+    override fun artTooling(): ArtTooling {
+      return object : ArtTooling by inspectorRule.environment.artTooling() {
+        override fun <T : Any?> registerExitHook(
+          originClass: Class<*>,
+          originMethod: String,
+          exitHook: ArtTooling.ExitHook<T>
+        ) {
+          if (originClass.name.endsWith(rejectClassName)) {
+            throw NoClassDefFoundError()
+          } else {
+            inspectorRule.environment
+              .artTooling()
+              .registerExitHook(originClass, originMethod, exitHook)
           }
         }
-
-        override fun executors(): InspectorExecutors {
-          return inspectorRule.environment.executors()
-        }
       }
+    }
 
-    // This test passes if no exception thrown here.
-    NetworkInspector(inspectorRule.connection, environment)
+    override fun executors(): InspectorExecutors {
+      return inspectorRule.environment.executors()
+    }
   }
 }
 

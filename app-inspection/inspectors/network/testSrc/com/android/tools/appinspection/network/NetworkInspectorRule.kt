@@ -18,16 +18,25 @@ package com.android.tools.appinspection.network
 
 import androidx.inspection.Inspector
 import com.android.tools.appinspection.network.utils.ConnectionIdGenerator
+import com.android.tools.appinspection.network.utils.TestLogger
 import java.util.concurrent.Executor
 import org.junit.rules.ExternalResource
 import studio.network.inspection.NetworkInspectorProtocol
 
-class NetworkInspectorRule(val autoStart: Boolean = true) : ExternalResource() {
+internal class NetworkInspectorRule(val autoStart: Boolean = true) : ExternalResource() {
 
   val connection = FakeConnection()
   val environment = FakeEnvironment()
   val trafficStatsProvider = FakeTrafficStatsProvider()
-  val inspector = NetworkInspector(connection, environment, trafficStatsProvider, 10)
+  val logger = TestLogger()
+  val inspector =
+    NetworkInspector(
+      connection,
+      environment,
+      trafficStatsProvider,
+      speedDataIntervalMs = 10,
+      logger = logger
+    )
 
   override fun before() {
     if (autoStart) {

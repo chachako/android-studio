@@ -50,6 +50,7 @@ kotlin_test(
         "testSrc/**/*.kt",
         "testSrc/**/*.java",
     ]),
+    friends = [":agent-sources_undexed"],
     jvm_flags = [
         "-Dtest.suite.jar=agent_tests.jar",
     ],

@@ -71,7 +71,7 @@ fun createFakeRuleAddedEvent(url: URL): NetworkInspectorProtocol.InterceptRuleAd
     }
     .build()
 
-fun NetworkInspector.receiveInterceptCommand(
+internal fun NetworkInspector.receiveInterceptCommand(
   interceptCommand: NetworkInspectorProtocol.InterceptCommand
 ) {
   onReceiveCommand(

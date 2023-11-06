@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection.network
+package com.android.tools.appinspection.network.utils
 
-import androidx.inspection.Connection
-import androidx.inspection.InspectorEnvironment
-import androidx.inspection.InspectorFactory
+internal class TestLogger : Logger {
+  val messages = mutableListOf<String>()
 
-private const val INSPECTOR_ID = "studio.network.inspection"
+  override fun debug(tag: String, msg: String) {
+    log("DEBUG", tag, msg)
+  }
 
-internal class NetworkInspectorFactory : InspectorFactory<NetworkInspector>(INSPECTOR_ID) {
+  override fun error(tag: String, msg: String) {
+    log("ERROR", tag, msg)
+  }
 
-  override fun createInspector(con: Connection, env: InspectorEnvironment): NetworkInspector {
-    return NetworkInspector(con, env)
+  private fun log(level: String, tag: String, msg: String) {
+    val message = "$level: $tag: $msg"
+    println(message)
+    messages.add(message)
   }
 }
