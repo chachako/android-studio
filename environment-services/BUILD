@@ -15,6 +15,7 @@ iml_module(
 kotlin_library(
     name = "tools.environment-services",
     srcs = [
+        "src/com/android/tools/environment/CancellationManager.kt",
         "src/com/android/tools/environment/Logger.kt",
         "src/com/android/tools/environment/log/NoopLogger.kt",
         "src/com/android/tools/environment/log/StubLoggerProvider.kt",

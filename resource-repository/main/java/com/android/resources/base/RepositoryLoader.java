@@ -76,6 +76,7 @@ import com.android.resources.FolderTypeRelationship;
 import com.android.resources.ResourceFolderType;
 import com.android.resources.ResourceType;
 import com.android.resources.ResourceVisibility;
+import com.android.tools.environment.CancellationManager;
 import com.android.utils.SdkUtils;
 import com.android.utils.XmlUtils;
 import com.google.common.base.Preconditions;
@@ -90,7 +91,6 @@ import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProcessCanceledException;
-import com.intellij.openapi.progress.ProgressManager;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -625,7 +625,7 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
       return new BufferedInputStream(CancellableFileIo.newInputStream(path));
     }
     else {
-      ProgressManager.checkCanceled();
+      CancellationManager.throwIfCancelled();
       ZipEntry entry = myZipFile.getEntry(file.getPortablePath());
       if (entry == null) {
         throw new NoSuchFileException(file.getPortablePath());

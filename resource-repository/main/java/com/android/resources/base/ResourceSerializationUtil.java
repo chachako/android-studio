@@ -22,11 +22,11 @@ import com.android.ide.common.rendering.api.StyleItemResourceValue;
 import com.android.ide.common.resources.ResourceItem;
 import com.android.ide.common.resources.configuration.FolderConfiguration;
 import com.android.resources.ResourceType;
+import com.android.tools.environment.CancellationManager;
 import com.android.utils.Base128InputStream;
 import com.android.utils.Base128OutputStream;
 import com.google.common.collect.ListMultimap;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.progress.ProgressManager;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -232,7 +232,7 @@ public class ResourceSerializationUtil {
     int cancellationCheckInterval = 500; // For framework repository without locale-specific resources cancellation check happens 32 times.
     for (int i = 0; i < n; i++) {
       if (i % cancellationCheckInterval == 0) {
-        ProgressManager.checkCanceled();
+        CancellationManager.throwIfCancelled();
       }
       BasicResourceItemBase item = BasicResourceItemBase.deserialize(stream, configurations, newSourceFiles, newNamespaceResolvers);
       resourceConsumer.accept(item);

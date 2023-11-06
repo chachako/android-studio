@@ -36,6 +36,7 @@ iml_module(
         "//tools/adt/idea/.idea/libraries:aapt-proto",
         "//prebuilts/studio/intellij-sdk:studio-sdk",
         "//tools/adt/idea/.idea/libraries:truth[test]",
+        "//tools/base/environment-services:studio.intellij.android.environment-services[module]",
     ],
 )
 
@@ -73,6 +74,7 @@ kotlin_library(
         "//prebuilts/tools/common/lint-psi/intellij-core",
         "//tools/base/build-system/aapt2-proto",
         "//tools/base/common:tools.common",
+        "//tools/base/environment-services:tools.environment-services",
         "//tools/base/layoutlib-api:tools.layoutlib-api",
         "//tools/base/sdk-common:tools.sdk-common",
         "@maven//:com.google.guava.guava",

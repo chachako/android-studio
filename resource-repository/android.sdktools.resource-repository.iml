@@ -17,5 +17,6 @@
     <orderEntry type="library" name="aapt-proto" level="project" />
     <orderEntry type="library" name="studio-sdk" level="project" />
     <orderEntry type="library" scope="TEST" name="truth" level="project" />
+    <orderEntry type="module" module-name="intellij.android.environment-services" />
   </component>
 </module>
