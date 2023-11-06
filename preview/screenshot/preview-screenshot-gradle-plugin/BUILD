@@ -93,5 +93,6 @@ kotlin_library(
         "//tools/base/sdk-common:tools.sdk-common",
         "//tools/base/sdklib:tools.sdklib",
         "//tools/base/testutils:tools.testutils",
+        "@maven//:net.sf.kxml.kxml2",
     ],
 )
