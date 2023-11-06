@@ -6,7 +6,6 @@ iml_module(
     name = "studio.android.sdktools.resource-repository",
     srcs = ["main/java"],
     iml_files = ["android.sdktools.resource-repository.iml"],
-    jvm_target = "8",
     test_data = [
         "//prebuilts/studio/layoutlib/data:framework_res.jar",
         "//prebuilts/studio/layoutlib/data/res",
@@ -54,7 +53,7 @@ genrule(
     ],
     outs = ["framework_res.jar"],
     cmd = "$(JAVA) -classpath $(location :framework-res-jar-creator_deploy.jar) " + "com.android.resources.aar.FrameworkResJarCreator " + "$(location //prebuilts/studio/layoutlib/data/res:version)/.. $(OUTS)",
-    toolchains = ["//prebuilts/studio/jdk:jdk_runtime"],
+    toolchains = ["//prebuilts/studio/jdk/jdk17:jdk17_runtime"],
     tools = [
         ":framework-res-jar-creator",
         ":framework-res-jar-creator_deploy.jar",
