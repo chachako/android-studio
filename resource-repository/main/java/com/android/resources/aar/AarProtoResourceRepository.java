@@ -57,7 +57,6 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Table;
 import com.google.protobuf.ByteString;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.util.io.URLUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -80,6 +79,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static com.android.SdkConstants.DOT_XML;
+import static com.android.SdkConstants.JAR_SEPARATOR;
 import static com.android.resources.base.RepositoryLoader.portableFileName;
 import static com.android.utils.DecimalUtils.trimInsignificantZeros;
 
@@ -134,11 +134,11 @@ public class AarProtoResourceRepository extends AbstractAarResourceRepository {
     super(loader.myNamespace, libraryName);
     myResApkFile = loader.myResApkFile;
 
-    myResourcePathPrefix = myResApkFile.toString() + URLUtil.JAR_SEPARATOR;
-    myResourceUrlPrefix = APK_PROTOCOL + "://" + portableFileName(myResApkFile.toString()) + URLUtil.JAR_SEPARATOR;
+    myResourcePathPrefix = myResApkFile + JAR_SEPARATOR;
+    myResourceUrlPrefix = APK_PROTOCOL + "://" + portableFileName(myResApkFile.toString()) + JAR_SEPARATOR;
 
     mySourceAttachmentPrefix = sourceJar != null && loader.myPackageName != null ?
-        sourceJar.toString() + URLUtil.JAR_SEPARATOR + getPackageNamePrefix(loader.myPackageName) : null;
+        sourceJar + JAR_SEPARATOR + getPackageNamePrefix(loader.myPackageName) : null;
   }
 
   @Override

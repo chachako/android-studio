@@ -3008,4 +3008,10 @@ public final class SdkConstants {
 
     /** Name used to identify a folder containing the exploded contents of an .aar file. */
     public static final String EXPLODED_AAR = "exploded-aar";
+
+    /** Path separator in the url for the jar entry, e.g.: jar://my_jar.jar!/entry.txt */
+    public static final String JAR_SEPARATOR = "!/";
+
+    /** Url protocol of the jar files, e.g.: jar://my_jar.jar */
+    public static final String JAR_PROTOCOL = "jar";
 }
