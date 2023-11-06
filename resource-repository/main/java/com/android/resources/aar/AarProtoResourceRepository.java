@@ -57,7 +57,6 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Table;
 import com.google.protobuf.ByteString;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.util.BitUtil;
 import com.intellij.util.io.URLUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -722,37 +721,41 @@ public class AarProtoResourceRepository extends AbstractAarResourceRepository {
       return trimInsignificantZeros(String.format(Locale.US, "%.5g", value)) + unit;
     }
 
+    private static boolean isBitSet(int value, int bitMask) {
+      return (value & bitMask) == bitMask;
+    }
+
     @NotNull
     private static Set<AttributeFormat> decodeFormatFlags(int flags) {
       Set<AttributeFormat> result = EnumSet.noneOf(AttributeFormat.class);
-      if (BitUtil.isSet(flags, Resources.Attribute.FormatFlags.REFERENCE_VALUE)) {
+      if (isBitSet(flags, Resources.Attribute.FormatFlags.REFERENCE_VALUE)) {
         result.add(AttributeFormat.REFERENCE);
       }
-      if (BitUtil.isSet(flags, Resources.Attribute.FormatFlags.STRING_VALUE)) {
+      if (isBitSet(flags, Resources.Attribute.FormatFlags.STRING_VALUE)) {
         result.add(AttributeFormat.STRING);
       }
-      if (BitUtil.isSet(flags, Resources.Attribute.FormatFlags.INTEGER_VALUE)) {
+      if (isBitSet(flags, Resources.Attribute.FormatFlags.INTEGER_VALUE)) {
         result.add(AttributeFormat.INTEGER);
       }
-      if (BitUtil.isSet(flags, Resources.Attribute.FormatFlags.BOOLEAN_VALUE)) {
+      if (isBitSet(flags, Resources.Attribute.FormatFlags.BOOLEAN_VALUE)) {
         result.add(AttributeFormat.BOOLEAN);
       }
-      if (BitUtil.isSet(flags, Resources.Attribute.FormatFlags.COLOR_VALUE)) {
+      if (isBitSet(flags, Resources.Attribute.FormatFlags.COLOR_VALUE)) {
         result.add(AttributeFormat.COLOR);
       }
-      if (BitUtil.isSet(flags, Resources.Attribute.FormatFlags.FLOAT_VALUE)) {
+      if (isBitSet(flags, Resources.Attribute.FormatFlags.FLOAT_VALUE)) {
         result.add(AttributeFormat.FLOAT);
       }
-      if (BitUtil.isSet(flags, Resources.Attribute.FormatFlags.DIMENSION_VALUE)) {
+      if (isBitSet(flags, Resources.Attribute.FormatFlags.DIMENSION_VALUE)) {
         result.add(AttributeFormat.DIMENSION);
       }
-      if (BitUtil.isSet(flags, Resources.Attribute.FormatFlags.FRACTION_VALUE)) {
+      if (isBitSet(flags, Resources.Attribute.FormatFlags.FRACTION_VALUE)) {
         result.add(AttributeFormat.FRACTION);
       }
-      if (BitUtil.isSet(flags, Resources.Attribute.FormatFlags.ENUM_VALUE)) {
+      if (isBitSet(flags, Resources.Attribute.FormatFlags.ENUM_VALUE)) {
         result.add(AttributeFormat.ENUM);
       }
-      if (BitUtil.isSet(flags, Resources.Attribute.FormatFlags.FLAGS_VALUE)) {
+      if (isBitSet(flags, Resources.Attribute.FormatFlags.FLAGS_VALUE)) {
         result.add(AttributeFormat.FLAGS);
       }
       return result;
