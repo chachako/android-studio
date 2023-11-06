@@ -23,7 +23,6 @@ import com.android.resources.ResourceVisibility;
 import com.android.utils.Base128InputStream;
 import com.android.utils.Base128InputStream.StreamFormatException;
 import com.android.utils.Base128OutputStream;
-import com.intellij.util.ArrayUtil;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.io.IOException;
 import java.util.Arrays;
@@ -36,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
  * Resource item representing a plurals resource.
  */
 public final class BasicPluralsResourceItem extends BasicValueResourceItemBase implements PluralsResourceValue {
+  private final static String[] EMPTY_STRING_ARRAY = new String[0];
   @NotNull private final Arity[] myArities;
   @NotNull private final String[] myValues;
   private final int myDefaultIndex;
@@ -55,7 +55,7 @@ public final class BasicPluralsResourceItem extends BasicValueResourceItemBase i
                                   @NotNull Map<Arity, String> quantityValues,
                                   @Nullable Arity defaultArity) {
     this(name, sourceFile, visibility,
-         quantityValues.keySet().toArray(Arity.EMPTY_ARRAY), quantityValues.values().toArray(ArrayUtil.EMPTY_STRING_ARRAY),
+         quantityValues.keySet().toArray(Arity.EMPTY_ARRAY), quantityValues.values().toArray(EMPTY_STRING_ARRAY),
          getIndex(defaultArity, quantityValues.keySet()));
   }
 
@@ -156,7 +156,7 @@ public final class BasicPluralsResourceItem extends BasicValueResourceItemBase i
                                               @NotNull ResourceNamespace.Resolver resolver) throws IOException {
     int n = stream.readInt();
     Arity[] arities = n == 0 ? Arity.EMPTY_ARRAY : new Arity[n];
-    String[] values = n == 0 ? ArrayUtil.EMPTY_STRING_ARRAY : new String[n];
+    String[] values = n == 0 ? EMPTY_STRING_ARRAY : new String[n];
     for (int i = 0; i < n; i++) {
       arities[i] = Arity.values()[stream.readInt()];
       values[i] = stream.readString();

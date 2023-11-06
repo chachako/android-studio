@@ -19,7 +19,6 @@ import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.utils.Base128InputStream;
 import com.android.utils.Base128InputStream.StreamFormatException;
 import com.android.utils.Base128OutputStream;
-import com.intellij.util.ArrayUtil;
 import java.io.IOException;
 import java.util.Arrays;
 import org.jetbrains.annotations.NotNull;
@@ -32,7 +31,7 @@ import org.xmlpull.v1.XmlPullParserException;
  * together with {@link XmlPullParser}.
  */
 public final class NamespaceResolver implements ResourceNamespace.Resolver {
-  public static final NamespaceResolver EMPTY = new NamespaceResolver(ArrayUtil.EMPTY_STRING_ARRAY);
+  public static final NamespaceResolver EMPTY = new NamespaceResolver(new String[0]);
 
   /** Interleaved prefixes and the corresponding URIs in order of descending priority. */
   @NotNull private final String[] prefixesAndUris;
