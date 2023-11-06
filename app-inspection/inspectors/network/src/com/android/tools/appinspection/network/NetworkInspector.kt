@@ -31,7 +31,6 @@ import com.squareup.okhttp.Interceptor
 import com.squareup.okhttp.OkHttpClient
 import java.net.URL
 import java.net.URLConnection
-import java.util.List
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -62,7 +61,7 @@ class NetworkInspector(
   private val trackerService = HttpTrackerFactoryImpl(connection)
   private var isStarted = false
 
-  private var okHttp2Interceptors: List<Interceptor>? = null
+  private var okHttp2Interceptors: MutableList<Interceptor>? = null
 
   private val interceptionService = InterceptionRuleServiceImpl()
 
@@ -122,24 +121,16 @@ class NetworkInspector(
       // The app can have multiple Application instances. In that case, we use the first non-null
       // uid, which is most likely from the Application created by Android.
       val uid =
-        environment
-          .artTooling()
-          .findInstances(Application::class.java)
-          .mapNotNull {
-            try {
-              it.applicationInfo?.uid
-            } catch (e: Exception) {
-              null
-            }
-          }
-          .firstOrNull()
-          ?: run {
-            Log.e(
-              this::class.java.name,
-              "Failed to find application instance. Collection of network speed is not available."
-            )
-            return@launch
-          }
+        environment.artTooling().findInstances(Application::class.java).firstNotNullOfOrNull {
+          runCatching { it.applicationInfo?.uid }.getOrNull()
+        }
+      if (uid == null) {
+        Log.e(
+          this::class.java.name,
+          "Failed to find application instance. Collection of network speed is not available."
+        )
+        return@launch
+      }
       var prevRxBytes = trafficStatsProvider.getUidRxBytes(uid)
       var prevTxBytes = trafficStatsProvider.getUidTxBytes(uid)
       var prevZero = false
@@ -214,7 +205,7 @@ class NetworkInspector(
         .registerExitHook(
           OkHttpClient::class.java,
           "networkInterceptors()Ljava/util/List;",
-          ArtTooling.ExitHook<List<Interceptor>> { list ->
+          ArtTooling.ExitHook<MutableList<Interceptor>> { list ->
             if (list.none { it is OkHttp2Interceptor }) {
               okHttp2Interceptors = list
               list.add(0, OkHttp2Interceptor(trackerService, interceptionService))
@@ -233,10 +224,10 @@ class NetworkInspector(
           okhttp3.OkHttpClient::class.java,
           "networkInterceptors()Ljava/util/List;",
           ArtTooling.ExitHook<List<okhttp3.Interceptor>> { list ->
-            val interceptors = java.util.ArrayList<okhttp3.Interceptor>()
+            val interceptors = ArrayList<okhttp3.Interceptor>()
             interceptors.add(OkHttp3Interceptor(trackerService, interceptionService))
             interceptors.addAll(list)
-            interceptors as List<okhttp3.Interceptor>
+            interceptors
           }
         )
     } catch (e: NoClassDefFoundError) {
