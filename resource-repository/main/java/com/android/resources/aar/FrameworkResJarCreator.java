@@ -17,7 +17,6 @@ package com.android.resources.aar;
 
 import com.android.utils.Base128OutputStream;
 import com.google.common.annotations.VisibleForTesting;
-import com.intellij.openapi.util.io.FileUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -77,7 +76,7 @@ public class FrameworkResJarCreator {
       for (Path file : files) {
         // When running on Windows, we need to make sure that the file entries are correctly encoded
         // with the Unix path separator since the ZIP file spec only allows for that one.
-        String relativePath = FileUtil.toSystemIndependentName(parentDir.relativize(file).toString());
+        String relativePath = parentDir.relativize(file).toString().replace('\\', '/');
         if (!relativePath.equals("res/version") && !relativePath.equals("res/BUILD")) { // Skip "version" and "BUILD" files.
           createZipEntry(relativePath, Files.readAllBytes(file), zip);
         }
