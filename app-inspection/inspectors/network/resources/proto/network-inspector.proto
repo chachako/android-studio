@@ -55,14 +55,6 @@ message HttpConnectionEvent {
         bytes payload = 1;
     }
 
-    message ThreadData {
-        // ID of the thread obtained from Java, which is different from the thread ID
-        // obtained in a JNI context.
-        int64 thread_id = 1;
-        // Name of the thread as obtained by Thread#getName()
-        string thread_name = 2;
-    }
-
     int64 connection_id = 1;
 
     oneof union {
@@ -76,6 +68,14 @@ message HttpConnectionEvent {
         Payload response_payload = 18;
         ThreadData http_thread = 19;
     }
+}
+
+message ThreadData {
+    // ID of the thread obtained from Java, which is different from the thread ID
+    // obtained in a JNI context.
+    int64 thread_id = 1;
+    // Name of the thread as obtained by Thread#getName()
+    string thread_name = 2;
 }
 
 // The network transmission and receiving speed experienced by the app.

@@ -46,7 +46,7 @@ private class ThreadReporterImpl(
       connection.sendHttpConnectionEvent(
         NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
           .setHttpThread(
-            NetworkInspectorProtocol.HttpConnectionEvent.ThreadData.newBuilder()
+            NetworkInspectorProtocol.ThreadData.newBuilder()
               .setThreadId(thread.id)
               .setThreadName(thread.name)
           )
