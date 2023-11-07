@@ -46,8 +46,8 @@ android {
 }
 
 dependencies {
-
     implementation(libs.core.ktx)
+    implementation(libs.androidx.work)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.activity.compose)
     implementation(platform(libs.compose.bom))
