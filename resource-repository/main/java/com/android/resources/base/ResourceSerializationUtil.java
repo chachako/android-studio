@@ -27,7 +27,6 @@ import com.android.utils.Base128OutputStream;
 import com.google.common.collect.ListMultimap;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.util.io.FileUtilRt;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -82,7 +81,8 @@ public class ResourceSerializationUtil {
     // Write to a temporary file first, then rename it to the final name.
     Path tempFile;
     try {
-      tempFile = FileUtilRt.createTempFile(cacheFile.getParent().toFile(), cacheFile.getFileName().toString(), ".tmp").toPath();
+      cacheFile.getParent().toFile().mkdirs();
+      tempFile = Files.createTempFile(cacheFile.getParent().toAbsolutePath(), cacheFile.getFileName().toString(), ".tmp");
     }
     catch (IOException e) {
       LOG.error("Unable to create a temporary file in " + cacheFile.getParent().toString(), e);
