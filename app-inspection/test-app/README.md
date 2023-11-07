@@ -15,3 +15,4 @@ Inspectors:
   * OKHttp2
   * OKHttp3
 
+The app is set up as a standalone Android Studio Gradle project.
