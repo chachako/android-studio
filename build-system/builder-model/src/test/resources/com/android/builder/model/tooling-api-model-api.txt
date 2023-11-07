@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-79913faf096e1a9bd37bdd6b6378de86b4d4b78e21aec3c9d7862a8e85fdb7c5
+820756b8e0c15a18c4552fa4de7cb1fe3b362bb104608d6d3c1e9029ef5dcb36
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -565,6 +565,7 @@ com.android.builder.model.v2.ide.AaptOptions$Namespacing.values: com.android.bui
 com.android.builder.model.v2.ide.AaptOptions.getNamespacing: com.android.builder.model.v2.ide.AaptOptions$Namespacing ()
 com.android.builder.model.v2.ide.AbstractArtifact
 com.android.builder.model.v2.ide.AbstractArtifact.getAssembleTaskName: java.lang.String ()
+com.android.builder.model.v2.ide.AbstractArtifact.getBytecodeTransformations: java.util.Collection<com.android.builder.model.v2.ide.BytecodeTransformation> ()
 com.android.builder.model.v2.ide.AbstractArtifact.getClassesFolders: java.util.Set<java.io.File> ()
 com.android.builder.model.v2.ide.AbstractArtifact.getCompileTaskName: java.lang.String ()
 com.android.builder.model.v2.ide.AbstractArtifact.getGeneratedClassPaths: java.util.Map<java.lang.String, java.io.File> ()
@@ -640,6 +641,10 @@ com.android.builder.model.v2.ide.BundleInfo.getApkFromBundleTaskName: java.lang.
 com.android.builder.model.v2.ide.BundleInfo.getApkFromBundleTaskOutputListingFile: java.io.File ()
 com.android.builder.model.v2.ide.BundleInfo.getBundleTaskName: java.lang.String ()
 com.android.builder.model.v2.ide.BundleInfo.getBundleTaskOutputListingFile: java.io.File ()
+com.android.builder.model.v2.ide.BytecodeTransformation extends java.lang.Enum
+com.android.builder.model.v2.ide.BytecodeTransformation.getDescription: java.lang.String ()
+com.android.builder.model.v2.ide.BytecodeTransformation.valueOf: com.android.builder.model.v2.ide.BytecodeTransformation (java.lang.String)
+com.android.builder.model.v2.ide.BytecodeTransformation.values: com.android.builder.model.v2.ide.BytecodeTransformation[] ()
 com.android.builder.model.v2.ide.CodeShrinker extends java.lang.Enum
 com.android.builder.model.v2.ide.CodeShrinker.valueOf: com.android.builder.model.v2.ide.CodeShrinker (java.lang.String)
 com.android.builder.model.v2.ide.CodeShrinker.values: com.android.builder.model.v2.ide.CodeShrinker[] ()

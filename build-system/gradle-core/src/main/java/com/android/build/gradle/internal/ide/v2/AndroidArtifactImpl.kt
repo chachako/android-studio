@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.ide.v2
 import com.android.builder.model.v2.ide.AndroidArtifact
 import com.android.builder.model.v2.ide.ApiVersion
 import com.android.builder.model.v2.ide.BundleInfo
+import com.android.builder.model.v2.ide.BytecodeTransformation
 import com.android.builder.model.v2.ide.CodeShrinker
 import com.android.builder.model.v2.ide.PrivacySandboxSdkInfo
 import com.android.builder.model.v2.ide.TestInfo
@@ -56,7 +57,8 @@ data class AndroidArtifactImpl(
     override val assembleTaskOutputListingFile: File?,
     override val privacySandboxSdkInfo: PrivacySandboxSdkInfo?,
     override val desugaredMethodsFiles: Collection<File>,
-    override val generatedClassPaths: Map<String, File>
+    override val generatedClassPaths: Map<String, File>,
+    override val bytecodeTransformations: Collection<BytecodeTransformation>,
 ) : AndroidArtifact, Serializable {
 
     @Deprecated("Was never used, removed in AGP 8.3")

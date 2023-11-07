@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.ide.v2
 
 import com.android.SdkConstants
 import com.android.Version
+import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.dsl.AndroidResources
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.BuildFeatures
@@ -26,6 +27,8 @@ import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.DefaultConfig
 import com.android.build.api.dsl.ProductFlavor
 import com.android.build.api.dsl.TestExtension
+import com.android.build.api.variant.ScopedArtifacts.Scope.ALL
+import com.android.build.api.variant.ScopedArtifacts.Scope.PROJECT
 import com.android.build.api.variant.impl.HasAndroidTest
 import com.android.build.api.variant.impl.HasTestFixtures
 import com.android.build.api.variant.impl.HasUnitTest
@@ -76,6 +79,7 @@ import com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags.BooleanF
 import com.android.builder.model.v2.ide.ArtifactDependenciesAdjacencyList
 import com.android.builder.model.v2.ide.BasicArtifact
 import com.android.builder.model.v2.ide.BundleInfo
+import com.android.builder.model.v2.ide.BytecodeTransformation
 import com.android.builder.model.v2.ide.CodeShrinker
 import com.android.builder.model.v2.ide.JavaArtifact
 import com.android.builder.model.v2.ide.PrivacySandboxSdkInfo
@@ -773,7 +777,8 @@ class ModelBuilder<
                 component.minSdk,
                 component.global
             ).files.toList(),
-            generatedClassPaths = generatedClassPaths
+            generatedClassPaths = generatedClassPaths,
+            bytecodeTransformations = getBytecodeTransformations(component),
         )
     }
 
@@ -792,6 +797,28 @@ class ModelBuilder<
                             e))
             ""
         }
+    }
+
+    private fun getBytecodeTransformations(component: ComponentCreationConfig): List<BytecodeTransformation> {
+        val jacoco = (component as? ApkCreationConfig)?.useJacocoTransformInstrumentation == true
+        val classesProject = component.artifacts.forScope(PROJECT).getScopedArtifactsContainer(
+            ScopedArtifact.CLASSES
+        ).artifactsAltered.get()
+        val classesAll = component.artifacts.forScope(ALL).getScopedArtifactsContainer(
+            ScopedArtifact.CLASSES
+        ).artifactsAltered.get()
+
+        val asmProject =
+            component.instrumentationCreationConfig?.projectClassesAreInstrumented == true
+        val asmAll =
+            component.instrumentationCreationConfig?.dependenciesClassesAreInstrumented == true
+        return listOfNotNull(
+            BytecodeTransformation.JACOCO_INSTRUMENTATION.takeIf { jacoco },
+            BytecodeTransformation.MODIFIES_PROJECT_CLASS_FILES.takeIf { classesProject },
+            BytecodeTransformation.MODIFIES_ALL_CLASS_FILES.takeIf { classesAll },
+            BytecodeTransformation.ASM_API_PROJECT.takeIf { asmProject },
+            BytecodeTransformation.ASM_API_ALL.takeIf { asmAll },
+        )
     }
 
     private fun createJavaArtifact(component: ComponentCreationConfig): JavaArtifact {
@@ -830,7 +857,8 @@ class ModelBuilder<
                 component.oldVariantApiLegacySupport!!.variantData.javaResourcesForUnitTesting,
 
             mockablePlatformJar = variantModel.mockableJarArtifact.files.singleOrNull(),
-            generatedClassPaths = generatedClassPaths
+            generatedClassPaths = generatedClassPaths,
+            bytecodeTransformations = getBytecodeTransformations(component),
         )
     }
 

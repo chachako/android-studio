@@ -69,4 +69,7 @@ interface AbstractArtifact {
      * the generated class file.
      */
     val generatedClassPaths: Map<String, File>
+
+    /** List of bytecode transformations applied to this variant. */
+    val bytecodeTransformations: Collection<BytecodeTransformation>
 }

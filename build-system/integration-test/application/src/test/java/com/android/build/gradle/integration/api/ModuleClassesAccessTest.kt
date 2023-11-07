@@ -19,6 +19,8 @@ package com.android.build.gradle.integration.api
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import  com.android.build.gradle.integration.common.fixture.app.KotlinHelloWorldApp
 import com.android.build.gradle.integration.common.truth.TruthHelper
+import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
+import com.android.builder.model.v2.ide.BytecodeTransformation
 import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
@@ -135,5 +137,14 @@ androidComponents {
             .containsClass("Lcom/android/api/tests/SomeInterface;");
         TruthHelper.assertThatApk(apk)
             .containsClass("Lcom/example/helloworld/HelloWorld;");
+
+        val debug =
+            project.modelV2()
+                .fetchModels("debug").container.getProject(":").androidProject!!.variants.first { it.name == "debug" }
+        assertThat(debug.mainArtifact.bytecodeTransformations).containsExactly(
+            BytecodeTransformation.MODIFIES_PROJECT_CLASS_FILES
+        )
+        assertThat(debug.androidTestArtifact!!.bytecodeTransformations).isEmpty()
+        assertThat(debug.unitTestArtifact!!.bytecodeTransformations).isEmpty()
     }
 }

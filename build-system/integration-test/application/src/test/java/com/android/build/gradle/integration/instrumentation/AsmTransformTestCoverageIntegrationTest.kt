@@ -17,8 +17,10 @@
 package com.android.build.gradle.integration.instrumentation
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.AsmApiApiTestUtils
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.builder.model.v2.ide.BytecodeTransformation
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth
 import org.junit.Rule
@@ -48,6 +50,21 @@ class AsmTransformTestCoverageIntegrationTest {
             "index.html"
         )
         Truth.assertThat(generatedCoverageReport.exists()).isTrue()
+
+        val debug =
+            project.modelV2()
+                .fetchModels("debug").container.getProject(":app").androidProject!!.variants.first { it.name == "debug" }
+        assertThat(debug.mainArtifact.bytecodeTransformations).containsExactly(
+            BytecodeTransformation.JACOCO_INSTRUMENTATION,
+            BytecodeTransformation.ASM_API_PROJECT,
+            BytecodeTransformation.ASM_API_ALL,
+            BytecodeTransformation.MODIFIES_PROJECT_CLASS_FILES,
+        )
+        assertThat(debug.androidTestArtifact!!.bytecodeTransformations).isEmpty()
+        assertThat(debug.unitTestArtifact!!.bytecodeTransformations).containsExactly(
+            BytecodeTransformation.MODIFIES_PROJECT_CLASS_FILES,
+            BytecodeTransformation.ASM_API_PROJECT,
+        )
     }
 
     /** regression test for b/197065758 */
