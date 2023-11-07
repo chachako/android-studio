@@ -41,11 +41,11 @@ import com.android.resources.base.ResourceSourceFileImpl;
 import com.android.utils.Base128InputStream;
 import com.android.utils.Base128OutputStream;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProcessCanceledException;
-import com.intellij.openapi.util.NullableLazyValue;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import org.jetbrains.annotations.NotNull;
@@ -97,7 +98,7 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
    */
   @NotNull private final String myResourceUrlPrefix;
   /** The package name read on-demand from the manifest. */
-  @NotNull private final NullableLazyValue<String> myManifestPackageName;
+  @NotNull private final Supplier<String> myManifestPackageName;
 
   protected AarSourceResourceRepository(@NotNull RepositoryLoader<? extends AarSourceResourceRepository> loader,
                                         @Nullable String libraryName) {
@@ -107,7 +108,7 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
     myResourcePathPrefix = loader.getResourcePathPrefix();
     myResourceUrlPrefix = loader.getResourceUrlPrefix();
 
-    myManifestPackageName = NullableLazyValue.lazyNullable(() -> {
+    myManifestPackageName = Suppliers.memoize(() -> {
       try {
         PathString manifestPath = getSourceFile("../" + FN_ANDROID_MANIFEST_XML, true);
         return AndroidManifestPackageNameUtils.getPackageNameFromManifestFile(manifestPath);
@@ -217,7 +218,7 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
   @Nullable
   public String getPackageName() {
     String packageName = myNamespace.getPackageName();
-    return packageName == null ? myManifestPackageName.getValue() : packageName;
+    return packageName == null ? myManifestPackageName.get() : packageName;
   }
 
   @Override
