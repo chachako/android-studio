@@ -148,10 +148,10 @@ maven_import(
 )
 
 maven_artifact(
-    name = "com.android.tools.build.bundletool_1.15.5",
-    pom = "repository/com/android/tools/build/bundletool/1.15.5/bundletool-1.15.5.pom",
+    name = "com.android.tools.build.bundletool_1.15.6",
+    pom = "repository/com/android/tools/build/bundletool/1.15.6/bundletool-1.15.6.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/build/bundletool/1.15.5",
+    repo_path = "com/android/tools/build/bundletool/1.15.6",
     deps = [
         "com.android.tools.build.aapt2-proto_7.3.0-alpha07-8248216",
         "com.google.auto.value.auto-value-annotations_1.6.2",
@@ -171,7 +171,7 @@ maven_import(
     name = "com.android.tools.build.bundletool",
     classifiers = [],
     jars = [
-        "repository/com/android/tools/build/bundletool/1.15.5/bundletool-1.15.5.jar"
+        "repository/com/android/tools/build/bundletool/1.15.6/bundletool-1.15.6.jar"
     ],
     deps = [
         "com.android.tools.build.aapt2-proto",
@@ -197,9 +197,9 @@ maven_import(
         "org.bitbucket.b_c.jose4j_0.7.0",
         "org.slf4j.slf4j-api_1.7.30",
     ],
-    pom = "repository/com/android/tools/build/bundletool/1.15.5/bundletool-1.15.5.pom",
+    pom = "repository/com/android/tools/build/bundletool/1.15.6/bundletool-1.15.6.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/build/bundletool/1.15.5",
+    repo_path = "com/android/tools/build/bundletool/1.15.6",
     visibility = ["//visibility:public"],
 )
 
