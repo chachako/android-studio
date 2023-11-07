@@ -79,6 +79,7 @@ import com.android.resources.ResourceVisibility;
 import com.android.utils.SdkUtils;
 import com.android.utils.XmlUtils;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -90,7 +91,6 @@ import com.google.common.collect.Tables;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -116,6 +116,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.kxml2.io.KXmlParser;
@@ -756,7 +757,7 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
     String groupName = myParser.getAttrGroupComment();
     String formatString = myParser.getAttributeValue(null, ATTR_FORMAT);
     Set<AttributeFormat> formats =
-      StringUtil.isEmpty(formatString) ? EnumSet.noneOf(AttributeFormat.class) : AttributeFormat.parse(formatString);
+      Strings.isNullOrEmpty(formatString) ? EnumSet.noneOf(AttributeFormat.class) : AttributeFormat.parse(formatString);
 
     // The average number of enum or flag values is 7 for Android framework, so start with small maps.
     Map<String, Integer> valueMap = Maps.newHashMapWithExpectedSize(8);

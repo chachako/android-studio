@@ -34,6 +34,7 @@ import com.android.resources.base.RepositoryLoader;
 import com.android.resources.base.ResourceSerializationUtil;
 import com.android.utils.Base128InputStream;
 import com.android.utils.Base128OutputStream;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -44,8 +45,6 @@ import com.google.common.collect.Sets;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProcessCanceledException;
-import com.intellij.openapi.util.TextRange;
-import com.intellij.openapi.util.text.StringUtil;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -344,7 +343,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
   @NotNull
   static String getLanguageGroup(@NotNull FolderConfiguration config) {
     LocaleQualifier locale = config.getLocaleQualifier();
-    return locale == null ? "" : getLanguageGroup(StringUtil.notNullize(locale.getLanguage()));
+    return locale == null ? "" : getLanguageGroup(Strings.nullToEmpty(locale.getLanguage()));
   }
 
   /**
@@ -395,9 +394,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
   @NotNull
   private String updateResourcePath(@NotNull String relativeResourcePath) {
     if (myUseCompiled9Patches && relativeResourcePath.endsWith(DOT_9PNG)) {
-      return StringUtil.replaceSubstring(relativeResourcePath,
-                                         TextRange.create(relativeResourcePath.length() - DOT_9PNG.length(), relativeResourcePath.length()),
-                                         COMPILED_9PNG_EXTENSION);
+      return relativeResourcePath.substring(0, relativeResourcePath.length() - DOT_9PNG.length()) + COMPILED_9PNG_EXTENSION;
     }
     return relativeResourcePath;
   }
