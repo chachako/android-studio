@@ -28,6 +28,7 @@ import com.android.tools.appinspection.network.okhttp.OkHttp2Interceptor
 import com.android.tools.appinspection.network.okhttp.OkHttp3Interceptor
 import com.android.tools.appinspection.network.rules.InterceptionRuleImpl
 import com.android.tools.appinspection.network.rules.InterceptionRuleServiceImpl
+import com.android.tools.appinspection.network.trackers.GrpcTracker
 import com.android.tools.appinspection.network.utils.Logger
 import com.android.tools.appinspection.network.utils.LoggerImpl
 import com.squareup.okhttp.Interceptor
@@ -258,7 +259,7 @@ internal class NetworkInspector(
     }
 
     try {
-      val grpcInterceptor = GrpcInterceptor()
+      val grpcInterceptor = GrpcInterceptor { GrpcTracker(connection) }
       listOf(GRPC_FOR_ADDRESS_METHOD, GRPC_FOR_TARGET_METHOD).forEach { method ->
         environment
           .artTooling()

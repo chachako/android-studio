@@ -22,14 +22,15 @@ import studio.network.inspection.NetworkInspectorProtocol
 class FakeConnection : Connection() {
 
   val httpData = mutableListOf<NetworkInspectorProtocol.HttpConnectionEvent>()
+  val grpcData = mutableListOf<NetworkInspectorProtocol.GrpcEvent>()
   val speedData = mutableListOf<NetworkInspectorProtocol.SpeedEvent>()
 
   override fun sendEvent(data: ByteArray) {
     val event = NetworkInspectorProtocol.Event.parseFrom(data)
-    if (event.hasSpeedEvent()) {
-      speedData.add(event.speedEvent)
-    } else if (event.hasHttpConnectionEvent()) {
-      httpData.add(event.httpConnectionEvent)
+    when {
+      event.hasHttpConnectionEvent() -> httpData.add(event.httpConnectionEvent)
+      event.hasGrpcEvent() -> grpcData.add(event.grpcEvent)
+      event.hasSpeedEvent() -> speedData.add(event.speedEvent)
     }
   }
 

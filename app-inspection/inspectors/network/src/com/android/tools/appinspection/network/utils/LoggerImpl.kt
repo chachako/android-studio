@@ -18,13 +18,14 @@ package com.android.tools.appinspection.network.utils
 
 import android.util.Log
 
+/** A [Logger] that uses Android [Log] */
 internal class LoggerImpl : Logger {
 
   override fun debug(tag: String, msg: String) {
     Log.d(tag, msg)
   }
 
-  override fun error(tag: String, msg: String) {
-    Log.e(tag, msg)
+  override fun error(tag: String, msg: String, t: Throwable?) {
+    Log.e(tag, msg, t)
   }
 }

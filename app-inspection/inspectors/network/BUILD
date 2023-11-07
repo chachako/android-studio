@@ -1,7 +1,7 @@
 load("//tools/adt/idea/studio:studio.bzl", "studio_data")
 load("//tools/base/app-inspection:app_inspection.bzl", "app_inspection_jar")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
-load("//tools/base/bazel:proto.bzl", "android_java_proto_library")
+load("//tools/base/bazel:proto.bzl", "android_java_proto_library", "java_proto_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -45,6 +45,13 @@ app_inspection_jar(
     ],
 )
 
+java_proto_library(
+    name = "test_server_java_proto",
+    srcs = ["testProto/test-server.proto"],
+    grpc_support = True,
+    java_deps = ["@maven//:io.grpc.grpc-all"],
+)
+
 kotlin_test(
     name = "agent_tests",
     srcs = glob([
@@ -61,6 +68,7 @@ kotlin_test(
     ],
     deps = [
         ":agent-sources_undexed",
+        ":test_server_java_proto",
         "//tools/base/app-inspection/inspectors/network/fake-android:fake_android",
         "//tools/base/testutils:tools.testutils",
         "@maven//:com.google.guava.guava",

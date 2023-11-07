@@ -16,8 +16,8 @@
 
 package com.android.tools.appinspection.network.grpc
 
-import com.android.tools.appinspection.network.utils.Logger
-import com.android.tools.appinspection.network.utils.LoggerImpl
+import com.android.tools.appinspection.common.getStackTrace
+import com.android.tools.appinspection.network.trackers.GrpcTracker
 import io.grpc.Attributes
 import io.grpc.CallOptions
 import io.grpc.Channel
@@ -29,82 +29,76 @@ import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener
 import io.grpc.Grpc.TRANSPORT_ATTR_REMOTE_ADDR
 import io.grpc.Metadata
 import io.grpc.MethodDescriptor
+import io.grpc.MethodDescriptor.Marshaller
 import io.grpc.Status
+import java.net.SocketAddress
 
-/**
- * A GRPC [ClientInterceptor] that sends events to the Network Inspector tool.
- *
- * TODO(295991498): Create and send the events instead of just logging them.
- */
-internal class GrpcInterceptor(private val logger: Logger = LoggerImpl()) : ClientInterceptor {
-  override fun <Req, Res> interceptCall(
+private const val UNKNOWN = "unknown"
+
+/** A GRPC [ClientInterceptor] that sends events to the Network Inspector tool. */
+internal class GrpcInterceptor(
+  private val trackerFactory: GrpcTracker.Factory,
+) : ClientInterceptor {
+  override fun <Req : Any, Res : Any> interceptCall(
     method: MethodDescriptor<Req, Res>,
     options: CallOptions,
     next: Channel
-  ): ClientCall<Req, Res> =
-    InterceptingClientCall(
-      logger,
+  ): ClientCall<Req, Res> {
+    val tracker = trackerFactory.newGrpcTracker()
+    return InterceptingClientCall(
+      tracker,
       method,
-      next.newCall(method, options.withStreamTracerFactory(StreamTracer.Factory(logger)))
+      next.newCall(method, options.withStreamTracerFactory(StreamTracer.Factory(tracker)))
     )
+  }
 
-  private class InterceptingClientCall<Req, Res>(
-    private val logger: Logger,
+  private class InterceptingClientCall<Req : Any, Res : Any>(
+    private val tracker: GrpcTracker,
     private val method: MethodDescriptor<Req, Res>,
     delegate: ClientCall<Req, Res>,
   ) : SimpleForwardingClientCall<Req, Res>(delegate) {
     override fun start(responseListener: Listener<Res>, headers: Metadata) {
-      val listener = ClientCallListener(logger, responseListener)
-      logger.debugHidden(
-        "Request started: method=${method.fullMethodName} headers=$headers (${System.identityHashCode(headers)})"
-      )
+      val listener = ClientCallListener(tracker, method.responseMarshaller, responseListener)
       super.start(listener, headers)
+      tracker.trackGrpcCallStarted(
+        method.serviceName ?: UNKNOWN,
+        method.bareMethodName ?: UNKNOWN,
+        headers,
+        getStackTrace(1)
+      )
     }
 
     override fun sendMessage(message: Req) {
       super.sendMessage(message)
-      logger.debugHidden("Request payload: ${message.toString().substringAfter('\n')}")
+      tracker.trackGrpcMessageSent(message, method.requestMarshaller)
     }
   }
 
-  private class StreamTracer(private val logger: Logger) : ClientStreamTracer() {
+  private class StreamTracer(private val tracker: GrpcTracker) : ClientStreamTracer() {
     override fun streamCreated(transportAttrs: Attributes, headers: Metadata) {
-      val address = transportAttrs.get(TRANSPORT_ATTR_REMOTE_ADDR)
-      logger.debugHidden(
-        "streamCreated: address: $address headers=$headers (${System.identityHashCode(headers)})"
-      )
+      val address: SocketAddress? = transportAttrs.get(TRANSPORT_ATTR_REMOTE_ADDR)
+      tracker.trackGrpcStreamCreated(address?.toString() ?: UNKNOWN, headers)
     }
 
-    override fun streamClosed(status: Status) {
-      logger.debugHidden("streamClosed: $status")
-    }
-
-    override fun inboundTrailers(trailers: Metadata) {
-      logger.debugHidden("Trailers: $trailers")
-    }
-
-    class Factory(private val logger: Logger) : ClientStreamTracer.Factory() {
-      override fun newClientStreamTracer(info: StreamInfo, headers: Metadata) = StreamTracer(logger)
+    class Factory(private val tracker: GrpcTracker) : ClientStreamTracer.Factory() {
+      override fun newClientStreamTracer(info: StreamInfo, headers: Metadata) =
+        StreamTracer(tracker)
     }
   }
 
-  class ClientCallListener<Res>(
-    private val logger: Logger,
+  class ClientCallListener<Res : Any>(
+    private val tracker: GrpcTracker,
+    private val marshaller: Marshaller<Res>,
     responseListener: ClientCall.Listener<Res>,
   ) : SimpleForwardingClientCallListener<Res>(responseListener) {
     override fun onMessage(message: Res) {
       super.onMessage(message)
-      logger.debugHidden("Response payload: ${message.toString().substringAfter('\n')}")
+      tracker.trackGrpcMessageReceived(message, marshaller)
     }
 
-    override fun onClose(status: Status?, trailers: Metadata?) {
+    override fun onClose(status: Status, trailers: Metadata) {
       super.onClose(status, trailers)
-      logger.debugHidden("onClose: $status")
-    }
-
-    override fun onHeaders(headers: Metadata) {
-      super.onHeaders(headers)
-      logger.debugHidden("Response headers: $headers")
+      tracker.trackGrpcCallEnded(status, trailers)
     }
   }
 }

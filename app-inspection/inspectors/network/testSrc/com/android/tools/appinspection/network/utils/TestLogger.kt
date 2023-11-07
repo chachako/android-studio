@@ -16,6 +16,7 @@
 
 package com.android.tools.appinspection.network.utils
 
+/** A [Logger] for tests */
 internal class TestLogger : Logger {
   val messages = mutableListOf<String>()
 
@@ -23,13 +24,14 @@ internal class TestLogger : Logger {
     log("DEBUG", tag, msg)
   }
 
-  override fun error(tag: String, msg: String) {
-    log("ERROR", tag, msg)
+  override fun error(tag: String, msg: String, t: Throwable?) {
+    log("ERROR", tag, msg, t)
   }
 
-  private fun log(level: String, tag: String, msg: String) {
+  private fun log(level: String, tag: String, msg: String, t: Throwable? = null) {
     val message = "$level: $tag: $msg"
     println(message)
+    t?.printStackTrace()
     messages.add(message)
   }
 }

@@ -9,10 +9,11 @@ message Event {
     oneof union {
         HttpConnectionEvent http_connection_event = 11;
         SpeedEvent speed_event = 12;
+        GrpcEvent grpc_event = 13;
     }
 }
 
-// Message representing a network event from the inspector.
+// Message representing an HTTP event from the inspector.
 message HttpConnectionEvent {
     enum HttpTransport {
         UNDEFINED = 0;
@@ -75,6 +76,56 @@ message HttpConnectionEvent {
         Payload request_payload = 17;
         Payload response_payload = 18;
         ThreadData http_thread = 19;
+    }
+}
+
+// Message representing a gRPC event from the inspector.
+message GrpcEvent {
+    message GrpcCallStarted {
+        string service = 1;
+        string method = 2;
+        repeated GrpcMetadata headers = 3;
+        string trace = 4;
+    }
+
+    message GrpcPayload {
+        optional bytes bytes = 1;
+        string type = 2;
+        string text = 3;
+    }
+    message GrpcMessageSent {
+        GrpcPayload payload = 1;
+    }
+
+    message GrpcMetadata {
+        string key = 1;
+        repeated string values = 2;
+    }
+
+    message GrpcStreamCreated {
+        string address = 1;
+        repeated GrpcMetadata headers = 2;
+    }
+
+    message GrpcMessageReceived {
+        GrpcPayload payload = 1;
+    }
+
+    message GrpcCallEnded {
+        string status = 1;
+        optional string error = 2;
+        repeated GrpcMetadata trailers = 3;
+    }
+
+    int64 connection_id = 1;
+
+    oneof union {
+        GrpcCallStarted grpc_call_started = 2;
+        GrpcMessageSent grpc_message_sent = 3;
+        GrpcStreamCreated grpc_stream_created = 4;
+        GrpcMessageReceived grpc_message_received = 5;
+        GrpcCallEnded grpc_call_ended = 6;
+        ThreadData grpc_thread = 7;
     }
 }
 

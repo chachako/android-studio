@@ -21,6 +21,7 @@ private const val TAG = "Network Inspector"
 // A Log tag that should be filtered out by Android Studio.
 private const val HIDDEN_TAG = "studio.inspectors"
 
+/** A simple logger interface */
 internal interface Logger {
   fun debug(msg: String) {
     debug(TAG, msg)
@@ -30,11 +31,11 @@ internal interface Logger {
     debug(HIDDEN_TAG, msg)
   }
 
-  fun error(msg: String) {
-    error(TAG, msg)
+  fun error(msg: String, t: Throwable? = null) {
+    error(TAG, msg, t)
   }
 
   fun debug(tag: String, msg: String)
 
-  fun error(tag: String, msg: String)
+  fun error(tag: String, msg: String, t: Throwable? = null)
 }
