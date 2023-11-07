@@ -7,10 +7,12 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration.Short
@@ -20,15 +22,25 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo.State.SUCCEEDED
 import androidx.work.WorkManager
 import com.google.test.inspectors.ui.theme.InspectorsTestAppTheme
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.launch
+
+private val POST_DATA =
+  """
+  {
+      "name": "morpheus",
+      "job": "leader"
+  }
+""".trimIndent().toByteArray()
+
+private const val JSON_TYPE = "application/json"
 
 class MainActivity : ComponentActivity() {
 
@@ -52,18 +64,34 @@ class MainActivity : ComponentActivity() {
 
     val snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) {
-      Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(it).fillMaxWidth(),
+      LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        contentPadding = it,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(8.dp)
       ) {
-        SimpleTextButton("Start Job") {
+        button("Start Job") {
           startJob()
           scope.launch {
             snackbarHostState.showSnackbar("Started job ${jobId.get()}", duration = Short)
           }
         }
-        SimpleTextButton("Start Work") {
+        button("Start Work") {
           startWork { scope.launch { snackbarHostState.showSnackbar(it, duration = Short) } }
+        }
+        button("Java Net GET") {
+          scope.launch {
+            NetworkJavaNet.doGet("https://reqres.in/api/users") { rc, _ ->
+              snackbarHostState.showSnackbar("Result: $rc", duration = Short)
+            }
+          }
+        }
+        button("Java Net POST") {
+          scope.launch {
+            NetworkJavaNet.doPost("https://reqres.in/api/users", POST_DATA, JSON_TYPE) { rc, _ ->
+              snackbarHostState.showSnackbar("Result: $rc", duration = Short)
+            }
+          }
         }
       }
     }
@@ -94,4 +122,8 @@ class MainActivity : ComponentActivity() {
   fun AppPreview() {
     InspectorsTestAppTheme { App() }
   }
+}
+
+private fun LazyGridScope.button(text: String, onClick: () -> Unit) {
+  item { SimpleTextButton(text, onClick) }
 }
