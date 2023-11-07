@@ -61,7 +61,7 @@ class BooleanOptionTest {
             BooleanOption.PRECOMPILE_DEPENDENCIES_RESOURCES,
             BooleanOption.INCLUDE_DEPENDENCY_INFO_IN_APKS,
             BooleanOption.ENABLE_LEGACY_API,
-            BooleanOption.FULL_R8
+            BooleanOption.FULL_R8,
         )
 
         val violatingOptions = BooleanOption.values().filter {
@@ -76,6 +76,7 @@ class BooleanOptionTest {
 
     @Test
     fun `check softly-enforced, enforced features have default value 'true'`() {
+        
         val violatingOptions = BooleanOption.values().filter {
             (it.stage is FeatureStage.SoftlyEnforced || it.stage is FeatureStage.Enforced)
                     && !it.defaultValue

@@ -39,9 +39,6 @@ class ManagedDeviceExtensionTest {
 
     @Before
     fun setUp() {
-        project.gradlePropertiesFile.appendText("""
-            android.experimental.testOptions.managedDevices.customDevice=true
-        """.trimIndent())
         project.getSubproject("app").buildFile.appendText("""
 import com.android.build.api.instrumentation.manageddevice.DeviceSetupInput
 import com.android.build.api.instrumentation.manageddevice.DeviceSetupConfigureAction

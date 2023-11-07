@@ -88,8 +88,6 @@ import java.util.logging.Level
 abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), AndroidTestTask {
 
     abstract class TestRunnerFactory {
-        @get: Input
-        abstract val customManagedDevice: Property<Boolean>
 
         @get: Input
         abstract val executionEnum: Property<TestOptions.Execution>
@@ -453,10 +451,6 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
                     .resolveDependencies(task.project.configurations)
             task.testRunnerFactory.getTargetIsSplitApk.setDisallowChanges(
                     testedConfig?.componentType?.isDynamicFeature ?: false
-            )
-            task.testRunnerFactory.customManagedDevice.setDisallowChanges(
-                globalConfig.services.projectOptions[
-                        BooleanOption.GRADLE_MANAGED_DEVICE_CUSTOM_DEVICE]
             )
 
             task.testRunnerFactory.getKeepInstalledApks.setDisallowChanges(

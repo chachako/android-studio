@@ -972,13 +972,6 @@ abstract class TaskManager(
                         )
                     )
                 registration != null -> {
-                    if (!globalConfig.services.projectOptions[
-                            BooleanOption.GRADLE_MANAGED_DEVICE_CUSTOM_DEVICE]) {
-                        error("Unsupported managed device type: ${managedDevice.javaClass}. " +
-                              "Managed Device extension API is experimental. Add " +
-                              "android.experimental.testOptions.managedDevices.customDevice=true " +
-                              "in your gradle.properties file to opt-in.")
-                    }
                     val setupResult: Provider<Directory>? = if (registration.hasSetupActions) {
                         taskFactory.named(setupTaskName(managedDevice)).flatMap { task ->
                             (task as ManagedDeviceSetupTask).setupResultDir

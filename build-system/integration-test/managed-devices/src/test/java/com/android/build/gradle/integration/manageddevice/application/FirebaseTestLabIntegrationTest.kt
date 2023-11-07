@@ -52,9 +52,6 @@ class FirebaseTestLabIntegrationTest {
                 }
             }
         """.trimIndent())
-        project.gradlePropertiesFile.appendText("""
-            android.experimental.testOptions.managedDevices.customDevice=true
-        """.trimIndent())
 
         val ftlBuildScriptResource =
                 Resources.getResource(FirebaseTestLabIntegrationTest::class.java,

@@ -47,9 +47,6 @@ class FirebaseTestLabDeviceTest {
                 }
             }
         """.trimIndent())
-        project.gradlePropertiesFile.appendText("""
-            android.experimental.testOptions.managedDevices.customDevice=true
-        """.trimIndent())
 
         val appBuildFileContent = project.getSubproject("app").buildFile.readText()
         project.getSubproject("app").buildFile.writeText("""
