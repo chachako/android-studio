@@ -6833,6 +6833,33 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testNotTheNewestTargetSdkForWear() {
+    if (createClient().highestKnownApiLevel <= MINIMUM_TARGET_SDK_VERSION) {
+      // test makes sense only if highestKnownApiLevel > MINIMUM_TARGET_SDK_VERSION, otherwise we
+      // will always have [EXPIRED_TARGET_SDK_VERSION] first
+      return
+    }
+    lint()
+      .sdkHome(TestUtils.getSdk().toFile())
+      .files(
+        manifest(
+            """
+            <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                package="test.bytecode"
+                android:versionCode="1"
+                android:versionName="1.0" >
+                <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="$MINIMUM_TARGET_SDK_VERSION" />
+                <uses-feature android:name="android.hardware.type.watch" />
+            </manifest>
+            """
+          )
+          .indented()
+      )
+      .issues(TARGET_NEWER)
+      .run()
+      .expectClean()
+  }
+
   fun testNewerCompileSdkVersionAvailable() {
     lint()
       .files(

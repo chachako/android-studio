@@ -195,7 +195,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     val target = attribute.value
     try {
       val targetSdkVersion = target.toInt()
-      val highest = context.client.highestKnownApiLevel
       val location = context.getLocation(attribute)
       when (
         val tsdk =
@@ -223,14 +222,14 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
             targetSdkLintFix(targetSdkVersion, tsdk.requiredVersion)
           )
         }
-        is TargetSdkCheckResult.NoIssue -> {
-          if (context.isEnabled(TARGET_NEWER) && targetSdkVersion < highest) {
+        is TargetSdkCheckResult.NotLatest -> {
+          if (context.isEnabled(TARGET_NEWER)) {
             context.report(
               TARGET_NEWER,
               element,
               location,
               tsdk.message,
-              targetSdkLintFix(targetSdkVersion, highest)
+              targetSdkLintFix(targetSdkVersion, tsdk.highestVersion)
             )
           }
         }
@@ -316,8 +315,8 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
                 fix().data("currentTargetSdkVersion", version).takeIf { LintClient.isStudio },
               )
             }
-            is TargetSdkCheckResult.NoIssue -> {
-              val highest = context.client.highestKnownApiLevel
+            is TargetSdkCheckResult.NotLatest -> {
+              val highest = tsdk.highestVersion
               val label = "Update targetSdkVersion to $highest"
               val fix =
                 if (LintClient.isStudio) {

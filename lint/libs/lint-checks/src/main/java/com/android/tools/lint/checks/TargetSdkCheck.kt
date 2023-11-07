@@ -18,6 +18,7 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.checks.TargetSdkCheckResult.Expired
 import com.android.tools.lint.checks.TargetSdkCheckResult.Expiring
 import com.android.tools.lint.checks.TargetSdkCheckResult.NoIssue
+import com.android.tools.lint.checks.TargetSdkCheckResult.NotLatest
 import com.android.tools.lint.checks.TargetSdkRequirements.MINIMUM_TARGET_SDK_VERSION
 import com.android.tools.lint.checks.TargetSdkRequirements.MINIMUM_TARGET_SDK_VERSION_YEAR
 import com.android.tools.lint.checks.TargetSdkRequirements.MINIMUM_WEAR_TARGET_SDK_VERSION
@@ -68,11 +69,16 @@ sealed interface TargetSdkCheckResult {
         "starting on August 31, $MINIMUM_TARGET_SDK_VERSION_YEAR."
   ) : TargetSdkCheckResult
 
+  data class NotLatest(val highestVersion: Int) : TargetSdkCheckResult {
+    val message: String
+      get() =
+        "Not targeting the latest versions of Android; compatibility " +
+          "modes apply. Consider testing and updating this version. " +
+          "Consult the `android.os.Build.VERSION_CODES` javadoc for details."
+  }
+
   object NoIssue : TargetSdkCheckResult {
-    val message: String =
-      "Not targeting the latest versions of Android; compatibility " +
-        "modes apply. Consider testing and updating this version. " +
-        "Consult the `android.os.Build.VERSION_CODES` javadoc for details."
+    const val message: String = ""
   }
 }
 
@@ -91,8 +97,11 @@ fun checkTargetSdk(context: Context, nowCalendar: Calendar, version: Int): Targe
     Calendar.getInstance().apply { set(MINIMUM_TARGET_SDK_VERSION_YEAR, Calendar.AUGUST, 31) }
 
   return when {
-    // If the version is at least the minimum then there's no issue
-    version >= minimumTargetSdkVersion -> NoIssue
+    // If the version is at least the minimum then there's no enforcement issue
+    version >= minimumTargetSdkVersion -> {
+      val highest = context.client.highestKnownApiLevel
+      if (version < highest && !isWearProject) NotLatest(highest) else NoIssue
+    }
     // Doesn't meet this year requirement after deadline (August 31 for 2023)
     nowCalendar.after(sdkEnforceDate) -> Expired(minimumTargetSdkVersion)
     // If you're not meeting the previous year's requirement, also enforce with error severity
