@@ -532,6 +532,7 @@ def iml_module(
         data = [],
         test_main_class = None,
         lint_baseline = None,
+        lint_enabled = True,
         lint_timeout = None,
         exec_properties = {},
         kotlin_use_compose = False,
@@ -592,6 +593,7 @@ def iml_module(
         data: Production runtime dependencies.
         test_main_class: See See https://bazel.build/reference/be/java#java_test_args.
         lint_baseline: See impl.
+        lint_enabled: enable or disable Lint checks
         lint_timeout: See impl.
         exec_properties: See https://bazel.build/reference/be/common-definitions#common.exec_properties
         kotlin_use_compose: See impl.
@@ -664,14 +666,10 @@ def iml_module(
     )
 
     lint_srcs = srcs.javas + srcs.kotlins + srcs.resources
-    if lint_baseline:
-        if not lint_srcs:
-            fail("lint_baseline set for iml_module that has no sources")
+    if lint_baseline and not lint_srcs:
+        fail("lint_baseline set for iml_module that has no sources")
 
-        kwargs = {}
-        if lint_timeout:
-            kwargs["timeout"] = lint_timeout
-
+    if lint_srcs and lint_enabled:
         lint_tags = tags if tags else []
         if "no_windows" not in lint_tags:
             lint_tags.append("no_windows")
@@ -684,10 +682,8 @@ def iml_module(
             custom_rules = ["//tools/base/lint:studio-checks.lint-rules.jar"],
             external_annotations = ["//tools/base/external-annotations:annotations.zip"],
             tags = lint_tags,
-            **kwargs
+            timeout = lint_timeout if lint_timeout else None,
         )
-    elif lint_timeout:
-        fail("lint_timeout set for iml_module that doesn't use lint (set lint_baseline to enable lint)")
 
     if not test_srcs:
         return

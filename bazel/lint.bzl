@@ -1,3 +1,5 @@
+"""This module implements the lint_test rule."""
+
 script_template = """\
 #!/bin/bash
 flags=""
@@ -8,10 +10,12 @@ fi
 """
 
 def _lint_test_impl(ctx):
-    classpath = depset()
+    transitive = []
     for dep in ctx.attr.deps:
         if JavaInfo in dep:
-            classpath = depset(transitive = [classpath, dep[JavaInfo].transitive_runtime_jars, dep[JavaInfo].transitive_compile_time_jars])
+            transitive.append(dep[JavaInfo].transitive_runtime_jars)
+            transitive.append(dep[JavaInfo].transitive_compile_time_jars)
+    classpath = depset(transitive = transitive)
 
     # Create project XML:
     project_xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
@@ -53,7 +57,8 @@ def _lint_test_impl(ctx):
     # Compute runfiles:
     runfiles = ctx.runfiles(
         files = (
-            [ctx.outputs.project_xml, ctx.file.baseline] +
+            [ctx.outputs.project_xml] +
+            ([ctx.file.baseline] if ctx.file.baseline else []) +
             ctx.files.srcs +
             ctx.files.custom_rules +
             ctx.files.external_annotations
