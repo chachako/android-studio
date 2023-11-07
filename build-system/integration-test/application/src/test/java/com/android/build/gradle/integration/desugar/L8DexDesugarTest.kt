@@ -23,6 +23,7 @@ import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.truth.TruthHelper
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThatApk
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.internal.dependency.L8DesugarLibTransform
 import com.android.build.gradle.options.IntegerOption
 import com.android.testutils.apk.AndroidArchive.checkValidClassName
 import com.android.testutils.apk.Dex
@@ -204,6 +205,33 @@ class L8DexDesugarTest {
                 GradleTestProject.ApkType.DEBUG,
                 GradleTestProject.ApkLocation.Intermediates)
         assertThatApk(apkApi23).hasClass(desugarClassCompanion)
+    }
+
+    /** Regression test for b/293206305. */
+    @Test
+    fun testL8DesugarLibTransformWithDifferentMinSdkVersions() {
+        project.buildFile.appendText("\n" +
+            """
+            android {
+                flavorDimensions "flavor"
+                productFlavors {
+                    foo {
+                        dimension "flavor"
+                        minSdkVersion 22
+                    }
+                    bar {
+                        dimension "flavor"
+                        minSdkVersion 24
+                    }
+                }
+            }
+            """.trimIndent()
+        )
+        val result = project.executor().run(":l8DexDesugarLibFooRelease", ":l8DexDesugarLibBarRelease")
+
+        // Check that the transform is executed once for each minSdkVersion
+        result.assertOutputContains("Running ${L8DesugarLibTransform::class.java.simpleName} with minSdkVersion = 22")
+        result.assertOutputContains("Running ${L8DesugarLibTransform::class.java.simpleName} with minSdkVersion = 24")
     }
 
     private fun normalSetUp() {

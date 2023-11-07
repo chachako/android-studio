@@ -165,11 +165,7 @@ abstract class L8DexDesugarLibTask : NonIncrementalTask() {
             task.fullBootClasspath.from(creationConfig.global.fullBootClasspath)
 
             if (dexingCreationConfig.needsShrinkDesugarLibrary) {
-                task.desugaredDesugarLibJar.from(getDesugaredDesugarLib(
-                    creationConfig.services,
-                    dexingCreationConfig.minSdkVersionForDexing,
-                    task.fullBootClasspath),
-                )
+                task.desugaredDesugarLibJar.from(getDesugaredDesugarLib(creationConfig))
                 // desugar library is shrunk to reduce apk but not obfuscated or optimized
                 task.keepRulesConfigurations.set(listOf("-dontobfuscate", "-dontoptimize"))
 

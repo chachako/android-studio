@@ -194,12 +194,7 @@ abstract class ExpandArtProfileWildcardsTask: NonIncrementalTask() {
 
             task.fullBootClasspath.from(creationConfig.global.fullBootClasspath)
 
-            task.desugaredDesugarLibJar.fromDisallowChanges(
-                getDesugaredDesugarLib(
-                    creationConfig.services,
-                    dexingCreationConfig.minSdkVersionForDexing,
-                    task.fullBootClasspath)
-            )
+            task.desugaredDesugarLibJar.fromDisallowChanges(getDesugaredDesugarLib(creationConfig))
 
             task.mergedArtProfile.setDisallowChanges(
                 creationConfig.artifacts.get(InternalArtifactType.MERGED_ART_PROFILE))
