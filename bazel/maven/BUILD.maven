@@ -12112,10 +12112,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.benchmark.benchmark-baseline-profile-gradle-plugin_1.2.0-rc02",
-    pom = "repository/androidx/benchmark/benchmark-baseline-profile-gradle-plugin/1.2.0-rc02/benchmark-baseline-profile-gradle-plugin-1.2.0-rc02.pom",
+    name = "androidx.benchmark.benchmark-baseline-profile-gradle-plugin_1.2.0",
+    pom = "repository/androidx/benchmark/benchmark-baseline-profile-gradle-plugin/1.2.0/benchmark-baseline-profile-gradle-plugin-1.2.0.pom",
     repo_root_path = "repository",
-    repo_path = "androidx/benchmark/benchmark-baseline-profile-gradle-plugin/1.2.0-rc02",
+    repo_path = "androidx/benchmark/benchmark-baseline-profile-gradle-plugin/1.2.0",
     deps = [
         "com.google.protobuf.protobuf-java_3.21.8",
         "com.google.testing.platform.core-proto_0.0.8-alpha08",
@@ -12124,10 +12124,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.benchmark.benchmark-gradle-plugin_1.2.0-rc02",
-    pom = "repository/androidx/benchmark/benchmark-gradle-plugin/1.2.0-rc02/benchmark-gradle-plugin-1.2.0-rc02.pom",
+    name = "androidx.benchmark.benchmark-gradle-plugin_1.2.0",
+    pom = "repository/androidx/benchmark/benchmark-gradle-plugin/1.2.0/benchmark-gradle-plugin-1.2.0.pom",
     repo_root_path = "repository",
-    repo_path = "androidx/benchmark/benchmark-gradle-plugin/1.2.0-rc02",
+    repo_path = "androidx/benchmark/benchmark-gradle-plugin/1.2.0",
     visibility = ["//visibility:public"],
 )
 
