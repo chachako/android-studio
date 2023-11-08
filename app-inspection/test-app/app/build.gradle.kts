@@ -46,15 +46,15 @@ android {
 }
 
 dependencies {
-    implementation(libs.core.ktx)
-    implementation(libs.androidx.work)
-    implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.activity.compose)
-    implementation(platform(libs.compose.bom))
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.work)
+    implementation(libs.core.ktx)
+    implementation(libs.lifecycle.runtime.ktx)
+    implementation(libs.material3)
     implementation(libs.ui)
     implementation(libs.ui.graphics)
     implementation(libs.ui.tooling.preview)
-    implementation(libs.material3)
-    implementation(libs.androidx.navigation.compose)
+    implementation(platform(libs.compose.bom))
     debugImplementation(libs.androidx.ui.tooling)
 }
