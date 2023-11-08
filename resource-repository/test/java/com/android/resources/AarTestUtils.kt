@@ -21,7 +21,6 @@ import com.android.SdkConstants.DOT_AAR
 import com.android.ide.common.util.toPathString
 import com.android.resources.aar.AarSourceResourceRepository
 import com.android.testutils.TestUtils.resolveWorkspacePath
-import com.intellij.openapi.util.io.FileUtil
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
 import java.nio.file.Path
@@ -64,7 +63,7 @@ private fun createAar(sourceDirectory: Path, tempDir: Path): Path {
   ZipOutputStream(Files.newOutputStream(aarFile)).use { zip ->
     Files.walkFileTree(sourceDirectory, object : SimpleFileVisitor<Path>() {
       override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-        val relativePath = FileUtil.toSystemIndependentName(sourceDirectory.relativize(file).toString())
+        val relativePath = sourceDirectory.relativize(file).toString().replace('\\', '/')
         createZipEntry(relativePath, Files.readAllBytes(file), zip)
         return FileVisitResult.CONTINUE
       }
