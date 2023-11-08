@@ -153,15 +153,23 @@ public final class DeviceImpl implements IDevice {
     @Nullable
     @Override
     public String getAvdName() {
-        AvdData avdData = getCurrentAvdData();
-        return avdData != null ? avdData.getName() : null;
+        return logCall(
+                IDeviceUsageTracker.Method.GET_AVD_NAME,
+                () -> {
+                    AvdData avdData = getCurrentAvdData();
+                    return avdData != null ? avdData.getName() : null;
+                });
     }
 
     @Nullable
     @Override
     public String getAvdPath() {
-        AvdData avdData = getCurrentAvdData();
-        return avdData != null ? avdData.getPath() : null;
+        return logCall(
+                IDeviceUsageTracker.Method.GET_AVD_PATH,
+                () -> {
+                    AvdData avdData = getCurrentAvdData();
+                    return avdData != null ? avdData.getPath() : null;
+                });
     }
 
     @Nullable
@@ -176,7 +184,7 @@ public final class DeviceImpl implements IDevice {
     @NonNull
     @Override
     public ListenableFuture<AvdData> getAvdData() {
-        return mAvdData;
+        return logCall(IDeviceUsageTracker.Method.GET_AVD_DATA, () -> mAvdData);
     }
 
     void setAvdData(@Nullable AvdData data) {
@@ -191,7 +199,7 @@ public final class DeviceImpl implements IDevice {
 
     @Override
     public DeviceState getState() {
-        return mState;
+        return logCall(IDeviceUsageTracker.Method.GET_STATE, () -> mState);
     }
 
     /** Changes the state of the device. */
@@ -202,34 +210,47 @@ public final class DeviceImpl implements IDevice {
     @NonNull
     @Override
     public Map<String, String> getProperties() {
-        return Collections.unmodifiableMap(mPropFetcher.getProperties());
+        return logCall(
+                IDeviceUsageTracker.Method.GET_PROPERTIES,
+                () -> Collections.unmodifiableMap(mPropFetcher.getProperties()));
     }
 
     @Override
     public int getPropertyCount() {
-        return mPropFetcher.getProperties().size();
+        return logCall(
+                IDeviceUsageTracker.Method.GET_PROPERTY_COUNT,
+                () -> mPropFetcher.getProperties().size());
     }
 
     @Nullable
     @Override
     public String getProperty(@NonNull String name) {
-        Map<String, String> properties = mPropFetcher.getProperties();
-        long timeout = properties.isEmpty() ? INITIAL_GET_PROP_TIMEOUT_MS : GET_PROP_TIMEOUT_MS;
+        return logCall(
+                IDeviceUsageTracker.Method.GET_PROPERTY,
+                () -> {
+                    Map<String, String> properties = mPropFetcher.getProperties();
+                    long timeout =
+                            properties.isEmpty()
+                                    ? INITIAL_GET_PROP_TIMEOUT_MS
+                                    : GET_PROP_TIMEOUT_MS;
 
-        Future<String> future = mPropFetcher.getProperty(name);
-        try {
-            return future.get(timeout, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException
-                | ExecutionException
-                | java.util.concurrent.TimeoutException e) {
-            // ignore
-        }
-        return null;
+                    Future<String> future = mPropFetcher.getProperty(name);
+                    try {
+                        return future.get(timeout, TimeUnit.MILLISECONDS);
+                    } catch (InterruptedException
+                            | ExecutionException
+                            | java.util.concurrent.TimeoutException e) {
+                        // ignore
+                    }
+                    return null;
+                });
     }
 
     @Override
     public boolean arePropertiesSet() {
-        return mPropFetcher.arePropertiesSet();
+        return logCall(
+                IDeviceUsageTracker.Method.ARE_PROPERTIES_SET,
+                () -> mPropFetcher.arePropertiesSet());
     }
 
     @Override
@@ -365,7 +386,7 @@ public final class DeviceImpl implements IDevice {
      */
     @Override
     public boolean isOnline() {
-        return mState == DeviceState.ONLINE;
+        return logCall(IDeviceUsageTracker.Method.IS_ONLINE, () -> mState == DeviceState.ONLINE);
     }
 
     /*
