@@ -72,24 +72,20 @@ class MainActivity : ComponentActivity() {
       ) {
         button("Start Job") {
           startJob()
-          scope.launch {
-            snackbarHostState.showSnackbar("Started job ${jobId.get()}", duration = Short)
-          }
+          scope.launch { snackbarHostState.show("Started job ${jobId.get()}") }
         }
-        button("Start Work") {
-          startWork { scope.launch { snackbarHostState.showSnackbar(it, duration = Short) } }
-        }
-        button("Java Net GET") {
-          scope.launch {
-            NetworkJavaNet.doGet("https://reqres.in/api/users") { rc, _ ->
-              snackbarHostState.showSnackbar("Result: $rc", duration = Short)
+        button("Start Work") { startWork { scope.launch { snackbarHostState.show(it) } } }
+        listOf(JavaNet, OkHttp2(), OkHttp3()).forEach { client ->
+          button("${client.name} GET") {
+            scope.launch {
+              val result = client.doGet("https://reqres.in/api/users")
+              snackbarHostState.show("Result: ${result.rc}")
             }
           }
-        }
-        button("Java Net POST") {
-          scope.launch {
-            NetworkJavaNet.doPost("https://reqres.in/api/users", POST_DATA, JSON_TYPE) { rc, _ ->
-              snackbarHostState.showSnackbar("Result: $rc", duration = Short)
+          button("${client.name} POST") {
+            scope.launch {
+              val result = client.doPost("https://reqres.in/api/users", POST_DATA, JSON_TYPE)
+              snackbarHostState.show("Result: ${result.rc}")
             }
           }
         }
@@ -122,6 +118,11 @@ class MainActivity : ComponentActivity() {
   fun AppPreview() {
     InspectorsTestAppTheme { App() }
   }
+}
+
+private suspend fun SnackbarHostState.show(message: String) {
+  currentSnackbarData?.dismiss()
+  showSnackbar(message, duration = Short)
 }
 
 private fun LazyGridScope.button(text: String, onClick: () -> Unit) {
