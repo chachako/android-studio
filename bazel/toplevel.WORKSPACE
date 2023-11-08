@@ -226,8 +226,9 @@ http_file(
 
 # An empty local repository which must be overridden according to the instructions at
 # go/agp-profiled-benchmarks if running the "_profiled" AGP build benchmarks.
-local_repository(
+new_local_repository(
     name = "yourkit_controller",
+    build_file = "tools/base/yourkit-controller/yourkit.BUILD",
     path = "tools/base/yourkit-controller",
 )
 
