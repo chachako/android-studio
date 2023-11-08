@@ -59,7 +59,7 @@ class EmulatorConsoleTest {
         scope.cancel(null)
     }
 
-    class FakeEmulator : Runnable {
+    private class FakeEmulator : Runnable {
 
         val server = ServerSocket(0)
         val port = server.localPort
@@ -220,7 +220,7 @@ class EmulatorConsoleTest {
         fail("Should not reach")
     }
 
-    fun <T> runBlockingWithTimeout(block: suspend CoroutineScope.() -> T) =
+    private fun <T> runBlockingWithTimeout(block: suspend CoroutineScope.() -> T) =
         runBlocking {
             withTimeout(5000) {
                 block()
