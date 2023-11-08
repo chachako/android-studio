@@ -18,16 +18,26 @@ package com.android.tools.lint.checks
 
 import com.android.testutils.TestUtils
 import com.android.tools.lint.checks.ToastDetectorTest.Companion.snackbarStubs
+import com.android.tools.lint.checks.infrastructure.LintDetectorTest.bytecode
 import com.android.tools.lint.checks.infrastructure.TestFile
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestFiles.rClass
 import com.android.tools.lint.checks.infrastructure.TestLintTask
 import com.android.tools.lint.checks.infrastructure.TestMode
+import com.android.tools.lint.detector.api.Category
+import com.android.tools.lint.detector.api.Detector
+import com.android.tools.lint.detector.api.Implementation
+import com.android.tools.lint.detector.api.Incident
+import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.LintUtilsTest
+import com.android.tools.lint.detector.api.Scope
+import com.android.tools.lint.detector.api.Severity
+import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
+import com.intellij.psi.PsiMethod
 import java.io.File
 import junit.framework.TestCase
 import org.jetbrains.uast.UCallExpression
@@ -1057,6 +1067,220 @@ class DataFlowAnalyzerTest : TestCase() {
     // TODO(b/308569204): Possibly, this should just be: intentFun.
     assertEquals("let, apply, intentFun, apply", receivers.joinToString { it })
 
+    Disposer.dispose(parsed.second)
+  }
+
+  fun testCompiledExtensionFunctions() {
+    // Tests that compiled extension functions are correctly handled (treated as escapes).
+    lint()
+      .files(
+        bytecode(
+          "bin/classes",
+          kotlin(
+              """
+            package com.pkg.mylib
+
+            class Intent {
+              fun intentFun() {}
+            }
+
+            fun Intent.extensionFunc() {
+              intentFun()
+            }
+            """
+            )
+            .indented(),
+          0x37304ed6,
+          """
+        META-INF/main.kotlin_module:
+        H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijgkuTiTc7P1SvITtfLrczJTBLi8Mwr
+        Sc0r8S5RYtBiAAD479xhMwAAAA==
+        """,
+          """
+        com/pkg/mylib/Intent.class:
+        H4sIAAAAAAAA/21RwU7bQBSct44NMZQ4KdCEUs4UJJygnlqEBEhIrlyQ2iqX
+        nDaJlS6x1yjeIHrLt/QPeqrUQxVx5KMQb01UoaqWPG9mnmf9/Hz/8PsPgHfY
+        IawP8iy8Ho/C7Huq+mGkTaLNEogQXMkbGaZSj8LL/lUyYNcheEdKK3NMcHbf
+        dlfhwvNRwRKhYr6pgrAZ/+/AD4SqKtn5VBPq8Tg3qdLhp8TIoTSS+yK7cXgo
+        slC1AAKN2b9VVrWZDTuE/fks8EVT+CKYz3yxbIlozmeHok2n7t0Pj+VHL3C2
+        RLtiI4dkD6o+jXEwNjzoWT5MCLVY6eRimvWTyVfZT9lpxPlApl05UVYvTP9L
+        Pp0MknNlRevzVBuVJV1VKO6eaJ0baVSuC3QgeA/2Evw+Xgtji1VoP4Oru/cL
+        yz/L9hajV5oOXjOuPj2AKnyudaz8De+XW+D732DlWZAWQYHtEpt4w/U9+/b3
+        vOjBibAWoRYhQJ0pGhFeYr0HKrCBzR7cAn6BVwW8AitMHgG8CTN0HwIAAA==
+        """,
+          """
+        com/pkg/mylib/IntentKt.class:
+        H4sIAAAAAAAA/21SW08TQRT+zhZ6WYqUAoUWxQtVSjVuMb6YGhNjQrKxFiOm
+        LzxNt5My7e6s2Z02+MZf8sUYHwzP/ijjmbZRQniYc/nmfOc28/vPz18AXuIZ
+        oRLEkfdlPPSir6Hqe742Upv3JgcilEZiKrxQ6KF30h/JgNEMYVVecEyqYn08
+        0QGh2ujclqN92CPsd+Jk6I2k6SdC6dQTWsdGGOamXjc23UkYtgnZ1+ZcpW/y
+        yBP2xrEJlfZG08hTnCjRIrQZE6arIM3BJWwF5zIYL/gfRSIiyYGEg0bnZsft
+        a8ipTTLkvoooYtXFCu4QNm/rPYcSoaBmNg9JyDQsq4wNF+vYJGzUbcf1G5uo
+        3L4IwnpnMdUHacRAGMGYE00z/AhkRcEKEGhsDYcvL5S1WmwNjgi7V5euy8cp
+        Oa6z49Tc0tVlzWlR02nZ4MELsuzCvN7zsSEsvYsHkrDWUVp2J1FfJp9FP2Sk
+        3IkDEfZEoqy/AOufJtqoSPp6qlLF0L+lvv3/YAT3NJ4kgTxWllNdcHpzxrVA
+        HMHBEuYjVbGMLPtP2HvFmjvFSrNc+IG15ndsfbPz4oClyzqLPOsCGuwX56Go
+        YJv1IZ8cLwi5GaE5k4/xdPaNCTtcpXqGjI+aj10fd3HPxx7u+3iAh2egFI+w
+        z/cpllPUU2z/BShsKIYDAwAA
+        """
+        ),
+        kotlin(
+            """
+            package com.pkg.myapp
+
+            import com.pkg.mylib.Intent
+            import com.pkg.mylib.extensionFunc
+
+            class Hello {
+              fun f() {
+                val intent = Intent()
+                intent.extensionFunc()
+              }
+            }
+            """,
+          )
+          .indented()
+      )
+      .testModes(TestMode.DEFAULT)
+      .issues(ReportsIntentAndEscapes.ISSUE)
+      .run()
+      .expect(
+        """
+      src/com/pkg/myapp/Hello.kt:8: Warning: Intent use escaped? true [_ReportsIntentAndEscapes]
+          val intent = Intent()
+                       ~~~~~~~~
+      0 errors, 1 warnings
+        """
+      )
+  }
+
+  class ReportsIntentAndEscapes : Detector(), SourceCodeScanner {
+
+    override fun getApplicableConstructorTypes() = listOf("com.pkg.mylib.Intent")
+
+    override fun visitConstructor(
+      context: JavaContext,
+      node: UCallExpression,
+      constructor: PsiMethod
+    ) {
+      val method = node.getParentOfType(UMethod::class.java)
+      val analyzer = EscapeCheckingDataFlowAnalyzer(listOf(node))
+      method!!.accept(analyzer)
+      context.report(
+        Incident(
+          ISSUE,
+          node,
+          context.getLocation(node),
+          "Intent use escaped? " + analyzer.escaped,
+        )
+      )
+    }
+
+    companion object {
+      val ISSUE =
+        Issue.create(
+          "_ReportsIntentAndEscapes",
+          "Not applicable",
+          "Not applicable",
+          Category.MESSAGES,
+          5,
+          Severity.WARNING,
+          Implementation(ReportsIntentAndEscapes::class.java, Scope.JAVA_FILE_SCOPE),
+        )
+    }
+  }
+
+  fun testStandardScopeExtensionFunctionWithUnknownFunction() {
+    // Tests that the apply extension function is still treated as an escape when passed an unknown
+    // higher-order function (as opposed to something like a lambda expression or a method
+    // reference, which we can handle specially).
+    val parsed =
+      LintUtilsTest.parse(
+        kotlin(
+            """
+            package com.pkg
+
+            class Intent
+
+            fun hello(handler: Intent.() -> Unit) {
+              val intent = Intent()
+              intent.apply(handler) // escape
+            }
+            """,
+          )
+          .indented()
+      )
+
+    val target = findMethodCall(parsed, "Intent")
+    val method = target.getParentOfType(UMethod::class.java)
+    val analyzer = EscapeCheckingDataFlowAnalyzer(listOf(target))
+    method!!.accept(analyzer)
+    assertTrue("Expected escape", analyzer.escaped)
+    Disposer.dispose(parsed.second)
+  }
+
+  fun testScopeFunctionNoEscape() {
+    // Tests that a trivial scope function use (with a lambda expression) does not cause an escape.
+    val parsed =
+      LintUtilsTest.parse(
+        kotlin(
+            """
+            package com.pkg
+
+            class Intent {
+              fun intentFun()
+            }
+
+            fun hello(handler: Intent.() -> Unit) {
+              val intent = Intent()
+              intent.apply {
+                intentFun()
+              }
+            }
+            """,
+          )
+          .indented()
+      )
+
+    val target = findMethodCall(parsed, "Intent")
+    val method = target.getParentOfType(UMethod::class.java)
+    val analyzer = EscapeCheckingDataFlowAnalyzer(listOf(target))
+    method!!.accept(analyzer)
+    assertFalse("Expected no escape", analyzer.escaped)
+    Disposer.dispose(parsed.second)
+  }
+
+  fun testExtensionPropertyNoEscape() {
+    // Tests that use of an extension property does not cause an escape.
+    val parsed =
+      LintUtilsTest.parse(
+        kotlin(
+            """
+            package com.pkg
+
+            class Intent {
+              val property: Int = 0
+            }
+
+            val Intent.extensionProperty: Int
+              get() = property
+              set(value) { property = value }
+
+            fun hello(handler: Intent.() -> Unit) {
+              val intent = Intent()
+              val i = intent.extensionProperty
+              intent.extensionProperty = i + 1
+            }
+            """,
+          )
+          .indented()
+      )
+
+    val target = findMethodCall(parsed, "Intent")
+    val method = target.getParentOfType(UMethod::class.java)
+    val analyzer = EscapeCheckingDataFlowAnalyzer(listOf(target))
+    method!!.accept(analyzer)
+    assertFalse("Expected no escape", analyzer.escaped)
     Disposer.dispose(parsed.second)
   }
 

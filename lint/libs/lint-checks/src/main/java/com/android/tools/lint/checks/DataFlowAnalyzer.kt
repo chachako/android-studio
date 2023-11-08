@@ -35,13 +35,12 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiPrimitiveType
 import com.intellij.psi.PsiVariable
-import org.jetbrains.kotlin.asJava.unwrapped
+import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.psi.KtCallableReferenceExpression
 import org.jetbrains.kotlin.psi.KtConstructor
-import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtSecondaryConstructor
-import org.jetbrains.kotlin.psi.psiUtil.isExtensionDeclaration
 import org.jetbrains.uast.UArrayAccessExpression
 import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UBinaryExpressionWithType
@@ -371,16 +370,22 @@ abstract class DataFlowAnalyzer(
         }
       }
 
-      val resolved = node.resolve()
-      if (resolved != null) {
-        val unwrapped = resolved.unwrapped
-        if (unwrapped is KtNamedFunction) {
-          if (unwrapped.isExtensionDeclaration()) {
-            // The value is really escaping into an extension function.
-            // (TODO: Consider flowing into the method and looking?)
-            argument(node, receiver ?: node)
-          }
-        }
+      // Handle extension function calls from Kotlin code; even though this is a case where the
+      // tracked element is used as a receiver, we want to treat it like the tracked element is
+      // being passed as an argument, which causes EscapeCheckingDataFlowAnalyzer to treat the
+      // element as escaped, by default. We could resolve the call to PSI and check if it is a
+      // KtNamedFunction, but this only works if the resolved function is not compiled. Instead, we
+      // use the Kotlin analysis API, which works for both compiled functions and functions in
+      // source.
+      val sourcePsi = node.sourcePsi
+      if (
+        sourcePsi is KtElement &&
+          analyze(sourcePsi) { isExtensionFunctionCall(sourcePsi) } &&
+          // We don't want to call "argument" for scope functions that we handle specially.
+          !(isScopingIt(node) && lambda != null) &&
+          !(isScopingThis(node) && lambda != null)
+      ) {
+        argument(node, receiver ?: node)
       }
     }
     return super.visitCallExpression(node)

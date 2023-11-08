@@ -38,3 +38,14 @@ internal fun KtAnalysisSession.getFunctionLikeSymbol(ktElement: KtElement): KtFu
     ?: callInfo.singleConstructorCallOrNull()?.symbol
     ?: callInfo.singleCallOrNull<KtAnnotationCall>()?.symbol
 }
+
+/**
+ * Returns true if [ktElement] is a call of an extension function.
+ *
+ * Unlike [org.jetbrains.kotlin.psi.psiUtil.isExtensionDeclaration], which only works if you have
+ * the Kotlin source PSI of a function declaration (it will not work if you have a call that
+ * resolves to a compiled function), this analysis API-based function can identify calls to
+ * extensions functions, regardless of whether the function declaration is in source or binary.
+ */
+internal fun KtAnalysisSession.isExtensionFunctionCall(ktElement: KtElement): Boolean =
+  getFunctionLikeSymbol(ktElement)?.isExtension == true
