@@ -537,14 +537,17 @@ abstract class R8Task @Inject constructor(
                     "but there are no source folders.")
                 null
             } else {
-                if (!sources.first().asFile.exists()) {
+                val startupProfile = sources.firstOrNull {
+                    it.asFile.exists()
+                }
+                if (startupProfile == null || !startupProfile.asFile.exists()) {
                     getLogger().debug(
                         "Dex optimization based on startup profile is enabled, but there are no " +
                         "input baseline profiles found in the baselineProfiles sources. " +
                         "You should add ${sources.first().asFile.absolutePath}, for instance.")
                     null
                 } else {
-                    sources.first().asFile
+                    startupProfile
                 }
             }
         } else null

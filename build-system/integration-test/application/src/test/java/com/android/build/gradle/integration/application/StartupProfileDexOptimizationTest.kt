@@ -21,7 +21,9 @@ import com.android.build.gradle.integration.common.fixture.LoggingLevel
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject
+import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.dsl.ModulePropertyKey
+import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -155,5 +157,97 @@ class StartupProfileDexOptimizationTest(
         // 4 classes.
         assertThat(apk.mainDexFile.get().classes)
             .hasSize(if (startupProfileDexOptimization) 1 else 4)
+    }
+
+    @Test
+    fun testVariantStartupProfile() {
+        // To test if the variant startup profile source is working, only run when dex optimization
+        // is enabled and main startup profile is not included
+        if (!startupProfileDexOptimization || includeStartupProfile) return
+
+        FileUtils.createFile(
+            project.getSubproject("app")
+                .file("src/release/baselineProfiles/startup-prof.txt"),
+            """
+                Lcom/example/app/Foo;->foo()V
+            """.trimIndent()
+        )
+        project.executor().run("assembleRelease")
+        val apk = project.getSubproject("app").getApk(GradleTestProject.ApkType.RELEASE)
+        // dex optimization is turned on so there should be 2 dexes
+        assertThat(apk.allDexes).hasSize(2)
+        // there should only be 1 class in the main dex since our startup profile contains only Foo
+        assertThat(apk.mainDexFile.get().classes).hasSize(1)
+    }
+
+    @Test
+    fun testGeneratedStartupProfile() {
+        // To test if the variant startup profile source is working, only run when dex optimization
+        // is enabled and main startup profile is not included
+        if (!startupProfileDexOptimization || includeStartupProfile) return
+
+        // Add the generated baseline profile as a source set
+        // Normally, the baseline profile generator will do this, but this test is just validating
+        // that the startup profile is collected from the generated folder when it has already been
+        // generated as a source set
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").buildFile,
+            """
+                android.sourceSets {
+                    getByName("main") {
+                        baselineProfiles.srcDir("src/release/generated/baselineProfiles")
+                    }
+                }
+            """.trimIndent()
+        )
+
+        FileUtils.createFile(
+            project.getSubproject("app")
+                .file("src/release/generated/baselineProfiles/startup-prof.txt"),
+            """
+                Lcom/example/app/Foo;->foo()V
+            """.trimIndent()
+        )
+        project.executor().run("assembleRelease")
+        val apk = project.getSubproject("app").getApk(GradleTestProject.ApkType.RELEASE)
+        // dex optimization is turned on so there should be 2 dexes
+        assertThat(apk.allDexes).hasSize(2)
+        // there should only be 1 class in the main dex since our startup profile contains only Foo
+        assertThat(apk.mainDexFile.get().classes).hasSize(1)
+    }
+
+    @Test
+    fun testMultipleStartupProfiles() {
+        // To test multiple startup profile sources, only run when dex optimization is enabled and
+        // main startup profile is included
+        if (!startupProfileDexOptimization || !includeStartupProfile) return
+
+        // Add the generated baseline profile as a source set to simulate the baseline profile
+        // generator plugin
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").buildFile,
+            """
+                android.sourceSets {
+                    getByName("main") {
+                        baselineProfiles.srcDir("src/release/generated/baselineProfiles")
+                    }
+                }
+            """.trimIndent()
+        )
+        FileUtils.createFile(
+            project.getSubproject("app")
+                .file("src/release/generated/baselineProfiles/startup-prof.txt"),
+            """
+                Lcom/example/app/Foo;->foo()V
+                Lcom/example/app/Bar;->bar()V
+            """.trimIndent()
+        )
+        project.executor().run("assembleRelease")
+        val apk = project.getSubproject("app").getApk(GradleTestProject.ApkType.RELEASE)
+        // dex optimization is turned on so there should be 2 dexes
+        assertThat(apk.allDexes).hasSize(2)
+        // there are two startup profiles, but the one in main should be used, meaning the classes
+        // size should be 1 (only Foo)
+        assertThat(apk.mainDexFile.get().classes).hasSize(1)
     }
 }
