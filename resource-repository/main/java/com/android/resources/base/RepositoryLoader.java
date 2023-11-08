@@ -91,7 +91,6 @@ import com.google.common.collect.Tables;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.util.containers.ContainerUtil;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -114,6 +113,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -233,7 +233,10 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
 
       List<Path> sourceFilesAndFolders = myResourceFilesAndFolders == null ?
                                          ImmutableList.of(myResourceDirectoryOrFile) :
-                                         ContainerUtil.map(myResourceFilesAndFolders, PathString::toPath);
+                                         myResourceFilesAndFolders
+                                                 .stream()
+                                                 .map(PathString::toPath)
+                                                 .collect(Collectors.toList());
       List<PathString> resourceFiles = findResourceFiles(sourceFilesAndFolders);
       for (PathString file : resourceFiles) {
         loadResourceFile(file, repository, shouldParseResourceIds);
