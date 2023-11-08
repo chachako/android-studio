@@ -34,6 +34,7 @@ import java.security.cert.Certificate
 import javax.net.ssl.HttpsURLConnection
 import org.junit.Before
 import org.junit.Test
+import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.HttpTransport
 
 class WrappedUrlConnectionTest {
 
@@ -51,7 +52,11 @@ class WrappedUrlConnectionTest {
 
             override fun trackRequestBody(stream: OutputStream) = stream
 
-            override fun trackRequest(method: String, fields: Map<String, List<String>>) = Unit
+            override fun trackRequest(
+              method: String,
+              fields: Map<String, List<String>>,
+              transport: HttpTransport
+            ) = Unit
 
             override fun trackResponseHeaders(fields: Map<String?, List<String>>) = Unit
 

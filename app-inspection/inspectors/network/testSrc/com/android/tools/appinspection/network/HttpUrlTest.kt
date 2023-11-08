@@ -24,6 +24,7 @@ import java.net.URL
 import org.junit.Rule
 import org.junit.Test
 import studio.network.inspection.NetworkInspectorProtocol
+import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.HttpTransport
 import studio.network.inspection.NetworkInspectorProtocol.InterceptCommand
 
 private const val URL_PARAMS = "activity=http"
@@ -47,6 +48,7 @@ internal class HttpUrlTest {
       )!!
     assertThat(httpRequestStarted.httpRequestStarted.url).contains(URL_PARAMS)
     assertThat(httpRequestStarted.httpRequestStarted.method).isEqualTo("GET")
+    assertThat(httpRequestStarted.httpRequestStarted.transport).isEqualTo(HttpTransport.JAVA_NET)
 
     val httpResponseStarted =
       inspectorRule.connection.findHttpEvent(
@@ -188,6 +190,7 @@ internal class HttpUrlTest {
       )!!
     assertThat(httpRequestStarted.httpRequestStarted.url).contains(URL_PARAMS)
     assertThat(httpRequestStarted.httpRequestStarted.method).isEqualTo("POST")
+    assertThat(httpRequestStarted.httpRequestStarted.transport).isEqualTo(HttpTransport.JAVA_NET)
 
     assertThat(
         inspectorRule.connection.findHttpEvent(

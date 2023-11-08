@@ -26,6 +26,7 @@ import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.Permission
+import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.HttpTransport.JAVA_NET
 
 /**
  * Wraps a [HttpURLConnection] instance and delegates the method calls to the wrapped object,
@@ -70,7 +71,7 @@ class TrackedHttpURLConnection(
   private fun trackPreConnect() {
     if (!connectTracked) {
       try {
-        connectionTracker.trackRequest(getRequestMethod(), requestProperties)
+        connectionTracker.trackRequest(getRequestMethod(), requestProperties, JAVA_NET)
       } finally {
         connectTracked = true
       }

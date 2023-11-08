@@ -30,6 +30,7 @@ import okio.BufferedSink
 import org.junit.Rule
 import org.junit.Test
 import studio.network.inspection.NetworkInspectorProtocol
+import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.HttpTransport
 import studio.network.inspection.NetworkInspectorProtocol.InterceptCommand
 
 private const val URL_PARAMS = "activity=OkHttp3Test"
@@ -54,6 +55,7 @@ internal class OkHttp3Test {
     val httpRequestStarted = inspectorRule.connection.httpData.first().httpRequestStarted
     assertThat(httpRequestStarted.url).contains(URL_PARAMS)
     assertThat(httpRequestStarted.method).isEqualTo("GET")
+    assertThat(httpRequestStarted.transport).isEqualTo(HttpTransport.OKHTTP3)
 
     val httpResponseStarted =
       inspectorRule.connection.findHttpEvent(
@@ -97,6 +99,7 @@ internal class OkHttp3Test {
     val httpRequestStarted = inspectorRule.connection.httpData.first().httpRequestStarted
     assertThat(httpRequestStarted.url).contains(URL_PARAMS)
     assertThat(httpRequestStarted.method).isEqualTo("POST")
+    assertThat(httpRequestStarted.transport).isEqualTo(HttpTransport.OKHTTP3)
 
     val httpRequestCompleted =
       inspectorRule.connection.findHttpEvent(

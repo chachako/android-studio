@@ -18,6 +18,7 @@ package com.android.tools.appinspection.network.trackers
 import com.android.tools.appinspection.network.rules.NetworkInterceptionMetrics
 import java.io.InputStream
 import java.io.OutputStream
+import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.HttpTransport
 
 /**
  * HTTP stacks can use this interface to report the key states and data associated with individual
@@ -52,15 +53,15 @@ interface HttpConnectionTracker {
   fun trackRequestBody(stream: OutputStream): OutputStream
 
   /**
-   * A HTTP request is about to be sent to the wire
+   * An HTTP request is about to be sent to the wire
    *
    * @param method HTTP method
    * @param fields HTTP request header fields
    */
-  fun trackRequest(method: String, fields: Map<String, List<String>>)
+  fun trackRequest(method: String, fields: Map<String, List<String>>, transport: HttpTransport)
 
   /**
-   * Tracks the receiving of a HTTP response
+   * Tracks the receiving of an HTTP response
    *
    * @param fields HTTP response header fields
    */

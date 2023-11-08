@@ -29,6 +29,7 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody
 import okio.Okio
+import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.HttpTransport.OKHTTP3
 
 class OkHttp3Interceptor(
   private val trackerFactory: HttpTrackerFactory,
@@ -78,7 +79,7 @@ class OkHttp3Interceptor(
     // Do not track request if it was from this package
     if (shouldIgnoreRequest(callstack, this.javaClass.name)) return null
     val tracker = trackerFactory.trackConnection(request.url().toString(), callstack)
-    tracker.trackRequest(request.method(), request.headers().toMultimap())
+    tracker.trackRequest(request.method(), request.headers().toMultimap(), OKHTTP3)
     request.body()?.let { body ->
       val outputStream = tracker.trackRequestBody(createNullOutputStream())
       val bufferedSink = Okio.buffer(Okio.sink(outputStream))

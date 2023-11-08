@@ -21,6 +21,7 @@ import com.android.tools.appinspection.network.rules.NetworkInterceptionMetrics
 import com.android.tools.appinspection.network.utils.ConnectionIdGenerator
 import com.android.tools.appinspection.network.utils.sendHttpConnectionEvent
 import studio.network.inspection.NetworkInspectorProtocol
+import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.HttpTransport
 
 /**
  * A class that is used to report connection related activity to Studio such as making requests or
@@ -28,7 +29,13 @@ import studio.network.inspection.NetworkInspectorProtocol
  */
 interface ConnectionReporter : ThreadReporter {
 
-  fun onRequest(url: String, callstack: String, method: String, fields: String)
+  fun onRequest(
+    url: String,
+    callstack: String,
+    method: String,
+    fields: String,
+    transport: HttpTransport
+  )
 
   fun onResponse(fields: String)
 
@@ -65,7 +72,13 @@ private class ConnectionReporterImpl(private val connection: Connection) :
     return OutputStreamReporterImpl(connection, connectionId, threadReporter)
   }
 
-  override fun onRequest(url: String, callstack: String, method: String, fields: String) {
+  override fun onRequest(
+    url: String,
+    callstack: String,
+    method: String,
+    fields: String,
+    transport: HttpTransport
+  ) {
     connection.sendHttpConnectionEvent(
       NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
         .setHttpRequestStarted(
@@ -74,6 +87,7 @@ private class ConnectionReporterImpl(private val connection: Connection) :
             .setTrace(callstack)
             .setMethod(method)
             .setFields(fields)
+            .setTransport(transport)
         )
         .setConnectionId(connectionId)
     )

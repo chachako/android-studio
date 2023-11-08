@@ -20,6 +20,7 @@ import com.android.tools.appinspection.network.reporters.ConnectionReporter
 import com.android.tools.appinspection.network.rules.NetworkInterceptionMetrics
 import java.io.InputStream
 import java.io.OutputStream
+import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.HttpTransport
 
 /**
  * This is the concrete AndroidStudio implementation of the public HTTP tracking interface. We're
@@ -44,7 +45,11 @@ class ConnectionTracker(
     return OutputStreamTracker(stream, reporter.createOutputStreamReporter())
   }
 
-  override fun trackRequest(method: String, fields: Map<String, List<String>>) {
+  override fun trackRequest(
+    method: String,
+    fields: Map<String, List<String>>,
+    transport: HttpTransport
+  ) {
     val s = StringBuilder()
     for ((key, value) in fields) {
       s.append(key).append(" = ")
@@ -53,7 +58,7 @@ class ConnectionTracker(
       }
       s.append('\n')
     }
-    reporter.onRequest(myUrl, callstack, method, s.toString())
+    reporter.onRequest(myUrl, callstack, method, s.toString(), transport)
     reporter.reportCurrentThread()
   }
 
