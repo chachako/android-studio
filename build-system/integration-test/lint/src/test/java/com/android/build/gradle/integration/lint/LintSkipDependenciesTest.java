@@ -21,6 +21,8 @@ import static com.android.testutils.truth.PathSubject.assertThat;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import java.io.File;
 import java.io.IOException;
+
+import com.android.build.gradle.options.BooleanOption;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -40,6 +42,7 @@ public class LintSkipDependenciesTest {
     public final GradleTestProject project =
             GradleTestProject.builder()
                     .fromTestProject("lintLibrarySkipDeps")
+                    .addGradleProperties(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName() + "=false")
                     .create();
 
     @Test

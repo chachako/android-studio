@@ -35,6 +35,7 @@ class LintDynamicFeatureTest {
     val project: GradleTestProject =
         GradleTestProject.builder()
             .fromTestProject("dynamicApp")
+            .addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=false")
             .create()
 
     private val app =

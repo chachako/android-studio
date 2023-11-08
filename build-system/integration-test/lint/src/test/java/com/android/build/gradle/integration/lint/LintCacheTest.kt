@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.lint
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.truth.PathSubject.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -24,8 +25,11 @@ import org.junit.Test
 class LintCacheTest {
 
     @get:Rule
-    val project: GradleTestProject =
-        GradleTestProject.builder().fromTestProject("lintDeps").withHeap("1001M").create()
+    val project: GradleTestProject = GradleTestProject.builder()
+            .fromTestProject("lintDeps")
+            .addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=false")
+            .withHeap("1001M")
+            .create()
 
     /**
      * Regression test for b/188187060. This test checks that lint uses a subdirectory of the build
