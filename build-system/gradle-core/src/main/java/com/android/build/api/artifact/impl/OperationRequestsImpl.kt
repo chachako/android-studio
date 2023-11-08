@@ -20,12 +20,12 @@ import com.android.build.api.artifact.Artifact
 import com.android.build.api.artifact.Artifact.Multiple
 import com.android.build.api.artifact.Artifact.Single
 import com.android.build.api.artifact.ArtifactTransformationRequest
-import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.artifact.CombiningOperationRequest
 import com.android.build.api.artifact.InAndOutDirectoryOperationRequest
 import com.android.build.api.artifact.InAndOutFileOperationRequest
 import com.android.build.api.artifact.MultipleArtifactTypeOutOperationRequest
 import com.android.build.api.artifact.OutOperationRequest
+import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import org.gradle.api.Task
@@ -212,7 +212,8 @@ class InAndOutDirectoryOperationRequestImpl<TaskT: Task>(
      * @param atLocation relative location within the project's build folder to place the
      * transformed [Directory] at.
      * @param builtArtifactsCustomizer optional lambda to post-process the [BuiltArtifactsImpl]
-     * before it is saved in the target directory along with the transformed [Artifact]s
+     * before it is saved in the target directory along with the transformed [Artifact]s. This only
+     * runs during task execution, so it should only use task inputs
      * @return [ArtifactTransformationRequest] that will allow processing of individual artifacts
      * located in the input directory.
      *

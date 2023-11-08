@@ -112,7 +112,7 @@ class GenericBuiltArtifactsTypeAdapterTest : TestCase() {
                     ),
                 ),
                 elementType = "File",
-                baselineProfiles = emptyList<BaselineProfileDetails>(),
+                baselineProfiles = null,
                 minSdkVersionForDexing = 24
                 ),
             //language=json
@@ -206,7 +206,7 @@ class GenericBuiltArtifactsTypeAdapterTest : TestCase() {
                     ),
                 ),
                 elementType = null,
-                baselineProfiles = emptyList<BaselineProfileDetails>(),
+                baselineProfiles = null,
                 minSdkVersionForDexing = null
             )
         )

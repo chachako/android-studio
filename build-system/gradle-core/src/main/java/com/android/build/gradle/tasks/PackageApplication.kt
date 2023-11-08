@@ -171,48 +171,46 @@ abstract class PackageApplication : PackageAndroidArtifact() {
     companion object {
 
         private fun customizeBuiltArtifacts(task: PackageApplication, input: BuiltArtifactsImpl): BuiltArtifactsImpl {
-            check(input.baselineProfiles.isEmpty())
+            check(input.baselineProfiles == null)
             check(input.minSdkVersionForDexing == null)
 
             return input.copy(
                 baselineProfiles = if (task.dexMetadataDirectory.isPresent) {
-                    baselineProfileDataForJson(
-                        input.elements,
-                        task.dexMetadataDirectory.get().asFile,
-                        task.outputDirectory.get().asFile,
-                    )
-                } else emptyList(),
+                    val dexMetadataPropertiesFile = File(
+                        task.dexMetadataDirectory.get().asFile, SdkConstants.FN_DEX_METADATA_PROP)
+                    if (dexMetadataPropertiesFile.exists()) {
+                        baselineProfileDataForJson(
+                            input.elements,
+                            dexMetadataPropertiesFile,
+                            task.outputDirectory.get().asFile,
+                        )
+                    } else {
+                        null
+                    }
+                } else null,
                 minSdkVersionForDexing = task.minSdkVersionForDexing.get() // See b/284201412
             )
         }
 
         private fun baselineProfileDataForJson(
-
             mappedElements: Collection<BuiltArtifactImpl>,
-            inputDexMetadataDirectory: File,
+            dexMetadataPropertiesFile: File,
             apkDirectory: File
         ): List<BaselineProfileDetails> {
-            if (!inputDexMetadataDirectory.exists() || !apkDirectory.exists()) {
-                return emptyList()
-            }
-            val dexMetadataProperties =
-                File(inputDexMetadataDirectory, SdkConstants.FN_DEX_METADATA_PROP)
-            if (!dexMetadataProperties.exists()) return emptyList()
-
             val apkNames = mappedElements.map {
                 File(it.outputFile).nameWithoutExtension
             }
             val baselineProfilesMapping = mutableMapOf<String, MutableList<String>>()
-            dexMetadataProperties.readLines().forEach {
+            dexMetadataPropertiesFile.readLines().forEach {
                 val entry = it.split("=")
                 baselineProfilesMapping.getOrPut(entry[1]) { mutableListOf() }.add(entry[0])
             }
             val baselineProfileData = mutableListOf<BaselineProfileDetails>()
             baselineProfilesMapping.forEach { entry ->
-                val minApi = entry.value.minByOrNull { it }?.toInt()
-                val maxApi = entry.value.maxByOrNull { it }?.toInt()
+                val minApi = entry.value.minByOrNull { it }!!.toInt()
+                val maxApi = entry.value.maxByOrNull { it }!!.toInt()
                 val baselineProfiles = mutableSetOf<File>()
-                val dmFile = inputDexMetadataDirectory.resolve(entry.key)
+                val dmFile = dexMetadataPropertiesFile.parentFile.resolve(entry.key)
                 val fileIndex = dmFile.parentFile.name
                 apkNames.forEach {
                     val renamedDmFile = FileUtils.join(
@@ -224,11 +222,11 @@ abstract class PackageApplication : PackageAndroidArtifact() {
                 if (minApi == maxApi) {
                     // in the case that there is only one api, don't set a limit on the maxApi
                     baselineProfileData.add(
-                        BaselineProfileDetails(minApi!!, null, baselineProfiles)
+                        BaselineProfileDetails(minApi, null, baselineProfiles)
                     )
                 } else {
                     baselineProfileData.add(
-                        BaselineProfileDetails(minApi!!, maxApi, baselineProfiles)
+                        BaselineProfileDetails(minApi, maxApi, baselineProfiles)
                     )
                 }
             }

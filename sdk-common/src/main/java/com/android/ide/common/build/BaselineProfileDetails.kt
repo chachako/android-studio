@@ -29,6 +29,8 @@ data class BaselineProfileDetails(
     val maxApi: Int?,
     val baselineProfiles: Set<File>
 ) {
-    fun getBaselineProfileFile(apkName: String): File? =
-        baselineProfiles.find { it.nameWithoutExtension == apkName }
+    fun getBaselineProfileFile(apkName: String) =
+        baselineProfiles.singleOrNull {
+            it.nameWithoutExtension == apkName
+        } ?: error("Cannot find apkName $apkName in baselineProfiles $baselineProfiles")
 }

@@ -54,10 +54,7 @@ data class GenericBuiltArtifacts(
      */
     val elementType: String?,
 
-    /**
-     * Returns baseline profile details for these [GenericBuiltArtifact] instances.
-     */
-    override val baselineProfiles: List<BaselineProfileDetails>,
+    override val baselineProfiles: List<BaselineProfileDetails>?,
 
     override val minSdkVersionForDexing: Int?
 

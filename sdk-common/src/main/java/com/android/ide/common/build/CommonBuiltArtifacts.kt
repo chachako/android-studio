@@ -34,21 +34,24 @@ interface CommonBuiltArtifacts {
     val version: Int
 
     /**
-     * Returns the application ID for these [CommonBuiltArtifacts] instances.
+     * Returns the application ID for this [CommonBuiltArtifacts] instance.
      *
      * @return the application ID.
      */
     val applicationId: String
 
     /**
-     * Identifies the variant name for these [CommonBuiltArtifact]
+     * Identifies the variant name for this [CommonBuiltArtifacts] instance.
      */
     val variantName: String
 
     /**
-     * Returns baseline profile details for these [CommonBuiltArtifact] instances.
+     * Returns baseline profile details for this [CommonBuiltArtifacts] instance.
+     * If it is null, this means that the baseline profiles are not available. Some examples are:
+     * - An older version of Android Gradle plugin is being used, which does not have this property
+     * - Baseline profiles do not apply to this [CommonBuiltArtifacts] instance
      */
-    val baselineProfiles: List<BaselineProfileDetails>
+    val baselineProfiles: List<BaselineProfileDetails>?
 
     /**
      * The minimum API level that the output `.dex` files support (or null if it is unknown/not

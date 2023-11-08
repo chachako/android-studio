@@ -192,28 +192,38 @@ class BuiltArtifactsLoaderImplTest {
         assertThat(builtArtifacts).isNotNull()
         val baselineProfiles = mutableListOf<BaselineProfileDetails>()
 
-        val baselineProfileFiles1 = mutableSetOf<File>()
-        val testFile = tmpFolder.root.resolve("1/app-release-unsigned-1.dm")
-        baselineProfileFiles1.add(testFile)
-        baselineProfileFiles1.add(tmpFolder.root.resolve("1/app-release-unsigned-2.dm"))
-        baselineProfiles.add(BaselineProfileDetails(
-            28, 30, baselineProfileFiles1))
+        val profileOneDmFiles = mutableSetOf<File>()
+        val profileOneDmFile1 = tmpFolder.root.resolve("1/app-release-unsigned-1.dm")
+        val profileOneDmFile2 = tmpFolder.root.resolve("1/app-release-unsigned-2.dm")
+        profileOneDmFiles.add(profileOneDmFile1)
+        profileOneDmFiles.add(profileOneDmFile2)
+        baselineProfiles.add(BaselineProfileDetails(28, 30, profileOneDmFiles))
 
-        val baselineProfileFiles2 = mutableSetOf<File>()
-        baselineProfileFiles2.add(tmpFolder.root.resolve("0/app-release-unsigned.dm"))
-        baselineProfiles.add(BaselineProfileDetails(
-            31, 34, baselineProfileFiles2))
+        val profileZeroDmFiles = mutableSetOf<File>()
+        val profileZeroDmFile1 = tmpFolder.root.resolve("0/app-release-unsigned.dm")
+        profileZeroDmFiles.add(profileZeroDmFile1)
+        baselineProfiles.add(BaselineProfileDetails(31, 34, profileZeroDmFiles))
 
-        val baselineProfileFiles3 = mutableSetOf<File>()
-        baselineProfileFiles3.add(tmpFolder.root.resolve("2/app-release-unsigned.dm"))
-        baselineProfiles.add(BaselineProfileDetails(
-            35, null, baselineProfileFiles3))
+        val profileTwoDmFiles = mutableSetOf<File>()
+        val profileTwoDmFile1 = tmpFolder.root.resolve("2/app-release-unsigned.dm")
+        profileTwoDmFiles.add(profileTwoDmFile1)
+        baselineProfiles.add(BaselineProfileDetails(35, null, profileTwoDmFiles))
         assertThat(builtArtifacts!!.baselineProfiles).isEqualTo(baselineProfiles)
 
-        val baselineProfile = builtArtifacts!!.baselineProfiles.first()
-        val baselineProfileFile =
-            baselineProfile.getBaselineProfileFile("app-release-unsigned-1")
-        assertThat(baselineProfileFile).isEqualTo(testFile)
+        val baselineProfileFile1 = builtArtifacts!!.baselineProfiles?.first()
+            ?.getBaselineProfileFile("app-release-unsigned-1")
+        assertThat(baselineProfileFile1).isEqualTo(profileOneDmFile1)
+        val baselineProfileFile2 = builtArtifacts!!.baselineProfiles?.first()
+            ?.getBaselineProfileFile("app-release-unsigned-2")
+        assertThat(baselineProfileFile2).isEqualTo(profileOneDmFile2)
+
+        val baselineProfileFile3 = builtArtifacts!!.baselineProfiles?.get(1)
+            ?.getBaselineProfileFile("app-release-unsigned")
+        assertThat(baselineProfileFile3).isEqualTo(profileZeroDmFile1)
+
+        val baselineProfileFile4 = builtArtifacts!!.baselineProfiles?.get(2)
+            ?.getBaselineProfileFile("app-release-unsigned")
+        assertThat(baselineProfileFile4).isEqualTo(profileTwoDmFile1)
     }
 
     private fun createSimpleMetadataFile() {

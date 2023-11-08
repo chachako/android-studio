@@ -42,7 +42,7 @@ data class BuiltArtifactsImpl @JvmOverloads constructor(
     override val variantName: String,
     override val elements: Collection<BuiltArtifactImpl>,
     private val elementType: String? = null,
-    override val baselineProfiles: List<BaselineProfileDetails> = emptyList(),
+    override val baselineProfiles: List<BaselineProfileDetails>? = null,
     override val minSdkVersionForDexing: Int? = null,
 ): CommonBuiltArtifacts, BuiltArtifacts, Serializable {
 
@@ -206,7 +206,7 @@ internal class BuiltArtifactsTypeAdapter(
         variantName: String,
         elements: List<BuiltArtifactImpl>,
         elementType: String?,
-        baselineProfiles: List<BaselineProfileDetails>,
+        baselineProfiles: List<BaselineProfileDetails>?,
         minSdkVersionForDexing: Int?,
     ): BuiltArtifactsImpl =
             BuiltArtifactsImpl(

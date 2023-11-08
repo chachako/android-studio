@@ -38,7 +38,7 @@ abstract class CommonBuiltArtifactsTypeAdapter<
     abstract fun getArtifactType(artifacts: T): ArtifactTypeT
     abstract fun getElements(artifacts: T): Collection<ElementT>
     abstract fun getElementType(artifacts: T): String?
-    abstract fun getBaselineProfiles(artifacts: T): List<BaselineProfileDetails>
+    abstract fun getBaselineProfiles(artifacts: T): List<BaselineProfileDetails>?
     abstract fun getMinSdkVersionForDexing(artifacts: T): Int?
 
     final override fun write(out: JsonWriter, value: T?) {
@@ -61,7 +61,7 @@ abstract class CommonBuiltArtifactsTypeAdapter<
             out.name("elementType").value(elementType)
         }
         val baselineProfiles = getBaselineProfiles(value)
-        if (baselineProfiles.isNotEmpty()) {
+        if (baselineProfiles != null) {
             out.name("baselineProfiles").beginArray()
             baselineProfiles.forEach { entry ->
                 out.beginObject()
@@ -91,7 +91,7 @@ abstract class CommonBuiltArtifactsTypeAdapter<
         variantName: String,
         elements: List<ElementT>,
         elementType: String?,
-        baselineProfiles: List<BaselineProfileDetails>,
+        baselineProfiles: List<BaselineProfileDetails>?,
         minSdkVersionForDexing: Int?,
     ) : T
 
@@ -103,7 +103,7 @@ abstract class CommonBuiltArtifactsTypeAdapter<
         var variantName: String? = null
         val elements = mutableListOf<ElementT>()
         var elementType: String? = null
-        val baselineProfiles = mutableListOf<BaselineProfileDetails>()
+        var baselineProfiles: List<BaselineProfileDetails>? = null
         var minSdkVersionForDexing: Int? = null
 
         while (reader.hasNext()) {
@@ -121,6 +121,7 @@ abstract class CommonBuiltArtifactsTypeAdapter<
                 }
                 "elementType" -> elementType = reader.nextString()
                 "baselineProfiles" -> {
+                    baselineProfiles = mutableListOf<BaselineProfileDetails>()
                     reader.beginArray()
                     while (reader.hasNext()) {
                         reader.beginObject()
@@ -215,7 +216,7 @@ class GenericBuiltArtifactsTypeAdapter(
     override fun getArtifactType(artifacts: GenericBuiltArtifacts) = artifacts.artifactType
     override fun getElements(artifacts: GenericBuiltArtifacts) = artifacts.elements
     override fun getElementType(artifacts: GenericBuiltArtifacts): String? = artifacts.elementType
-    override fun getBaselineProfiles(artifacts: GenericBuiltArtifacts): List<BaselineProfileDetails> = emptyList()
+    override fun getBaselineProfiles(artifacts: GenericBuiltArtifacts): List<BaselineProfileDetails>? = artifacts.baselineProfiles
     override fun getMinSdkVersionForDexing(artifacts: GenericBuiltArtifacts): Int? = artifacts.minSdkVersionForDexing
 
     override fun instantiate(
@@ -225,7 +226,7 @@ class GenericBuiltArtifactsTypeAdapter(
         variantName: String,
         elements: List<GenericBuiltArtifact>,
         elementType: String?,
-        baselineProfiles: List<BaselineProfileDetails>,
+        baselineProfiles: List<BaselineProfileDetails>?,
         minSdkVersionForDexing: Int?,
     ) = GenericBuiltArtifacts(
         version = version,
