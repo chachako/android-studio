@@ -20,14 +20,12 @@ import com.android.build.api.variant.impl.BuiltArtifactImpl
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.gradle.internal.AndroidJarInput
 import com.android.build.gradle.internal.LoggerWrapper
-import com.android.build.gradle.internal.component.ApkCreationConfig
+import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.initialize
-import com.android.build.gradle.internal.res.Aapt2FromMaven
 import com.android.build.gradle.internal.res.namespaced.Aapt2LinkRunnable
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.Aapt2Input
-import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.services.getLeasingAapt2
 import com.android.build.gradle.internal.signing.SigningConfigData
 import com.android.build.gradle.internal.signing.SigningConfigDataProvider
@@ -94,6 +92,15 @@ abstract class ExtractPrivacySandboxCompatApks: NonIncrementalTask() {
     @get:Input
     abstract val applicationId: Property<String>
 
+    @get:Input
+    abstract val projectBaseName: Property<String>
+
+    @get:Input
+    abstract val componentBaseName: Property<String>
+
+    @get:Input
+    abstract val versionCode: Property<Int?>
+
     @get:Nested
     abstract val androidJarInput: AndroidJarInput
 
@@ -145,10 +152,7 @@ abstract class ExtractPrivacySandboxCompatApks: NonIncrementalTask() {
             val compatSplitApk = writeCompatApkSplit(
                     FileUtils.join(outputDir.get().asFile,
                             "splits",
-                            "${
-                                applicationId.get()
-                                        .replace(".", "")
-                            }-injected-privacy-sandbox-compat.apk")
+                            "${projectBaseName.get()}-${componentBaseName.get()}-injected-privacy-sandbox-compat.apk")
                             .toPath(),
                     temporaryDir,
                     runtimeEnabledSdkTableFile.get().asFile)
@@ -198,7 +202,7 @@ abstract class ExtractPrivacySandboxCompatApks: NonIncrementalTask() {
                         "<manifest \n" +
                         " xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
                         " android:isFeatureSplit=\"true\"\n" +
-                        " android:versionCode=\"1\"\n" +
+                        (versionCode.orNull?.let { " android:versionCode=\"$it\"\n" } ?: "") +
                         " split=\"${outputApkPath.toFile().nameWithoutExtension.replace("-", "")}\"\n" +
                         " package=\"${applicationId.get()}\">\n" +
                         "<application android:hasCode=\"false\"></application>\n" +
@@ -245,8 +249,8 @@ abstract class ExtractPrivacySandboxCompatApks: NonIncrementalTask() {
         ).saveToFile(apksFromBundleIdeModel.get().asFile)
     }
 
-    class CreationAction(creationAction: ApkCreationConfig) :
-            VariantTaskCreationAction<ExtractPrivacySandboxCompatApks, ApkCreationConfig>(creationAction) {
+    class CreationAction(creationAction: ApplicationCreationConfig) :
+            VariantTaskCreationAction<ExtractPrivacySandboxCompatApks, ApplicationCreationConfig>(creationAction) {
 
         override val name: String
             get() = getTaskName(creationConfig)
@@ -278,6 +282,9 @@ abstract class ExtractPrivacySandboxCompatApks: NonIncrementalTask() {
                     creationConfig.artifacts.get(InternalArtifactType.RUNTIME_ENABLED_SDK_TABLE)
             )
             task.applicationId.setDisallowChanges(creationConfig.applicationId)
+            task.projectBaseName.setDisallowChanges(creationConfig.services.projectInfo.getProjectBaseName())
+            task.componentBaseName.setDisallowChanges(creationConfig.baseName)
+            task.versionCode.setDisallowChanges(creationConfig.outputs.getMainSplit().versionCode)
             task.privacySandboxEnabled.setDisallowChanges(
                     creationConfig.services.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT])
             task.androidJarInput.initialize(creationConfig)

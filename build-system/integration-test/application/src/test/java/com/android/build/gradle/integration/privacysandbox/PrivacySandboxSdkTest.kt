@@ -41,6 +41,7 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
+import java.nio.file.Path
 import java.util.Objects
 import kotlin.io.path.readText
 
@@ -169,6 +170,7 @@ class PrivacySandboxSdkTest {
                 minSdk = 14
                 namespace = "com.example.privacysandboxsdk.consumer"
                 compileSdkPreview = "TiramisuPrivacySandbox"
+
             }
             dependencies {
                 implementation(project(":privacy-sandbox-sdk"))
@@ -177,7 +179,7 @@ class PrivacySandboxSdkTest {
                 """
                     android {
                         defaultConfig {
-                            versionCode = 1
+                            versionCode = 4
                         }
                     }
                 """.trimIndent()
@@ -536,7 +538,7 @@ class PrivacySandboxSdkTest {
                 .toList()
         assertThat(extractedSdkApks.map { it.name })
                 .containsExactly(
-                        "comexampleprivacysandboxsdkconsumer-injected-privacy-sandbox-compat.apk",
+                        "example-app-debug-injected-privacy-sandbox-compat.apk",
                         "comexampleprivacysandboxsdk-master.apk"
                 )
 
@@ -546,7 +548,7 @@ class PrivacySandboxSdkTest {
                     listOf(
                             "N: android=http://schemas.android.com/apk/res/android (line=2)",
                             "  E: manifest (line=2)",
-                            "    A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=1",
+                            "    A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=4",
                             "    A: http://schemas.android.com/apk/res/android:isFeatureSplit(0x0101055b)=true",
                             "    A: package=\"com.example.privacysandboxsdk.consumer\" (Raw: \"com.example.privacysandboxsdk.consumer\")",
                             "    A: split=\"comexampleprivacysandboxsdk\" (Raw: \"comexampleprivacysandboxsdk\")",
@@ -576,6 +578,34 @@ class PrivacySandboxSdkTest {
                     "/META-INF/MANIFEST.MF",
                     "/META-INF/BNDLTOOL.RSA",
                     "/META-INF/BNDLTOOL.SF",
+                    "/resources.arsc"
+            )
+        }
+
+        Apk(extractedSdkApks.single { it.name == "example-app-debug-injected-privacy-sandbox-compat.apk" }).use {
+            val manifestContent = ApkSubject.getManifestContent(it.file)
+            assertThat(manifestContent).named("Manifest content of %s", it.file).containsAtLeast(
+                    "N: android=http://schemas.android.com/apk/res/android (line=2)",
+                    "  E: manifest (line=2)",
+                    "    A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=4",
+                    "    A: http://schemas.android.com/apk/res/android:isFeatureSplit(0x0101055b)=true",
+                    "    A: http://schemas.android.com/apk/res/android:compileSdkVersion(0x01010572)=33",
+                    "    A: http://schemas.android.com/apk/res/android:compileSdkVersionCodename(0x01010573)=\"TiramisuPrivacySandbox\" (Raw: \"TiramisuPrivacySandbox\")",
+                    "    A: package=\"com.example.privacysandboxsdk.consumer\" (Raw: \"com.example.privacysandboxsdk.consumer\")",
+                    "    A: platformBuildVersionCode=33",
+                    "    A: platformBuildVersionName=\"TiramisuPrivacySandbox\" (Raw: \"TiramisuPrivacySandbox\")",
+                    "    A: split=\"exampleappdebuginjectedprivacysandboxcompat\" (Raw: \"exampleappdebuginjectedprivacysandboxcompat\")",
+                    "      E: application (line=9)",
+                    "        A: http://schemas.android.com/apk/res/android:hasCode(0x0101000c)=false",
+            )
+
+            val entries = it.entries.map(Path::toString)
+            assertThat(entries).named("entries of %s", it.file).containsExactly(
+                    "/AndroidManifest.xml",
+                    "/META-INF/CERT.RSA",
+                    "/META-INF/CERT.SF",
+                    "/META-INF/MANIFEST.MF",
+                    "/assets/RuntimeEnabledSdkTable.xml",
                     "/resources.arsc"
             )
         }
