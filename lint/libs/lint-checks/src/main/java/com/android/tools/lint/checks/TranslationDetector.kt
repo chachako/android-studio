@@ -361,10 +361,10 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
     var items: List<ResourceItem> = resources.getResources(namespace, type, originalName)
     if (items.isEmpty() && originalName != name) { // name contains .'s, -'s, etc
       items = resources.getResources(namespace, type, name)
-      if (items.isEmpty()) {
-        // Something is wrong with the resource repository; can't analyze here
-        return
-      }
+    }
+    if (items.isEmpty()) {
+      // Something is wrong with the resource repository; can't analyze here
+      return
     }
     val hasDefault = items.filter { isDefaultFolder(it.configuration, null) }.any()
     if (!hasDefault) {
