@@ -20,6 +20,7 @@ import com.android.build.gradle.AppExtension
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.internal.fixture.TestConstants
 import com.android.build.gradle.internal.fixture.TestProjects
+import com.android.build.gradle.internal.utils.importOfflineMavenRepo
 import com.google.common.truth.Expect
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -42,6 +43,10 @@ class NoTaskOutputFileOverlapTest {
 
     @get:Rule
     val expect = Expect.create()!!
+
+    init {
+        importOfflineMavenRepo()
+    }
 
     @Test
     @Throws(IOException::class)

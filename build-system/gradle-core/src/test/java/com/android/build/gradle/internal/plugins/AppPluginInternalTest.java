@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.plugins;
 
+import static com.android.build.gradle.internal.utils.OfflineMavenRepoUtilKt.importOfflineMavenRepo;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 
@@ -68,6 +69,10 @@ public class AppPluginInternalTest {
 
     @Rule public TemporaryFolder projectDirectory = new TemporaryFolder();
     private Project project;
+
+    static {
+        importOfflineMavenRepo();
+    }
 
     @Before
     public void setUp() throws Exception {

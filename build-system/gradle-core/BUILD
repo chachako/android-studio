@@ -1,4 +1,5 @@
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
+load("//tools/base/bazel:maven.bzl", "maven_repository")
 load("//tools/base/bazel:proto.bzl", "android_java_proto_library", "java_proto_library")
 load("//tools/base/bazel:utils.bzl", "fileset")
 load("//tools/base/common:version.bzl", "BUILD_VERSION")
@@ -152,6 +153,17 @@ fileset(
     srcs = glob(["src/test/data/**"]),
 )
 
+maven_repository(
+    name = "runtime_test_dependencies",
+    # keep sorted
+    artifacts = [
+        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core",
+        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-android",
+        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-bom"
+    ],
+    visibility = ["//visibility:private"],
+)
+
 kotlin_test(
     name = "tests",
     size = "large",
@@ -161,6 +173,7 @@ kotlin_test(
         "src/test/java/**/*.java",
     ]),
     data = [
+        ":runtime_test_dependencies",
         ":TestData",
         "//prebuilts/studio/jdk:jdk11",
         "//prebuilts/studio/sdk:add-ons/addon-google_apis-google-latest",

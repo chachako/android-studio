@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.plugins;
 
+import static com.android.build.gradle.internal.utils.OfflineMavenRepoUtilKt.importOfflineMavenRepo;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
@@ -50,6 +51,7 @@ public class AppPluginDslTest {
         DEFAULT_DEBUG = R8_DEBUG;
         DEFAULT_DEBUG_ANDROID_TEST = R8_DEBUG_ANDROID_TEST;
         DEFAULT_RELEASE = R8_RELEASE;
+        importOfflineMavenRepo();
     }
 
     @Rule public final TemporaryFolder projectDirectory = new TemporaryFolder();

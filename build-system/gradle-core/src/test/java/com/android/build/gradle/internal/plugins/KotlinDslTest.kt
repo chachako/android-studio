@@ -25,19 +25,19 @@ import com.android.build.gradle.internal.fixture.TestConstants
 import com.android.build.gradle.internal.fixture.TestProjects
 import com.android.build.gradle.internal.packaging.defaultExcludes
 import com.android.build.gradle.internal.packaging.defaultMerges
+import com.android.build.gradle.internal.utils.importOfflineMavenRepo
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
 import com.google.common.truth.StringSubject
 import com.google.common.truth.Truth.assertThat
-import java.io.File
-import kotlin.test.assertFailsWith
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.lang.RuntimeException
+import java.io.File
+import kotlin.test.assertFailsWith
 
 /** Functional tests for the new Kotlin DSL. */
 class KotlinDslTest {
@@ -48,6 +48,10 @@ class KotlinDslTest {
     private lateinit var plugin: AppPlugin
     private lateinit var android: ApplicationExtension
     private lateinit var project: Project
+
+    init {
+        importOfflineMavenRepo()
+    }
 
     @Before
     fun setUp() {
