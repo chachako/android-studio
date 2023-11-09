@@ -3073,6 +3073,7 @@ maven_import(
     pom = "repository/io/grpc/grpc-all/1.57.0/grpc-all-1.57.0.pom",
     repo_root_path = "repository",
     repo_path = "io/grpc/grpc-all/1.57.0",
+    srcjar = "repository/io/grpc/grpc-all/1.57.0/grpc-all-1.57.0-sources.jar",
     visibility = ["//visibility:public"],
 )
 
@@ -3163,6 +3164,7 @@ maven_import(
     pom = "repository/io/grpc/grpc-api/1.57.0/grpc-api-1.57.0.pom",
     repo_root_path = "repository",
     repo_path = "io/grpc/grpc-api/1.57.0",
+    srcjar = "repository/io/grpc/grpc-api/1.57.0/grpc-api-1.57.0-sources.jar",
     visibility = ["//visibility:public"],
 )
 
@@ -3200,6 +3202,7 @@ maven_import(
     pom = "repository/io/grpc/grpc-auth/1.57.0/grpc-auth-1.57.0.pom",
     repo_root_path = "repository",
     repo_path = "io/grpc/grpc-auth/1.57.0",
+    srcjar = "repository/io/grpc/grpc-auth/1.57.0/grpc-auth-1.57.0-sources.jar",
     visibility = ["//visibility:public"],
 )
 
@@ -3229,6 +3232,7 @@ maven_import(
     pom = "repository/io/grpc/grpc-context/1.57.0/grpc-context-1.57.0.pom",
     repo_root_path = "repository",
     repo_path = "io/grpc/grpc-context/1.57.0",
+    srcjar = "repository/io/grpc/grpc-context/1.57.0/grpc-context-1.57.0-sources.jar",
     visibility = ["//visibility:public"],
 )
 
@@ -3281,6 +3285,7 @@ maven_import(
     pom = "repository/io/grpc/grpc-core/1.57.0/grpc-core-1.57.0.pom",
     repo_root_path = "repository",
     repo_path = "io/grpc/grpc-core/1.57.0",
+    srcjar = "repository/io/grpc/grpc-core/1.57.0/grpc-core-1.57.0-sources.jar",
     visibility = ["//visibility:public"],
 )
 
@@ -3370,6 +3375,7 @@ maven_import(
     pom = "repository/io/grpc/grpc-netty-shaded/1.57.0/grpc-netty-shaded-1.57.0.pom",
     repo_root_path = "repository",
     repo_path = "io/grpc/grpc-netty-shaded/1.57.0",
+    srcjar = "repository/io/grpc/grpc-netty-shaded/1.57.0/grpc-netty-shaded-1.57.0-sources.jar",
     visibility = ["//visibility:public"],
 )
 
@@ -3419,6 +3425,7 @@ maven_import(
     pom = "repository/io/grpc/grpc-netty/1.57.0/grpc-netty-1.57.0.pom",
     repo_root_path = "repository",
     repo_path = "io/grpc/grpc-netty/1.57.0",
+    srcjar = "repository/io/grpc/grpc-netty/1.57.0/grpc-netty-1.57.0-sources.jar",
     visibility = ["//visibility:public"],
 )
 
@@ -3459,6 +3466,7 @@ maven_import(
     pom = "repository/io/grpc/grpc-okhttp/1.57.0/grpc-okhttp-1.57.0.pom",
     repo_root_path = "repository",
     repo_path = "io/grpc/grpc-okhttp/1.57.0",
+    srcjar = "repository/io/grpc/grpc-okhttp/1.57.0/grpc-okhttp-1.57.0-sources.jar",
     visibility = ["//visibility:public"],
 )
 
@@ -3499,6 +3507,7 @@ maven_import(
     pom = "repository/io/grpc/grpc-protobuf-lite/1.57.0/grpc-protobuf-lite-1.57.0.pom",
     repo_root_path = "repository",
     repo_path = "io/grpc/grpc-protobuf-lite/1.57.0",
+    srcjar = "repository/io/grpc/grpc-protobuf-lite/1.57.0/grpc-protobuf-lite-1.57.0-sources.jar",
     visibility = ["//visibility:public"],
 )
 
@@ -3545,6 +3554,7 @@ maven_import(
     pom = "repository/io/grpc/grpc-protobuf/1.57.0/grpc-protobuf-1.57.0.pom",
     repo_root_path = "repository",
     repo_path = "io/grpc/grpc-protobuf/1.57.0",
+    srcjar = "repository/io/grpc/grpc-protobuf/1.57.0/grpc-protobuf-1.57.0-sources.jar",
     visibility = ["//visibility:public"],
 )
 
@@ -3746,6 +3756,7 @@ maven_import(
     pom = "repository/io/grpc/grpc-stub/1.57.0/grpc-stub-1.57.0.pom",
     repo_root_path = "repository",
     repo_path = "io/grpc/grpc-stub/1.57.0",
+    srcjar = "repository/io/grpc/grpc-stub/1.57.0/grpc-stub-1.57.0-sources.jar",
     visibility = ["//visibility:public"],
 )
 

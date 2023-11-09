@@ -810,6 +810,17 @@ DATA = [
     "org.jetbrains.kotlin:kotlin-test-junit:1.9.20-Beta",
 ] + [
     # Source JARs
+    "io.grpc:grpc-all:jar:sources:1.57.0",
+    "io.grpc:grpc-api:jar:sources:1.57.0",
+    "io.grpc:grpc-auth:jar:sources:1.57.0",
+    "io.grpc:grpc-context:jar:sources:1.57.0",
+    "io.grpc:grpc-core:jar:sources:1.57.0",
+    "io.grpc:grpc-netty:jar:sources:1.57.0",
+    "io.grpc:grpc-netty-shaded:jar:sources:1.57.0",
+    "io.grpc:grpc-okhttp:jar:sources:1.57.0",
+    "io.grpc:grpc-protobuf:jar:sources:1.57.0",
+    "io.grpc:grpc-protobuf-lite:jar:sources:1.57.0",
+    "io.grpc:grpc-stub:jar:sources:1.57.0",
     "org.jetbrains.compose.animation:animation-core-desktop:jar:sources:1.5.10",
     "org.jetbrains.compose.animation:animation-desktop:jar:sources:1.5.10",
     "org.jetbrains.compose.compiler:compiler-hosted:jar:sources:1.4.5",
