@@ -1,11 +1,13 @@
-load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
+load("//tools/base/bazel:bazel.bzl", "iml_module")
+load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
 load("//tools/base/bazel:maven.bzl", "maven_library")
-load("//tools/base/sdklib:sdk.bzl", "sdk_java_binary")
 load("//tools/base/common:version.bzl", "BASE_VERSION")
+load("//tools/base/sdklib:sdk.bzl", "sdk_java_binary")
 
 maven_library(
     name = "cli",
     # TODO: move resources out of java?
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
@@ -69,13 +71,12 @@ sdk_java_binary(
     runtime_deps = [":cli"],
 )
 
-load("//tools/base/bazel:bazel.bzl", "iml_module")
-
 # managed by go/iml_to_build
 iml_module(
     name = "studio.android.sdktools.lint.cli",
     srcs = ["src/main/java"],
     iml_files = ["android.sdktools.lint.cli.iml"],
+    lint_baseline = "lint_baseline.xml",
     visibility = ["//visibility:public"],
     exports = ["//tools/base/lint/cli:lint-cli-psi-prebuilts"],
     # do not sort: must match IML order
@@ -93,8 +94,6 @@ iml_module(
         "//prebuilts/studio/intellij-sdk:studio-sdk",
     ],
 )
-
-load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
 
 # managed by go/iml_to_build
 jvm_import(

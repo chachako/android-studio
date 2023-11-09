@@ -6,6 +6,7 @@ iml_module(
     name = "studio.android.sdktools.adblib.tools",
     srcs = ["src"],
     iml_files = ["android.sdktools.adblib.tools.iml"],
+    lint_baseline = "lint_baseline.xml",
     test_srcs = ["test/src"],
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
@@ -54,6 +55,7 @@ kotlin_library(
 # Test with: bazel test //tools/base/adblib-tools:adblib.tools.tests
 kotlin_test(
     name = "adblib.tools.tests",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "test/src/**/*.kt",
         "test/src/**/*.java",

@@ -169,8 +169,8 @@ iml_module(
     name = "studio.android.sdktools.common.testfixtures",
     srcs = ["src/testFixtures/java"],
     iml_files = ["android.sdktools.common.testfixtures.iml"],
+    lint_baseline = "testfixtures_lint_baseline.xml",
     visibility = ["//visibility:public"],
-    # do not sort: must match IML order
     exports = ["//tools/base/annotations:studio.android.sdktools.android-annotations"],
     # do not sort: must match IML order
     deps = [

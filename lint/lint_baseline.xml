@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.3.0-alpha13" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-alpha13">
+
+    <issue
+        id="ExternalAnnotations"
+        message="getAnnotations used instead of `JavaEvaluator.getAllAnnotations`."
+        errorLine1="            for (PsiAnnotation psiAnnotation : modifierList.getAnnotations()) {"
+        errorLine2="                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="libs/lint-gradle/src/main/java/com/android/tools/lint/annotations/Extractor.java"
+            line="570"
+            column="48"/>
+    </issue>
+
+    <issue
+        id="ExternalAnnotations"
+        message="getUAnnotations used instead of `JavaEvaluator.getAllAnnotations`."
+        errorLine1="            for (UAnnotation annotation : annotated.getUAnnotations()) {"
+        errorLine2="                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="libs/lint-gradle/src/main/java/com/android/tools/lint/annotations/Extractor.java"
+            line="583"
+            column="43"/>
+    </issue>
+
+    <issue
+        id="ExternalAnnotations"
+        message="getUAnnotations used instead of `JavaEvaluator.getAllAnnotations`."
+        errorLine1="            for (UAnnotation annotation : annotated.getUAnnotations()) {"
+        errorLine2="                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="libs/lint-gradle/src/main/java/com/android/tools/lint/annotations/Extractor.java"
+            line="679"
+            column="43"/>
+    </issue>
+
+    <issue
+        id="ExternalAnnotations"
+        message="getAnnotations used instead of `JavaEvaluator.getAllAnnotations`."
+        errorLine1="                for (PsiAnnotation pa : modifierList.getAnnotations()) {"
+        errorLine2="                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="libs/lint-gradle/src/main/java/com/android/tools/lint/annotations/Extractor.java"
+            line="749"
+            column="41"/>
+    </issue>
+
+    <issue
+        id="ExternalAnnotations"
+        message="getUAnnotations used instead of `JavaEvaluator.getAllAnnotations`."
+        errorLine1="                for (UAnnotation annotation : ((UAnnotated) aClass).getUAnnotations()) {"
+        errorLine2="                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="libs/lint-gradle/src/main/java/com/android/tools/lint/annotations/Extractor.java"
+            line="2850"
+            column="47"/>
+    </issue>
+
+</issues>

@@ -1,9 +1,10 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
+load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library")
+load("//tools/base/bazel:proto.bzl", "maven_proto_library")
 load("//tools/base/bazel:utils.bzl", "replace_manifest")
 load("//tools/base/common:version.bzl", "BASE_VERSION")
-load("//tools/base/bazel:proto.bzl", "maven_proto_library")
 
 maven_proto_library(
     name = "lint-checks-proto",
@@ -37,6 +38,7 @@ iml_module(
 
 maven_library(
     name = "tools.lint-model",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "libs/lint-model/src/main/java/**/*.kt",
         "libs/lint-model/src/main/java/**/*.java",
@@ -98,6 +100,7 @@ iml_module(
 maven_library(
     name = "tools.lint-api",
     # TODO: move resources out of java?
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "libs/lint-api/src/main/java/**/*.kt",
         "libs/lint-api/src/main/java/**/*.java",
@@ -168,6 +171,7 @@ iml_module(
 
 maven_library(
     name = "tools.lint-checks",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "libs/lint-checks/src/main/java/**/*.kt",
         "libs/lint-checks/src/main/java/**/*.java",
@@ -207,6 +211,7 @@ maven_library(
 
 maven_library(
     name = "tools.lint-gradle",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "libs/lint-gradle/src/main/java/**/*.kt",
         "libs/lint-gradle/src/main/java/**/*.java",
@@ -231,6 +236,7 @@ maven_library(
 
 kotlin_test(
     name = "tests",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "libs/lint-gradle/src/test/java/**/*.kt",
         "libs/lint-gradle/src/test/java/**/*.java",
@@ -280,6 +286,7 @@ kotlin_test(
 
 kotlin_library(
     name = "studio-checks",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "studio-checks/src/main/java/**/*.kt",
         "studio-checks/src/main/java/**/*.java",
@@ -306,6 +313,7 @@ replace_manifest(
 
 kotlin_test(
     name = "studio-checks-tests",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "studio-checks/src/test/java/**/*.kt",
         "studio-checks/src/test/java/**/*.java",
@@ -370,6 +378,7 @@ iml_module(
     name = "studio.android.sdktools.lint.gradle",
     srcs = ["libs/lint-gradle/src/main/java"],
     iml_files = ["libs/lint-gradle/android.sdktools.lint.gradle.iml"],
+    lint_baseline = "lint_baseline.xml",
     test_tags = ["manual"],  # src/main/java is TEST scoped but contains no runnable tests
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
@@ -406,8 +415,6 @@ iml_module(
         "//tools/adt/idea/.idea/libraries:truth[test]",
     ],
 )
-
-load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
 
 # managed by go/iml_to_build
 jvm_import(

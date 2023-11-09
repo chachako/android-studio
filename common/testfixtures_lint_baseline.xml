@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.3.0-alpha13" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-alpha13">
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        EnvironmentProvider.DIRECT.fileSystemOverrideForTests = fileSystem"
+        errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/testFixtures/java/com/android/prefs/AndroidLocationsSingletonRule.kt"
+            line="32"
+            column="36"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        AndroidLocationsSingleton.resetPathsForTest()"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/testFixtures/java/com/android/prefs/AndroidLocationsSingletonRule.kt"
+            line="37"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        EnvironmentProvider.DIRECT.fileSystemOverrideForTests = null"
+        errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/testFixtures/java/com/android/prefs/AndroidLocationsSingletonRule.kt"
+            line="41"
+            column="36"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        AndroidLocationsSingleton.resetPathsForTest()"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/testFixtures/java/com/android/prefs/AndroidLocationsSingletonRule.kt"
+            line="45"
+            column="35"/>
+    </issue>
+
+</issues>

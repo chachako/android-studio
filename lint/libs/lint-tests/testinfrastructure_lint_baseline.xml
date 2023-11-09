@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.3.0-alpha14" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-alpha14">
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="            String name = String.format(&quot;sdkTests_%1$tF_%1$tT&quot;, c).replace(&apos;:&apos;, &apos;-&apos;);"
+        errorLine2="                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/checks/infrastructure/BaseLintDetectorTest.java"
+            line="165"
+            column="27"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        BuiltinIssueRegistry.reset();"
+        errorLine2="                             ~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/checks/infrastructure/LintDetectorTest.java"
+            line="100"
+            column="30"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        LintDriver.clearCrashCount();"
+        errorLine2="                   ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/checks/infrastructure/LintDetectorTest.java"
+            line="101"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="                if (LintDriver.getCrashCount() > 0) {"
+        errorLine2="                               ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/checks/infrastructure/LintDetectorTest.java"
+            line="122"
+            column="32"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        BuiltinIssueRegistry.reset();"
+        errorLine2="                             ~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/checks/infrastructure/TestIssueRegistry.java"
+            line="31"
+            column="30"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        BuiltinIssueRegistry.reset();"
+        errorLine2="                             ~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/checks/infrastructure/TestIssueRegistry.java"
+            line="36"
+            column="30"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        TestResourceRepository repository = new TestResourceRepository(RES_AUTO);"
+        errorLine2="                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/checks/infrastructure/TestLintClient.java"
+            line="1643"
+            column="45"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="            repository.update(merger);"
+        errorLine2="                       ~~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/checks/infrastructure/TestLintClient.java"
+            line="1665"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="                            ResourceFile.createSingle(file, idItem, qualifiers);"
+        errorLine2="                                         ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/checks/infrastructure/TestLintClient.java"
+            line="1717"
+            column="42"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        BuiltinIssueRegistry.reset();"
+        errorLine2="                             ~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/checks/infrastructure/TestLintTask.java"
+            line="167"
+            column="30"/>
+    </issue>
+
+    <issue
+        id="FileComparisons"
+        message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+        errorLine1="                getTargetDir().equals(getTempDir()));"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/checks/infrastructure/LintDetectorTest.java"
+            line="634"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="MissingVendor"
+        message="An `IssueRegistry` should override the `vendor` property"
+        errorLine1="    public class CustomIssueRegistry extends IssueRegistry {"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/checks/infrastructure/LintDetectorTest.java"
+            line="170"
+            column="18"/>
+    </issue>
+
+</issues>

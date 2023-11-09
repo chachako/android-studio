@@ -1,9 +1,12 @@
+load("//tools/base/bazel:bazel.bzl", "iml_module")
+load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library")
 load("//tools/base/common:version.bzl", "BASE_VERSION")
 
 maven_library(
     name = "lint-tests",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
@@ -39,6 +42,7 @@ maven_library(
 kotlin_test(
     name = "tests",
     timeout = "long",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "src/test/java/**/*.kt",
         "src/test/java/**/*.java",
@@ -102,13 +106,12 @@ kotlin_test(
     ],
 )
 
-load("//tools/base/bazel:bazel.bzl", "iml_module")
-
 # managed by go/iml_to_build
 iml_module(
     name = "studio.android.sdktools.lint.testinfrastructure",
     srcs = ["src/main/java"],
     iml_files = ["android.sdktools.lint.testinfrastructure.iml"],
+    lint_baseline = "testinfrastructure_lint_baseline.xml",
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     deps = [
@@ -152,8 +155,6 @@ iml_module(
         "//tools/adt/idea/.idea/libraries:kotlin-test[test]",
     ],
 )
-
-load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
 
 # managed by go/iml_to_build
 jvm_import(

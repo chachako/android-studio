@@ -7,6 +7,7 @@ iml_module(
     srcs = ["src/main/kotlin"],
     iml_files = ["android.build-analyzer.common.iml"],
     jvm_target = "8",
+    lint_baseline = "lint_baseline.xml",
     test_srcs = ["src/test/kotlin"],
     visibility = ["//visibility:public"],
     # do not sort: must match IML order

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.3.0-alpha13" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-alpha13">
+
+    <issue
+        id="NoNioFilesCopy"
+        message="Do not use `java.nio.file.Files.copy(Path, Path)`. Instead, use `FileUtils.copyFile(Path, Path)` or Kotlin&apos;s `File#copyTo(File)`"
+        errorLine1="            Files.copy(src, dest);"
+        errorLine2="                  ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/repository/io/FileOpUtils.java"
+            line="88"
+            column="19"/>
+    </issue>
+
+    <issue
+        id="NoNioFilesCopy"
+        message="Do not use `java.nio.file.Files.copy(Path, Path)`. Instead, use `FileUtils.copyFile(Path, Path)` or Kotlin&apos;s `File#copyTo(File)`"
+        errorLine1="            Files.copy(source, tempFile);"
+        errorLine2="                  ~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/repository/impl/downloader/LocalFileAwareDownloader.java"
+            line="61"
+            column="19"/>
+    </issue>
+
+    <issue
+        id="NoNioFilesCopy"
+        message="Do not use `java.nio.file.Files.copy(Path, Path)`. Instead, use `FileUtils.copyFile(Path, Path)` or Kotlin&apos;s `File#copyTo(File)`"
+        errorLine1="            Files.copy(source, target);"
+        errorLine2="                  ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/repository/impl/downloader/LocalFileAwareDownloader.java"
+            line="78"
+            column="19"/>
+    </issue>
+
+</issues>

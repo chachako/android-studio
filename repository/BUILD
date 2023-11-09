@@ -2,8 +2,8 @@ load("//tools/base/bazel:bazel.bzl", "iml_module")
 load("//tools/base/bazel:coverage.bzl", "coverage_java_test")
 load("//tools/base/bazel:maven.bzl", "maven_library")
 load("//tools/base/bazel:utils.bzl", "fileset")
-load("xjc.bzl", "xsd_to_java")
 load("//tools/base/common:version.bzl", "BASE_VERSION")
+load("xjc.bzl", "xsd_to_java")
 
 exports_files(
     ["src/main/resources/xsd/global.xjb"],
@@ -16,6 +16,7 @@ iml_module(
     srcs = ["src/main/java"],
     iml_files = ["android.sdktools.repository.iml"],
     jvm_target = "8",
+    lint_baseline = "lint_baseline.xml",
     resources = ["src/main/resources"],
     test_resources = ["src/test/resources"],
     test_srcs = [
@@ -50,6 +51,7 @@ fileset(
 
 maven_library(
     name = "tools.repository",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
@@ -75,6 +77,7 @@ maven_library(
 
 java_library(
     name = "tools.testlib",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob(["src/testFixtures/java/**/*.java"]),
     visibility = ["//visibility:public"],  # contains com.android.repository.testframework
     deps = [
@@ -88,6 +91,7 @@ java_library(
 
 coverage_java_test(
     name = "tools.tests",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob(["src/test/java/**/*.java"]),
     jvm_flags = ["-Dtest.suite.jar=tools.tests.jar"],
     resources = glob(["src/test/resources/**"]),

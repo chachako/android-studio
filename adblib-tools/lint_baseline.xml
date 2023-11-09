@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.3.0-alpha13" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-alpha13">
+
+    <issue
+        id="AdbDeviceServicesCommand"
+        message="Use of `com.android.adblib.AdbDeviceServices#shell` is discouraged. Consider using `AdbDeviceServices.shellCommand()` instead"
+        errorLine1="        return deviceService.shell (device, cmd, TextShellCollector())"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/com/android/adblib/tools/PMCmd.kt"
+            line="31"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="AdbDeviceServicesCommand"
+        message="Use of `com.android.adblib.AdbDeviceServices#exec` is discouraged. Consider using `AdbDeviceServices.shellCommand()` instead"
+        errorLine1="        return deviceService.exec(device, cmd, TextShellCollector(), apk, shutdownOutput = false)"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/com/android/adblib/tools/PMCmd.kt"
+            line="36"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="AdbDeviceServicesCommand"
+        message="Use of `com.android.adblib.AdbDeviceServices#shell` is discouraged. Consider using `AdbDeviceServices.shellCommand()` instead"
+        errorLine1="        return deviceService.shell(device, cmd, TextShellCollector())"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/com/android/adblib/tools/PMCmd.kt"
+            line="41"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="AdbDeviceServicesCommand"
+        message="Use of `com.android.adblib.AdbDeviceServices#shell` is discouraged. Consider using `AdbDeviceServices.shellCommand()` instead"
+        errorLine1="        return deviceService.shell(device, cmd, TextShellCollector())"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/com/android/adblib/tools/PMCmd.kt"
+            line="46"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="AdbDeviceServicesCommand"
+        message="Use of `com.android.adblib.AdbDeviceServices#shell` is discouraged. Consider using `AdbDeviceServices.shellCommand()` instead"
+        errorLine1="        return deviceService.shell(device, parameters.joinToString(&quot; &quot;), TextShellCollector())"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/com/android/adblib/tools/PMLegacy.kt"
+            line="56"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="AdbDeviceServicesCommand"
+        message="Use of `com.android.adblib.AdbDeviceServices#shell` is discouraged. Consider using `AdbDeviceServices.shellCommand()` instead"
+        errorLine1="        deviceService.shell(device, &quot;rm -f $INSTALL_APK_STAGING&quot;, TextShellCollector()).first()"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/com/android/adblib/tools/PMLegacy.kt"
+            line="78"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AdbDeviceServicesCommand"
+        message="Use of `com.android.adblib.AdbDeviceServices#shell` is discouraged. Consider using `AdbDeviceServices.shellCommand()` instead"
+        errorLine1="        return deviceService.shell(device, cmd, TextShellCollector())"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/com/android/adblib/tools/PMPm.kt"
+            line="31"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="AdbDeviceServicesCommand"
+        message="Use of `com.android.adblib.AdbDeviceServices#exec` is discouraged. Consider using `AdbDeviceServices.shellCommand()` instead"
+        errorLine1="        return deviceService.exec(device, cmd, TextShellCollector(), apk, shutdownOutput = false)"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/com/android/adblib/tools/PMPm.kt"
+            line="36"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="AdbDeviceServicesCommand"
+        message="Use of `com.android.adblib.AdbDeviceServices#shell` is discouraged. Consider using `AdbDeviceServices.shellCommand()` instead"
+        errorLine1="        return deviceService.shell(device, cmd, TextShellCollector())"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/com/android/adblib/tools/PMPm.kt"
+            line="41"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="AdbDeviceServicesCommand"
+        message="Use of `com.android.adblib.AdbDeviceServices#shell` is discouraged. Consider using `AdbDeviceServices.shellCommand()` instead"
+        errorLine1="        return deviceService.shell(device, cmd, TextShellCollector())"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/com/android/adblib/tools/PMPm.kt"
+            line="46"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="AdbDeviceServicesCommand"
+        message="Use of `com.android.adblib.AdbDeviceServices#shell` is discouraged. Consider using `AdbDeviceServices.shellCommand()` instead"
+        errorLine1="    val flow = this.shell(device, cmd, TextShellCollector(), commandTimeout = timeout)"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/com/android/adblib/tools/Uninstall.kt"
+            line="61"
+            column="16"/>
+    </issue>
+
+</issues>
