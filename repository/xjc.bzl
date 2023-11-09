@@ -29,5 +29,8 @@ def xsd_to_java(name, package, xsd, src_location, episode = None, binding_deps =
         outs = outs,
         cmd = cmd,
         tools = ["//tools/base/repository:xjc"],
-        tags = ["manual"],
+        # b/310040456 - The no_linux tag prevents building these targets in studio-linux.
+        # These targets cannot build in CI until they can be properly sandboxed,
+        # and do not modify the workspace/source tree.
+        tags = ["manual", "no_linux"],
     )
