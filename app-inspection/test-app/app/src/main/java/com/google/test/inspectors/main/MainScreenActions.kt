@@ -1,0 +1,13 @@
+package com.google.test.inspectors.main
+
+import com.google.test.inspectors.HttpClient
+
+internal interface MainScreenActions {
+  fun startJob() {}
+
+  fun startWork() {}
+
+  fun doGet(client: HttpClient, url: String) {}
+
+  fun doPost(client: HttpClient, url: String, data: ByteArray, type: String) {}
+}
