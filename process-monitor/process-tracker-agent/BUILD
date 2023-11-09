@@ -13,6 +13,9 @@ cc_binary(
     tags = [
         "manual",
         "no_windows",
+        # This target relies on Android transitions, and only builds as a dependency of android_cc_binary rules.
+        # See b/181808614#comment6.
+        "no_linux",
     ],
 )
 
