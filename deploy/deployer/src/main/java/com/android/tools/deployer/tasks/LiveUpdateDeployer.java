@@ -300,12 +300,6 @@ public class LiveUpdateDeployer {
     public UpdateLiveEditResult updateLiveEdit(
             Installer installer, AdbClient adb, String packageName, UpdateLiveEditsParam param) {
 
-        // Sometimes we get a PSI event for a top-level file when no top-level class exists. In this
-        // case, just treat it as a no-op success.
-        if (param.classes.isEmpty()) {
-            return new UpdateLiveEditResult();
-        }
-
         List<Integer> pids = adb.getPids(packageName);
         if (pids.isEmpty()) {
             System.out.println("Cancelling LiveEdit request(No target pids)");
