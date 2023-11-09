@@ -102,6 +102,26 @@ public class AdbInstallerChannelManagerTest {
         assertHistory(device, expectedHistory);
     }
 
+    @Test
+    public void testChannelCaching() throws Exception {
+        AssumeUtil.assumeNotWindows(); // This test runs the installer on the host
+
+        AndroidDebugBridge.init(AdbInitOptions.DEFAULT);
+        AndroidDebugBridge bridge = AndroidDebugBridge.createBridge();
+        while (!bridge.hasInitialDeviceList()) {
+            Thread.sleep(100);
+        }
+
+        IDevice device = getDevice(bridge);
+        AdbClient client = new AdbClient(device, logger);
+
+        AdbInstallerChannelManager manager =
+                new AdbInstallerChannelManager(logger, AdbInstaller.Mode.DAEMON);
+        AdbInstallerChannel c1 = manager.getChannel(client, device.getSerialNumber());
+        AdbInstallerChannel c2 = manager.getChannel(client, device.getSerialNumber());
+        Assert.assertTrue("Channel was not cached", c1 == c2);
+    }
+
     private static void assertHistory(FakeDevice device, String... expect) {
         String actual = String.join("\n", device.getShell().getHistory());
         String expected = String.join("\n", expect);

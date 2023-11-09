@@ -50,7 +50,7 @@ internal class AdblibChannelWrapper(
         }
 
     override fun isOpen(): Boolean {
-        return closed
+        return !closed
     }
 
     override fun close() {
