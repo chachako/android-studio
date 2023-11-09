@@ -138,6 +138,7 @@ java_test(
     tags = [
         "manual",  # b/303906718
     ],
+    target_compatible_with = ["@platforms//:incompatible"],  # b/303906718
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
         ":benchmarks_utils",
@@ -161,6 +162,7 @@ java_test(
     tags = [
         "manual",  # b/303906718
     ],
+    target_compatible_with = ["@platforms//:incompatible"],  # b/303906718
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
         ":benchmarks_utils",
@@ -184,6 +186,7 @@ java_test(
     tags = [
         "manual",  # b/303906718
     ],
+    target_compatible_with = ["@platforms//:incompatible"],  # b/303906718
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
         ":benchmarks_utils",
@@ -207,6 +210,7 @@ java_test(
     tags = [
         "manual",  # b/303906718
     ],
+    target_compatible_with = ["@platforms//:incompatible"],  # b/303906718
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
         ":benchmarks_utils",
