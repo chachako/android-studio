@@ -5,6 +5,9 @@ startup --windows_enable_symlinks
 # Platform specific config automatically applies --config=(linux|macos|windows)
 common --enable_platform_specific_config
 
+# See b/340640065 for progress on using bzlmod.
+common --noenable_bzlmod
+
 # Remote Build Execution requires a strong hash function, such as SHA256.
 startup --host_jvm_args=-Dbazel.DigestFunction=SHA256
 
@@ -209,7 +212,9 @@ build:remote --config=sponge
 
 ## Config used for continous integration testing scripts.
 build:ci --config=_remote_base
-build:ci --config=dynamic
+# TODO(b/173153395) Switch back to dynamic after Bazel issue is resolved.
+# See https://github.com/bazelbuild/bazel/issues/22482
+build:ci --config=remote-exec
 build:ci --config=sponge
 build:ci --config=release
 # Increase worker visibility in case there are issues.

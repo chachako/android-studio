@@ -399,6 +399,7 @@ def _iml_module_impl(ctx):
     ]
 
 _iml_module_ = rule(
+    toolchains = ["@bazel_tools//tools/jdk:toolchain_type"],
     attrs = {
         "iml_files": attr.label_list(
             allow_files = True,

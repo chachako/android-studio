@@ -441,6 +441,7 @@ _kotlin_library = rule(
     outputs = {
         "source_jar": "%{name}-src.jar",
     },
+    toolchains = ["@bazel_tools//tools/jdk:toolchain_type"],
     implementation = _kotlin_library_impl,
 )
 

@@ -12,6 +12,7 @@ register_toolchains(
     "//prebuilts/python/linux-x86:python_toolchain",
     "//prebuilts/studio/jdk/jdk11:runtime_toolchain_definition",
     "//prebuilts/studio/jdk/jdk17:java_runtime_toolchain",
+    "//prebuilts/studio/jdk/jdk17:bootstrap_runtime_toolchain_type",
     "//prebuilts/studio/jdk/jdk17:java8_compile_toolchain_definition",
     "//prebuilts/studio/jdk/jdk17:java11_compile_toolchain_definition",
     "//prebuilts/studio/jdk/jdk17:java17_compile_toolchain_definition",
@@ -170,19 +171,19 @@ http_file(
 # go/agp-profiled-benchmarks if running the "_profiled" AGP build benchmarks.
 new_local_repository(
     name = "yourkit_controller",
-    build_file = "tools/base/yourkit-controller/yourkit.BUILD",
+    build_file = "//tools/base:yourkit-controller/yourkit.BUILD",
     path = "tools/base/yourkit-controller",
 )
 
 new_local_repository(
     name = "maven",
-    build_file = "tools/base/bazel/maven/BUILD.maven",
+    build_file = "//tools/base/bazel:maven/BUILD.maven",
     path = "prebuilts/tools/common/m2",
 )
 
 new_local_repository(
     name = "jar_jar",
-    build_file = "tools/base/bazel/jarjar/jarjar.BUILD",
+    build_file = "//tools/base/bazel/jarjar:jarjar.BUILD",
     path = "external/jarjar",
 )
 

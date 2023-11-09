@@ -13,7 +13,7 @@ bazel_version_repository = repository_rule(
 _git = [
     {
         "name": "native_toolchain",
-        "build_file": "tools/base/bazel/toolchains/clang.BUILD",
+        "build_file": "//tools/base/bazel/toolchains:clang.BUILD",
         "path": "prebuilts/clang",
     },
     {
@@ -22,7 +22,7 @@ _git = [
     },
     {
         "name": "slicer_repo",
-        "build_file": "tools/base/profiler/native/external/slicer.BUILD",
+        "build_file": "//tools/base/profiler:native/external/slicer.BUILD",
         "path": "external/dexter/slicer",
     },
     {
@@ -40,7 +40,7 @@ _git = [
     # TODO: Migrate users of @perfetto_repo to @perfetto
     {
         "name": "perfetto_repo",
-        "build_file": "tools/base/profiler/native/external/perfetto.BUILD",
+        "build_file": "//tools/base/profiler:native/external/perfetto.BUILD",
         "path": "external/perfetto",
     },
     {
@@ -49,7 +49,7 @@ _git = [
     },
     {
         "name": "zlib_repo",
-        "build_file": "tools/base/bazel/external/zlib.BUILD",
+        "build_file": "//tools/base/bazel:external/zlib.BUILD",
         "path": "external/zlib",
     },
     {
@@ -62,7 +62,7 @@ _git = [
     },
     {
         "name": "android_system_logging_repo",
-        "build_file": "tools/base/bazel/external/android_system_logging.BUILD",
+        "build_file": "//tools/base/bazel:external/android_system_logging.BUILD",
         "path": "external/android/system/logging",
     },
 ]
@@ -81,7 +81,7 @@ _vendor_git = [
     },
     {
         "name": "freetype_repo",
-        "build_file": "tools/vendor/google/skia/external/freetype.BUILD",
+        "build_file": "//tools/vendor/google/skia:external/freetype.BUILD",
         "path": "external/freetype",
     },
     {
@@ -98,7 +98,7 @@ _vendor_git = [
     },
     {
         "name": "libpng_repo",
-        "build_file": "tools/vendor/google/skia/external/libpng.BUILD",
+        "build_file": "//tools/vendor/google/skia:external/libpng.BUILD",
         "path": "external/libpng",
     },
 ]
