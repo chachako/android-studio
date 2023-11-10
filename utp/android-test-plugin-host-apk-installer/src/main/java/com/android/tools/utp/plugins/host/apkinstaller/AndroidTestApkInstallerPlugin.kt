@@ -122,6 +122,7 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
         if (installableApk != null && installableApk.installOptions.installAsTestService) {
             if (deviceApiLevel >= 23) installCmd.add("-g")
             if (deviceApiLevel >= 30) installCmd.add("--force-queryable")
+            if (deviceApiLevel >= 34) installCmd.add("--bypass-low-target-sdk-block")
         }
         if (userId != null) installCmd.addAll(listOfNotNull("--user", userId))
         if (forceReinstall) installCmd.addAll(listOf("-r", "-d"))
@@ -153,6 +154,10 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
                         .deviceApiLevel.toInt()
         val deviceSerial = deviceController.getDevice().serial
         userId = getUserId(deviceApiLevel, deviceController, deviceSerial)
+
+        if (deviceApiLevel >= 33) {
+            deviceController.execute(listOf("shell", "settings", "put", "global", "verifier_verify_adb_installs", "0"))
+        }
 
         val installablesInstallCmd = getInstallCmd(null, deviceApiLevel)
         installables.forEach { artifact ->
