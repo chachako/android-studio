@@ -170,6 +170,7 @@ class InterceptionRuleTest {
   fun changeStatusCode() {
     val response =
       NetworkResponse(
+        200,
         mapOf(null to listOf("HTTP/1.0 200 OK"), "response-status-code" to listOf("200")),
         "Body".byteInputStream()
       )
@@ -189,6 +190,7 @@ class InterceptionRuleTest {
     assertThat(transformedResponse.responseHeaders["response-status-code"]!![0]).isEqualTo("404")
     val responseWithoutMessage =
       NetworkResponse(
+        200,
         mapOf(null to listOf("HTTP/1.0 200"), "response-status-code" to listOf("200")),
         "Body".byteInputStream()
       )
@@ -198,7 +200,7 @@ class InterceptionRuleTest {
     assertThat(transformedResponse.responseHeaders["response-status-code"]!![0]).isEqualTo("404")
 
     val responseWithoutStatusLine =
-      NetworkResponse(mapOf("response-status-code" to listOf("200")), "Body".byteInputStream())
+      NetworkResponse(200, mapOf("response-status-code" to listOf("200")), "Body".byteInputStream())
     transformedResponse =
       StatusCodeReplacedTransformation(proto).transform(responseWithoutStatusLine)
     assertThat(transformedResponse.interception.statusCode).isTrue()
@@ -209,7 +211,7 @@ class InterceptionRuleTest {
   @Test
   fun addResponseHeader() {
     val response =
-      NetworkResponse(mapOf(null to listOf("HTTP/1.0 200 OK")), "Body".byteInputStream())
+      NetworkResponse(200, mapOf(null to listOf("HTTP/1.0 200 OK")), "Body".byteInputStream())
     val addingNewHeaderAndValue =
       HeaderAdded.newBuilder()
         .apply {
@@ -238,7 +240,7 @@ class InterceptionRuleTest {
   @Test
   fun replaceResponseHeader() {
     val response =
-      NetworkResponse(mapOf("header1" to listOf("value1", "value2")), "Body".byteInputStream())
+      NetworkResponse(200, mapOf("header1" to listOf("value1", "value2")), "Body".byteInputStream())
     val headerNotMatchedProto =
       HeaderReplaced.newBuilder()
         .apply {
@@ -291,7 +293,7 @@ class InterceptionRuleTest {
   @Test
   fun replaceResponseHeaderPartially() {
     val response =
-      NetworkResponse(mapOf("header" to listOf("value", "value2")), "Body".byteInputStream())
+      NetworkResponse(200, mapOf("header" to listOf("value", "value2")), "Body".byteInputStream())
     val headerValueReplacedProto =
       HeaderReplaced.newBuilder()
         .apply {
@@ -336,6 +338,7 @@ class InterceptionRuleTest {
   fun modifyResponseBody() {
     val response =
       NetworkResponse(
+        200,
         mapOf(null to listOf("HTTP/1.0 200 OK"), "content-type" to listOf("text/html")),
         "BodyXBodyXBodyXBoody".byteInputStream()
       )
@@ -356,6 +359,7 @@ class InterceptionRuleTest {
 
     val responseWithJsonContent =
       NetworkResponse(
+        200,
         mapOf(null to listOf("HTTP/1.0 200 OK"), "content-type" to listOf("application/json")),
         "Body".byteInputStream()
       )
@@ -369,6 +373,7 @@ class InterceptionRuleTest {
   fun modifyResponseBodyWithRegex() {
     val response =
       NetworkResponse(
+        200,
         mapOf(null to listOf("HTTP/1.0 200 OK"), "content-type" to listOf("text/html")),
         "BodyXBodyXBodyXBoody".byteInputStream()
       )
@@ -394,6 +399,7 @@ class InterceptionRuleTest {
     GZIPOutputStream(byteOutput).use { stream -> stream.write("Body".toByteArray()) }
     val response =
       NetworkResponse(
+        200,
         mapOf(
           null to listOf("HTTP/1.0 200 OK"),
           "content-type" to listOf("text/html"),
@@ -425,6 +431,7 @@ class InterceptionRuleTest {
     GZIPOutputStream(byteOutput).use { stream -> stream.write("Body".toByteArray()) }
     val response =
       NetworkResponse(
+        200,
         mapOf(
           null to listOf("HTTP/1.0 200 OK"),
           "content-type" to listOf("text/html"),
@@ -445,11 +452,13 @@ class InterceptionRuleTest {
   fun replaceTwoResponseBody() {
     val response1 =
       NetworkResponse(
+        200,
         mapOf(null to listOf("HTTP/1.0 200 OK"), "content-type" to listOf("text/html")),
         "Body1".toByteArray().inputStream()
       )
     val response2 =
       NetworkResponse(
+        200,
         mapOf(null to listOf("HTTP/1.0 200 OK"), "content-type" to listOf("text/html")),
         "Body2".toByteArray().inputStream()
       )

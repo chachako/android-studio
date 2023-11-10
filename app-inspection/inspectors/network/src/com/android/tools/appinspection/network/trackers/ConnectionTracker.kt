@@ -47,31 +47,15 @@ class ConnectionTracker(
 
   override fun trackRequest(
     method: String,
-    fields: Map<String, List<String>>,
+    headers: Map<String, List<String>>,
     transport: HttpTransport
   ) {
-    val s = StringBuilder()
-    for ((key, value) in fields) {
-      s.append(key).append(" = ")
-      for (`val` in value) {
-        s.append(`val`).append("; ")
-      }
-      s.append('\n')
-    }
-    reporter.onRequest(myUrl, callstack, method, s.toString(), transport)
+    reporter.onRequest(myUrl, callstack, method, headers, transport)
     reporter.reportCurrentThread()
   }
 
-  override fun trackResponseHeaders(fields: Map<String?, List<String>>) {
-    val s = StringBuilder()
-    for ((key, value) in fields) {
-      s.append(key).append(" = ")
-      for (`val` in value) {
-        s.append(`val`).append("; ")
-      }
-      s.append('\n')
-    }
-    reporter.onResponse(s.toString())
+  override fun trackResponseHeaders(responseCode: Int, headers: Map<String?, List<String>>) {
+    reporter.onResponse(responseCode, headers)
     reporter.reportCurrentThread()
   }
 

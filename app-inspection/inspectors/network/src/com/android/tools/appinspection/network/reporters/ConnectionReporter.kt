@@ -21,6 +21,7 @@ import com.android.tools.appinspection.network.rules.NetworkInterceptionMetrics
 import com.android.tools.appinspection.network.utils.ConnectionIdGenerator
 import com.android.tools.appinspection.network.utils.sendHttpConnectionEvent
 import studio.network.inspection.NetworkInspectorProtocol
+import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.Header
 import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.HttpTransport
 
 /**
@@ -33,11 +34,11 @@ interface ConnectionReporter : ThreadReporter {
     url: String,
     callstack: String,
     method: String,
-    fields: String,
+    headers: Map<String, List<String>>,
     transport: HttpTransport
   )
 
-  fun onResponse(fields: String)
+  fun onResponse(responseCode: Int, headers: Map<String?, List<String>>)
 
   fun onInterception(interception: NetworkInterceptionMetrics)
 
@@ -76,7 +77,7 @@ private class ConnectionReporterImpl(private val connection: Connection) :
     url: String,
     callstack: String,
     method: String,
-    fields: String,
+    headers: Map<String, List<String>>,
     transport: HttpTransport
   ) {
     connection.sendHttpConnectionEvent(
@@ -86,19 +87,28 @@ private class ConnectionReporterImpl(private val connection: Connection) :
             .setUrl(url)
             .setTrace(callstack)
             .setMethod(method)
-            .setFields(fields)
+            .addAllHeaders(
+              headers.entries.map {
+                Header.newBuilder().setKey(it.key).addAllValues(it.value).build()
+              }
+            )
             .setTransport(transport)
         )
         .setConnectionId(connectionId)
     )
   }
 
-  override fun onResponse(fields: String) {
+  override fun onResponse(responseCode: Int, headers: Map<String?, List<String>>) {
     connection.sendHttpConnectionEvent(
       NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
         .setHttpResponseStarted(
           NetworkInspectorProtocol.HttpConnectionEvent.ResponseStarted.newBuilder()
-            .setFields(fields)
+            .setResponseCode(responseCode)
+            .addAllHeaders(
+              headers.entries.map {
+                Header.newBuilder().setKey(it.key ?: "null").addAllValues(it.value).build()
+              }
+            )
         )
         .setConnectionId(connectionId)
     )

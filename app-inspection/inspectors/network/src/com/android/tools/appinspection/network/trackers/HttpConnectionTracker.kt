@@ -56,16 +56,16 @@ interface HttpConnectionTracker {
    * An HTTP request is about to be sent to the wire
    *
    * @param method HTTP method
-   * @param fields HTTP request header fields
+   * @param headers HTTP request header fields
    */
-  fun trackRequest(method: String, fields: Map<String, List<String>>, transport: HttpTransport)
+  fun trackRequest(method: String, headers: Map<String, List<String>>, transport: HttpTransport)
 
   /**
    * Tracks the receiving of an HTTP response
    *
-   * @param fields HTTP response header fields
+   * @param headers HTTP response header fields
    */
-  fun trackResponseHeaders(fields: Map<String?, List<String>>)
+  fun trackResponseHeaders(responseCode: Int, headers: Map<String?, List<String>>)
 
   /**
    * Tracks an optional response body after the response is received

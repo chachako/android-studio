@@ -54,7 +54,7 @@ open class FakeHttpUrlConnection(
 
   override fun getResponseMessage() = "OKAY"
 
-  override fun getResponseCode() = 0
+  override fun getResponseCode() = 200
 
   override fun getOutputStream() = outputStream
 }

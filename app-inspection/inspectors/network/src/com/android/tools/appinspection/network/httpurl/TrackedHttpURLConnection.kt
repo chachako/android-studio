@@ -112,7 +112,7 @@ class TrackedHttpURLConnection(
         interceptedResponse =
           interceptionRuleService.interceptResponse(
             NetworkConnection(wrapped.url.toString(), wrapped.requestMethod),
-            NetworkResponse(wrapped.headerFields, wrapped.inputStream)
+            NetworkResponse(wrapped.responseCode, wrapped.headerFields, wrapped.inputStream)
           )
         // Create a list for intercepted headers.
         interceptedHeaders =
@@ -121,10 +121,13 @@ class TrackedHttpURLConnection(
           }
         // Don't call our getHeaderFields overrides, as it would call
         // this method recursively.
-        connectionTracker.trackResponseHeaders(interceptedResponse.responseHeaders)
+        connectionTracker.trackResponseHeaders(
+          interceptedResponse.responseCode,
+          interceptedResponse.responseHeaders
+        )
         connectionTracker.trackResponseInterception(interceptedResponse.interception)
       } catch (e: IOException) {
-        interceptedResponse = NetworkResponse(wrapped.headerFields, e)
+        interceptedResponse = NetworkResponse(-1, wrapped.headerFields, e)
         throw e
       } finally {
         responseTracked = true

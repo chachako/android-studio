@@ -102,10 +102,13 @@ class OkHttp3Interceptor(
     val interceptedResponse =
       interceptionRuleService.interceptResponse(
         NetworkConnection(request.url().toString(), request.method()),
-        NetworkResponse(fields, body.source().inputStream())
+        NetworkResponse(response.code(), fields, body.source().inputStream())
       )
 
-    tracker.trackResponseHeaders(interceptedResponse.responseHeaders)
+    tracker.trackResponseHeaders(
+      interceptedResponse.responseCode,
+      interceptedResponse.responseHeaders
+    )
     val source = Okio.buffer(Okio.source(tracker.trackResponseBody(interceptedResponse.body)))
     val responseBody = ResponseBody.create(body.contentType(), body.contentLength(), source)
     if (interceptedResponse.responseHeaders.containsKey(null)) {

@@ -30,12 +30,18 @@ import okio.BufferedSink
 import org.junit.Rule
 import org.junit.Test
 import studio.network.inspection.NetworkInspectorProtocol
+import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.Header
 import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.HttpTransport
+import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.ResponseStarted
 import studio.network.inspection.NetworkInspectorProtocol.InterceptCommand
 
 private const val URL_PARAMS = "activity=OkHttp3Test"
 private val FAKE_URL = URL("https://www.google.com?$URL_PARAMS")
-private const val EXPECTED_RESPONSE_CODE = "response-status-code = 200"
+private val EXPECTED_RESPONSE =
+  ResponseStarted.newBuilder()
+    .setResponseCode(200)
+    .addHeaders(Header.newBuilder().setKey("response-status-code").addValues("200"))
+    .build()
 
 internal class OkHttp3Test {
 
@@ -61,7 +67,7 @@ internal class OkHttp3Test {
       inspectorRule.connection.findHttpEvent(
         NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.HTTP_RESPONSE_STARTED
       )!!
-    assertThat(httpResponseStarted.httpResponseStarted.fields).contains(EXPECTED_RESPONSE_CODE)
+    assertThat(httpResponseStarted.httpResponseStarted).isEqualTo(EXPECTED_RESPONSE)
 
     assertThat(
         inspectorRule.connection
@@ -179,7 +185,7 @@ internal class OkHttp3Test {
         inspectorRule.connection.findHttpEvent(
           NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.HTTP_RESPONSE_STARTED
         )
-      assertThat(httpResponseStarted!!.httpResponseStarted.fields).contains(EXPECTED_RESPONSE_CODE)
+      assertThat(httpResponseStarted!!.httpResponseStarted).isEqualTo(EXPECTED_RESPONSE)
       assertThat(successEvents[5].hasHttpClosed()).isTrue()
       assertThat(successEvents[5].httpClosed.completed).isTrue()
     }

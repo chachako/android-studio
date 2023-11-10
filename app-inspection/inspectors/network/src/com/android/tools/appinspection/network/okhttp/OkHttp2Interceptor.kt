@@ -101,10 +101,13 @@ class OkHttp2Interceptor(
     val interceptedResponse =
       interceptionRuleService.interceptResponse(
         NetworkConnection(request.urlString(), request.method()),
-        NetworkResponse(fields, response.body().source().inputStream())
+        NetworkResponse(response.code(), fields, response.body().source().inputStream())
       )
 
-    tracker.trackResponseHeaders(interceptedResponse.responseHeaders)
+    tracker.trackResponseHeaders(
+      interceptedResponse.responseCode,
+      interceptedResponse.responseHeaders
+    )
     val source = Okio.buffer(Okio.source(tracker.trackResponseBody(interceptedResponse.body)))
     val body =
       ResponseBody.create(response.body().contentType(), response.body().contentLength(), source)

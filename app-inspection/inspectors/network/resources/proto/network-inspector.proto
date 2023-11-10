@@ -22,12 +22,15 @@ message HttpConnectionEvent {
         OKHTTP3 = 3;
     }
 
+    message Header {
+        string key = 1;
+        repeated string values = 2;
+    }
+
     message RequestStarted {
         string url = 1;
         string trace = 2;
-        // Header fields associated with this request. See also:
-        // https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Request_fields.
-        string fields = 3;
+        repeated Header headers = 3;
         string method = 4;
         HttpTransport transport = 5;
     }
@@ -36,9 +39,8 @@ message HttpConnectionEvent {
     }
 
     message ResponseStarted {
-        // Header fields associated with this response. See also:
-        // https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Response_fields.
-        string fields = 1;
+        repeated Header headers = 1;
+        int32 response_code = 2;
     }
 
     message ResponseIntercepted {

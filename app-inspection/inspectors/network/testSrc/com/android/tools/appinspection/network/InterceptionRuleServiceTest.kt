@@ -29,7 +29,7 @@ class InterceptionRuleServiceTest {
   // Does not matter what the connection is.
   private val defaultConnection = NetworkConnection("", "")
 
-  private val startingResponse = NetworkResponse(emptyMap(), ByteArray(0).inputStream())
+  private val startingResponse = NetworkResponse(200, emptyMap(), ByteArray(0).inputStream())
 
   // A rule that adds a letter to the end of the body. For testing purposes.
   private fun testRule(c: Char, isEnabled: Boolean = true) =

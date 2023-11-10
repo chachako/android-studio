@@ -29,7 +29,15 @@ import studio.network.inspection.NetworkInspectorProtocol.InterceptCommand
 
 private const val URL_PARAMS = "activity=http"
 private val FAKE_URL = URL("https://www.google.com?$URL_PARAMS")
-private const val EXPECTED_RESPONSE = "HTTP/1.0 200 OK"
+private val EXPECTED_RESPONSE =
+  NetworkInspectorProtocol.HttpConnectionEvent.ResponseStarted.newBuilder()
+    .setResponseCode(200)
+    .addHeaders(
+      NetworkInspectorProtocol.HttpConnectionEvent.Header.newBuilder()
+        .setKey("null")
+        .addValues("HTTP/1.0 200 OK")
+    )
+    .build()
 
 internal class HttpUrlTest {
 
@@ -54,7 +62,7 @@ internal class HttpUrlTest {
       inspectorRule.connection.findHttpEvent(
         NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.HTTP_RESPONSE_STARTED
       )
-    assertThat(httpResponseStarted!!.httpResponseStarted.fields).contains(EXPECTED_RESPONSE)
+    assertThat(httpResponseStarted!!.httpResponseStarted).isEqualTo(EXPECTED_RESPONSE)
 
     assertThat(
         inspectorRule.connection
@@ -212,7 +220,7 @@ internal class HttpUrlTest {
       inspectorRule.connection.findHttpEvent(
         NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.HTTP_RESPONSE_STARTED
       )!!
-    assertThat(httpResponseStarted.httpResponseStarted.fields).contains(EXPECTED_RESPONSE)
+    assertThat(httpResponseStarted.httpResponseStarted).isEqualTo(EXPECTED_RESPONSE)
 
     assertThat(
         inspectorRule.connection
@@ -249,7 +257,7 @@ internal class HttpUrlTest {
       inspectorRule.connection.findHttpEvent(
         NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.HTTP_RESPONSE_STARTED
       )!!
-    assertThat(httpResponseStarted.httpResponseStarted.fields).contains(EXPECTED_RESPONSE)
+    assertThat(httpResponseStarted.httpResponseStarted).isEqualTo(EXPECTED_RESPONSE)
 
     assertThat(
         inspectorRule.connection

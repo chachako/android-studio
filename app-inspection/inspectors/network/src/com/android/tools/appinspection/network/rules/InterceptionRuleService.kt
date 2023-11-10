@@ -40,19 +40,26 @@ sealed class InterceptedResponseBody {
 }
 
 data class NetworkResponse(
+  val responseCode: Int,
   val responseHeaders: Map<String?, List<String>>,
   val responseBody: InterceptedResponseBody,
   val interception: NetworkInterceptionMetrics = NetworkInterceptionMetrics()
 ) {
   constructor(
+    responseCode: Int,
     responseHeaders: Map<String?, List<String>>,
     responseBody: InputStream
-  ) : this(responseHeaders, InterceptedResponseBody.SuccessfulResponseBody(responseBody))
+  ) : this(
+    responseCode,
+    responseHeaders,
+    InterceptedResponseBody.SuccessfulResponseBody(responseBody)
+  )
 
   constructor(
+    responseCode: Int,
     responseHeaders: Map<String?, List<String>>,
     error: IOException
-  ) : this(responseHeaders, InterceptedResponseBody.FailedResponseBody(error))
+  ) : this(responseCode, responseHeaders, InterceptedResponseBody.FailedResponseBody(error))
 
   val body: InputStream
     get() = responseBody.get()

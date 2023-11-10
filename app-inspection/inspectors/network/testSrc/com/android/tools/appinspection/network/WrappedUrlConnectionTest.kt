@@ -54,11 +54,14 @@ class WrappedUrlConnectionTest {
 
             override fun trackRequest(
               method: String,
-              fields: Map<String, List<String>>,
+              headers: Map<String, List<String>>,
               transport: HttpTransport
             ) = Unit
 
-            override fun trackResponseHeaders(fields: Map<String?, List<String>>) = Unit
+            override fun trackResponseHeaders(
+              responseCode: Int,
+              headers: Map<String?, List<String>>
+            ) = Unit
 
             override fun trackResponseBody(stream: InputStream) = stream
 
@@ -178,6 +181,7 @@ class WrappedUrlConnectionTest {
     // Setup
     val newResponse =
       NetworkResponse(
+        200,
         mapOf(
           null to listOf("HTTP/1.0 200 OK"),
           "content-type" to listOf("text/html"),

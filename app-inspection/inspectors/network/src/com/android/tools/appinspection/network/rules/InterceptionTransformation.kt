@@ -16,11 +16,14 @@
 
 package com.android.tools.appinspection.network.rules
 
+import com.android.tools.appinspection.network.utils.Logger
+import com.android.tools.appinspection.network.utils.LoggerImpl
 import java.io.IOException
 import java.io.InputStream
 import java.util.regex.Pattern
 import java.util.zip.GZIPInputStream
 import java.util.zip.ZipException
+import studio.network.inspection.NetworkInspectorProtocol
 import studio.network.inspection.NetworkInspectorProtocol.Transformation.BodyModified
 import studio.network.inspection.NetworkInspectorProtocol.Transformation.BodyReplaced
 import studio.network.inspection.NetworkInspectorProtocol.Transformation.HeaderAdded
@@ -33,17 +36,29 @@ interface InterceptionTransformation {
 }
 
 /** A transformation class that changes the status code from response headers. */
-class StatusCodeReplacedTransformation(statusCodeReplaced: StatusCodeReplaced) :
-  InterceptionTransformation {
-
-  private val targetCodeProto = statusCodeReplaced.targetCode
-  private val replacingCode = statusCodeReplaced.newCode
+internal class StatusCodeReplacedTransformation(
+  private val statusCodeReplaced: StatusCodeReplaced,
+  private val logger: Logger = LoggerImpl()
+) : InterceptionTransformation {
 
   override fun transform(response: NetworkResponse): NetworkResponse {
-    return transformWithNullHeader(response) ?: transformWithStatusCodeHeader(response)
+    val targetCodeProto = statusCodeReplaced.targetCode
+    val replacingCode = statusCodeReplaced.newCode.toIntOrNull()
+    if (replacingCode == null) {
+      logger.debug(
+        "Ignoring interception rule because of an invalid newCode: ${statusCodeReplaced.newCode}"
+      )
+      return response
+    }
+    return transformWithNullHeader(response, targetCodeProto, replacingCode)
+      ?: transformWithStatusCodeHeader(response, targetCodeProto, replacingCode)
   }
 
-  private fun transformWithNullHeader(response: NetworkResponse): NetworkResponse? {
+  private fun transformWithNullHeader(
+    response: NetworkResponse,
+    targetCodeProto: NetworkInspectorProtocol.MatchingText,
+    replacingCode: Int
+  ): NetworkResponse? {
     val statusHeader = response.responseHeaders[null] ?: return null
     val statusLine = statusHeader.getOrNull(0) ?: return null
     if (statusLine.startsWith("HTTP/1.")) {
@@ -60,9 +75,10 @@ class StatusCodeReplacedTransformation(statusCodeReplaced: StatusCodeReplaced) :
           val newHeaders = response.responseHeaders.toMutableMap()
           newHeaders[null] = listOf("$prefix $replacingCode$suffix")
           if (newHeaders.containsKey(FIELD_RESPONSE_STATUS_CODE)) {
-            newHeaders[FIELD_RESPONSE_STATUS_CODE] = listOf(replacingCode)
+            newHeaders[FIELD_RESPONSE_STATUS_CODE] = listOf(replacingCode.toString())
           }
           return response.copy(
+            responseCode = replacingCode,
             responseHeaders = newHeaders,
             interception = response.interception.copy(statusCode = true)
           )
@@ -72,14 +88,19 @@ class StatusCodeReplacedTransformation(statusCodeReplaced: StatusCodeReplaced) :
     return null
   }
 
-  private fun transformWithStatusCodeHeader(response: NetworkResponse): NetworkResponse {
+  private fun transformWithStatusCodeHeader(
+    response: NetworkResponse,
+    targetCodeProto: NetworkInspectorProtocol.MatchingText,
+    replacingCode: Int
+  ): NetworkResponse {
     val statusCodeHeaderValue = response.responseHeaders[FIELD_RESPONSE_STATUS_CODE]
     if (statusCodeHeaderValue?.isNotEmpty() == true) {
       val statusCode = statusCodeHeaderValue[0]
       if (targetCodeProto.matches(statusCode)) {
         val newHeaders = response.responseHeaders.toMutableMap()
-        newHeaders[FIELD_RESPONSE_STATUS_CODE] = listOf(replacingCode)
+        newHeaders[FIELD_RESPONSE_STATUS_CODE] = listOf(replacingCode.toString())
         return response.copy(
+          responseCode = replacingCode,
           responseHeaders = newHeaders,
           interception = response.interception.copy(statusCode = true)
         )
