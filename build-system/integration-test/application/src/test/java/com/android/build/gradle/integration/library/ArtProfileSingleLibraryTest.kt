@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.library
 import com.android.SdkConstants
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldLibraryApp
+import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.testutils.apk.Zip
 import com.android.tools.profgen.ArtProfile
@@ -76,8 +77,17 @@ class ArtProfileSingleLibraryTest {
         testSingleLibraryWithOptionalApplicationArtProfileMerging(true)
     }
 
+    @Test
+    fun testSingleLibraryWithGeneratedSourceAndApplicationArtProfiles() {
+        testSingleLibraryWithOptionalApplicationArtProfileMerging(
+            addApplicationProfile = true,
+            useGeneratedSource = true
+        )
+    }
+
     private fun testSingleLibraryWithOptionalApplicationArtProfileMerging(
-        addApplicationProfile: Boolean
+        addApplicationProfile: Boolean,
+        useGeneratedSource: Boolean = false
     ) {
 
         val app = project.getSubproject(":app").also {
@@ -113,36 +123,56 @@ class ArtProfileSingleLibraryTest {
         val library = project.getSubproject(":lib")
         val androidAssets = library.mainSrcDir.parentFile
         androidAssets.mkdir()
-
         val libraryFileContent =
-                """
-                    HSPLcom/google/Foo;->method(II)I
-                    HSPLcom/google/Foo;->method-name-with-hyphens(II)I
-                """.trimIndent()
+            """
+                HSPLcom/google/Foo;->method(II)I
+                HSPLcom/google/Foo;->method-name-with-hyphens(II)I
+            """.trimIndent()
 
-        File(androidAssets,
-                SdkConstants.FN_ART_PROFILE).writeText(
+        if (useGeneratedSource) {
+            TestFileUtils.appendToFile(
+                library.buildFile,
+                """
+                    android.sourceSets {
+                        getByName("main") {
+                            baselineProfiles.srcDir("src/release/generated/baselineProfiles")
+                        }
+                    }
+                """.trimIndent()
+            )
+            FileUtils.createFile(
+                library.file("src/release/generated/baselineProfiles/baseline-prof.txt"),
                 libraryFileContent
-        )
+            )
+        }
+
+        File(androidAssets, SdkConstants.FN_ART_PROFILE).writeText(libraryFileContent)
 
         val result = project.executor()
                 .run(":lib:bundleReleaseAar", ":app:assembleRelease", ":app:makeApkFromBundleForRelease")
         Truth.assertThat(result.failedTasks).isEmpty()
 
         val libFile = FileUtils.join(
-                project.getSubproject(":lib").buildDir,
-                SdkConstants.FD_INTERMEDIATES,
-                InternalArtifactType.LIBRARY_ART_PROFILE.getFolderName(),
-                "release",
-                "prepareReleaseArtProfile",
-                SdkConstants.FN_ART_PROFILE,
+            project.getSubproject(":lib").buildDir,
+            SdkConstants.FD_INTERMEDIATES,
+            InternalArtifactType.LIBRARY_ART_PROFILE.getFolderName(),
+            "release",
+            "prepareReleaseArtProfile",
+            SdkConstants.FN_ART_PROFILE
         )
-        Truth.assertThat(libFile.readText()).isEqualTo(libraryFileContent)
+
+        val expectedLibraryContent = if (useGeneratedSource) {
+            "$libraryFileContent\n$libraryFileContent"
+        } else {
+            libraryFileContent
+        }
+
+        Truth.assertThat(libFile.readText()).isEqualTo(expectedLibraryContent)
 
         // check packaging.
         project.getSubproject(":lib").getAar("release") {
             checkAndroidArtifact(tempFolder, it, aarEntryName) { fileContent ->
-                Truth.assertThat(fileContent).isEqualTo(libraryFileContent.toByteArray())
+                Truth.assertThat(fileContent).isEqualTo(expectedLibraryContent.toByteArray())
             }
         }
 
@@ -155,8 +185,8 @@ class ArtProfileSingleLibraryTest {
                 SdkConstants.FN_ART_PROFILE,
         )
         val expectedContent = if (addApplicationProfile) {
-            "$libraryFileContent\n$applicationFileContent"
-        } else libraryFileContent
+            "$expectedLibraryContent\n$applicationFileContent"
+        } else expectedLibraryContent
 
         Truth.assertThat(mergedFile.readText()).isEqualTo(expectedContent)
         Truth.assertThat(
