@@ -45,7 +45,7 @@ maven_repository(
         "@maven//:com.google.protobuf.protobuf-gradle-plugin",
         "@maven//:com.google.testing.compile.compile-testing",
         "@maven//:com.google.testing.platform.android-device-provider-local",
-        "@maven//:com.google.testing.platform.android-driver-instrumentation_0.0.9-alpha01",
+        "@maven//:com.google.testing.platform.android-driver-instrumentation",
         "@maven//:com.google.testing.platform.core-proto",
         "@maven//:com.google.testing.platform.launcher",
         "@maven//:com.googlecode.jarjar.jarjar",

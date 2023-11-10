@@ -2148,10 +2148,10 @@ maven_import(
 )
 
 maven_artifact(
-    name = "com.google.testing.platform.android-device-provider-local_0.0.9-alpha01",
-    pom = "repository/com/google/testing/platform/android-device-provider-local/0.0.9-alpha01/android-device-provider-local-0.0.9-alpha01.pom",
+    name = "com.google.testing.platform.android-device-provider-local_0.0.9-alpha02",
+    pom = "repository/com/google/testing/platform/android-device-provider-local/0.0.9-alpha02/android-device-provider-local-0.0.9-alpha02.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/testing/platform/android-device-provider-local/0.0.9-alpha01",
+    repo_path = "com/google/testing/platform/android-device-provider-local/0.0.9-alpha02",
     visibility = ["//visibility:public"],
 )
 
@@ -2159,20 +2159,20 @@ maven_import(
     name = "com.google.testing.platform.android-device-provider-local",
     classifiers = [],
     jars = [
-        "repository/com/google/testing/platform/android-device-provider-local/0.0.9-alpha01/android-device-provider-local-0.0.9-alpha01.jar"
+        "repository/com/google/testing/platform/android-device-provider-local/0.0.9-alpha02/android-device-provider-local-0.0.9-alpha02.jar"
     ],
     original_deps = [],
-    pom = "repository/com/google/testing/platform/android-device-provider-local/0.0.9-alpha01/android-device-provider-local-0.0.9-alpha01.pom",
+    pom = "repository/com/google/testing/platform/android-device-provider-local/0.0.9-alpha02/android-device-provider-local-0.0.9-alpha02.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/testing/platform/android-device-provider-local/0.0.9-alpha01",
+    repo_path = "com/google/testing/platform/android-device-provider-local/0.0.9-alpha02",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "com.google.testing.platform.android-driver-instrumentation_0.0.9-alpha01",
-    pom = "repository/com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha01/android-driver-instrumentation-0.0.9-alpha01.pom",
+    name = "com.google.testing.platform.android-driver-instrumentation_0.0.9-alpha02",
+    pom = "repository/com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha02/android-driver-instrumentation-0.0.9-alpha02.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha01",
+    repo_path = "com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha02",
     visibility = ["//visibility:public"],
 )
 
@@ -2180,20 +2180,20 @@ maven_import(
     name = "com.google.testing.platform.android-driver-instrumentation",
     classifiers = [],
     jars = [
-        "repository/com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha01/android-driver-instrumentation-0.0.9-alpha01.jar"
+        "repository/com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha02/android-driver-instrumentation-0.0.9-alpha02.jar"
     ],
     original_deps = [],
-    pom = "repository/com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha01/android-driver-instrumentation-0.0.9-alpha01.pom",
+    pom = "repository/com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha02/android-driver-instrumentation-0.0.9-alpha02.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha01",
+    repo_path = "com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha02",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "com.google.testing.platform.android-test-plugin_0.0.8-alpha07",
-    pom = "repository/com/google/testing/platform/android-test-plugin/0.0.8-alpha07/android-test-plugin-0.0.8-alpha07.pom",
+    name = "com.google.testing.platform.android-test-plugin_0.0.9-alpha02",
+    pom = "repository/com/google/testing/platform/android-test-plugin/0.0.9-alpha02/android-test-plugin-0.0.9-alpha02.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/testing/platform/android-test-plugin/0.0.8-alpha07",
+    repo_path = "com/google/testing/platform/android-test-plugin/0.0.9-alpha02",
     visibility = ["//visibility:public"],
 )
 
@@ -2201,20 +2201,20 @@ maven_import(
     name = "com.google.testing.platform.android-test-plugin",
     classifiers = [],
     jars = [
-        "repository/com/google/testing/platform/android-test-plugin/0.0.8-alpha07/android-test-plugin-0.0.8-alpha07.jar"
+        "repository/com/google/testing/platform/android-test-plugin/0.0.9-alpha02/android-test-plugin-0.0.9-alpha02.jar"
     ],
     original_deps = [],
-    pom = "repository/com/google/testing/platform/android-test-plugin/0.0.8-alpha07/android-test-plugin-0.0.8-alpha07.pom",
+    pom = "repository/com/google/testing/platform/android-test-plugin/0.0.9-alpha02/android-test-plugin-0.0.9-alpha02.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/testing/platform/android-test-plugin/0.0.8-alpha07",
+    repo_path = "com/google/testing/platform/android-test-plugin/0.0.9-alpha02",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "com.google.testing.platform.core-proto_0.0.9-alpha01",
-    pom = "repository/com/google/testing/platform/core-proto/0.0.9-alpha01/core-proto-0.0.9-alpha01.pom",
+    name = "com.google.testing.platform.core-proto_0.0.9-alpha02",
+    pom = "repository/com/google/testing/platform/core-proto/0.0.9-alpha02/core-proto-0.0.9-alpha02.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/testing/platform/core-proto/0.0.9-alpha01",
+    repo_path = "com/google/testing/platform/core-proto/0.0.9-alpha02",
     visibility = ["//visibility:public"],
 )
 
@@ -2222,20 +2222,20 @@ maven_import(
     name = "com.google.testing.platform.core-proto",
     classifiers = [],
     jars = [
-        "repository/com/google/testing/platform/core-proto/0.0.9-alpha01/core-proto-0.0.9-alpha01.jar"
+        "repository/com/google/testing/platform/core-proto/0.0.9-alpha02/core-proto-0.0.9-alpha02.jar"
     ],
     original_deps = [],
-    pom = "repository/com/google/testing/platform/core-proto/0.0.9-alpha01/core-proto-0.0.9-alpha01.pom",
+    pom = "repository/com/google/testing/platform/core-proto/0.0.9-alpha02/core-proto-0.0.9-alpha02.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/testing/platform/core-proto/0.0.9-alpha01",
+    repo_path = "com/google/testing/platform/core-proto/0.0.9-alpha02",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "com.google.testing.platform.core_0.0.8-alpha07",
-    pom = "repository/com/google/testing/platform/core/0.0.8-alpha07/core-0.0.8-alpha07.pom",
+    name = "com.google.testing.platform.core_0.0.9-alpha02",
+    pom = "repository/com/google/testing/platform/core/0.0.9-alpha02/core-0.0.9-alpha02.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/testing/platform/core/0.0.8-alpha07",
+    repo_path = "com/google/testing/platform/core/0.0.9-alpha02",
     visibility = ["//visibility:public"],
 )
 
@@ -2243,20 +2243,20 @@ maven_import(
     name = "com.google.testing.platform.core",
     classifiers = [],
     jars = [
-        "repository/com/google/testing/platform/core/0.0.8-alpha07/core-0.0.8-alpha07.jar"
+        "repository/com/google/testing/platform/core/0.0.9-alpha02/core-0.0.9-alpha02.jar"
     ],
     original_deps = [],
-    pom = "repository/com/google/testing/platform/core/0.0.8-alpha07/core-0.0.8-alpha07.pom",
+    pom = "repository/com/google/testing/platform/core/0.0.9-alpha02/core-0.0.9-alpha02.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/testing/platform/core/0.0.8-alpha07",
+    repo_path = "com/google/testing/platform/core/0.0.9-alpha02",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "com.google.testing.platform.launcher_0.0.9-alpha01",
-    pom = "repository/com/google/testing/platform/launcher/0.0.9-alpha01/launcher-0.0.9-alpha01.pom",
+    name = "com.google.testing.platform.launcher_0.0.9-alpha02",
+    pom = "repository/com/google/testing/platform/launcher/0.0.9-alpha02/launcher-0.0.9-alpha02.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/testing/platform/launcher/0.0.9-alpha01",
+    repo_path = "com/google/testing/platform/launcher/0.0.9-alpha02",
     visibility = ["//visibility:public"],
 )
 
@@ -2264,12 +2264,12 @@ maven_import(
     name = "com.google.testing.platform.launcher",
     classifiers = [],
     jars = [
-        "repository/com/google/testing/platform/launcher/0.0.9-alpha01/launcher-0.0.9-alpha01.jar"
+        "repository/com/google/testing/platform/launcher/0.0.9-alpha02/launcher-0.0.9-alpha02.jar"
     ],
     original_deps = [],
-    pom = "repository/com/google/testing/platform/launcher/0.0.9-alpha01/launcher-0.0.9-alpha01.pom",
+    pom = "repository/com/google/testing/platform/launcher/0.0.9-alpha02/launcher-0.0.9-alpha02.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/testing/platform/launcher/0.0.9-alpha01",
+    repo_path = "com/google/testing/platform/launcher/0.0.9-alpha02",
     visibility = ["//visibility:public"],
 )
 
@@ -41748,6 +41748,30 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.testing.platform.android-device-provider-local_0.0.9-alpha01",
+    pom = "repository/com/google/testing/platform/android-device-provider-local/0.0.9-alpha01/android-device-provider-local-0.0.9-alpha01.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/testing/platform/android-device-provider-local/0.0.9-alpha01",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.testing.platform.android-driver-instrumentation_0.0.9-alpha01",
+    pom = "repository/com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha01/android-driver-instrumentation-0.0.9-alpha01.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/testing/platform/android-driver-instrumentation/0.0.9-alpha01",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.testing.platform.android-test-plugin_0.0.8-alpha07",
+    pom = "repository/com/google/testing/platform/android-test-plugin/0.0.8-alpha07/android-test-plugin-0.0.8-alpha07.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/testing/platform/android-test-plugin/0.0.8-alpha07",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.testing.platform.android-test-plugin_0.0.9-alpha01",
     pom = "repository/com/google/testing/platform/android-test-plugin/0.0.9-alpha01/android-test-plugin-0.0.9-alpha01.pom",
     repo_root_path = "repository",
@@ -41788,6 +41812,22 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.testing.platform.core-proto_0.0.9-alpha01",
+    pom = "repository/com/google/testing/platform/core-proto/0.0.9-alpha01/core-proto-0.0.9-alpha01.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/testing/platform/core-proto/0.0.9-alpha01",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.testing.platform.core_0.0.8-alpha07",
+    pom = "repository/com/google/testing/platform/core/0.0.8-alpha07/core-0.0.8-alpha07.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/testing/platform/core/0.0.8-alpha07",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.testing.platform.core_0.0.9-alpha01",
     pom = "repository/com/google/testing/platform/core/0.0.9-alpha01/core-0.0.9-alpha01.pom",
     repo_root_path = "repository",
@@ -41800,6 +41840,14 @@ maven_artifact(
     pom = "repository/com/google/testing/platform/launcher/0.0.8-alpha07/launcher-0.0.8-alpha07.pom",
     repo_root_path = "repository",
     repo_path = "com/google/testing/platform/launcher/0.0.8-alpha07",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.testing.platform.launcher_0.0.9-alpha01",
+    pom = "repository/com/google/testing/platform/launcher/0.0.9-alpha01/launcher-0.0.9-alpha01.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/testing/platform/launcher/0.0.9-alpha01",
     visibility = ["//visibility:public"],
 )
 
