@@ -117,12 +117,12 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
         if (installableApk != null && installableApk.installOptions.installAsSplitApk) {
             installCmd = SPLIT_APK_INSTALL_CMD.toMutableList()
         }
+        if (deviceApiLevel >= 34) installCmd.add("--bypass-low-target-sdk-block")
         // Append -t to install apk marked as testOnly.
         installCmd.add("-t")
         if (installableApk != null && installableApk.installOptions.installAsTestService) {
             if (deviceApiLevel >= 23) installCmd.add("-g")
             if (deviceApiLevel >= 30) installCmd.add("--force-queryable")
-            if (deviceApiLevel >= 34) installCmd.add("--bypass-low-target-sdk-block")
         }
         if (userId != null) installCmd.addAll(listOfNotNull("--user", userId))
         if (forceReinstall) installCmd.addAll(listOf("-r", "-d"))
