@@ -236,7 +236,7 @@ internal fun buildDexMetadata(
         profile: ArtProfile,
         outputDir: File,
         infoList: List<SerializerInfo> = listOf(
-                SerializerInfo(ArtProfileSerializer.V0_1_5_S, 31..34),
+                SerializerInfo(ArtProfileSerializer.V0_1_5_S, 31..Int.MAX_VALUE),
                 SerializerInfo(ArtProfileSerializer.V0_1_0_P, 28..30),
         )
 ): Map<AndroidSdkLevel, File> {
@@ -252,8 +252,14 @@ internal fun buildDexMetadata(
                         profileVersion = info.serializer,
                         metadataVersion = ArtProfileSerializer.METADATA_0_0_2
                 )
-        info.apiLevels.forEach { apiLevel ->
-            fileMap[apiLevel] = output
+        if (info.serializer == ArtProfileSerializer.V0_1_5_S) {
+            // Just encode the first and last API level when we find the S format.
+            fileMap[info.apiLevels.first] = output
+            fileMap[info.apiLevels.last] = output
+        } else {
+            info.apiLevels.forEach { apiLevel ->
+                fileMap[apiLevel] = output
+            }
         }
     }
     return fileMap

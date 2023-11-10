@@ -108,9 +108,7 @@ class InstallProfilesPerDeviceApiConnectedTest {
         Truth.assertThat(dexMetadataProperties.readText()).isEqualTo(
             """
                 31=0/.dm
-                32=0/.dm
-                33=0/.dm
-                34=0/.dm
+                2147483647=0/.dm
                 28=1/.dm
                 29=1/.dm
                 30=1/.dm
@@ -176,11 +174,9 @@ class InstallProfilesPerDeviceApiConnectedTest {
         )
 
         Truth.assertThat(dexMetadataProperties.readText()).isEqualTo(
-            """
+                """
                 31=0/.dm
-                32=0/.dm
-                33=0/.dm
-                34=0/.dm
+                2147483647=0/.dm
                 28=1/.dm
                 29=1/.dm
                 30=1/.dm
