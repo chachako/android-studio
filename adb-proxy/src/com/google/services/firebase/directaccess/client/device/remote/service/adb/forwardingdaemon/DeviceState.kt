@@ -24,4 +24,7 @@ enum class DeviceState(val adbState: String) {
   MISSING("missing"),
   OFFLINE("offline"),
   UNAUTHORIZED("unauthorized"),
+  // Local only device state. Cannot be received from remote server.
+  // Used to denote device disconnect due to latency
+  LATENCY_DISCONNECT("latency disconnect")
 }

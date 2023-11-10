@@ -21,6 +21,7 @@ import java.time.Duration
 import java.util.concurrent.TimeoutException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 internal val ROUND_TRIP_LATENCY_LIMIT: Duration = Duration.ofSeconds(5)
 internal val FAST_TASK_TIME_LIMIT: Duration = Duration.ofSeconds(1)
@@ -75,6 +76,9 @@ interface ForwardingDaemon : AutoCloseable {
 
   /** Returns a flow of round trip latency, emitting every [LATENCY_COLLECTION_INTERVAL]. */
   val roundTripLatencyMsFlow: Flow<Long>
+
+  /** Returns a [StateFlow] of the device state */
+  val deviceState: StateFlow<DeviceState>
 }
 
 fun ForwardingDaemon(

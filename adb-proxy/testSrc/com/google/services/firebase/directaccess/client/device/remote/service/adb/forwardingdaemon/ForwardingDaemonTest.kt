@@ -232,6 +232,18 @@ class ForwardingDaemonTest {
     assertThat(isAdbDeviceConnected()).isFalse()
   }
 
+  @Test
+  fun testDeviceStateOnLatencyDisconnect() = runBlockingWithTimeout {
+    val scope = CoroutineScope(MoreExecutors.directExecutor().asCoroutineDispatcher())
+    forwardingDaemon = ForwardingDaemonImpl(fakeStreamOpener, scope, fakeAdbSession) { testSocket }
+    assertThat(forwardingDaemon.devicePort).isEqualTo(-1)
+    // Since we don't send/receive anything, the latency collector throws an EOF error
+    // which results in emitting ROUND_TRIP_LATENCY_LIMIT thrice.
+    forwardingDaemon.start()
+
+    yieldUntil { forwardingDaemon.deviceState.value == DeviceState.LATENCY_DISCONNECT }
+  }
+
   private fun isAdbDeviceConnected() =
     fakeAdbSession.hostServices.devices.entries.any {
       it.serialNumber == "localhost:${forwardingDaemon.devicePort}"

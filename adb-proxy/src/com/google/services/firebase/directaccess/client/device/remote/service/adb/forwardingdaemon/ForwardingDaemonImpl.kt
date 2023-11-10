@@ -49,6 +49,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -91,11 +92,12 @@ internal class ForwardingDaemonImpl(
   // The socket the local ADB server sends ADB commands to. Bytes, in this case ADB commands,
   // coming to this socket are forwarded to the remote device.
   private lateinit var localAdbChannel: AdbChannel
-  private val deviceState = MutableStateFlow(DeviceState.MISSING)
+  private val _deviceState = MutableStateFlow(DeviceState.MISSING)
   private val onlineStates = setOf(DeviceState.DEVICE, DeviceState.RECOVERY, DeviceState.RESCUE)
   private lateinit var adbCommandHandler: Job
   private var roundTripLatencyCollector: Job? = null
   private var consecutiveConnectionLostCount = 0
+  override val deviceState = _deviceState.asStateFlow()
 
   @OptIn(ExperimentalCoroutinesApi::class)
   override val roundTripLatencyMsFlow: Flow<Long> =
@@ -258,7 +260,11 @@ internal class ForwardingDaemonImpl(
         }
         streams.values.forEach { runAndLogExceptionsOnClosing { it.sendClose() } }
         runAndLogExceptionsOnClosing { streamOpener.close() }
-        onStateChanged(DeviceState.OFFLINE)
+        if (consecutiveConnectionLostCount >= 3) {
+          onStateChanged(DeviceState.LATENCY_DISCONNECT)
+        } else {
+          onStateChanged(DeviceState.OFFLINE)
+        }
       } finally {
         runBlocking {
           if (adbSession.hostServices.devices().any { it.serialNumber == serialNumber }) {
@@ -282,7 +288,7 @@ internal class ForwardingDaemonImpl(
 
   override fun onStateChanged(newState: DeviceState, features: String?) {
     if (features != null) this.features = features
-    deviceState.update { newState }
+    _deviceState.update { newState }
     if (this::localAdbChannel.isInitialized) localAdbChannel.close()
   }
 
