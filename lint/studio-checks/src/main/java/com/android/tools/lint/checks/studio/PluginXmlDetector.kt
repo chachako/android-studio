@@ -113,7 +113,8 @@ class PluginXmlDetector : Detector(), OtherFileScanner {
   private fun looksLikeClassRef(s: String?): Boolean {
     return s != null &&
       s != "classpath" &&
-      CLASS_KEYWORDS.any { keyword -> s.contains(keyword, ignoreCase = true) }
+      CLASS_KEYWORDS.any { keyword -> s.contains(keyword, ignoreCase = true) } &&
+      NOT_CLASS_SUFFIXES.all { suffix -> !s.endsWith(suffix, ignoreCase = true) }
   }
 }
 
@@ -126,4 +127,11 @@ private val CLASS_KEYWORDS =
     "interface",
     "topic",
     "provider",
+  )
+
+/** Suffixes that refute association with a class name. */
+private val NOT_CLASS_SUFFIXES =
+  arrayOf(
+    "id",
+    "key",
   )

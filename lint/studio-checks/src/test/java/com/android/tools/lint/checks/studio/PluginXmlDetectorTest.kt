@@ -27,6 +27,7 @@ class PluginXmlDetectorTest {
       .files(
         java("package test.pkg;\nclass SomeClassA {}").indented(),
         java("package test.pkg;\nclass SomeClassB {}").indented(),
+        java("package test.pkg;\nclass SomeClassC {}").indented(),
         @Suppress("PluginXmlValidity", "PluginXmlCapitalization")
         xml(
             "res/META-INF/android-plugin.xml",
@@ -39,6 +40,9 @@ class PluginXmlDetectorTest {
               <extensions defaultExtensionNs="com.intellij">
                 <projectService serviceImplementation="test.pkg.SomeClassB"/>
                 <projectService serviceImplementation="test.pkg.MissingClassB"/>
+                <codeInsight.declarativeInlayProviderCustomSettingsProvider language="JAVA"
+                                                                providerId="some.id.that.looks.classlike"
+                                                                implementationClass="test.pkg.SomeClassC"/>
               </extensions>
             </idea-plugin>
             """
