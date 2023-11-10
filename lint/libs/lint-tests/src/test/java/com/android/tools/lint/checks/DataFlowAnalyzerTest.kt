@@ -38,11 +38,15 @@ import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiMethod
+import com.intellij.psi.PsiVariable
 import java.io.File
 import junit.framework.TestCase
+import org.jetbrains.uast.UArrayAccessExpression
 import org.jetbrains.uast.UCallExpression
+import org.jetbrains.uast.UCallableReferenceExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UMethod
+import org.jetbrains.uast.UReturnExpression
 import org.jetbrains.uast.UVariable
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.util.isConstructorCall
@@ -196,7 +200,7 @@ class DataFlowAnalyzerTest : TestCase() {
     val method = target.getParentOfType(UMethod::class.java)
     method?.accept(analyzer)
 
-    assertEquals("e, f, g, toString, apply, h", receivers.joinToString { it })
+    assertEquals("e, f, g, toString, h", receivers.joinToString { it })
 
     Disposer.dispose(parsed.second)
   }
@@ -210,6 +214,8 @@ class DataFlowAnalyzerTest : TestCase() {
     file.accept(
       object : AbstractUastVisitor() {
         override fun visitCallExpression(node: UCallExpression): Boolean {
+          if (target != null) return super.visitCallExpression(node)
+
           if (node.methodName == targetName) {
             target = node
           } else if (node.isConstructorCall() && node.classReference?.resolvedName == targetName) {
@@ -861,6 +867,56 @@ class DataFlowAnalyzerTest : TestCase() {
       .expectClean()
   }
 
+  fun testMethodReferences2() {
+    val parsed =
+      LintUtilsTest.parse(
+        kotlin(
+            """
+            package com.pkg
+
+            class Intent {
+              fun show() {}
+              fun show1() {}
+              fun show2() {}
+            }
+
+            fun test1() {
+                val intent = Intent()
+                val handle1 = Intent::show1
+                handle1(intent) // argument(...)
+                val handle2 = intent::show2 // methodReference(...) - method reference taken
+                handle2() // no calls
+                intent.show() // receiver(...)
+                intent.let(::display) // argument(...)
+                val intent2 = intent.also(::display) // argument(...)
+                intent2.show() // receiver(...)
+            }
+
+            private fun display(intent: Intent) {}
+            """,
+          )
+          .indented()
+      )
+
+    val target = findMethodCall(parsed, "Intent")
+    val method = target.getParentOfType(UMethod::class.java)
+    val dfa = LoggingDataFlowAnalyzer(listOf(target))
+    method?.accept(dfa)
+    assertEquals(
+      """
+      argument(handle1(intent), intent)
+      methodReference(intent::show2)
+      receiver(show())
+      argument(let(::display), intent)
+      argument(also(::display), intent)
+      receiver(show())
+      """
+        .trimIndent(),
+      dfa.events.joinToString(separator = "\n") { it }
+    )
+    Disposer.dispose(parsed.second)
+  }
+
   fun testElvis() {
     lint()
       .files(
@@ -1052,20 +1108,13 @@ class DataFlowAnalyzerTest : TestCase() {
         }
       }
     )
-    // TODO(b/308569204): Recent support for extension function calls on tracked instances will
-    //  typically trigger "argument()", so we might expect to see "let" and "apply" appear here. I
-    //  think the only reason we don't is that the extension function support only works for
-    //  extension functions with source. Regardless, assuming we fix this, we would like to avoid
-    //  "let" and "apply" appearing here, because we try to handle scope functions specially, such
-    //  that they don't seem like function calls at all.
     assertEquals("fa, fb, fc, fh, fi, fj", argumentCalls.joinToString { it })
     assertEquals(
       "it, this, this@l, this@l, this, this@apply",
       argumentReferences.joinToString { it }
     )
 
-    // TODO(b/308569204): Possibly, this should just be: intentFun.
-    assertEquals("let, apply, intentFun, apply", receivers.joinToString { it })
+    assertEquals("intentFun", receivers.joinToString { it })
 
     Disposer.dispose(parsed.second)
   }
@@ -1281,6 +1330,375 @@ class DataFlowAnalyzerTest : TestCase() {
     val analyzer = EscapeCheckingDataFlowAnalyzer(listOf(target))
     method!!.accept(analyzer)
     assertFalse("Expected no escape", analyzer.escaped)
+    Disposer.dispose(parsed.second)
+  }
+
+  class LoggingDataFlowAnalyzer(
+    initial: Collection<UElement>,
+    initialReferences: Collection<PsiVariable> = emptyList()
+  ) : DataFlowAnalyzer(initial, initialReferences) {
+    val events = mutableListOf<String>()
+
+    override fun receiver(call: UCallExpression) {
+      events.add("receiver(${call.sourcePsi!!.text})")
+      super.receiver(call)
+    }
+
+    override fun methodReference(call: UCallableReferenceExpression) {
+      events.add("methodReference(${call.sourcePsi!!.text})")
+      super.methodReference(call)
+    }
+
+    override fun returns(expression: UReturnExpression) {
+      events.add("returns(${expression.sourcePsi?.text ?: expression.asRenderString()})")
+      super.returns(expression)
+    }
+
+    override fun field(field: UElement) {
+      events.add("field(${field.sourcePsi!!.text})")
+      super.field(field)
+    }
+
+    override fun array(array: UArrayAccessExpression) {
+      events.add("array(${array.sourcePsi!!.text})")
+      super.array(array)
+    }
+
+    override fun argument(call: UCallExpression, reference: UElement) {
+      events.add(
+        "argument(${call.sourcePsi!!.text}, ${reference.sourcePsi?.text ?: reference.asRenderString()})"
+      )
+      super.argument(call, reference)
+    }
+  }
+
+  fun testReturnedFromScopeFunction() {
+    // Tests that a tracked object returned from a scope function
+    // does not trigger "returns", but is still tracked and then triggers
+    // "argument". Also ensures returns that do not target a handled scope
+    // function lambda still trigger "returns".
+    val parsed =
+      LintUtilsTest.parse(
+        kotlin(
+            """
+            package com.pkg
+
+            class Intent {
+              var a: Int = 1
+            }
+
+            fun hello(): Intent {
+              val intent = run { Intent() }
+              a(intent) // argument
+
+              val intent2 = intent.run {
+                if (a == 1) {
+                  return@run this // tracking propagates to intent2
+                }
+                Intent() // untracked
+              }
+              b(intent2) // argument
+
+              val intent3 = intent2.run {
+                if (a == 1) {
+                  // triggers returns(...) because we are returning to hello.
+                  return@hello this
+                }
+                Intent() // untracked
+              }
+              c(intent3) // untracked
+            }
+
+            fun a(intent: Intent) {}
+            fun b(intent: Intent) {}
+            fun c(intent: Intent) {}
+            """,
+          )
+          .indented()
+      )
+
+    val target = findMethodCall(parsed, "Intent")
+    val method = target.getParentOfType(UMethod::class.java)
+    val dfa = LoggingDataFlowAnalyzer(listOf(target))
+    method?.accept(dfa)
+    assertEquals(
+      "argument(a(intent), intent), argument(b(intent2), intent2), returns(return@hello this)",
+      dfa.events.joinToString { it }
+    )
+    Disposer.dispose(parsed.second)
+  }
+
+  fun testScopeFunctionWith() {
+    // Tests "with" scope function.
+    val parsed =
+      LintUtilsTest.parse(
+        kotlin(
+            """
+            package com.pkg
+
+            class Intent {
+              fun intentFun() {}
+            }
+
+            fun hello(handler: Intent.() -> Unit, untracked: Intent) {
+              // Handled scope function (Intent is trivially returned).
+              val intent = with(untracked) { Intent() }
+
+              // Scope function not handled, so will see argument(...).
+              with(intent, handler)
+
+              var intent2: Intent? = untracked
+
+              intent2 = intent
+
+              // Handled (reference to variable, and reversed args).
+              val untracked2 = with(block = {
+                // receiver
+                intentFun()
+                // Return a fresh Intent; should not be tracked.
+                Intent()
+              }, receiver = intent2)
+
+              // Not tracked.
+              untracked.intentFun()
+              untracked2.intentFun()
+            }
+
+            """,
+          )
+          .indented()
+      )
+
+    val target = findMethodCall(parsed, "Intent")
+    val method = target.getParentOfType(UMethod::class.java)
+    val dfa = LoggingDataFlowAnalyzer(listOf(target))
+    method?.accept(dfa)
+    assertEquals(
+      "argument(with(intent, handler), intent), receiver(intentFun())",
+      dfa.events.joinToString { it }
+    )
+    Disposer.dispose(parsed.second)
+  }
+
+  fun testScopeFunctionLet() {
+    // Tests "let" scope function.
+    val parsed =
+      LintUtilsTest.parse(
+        kotlin(
+            """
+            package com.pkg
+
+            class Intent {
+              fun a() {}
+              fun b() {}
+              fun c() {}
+              fun d() {}
+              fun e() {}
+              fun f() {}
+            }
+
+            fun hello(handler: (Intent) -> Intent, untracked: Intent) {
+
+              untracked.a()
+
+              // handled scope function
+              val intent = untracked.let {
+                // untracked
+                it.b()
+
+                Intent()
+              }
+
+              untracked.c()
+
+              // Scope function not handled, so will see receiver(...).
+              intent.apply(handler)
+
+              // Handled
+              val intent2 = intent.let {
+                // receiver
+                it.d()
+                it
+              }
+
+              // receiver
+              intent2.e()
+
+              // Handled
+              val untracked2 = intent2.let {
+                Intent()
+              }
+
+              untracked2.f()
+            }
+
+            """,
+          )
+          .indented()
+      )
+
+    val target = findMethodCall(parsed, "Intent")
+    val method = target.getParentOfType(UMethod::class.java)
+    val dfa = LoggingDataFlowAnalyzer(listOf(target))
+    method?.accept(dfa)
+    assertEquals(
+      "receiver(apply(handler)), argument(apply(handler), intent), receiver(d()), receiver(e())",
+      dfa.events.joinToString { it }
+    )
+    Disposer.dispose(parsed.second)
+  }
+
+  fun testNestedScopesImplicitReceiver() {
+    // Tests that nested lambdas and extension function definitions do not confuse the support for
+    // tracking across scope functions.
+    val parsed =
+      LintUtilsTest.parse(
+        kotlin(
+            """
+            package com.pkg
+
+            class Intent {
+              fun a() {}
+              fun b() {}
+              fun c() {}
+              fun d() {}
+              fun e() {}
+              fun f() {}
+            }
+
+            fun Intent.extFuncA(handler: Intent.(Intent) -> Intent) {
+              a()
+            }
+
+            fun hello() {
+              val intent = Intent()
+              intent.apply {
+                b()
+                fun Intent.extFuncB() {
+                  c() // ignored
+                  this.d() // ignored
+                }
+                extFuncB()
+                val untracked = extFuncA {
+                  e() // ignored
+                  it.f() // ignored
+                  intent // returned
+                }
+                untracked.f()
+              }
+            }
+
+            """,
+          )
+          .indented()
+      )
+
+    val target = findMethodCall(parsed, "Intent")
+    val method = target.getParentOfType(UMethod::class.java)
+    val dfa = LoggingDataFlowAnalyzer(listOf(target))
+    method?.accept(dfa)
+    assertEquals(
+      """
+      receiver(b())
+      receiver(extFuncA {
+            e() // ignored
+            it.f() // ignored
+            intent // returned
+          })
+      argument(extFuncA {
+            e() // ignored
+            it.f() // ignored
+            intent // returned
+          }, var <this>: com.pkg.Intent)
+      returns(return intent)
+      """
+        .trimIndent(),
+      dfa.events.joinToString(separator = "\n") { it }
+    )
+    Disposer.dispose(parsed.second)
+  }
+
+  fun disabledTestImplicitFunctionCalls() {
+    // Tests implicit function calls from Kotlin operator overloading.
+
+    // TODO: DataFlowAnalyzer does not yet handle these implicit function calls. The fix should
+    //  probably make use of the Kotlin Analysis API (KtCompoundArrayAccessCall) rather than just
+    //  looking at the AST because the same AST can result in quite different sets of calls
+    //  depending on various factors. See disabledTestKtCompoundArrayAccessCallWithTwoReceivers.
+    val parsed =
+      LintUtilsTest.parse(
+        kotlin(
+            """
+            package com.pkg
+
+            class Intent
+            class A {
+              operator fun get(s: String): A { TODO() }
+            }
+
+            fun foo(m: MutableMap<String, Intent>) {
+              val a = A()
+              a["aaa"]
+            }
+            """,
+          )
+          .indented()
+      )
+
+    val target = findMethodCall(parsed, "A")
+    val method = target.getParentOfType(UMethod::class.java)
+    val dfa = LoggingDataFlowAnalyzer(listOf(target))
+    method?.accept(dfa)
+    assertEquals(
+      """
+      receiver(...something...)
+      """
+        .trimIndent(),
+      dfa.events.joinToString(separator = "\n") { it }
+    )
+    Disposer.dispose(parsed.second)
+  }
+
+  fun disabledTestKtCompoundArrayAccessCallWithTwoReceivers() {
+    // Tests a tricky case, where the binary expression essentially results in three implicit calls:
+    // MutableMap.get, Intent?.plus, MutableMap.set. The second call has an implicit dispatch
+    // receiver that is tracked.
+
+    // TODO: DataFlowAnalyzer does not yet handle these implicit function calls. See
+    //  disabledTestImplicitFunctionCalls.
+    val parsed =
+      LintUtilsTest.parse(
+        kotlin(
+            """
+            package com.pkg
+
+            class Intent
+            class A {
+              operator fun Intent?.plus(other: Intent): Intent { TODO() }
+            }
+
+            fun foo(m: MutableMap<String, Intent>) {
+              val a = A()
+              with (a) {
+                m["s"] += Intent()
+              }
+            }
+            """,
+          )
+          .indented()
+      )
+
+    val target = findMethodCall(parsed, "A")
+    val method = target.getParentOfType(UMethod::class.java)
+    val dfa = LoggingDataFlowAnalyzer(listOf(target))
+    method?.accept(dfa)
+    assertEquals(
+      """
+      receiver(...something...)
+      """
+        .trimIndent(),
+      dfa.events.joinToString(separator = "\n") { it }
+    )
     Disposer.dispose(parsed.second)
   }
 

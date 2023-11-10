@@ -22,15 +22,15 @@ import com.android.tools.lint.detector.api.isBelow
 import com.android.tools.lint.detector.api.isElvisIf
 import com.android.tools.lint.detector.api.isJava
 import com.android.tools.lint.detector.api.isReturningContext
+import com.android.tools.lint.detector.api.isReturningLambdaResult
 import com.android.tools.lint.detector.api.isScopingIt
 import com.android.tools.lint.detector.api.isScopingThis
 import com.android.tools.lint.detector.api.skipLabeledExpression
-import com.intellij.psi.PsiClass
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiLocalVariable
-import com.intellij.psi.PsiMember
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiPrimitiveType
@@ -40,6 +40,7 @@ import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.psi.KtCallableReferenceExpression
 import org.jetbrains.kotlin.psi.KtConstructor
 import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtSecondaryConstructor
 import org.jetbrains.uast.UArrayAccessExpression
 import org.jetbrains.uast.UBinaryExpression
@@ -57,6 +58,7 @@ import org.jetbrains.uast.ULabeledExpression
 import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.ULocalVariable
 import org.jetbrains.uast.UMethod
+import org.jetbrains.uast.UParameter
 import org.jetbrains.uast.UParenthesizedExpression
 import org.jetbrains.uast.UPolyadicExpression
 import org.jetbrains.uast.UPostfixExpression
@@ -73,11 +75,13 @@ import org.jetbrains.uast.UVariable
 import org.jetbrains.uast.UYieldExpression
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.getQualifiedParentOrThis
+import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.KotlinPostfixOperators
 import org.jetbrains.uast.kotlin.kinds.KotlinSpecialExpressionKinds
 import org.jetbrains.uast.skipParenthesizedExprDown
 import org.jetbrains.uast.skipParenthesizedExprUp
 import org.jetbrains.uast.toUElement
+import org.jetbrains.uast.toUElementOfType
 import org.jetbrains.uast.tryResolve
 import org.jetbrains.uast.util.isAssignment
 import org.jetbrains.uast.visitor.AbstractUastVisitor
@@ -251,18 +255,24 @@ abstract class DataFlowAnalyzer(
 
   protected val references: MutableSet<PsiElement> = LinkedHashSet()
   protected val instances: MutableSet<UElement> = LinkedHashSet()
-  protected val received: MutableSet<UElement> = LinkedHashSet()
-  protected val types: MutableSet<PsiClass> = LinkedHashSet()
 
   /**
-   * Lambda expressions passed to scope functions (like X.apply { ... }), where the receiver (X) of
-   * the scope function is tracked. The "this" expressions within the lambda that reference the
-   * receiver resolve (via UAST's resolve() function) to the lambda expression. We store the lambda
-   * expressions so that when we later visit the "this" expressions, we can mark them as tracked. We
-   * don't want to add the lambda expression to [instances] because otherwise we will call
-   * [argument] for the "apply(lambda)" call.
+   * Lambda expressions of handled scope functions where we know the scope function returns the
+   * lambda result. When we visit return expressions that return to one of these lambda expressions
+   * then we can skip calling `returns(...)` and instead just propagate tracking.
    */
-  private val trackedLambdaScopes: MutableSet<ULambdaExpression> = LinkedHashSet()
+  private val lambdaExprResultReturnedByCall: MutableMap<ULambdaExpression, UCallExpression> =
+    HashMap()
+
+  /**
+   * Handled scope function calls. Handled means that we propagate tracking information into and out
+   * of the lambda expression (where appropriate) and do not call `receiver(...)` or `argument(...)`
+   * for the function call.
+   */
+  private val handledScopeFunctionCalls: MutableSet<UCallExpression> = HashSet()
+
+  private val baseKotlinUastResolveProviderService: BaseKotlinUastResolveProviderService =
+    ApplicationManager.getApplication().getService(BaseKotlinUastResolveProviderService::class.java)
 
   init {
     if (references.isEmpty()) {
@@ -282,92 +292,252 @@ abstract class DataFlowAnalyzer(
             references.add(reference)
           }
         }
-        val type = (element as? UExpression)?.getExpressionType() as? PsiClassType
-        type?.resolve()?.let { types.add(it) }
       }
     }
   }
 
-  override fun visitCallExpression(node: UCallExpression): Boolean {
-    val receiver = node.receiver?.skipParenthesizedExprDown()
-    var matched = false
-    if (receiver != null) {
-      if (instances.contains(receiver)) {
-        matched = true
+  private fun UThisExpression.resolveToThisParam(): UParameter? {
+    // We only handle <this> parameters in Kotlin code.
+    if (this.lang != KotlinLanguage.INSTANCE) return null
+
+    // We only care about "this" expressions within lambda expressions.
+    if (this.getParentOfType<ULambdaExpression>() == null) return null
+
+    // Try to resolve the "this" expression to a parent lambda expression, using UAST.
+
+    // TODO(b/308627646): UAST bug: this.resolve() only works if the "this" expression has a label
+    //  (e.g. this@apply or this@ClassName). But the first PSI child is a KtNameReferenceExpression,
+    //  which can be converted to a USimpleNameReferenceExpression
+    //  (KotlinUSimpleReferenceExpression); resolve always seems to work for this element, for both
+    //  labelled and unlabelled "this" expressions.
+    val referenceExpression =
+      this.sourcePsi?.children?.firstOrNull()?.toUElementOfType<USimpleNameReferenceExpression>()
+        ?: return null
+    val lambdaExpression =
+      referenceExpression.resolve()?.toUElement() as? ULambdaExpression ?: return null
+
+    return lambdaExpression.getThisParameter(baseKotlinUastResolveProviderService)
+  }
+
+  private fun isTracked(element: UElement): Boolean {
+    if (instances.contains(element)) return true
+    if (element is UReferenceExpression)
+      return element.resolve()?.let { references.contains(it) } == true
+
+    // Special handling of "this" expressions.
+    if (element is UThisExpression) {
+      val thisParam = element.resolveToThisParam() ?: return false
+      return instances.contains(thisParam) ||
+        thisParam.javaPsi?.let { references.contains(it) } == true
+    }
+
+    return false
+  }
+
+  /**
+   * Returns a pair "isReceiverTracked, receiver". The first element indicates whether the receiver
+   * is tracked. If the first element is true, then the second element provides the receiver
+   * UElement. Note that if the call has an implicit "this" receiver, then the receiver UElement
+   * will often be a lightweight <this> UParameter of an enclosing lambda expression, with no
+   * sourcePsi. Returns null in certain cases where the receiver is implicit, and we could not
+   * resolve it to a UElement. This is not necessarily a problem. For example, null will be returned
+   * when the implicit "this" receiver references the containing class. The idea is that resolving
+   * the implicit receiver is less reliable, and so if null is returned, the caller may want to
+   * react differently.
+   */
+  private fun getTrackedReceiver(callExpression: UCallExpression): Pair<Boolean, UElement?>? {
+    // Simple case: explicit receiver.
+    callExpression.receiver?.let { explicitReceiver ->
+      return if (isTracked(explicitReceiver)) {
+        true to explicitReceiver
       } else {
-        val resolved = receiver.tryResolve()
-        if (resolved != null) {
-          if (references.contains(resolved)) {
-            matched = true
-          }
-        }
+        false to null
       }
-    } else if (received.contains(node)) {
-      // We've already marked this (receiver-less) call as having been invoked on
-      // a tracked element. For example, in tracker.apply { foo() }, foo has no
-      // receiver, but if we've already determined that it binds to a method
-      // in the tracked class, we've recorded that here to mark this as
-      // being received on a tracked element.
-      matched = true
-    } else {
-      val parent = skipParenthesizedExprUp(node.uastParent)
-      val parentParent = skipParenthesizedExprUp(parent?.uastParent)
-      val lambda =
-        parent as? ULambdaExpression
-          ?: parentParent as? ULambdaExpression
-          // Kotlin 1.3.50 may add another layer UImplicitReturnExpression
-          ?: skipParenthesizedExprUp(parentParent)?.uastParent as? ULambdaExpression
-      val lambdaCall = skipParenthesizedExprUp(lambda?.uastParent) as? UCallExpression
-      if (lambdaCall != null && isReturningContext(lambdaCall)) {
-        if (instances.contains(node)) {
-          matched = true
+    }
+
+    // Implicit receiver.
+    if (callExpression.receiverType != null && callExpression.lang == KotlinLanguage.INSTANCE) {
+      val ktExpression = callExpression.sourcePsi as? KtExpression ?: return null
+      val implicitReceiver =
+        analyze(ktExpression) {
+          getImplicitReceiverIfFromLambdaExpr(ktExpression, baseKotlinUastResolveProviderService)
+        } ?: return null
+      return if (isTracked(implicitReceiver)) {
+        true to implicitReceiver
+      } else {
+        false to null
+      }
+    }
+
+    return null
+  }
+
+  /**
+   * Tries to handle [callExpression] if it is a scope function call that can be handled. Handled
+   * means that we propagate tracking information into and out of the lambda expression (where
+   * appropriate) and do not call `receiver(...)` or `argument(...)` for the function call.
+   *
+   * @return true iff the scope function was handled
+   */
+  private fun handleScopeFunctionCall(callExpression: UCallExpression): Boolean {
+    // Scope function calls are only in Kotlin code.
+    if (callExpression.lang != KotlinLanguage.INSTANCE) return false
+
+    val scopingIt = isScopingIt(callExpression)
+    val scopingThis = isScopingThis(callExpression)
+
+    if (!scopingIt && !scopingThis) return false
+
+    // Special case: UCallableReferenceExpression, like `tracked.let(::func)`. In this case, we want
+    // to treat this like a function call: `func(tracked)`. We still treat this as a handled scope
+    // function, which means that `receiver(...)` won't be called.
+    if (scopingIt && callExpression.valueArgumentCount == 1) {
+      val arg = callExpression.valueArguments[0].skipParenthesizedExprDown()
+      if (arg is UCallableReferenceExpression) {
+        val (isReceiverTracked, receiver) = getTrackedReceiver(callExpression) ?: return false
+        // We will now definitely treat this as handled, and return early.
+        // Do not add early returns in this block.
+        if (isReceiverTracked) {
+          argument(callExpression, receiver ?: arg)
+          if (isReturningContext(callExpression)) {
+            track(callExpression, callExpression)
+          }
+          // Note: no need to check if the scope function returns the result of the higher-order
+          // function parameter; if the subclass decides, in `argument(...)`, that this "function
+          // call" returns a tracked instance, then the subclass will mark callExpression as
+          // tracked, which has the desired effect.
         }
-      } else if (isScopingThis(node)) {
-        val args = node.valueArguments
-        if (
-          args.size == 2 &&
-            instances.contains<UElement?>(args[0].skipParenthesizedExprDown()) &&
-            args[1].skipParenthesizedExprDown() is ULambdaExpression
-        ) {
-          handleLambdaSuffix(args[1].skipParenthesizedExprDown() as ULambdaExpression, node)
+        return true
+      }
+    }
+
+    // We can give up (return false) at any point, meaning that we don't want to treat this as a
+    // "handled" scope function, and so we don't want to propagate any tracking. Thus, we don't
+    // actually update any of our sets until the end of this function, hence these mutable vars.
+    var trackIt = false
+    var trackThis = false
+    var lambdaResultReturnedByCall = false
+    var trackCallExpression = false
+
+    if (callExpression.valueArgumentCount < 1) return false
+
+    val lastParameterIndex =
+      (callExpression.resolve()?.toUElementOfType<UMethod>()?.uastParameters?.size
+        ?: return false) - 1
+
+    val lambda =
+      callExpression
+        .getArgumentForParameter(lastParameterIndex)
+        ?.skipParenthesizedExprDown()
+        ?.skipLabeledExpression() as? ULambdaExpression ?: return false
+
+    if (isReturningLambdaResult(callExpression)) {
+      lambdaResultReturnedByCall = true
+    }
+
+    if (callExpression.receiverType == null) {
+      // If there is no receiver type, then this is not an extension function.
+      // The only cases we expect here are:
+      //  - with(tracked) { ... <this> is now also tracked ... }
+      //  - run { ... no tracking of <this> ... }
+
+      if (getMethodName(callExpression) == "with" && callExpression.valueArgumentCount == 2) {
+        // with(tracked) { ... <this> is now also tracked ... }
+
+        // If the argument is tracked:
+        val arg =
+          callExpression.getArgumentForParameter(0)?.skipParenthesizedExprDown() ?: return false
+        if (isTracked(arg)) {
+          // TODO: The above check does not properly handle cases where the argument is only added
+          //  to "instances" _after_ being visited. This bug already existed in a previous version
+          //  of this code. If fixed, we can also remove skipParenthesizedExprDown().
+
+          trackThis = true
+        }
+      } else if (getMethodName(callExpression) == "run" && callExpression.valueArgumentCount == 1) {
+        // There is nothing to propagate into the lambda, but we still want to update sets based on
+        // lambdaResultReturnedByCall.
+      } else {
+        // Otherwise: we don't recognize this function, so we don't handle it.
+        return false
+      }
+    } else {
+      // Otherwise, this is a scope extension function.
+      val (isReceiverTracked, _) = getTrackedReceiver(callExpression) ?: return false
+
+      // If the receiver is tracked...
+      if (isReceiverTracked) {
+        // We need to propagate the tracking to the lambda expression parameter ("this" or "it").
+        if (scopingThis) {
+          trackThis = true
+        } else {
+          trackIt = true
+        }
+        // If we know the scope function returns the tracked receiver, then track the call
+        // expression itself.
+        if (isReturningContext(callExpression)) {
+          trackCallExpression = true
         }
       }
     }
 
-    if (matched) {
-      if (!initial.contains(node)) {
-        receiver(node)
-      }
-      if (returnsSelf(node)) {
-        track(node, node)
-        val parent = skipParenthesizedExprUp(node.uastParent) as? UQualifiedReferenceExpression
-        if (parent != null) {
-          track(parent, node)
-          val parentParent =
-            skipParenthesizedExprUp(parent.uastParent) as? UQualifiedReferenceExpression
-          val chained = parentParent?.selector
-          if (chained != null) {
-            track(chained, node)
-          }
-        }
+    // Note: return early if we cannot get the parameter.
+    // Note: must use valueParameters, which includes implicit "it" (or the explicit named
+    // parameter), but never includes "this".
+    val itParam =
+      if (trackIt) {
+        lambda.valueParameters.firstOrNull() ?: return false
+      } else null
+    // Note: return early if we cannot get the parameter.
+    val thisParam =
+      if (trackThis) {
+        lambda.getThisParameter(baseKotlinUastResolveProviderService) ?: return false
+      } else null
+
+    //
+    // This scope function can now definitely be handled. Do not add early returns below, as we want
+    // to make sure we now update all of our sets consistently, and then return true.
+    //
+
+    itParam?.let {
+      track(it as UElement, callExpression)
+      addVariableReference(it)
+    }
+
+    thisParam?.let {
+      // There is probably no point in tracking the UElement because we get a fresh UElement each
+      // time when we get the <this> parameter. But there is no major harm in doing so, and perhaps
+      // this behavior will change in the future.
+      track(it as UElement, callExpression)
+      addVariableReference(it)
+    }
+
+    if (lambdaResultReturnedByCall) {
+      lambdaExprResultReturnedByCall[lambda] = callExpression
+    }
+
+    if (trackCallExpression) {
+      track(callExpression, callExpression)
+    }
+
+    return true
+  }
+
+  private fun handleVisitCallExpression(callExpression: UCallExpression) {
+    // If this is a scope function call that we can handle then we skip everything below.
+    if (handleScopeFunctionCall(callExpression)) {
+      handledScopeFunctionCalls.add(callExpression)
+      return
+    }
+
+    val (isReceiverTracked, receiver) = getTrackedReceiver(callExpression) ?: return
+    if (isReceiverTracked) {
+      if (!initial.contains(callExpression)) {
+        receiver(callExpression)
       }
 
-      val lambda =
-        node.valueArguments.lastOrNull()?.skipParenthesizedExprDown()?.skipLabeledExpression()
-          as? ULambdaExpression
-      if (lambda != null) {
-        handleLambdaSuffix(lambda, node)
-      }
-
-      if (isScopingIt(node)) {
-        val arguments = node.valueArguments
-        if (arguments.size == 1) {
-          val arg = arguments[0]
-          if (arg is UCallableReferenceExpression && arg.qualifierExpression == null) {
-            // target.let(::method) -> here target is being passed as a parameter to the method
-            argument(node, receiver ?: arg)
-          }
-        }
+      if (returnsSelf(callExpression)) {
+        track(callExpression, callExpression)
       }
 
       // Handle extension function calls from Kotlin code; even though this is a case where the
@@ -377,33 +547,33 @@ abstract class DataFlowAnalyzer(
       // KtNamedFunction, but this only works if the resolved function is not compiled. Instead, we
       // use the Kotlin analysis API, which works for both compiled functions and functions in
       // source.
-      val sourcePsi = node.sourcePsi
-      if (
-        sourcePsi is KtElement &&
-          analyze(sourcePsi) { isExtensionFunctionCall(sourcePsi) } &&
-          // We don't want to call "argument" for scope functions that we handle specially.
-          !(isScopingIt(node) && lambda != null) &&
-          !(isScopingThis(node) && lambda != null)
-      ) {
-        argument(node, receiver ?: node)
+      val sourcePsi = callExpression.sourcePsi
+      if (sourcePsi is KtElement && analyze(sourcePsi) { isExtensionFunctionCall(sourcePsi) }) {
+        argument(callExpression, receiver ?: callExpression)
       }
     }
+  }
+
+  override fun visitCallExpression(node: UCallExpression): Boolean {
+    // We need to visit call expressions before and after visiting the child elements.
+    // - Before: we need to handle scope functions where the receiver is tracked so that when we
+    //   visit the child elements of the lambda expression, the appropriate parameters (such as
+    //   "<this>" or "it") are already tracked.
+    // - After: to call "argument(...)" for each argument, we must wait until after we have visited
+    //   the arguments because visiting an argument may cause it to become tracked.
+
+    handleVisitCallExpression(node)
     return super.visitCallExpression(node)
   }
 
   override fun afterVisitCallExpression(node: UCallExpression) {
+    // Skip calling `argument(...)` if this is a handled scope function call.
+    if (handledScopeFunctionCalls.contains(node)) return
+
     for (expression in node.valueArguments) {
-      if (instances.contains(expression)) {
+      if (isTracked(expression)) {
         if (!ignoreArgument(node, expression)) {
           argument(node, expression)
-        }
-      } else if (expression is UReferenceExpression) {
-        val resolved = expression.resolve()
-        if (references.contains(resolved)) {
-          if (!ignoreArgument(node, expression)) {
-            argument(node, expression)
-          }
-          break
         }
       }
     }
@@ -415,11 +585,7 @@ abstract class DataFlowAnalyzer(
     @Suppress("UnstableApiUsage")
     if (node.kind == KotlinSpecialExpressionKinds.ELVIS) {
       for (expression in node.expressions) {
-        if (instances.contains(expression)) {
-          track(node, expression)
-        } else if (
-          expression is UReferenceExpression && references.contains(expression.resolve())
-        ) {
+        if (isTracked(expression)) {
           track(node, expression)
         }
       }
@@ -438,204 +604,24 @@ abstract class DataFlowAnalyzer(
         ?: (node.sourcePsi as? KtCallableReferenceExpression)?.receiverExpression?.toUElement()
 
     if (qualifier != null) {
-      if (instances.contains(qualifier)) {
+      if (isTracked(qualifier)) {
         methodReference(node)
-      } else if (qualifier is UReferenceExpression) {
-        if (references.contains(qualifier.resolve())) {
-          methodReference(node)
-        }
       }
     }
     return super.visitCallableReferenceExpression(node)
   }
 
-  private fun handleThisExpressionIfWithinScope(node: UThisExpression) {
-    // We must handle "this" expressions within scope function lambdas. See also:
-    // handleLambdaSuffix.
-
-    // Scope functions are only present in Kotlin code.
-    if (node.lang != KotlinLanguage.INSTANCE) return
-
-    // We only care about "this" expressions within lambda expressions.
-    if (node.getParentOfType<ULambdaExpression>() == null) return
-
-    // Try to resolve the "this" expression to a parent lambda expression, using UAST.
-
-    // TODO(b/308627646): UAST bug: node.resolve() only works if the "this" expression has a label
-    //  (e.g. this@apply or this@ClassName). But the first PSI child is a KtNameReferenceExpression,
-    //  which can be converted to a USimpleNameReferenceExpression
-    //  (KotlinUSimpleReferenceExpression); resolve always seems to work for this element, for both
-    //  labelled and unlabelled "this" expressions.
-    val referenceExpression =
-      node.sourcePsi
-        ?.children
-        ?.firstOrNull()
-        ?.toUElement(USimpleNameReferenceExpression::class.java) ?: return
-    val lambdaExpression =
-      referenceExpression.resolve()?.toUElement() as? ULambdaExpression ?: return
-
-    // If we previously added the lambda to trackedLambdaScopes (see handleLambdaSuffix) then we
-    // know the receiver is tracked, so the "this" expression also needs to be tracked.
-    if (trackedLambdaScopes.contains(lambdaExpression)) {
-      track(node)
+  override fun afterVisitQualifiedReferenceExpression(node: UQualifiedReferenceExpression) {
+    val selector = node.selector
+    if (isTracked(selector)) {
+      track(node, selector)
     }
-  }
-
-  override fun afterVisitThisExpression(node: UThisExpression) {
-    handleThisExpressionIfWithinScope(node)
-    super.afterVisitThisExpression(node)
-  }
-
-  private fun handleLambdaSuffix(lambda: ULambdaExpression, node: UCallExpression) {
-    if (isScopingIt(node)) {
-      // If we have X.let { Y }, and X is a tracked instance, we should now
-      // also track references to the "it" variable (or whatever the lambda
-      // variable is called). Same case for X.also { Y }.
-      if (lambda.valueParameters.size == 1) {
-        val lambdaVar = lambda.valueParameters.first()
-        track(lambdaVar as UElement, node)
-        addVariableReference(lambdaVar)
-      }
-    } else if (isScopingThis(node)) {
-      // We have something like X.apply { ... }, where X is tracked, so X can be referenced via
-      // "this" within the lambda body. To handle explicit labelled and unlabelled "this"
-      // expressions, such as in:
-      //
-      // ```
-      // X.apply {
-      //   // Explicit "this" is always the innermost scope.
-      //   this.someFun()
-      //   otherFun(this)
-      //   // Labelled "this" could refer to an outer scope.
-      //   this@SomeClass.someFun()
-      //   otherFun(this@apply)
-      // }
-      // ```
-      //
-      // we add the ULambdaExpression to trackedLambdaScopes, so that our main visitor can visit
-      // "this" expressions, resolve them, and mark them as tracked if they resolve to one of
-      // trackedLambdaScopes.
-      trackedLambdaScopes.add(lambda)
-
-      // Cases where X is implicitly the receiver are handled below via a one-off UAST visitor.
-
-      /*
-      We have a lambda, where the tracked instance is "this", e.g.
-          target.apply {
-             first()
-             second().something()
-             descriptor = Integer.valueOf(0)
-             ...
-             if (third) { fourth(1) } else fourth(2)
-             "string".apply {
-                fifth()
-             }
-             sixth.seventh()
-          }
-
-      When we end up visiting the elements inside the lambda body, we want
-      to flag any calls that are invoked on this tracked instance.
-
-      This won't work with the normal call receiver approach, where for
-      each call we see if the receiver has already been tagged as referencing
-      our tracked instance, since here there are no receivers.
-
-      The bigger complication is knowing whether a given element is actually
-      referencing "this". In the above example, this depends a lot on what
-      the declarations look like. For example, if "first" is a method in
-      the type of target, then it does, otherwise it does not. And the
-      call to fifth() is in a nested lambda where "this" is a different
-      object (a string), but if string does not define a method called
-      "fifth", it *will* bind to the "fifth" method in the outer apply
-      block. Note also that this isn't just for calls; the assignment to
-      descriptor for example could be a field reference in the target class,
-      or it could be to an unrelated variable or field in a scope outside
-      this apply block.
-
-      This is all a long way of saying that we cannot just look
-      at the top level expressions of the lambda, and that we need to
-      figure out the binding for each receiver in nested blocks. Ideally,
-      this information would simply be available in UAST, or even by
-      looking inside the Kotlin PSI. However, the information is not there,
-      so we'll need to use some approximations. What we'll do is resolve
-      the reference, find its type, and then search outwards for the
-      first scope that has a compatible type.
-      */
-
-      lambda.body.accept(
-        object : AbstractUastVisitor() {
-          private fun checkBinding(node: UElement) {
-            val member = node.tryResolve() as? PsiMember ?: return
-            val containingClass = member.containingClass
-            if (isMatchingType(containingClass)) {
-              received.add(node)
-              return
-            }
-
-            if (member is PsiMethod) {
-              getTypeOfExtensionMethod(member)?.resolve()?.let { extensionClass ->
-                if (isMatchingType(extensionClass)) {
-                  received.add(node)
-                }
-              }
-            }
-          }
-
-          override fun visitSimpleNameReferenceExpression(
-            node: USimpleNameReferenceExpression
-          ): Boolean {
-            checkBinding(node)
-            return super.visitSimpleNameReferenceExpression(node)
-          }
-
-          override fun visitCallExpression(node: UCallExpression): Boolean {
-            val callReceiver = node.receiver?.skipParenthesizedExprDown()
-            if (callReceiver == null) {
-              checkBinding(node)
-            }
-            return super.visitCallExpression(node)
-          }
-
-          override fun visitLambdaExpression(node: ULambdaExpression): Boolean {
-            // If we run into another lambda that also scopes this, and it's
-            // of the same type, then stop recursing, since inside this lambda,
-            // that other scope will take over.
-            val parent = skipParenthesizedExprUp(node.uastParent) as? UCallExpression
-            val typeClass = (parent?.getExpressionType() as? PsiClassType)?.resolve()
-            if (isMatchingType(typeClass)) {
-              // type matches; don't visit the lambda body since it hides this
-              if (parent != null && isScopingThis(parent)) {
-                return true
-              }
-            }
-            return super.visitLambdaExpression(node)
-          }
-        }
-      )
-    }
-  }
-
-  /** Returns true if the given class matches the types of tracked element scopes */
-  @Suppress("RedundantIf")
-  private fun isMatchingType(containingClass: PsiClass?): Boolean {
-    containingClass ?: return false
-
-    if (types.any { containingClass == it }) {
-      return true
-    }
-
-    if (containingClass.name != "Object" && types.any { it.isInheritor(containingClass, true) }) {
-      return true
-    }
-
-    return false
+    super.afterVisitQualifiedReferenceExpression(node)
   }
 
   override fun afterVisitParenthesizedExpression(node: UParenthesizedExpression) {
     val expression = node.expression
-    if (instances.contains(expression)) {
-      track(node, expression)
-    } else if (expression is UReferenceExpression && references.contains(expression.resolve())) {
+    if (isTracked(expression)) {
       track(node, expression)
     }
     super.afterVisitParenthesizedExpression(node)
@@ -644,14 +630,8 @@ abstract class DataFlowAnalyzer(
   override fun afterVisitLocalVariable(node: ULocalVariable) {
     val initializer = node.uastInitializer?.skipParenthesizedExprDown()
     if (initializer != null) {
-      if (instances.contains(initializer)) {
-        // Instance is stored in a variable
+      if (isTracked(initializer)) {
         addVariableReference(node, initializer)
-      } else if (initializer is UReferenceExpression) {
-        val resolved = initializer.resolve()
-        if (resolved != null && references.contains(resolved)) {
-          addVariableReference(node, initializer)
-        }
       }
     }
     super.afterVisitLocalVariable(node)
@@ -661,13 +641,8 @@ abstract class DataFlowAnalyzer(
     @Suppress("UnstableApiUsage")
     if (node.operator == KotlinPostfixOperators.EXCLEXCL) {
       val element = node.operand
-      if (instances.contains(element)) {
+      if (isTracked(element)) {
         track(node, element)
-      } else if (element is UReferenceExpression) {
-        val resolved = element.resolve()
-        if (references.contains(resolved)) {
-          track(node, element)
-        }
       }
     }
 
@@ -676,13 +651,8 @@ abstract class DataFlowAnalyzer(
 
   override fun afterVisitBinaryExpressionWithType(node: UBinaryExpressionWithType) {
     val operand = node.operand
-    if (instances.contains(operand)) {
+    if (isTracked(operand)) {
       track(node, operand)
-    } else if (operand is UReferenceExpression) {
-      val resolved = operand.resolve()
-      if (references.contains(resolved)) {
-        track(node, operand)
-      }
     }
     super.afterVisitBinaryExpressionWithType(node)
   }
@@ -823,15 +793,9 @@ abstract class DataFlowAnalyzer(
     clearLhsVariable(node)
 
     val rhs = node.rightOperand
-    if (instances.contains(rhs)) {
+    if (isTracked(rhs)) {
       addBinaryExpressionReferences(node, rhs)
-    } else if (rhs is UReferenceExpression) {
-      val resolved = rhs.resolve()
-      if (resolved != null && references.contains(resolved)) {
-        addBinaryExpressionReferences(node, rhs)
-      }
     }
-
     super.afterVisitBinaryExpression(node)
   }
 
@@ -911,17 +875,23 @@ abstract class DataFlowAnalyzer(
   }
 
   override fun afterVisitReturnExpression(node: UReturnExpression) {
-    val returnValue = node.returnExpression?.skipParenthesizedExprDown()
-    if (returnValue != null) {
-      if (instances.contains(returnValue)) {
-        returns(node)
-      } else if (returnValue is UReferenceExpression) {
-        val resolved = returnValue.resolve()
-        if (resolved != null && references.contains(resolved)) {
-          returns(node)
+    val returnValue = node.returnExpression?.skipParenthesizedExprDown() ?: return
+    if (isTracked(returnValue)) {
+      // Before calling returns(node), check whether the return is for a handled lambda expression
+      // (in lambdaExprResultReturnedByCall) such that we do not need to treat this as a return.
+      val lambdaExpr = node.jumpTarget as? ULambdaExpression
+      if (lambdaExpr != null) {
+        val callExpr = lambdaExprResultReturnedByCall[lambdaExpr]
+        if (callExpr != null) {
+          // Track the call itself, and return early.
+          track(callExpr, node)
+          return
         }
       }
+      // Otherwise:
+      returns(node)
     }
+
     super.afterVisitReturnExpression(node)
   }
 
@@ -976,13 +946,6 @@ abstract class DataFlowAnalyzer(
     for (instance in instances) {
       sb.append(instance.id())
       sb.append("\n")
-    }
-    if (received.isNotEmpty()) {
-      sb.append("Receivers:\n")
-      for (receiver in received) {
-        sb.append(receiver.id())
-        sb.append("\n")
-      }
     }
     if (references.isNotEmpty()) {
       sb.append("References:\n")
