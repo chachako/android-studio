@@ -39460,6 +39460,35 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.android.material.material_1.10.0",
+    pom = "repository/com/google/android/material/material/1.10.0/material-1.10.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/material/material/1.10.0",
+    deps = [
+        "androidx.activity.activity_1.8.0",
+        "androidx.annotation.annotation_1.2.0",
+        "androidx.appcompat.appcompat_1.6.1",
+        "androidx.cardview.cardview_1.0.0",
+        "androidx.coordinatorlayout.coordinatorlayout_1.1.0",
+        "androidx.constraintlayout.constraintlayout_2.0.1",
+        "androidx.core.core_1.6.0",
+        "androidx.drawerlayout.drawerlayout_1.1.1",
+        "androidx.dynamicanimation.dynamicanimation_1.0.0",
+        "androidx.annotation.annotation-experimental_1.0.0",
+        "androidx.fragment.fragment_1.2.5",
+        "androidx.lifecycle.lifecycle-runtime_2.0.0",
+        "androidx.recyclerview.recyclerview_1.0.0",
+        "androidx.resourceinspection.resourceinspection-annotation_1.0.1",
+        "androidx.transition.transition_1.2.0",
+        "androidx.vectordrawable.vectordrawable_1.1.0",
+        "androidx.viewpager2.viewpager2_1.0.0",
+        "com.google.errorprone.error_prone_annotations_2.15.0",
+        "org.jetbrains.kotlin.kotlin-bom_1.8.22",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.android.material.material_1.2.0-rc01",
     pom = "repository/com/google/android/material/material/1.2.0-rc01/material-1.2.0-rc01.pom",
     repo_root_path = "repository",
@@ -46265,6 +46294,14 @@ maven_artifact(
     pom = "repository/org/jetbrains/kotlin/kotlin-bom/1.8.0/kotlin-bom-1.8.0.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-bom/1.8.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-bom_1.8.22",
+    pom = "repository/org/jetbrains/kotlin/kotlin-bom/1.8.22/kotlin-bom-1.8.22.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-bom/1.8.22",
     visibility = ["//visibility:public"],
 )
 
