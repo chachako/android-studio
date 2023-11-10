@@ -72,17 +72,15 @@ cc_binary(
 
 android_cc_binary(
     name = "android",
-    abis = [
-        "x86",
-        "x86_64",
-        "armeabi-v7a",
-        "arm64-v8a",
-    ],
     # Cross compiling from windows doesn't produce a stripped binary.
     binary = select({
         "@platforms//os:windows": ":libjvmtiagent.so",
         "//conditions:default": ":libjvmtiagent.so.stripped",
     }),
     filename = "libjvmtiagent.so",
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
 )

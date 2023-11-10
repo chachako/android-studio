@@ -127,7 +127,9 @@ build --strategy=lnzipper=local
 build --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
 
 # default android native abis
-build --fat_apk_cpu=x86,x86_64,armeabi-v7a,arm64-v8a
+# LINT.IfChange(android_platforms)
+common --android_platforms=@rules_android//:x86,@rules_android//:x86_64,@rules_android//:armeabi-v7a,@rules_android//:arm64-v8a
+# LINT.ThenChange(/bazel/android.bzl:android_platforms)
 
 ## Options to make bazel less memory/cpu intensive.
 ## Recommended to use with rcache config to avoid building outputs already

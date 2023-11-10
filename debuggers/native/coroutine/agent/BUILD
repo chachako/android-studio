@@ -22,13 +22,11 @@ cc_binary(
 
 android_cc_binary(
     name = "coroutine_debugger_agent",
-    abis = [
-        "x86",
-        "x86_64",
-        "armeabi-v7a",
-        "arm64-v8a",
-    ],
     binary = ":coroutine_debugger_agent.so.stripped",
     filename = "coroutine_debugger_agent.so",
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
 )

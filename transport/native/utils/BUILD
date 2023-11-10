@@ -1,5 +1,4 @@
 load("//tools/base/bazel:android.bzl", "select_android")
-load("@bazel_skylib//lib:selects.bzl", "selects")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -33,15 +32,7 @@ cc_library(
         "tokenizer.cc",
         "trace.cc",
         "uid_fetcher.cc",
-    ] + selects.with_or({
-        # TODO(b/339912196) This will be fixed in Bazel 7 with Anroid platforms.
-        ("@//tools/base/bazel:android_cpu_x86", "@//tools/base/bazel:android_cpu_x86_64", "@//tools/base/bazel:android_cpu_arm", "@//tools/base/bazel:android_cpu_arm_64"): [
-            "clock.cc",
-            "current_process.linux.cc",
-            "filesystem_notifier.cc",
-            "thread_name.cc",
-            "uid_fetcher.linux.cc",
-        ],
+    ] + select({
         "@platforms//os:macos": [
             "clock.mac.cc",
             "current_process.mac.cc",

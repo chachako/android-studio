@@ -33,18 +33,16 @@ cc_library(
 
 android_cc_binary(
     name = "android",
-    abis = [
-        "x86",
-        "x86_64",
-        "armeabi-v7a",
-        "arm64-v8a",
-    ],
     # Cross compiling from windows doesn't produce a stripped binary.
     binary = select({
         "@platforms//os:windows": ":transport_main",
         "//conditions:default": ":transport_main.stripped",
     }),
     filename = "transport",
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
 )
 

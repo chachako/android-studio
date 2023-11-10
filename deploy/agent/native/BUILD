@@ -130,16 +130,11 @@ genrule(
 
 android_cc_binary(
     name = "android-libswap",
-    abis = [
-        "x86",
-        "x86_64",
-        "armeabi-v7a",
-        "arm64-v8a",
-    ],
     binary = ":libswap.so.stripped",
     filename = "android-libswap.so",
-    tags = [
-        "no_windows",
-    ],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//tools/base/deploy:__subpackages__"],
 )

@@ -1,10 +1,9 @@
-load("//tools/base/bazel:coverage.bzl", "coverage_java_test")
-load("//tools/base/bazel:utils.bzl", "java_jarjar")
-load("//tools/base/bazel:proto.bzl", "PROTOC_VERSION")
 load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
+load("//tools/base/bazel:coverage.bzl", "coverage_java_test")
 load("//tools/base/bazel:maven/artifacts.bzl", "ARTIFACTS", "DATA", "REMOTE_REPOS")
-load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("//tools/base/bazel:proto.bzl", "PROTOC_VERSION")
+load("//tools/base/bazel:utils.bzl", "java_jarjar")
 
 exports_files(["jarjar_rules.txt"])
 
@@ -371,30 +370,6 @@ java_jarjar(
     visibility = ["//visibility:public"],
 )
 
-config_setting(
-    name = "android_cpu_x86",
-    values = {"cpu": "x86"},
-    visibility = ["//visibility:public"],
-)
-
-config_setting(
-    name = "android_cpu_x86_64",
-    values = {"cpu": "x86_64"},
-    visibility = ["//visibility:public"],
-)
-
-config_setting(
-    name = "android_cpu_arm",
-    values = {"cpu": "armeabi-v7a"},
-    visibility = ["//visibility:public"],
-)
-
-config_setting(
-    name = "android_cpu_arm_64",
-    values = {"cpu": "arm64-v8a"},
-    visibility = ["//visibility:public"],
-)
-
 bool_flag(
     name = "studio-release",
     build_setting_default = False,
@@ -418,35 +393,6 @@ config_setting(
     flag_values = {
         ":without-vendor": "True",
     },
-    visibility = ["//visibility:public"],
-)
-
-selects.config_setting_group(
-    name = "target_android",
-    match_any = [
-        "@//tools/base/bazel:android_cpu_x86",
-        "@//tools/base/bazel:android_cpu_x86_64",
-        "@//tools/base/bazel:android_cpu_arm",
-        "@//tools/base/bazel:android_cpu_arm_64",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-selects.config_setting_group(
-    name = "host_un*x",
-    match_any = [
-        "@platforms//os:linux",
-        "@platforms//os:macos",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-selects.config_setting_group(
-    name = "target_android_host_un*x",
-    match_all = [
-        ":target_android",
-        ":host_un*x",
-    ],
     visibility = ["//visibility:public"],
 )
 

@@ -1,5 +1,5 @@
-load("//tools/base/bazel:android.bzl", "ANDROID_COPTS", "ANDROID_LINKOPTS", "android_cc_binary", "select_android")
 load("//tools/adt/idea/studio:studio.bzl", "studio_data")
+load("//tools/base/bazel:android.bzl", "ANDROID_COPTS", "ANDROID_LINKOPTS", "android_cc_binary", "select_android")
 
 # This is the one-and-only "version" rule (to rule them all).
 # Everything within the installer uses the hash value output here to
@@ -276,31 +276,23 @@ cc_binary(
 
 android_cc_binary(
     name = "android-installer_raw",
-    abis = [
-        "x86",
-        "x86_64",
-        "armeabi-v7a",
-        "arm64-v8a",
-    ],
     binary = ":installer.stripped",
     filename = "android-installer_raw",
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//tools/base/deploy:__subpackages__"],
 )
 
 android_cc_binary(
     name = "android-install-server",
-    abis = [
-        "x86",
-        "x86_64",
-        "armeabi-v7a",
-        "arm64-v8a",
-    ],
     binary = ":install-server.stripped",
     filename = "android-install-server",
-    tags = [
-        "no_windows",
-    ],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//tools/base/deploy:__subpackages__"],
 )
 

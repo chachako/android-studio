@@ -51,23 +51,25 @@ _android_cc_binary = rule(
     attrs = {
         "filename": attr.string(),
         "binary": attr.label(
-            cfg = android_common.multi_cpu_configuration,
             allow_files = True,
+            cfg = android_common.multi_cpu_configuration,
         ),
-        "abis": attr.string_list(),
         "outs": attr.output_list(),
     },
-    fragments = ["cpp"],
     implementation = _android_cc_binary_impl,
 )
 
-def android_cc_binary(name, binary, abis, filename, **kwargs):
+def android_cc_binary(name, binary, filename, **kwargs):
     outs = []
-    for abi in abis:
+
+    # This is tightly coupled to the value given to --android_platforms because it uses
+    # transitions based the given platforms.
+    # LINT.IfChange(android_platforms)
+    for abi in ["x86", "x86_64", "armeabi-v7a", "arm64-v8a"]:
+        # LINT.ThenChange(/bazel/common.bazelrc:android_platforms)
         outs.append(name + "/" + abi + "/" + filename)
     _android_cc_binary(
         name = name,
-        abis = abis,
         filename = filename,
         binary = binary,
         outs = outs,
@@ -91,18 +93,9 @@ jni_library = rule(
     implementation = _jni_library_impl,
 )
 
-def select_android(android, default):
+def select_android(android, default = []):
     return select({
-        "@//tools/base/bazel:android_cpu_x86": android,
-        "@//tools/base/bazel:android_cpu_x86_64": android,
-        "@//tools/base/bazel:android_cpu_arm": android,
-        "@//tools/base/bazel:android_cpu_arm_64": android,
-        "//conditions:default": default,
-    })
-
-def select_target_android_host_unx(v, default):
-    return select({
-        "@//tools/base/bazel:target_android_host_un*x": v,
+        "@platforms//os:android": android,
         "//conditions:default": default,
     })
 
@@ -161,14 +154,8 @@ ANDROID_COPTS = select_android(
     [
         "-fPIC",
         "-std=c++17",
+        "-flto",
     ],
-    [],
-) + select_target_android_host_unx(
-    # LTO is not working with r20 on Windows.
-    # TODO: Enable it when bazel support lld linker
-    # (a.k.a) >= r23.
-    ["-flto"],
-    [],
 )
 
 ANDROID_LINKOPTS = select_android(
@@ -181,12 +168,6 @@ ANDROID_LINKOPTS = select_android(
         "-Wl,--gc-sections",
         "-Wl,--as-needed",
         "-Wl,-z,max-page-size=16384",
+        "-flto",
     ],
-    [],
-) + select_target_android_host_unx(
-    # LTO is not working with r20 on Windows.
-    # TODO: Enable it when bazel support lld linker
-    # (a.k.a) >= r23.
-    ["-flto"],
-    [],
 )

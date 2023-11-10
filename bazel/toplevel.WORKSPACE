@@ -59,6 +59,11 @@ local_repository(
     path = "prebuilts/tools/common/external-src-archives/bazel-toolchains/bazel-toolchains-5.1.2",
 )
 
+local_repository(
+    name = "rules_android",
+    path = "prebuilts/tools/common/external-src-archives/bazelbuild-rules_android",
+)
+
 load(
     "@bazel_toolchains//repositories:repositories.bzl",
     bazel_toolchains_repositories = "repositories",

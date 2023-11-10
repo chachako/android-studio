@@ -10,26 +10,17 @@ cc_binary(
     copts = ANDROID_COPTS,
     linkopts = ANDROID_LINKOPTS,
     stamp = 0,
-    tags = [
-        "manual",
-        "no_windows",
-        # This target relies on Android transitions, and only builds as a dependency of android_cc_binary rules.
-        # See b/181808614#comment6.
-        "no_linux",
-    ],
+    target_compatible_with = ["@platforms//os:android"],
 )
 
 android_cc_binary(
     name = "native",
-    abis = [
-        "x86",
-        "x86_64",
-        "armeabi-v7a",
-        "arm64-v8a",
-    ],
     binary = ":process-tracker",
     filename = "process-tracker",
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
 )
 
