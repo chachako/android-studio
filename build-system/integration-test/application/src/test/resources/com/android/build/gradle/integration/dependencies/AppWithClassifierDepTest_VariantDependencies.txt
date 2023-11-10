@@ -1,0 +1,160 @@
+> VariantDependencies:
+   - name                 = "debug"
+   > mainArtifact:
+      - compileDependencies:
+         - com.foo|sample|1.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.foo:sample:1.0:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - runtimeDependencies:
+         - com.foo|sample|1.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.foo:sample:1.0:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - unresolvedDependencies = []
+   < mainArtifact
+   > androidTestArtifact:
+      - compileDependencies:
+         - com.foo|sample|1.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.foo:sample:1.0:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+         - :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:projectWithClassifierDep:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies:
+               - com.foo|sample|1.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.foo:sample:1.0:
+                  - dependencies = "*visited*"
+      - runtimeDependencies:
+         - com.foo|sample|1.0|org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.foo:sample:1.0:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - unresolvedDependencies = []
+   < androidTestArtifact
+   > unitTestArtifact:
+      - compileDependencies:
+         - com.foo|sample|1.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.foo:sample:1.0:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+         - :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:projectWithClassifierDep:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies:
+               - com.foo|sample|1.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.foo:sample:1.0:
+                  - dependencies = "*visited*"
+      - runtimeDependencies:
+         - :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|:projectWithClassifierDep:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies:
+               - com.foo|sample|1.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.foo:sample:1.0:
+                  - requestedCoordinates = (null)
+                  - dependencies         = []
+         - com.foo|sample|1.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.foo:sample:1.0:
+            - dependencies = "*visited*"
+      - unresolvedDependencies = []
+   < unitTestArtifact
+   - testFixturesArtifact = (null)
+   > libraries:
+      > :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:projectWithClassifierDep:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":"
+            - isTestFixtures = false
+            - buildType      = "debug"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> debug"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * ":projectWithClassifierDep:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:projectWithClassifierDep:unspecified
+      > :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|:projectWithClassifierDep:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":"
+            - isTestFixtures = false
+            - buildType      = "debug"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> debug"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * ":projectWithClassifierDep:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|:projectWithClassifierDep:unspecified
+      > com.foo|sample|1.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.foo:sample:1.0:
+         - type               = JAVA_LIBRARY
+         - artifact           = {PROJECT}/repo/com/foo/sample/1.0/sample-1.0.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "com.foo"
+            - name           = "sample"
+            - version        = "1.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "com.foo:sample:1.0"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < com.foo|sample|1.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.foo:sample:1.0
+      > com.foo|sample|1.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.foo:sample:1.0:
+         - type               = JAVA_LIBRARY
+         - artifact           = {PROJECT}/repo/com/foo/sample/1.0/sample-1.0.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "com.foo"
+            - name           = "sample"
+            - version        = "1.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "com.foo:sample:1.0"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < com.foo|sample|1.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.foo:sample:1.0
+      > com.foo|sample|1.0|org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.foo:sample:1.0:
+         - type               = JAVA_LIBRARY
+         - artifact           = {PROJECT}/repo/com/foo/sample/1.0/sample-1.0-testlib.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "com.foo"
+            - name           = "sample"
+            - version        = "1.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "com.foo:sample:1.0"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < com.foo|sample|1.0|org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.foo:sample:1.0
+   < libraries
+< VariantDependencies

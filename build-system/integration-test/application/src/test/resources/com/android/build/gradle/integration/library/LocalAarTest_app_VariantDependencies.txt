@@ -1,0 +1,121 @@
+> VariantDependencies:
+   - name                 = "debug"
+   - mainArtifact:
+      - compileDependencies:
+         - __wrapped_aars__|:lib1|unspecified||localAarTest:lib1:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - runtimeDependencies:
+         - __wrapped_aars__|:lib1|unspecified||localAarTest:lib1:unspecified:
+            - dependencies = "*visited*"
+      - unresolvedDependencies = []
+   > androidTestArtifact:
+      - compileDependencies:
+         - __wrapped_aars__|:lib1|unspecified||localAarTest:lib1:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+         - :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|localAarTest:app:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies:
+               - __wrapped_aars__|:lib1|unspecified||localAarTest:lib1:unspecified:
+                  - dependencies = "*visited*"
+      - runtimeDependencies    = []
+      - unresolvedDependencies = []
+   < androidTestArtifact
+   > unitTestArtifact:
+      - compileDependencies:
+         - __wrapped_aars__|:lib1|unspecified||localAarTest:lib1:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+         - :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|localAarTest:app:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies:
+               - __wrapped_aars__|:lib1|unspecified||localAarTest:lib1:unspecified:
+                  - dependencies = "*visited*"
+      - runtimeDependencies:
+         - :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|localAarTest:app:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies:
+               - __wrapped_aars__|:lib1|unspecified||localAarTest:lib1:unspecified:
+                  - dependencies = "*visited*"
+         - __wrapped_aars__|:lib1|unspecified||localAarTest:lib1:unspecified:
+            - dependencies = "*visited*"
+      - unresolvedDependencies = []
+   < unitTestArtifact
+   - testFixturesArtifact = (null)
+   > libraries:
+      > :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|localAarTest:app:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":app"
+            - isTestFixtures = false
+            - buildType      = "debug"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> debug"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "localAarTest:app:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|localAarTest:app:unspecified
+      > :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|localAarTest:app:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":app"
+            - isTestFixtures = false
+            - buildType      = "debug"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> debug"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "localAarTest:app:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|localAarTest:app:unspecified
+      > __wrapped_aars__|:lib1|unspecified||localAarTest:lib1:unspecified:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {PROJECT}/lib1/lib1.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "__wrapped_aars__"
+            - name           = ":lib1"
+            - version        = "unspecified"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes     = []
+            - capabilities:
+               * "localAarTest:lib1:unspecified"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/jars/classes.jar{F}]
+            - manifest            = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/AndroidManifest.xml{F}
+            - resFolder           = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/res{D}
+            - resStaticLibrary    = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/res.apk{!}
+            - assetsFolder        = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/assets{!}
+            - jniFolder           = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/jni{!}
+            - aidlFolder          = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/aidl{!}
+            - renderscriptFolder  = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/rs{!}
+            - proguardRules       = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/proguard.txt{!}
+            - externalAnnotations = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/annotations.zip{!}
+            - publicResources     = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/public.txt{!}
+            - symbolFile          = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/R.txt{F}
+         < androidLibraryData
+      < __wrapped_aars__|:lib1|unspecified||localAarTest:lib1:unspecified
+   < libraries
+< VariantDependencies

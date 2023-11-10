@@ -174,11 +174,11 @@ class AndroidXJetifierMatrixTest {
     fun `AndroidX=false, Jetifier=false, AndroidX dependencies not present, expect no issues`() {
         addSupportLibDependencies()
 
-        val model = project.model()
+        val model = project.modelV2()
                 .with(BooleanOption.USE_ANDROID_X, false)
                 .with(BooleanOption.ENABLE_JETIFIER, false)
-                .ignoreSyncIssues().fetchAndroidProjects()
-        assertThat(model.onlyModelSyncIssues).isEmpty()
+                .ignoreSyncIssues().fetchModels().container
+        assertThat(model.getProject().issues!!.syncIssues).isEmpty()
     }
 
     @Test

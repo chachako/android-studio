@@ -1,0 +1,96 @@
+> VariantDependencies:
+   - name                 = "debug"
+   - mainArtifact:
+      - compileDependencies:
+         - :|:library2|org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library2:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - runtimeDependencies    = []
+      - unresolvedDependencies = []
+   > androidTestArtifact:
+      - compileDependencies:
+         - :|:library|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:library:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - runtimeDependencies:
+         - :|:library|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - unresolvedDependencies = []
+   < androidTestArtifact
+   > unitTestArtifact:
+      - compileDependencies:
+         - :|:library|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:library:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - runtimeDependencies:
+         - :|:library|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - unresolvedDependencies = []
+   < unitTestArtifact
+   - testFixturesArtifact = (null)
+   > libraries:
+      > :|:library2|org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library2:unspecified:
+         - type               = PROJECT
+         - artifact           = {PROJECT}/library2/build/libs/library2.jar{!}
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":library2"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "projectWithModules:library2:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:library2|org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library2:unspecified
+      > :|:library|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:library:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":library"
+            - isTestFixtures = false
+            - buildType      = "debug"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> debug"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "projectWithModules:library:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = {PROJECT}/library/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
+         - androidLibraryData = (null)
+      < :|:library|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:library:unspecified
+      > :|:library|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":library"
+            - isTestFixtures = false
+            - buildType      = "debug"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> debug"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "projectWithModules:library:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = {PROJECT}/library/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
+         - androidLibraryData = (null)
+      < :|:library|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified
+   < libraries
+< VariantDependencies

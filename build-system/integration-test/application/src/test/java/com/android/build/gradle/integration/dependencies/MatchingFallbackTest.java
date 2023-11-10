@@ -224,7 +224,7 @@ public class MatchingFallbackTest {
         FileUtils.mkdirs(fooTxt.getParentFile());
         Files.asCharSink(fooTxt, Charsets.UTF_8).write("foo");
 
-        project.executeAndReturnMultiModel("clean", ":app:assembleOrangeDebug");
+        project.execute("clean", ":app:assembleOrangeDebug");
 
         final Apk apk = project.getSubproject("app").getApk(ApkType.DEBUG, "orange");
         assertThat(apk.getFile()).isFile();

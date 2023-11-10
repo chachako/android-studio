@@ -1,0 +1,330 @@
+> VariantDependencies:
+   - name                 = "release"
+   > mainArtifact:
+      > compileDependencies:
+         > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:library:unspecified:
+            - requestedCoordinates = (null)
+            > dependencies:
+               - org.jdeferred|jdeferred-android-aar|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.jdeferred:jdeferred-android-aar:1.2.3:
+                  - requestedCoordinates = (null)
+                  - dependencies:
+                     - org.jdeferred|jdeferred-core|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.jdeferred:jdeferred-core:1.2.3:
+                        - requestedCoordinates = (null)
+                        - dependencies:
+                           - org.slf4j|slf4j-api|1.7.2|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.slf4j:slf4j-api:1.7.2:
+                              - requestedCoordinates = (null)
+                              - dependencies         = []
+            < dependencies
+         < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:library:unspecified
+      < compileDependencies
+      > runtimeDependencies:
+         > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified:
+            - requestedCoordinates = (null)
+            > dependencies:
+               - org.jdeferred|jdeferred-android-aar|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jdeferred:jdeferred-android-aar:1.2.3:
+                  - requestedCoordinates = (null)
+                  - dependencies:
+                     - org.jdeferred|jdeferred-core|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jdeferred:jdeferred-core:1.2.3:
+                        - requestedCoordinates = (null)
+                        - dependencies:
+                           - org.slf4j|slf4j-api|1.7.2|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.slf4j:slf4j-api:1.7.2:
+                              - requestedCoordinates = (null)
+                              - dependencies         = []
+            < dependencies
+         < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified
+      < runtimeDependencies
+      - unresolvedDependencies = []
+   < mainArtifact
+   - androidTestArtifact  = (null)
+   > unitTestArtifact:
+      > compileDependencies:
+         > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:library:unspecified:
+            - requestedCoordinates = (null)
+            > dependencies:
+               - org.jdeferred|jdeferred-android-aar|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.jdeferred:jdeferred-android-aar:1.2.3:
+                  - requestedCoordinates = (null)
+                  - dependencies:
+                     - org.jdeferred|jdeferred-core|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.jdeferred:jdeferred-core:1.2.3:
+                        - requestedCoordinates = (null)
+                        - dependencies:
+                           - org.slf4j|slf4j-api|1.7.2|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.slf4j:slf4j-api:1.7.2:
+                              - requestedCoordinates = (null)
+                              - dependencies         = []
+            < dependencies
+         < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:library:unspecified
+         - :|:app|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:app:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      < compileDependencies
+      > runtimeDependencies:
+         > :|:app|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|projectWithModules:app:unspecified:
+            - requestedCoordinates = (null)
+            > dependencies:
+               > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified:
+                  - requestedCoordinates = (null)
+                  > dependencies:
+                     - org.jdeferred|jdeferred-android-aar|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jdeferred:jdeferred-android-aar:1.2.3:
+                        - requestedCoordinates = (null)
+                        - dependencies:
+                           - org.jdeferred|jdeferred-core|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jdeferred:jdeferred-core:1.2.3:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - org.slf4j|slf4j-api|1.7.2|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.slf4j:slf4j-api:1.7.2:
+                                    - requestedCoordinates = (null)
+                                    - dependencies         = []
+                  < dependencies
+               < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified
+            < dependencies
+         < :|:app|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|projectWithModules:app:unspecified
+         - :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified:
+            - dependencies = "*visited*"
+      < runtimeDependencies
+      - unresolvedDependencies = []
+   < unitTestArtifact
+   - testFixturesArtifact = (null)
+   > libraries:
+      > :|:app|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:app:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":app"
+            - isTestFixtures = false
+            - buildType      = "release"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> release"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "projectWithModules:app:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:app|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:app:unspecified
+      > :|:app|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|projectWithModules:app:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":app"
+            - isTestFixtures = false
+            - buildType      = "release"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> release"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "projectWithModules:app:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:app|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|projectWithModules:app:unspecified
+      > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:library:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":library"
+            - isTestFixtures = false
+            - buildType      = "release"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> release"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "projectWithModules:library:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = {PROJECT}/library/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
+         - androidLibraryData = (null)
+      < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:library:unspecified
+      > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":library"
+            - isTestFixtures = false
+            - buildType      = "release"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> release"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "projectWithModules:library:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = {PROJECT}/library/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
+         - androidLibraryData = (null)
+      < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified
+      > org.jdeferred|jdeferred-android-aar|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.jdeferred:jdeferred-android-aar:1.2.3:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/org/jdeferred/jdeferred-android-aar/1.2.3/jdeferred-android-aar-1.2.3.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "org.jdeferred"
+            - name           = "jdeferred-android-aar"
+            - version        = "1.2.3"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "org.jdeferred:jdeferred-android-aar:1.2.3"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/res{D}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/R.txt{F}
+         < androidLibraryData
+      < org.jdeferred|jdeferred-android-aar|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.jdeferred:jdeferred-android-aar:1.2.3
+      > org.jdeferred|jdeferred-android-aar|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jdeferred:jdeferred-android-aar:1.2.3:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/org/jdeferred/jdeferred-android-aar/1.2.3/jdeferred-android-aar-1.2.3.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "org.jdeferred"
+            - name           = "jdeferred-android-aar"
+            - version        = "1.2.3"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "org.jdeferred:jdeferred-android-aar:1.2.3"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/res{D}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/jdeferred-android-aar-1.2.3/R.txt{F}
+         < androidLibraryData
+      < org.jdeferred|jdeferred-android-aar|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jdeferred:jdeferred-android-aar:1.2.3
+      > org.jdeferred|jdeferred-core|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.jdeferred:jdeferred-core:1.2.3:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/org/jdeferred/jdeferred-core/1.2.3/jdeferred-core-1.2.3.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "org.jdeferred"
+            - name           = "jdeferred-core"
+            - version        = "1.2.3"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "org.jdeferred:jdeferred-core:1.2.3"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < org.jdeferred|jdeferred-core|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.jdeferred:jdeferred-core:1.2.3
+      > org.jdeferred|jdeferred-core|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jdeferred:jdeferred-core:1.2.3:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/org/jdeferred/jdeferred-core/1.2.3/jdeferred-core-1.2.3.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "org.jdeferred"
+            - name           = "jdeferred-core"
+            - version        = "1.2.3"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "org.jdeferred:jdeferred-core:1.2.3"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < org.jdeferred|jdeferred-core|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jdeferred:jdeferred-core:1.2.3
+      > org.slf4j|slf4j-api|1.7.2|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.slf4j:slf4j-api:1.7.2:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/org/slf4j/slf4j-api/1.7.2/slf4j-api-1.7.2.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "org.slf4j"
+            - name           = "slf4j-api"
+            - version        = "1.7.2"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "org.slf4j:slf4j-api:1.7.2"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < org.slf4j|slf4j-api|1.7.2|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.slf4j:slf4j-api:1.7.2
+      > org.slf4j|slf4j-api|1.7.2|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.slf4j:slf4j-api:1.7.2:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/org/slf4j/slf4j-api/1.7.2/slf4j-api-1.7.2.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "org.slf4j"
+            - name           = "slf4j-api"
+            - version        = "1.7.2"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "org.slf4j:slf4j-api:1.7.2"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < org.slf4j|slf4j-api|1.7.2|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.slf4j:slf4j-api:1.7.2
+   < libraries
+< VariantDependencies

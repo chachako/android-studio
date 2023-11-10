@@ -18,17 +18,16 @@ package com.android.build.gradle.integration.library;
 
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThatAar;
-import static org.junit.Assert.assertEquals;
 
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.utils.ProjectBuildOutputUtils;
+import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
+import com.android.build.gradle.integration.common.utils.ProjectBuildOutputUtilsV2;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.VariantBuildInformation;
 import com.android.builder.model.v2.ide.SyncIssue;
-import com.android.ide.common.process.ProcessException;
+import com.android.builder.model.v2.ide.Variant;
+import com.android.builder.model.v2.models.AndroidProject;
 import com.google.common.collect.Iterables;
 import com.google.common.truth.Truth8;
 import java.io.File;
@@ -67,8 +66,7 @@ public class JarJarLibTest {
     }
 
     @Test
-    public void checkRepackagedGsonLibrary()
-            throws IOException, InterruptedException, ProcessException {
+    public void checkRepackagedGsonLibrary() throws IOException {
         TestFileUtils.appendToFile(
                 project.getBuildFile(),
                 ""
@@ -76,15 +74,11 @@ public class JarJarLibTest {
                         + "    registerTransform(new com.android.test.jarjar.JarJarTransform(false /*broken transform*/))\n"
                         + "}\n");
 
-        AndroidProject outputModel =
-                project.executeAndReturnModel("clean", "assembleDebug").getOnlyModel();
-
-        VariantBuildInformation debugBuildOutput =
-                ProjectBuildOutputUtils.getDebugVariantBuildOutput(outputModel);
-        assertEquals(1, ProjectBuildOutputUtils.getApkFolderOutput(debugBuildOutput).size());
-
-        // make sure the Gson library has been renamed and the original one is not present.
-        File outputFile = new File(ProjectBuildOutputUtils.getSingleOutputFile(debugBuildOutput));
+        project.execute("clean", "assembleDebug");
+        AndroidProject androidProject =
+                project.modelV2().fetchModels().getContainer().getProject().getAndroidProject();
+        Variant debug = AndroidProjectUtilsV2.getVariantByName(androidProject, "debug");
+        File outputFile = new File(ProjectBuildOutputUtilsV2.getSingleOutputFile(debug));
         assertThatAar(outputFile).containsClass("Lcom/android/tests/basic/Main;");
 
         // libraries do not include their dependencies unless they are local (which is not

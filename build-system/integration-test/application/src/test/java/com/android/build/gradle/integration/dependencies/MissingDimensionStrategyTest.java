@@ -92,7 +92,7 @@ public class MissingDimensionStrategyTest {
                         + "    implementation project(\":library\")\n"
                         + "}\n");
 
-        project.executeAndReturnMultiModel("clean", ":app:assembleDebug");
+        project.execute("clean", ":app:assembleDebug");
 
         final Apk apk = appProject.getApk(ApkType.DEBUG);
         assertThat(apk.getFile()).isFile();
@@ -115,7 +115,7 @@ public class MissingDimensionStrategyTest {
                         + "    implementation project(\":library\")\n"
                         + "}\n");
 
-        project.executeAndReturnMultiModel("clean", ":app:assembleDebug");
+        project.execute("clean", ":app:assembleDebug");
 
         final Apk apk = appProject.getApk(ApkType.DEBUG);
         assertThat(apk.getFile()).isFile();
@@ -142,7 +142,7 @@ public class MissingDimensionStrategyTest {
                         + "    implementation project(\":library\")\n"
                         + "}\n");
 
-        project.executeAndReturnMultiModel("clean", ":app:assembleBlueDebug");
+        project.execute("clean", ":app:assembleBlueDebug");
 
         final Apk apk = appProject.getApk(ApkType.DEBUG, "blue");
         assertThat(apk.getFile()).isFile();
@@ -169,7 +169,7 @@ public class MissingDimensionStrategyTest {
                         + "    implementation project(\":library\")\n"
                         + "}\n");
 
-        project.executeAndReturnMultiModel("clean", ":app:assembleBlueDebug");
+        project.execute("clean", ":app:assembleBlueDebug");
 
         final Apk apk = appProject.getApk(ApkType.DEBUG, "blue");
         assertThat(apk.getFile()).isFile();
@@ -202,8 +202,7 @@ public class MissingDimensionStrategyTest {
                         + "    implementation project(\":library\")\n"
                         + "}\n");
 
-        project.executeAndReturnMultiModel(
-                "clean", ":app:assembleBlueDebug", ":app:assembleRedDebug");
+        project.execute("clean", ":app:assembleBlueDebug", ":app:assembleRedDebug");
 
         final Apk blueApk = appProject.getApk(ApkType.DEBUG, "blue");
         assertThat(blueApk.getFile()).isFile();
@@ -238,8 +237,7 @@ public class MissingDimensionStrategyTest {
                         + "    implementation project(\":library\")\n"
                         + "}\n");
 
-        project.executeAndReturnMultiModel(
-                "clean", ":app:assembleBlueDebug", ":app:assembleRedDebug");
+        project.execute("clean", ":app:assembleBlueDebug", ":app:assembleRedDebug");
 
         final Apk blueApk = appProject.getApk(ApkType.DEBUG, "blue");
         assertThat(blueApk.getFile()).isFile();

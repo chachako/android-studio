@@ -1,0 +1,94 @@
+> VariantDependencies:
+   - name                 = "debug"
+   - mainArtifact:
+      - compileDependencies:
+         - com.google.guava|guava|18.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.google.guava:guava:18.0:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - runtimeDependencies    = []
+      - unresolvedDependencies = []
+   - androidTestArtifact:
+      - compileDependencies:
+         - :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:projectWithLocalDeps:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - runtimeDependencies    = []
+      - unresolvedDependencies = []
+   > unitTestArtifact:
+      - compileDependencies:
+         - :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:projectWithLocalDeps:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - runtimeDependencies:
+         - :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|:projectWithLocalDeps:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - unresolvedDependencies = []
+   < unitTestArtifact
+   - testFixturesArtifact = (null)
+   > libraries:
+      > :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:projectWithLocalDeps:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":"
+            - isTestFixtures = false
+            - buildType      = "debug"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> debug"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * ":projectWithLocalDeps:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:projectWithLocalDeps:unspecified
+      > :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|:projectWithLocalDeps:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":"
+            - isTestFixtures = false
+            - buildType      = "debug"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> debug"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * ":projectWithLocalDeps:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|:projectWithLocalDeps:unspecified
+      > com.google.guava|guava|18.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.google.guava:guava:18.0:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/com/google/guava/guava/18.0/guava-18.0.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "com.google.guava"
+            - name           = "guava"
+            - version        = "18.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "com.google.guava:guava:18.0"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < com.google.guava|guava|18.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.google.guava:guava:18.0
+   < libraries
+< VariantDependencies

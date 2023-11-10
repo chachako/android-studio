@@ -25,7 +25,6 @@ import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.io.File
 
 class ApplicationIdReset {
 
@@ -89,12 +88,13 @@ class ApplicationIdReset {
 
     @Test
     fun checkApplicationIdDebug() {
-        val model = project.executeAndReturnModel("assembleApp1FreeDebug")
+        project.execute("assembleApp1FreeDebug")
+        val androidProject = project.modelV2().fetchModels().container.getProject().androidProject!!
+
         val listingFile = ListingFileRedirect.getListingFile(
-            File(model.onlyModel
-                .getVariantByName("app1FreeDebug")
-                .mainArtifact.assembleTaskOutputListingFile)
+            androidProject.getVariantByName("app1FreeDebug").mainArtifact.assembleTaskOutputListingFile!!
         )
+
         Truth.assertThat(listingFile.readText(Charsets.UTF_8)).contains(
             "  \"applicationId\": \"com.flavors.app1.free\""
         )

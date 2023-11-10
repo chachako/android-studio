@@ -1,0 +1,153 @@
+> VariantDependencies:
+   - name                 = "release"
+   > mainArtifact:
+      - compileDependencies:
+         - com.google.guava|guava|19.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.google.guava:guava:19.0:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+         - __local_aars__|{PROJECT}/baseLibrary/libs/util-1.0.jar{F}|unspecified||:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - runtimeDependencies:
+         - com.google.guava|guava|19.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.google.guava:guava:19.0:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+         - __local_aars__|{PROJECT}/baseLibrary/libs/util-1.0.jar{F}|unspecified||:
+            - dependencies = "*visited*"
+      - unresolvedDependencies = []
+   < mainArtifact
+   - androidTestArtifact  = (null)
+   > unitTestArtifact:
+      > compileDependencies:
+         - com.google.guava|guava|19.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.google.guava:guava:19.0:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+         - :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|localJars:baseLibrary:1.0:
+            - requestedCoordinates = (null)
+            - dependencies:
+               - com.google.guava|guava|19.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.google.guava:guava:19.0:
+                  - dependencies = "*visited*"
+         - __local_aars__|{PROJECT}/baseLibrary/libs/util-1.0.jar{F}|unspecified||:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      < compileDependencies
+      > runtimeDependencies:
+         - :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|localJars:baseLibrary:1.0:
+            - requestedCoordinates = (null)
+            - dependencies:
+               - com.google.guava|guava|19.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.google.guava:guava:19.0:
+                  - requestedCoordinates = (null)
+                  - dependencies         = []
+         - com.google.guava|guava|19.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.google.guava:guava:19.0:
+            - dependencies = "*visited*"
+         - __local_aars__|{PROJECT}/baseLibrary/libs/util-1.0.jar{F}|unspecified||:
+            - dependencies = "*visited*"
+      < runtimeDependencies
+      - unresolvedDependencies = []
+   < unitTestArtifact
+   - testFixturesArtifact = (null)
+   > libraries:
+      > :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|localJars:baseLibrary:1.0:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":baseLibrary"
+            - isTestFixtures = false
+            - buildType      = "release"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> release"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "localJars:baseLibrary:1.0"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = {PROJECT}/baseLibrary/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
+         - androidLibraryData = (null)
+      < :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|localJars:baseLibrary:1.0
+      > :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|localJars:baseLibrary:1.0:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":baseLibrary"
+            - isTestFixtures = false
+            - buildType      = "release"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> release"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "localJars:baseLibrary:1.0"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = {PROJECT}/baseLibrary/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
+         - androidLibraryData = (null)
+      < :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|localJars:baseLibrary:1.0
+      > __local_aars__|{PROJECT}/baseLibrary/libs/util-1.0.jar{F}|unspecified||:
+         - type               = JAVA_LIBRARY
+         - artifact           = {PROJECT}/baseLibrary/libs/util-1.0.jar{F}
+         - projectInfo        = (null)
+         - libraryInfo:
+            - group          = "__local_aars__"
+            - name           = {PROJECT}/baseLibrary/libs/util-1.0.jar{F}
+            - version        = "unspecified"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes     = []
+            - capabilities   = []
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < __local_aars__|{PROJECT}/baseLibrary/libs/util-1.0.jar{F}|unspecified||
+      > com.google.guava|guava|19.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.google.guava:guava:19.0:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/com/google/guava/guava/19.0/guava-19.0.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "com.google.guava"
+            - name           = "guava"
+            - version        = "19.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "com.google.guava:guava:19.0"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < com.google.guava|guava|19.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.google.guava:guava:19.0
+      > com.google.guava|guava|19.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.google.guava:guava:19.0:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/com/google/guava/guava/19.0/guava-19.0.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "com.google.guava"
+            - name           = "guava"
+            - version        = "19.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "com.google.guava:guava:19.0"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < com.google.guava|guava|19.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.google.guava:guava:19.0
+   < libraries
+< VariantDependencies

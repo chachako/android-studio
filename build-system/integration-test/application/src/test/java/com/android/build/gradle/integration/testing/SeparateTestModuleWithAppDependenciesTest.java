@@ -83,7 +83,7 @@ public class SeparateTestModuleWithAppDependenciesTest {
                         + "            new android.support.test.rule.ActivityTestRule<>(foo.FooActivity.class);\n"
                         + "}\n");
 
-        project.executeAndReturnMultiModel("clean", "test:assembleDebug");
+        project.execute("clean", "test:assembleDebug");
     }
 
     @AfterClass

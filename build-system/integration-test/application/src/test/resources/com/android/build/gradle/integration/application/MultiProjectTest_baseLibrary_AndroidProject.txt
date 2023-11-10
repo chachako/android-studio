@@ -1,0 +1,155 @@
+> AndroidProject:
+   - namespace             = "com.example.android.multiproject.library.base"
+   - androidTestNamespace  = "com.example.android.multiproject.library.base.test"
+   - testFixturesNamespace = (null)
+   - resourcePrefix        = (null)
+   - dynamicFeatures       = (null)
+   > variants:
+      > debug:
+         - name                   = "debug"
+         - displayName            = "debug"
+         - isInstantAppCompatible = false
+         > mainArtifact:
+            - compileTaskName               = "compileDebugSources"
+            - assembleTaskName              = "assembleDebug"
+            - classesFolders:
+               * {PROJECT}/baseLibrary/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar{!}
+               * {PROJECT}/baseLibrary/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes{!}
+            - ideSetupTaskNames             = ["generateDebugSources"]
+            - generatedSourceFolders:
+               * {PROJECT}/baseLibrary/build/generated/ap_generated_sources/debug/out{!}
+            - minSdkVersion:
+               - apiLevel = 14
+               - codename = (null)
+            - targetSdkVersionOverride      = (null)
+            - maxSdkVersion                 = (null)
+            - isSigned                      = false
+            - signingConfigName             = (null)
+            - applicationId                 = (null)
+            - sourceGenTaskName             = "generateDebugSources"
+            - resGenTaskName                = "generateDebugResources"
+            - generatedResourceFolders:
+               * {PROJECT}/baseLibrary/build/generated/res/resValues/debug{!}
+            - abiFilters                    = []
+            - assembleTaskOutputListingFile = (null)
+            - testInfo                      = (null)
+            - bundleInfo                    = (null)
+            - codeShrinker                  = (null)
+            - privacySandboxSdkInfo         = (null)
+         < mainArtifact
+         > androidTestArtifact:
+            - compileTaskName               = "compileDebugAndroidTestSources"
+            - assembleTaskName              = "assembleDebugAndroidTest"
+            - classesFolders:
+               * {PROJECT}/baseLibrary/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debugAndroidTest/processDebugAndroidTestResources/R.jar{!}
+               * {PROJECT}/baseLibrary/build/intermediates/javac/debugAndroidTest/compileDebugAndroidTestJavaWithJavac/classes{!}
+            - ideSetupTaskNames             = ["generateDebugAndroidTestSources"]
+            - generatedSourceFolders:
+               * {PROJECT}/baseLibrary/build/generated/ap_generated_sources/debugAndroidTest/out{!}
+            - minSdkVersion:
+               - apiLevel = 14
+               - codename = (null)
+            - targetSdkVersionOverride      = (null)
+            - maxSdkVersion                 = (null)
+            - isSigned                      = true
+            - signingConfigName             = "debug"
+            - applicationId                 = "com.example.android.multiproject.library.base.test"
+            - sourceGenTaskName             = "generateDebugAndroidTestSources"
+            - resGenTaskName                = "generateDebugAndroidTestResources"
+            - generatedResourceFolders:
+               * {PROJECT}/baseLibrary/build/generated/res/resValues/androidTest/debug{!}
+            - abiFilters                    = []
+            - assembleTaskOutputListingFile = {PROJECT}/baseLibrary/build/intermediates/apk_ide_redirect_file/debugAndroidTest/createDebugAndroidTestApkListingFileRedirect/redirect.txt{!}
+            - testInfo:
+               - animationsDisabled       = false
+               - execution                = HOST
+               - additionalRuntimeApks    = []
+               - instrumentedTestTaskName = "connectedDebugAndroidTest"
+            - bundleInfo                    = (null)
+            - codeShrinker                  = (null)
+            - privacySandboxSdkInfo         = (null)
+         < androidTestArtifact
+         > unitTestArtifact:
+            - compileTaskName       = "compileDebugUnitTestSources"
+            - assembleTaskName      = "assembleDebugUnitTest"
+            - classesFolders:
+               * {PROJECT}/baseLibrary/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debugUnitTest/generateDebugUnitTestStubRFile/R.jar{!}
+               * {PROJECT}/baseLibrary/build/intermediates/javac/debugUnitTest/compileDebugUnitTestJavaWithJavac/classes{!}
+            - ideSetupTaskNames     = ["createMockableJar"]
+            - generatedSourceFolders:
+               * {PROJECT}/baseLibrary/build/generated/ap_generated_sources/debugUnitTest/out{!}
+            - mockablePlatformJar   = {GRADLE_CACHE}/{CHECKSUM}/transformed/android.jar{F}
+            - runtimeResourceFolder = {PROJECT}/baseLibrary/build/intermediates/java_res/debugUnitTest/processDebugUnitTestJavaRes/out{!}
+         < unitTestArtifact
+         - testFixturesArtifact   = (null)
+         - testedTargetVariant    = (null)
+         - desugaredMethods       = [{GRADLE_CACHE}/{CHECKSUM}/transformed/D8BackportedDesugaredMethods.txt{F}]
+      < debug
+      > release:
+         - name                   = "release"
+         - displayName            = "release"
+         - isInstantAppCompatible = false
+         > mainArtifact:
+            - compileTaskName               = "compileReleaseSources"
+            - assembleTaskName              = "assembleRelease"
+            - classesFolders:
+               * {PROJECT}/baseLibrary/build/intermediates/compile_r_class_jar/release/generateReleaseRFile/R.jar{!}
+               * {PROJECT}/baseLibrary/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes{!}
+            - ideSetupTaskNames             = ["generateReleaseSources"]
+            - generatedSourceFolders:
+               * {PROJECT}/baseLibrary/build/generated/ap_generated_sources/release/out{!}
+            - minSdkVersion:
+               - apiLevel = 14
+               - codename = (null)
+            - targetSdkVersionOverride      = (null)
+            - maxSdkVersion                 = (null)
+            - isSigned                      = false
+            - signingConfigName             = (null)
+            - applicationId                 = (null)
+            - sourceGenTaskName             = "generateReleaseSources"
+            - resGenTaskName                = "generateReleaseResources"
+            - generatedResourceFolders:
+               * {PROJECT}/baseLibrary/build/generated/res/resValues/release{!}
+            - abiFilters                    = []
+            - assembleTaskOutputListingFile = (null)
+            - testInfo                      = (null)
+            - bundleInfo                    = (null)
+            - codeShrinker                  = (null)
+            - privacySandboxSdkInfo         = (null)
+         < mainArtifact
+         - androidTestArtifact    = (null)
+         > unitTestArtifact:
+            - compileTaskName       = "compileReleaseUnitTestSources"
+            - assembleTaskName      = "assembleReleaseUnitTest"
+            - classesFolders:
+               * {PROJECT}/baseLibrary/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/releaseUnitTest/generateReleaseUnitTestStubRFile/R.jar{!}
+               * {PROJECT}/baseLibrary/build/intermediates/javac/releaseUnitTest/compileReleaseUnitTestJavaWithJavac/classes{!}
+            - ideSetupTaskNames     = ["createMockableJar"]
+            - generatedSourceFolders:
+               * {PROJECT}/baseLibrary/build/generated/ap_generated_sources/releaseUnitTest/out{!}
+            - mockablePlatformJar   = {GRADLE_CACHE}/{CHECKSUM}/transformed/android.jar{F}
+            - runtimeResourceFolder = {PROJECT}/baseLibrary/build/intermediates/java_res/releaseUnitTest/processReleaseUnitTestJavaRes/out{!}
+         < unitTestArtifact
+         - testFixturesArtifact   = (null)
+         - testedTargetVariant    = (null)
+         - desugaredMethods       = [{GRADLE_CACHE}/{CHECKSUM}/transformed/D8BackportedDesugaredMethods.txt{F}]
+      < release
+   < variants
+   - javaCompileOptions:
+      - encoding                       = "UTF-8"
+      - sourceCompatibility            = "1.8"
+      - targetCompatibility            = "1.8"
+      - isCoreLibraryDesugaringEnabled = false
+   - viewBindingOptions:
+      - isEnabled = false
+   - flags:
+      * "APPLICATION_R_CLASS_CONSTANT_IDS -> false"
+      * "ENABLE_VCS_INFO -> false"
+      * "JETPACK_COMPOSE -> false"
+      * "ML_MODEL_BINDING -> false"
+      * "TEST_R_CLASS_CONSTANT_IDS -> false"
+      * "TRANSITIVE_R_CLASS -> false"
+      * "UNIFIED_TEST_PLATFORM -> true"
+      * "USE_ANDROID_X -> false"
+   - lintChecksJars        = []
+< AndroidProject
