@@ -17,19 +17,25 @@
 package com.android.tools.lint.checks.infrastructure
 
 import com.android.tools.lint.detector.api.JavaContext
+import com.intellij.psi.JavaTokenType
 import com.intellij.psi.PsiAnnotation
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiImportList
+import com.intellij.psi.PsiLiteralExpression
 import com.intellij.psi.PsiPackageStatement
+import com.intellij.psi.PsiPrefixExpression
 import com.intellij.psi.PsiRecursiveElementVisitor
 import com.intellij.psi.PsiWhiteSpace
 import org.jetbrains.kotlin.KtNodeTypes
+import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtAnnotation
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
+import org.jetbrains.kotlin.psi.KtConstantExpression
 import org.jetbrains.kotlin.psi.KtContainerNode
 import org.jetbrains.kotlin.psi.KtImportList
 import org.jetbrains.kotlin.psi.KtPackageDirective
+import org.jetbrains.kotlin.psi.KtPrefixExpression
 import org.jetbrains.kotlin.psi.KtStringTemplateExpression
 import org.jetbrains.uast.UFile
 
@@ -104,6 +110,18 @@ class WhitespaceTestMode :
             // And ditto for package names:
             is PsiPackageStatement,
             is KtPackageDirective -> return
+            is KtPrefixExpression -> // Don't split "-1" into "- 1"
+            if (
+                element.operationToken == KtTokens.MINUS &&
+                  element.baseExpression is KtConstantExpression
+              )
+                return
+            is PsiPrefixExpression -> // Don't split "-1" into "- 1"
+            if (
+                element.operationTokenType == JavaTokenType.MINUS &&
+                  element.operand is PsiLiteralExpression
+              )
+                return
           }
 
           super.visitElement(element)

@@ -60,6 +60,7 @@ class WhitespaceTestModeTest {
                 val t2: Any = ${'"'}""test""${'"'}
                 (t as? String)?.plus("other")?.get(0)?.dec()?.inc()
                 "foo".chars().allMatch { it.dec() > 0 }.toString()
+                val minusOne = -1
             }
         """
         .trimIndent()
@@ -84,6 +85,7 @@ class WhitespaceTestModeTest {
         "     val   t2 :   Any   =   \"\"\"test\"\"\" \n" +
         "     ( t   as?   String ) ?. plus ( \"other\" ) ?. get ( 0 ) ?. dec ( ) ?. inc ( ) \n" +
         "     \"foo\" . chars ( ) . allMatch   {   it . dec ( )   >   0   } . toString ( ) \n" +
+        "     val   minusOne   =   -1 \n" +
         " } "
 
     val modified = addSpacesKotlin(kotlin)
@@ -146,6 +148,7 @@ class WhitespaceTestModeTest {
                     /** {@link Test} */
                     String s="test"+'test';
                     boolean x=i>5?!true:i%2==0;
+                    int minusOne = -1;
                 }
             }
         """
@@ -164,6 +167,7 @@ class WhitespaceTestModeTest {
         "         /** {@link Test} */ \n" +
         "         String   s = \"test\" + 'test' ; \n" +
         "         boolean   x = i > 5 ? ! true : i % 2 == 0 ; \n" +
+        "         int   minusOne   =   -1 ; \n" +
         "     } \n" +
         " } "
     val modified = addSpacesJava(java)
