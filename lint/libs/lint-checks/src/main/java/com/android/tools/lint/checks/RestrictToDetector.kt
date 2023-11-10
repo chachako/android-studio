@@ -750,13 +750,25 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         briefDescription = "Visible Only For Tests",
         explanation =
           """
-                With the `@VisibleForTesting` annotation you can specify an `otherwise=` \
-                attribute which specifies the intended visibility if the method had not \
-                been made more widely visible for the tests.
-
                 This check looks for accesses from production code (e.g. not tests) where \
                 the access would not have been allowed with the intended production \
-                visibility.""",
+                visibility.
+
+                Depending on your development environment, you may be able to use an \
+                `@VisibleForTesting` annotation to specify the intended visibility if \
+                the method had not been more widely visible for the tests.
+
+                When using `androidx.annotations.VisibleForTesting`, the production \
+                visibility is assumed to be private unless specified with the `otherwise=` \
+                parameter. `com.google.common.annotations.VisibleForTesting` and \
+                `com.android.internal.annotations.VisibleForTesting` work similarly with \
+                their own parameters called `productionVisibility` and `visibility`.
+
+                If instead you use `org.jetbrains.annotations.VisibleForTesting`, there \
+                is no such parameter, and the production visibility is instead assumed to be \
+                "one step down" from the testing visibility. For example, if the testing \
+                visibility is public, the production visibility is assumed to be package-private.
+                """,
         category = Category.CORRECTNESS,
         priority = 4,
         severity = Severity.WARNING,
