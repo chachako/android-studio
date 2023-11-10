@@ -19,9 +19,6 @@ package com.android.manifmerger;
 import static com.android.manifmerger.ManifestMergerTestUtil.loadTestData;
 import static com.android.manifmerger.ManifestMergerTestUtil.transformParameters;
 import static com.android.manifmerger.MergingReport.Record;
-import static junit.framework.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -33,6 +30,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.truth.Expect;
 import java.io.BufferedReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -49,8 +47,6 @@ import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.google.common.truth.Expect;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -156,7 +152,9 @@ public class ManifestMerger2Test {
                 "104_merging_privacy_sandbox_tagged_permissions.xml",
                 "104b_merging_privacy_sandbox_tagged_permissions_all_untagged.xml",
                 "105_ignore_use_embedded_dex_from_library.xml",
-                "106_ignore_extract_native_libs_from_library.xml"
+                "106_ignore_extract_native_libs_from_library.xml",
+                "107_sdk_library.xml",
+                "108_uses_sdk_library.xml"
             };
 
     private static final Multimap<Predicate<String>, ManifestMerger2.Invoker.Feature>

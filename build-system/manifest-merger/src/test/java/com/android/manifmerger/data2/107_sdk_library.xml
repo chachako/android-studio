@@ -1,0 +1,79 @@
+#
+# Test sdk-library: add a sdk-library from an app and validate merge.
+#
+
+@main
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.app1"
+    android:versionCode="100"
+    android:versionName="1.0.0">
+
+    <application android:name="com.example.TheApp">
+
+        <sdk-library
+            android:name="com.example.SomeLibrary0"
+            android:majorVersion="1"/>
+    </application>
+
+</manifest>
+
+@lib1
+
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.lib1">
+
+    <application
+         android:label="@string/lib_name1">
+
+        <sdk-library
+            android:name="com.example.SomeLibrary1"
+            android:majorVersion="1"/>
+    </application>
+
+</manifest>
+
+
+@lib2
+
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.lib2">
+
+    <application
+        android:label="@string/lib_name1">
+
+        <sdk-library
+            android:name="com.example.SomeLibrary2"
+            android:majorVersion="1"/>
+    </application>
+
+</manifest>
+
+@result
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.app1"
+    android:versionCode="100"
+    android:versionName="1.0.0" >
+
+    <application
+        android:name="com.example.TheApp"
+        android:label="@string/lib_name1" >
+        <sdk-library
+            android:name="com.example.SomeLibrary0"
+            android:majorVersion="1" />
+        <sdk-library
+            android:name="com.example.SomeLibrary1"
+            android:majorVersion="1" />
+        <sdk-library
+            android:name="com.example.SomeLibrary2"
+            android:majorVersion="1" />
+    </application>
+
+</manifest>
+
+@errors

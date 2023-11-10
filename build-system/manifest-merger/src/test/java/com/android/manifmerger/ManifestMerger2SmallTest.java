@@ -2124,9 +2124,8 @@ public class ManifestMerger2SmallTest {
      * Tests related to provider tag which can have different behaviors depending on its location in
      * the xml tree.
      *
-     * <p>For provider in application xml eleemnt, an "android:name" attribute is used as the key
+     * <p>For provider in application xml element, an "android:name" attribute is used as the key
      * for merging. For provider in queries xml element, there are no key.
-     *
      */
     @Test
     public void testProviderTags() throws Exception {
@@ -2230,6 +2229,76 @@ public class ManifestMerger2SmallTest {
             assertThat(appFile.delete()).named("Overlay was deleted").isTrue();
             assertThat(lib1File.delete()).named("Lib1 file was deleted").isTrue();
             assertThat(lib2File.delete()).named("Lib1 file was deleted").isTrue();
+        }
+    }
+
+    /** Test related to property tag. */
+    @Test
+    public void testPropertyTags() throws Exception {
+        MockLog mockLog = new MockLog();
+        String appInput =
+                ""
+                        + "<manifest\n"
+                        + "    xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                        + "    xmlns:tools=\"http://schemas.android.com/tools\"\n"
+                        + "    package=\"com.example.app1\">\n"
+                        + "\n"
+                        + "    <application android:label=\"@string/lib_name\">\n"
+                        + "       <property android:name=\"appProperty\" />\n"
+                        + "    </application>"
+                        + "\n"
+                        + "</manifest>";
+
+        File appFile = TestUtils.inputAsFile("providerTagsHandlingLibApp", appInput);
+        assertTrue(appFile.exists());
+
+        String libInput =
+                ""
+                        + "<manifest\n"
+                        + "xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                        + "package=\"com.example.lib1\">\n"
+                        + "\n"
+                        + "    <application>\n"
+                        + "       <property android:name=\"libProperty\" "
+                        + " android:directBootAware=\"true\"/>\n"
+                        + "    </application>"
+                        + "\n"
+                        + "</manifest>";
+        File libFile = TestUtils.inputAsFile("providerTagsHandlingLib", libInput);
+
+        try {
+            MergingReport mergingReport =
+                    ManifestMerger2.newMerger(
+                                    appFile, mockLog, ManifestMerger2.MergeType.APPLICATION)
+                            .addLibraryManifest(libFile)
+                            .merge();
+            assertThat(mergingReport.getResult()).isEqualTo(MergingReport.Result.SUCCESS);
+            Document mergedDocument =
+                    parse(mergingReport.getMergedDocument(MergedManifestKind.MERGED));
+
+            NodeList applications =
+                    mergedDocument.getElementsByTagName(SdkConstants.TAG_APPLICATION);
+            assertThat(applications.getLength()).isEqualTo(1);
+            NodeList appProperties =
+                    ((Element) applications.item(0))
+                            .getElementsByTagName(SdkConstants.TAG_PROPERTY);
+            assertThat(appProperties.getLength()).isEqualTo(2);
+            Truth.assertThat(
+                            appProperties
+                                    .item(0)
+                                    .getAttributes()
+                                    .getNamedItem("android:name")
+                                    .getNodeValue())
+                    .isEqualTo("com.example.app1.appProperty");
+            Truth.assertThat(
+                            appProperties
+                                    .item(1)
+                                    .getAttributes()
+                                    .getNamedItem("android:name")
+                                    .getNodeValue())
+                    .isEqualTo("com.example.lib1.libProperty");
+        } finally {
+            assertThat(appFile.delete()).named("Overlay was deleted").isTrue();
         }
     }
 

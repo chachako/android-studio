@@ -1095,6 +1095,7 @@ public final class SdkConstants {
     public static final String TAG_USES_PERMISSION_SDK_M = "uses-permission-sdk-m";
     public static final String TAG_USES_LIBRARY = "uses-library";
     public static final String TAG_USES_SPLIT = "uses-split";
+    public static final String TAG_USES_SDK_LIBRARY = "uses-sdk-library";
     public static final String TAG_APPLICATION = "application";
     public static final String TAG_INTENT_FILTER = "intent-filter";
     public static final String TAG_CATEGORY = "category";
@@ -1103,18 +1104,19 @@ public final class SdkConstants {
     public static final String TAG_ACTIVITY_ALIAS = "activity-alias";
     public static final String TAG_RECEIVER = "receiver";
     public static final String TAG_PACKAGE = "package";
+    public static final String TAG_PROPERTY = "property";
     public static final String TAG_PROVIDER = "provider";
     public static final String TAG_GRANT_PERMISSION = "grant-uri-permission";
     public static final String TAG_PATH_PERMISSION = "path-permission";
     public static final String TAG_ACTION = "action";
     public static final String TAG_INSTRUMENTATION = "instrumentation";
     public static final String TAG_META_DATA = "meta-data";
-    public static final String TAG_PROPERTY = "property";
     public static final String TAG_RESOURCE = "resource";
     public static final String TAG_MODULE = "module";
     public static final String TAG_NAV_GRAPH = "nav-graph";
     public static final String TAG_QUERIES = "queries";
     public static final String TAG_INTENT = "intent";
+    public static final String TAG_SDK_LIBRARY = "sdk-library";
 
     // Tags: Resources
     public static final String TAG_RESOURCES = "resources";
