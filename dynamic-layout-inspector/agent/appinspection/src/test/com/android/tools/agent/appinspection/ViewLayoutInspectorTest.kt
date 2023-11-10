@@ -47,11 +47,6 @@ import com.android.tools.agent.appinspection.testutils.property.companions.ViewI
 import com.android.tools.agent.appinspection.util.ThreadUtils
 import com.android.tools.agent.appinspection.util.decompress
 import com.android.tools.agent.shared.FoldObserver
-import com.android.tools.idea.protobuf.ByteString
-import com.android.tools.layoutinspector.BITMAP_HEADER_SIZE
-import com.android.tools.layoutinspector.BitmapType
-import com.android.tools.layoutinspector.toBytes
-import com.google.common.truth.Truth.assertThat
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Command
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.ErrorCode
@@ -62,6 +57,11 @@ import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorVie
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Response
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Screenshot
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.StopFetchCommand
+import com.android.tools.idea.protobuf.ByteString
+import com.android.tools.layoutinspector.BITMAP_HEADER_SIZE
+import com.android.tools.layoutinspector.BitmapType
+import com.android.tools.layoutinspector.toBytes
+import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -69,7 +69,6 @@ import org.junit.Test
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import kotlin.concurrent.thread
@@ -1847,8 +1846,8 @@ abstract class ViewLayoutInspectorTestBase {
         val context = Context(packageName, resources)
         val mainScreen = ViewGroup(context).apply {
             setAttachInfo(View.AttachInfo())
-            width = 0
-            height = -1
+            width = 1  // will be scaled below 1
+            height = 2 // will be scaled below 1
         }
         val fakeBitmapHeader = byteArrayOf(1, 2, 3) // trailed by 0s
 
@@ -1865,6 +1864,17 @@ abstract class ViewLayoutInspectorTestBase {
         )
 
         ThreadUtils.runOnMainThread { }.get() // Wait for startCommand to finish initializing
+
+        val updateScreenshotTypeCommand = Command.newBuilder().apply {
+            updateScreenshotTypeCommandBuilder.apply {
+                type = Screenshot.Type.BITMAP
+                this.scale = 0.1f
+            }
+        }.build()
+        viewInspector.onReceiveCommand(
+            updateScreenshotTypeCommand.toByteArray(),
+            inspectorRule.commandCallback
+        )
 
         mainScreen.viewRootImpl = ViewRootImpl()
         mainScreen.viewRootImpl.mSurface = Surface()

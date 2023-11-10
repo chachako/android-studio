@@ -17,7 +17,6 @@
 package com.android.tools.agent.appinspection.framework
 
 import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.graphics.Rect
 import android.util.Log
 import android.view.PixelCopy
@@ -68,14 +67,12 @@ fun View.flatten(): Sequence<View> {
  * This method may return null if the app runs out of memory or has a reflection issue.
  */
 fun View.takeScreenshot(scale: Float, bitmapType: BitmapType): Bitmap? {
-    if (width <= 0 || height <= 0) {
+    val scaledWidth = (width * scale).roundToInt()
+    val scaledHeight = (height * scale).roundToInt()
+    if (scaledWidth <= 0 || scaledHeight <= 0) {
         return null
     }
-    val bitmap = Bitmap.createBitmap(
-        (width * scale).roundToInt(),
-        (height * scale).roundToInt(),
-        bitmapType.toBitmapConfig()
-    )
+    val bitmap = Bitmap.createBitmap(scaledWidth, scaledHeight, bitmapType.toBitmapConfig())
     return try {
             val location = IntArray(2)
             getLocationInSurface(location)
