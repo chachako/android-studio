@@ -50,6 +50,7 @@ import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.util.List;
 import kotlin.Pair;
+import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.api.file.DirectoryProperty;
 import org.junit.Test;
@@ -77,7 +78,8 @@ public class VariantDslInfoTest {
 
         ApplicationVariantDslInfo variant = getVariant(override);
 
-        assertThat(variant.getSigningConfig()).isEqualTo(override);
+        assertThat(variant.getSigningConfigResolver().getSigningConfigOverride())
+                .isEqualTo(override);
     }
 
     @Test
@@ -94,7 +96,8 @@ public class VariantDslInfoTest {
 
         ApplicationVariantDslInfo variant = getVariant(override);
 
-        assertThat(variant.getSigningConfig()).isEqualTo(override);
+        assertThat(variant.getSigningConfigResolver().getSigningConfigOverride())
+                .isEqualTo(override);
     }
 
     @Test
@@ -284,6 +287,9 @@ public class VariantDslInfoTest {
         InternalApplicationExtension extension = Mockito.mock(InternalApplicationExtension.class);
         Mockito.when(extension.getPublishing())
                 .thenReturn(Mockito.mock(ApplicationPublishingImpl.class));
+
+        Mockito.when(extension.getSigningConfigs())
+                .thenReturn(Mockito.mock(NamedDomainObjectContainer.class));
 
         List<Pair<String, String>> flavors = ImmutableList.of(new Pair<>("dimension1", "flavor"));
         DslInfoBuilder<?, ApplicationVariantDslInfo> builder =

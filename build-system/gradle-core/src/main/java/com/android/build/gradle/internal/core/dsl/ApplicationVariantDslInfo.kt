@@ -64,4 +64,6 @@ interface ApplicationVariantDslInfo:
     val includeVcsInfo: Boolean?
 
     override val androidResourcesDsl: AndroidResourcesDslInfo
+
+    val compileSdk: Int?
 }

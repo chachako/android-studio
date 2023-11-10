@@ -184,10 +184,10 @@ open class TestVariantImpl @Inject constructor(
     override val shouldPackageProfilerDependencies: Boolean = false
     override val advancedProfilingTransforms: List<String> = emptyList()
 
-    override val signingConfigImpl: SigningConfigImpl? by lazy {
-        dslInfo.signingConfig?.let {
+    override val signingConfig: SigningConfigImpl? by lazy {
+        dslInfo.signingConfigResolver?.let {
             SigningConfigImpl(
-                it,
+                it.resolveConfig(profileable = false, debuggable),
                 internalServices,
                 minSdk.apiLevel,
                 global.targetDeployApiFromIDE

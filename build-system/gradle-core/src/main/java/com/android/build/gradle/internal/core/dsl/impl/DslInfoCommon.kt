@@ -75,35 +75,3 @@ internal fun ComponentDslInfo.initTestApplicationId(
         namespace
     }
 }
-
-internal fun ApkProducingComponentDslInfo.getSigningConfig(
-    buildTypeObj: BuildType,
-    mergedFlavor: MergedFlavor,
-    signingConfigOverride: SigningConfig?,
-    extension: CommonExtension<*, *, *, *, *>,
-    services: VariantServices
-): SigningConfig? {
-    val dslSigningConfig =
-        (buildTypeObj as? ApplicationBuildType)?.signingConfig
-            ?: mergedFlavor.signingConfig
-
-    signingConfigOverride?.let {
-        // use enableV1 and enableV2 from the DSL if the override values are null
-        if (it.enableV1Signing == null) {
-            it.enableV1Signing = dslSigningConfig?.enableV1Signing
-        }
-        if (it.enableV2Signing == null) {
-            it.enableV2Signing = dslSigningConfig?.enableV2Signing
-        }
-        // use enableV3 and enableV4 from the DSL because they're not injectable
-        it.enableV3Signing = dslSigningConfig?.enableV3Signing
-        it.enableV4Signing = dslSigningConfig?.enableV4Signing
-        return it
-    }
-    if (services.projectOptions[BooleanOption.ENABLE_DEFAULT_DEBUG_SIGNING_CONFIG] &&
-        dslSigningConfig == null &&
-        ((this as? ApplicationVariantDslInfo)?.isProfileable == true || isDebuggable)) {
-        return extension.signingConfigs.findByName(BuilderConstants.DEBUG) as SigningConfig?
-    }
-    return dslSigningConfig as SigningConfig?
-}

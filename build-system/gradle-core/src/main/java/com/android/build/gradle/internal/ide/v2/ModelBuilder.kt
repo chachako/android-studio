@@ -732,7 +732,7 @@ class ModelBuilder<
         }
 
         val signingConfig = if (component is ApkCreationConfig)
-            component.signingConfigImpl else null
+            component.signingConfig else null
 
         val minSdkVersion =
                 ApiVersionImpl(component.minSdk.apiLevel, component.minSdk.codename)

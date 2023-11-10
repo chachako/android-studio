@@ -171,13 +171,10 @@ open class AndroidTestImpl @Inject constructor(
             )
     }
 
-    override val signingConfig: SigningConfig?
-        get() = signingConfigImpl
-
-    override val signingConfigImpl: SigningConfigImpl? by lazy {
-        dslInfo.signingConfig?.let {
+    override val signingConfig: SigningConfigImpl? by lazy {
+        dslInfo.signingConfigResolver?.let {
             SigningConfigImpl(
-                it,
+                it.resolveConfig(profileable = false, debuggable = debuggable),
                 variantServices,
                 minSdk.apiLevel,
                 global.targetDeployApiFromIDE

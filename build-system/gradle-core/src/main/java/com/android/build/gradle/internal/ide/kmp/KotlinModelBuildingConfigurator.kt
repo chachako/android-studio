@@ -220,7 +220,7 @@ object KotlinModelBuildingConfigurator {
                 InstrumentedTestInfo.Builder::setTestInstrumentationRunner
             )
             .setIfNotNull(
-                signingConfigImpl?.convert(),
+                signingConfig?.convert(),
                 InstrumentedTestInfo.Builder::setSigningConfig
             )
             .putAllTestInstrumentationRunnerArguments(testInstrumentationRunnerArguments)

@@ -174,17 +174,14 @@ open class KmpAndroidTestImpl @Inject constructor(
     override val isCoreLibraryDesugaringEnabledLintCheck: Boolean
         get() = dexing.isCoreLibraryDesugaringEnabled
 
-    override val signingConfigImpl: SigningConfigImpl? by lazy {
+    override val signingConfig: SigningConfigImpl? by lazy {
         SigningConfigImpl(
-            dslInfo.signingConfig,
+            dslInfo.signingConfigResolver?.resolveConfig(profileable = false, debuggable = false),
             internalServices,
             minSdk.apiLevel,
             global.targetDeployApiFromIDE
         )
     }
-
-    override val signingConfig: SigningConfig?
-        get() = signingConfigImpl
 
     override val optimizationCreationConfig: OptimizationCreationConfig by lazy(LazyThreadSafetyMode.NONE) {
         OptimizationCreationConfigImpl(

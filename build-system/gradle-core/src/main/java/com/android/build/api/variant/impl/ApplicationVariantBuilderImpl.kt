@@ -16,7 +16,6 @@
 package com.android.build.api.variant.impl
 
 import com.android.build.api.component.analytics.AnalyticsEnabledApplicationVariantBuilder
-import com.android.build.api.dsl.ApplicationBuildType
 import com.android.build.api.variant.AndroidTestBuilder
 import com.android.build.api.variant.ApplicationVariantBuilder
 import com.android.build.api.variant.ComponentIdentity
@@ -26,6 +25,7 @@ import com.android.build.api.variant.VariantBuilder
 import com.android.build.gradle.internal.core.dsl.ApplicationVariantDslInfo
 import com.android.build.gradle.internal.services.ProjectServices
 import com.android.build.gradle.internal.services.VariantBuilderServices
+import com.android.builder.errors.IssueReporter
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import javax.inject.Inject
 
@@ -55,6 +55,24 @@ open class ApplicationVariantBuilderImpl @Inject constructor(
         set(value) {
             androidTest.enable = value
         }
+
+    internal var _profileable = dslInfo.isProfileable
+
+    override var profileable: Boolean
+        get() = throw PropertyAccessNotAllowedException("profileable", "ApplicationVariantBuilder")
+        set(value) {
+            if (debuggable && value) {
+                val message =
+                    "Variant '$name' can only have debuggable or profileable enabled.\n" +
+                            "Only one of these options can be used at a time.\n" +
+                            "Recommended action: Only set one of profileable=true via variant API \n" +
+                            "or debuggable=true via DSL"
+                variantBuilderServices.issueReporter.reportWarning(IssueReporter.Type.GENERIC, message)
+            } else {
+                _profileable = value
+            }
+        }
+
     override var enableTestFixtures: Boolean = dslInfo.testFixtures?.enable ?: false
 
     // only instantiate this if this is needed. This allows non-built variant to not do too much work.

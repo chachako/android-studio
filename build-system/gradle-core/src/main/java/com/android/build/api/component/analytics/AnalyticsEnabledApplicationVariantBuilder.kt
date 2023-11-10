@@ -42,6 +42,13 @@ open class AnalyticsEnabledApplicationVariantBuilder @Inject constructor(
             return delegate.dependenciesInfo
         }
 
+    override var profileable: Boolean
+        get() = throw PropertyAccessNotAllowedException("profileable", "ApplicationVariantBuilder")
+        set(value) {
+            stats.variantApiAccessBuilder.addVariantAccessBuilder().type = VariantMethodType.PROFILEABLE_ENABLED_VALUE
+            delegate.profileable = value
+        }
+
     override var androidTestEnabled: Boolean
         get() = delegate.androidTest.enable
         set(value) {

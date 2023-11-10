@@ -98,9 +98,9 @@ class SigningConfigDataProvider(
                     // encapsulate in a Provider to avoid these resolutions at configuration
                     // time
                     creationConfig.services.provider {
-                        creationConfig.signingConfigImpl?.let {
+                        creationConfig.signingConfig?.let {
                             if (it.hasConfig()) {
-                                SigningConfigData.fromSigningConfig(creationConfig.signingConfigImpl!!)
+                                SigningConfigData.fromSigningConfig(it)
                             } else {
                                 null
                             }

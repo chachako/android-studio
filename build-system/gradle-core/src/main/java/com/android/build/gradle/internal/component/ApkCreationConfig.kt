@@ -48,7 +48,7 @@ interface ApkCreationConfig: ConsumableCreationConfig {
     /**
      * Variant's signing information of null if signing is not configured for this variant.
      */
-    val signingConfigImpl: SigningConfigImpl?
+    val signingConfig: SigningConfigImpl?
 
     val bundleConfig: BundleConfigImpl?
         get() = null

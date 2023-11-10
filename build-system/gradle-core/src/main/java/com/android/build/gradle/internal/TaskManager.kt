@@ -1515,7 +1515,7 @@ abstract class TaskManager(
     protected fun createPackagingTask(creationConfig: ApkCreationConfig) {
         // ApkVariantData variantData = (ApkVariantData) variantScope.getVariantData();
         val taskContainer = creationConfig.taskContainer
-        val signedApk = creationConfig.signingConfigImpl?.isSigningReady() ?: false
+        val signedApk = creationConfig.signingConfig?.isSigningReady() ?: false
 
         /*
          * PrePackaging step class that will look if the packaging of the main FULL_APK split is
@@ -1598,7 +1598,7 @@ abstract class TaskManager(
     }
 
     protected fun createValidateSigningTask(creationConfig: ApkCreationConfig) {
-        if (creationConfig.signingConfigImpl?.isSigningReady() != true) {
+        if (creationConfig.signingConfig?.isSigningReady() != true) {
             return
         }
 

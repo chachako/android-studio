@@ -2440,8 +2440,11 @@ package com.android.build.api.variant {
   public interface ApplicationVariantBuilder extends com.android.build.api.variant.VariantBuilder com.android.build.api.variant.CanMinifyAndroidResourcesBuilder com.android.build.api.variant.CanMinifyCodeBuilder com.android.build.api.variant.GeneratesApkBuilder com.android.build.api.variant.HasAndroidTestBuilder com.android.build.api.variant.HasTestFixturesBuilder com.android.build.api.variant.HasUnitTestBuilder {
     method public boolean getDebuggable();
     method public com.android.build.api.variant.DependenciesInfoBuilder getDependenciesInfo();
+    method @Deprecated @org.gradle.api.Incubating public boolean getProfileable();
+    method @Deprecated @org.gradle.api.Incubating public void setProfileable(boolean);
     property public abstract boolean debuggable;
     property public abstract com.android.build.api.variant.DependenciesInfoBuilder dependenciesInfo;
+    property @Deprecated @org.gradle.api.Incubating public abstract boolean profileable;
   }
 
   public final class BuildConfigField<T extends java.io.Serializable> implements java.io.Serializable {

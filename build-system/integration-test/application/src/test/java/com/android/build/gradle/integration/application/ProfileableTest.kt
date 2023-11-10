@@ -80,6 +80,77 @@ class ProfileableTest {
     }
 
     @Test
+    fun `test variant api when the release build type to be profileable`() {
+        val app = project.getSubproject(":app")
+        app.buildFile.appendText("""
+
+            androidComponents {
+                 beforeVariants(selector().withBuildType("release"), { builder ->
+                      builder.setProfileable(true)
+                 })
+           }
+        """.trimIndent())
+        project.executor()
+            .with(BooleanOption.ENABLE_DEFAULT_DEBUG_SIGNING_CONFIG, true)
+            .run("assembleRelease")
+        val apkSigned =
+            project.getSubproject("app").getApk(GradleTestProject.ApkType.RELEASE_SIGNED)
+        val verificationResult = SigningHelper.assertApkSignaturesVerify(apkSigned, 30)
+        assertThat(
+            verificationResult.signerCertificates.first().subjectX500Principal.name
+        ).isEqualTo("C=US,O=Android,CN=Android Debug")
+        val manifest = ApkSubject.getManifestContent(apkSigned.file.toAbsolutePath())
+        assertThat(manifest).containsAtLeastElementsIn(
+            arrayListOf(
+                "        E: application (line=11)",
+                "            E: profileable (line=12)",
+                "              A: http://schemas.android.com/apk/res/android:enabled(0x0101000e)=true",
+                "              A: http://schemas.android.com/apk/res/android:shell(0x01010594)=true"
+            )
+        )
+
+        // Test no signing config configured, if the automatic signing config assignment is disabled.
+        project.executor().with(BooleanOption.ENABLE_DEFAULT_DEBUG_SIGNING_CONFIG, false)
+            .run("clean", "assembleRelease")
+        val apkUnsigned =
+            project.getSubproject("app").getApk(GradleTestProject.ApkType.RELEASE)
+        ApkSubject.assertThat(apkUnsigned).doesNotContainApkSigningBlock()
+    }
+
+    @Test
+    fun `test variant api the release build type to be profileable on Api 29`() {
+        val app = project.getSubproject(":app")
+        app.buildFile.apply {
+            appendText("android.compileSdk 29\n")
+            appendText("""
+            androidComponents {
+                 beforeVariants(selector().withBuildType("release"), { builder ->
+                      builder.setProfileable(true)
+                 })
+           }
+           """.trimIndent())
+        }
+
+        project.executor()
+                .with(BooleanOption.ENABLE_DEFAULT_DEBUG_SIGNING_CONFIG, true)
+                .run("assembleRelease")
+        val apkSigned =
+                project.getSubproject("app").getApk(GradleTestProject.ApkType.RELEASE_SIGNED)
+        val manifest = ApkSubject.getManifestContent(apkSigned.file.toAbsolutePath())
+        assertThat(manifest).containsAtLeastElementsIn(
+                arrayListOf(
+                        "        E: application (line=11)",
+                        "            E: profileable (line=12)",
+                        "              A: http://schemas.android.com/apk/res/android:shell(0x01010594)=true"
+                )
+        )
+        assertThat(manifest).doesNotContain(
+                "              A: http://schemas.android.com/apk/res/android:enabled(0x0101000e)=true"
+        )
+    }
+
+
+    @Test
     fun `test dsl setting the release build type to be profileable on Api 29`() {
         val app = project.getSubproject(":app")
         app.buildFile.apply {
@@ -132,6 +203,41 @@ class ProfileableTest {
     }
 
     @Test
+    fun `test variant api when profileable and debuggable enabled`() {
+        val app = project.getSubproject(":app")
+        app.buildFile.appendText("android.buildTypes.debug.debuggable true\n")
+        app.buildFile.appendText(
+            """
+            androidComponents {
+                 beforeVariants(selector().withBuildType("debug"), { builder ->
+                      builder.setProfileable(true)
+                 })
+           }
+           """.trimIndent()
+        )
+        val result = project.executor().run("assembleDebug")
+        // Ensure profileable is not applied (debuggable dsl option overrides profileable).
+        val manifest = ApkSubject.getManifestContent(
+            project.getApkAsFile(GradleTestProject.ApkType.DEBUG).toPath()
+        )
+        assertThat(manifest).doesNotContain(
+            arrayListOf(
+                "        E: application (line=11)",
+                "            E: profileable (line=12)",
+                "              A: http://schemas.android.com/apk/res/android:shell(0x01010594)=true"
+            )
+        )
+        result.stdout.use { out ->
+            ScannerSubject.assertThat(out).contains(
+                "Variant 'debug' can only have debuggable or profileable enabled.\n" +
+                        "Only one of these options can be used at a time.\n" +
+                        "Recommended action: Only set one of profileable=true via variant API\n" +
+                        "or debuggable=true via DSL"
+            )
+        }
+    }
+
+    @Test
     fun `test injecting the debug build type to be profileable`() {
         val app = project.getSubproject(":app")
         val result = project.executor()
@@ -165,6 +271,8 @@ class ProfileableTest {
             "android.compileSdkVersion $DEFAULT_COMPILE_SDK_VERSION",
             "android.compileSdkVersion $lowCompileSdkVersion",
         )
+        app.buildFile.appendText("android.buildTypes.debug.debuggable false\n")
+
         val result = project.executor()
             .with(StringOption.PROFILING_MODE, "profileable")
             .expectFailure()
@@ -172,10 +280,68 @@ class ProfileableTest {
 
         result.stderr.use { out ->
             ScannerSubject.assertThat(out).contains(
-                "'profileable' is enabled with compile SDK less than API 29."
+                "'profileable' is enabled in variant 'debug' with compile SDK less than API 29."
             )
             ScannerSubject.assertThat(out).contains(
                     "Recommended action: If possible, upgrade compileSdk from $lowCompileSdkVersion to at least API 29."
+            )
+        }
+    }
+
+    @Test
+    fun `build with compileSdk less than 29 fails with variant api`() {
+        val app = project.getSubproject(":app")
+        app.buildFile.appendText("android.buildTypes.debug.debuggable false\n")
+        app.buildFile.appendText(
+            """
+            androidComponents {
+                 beforeVariants(selector().withBuildType("debug"), { builder ->
+                      builder.setProfileable(true)
+                 })
+           }
+           """.trimIndent()
+        )
+        val lowCompileSdkVersion = 28
+        TestFileUtils.searchAndReplace(
+            app.buildFile.absoluteFile,
+            "android.compileSdkVersion $DEFAULT_COMPILE_SDK_VERSION",
+            "android.compileSdkVersion $lowCompileSdkVersion",
+        )
+
+        val result = project.executor().expectFailure().run("assembleDebug")
+
+        result.stderr.use { out ->
+            ScannerSubject.assertThat(out).contains(
+                "'profileable' is enabled in variant 'debug' with compile SDK less than API 29."
+            )
+            ScannerSubject.assertThat(out).contains(
+                "Recommended action: If possible, upgrade compileSdk from $lowCompileSdkVersion to at least API 29."
+            )
+        }
+    }
+
+    @Test
+    fun `test fail on reading profileable from builder`() {
+        val app = project.getSubproject(":app")
+        app.buildFile.apply {
+            appendText("android.compileSdk 29\n")
+            appendText(
+                """
+            androidComponents {
+                 beforeVariants(selector().withBuildType("release"), { builder ->
+                      boolean prof = builder.profileable
+                 })
+           }
+           """.trimIndent()
+            )
+        }
+
+        val result = project.executor().expectFailure()
+            .with(BooleanOption.ENABLE_DEFAULT_DEBUG_SIGNING_CONFIG, true)
+            .run("assembleRelease")
+        result.stderr.use { out ->
+            ScannerSubject.assertThat(out).contains(
+                "You cannot access profileable on ApplicationVariantBuilder in the [AndroidComponentsExtension.beforeVariants]"
             )
         }
     }
