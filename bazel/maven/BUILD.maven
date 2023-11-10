@@ -16214,6 +16214,7 @@ maven_artifact(
     repo_path = "androidx/compose/ui/ui-util-android/1.5.0",
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
     ],
     visibility = ["//visibility:public"],
 )
@@ -20788,6 +20789,25 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.navigation.navigation-compose_2.6.0",
+    pom = "repository/androidx/navigation/navigation-compose/2.6.0/navigation-compose-2.6.0.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/navigation/navigation-compose/2.6.0",
+    deps = [
+        "androidx.activity.activity-compose_1.7.0",
+        "androidx.compose.animation.animation_1.0.1",
+        "androidx.compose.foundation.foundation-layout_1.0.1",
+        "androidx.compose.runtime.runtime_1.0.1",
+        "androidx.compose.runtime.runtime-saveable_1.0.1",
+        "androidx.compose.ui.ui_1.0.1",
+        "androidx.lifecycle.lifecycle-viewmodel-compose_2.6.1",
+        "androidx.navigation.navigation-runtime-ktx_2.6.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.20",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.navigation.navigation-compose_2.6.0-beta01",
     pom = "repository/androidx/navigation/navigation-compose/2.6.0-beta01/navigation-compose-2.6.0-beta01.pom",
     repo_root_path = "repository",
@@ -23456,6 +23476,25 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.wear.compose.compose-foundation_1.2.1",
+    pom = "repository/androidx/wear/compose/compose-foundation/1.2.1/compose-foundation-1.2.1.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/wear/compose/compose-foundation/1.2.1",
+    deps = [
+        "androidx.compose.foundation.foundation_1.5.0",
+        "androidx.compose.foundation.foundation-layout_1.5.0",
+        "androidx.compose.runtime.runtime_1.5.0",
+        "androidx.compose.ui.ui_1.5.0",
+        "androidx.compose.ui.ui-text_1.5.0",
+        "androidx.compose.ui.ui-util_1.5.0",
+        "androidx.core.core_1.10.0",
+        "androidx.profileinstaller.profileinstaller_1.3.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.wear.compose.compose-material-core_1.2.0-alpha10",
     pom = "repository/androidx/wear/compose/compose-material-core/1.2.0-alpha10/compose-material-core-1.2.0-alpha10.pom",
     repo_root_path = "repository",
@@ -23471,6 +23510,27 @@ maven_artifact(
         "androidx.compose.ui.ui-util_1.5.0-alpha04",
         "androidx.profileinstaller.profileinstaller_1.3.0",
         "androidx.wear.compose.compose-foundation_1.2.0-alpha10",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.wear.compose.compose-material-core_1.2.1",
+    pom = "repository/androidx/wear/compose/compose-material-core/1.2.1/compose-material-core-1.2.1.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/wear/compose/compose-material-core/1.2.1",
+    deps = [
+        "androidx.compose.animation.animation_1.5.0",
+        "androidx.compose.foundation.foundation_1.5.0",
+        "androidx.compose.material.material-icons-core_1.5.0",
+        "androidx.compose.material.material-ripple_1.5.0",
+        "androidx.compose.runtime.runtime_1.5.0",
+        "androidx.compose.ui.ui_1.5.0",
+        "androidx.compose.ui.ui-text_1.5.0",
+        "androidx.compose.ui.ui-util_1.5.0",
+        "androidx.profileinstaller.profileinstaller_1.3.0",
+        "androidx.wear.compose.compose-foundation_1.2.1",
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
     ],
     visibility = ["//visibility:public"],
@@ -23494,6 +23554,29 @@ maven_artifact(
         "androidx.profileinstaller.profileinstaller_1.3.0",
         "androidx.wear.compose.compose-foundation_1.2.0-alpha10",
         "androidx.wear.compose.compose-material-core_1.2.0-alpha10",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.wear.compose.compose-material_1.2.1",
+    pom = "repository/androidx/wear/compose/compose-material/1.2.1/compose-material-1.2.1.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/wear/compose/compose-material/1.2.1",
+    deps = [
+        "androidx.compose.animation.animation_1.5.0",
+        "androidx.compose.foundation.foundation_1.5.0",
+        "androidx.compose.material.material-icons-core_1.5.0",
+        "androidx.compose.material.material-ripple_1.5.0",
+        "androidx.compose.runtime.runtime_1.5.0",
+        "androidx.compose.ui.ui_1.5.0",
+        "androidx.compose.ui.ui-text_1.5.0",
+        "androidx.compose.ui.ui-util_1.5.0",
+        "androidx.lifecycle.lifecycle-common_2.5.1",
+        "androidx.profileinstaller.profileinstaller_1.3.0",
+        "androidx.wear.compose.compose-foundation_1.2.1",
+        "androidx.wear.compose.compose-material-core_1.2.1",
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
     ],
     visibility = ["//visibility:public"],
@@ -23541,6 +23624,26 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.wear.compose.compose-navigation_1.2.1",
+    pom = "repository/androidx/wear/compose/compose-navigation/1.2.1/compose-navigation-1.2.1.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/wear/compose/compose-navigation/1.2.1",
+    deps = [
+        "androidx.activity.activity-compose_1.7.0",
+        "androidx.compose.runtime.runtime_1.5.0",
+        "androidx.compose.ui.ui_1.5.0",
+        "androidx.lifecycle.lifecycle-viewmodel-compose_2.6.0",
+        "androidx.navigation.navigation-common_2.6.0",
+        "androidx.navigation.navigation-compose_2.6.0",
+        "androidx.navigation.navigation-runtime_2.6.0",
+        "androidx.profileinstaller.profileinstaller_1.3.0",
+        "androidx.wear.compose.compose-material_1.2.1",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.wear.compose.compose-ui-tooling_1.2.0-alpha10",
     pom = "repository/androidx/wear/compose/compose-ui-tooling/1.2.0-alpha10/compose-ui-tooling-1.2.0-alpha10.pom",
     repo_root_path = "repository",
@@ -23548,6 +23651,19 @@ maven_artifact(
     deps = [
         "androidx.annotation.annotation_1.5.0",
         "androidx.compose.ui.ui-tooling-preview_1.5.0-alpha04",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.wear.compose.compose-ui-tooling_1.2.1",
+    pom = "repository/androidx/wear/compose/compose-ui-tooling/1.2.1/compose-ui-tooling-1.2.1.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/wear/compose/compose-ui-tooling/1.2.1",
+    deps = [
+        "androidx.annotation.annotation_1.5.0",
+        "androidx.compose.ui.ui-tooling-preview_1.5.0",
         "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
     ],
     visibility = ["//visibility:public"],

@@ -58,7 +58,7 @@ private fun RecipeExecutor.commonComposeRecipe(
     // Add Compose Wear dependencies; the Compose BOM doesn't include Wear.
     val wearComposeVersionVarName =
         getDependencyVarName("androidx.wear.compose:compose-material", "wear_compose_version")
-    val wearComposeVersion = getExtVar(wearComposeVersionVarName, "1.1.2")
+    val wearComposeVersion = getExtVar(wearComposeVersionVarName, "1.2.1")
     addDependency(mavenCoordinate = "androidx.wear.compose:compose-material:$wearComposeVersion")
     addDependency(mavenCoordinate = "androidx.wear.compose:compose-foundation:$wearComposeVersion")
 
