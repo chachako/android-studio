@@ -70,6 +70,8 @@ private fun MainScreen(actions: MainScreenActions) {
         actions.doPost(client, "https://reqres.in/api/users", POST_DATA, JSON_TYPE)
       }
     }
+    button("gRPC Proto") { actions.doProtoGrpc("Foo") }
+    button("gRPC Json") { actions.doJsonGrpc("Bar") }
   }
 }
 

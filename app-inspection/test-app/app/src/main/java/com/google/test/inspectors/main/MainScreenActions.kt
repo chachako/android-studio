@@ -10,4 +10,8 @@ internal interface MainScreenActions {
   fun doGet(client: HttpClient, url: String) {}
 
   fun doPost(client: HttpClient, url: String, data: ByteArray, type: String) {}
+
+  fun doProtoGrpc(name: String) {}
+
+  fun doJsonGrpc(name: String) {}
 }

@@ -12,10 +12,13 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import com.google.grpc.proto.protoRequest
 import com.google.test.inspectors.AppJobService
 import com.google.test.inspectors.AppWorker
 import com.google.test.inspectors.HttpClient
 import com.google.test.inspectors.Logger
+import com.google.test.inspectors.grpc.GrpcClient
+import com.google.test.inspectors.grpc.json.JsonRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
@@ -41,10 +44,14 @@ private const val StopTimeoutMillis: Long = 5000
 private val WhileUiSubscribed: SharingStarted = SharingStarted.WhileSubscribed(StopTimeoutMillis)
 
 @HiltViewModel
-internal class MainViewModel @Inject constructor(private val application: Application) :
-  ViewModel(), MainScreenActions {
+internal class MainViewModel
+@Inject
+constructor(
+  private val application: Application,
+) : ViewModel(), MainScreenActions {
   private val snackFlow: MutableStateFlow<String?> = MutableStateFlow(null)
   val snackState: StateFlow<String?> = snackFlow.stateIn(viewModelScope, WhileUiSubscribed, null)
+  private val grpcClient = GrpcClient()
 
   override fun startJob() {
     val id = jobId.getAndIncrement()
@@ -82,6 +89,20 @@ internal class MainViewModel @Inject constructor(private val application: Applic
     viewModelScope.launch {
       val result = client.doPost(url, data, type)
       snackFlow.value = "${client.name} Result: ${result.rc}"
+    }
+  }
+
+  override fun doProtoGrpc(name: String) {
+    viewModelScope.launch {
+      val response = grpcClient.doProtoGrpc(protoRequest { this.name = name })
+      snackFlow.value = response.message
+    }
+  }
+
+  override fun doJsonGrpc(name: String) {
+    viewModelScope.launch {
+      val response = grpcClient.doJsonGrpc(JsonRequest(name))
+      snackFlow.value = response.message
     }
   }
 }

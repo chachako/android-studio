@@ -35,23 +35,32 @@ android {
 }
 
 dependencies {
+  implementation(project(":proto"))
+
   implementation(libs.activity.compose)
   implementation(libs.androidx.hilt.navigation.compose)
-  implementation(libs.androidx.lifecycle.viewmodel.compose)
+  implementation(libs.androidx.lifecycle.livedata.ktx)
   implementation(libs.androidx.lifecycle.runtime.compose)
+  implementation(libs.androidx.lifecycle.viewmodel.compose)
   implementation(libs.androidx.navigation.compose)
   implementation(libs.androidx.work)
   implementation(libs.core.ktx)
+  implementation(libs.grpc.core)
+  implementation(libs.grpc.inprocess)
+  implementation(libs.grpc.kotlin.stub)
+  implementation(libs.grpc.protobuf.lite)
+  implementation(libs.grpc.stub)
+  implementation(libs.gson)
   implementation(libs.hilt.android)
   implementation(libs.lifecycle.runtime.ktx)
   implementation(libs.material3)
-  implementation(libs.androidx.lifecycle.livedata.ktx)
   implementation(libs.okhttp)
   implementation(libs.okhttp3)
   implementation(libs.ui)
   implementation(libs.ui.graphics)
   implementation(libs.ui.tooling.preview)
   implementation(platform(libs.compose.bom))
+
   kapt(libs.hilt.compiler)
   debugImplementation(libs.androidx.ui.tooling)
 }

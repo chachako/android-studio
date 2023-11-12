@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Inspectors Test App"
 include(":app")
+include(":proto")
