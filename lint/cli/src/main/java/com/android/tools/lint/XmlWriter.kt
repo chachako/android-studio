@@ -30,6 +30,7 @@ import com.android.SdkConstants.TAG_LOCATION
 import com.android.SdkConstants.VALUE_FALSE
 import com.android.SdkConstants.VALUE_TRUE
 import com.android.tools.lint.client.api.LintDriver
+import com.android.tools.lint.client.api.LintFixPerformer.Companion.canAutoFix
 import com.android.tools.lint.client.api.PrettyPaths
 import com.android.tools.lint.detector.api.AllOfConstraint
 import com.android.tools.lint.detector.api.AnyOfConstraint
@@ -64,8 +65,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 /** A reporter which emits lint results into an XML report. */
-open class XmlWriter
-constructor(
+open class XmlWriter(
   /** Client handling IO, path normalization and error reporting. */
   private val client: LintCliClient,
   /** The type of report to create. */
@@ -465,11 +465,11 @@ constructor(
     writer.write("<")
     writer.write(TAG_FIX)
     lintFix.getDisplayName()?.let { writeAttribute(writer, 3, ATTR_DESCRIPTION, it) }
-    writeAttribute(writer, 3, ATTR_AUTO, LintFixPerformer.canAutoFix(lintFix).toString())
+    writeAttribute(writer, 3, ATTR_AUTO, canAutoFix(lintFix).toString())
 
     var haveChildren = false
 
-    val performer = LintFixPerformer(client, false)
+    val performer = LintCliFixPerformer(client, false)
     val files = performer.computeEdits(incident, lintFix)
     if (files.isNotEmpty()) {
       haveChildren = true
@@ -535,6 +535,12 @@ constructor(
         if (lintFix.imports.isNotEmpty()) {
           writeAttribute(writer, indented, ATTR_IMPORTS, lintFix.imports.joinToString(","))
         }
+        if (lintFix.globally) {
+          writeAttribute(writer, indented, ATTR_REPEATEDLY, VALUE_TRUE)
+        }
+        if (lintFix.optional) {
+          writeAttribute(writer, indented, ATTR_OPTIONAL, VALUE_TRUE)
+        }
         val range = lintFix.range
         if (range != null) {
           writer.write(">\n")
@@ -555,10 +561,10 @@ constructor(
         lintFix.namespace?.let { writeAttribute(writer, indented, ATTR_NAMESPACE, it) }
         writeAttribute(writer, indented, ATTR_ATTRIBUTE, lintFix.attribute)
         lintFix.value?.let { writeAttribute(writer, indented, ATTR_VALUE, it) }
-        if (lintFix.dot != Integer.MIN_VALUE) {
-          writeAttribute(writer, indented, ATTR_DOT, lintFix.dot.toString())
+        if (lintFix.point != null) {
+          writeAttribute(writer, indented, ATTR_POINT, lintFix.point.toString())
         }
-        if (lintFix.mark != Integer.MIN_VALUE) {
+        if (lintFix.mark != null) {
           writeAttribute(writer, indented, ATTR_MARK, lintFix.mark.toString())
         }
         val range = lintFix.range
@@ -799,7 +805,7 @@ const val ATTR_CHECK_DEPS = "dependencies"
 const val ATTR_ATTRIBUTE = "attribute"
 const val ATTR_NAMESPACE = "namespace"
 const val ATTR_RANGE = "range"
-const val ATTR_DOT = "dot"
+const val ATTR_POINT = "point"
 const val ATTR_MARK = "mark"
 const val ATTR_SOURCE = "source"
 const val ATTR_REPLACE = "replace"
@@ -815,6 +821,8 @@ const val ATTR_BINARY = "binary"
 const val ATTR_SHORTEN_NAMES = "shortenNames"
 const val ATTR_REFORMAT = "reformat"
 const val ATTR_IMPORTS = "imports"
+const val ATTR_REPEATEDLY = "repeat"
+const val ATTR_OPTIONAL = "optional"
 const val ATTR_OFFSET = "offset"
 const val ATTR_AFTER = "after"
 const val ATTR_BEFORE = "before"

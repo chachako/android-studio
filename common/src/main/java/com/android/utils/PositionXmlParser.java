@@ -484,15 +484,19 @@ public class PositionXmlParser {
     /**
      * Finds the leaf node at the given offset.
      *
-     * @param document root node
-     * @param offset   offset to look for
+     * @param node the root node (or document)
+     * @param offset offset to look for
      * @return the leaf node at that offset, if any
      */
     @Nullable
-    public static Node findNodeAtOffset(@NonNull Document document, int offset) {
-        Element root = document.getDocumentElement();
-        if (root != null) {
-            return findNodeAtOffset(root, offset);
+    public static Node findNodeAt(@NonNull Node node, int offset) {
+        if (node instanceof Document) {
+            Element root = ((Document) node).getDocumentElement();
+            if (root != null) {
+                return findNodeAtOffset(root, offset);
+            }
+        } else {
+            return findNodeAtOffset(node, offset);
         }
 
         return null;

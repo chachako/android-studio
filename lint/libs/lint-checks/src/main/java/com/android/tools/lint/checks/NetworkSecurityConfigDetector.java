@@ -31,6 +31,7 @@ import com.android.tools.lint.detector.api.Issue;
 import com.android.tools.lint.detector.api.Lint;
 import com.android.tools.lint.detector.api.LintFix;
 import com.android.tools.lint.detector.api.Location;
+import com.android.tools.lint.detector.api.LocationType;
 import com.android.tools.lint.detector.api.Project;
 import com.android.tools.lint.detector.api.ResourceXmlDetector;
 import com.android.tools.lint.detector.api.Scope;
@@ -50,6 +51,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import kotlin.text.StringsKt;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -468,6 +470,7 @@ public class NetworkSecurityConfigDetector extends ResourceXmlDetector {
                             // incorrect digest length
                             String message =
                                     String.format(
+                                            Locale.getDefault(),
                                             "Decoded digest length `%1$d` does not match expected "
                                                     + "length for `%2$s` of `%3$d`",
                                             decodedDigest.length,
@@ -567,7 +570,18 @@ public class NetworkSecurityConfigDetector extends ResourceXmlDetector {
                             "Misspelled tag `<%1$s>`: Did you mean `%2$s`?",
                             tagName, suggestionString);
 
-            context.report(ISSUE, node, context.getNameLocation(node), message);
+            List<LintFix> fixes = new ArrayList<>();
+            for (String suggestion : suggestions) {
+                fixes.add(
+                        LintFix.create()
+                                .renameTag(
+                                        tagName,
+                                        suggestion,
+                                        context.getLocation(node, LocationType.ALL))
+                                .build());
+            }
+            LintFix fix = LintFix.create().alternatives(fixes.toArray(new LintFix[0]));
+            context.report(ISSUE, node, context.getNameLocation(node), message, fix);
             return true;
         }
         return false;
@@ -585,26 +599,36 @@ public class NetworkSecurityConfigDetector extends ResourceXmlDetector {
         for (int i = 0; i < attributes.getLength(); i++) {
             Node attr = attributes.item(i);
             String nodeName = attr.getNodeName();
-            if (nodeName != null) {
+            if (!StringsKt.isBlank(nodeName)) {
                 suggestions = generateTypoSuggestions(nodeName, validAttributeNames);
             }
             if (suggestions != null && suggestions.size() == 1) {
+                String suggestion = suggestions.get(0);
+                String nodeValue = attr.getNodeValue();
+                LintFix fix =
+                        LintFix.create()
+                                .replaceAttribute((Attr) attr, null, suggestion, nodeValue)
+                                .name("Replace with `" + suggestion + "`")
+                                .build();
                 context.report(
                         ISSUE,
                         attr,
                         context.getNameLocation(attr),
                         String.format(
                                 "Misspelled attribute `%1$s`: Did you mean `%2$s`?",
-                                nodeName, attrName));
-                foundSpellingError |= true;
+                                nodeName, attrName),
+                        fix);
+                foundSpellingError = true;
             }
         }
         if (!foundSpellingError && requiredAttribute) {
+            LintFix fix = LintFix.create().set().todo(null, attrName).build();
             context.report(
                     ISSUE,
                     node,
                     context.getNameLocation(node),
-                    String.format("Missing `%1$s` attribute", attrName));
+                    String.format("Missing `%1$s` attribute", attrName),
+                    fix);
         }
     }
 
@@ -633,98 +657,6 @@ public class NetworkSecurityConfigDetector extends ResourceXmlDetector {
                 context.getNameLocation(element)
                         .withSecondary(handle.resolve(), ALREADY_DECLARED_MESSAGE),
                 String.format("Expecting at most 1 `<%1$s>`", elementName));
-    }
-
-    /**
-     * For a given error message created by this lint detector, returns whether the error was due to
-     * a typo in an attribute name. This is primarily for use by IDE quick fixes.
-     *
-     * @param errorMessage The error message associated with this detector.
-     * @return true if this is a spelling error in an attribute.
-     */
-    @SuppressWarnings("unused")
-    public static boolean isAttributeSpellingError(@NonNull String errorMessage) {
-        return errorMessage.startsWith("Misspelled attribute");
-    }
-
-    /**
-     * For a given misspelled attribute, return the allowed suggestions/corrections.
-     *
-     * @param errorAttribute the misspelled attribute
-     * @param parentTag the parent tag used for determining the allowed attributes
-     * @return list of strings containing the suggestions or null if no suggestions
-     */
-    @SuppressWarnings("unused")
-    @NonNull
-    public static List<String> getAttributeSpellingSuggestions(
-            @NonNull String errorAttribute, @NonNull String parentTag) {
-        Collection<String> validAttributes;
-        switch (parentTag) {
-            case TAG_BASE_CONFIG: // fallthrough
-            case TAG_DOMAIN_CONFIG: // fallthrough
-            case TAG_DEBUG_OVERRIDES:
-                validAttributes = Collections.singleton(ATTR_CLEARTEXT_TRAFFIC_PERMITTED);
-                break;
-            case TAG_CERTIFICATES:
-                validAttributes = Collections.singleton(ATTR_SRC);
-                break;
-            case TAG_DOMAIN:
-                validAttributes = Collections.singleton(ATTR_INCLUDE_SUBDOMAINS);
-                break;
-            case TAG_PIN_SET:
-                validAttributes = Collections.singleton(ATTR_EXPIRATION);
-                break;
-            case TAG_PIN:
-                validAttributes = Collections.singleton(ATTR_DIGEST);
-                break;
-            default:
-                return Collections.emptyList();
-        }
-        List<String> result = generateTypoSuggestions(errorAttribute, validAttributes);
-        return result == null ? Collections.emptyList() : result;
-    }
-
-    /**
-     * @param errorMessage The error message associated with this detector.
-     * @return true if this is a spelling error in the element name.
-     */
-    @SuppressWarnings("unused")
-    public static boolean isTagSpellingError(@NonNull String errorMessage) {
-        return errorMessage.startsWith("Misspelled tag");
-    }
-
-    /**
-     * For a given misspelled attribute, return the allowed suggestions/corrections.
-     *
-     * @param errorTag the misspelled attribute
-     * @param parentTag the parent tag used for determining the allowed attributes
-     * @return list of strings containing the suggestions or null if no suggestions
-     */
-    @SuppressWarnings("unused")
-    @NonNull
-    public static List<String> getTagSpellingSuggestions(
-            @NonNull String errorTag, @NonNull String parentTag) {
-        Collection<String> validTags;
-        switch (parentTag) {
-            case TAG_NETWORK_SECURITY_CONFIG:
-                validTags = VALID_BASE_TAGS;
-                break;
-            case TAG_BASE_CONFIG: // fallthrough
-            case TAG_DOMAIN_CONFIG: // fallthrough
-            case TAG_DEBUG_OVERRIDES:
-                validTags = VALID_CONFIG_TAGS;
-                break;
-            case TAG_TRUST_ANCHORS:
-                validTags = Collections.singleton(TAG_CERTIFICATES);
-                break;
-            case TAG_PIN_SET:
-                validTags = Collections.singleton(TAG_PIN);
-                break;
-            default:
-                return Collections.emptyList();
-        }
-        List<String> result = generateTypoSuggestions(errorTag, validTags);
-        return result == null ? Collections.emptyList() : result;
     }
 
     /**

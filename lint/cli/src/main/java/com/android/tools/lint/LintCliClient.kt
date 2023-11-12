@@ -92,7 +92,6 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
-import java.io.OutputStreamWriter
 import java.io.PrintWriter
 import java.net.URL
 import java.net.URLConnection
@@ -338,7 +337,7 @@ open class LintCliClient : LintClient {
     writeReports(stats)
     if (flags.isAutoFix) {
       val statistics = !flags.isQuiet
-      val performer = LintFixPerformer(this, statistics)
+      val performer = LintCliFixPerformer(this, statistics, updateImports = flags.isAutoFixImports)
       val fixed = performer.fix(definiteIncidents)
       if (fixed && flags.isAbortOnAutoFix) {
         val message =
@@ -1857,9 +1856,7 @@ open class LintCliClient : LintClient {
     /** Creates a print writer for UTF-8 output */
     @JvmStatic
     fun OutputStream.printWriter(): PrintWriter {
-      // When we switch to Java 11 this can be
-      // return PrintWriter(this, true, Charsets.UTF_8)
-      return PrintWriter(OutputStreamWriter(this, Charsets.UTF_8).buffered(), true)
+      return PrintWriter(this, true, Charsets.UTF_8)
     }
   }
 

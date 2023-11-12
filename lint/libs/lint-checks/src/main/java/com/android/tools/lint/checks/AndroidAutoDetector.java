@@ -35,6 +35,7 @@ import com.android.tools.lint.detector.api.Detector;
 import com.android.tools.lint.detector.api.Implementation;
 import com.android.tools.lint.detector.api.Issue;
 import com.android.tools.lint.detector.api.JavaContext;
+import com.android.tools.lint.detector.api.LintFix;
 import com.android.tools.lint.detector.api.Location;
 import com.android.tools.lint.detector.api.Scope;
 import com.android.tools.lint.detector.api.Severity;
@@ -274,6 +275,19 @@ public class AndroidAutoDetector extends Detector implements XmlScanner, SourceC
                         // no name specified
                         continue;
                     }
+
+                    LintFix.GroupBuilder alternatives = fix().alternatives();
+                    String value = node.getValue();
+                    String[] suggestions = AndroidAutoDetector.getAllowedAutomotiveAppTypes();
+                    for (String suggestion : suggestions) {
+                        alternatives.add(
+                                fix().name("Replace with \"" + suggestion + "\"")
+                                        .replace()
+                                        .text(value)
+                                        .with(suggestion)
+                                        .build());
+                    }
+
                     context.report(
                             INVALID_USES_TAG_ISSUE,
                             node,
@@ -289,7 +303,8 @@ public class AndroidAutoDetector extends Detector implements XmlScanner, SourceC
                                     + "` for the name "
                                     + "attribute in "
                                     + TAG_USES
-                                    + " tag");
+                                    + " tag",
+                            alternatives.build());
                 }
             }
         }

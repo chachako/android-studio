@@ -21,6 +21,27 @@ Guide.
   message change doesn't suddenly invalidate all existing baseline
   files for your issue.
 
+* The replace-string quickfix descriptor now lets you replace a string
+  repeatedly. Example:
+  ```
+  fix().replace().text("Foo").with("Bar").repeatedly().build()
+  ```
+
+  You can also match an element optionally. Example:
+  ```
+  fix().composite(
+    fix().replace().text("<Tag>").with("<tag>").build(),
+     fix().replace().text("</Tag>").with("</tag>").optional().build()
+  )
+  ```
+
+* The quickfix machinery was improved significantly. It now does a
+  better job inserting imports (in alphabetical order instead of always
+  prepending to the import list), inserting new XML attributes in the
+  right canonical Android order, cleaning up whitespace after edits,
+  etc. This may result in some diffs in any quickfix-related unit tests
+  (e.g. `lint().run().expectFixDiffs(...)`)
+
 * The `getFileNameWithParent` utility method now always uses / as
   a file separator instead of the platform-specific one (e.g. \ on
   Windows). This ensures that baselines don't vary their error

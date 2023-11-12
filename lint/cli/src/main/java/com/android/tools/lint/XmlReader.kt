@@ -297,7 +297,7 @@ class XmlReader(
     val type =
       if (tag == TAG_FIX_ALTERNATIVES) LintFix.GroupType.ALTERNATIVES
       else LintFix.GroupType.COMPOSITE
-    val newFix = LintFix.LintFixGroup(displayName, familyName, type, fixList)
+    val newFix = LintFix.LintFixGroup(displayName, familyName, type, fixList, robot, independent)
     newFix.autoFix(robot, independent)
     addFix(newFix)
     fixLists.addLast(fixList)
@@ -348,8 +348,8 @@ class XmlReader(
     var namespace: String? = null
     var attributeName: String? = null
     var attributeValue: String? = null
-    var dot = Integer.MIN_VALUE
-    var mark = Integer.MIN_VALUE
+    var point: Int? = null
+    var mark: Int? = null
     var displayName: String? = null
     var familyName: String? = null
     var robot = false
@@ -363,8 +363,8 @@ class XmlReader(
         ATTR_NAMESPACE -> namespace = value
         ATTR_ATTRIBUTE -> attributeName = value
         ATTR_VALUE -> attributeValue = value
-        ATTR_DOT -> dot = value.toInt()
-        ATTR_MARK -> mark = value.toInt()
+        ATTR_POINT -> point = value.toInt().let { if (it == -1) null else it }
+        ATTR_MARK -> mark = value.toInt().let { if (it == -1) null else it }
         ATTR_DESCRIPTION -> displayName = value
         ATTR_FAMILY -> familyName = value
         ATTR_INDEPENDENT -> independent = true
@@ -384,7 +384,7 @@ class XmlReader(
       .attribute(attributeName)
       .value(attributeValue)
       .range(null)
-      .select(dot, mark)
+      .apply { if (point != null && mark != null) select(point, mark) }
       .autoFix(robot, independent)
       .build()
   }
@@ -466,6 +466,8 @@ class XmlReader(
     var shortenNames = false
     var reformat = false
     var imports: List<String>? = null
+    var repeatedly = false
+    var optional = false
     var displayName: String? = null
     var familyName: String? = null
     var robot = false
@@ -483,6 +485,8 @@ class XmlReader(
         ATTR_SHORTEN_NAMES -> shortenNames = true
         ATTR_REFORMAT -> reformat = true
         ATTR_IMPORTS -> imports = value.split(",")
+        ATTR_REPEATEDLY -> repeatedly = true
+        ATTR_OPTIONAL -> optional = true
         ATTR_DESCRIPTION -> displayName = value
         ATTR_FAMILY -> familyName = value
         ATTR_INDEPENDENT -> independent = true
@@ -506,6 +510,8 @@ class XmlReader(
       .shortenNames(shortenNames)
       .reformat(reformat)
       .apply { imports?.let { this.imports(*it.toTypedArray()) } }
+      .repeatedly(repeatedly)
+      .optional(optional)
       .autoFix(robot, independent)
       .build()
   }

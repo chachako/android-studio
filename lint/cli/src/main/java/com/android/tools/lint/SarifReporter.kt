@@ -28,6 +28,7 @@ import com.android.SdkConstants.FN_BUILD_GRADLE_KTS
 import com.android.repository.Revision
 import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.LintClient
+import com.android.tools.lint.client.api.LintFixPerformer
 import com.android.tools.lint.detector.api.DefaultPosition
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue
@@ -619,7 +620,7 @@ constructor(client: LintCliClient, output: File) : Reporter(client, output) {
         listOf(lintFix)
       }
 
-    val performer = LintFixPerformer(client, false)
+    val performer = LintCliFixPerformer(client, false)
     val edits =
       try {
         fixes.map { fix -> Pair(fix, performer.computeEdits(incident, fix)) }

@@ -32,7 +32,9 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.xml
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.LintDriver
 import com.android.tools.lint.client.api.LintRequest
+import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.JavaContext
+import com.android.tools.lint.detector.api.LintFix
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.XmlContext
@@ -500,13 +502,19 @@ fun runOnSources(
   bucketSize: Int = 500,
   absolutePaths: Boolean = currentPlatform() != PLATFORM_WINDOWS,
   testModes: List<TestMode> = listOf(TestMode.DEFAULT),
-  verbose: Boolean = false
+  verbose: Boolean = false,
+  expectFixDiffs: String? = null,
+  applyFixes: ((Incident, List<LintFix>) -> LintFix?)? = null
 ) {
+  if (applyFixes != null && !absolutePaths) {
+    error("applyFixes = true requires absolutePaths = true")
+  }
   val seen = HashSet<String>()
   val root = dir.canonicalFile
   val sourceFiles =
     root.walkTopDown().filter { !ignore(it) && accept(it) }.sortedBy { it.path }.toList()
   val sb = StringBuilder()
+  val fixSb = StringBuilder()
   val buckets = sourceFiles.size / bucketSize
   for (i in 0..buckets) {
     val from = i * bucketSize
@@ -532,7 +540,12 @@ fun runOnSources(
         if (keep) {
           val srcPath =
             if (absolutePaths) "src/$path"
-            else path.removePrefix(root.path).removePrefix(File.separator).portablePath()
+            else
+              path.removePrefix(root.path).removePrefix(File.separator).portablePath().let { path ->
+                // Make sure we place relative paths within src/, otherwise they won't be
+                // treated as Kotlin/Java sources in the test project!
+                if (!path.startsWith("src/")) "src/$path" else path
+              }
 
           if (srcPath.endsWith(DOT_KT)) kotlin(srcPath, source)
           else if (srcPath.endsWith(DOT_JAVA)) java(srcPath, source)
@@ -579,6 +592,27 @@ fun runOnSources(
           "" // such that we pass and continue
         }
       )
+
+      if (expectFixDiffs != null) {
+        result
+          .verifyFixes(TestMode.DEFAULT)
+          .expectFixDiffs(
+            expected,
+            transformer = { report ->
+              val cleaned =
+                if (absolutePaths) {
+                  report.removePrefix("src").replace("\nsrc", "\n")
+                } else {
+                  report.replace(root.path, "").replace(root.path.portablePath(), "")
+                }
+              fixSb.append(cleaned).append("\n")
+              if (verbose) {
+                println("Partial:\n$cleaned\n")
+              }
+              "" // such that we pass and continue
+            }
+          )
+      }
     } catch (ignore: Throwable) {
       // Gracefully handle parsing errors in some batches
       if (verbose) {
@@ -586,7 +620,26 @@ fun runOnSources(
       }
       result?.cleanup()
     }
+
+    if (applyFixes != null && result != null) {
+      result.applyFixes(applyFixes) { project, file, bytes ->
+        val realFile =
+          if (project != null) File(file.path.removePrefix(project.dir.path).removePrefix("/src"))
+          else file
+        if (bytes == null) {
+          realFile.delete()
+        } else {
+          val parent = realFile.parentFile
+          parent?.mkdirs()
+          realFile.writeBytes(bytes)
+        }
+      }
+    }
   }
   val actual = sb.toString().trim()
-  assertEquals(expected, actual)
+  assertEquals(expected.trimIndent().trim(), actual)
+
+  if (expectFixDiffs != null) {
+    assertEquals(expectFixDiffs.trimIndent().trim(), fixSb.toString().trim())
+  }
 }

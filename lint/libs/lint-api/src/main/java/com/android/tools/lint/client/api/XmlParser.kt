@@ -207,6 +207,15 @@ abstract class XmlParser {
   abstract fun findNodeAt(context: XmlContext, offset: Int): Node?
 
   /**
+   * Returns the leaf node at the given offset (biased towards the right), or null if not found
+   *
+   * @param node the node (or document) to search from
+   * @param offset the offset to search at
+   * @return the leaf node, if any
+   */
+  abstract fun findNodeAt(node: Node, offset: Int): Node?
+
+  /**
    * Returns a [Location] for the given DOM node
    *
    * @return a location for the given node

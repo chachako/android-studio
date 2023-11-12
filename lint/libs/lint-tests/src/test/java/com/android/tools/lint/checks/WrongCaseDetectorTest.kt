@@ -58,5 +58,28 @@ class WrongCaseDetectorTest : AbstractCheckTest() {
             4 errors, 0 warnings
             """
       )
+      .expectFixDiffs(
+        """
+        Fix for res/layout/case.xml line 1: Replace with `<merge>`:
+        @@ -1 +1
+        - <Merge xmlns:android="http://schemas.android.com/apk/res/android" >
+        + <merge xmlns:android="http://schemas.android.com/apk/res/android" >
+        @@ -7 +7
+        - </Merge>
+        + </merge>
+        Fix for res/layout/case.xml line 3: Replace with `<fragment>`:
+        @@ -3 +3
+        -     <Fragment android:name="foo.bar.Fragment" />
+        +     <fragment android:name="foo.bar.Fragment" />
+        Fix for res/layout/case.xml line 4: Replace with `<include>`:
+        @@ -4 +4
+        -     <Include layout="@layout/foo" />
+        +     <include layout="@layout/foo" />
+        Fix for res/layout/case.xml line 5: Replace with `<requestFocus>`:
+        @@ -5 +5
+        -     <RequestFocus />
+        +     <requestFocus />
+        """
+      )
   }
 }

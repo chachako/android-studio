@@ -135,7 +135,25 @@ public class AndroidAutoDetectorTest extends AbstractCheckTest {
                                         + "</automotiveApp>\n"))
                 .issues(AndroidAutoDetector.INVALID_USES_TAG_ISSUE)
                 .run()
-                .expect(expected);
+                .expect(expected)
+                .expectFixDiffs(
+                        ""
+                                + "Fix for res/xml/automotive_app_desc.xml line 3: Replace with \"media\":\n"
+                                + "@@ -3 +3\n"
+                                + "-     <uses name=\"medias\"/>\n"
+                                + "+     <uses name=\"media\"/>\n"
+                                + "Fix for res/xml/automotive_app_desc.xml line 3: Replace with \"notification\":\n"
+                                + "@@ -3 +3\n"
+                                + "-     <uses name=\"medias\"/>\n"
+                                + "+     <uses name=\"notification\"/>\n"
+                                + "Fix for res/xml/automotive_app_desc.xml line 3: Replace with \"sms\":\n"
+                                + "@@ -3 +3\n"
+                                + "-     <uses name=\"medias\"/>\n"
+                                + "+     <uses name=\"sms\"/>\n"
+                                + "Fix for res/xml/automotive_app_desc.xml line 3: Replace with \"template\":\n"
+                                + "@@ -3 +3\n"
+                                + "-     <uses name=\"medias\"/>\n"
+                                + "+     <uses name=\"template\"/>");
     }
 
     public void testMissingMediaSearchIntent() {

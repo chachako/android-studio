@@ -17,15 +17,17 @@ package com.android.tools.lint.checks.infrastructure
 
 import com.android.SdkConstants.DOT_XML
 import com.android.ide.common.xml.XmlPrettyPrinter
-import com.android.tools.lint.LintFixPerformer
-import com.android.tools.lint.LintFixPerformer.Companion.getLocation
+import com.android.tools.lint.LintCliFixPerformer
 import com.android.tools.lint.checks.infrastructure.TestLintResult.Companion.getDiff
+import com.android.tools.lint.client.api.LintFixPerformer.Companion.getLocation
+import com.android.tools.lint.client.api.LintFixPerformer.Companion.isEditingFix
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.LintFix
 import com.android.tools.lint.detector.api.LintFix.GroupType
 import com.android.tools.lint.detector.api.LintFix.LintFixGroup
 import com.android.tools.lint.detector.api.LintFix.SetAttribute
 import com.android.tools.lint.detector.api.LintFix.ShowUrl
+import com.android.tools.lint.detector.api.Project
 import com.android.utils.XmlUtils
 import com.google.common.base.Splitter
 import com.google.common.collect.Lists
@@ -40,7 +42,7 @@ import org.xml.sax.SAXException
 /**
  * Verifier which can simulate IDE quickfixes and check fix data.
  *
- * TODO: Merge with [LintFixPerformer] (though they work slightly differently; the fix verifier
+ * TODO: Merge with [LintCliFixPerformer] (though they work slightly differently; the fix verifier
  *   shows each individual fix applied to the doc in sequence, whereas the fix performer accumulates
  *   all the fixes into a single edit. But we should be able to share a bunch of the logic.)
  */
@@ -116,17 +118,29 @@ class LintFixVerifier(
    * @return this
    */
   fun expectFixDiffs(expected: String): LintFixVerifier {
+    return expectFixDiffs(expected) { it }
+  }
+
+  /**
+   * Applies the fixes and provides diffs of all the affected files, then compares it against the
+   * expected result.
+   *
+   * @param expected the diff description resulting from applying the diffs
+   * @param transformer which will convert the output from the fix performer before the comparison
+   * @return this
+   */
+  fun expectFixDiffs(expected: String, transformer: TestResultTransformer): LintFixVerifier {
     try {
       // Diff output format has changed; if we fail to verify, retry with
       // the older format (but if that doesn't fail, use the original
       // failure exceptions such that we present the new format.
-      expectFixDiffs(expected, compatMode = false)
+      expectFixDiffs(expected, compatMode = false, transformer = transformer)
     } catch (throwable: Throwable) {
       if (expected.isBlank()) {
         throw throwable
       }
       try {
-        expectFixDiffs(expected, compatMode = true)
+        expectFixDiffs(expected, compatMode = true, transformer = transformer)
       } catch (ignore: Throwable) {
         throw throwable
       }
@@ -134,11 +148,16 @@ class LintFixVerifier(
     return this
   }
 
-  private fun expectFixDiffs(expected: String, compatMode: Boolean): LintFixVerifier {
+  private fun expectFixDiffs(
+    expected: String,
+    compatMode: Boolean,
+    transformer: TestResultTransformer = TestResultTransformer { it }
+  ): LintFixVerifier {
     var expected = expected
     val diff = StringBuilder(100)
     checkFixes(null, null, diff, compatMode)
-    var actual = diff.toString().replace("\r\n", "\n").trimIndent().replace('$', '＄')
+    var actual =
+      transformer.transform(diff.toString().replace("\r\n", "\n").trimIndent().replace('$', '＄'))
     val originalActual = actual
     expected = expected.trimIndent().replace('$', '＄')
     if (
@@ -155,6 +174,13 @@ class LintFixVerifier(
       // since the latter is not done frequently.
       if (TOLERATE_AUTO_FIX_DIFFS && !expected.contains("Autofix for ")) {
         actual = actual.replace("Autofix for ", "Fix for ")
+      }
+
+      // Import order was adjusted recently
+      if (
+        diffWindow == 0 && dropImportLineNumberDiffs(expected) == dropImportLineNumberDiffs(actual)
+      ) {
+        return this
       }
 
       // Until 3.2 canary 10 the line numbers were off by one; try adjusting
@@ -296,25 +322,44 @@ class LintFixVerifier(
     }
   }
 
+  fun applyFixes(
+    pickFix: (Incident, List<LintFix>) -> LintFix?,
+    apply: (Project?, File, ByteArray?) -> Unit
+  ) {
+    val project = incidents.firstNotNullOfOrNull { it.project } ?: return
+    val performer =
+      object : LintCliFixPerformer(client, false, false, true /* for includes */) {
+        override fun writeFile(file: File, contents: ByteArray?) {
+          apply(project, file, contents)
+        }
+
+        override fun writeFile(file: File, contents: String) {
+          apply(project, file, contents.toByteArray(Charsets.UTF_8))
+        }
+      }
+    // TODO: Add filtering of incidents/fixes?
+    performer.fix(incidents)
+  }
+
   private fun applyFix(
     incident: Incident,
     lintFix: LintFix,
     before: MutableMap<String, String>,
     after: MutableMap<String, String>
   ): Boolean {
-    if (LintFixPerformer.isEditingFix(lintFix) || lintFix is LintFixGroup) {
+    if (isEditingFix(lintFix) || lintFix is LintFixGroup) {
       val edits = getLeafFixes(lintFix)
       val performer =
         object :
-          LintFixPerformer(
+          LintCliFixPerformer(
             client,
             printStatistics = false,
             requireAutoFixable = false,
             includeMarkers = task.includeSelectionMarkers
           ) {
-          override fun writeFile(pendingFile: PendingEditFile, contents: ByteArray?) {
+          override fun writeFile(file: File, contents: ByteArray?) {
             val project = incident.project
-            val targetPath = project?.getDisplayPath(pendingFile.file) ?: pendingFile.file.path
+            val targetPath = project?.getDisplayPath(file) ?: file.path
             val initial = findTestFile(targetPath)?.getContents() ?: "" // creating new file
             before[targetPath] = initial
             if (contents == null) {
@@ -326,10 +371,10 @@ class LintFixVerifier(
             }
           }
 
-          override fun writeFile(pendingFile: PendingEditFile, contents: String) {
+          override fun writeFile(file: File, contents: String) {
             val project = incident.project
-            val targetPath = project?.getDisplayPath(pendingFile.file) ?: pendingFile.file.path
-            val initial = client.getSourceText(pendingFile.file).toString()
+            val targetPath = project?.getDisplayPath(file) ?: file.path
+            val initial = getSourceText(file).toString()
             before[targetPath] = initial
             after[targetPath] = contents
           }
@@ -410,7 +455,8 @@ class LintFixVerifier(
       .append(incident.line + 1)
       .append(": ")
     val fixDescription = fix.getDisplayName()
-    if (fixDescription != null) {
+    // Compatibility: before we created a custom name here we just showed the URL
+    if (fixDescription != "Show " + fix.url && fixDescription != null) {
       diffs.append(fixDescription).append(":\n")
     }
     diffs.append(fix.url)
@@ -451,6 +497,31 @@ class LintFixVerifier(
      */
     fun bumpFixLineNumbers(output: String): String {
       return adjustLineNumbers(output) { it + 1 }
+    }
+
+    /**
+     * We recently updated the quickfix applier to insert imports alphabetically rather than always
+     * prepending to the front. This can create some diffs in existing tests. This CL just removes
+     * line numbers in diffs for import lines.
+     */
+    fun dropImportLineNumberDiffs(output: String): String {
+      if (output.contains("@@")) {
+        val lines = output.lines()
+        val sb = StringBuilder(output.length)
+        for (i in lines.indices) {
+          val line = lines[i]
+          if (
+            line.startsWith("@@ ") && i < lines.size - 1 && lines[i + 1].startsWith("+ import ")
+          ) {
+            sb.append("@@ -x +y")
+          } else {
+            sb.append(line)
+          }
+          sb.append('\n')
+        }
+        return sb.toString()
+      }
+      return output
     }
 
     /**
@@ -495,7 +566,7 @@ class LintFixVerifier(
     private fun getLeafFixes(fix: LintFix): List<LintFix> {
       val flattened: MutableList<LintFix> = mutableListOf()
       fun flatten(fix: LintFix) {
-        if (LintFixPerformer.isEditingFix(fix)) {
+        if (isEditingFix(fix)) {
           flattened.add(fix)
         } else if (fix is LintFixGroup && fix.type == GroupType.COMPOSITE) {
           for (nested in fix.fixes) {

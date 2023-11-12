@@ -93,7 +93,13 @@ public class NetworkSecurityConfigDetectorTest extends AbstractCheckTest {
                                         + "    </domain-config>\n"
                                         + "</network-security-config>"))
                 .run()
-                .expect(expected);
+                .expect(expected)
+                .expectFixDiffs(
+                        ""
+                                + "Fix for res/xml/network_config.xml line 9: Set src:\n"
+                                + "@@ -14 +14\n"
+                                + "-             <certificates />\n"
+                                + "+             <certificates src=\"[TODO]|\" />");
     }
 
     // Test a config file that has its base-config's cleartextTrafficPermitted flag set to "true"
@@ -153,7 +159,6 @@ public class NetworkSecurityConfigDetectorTest extends AbstractCheckTest {
     // Test a config file that only allows user certificates in debug environments
     // This should not trigger the warning about user certificates
     public void testAllowsUserCertificatesOnlyWhenDebuggable() {
-        String expected = "No warnings.";
         //noinspection all // Sample code
         lint().files(
                         xml(
@@ -171,7 +176,7 @@ public class NetworkSecurityConfigDetectorTest extends AbstractCheckTest {
                                         + "    </base-config>\n"
                                         + "</network-security-config>"))
                 .run()
-                .expect(expected);
+                .expectClean();
     }
 
     // Test expiration, invalid digest algorithm and invalid digest length for sha-256
@@ -461,7 +466,49 @@ public class NetworkSecurityConfigDetectorTest extends AbstractCheckTest {
                                         + "     <debug-ovrrides></debug-ovrrides>\n"
                                         + "</network-security-config>"))
                 .run()
-                .expect(expected);
+                .expect(expected)
+                .expectFixDiffs(
+                        ""
+                                + "Fix for res/xml/network_config.xml line 4: Replace with `<base-config>`:\n"
+                                + "@@ -4 +4\n"
+                                + "-      <base-cnofig>\n"
+                                + "-      </base-cnofig>\n"
+                                + "+      <base-config>\n"
+                                + "+      </base-config>\n"
+                                + "Fix for res/xml/network_config.xml line 6: Replace with `cleartextTrafficPermitted`:\n"
+                                + "@@ -10 +10\n"
+                                + "-         clearTxtTrafficPermitted=\"true\"\n"
+                                + "+         cleartextTrafficPermitted=\"true\"\n"
+                                + "Fix for res/xml/network_config.xml line 7: Replace with `includeSubdomains`:\n"
+                                + "@@ -12 +12\n"
+                                + "-         <domain includeSubdomain=\"true\" >\n"
+                                + "+         <domain includeSubdomains=\"true\" >\n"
+                                + "Fix for res/xml/network_config.xml line 8: Replace with `<trust-anchors>`:\n"
+                                + "@@ -8 +8\n"
+                                + "-         <trustAnchor>\n"
+                                + "+         <trust-anchors>\n"
+                                + "-         </trustAnchor>\n"
+                                + "+         </trust-anchors>\n"
+                                + "Fix for res/xml/network_config.xml line 15: Replace with `<certificates>`:\n"
+                                + "@@ -15 +15\n"
+                                + "-             <ceritficates src=\"@raw/debug_cas\"/>\n"
+                                + "+             <certificates src=\"@raw/debug_cas\"/>\n"
+                                + "Fix for res/xml/network_config.xml line 21: Replace with `src`:\n"
+                                + "@@ -35 +35\n"
+                                + "-             <certificates source=\"@raw/debug_cas\" />\n"
+                                + "+             <certificates src=\"@raw/debug_cas\" />\n"
+                                + "Fix for res/xml/network_config.xml line 24: Replace with `digest`:\n"
+                                + "@@ -39 +39\n"
+                                + "-             <pin dgest=\"SHA-256\" >\n"
+                                + "+             <pin digest=\"SHA-256\" >\n"
+                                + "Fix for res/xml/network_config.xml line 25: Replace with `<pin>`:\n"
+                                + "@@ -25 +25\n"
+                                + "-             <pln digest=\"SHA-256\">fwza0LRMXouZHRC8Ei+4PyuldPDcf3UKgO/04cDM1oE=</pln>\n"
+                                + "+             <pin digest=\"SHA-256\">fwza0LRMXouZHRC8Ei+4PyuldPDcf3UKgO/04cDM1oE=</pin>\n"
+                                + "Fix for res/xml/network_config.xml line 32: Replace with `<debug-overrides>`:\n"
+                                + "@@ -32 +32\n"
+                                + "-      <debug-ovrrides></debug-ovrrides>\n"
+                                + "+      <debug-overrides></debug-overrides>");
     }
 
     public void testConfigDuplicatesMessage() {

@@ -2129,7 +2129,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
             @@ -1 +1
             + <data-extraction-rules>
             +     <cloud-backup>
-            +          <include domain="file" path="dd"/>
+            +          |<include domain="file" path="dd"/>
             +          <exclude domain="file" path="dd/fo3o.txt"/>
             +          <exclude domain="file" path="dd/ss/foo.txt"/>
             +     </cloud-backup>
@@ -2195,7 +2195,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
             + <data-extraction-rules>
             +     <cloud-backup disableIfNoEncryptionCapabilities="true">
             +          <!-- Some comment -->
-            +          <include domain="file" path="dd"/>
+            +          |<include domain="file" path="dd"/>
             +          <!-- <exclude domain="file" path="dd/fo3o.txt" requireFlags="deviceToDeviceTransfer"/> -->
             +          <exclude domain="file" path="dd/fo3o2.txt" requireFlags="clientSideEncryption"/>
             +          <exclude domain="file" path="dd/fo3o3.txt"/>
@@ -2255,7 +2255,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
             + <data-extraction-rules>
             +     <cloud-backup>
             +         <!--
-            +         TODO: Use <include> and <exclude> to control what is backed up.
+            +         |TODO: Use <include> and <exclude> to control what is backed up.
             +         The domain can be file, database, sharedpref, external or root.
             +         Examples:
             +

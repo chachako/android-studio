@@ -18,14 +18,19 @@ package com.android.tools.lint.detector.api
 import com.android.SdkConstants.ANDROID_URI
 import com.android.SdkConstants.VALUE_TRUE
 import com.android.SdkConstants.XMLNS_PREFIX
+import com.android.tools.lint.client.api.LintClient
+import com.android.tools.lint.client.api.LintFixPerformer
+import com.android.tools.lint.detector.api.LintFix.Companion.create
 import com.android.tools.lint.detector.api.LintFix.ReplaceString.Companion.INSERT_BEGINNING
 import com.android.tools.lint.detector.api.LintFix.ReplaceString.Companion.INSERT_END
+import com.android.utils.XmlUtils
 import com.google.common.base.Splitter
 import com.google.common.collect.Lists
 import com.google.common.collect.Maps
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiMethod
+import com.intellij.util.text.nullize
 import java.io.File
 import java.util.regex.Matcher
 import kotlin.math.max
@@ -37,6 +42,7 @@ import org.jetbrains.annotations.NonNls
 import org.jetbrains.kotlin.asJava.elements.KtLightElement
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtProperty
+import org.w3c.dom.Attr
 
 /**
  * A **description** of a quickfix for a lint warning, which provides structured data for use by the
@@ -57,6 +63,9 @@ protected constructor(
 ) {
   /** The display name, a short user-visible description of the fix */
   open fun getDisplayName(): String? = displayName
+
+  /** Returns true if a custom display name was set on this group */
+  fun hasDisplayName(): Boolean = displayName != null
 
   /**
    * The "family" name; the shared name to use to apply *all* fixes of the same family name in a
@@ -214,8 +223,8 @@ protected constructor(
      * **NOTE:** Be careful combining multiple fixes that are potentially overlapping, such as
      * replace strings.
      *
-     * The test infrastructure may not apply these correctly. This is primarily intended for fixes
-     * that are clearly separate, such as setting multiple attributes.
+     * Make sure the fixes are not conflicting with each other (in other words, that the resulting
+     * edits are not overlapping).
      */
     fun composite(): GroupBuilder {
       return GroupBuilder(displayName, familyName).type(GroupType.COMPOSITE)
@@ -227,10 +236,26 @@ protected constructor(
      * **NOTE:** Be careful combining multiple fixes that are potentially overlapping, such as
      * replace strings.
      *
-     * The test infrastructure may not apply these correctly. This is primarily intended for fixes
-     * that are clearly separate, such as setting multiple attributes.
+     * Make sure the fixes are not conflicting with each other (in other words, that the resulting
+     * edits are not overlapping).
      */
     fun composite(vararg fixes: LintFix?): LintFix {
+      return GroupBuilder(displayName, familyName)
+        .type(GroupType.COMPOSITE)
+        .join(*fixes.filterNotNull().toTypedArray())
+        .build()
+    }
+
+    /**
+     * Creates a composite fix: multiple lint fixes which will all be applied as a single unit.
+     *
+     * **NOTE:** Be careful combining multiple fixes that are potentially overlapping, such as
+     * replace strings.
+     *
+     * Make sure the fixes are not conflicting with each other (in other words, that the resulting
+     * edits are not overlapping).
+     */
+    fun composite(fixes: List<LintFix?>): LintFix {
       return GroupBuilder(displayName, familyName)
         .type(GroupType.COMPOSITE)
         .join(*fixes.filterNotNull().toTypedArray())
@@ -334,6 +359,89 @@ protected constructor(
         .namespace(namespace)
         .attribute(attribute)
         .value(null)
+    }
+
+    /**
+     * Renames a tag
+     *
+     * @return a replace string builder
+     */
+    fun renameTag(current: String, newName: String, range: Location? = null): GroupBuilder {
+      val open =
+        replace()
+          .pattern("<($current)\\b")
+          .with(newName)
+          .apply { if (range != null) this.range(range) }
+          .build()
+      val close =
+        replace()
+          .pattern("</($current)\\s*>")
+          .with(newName)
+          .optional()
+          .apply { if (range != null) this.range(range) }
+          .build()
+      return name("Replace with `<$newName>`").composite().add(open).add(close)
+    }
+
+    /**
+     * Given an [attribute], change its namespace to [newNamespace] and/or its attribute name to
+     * [newAttribute] and/or its value to [newValue]. (These all default to their current values, so
+     * you only need to specify what you want to change.) Typically, if you're only changing the
+     * value, use [set] directly; this method is primarily intended for when you want to change the
+     * namespace and/or attribute name (and at the same time unset the old attribute.)
+     */
+    fun replaceAttribute(
+      attribute: Attr,
+      newNamespace: String? = attribute.namespaceURI.nullize(),
+      newAttribute: String = attribute.localName ?: attribute.name,
+      newValue: String = attribute.value
+    ): GroupBuilder {
+      val prefix =
+        if (newNamespace != null)
+          attribute.lookupPrefix(newNamespace)
+            ?: LintFixPerformer.suggestNamespacePrefix(newNamespace)
+        else null
+      return replaceAttribute(
+        attribute.namespaceURI.nullize(),
+        attribute.localName ?: attribute.name,
+        newValue,
+        newNamespace,
+        newAttribute,
+        prefix
+      )
+    }
+
+    /**
+     * Given an [attribute] in the given [namespace] (where null means no namespace), change its
+     * value to [newValue], its namespace to [newNamespace] and its attribute name to
+     * [newAttribute]. (These all default to their current values, so you only need to specify what
+     * you want to change.) Typically, if you're only changing the value, use [set] directly; this
+     * method is primarily intended for when you want to change the namespace and/or attribute name
+     * (and at the same time unset the old attribute.)
+     */
+    fun replaceAttribute(
+      namespace: String?,
+      attribute: String,
+      newValue: String,
+      newNamespace: String? = namespace,
+      newAttribute: String = attribute,
+      newNamespacePrefix: String? = LintFixPerformer.suggestNamespacePrefix(newNamespace)
+    ): GroupBuilder {
+      return composite()
+        .name(
+          displayName
+            ?: if (!newNamespacePrefix.isNullOrBlank()) {
+              "Update to `$newNamespacePrefix:$newAttribute`"
+            } else if (newAttribute != attribute) {
+              "Update to `$newAttribute`"
+            } else if (namespace != null) {
+              "Drop namespace prefix"
+            } else {
+              "Replace attribute"
+            }
+        )
+        .add(unset(namespace, attribute).build())
+        .add(set(newNamespace, newAttribute, newValue).build())
     }
 
     /** Provides a map with details for the quickfix implementation */
@@ -544,6 +652,8 @@ protected constructor(
   ) {
     private var type = GroupType.ALTERNATIVES
     private val list: MutableList<LintFix> = Lists.newArrayListWithExpectedSize(4)
+    private var robot = false
+    private var independent = false
 
     /**
      * Sets display name. If not supplied a default will be created based on the type of quickfix.
@@ -583,14 +693,53 @@ protected constructor(
       return this
     }
 
+    /**
+     * Sets options related to auto-applying this fix. Convenience method for setting both [robot]
+     * and [independent]
+     *
+     * @param robot whether this fix can be applied by a robot, e.g. does not require human
+     *   intervention
+     * @param independent whether it is **not** the case that applying other fixes simultaneously
+     *   can invalidate this fix
+     * @return this
+     */
+    fun autoFix(robot: Boolean, independent: Boolean): GroupBuilder {
+      this.robot = robot
+      this.independent = independent
+      for (fix in list) {
+        fix.autoFix(robot, independent)
+      }
+      return this
+    }
+
+    /**
+     * Convenience method for [autoFix]: indicates that this fix can safely be applied in auto-fix
+     * mode, in parallel with other fixes.
+     *
+     * @return this
+     */
+    fun autoFix(): GroupBuilder {
+      autoFix(robot = true, independent = true)
+      return this
+    }
+
     /** Adds the given fixes to this group */
     fun join(vararg fixes: LintFix): GroupBuilder {
-      list.addAll(listOf(*fixes))
+      fixes.forEach { add(it) }
       return this
     }
 
     /** Adds the given fix to this group */
     fun add(fix: LintFix): GroupBuilder {
+      if (type == GroupType.COMPOSITE && fix is LintFixGroup) {
+        if (fix.type == GroupType.COMPOSITE) {
+          // Composite: just join them
+          fix.fixes.forEach { add(it) }
+          return this
+        } else {
+          error("Cannot place alternatives-groups inside composite groups")
+        }
+      }
       list.add(fix)
       return this
     }
@@ -600,10 +749,35 @@ protected constructor(
       return this
     }
 
+    /**
+     * Sets a location range to use for searching for the text or pattern. Useful if you want to
+     * make a replacement that is larger than the error range highlighted as the problem range.
+     */
+    fun range(range: Location): GroupBuilder {
+      var found = false
+      for (fix in list) {
+        if (fix.range == null) {
+          fix.range = range
+          found = true
+        }
+      }
+      if (!found) {
+        error(
+          "All the nested fixes already have a custom range set. Make sure this method is called after adding " +
+            "all the nested fixes. (If the fixes all have appropriate ranges setting it on the group is not necessary.)"
+        )
+      }
+
+      return this
+    }
+
     /** Construct a [LintFix] for this group of fixes */
     fun build(): LintFix {
       assert(list.isNotEmpty())
-      return LintFixGroup(displayName, familyName, type, list)
+      if (list.size == 1) {
+        return list[0]
+      }
+      return LintFixGroup(displayName, familyName, type, list, robot, independent)
     }
   }
 
@@ -621,6 +795,8 @@ protected constructor(
     private var robot = false
     private var independent = false
     private var imports: MutableList<String>? = null
+    private var repeatedly = false
+    private var optional = false
 
     @RegExp private var oldPattern: String? = null
     private var range: Location? = null
@@ -848,6 +1024,29 @@ protected constructor(
       return this
     }
 
+    /**
+     * Normally the replacement happens just once; the first occurrence. But with the `repeatedly`
+     * flag set, it will repeat the search and perform repeated replacements throughout the entire
+     * fix range -- e.g. in the same sense as "/g" in a sed command.
+     */
+    fun repeatedly(value: Boolean = true): ReplaceStringBuilder {
+      repeatedly = value
+      return this
+    }
+
+    /**
+     * Normally the replacement is required to happen exactly once, or at least once (if
+     * [repeatedly] is set). But in some cases the replacement can be optional. This typically
+     * doesn't make sense for a quickfix on its own, but is useful in composite fixes. For example,
+     * when renaming an XML element tag, we also want to rename the closing tag -- but some elements
+     * don't have a closing tag. Instead of having to figure that up front, we'll just mark the
+     * closing edit as optional.
+     */
+    fun optional(value: Boolean = true): ReplaceStringBuilder {
+      optional = value
+      return this
+    }
+
     /** Constructs a [LintFix] for this string replacement */
     fun build(): LintFix {
       return ReplaceString(
@@ -861,6 +1060,8 @@ protected constructor(
         reformat,
         imports ?: emptyList(),
         range,
+        repeatedly,
+        optional,
         robot,
         independent
       )
@@ -932,6 +1133,15 @@ protected constructor(
      */
     fun select(@RegExp selectPattern: String?): CreateFileBuilder {
       this.selectPattern = selectPattern
+      return this
+    }
+
+    /** Open the file after creating it */
+    fun open(): CreateFileBuilder {
+      // See select() above" sets a pattern to select; if it contains parentheses, group(1) will be
+      // selected.
+      // To just set the caret, use an empty group.
+      this.selectPattern = "()"
       return this
     }
 
@@ -1045,7 +1255,7 @@ protected constructor(
     }
 
     fun build(): LintFix {
-      return ShowUrl(displayName, familyName, url!!)
+      return ShowUrl(displayName ?: "Show $url", familyName, url!!)
     }
   }
 
@@ -1058,8 +1268,8 @@ protected constructor(
     private var attribute: String? = null
     private var namespace: String? = null
     private var value: String? = ""
-    private var mark = Int.MIN_VALUE
-    private var dot = Int.MIN_VALUE
+    private var mark: Int? = null
+    private var point: Int? = null
     private var robot = false
     private var independent = false
     private var range: Location? = null
@@ -1149,7 +1359,8 @@ protected constructor(
 
     /** Selects the newly inserted value */
     fun selectAll(): SetAttributeBuilder {
-      dot = value!!.length // value must be set first
+      // value must be set first
+      point = XmlUtils.toXmlAttributeValue(value!!).length
       mark = 0
       return this
     }
@@ -1198,7 +1409,7 @@ protected constructor(
     /** Selects the value in the offset range (relative to value start) */
     fun select(start: Int, end: Int): SetAttributeBuilder {
       mark = min(start, end)
-      dot = max(start, end)
+      point = max(start, end)
       return this
     }
 
@@ -1207,8 +1418,8 @@ protected constructor(
      * negative ([means not set][Integer.MIN_VALUE]
      */
     fun caret(valueStartDelta: Int): SetAttributeBuilder {
-      dot = valueStartDelta
-      mark = dot
+      point = valueStartDelta
+      mark = point
       return this
     }
 
@@ -1309,7 +1520,7 @@ protected constructor(
         attribute!!,
         value,
         range,
-        dot,
+        point,
         mark,
         robot,
         independent
@@ -1501,7 +1712,7 @@ protected constructor(
 
   /** A URL to be offered to be shown as a "fix". */
   class ShowUrl(
-    displayName: String?,
+    displayName: String,
     familyName: String?,
     val url: String,
     val onUrlOpen: (() -> Unit)? = null
@@ -1545,8 +1756,20 @@ protected constructor(
     /** The type of group */
     val type: GroupType,
     /** A list of fixes */
-    val fixes: List<LintFix>
+    val fixes: List<LintFix>,
+    robot: Boolean,
+    independent: Boolean
   ) : LintFix(displayName, familyName) {
+    init {
+      this.robot = robot
+      this.independent = independent
+      if (displayName == null && type == GroupType.COMPOSITE && LintClient.isUnitTest) {
+        error(
+          "You should explicitly set a display name for composite group actions; " +
+            "unlike string replacement, set attribute, etc. it cannot produce a good default on its own"
+        )
+      }
+    }
 
     override var range: Location? = null
       set(value) {
@@ -1559,12 +1782,7 @@ protected constructor(
       // For composites, we can display the name of one of the actions
       val displayName = super.getDisplayName()
       if (displayName == null && type == GroupType.COMPOSITE) {
-        for (fix in fixes) {
-          val name = fix.displayName
-          if (name != null) {
-            return name
-          }
-        }
+        return fixes.mapNotNull { it.getDisplayName() }.joinToString(" and ")
       }
       return displayName
     }
@@ -1599,12 +1817,12 @@ protected constructor(
      */
     range: Location?,
     /**
-     * The caret location to show, OR [Integer.MIN_VALUE] if not set. If [mark] is set, the end of
-     * the selection too.
+     * The caret location to show, OR null if not set. If [mark] is set, the end of the selection
+     * too.
      */
-    val dot: Int,
-    /** The selection anchor, OR [Integer.MIN_VALUE] if not set */
-    val mark: Int,
+    val point: Int?,
+    /** The selection anchor, OR null if not set */
+    val mark: Int?,
     robot: Boolean,
     independent: Boolean
   ) : LintFix(displayName, familyName, range) {
@@ -1616,7 +1834,7 @@ protected constructor(
     override fun getDisplayName(): String {
       return super.getDisplayName()
         ?: if (value != null) {
-          if (value.isEmpty() || dot > 0) { // dot > 0: value is partial?
+          if (value.isEmpty() || point != null && point > 0) { // point > 0: value is partial?
             "Set $attribute"
           } else {
             "Set $attribute=\"$value\""
@@ -1667,6 +1885,21 @@ protected constructor(
      * replacement that is larger than the error range highlighted as the problem range.
      */
     range: Location?,
+    /**
+     * Normally the replacement happens just once; the first occurrence. But with the global flag
+     * set, it will repeat the search and perform repeated replacements throughout the entire fix
+     * range -- e.g. in the same sense as "/g" in a sed command.
+     */
+    val globally: Boolean,
+    /**
+     * Normally the replacement is required to happen exactly once, or at least once (if [globally]
+     * is set). But in some cases the replacement can be optional. This typically doesn't make sense
+     * for a quickfix on its own, but is useful in composite fixes. For example, when renaming an
+     * XML element tag, we also want to rename the closing tag -- but some elements don't have a
+     * closing tag. Instead of having to figure that up front, we'll just mark the closing edit as
+     * optional.
+     */
+    val optional: Boolean,
     robot: Boolean,
     independent: Boolean
   ) : LintFix(displayName, familyName, range) {
@@ -1698,7 +1931,7 @@ protected constructor(
     /**
      * If this [ReplaceString] specified a regular expression in [oldPattern], and the replacement
      * string [replacement] specifies one or more "back references" (with `(?<name>)` with the
-     * syntax `\k<name>` then this method will substitute in the matching group. Note that "target"
+     * syntax `\k<name>` then this method will substitute in the matching group). Note that "target"
      * is a reserved name, used to identify the range that should be completed.
      */
     fun expandBackReferences(matcher: Matcher): String {

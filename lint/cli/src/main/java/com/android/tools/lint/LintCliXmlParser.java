@@ -286,7 +286,13 @@ public class LintCliXmlParser extends XmlParser {
     @Nullable
     @Override
     public Node findNodeAt(@NonNull XmlContext context, int offset) {
-        return PositionXmlParser.findNodeAtOffset(context.document, offset);
+        return PositionXmlParser.findNodeAt(context.document, offset);
+    }
+
+    @Nullable
+    @Override
+    public Node findNodeAt(@NonNull Node node, int offset) {
+        return PositionXmlParser.findNodeAt(node, offset);
     }
 
     @NonNull

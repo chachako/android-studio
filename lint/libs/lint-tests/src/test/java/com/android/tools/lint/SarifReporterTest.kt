@@ -926,7 +926,8 @@ class SarifReporterTest {
                                 "fixes": [
                                     {
                                         "description": {
-                                            "text": "Update to android:showAsAction"
+                                            "text": "Update to android:showAsAction",
+                                            "markdown": "Update to `android:showAsAction`"
                                         },
                                         "artifactChanges": [
                                             {
@@ -937,25 +938,25 @@ class SarifReporterTest {
                                                 "replacements": [
                                                     {
                                                         "deletedRegion": {
+                                                            "startLine": 6,
+                                                            "startColumn": 9,
+                                                            "charOffset": 260,
+                                                            "endLine": 6,
+                                                            "endColumn": 34,
+                                                            "charLength": 25
+                                                        },
+                                                        "insertedContent": {
+                                                            "text": "\n"
+                                                        }
+                                                    },
+                                                    {
+                                                        "deletedRegion": {
                                                             "startLine": 4,
                                                             "startColumn": 9,
                                                             "charOffset": 174
                                                         },
                                                         "insertedContent": {
                                                             "text": "android:showAsAction=\"never\" \n"
-                                                        }
-                                                    },
-                                                    {
-                                                        "deletedRegion": {
-                                                            "startLine": 6,
-                                                            "startColumn": 9,
-                                                            "charOffset": 260,
-                                                            "endLine": 6,
-                                                            "endColumn": 33,
-                                                            "charLength": 24
-                                                        },
-                                                        "insertedContent": {
-                                                            "text": "\n"
                                                         }
                                                     }
                                                 ]

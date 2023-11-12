@@ -413,8 +413,10 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                 @@ -48 +48
                 +     @ChecksSdkIntAtLeast(parameter=0, lambda=1)
                 Fix for src/test/pkg/NotImported.java line 6: Annotate with @ChecksSdkIntAtLeast:
-                @@ -6 +6
-                +     @androidx.annotation.ChecksSdkIntAtLeast(api=N)
+                @@ -4 +4
+                + import androidx.annotation.ChecksSdkIntAtLeast;
+                @@ -6 +7
+                +     @ChecksSdkIntAtLeast(api=N)
                 Fix for src/test/pkg/Utils.kt line 12: Annotate with @ChecksSdkIntAtLeast:
                 @@ -12 +12
                 + @ChecksSdkIntAtLeast(api=VERSION_CODES.N)
@@ -702,44 +704,76 @@ class SdkIntDetectorTest : AbstractCheckTest() {
       .expectFixDiffs(
         """
         Fix for src/test/pkg/SdkExtensionsTest.java line 12: Annotate with @ChecksSdkIntAtLeast:
-        @@ -12 +12
+        @@ -5 +5
+          import android.os.ext.SdkExtensions;
+        + import androidx.annotation.ChecksSdkIntAtLeast;
+          import androidx.annotation.RequiresApi;
+        @@ -12 +13
               //@ChecksSdkIntAtLeast(api = 4, extension = Build.VERSION_CODES.R)
-        +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, extension=Build.VERSION_CODES.R)
+        +     @ChecksSdkIntAtLeast(api=4, extension=Build.VERSION_CODES.R)
               public static final boolean HAS_R_4 = SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 4; // WARN 1
         Fix for src/test/pkg/SdkExtensionsTest.java line 15: Annotate with @ChecksSdkIntAtLeast:
-        @@ -15 +15
+        @@ -5 +5
+          import android.os.ext.SdkExtensions;
+        + import androidx.annotation.ChecksSdkIntAtLeast;
+          import androidx.annotation.RequiresApi;
+        @@ -15 +16
               //@ChecksSdkIntAtLeast(api = 4, extension = Build.VERSION_CODES.R)
-        +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, extension=Build.VERSION_CODES.R)
+        +     @ChecksSdkIntAtLeast(api=4, extension=Build.VERSION_CODES.R)
               public static final boolean HAS_R_4B = SDK_INT >= TIRAMISU && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 4; // WARN 2
         Fix for src/test/pkg/SdkExtensionsTest.java line 18: Annotate with @ChecksSdkIntAtLeast:
-        @@ -18 +18
+        @@ -5 +5
+          import android.os.ext.SdkExtensions;
+        + import androidx.annotation.ChecksSdkIntAtLeast;
+          import androidx.annotation.RequiresApi;
+        @@ -18 +19
               //@ChecksSdkIntAtLeast(extension = Build.VERSION_CODES.R)
-        +     @androidx.annotation.ChecksSdkIntAtLeast(extension=Build.VERSION_CODES.R)
+        +     @ChecksSdkIntAtLeast(extension=Build.VERSION_CODES.R)
               public static final boolean R_VERSION = SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R); // WARN 3
         Fix for src/test/pkg/SdkExtensionsTest.java line 21: Annotate with @ChecksSdkIntAtLeast:
-        @@ -21 +21
+        @@ -5 +5
+          import android.os.ext.SdkExtensions;
+        + import androidx.annotation.ChecksSdkIntAtLeast;
+          import androidx.annotation.RequiresApi;
+        @@ -21 +22
               //@ChecksSdkIntAtLeast(extension = Build.VERSION_CODES.R)
-        +     @androidx.annotation.ChecksSdkIntAtLeast(extension=Build.VERSION_CODES.R)
+        +     @ChecksSdkIntAtLeast(extension=Build.VERSION_CODES.R)
               public static final boolean R_VERSION2 = getExtensionVersion(Build.VERSION_CODES.R); // WARN 4
         Fix for src/test/pkg/SdkExtensionsTest.java line 24: Annotate with @ChecksSdkIntAtLeast:
-        @@ -24 +24
+        @@ -5 +5
+          import android.os.ext.SdkExtensions;
+        + import androidx.annotation.ChecksSdkIntAtLeast;
+          import androidx.annotation.RequiresApi;
+        @@ -24 +25
               //@ChecksSdkIntAtLeast(api = 4, extension = Build.VERSION_CODES.R)
-        +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, extension=Build.VERSION_CODES.R)
+        +     @ChecksSdkIntAtLeast(api=4, extension=Build.VERSION_CODES.R)
               public boolean hasR4() { // WARN 5
         Fix for src/test/pkg/SdkExtensionsTest.java line 29: Annotate with @ChecksSdkIntAtLeast:
-        @@ -29 +29
+        @@ -5 +5
+          import android.os.ext.SdkExtensions;
+        + import androidx.annotation.ChecksSdkIntAtLeast;
+          import androidx.annotation.RequiresApi;
+        @@ -29 +30
               //@ChecksSdkIntAtLeast(parameter=0, extension = Build.VERSION_CODES.R)
-        +     @androidx.annotation.ChecksSdkIntAtLeast(parameter=0, extension=Build.VERSION_CODES.R)
+        +     @ChecksSdkIntAtLeast(parameter=0, extension=Build.VERSION_CODES.R)
               public static boolean hasR(int rev) { // WARN 6
         Fix for src/test/pkg/SdkExtensionsTest.java line 34: Annotate with @ChecksSdkIntAtLeast:
-        @@ -34 +34
+        @@ -5 +5
+          import android.os.ext.SdkExtensions;
+        + import androidx.annotation.ChecksSdkIntAtLeast;
+          import androidx.annotation.RequiresApi;
+        @@ -34 +35
               //@ChecksSdkIntAtLeast(parameter=0, extension = Build.VERSION_CODES.R)
-        +     @androidx.annotation.ChecksSdkIntAtLeast(parameter=0, extension=Build.VERSION_CODES.R)
+        +     @ChecksSdkIntAtLeast(parameter=0, extension=Build.VERSION_CODES.R)
               public static boolean hasRB(int rev) {
         Fix for src/test/pkg/SdkExtensionsTest.java line 40: Annotate with @ChecksSdkIntAtLeast:
-        @@ -40 +40
+        @@ -5 +5
+          import android.os.ext.SdkExtensions;
+        + import androidx.annotation.ChecksSdkIntAtLeast;
+          import androidx.annotation.RequiresApi;
+        @@ -40 +41
               // @ChecksSdkIntAtLeast(api=4, lambda=0, extension=Build.VERSION_CODES.R)
-        +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, lambda=0, extension=Build.VERSION_CODES.R)
+        +     @ChecksSdkIntAtLeast(api=4, lambda=0, extension=Build.VERSION_CODES.R)
               public static void runOnR4(Runnable runnable) { // WARN 7
         """
       )

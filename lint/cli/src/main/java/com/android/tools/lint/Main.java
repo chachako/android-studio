@@ -1196,6 +1196,8 @@ public class Main {
                 flags.setWarningsAsErrors(true);
             } else if (arg.equals(ARG_AUTO_FIX)) {
                 flags.setAutoFix(true);
+            } else if (arg.equals("--X-include-imports")) {
+                flags.setAutoFixImports(true);
             } else if (arg.equals(ARG_DESCRIBE_FIXES)) {
                 flags.setIncludeXmlFixes(true);
                 // Make sure we also update any XML reporters we've *already* created before

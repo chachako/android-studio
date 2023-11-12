@@ -63,6 +63,18 @@ class VectorDrawableCompatDetectorTest : AbstractCheckTest() {
       )
       .run()
       .expect(expected)
+      .expectFixDiffs(
+        """
+        Fix for src/main/res/layout/main_activity.xml line 3: Update to `app:srcCompat`:
+        @@ -2 +2
+        - <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" >
+        + <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        +     xmlns:app="http://schemas.android.com/apk/res-auto" >
+        @@ -6 +7
+        -     <ImageView android:src="@drawable/foo" />
+        +     <ImageView app:srcCompat="@drawable/foo" />
+        """
+      )
   }
 
   fun testAnimatedVector() {

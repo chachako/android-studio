@@ -170,12 +170,9 @@ public class GridLayoutDetector extends LayoutDetector {
             String message = sb.toString();
 
             LintFix fix =
-                    fix().name("Update to " + prefix + ":" + name)
-                            .composite(
-                                    fix().set(AUTO_URI, name, attribute.getValue()).build(),
-                                    fix().unset(ANDROID_URI, name).build())
-                            .autoFix();
-
+                    fix().replaceAttribute(attribute, AUTO_URI, name, attribute.getValue())
+                            .autoFix()
+                            .build();
             context.report(ISSUE, attribute, context.getLocation(attribute), message, fix);
         }
     }

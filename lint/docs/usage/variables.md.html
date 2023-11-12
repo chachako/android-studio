@@ -144,6 +144,19 @@ what they are seems useful.
   shortcut for invoking the `lintFix` targets or running the `lint`
   command with `--apply-suggestions`.
 
+`lint.autofix.imports`
+: If `lint.autofix` is on, setting this flag will also include updating
+  imports and applying reference shortening for updated code. This
+  is normally only done in the IDE, relying on the safe refactoring
+  machinery there. Lint's implementation isn't accurate in all cases
+  (for example, it may apply reference shortening in comments), but
+  can be enabled when useful (such as large bulk operations along with
+  manual verification.)
+
+: Turns on auto-fixing (applying safe quickfixes) by default. This is a
+  shortcut for invoking the `lintFix` targets or running the `lint`
+  command with `--apply-suggestions`.
+
 `lint.html.prefs`
 : This property allows you to customize lint's HTML reports. It
   consists of a comma separated list of property assignments, e.g.

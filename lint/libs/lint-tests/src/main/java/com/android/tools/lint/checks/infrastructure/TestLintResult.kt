@@ -25,6 +25,8 @@ import com.android.tools.lint.XmlFileType
 import com.android.tools.lint.checks.BuiltinIssueRegistry
 import com.android.tools.lint.client.api.LintBaseline
 import com.android.tools.lint.detector.api.Incident
+import com.android.tools.lint.detector.api.LintFix
+import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.TextFormat
 import com.android.utils.PositionXmlParser
@@ -502,6 +504,15 @@ internal constructor(
       )
     }
 
+    return this
+  }
+
+  /** Applies the lint fixes in place */
+  fun applyFixes(
+    pickFix: (Incident, List<LintFix>) -> LintFix?,
+    apply: (Project?, File, ByteArray?) -> Unit
+  ): TestLintResult {
+    LintFixVerifier(task, defaultMode, states[defaultMode]!!).applyFixes(pickFix, apply)
     return this
   }
 

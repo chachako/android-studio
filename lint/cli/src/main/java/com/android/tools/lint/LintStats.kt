@@ -16,8 +16,8 @@
 
 package com.android.tools.lint
 
-import com.android.tools.lint.LintFixPerformer.Companion.canAutoFix
 import com.android.tools.lint.client.api.LintBaseline
+import com.android.tools.lint.client.api.LintFixPerformer.Companion.canAutoFix
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Severity
 import kotlin.math.max

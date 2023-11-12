@@ -172,7 +172,11 @@ class VectorDrawableCompatDetector : ResourceXmlDetector() {
     if (useSupportLibrary && ATTR_SRC == name) {
       val location = context.getNameLocation(attribute)
       val message = "When using VectorDrawableCompat, you need to use `app:srcCompat`"
-      val incident = Incident(ISSUE, attribute, location, message)
+      val fix =
+        fix()
+          .replaceAttribute(ANDROID_URI, ATTR_SRC, attribute.value, AUTO_URI, ATTR_SRC_COMPAT)
+          .build()
+      val incident = Incident(ISSUE, attribute, location, message, fix)
       // Report with minSdk<21 constraint since consuming modules could have a higher
       // minSdkVersion
       context.report(incident, minSdkLessThan(21))

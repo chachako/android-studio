@@ -291,7 +291,7 @@ public class ParcelDetectorTest extends AbstractCheckTest {
                                         + "import android.os.Parcel\n"
                                         + "import android.os.Parcelable\n"
                                         + "\n"
-                                        + "class MyClass(val something: String) : Parcelable {\n"
+                                        + "class MyClass(val something: String?) : Parcelable {\n"
                                         + "\n"
                                         + "    private constructor(p: Parcel) : this(\n"
                                         + "            something = p.readString()\n"

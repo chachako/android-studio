@@ -531,9 +531,11 @@ class DefaultEncodingDetectorTest {
             -         js.getBytes()
             +         js.toByteArray(Charsets.UTF_8)
             Fix for src/TestKotlin.kt line 8: Replace with `toByteArray(defaultCharset())`:
-            @@ -8 +8
+            @@ -2 +2
+            + import java.nio.charset.Charset
+            @@ -8 +9
             -         js.getBytes()
-            +         js.toByteArray(defaultCharset())
+            +         js.toByteArray(Charset.defaultCharset())
             Fix for src/TestKotlin.kt line 9: Replace with `encodeToByteArray()`:
             @@ -9 +9
             -         js.bytes
@@ -543,17 +545,21 @@ class DefaultEncodingDetectorTest {
             -         js.bytes
             +         js.toByteArray(Charsets.UTF_8)
             Fix for src/TestKotlin.kt line 9: Replace with `toByteArray(defaultCharset())`:
-            @@ -9 +9
+            @@ -2 +2
+            + import java.nio.charset.Charset
+            @@ -9 +10
             -         js.bytes
-            +         js.toByteArray(defaultCharset())
+            +         js.toByteArray(Charset.defaultCharset())
             Fix for src/TestKotlin.kt line 11: Add charset argument, `String(..., UTF_8)`:
             @@ -11 +11
             -         val s2 = java.lang.String(b)
             +         val s2 = java.lang.String(b, Charsets.UTF_8)
             Fix for src/TestKotlin.kt line 11: Add charset argument, `String(..., defaultCharset())`:
-            @@ -11 +11
+            @@ -2 +2
+            + import java.nio.charset.Charset
+            @@ -11 +12
             -         val s2 = java.lang.String(b)
-            +         val s2 = java.lang.String(b, defaultCharset())
+            +         val s2 = java.lang.String(b, Charset.defaultCharset())
             """
       )
   }
@@ -596,69 +602,93 @@ class DefaultEncodingDetectorTest {
       .expectFixDiffs(
         """
             Fix for src/TestJava.java line 4: Add charset argument, `FileReader(..., UTF_8)`:
-            @@ -4 +4
+            @@ -2 +2
+            + import java.nio.charset.StandardCharsets;
+            @@ -4 +5
             -     new FileReader(file);
-            +     new FileReader(file, java.nio.charset.StandardCharsets.UTF_8);
+            +     new FileReader(file, StandardCharsets.UTF_8);
             Fix for src/TestJava.java line 4: Add charset argument, `FileReader(..., defaultCharset())`:
-            @@ -4 +4
+            @@ -2 +2
+            + import java.nio.charset.Charset;
+            @@ -4 +5
             -     new FileReader(file);
-            +     new FileReader(file, java.nio.charset.Charset.defaultCharset());
+            +     new FileReader(file, Charset.defaultCharset());
             Fix for src/TestJava.java line 5: Add charset argument, `FileWriter(..., UTF_8)`:
-            @@ -5 +5
+            @@ -2 +2
+            + import java.nio.charset.StandardCharsets;
+            @@ -5 +6
             -     new FileWriter(file);
-            +     new FileWriter(file, java.nio.charset.StandardCharsets.UTF_8);
+            +     new FileWriter(file, StandardCharsets.UTF_8);
             Fix for src/TestJava.java line 5: Add charset argument, `FileWriter(..., defaultCharset())`:
-            @@ -5 +5
+            @@ -2 +2
+            + import java.nio.charset.Charset;
+            @@ -5 +6
             -     new FileWriter(file);
-            +     new FileWriter(file, java.nio.charset.Charset.defaultCharset());
+            +     new FileWriter(file, Charset.defaultCharset());
             Fix for src/TestJava.java line 6: Add charset argument, `FileReader(..., UTF_8)`:
-            @@ -6 +6
+            @@ -2 +2
+            + import java.nio.charset.StandardCharsets;
+            @@ -6 +7
             -     new BufferedReader(new FileReader(file));
-            +     new BufferedReader(new FileReader(file, java.nio.charset.StandardCharsets.UTF_8));
+            +     new BufferedReader(new FileReader(file, StandardCharsets.UTF_8));
             Fix for src/TestJava.java line 6: Add charset argument, `FileReader(..., defaultCharset())`:
-            @@ -6 +6
+            @@ -2 +2
+            + import java.nio.charset.Charset;
+            @@ -6 +7
             -     new BufferedReader(new FileReader(file));
-            +     new BufferedReader(new FileReader(file, java.nio.charset.Charset.defaultCharset()));
+            +     new BufferedReader(new FileReader(file, Charset.defaultCharset()));
             Fix for src/TestJava.java line 7: Add charset argument, `FileWriter(..., UTF_8)`:
-            @@ -7 +7
+            @@ -2 +2
+            + import java.nio.charset.StandardCharsets;
+            @@ -7 +8
             -     new BufferedWriter(new FileWriter(file));
-            +     new BufferedWriter(new FileWriter(file, java.nio.charset.StandardCharsets.UTF_8));
+            +     new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8));
             Fix for src/TestJava.java line 7: Add charset argument, `FileWriter(..., defaultCharset())`:
-            @@ -7 +7
+            @@ -2 +2
+            + import java.nio.charset.Charset;
+            @@ -7 +8
             -     new BufferedWriter(new FileWriter(file));
-            +     new BufferedWriter(new FileWriter(file, java.nio.charset.Charset.defaultCharset()));
+            +     new BufferedWriter(new FileWriter(file, Charset.defaultCharset()));
             Fix for src/TestKotlin.kt line 4: Replace with `file.reader()` (uses UTF-8):
             @@ -4 +4
             -     FileReader(file)
             +     file.reader()
             Fix for src/TestKotlin.kt line 4: Replace with `file.reader(defaultCharset())`:
-            @@ -4 +4
+            @@ -2 +2
+            + import java.nio.charset.StandardCharsets
+            @@ -4 +5
             -     FileReader(file)
-            +     file.reader(java.nio.charset.StandardCharsets.UTF_8)
+            +     file.reader(StandardCharsets.UTF_8)
             Fix for src/TestKotlin.kt line 5: Replace with `file.writer()` (uses UTF-8):
             @@ -5 +5
             -     FileWriter(file)
             +     file.writer()
             Fix for src/TestKotlin.kt line 5: Replace with `file.writer(defaultCharset())`:
-            @@ -5 +5
+            @@ -2 +2
+            + import java.nio.charset.StandardCharsets
+            @@ -5 +6
             -     FileWriter(file)
-            +     file.writer(java.nio.charset.StandardCharsets.UTF_8)
+            +     file.writer(StandardCharsets.UTF_8)
             Fix for src/TestKotlin.kt line 6: Replace with `file.bufferedReader()` (uses UTF-8):
             @@ -6 +6
             -     BufferedReader(FileReader(file))
             +     file.bufferedReader()
             Fix for src/TestKotlin.kt line 6: Replace with `file.bufferedReader(defaultCharset())`:
-            @@ -6 +6
+            @@ -2 +2
+            + import java.nio.charset.StandardCharsets
+            @@ -6 +7
             -     BufferedReader(FileReader(file))
-            +     file.bufferedReader(java.nio.charset.StandardCharsets.UTF_8)
+            +     file.bufferedReader(StandardCharsets.UTF_8)
             Fix for src/TestKotlin.kt line 7: Replace with `file.bufferedWriter()` (uses UTF-8):
             @@ -7 +7
             -     BufferedWriter(FileWriter(file))
             +     file.bufferedWriter()
             Fix for src/TestKotlin.kt line 7: Replace with `file.bufferedWriter(defaultCharset())`:
-            @@ -7 +7
+            @@ -2 +2
+            + import java.nio.charset.StandardCharsets
+            @@ -7 +8
             -     BufferedWriter(FileWriter(file))
-            +     file.bufferedWriter(java.nio.charset.StandardCharsets.UTF_8)
+            +     file.bufferedWriter(StandardCharsets.UTF_8)
             """
       )
   }
@@ -762,53 +792,71 @@ class DefaultEncodingDetectorTest {
       .expectFixDiffs(
         """
             Fix for src/test/pkg/TestJava.java line 8: Add charset argument, `PrintWriter(..., UTF_8)`:
-            @@ -8 +8
+            @@ -6 +6
+            + import java.nio.charset.StandardCharsets;
+            @@ -8 +9
             -         new PrintWriter(System.out, true);
-            +         new PrintWriter(System.out, true, java.nio.charset.StandardCharsets.UTF_8);
+            +         new PrintWriter(System.out, true, StandardCharsets.UTF_8);
             Fix for src/test/pkg/TestJava.java line 8: Add charset argument, `PrintWriter(..., defaultCharset())`:
-            @@ -8 +8
+            @@ -6 +6
+            + import java.nio.charset.Charset;
+            @@ -8 +9
             -         new PrintWriter(System.out, true);
-            +         new PrintWriter(System.out, true, java.nio.charset.Charset.defaultCharset());
+            +         new PrintWriter(System.out, true, Charset.defaultCharset());
             Fix for src/test/pkg/TestJava.java line 9: Add charset argument, `PrintWriter(..., UTF_8)`:
-            @@ -9 +9
+            @@ -6 +6
+            + import java.nio.charset.StandardCharsets;
+            @@ -9 +10
             -         new PrintWriter("/path");
-            +         new PrintWriter("/path", java.nio.charset.StandardCharsets.UTF_8);
+            +         new PrintWriter("/path", StandardCharsets.UTF_8);
             Fix for src/test/pkg/TestJava.java line 9: Add charset argument, `PrintWriter(..., defaultCharset())`:
-            @@ -9 +9
+            @@ -6 +6
+            + import java.nio.charset.Charset;
+            @@ -9 +10
             -         new PrintWriter("/path");
-            +         new PrintWriter("/path", java.nio.charset.Charset.defaultCharset());
+            +         new PrintWriter("/path", Charset.defaultCharset());
             Fix for src/test/pkg/TestJava.java line 10: Add charset argument, `PrintWriter(..., UTF_8)`:
-            @@ -10 +10
+            @@ -6 +6
+            + import java.nio.charset.StandardCharsets;
+            @@ -10 +11
             -         new PrintWriter(file);
-            +         new PrintWriter(file, java.nio.charset.StandardCharsets.UTF_8);
+            +         new PrintWriter(file, StandardCharsets.UTF_8);
             Fix for src/test/pkg/TestJava.java line 10: Add charset argument, `PrintWriter(..., defaultCharset())`:
-            @@ -10 +10
+            @@ -6 +6
+            + import java.nio.charset.Charset;
+            @@ -10 +11
             -         new PrintWriter(file);
-            +         new PrintWriter(file, java.nio.charset.Charset.defaultCharset());
+            +         new PrintWriter(file, Charset.defaultCharset());
             Fix for src/test/pkg/TestKotlin.kt line 8: Add charset argument, `PrintWriter(..., UTF_8)`:
             @@ -8 +8
             -     PrintWriter(System.out, true)
-            +     PrintWriter(System.out, true, kotlin.text.Charsets.UTF_8)
+            +     PrintWriter(System.out, true, Charsets.UTF_8)
             Fix for src/test/pkg/TestKotlin.kt line 8: Add charset argument, `PrintWriter(..., defaultCharset())`:
-            @@ -8 +8
+            @@ -5 +5
+            + import java.nio.charset.Charset
+            @@ -8 +9
             -     PrintWriter(System.out, true)
-            +     PrintWriter(System.out, true, java.nio.charset.Charset.defaultCharset())
+            +     PrintWriter(System.out, true, Charset.defaultCharset())
             Fix for src/test/pkg/TestKotlin.kt line 9: Add charset argument, `PrintWriter(..., UTF_8)`:
             @@ -9 +9
             -     PrintWriter("/path")
-            +     PrintWriter("/path", kotlin.text.Charsets.UTF_8)
+            +     PrintWriter("/path", Charsets.UTF_8)
             Fix for src/test/pkg/TestKotlin.kt line 9: Add charset argument, `PrintWriter(..., defaultCharset())`:
-            @@ -9 +9
+            @@ -5 +5
+            + import java.nio.charset.Charset
+            @@ -9 +10
             -     PrintWriter("/path")
-            +     PrintWriter("/path", java.nio.charset.Charset.defaultCharset())
+            +     PrintWriter("/path", Charset.defaultCharset())
             Fix for src/test/pkg/TestKotlin.kt line 10: Add charset argument, `PrintWriter(..., UTF_8)`:
             @@ -10 +10
             -     PrintWriter(file)
-            +     PrintWriter(file, kotlin.text.Charsets.UTF_8)
+            +     PrintWriter(file, Charsets.UTF_8)
             Fix for src/test/pkg/TestKotlin.kt line 10: Add charset argument, `PrintWriter(..., defaultCharset())`:
-            @@ -10 +10
+            @@ -5 +5
+            + import java.nio.charset.Charset
+            @@ -10 +11
             -     PrintWriter(file)
-            +     PrintWriter(file, java.nio.charset.Charset.defaultCharset())
+            +     PrintWriter(file, Charset.defaultCharset())
             """
       )
   }
@@ -867,33 +915,41 @@ class DefaultEncodingDetectorTest {
             -         OutputStreamWriter(out)
             +         out.writer()
             Fix for src/test/pkg/TestKotlin.kt line 11: Replace with `out.writer(defaultCharset())`:
-            @@ -11 +11
+            @@ -8 +8
+            + import java.nio.charset.StandardCharsets
+            @@ -11 +12
             -         OutputStreamWriter(out)
-            +         out.writer(java.nio.charset.StandardCharsets.UTF_8)
+            +         out.writer(StandardCharsets.UTF_8)
             Fix for src/test/pkg/TestKotlin.kt line 12: Replace with `input.reader()` (uses UTF-8):
             @@ -12 +12
             -         InputStreamReader(input)
             +         input.reader()
             Fix for src/test/pkg/TestKotlin.kt line 12: Replace with `input.reader(defaultCharset())`:
-            @@ -12 +12
+            @@ -8 +8
+            + import java.nio.charset.StandardCharsets
+            @@ -12 +13
             -         InputStreamReader(input)
-            +         input.reader(java.nio.charset.StandardCharsets.UTF_8)
+            +         input.reader(StandardCharsets.UTF_8)
             Fix for src/test/pkg/TestKotlin.kt line 13: Replace with `out.bufferedWriter()` (uses UTF-8):
             @@ -13 +13
             -         BufferedWriter(OutputStreamWriter(out))
             +         out.bufferedWriter()
             Fix for src/test/pkg/TestKotlin.kt line 13: Replace with `out.bufferedWriter(defaultCharset())`:
-            @@ -13 +13
+            @@ -8 +8
+            + import java.nio.charset.StandardCharsets
+            @@ -13 +14
             -         BufferedWriter(OutputStreamWriter(out))
-            +         out.bufferedWriter(java.nio.charset.StandardCharsets.UTF_8)
+            +         out.bufferedWriter(StandardCharsets.UTF_8)
             Fix for src/test/pkg/TestKotlin.kt line 14: Replace with `input.bufferedReader()` (uses UTF-8):
             @@ -14 +14
             -         BufferedReader(InputStreamReader(input))
             +         input.bufferedReader()
             Fix for src/test/pkg/TestKotlin.kt line 14: Replace with `input.bufferedReader(defaultCharset())`:
-            @@ -14 +14
+            @@ -8 +8
+            + import java.nio.charset.StandardCharsets
+            @@ -14 +15
             -         BufferedReader(InputStreamReader(input))
-            +         input.bufferedReader(java.nio.charset.StandardCharsets.UTF_8)
+            +         input.bufferedReader(StandardCharsets.UTF_8)
             """
       )
   }
@@ -921,22 +977,30 @@ class DefaultEncodingDetectorTest {
       .run()
       .expectFixDiffs(
         """
-            Fix for src/test/pkg/TestJava.java line 7: Add charset argument, `Scanner(..., UTF_8)`:
-            @@ -7 +7
-            -         new Scanner((java.io.InputStream) null);
-            +         new Scanner((java.io.InputStream) null, StandardCharsets.UTF_8);
-            Fix for src/test/pkg/TestJava.java line 7: Add charset argument, `Scanner(..., defaultCharset())`:
-            @@ -7 +7
-            -         new Scanner((java.io.InputStream) null);
-            +         new Scanner((java.io.InputStream) null, Charset.defaultCharset());
-            Fix for src/test/pkg/TestJava.java line 8: Add charset argument, `Scanner(..., UTF_8)`:
-            @@ -8 +8
-            -         new Scanner((java.io.File) null);
-            +         new Scanner((java.io.File) null, StandardCharsets.UTF_8);
-            Fix for src/test/pkg/TestJava.java line 8: Add charset argument, `Scanner(..., defaultCharset())`:
-            @@ -8 +8
-            -         new Scanner((java.io.File) null);
-            +         new Scanner((java.io.File) null, Charset.defaultCharset());
+          Fix for src/test/pkg/TestJava.java line 7: Add charset argument, `Scanner(..., UTF_8)`:
+          @@ -4 +4
+          + import java.io.InputStream;
+          @@ -7 +8
+          -         new Scanner((java.io.InputStream) null);
+          +         new Scanner((InputStream) null, StandardCharsets.UTF_8);
+          Fix for src/test/pkg/TestJava.java line 7: Add charset argument, `Scanner(..., defaultCharset())`:
+          @@ -4 +4
+          + import java.io.InputStream;
+          @@ -7 +8
+          -         new Scanner((java.io.InputStream) null);
+          +         new Scanner((InputStream) null, Charset.defaultCharset());
+          Fix for src/test/pkg/TestJava.java line 8: Add charset argument, `Scanner(..., UTF_8)`:
+          @@ -4 +4
+          + import java.io.File;
+          @@ -8 +9
+          -         new Scanner((java.io.File) null);
+          +         new Scanner((File) null, StandardCharsets.UTF_8);
+          Fix for src/test/pkg/TestJava.java line 8: Add charset argument, `Scanner(..., defaultCharset())`:
+          @@ -4 +4
+          + import java.io.File;
+          @@ -8 +9
+          -         new Scanner((java.io.File) null);
+          +         new Scanner((File) null, Charset.defaultCharset());
             """
       )
   }

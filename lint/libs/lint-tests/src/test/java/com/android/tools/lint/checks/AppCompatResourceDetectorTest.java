@@ -36,7 +36,7 @@ public class AppCompatResourceDetectorTest extends AbstractCheckTest {
                 .expect(expected)
                 .expectFixDiffs(
                         ""
-                                + "Fix for res/menu/showAction1.xml line 5: Update to android:showAsAction:\n"
+                                + "Fix for res/menu/showAction1.xml line 5: Update to `android:showAsAction`:\n"
                                 + "@@ -8 +8\n"
                                 + "-         android:title=\"@string/action_settings\"\n"
                                 + "-         app:showAsAction=\"never\"/>\n"
@@ -89,7 +89,7 @@ public class AppCompatResourceDetectorTest extends AbstractCheckTest {
                                 + "2 errors, 0 warnings\n")
                 .expectFixDiffs(
                         ""
-                                + "Fix for res/menu/showAction3.xml line 4: Update to app:showAsAction:\n"
+                                + "Fix for res/menu/showAction3.xml line 4: Update to `app:showAsAction`:\n"
                                 + "@@ -2 +2\n"
                                 + "- <menu xmlns:android=\"http://schemas.android.com/apk/res/android\" >\n"
                                 + "+ <menu xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
@@ -99,7 +99,7 @@ public class AppCompatResourceDetectorTest extends AbstractCheckTest {
                                 + "-         android:title=\"@string/action_share\"/>\n"
                                 + "+         android:title=\"@string/action_share\"\n"
                                 + "+         app:showAsAction=\"ifRoom\"/>\n"
-                                + "Fix for res/menu/showAction3.xml line 5: Update to app:actionProviderClass:\n"
+                                + "Fix for res/menu/showAction3.xml line 5: Update to `app:actionProviderClass`:\n"
                                 + "@@ -2 +2\n"
                                 + "- <menu xmlns:android=\"http://schemas.android.com/apk/res/android\" >\n"
                                 + "+ <menu xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
@@ -127,7 +127,7 @@ public class AppCompatResourceDetectorTest extends AbstractCheckTest {
                 .expect(expected)
                 .expectFixDiffs(
                         ""
-                                + "Fix for res/menu/showAction3.xml line 4: Update to app:showAsAction:\n"
+                                + "Fix for res/menu/showAction3.xml line 4: Update to `app:showAsAction`:\n"
                                 + "@@ -2 +2\n"
                                 + "- <menu xmlns:android=\"http://schemas.android.com/apk/res/android\" >\n"
                                 + "+ <menu xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
@@ -137,7 +137,7 @@ public class AppCompatResourceDetectorTest extends AbstractCheckTest {
                                 + "-         android:title=\"@string/action_search\"/>\n"
                                 + "+         android:title=\"@string/action_search\"\n"
                                 + "+         app:showAsAction=\"ifRoom\"/>\n"
-                                + "Fix for res/menu/showAction3.xml line 5: Update to app:actionViewClass:\n"
+                                + "Fix for res/menu/showAction3.xml line 5: Update to `app:actionViewClass`:\n"
                                 + "@@ -2 +2\n"
                                 + "- <menu xmlns:android=\"http://schemas.android.com/apk/res/android\" >\n"
                                 + "+ <menu xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"

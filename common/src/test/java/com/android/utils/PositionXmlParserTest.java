@@ -110,10 +110,15 @@ public class PositionXmlParserTest {
         assertEquals(xml.indexOf("/>", position.getStartOffset()) + 2, position.getEndOffset());
         assertEquals(16, position.getEndLine());
 
-        assertSame(button2, PositionXmlParser.findNodeAtLineAndCol(document,
-                position.getStartLine(), position.getStartColumn()));
-        assertSame(button2, PositionXmlParser.findNodeAtOffset(document,
-                position.getStartOffset()));
+        assertSame(
+                button2,
+                PositionXmlParser.findNodeAtLineAndCol(
+                        document, position.getStartLine(), position.getStartColumn()));
+        assertSame(button2, PositionXmlParser.findNodeAt(document, position.getStartOffset()));
+        assertSame(
+                button2,
+                PositionXmlParser.findNodeAt(
+                        document.getDocumentElement(), position.getStartOffset()));
     }
 
     @Test

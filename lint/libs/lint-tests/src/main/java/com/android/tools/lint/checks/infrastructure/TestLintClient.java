@@ -57,7 +57,6 @@ import com.android.support.AndroidxNameUtils;
 import com.android.tools.lint.LintCliClient;
 import com.android.tools.lint.LintCliFlags;
 import com.android.tools.lint.LintCliXmlParser;
-import com.android.tools.lint.LintFixPerformer;
 import com.android.tools.lint.LintResourceRepository;
 import com.android.tools.lint.LintStats;
 import com.android.tools.lint.Reporter;
@@ -1208,6 +1207,38 @@ public class TestLintClient extends LintCliClient {
                 offset = matcher.end();
             }
         }
+
+        if (fix != null) {
+            checkFixMessage(fix, true);
+        }
+    }
+
+    private void checkFixMessage(@NonNull LintFix fix, boolean isTopLevel) {
+        if (fix instanceof LintFix.DataMap) {
+            // Real quickfix implementation is on the IDE side, which will provide the error message
+            return;
+        } else if (fix instanceof LintFix.LintFixGroup) {
+            LintFix.LintFixGroup group = (LintFix.LintFixGroup) fix;
+            if (group.getType() == LintFix.GroupType.ALTERNATIVES) {
+                for (LintFix nested : group.getFixes()) {
+                    checkFixMessage(nested, false);
+                }
+            } else {
+                if (group.hasDisplayName()) {
+                    return;
+                }
+                // We can get a reasonable combined message if all the children have a reasonable
+                // default
+                for (LintFix nested : group.getFixes()) {
+                    checkFixMessage(nested, false);
+                }
+            }
+        } else {
+            if (fix.getDisplayName() != null) {
+                return;
+            }
+            fail("Missing fix message for associated quickfix (" + fix + ")");
+        }
     }
 
     // Pattern for recognizing a message containing an embedded absolute
@@ -1312,7 +1343,7 @@ public class TestLintClient extends LintCliClient {
 
             File file = range != null ? range.getFile() : incident.getLocation().getFile();
             if (!file.isFile()) {
-                fail(file + " is not a file. Use fix().createFile instead of fix().replace.");
+                fail(file + " is not a file. Use fix().newFile() instead of fix().replace.");
             }
         } else if (fix instanceof LintFix.CreateFileFix) {
             LintFix.CreateFileFix createFix = (LintFix.CreateFileFix) fix;
@@ -1336,7 +1367,9 @@ public class TestLintClient extends LintCliClient {
                 readFixFiles(incident, f);
             }
         } else {
-            Location location = LintFixPerformer.Companion.getLocation(incident, fix);
+            Location location =
+                    com.android.tools.lint.client.api.LintFixPerformer.Companion.getLocation(
+                            incident, fix);
             File file = location.getFile();
             if (file.isFile()) {
                 String displayName = fix.getDisplayName();

@@ -79,6 +79,8 @@ public class LintCliFlags {
     private boolean baselineOmitLineNumbers;
     private boolean continueAfterBaselineCreated;
     private boolean autoFix = VALUE_TRUE.equals(System.getProperty("lint.autofix"));
+    private boolean autoFixImports =
+            autoFix && VALUE_TRUE.equals(System.getProperty("lint.autofix.imports"));
     private boolean abortOnAutoFix;
     private boolean includeXmlFixes;
     private boolean allowSuppress;
@@ -731,6 +733,24 @@ public class LintCliFlags {
     /** Sets whether to apply safe suggestions */
     public void setAutoFix(boolean autoFix) {
         this.autoFix = autoFix;
+    }
+
+    /**
+     * Whether lint should also attempt to update import statements and reference shortening when
+     * running from the command line. This will use some heuristics which may not work in all corner
+     * cases.
+     */
+    public boolean isAutoFixImports() {
+        return autoFixImports;
+    }
+
+    /**
+     * Sets whether lint should also attempt to update import statements and reference shortening
+     * when running from the command line. This will use some heuristics which may not work in all
+     * corner cases.
+     */
+    public void setAutoFixImports(boolean autoFixImports) {
+        this.autoFixImports = autoFixImports;
     }
 
     public boolean isAbortOnAutoFix() {

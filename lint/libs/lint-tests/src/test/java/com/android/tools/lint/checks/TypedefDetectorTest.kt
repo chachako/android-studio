@@ -1886,21 +1886,29 @@ class TypedefDetectorTest : AbstractCheckTest() {
             -         alarmManager.setExact(Integer.MAX_VALUE, 0L, operation);
             +         alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 0L, operation);
             Fix for src/test/pkg/test.kt line 6: Change to AlarmManager.RTC (1):
-            @@ -6 +6
+            @@ -3 +3
+            + import android.app.AlarmManager
+            @@ -6 +7
             -     alarmManager.setExact(1, 0L, operation)
-            +     alarmManager.setExact(android.app.AlarmManager.RTC, 0L, operation)
+            +     alarmManager.setExact(AlarmManager.RTC, 0L, operation)
             Fix for src/test/pkg/test.kt line 6: Change to AlarmManager.RTC_WAKEUP:
-            @@ -6 +6
+            @@ -3 +3
+            + import android.app.AlarmManager
+            @@ -6 +7
             -     alarmManager.setExact(1, 0L, operation)
-            +     alarmManager.setExact(android.app.AlarmManager.RTC_WAKEUP, 0L, operation)
+            +     alarmManager.setExact(AlarmManager.RTC_WAKEUP, 0L, operation)
             Fix for src/test/pkg/test.kt line 6: Change to AlarmManager.ELAPSED_REALTIME_WAKEUP:
-            @@ -6 +6
+            @@ -3 +3
+            + import android.app.AlarmManager
+            @@ -6 +7
             -     alarmManager.setExact(1, 0L, operation)
-            +     alarmManager.setExact(android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP, 0L, operation)
+            +     alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, 0L, operation)
             Fix for src/test/pkg/test.kt line 6: Change to AlarmManager.ELAPSED_REALTIME:
-            @@ -6 +6
+            @@ -3 +3
+            + import android.app.AlarmManager
+            @@ -6 +7
             -     alarmManager.setExact(1, 0L, operation)
-            +     alarmManager.setExact(android.app.AlarmManager.ELAPSED_REALTIME, 0L, operation)
+            +     alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 0L, operation)
             """
       )
   }

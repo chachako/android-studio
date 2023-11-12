@@ -22,6 +22,7 @@ import com.android.tools.lint.detector.api.Implementation;
 import com.android.tools.lint.detector.api.Issue;
 import com.android.tools.lint.detector.api.LayoutDetector;
 import com.android.tools.lint.detector.api.LintFix;
+import com.android.tools.lint.detector.api.LocationType;
 import com.android.tools.lint.detector.api.Scope;
 import com.android.tools.lint.detector.api.Severity;
 import com.android.tools.lint.detector.api.XmlContext;
@@ -35,8 +36,6 @@ import org.w3c.dom.Element;
  * <p>TODO: Generalize this to handling spelling errors in general.
  */
 public class WrongCaseDetector extends LayoutDetector {
-    public static final String KEY_REPLACEMENTS = "replacements";
-
     /** Using the wrong case for layout tags */
     public static final Issue WRONG_CASE =
             Issue.create(
@@ -63,12 +62,13 @@ public class WrongCaseDetector extends LayoutDetector {
     public void visitElement(@NonNull XmlContext context, @NonNull Element element) {
         String tag = element.getTagName();
         String correct = Character.toLowerCase(tag.charAt(0)) + tag.substring(1);
-        LintFix fix = fix().data(KEY_REPLACEMENTS, Arrays.asList(tag, correct));
         context.report(
                 WRONG_CASE,
                 element,
                 context.getNameLocation(element),
                 String.format("Invalid tag `<%1$s>`; should be `<%2$s>`", tag, correct),
-                fix);
+                LintFix.create()
+                        .renameTag(tag, correct, context.getLocation(element, LocationType.ALL))
+                        .build());
     }
 }

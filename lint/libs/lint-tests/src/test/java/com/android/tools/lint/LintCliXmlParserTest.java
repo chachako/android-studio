@@ -16,6 +16,7 @@
 
 package com.android.tools.lint;
 
+import static com.android.SdkConstants.ATTR_ID;
 import static com.android.SdkConstants.XMLNS_PREFIX;
 import static com.android.tools.lint.client.api.LintClient.CLIENT_UNIT_TESTS;
 import static org.junit.Assert.assertEquals;
@@ -51,6 +52,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class LintCliXmlParserTest {
@@ -76,6 +78,8 @@ public class LintCliXmlParserTest {
                         + "        android:layout_width=\"wrap_content\"\n"
                         + "        android:layout_height=\"wrap_content\"\n"
                         + "        android:text=\"Button\" />\n"
+                        + "<!-- my comment -->\n"
+                        + "some text\n"
                         + "\n"
                         + "</LinearLayout>\n";
         LintCliXmlParser parser = new LintCliXmlParser(new LintCliClient(CLIENT_UNIT_TESTS));
@@ -143,6 +147,7 @@ public class LintCliXmlParserTest {
         assertEquals(xml.indexOf("<Button"), start.getOffset());
         assertEquals(xml.indexOf("/>") + 2, end.getOffset());
         assertEquals(10, end.getLine());
+        int button1Start = start.getOffset();
         int button1End = end.getOffset();
 
         // Check element name positions
@@ -173,6 +178,26 @@ public class LintCliXmlParserTest {
         assertEquals(xml.indexOf("<Button", button1End), start.getOffset());
         assertEquals(xml.indexOf("/>", start.getOffset()) + 2, end.getOffset());
         assertEquals(16, end.getLine());
+
+        // Check findNodeAt
+        assertSame(button, parser.findNodeAt(document.getDocumentElement(), button1Start));
+        assertSame(button, parser.findNodeAt(document, button1Start));
+        assertSame(button, parser.findNodeAt(document, button1End - 1));
+        Attr buttonId = button.getAttributeNodeNS(ANDROID_URI, ATTR_ID);
+        int buttonIdStart = parser.getNodeStartOffset(context, buttonId);
+        int buttonIdEnd = parser.getNodeEndOffset(context, buttonId);
+        assertSame(buttonId, parser.findNodeAt(document, buttonIdStart));
+        assertSame(buttonId, parser.findNodeAt(document, buttonIdEnd - 1));
+
+        Node text = parser.findNodeAt(document, xml.indexOf("some text"));
+        assertNotNull(text);
+        assertEquals(Node.TEXT_NODE, text.getNodeType());
+        assertEquals("\nsome text\n\n", text.getNodeValue());
+
+        Node comment = parser.findNodeAt(document, xml.indexOf("comment"));
+        assertNotNull(comment);
+        assertEquals(Node.COMMENT_NODE, comment.getNodeType());
+        assertEquals(" my comment ", comment.getNodeValue());
     }
 
     @Test

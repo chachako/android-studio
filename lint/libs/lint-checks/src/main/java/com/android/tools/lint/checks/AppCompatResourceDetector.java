@@ -87,14 +87,13 @@ public class AppCompatResourceDetector extends ResourceXmlDetector {
                 return;
             }
             if (appCompat == Boolean.TRUE) {
-
                 LintFix fix =
-                        fix().name("Update to app:" + localName)
-                                .composite(
-                                        fix().set(AUTO_URI, localName, attribute.getValue())
-                                                .build(),
-                                        fix().unset(ANDROID_URI, localName).build());
-
+                        fix().replaceAttribute(
+                                        attribute,
+                                        AUTO_URI,
+                                        attribute.getLocalName(),
+                                        attribute.getValue())
+                                .build();
                 String message =
                         String.format(
                                 "Should use `app:%1$s` with the appcompat library with "
@@ -106,11 +105,12 @@ public class AppCompatResourceDetector extends ResourceXmlDetector {
             if (appCompat == Boolean.FALSE) {
 
                 LintFix fix =
-                        fix().name("Update to android:" + localName)
-                                .composite(
-                                        fix().set(ANDROID_URI, localName, attribute.getValue())
-                                                .build(),
-                                        fix().unset(AUTO_URI, localName).build());
+                        fix().replaceAttribute(
+                                        attribute,
+                                        ANDROID_URI,
+                                        attribute.getLocalName(),
+                                        attribute.getValue())
+                                .build();
 
                 String message =
                         String.format(

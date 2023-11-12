@@ -819,9 +819,12 @@ class ManifestDetector : Detector(), XmlScanner {
     }
 
     val descriptor = getDataExtractionFileContent(context, fullBackupNode)
-    val createFix = fix().newFile(file, descriptor).build()
+    val select =
+      if (descriptor.contains("TODO:")) " ()TODO:"
+      else if (descriptor.contains("<include")) "()<include" else "()"
+    val createFix = fix().newFile(file, descriptor).select(select).build()
     val setAttributeFix = fix().set(ANDROID_URI, ATTR_DATA_EXTRACTION_RULES, "@xml/$name").build()
-    return fix().composite(createFix, setAttributeFix)
+    return fix().name("Create $name.xml").composite(createFix, setAttributeFix)
   }
 
   private fun checkXmlResourceExists(
