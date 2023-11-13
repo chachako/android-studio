@@ -57,6 +57,7 @@ import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
@@ -102,6 +103,7 @@ abstract class ExtractPrivacySandboxCompatApks: NonIncrementalTask() {
     abstract val componentBaseName: Property<String>
 
     @get:Input
+    @get:Optional
     abstract val versionCode: Property<Int?>
 
     @get:Nested
