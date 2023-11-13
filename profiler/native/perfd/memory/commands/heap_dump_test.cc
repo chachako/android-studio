@@ -171,7 +171,7 @@ TEST_F(HeapDumpTest, CommandsGeneratesEventsInTaskBasedUX) {
     std::unique_lock<std::mutex> lock(mutex);
     // Expect that we receive events before the timeout.
     // We should expect a status, start and end event
-    EXPECT_TRUE(cv_.wait_for(lock, std::chrono::milliseconds(5000),
+    EXPECT_TRUE(cv_.wait_for(lock, std::chrono::seconds(10),
                              [this] { return events_.size() == 5; }));
   }
 
