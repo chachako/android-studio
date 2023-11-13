@@ -45,6 +45,8 @@
             - privacySandboxSdkInfo:
                - task                    = "buildPrivacySandboxSdkApksForDebug"
                - outputListingFile       = {PROJECT}/build/intermediates/extracted_apks_from_privacy_sandbox_sdks_ide_model/debug/buildPrivacySandboxSdkApksForDebug/ide_model.json{!}
+               - additionalApkSplitTask  = "generateDebugAdditionalSplitForPrivacySandboxDeployment"
+               - additionalApkSplitFile  = {PROJECT}/build/intermediates/uses_sdk_library_split_for_local_deployment/debug/generateDebugAdditionalSplitForPrivacySandboxDeployment/basic-debug-injected-privacy-sandbox.apk{!}
                - taskLegacy              = "extractApksFromSdkSplitsForDebug"
                - outputListingLegacyFile = {PROJECT}/build/intermediates/apk_from_sdks_ide_model/debug/extractApksFromSdkSplitsForDebug/output-metadata.json{!}
          < mainArtifact
