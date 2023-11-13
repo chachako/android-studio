@@ -1,0 +1,122 @@
+> VariantDependencies:
+   - name                 = "freeDebug"
+   - mainArtifact:
+      - compileDependencies    = []
+      - runtimeDependencies    = []
+      - unresolvedDependencies = []
+   > androidTestArtifact:
+      - compileDependencies:
+         - :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>7, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:jar:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+         - :|:app|debug|foo>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:app:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - runtimeDependencies:
+         - :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>7, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:jar:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - unresolvedDependencies = []
+   < androidTestArtifact
+   > unitTestArtifact:
+      - compileDependencies:
+         - :|:app|debug|foo>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:app:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - runtimeDependencies:
+         - :|:app|debug|foo>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeDebug, org.gradle.usage>java-runtime|projectWithModules:app:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - unresolvedDependencies = []
+   < unitTestArtifact
+   - testFixturesArtifact = (null)
+   > libraries:
+      > :|:app|debug|foo>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:app:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":app"
+            - isTestFixtures = false
+            - buildType      = "debug"
+            - productFlavors:
+               * "foo -> free"
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> freeDebug"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "projectWithModules:app:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:app|debug|foo>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:app:unspecified
+      > :|:app|debug|foo>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeDebug, org.gradle.usage>java-runtime|projectWithModules:app:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":app"
+            - isTestFixtures = false
+            - buildType      = "debug"
+            - productFlavors:
+               * "foo -> free"
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> freeDebug"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "projectWithModules:app:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:app|debug|foo>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeDebug, org.gradle.usage>java-runtime|projectWithModules:app:unspecified
+      > :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>7, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:jar:unspecified:
+         - type               = PROJECT
+         - artifact           = {PROJECT}/jar/build/libs/jar.jar{!}
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":jar"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.dependency.bundling -> external"
+               * "org.gradle.jvm.version -> 7"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "projectWithModules:jar:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>7, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:jar:unspecified
+      > :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>7, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:jar:unspecified:
+         - type               = PROJECT
+         - artifact           = {PROJECT}/jar/build/libs/jar.jar{!}
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":jar"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.dependency.bundling -> external"
+               * "org.gradle.jvm.version -> 7"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "projectWithModules:jar:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>7, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:jar:unspecified
+   < libraries
+< VariantDependencies

@@ -28,7 +28,6 @@ import com.android.build.gradle.integration.common.fixture.testprojects.TestProj
 import com.android.build.gradle.integration.common.truth.AarSubject
 import com.android.build.gradle.integration.common.truth.forEachLine
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import com.android.build.gradle.integration.common.utils.getApkFolderOutput
 import com.android.build.gradle.integration.common.utils.getApkLocations
 import com.android.build.gradle.integration.common.utils.getBundleLocation
 import com.android.build.gradle.integration.common.utils.getVariantByName
@@ -1340,7 +1339,7 @@ allprojects { proj ->
         return applyOptions(ModelBuilderV2(this, projectConnection)).withPerTestPrefsRoot(true)
     }
 
-    fun locateBundleFileViaModel(variantName: String, projectPath: String): File {
+    fun locateBundleFileViaModel(variantName: String, projectPath: String?): File {
         val bundleFile = modelV2().fetchModels().container.getProject(projectPath).androidProject
             ?.getVariantByName(variantName)
             ?.getBundleLocation()
@@ -1349,7 +1348,7 @@ allprojects { proj ->
             ?: throw RuntimeException("Failed to get bundle file for $projectPath module")
     }
 
-    fun locateApkFolderViaModel(variantName: String, projectPath: String): File {
+    fun locateApkFolderViaModel(variantName: String, projectPath: String?): File {
         val apkFiles = modelV2().fetchModels().container.getProject(projectPath).androidProject
             ?.getVariantByName(variantName)
             ?.getApkLocations()
@@ -1358,7 +1357,7 @@ allprojects { proj ->
             ?: throw RuntimeException("Failed to get apk folder for $projectPath module")
     }
 
-    fun getApkFromBundleTaskName(variantName: String, projectPath: String): String {
+    fun getApkFromBundleTaskName(variantName: String, projectPath: String?): String {
         val appModel = modelV2().fetchModels().container.getProject(projectPath).androidProject
             ?: throw RuntimeException("Failed to get sync model for $projectPath module")
 
@@ -1367,7 +1366,7 @@ allprojects { proj ->
             ?: throw RuntimeException("Module $projectPath does not have apkFromBundle task name")
     }
 
-    fun getBundleTaskName(variantName: String, projectPath: String): String {
+    fun getBundleTaskName(variantName: String, projectPath: String?): String {
         val appModel = modelV2().fetchModels().container.getProject(projectPath).androidProject
             ?: throw RuntimeException("Failed to get sync model for $projectPath module")
 
@@ -1417,60 +1416,6 @@ allprojects { proj ->
      * @return the AndroidProject model for the project.
      */
     fun executeAndReturnModel(vararg tasks: String): ModelContainer<AndroidProject> {
-        _buildResult = executor().run(*tasks)
-        return model().fetchAndroidProjects()
-    }
-
-    /**
-     * Runs gradle on the project, and returns the (minimal) output model. Throws exception on
-     * failure.
-     *
-     * @param tasks Variadic list of tasks to execute.
-     * @param setupBlock Setup function for the GradleTaskExecutor and ModelBuilder
-     * @return the output models for the project as map of output model name (variant name +
-     * artifact name) to the associated [BuiltArtifacts]
-     */
-    @JvmOverloads
-    fun executeAndReturnOutputModels(setupBlock: (BaseGradleExecutor<*>) -> Unit = {}, vararg tasks: String): Map<String, BuiltArtifacts> {
-        executor().also(setupBlock).run(*tasks)
-        val androidProjectModelContainer = model().also(setupBlock).ignoreSyncIssues().fetchAndroidProjects()
-        val onlyModel = androidProjectModelContainer.onlyModel
-        val mapOfVariantOutputs = ImmutableMap.builder<String, BuiltArtifacts>()
-        for (variant in onlyModel.variants) {
-            val postModelFile = variant.mainArtifact.assembleTaskOutputListingFile
-            val builtArtifacts: BuiltArtifacts? = loadFromFile(
-                File(postModelFile)
-            )
-            if (builtArtifacts != null) {
-                mapOfVariantOutputs.put(variant.name, builtArtifacts)
-            }
-            for (extraAndroidArtifact in variant.extraAndroidArtifacts) {
-                val extraModelFile = extraAndroidArtifact.assembleTaskOutputListingFile
-                if (!extraModelFile.isEmpty()) {
-                    val extraBuiltArtifacts: BuiltArtifacts? =
-                        loadFromFile(
-                            File(postModelFile),
-                        )
-                    if (extraBuiltArtifacts != null) {
-                        mapOfVariantOutputs.put(
-                            variant.name + extraAndroidArtifact.name,
-                            extraBuiltArtifacts
-                        )
-                    }
-                }
-            }
-        }
-        return mapOfVariantOutputs.build()
-    }
-
-    /**
-     * Runs gradle on the project, and returns a project model for each sub-project. Throws
-     * exception on failure.
-     *
-     * @param tasks Variadic list of tasks to execute.
-     * @return the AndroidProject model for the project.
-     */
-    fun executeAndReturnMultiModel(vararg tasks: String): ModelContainer<AndroidProject> {
         _buildResult = executor().run(*tasks)
         return model().fetchAndroidProjects()
     }

@@ -65,31 +65,3 @@ fun VariantBuildInformation.getApkFolderOutput() =
 
 fun VariantBuildInformation.getSingleOutputFile() =
     getApkFolderOutput().single()
-
-/**
- * Convenience method to verify that the given ProjectBuildOutput contains exactly two variants,
- * then return the "debug" variant. This is most useful for integration tests building projects
- * with no extra buildTypes and no specified productFlavors.
- *
- * @return the build output for the "debug" variant
- * @throws AssertionError if the model contains more than two variants, or does not have a
- * "debug" variant
- */
-fun AndroidProject.getDebugVariantBuildOutput(): VariantBuildInformation {
-    TruthHelper.assertThat(variantsBuildInformation).hasSize(2)
-    val debugVariantOutput = getVariantBuildInformationByName(BuilderConstants.DEBUG)
-    TruthHelper.assertThat(debugVariantOutput).isNotNull()
-    return debugVariantOutput
-}
-
-/**
- * Gets the VariantBuildOutput with the given name.
- *
- * @param name the name to match, e.g. [com.android.builder.core.BuilderConstants.DEBUG]
- * @return the only item with the given name
- * @throws AssertionError if no items match or if multiple items match
- */
-fun AndroidProject.getVariantBuildInformation(name: String): VariantBuildInformation {
-    return searchForExistingItem(
-            this.variantsBuildInformation, name, VariantBuildInformation::variantName, "VariantBuildInformation")
-}

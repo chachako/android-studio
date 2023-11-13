@@ -20,8 +20,6 @@ import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl
 import com.android.ide.common.build.ListingFileRedirect
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
-import com.android.build.gradle.integration.common.utils.getVariantBuildInformationByName
-import com.android.build.gradle.integration.common.utils.getVariantByName
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.getOutputDir
 import com.android.utils.FileUtils
@@ -93,17 +91,12 @@ class BundleOptionsTest {
             assertThat(File(bundleFile).exists()).isTrue()
         }
 
-        val projectModel = project.executeAndReturnModel(":bundleDebug")
-        // check that model files are present.
-        val debugBuildInformation =
-            projectModel.onlyModel.getVariantBuildInformationByName("debug")
-        assertThat(debugBuildInformation.bundleTaskName).isNotNull()
-        checkPostBundleModel(File(debugBuildInformation.bundleTaskOutputListingFile!!))
-
-        val mainArtifact = projectModel.onlyModel.getVariantByName("debug").mainArtifact
-        assertThat(mainArtifact.bundleTaskOutputListingFile).isNotNull()
-        val postBundleModel = File(mainArtifact.bundleTaskOutputListingFile!!)
-        checkPostBundleModel(postBundleModel)
+        project.execute(":bundleDebug")
+        val appModel = project.modelV2().fetchModels().container.getProject()
+        val variantsBuildInformation = appModel.androidProject?.variants!!
+        val debugBuildInformation = variantsBuildInformation.single { it.name == "debug" }
+        assertThat(debugBuildInformation.mainArtifact.bundleInfo?.bundleTaskName).isNotNull()
+        checkPostBundleModel(debugBuildInformation.mainArtifact.bundleInfo?.bundleTaskOutputListingFile!!)
 
         // test redirect file presence.
         val redirectFile = FileUtils.join(

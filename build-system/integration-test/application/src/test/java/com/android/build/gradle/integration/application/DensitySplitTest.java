@@ -9,12 +9,13 @@ import com.android.build.api.variant.BuiltArtifact;
 import com.android.build.api.variant.BuiltArtifacts;
 import com.android.build.api.variant.FilterConfiguration;
 import com.android.build.api.variant.VariantOutputConfiguration;
+import com.android.build.api.variant.impl.BuiltArtifactsImpl;
+import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.VariantOutputUtils;
-import com.android.builder.core.BuilderConstants;
 import com.android.testutils.apk.Apk;
 import com.google.common.collect.Maps;
-import com.google.common.truth.Truth;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
@@ -33,9 +34,8 @@ public class DensitySplitTest {
 
     @BeforeClass
     public static void setUp() throws IOException, InterruptedException {
-        builtArtifacts =
-                project.executeAndReturnOutputModels("clean", "assembleDebug")
-                        .get(BuilderConstants.DEBUG);
+        project.execute("clean", "assembleDebug");
+        builtArtifacts = loadBuiltArtifacts(new File(project.getOutputDir(), "apk/debug"));
     }
 
     @AfterClass
@@ -43,8 +43,14 @@ public class DensitySplitTest {
         project = null;
     }
 
+    private static BuiltArtifacts loadBuiltArtifacts(File output) {
+        BuiltArtifactsImpl builtArtifacts = BuiltArtifactsLoaderImpl.loadFromDirectory(output);
+        assertNotNull(builtArtifacts);
+        return builtArtifacts;
+    }
+
     @Test
-    public void testPackaging() throws IOException {
+    public void testPackaging() {
         Collection<BuiltArtifact> outputFiles = builtArtifacts.getElements();
         assertThat(outputFiles).hasSize(5);
 
@@ -54,7 +60,7 @@ public class DensitySplitTest {
     }
 
     @Test
-    public void checkVersionCodeInApk() throws IOException {
+    public void checkVersionCodeInApk() {
         Apk universalApk = project.getApk("universal", GradleTestProject.ApkType.DEBUG);
         assertThat(universalApk).hasVersionCode(112);
         assertThat(universalApk).hasVersionName("version 112");

@@ -22,16 +22,15 @@ import static org.junit.Assert.assertTrue;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.truth.ScannerSubject;
-import com.android.build.gradle.integration.common.utils.ProjectBuildOutputUtils;
+import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
+import com.android.build.gradle.integration.common.utils.ProjectBuildOutputUtilsV2;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.builder.core.BuilderConstants;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.VariantBuildInformation;
+import com.android.builder.model.v2.ide.Variant;
+import com.android.builder.model.v2.models.AndroidProject;
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -41,27 +40,25 @@ public class RenamedApkTest {
     public static GradleTestProject project =
             GradleTestProject.builder().fromTestProject("renamedApk").create();
 
-    private static AndroidProject model;
-
-    @BeforeClass
-    public static void setUp() throws IOException, InterruptedException {
-        model = project.executeAndReturnModel("clean", "assembleDebug").getOnlyModel();
-    }
-
     @AfterClass
     public static void cleanUp() {
         project = null;
-        model = null;
     }
 
     @Test
     public void checkModelReflectsRenamedApk() throws Exception {
-        File projectDir = project.getProjectDir();
-        VariantBuildInformation variantBuildOutput =
-                ProjectBuildOutputUtils.getDebugVariantBuildOutput(model);
-        Collection<String> outputFiles = ProjectBuildOutputUtils.getApkFolderOutput(variantBuildOutput);
+        project.executor().run("clean", "assembleDebug");
+        AndroidProject projectBuildOutput =
+                project.modelV2()
+                        .ignoreSyncIssues()
+                        .fetchModels(null, null)
+                        .getContainer()
+                        .getProject(null, ":")
+                        .getAndroidProject();
+        Variant debugVariant = AndroidProjectUtilsV2.getDebugVariant(projectBuildOutput);
+        Collection<String> outputFiles = ProjectBuildOutputUtilsV2.getApkFolderOutput(debugVariant);
 
-        File buildDir = new File(projectDir, "build/outputs/apk/debug");
+        File buildDir = new File(project.getProjectDir(), "build/outputs/apk/debug");
 
         assertEquals(1, outputFiles.size());
         String output = outputFiles.iterator().next();

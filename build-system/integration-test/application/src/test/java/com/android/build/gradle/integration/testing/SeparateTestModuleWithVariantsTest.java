@@ -4,14 +4,14 @@ import static com.android.testutils.truth.PathSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.builder.model.TestedTargetVariant;
-import com.android.builder.model.Variant;
+import com.android.builder.model.v2.ide.TestedTargetVariant;
+import com.android.builder.model.v2.ide.Variant;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,7 +60,7 @@ public class SeparateTestModuleWithVariantsTest {
     }
 
     @Test
-    public void checkInstrumentationAdded() throws Exception {
+    public void checkInstrumentationAdded() {
         GradleTestProject testProject = project.getSubproject("test");
         project.execute("clean", ":test:assembleDebug");
 
@@ -75,19 +75,14 @@ public class SeparateTestModuleWithVariantsTest {
     }
 
     @Test
-    public void checkModelContainsTestedApksToInstall() throws Exception {
-        Variant variant =
-                Iterables.getFirst(
-                        project.executeAndReturnMultiModel("clean")
-                                .getOnlyModelMap()
-                                .get(":test")
-                                .getVariants(),
-                        null);
-        assertThat(variant).isNotNull();
-        Collection<TestedTargetVariant> toInstall = variant.getTestedTargetVariants();
+    public void checkModelContainsTestedApksToInstall() {
+        ModelContainerV2.ModelInfo model =
+                project.modelV2().fetchModels().getContainer().getProject(":test");
 
-        assertThat(toInstall).hasSize(1);
-        TestedTargetVariant testedVariant = Iterables.getOnlyElement(toInstall);
+        Variant variant = Iterables.getFirst(model.getAndroidProject().getVariants(), null);
+
+        assertThat(variant).isNotNull();
+        TestedTargetVariant testedVariant = variant.getTestedTargetVariant();
         assertThat(testedVariant.getTargetProjectPath()).isEqualTo(":app");
         assertThat(testedVariant.getTargetVariant()).isEqualTo("debug");
     }

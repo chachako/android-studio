@@ -21,10 +21,10 @@ import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_V
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.integration.common.utils.getDebugVariant
 import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
-import java.io.File
 import kotlin.test.assertNotNull
 
 class BuiltArtifactsWithWorkerTest {
@@ -240,12 +240,14 @@ androidComponents.onVariants(androidComponents.selector().all(), {
 })
         """.trimIndent()
         )
-        val model = project.executeAndReturnModel("clean")
-        val debugVariant = model.onlyModel.variants.filter { it.name == "debug" }.single()
+
+        val model = project.modelV2().fetchModels().container.getProject()
+        val debugVariant = model.androidProject!!.getDebugVariant()
+
         val assembleTaskOutputListingFile = debugVariant.mainArtifact.assembleTaskOutputListingFile
         // assert that the listing file location produced by the new task has not been recorded in
         // the model, only the content of the redirect file should change.
-        Truth.assertThat(assembleTaskOutputListingFile).doesNotContain("acme_apks")
+        Truth.assertThat(assembleTaskOutputListingFile?.name).doesNotContain("acme_apks")
 
         // now executes assemble to make sure the redirect file is created.
         val result = project.executor().run(debugVariant.mainArtifact.assembleTaskName, "debugVerifier")
@@ -253,9 +255,7 @@ androidComponents.onVariants(androidComponents.selector().all(), {
             ":createDebugApkListingFileRedirect", ":debugProducerTask", ":debugConsumerTask", ":debugVerifier")
 
         // and check the listing file content.
-        val listingFile = File(assembleTaskOutputListingFile)
-        val updatedApks =
-                BuiltArtifactsLoaderImpl.loadFromFile(listingFile)
+        val updatedApks = BuiltArtifactsLoaderImpl.loadFromFile(assembleTaskOutputListingFile)
         assertNotNull(updatedApks)
         Truth.assertThat(updatedApks.elements).hasSize(3)
         updatedApks.elements.forEach { builtArtifact ->

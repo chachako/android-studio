@@ -91,8 +91,7 @@ public class LibTestDepTest {
     }
 
     @Test
-    public void checkDebugAndReleaseOutputHaveDifferentNames()
-            throws IOException, InterruptedException {
+    public void checkDebugAndReleaseOutputHaveDifferentNames() {
         File debugOutput = getOutputFile();
         project.execute("clean", "assembleRelease");
         File releaseOutput = getOutputFile();

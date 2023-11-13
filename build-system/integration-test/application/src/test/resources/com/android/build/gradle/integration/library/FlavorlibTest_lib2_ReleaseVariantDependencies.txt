@@ -1,0 +1,166 @@
+> VariantDependencies:
+   - name                 = "release"
+   - mainArtifact:
+      - compileDependencies    = []
+      - runtimeDependencies    = []
+      - unresolvedDependencies = []
+   - androidTestArtifact  = (null)
+   > unitTestArtifact:
+      > compileDependencies:
+         - :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|flavorlib:lib2:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+         - junit|junit|4.12|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|junit:junit:4.12:
+            - requestedCoordinates = (null)
+            - dependencies:
+               - org.hamcrest|hamcrest-core|1.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.hamcrest:hamcrest-core:1.3:
+                  - requestedCoordinates = (null)
+                  - dependencies         = []
+      < compileDependencies
+      > runtimeDependencies:
+         - :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|flavorlib:lib2:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+         - junit|junit|4.12|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|junit:junit:4.12:
+            - requestedCoordinates = (null)
+            - dependencies:
+               - org.hamcrest|hamcrest-core|1.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.hamcrest:hamcrest-core:1.3:
+                  - requestedCoordinates = (null)
+                  - dependencies         = []
+      < runtimeDependencies
+      - unresolvedDependencies = []
+   < unitTestArtifact
+   - testFixturesArtifact = (null)
+   > libraries:
+      > :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|flavorlib:lib2:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":lib2"
+            - isTestFixtures = false
+            - buildType      = "release"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> release"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "flavorlib:lib2:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = {PROJECT}/lib2/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
+         - androidLibraryData = (null)
+      < :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|flavorlib:lib2:unspecified
+      > :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|flavorlib:lib2:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":lib2"
+            - isTestFixtures = false
+            - buildType      = "release"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> release"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "flavorlib:lib2:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = {PROJECT}/lib2/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
+         - androidLibraryData = (null)
+      < :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|flavorlib:lib2:unspecified
+      > junit|junit|4.12|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|junit:junit:4.12:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/junit/junit/4.12/junit-4.12.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "junit"
+            - name           = "junit"
+            - version        = "4.12"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "junit:junit:4.12"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < junit|junit|4.12|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|junit:junit:4.12
+      > junit|junit|4.12|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|junit:junit:4.12:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/junit/junit/4.12/junit-4.12.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "junit"
+            - name           = "junit"
+            - version        = "4.12"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "junit:junit:4.12"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < junit|junit|4.12|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|junit:junit:4.12
+      > org.hamcrest|hamcrest-core|1.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.hamcrest:hamcrest-core:1.3:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "org.hamcrest"
+            - name           = "hamcrest-core"
+            - version        = "1.3"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "org.hamcrest:hamcrest-core:1.3"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < org.hamcrest|hamcrest-core|1.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.hamcrest:hamcrest-core:1.3
+      > org.hamcrest|hamcrest-core|1.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.hamcrest:hamcrest-core:1.3:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "org.hamcrest"
+            - name           = "hamcrest-core"
+            - version        = "1.3"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "org.hamcrest:hamcrest-core:1.3"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < org.hamcrest|hamcrest-core|1.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.hamcrest:hamcrest-core:1.3
+   < libraries
+< VariantDependencies

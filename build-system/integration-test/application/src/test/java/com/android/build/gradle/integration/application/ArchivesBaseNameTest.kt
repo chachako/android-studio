@@ -16,15 +16,15 @@
 
 package com.android.build.gradle.integration.application
 
-import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
-import com.android.testutils.truth.PathSubject.assertThat
-
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.runner.FilterableParameterized
+import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import com.android.build.gradle.integration.common.utils.getDebugVariantBuildOutput
+import com.android.build.gradle.integration.common.utils.getDebugVariant
 import com.android.build.gradle.integration.common.utils.getSingleOutputFile
+import com.android.testutils.truth.PathSubject.assertThat
+import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -58,11 +58,14 @@ class ArchivesBaseNameTest(plugin: String, private val extension: String) {
     }
 
     private fun checkApkName(name: String, extension: String) {
-        val projectBuildOutput = project.executeAndReturnModel("clean","assembleDebug").onlyModel
-        val debugBuildOutput = projectBuildOutput.getDebugVariantBuildOutput()
+        project.execute("clean","assembleDebug")
+        val androidProject = project.modelV2().fetchModels().container.getProject().androidProject!!
+        val variantBuildOutputs = androidProject.variants
+        Truth.assertThat(variantBuildOutputs).hasSize(2)
+        val debugBuildOutput = androidProject.getDebugVariant()
 
         // Get the apk file
-        val outputFile = if (debugBuildOutput.assembleTaskOutputListingFile != null) {
+        val outputFile = if (debugBuildOutput.mainArtifact.assembleTaskOutputListingFile != null) {
             File(debugBuildOutput.getSingleOutputFile())
         } else {
             File(project.buildDir, "outputs/aar").listFiles()?.first()
@@ -77,8 +80,8 @@ class ArchivesBaseNameTest(plugin: String, private val extension: String) {
         @JvmStatic
         fun data(): Iterable<Array<Any>> {
             return listOf(
-                arrayOf<Any>("com.android.application", "apk"),
-                arrayOf<Any>("com.android.library", "aar")
+                arrayOf("com.android.application", "apk"),
+                arrayOf("com.android.library", "aar")
             )
         }
     }

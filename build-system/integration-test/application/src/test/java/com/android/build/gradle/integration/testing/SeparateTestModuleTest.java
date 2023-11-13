@@ -10,16 +10,16 @@ import static com.google.common.truth.Truth.assertThat;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType;
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.builder.model.TestedTargetVariant;
-import com.android.builder.model.Variant;
+import com.android.builder.model.v2.ide.TestedTargetVariant;
+import com.android.builder.model.v2.ide.Variant;
 import com.android.testutils.apk.Apk;
 import com.android.utils.FileUtils;
 import com.google.common.collect.Iterables;
 import com.google.common.truth.Truth;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Collection;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -112,7 +112,7 @@ public class SeparateTestModuleTest {
     }
 
     @Test
-    public void checkInstrumentationAdded() throws Exception {
+    public void checkInstrumentationAdded() {
         GradleTestProject testProject = project.getSubproject("test");
         project.execute("clean", ":test:assembleDebug");
 
@@ -127,22 +127,15 @@ public class SeparateTestModuleTest {
     }
 
     @Test
-    public void checkModelContainsTestedApksToInstall() throws Exception {
-        Variant variant =
-                Iterables.getFirst(
-                        project.executeAndReturnMultiModel("clean")
-                                .getOnlyModelMap()
-                                .get(":test")
-                                .getVariants(),
-                        null);
-        Truth.assertThat(variant).isNotNull();
-        Collection<TestedTargetVariant> toInstall = variant.getTestedTargetVariants();
+    public void checkModelContainsTestedApksToInstall() {
+        ModelContainerV2.ModelInfo model =
+                project.modelV2().fetchModels().getContainer().getProject(":test");
 
-        assertThat(toInstall).hasSize(1);
-        assertThat(Iterables.getOnlyElement(toInstall).getTargetProjectPath()).isEqualTo(":app");
-        // FIXME we can't know the variant yet because it's not passed through the new dependency
-        // scheme.
-        // assertThat(toInstall.first().getTargetVariant()).isEqualTo("debug")
+        Variant variant = Iterables.getFirst(model.getAndroidProject().getVariants(), null);
+        Truth.assertThat(variant).isNotNull();
+        TestedTargetVariant testedVariant = variant.getTestedTargetVariant();
+        assertThat(testedVariant.getTargetProjectPath()).isEqualTo(":app");
+        assertThat(testedVariant.getTargetVariant()).isEqualTo("debug");
     }
 
     /**
