@@ -27,6 +27,7 @@ import com.android.SdkConstants.VALUE_FALSE
 import com.android.ide.common.resources.LocaleManager
 import com.android.ide.common.resources.ResourceItem
 import com.android.ide.common.resources.ResourceRepository
+import com.android.ide.common.resources.ResourceUpdateTracerService
 import com.android.ide.common.resources.ResourceVisitor
 import com.android.ide.common.resources.configuration.DensityQualifier
 import com.android.ide.common.resources.configuration.FolderConfiguration
@@ -363,7 +364,16 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
       items = resources.getResources(namespace, type, name)
     }
     if (items.isEmpty()) {
+      // Dump resource trace to help investigate b/167583128
+      ResourceUpdateTracerService.getInstance()?.dumpTrace(null)
+
       // Something is wrong with the resource repository; can't analyze here
+      client.log(
+        Severity.ERROR,
+        null,
+        "Resource repository is out-of-date:" +
+          " Could not find resource $originalName of type $type in namespace $namespace"
+      )
       return
     }
     val hasDefault = items.filter { isDefaultFolder(it.configuration, null) }.any()
