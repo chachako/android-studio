@@ -56,6 +56,18 @@ class ManagedDeviceUtilsTest {
     }
 
     @Test
+    fun computeAvdName_worksWitQuotations() {
+        val computedName = computeAvdName(
+            33,
+            "google_apis",
+            "x86",
+            "8\" Fold-out",
+        )
+
+        assertThat(computedName).isEqualTo("dev33_google_apis_x86_8__Fold-out")
+    }
+
+    @Test
     fun computeAbiFromArchitecture_useX86Over64IfAvailable() {
         SystemPropertyOverrides().use { systemPropertyOverrides ->
             systemPropertyOverrides.setProperty("os.arch", "x86_64")
