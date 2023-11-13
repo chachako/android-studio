@@ -19,8 +19,11 @@ package com.android.build.api.variant.impl
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.VariantBuilder
 import com.android.build.gradle.internal.core.dsl.VariantDslInfo
+import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import com.android.build.gradle.internal.services.ProjectServices
 import com.android.build.gradle.internal.services.VariantBuilderServices
+import com.android.build.gradle.options.ProjectOptions
+import com.google.common.collect.ImmutableMap
 import com.google.common.truth.Truth
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.junit.Before
@@ -64,6 +67,9 @@ internal class VariantBuilderImplTest {
 
     @Before
     fun setup() {
+        Mockito.`when`(variantBuilderServices.projectOptions).thenReturn(
+            ProjectOptions(ImmutableMap.of(), FakeProviderFactory.factory)
+        )
         Mockito.`when`(variantDslInfo.minSdkVersion).thenReturn(MutableAndroidVersion(12, null))
         Mockito.`when`(variantDslInfo.targetSdkVersion).thenReturn(null)
     }

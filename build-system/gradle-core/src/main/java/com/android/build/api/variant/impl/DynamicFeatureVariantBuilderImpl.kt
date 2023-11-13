@@ -76,5 +76,6 @@ open class DynamicFeatureVariantBuilderImpl @Inject constructor(
             _enableMultiDex = value
         }
 
-    override val androidTest: AndroidTestBuilderImpl = AndroidTestBuilderImpl(_enableMultiDex)
+    override val androidTest: AndroidTestBuilderImpl =
+        AndroidTestBuilderImpl(variantBuilderServices, _enableMultiDex)
 }

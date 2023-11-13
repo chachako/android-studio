@@ -93,6 +93,7 @@ open class LibraryVariantBuilderImpl @Inject constructor(
         set(value) = setMinificationIfPossible("minifyEnabled", value) { field = it }
 
     override val androidTest: AndroidTestBuilder = AndroidTestBuilderImpl(
-            dslInfo.isAndroidTestMultiDexEnabled
+        variantBuilderServices,
+        dslInfo.isAndroidTestMultiDexEnabled
     )
 }

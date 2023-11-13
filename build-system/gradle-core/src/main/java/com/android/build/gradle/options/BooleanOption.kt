@@ -272,6 +272,12 @@ enum class BooleanOption(
         FeatureStage.Experimental
     ),
 
+    ENABLE_NEW_TEST_DSL(
+        "android.experimental.enableNewTestDsl",
+        false,
+        FeatureStage.Experimental
+    ),
+
     /* ------------------------
      * SOFTLY-ENFORCED FEATURES
      */

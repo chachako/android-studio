@@ -18,12 +18,15 @@ package com.android.build.api.variant.impl
 
 import com.android.build.api.variant.AndroidTestBuilder
 import com.android.build.api.variant.PropertyAccessNotAllowedException
+import com.android.build.gradle.internal.services.VariantBuilderServices
+import com.android.build.gradle.options.BooleanOption
 
 class AndroidTestBuilderImpl(
+    variantBuilderServices: VariantBuilderServices,
     enableMultiDexInitialValue: Boolean?
 ): AndroidTestBuilder {
 
-    override var enable = true
+    override var enable = !variantBuilderServices.projectOptions[BooleanOption.ENABLE_NEW_TEST_DSL]
 
     internal var _enableMultiDex = enableMultiDexInitialValue
 

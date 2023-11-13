@@ -116,5 +116,6 @@ open class ApplicationVariantBuilderImpl @Inject constructor(
             _enableMultiDex = value
         }
 
-    override val androidTest: AndroidTestBuilder = AndroidTestBuilderImpl(_enableMultiDex)
+    override val androidTest: AndroidTestBuilder =
+        AndroidTestBuilderImpl(variantBuilderServices, _enableMultiDex)
 }
