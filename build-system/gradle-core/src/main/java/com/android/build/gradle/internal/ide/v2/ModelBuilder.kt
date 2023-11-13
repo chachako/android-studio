@@ -413,11 +413,10 @@ class ModelBuilder<
         val isBaseModule = component.componentType.isBaseModule
         val isDynamicFeature = component.componentType.isDynamicFeature
         if (!isBaseModule) {
-            val consumerProguardFiles = component.optimizationCreationConfig.consumerProguardFiles
             checkProguardFiles(
                 project.layout.buildDirectory,
                 isDynamicFeature,
-                consumerProguardFiles
+                component.optimizationCreationConfig.consumerProguardFilePaths
             ) { errorMessage: String -> variantModel
                 .syncIssueReporter
                 .reportError(IssueReporter.Type.GENERIC, errorMessage)

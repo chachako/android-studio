@@ -833,7 +833,7 @@ abstract class VariantInputs {
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.NAME_ONLY)
     @get:Optional
-    abstract val consumerProguardFiles: ListProperty<File>
+    abstract val consumerProguardFiles: ListProperty<RegularFile>
 
     @get:Nested
     @get:Optional
@@ -1399,7 +1399,7 @@ abstract class VariantInputs {
             manifestPlaceholders = manifestPlaceholders.get(),
             resourceConfigurations = resourceConfigurations.get(),
             proguardFiles = proguardFiles.orNull?.map { it.asFile } ?: listOf(),
-            consumerProguardFiles = consumerProguardFiles.orNull ?: listOf(),
+            consumerProguardFiles = consumerProguardFiles.orNull?.map { it.asFile } ?: listOf(),
             sourceProviders = mainSourceProvider.orNull?.toLintModels() ?: emptyList(),
             testSourceProviders = listOfNotNull(
                 unitTestSourceProvider.orNull?.toLintModels(),

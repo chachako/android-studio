@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.integration.application
+package com.android.build.gradle.integration.r8
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProjectUsingKTS
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
-import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
 
-class DefaultProguardFileTest {
+class DefaultProguardFilesTest {
 
     private val baseModule = MinimalSubProjectUsingKTS.app("com.example.baseModule")
         .appendToBuild(
@@ -74,19 +72,16 @@ class DefaultProguardFileTest {
             .build()
 
     @get:Rule
-    val project =
-        GradleTestProject.builder()
-            .fromTestApp(testApp)
-            .create()
+    val project = GradleTestProject.builder().fromTestApp(testApp).create()
 
+    /** Regression test for b/295666695. */
     @Test
-    fun testDefaultProguardFilesAreCompatibleWithGradle9() {
-        val result = project.executor()
-            .expectFailure()
-            .run("assembleRelease")
+    fun testDefaultProguardFilesHaveTaskDependencies() {
+        val result = project.executor().expectFailure().run("assembleRelease")
 
-        result.assertErrorContains(
-            "Default file proguard-android-optimize.txt should not be specified in this module. It can be specified in the base module instead."
-        )
+        // If default Proguard files didn't have task dependencies, the build would fail with an
+        // error different from the error below (see b/295666695), so by checking the error below,
+        // we're ensuring that default Proguard files have task dependencies.
+        result.assertErrorContains("Default file proguard-android-optimize.txt should not be specified in this module. It can be specified in the base module instead.")
     }
 }
