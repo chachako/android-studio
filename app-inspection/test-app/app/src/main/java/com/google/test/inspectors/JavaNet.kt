@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 internal object JavaNet : AbstractHttpClient<HttpURLConnection>() {
+
   override val name: String
     get() = "Java Net"
 
@@ -30,12 +31,7 @@ internal object JavaNet : AbstractHttpClient<HttpURLConnection>() {
       val rc = connection.responseCode
       Log.i("NetworkApp", "Response: $rc")
 
-      val content =
-        when {
-          rc in 200 ..< 300 -> connection.inputStream.reader().use { it.readText() }
-          else -> connection.errorStream.reader().use { it.readText() }
-        }
-      return@withContext Result(rc, content)
+      return@withContext Result(rc, connection.inputStream.reader().use { it.readText() })
     }
   }
 }
