@@ -238,7 +238,6 @@ class StartupProfileDexOptimizationTest(
             project.getSubproject("app")
                 .file("src/release/generated/baselineProfiles/startup-prof.txt"),
             """
-                Lcom/example/app/Foo;->foo()V
                 Lcom/example/app/Bar;->bar()V
             """.trimIndent()
         )
@@ -246,8 +245,7 @@ class StartupProfileDexOptimizationTest(
         val apk = project.getSubproject("app").getApk(GradleTestProject.ApkType.RELEASE)
         // dex optimization is turned on so there should be 2 dexes
         assertThat(apk.allDexes).hasSize(2)
-        // there are two startup profiles, but the one in main should be used, meaning the classes
-        // size should be 1 (only Foo)
-        assertThat(apk.mainDexFile.get().classes).hasSize(1)
+        // there are two startup profiles with one class each, meaning the classes size should be 2
+        assertThat(apk.mainDexFile.get().classes).hasSize(2)
     }
 }

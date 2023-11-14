@@ -238,6 +238,10 @@ abstract class R8Task @Inject constructor(
     @get:Inject
     abstract val providerFactory: ProviderFactory
 
+    @get:Optional
+    @get:OutputFile
+    abstract val mergedStartupProfile: RegularFileProperty
+
     class CreationAction(
             creationConfig: ConsumableCreationConfig,
             isTestApplication: Boolean = false,
@@ -317,6 +321,11 @@ abstract class R8Task @Inject constructor(
                     .use(taskProvider)
                     .wiredWithFiles(R8Task::inputArtProfile, R8Task::outputArtProfile)
                     .toTransform(InternalArtifactType.R8_ART_PROFILE)
+
+                creationConfig.artifacts.setInitialProvider(
+                    taskProvider,
+                    R8Task::mergedStartupProfile
+                ).on(InternalArtifactType.MERGED_STARTUP_PROFILE)
             }
         }
 
@@ -529,28 +538,26 @@ abstract class R8Task @Inject constructor(
             outputArtProfile.orNull?.asFile?.let { FileUtils.copyFile(inputArtProfileFile, it) }
         }
 
-        val inputBaselineProfileForStartupOptimization = if (enableDexStartupOptimization.get()) {
+        if (enableDexStartupOptimization.get()) {
             val sources = baselineProfilesSources.orNull
             if (sources.isNullOrEmpty()) {
                 getLogger().debug(
                     "Dex optimization based on startup profile is enabled, " +
                     "but there are no source folders.")
-                null
             } else {
-                val startupProfile = sources.firstOrNull {
-                    it.asFile.exists()
-                }
-                if (startupProfile == null || !startupProfile.asFile.exists()) {
+                val startupProfiles = sources.filter { it.asFile.exists() }.map { it.asFile }
+                if (startupProfiles.isEmpty()) {
                     getLogger().debug(
                         "Dex optimization based on startup profile is enabled, but there are no " +
                         "input baseline profiles found in the baselineProfiles sources. " +
                         "You should add ${sources.first().asFile.absolutePath}, for instance.")
-                    null
                 } else {
-                    startupProfile
+                    mergedStartupProfile.get().asFile.printWriter().buffered().use { writer ->
+                        startupProfiles.joinTo(writer, "\n") { it.readText() }
+                    }
                 }
             }
-        } else null
+        }
 
         val workerAction = { it: R8Runnable.Params ->
             it.bootClasspath.from(bootClasspath.toList())
@@ -619,10 +626,9 @@ abstract class R8Task @Inject constructor(
                 it.inputArtProfile.set(inputArtProfile)
                 it.outputArtProfile.set(outputArtProfile)
             }
-            if (enableDexStartupOptimization.get()) {
-                it.inputProfileForDexStartupOptimization.set(
-                    inputBaselineProfileForStartupOptimization
-                )
+            if (enableDexStartupOptimization.get() &&
+                mergedStartupProfile.orNull?.asFile?.exists() == true) {
+                it.inputProfileForDexStartupOptimization.set(mergedStartupProfile)
             }
         }
         if (executionOptions.get().runInSeparateProcess) {
