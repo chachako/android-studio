@@ -155,13 +155,56 @@ public class AdbClient {
         String allowAdbLibProp = System.getProperty(ALLOW_ADBLIB_PROP_KEY);
         boolean allowAdbLib = Boolean.parseBoolean(allowAdbLibProp);
 
+        // If there are baseline profiles, let's add them to the list of files to install.
+        List<Path> paths = new ArrayList<>();
+        paths.addAll(
+                app.getApks().stream()
+                        .map(apk -> Paths.get(apk.path))
+                        .collect(Collectors.toList()));
+
+        List<Path> bps = app.getBaselineProfile(device.getVersion().getApiLevel());
+        paths.addAll(bps);
+        logger.info("Installing:");
+        for (Path p : paths) {
+            logger.info("    " + p.getFileName());
+        }
+
+        InstallResult ir;
         if (adbSession.isPresent() && allowAdbLib) {
             logger.info("Installing with adblib");
-            return installWithAdbLib(app, options, reinstall);
+            ir = installWithAdbLib(paths, options, reinstall);
         } else {
             logger.info("Installing with ddmlib");
-            return installWithDdmLib(app, options, reinstall);
+            ir = installWithDdmLib(paths, options, reinstall);
         }
+
+        if (!bps.isEmpty() && baselineInstallationStatusSupported()) {
+            // Expected output from this command:
+            // path: /data/app/~~-[...]==/c.e.c-==/base.apk
+            //    arm64: [status=speed-profile] [reason=install] [primary-abi]
+            //      [location is /data/app/~~[...]==/c.e.c-==/oat/arm64/base.odex]
+            String[] cmd = {"pm", "art", "dump", app.getAppId()};
+            byte[] rawResult = new byte[0];
+            try {
+                rawResult = shell(cmd, Timeouts.SHELL_BASELINE_PROFILE_STATUS);
+            } catch (IOException e) {
+                logger.error(e, "Unable to retrieve baseline profile status");
+            }
+            String result = new String(rawResult);
+            if (!result.contains("status=speed-profile")) {
+                return new InstallResult(
+                        InstallStatus.INSTALL_BASELINE_PROFILE_FAILED,
+                        "Baseline profile did not install: " + result);
+            }
+            logger.info(result);
+            return ir;
+        }
+
+        return ir;
+    }
+
+    private boolean baselineInstallationStatusSupported() {
+        return device.getVersion().getApiLevel() >= 33;
     }
 
     private InstallResult makeInstallResult(String code, String message, Throwable t) {
@@ -183,15 +226,11 @@ public class AdbClient {
     }
 
     private InstallResult installWithAdbLib(
-            @NonNull App app, List<String> options, boolean reinstall) {
+            @NonNull List<Path> paths, List<String> options, boolean reinstall) {
         try {
             if (reinstall) {
                 options.add("-r");
             }
-            List<Path> apks =
-                    app.getApks().stream()
-                            .map(apk -> Paths.get(apk.path))
-                            .collect(Collectors.toList());
             DeviceSelector deviceSelector =
                     DeviceSelector.fromSerialNumber(device.getSerialNumber());
             Duration timeout = Duration.of(Timeouts.CMD_OINSTALL_MS, ChronoUnit.MILLIS);
@@ -200,7 +239,7 @@ public class AdbClient {
                     deviceServices.getSession(),
                     c ->
                             InstallerKt.install(
-                                    deviceServices, deviceSelector, apks, options, timeout, c));
+                                    deviceServices, deviceSelector, paths, options, timeout, c));
             return new InstallResult(InstallStatus.OK, null, device.getLastInstallMetrics());
         } catch (com.android.adblib.tools.InstallException e) {
             String code = e.getErrorCode();
@@ -210,9 +249,9 @@ public class AdbClient {
     }
 
     private InstallResult installWithDdmLib(
-            @NonNull App app, List<String> options, boolean reinstall) {
-        List<File> files =
-                app.getApks().stream().map(apk -> new File(apk.path)).collect(Collectors.toList());
+            @NonNull List<Path> paths, List<String> options, boolean reinstall) {
+
+        List<File> files = paths.stream().map(Path::toFile).collect(Collectors.toList());
         try {
             if (device.getVersion().isGreaterOrEqualThan(AndroidVersion.VersionCodes.LOLLIPOP)) {
                 device.installPackages(files, reinstall, options, 5, TimeUnit.MINUTES);

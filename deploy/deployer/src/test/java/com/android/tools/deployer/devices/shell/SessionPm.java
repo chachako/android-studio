@@ -84,7 +84,7 @@ public class SessionPm extends ShellCommand {
                     } else {
                         apk = device.readFile(path);
                     }
-                    device.writeToSession(session, apk);
+                    device.writeToSession(session, name, apk);
                     stdout.format("Success: streamed %d bytes\n", size);
                     return 0;
                 }

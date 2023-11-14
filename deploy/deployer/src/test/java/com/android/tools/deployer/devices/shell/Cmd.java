@@ -135,7 +135,7 @@ public class Cmd extends ShellCommand {
                         stdout.println("Error: APK content must be streamed");
                         return 1;
                     }
-                    device.writeToSession(session, apk);
+                    device.writeToSession(session, name, apk);
                     stdout.format("Success: streamed %d bytes\n", size);
                     return 0;
                 }

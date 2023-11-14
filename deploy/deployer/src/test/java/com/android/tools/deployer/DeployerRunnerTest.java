@@ -169,6 +169,35 @@ public class DeployerRunnerTest {
     }
 
     @Test
+    @ApiLevel.InRange(min = 31)
+    public void testBaselineInstall() throws Exception {
+        assertTrue(device.getApps().isEmpty());
+        DeployerRunner runner = new DeployerRunner(cacheDb, dexDB, service);
+        Path apk = TestUtils.resolveWorkspacePath(BASE + "sample.apk");
+        Path baseline = TestUtils.resolveWorkspacePath(BASE + "sample.dm");
+        Path installersPath = DeployerTestUtils.prepareInstaller().toPath();
+        String[] args = {
+            "install",
+            "com.example.helloworld",
+            apk.toString(),
+            baseline.toString(),
+            "--force-full-install",
+            "--installers-path=" + installersPath
+        };
+        int retcode = runner.run(args);
+        assertEquals(0, retcode);
+        assertEquals(1, device.getApps().size());
+        assertInstalled("com.example.helloworld", apk);
+        assertMetrics(
+                runner.getMetrics(),
+                "DELTAINSTALL:DISABLED",
+                "INSTALL:OK",
+                "DDMLIB_UPLOAD",
+                "DDMLIB_INSTALL");
+        assertFalse(device.hasFile("/data/local/tmp/sample.apk"));
+    }
+
+    @Test
     public void testFullInstallSuccessful() throws Exception {
         assertTrue(device.getApps().isEmpty());
         DeployerRunner runner = new DeployerRunner(cacheDb, dexDB, service);

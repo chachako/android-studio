@@ -253,9 +253,9 @@ public class FakeDevice {
         return exe.canExecute();
     }
 
-    public InstallResult install(byte[] file) throws IOException {
+    public InstallResult install(String name, byte[] bytes) throws IOException {
         int session = createSession(null);
-        writeToSession(session, file);
+        writeToSession(session, name, bytes);
         return commitSession(session);
     }
 
@@ -361,8 +361,8 @@ public class FakeDevice {
         return id;
     }
 
-    public void writeToSession(int id, byte[] apk) {
-        sessions.get(id).apks.add(apk);
+    public void writeToSession(int id, String name, byte[] bytes) {
+        sessions.get(id).files.add(new InstallWrittenFile(name, bytes));
     }
 
     public boolean isValidSession(int session) {
@@ -391,12 +391,16 @@ public class FakeDevice {
             }
         }
 
-        for (byte[] bytes : session.apks) {
+        for (InstallWrittenFile file : session.files) {
+            if (!file.name.endsWith("apk")) {
+                // We skip non apks.
+                continue;
+            }
             Path tmp = Files.createTempFile(getStorage().toPath(), "apk", ".apk");
-            Files.write(tmp, bytes);
+            Files.write(tmp, file.bytes);
             Apk apk = new Apk(ApkParser.getApkDetails(tmp.toFile().getAbsolutePath()));
 
-            stage.put(apk.getFileName(), bytes);
+            stage.put(apk.getFileName(), file.bytes);
             details.put(apk.getFileName(), apk.details);
         }
 
@@ -648,13 +652,23 @@ public class FakeDevice {
 
     class Session {
         public final int id;
-        public final List<byte[]> apks;
+        public final List<InstallWrittenFile> files;
         public final String inherit;
 
         Session(int id, String inherit) {
             this.id = id;
             this.inherit = inherit;
-            apks = new ArrayList<>();
+            files = new ArrayList<>();
+        }
+    }
+
+    class InstallWrittenFile {
+        public final String name;
+        public final byte[] bytes;
+
+        InstallWrittenFile(String name, byte[] bytes) {
+            this.name = name;
+            this.bytes = bytes;
         }
     }
 

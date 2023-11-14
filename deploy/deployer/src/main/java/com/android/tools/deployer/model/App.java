@@ -16,6 +16,8 @@
 
 package com.android.tools.deployer.model;
 
+import static java.util.Collections.emptyList;
+
 import com.android.annotations.NonNull;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -27,33 +29,64 @@ public class App {
 
     private final String appId;
 
-    private App(@NonNull String appId, @NonNull List<Apk> apks) {
+    private final List<BaselineProfile> baselineProfiles;
+
+    private App(
+            @NonNull String appId,
+            @NonNull List<Apk> apks,
+            @NonNull List<BaselineProfile> baselineProfiles) {
         this.appId = appId;
         this.apks = apks;
+        this.baselineProfiles = baselineProfiles;
     }
 
     public static App fromApks(@NonNull String appId, @NonNull List<Apk> apks) {
-        return new App(appId, apks);
+        return new App(appId, apks, emptyList());
     }
 
     public static App fromApk(@NonNull String appId, @NonNull Apk apk) {
-        return new App(appId, Arrays.asList(apk));
+        return new App(appId, Arrays.asList(apk), emptyList());
     }
 
     public static App fomApks(@NonNull String appId, @NonNull List<Apk> apks) {
-        return new App(appId, apks);
+        return new App(appId, apks, emptyList());
     }
 
     public static App fromString(@NonNull String appId, @NonNull String apkPath) {
-        return new App(appId, Arrays.asList(ApkParser.parse(apkPath)));
+        return new App(appId, Arrays.asList(ApkParser.parse(apkPath)), emptyList());
+    }
+
+    public static App fromPaths(
+            @NonNull String appId,
+            @NonNull List<Path> paths,
+            @NonNull List<BaselineProfile> baselineProfiles) {
+        return new App(appId, convert(paths), baselineProfiles);
     }
 
     public static App fromPaths(@NonNull String appId, @NonNull List<Path> paths) {
-        return new App(appId, convert(paths));
+        List<Path> apks = new ArrayList<>();
+        List<BaselineProfile> baselineProfiles = new ArrayList<>();
+        for (Path path : paths) {
+            if (path.toString().endsWith(".apk")) {
+                apks.add(path);
+                continue;
+            }
+            if (path.toString().endsWith(".dm")) {
+                if (baselineProfiles.isEmpty()) {
+                    baselineProfiles.add(
+                            new BaselineProfile(
+                                    Integer.MIN_VALUE, Integer.MAX_VALUE, new ArrayList<>()));
+                }
+                baselineProfiles.get(0).getPaths().add(path);
+                continue;
+            }
+            throw new IllegalStateException("Unknown path type (neither apk nor dm):" + path);
+        }
+        return fromPaths(appId, apks, baselineProfiles);
     }
 
     public static App fromPath(@NonNull String appId, @NonNull Path path) {
-        return fromPaths(appId, Arrays.asList(path));
+        return fromPaths(appId, Arrays.asList(path), emptyList());
     }
 
     @NonNull
@@ -71,5 +104,14 @@ public class App {
 
     public List<Apk> getApks() {
         return apks;
+    }
+
+    public List<Path> getBaselineProfile(int api) {
+        for (BaselineProfile bp : baselineProfiles) {
+            if (bp.getMinApi() <= api && api <= bp.getMaxApi()) {
+                return bp.getPaths();
+            }
+        }
+        return emptyList();
     }
 }

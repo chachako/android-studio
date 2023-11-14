@@ -43,4 +43,5 @@ public class Timeouts {
     static final long SHELL_CHOWN = T_5_SECONDS;
     static final long SHELL_AM_STOP = T_5_SECONDS;
     static final long SHELL_ABORT_INSTALL_MS = T_5_SECONDS;
+    static final long SHELL_BASELINE_PROFILE_STATUS = T_5_SECONDS;
 }

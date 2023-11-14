@@ -45,7 +45,8 @@ public class ApkInstaller {
         NO_CHANGES,
         DUMP_UNKNOWN_PACKAGE,
         STREAM_APK_FAILED,
-        STREAM_APK_NOT_SUPPORTED
+        STREAM_APK_NOT_SUPPORTED,
+        BASELINE_PROFILE_NOT_SUPPORTED
     }
 
     private static class DeltaInstallResult {
@@ -140,6 +141,7 @@ public class ApkInstaller {
             case PATCH_SIZE_EXCEEDED:
             case STREAM_APK_FAILED:
             case STREAM_APK_NOT_SUPPORTED:
+            case BASELINE_PROFILE_NOT_SUPPORTED:
                 {
                     logger.info(deltaInstallResult.status.name());
                     // Delta install could not be attempted (app not install or delta above limit or API
@@ -235,6 +237,14 @@ public class ApkInstaller {
             throws DeployerException {
         if (installMode == Deployer.InstallMode.FULL) {
             return new DeltaInstallResult(DeltaInstallStatus.DISABLED);
+        }
+
+        if (!app.getBaselineProfile(adb.getDevice().getVersion().getApiLevel()).isEmpty()) {
+            // Supporting baseline profile install via delta-push is a significant change.
+            // The gain is not worth it in the context of a release apk (we only get baseline
+            // profile in release mode if configured), given build system compile time (always full,
+            // and always for all devices), and ART pre-compiled time.
+            return new DeltaInstallResult(DeltaInstallStatus.BASELINE_PROFILE_NOT_SUPPORTED);
         }
 
         // We use "cmd" on the device side which was only added in Android N (API 24)

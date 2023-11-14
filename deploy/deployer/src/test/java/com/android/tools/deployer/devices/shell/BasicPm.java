@@ -43,7 +43,7 @@ public class BasicPm extends ShellCommand {
                         "\tpkg: /data/local/tmp/sample.apk2\nFailure [INSTALL_FAILED_INVALID_URI]\n");
                 return 1;
             }
-            FakeDevice.InstallResult install = device.install(file);
+            FakeDevice.InstallResult install = device.install(pkg, file);
             switch (install.error) {
                 case SUCCESS:
                     stdout.println("Success");
