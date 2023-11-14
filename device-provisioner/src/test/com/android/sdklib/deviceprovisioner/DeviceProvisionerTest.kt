@@ -405,4 +405,44 @@ class DeviceProvisionerTest {
       assertThat(handle?.state?.connectedDevice?.serialNumber).isEqualTo(SerialNumbers.EMULATOR)
     }
   }
+
+  /**
+   * If there are exceptions during claim, then we should wait until the next time the device comes
+   * online, then try to offer it again.
+   */
+  @Test
+  fun deviceErrorDuringClaim() {
+    runBlockingWithTimeout {
+      val channel = Channel<List<DeviceHandle>>(1)
+      fakeSession.scope.launch { provisioner.devices.collect { channel.send(it) } }
+
+      // Make an error occur for both plugins
+      fakeSession.deviceServices.shellNumTimeouts = 2
+      setDevices(SerialNumbers.PHYSICAL1_USB)
+      fakeSession.hostServices.devices =
+        DeviceList(listOf(DeviceInfo(SerialNumbers.PHYSICAL1_USB, DeviceState.ONLINE)), emptyList())
+
+      yieldUntil {
+        fakeSession.host.loggerFactory.logEntries.any {
+          it.message == "Device ${SerialNumbers.PHYSICAL1_USB} not claimed by any provisioner"
+        }
+      }
+
+      fakeSession.hostServices.devices =
+        DeviceList(
+          listOf(DeviceInfo(SerialNumbers.PHYSICAL1_USB, DeviceState.OFFLINE)),
+          emptyList()
+        )
+
+      yieldUntil {
+        fakeSession.host.loggerFactory.logEntries.any {
+          it.message == "Device ${SerialNumbers.PHYSICAL1_USB} is offline"
+        }
+      }
+
+      fakeSession.hostServices.devices =
+        DeviceList(listOf(DeviceInfo(SerialNumbers.PHYSICAL1_USB, DeviceState.ONLINE)), emptyList())
+      channel.receiveUntilPassing { devices -> assertThat(devices).hasSize(1) }
+    }
+  }
 }

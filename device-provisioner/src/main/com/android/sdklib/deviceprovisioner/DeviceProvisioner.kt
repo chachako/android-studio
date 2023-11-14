@@ -31,11 +31,12 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
@@ -165,9 +166,21 @@ private constructor(
         logger.debug { "Offering ${device.serialNumber}" }
         while (device.scope.isActive) {
           // Wait until the device becomes online, then offer it to a plugin.
-          device.deviceInfoFlow.takeWhile { it.deviceState != DeviceState.ONLINE }.collect()
-
-          val handle = offer(device)
+          val handle =
+            device.deviceInfoFlow
+              .map { it.deviceState == DeviceState.ONLINE }
+              .transformLatest { isOnline ->
+                if (isOnline) {
+                  when (val handle = offer(device)) {
+                    null ->
+                      logger.warn("Device ${device.serialNumber} not claimed by any provisioner")
+                    else -> emit(handle)
+                  }
+                } else {
+                  logger.debug { "Device ${device.serialNumber} is offline" }
+                }
+              }
+              .first()
 
           // Once it is claimed, it's the plugin's responsibility; we wait until the plugin no
           // longer holds the device before re-offering it.
@@ -182,12 +195,13 @@ private constructor(
 
   /**
    * Offers the device to the plugins in priority order. It is expected to be claimed by the default
-   * plugin if no other plugin claims it first.
+   * plugin if no other plugin claims it first, unless an exception occurs (e.g. the device goes
+   * offline during claim).
    *
    * To simplify plugin implementation, we only offer one device to one plugin at a time; we may
    * want to relax this in the future to support identifying devices in parallel.
    */
-  private suspend fun offer(device: ConnectedDevice): DeviceHandle =
+  private suspend fun offer(device: ConnectedDevice): DeviceHandle? =
     offerMutex.withLock {
       provisioners.firstNotNullOfOrNull {
         try {
@@ -199,9 +213,6 @@ private constructor(
           null
         }
       }
-        ?: throw IllegalStateException(
-          "Device ${device.serialNumber} not claimed by any provisioner"
-        )
     }
 
   /**
