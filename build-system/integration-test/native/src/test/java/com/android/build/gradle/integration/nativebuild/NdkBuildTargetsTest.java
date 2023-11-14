@@ -76,6 +76,9 @@ public class NdkBuildTargetsTest {
                         + GradleTestProject.DEFAULT_BUILD_TOOL_VERSION
                         + "\"\n"
                         + "    defaultConfig {\n"
+                        + "      minSdk "
+                        + GradleTestProject.DEFAULT_MIN_SDK_VERSION
+                        + "\n"
                         + "      externalNativeBuild {\n"
                         + "        ndkBuild {\n"
                         + "          arguments.addAll(\"NDK_TOOLCHAIN_VERSION:=clang\")\n"

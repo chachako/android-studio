@@ -42,9 +42,10 @@ open class DefaultNdkInfo(protected val rootDirectory: File) : NdkInfo {
 
     override fun findSuitablePlatformVersion(
         abi: String,
-        androidVersion: AndroidVersion?
+        androidVersion: AndroidVersion?,
+        ignoreMinSdkVersion: List<Int>
     ): Int {
-        return platformConfigurator.findSuitablePlatformVersion(abi, abiInfoList, androidVersion)
+        return platformConfigurator.findSuitablePlatformVersion(abi, abiInfoList, androidVersion, ignoreMinSdkVersion)
     }
 
     private fun getToolchainPrefix(abi: String): String {

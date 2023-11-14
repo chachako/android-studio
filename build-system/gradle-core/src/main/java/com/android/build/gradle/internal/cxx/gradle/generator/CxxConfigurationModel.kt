@@ -62,7 +62,6 @@ import com.android.utils.cxx.CxxDiagnosticCode.BUILD_OUTPUT_LEVEL_NOT_SUPPORTED
 import com.android.utils.cxx.CxxDiagnosticCode.CMAKE_IS_MISSING
 import com.android.utils.cxx.CxxDiagnosticCode.INVALID_EXTERNAL_NATIVE_BUILD_CONFIG
 import org.gradle.api.file.FileCollection
-import org.gradle.api.provider.ProviderFactory
 import java.io.File
 import java.util.Locale
 
@@ -120,6 +119,7 @@ data class CxxConfigurationParameters(
     val buildFile: File,
     val isDebuggable: Boolean,
     val minSdkVersion: AndroidVersion,
+    val ignoreMinSdkVersion: List<Int>,
     val compileSdkVersion: String,
     val ndkVersion: String?,
     val ndkPathFromDsl: String?,
@@ -288,6 +288,11 @@ fun tryCreateConfigurationParameters(
         buildFile = projectInfo.buildFile,
         isDebuggable = variant.debuggable,
         minSdkVersion = variant.minSdk.toSharedAndroidVersion(),
+        ignoreMinSdkVersion = option(StringOption.NDK_SUPPRESS_MIN_SDK_VERSION_ERROR)
+            ?.split(",")
+            ?.filter { it.isNotBlank() }
+            ?.map { it.toInt() }
+            ?: listOf(),
         compileSdkVersion = globalConfig.compileSdkHashString,
         ndkVersion = globalConfig.ndkVersion,
         ndkPathFromDsl = globalConfig.ndkPath,

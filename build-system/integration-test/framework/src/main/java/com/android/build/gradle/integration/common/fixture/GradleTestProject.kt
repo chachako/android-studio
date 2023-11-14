@@ -133,6 +133,8 @@ open class GradleTestProject @JvmOverloads constructor(
         val DEFAULT_COMPILE_SDK_VERSION: String
         @JvmField
         val DEFAULT_BUILD_TOOL_VERSION: String
+        @JvmField
+        val DEFAULT_MIN_SDK_VERSION: String = "19"
         const val DEFAULT_NDK_SIDE_BY_SIDE_VERSION: String = NDK_DEFAULT_VERSION
         @JvmField
         val APPLY_DEVICEPOOL_PLUGIN = System.getenv("APPLY_DEVICEPOOL_PLUGIN")?.toBoolean() ?: false

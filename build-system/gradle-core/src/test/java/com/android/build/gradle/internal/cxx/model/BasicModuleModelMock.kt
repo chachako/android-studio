@@ -416,6 +416,8 @@ open class BasicModuleModelMock {
         doReturn(FakeGradleProvider(FakeGradleDirectory(sdkDir))).`when`(sdkComponents).sdkDirectoryProvider
         doReturn(null).`when`(sdkComponents).ndkSymlinkDirFromProperties
         doReturn(null).`when`(sdkComponents).cmakeDirFromProperties
+        doReturn("").`when`(projectOptions)
+            .get(StringOption.NDK_SUPPRESS_MIN_SDK_VERSION_ERROR)
         doReturn(false).`when`(projectOptions)
             .get(BooleanOption.ENABLE_PROFILE_JSON)
         doReturn(BooleanOption.ENABLE_CMAKE_BUILD_COHABITATION.defaultValue).`when`(projectOptions)

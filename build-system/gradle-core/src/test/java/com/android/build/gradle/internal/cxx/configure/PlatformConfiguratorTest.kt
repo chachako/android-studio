@@ -55,7 +55,34 @@ class PlatformConfiguratorTest {
             "    \"P\": 28\n" +
             "  }\n" +
             "}"
-
+    private val expectedNdkR26MetaPlatforms = """
+        {
+          "min": 21,
+          "max": 34,
+          "aliases": {
+            "20": 19,
+            "25": 24,
+            "J": 16,
+            "J-MR1": 17,
+            "J-MR2": 18,
+            "K": 19,
+            "L": 21,
+            "L-MR1": 22,
+            "M": 23,
+            "N": 24,
+            "N-MR1": 24,
+            "O": 26,
+            "O-MR1": 27,
+            "P": 28,
+            "Q": 29,
+            "R": 30,
+            "S": 31,
+            "Sv2": 32,
+            "Tiramisu": 33,
+            "UpsideDownCake": 34
+          }
+        }
+    """.trimIndent()
     val ABIS_FROM_META = parseAbiJson(StringReader("""
             {
               "armeabi-v7a": {
@@ -125,10 +152,12 @@ class PlatformConfiguratorTest {
         """.trimIndent()), "unknown")
     private val logger = PassThroughRecordingLoggingEnvironment()
     private lateinit var ndk17: File
+    private lateinit var ndk26: File
 
     @Before
     fun before() {
         ndk17 = temporaryFolder.newFolder("17").absoluteFile
+        ndk26 = temporaryFolder.newFolder("26").absoluteFile
     }
 
     @After
@@ -138,6 +167,10 @@ class PlatformConfiguratorTest {
 
     private fun expectedNdkR17MetaPlatforms() : NdkMetaPlatforms {
         return NdkMetaPlatforms.fromReader(StringReader(expectedNdkR17MetaPlatforms))
+    }
+
+    private fun expectedNdkR26MetaPlatforms() : NdkMetaPlatforms {
+        return NdkMetaPlatforms.fromReader(StringReader(expectedNdkR26MetaPlatforms))
     }
 
     private fun platformConfiguratorNdk16() : PlatformConfigurator {
@@ -172,6 +205,12 @@ class PlatformConfiguratorTest {
         File(root, "platforms/android-26/arch-x86").mkdirs()
         File(root, "platforms/android-27/arch-x86").mkdirs()
         File(root, "platforms/android-28/arch-x86").mkdirs()
+        return PlatformConfigurator(root)
+    }
+
+    private fun platformConfiguratorNdk26() : PlatformConfigurator {
+        val root = ndk26
+        root.deleteRecursively()
         return PlatformConfigurator(root)
     }
 
@@ -214,7 +253,8 @@ class PlatformConfiguratorTest {
         abiName: String,
         minSdkVersion: Int?,
         codeName: String?,
-        ndkMetaPlatforms: NdkMetaPlatforms? = null) : Int {
+        ndkMetaPlatforms: NdkMetaPlatforms? = null,
+        vararg ignoreMinSdkVersion: Int = intArrayOf()) : Int {
         val androidVersion = if (minSdkVersion == null && codeName == null) {
             null
         } else {
@@ -224,7 +264,8 @@ class PlatformConfiguratorTest {
                 abiName,
                 ABIS_FROM_META,
                 androidVersion,
-                ndkMetaPlatforms)
+                ndkMetaPlatforms,
+                ignoreMinSdkVersion.toList())
     }
 
     @Test
@@ -249,7 +290,7 @@ class PlatformConfiguratorTest {
             null)
         assertThat(platform).isEqualTo(27)
         assertThat(logger.warnings).containsExactly("C/C++: Platform version " +
-                "'28' is beyond '27', the maximum API level supported by this NDK.")
+                "28 is beyond 27, the maximum API level supported by this NDK. Using 27 instead.")
     }
 
     @Test
@@ -261,7 +302,9 @@ class PlatformConfiguratorTest {
             13,
             null)
         assertThat(platform).isEqualTo(14)
-        assertThat(logger.messageCount).isEqualTo(0)
+        assertThat(logger.messageCount).isEqualTo(1)
+        assertThat(logger.warnings.single()).isEqualTo(
+            "C/C++: Platform version 13 is unsupported by this NDK, using 14 instead. Please change minSdk to at least 14 to avoid this warning.")
     }
 
     @Test
@@ -285,8 +328,8 @@ class PlatformConfiguratorTest {
             29,
             null)
         assertThat(platform).isEqualTo(28)
-        assertThat(logger.warnings).containsExactly("C/C++: Platform version '29' " +
-                "is beyond '28', the maximum API level supported by this NDK.")
+        assertThat(logger.warnings).containsExactly("C/C++: Platform version 29 " +
+                "is beyond 28, the maximum API level supported by this NDK. Using 28 instead.")
     }
 
     @Test
@@ -298,7 +341,9 @@ class PlatformConfiguratorTest {
             13,
             null)
         assertThat(platform).isEqualTo(14)
-        assertThat(logger.messageCount).isEqualTo(0)
+        assertThat(logger.messageCount).isEqualTo(1)
+        assertThat(logger.warnings.single()).isEqualTo(
+            "C/C++: Platform version 13 is unsupported by this NDK, using 14 instead. Please change minSdk to at least 14 to avoid this warning.")
     }
 
     @Test
@@ -379,8 +424,8 @@ class PlatformConfiguratorTest {
             null,
             expectedNdkR17MetaPlatforms())
         assertThat(platform).isEqualTo(28)
-        assertThat(logger.warnings).containsExactly("C/C++: Platform version '29' " +
-                "is beyond '28', the maximum API level supported by this NDK.")
+        assertThat(logger.warnings).containsExactly("C/C++: Platform version 29 " +
+                "is beyond 28, the maximum API level supported by this NDK. Using 28 instead.")
     }
 
     @Test
@@ -388,12 +433,61 @@ class PlatformConfiguratorTest {
         val configurator = platformConfiguratorNdk17()
         val platform = findSuitablePlatformVersion(
             configurator,
-            "x86",
-            13,
-            null,
+            abiName = "x86",
+            minSdkVersion = 13,
+            codeName = null,
             expectedNdkR17MetaPlatforms())
         assertThat(platform).isEqualTo(16)
+        assertThat(logger.messageCount).isEqualTo(1)
+        assertThat(logger.warnings.single()).isEqualTo(
+            "C/C++: Platform version 13 is unsupported by this NDK, using 16 instead. Please change minSdk to at least 16 to avoid this warning.")
+    }
+
+    @Test
+    fun `Bug 310718265 platform too low becomes error after min SDK version 19`() {
+        val configurator = platformConfiguratorNdk26()
+        val platform = findSuitablePlatformVersion(
+            configurator,
+            abiName = "x86",
+            minSdkVersion = 19,
+            codeName = null,
+            expectedNdkR26MetaPlatforms())
+        assertThat(platform).isEqualTo(19)
+        assertThat(logger.messageCount).isEqualTo(1)
+        assertThat(logger.errors.single()).isEqualTo(
+            "[CXX1110] Platform version 19 is unsupported by this NDK. Please change minSdk to at least 21 to avoid undefined behavior. " +
+                    "To suppress this error, add android.ndk.suppressMinSdkVersionError=19 to the project's gradle.properties.")
+    }
+
+    @Test
+    fun `Bug 310718265 platform too low error ignored if user passes flag`() {
+        val configurator = platformConfiguratorNdk26()
+        val platform = findSuitablePlatformVersion(
+            configurator,
+            abiName = "x86",
+            minSdkVersion = 19,
+            codeName = null,
+            expectedNdkR26MetaPlatforms(),
+            19)
+        assertThat(platform).isEqualTo(19)
         assertThat(logger.messageCount).isEqualTo(0)
+    }
+
+    @Test
+    fun `Bug 310718265 platform too low error ignored if user passed wrong flag`() {
+        val configurator = platformConfiguratorNdk26()
+        val platform = findSuitablePlatformVersion(
+            configurator,
+            abiName = "x86",
+            minSdkVersion = 19,
+            codeName = null,
+            expectedNdkR26MetaPlatforms(),
+            20)
+        assertThat(platform).isEqualTo(19)
+        assertThat(logger.messageCount).isEqualTo(1)
+        assertThat(logger.errors.single()).isEqualTo(
+            "[CXX1110] Platform version 19 is unsupported by this NDK. Please change minSdk to at least 21 to avoid undefined behavior. " +
+                    "To suppress this error, add android.ndk.suppressMinSdkVersionError=19 to the project's gradle.properties.")
     }
 
     @Test

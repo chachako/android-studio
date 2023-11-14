@@ -70,6 +70,9 @@ public class CmakeTargetsTest {
                         + "    buildToolsVersion \""
                         + GradleTestProject.DEFAULT_BUILD_TOOL_VERSION
                         + "\"\n"
+                        + "    defaultConfig.minSdk="
+                        + GradleTestProject.DEFAULT_MIN_SDK_VERSION
+                        + "\n"
                         + "    externalNativeBuild {\n"
                         + "      cmake {\n"
                         + "        path \"CMakeLists.txt\"\n"

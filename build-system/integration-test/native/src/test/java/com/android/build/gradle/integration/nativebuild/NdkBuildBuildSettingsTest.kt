@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.nativebuild
 import com.android.SdkConstants
 import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.DEFAULT_MIN_SDK_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.DEFAULT_NDK_SIDE_BY_SIDE_VERSION
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldJniApp
 import com.android.build.gradle.integration.common.fixture.model.goldenBuildProducts
@@ -60,6 +61,7 @@ class NdkBuildBuildSettingsTest {
                     compileSdkVersion $DEFAULT_COMPILE_SDK_VERSION
                     ndkPath "${project.ndkPath}"
                     defaultConfig {
+                      minSdk $DEFAULT_MIN_SDK_VERSION
                       externalNativeBuild {
                           ndkBuild {
                             abiFilters.addAll("armeabi-v7a", "arm64-v8a")

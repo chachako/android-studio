@@ -188,6 +188,7 @@ class CmakeBasicProjectTest(
                 buildToolsVersion "${GradleTestProject.DEFAULT_BUILD_TOOL_VERSION}"
                 ndkPath "${project.ndkPath}"
                 defaultConfig {
+                  minSdk ${GradleTestProject.DEFAULT_MIN_SDK_VERSION}
                   externalNativeBuild {
                       cmake {
                         abiFilters.addAll("armeabi-v7a", "x86_64");
@@ -229,6 +230,7 @@ class CmakeBasicProjectTest(
                 buildToolsVersion "${GradleTestProject.DEFAULT_BUILD_TOOL_VERSION}"
                 ndkPath "${project.ndkPath}"
                 defaultConfig {
+                    minSdk ${GradleTestProject.DEFAULT_MIN_SDK_VERSION}
                     externalNativeBuild {
                       experimentalProperties["ninja.path"] = "$cmakeListsPath"
                       experimentalProperties["ninja.configure"] = "${cmakeExe.replace("\\", "\\\\")}"
@@ -316,6 +318,7 @@ class CmakeBasicProjectTest(
                 buildToolsVersion "${GradleTestProject.DEFAULT_BUILD_TOOL_VERSION}"
                 ndkPath "${project.ndkPath}"
                 defaultConfig {
+                    minSdk ${GradleTestProject.DEFAULT_MIN_SDK_VERSION}
                     externalNativeBuild {
                       experimentalProperties["ninja.abiFilters"] = ["armeabi-v7a", "x86_64"];
                       experimentalProperties["ninja.cFlags"] = ["-DTEST_C_FLAG", "-DTEST_C_FLAG_2"];
@@ -776,10 +779,10 @@ class CmakeBasicProjectTest(
             // Special fix for NDKs <= r16
             .replace(
                 "-DCMAKE_SYSTEM_VERSION=21",
-                "-DCMAKE_SYSTEM_VERSION=16")
+                "-DCMAKE_SYSTEM_VERSION=19")
             .replace(
                 "-DANDROID_PLATFORM=android-21",
-                "-DANDROID_PLATFORM=android-16")
+                "-DANDROID_PLATFORM=android-19")
         val minPlatform = project.recoverExistingCxxAbiModels().first().variant.module.ndkMinPlatform
 
         if (mode == Mode.NinjaRedirect) {

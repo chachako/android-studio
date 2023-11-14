@@ -140,6 +140,16 @@ enum class StringOption(
     ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES("android.privacySandboxSdk.apiGenerator.generatedRuntimeDependencies", ApiStage.Experimental),
 
     ANDROID_PRIVACY_SANDBOX_SDK_API_PACKAGER("android.privacySandboxSdk.apiPackager", ApiStage.Experimental),
+
+    /**
+     * Normally, a minSdkVersion that is too low results in an error from NDK code:
+     *
+     * When this flag is set to the specific NDK version that is requested, that error is suppressed.
+     *
+     * Multiple versions may be specified by separating them with commas.
+     */
+    NDK_SUPPRESS_MIN_SDK_VERSION_ERROR("android.ndk.suppressMinSdkVersionError", ApiStage.Experimental),
+
     /* ---------------
      * DEPRECATED APIs
      */

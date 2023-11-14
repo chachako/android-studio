@@ -362,6 +362,9 @@ public class NativeBuildOutputTest {
                 "android {\n"
                         + "    externalNativeBuild.cmake.path 'CMakeLists.txt'\n"
                         + "    defaultConfig.externalNativeBuild.cmake.abiFilters 'x86_64'\n"
+                        + "    defaultConfig.minSdk="
+                        + GradleTestProject.DEFAULT_MIN_SDK_VERSION
+                        + "\n"
                         + "}");
 
         // CMakeLists.txt that references an external library. The library doesn't exist but that

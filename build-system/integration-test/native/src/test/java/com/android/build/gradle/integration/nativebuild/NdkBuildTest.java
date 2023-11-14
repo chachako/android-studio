@@ -82,6 +82,9 @@ public class NdkBuildTest {
                         + GradleTestProject.DEFAULT_BUILD_TOOL_VERSION
                         + "\"\n"
                         + "        defaultConfig {\n"
+                        + "          minSdk "
+                        + GradleTestProject.DEFAULT_MIN_SDK_VERSION
+                        + "\n"
                         + "          externalNativeBuild {\n"
                         + "              ndkBuild {\n"
                         + "                abiFilters.addAll(\"armeabi-v7a\", \"arm64-v8a\")\n"
