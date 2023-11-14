@@ -103,6 +103,7 @@ import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIB
 import org.gradle.api.attributes.AttributesSchema
 import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.Usage
+import org.gradle.api.provider.MapProperty
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import java.lang.Boolean.FALSE
 import java.lang.Boolean.TRUE
@@ -501,15 +502,12 @@ class DependencyConfigurator(
             return this
         }
 
-        fun configureExtractSdkShimTransforms(variant: VariantCreationConfig) {
+        fun configureExtractSdkShimTransforms(experimentalProperties: Map<String, Any>) {
             val extractSdkShimTransformParamConfig =
                     { reg: TransformSpec<ExtractSdkShimTransform.Parameters> ->
-                        val experimentalProperties = variant.experimentalProperties
-                        experimentalProperties.finalizeValue()
-
                         val experimentalPropertiesApiGenerator: Dependency? =
                                 ModulePropertyKey.Dependencies.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR
-                                        .getValue(experimentalProperties.get())?.single()
+                                        .getValue(experimentalProperties)?.single()
                         val apigeneratorArtifact: Dependency =
                                 experimentalPropertiesApiGenerator
                                         ?: project.dependencies.create(
@@ -518,7 +516,7 @@ class DependencyConfigurator(
                                         ) as Dependency
 
                         val experimentalPropertiesRuntimeApigeneratorDependencies =
-                                ModulePropertyKey.Dependencies.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES.getValue(experimentalProperties.get())
+                                ModulePropertyKey.Dependencies.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES.getValue(experimentalProperties)
                         val runtimeDependenciesForShimSdk: List<Dependency> =
                                 experimentalPropertiesRuntimeApigeneratorDependencies
                                         ?: (projectServices.projectOptions
@@ -599,9 +597,20 @@ class DependencyConfigurator(
             registerExtractSdkShimTransform(Usage.JAVA_RUNTIME)
         }
 
-        for (variant in variants) {
-            configureExtractSdkShimTransforms(variant)
+        val properties = variants.map { variant ->
+            variant.experimentalProperties.also { it.disallowChanges() }.get().filterKeys {
+                it == ModulePropertyKey.Dependencies.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES.key ||
+                        it == ModulePropertyKey.Dependencies.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR.key
+            }
+        }.distinct()
+
+        when(properties.size) {
+            0 -> {} // No variants, problem will be reported elsewhere.
+            1 -> configureExtractSdkShimTransforms(properties.single())
+            else -> error("It is not possible to override Privacy Sandbox experimental properties per variant.\n" +
+                    "Properties with different values defined across multiple variants: ${properties.joinToString()} ")
         }
+
         return this
     }
 
