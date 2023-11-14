@@ -33,7 +33,12 @@ import com.android.tools.appinspection.network.utils.Logger
 import com.android.tools.appinspection.network.utils.LoggerImpl
 import com.squareup.okhttp.Interceptor
 import com.squareup.okhttp.OkHttpClient
+import io.grpc.CallOptions
+import io.grpc.Channel
+import io.grpc.ClientCall
+import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
+import io.grpc.MethodDescriptor
 import java.net.URL
 import java.net.URLConnection
 import java.util.concurrent.TimeUnit
@@ -55,9 +60,10 @@ private val INTERCEPT_COMMAND_RESPONSE =
 
 private const val GRPC_FOR_ADDRESS_METHOD =
   "forAddress(Ljava/lang/String;I)Lio/grpc/ManagedChannelBuilder;"
-
 private const val GRPC_FOR_TARGET_METHOD =
   "forTarget(Ljava/lang/String;)Lio/grpc/ManagedChannelBuilder;"
+private const val GRPC_CHANNEL_CLASS_NAME = "io.grpc.internal.ManagedChannelImpl"
+private const val GRPC_CHANNEL_FIELD_NAME = "interceptorChannel"
 
 internal class NetworkInspector(
   connection: Connection,
@@ -260,18 +266,8 @@ internal class NetworkInspector(
 
     try {
       val grpcInterceptor = GrpcInterceptor { GrpcTracker(connection) }
-      listOf(GRPC_FOR_ADDRESS_METHOD, GRPC_FOR_TARGET_METHOD).forEach { method ->
-        environment
-          .artTooling()
-          .registerExitHook(
-            ManagedChannelBuilder::class.java,
-            method,
-            ArtTooling.ExitHook<ManagedChannelBuilder<*>> { channelBuilder ->
-              channelBuilder.intercept(grpcInterceptor)
-              channelBuilder
-            }
-          )
-      }
+      instrumentExistingGrpcChannels(grpcInterceptor)
+      instrumentGrpcChannelBuilder(grpcInterceptor)
       logger.debugHidden("Instrumented ${ManagedChannelBuilder::class.qualifiedName}")
     } catch (e: NoClassDefFoundError) {
       logger.debug(
@@ -280,8 +276,68 @@ internal class NetworkInspector(
     }
   }
 
+  /**
+   * Instruments pre-existing channels
+   *
+   * The gRPC interception API acts on the `ManagedChannel` builder, not the `ManagedChannel`
+   * itself. By the time this is executed, the app could have already created channels, and we are
+   * too late to instrument them using the API.
+   *
+   * Therefore, we find all existing instances on `ManagedChannel` and try to instrument them
+   * manually using internal implementation details by reflection.
+   *
+   * This is known to be brittle but there doesn't seem to be a robust way of doing this.
+   */
+  private fun instrumentExistingGrpcChannels(grpcInterceptor: GrpcInterceptor) {
+    environment.artTooling().findInstances(ManagedChannel::class.java).forEach {
+      if (it::class.java.name == GRPC_CHANNEL_CLASS_NAME) {
+        try {
+          val field = it::class.java.getDeclaredField(GRPC_CHANNEL_FIELD_NAME)
+          field.isAccessible = true
+          val channel = field.get(it) as Channel
+          field.set(it, InterceptingGrpcChannel(channel, grpcInterceptor))
+          logger.debugHidden("Preexisting channel was instrumented")
+        } catch (e: Exception) {
+          logger.error("Preexisting channel of type was not instrumented", e)
+        }
+      } else {
+        logger.debugHidden("Preexisting channel of type ${it::class.java.name} was skipped")
+      }
+    }
+  }
+
+  private fun instrumentGrpcChannelBuilder(grpcInterceptor: GrpcInterceptor) {
+    listOf(GRPC_FOR_ADDRESS_METHOD, GRPC_FOR_TARGET_METHOD).forEach { method ->
+      environment
+        .artTooling()
+        .registerExitHook(
+          ManagedChannelBuilder::class.java,
+          method,
+          ArtTooling.ExitHook<ManagedChannelBuilder<*>> { channelBuilder ->
+            channelBuilder.intercept(grpcInterceptor)
+            channelBuilder
+          }
+        )
+    }
+  }
+
   override fun onDispose() {
     okHttp2Interceptors?.removeIf { it is OkHttp2Interceptor }
     scope.cancel("Network Inspector has been disposed.")
+  }
+
+  private class InterceptingGrpcChannel(
+    private val delegate: Channel,
+    private val interceptor: GrpcInterceptor
+  ) : Channel() {
+
+    override fun <Req : Any, Res : Any> newCall(
+      methodDescriptor: MethodDescriptor<Req, Res>,
+      callOptions: CallOptions
+    ): ClientCall<Req, Res> {
+      return interceptor.interceptCall(methodDescriptor, callOptions, delegate)
+    }
+
+    override fun authority(): String = delegate.authority()
   }
 }
