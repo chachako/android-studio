@@ -53,6 +53,7 @@ import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dsl.BuildType
 import com.android.build.gradle.internal.dsl.CommonExtensionImpl
 import com.android.build.gradle.internal.dsl.DefaultConfig
+import com.android.build.gradle.internal.dsl.ModulePropertyKey
 import com.android.build.gradle.internal.dsl.ProductFlavor
 import com.android.build.gradle.internal.dsl.SigningConfig
 import com.android.build.gradle.internal.errors.DeprecationReporterImpl
@@ -710,6 +711,24 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
             }
         variantManager.createVariants(buildFeatureValues)
         val variants = variantManager.mainComponents
+        projectBuilder?.let { builder ->
+            variants.forEach { variant ->
+                variant.variant.experimentalProperties.get().keys.forEach { modulePropertyKey ->
+                    ModulePropertyKey.OptionalString[modulePropertyKey]?.name?.let {
+                        AnalyticsUtil.toProto(it).number
+                    }?.let { builder.optionsBuilder.addModulePropertyKeys(it) }
+                    ModulePropertyKey.BooleanWithDefault[modulePropertyKey]?.name?.let {
+                        AnalyticsUtil.toProto(it).number
+                    }?.let { builder.optionsBuilder.addModulePropertyKeys(it) }
+                    ModulePropertyKey.Dependencies[modulePropertyKey]?.name?.let {
+                        AnalyticsUtil.toProto(it).number
+                    }?.let { builder.optionsBuilder.addModulePropertyKeys(it) }
+                    ModulePropertyKey.OptionalBoolean[modulePropertyKey]?.name?.let {
+                        AnalyticsUtil.toProto(it).number
+                    }?.let { builder.optionsBuilder.addModulePropertyKeys(it) }
+                }
+            }
+        }
         val taskManager = createTaskManager(
             project,
             variants,

@@ -51,6 +51,11 @@ sealed interface ModulePropertyKey<OutputT> {
                 else -> throw IllegalArgumentException("Unexpected type ${value::class.qualifiedName} for property $key")
             }
         }
+
+        companion object {
+            private val keyToModulePropertyKey = Dependencies.values().associateBy { it.key }
+            internal operator fun get(value: String) = keyToModulePropertyKey[value]
+        }
     }
 
     enum class OptionalBoolean(override val key: String) : ModulePropertyKey<Boolean?> {
@@ -65,6 +70,11 @@ sealed interface ModulePropertyKey<OutputT> {
 
         override fun getValue(properties: Map<String, Any>): Boolean? {
             return properties[key]?.let { parseBoolean(key, it) }
+        }
+
+        companion object {
+            private val keyToModulePropertyKey = OptionalBoolean.values().associateBy { it.key }
+            internal operator fun get(value: String) = keyToModulePropertyKey[value]
         }
     }
 
@@ -84,7 +94,7 @@ sealed interface ModulePropertyKey<OutputT> {
         ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_KEY_ALIAS(
                 "android.privacy_sandbox.local_deployment_signing_key_alias"
         ),
-        ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_KEY_PASSOWRD(
+        ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_KEY_PASSWORD(
                 "android.privacy_sandbox.local_deployment_signing_key_password"
         ),
 
@@ -97,6 +107,11 @@ sealed interface ModulePropertyKey<OutputT> {
 
         override fun getValue(properties: Map<String, Any>): String? {
             return properties[key] as String?
+        }
+
+        companion object {
+            private val keyToModulePropertyKey = OptionalString.values().associateBy { it.key }
+            internal operator fun get(value: String) = keyToModulePropertyKey[value]
         }
     }
 
@@ -122,6 +137,11 @@ sealed interface ModulePropertyKey<OutputT> {
 
         override fun getValue(properties: Map<String, Any>): Boolean {
             return properties[key]?.let { parseBoolean(key, it) } ?: default
+        }
+
+        companion object {
+            private val keyToModulePropertyKey = BooleanWithDefault.values().associateBy { it.key }
+            internal operator fun get(value: String) = keyToModulePropertyKey[value]
         }
     }
 

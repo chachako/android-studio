@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import com.android.annotations.NonNull;
 import com.android.build.api.artifact.SingleArtifact;
 import com.android.build.api.transform.Transform;
+import com.android.build.gradle.internal.dsl.ModulePropertyKey;
 import com.android.build.gradle.internal.dsl.Splits;
 import com.android.build.gradle.internal.dsl.decorator.AndroidPluginDslDecoratorKt;
 import com.android.build.gradle.internal.fixtures.FakeProviderFactory;
@@ -290,6 +291,27 @@ public class AnalyticsUtilTest {
         checkOptions(StringOption.values(), AnalyticsUtil::toProto);
     }
 
+    @Test
+    public void checkModulePropertyKeys() {
+        List<String> modulePropertyKeys = new ArrayList<>();
+        for (ModulePropertyKey.OptionalString optionalString :
+                ModulePropertyKey.OptionalString.values()) {
+            modulePropertyKeys.add(optionalString.name());
+        }
+        for (ModulePropertyKey.BooleanWithDefault booleanWithDefault :
+                ModulePropertyKey.BooleanWithDefault.values()) {
+            modulePropertyKeys.add(booleanWithDefault.name());
+        }
+        for (ModulePropertyKey.Dependencies dependency : ModulePropertyKey.Dependencies.values()) {
+            modulePropertyKeys.add(dependency.name());
+        }
+        for (ModulePropertyKey.OptionalBoolean optionalBoolean :
+                ModulePropertyKey.OptionalBoolean.values()) {
+            modulePropertyKeys.add(optionalBoolean.name());
+        }
+        checkModulePropertyKeys(modulePropertyKeys.toArray(new String[0]), AnalyticsUtil::toProto);
+    }
+
     private <OptionT extends Enum<OptionT>, AnalyticsT extends ProtocolMessageEnum>
             void checkOptions(OptionT[] options, Function<OptionT, AnalyticsT> toProtoFunction) {
         List<OptionT> missing = new ArrayList<>();
@@ -321,6 +343,37 @@ public class AnalyticsUtilTest {
         }
     }
 
+    private <AnalyticsT extends ProtocolMessageEnum> void checkModulePropertyKeys(
+            String[] modulePropertyKeys, Function<String, AnalyticsT> toProtoFunction) {
+        List<String> missing = new ArrayList<>();
+        for (String modulePropertyKey : modulePropertyKeys) {
+            if (toProtoFunction.apply(modulePropertyKey).getNumber() == 0) {
+                missing.add(modulePropertyKey);
+            }
+        }
+        if (!missing.isEmpty()) {
+            Descriptors.EnumDescriptor descriptor =
+                    toProtoFunction.apply(missing.get(0)).getDescriptorForType();
+            int max = getMaxEnumNumber(descriptor);
+
+            StringBuilder errorMessage =
+                    new StringBuilder("Missing analytics enum constants: ")
+                            .append(descriptor.getName())
+                            .append(
+                                    "\nSee tools/analytics-library/protos/src/main/proto/analytics_enums.proto\n\n");
+            for (String modulePropertyKey : missing) {
+                max++;
+                errorMessage
+                        .append("    ")
+                        .append(modulePropertyKey)
+                        .append(" = ")
+                        .append(max)
+                        .append(";\n");
+            }
+            throw new AssertionError(errorMessage.toString());
+        }
+    }
+
     @Test
     public void checkEmptyProjectOptions() {
         ProjectOptions options =
@@ -336,6 +389,7 @@ public class AnalyticsUtilTest {
         assertThat(gradleProjectOptionsSettings.getIntegerOptionValuesList()).isEmpty();
         assertThat(gradleProjectOptionsSettings.getLongOptionsList()).isEmpty();
         assertThat(gradleProjectOptionsSettings.getStringOptionsList()).isEmpty();
+        assertThat(gradleProjectOptionsSettings.getModulePropertyKeysList()).isEmpty();
     }
 
     @Test
