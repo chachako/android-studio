@@ -341,7 +341,7 @@ class ProfileableTest {
             .run("assembleRelease")
         result.stderr.use { out ->
             ScannerSubject.assertThat(out).contains(
-                "You cannot access profileable on ApplicationVariantBuilder in the [AndroidComponentsExtension.beforeVariants]"
+                "You cannot access 'profileable' on ApplicationVariantBuilder in the [AndroidComponentsExtension.beforeVariants]"
             )
         }
     }

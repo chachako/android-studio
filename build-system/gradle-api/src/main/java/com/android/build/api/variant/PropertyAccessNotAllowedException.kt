@@ -37,7 +37,7 @@ class PropertyAccessNotAllowedException(
         val location: String
 ): RuntimeException(
         """
-            You cannot access $propertyName on $location in the [AndroidComponentsExtension.beforeVariants]
+            You cannot access '$propertyName' on $location in the [AndroidComponentsExtension.beforeVariants]
             callbacks. Other plugins applied later can still change this value, it is not safe
             to read at this stage.
         """.trimIndent()

@@ -83,7 +83,7 @@ internal class AnalyticsEnabledApplicationVariantBuilderTest {
         }
         Truth.assertThat(exception.message).isEqualTo(
             """
-                You cannot access profileable on ApplicationVariantBuilder in the [AndroidComponentsExtension.beforeVariants]
+                You cannot access 'profileable' on ApplicationVariantBuilder in the [AndroidComponentsExtension.beforeVariants]
                 callbacks. Other plugins applied later can still change this value, it is not safe
                 to read at this stage.""".trimIndent())
     }
