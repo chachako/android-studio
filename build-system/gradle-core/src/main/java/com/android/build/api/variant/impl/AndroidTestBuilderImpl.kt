@@ -17,6 +17,7 @@
 package com.android.build.api.variant.impl
 
 import com.android.build.api.variant.AndroidTestBuilder
+import com.android.build.api.variant.PropertyAccessNotAllowedException
 
 class AndroidTestBuilderImpl(
     enableMultiDexInitialValue: Boolean?
@@ -27,9 +28,7 @@ class AndroidTestBuilderImpl(
     internal var _enableMultiDex = enableMultiDexInitialValue
 
     override var enableMultiDex: Boolean?
-        get() {
-            throw RuntimeException("")
-        }
+        get() = throw PropertyAccessNotAllowedException("enableMultiDex", "AndroidTestBuilder")
         set(value) {
             _enableMultiDex = value
         }
