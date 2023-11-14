@@ -1,5 +1,7 @@
-package com.google.test.inspectors.grpc.json
+package com.google.test.inspectors.grpc
 
+import com.google.test.inspectors.grpc.json.JsonGrpc
+import com.google.test.inspectors.grpc.json.JsonResponse
 import io.grpc.BindableService
 import io.grpc.ServerServiceDefinition
 import io.grpc.stub.ServerCalls
@@ -11,7 +13,9 @@ internal class JsonService : BindableService {
       .addMethod(
         JsonGrpc.doJsonGrpcMethod,
         ServerCalls.asyncUnaryCall { request, observer ->
-          observer.onNext(JsonResponse("Hello ${request.name} (Json)"))
+          val response = JsonResponse("Hello ${request.name} (Json)")
+          println("doJson:\n  Request: $request\n  Response: $response")
+          observer.onNext(response)
           observer.onCompleted()
         }
       )

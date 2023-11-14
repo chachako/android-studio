@@ -35,8 +35,8 @@ android {
 }
 
 dependencies {
-  implementation(project(":proto"))
 
+  implementation(project(":shared"))
   implementation(libs.activity.compose)
   implementation(libs.androidx.hilt.navigation.compose)
   implementation(libs.androidx.lifecycle.livedata.ktx)
@@ -46,11 +46,10 @@ dependencies {
   implementation(libs.androidx.work)
   implementation(libs.core.ktx)
   implementation(libs.grpc.core)
-  implementation(libs.grpc.inprocess)
   implementation(libs.grpc.kotlin.stub)
+  implementation(libs.grpc.okhttp)
   implementation(libs.grpc.protobuf.lite)
   implementation(libs.grpc.stub)
-  implementation(libs.gson)
   implementation(libs.hilt.android)
   implementation(libs.lifecycle.runtime.ktx)
   implementation(libs.material3)

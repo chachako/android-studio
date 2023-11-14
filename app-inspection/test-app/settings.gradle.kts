@@ -22,4 +22,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Inspectors Test App"
 include(":app")
-include(":proto")
+include(":shared")
+include(":server")

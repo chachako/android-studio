@@ -6,7 +6,7 @@ import io.grpc.Metadata
 import io.grpc.kotlin.AbstractCoroutineStub
 import io.grpc.kotlin.ClientCalls
 
-internal class JsonServiceCoroutineStub(
+class JsonServiceCoroutineStub(
   channel: Channel,
   callOptions: CallOptions = CallOptions.DEFAULT,
 ) : AbstractCoroutineStub<JsonServiceCoroutineStub>(channel, callOptions) {

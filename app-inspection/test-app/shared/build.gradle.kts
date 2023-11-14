@@ -54,6 +54,7 @@ dependencies {
   implementation(libs.grpc.kotlin.stub)
   implementation(libs.grpc.protobuf.lite)
   implementation(libs.grpc.stub)
+  implementation(libs.gson)
   implementation(libs.guava)
   implementation(libs.javax.annotation.api)
   implementation(libs.kotlinx.coroutines.core)

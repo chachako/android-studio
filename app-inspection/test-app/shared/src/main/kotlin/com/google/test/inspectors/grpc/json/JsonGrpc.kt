@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets
 
 private const val METHOD_NAME = "doJsonRpc"
 
-internal object JsonGrpc {
+object JsonGrpc {
   const val SERVICE_NAME = "JsonService"
 
   val doJsonGrpcMethod: MethodDescriptor<JsonRequest, JsonResponse> =
