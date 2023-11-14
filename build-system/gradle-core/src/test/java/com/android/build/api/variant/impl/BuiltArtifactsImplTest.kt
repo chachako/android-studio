@@ -331,7 +331,7 @@ class BuiltArtifactsImplTest {
 
         val baselineProfileFiles3 = mutableSetOf<File>()
         baselineProfileFiles3.add(outputFolder.resolve("2/file1.dm"))
-        baselineProfiles.add(BaselineProfileDetails(35, null, baselineProfileFiles3))
+        baselineProfiles.add(BaselineProfileDetails(35, 35, baselineProfileFiles3))
 
         BuiltArtifactsImpl(
             artifactType = SingleArtifact.APK,
@@ -389,6 +389,7 @@ class BuiltArtifactsImplTest {
                     },
                     {
                       "minApi": 35,
+                      "maxApi": 35,
                       "baselineProfiles": [
                         "2/file1.dm"
                       ]

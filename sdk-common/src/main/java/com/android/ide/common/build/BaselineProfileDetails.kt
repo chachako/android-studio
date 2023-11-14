@@ -26,7 +26,7 @@ import java.io.File
  */
 data class BaselineProfileDetails(
     val minApi: Int,
-    val maxApi: Int?,
+    val maxApi: Int,
     val baselineProfiles: Set<File>
 ) {
     fun getBaselineProfileFile(apkName: String) =

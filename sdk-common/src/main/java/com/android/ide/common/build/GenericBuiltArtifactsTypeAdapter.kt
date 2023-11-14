@@ -66,9 +66,7 @@ abstract class CommonBuiltArtifactsTypeAdapter<
             baselineProfiles.forEach { entry ->
                 out.beginObject()
                 out.name("minApi").value(entry.minApi)
-                if (entry.maxApi != null) {
-                    out.name("maxApi").value(entry.maxApi)
-                }
+                out.name("maxApi").value(entry.maxApi)
                 out.name("baselineProfiles").beginArray()
                 entry.baselineProfiles.forEach {
                     val relativePath = projectPath.relativize(it.toPath())
@@ -147,8 +145,8 @@ abstract class CommonBuiltArtifactsTypeAdapter<
                         reader.endObject()
                         baselineProfiles.add(
                             BaselineProfileDetails(
-                                minApi ?: throw IOException("minApi is required"),
-                                maxApi,
+                                minApi ?: error("minApi is required"),
+                                maxApi ?: error("maxApi is required"),
                                 baselineProfileFiles
                             )
                         )

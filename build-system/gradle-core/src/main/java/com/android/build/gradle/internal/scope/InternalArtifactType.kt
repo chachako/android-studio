@@ -591,6 +591,7 @@ InternalArtifactType<T : FileSystemLocation>(
     )
     // This is the Art profile that combines the app's profile and the L8 profile when present,
     // which is compiled into the binary art profile
+    // Currently, it is not consumed, and only used in CompileArtProfileTask
     object COMBINED_ART_PROFILE: InternalArtifactType<RegularFile>(
         FILE,
         fileName = SdkConstants.FN_ART_PROFILE
@@ -621,6 +622,8 @@ InternalArtifactType<T : FileSystemLocation>(
 
     object SCREENSHOTS_RENDERED: InternalArtifactType<Directory>(DIRECTORY), Replaceable
 
+    // This is the startup profile containing the profiles from all variant sources
+    // Currently, it is not consumed, and only used in R8Task
     object MERGED_STARTUP_PROFILE: InternalArtifactType<RegularFile>(
         FILE,
         fileName = BaselineProfiles.StartupProfileFileName

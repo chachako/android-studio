@@ -207,7 +207,7 @@ class BuiltArtifactsLoaderImplTest {
         val profileTwoDmFiles = mutableSetOf<File>()
         val profileTwoDmFile1 = tmpFolder.root.resolve("2/app-release-unsigned.dm")
         profileTwoDmFiles.add(profileTwoDmFile1)
-        baselineProfiles.add(BaselineProfileDetails(35, null, profileTwoDmFiles))
+        baselineProfiles.add(BaselineProfileDetails(35, 35, profileTwoDmFiles))
         assertThat(builtArtifacts!!.baselineProfiles).isEqualTo(baselineProfiles)
 
         val baselineProfileFile1 = builtArtifacts!!.baselineProfiles?.first()
@@ -290,6 +290,7 @@ class BuiltArtifactsLoaderImplTest {
                         },
                         {
                             "minApi": 35,
+                            "maxApi": 35,
                             "baselineProfiles": [
                                 "2/app-release-unsigned.dm"
                             ]

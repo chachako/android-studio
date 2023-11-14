@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.integration.library
+package com.android.build.gradle.integration.baselineprofiles
 
 import com.android.SdkConstants
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
-import com.android.build.gradle.integration.library.ArtProfileSingleLibraryTest.Companion.aabEntryName
-import com.android.build.gradle.integration.library.ArtProfileSingleLibraryTest.Companion.aarEntryName
-import com.android.build.gradle.integration.library.ArtProfileSingleLibraryTest.Companion.apkEntryName
 import com.android.build.gradle.internal.scope.InternalArtifactType
+import com.android.testutils.apk.Zip
 import com.android.tools.profgen.ArtProfile
 import com.android.tools.profgen.HumanReadableProfile
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth
 import junit.framework.Assert.fail
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -36,6 +35,8 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import java.io.ByteArrayInputStream
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.util.jar.JarFile
 import java.util.zip.ZipEntry
 
@@ -56,6 +57,24 @@ class ArtProfileMultipleLibrariesTest(
                 arrayOf(false, true),
                 arrayOf(false, false),
             )
+
+        const val aarEntryName = SdkConstants.FN_ART_PROFILE
+        const val apkEntryName = "${SdkConstants.FN_BINART_ART_PROFILE_FOLDER_IN_APK}/${SdkConstants.FN_BINARY_ART_PROFILE}"
+        const val aabEntryName = "BUNDLE-METADATA/${SdkConstants.FN_BINART_ART_PROFILE_FOLDER_IN_AAB}/${SdkConstants.FN_BINARY_ART_PROFILE}"
+
+        fun checkAndroidArtifact(
+                tempFolder: TemporaryFolder,
+                target: Zip,
+                entryName: String,
+                expected: (ByteArray) -> Unit) {
+            target.getEntry(entryName)?.let {
+                val tempFile = tempFolder.newFile()
+                Files.newInputStream(it).use { inputStream ->
+                    Files.copy(inputStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                }
+                expected(tempFile.readBytes())
+            } ?: Assert.fail("Entry $entryName is null")
+        }
     }
 
     @get:Rule
@@ -269,9 +288,13 @@ class ArtProfileMultipleLibrariesTest(
 
             // check packaging.
             project.getSubproject(":lib$i").getAar("release") {
-                ArtProfileSingleLibraryTest.checkAndroidArtifact(tempFolder, it, aarEntryName) { fileContent ->
+                checkAndroidArtifact(
+                    tempFolder,
+                    it,
+                    aarEntryName
+                ) { fileContent ->
                     Truth.assertThat(fileContent).isEqualTo(
-                            expectedBaselineProfContent.toByteArray()
+                        expectedBaselineProfContent.toByteArray()
                     )
                 }
             }
@@ -342,7 +365,11 @@ class ArtProfileMultipleLibrariesTest(
 
         // check APK packaging.
         project.getSubproject(":app").getApk(GradleTestProject.ApkType.RELEASE).also {
-            ArtProfileSingleLibraryTest.checkAndroidArtifact(tempFolder, it, apkEntryName) { fileContent ->
+            checkAndroidArtifact(
+                tempFolder,
+                it,
+                apkEntryName
+            ) { fileContent ->
                 Truth.assertThat(ArtProfile(ByteArrayInputStream(fileContent))).isNotNull()
             }
             JarFile(it.file.toFile()).use { jarFile ->
@@ -358,7 +385,11 @@ class ArtProfileMultipleLibrariesTest(
 
         // check Bundle packaging.
         project.getSubproject(":app").getBundle(GradleTestProject.ApkType.RELEASE).also {
-            ArtProfileSingleLibraryTest.checkAndroidArtifact(tempFolder, it, aabEntryName) { fileContent ->
+            checkAndroidArtifact(
+                tempFolder,
+                it,
+                aabEntryName
+            ) { fileContent ->
                 Truth.assertThat(ArtProfile(ByteArrayInputStream(fileContent))).isNotNull()
             }
         }

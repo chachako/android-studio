@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.integration.library
+package com.android.build.gradle.integration.baselineprofiles
 
 import com.android.SdkConstants
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
@@ -44,7 +44,6 @@ class ArtProfileSingleLibraryTest {
     companion object {
         const val aarEntryName = SdkConstants.FN_ART_PROFILE
         const val apkEntryName = "${SdkConstants.FN_BINART_ART_PROFILE_FOLDER_IN_APK}/${SdkConstants.FN_BINARY_ART_PROFILE}"
-        val aabEntryName = "BUNDLE-METADATA/${SdkConstants.FN_BINART_ART_PROFILE_FOLDER_IN_AAB}/${SdkConstants.FN_BINARY_ART_PROFILE}"
 
         fun checkAndroidArtifact(
                 tempFolder: TemporaryFolder,
