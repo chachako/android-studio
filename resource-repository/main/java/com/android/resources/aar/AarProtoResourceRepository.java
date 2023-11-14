@@ -49,6 +49,7 @@ import com.android.resources.base.RepositoryLoader;
 import com.android.resources.base.ResourceSourceFile;
 import com.android.resources.base.ResourceSourceFileImpl;
 import com.android.resources.base.ResourceUrlParser;
+import com.android.tools.environment.Logger;
 import com.android.utils.SdkUtils;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.ArrayListMultimap;
@@ -56,7 +57,6 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Table;
 import com.google.protobuf.ByteString;
-import com.intellij.openapi.diagnostic.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

@@ -29,11 +29,15 @@ interface Logger {
 
     fun error(message: String) = error(message, null)
 
+    fun error(throwable: Throwable) = error(throwable.message ?: "", throwable)
+
     fun debug(message: String, throwable: Throwable?)
 
     fun debug(message: String) = debug(message, null)
 
     fun debug(throwable: Throwable) = debug(throwable.message ?: "", throwable)
+
+    val isDebugEnabled: Boolean
 
     /** Interface for the service providing functionality to construct a logger. */
     interface LoggerProvider {

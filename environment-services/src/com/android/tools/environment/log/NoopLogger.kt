@@ -26,4 +26,6 @@ class NoopLogger : Logger {
     override fun error(message: String, throwable: Throwable?) { }
 
     override fun debug(message: String, throwable: Throwable?) { }
+
+    override val isDebugEnabled: Boolean = false
 }
