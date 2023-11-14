@@ -386,11 +386,11 @@ class UtpConfigFactory {
 
                     if (cfg != INVALID_JWT_CONFIG) {
                         // Note cfg != INVALID -> grpcInfo != null
-                        additionalTestParams["grpc.port"] = grpcInfo!!.port.toString()
+                        additionalTestParams["grpc.port"] = grpcInfo.port.toString()
                         additionalTestParams["grpc.token"] = cfg.token
                         addHostPlugin(
                             createEmulatorControlPlugin(
-                                grpcInfo?.port,
+                                grpcInfo.port,
                                 cfg.token,
                                 cfg.jwkPath,
                                 emulatorControlConfig.secondsValid,

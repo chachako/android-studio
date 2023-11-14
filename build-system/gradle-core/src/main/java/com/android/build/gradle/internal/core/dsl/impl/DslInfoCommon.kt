@@ -16,21 +16,12 @@
 
 package com.android.build.gradle.internal.core.dsl.impl
 
-import com.android.build.api.dsl.ApplicationBuildType
-import com.android.build.api.dsl.BuildType
-import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.ProductFlavor
-import com.android.build.gradle.internal.core.MergedFlavor
-import com.android.build.gradle.internal.core.dsl.ApkProducingComponentDslInfo
-import com.android.build.gradle.internal.core.dsl.ApplicationVariantDslInfo
 import com.android.build.gradle.internal.core.dsl.ComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.TestComponentDslInfo
 import com.android.build.gradle.internal.dsl.DefaultConfig
 import com.android.build.gradle.internal.dsl.InternalTestedExtension
-import com.android.build.gradle.internal.dsl.SigningConfig
 import com.android.build.gradle.internal.services.VariantServices
-import com.android.build.gradle.options.BooleanOption
-import com.android.builder.core.BuilderConstants
 import com.android.builder.errors.IssueReporter
 import org.gradle.api.provider.Provider
 

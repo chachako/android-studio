@@ -22,7 +22,6 @@ import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.builder.core.AbstractProductFlavor
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 
 abstract class KmpComponentDslInfoImpl(

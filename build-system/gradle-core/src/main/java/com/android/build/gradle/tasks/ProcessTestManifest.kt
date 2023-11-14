@@ -260,7 +260,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
                         ManifestMerger2.Invoker.Feature.CHECK_IF_PACKAGE_IN_MAIN_MANIFEST
                     )
 
-                instrumentationRunner?.let {
+                instrumentationRunner.let {
                     intermediateInvoker.setPlaceHolderValue(
                         PlaceholderHandler.INSTRUMENTATION_RUNNER,
                         it)

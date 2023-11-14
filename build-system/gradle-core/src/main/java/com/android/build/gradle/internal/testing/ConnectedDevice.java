@@ -18,7 +18,6 @@ package com.android.build.gradle.internal.testing;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
-import com.android.builder.model.InjectedProperties;
 import com.android.builder.testing.api.DeviceConfig;
 import com.android.builder.testing.api.DeviceConnector;
 import com.android.builder.testing.api.DeviceException;

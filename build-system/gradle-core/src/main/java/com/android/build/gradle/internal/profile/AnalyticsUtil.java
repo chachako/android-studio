@@ -54,7 +54,6 @@ import java.lang.reflect.Method;
 import java.util.Locale;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.logging.Logging;
 
 /**
  * Utilities to map internal representations of types to analytics.

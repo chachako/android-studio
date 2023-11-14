@@ -215,7 +215,7 @@ abstract class AssetPackBundlePlugin : Plugin<Project> {
             LinkManifestForAssetPackTask.CreationForAssetPackBundleAction(
                 artifacts,
                 projectServices,
-                extension.compileSdk!!
+                extension.compileSdk
             )
         )
 

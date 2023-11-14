@@ -138,7 +138,7 @@ abstract class RecalculateStackFramesTransform :
                     )
                 }
 
-                attributes.stringAttributes?.forEach { name, value ->
+                attributes.stringAttributes.forEach { name, value ->
                     spec.from.attribute(name, value)
                     spec.to.attribute(name, value)
                 }
