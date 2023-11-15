@@ -25,4 +25,14 @@ public class Surface {
     public static final int ROTATION_270 = 3;
 
     @VisibleForTesting public byte[] bitmapBytes;
+
+    private boolean mValid = true;
+
+    public boolean isValid() {
+        return mValid;
+    }
+
+    public void setValid(boolean valid) {
+        mValid = valid;
+    }
 }

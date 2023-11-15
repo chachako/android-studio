@@ -69,7 +69,7 @@ fun View.flatten(): Sequence<View> {
 fun View.takeScreenshot(scale: Float, bitmapType: BitmapType): Bitmap? {
     val scaledWidth = (width * scale).roundToInt()
     val scaledHeight = (height * scale).roundToInt()
-    if (scaledWidth <= 0 || scaledHeight <= 0) {
+    if (scaledWidth <= 0 || scaledHeight <= 0 || !viewRootImpl.mSurface.isValid) {
         return null
     }
     val bitmap = Bitmap.createBitmap(scaledWidth, scaledHeight, bitmapType.toBitmapConfig())
