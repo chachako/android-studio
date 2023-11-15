@@ -43,6 +43,7 @@ import com.android.tools.res.ids.apk.ApkResourceIdManager
 import com.android.tools.sdk.AndroidPlatform
 import com.android.tools.sdk.AndroidSdkData
 import com.google.common.annotations.VisibleForTesting
+import java.nio.file.Path
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
@@ -112,7 +113,7 @@ internal fun renderImpl(
             if (resourceApkPath != null)
                 ApkResourceRepository(resourceApkPath, resourceIdManager::findById)
             else
-                LocalResourceRepository.EmptyRepository(ResourceNamespace.RES_AUTO)
+                LocalResourceRepository.EmptyRepository<Path>(ResourceNamespace.RES_AUTO)
 
         val androidVersion = AndroidVersion(33)
         val androidTarget = StandaloneAndroidTarget(androidVersion)
