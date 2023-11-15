@@ -668,6 +668,7 @@ com/android/tools/common
   com/android/utils/cxx/process/
   com/android/utils/reflection/
   com/android/utils/sleep/
+  com/android/utils/text/
   com/android/utils/time/
   com/android/version.properties
   com/android/xml/
