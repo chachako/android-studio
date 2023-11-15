@@ -176,7 +176,9 @@ public class DeployerRunner {
 
         // Use an adblib connection. This is piggybagging on the adb server guaranteed to be
         // spawned by DDMLIB.
-        AdbSession session = AdbLibSessionFactoryKt.createStandaloneSession();
+        AdbSession session =
+                AdbLibSessionFactoryKt.createSocketConnectSession(
+                        AndroidDebugBridge::getSocketAddress);
 
         AdbClient adb = new AdbClient(device, logger, session);
         Installer installer =

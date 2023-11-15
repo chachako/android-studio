@@ -17,6 +17,7 @@ package com.android.adblib.tools
 
 import com.android.adblib.AdbServerChannelProvider
 import com.android.adblib.AdbSession
+import java.net.InetSocketAddress
 
 /**
  * Creates an [AdbSession] to use with Console/Command Line Interface tools,
@@ -37,5 +38,20 @@ fun createStandaloneSession() : AdbSession {
         AdbSession.create(
             host = host,
             channelProvider = AdbServerChannelProvider.createConnectAddressesWithServerStartup(host))
+    return session
+}
+
+// Convenience method used by CLI DeployerRunner. Delete once we support custom server port
+// e.g.: env variable ANDROID_ADB_SERVER_PORT
+fun createSocketConnectSession(socketAddressProvider: () -> InetSocketAddress) : AdbSession {
+    // TODO Move to an AdbChannelProvider that knows how to spawn and ADB server.
+    // This one assume it is already up and running which is fine for our current needs.
+    val host = StandaloneHost(StdLoggerFactory())
+    val session =
+        AdbSession.create(
+            host = host,
+            channelProvider = AdbServerChannelProvider.createConnectAddresses(host) {
+                listOf(socketAddressProvider())
+            })
     return session
 }
