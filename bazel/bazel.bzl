@@ -574,8 +574,11 @@ def iml_module(
         test_jvm_flags: JVM flags passed to the test process.
         test_timeout: See https://bazel.build/reference/be/common-definitions#test.timeout.
         test_class: See https://bazel.build/reference/be/java#java_test_args.
-        test_shard_count: Number of shards to use for testing.
-        split_test_targets: A dict indicating split test targets to create.
+                            Almost every test module is expected to have a class extending `IdeaTestSuiteBase` class.
+                            This class sets up the test environment for the code in the test target and allows to
+                            customize access to additional data for the testing code.
+        test_shard_count: Number of shards to use for testing, should not be used with split_test_targets.
+        split_test_targets: A dict indicating split test targets to create, should not be used with test_shard_count.
                             Each split target runs a subset of tests matching a package name or FQCN.
                             If a test target does not define a `test_filter`, it will run the set of tests that
                             excludes all the other filters. If a test target defines a `test_filter` which
