@@ -16,15 +16,14 @@
 
 package com.android.tools.appinspection.network.trackers
 
-import androidx.annotation.VisibleForTesting
 import androidx.inspection.Connection
+import com.android.tools.appinspection.network.utils.ConnectionIdGenerator
 import com.android.tools.appinspection.network.utils.Logger
 import com.android.tools.appinspection.network.utils.LoggerImpl
 import com.android.tools.idea.protobuf.ByteString
 import io.grpc.Metadata
 import io.grpc.MethodDescriptor.Marshaller
 import io.grpc.Status
-import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import studio.network.inspection.NetworkInspectorProtocol
 import studio.network.inspection.NetworkInspectorProtocol.GrpcEvent
@@ -42,7 +41,8 @@ internal class GrpcTracker(
   private val connection: Connection,
   private val logger: Logger = LoggerImpl(),
 ) {
-  private val connectionId = nextId()
+  private val connectionId = ConnectionIdGenerator.nextId()
+
   private var lastThread: AtomicReference<Thread?> = AtomicReference()
 
   fun trackGrpcCallStarted(service: String, method: String, headers: Metadata, trace: String) {
@@ -146,14 +146,6 @@ internal class GrpcTracker(
 
   fun interface Factory {
     fun newGrpcTracker(): GrpcTracker
-  }
-
-  companion object {
-    private val id = AtomicLong()
-
-    fun nextId() = id.getAndIncrement()
-
-    @VisibleForTesting fun reset() = id.set(0L)
   }
 }
 

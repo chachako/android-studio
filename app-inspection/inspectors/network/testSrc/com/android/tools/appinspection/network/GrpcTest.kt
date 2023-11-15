@@ -18,6 +18,7 @@ package com.android.tools.appinspection.network
 
 import com.android.tools.appinspection.network.grpc.GrpcInterceptor
 import com.android.tools.appinspection.network.trackers.GrpcTracker
+import com.android.tools.appinspection.network.utils.ConnectionIdGenerator
 import com.android.tools.appinspection.network.utils.TestLogger
 import com.google.common.truth.Truth.assertThat
 import com.google.grpc.test.GreeterGrpc
@@ -80,7 +81,7 @@ class GrpcTest {
   fun tearDown() {
     server.shutdownNow()
     server.awaitTermination(5, SECONDS)
-    GrpcTracker.reset()
+    ConnectionIdGenerator.id.set(0)
   }
 
   @Test
