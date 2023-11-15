@@ -445,6 +445,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           ToastDetector.ISSUE,
           TooManyViewsDetector.TOO_DEEP,
           TooManyViewsDetector.TOO_MANY,
+          TraceSectionDetector.UNCLOSED_TRACE,
           TranslationDetector.EXTRA,
           TranslationDetector.MISSING,
           TranslationDetector.MISSING_BASE,

@@ -683,13 +683,20 @@ open class ControlFlowGraph<T : Any> private constructor() {
        * to throw Throwable (which includes errors like out of memory etc.)
        */
       val strict: Boolean,
-
       /**
        * Whether to automatically add exception edges for any calls found, mapping to the correct
        * exception handler or the method exit if there is no applicable surrounding exception
        * handler
        */
       val trackCallThrows: Boolean = strict,
+      /**
+       * Whether to add unchecked exception edges for Java calls that do not declare they throw
+       * anything. This only takes effect if trackCallThrows=true, and it only changes the behavior
+       * of Java calls; Kotlin calls ignore this setting and add edges for exceptions whenever
+       * trackCallThrows=true. If strict=true, this setting is ignored because it adds edges for
+       * [java.lang.Throwable] on all Java and Kotlin calls.
+       */
+      val trackUncheckedExceptions: Boolean = trackCallThrows,
       /**
        * If true, for potential method calls, if the method body is available and simple, look at it
        * and determine whether it looks safe enough to assume it won't throw an exception under
@@ -857,11 +864,16 @@ open class ControlFlowGraph<T : Any> private constructor() {
       fun getDefaultMethodExceptions(reference: UElement): List<String> {
         val defaults =
           if (strict) {
+            // strict mode takes precedence over all other exception-handling settings
             DEFAULT_EXCEPTIONS_STRICT
           } else if (isKotlin(reference.sourcePsi)) {
+            // Kotlin is not allowed to ignore unchecked exceptions, so always return the default
+            // exceptions list
             DEFAULT_EXCEPTIONS_KOTLIN
-          } else {
+          } else if (trackUncheckedExceptions) { // !strict && !kotlin
             DEFAULT_EXCEPTIONS_JAVA
+          } else {
+            emptyList()
           }
 
         val catches =
