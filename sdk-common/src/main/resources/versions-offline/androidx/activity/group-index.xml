@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <androidx.activity>
-  <activity versions="1.7.0,1.8.0-alpha02"/>
-  <activity-compose versions="1.7.0,1.8.0-alpha02"/>
-  <activity-ktx versions="1.7.0,1.8.0-alpha02"/>
+  <activity versions="1.8.0"/>
+  <activity-compose versions="1.8.0"/>
+  <activity-ktx versions="1.8.0"/>
 </androidx.activity>
 

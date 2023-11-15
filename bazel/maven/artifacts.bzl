@@ -215,7 +215,8 @@ DATA = [
     "android.arch.navigation:navigation-ui:1.0.0",
     "android.arch.persistence.room:runtime:1.0.0",
     "androidx.activity:activity-compose:1.5.1",  # Still needed from //tools/base/build-system/integration-tests
-    "androidx.activity:activity-compose:1.7.2",
+    "androidx.activity:activity-compose:1.7.2",  # Still needed from //tools/base/android-templates/BUILD
+    "androidx.activity:activity-compose:1.8.0",
     "androidx.activity:activity-ktx:1.4.0",
     "androidx.activity:activity-ktx:1.6.0",  # Still needed from navigation-fragment-ktx:2.5.3
     "androidx.activity:activity-ktx:1.7.0",
