@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.channels.ClosedSelectorException;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -62,6 +63,11 @@ public class AdbInstallerTest {
     public void setUp() {
         device = connection.getDevice();
         logger = new TestLogger();
+    }
+
+    @After
+    public void tearDown() {
+        AndroidDebugBridge.terminate();
     }
 
     @Test
