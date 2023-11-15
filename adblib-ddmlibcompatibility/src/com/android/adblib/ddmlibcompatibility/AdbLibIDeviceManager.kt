@@ -52,7 +52,7 @@ internal class AdbLibIDeviceManager(
 
     init {
 
-        session.scope.launch {
+        scope.launch {
             ddmlibEventQueue.runDispatcher()
         }
 
